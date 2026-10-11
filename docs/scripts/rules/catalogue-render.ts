@@ -30,6 +30,11 @@ import {
 } from "./vue-category-labels.ts";
 import { localizeVueExampleLabels } from "./vue-category-translations.ts";
 import { crossMetadata } from "./project-metadata.ts";
+import {
+  overviewIntroduction,
+  overviewProjectIntroduction,
+  ruleOverview,
+} from "./all-rules-overview.ts";
 
 interface Reference {
   id: string;
@@ -123,7 +128,11 @@ export function generateRemainingCatalogues(
     )?.[1];
     const labels = vueCategoryLabels[locale];
     const text =
-      locale === "en" || locale === "ja" ? intro[locale] : catalogueTranslation(locale).intro;
+      file === "all"
+        ? overviewIntroduction[locale]
+        : locale === "en" || locale === "ja"
+          ? intro[locale]
+          : catalogueTranslation(locale).intro;
     const projectText =
       locale === "en" || locale === "ja"
         ? crossIntro[locale]
@@ -162,7 +171,9 @@ export function generateRemainingCatalogues(
         : []),
       text,
       "",
-      ...(entries.some((entry) => entry.project) ? [projectText, "", cliText, ""] : []),
+      ...(entries.some((entry) => entry.project)
+        ? [file === "all" ? overviewProjectIntroduction[locale] : projectText, "", cliText, ""]
+        : []),
       ...retainedCategoryFragments(locale, file, owned),
       "",
       `| ${labels.rule} | ${labels.examples} | ${labels.purpose}${withStatus ? ` | ${supportHeading}` : ""} |`,
@@ -189,7 +200,11 @@ export function generateRemainingCatalogues(
       locale,
       file,
       lines.join("\n"),
-      entries.map((entry) => packet(entry, locale)),
+      entries.map((entry) =>
+        file === "all"
+          ? ruleOverview(locale === "ja" ? entry.ja : entry.en, entry.id, locale, entry.project)
+          : packet(entry, locale),
+      ),
       checking,
     );
   };

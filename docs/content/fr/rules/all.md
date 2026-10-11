@@ -4,9 +4,9 @@ title: "Toutes les règles Patina"
 
 # Toutes les règles Patina
 
-Chaque règle présente sur cette page son objectif, sa configuration et ses exemples complets Mauvais et Bon, accompagnés de leurs explications. Les lignes surlignées montrent les modifications ; le code copié conserve la source complète. Les limites de prise en charge actuelles sont précisées avant les exemples concernés.
+Cet index permet de trouver l'objectif d'une règle, ses réglages par défaut et son groupe. Les pages des groupes présentent les explications, la configuration, les exemples complets incorrects et corrects ainsi que les limites actuelles. Les liens existants vers les règles et leurs exemples restent utilisables ici.
 
-Les 66 exemples de projets réunissent ici les fichiers communs et les exemples complets Mauvais et Bon. Utilisez les fichiers communs des deux côtés. Les 60 codes d’analyse conservent leurs limites réelles : 19 codes CLI (18 paires de sources qualifiées et un projet illustratif avec son graphe réactif conservé), 16 codes de l’analyseur Rust expérimental que cette passe CLI n’émet pas individuellement, et 25 contrats sans producteur actuel. Configurer un identifiant n’active pas un producteur indisponible.
+Les 66 entrées de projet renvoient aux fichiers partagés complets et aux exemples incorrects et corrects de la page des règles inter-fichiers. Les 60 codes d'analyse conservent leurs limites réelles : 19 codes CLI (18 paires de sources validées et un projet illustratif avec son graphe réactif conservé), 16 codes expérimentaux de l'analyseur Rust que cette passe CLI n'émet pas individuellement et 25 contrats sans producteur actuel. Configurer un identifiant n'active pas un producteur indisponible.
 
 Le CLI public expose la même passe avec `vize lint --cross-file`. Les codes affichés `vize:croquis/cf/*` utilisent `croquis/cf/*` dans `lint.vize.rules` (sans `vize:`). Les diagnostics de niveau information/hint deviennent des avertissements CLI. Les emplacements associés expliquent la relation entre la source et le consommateur.
 

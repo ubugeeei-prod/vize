@@ -6,9 +6,7 @@ import { parseArgs } from "node:util";
 import { chromium } from "playwright";
 import type { Browser } from "playwright";
 import { resolvePuppeteerExecutablePath } from "../browser-path.js";
-import { navigationRenderRoutes } from "./navigation-render-routes.ts";
-import { categoryFiles } from "./rules/catalogue-routes.ts";
-import { catalogueSubgroups } from "./rules/catalogue-subgroups.ts";
+import { defaultNavigationRenderRoutes } from "./navigation-render-routes.ts";
 import { verifyCaptureRenderControls } from "./capture-render-controls.ts";
 import { verifyLocaleRenderControls } from "./locale-control-render.ts";
 import { verifyNavigationRenderJob } from "./navigation-render-page.ts";
@@ -34,13 +32,7 @@ const { values } = parseArgs({
 });
 const dist = path.resolve(values.dir);
 const output = path.resolve(values.output);
-const routes = values.routes?.split(",") ?? [
-  ...navigationRenderRoutes,
-  ...["zh-CN", "pt-BR", "fr"].flatMap((locale) =>
-    ["all", "vue", ...categoryFiles, "cross-file"].map((file) => `/${locale}/rules/${file}`),
-  ),
-  ...Object.keys(catalogueSubgroups).map((file) => `/rules/${file}`),
-];
+const routes = values.routes?.split(",") ?? defaultNavigationRenderRoutes;
 const workers = parseRenderWorkers(values.workers);
 const jobs = createRenderJobs(routes);
 const startedAt = new Date().toISOString();

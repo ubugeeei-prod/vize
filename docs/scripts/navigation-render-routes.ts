@@ -1,4 +1,6 @@
 import { ruleRenderRoutes } from "./rule-render-assertions.ts";
+import { categoryFiles } from "./rules/catalogue-routes.ts";
+import { catalogueSubgroups } from "./rules/catalogue-subgroups.ts";
 
 const pages = [
   "/",
@@ -23,4 +25,13 @@ export const navigationRenderRoutes = [
   "/zh-CN/getting-started",
   "/pt-BR/getting-started",
   "/fr/getting-started",
+];
+
+/** The CLI and coverage checks consume the same complete native route manifest. */
+export const defaultNavigationRenderRoutes = [
+  ...navigationRenderRoutes,
+  ...["zh-CN", "pt-BR", "fr"].flatMap((locale) =>
+    ["all", "vue", ...categoryFiles, "cross-file"].map((file) => `/${locale}/rules/${file}`),
+  ),
+  ...Object.keys(catalogueSubgroups).map((file) => `/rules/${file}`),
 ];

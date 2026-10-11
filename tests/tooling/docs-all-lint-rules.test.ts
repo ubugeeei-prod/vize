@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { test } from "node:test";
@@ -25,6 +25,9 @@ const tsSyntax: unknown = require("@babel/plugin-syntax-typescript");
 import { parse as parseSfc, compileScript } from "vue-computed-inlay-oracle/compiler-sfc";
 import { crossMetadata } from "../../docs/scripts/rules/project-metadata.ts";
 import { verifyCompleteCategorySources } from "./support/docs-category-sources.ts";
+import { verifyRuleOverviewSource } from "./support/docs-rule-overview-sources.ts";
+import { defaultNavigationRenderRoutes } from "../../docs/scripts/navigation-render-routes.ts";
+import { createRenderJobs } from "../../docs/scripts/navigation-render-concurrency.ts";
 
 const root = resolve(import.meta.dirname, "../..");
 const read = (path: string) => readFileSync(resolve(root, path), "utf8");
@@ -230,49 +233,20 @@ await test("project references retain every code and distinguish actual CLI prod
   }
 });
 
-await test("both catalogue pages retain all 317 complete reference examples and same-page targets", () => {
-  for (const [locale, generated] of [
-    ["", "en"],
-    ["ja/", "ja"],
-  ]) {
-    const catalogue = read(`docs/content/generated/rules/${generated}/all.md`);
-    const targets = [...catalogue.matchAll(/^### `([^`]+)`$/gm)];
-    assert.equal(targets.length, 317);
-    assert.equal(new Set(targets.map((match) => match[1])).size, 317);
-    for (let index = 0; index < targets.length; index += 1) {
-      const [, id] = targets[index];
-      const slug = id.replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
-      const section = catalogue.slice(targets[index].index, targets[index + 1]?.index);
-      const directories = ["reference", "project"].filter((directory) =>
-        existsSync(resolve(root, `docs/content/${locale}rules/${directory}/${slug}.md`)),
+await test("all five catalogues remain complete overview indexes with usable example aliases", () => {
+  for (const locale of ["en", "ja", "zh-CN", "pt-BR", "fr"]) verifyRuleOverviewSource(root, locale);
+});
+
+await test("every supported All Rules index receives native desktop and mobile reader coverage", () => {
+  const jobs = createRenderJobs(defaultNavigationRenderRoutes);
+  for (const prefix of ["", "/ja", "/zh-CN", "/pt-BR", "/fr"]) {
+    for (const device of ["desktop", "mobile"]) {
+      assert.equal(
+        jobs.filter((job) => job.route === `${prefix}/rules/all` && job.device === device).length,
+        1,
+        `${prefix || "en"}: one complete native ${device} index review`,
       );
-      assert.equal(directories.length, 1, `${id}: one source reference`);
-      const directory = directories[0];
-      const reference = read(`docs/content/${locale}rules/${directory}/${slug}.md`);
-      assert.deepEqual(
-        codeBlocks(section),
-        codeBlocks(reference),
-        `${locale}${id}: every complete fenced byte preserved`,
-      );
-      for (const [kind, label] of [
-        ["bad", locale ? "悪い" : "Bad"],
-        ["good", locale ? "良い" : "Good"],
-      ]) {
-        assert.ok(
-          section.includes(`<span id="${slug}-${kind}"></span>`),
-          `${id}: unique ${kind} target`,
-        );
-        const rationale = reference.split(`## ${label}\n`)[1].split("```")[0].trim();
-        assert.ok(section.includes(rationale), `${id}: whole authored ${kind} explanation/context`);
-      }
     }
-    const anchors = new Set(
-      [...catalogue.matchAll(/<span id="([^"\n]+)"><\/span>/g)]
-        .map((match) => match[1])
-        .concat(targets.map((match) => match[1].replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase())),
-    );
-    for (const [, anchor] of catalogue.matchAll(/\]\(#([^)]*)\)/g))
-      assert.ok(anchors.has(anchor), `${locale}: missing same-page ${anchor}`);
   }
 });
 

@@ -4,7 +4,7 @@ title: All lint rules
 
 # All lint rules
 
-All 251 source catalog entries with purpose, scope, configuration, and Bad/Good examples on this page. Each example explains the finding and repair, with current support gaps stated explicitly.
+Use this index to find a rule's purpose, default settings, and owning group. The group pages contain the explanations, configuration, complete Bad/Good examples, and current support limits. Existing rule and example links remain usable here.
 
 With Vite+, import `defineConfig` from `@vizejs/vite-plugin/vite-plus`, configure `lint.vize.rules`, and run `vp run lint` for Vize and Oxlint diagnostics.
 

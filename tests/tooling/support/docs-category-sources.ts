@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { CATALOGUE_SOURCES } from "../../../docs/scripts/materialize-content.ts";
+import { verifyRuleOverviewSource } from "./docs-rule-overview-sources.ts";
 
 /** Compare the actual reader documents with complete independent reference authorities. */
 export function verifyCompleteCategorySources(root: string) {
@@ -44,6 +45,10 @@ export function verifyCompleteCategorySources(root: string) {
       headings.length,
       `${file}: unique rule packets`,
     );
+    if (page === "all") {
+      verifyRuleOverviewSource(root, locale);
+      continue;
+    }
     for (let index = 0; index < headings.length; index += 1) {
       const [, id] = headings[index];
       const section = catalogue.slice(headings[index].index, headings[index + 1]?.index);

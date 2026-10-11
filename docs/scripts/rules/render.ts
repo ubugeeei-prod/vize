@@ -9,7 +9,7 @@ import { migrationPage } from "./migration.ts";
 import { purposeJa } from "./purpose-ja.ts";
 import { exampleLinks } from "./example-links.ts";
 import { projectIndex } from "./project-index.ts";
-import { nativeInlineReference } from "./annotate-reference.ts";
+import { overviewIntroduction, ruleOverview } from "./all-rules-overview.ts";
 
 export const configurableRules = new Set([
   "html/no-empty-palpable-content",
@@ -56,9 +56,7 @@ export function generateRulePages({
       "",
       `# ${ja ? "全 lint ルール" : "All lint rules"}`,
       "",
-      ja
-        ? `現在のソースカタログにある ${rules.length} 項目の一覧です。このページに、目的・適用範囲・設定・悪い例・良い例と理由をまとめています。未対応の範囲も各例の前に明記しています。`
-        : `All ${rules.length} source catalog entries with purpose, scope, configuration, and Bad/Good examples on this page. Each example explains the finding and repair, with current support gaps stated explicitly.`,
+      overviewIntroduction[ja ? "ja" : "en"],
       "",
       ja
         ? "Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lint.vize.rules` に指定します。`vp run lint` で Vize と Oxlint の lint を実行します。"
@@ -95,7 +93,7 @@ export function generateRulePages({
         );
         const reference = detail(rule, example, ja);
         output(resolve(directory, "reference", path), reference, checking);
-        examples.push(nativeInlineReference(reference, rule.name));
+        examples.push(ruleOverview(reference, rule.name, ja ? "ja" : "en"));
       }
     }
     lines.push(...projectIndex(workspaceRoot, ja, true));
@@ -111,7 +109,9 @@ export function generateRulePages({
       "",
       `## ${ja ? "プロジェクトの例" : "Project examples"}`,
       "",
-      ...projectPages.get(locale)!.map(({ id, text }) => nativeInlineReference(text, id, true)),
+      ...projectPages
+        .get(locale)!
+        .map(({ id, text }) => ruleOverview(text, id, ja ? "ja" : "en", true)),
     ];
     const generated = resolve(workspaceRoot, `docs/content/generated/rules/${ja ? "ja" : "en"}`);
     if (!checking) mkdirSync(generated, { recursive: true });

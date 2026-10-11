@@ -4,7 +4,7 @@ title: All lint rules
 
 # All lint rules
 
-All 251 source catalog entries with purpose, scope, configuration, and Bad/Good examples on this page. Each example explains the finding and repair, with current support gaps stated explicitly.
+Use this index to find a rule's purpose, default settings, and owning group. The group pages contain the explanations, configuration, complete Bad/Good examples, and current support limits. Existing rule and example links remain usable here.
 
 With Vite+, import `defineConfig` from `@vizejs/vite-plugin/vite-plus`, configure `lint.vize.rules`, and run `vp run lint` for Vize and Oxlint diagnostics.
 
@@ -349,16348 +349,3515 @@ These project entries supplement the 251 single-file catalog entries above. Each
 
 Disallow directives that petite-vue does not support
 
-[Bad](#petite-vue-no-unsupported-directive-bad) · [Good](#petite-vue-no-unsupported-directive-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: HTML documents detected as petite-vue; ordinary Vue SFCs are outside this rule's scope.  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "petite-vue/no-unsupported-directive": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="petite-vue-no-unsupported-directive-bad"></span>
 
-**Bad**
-
-`v-memo`, `v-slot:header`, and the custom `v-my-directive` are absent from petite-vue’s supported directive list. The petite-vue script marks this HTML as the relevant dialect.
-
-```html annotate="remove:3,4,5"
-<!doctype html>
-<html><body>
-<div v-memo="[a, b]"></div>
-<template v-slot:header></template>
-<div v-my-directive></div>
-<script src="https://unpkg.com/petite-vue" init></script>
-</body></html>
-```
+[Bad](./petite-vue.md#petite-vue-no-unsupported-directive-bad)
 
 <span id="petite-vue-no-unsupported-directive-good"></span>
 
-**Good**
+[Good](./petite-vue.md#petite-vue-no-unsupported-directive-good)
 
-The replacement uses supported `v-scope`, `v-effect`, `v-if`, `v-bind`, and `v-on` syntax instead of relying on unsupported directives.
-
-```html annotate="add:3,4"
-<!doctype html>
-<html><body>
-<div v-scope="{ count: 0 }" v-effect="console.log(count)"></div>
-<div v-if="ok" v-bind:title="title" @click="count++"></div>
-<script src="https://unpkg.com/petite-vue" init></script>
-</body></html>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/no_unsupported_directive.rs#L43) · [All rules](all.md)
+[Group examples](./petite-vue.md#petite-vue-no-unsupported-directive) · [Rule reference](./reference/petite-vue-no-unsupported-directive.md)
 
 ### `petite-vue/valid-v-effect`
 
 Require v-effect to have a non-empty expression
 
-[Bad](#petite-vue-valid-v-effect-bad) · [Good](#petite-vue-valid-v-effect-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: HTML documents detected as petite-vue; ordinary Vue SFCs are outside this rule's scope.  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "petite-vue/valid-v-effect": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="petite-vue-valid-v-effect-bad"></span>
 
-**Bad**
-
-Each `v-effect` has no executable expression: its value is missing, empty, or only whitespace.
-
-```html annotate="remove:3,4,5"
-<!doctype html>
-<html><body>
-<div v-effect></div>
-<div v-effect=""></div>
-<div v-effect="   "></div>
-<script src="https://unpkg.com/petite-vue" init></script>
-</body></html>
-```
+[Bad](./petite-vue.md#petite-vue-valid-v-effect-bad)
 
 <span id="petite-vue-valid-v-effect-good"></span>
 
-**Good**
+[Good](./petite-vue.md#petite-vue-valid-v-effect-good)
 
-Both `v-effect` values contain an expression: one updates `el.textContent`, and the other increments `count`. This rule checks for a nonempty expression, not the effect’s business logic.
-
-```html annotate="add:3,4"
-<!doctype html>
-<html><body>
-<div v-effect="el.textContent = count"></div>
-<div v-effect="count++"></div>
-<script src="https://unpkg.com/petite-vue" init></script>
-</body></html>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/valid_v_effect.rs#L35) · [All rules](all.md)
+[Group examples](./petite-vue.md#petite-vue-valid-v-effect) · [Rule reference](./reference/petite-vue-valid-v-effect.md)
 
 ### `petite-vue/valid-v-scope`
 
 Require v-scope to bind an object literal
 
-[Bad](#petite-vue-valid-v-scope-bad) · [Good](#petite-vue-valid-v-scope-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: HTML documents detected as petite-vue; ordinary Vue SFCs are outside this rule's scope.  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "petite-vue/valid-v-scope": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="petite-vue-valid-v-scope-bad"></span>
 
-**Bad**
-
-The four nonempty `v-scope` values are an identifier, a call, arithmetic, and a number; none parses as an object literal.
-
-```html annotate="remove:3,4,5,6"
-<!doctype html>
-<html><body>
-<div v-scope="count"></div>
-<div v-scope="foo()"></div>
-<div v-scope="a + b"></div>
-<div v-scope="123"></div>
-<script src="https://unpkg.com/petite-vue" init></script>
-</body></html>
-```
+[Bad](./petite-vue.md#petite-vue-valid-v-scope-bad)
 
 <span id="petite-vue-valid-v-scope-good"></span>
 
-**Good**
+[Good](./petite-vue.md#petite-vue-valid-v-scope-good)
 
-A valueless `v-scope` uses the root scope. The other values are object literals, including the parenthesized object, which the rule accepts.
-
-```html annotate="add:3,4,5,6"
-<!doctype html>
-<html><body>
-<div v-scope></div>
-<div v-scope="{}"></div>
-<div v-scope="{ count: 0 }"></div>
-<div v-scope="({ count: 0 })"></div>
-<script src="https://unpkg.com/petite-vue" init></script>
-</body></html>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/valid_v_scope.rs#L46) · [All rules](all.md)
+[Group examples](./petite-vue.md#petite-vue-valid-v-scope) · [Rule reference](./reference/petite-vue-valid-v-scope.md)
 
 ### `vue/multi-word-component-names`
 
 Require component names to be multi-word
 
-[Bad](#vue-multi-word-component-names-bad) · [Good](#vue-multi-word-component-names-good)
-
-Default severity: `error`  
-Presets: `essential`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-The filename is the finding. Rename the same component; changing a child tag does not fix it.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/multi-word-component-names": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-multi-word-component-names-bad"></span>
 
-**Bad**
-
-Item.vue gives the component a single-word name.
-
-`Item.vue`
-
-```vue
-<template><p>Item</p></template>
-```
+[Bad](./vue.md#vue-multi-word-component-names-bad)
 
 <span id="vue-multi-word-component-names-good"></span>
 
-**Good**
+[Good](./vue.md#vue-multi-word-component-names-good)
 
-TodoItem.vue gives the same template a multi-word component name.
-
-`TodoItem.vue`
-
-```vue
-<template><p>Item</p></template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/multi_word_component_names.rs#L34) · [All rules](all.md)
+[Group examples](./vue.md#vue-multi-word-component-names) · [Rule reference](./reference/vue-multi-word-component-names.md)
 
 ### `vue/no-child-content`
 
 Disallow child content when using v-html or v-text
 
-[Bad](#vue-no-child-content-bad) · [Good](#vue-no-child-content-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-child-content": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-child-content-bad"></span>
 
-**Bad**
-
-v-text replaces the paragraph content, so the authored fallback text cannot survive that directive.
-
-```vue annotate="remove:2"
-<template>
-  <p v-text="message">Fallback text</p>
-</template>
-```
+[Bad](./vue.md#vue-no-child-content-bad)
 
 <span id="vue-no-child-content-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-child-content-good)
 
-Removing the child text leaves v-text as the single source of paragraph content.
-
-```vue annotate="add:2"
-<template>
-  <p v-text="message" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_child_content.rs#L30) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-child-content) · [Rule reference](./reference/vue-no-child-content.md)
 
 ### `vue/no-deprecated-filter`
 
 Disallow deprecated Vue 2 filter syntax using the pipe operator
 
-[Bad](#vue-no-deprecated-filter-bad) · [Good](#vue-no-deprecated-filter-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-filter": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-deprecated-filter-bad"></span>
 
-**Bad**
-
-The pipe uses the removed Vue filter syntax to apply capitalize.
-
-```vue annotate="remove:2"
-<template>
-{{ message | capitalize }}
-</template>
-```
+[Bad](./vue.md#vue-no-deprecated-filter-bad)
 
 <span id="vue-no-deprecated-filter-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-deprecated-filter-good)
 
-Calling capitalize(message) applies the transformation as an ordinary expression.
-
-```vue annotate="add:2"
-<template>
-{{ capitalize(message) }}
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_filter.rs#L53) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-deprecated-filter) · [Rule reference](./reference/vue-no-deprecated-filter.md)
 
 ### `vue/no-deprecated-functional-template`
 
 Disallow the `functional` attribute on the SFC `<template>`
 
-[Bad](#vue-no-deprecated-functional-template-bad) · [Good](#vue-no-deprecated-functional-template-good)
-
-Default severity: `error`  
-Presets: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-functional-template": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-deprecated-functional-template-bad"></span>
 
-**Bad**
-
-The SFC template has the removed functional attribute and reads the old props context.
-
-```vue annotate="remove:1,2"
-<template functional>
-  <div>{{ props.msg }}</div>
-</template>
-```
+[Bad](./vue.md#vue-no-deprecated-functional-template-bad)
 
 <span id="vue-no-deprecated-functional-template-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-deprecated-functional-template-good)
 
-The ordinary template omits functional and reads the component binding msg directly.
-
-```vue annotate="add:1,2"
-<template>
-  <div>{{ msg }}</div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_functional_template.rs#L57) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-deprecated-functional-template) · [Rule reference](./reference/vue-no-deprecated-functional-template.md)
 
 ### `vue/no-deprecated-html-element-is`
 
 Disallow the `is` attribute on native HTML elements
 
-[Bad](#vue-no-deprecated-html-element-is-bad) · [Good](#vue-no-deprecated-html-element-is-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-html-element-is": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-deprecated-html-element-is-bad"></span>
 
-**Bad**
-
-A native div uses the old unprefixed is attribute to request a Vue component.
-
-```vue annotate="remove:2"
-<template>
-  <div is="MyComponent" />
-</template>
-```
+[Bad](./vue.md#vue-no-deprecated-html-element-is-bad)
 
 <span id="vue-no-deprecated-html-element-is-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-deprecated-html-element-is-good)
 
-A dynamic component uses :is; the native-element spelling explicitly uses the vue: prefix.
-
-```vue annotate="add:2,3"
-<template>
-  <component :is="MyComponent" />
-  <div is="vue:MyComponent" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_html_element_is.rs#L39) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-deprecated-html-element-is) · [Rule reference](./reference/vue-no-deprecated-html-element-is.md)
 
 ### `vue/no-deprecated-inline-template`
 
 Disallow the deprecated `inline-template` attribute
 
-[Bad](#vue-no-deprecated-inline-template-bad) · [Good](#vue-no-deprecated-inline-template-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-inline-template": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-deprecated-inline-template-bad"></span>
 
-**Bad**
-
-Card uses the deprecated inline-template attribute for its supplied content.
-
-```vue annotate="remove:2"
-<template>
-<Card inline-template><p>Details</p></Card>
-</template>
-```
+[Bad](./vue.md#vue-no-deprecated-inline-template-bad)
 
 <span id="vue-no-deprecated-inline-template-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-deprecated-inline-template-good)
 
-The same content is passed normally without the inline-template attribute.
-
-```vue annotate="add:2"
-<template>
-<Card><p>Details</p></Card>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_inline_template.rs#L20) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-deprecated-inline-template) · [Rule reference](./reference/vue-no-deprecated-inline-template.md)
 
 ### `vue/no-deprecated-router-link-tag-prop`
 
 Disallow the `tag` prop on &lt;router-link&gt;
 
-[Bad](#vue-no-deprecated-router-link-tag-prop-bad) · [Good](#vue-no-deprecated-router-link-tag-prop-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-router-link-tag-prop": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-deprecated-router-link-tag-prop-bad"></span>
 
-**Bad**
-
-RouterLink uses the removed tag prop to request a button element.
-
-```vue annotate="remove:2"
-<template>
-  <router-link to="/home" tag="button">Home</router-link>
-</template>
-```
+[Bad](./vue.md#vue-no-deprecated-router-link-tag-prop-bad)
 
 <span id="vue-no-deprecated-router-link-tag-prop-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-deprecated-router-link-tag-prop-good)
 
-The slot provides navigate to an explicitly authored button.
-
-```vue annotate="add:2,3,4"
-<template>
-  <router-link to="/home" v-slot="{ navigate }">
-    <button @click="navigate">Home</button>
-  </router-link>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_router_link_tag_prop.rs#L37) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-deprecated-router-link-tag-prop) · [Rule reference](./reference/vue-no-deprecated-router-link-tag-prop.md)
 
 ### `vue/no-deprecated-scope-attribute`
 
 Disallow the deprecated `scope` attribute on &lt;template&gt;
 
-[Bad](#vue-no-deprecated-scope-attribute-bad) · [Good](#vue-no-deprecated-scope-attribute-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-scope-attribute": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-deprecated-scope-attribute-bad"></span>
 
-**Bad**
-
-The slot template declares props through the deprecated scope attribute.
-
-```vue annotate="remove:2"
-<template>
-<Card><template scope="props">{{ props.name }}</template></Card>
-</template>
-```
+[Bad](./vue.md#vue-no-deprecated-scope-attribute-bad)
 
 <span id="vue-no-deprecated-scope-attribute-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-deprecated-scope-attribute-good)
 
-The default-slot directive declares the same props binding through current slot syntax.
-
-```vue annotate="add:2"
-<template>
-<Card><template #default="props">{{ props.name }}</template></Card>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_scope_attribute.rs#L38) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-deprecated-scope-attribute) · [Rule reference](./reference/vue-no-deprecated-scope-attribute.md)
 
 ### `vue/no-deprecated-slot-attribute`
 
 Disallow the deprecated `slot` attribute
 
-[Bad](#vue-no-deprecated-slot-attribute-bad) · [Good](#vue-no-deprecated-slot-attribute-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-slot-attribute": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-deprecated-slot-attribute-bad"></span>
 
-**Bad**
-
-The header slot is selected through the old slot attribute.
-
-```vue annotate="remove:3,4"
-<template>
-  <Foo>
-    <template slot="header"><h1>Title</h1></template>
-    <div :slot="name">Title</div>
-  </Foo>
-</template>
-```
+[Bad](./vue.md#vue-no-deprecated-slot-attribute-bad)
 
 <span id="vue-no-deprecated-slot-attribute-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-deprecated-slot-attribute-good)
 
-v-slot:header explicitly selects the header slot with the current directive.
-
-```vue annotate="add:3"
-<template>
-  <Foo>
-    <template v-slot:header><h1>Title</h1></template>
-  </Foo>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs#L39) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-deprecated-slot-attribute) · [Rule reference](./reference/vue-no-deprecated-slot-attribute.md)
 
 ### `vue/no-deprecated-slot-scope-attribute`
 
 Disallow the deprecated `slot-scope` attribute
 
-[Bad](#vue-no-deprecated-slot-scope-attribute-bad) · [Good](#vue-no-deprecated-slot-scope-attribute-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-slot-scope-attribute": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-deprecated-slot-scope-attribute-bad"></span>
 
-**Bad**
-
-The template receives slot props through the deprecated slot-scope attribute.
-
-```vue annotate="remove:2"
-<template>
-<Card><template slot-scope="props">{{ props.name }}</template></Card>
-</template>
-```
+[Bad](./vue.md#vue-no-deprecated-slot-scope-attribute-bad)
 
 <span id="vue-no-deprecated-slot-scope-attribute-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-deprecated-slot-scope-attribute-good)
 
-The #default directive receives those props without slot-scope.
-
-```vue annotate="add:2"
-<template>
-<Card><template #default="props">{{ props.name }}</template></Card>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_scope_attribute.rs#L33) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-deprecated-slot-scope-attribute) · [Rule reference](./reference/vue-no-deprecated-slot-scope-attribute.md)
 
 ### `vue/no-deprecated-v-bind-sync`
 
 Disallow the deprecated `.sync` modifier on `v-bind`
 
-[Bad](#vue-no-deprecated-v-bind-sync-bad) · [Good](#vue-no-deprecated-v-bind-sync-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-v-bind-sync": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-deprecated-v-bind-sync-bad"></span>
 
-**Bad**
-
-The bindings use the removed .sync modifier, including its combination with .camel.
-
-```vue annotate="remove:2,3,4"
-<template>
-<MyComponent :title.sync="title" />
-<MyComponent v-bind:title.sync="title" />
-<MyComponent :title.sync.camel="title" />
-</template>
-```
+[Bad](./vue.md#vue-no-deprecated-v-bind-sync-bad)
 
 <span id="vue-no-deprecated-v-bind-sync-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-deprecated-v-bind-sync-good)
 
-Use an ordinary one-way title binding or v-model:title when an update channel is required.
-
-```vue annotate="add:2,3"
-<template>
-<MyComponent :title="title" />
-<MyComponent v-model:title="title" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_bind_sync.rs#L42) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-deprecated-v-bind-sync) · [Rule reference](./reference/vue-no-deprecated-v-bind-sync.md)
 
 ### `vue/no-deprecated-v-on-native-modifier`
 
 Disallow the deprecated `.native` modifier on `v-on`
 
-[Bad](#vue-no-deprecated-v-on-native-modifier-bad) · [Good](#vue-no-deprecated-v-on-native-modifier-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-v-on-native-modifier": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-deprecated-v-on-native-modifier-bad"></span>
 
-**Bad**
-
-The component handlers use the removed .native event modifier.
-
-```vue annotate="remove:2,3,4"
-<template>
-<MyComponent @click.native="handler" />
-<MyComponent v-on:click.native="handler" />
-<MyComponent @click.native.stop="handler" />
-</template>
-```
+[Bad](./vue.md#vue-no-deprecated-v-on-native-modifier-bad)
 
 <span id="vue-no-deprecated-v-on-native-modifier-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-deprecated-v-on-native-modifier-good)
 
-The handlers omit .native and preserve other event modifiers such as .stop.
-
-```vue annotate="add:2,3"
-<template>
-<MyComponent @click="handler" />
-<MyComponent @click.stop="handler" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_on_native_modifier.rs#L43) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-deprecated-v-on-native-modifier) · [Rule reference](./reference/vue-no-deprecated-v-on-native-modifier.md)
 
 ### `vue/no-deprecated-v-on-number-modifiers`
 
 Disallow deprecated numeric `keyCode` modifiers on `v-on`
 
-[Bad](#vue-no-deprecated-v-on-number-modifiers-bad) · [Good](#vue-no-deprecated-v-on-number-modifiers-good)
-
-Default severity: `error`  
-Presets: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-v-on-number-modifiers": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-deprecated-v-on-number-modifiers-bad"></span>
 
-**Bad**
-
-The keyboard handlers identify keys by the removed numeric codes 13 and 27.
-
-```vue annotate="remove:2,3,4"
-<template>
-<input @keyup.13="submit" />
-<input v-on:keyup.27="cancel" />
-<input @keyup.13.stop="submit" />
-</template>
-```
+[Bad](./vue.md#vue-no-deprecated-v-on-number-modifiers-bad)
 
 <span id="vue-no-deprecated-v-on-number-modifiers-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-deprecated-v-on-number-modifiers-good)
 
-The handlers use the named enter and esc key modifiers.
-
-```vue annotate="add:2,3"
-<template>
-<input @keyup.enter="submit" />
-<input @keyup.esc="cancel" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_on_number_modifiers.rs#L43) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-deprecated-v-on-number-modifiers) · [Rule reference](./reference/vue-no-deprecated-v-on-number-modifiers.md)
 
 ### `vue/no-dupe-v-else-if`
 
 Disallow duplicate conditions in `v-if` / `v-else-if` chains
 
-[Bad](#vue-no-dupe-v-else-if-bad) · [Good](#vue-no-dupe-v-else-if-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-dupe-v-else-if": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-dupe-v-else-if-bad"></span>
 
-**Bad**
-
-The else-if repeats the ready condition already tested by the first branch, making that later branch unreachable.
-
-```vue annotate="remove:3"
-<template>
-  <p v-if="status === 'ready'">Ready</p>
-  <p v-else-if="status === 'ready'">Still ready</p>
-</template>
-```
+[Bad](./vue.md#vue-no-dupe-v-else-if-bad)
 
 <span id="vue-no-dupe-v-else-if-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-dupe-v-else-if-good)
 
-The second branch tests loading, a distinct state that can reach the else-if.
-
-```vue annotate="add:3"
-<template>
-  <p v-if="status === 'ready'">Ready</p>
-  <p v-else-if="status === 'loading'">Loading</p>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_dupe_v_else_if.rs#L34) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-dupe-v-else-if) · [Rule reference](./reference/vue-no-dupe-v-else-if.md)
 
 ### `vue/no-duplicate-attributes`
 
 Disallow duplicate attributes on the same element
 
-[Bad](#vue-no-duplicate-attributes-bad) · [Good](#vue-no-duplicate-attributes-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-duplicate-attributes": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-duplicate-attributes-bad"></span>
 
-**Bad**
-
-The same button declares class twice instead of one combined class value.
-
-```vue annotate="remove:2"
-<template>
-  <button class="primary" class="large">Save</button>
-</template>
-```
+[Bad](./vue.md#vue-no-duplicate-attributes-bad)
 
 <span id="vue-no-duplicate-attributes-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-duplicate-attributes-good)
 
-Both class tokens appear in a single class attribute.
-
-```vue annotate="add:2"
-<template>
-  <button class="primary large">Save</button>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_duplicate_attributes.rs#L31) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-duplicate-attributes) · [Rule reference](./reference/vue-no-duplicate-attributes.md)
 
 ### `vue/no-multiple-template-root`
 
 Disallow multiple root nodes in a template
 
-[Bad](#vue-no-multiple-template-root-bad) · [Good](#vue-no-multiple-template-root-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-Enable only for a single-root contract. Vue 3 normally supports fragments.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-multiple-template-root": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-multiple-template-root-bad"></span>
 
-**Bad**
-
-The opt-in single-root convention sees two sibling paragraphs at the template root.
-
-```vue annotate="remove:2,3"
-<template>
-<p>First</p>
-<p>Second</p>
-</template>
-```
+[Bad](./vue.md#vue-no-multiple-template-root-bad)
 
 <span id="vue-no-multiple-template-root-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-multiple-template-root-good)
 
-A section wraps the paragraphs into one root; enable this convention only when a single-root contract is intended.
-
-```vue annotate="add:2"
-<template>
-<section><p>First</p><p>Second</p></section>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_multiple_template_root.rs#L27) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-multiple-template-root) · [Rule reference](./reference/vue-no-multiple-template-root.md)
 
 ### `vue/no-mutating-props`
 
 Disallow mutating component props
 
-[Bad](#vue-no-mutating-props-bad) · [Good](#vue-no-mutating-props-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: See [typed options and defaults](options.md).
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-mutating-props": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-mutating-props-bad"></span>
 
-**Bad**
-
-Incrementing props.count writes directly to a value supplied by the parent.
-
-```vue annotate="remove:4"
-<script setup lang="ts">
-const props = defineProps<{ count: number }>();
-
-props.count++;
-</script>
-```
+[Bad](./vue.md#vue-no-mutating-props-bad)
 
 <span id="vue-no-mutating-props-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-mutating-props-good)
 
-The component emits update:count with the next value, leaving the parent responsible for updating the prop.
-
-```vue annotate="add:3,5,6,7"
-<script setup lang="ts">
-const props = defineProps<{ count: number }>();
-const emit = defineEmits<{ "update:count": [value: number] }>();
-
-function increment() {
-  emit("update:count", props.count + 1);
-}
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_mutating_props.rs#L42) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-mutating-props) · [Rule reference](./reference/vue-no-mutating-props.md)
 
 ### `vue/no-reserved-component-names`
 
 Disallow the use of reserved names as component names
 
-[Bad](#vue-no-reserved-component-names-bad) · [Good](#vue-no-reserved-component-names-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-reserved-component-names": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-reserved-component-names-bad"></span>
 
-**Bad**
-
-The component name button conflicts with a native HTML element name.
-
-```vue annotate="remove:1,2,3,4"
-<script>
-export default {
-  name: "button",
-};
-</script>
-```
+[Bad](./vue.md#vue-no-reserved-component-names-bad)
 
 <span id="vue-no-reserved-component-names-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-reserved-component-names-good)
 
-AppButton is an application component name and does not reuse the native button name.
-
-```vue annotate="add:1,2,4,5,6,7,8,9"
-<script setup lang="ts">
-defineOptions({ name: "AppButton" });
-</script>
-
-<template>
-  <Transition>
-    <AppButton />
-  </Transition>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_reserved_component_names.rs#L45) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-reserved-component-names) · [Rule reference](./reference/vue-no-reserved-component-names.md)
 
 ### `vue/no-template-key`
 
 Disallow `key` attribute on `<template>`
 
-[Bad](#vue-no-template-key-bad) · [Good](#vue-no-template-key-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-template-key": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-template-key-bad"></span>
 
-**Bad**
-
-A non-loop template wrapper has a key even though it is not the keyed iteration boundary.
-
-```vue annotate="remove:2"
-<template>
-<template :key="section"><div>Details</div></template>
-</template>
-```
+[Bad](./vue.md#vue-no-template-key-bad)
 
 <span id="vue-no-template-key-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-template-key-good)
 
-The key belongs to a template v-for iteration, where it identifies each repeated fragment.
-
-```vue annotate="add:2"
-<template>
-<template v-for="item in items" :key="item.id"><div>{{ item.name }}</div></template>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_template_key.rs#L31) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-template-key) · [Rule reference](./reference/vue-no-template-key.md)
 
 ### `vue/no-textarea-mustache`
 
 Disallow mustache interpolation in `<textarea>`
 
-[Bad](#vue-no-textarea-mustache-bad) · [Good](#vue-no-textarea-mustache-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-textarea-mustache": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-textarea-mustache-bad"></span>
 
-**Bad**
-
-The textarea places message in child interpolation instead of binding its value.
-
-```vue annotate="remove:2"
-<template>
-  <textarea>{{ message }}</textarea>
-</template>
-```
+[Bad](./vue.md#vue-no-textarea-mustache-bad)
 
 <span id="vue-no-textarea-mustache-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-textarea-mustache-good)
 
-v-model binds the editable textarea value to message.
-
-```vue annotate="add:2"
-<template>
-  <textarea v-model="message"></textarea>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_textarea_mustache.rs#L26) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-textarea-mustache) · [Rule reference](./reference/vue-no-textarea-mustache.md)
 
 ### `vue/no-unused-components`
 
 Disallow registering components that are not used inside templates
 
-[Bad](#vue-no-unused-components-bad) · [Good](#vue-no-unused-components-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-unused-components": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-unused-components-bad"></span>
 
-**Bad**
-
-UserAvatar is imported as a component but the template never renders it.
-
-```vue annotate="remove:6"
-<script setup lang="ts">
-import UserAvatar from "./UserAvatar.vue";
-</script>
-
-<template>
-  <p>{{ user.name }}</p>
-</template>
-```
+[Bad](./vue.md#vue-no-unused-components-bad)
 
 <span id="vue-no-unused-components-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-unused-components-good)
 
-The template renders the imported UserAvatar and passes the user binding.
-
-```vue annotate="add:6"
-<script setup lang="ts">
-import UserAvatar from "./UserAvatar.vue";
-</script>
-
-<template>
-  <UserAvatar :user="user" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unused_components.rs#L46) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-unused-components) · [Rule reference](./reference/vue-no-unused-components.md)
 
 ### `vue/no-unused-vars`
 
 Disallow unused variable definitions in v-for and v-slot directives
 
-[Bad](#vue-no-unused-vars-bad) · [Good](#vue-no-unused-vars-good)
-
-Default severity: `warning`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-unused-vars": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-unused-vars-bad"></span>
 
-**Bad**
-
-The loop declares an unused index and the slot declares foo without referencing it.
-
-```vue annotate="remove:2,3,4"
-<template>
-  <li v-for="(item, index) in items" :key="item.id">{{ item.name }}</li>
-  <template v-slot="{ foo }">
-    <span>Hello</span>
-  </template>
-</template>
-```
+[Bad](./vue.md#vue-no-unused-vars-bad)
 
 <span id="vue-no-unused-vars-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-unused-vars-good)
 
-The examples consume index or mark it intentionally unused as _index, and the slot renders data. Index keys are only a usage example here, not a recommendation for stable item identity.
-
-```vue annotate="add:2,3,4,5"
-<template>
-  <li v-for="(item, index) in items" :key="index">{{ item.name }}</li>
-  <li v-for="(item, _index) in items" :key="item.id">{{ item.name }}</li>
-  <template v-slot="{ data }">
-    <span>{{ data }}</span>
-  </template>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unused_vars.rs#L48) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-unused-vars) · [Rule reference](./reference/vue-no-unused-vars.md)
 
 ### `vue/no-use-v-if-with-v-for`
 
 Disallow using `v-if` on the same element as `v-for`
 
-[Bad](#vue-no-use-v-if-with-v-for-bad) · [Good](#vue-no-use-v-if-with-v-for-good)
-
-Default severity: `warning`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-use-v-if-with-v-for": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-use-v-if-with-v-for-bad"></span>
 
-**Bad**
-
-The same list element combines v-if and v-for and tests visibility through the loop binding.
-
-```vue annotate="remove:2"
-<template>
-  <li v-for="item in items" v-if="item.visible" :key="item.id">
-    {{ item.name }}
-  </li>
-</template>
-```
+[Bad](./vue.md#vue-no-use-v-if-with-v-for-bad)
 
 <span id="vue-no-use-v-if-with-v-for-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-use-v-if-with-v-for-good)
 
-A computed collection filters the visible items before the template iterates over them.
-
-```vue annotate="add:1,2,3,4,6"
-<script setup lang="ts">
-const visibleItems = computed(() => items.filter((item) => item.visible));
-</script>
-
-<template>
-  <li v-for="item in visibleItems" :key="item.id">
-    {{ item.name }}
-  </li>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_use_v_if_with_v_for.rs#L35) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-use-v-if-with-v-for) · [Rule reference](./reference/vue-no-use-v-if-with-v-for.md)
 
 ### `vue/no-useless-template-attributes`
 
 Disallow useless attributes on `<template>` elements
 
-[Bad](#vue-no-useless-template-attributes-bad) · [Good](#vue-no-useless-template-attributes-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-useless-template-attributes": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-useless-template-attributes-bad"></span>
 
-**Bad**
-
-The conditional template has a class, but this structural wrapper does not render a DOM element to receive it.
-
-```vue annotate="remove:2"
-<template>
-<section><template v-if="ready" class="notice"><p>Ready</p></template></section>
-</template>
-```
+[Bad](./vue.md#vue-no-useless-template-attributes-bad)
 
 <span id="vue-no-useless-template-attributes-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-useless-template-attributes-good)
 
-The class moves to the paragraph that actually renders while v-if stays on the structural template.
-
-```vue annotate="add:2"
-<template>
-<section><template v-if="ready"><p class="notice">Ready</p></template></section>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_useless_template_attributes.rs#L32) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-useless-template-attributes) · [Rule reference](./reference/vue-no-useless-template-attributes.md)
 
 ### `vue/no-v-for-template-key-on-child`
 
 Disallow `key` on the child of a `<template v-for>`
 
-[Bad](#vue-no-v-for-template-key-on-child-bad) · [Good](#vue-no-v-for-template-key-on-child-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-v-for-template-key-on-child": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-v-for-template-key-on-child-bad"></span>
 
-**Bad**
-
-The child paragraph has the key while the template iteration itself has no key.
-
-```vue annotate="remove:2"
-<template>
-<template v-for="item in items"><p :key="item.id">{{ item.name }}</p></template>
-</template>
-```
+[Bad](./vue.md#vue-no-v-for-template-key-on-child-bad)
 
 <span id="vue-no-v-for-template-key-on-child-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-v-for-template-key-on-child-good)
 
-The key moves to template v-for, identifying the complete repeated fragment.
-
-```vue annotate="add:2"
-<template>
-<template v-for="item in items" :key="item.id"><p>{{ item.name }}</p></template>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_v_for_template_key_on_child.rs#L30) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-v-for-template-key-on-child) · [Rule reference](./reference/vue-no-v-for-template-key-on-child.md)
 
 ### `vue/no-v-html`
 
 Warn against v-html to prevent XSS vulnerabilities
 
-[Bad](#vue-no-v-html-bad) · [Good](#vue-no-v-html-good)
-
-Default severity: `warning`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-v-html": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-v-html-bad"></span>
 
-**Bad**
-
-v-html interprets content as HTML rather than ordinary text.
-
-```vue annotate="remove:2"
-<template>
-  <article v-html="content" />
-</template>
-```
+[Bad](./vue.md#vue-no-v-html-bad)
 
 <span id="vue-no-v-html-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-v-html-good)
 
-Mustache interpolation displays content as escaped text instead of injecting HTML.
-
-```vue annotate="add:2"
-<template>
-  <article>{{ content }}</article>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_v_html.rs#L51) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-v-html) · [Rule reference](./reference/vue-no-v-html.md)
 
 ### `vue/no-v-text-v-html-on-component`
 
 Disallow v-text / v-html on component elements
 
-[Bad](#vue-no-v-text-v-html-on-component-bad) · [Good](#vue-no-v-text-v-html-on-component-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-v-text-v-html-on-component": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-v-text-v-html-on-component-bad"></span>
 
-**Bad**
-
-The component tag receives v-html or v-text, which replaces element content rather than supplying component slots.
-
-```vue annotate="remove:2,3"
-<template>
-  <MyComponent v-html="content" />
-  <MyComponent v-text="content" />
-</template>
-```
+[Bad](./vue.md#vue-no-v-text-v-html-on-component-bad)
 
 <span id="vue-no-v-text-v-html-on-component-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-v-text-v-html-on-component-good)
 
-Native HTML targets can receive the directives; MyComponent receives its content through the default slot.
-
-```vue annotate="add:2,3,4"
-<template>
-  <div v-html="content"></div>
-  <component is="div" v-html="content" />
-  <MyComponent>{{ content }}</MyComponent>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_v_text_v_html_on_component.rs#L33) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-v-text-v-html-on-component) · [Rule reference](./reference/vue-no-v-text-v-html-on-component.md)
 
 ### `vue/permitted-contents`
 
 Enforce HTML content model rules
 
-[Bad](#vue-permitted-contents-bad) · [Good](#vue-permitted-contents-good)
-
-Default severity: `error`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/permitted-contents": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-permitted-contents-bad"></span>
 
-**Bad**
-
-The examples put block content in p, omit the table body, nest interactive controls, or put a div directly inside ul.
-
-```vue annotate="remove:2,3,4,5"
-<template>
-  <p><div>block in a paragraph</div></p>
-  <table><tr><td>row without tbody</td></tr></table>
-  <a href="#"><button type="button">nested control</button></a>
-  <ul><div>not a list item</div></ul>
-</template>
-```
+[Bad](./vue.md#vue-permitted-contents-bad)
 
 <span id="vue-permitted-contents-good"></span>
 
-**Good**
+[Good](./vue.md#vue-permitted-contents-good)
 
-The examples use inline paragraph content, an explicit tbody, and li children. The custom MyItem is not treated as a known native ul child.
-
-```vue annotate="add:2,3,4"
-<template>
-  <p><span>inline in a paragraph</span></p>
-  <table><tbody><tr><td>cell</td></tr></tbody></table>
-  <ul><li>list item</li><MyItem /></ul>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/permitted_contents.rs#L56) · [All rules](all.md)
+[Group examples](./vue.md#vue-permitted-contents) · [Rule reference](./reference/vue-permitted-contents.md)
 
 ### `vue/require-component-is`
 
 Require `v-bind:is` on `<component>` elements
 
-[Bad](#vue-require-component-is-bad) · [Good](#vue-require-component-is-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/require-component-is": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-require-component-is-bad"></span>
 
-**Bad**
-
-The dynamic `<component>` has no `is` target, so Vue cannot choose a component to render.
-
-```vue annotate="remove:2"
-<template>
-  <component />
-</template>
-```
+[Bad](./vue.md#vue-require-component-is-bad)
 
 <span id="vue-require-component-is-good"></span>
 
-**Good**
+[Good](./vue.md#vue-require-component-is-good)
 
-`:is="currentComponent"` supplies the component selection; the binding may change at runtime.
-
-```vue annotate="add:2"
-<template>
-  <component :is="currentComponent" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_component_is.rs#L27) · [All rules](all.md)
+[Group examples](./vue.md#vue-require-component-is) · [Rule reference](./reference/vue-require-component-is.md)
 
 ### `vue/require-toggle-inside-transition`
 
 Require a toggle on the element wrapped by `<transition>`
 
-[Bad](#vue-require-toggle-inside-transition-bad) · [Good](#vue-require-toggle-inside-transition-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/require-toggle-inside-transition": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-require-toggle-inside-transition-bad"></span>
 
-**Bad**
-
-The static child inside `<Transition>` has no conditional visibility or dynamic selection to trigger an enter/leave change.
-
-```vue annotate="remove:3"
-<template>
-<transition>
-  <div>content</div>
-</transition>
-</template>
-```
+[Bad](./vue.md#vue-require-toggle-inside-transition-bad)
 
 <span id="vue-require-toggle-inside-transition-good"></span>
 
-**Good**
+[Good](./vue.md#vue-require-toggle-inside-transition-good)
 
-`v-if="show"` changes whether the child exists, giving the transition an enter/leave boundary.
-
-```vue annotate="add:3"
-<template>
-<transition>
-  <div v-if="show">content</div>
-</transition>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_toggle_inside_transition.rs#L48) · [All rules](all.md)
+[Group examples](./vue.md#vue-require-toggle-inside-transition) · [Rule reference](./reference/vue-require-toggle-inside-transition.md)
 
 ### `vue/require-v-for-key`
 
 Require `v-bind:key` with `v-for` directives
 
-[Bad](#vue-require-v-for-key-bad) · [Good](#vue-require-v-for-key-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/require-v-for-key": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-require-v-for-key-bad"></span>
 
-**Bad**
-
-Each repeated `<li>` lacks a key that identifies its corresponding item during list updates.
-
-```vue annotate="remove:2"
-<template>
-  <li v-for="item in items">{{ item.name }}</li>
-</template>
-```
+[Bad](./vue.md#vue-require-v-for-key-bad)
 
 <span id="vue-require-v-for-key-good"></span>
 
-**Good**
+[Good](./vue.md#vue-require-v-for-key-good)
 
-`:key="item.id"` gives each repeated node the item's identity rather than its current position.
-
-```vue annotate="add:2"
-<template>
-  <li v-for="item in items" :key="item.id">{{ item.name }}</li>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_v_for_key.rs#L35) · [All rules](all.md)
+[Group examples](./vue.md#vue-require-v-for-key) · [Rule reference](./reference/vue-require-v-for-key.md)
 
 ### `vue/use-v-on-exact`
 
 Enforce `.exact` modifier on `v-on` when there are modifier-based handlers
 
-[Bad](#vue-use-v-on-exact-bad) · [Good](#vue-use-v-on-exact-good)
-
-Default severity: `warning`  
-Presets: `essential`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/use-v-on-exact": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-use-v-on-exact-bad"></span>
 
-**Bad**
-
-The plain click handler can also run on Ctrl-click, overlapping the separate `.ctrl` handler.
-
-```vue annotate="remove:2"
-<template>
-  <button type="button" @click="handleClick" @click.ctrl="handleCtrlClick">
-    Save
-  </button>
-</template>
-```
+[Bad](./vue.md#vue-use-v-on-exact-bad)
 
 <span id="vue-use-v-on-exact-good"></span>
 
-**Good**
+[Good](./vue.md#vue-use-v-on-exact-good)
 
-`.exact` limits the ordinary click handler to clicks without modifier keys; the Ctrl-specific handler remains separate.
-
-```vue annotate="add:2,3,4,5,6"
-<template>
-  <button
-    type="button"
-    @click.exact="handleClick"
-    @click.ctrl="handleCtrlClick"
-  >
-    Save
-  </button>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/use_v_on_exact.rs#L28) · [All rules](all.md)
+[Group examples](./vue.md#vue-use-v-on-exact) · [Rule reference](./reference/vue-use-v-on-exact.md)
 
 ### `vue/valid-attribute-name`
 
 Require valid attribute names
 
-[Bad](#vue-valid-attribute-name-bad) · [Good](#vue-valid-attribute-name-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-Bad diagnostic: `parser/template`
-
-Malformed attribute spelling is diagnosed by parser/template before this defensive rule sees an attribute. Bad therefore reports parser/template; it does not promise a separate vue/valid-attribute-name finding.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-attribute-name": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-valid-attribute-name-bad"></span>
 
-**Bad**
-
-The quote inside `my"attr` makes the attribute name malformed. This example produces the parser's `parser/template` diagnostic rather than promising a separate rule diagnostic.
-
-```vue annotate="remove:2"
-<template>
-<div my"attr="value"></div>
-</template>
-```
+[Bad](./vue.md#vue-valid-attribute-name-bad)
 
 <span id="vue-valid-attribute-name-good"></span>
 
-**Good**
+[Good](./vue.md#vue-valid-attribute-name-good)
 
-`my-attr` is a well-formed attribute name, so the template parser can read the attribute and its value.
-
-```vue annotate="add:2"
-<template>
-<div my-attr="value"></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_attribute_name.rs#L27) · [All rules](all.md)
+[Group examples](./vue.md#vue-valid-attribute-name) · [Rule reference](./reference/vue-valid-attribute-name.md)
 
 ### `vue/valid-template-root`
 
 Enforce a valid `<template>` root for Vue 3 fragment semantics
 
-[Bad](#vue-valid-template-root-bad) · [Good](#vue-valid-template-root-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-template-root": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-valid-template-root-bad"></span>
 
-**Bad**
-
-A plain nested `<template>` occupies the template root without a directive that gives it a rendering role.
-
-```vue annotate="remove:2"
-<template>
-  <template>content</template>
-</template>
-```
+[Bad](./vue.md#vue-valid-template-root-bad)
 
 <span id="vue-valid-template-root-good"></span>
 
-**Good**
+[Good](./vue.md#vue-valid-template-root-good)
 
-The `<div>` is a renderable root element. This example does not impose a universal single-root restriction on Vue 3 fragments.
-
-```vue annotate="add:2"
-<template>
-  <div>content</div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_template_root.rs#L82) · [All rules](all.md)
+[Group examples](./vue.md#vue-valid-template-root) · [Rule reference](./reference/vue-valid-template-root.md)
 
 ### `vue/valid-v-bind`
 
 Enforce valid `v-bind` directives
 
-[Bad](#vue-valid-v-bind-bad) · [Good](#vue-valid-v-bind-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-v-bind": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-valid-v-bind-bad"></span>
 
-**Bad**
-
-The bare `v-bind` has no object expression, and the empty argument form has no attribute name.
-
-```vue annotate="remove:2,3"
-<template>
-  <div v-bind></div>
-  <div :></div>
-</template>
-```
+[Bad](./vue.md#vue-valid-v-bind-bad)
 
 <span id="vue-valid-v-bind-good"></span>
 
-**Good**
+[Good](./vue.md#vue-valid-v-bind-good)
 
-Provide an attribute and expression, bind an object, or use Vue 3.4+ same-name shorthand such as `:loading`.
-
-```vue annotate="add:2,3,4"
-<template>
-  <div :class="panelClass"></div>
-  <div v-bind="{ class: panelClass }"></div>
-  <div :loading></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_bind.rs#L30) · [All rules](all.md)
+[Group examples](./vue.md#vue-valid-v-bind) · [Rule reference](./reference/vue-valid-v-bind.md)
 
 ### `vue/valid-v-cloak`
 
 Enforce valid `v-cloak` directives
 
-[Bad](#vue-valid-v-cloak-bad) · [Good](#vue-valid-v-cloak-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-v-cloak": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-valid-v-cloak-bad"></span>
 
-**Bad**
-
-`v-cloak` is given a value, argument, or modifier even though it accepts none of those.
-
-```vue annotate="remove:2,3,4"
-<template>
-<div v-cloak="foo"></div>
-<div v-cloak:arg></div>
-<div v-cloak.mod></div>
-</template>
-```
+[Bad](./vue.md#vue-valid-v-cloak-bad)
 
 <span id="vue-valid-v-cloak-good"></span>
 
-**Good**
+[Good](./vue.md#vue-valid-v-cloak-good)
 
-Use bare `v-cloak`; CSS can hide the element until Vue removes that attribute after mounting.
-
-```vue annotate="add:2"
-<template>
-<div v-cloak></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_cloak.rs#L27) · [All rules](all.md)
+[Group examples](./vue.md#vue-valid-v-cloak) · [Rule reference](./reference/vue-valid-v-cloak.md)
 
 ### `vue/valid-v-else`
 
 Enforce valid `v-else` directives
 
-[Bad](#vue-valid-v-else-bad) · [Good](#vue-valid-v-else-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: Available for supported findings  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-v-else": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-valid-v-else-bad"></span>
 
-**Bad**
-
-The examples give `v-else` an expression, combine it with `v-if`, or omit its adjacent preceding conditional branch.
-
-```vue annotate="remove:2,3"
-<template>
-  <div v-else="ready"></div>
-  <div v-else v-if="ready"></div>
-  <div v-else></div>
-</template>
-```
+[Bad](./vue.md#vue-valid-v-else-bad)
 
 <span id="vue-valid-v-else-good"></span>
 
-**Good**
+[Good](./vue.md#vue-valid-v-else-good)
 
-Place bare `v-else` immediately after the corresponding `v-if` branch.
-
-```vue annotate="add:2"
-<template>
-  <div v-if="ready"></div>
-  <div v-else></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_else.rs#L32) · [All rules](all.md)
+[Group examples](./vue.md#vue-valid-v-else) · [Rule reference](./reference/vue-valid-v-else.md)
 
 ### `vue/valid-v-for`
 
 Enforce valid `v-for` directives
 
-[Bad](#vue-valid-v-for-bad) · [Good](#vue-valid-v-for-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-v-for": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-valid-v-for-bad"></span>
 
-**Bad**
-
-The loops omit their iteration expression or add an unsupported `.stop` modifier.
-
-```vue annotate="remove:2,3,4"
-<template>
-  <div v-for></div>
-  <div v-for=""></div>
-  <div v-for.stop="item in items"></div>
-</template>
-```
+[Bad](./vue.md#vue-valid-v-for-bad)
 
 <span id="vue-valid-v-for-good"></span>
 
-**Good**
+[Good](./vue.md#vue-valid-v-for-good)
 
-Use `item in items` or `(item, index) of items` with a complete iteration expression and the shown keys.
-
-```vue annotate="add:2,3"
-<template>
-  <div v-for="item in items" :key="item.id"></div>
-  <div v-for="(item, index) of items" :key="index"></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_for.rs#L31) · [All rules](all.md)
+[Group examples](./vue.md#vue-valid-v-for) · [Rule reference](./reference/vue-valid-v-for.md)
 
 ### `vue/valid-v-html`
 
 Enforce valid `v-html` directives
 
-[Bad](#vue-valid-v-html-bad) · [Good](#vue-valid-v-html-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-v-html": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-valid-v-html-bad"></span>
 
-**Bad**
-
-`v-html` lacks its expression or uses an argument/modifier that this directive does not support.
-
-```vue annotate="remove:2,3,4"
-<template>
-<div v-html></div>
-<div v-html:arg="foo"></div>
-<div v-html.mod="foo"></div>
-</template>
-```
+[Bad](./vue.md#vue-valid-v-html-bad)
 
 <span id="vue-valid-v-html-good"></span>
 
-**Good**
+[Good](./vue.md#vue-valid-v-html-good)
 
-`v-html="html"` supplies a valid expression. Syntax validity does not sanitize HTML or make untrusted content safe.
-
-```vue annotate="add:2"
-<template>
-<div v-html="html"></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_html.rs#L28) · [All rules](all.md)
+[Group examples](./vue.md#vue-valid-v-html) · [Rule reference](./reference/vue-valid-v-html.md)
 
 ### `vue/valid-v-if`
 
 Enforce valid `v-if` directives
 
-[Bad](#vue-valid-v-if-bad) · [Good](#vue-valid-v-if-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-v-if": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-valid-v-if-bad"></span>
 
-**Bad**
-
-The conditions omit an expression or combine `v-if` with an else directive on the same node.
-
-```vue annotate="remove:2,3,4"
-<template>
-  <div v-if></div>
-  <div v-if=""></div>
-  <div v-if="ready" v-else></div>
-</template>
-```
+[Bad](./vue.md#vue-valid-v-if-bad)
 
 <span id="vue-valid-v-if-good"></span>
 
-**Good**
+[Good](./vue.md#vue-valid-v-if-good)
 
-Each `v-if` has a nonempty condition such as `ready` or `count > 0`, without an incompatible else directive.
-
-```vue annotate="add:2,3"
-<template>
-  <div v-if="ready"></div>
-  <div v-if="count > 0"></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_if.rs#L29) · [All rules](all.md)
+[Group examples](./vue.md#vue-valid-v-if) · [Rule reference](./reference/vue-valid-v-if.md)
 
 ### `vue/valid-v-memo`
 
 Enforce valid `v-memo` directives
 
-[Bad](#vue-valid-v-memo-bad) · [Good](#vue-valid-v-memo-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-v-memo": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-valid-v-memo-bad"></span>
 
-**Bad**
-
-Bare `v-memo` gives Vue no dependency expression for deciding when to reuse the subtree.
-
-```vue annotate="remove:2"
-<template>
-  <div v-memo></div>
-</template>
-```
+[Bad](./vue.md#vue-valid-v-memo-bad)
 
 <span id="vue-valid-v-memo-good"></span>
 
-**Good**
+[Good](./vue.md#vue-valid-v-memo-good)
 
-`v-memo="[valueA, valueB]"` supplies the dependency array used for memoization.
-
-```vue annotate="add:2"
-<template>
-  <div v-memo="[valueA, valueB]">{{ label }}</div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_memo.rs#L27) · [All rules](all.md)
+[Group examples](./vue.md#vue-valid-v-memo) · [Rule reference](./reference/vue-valid-v-memo.md)
 
 ### `vue/valid-v-model`
 
 Enforce valid `v-model` directives
 
-[Bad](#vue-valid-v-model-bad) · [Good](#vue-valid-v-model-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-v-model": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-valid-v-model-bad"></span>
 
-**Bad**
-
-A native `<div>` cannot use `v-model` as a form control, and a bare input directive has no writable target expression.
-
-```vue annotate="remove:2,3"
-<template>
-  <div v-model="value"></div>
-  <input v-model />
-</template>
-```
+[Bad](./vue.md#vue-valid-v-model-bad)
 
 <span id="vue-valid-v-model-good"></span>
 
-**Good**
+[Good](./vue.md#vue-valid-v-model-good)
 
-Bind the input, select, textarea, or custom component to the shown writable variables.
-
-```vue annotate="add:2,3,4,5"
-<template>
-  <input v-model="value" />
-  <select v-model="selected"></select>
-  <textarea v-model="text"></textarea>
-  <MyInput v-model="value" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_model.rs#L36) · [All rules](all.md)
+[Group examples](./vue.md#vue-valid-v-model) · [Rule reference](./reference/vue-valid-v-model.md)
 
 ### `vue/valid-v-on`
 
 Enforce valid `v-on` directives
 
-[Bad](#vue-valid-v-on-bad) · [Good](#vue-valid-v-on-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-v-on": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-valid-v-on-bad"></span>
 
-**Bad**
-
-The listener forms omit an event argument or their required handler/object expression.
-
-```vue annotate="remove:2,3,4"
-<template>
-  <div v-on></div>
-  <div @></div>
-  <div @click></div>
-</template>
-```
+[Bad](./vue.md#vue-valid-v-on-bad)
 
 <span id="vue-valid-v-on-good"></span>
 
-**Good**
+[Good](./vue.md#vue-valid-v-on-good)
 
-Use an event with its handler, or pass a listener object to argument-free `v-on`.
-
-```vue annotate="add:2,3"
-<template>
-  <div @click="handleClick"></div>
-  <div v-on="{ click: handleClick }"></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_on.rs#L30) · [All rules](all.md)
+[Group examples](./vue.md#vue-valid-v-on) · [Rule reference](./reference/vue-valid-v-on.md)
 
 ### `vue/valid-v-once`
 
 Enforce valid `v-once` directives
 
-[Bad](#vue-valid-v-once-bad) · [Good](#vue-valid-v-once-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-v-once": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-valid-v-once-bad"></span>
 
-**Bad**
-
-`v-once` has a value, argument, or modifier, although this directive is a value-free render-once marker.
-
-```vue annotate="remove:2,3,4"
-<template>
-<div v-once="foo"></div>
-<div v-once:arg></div>
-<div v-once.mod></div>
-</template>
-```
+[Bad](./vue.md#vue-valid-v-once-bad)
 
 <span id="vue-valid-v-once-good"></span>
 
-**Good**
+[Good](./vue.md#vue-valid-v-once-good)
 
-Bare `v-once` marks the subtree for one-time rendering without unsupported syntax.
-
-```vue annotate="add:2"
-<template>
-<div v-once></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_once.rs#L27) · [All rules](all.md)
+[Group examples](./vue.md#vue-valid-v-once) · [Rule reference](./reference/vue-valid-v-once.md)
 
 ### `vue/valid-v-show`
 
 Enforce valid `v-show` directives
 
-[Bad](#vue-valid-v-show-bad) · [Good](#vue-valid-v-show-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-v-show": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-valid-v-show-bad"></span>
 
-**Bad**
-
-`v-show` lacks its visibility expression or is placed on a `<template>` that has no DOM element whose display can be changed.
-
-```vue annotate="remove:2,3"
-<template>
-  <div v-show></div>
-  <template v-show="ready"><div></div></template>
-</template>
-```
+[Bad](./vue.md#vue-valid-v-show-bad)
 
 <span id="vue-valid-v-show-good"></span>
 
-**Good**
+[Good](./vue.md#vue-valid-v-show-good)
 
-Apply the visibility expression to a rendered element such as `<div>`.
-
-```vue annotate="add:2,3"
-<template>
-  <div v-show="ready"></div>
-  <div v-show="count > 0"></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_show.rs#L28) · [All rules](all.md)
+[Group examples](./vue.md#vue-valid-v-show) · [Rule reference](./reference/vue-valid-v-show.md)
 
 ### `vue/valid-v-slot`
 
 Enforce valid `v-slot` directives
 
-[Bad](#vue-valid-v-slot-bad) · [Good](#vue-valid-v-slot-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: See [typed options and defaults](options.md).
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-v-slot": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-valid-v-slot-bad"></span>
 
-**Bad**
-
-The slot directive is on a native `<div>` or conflicts with other default/named slot declarations.
-
-```vue annotate="remove:2,3,4"
-<template>
-  <div v-slot:header></div>
-  <MyComponent v-slot v-slot:header />
-  <template v-slot:header v-slot:footer />
-</template>
-```
+[Bad](./vue.md#vue-valid-v-slot-bad)
 
 <span id="vue-valid-v-slot-good"></span>
 
-**Good**
+[Good](./vue.md#vue-valid-v-slot-good)
 
-Declare a component's default slot on that component, or its named slot on a child `<template #header>`.
-
-```vue annotate="add:2,3,4,5"
-<template>
-  <MyComponent v-slot="{ item }">{{ item }}</MyComponent>
-  <MyComponent>
-    <template #header>Header</template>
-  </MyComponent>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_slot.rs#L29) · [All rules](all.md)
+[Group examples](./vue.md#vue-valid-v-slot) · [Rule reference](./reference/vue-valid-v-slot.md)
 
 ### `vue/valid-v-text`
 
 Enforce valid `v-text` directives
 
-[Bad](#vue-valid-v-text-bad) · [Good](#vue-valid-v-text-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-v-text": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-valid-v-text-bad"></span>
 
-**Bad**
-
-`v-text` lacks its text expression or uses an unsupported argument/modifier.
-
-```vue annotate="remove:2,3,4"
-<template>
-<div v-text></div>
-<div v-text:arg="foo"></div>
-<div v-text.mod="foo"></div>
-</template>
-```
+[Bad](./vue.md#vue-valid-v-text-bad)
 
 <span id="vue-valid-v-text-good"></span>
 
-**Good**
+[Good](./vue.md#vue-valid-v-text-good)
 
-`v-text="msg"` is syntactically valid. The separate `vue/no-v-text` style rule can still prefer interpolation.
-
-```vue annotate="add:2"
-<template>
-<div v-text="msg"></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_text.rs#L27) · [All rules](all.md)
+[Group examples](./vue.md#vue-valid-v-text) · [Rule reference](./reference/vue-valid-v-text.md)
 
 ### `vue/attribute-hyphenation`
 
 Enforce attribute naming style on custom components
 
-[Bad](#vue-attribute-hyphenation-bad) · [Good](#vue-attribute-hyphenation-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: Available for supported findings  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: See [typed options and defaults](options.md).
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/attribute-hyphenation": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-attribute-hyphenation-bad"></span>
 
-**Bad**
-
-The component attribute uses the camelCase spelling firstName.
-
-```vue annotate="remove:2"
-<template>
-<UserCard firstName="Ada" />
-</template>
-```
+[Bad](./vue.md#vue-attribute-hyphenation-bad)
 
 <span id="vue-attribute-hyphenation-good"></span>
 
-**Good**
+[Good](./vue.md#vue-attribute-hyphenation-good)
 
-The first-name spelling follows the configured hyphenated component-attribute convention.
-
-```vue annotate="add:2"
-<template>
-<UserCard first-name="Ada" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/attribute_hyphenation.rs#L35) · [All rules](all.md)
+[Group examples](./vue.md#vue-attribute-hyphenation) · [Rule reference](./reference/vue-attribute-hyphenation.md)
 
 ### `vue/component-definition-name-casing`
 
 Enforce PascalCase or kebab-case for component definition names
 
-[Bad](#vue-component-definition-name-casing-bad) · [Good](#vue-component-definition-name-casing-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-The component filename is checked. PascalCase and kebab-case are accepted; mixed casing is reported.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/component-definition-name-casing": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-component-definition-name-casing-bad"></span>
 
-**Bad**
-
-The filename myComponent.vue mixes a lowercase initial with an internal uppercase letter instead of using PascalCase or kebab-case.
-
-`myComponent.vue`
-
-```vue
-<template><p>Content</p></template>
-```
+[Bad](./vue.md#vue-component-definition-name-casing-bad)
 
 <span id="vue-component-definition-name-casing-good"></span>
 
-**Good**
+[Good](./vue.md#vue-component-definition-name-casing-good)
 
-Renaming the file to MyComponent.vue uses PascalCase; its template content is unchanged.
-
-`MyComponent.vue`
-
-```vue
-<template><p>Content</p></template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/component_definition_name_casing.rs#L36) · [All rules](all.md)
+[Group examples](./vue.md#vue-component-definition-name-casing) · [Rule reference](./reference/vue-component-definition-name-casing.md)
 
 ### `vue/html-quotes`
 
 Enforce quotes style of HTML attributes
 
-[Bad](#vue-html-quotes-bad) · [Good](#vue-html-quotes-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: Available for supported findings  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/html-quotes": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-html-quotes-bad"></span>
 
-**Bad**
-
-The attributes use single quotes or no quotes instead of the double-quote convention.
-
-```vue annotate="remove:2,3,4"
-<template>
-  <div class='foo'></div>
-  <div class=foo></div>
-  <div v-if='ready'></div>
-</template>
-```
+[Bad](./vue.md#vue-html-quotes-bad)
 
 <span id="vue-html-quotes-good"></span>
 
-**Good**
+[Good](./vue.md#vue-html-quotes-good)
 
-Both ordinary attributes and directive expressions use double quotes.
-
-```vue annotate="add:2,3"
-<template>
-  <div class="foo"></div>
-  <div v-if="ready"></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/html_quotes.rs#L53) · [All rules](all.md)
+[Group examples](./vue.md#vue-html-quotes) · [Rule reference](./reference/vue-html-quotes.md)
 
 ### `vue/html-self-closing`
 
 Enforce self-closing style
 
-[Bad](#vue-html-self-closing-bad) · [Good](#vue-html-self-closing-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: Available for supported findings  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: See [typed options and defaults](options.md).
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/html-self-closing": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-html-self-closing-bad"></span>
 
-**Bad**
-
-The empty component uses a closing pair, while void img and br elements omit the configured self-closing spelling.
-
-```vue annotate="remove:2,3,4"
-<template>
-  <MyComponent></MyComponent>
-  <img>
-  <br>
-</template>
-```
+[Bad](./vue.md#vue-html-self-closing-bad)
 
 <span id="vue-html-self-closing-good"></span>
 
-**Good**
+[Good](./vue.md#vue-html-self-closing-good)
 
-The component and void elements use self-closing syntax; a div with content retains its closing tag.
-
-```vue annotate="add:2,3,4,5,6,7"
-<template>
-  <MyComponent />
-  <div></div>
-  <div />
-  <img />
-  <br />
-  <div>content</div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/html_self_closing.rs#L30) · [All rules](all.md)
+[Group examples](./vue.md#vue-html-self-closing) · [Rule reference](./reference/vue-html-self-closing.md)
 
 ### `vue/mustache-interpolation-spacing`
 
 Enforce consistent spacing inside mustache interpolations
 
-[Bad](#vue-mustache-interpolation-spacing-bad) · [Good](#vue-mustache-interpolation-spacing-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: Available for supported findings  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/mustache-interpolation-spacing": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-mustache-interpolation-spacing-bad"></span>
 
-**Bad**
-
-The text interpolation is missing a space at one or both delimiter boundaries.
-
-```vue annotate="remove:2,3,4"
-<template>
-  <div>{{text}}</div>
-  <div>{{ text}}</div>
-  <div>{{text }}</div>
-</template>
-```
+[Bad](./vue.md#vue-mustache-interpolation-spacing-bad)
 
 <span id="vue-mustache-interpolation-spacing-good"></span>
 
-**Good**
+[Good](./vue.md#vue-mustache-interpolation-spacing-good)
 
-Spaces separate the expression from both opening and closing mustache delimiters.
-
-```vue annotate="add:2,3,4"
-<template>
-  <div>{{ text }}</div>
-  <div>{{ foo.bar }}</div>
-  <div>{{ foo + bar }}</div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/mustache_interpolation_spacing.rs#L35) · [All rules](all.md)
+[Group examples](./vue.md#vue-mustache-interpolation-spacing) · [Rule reference](./reference/vue-mustache-interpolation-spacing.md)
 
 ### `vue/no-multi-spaces`
 
 Disallow multiple consecutive spaces
 
-[Bad](#vue-no-multi-spaces-bad) · [Good](#vue-no-multi-spaces-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: Available for supported findings  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-multi-spaces": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-multi-spaces-bad"></span>
 
-**Bad**
-
-Two spaces separate attributes or the element name and the first attribute.
-
-```vue annotate="remove:2,3"
-<template>
-  <div  class="panel"></div>
-  <div class="panel"  id="main"></div>
-</template>
-```
+[Bad](./vue.md#vue-no-multi-spaces-bad)
 
 <span id="vue-no-multi-spaces-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-multi-spaces-good)
 
-Single spaces separate the same attributes.
-
-```vue annotate="add:2,3"
-<template>
-  <div class="panel"></div>
-  <div class="panel" id="main"></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_multi_spaces.rs#L26) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-multi-spaces) · [Rule reference](./reference/vue-no-multi-spaces.md)
 
 ### `vue/no-template-shadow`
 
 Disallow variable names that shadow variables in outer scope
 
-[Bad](#vue-no-template-shadow-bad) · [Good](#vue-no-template-shadow-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-The current check compares nested v-for bindings. It does not report a single v-for binding merely because it shares a script binding's name.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-template-shadow": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-template-shadow-bad"></span>
 
-**Bad**
-
-The inner v-for declares item again and hides the outer item binding inside the nested loop.
-
-```vue annotate="remove:2"
-<template>
-<div v-for="item in items" :key="item.id"><span v-for="item in item.children" :key="item.id">{{ item.name }}</span></div>
-</template>
-```
+[Bad](./vue.md#vue-no-template-shadow-bad)
 
 <span id="vue-no-template-shadow-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-template-shadow-good)
 
-The inner loop declares child, leaving item available for the outer row and child for the nested row.
-
-```vue annotate="add:2"
-<template>
-<div v-for="item in items" :key="item.id"><span v-for="child in item.children" :key="child.id">{{ child.name }}</span></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_template_shadow.rs#L34) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-template-shadow) · [Rule reference](./reference/vue-no-template-shadow.md)
 
 ### `vue/no-unused-properties`
 
 Disallow unused properties defined in defineProps
 
-[Bad](#vue-no-unused-properties-bad) · [Good](#vue-no-unused-properties-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-unused-properties": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-unused-properties-bad"></span>
 
-**Bad**
-
-The component declares description as a prop but renders only title.
-
-```vue
-<script setup lang="ts">
-defineProps<{ title: string; description: string }>();
-</script>
-
-<template>
-  <h1>{{ title }}</h1>
-</template>
-```
+[Bad](./vue.md#vue-no-unused-properties-bad)
 
 <span id="vue-no-unused-properties-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-unused-properties-good)
 
-Both declared props are referenced by the template.
-
-```vue annotate="add:7"
-<script setup lang="ts">
-defineProps<{ title: string; description: string }>();
-</script>
-
-<template>
-  <h1>{{ title }}</h1>
-  <p>{{ description }}</p>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unused_properties.rs#L94) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-unused-properties) · [Rule reference](./reference/vue-no-unused-properties.md)
 
 ### `vue/prop-name-casing`
 
 Enforce a casing for declared prop names
 
-[Bad](#vue-prop-name-casing-bad) · [Good](#vue-prop-name-casing-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-Checks declared prop names, not the casing of attributes passed to a child.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/prop-name-casing": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-prop-name-casing-bad"></span>
 
-**Bad**
-
-The declared prop name user_name uses underscore-separated spelling.
-
-```vue annotate="remove:2,4"
-<script setup lang="ts">
-defineProps<{ user_name: string }>();
-</script>
-<template><p>{{ user_name }}</p></template>
-```
+[Bad](./vue.md#vue-prop-name-casing-bad)
 
 <span id="vue-prop-name-casing-good"></span>
 
-**Good**
+[Good](./vue.md#vue-prop-name-casing-good)
 
-The declaration and its template reference use the camelCase name userName.
-
-```vue annotate="add:2,4"
-<script setup lang="ts">
-defineProps<{ userName: string }>();
-</script>
-<template><p>{{ userName }}</p></template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/prop_name_casing.rs#L50) · [All rules](all.md)
+[Group examples](./vue.md#vue-prop-name-casing) · [Rule reference](./reference/vue-prop-name-casing.md)
 
 ### `vue/v-bind-style`
 
 Enforce `v-bind` directive style
 
-[Bad](#vue-v-bind-style-bad) · [Good](#vue-v-bind-style-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: Available for supported findings  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/v-bind-style": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-v-bind-style-bad"></span>
 
-**Bad**
-
-`v-bind:class` uses the long form where the configured binding style requires the colon shorthand.
-
-```vue annotate="remove:2"
-<template>
-  <div v-bind:class="panelClass"></div>
-</template>
-```
+[Bad](./vue.md#vue-v-bind-style-bad)
 
 <span id="vue-v-bind-style-good"></span>
 
-**Good**
+[Good](./vue.md#vue-v-bind-style-good)
 
-`:class` retains the same expression with the required shorthand; this rule concerns spelling rather than the value's type.
-
-```vue annotate="add:2"
-<template>
-  <div :class="panelClass"></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_bind_style.rs#L30) · [All rules](all.md)
+[Group examples](./vue.md#vue-v-bind-style) · [Rule reference](./reference/vue-v-bind-style.md)
 
 ### `vue/v-on-style`
 
 Enforce `v-on` directive style
 
-[Bad](#vue-v-on-style-bad) · [Good](#vue-v-on-style-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: Available for supported findings  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/v-on-style": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-v-on-style-bad"></span>
 
-**Bad**
-
-`v-on:click` uses the long event-listener form where the rule requires shorthand.
-
-```vue annotate="remove:2"
-<template>
-  <div v-on:click="handleClick"></div>
-</template>
-```
+[Bad](./vue.md#vue-v-on-style-bad)
 
 <span id="vue-v-on-style-good"></span>
 
-**Good**
+[Good](./vue.md#vue-v-on-style-good)
 
-`@click` keeps the same handler while using the configured shorthand.
-
-```vue annotate="add:2"
-<template>
-  <div @click="handleClick"></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/v_on_style.rs#L28) · [All rules](all.md)
+[Group examples](./vue.md#vue-v-on-style) · [Rule reference](./reference/vue-v-on-style.md)
 
 ### `vue/v-slot-style`
 
 Enforce `v-slot` directive style
 
-[Bad](#vue-v-slot-style-bad) · [Good](#vue-v-slot-style-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: Available for supported findings  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/v-slot-style": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-v-slot-style-bad"></span>
 
-**Bad**
-
-The component uses `#default` and the template uses `v-slot:header`, opposite to the rule's context-specific styles.
-
-```vue annotate="remove:2,4"
-<template>
-  <MyComponent #default="props">{{ props.item }}</MyComponent>
-  <MyComponent>
-    <template v-slot:header>Header</template>
-  </MyComponent>
-</template>
-```
+[Bad](./vue.md#vue-v-slot-style-bad)
 
 <span id="vue-v-slot-style-good"></span>
 
-**Good**
+[Good](./vue.md#vue-v-slot-style-good)
 
-Use `v-slot` for the component's default slot and `#header` for the template's named slot.
-
-```vue annotate="add:2,4"
-<template>
-  <MyComponent v-slot="props">{{ props.item }}</MyComponent>
-  <MyComponent>
-    <template #header>Header</template>
-  </MyComponent>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/v_slot_style.rs#L41) · [All rules](all.md)
+[Group examples](./vue.md#vue-v-slot-style) · [Rule reference](./reference/vue-v-slot-style.md)
 
 ### `ssr/no-browser-globals-in-ssr`
 
 Disallow browser-only globals in SSR context
 
-[Bad](#ssr-no-browser-globals-in-ssr-bad) · [Good](#ssr-no-browser-globals-in-ssr-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "ssr/no-browser-globals-in-ssr": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="ssr-no-browser-globals-in-ssr-bad"></span>
 
-**Bad**
-
-Setup reads `window.innerWidth` immediately, although `window` does not exist when the component runs on the server.
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-const width = window.innerWidth;
-</script>
-```
+[Bad](./ssr.md#ssr-no-browser-globals-in-ssr-bad)
 
 <span id="ssr-no-browser-globals-in-ssr-good"></span>
 
-**Good**
+[Good](./ssr.md#ssr-no-browser-globals-in-ssr-good)
 
-The initial width is a server-safe ref value, and the browser access moves into `onMounted`, which runs on the client rather than during SSR setup.
-
-```vue annotate="add:2,3,4,5,6"
-<script setup lang="ts">
-const width = ref(0);
-
-onMounted(() => {
-  width.value = window.innerWidth;
-});
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ssr/no_browser_globals_in_ssr.rs#L158) · [All rules](all.md)
+[Group examples](./ssr.md#ssr-no-browser-globals-in-ssr) · [Rule reference](./reference/ssr-no-browser-globals-in-ssr.md)
 
 ### `ssr/no-hydration-mismatch`
 
 Disallow non-deterministic values that cause hydration mismatch
 
-[Bad](#ssr-no-hydration-mismatch-bad) · [Good](#ssr-no-hydration-mismatch-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "ssr/no-hydration-mismatch": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="ssr-no-hydration-mismatch-bad"></span>
 
-**Bad**
-
-The template evaluates `Math.random()` during rendering, so the server and client can produce different text for the same paragraph.
-
-```vue annotate="remove:2"
-<template>
-  <p>{{ Math.random() }}</p>
-</template>
-```
+[Bad](./ssr.md#ssr-no-hydration-mismatch-bad)
 
 <span id="ssr-no-hydration-mismatch-good"></span>
 
-**Good**
+[Good](./ssr.md#ssr-no-hydration-mismatch-good)
 
-The paragraph renders the stable `seed` state instead of a fresh random result. In this Nuxt-style example, `useState` supplies the shared state and the initializer is the constant `"stable"`.
-
-```vue annotate="add:1,2,3,4,6"
-<script setup lang="ts">
-const seed = useState("seed", () => "stable");
-</script>
-
-<template>
-  <p>{{ seed }}</p>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ssr/no_hydration_mismatch.rs#L122) · [All rules](all.md)
+[Group examples](./ssr.md#ssr-no-hydration-mismatch) · [Rule reference](./reference/ssr-no-hydration-mismatch.md)
 
 ### `vue/a11y-img-alt`
 
 Require alt attribute on images for accessibility
 
-[Bad](#vue-a11y-img-alt-bad) · [Good](#vue-a11y-img-alt-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/a11y-img-alt": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-a11y-img-alt-bad"></span>
 
-**Bad**
-
-Neither the static image nor the dynamically sourced image supplies an alt attribute.
-
-```vue annotate="remove:2,3"
-<template>
-<img src="/photo.jpg" />
-<img :src="photo" />
-</template>
-```
+[Bad](./vue.md#vue-a11y-img-alt-bad)
 
 <span id="vue-a11y-img-alt-good"></span>
 
-**Good**
+[Good](./vue.md#vue-a11y-img-alt-good)
 
-Informative images get descriptive alt text, decoration gets an empty alt, and the dynamic image binds its description.
-
-```vue annotate="add:2,3,4,5,6,7,8,9"
-<template>
-<!-- Informative image -->
-<img src="/photo.jpg" alt="Team photo from company retreat" />
-
-<!-- Decorative image (empty alt) -->
-<img src="/decoration.svg" alt="" />
-
-<!-- Dynamic alt -->
-<img :src="photo" :alt="photoDescription" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/a11y_img_alt.rs#L33) · [All rules](all.md)
+[Group examples](./vue.md#vue-a11y-img-alt) · [Rule reference](./reference/vue-a11y-img-alt.md)
 
 ### `vue/attribute-order`
 
 Enforce a consistent order of attributes
 
-[Bad](#vue-attribute-order-bad) · [Good](#vue-attribute-order-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/attribute-order": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-attribute-order-bad"></span>
 
-**Bad**
-
-The event handler appears before the structural v-if directive and ordinary id attribute.
-
-```vue annotate="remove:2"
-<template>
-  <div @click="onClick" v-if="show" id="main"></div>
-</template>
-```
+[Bad](./vue.md#vue-attribute-order-bad)
 
 <span id="vue-attribute-order-good"></span>
 
-**Good**
+[Good](./vue.md#vue-attribute-order-good)
 
-v-if comes first, followed by id and then the event handler, following the rule ordering.
-
-```vue annotate="add:2"
-<template>
-  <div v-if="show" id="main" @click="onClick"></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/attribute_order.rs#L36) · [All rules](all.md)
+[Group examples](./vue.md#vue-attribute-order) · [Rule reference](./reference/vue-attribute-order.md)
 
 ### `vue/component-name-in-template-casing`
 
 Enforce specific casing for component names in templates
 
-[Bad](#vue-component-name-in-template-casing-bad) · [Good](#vue-component-name-in-template-casing-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: Available for supported findings  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: See [typed options and defaults](options.md).
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/component-name-in-template-casing": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-component-name-in-template-casing-bad"></span>
 
-**Bad**
-
-The component is written in kebab-case and camelCase under the PascalCase convention.
-
-```vue annotate="remove:5,6"
-<script setup>
-import MyComponent from "./MyComponent.vue";
-</script>
-<template>
-  <my-component />
-  <myComponent />
-</template>
-```
+[Bad](./vue.md#vue-component-name-in-template-casing-bad)
 
 <span id="vue-component-name-in-template-casing-good"></span>
 
-**Good**
+[Good](./vue.md#vue-component-name-in-template-casing-good)
 
-MyComponent uses PascalCase; native slot syntax remains lowercase.
-
-```vue annotate="add:5,6,7"
-<script setup>
-import MyComponent from "./MyComponent.vue";
-</script>
-<template>
-  <MyComponent />
-  <RouterView />
-  <slot />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/component_name_in_template_casing.rs#L31) · [All rules](all.md)
+[Group examples](./vue.md#vue-component-name-in-template-casing) · [Rule reference](./reference/vue-component-name-in-template-casing.md)
 
 ### `vue/html-button-has-type`
 
 Require an explicit valid type on button elements
 
-[Bad](#vue-html-button-has-type-bad) · [Good](#vue-html-button-has-type-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/html-button-has-type": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-html-button-has-type-bad"></span>
 
-**Bad**
-
-One button omits type and another supplies the unsupported foo type.
-
-```vue annotate="remove:2,3"
-<template>
-<button>Click</button>
-<button type="foo">Click</button>
-</template>
-```
+[Bad](./vue.md#vue-html-button-has-type-bad)
 
 <span id="vue-html-button-has-type-good"></span>
 
-**Good**
+[Good](./vue.md#vue-html-button-has-type-good)
 
-Buttons specify button, submit, or reset; a bound type is treated as dynamic.
-
-```vue annotate="add:2,3,4,5"
-<template>
-<button type="button">Click</button>
-<button type="submit">Save</button>
-<button type="reset">Reset</button>
-<button :type="dynamicType">Click</button>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/html_button_has_type.rs#L39) · [All rules](all.md)
+[Group examples](./vue.md#vue-html-button-has-type) · [Rule reference](./reference/vue-html-button-has-type.md)
 
 ### `vue/max-template-complexity`
 
 Limit a component's own template complexity (cyclomatic and cognitive)
 
-[Bad](#vue-max-template-complexity-bad) · [Good](#vue-max-template-complexity-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-Bad has cyclomatic complexity 13 and cognitive complexity 25 (limits: 11 and 16). Each component is measured separately; only inline HTML templates are supported.
-
-See [complexity scoring and component boundaries](../guide/cross-file-complexity.md) for the contributions behind the example's two scores.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/max-template-complexity": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-max-template-complexity-bad"></span>
 
-**Bad**
-
-The parent-authored branches, loop, slot content, and expression decisions produce scores of 13 and 25, above the default limits 11 and 16.
-
-```vue annotate="remove:1,2,3,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19"
-<script setup lang="ts">
-defineProps<{ rows: Row[] }>();
-</script>
-<template>
-  <section>
-    <h1>{{ user ? user.name : 'Guest' }}</h1>
-    <DataTable :rows="rows">
-      <template #cell="{ row, column }">
-        <span v-if="column.key === 'status'" :class="row.active ? 'on' : 'off'">{{ row.status ?? 'unknown' }}</span>
-        <a v-else-if="column.key === 'link' && row.url" :href="row.url">{{ row.label }}</a>
-        <template v-else>
-          <em v-for="tag in row.tags" :key="tag">
-            <b v-if="tag.pinned || tag.starred">{{ tag.hot ? '!' : '' }}</b>
-          </em>
-        </template>
-      </template>
-    </DataTable>
-    <p v-if="!rows.length && !loading">No data</p>
-  </section>
-</template>
-```
+[Bad](./vue.md#vue-max-template-complexity-bad)
 
 <span id="vue-max-template-complexity-good"></span>
 
-**Good**
+[Good](./vue.md#vue-max-template-complexity-good)
 
-The parent template delegates rendering to RowList and keeps one v-if; its own scores are 2 and 1.
-
-```vue annotate="add:2"
-<template>
-  <RowList v-if="ready" :rows="rows" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/facts/max_template_complexity.rs#L56) · [All rules](all.md)
+[Group examples](./vue.md#vue-max-template-complexity) · [Rule reference](./reference/vue-max-template-complexity.md)
 
 ### `vue/no-array-index-key`
 
 Disallow using the v-for index variable directly as the :key
 
-[Bad](#vue-no-array-index-key-bad) · [Good](#vue-no-array-index-key-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-array-index-key": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-array-index-key-bad"></span>
 
-**Bad**
-
-The list key is its current index, so item identity changes when the list is reordered.
-
-```vue annotate="remove:2"
-<template>
-<li v-for="(item, index) in items" :key="index">{{ item.name }}</li>
-</template>
-```
+[Bad](./vue.md#vue-no-array-index-key-bad)
 
 <span id="vue-no-array-index-key-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-array-index-key-good)
 
-The key comes from item.id, preserving the identity of each item across position changes.
-
-```vue annotate="add:2"
-<template>
-<li v-for="item in items" :key="item.id">{{ item.name }}</li>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_array_index_key.rs#L32) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-array-index-key) · [Rule reference](./reference/vue-no-array-index-key.md)
 
 ### `vue/no-bare-strings-in-template`
 
 Disallow raw human-readable text in the template that should be internationalized
 
-[Bad](#vue-no-bare-strings-in-template-bad) · [Good](#vue-no-bare-strings-in-template-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-bare-strings-in-template": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-bare-strings-in-template-bad"></span>
 
-**Bad**
-
-Visible text and naming attributes embed untranslated strings directly in the template.
-
-```vue annotate="remove:2,3,4,5"
-<template>
-<div>hello</div>
-<img alt="a cat" />
-<input placeholder="Search" />
-<button title="Close">x</button>
-</template>
-```
+[Bad](./vue.md#vue-no-bare-strings-in-template-bad)
 
 <span id="vue-no-bare-strings-in-template-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-bare-strings-in-template-good)
 
-Translatable content calls $t; the punctuation and numeric-only examples are allowed exceptions.
-
-```vue annotate="add:2,3,4,5,6"
-<template>
-<div>{{ $t('hello') }}</div>
-<img :alt="$t('cat')" />
-<div>-</div>
-<div>123</div>
-<button :title="$t('close')">{{ $t('x') }}</button>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L47) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-bare-strings-in-template) · [Rule reference](./reference/vue-no-bare-strings-in-template.md)
 
 ### `vue/no-boolean-attr-value`
 
 Disallow explicit values for boolean HTML attributes
 
-[Bad](#vue-no-boolean-attr-value-bad) · [Good](#vue-no-boolean-attr-value-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: Available for supported findings  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-boolean-attr-value": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-boolean-attr-value-bad"></span>
 
-**Bad**
-
-The boolean disabled and checked attributes redundantly contain string values.
-
-```vue annotate="remove:2,3,4"
-<template>
-  <input disabled="disabled" />
-  <input checked="checked" />
-  <button disabled="true">Save</button>
-</template>
-```
+[Bad](./vue.md#vue-no-boolean-attr-value-bad)
 
 <span id="vue-no-boolean-attr-value-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-boolean-attr-value-good)
 
-The presence of each boolean attribute expresses the same enabled state without a value.
-
-```vue annotate="add:2,3,4"
-<template>
-  <input disabled />
-  <input checked />
-  <button disabled>Save</button>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_boolean_attr_value.rs#L36) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-boolean-attr-value) · [Rule reference](./reference/vue-no-boolean-attr-value.md)
 
 ### `vue/no-empty-component-block`
 
 Disallow empty SFC blocks
 
-[Bad](#vue-no-empty-component-block-bad) · [Good](#vue-no-empty-component-block-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-empty-component-block": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-empty-component-block-bad"></span>
 
-**Bad**
-
-The template, script, and style blocks contain no meaningful content.
-
-```vue annotate="remove:1,3,5"
-<template></template>
-
-<script></script>
-
-<style>
-</style>
-```
+[Bad](./vue.md#vue-no-empty-component-block-bad)
 
 <span id="vue-no-empty-component-block-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-empty-component-block-good)
 
-Each retained block contains actual markup, script declarations, or style declarations.
-
-```vue annotate="add:1,2,3,5,6,7,9,10"
-<template>
-  <div>Hello</div>
-</template>
-
-<script setup>
-const message = "Hello";
-</script>
-
-<style scoped>
-.button { color: red; }
-</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_empty_component_block.rs#L42) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-empty-component-block) · [Rule reference](./reference/vue-no-empty-component-block.md)
 
 ### `vue/no-inline-style`
 
 Discourage use of inline style attributes
 
-[Bad](#vue-no-inline-style-bad) · [Good](#vue-no-inline-style-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-inline-style": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-inline-style-bad"></span>
 
-**Bad**
-
-The static style attribute embeds the color declaration in the element.
-
-```vue annotate="remove:2"
-<template>
-  <div style="color: red">Text</div>
-</template>
-```
+[Bad](./vue.md#vue-no-inline-style-bad)
 
 <span id="vue-no-inline-style-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-inline-style-good)
 
-Classes express the fixed color; the ratio-dependent width remains a dynamic style binding, outside the static-attribute check.
-
-```vue annotate="add:2,3,4"
-<template>
-  <div class="text-red">Text</div>
-  <span :class="{ 'text-red': isRed }">Text</span>
-  <div :style="{ width: `${ratio}%` }">Text</div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_inline_style.rs#L33) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-inline-style) · [Rule reference](./reference/vue-no-inline-style.md)
 
 ### `vue/no-invalid-html-attribute`
 
 Disallow invalid static values for HTML attributes
 
-[Bad](#vue-no-invalid-html-attribute-bad) · [Good](#vue-no-invalid-html-attribute-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-invalid-html-attribute": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-invalid-html-attribute-bad"></span>
 
-**Bad**
-
-The anchor uses stylesheet as a rel value, although that value belongs to stylesheet link elements.
-
-```vue annotate="remove:2"
-<template>
-<a href="/guide" rel="stylesheet">Guide</a>
-</template>
-```
+[Bad](./vue.md#vue-no-invalid-html-attribute-bad)
 
 <span id="vue-no-invalid-html-attribute-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-invalid-html-attribute-good)
 
-The anchor uses help, a rel value appropriate for a linked help resource.
-
-```vue annotate="add:2"
-<template>
-<a href="/guide" rel="help">Guide</a>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_invalid_html_attribute.rs#L12) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-invalid-html-attribute) · [Rule reference](./reference/vue-no-invalid-html-attribute.md)
 
 ### `vue/no-lone-template`
 
 Disallow unnecessary `<template>` elements
 
-[Bad](#vue-no-lone-template-bad) · [Good](#vue-no-lone-template-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-lone-template": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-lone-template-bad"></span>
 
-**Bad**
-
-The inner template has no directive or slot role that gives it a structural purpose.
-
-```vue annotate="remove:2"
-<template>
-<div><template><p>Details</p></template></div>
-</template>
-```
+[Bad](./vue.md#vue-no-lone-template-bad)
 
 <span id="vue-no-lone-template-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-lone-template-good)
 
-Removing the unnecessary wrapper leaves the paragraph directly inside div.
-
-```vue annotate="add:2"
-<template>
-<div><p>Details</p></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_lone_template.rs#L32) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-lone-template) · [Rule reference](./reference/vue-no-lone-template.md)
 
 ### `vue/no-multiple-objects-in-class`
 
 Disallow multiple object literals inside a :class array binding
 
-[Bad](#vue-no-multiple-objects-in-class-bad) · [Good](#vue-no-multiple-objects-in-class-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-multiple-objects-in-class": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-multiple-objects-in-class-bad"></span>
 
-**Bad**
-
-A class array contains two top-level object literals that can be merged.
-
-```vue annotate="remove:2,3"
-<template>
-<div :class="[{ a }, { b }]"></div>
-<div :class="[{ active: isActive }, { error: hasError }]"></div>
-</template>
-```
+[Bad](./vue.md#vue-no-multiple-objects-in-class-bad)
 
 <span id="vue-no-multiple-objects-in-class-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-multiple-objects-in-class-good)
 
-One object contains the class conditions; arrays with one object and a string or with non-literal entries remain allowed.
-
-```vue annotate="add:2,3,4"
-<template>
-<div :class="{ a, b }"></div>
-<div :class="[{ active: isActive }, 'static']"></div>
-<div :class="[foo, bar]"></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_multiple_objects_in_class.rs#L33) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-multiple-objects-in-class) · [Rule reference](./reference/vue-no-multiple-objects-in-class.md)
 
 ### `vue/no-negated-v-if-condition`
 
 Disallow a negated v-if condition when the chain has a v-else
 
-[Bad](#vue-no-negated-v-if-condition-bad) · [Good](#vue-no-negated-v-if-condition-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-negated-v-if-condition": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-negated-v-if-condition-bad"></span>
 
-**Bad**
-
-The paired v-if and v-else branches begin with a negated condition.
-
-```vue
-<template>
-<div v-if="!ok">A</div>
-<div v-else>B</div>
-</template>
-```
+[Bad](./vue.md#vue-no-negated-v-if-condition-bad)
 
 <span id="vue-no-negated-v-if-condition-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-negated-v-if-condition-good)
 
-A positive ok condition comes first; when inverting a condition, place the original opposite branch first. A lone negated v-if and !== comparisons remain allowed.
-
-```vue annotate="add:2,3,4,6,7"
-<template>
-<div v-if="ok">B</div>
-<div v-else>A</div>
-
-<div v-if="!ok">A</div>
-
-<div v-if="a !== b">A</div>
-<div v-else>B</div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_negated_v_if_condition.rs#L37) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-negated-v-if-condition) · [Rule reference](./reference/vue-no-negated-v-if-condition.md)
 
 ### `vue/no-non-component-keep-alive-child`
 
 Disallow plain element wrappers directly below `<KeepAlive>`
 
-[Bad](#vue-no-non-component-keep-alive-child-bad) · [Good](#vue-no-non-component-keep-alive-child-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-non-component-keep-alive-child": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-non-component-keep-alive-child-bad"></span>
 
-**Bad**
-
-KeepAlive conditionally wraps a native div rather than directly caching UserCard.
-
-```vue annotate="remove:3"
-<template>
-  <KeepAlive>
-    <div v-if="ready">
-      <UserCard />
-    </div>
-  </KeepAlive>
-</template>
-```
+[Bad](./vue.md#vue-no-non-component-keep-alive-child-bad)
 
 <span id="vue-no-non-component-keep-alive-child-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-non-component-keep-alive-child-good)
 
-The first example makes UserCard the conditional child. The v-show wrapper illustrates a shape outside this conditional-child check, not a promise that the native wrapper is cached.
-
-```vue annotate="add:3,4,5,6"
-<template>
-  <KeepAlive>
-    <UserCard v-if="ready" />
-  </KeepAlive>
-  <KeepAlive>
-    <div v-show="opened">
-      <UserCard />
-    </div>
-  </KeepAlive>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_non_component_keep_alive_child.rs#L14) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-non-component-keep-alive-child) · [Rule reference](./reference/vue-no-non-component-keep-alive-child.md)
 
 ### `vue/no-preprocessor-lang`
 
 Discourage CSS preprocessor usage in favor of modern CSS
 
-[Bad](#vue-no-preprocessor-lang-bad) · [Good](#vue-no-preprocessor-lang-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: Not implemented for SFC lint  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-Current support: `no-sfc-finding`
-
-This catalog entry does not currently emit its rule-specific finding through SFC lint. The Bad/Good pair describes the intended convention, not an executable finding. Enabling the ID does not supply the missing SFC check.
-
-**Configured ID (currently no SFC finding)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-preprocessor-lang": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-preprocessor-lang-bad"></span>
 
-**Bad**
-
-The style block selects SCSS with lang. This describes the intended no-preprocessor convention; the current SFC path does not emit this rule.
-
-```vue annotate="remove:2"
-<template><p>Notice</p></template>
-<style lang="scss">
-.notice { color: red; }
-</style>
-```
+[Bad](./vue.md#vue-no-preprocessor-lang-bad)
 
 <span id="vue-no-preprocessor-lang-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-preprocessor-lang-good)
 
-The same CSS declarations omit the preprocessor lang. This is the convention repair, not an executable Bad/Good diagnostic difference today.
-
-```vue annotate="add:2"
-<template><p>Notice</p></template>
-<style>
-.notice { color: red; }
-</style>
-```
-
-Good illustrates the intended convention; the current SFC path emits neither side's rule-specific finding.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_preprocessor_lang.rs#L22) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-preprocessor-lang) · [Rule reference](./reference/vue-no-preprocessor-lang.md)
 
 ### `vue/no-root-v-if`
 
 Disallow v-if on the single root element of a template
 
-[Bad](#vue-no-root-v-if-bad) · [Good](#vue-no-root-v-if-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-root-v-if": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-root-v-if-bad"></span>
 
-**Bad**
-
-The component root itself appears and disappears under v-if.
-
-```vue annotate="remove:2"
-<template>
-  <div v-if="show">content</div>
-</template>
-```
+[Bad](./vue.md#vue-no-root-v-if-bad)
 
 <span id="vue-no-root-v-if-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-root-v-if-good)
 
-A stable outer div remains the root while the nested paragraph carries the visibility condition.
-
-```vue annotate="add:2,3,4"
-<template>
-  <div>
-    <p v-if="show">content</p>
-  </div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_root_v_if.rs#L40) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-root-v-if) · [Rule reference](./reference/vue-no-root-v-if.md)
 
 ### `vue/no-script-non-standard-lang`
 
 Discourage non-standard script lang values
 
-[Bad](#vue-no-script-non-standard-lang-bad) · [Good](#vue-no-script-non-standard-lang-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: Not implemented for SFC lint  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-Current support: `no-sfc-finding`
-
-This catalog entry does not currently emit its rule-specific finding through SFC lint. The Bad/Good pair describes the intended convention, not an executable finding. Enabling the ID does not supply the missing SFC check.
-
-**Configured ID (currently no SFC finding)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-script-non-standard-lang": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-script-non-standard-lang-bad"></span>
 
-**Bad**
-
-The script uses CoffeeScript syntax under lang=coffee. The current SFC path does not emit this catalog rule for that language.
-
-```vue annotate="remove:1,2"
-<script lang="coffee">
-count = 0
-</script>
-<template><p>Notice</p></template>
-```
+[Bad](./vue.md#vue-no-script-non-standard-lang-bad)
 
 <span id="vue-no-script-non-standard-lang-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-script-non-standard-lang-good)
 
-The script uses an ordinary TypeScript declaration with lang=ts, illustrating the intended language convention.
-
-```vue annotate="add:1,2"
-<script lang="ts">
-const count = 0;
-</script>
-<template><p>Notice</p></template>
-```
-
-Good illustrates the intended convention; the current SFC path emits neither side's rule-specific finding.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_script_non_standard_lang.rs#L44) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-script-non-standard-lang) · [Rule reference](./reference/vue-no-script-non-standard-lang.md)
 
 ### `vue/no-src-attribute`
 
 Discourage src attribute on SFC blocks
 
-[Bad](#vue-no-src-attribute-bad) · [Good](#vue-no-src-attribute-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-src-attribute": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-src-attribute-bad"></span>
 
-**Bad**
-
-The SFC blocks delegate their template, script, and style content to src files.
-
-```vue annotate="remove:1,2,3"
-<template src="./template.html"></template>
-<script src="./script.ts"></script>
-<style src="./style.css"></style>
-```
+[Bad](./vue.md#vue-no-src-attribute-bad)
 
 <span id="vue-no-src-attribute-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-src-attribute-good)
 
-Each SFC block contains its own content without an external src attribute.
-
-```vue annotate="add:1,2,3,4,5,6,7,8,9,10,11,12,13"
-<template>
-  <p>Hello</p>
-</template>
-
-<script setup lang="ts">
-const label = "Hello";
-</script>
-
-<style scoped>
-p {
-  color: red;
-}
-</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_src_attribute.rs#L16) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-src-attribute) · [Rule reference](./reference/vue-no-src-attribute.md)
 
 ### `vue/no-static-inline-styles`
 
 Disallow static inline style attributes
 
-[Bad](#vue-no-static-inline-styles-bad) · [Good](#vue-no-static-inline-styles-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-static-inline-styles": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-static-inline-styles-bad"></span>
 
-**Bad**
-
-The paragraph carries the constant color declaration in its style attribute.
-
-```vue annotate="remove:1,2,3"
-<template>
-<p style="color: red">Notice</p>
-</template>
-```
+[Bad](./vue.md#vue-no-static-inline-styles-bad)
 
 <span id="vue-no-static-inline-styles-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-static-inline-styles-good)
 
-A notice class and scoped stylesheet hold the constant color outside the template attribute.
-
-```vue annotate="add:1,2"
-<template><p class="notice">Notice</p></template>
-<style scoped>.notice { color: red; }</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_static_inline_styles.rs#L15) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-static-inline-styles) · [Rule reference](./reference/vue-no-static-inline-styles.md)
 
 ### `vue/no-template-lang`
 
 Discourage lang attribute on template block
 
-[Bad](#vue-no-template-lang-bad) · [Good](#vue-no-template-lang-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: Not implemented for SFC lint  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-Current support: `no-sfc-finding`
-
-This catalog entry does not currently emit its rule-specific finding through SFC lint. The Bad/Good pair describes the intended convention, not an executable finding. Enabling the ID does not supply the missing SFC check.
-
-**Configured ID (currently no SFC finding)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-template-lang": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-template-lang-bad"></span>
 
-**Bad**
-
-The template selects Pug through lang. This is an intended HTML-only convention; the current SFC path does not diagnose this catalog ID.
-
-```vue annotate="remove:1,2"
-<template lang="pug">
-p Notice
-</template>
-```
+[Bad](./vue.md#vue-no-template-lang-bad)
 
 <span id="vue-no-template-lang-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-template-lang-good)
 
-An ordinary HTML template omits lang and uses the paragraph directly. This illustrates the convention without claiming a current SFC finding.
-
-```vue annotate="add:1,2"
-<template>
-<p>Notice</p>
-</template>
-```
-
-Good illustrates the intended convention; the current SFC path emits neither side's rule-specific finding.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_template_lang.rs#L38) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-template-lang) · [Rule reference](./reference/vue-no-template-lang.md)
 
 ### `vue/no-template-target-blank`
 
 Disallow target="_blank" without rel="noopener noreferrer"
 
-[Bad](#vue-no-template-target-blank-bad) · [Good](#vue-no-template-target-blank-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-template-target-blank": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-template-target-blank-bad"></span>
 
-**Bad**
-
-The external link opens a new browsing context without the expected rel protection.
-
-```vue annotate="remove:2"
-<template>
-<a href="https://example.com" target="_blank">x</a>
-</template>
-```
+[Bad](./vue.md#vue-no-template-target-blank-bad)
 
 <span id="vue-no-template-target-blank-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-template-target-blank-good)
 
-The same link includes noopener noreferrer alongside target=_blank.
-
-```vue annotate="add:2"
-<template>
-<a href="https://example.com" target="_blank" rel="noopener noreferrer">x</a>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_template_target_blank.rs#L33) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-template-target-blank) · [Rule reference](./reference/vue-no-template-target-blank.md)
 
 ### `vue/no-undefined-refs`
 
 Disallow undefined variable references in templates
 
-[Bad](#vue-no-undefined-refs-bad) · [Good](#vue-no-undefined-refs-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-undefined-refs": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-undefined-refs-bad"></span>
 
-**Bad**
-
-The template reads missing, although the script declares only message.
-
-```vue annotate="remove:2"
-<script setup>const message = "Hello";</script>
-<template>{{ missing }}</template>
-```
+[Bad](./vue.md#vue-no-undefined-refs-bad)
 
 <span id="vue-no-undefined-refs-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-undefined-refs-good)
 
-The interpolation reads the existing message binding.
-
-```vue annotate="add:2"
-<script setup>const message = "Hello";</script>
-<template>{{ message }}</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_undefined_refs.rs#L14) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-undefined-refs) · [Rule reference](./reference/vue-no-undefined-refs.md)
 
 ### `vue/no-unsafe-url`
 
 Warn about potentially unsafe URL bindings
 
-[Bad](#vue-no-unsafe-url-bad) · [Good](#vue-no-unsafe-url-good)
-
-Default severity: `warning`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-unsafe-url": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-unsafe-url-bad"></span>
 
-**Bad**
-
-The anchor destination begins with the executable javascript: scheme.
-
-```vue annotate="remove:2"
-<template>
-<a href="javascript:alert(1)">Continue</a>
-</template>
-```
+[Bad](./vue.md#vue-no-unsafe-url-bad)
 
 <span id="vue-no-unsafe-url-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-unsafe-url-good)
 
-The anchor uses the ordinary local /next navigation destination.
-
-```vue annotate="add:2"
-<template>
-<a href="/next">Continue</a>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unsafe_url.rs#L55) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-unsafe-url) · [Rule reference](./reference/vue-no-unsafe-url.md)
 
 ### `vue/no-unsandboxed-iframe`
 
 Require a sandbox attribute on iframe elements
 
-[Bad](#vue-no-unsandboxed-iframe-bad) · [Good](#vue-no-unsandboxed-iframe-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-unsandboxed-iframe": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-unsandboxed-iframe-bad"></span>
 
-**Bad**
-
-The embedded frame has no sandbox attribute limiting its capabilities.
-
-```vue annotate="remove:2"
-<template>
-<iframe src="/embed"></iframe>
-</template>
-```
+[Bad](./vue.md#vue-no-unsandboxed-iframe-bad)
 
 <span id="vue-no-unsandboxed-iframe-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-unsandboxed-iframe-good)
 
-sandbox applies restrictions; allow-scripts explicitly opts into that one capability when needed.
-
-```vue annotate="add:2,3"
-<template>
-<iframe src="/embed" sandbox></iframe>
-<iframe src="/embed" sandbox="allow-scripts"></iframe>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unsandboxed_iframe.rs#L32) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-unsandboxed-iframe) · [Rule reference](./reference/vue-no-unsandboxed-iframe.md)
 
 ### `vue/no-unused-refs`
 
 Report template refs (ref="x") never referenced in &lt;script&gt;
 
-[Bad](#vue-no-unused-refs-bad) · [Good](#vue-no-unused-refs-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-unused-refs": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-unused-refs-bad"></span>
 
-**Bad**
-
-The template declares the unused ref name with no corresponding script reference binding.
-
-```vue annotate="remove:1,3"
-<template><input ref="unused" /></template>
-<script setup>
-const x = 1
-</script>
-```
+[Bad](./vue.md#vue-no-unused-refs-bad)
 
 <span id="vue-no-unused-refs-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-unused-refs-good)
 
-The inputEl template ref has a same-named ref binding in script setup.
-
-```vue annotate="add:1,3,4"
-<template><input ref="inputEl" /></template>
-<script setup>
-import { ref } from 'vue'
-const inputEl = ref(null)
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_unused_refs.rs#L60) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-unused-refs) · [Rule reference](./reference/vue-no-unused-refs.md)
 
 ### `vue/no-unused-setup-bindings`
 
 Disallow unread script setup bindings
 
-[Bad](#vue-no-unused-setup-bindings-bad) · [Good](#vue-no-unused-setup-bindings-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-unused-setup-bindings": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-unused-setup-bindings-bad"></span>
 
-**Bad**
-
-The script setup message binding is never read by the template.
-
-```vue annotate="remove:2"
-<script setup>const message = "Hello";</script>
-<template><p>Welcome</p></template>
-```
+[Bad](./vue.md#vue-no-unused-setup-bindings-bad)
 
 <span id="vue-no-unused-setup-bindings-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-unused-setup-bindings-good)
 
-The paragraph interpolates message, using the declared binding.
-
-```vue annotate="add:2"
-<script setup>const message = "Hello";</script>
-<template><p>{{ message }}</p></template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/facts/unused_setup_bindings.rs#L19) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-unused-setup-bindings) · [Rule reference](./reference/vue-no-unused-setup-bindings.md)
 
 ### `vue/no-use-v-else-with-v-for`
 
 Disallow using `v-else-if` or `v-else` on the same element as `v-for`
 
-[Bad](#vue-no-use-v-else-with-v-for-bad) · [Good](#vue-no-use-v-else-with-v-for-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-use-v-else-with-v-for": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-use-v-else-with-v-for-bad"></span>
 
-**Bad**
-
-The else branch and v-for iteration are attached to the same paragraph.
-
-```vue annotate="remove:3"
-<template>
-<p v-if="ready">Ready</p>
-<p v-else v-for="item in items" :key="item.id">{{ item.name }}</p>
-</template>
-```
+[Bad](./vue.md#vue-no-use-v-else-with-v-for-bad)
 
 <span id="vue-no-use-v-else-with-v-for-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-use-v-else-with-v-for-good)
 
-A separate template owns v-else, and its child paragraph owns v-for.
-
-```vue annotate="add:3"
-<template>
-<p v-if="ready">Ready</p>
-<template v-else><p v-for="item in items" :key="item.id">{{ item.name }}</p></template>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_use_v_else_with_v_for.rs#L19) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-use-v-else-with-v-for) · [Rule reference](./reference/vue-no-use-v-else-with-v-for.md)
 
 ### `vue/no-useless-mustaches`
 
 Disallow a mustache interpolation whose expression is a constant string literal
 
-[Bad](#vue-no-useless-mustaches-bad) · [Good](#vue-no-useless-mustaches-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-useless-mustaches": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-useless-mustaches-bad"></span>
 
-**Bad**
-
-The interpolation contains only a constant string and does not need expression evaluation.
-
-```vue annotate="remove:2,3,4"
-<template>
-<div>{{ 'x' }}</div>
-<div>{{ "x" }}</div>
-<div>{{ `x` }}</div>
-</template>
-```
+[Bad](./vue.md#vue-no-useless-mustaches-bad)
 
 <span id="vue-no-useless-mustaches-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-useless-mustaches-good)
 
-Literal text is written directly; variable expressions, interpolated template strings, and intentional separator whitespace remain interpolation cases.
-
-```vue annotate="add:2,3,4,5"
-<template>
-<div>x</div>
-<div>{{ x }}</div>
-<div>{{ `pre-${x}` }}</div>
-<span>A</span> {{ " " }} <span>B</span>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_useless_mustaches.rs#L37) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-useless-mustaches) · [Rule reference](./reference/vue-no-useless-mustaches.md)
 
 ### `vue/no-useless-v-bind`
 
 Disallow a v-bind whose value is a plain string literal
 
-[Bad](#vue-no-useless-v-bind-bad) · [Good](#vue-no-useless-v-bind-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-useless-v-bind": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-useless-v-bind-bad"></span>
 
-**Bad**
-
-The foo binding evaluates a constant quoted string or a template string without interpolation.
-
-```vue annotate="remove:2,3"
-<template>
-<div :foo="'bar'"></div>
-<div :foo="`bar`"></div>
-</template>
-```
+[Bad](./vue.md#vue-no-useless-v-bind-bad)
 
 <span id="vue-no-useless-v-bind-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-useless-v-bind-good)
 
-The constant value becomes a static attribute; variable and interpolated values retain their binding.
-
-```vue annotate="add:2,3,4"
-<template>
-<div foo="bar"></div>
-<div :foo="bar"></div>
-<div :foo="`pre-${bar}`"></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_useless_v_bind.rs#L29) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-useless-v-bind) · [Rule reference](./reference/vue-no-useless-v-bind.md)
 
 ### `vue/no-v-text`
 
 Disallow the v-text directive; prefer mustache interpolation
 
-[Bad](#vue-no-v-text-bad) · [Good](#vue-no-v-text-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-v-text": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-no-v-text-bad"></span>
 
-**Bad**
-
-The div's content is supplied through the v-text directive.
-
-```vue annotate="remove:2"
-<template>
-<div v-text="message"></div>
-</template>
-```
+[Bad](./vue.md#vue-no-v-text-bad)
 
 <span id="vue-no-v-text-good"></span>
 
-**Good**
+[Good](./vue.md#vue-no-v-text-good)
 
-Mustache interpolation expresses the same text binding directly in the element content.
-
-```vue annotate="add:2"
-<template>
-<div>{{ message }}</div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_v_text.rs#L31) · [All rules](all.md)
+[Group examples](./vue.md#vue-no-v-text) · [Rule reference](./reference/vue-no-v-text.md)
 
 ### `vue/prefer-props-shorthand`
 
 Recommend shorthand syntax for props (Vue 3.4+)
 
-[Bad](#vue-prefer-props-shorthand-bad) · [Good](#vue-prefer-props-shorthand-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: Available for supported findings  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/prefer-props-shorthand": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-prefer-props-shorthand-bad"></span>
 
-**Bad**
-
-Each binding repeats the corresponding variable name, including the camelCase equivalent of a hyphenated argument.
-
-```vue annotate="remove:2,3,4,5"
-<template>
-  <MyComponent :foo="foo" />
-  <MyComponent :user-name="userName" />
-  <span :style="style" />
-  <div :aria-label="ariaLabel" />
-</template>
-```
+[Bad](./vue.md#vue-prefer-props-shorthand-bad)
 
 <span id="vue-prefer-props-shorthand-good"></span>
 
-**Good**
+[Good](./vue.md#vue-prefer-props-shorthand-good)
 
-Vue 3.4+ same-name binding shorthand removes the repeated expressions; a different source variable such as bar remains explicit.
-
-```vue annotate="add:2,3,4,5,6"
-<template>
-  <MyComponent :foo />
-  <MyComponent :user-name />
-  <span :style />
-  <div :aria-label />
-  <MyComponent :foo="bar" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/prefer_props_shorthand.rs#L39) · [All rules](all.md)
+[Group examples](./vue.md#vue-prefer-props-shorthand) · [Rule reference](./reference/vue-prefer-props-shorthand.md)
 
 ### `vue/prefer-true-attribute-shorthand`
 
 Prefer the shorthand for a boolean attribute bound to `true`
 
-[Bad](#vue-prefer-true-attribute-shorthand-bad) · [Good](#vue-prefer-true-attribute-shorthand-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/prefer-true-attribute-shorthand": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-prefer-true-attribute-shorthand-bad"></span>
 
-**Bad**
-
-A native boolean disabled attribute binds the constant true value.
-
-```vue annotate="remove:2"
-<template>
-<input :disabled="true" />
-</template>
-```
+[Bad](./vue.md#vue-prefer-true-attribute-shorthand-bad)
 
 <span id="vue-prefer-true-attribute-shorthand-good"></span>
 
-**Good**
+[Good](./vue.md#vue-prefer-true-attribute-shorthand-good)
 
-The native attribute uses its boolean shorthand. False bindings and component props retain their explicit values.
-
-```vue annotate="add:2,3,4,5"
-<template>
-<input disabled />
-<input :disabled="false" />
-<MyComponent :visible="true" />
-<MyComponent :visible="isVisible" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/prefer_true_attribute_shorthand.rs#L38) · [All rules](all.md)
+[Group examples](./vue.md#vue-prefer-true-attribute-shorthand) · [Rule reference](./reference/vue-prefer-true-attribute-shorthand.md)
 
 ### `vue/require-component-registration`
 
 Require explicit import or registration for components
 
-[Bad](#vue-require-component-registration-bad) · [Good](#vue-require-component-registration-good)
-
-Default severity: `warning`  
-Presets: `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: See [typed options and defaults](options.md).
-
-List explicit component names supplied by application plugins or Musea previewSetup. PascalCase and kebab-case spellings are accepted; regular expressions are not interpreted. Options do not enable the rule. Later layers replace the list; an empty list clears inherited names.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/require-component-registration": "warn"
-      },
-      "ruleOptions": {
-        "vue/require-component-registration": {
-          "globals": [
-            "MyButton",
-            "MyIcon"
-          ]
-        }
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-require-component-registration-bad"></span>
 
-**Bad**
-
-`MissingWidget` is neither registered nor included in the configured global-component allowlist.
-
-```vue annotate="remove:2"
-<template>
-<MissingWidget />
-</template>
-```
+[Bad](./vue.md#vue-require-component-registration-bad)
 
 <span id="vue-require-component-registration-good"></span>
 
-**Good**
+[Good](./vue.md#vue-require-component-registration-good)
 
-`MyButton` is listed in the example's `globals` option. That option exempts a known global component; it does not register or import it.
-
-```vue annotate="add:2"
-<template>
-<MyButton />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs#L56) · [All rules](all.md)
+[Group examples](./vue.md#vue-require-component-registration) · [Rule reference](./reference/vue-require-component-registration.md)
 
 ### `vue/require-scoped-style`
 
 Require scoped attribute on style tags
 
-[Bad](#vue-require-scoped-style-bad) · [Good](#vue-require-scoped-style-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/require-scoped-style": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-require-scoped-style-bad"></span>
 
-**Bad**
-
-The `.button` style is unscoped and can affect matching elements outside this component.
-
-```vue annotate="remove:1"
-<style>
-.button {
-  color: red;
-}
-</style>
-```
+[Bad](./vue.md#vue-require-scoped-style-bad)
 
 <span id="vue-require-scoped-style-good"></span>
 
-**Good**
+[Good](./vue.md#vue-require-scoped-style-good)
 
-Adding `scoped` applies Vue's component scope to the same selector and declarations.
-
-```vue annotate="add:1"
-<style scoped>
-.button {
-  color: red;
-}
-</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_scoped_style.rs#L49) · [All rules](all.md)
+[Group examples](./vue.md#vue-require-scoped-style) · [Rule reference](./reference/vue-require-scoped-style.md)
 
 ### `vue/scoped-event-names`
 
 Recommend scoped event names using context:event format
 
-[Bad](#vue-scoped-event-names-bad) · [Good](#vue-scoped-event-names-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/scoped-event-names": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-scoped-event-names-bad"></span>
 
-**Bad**
-
-`playAudio`, `pauseAudio`, and `reloadAudio` encode their scope as camel-case suffixes rather than the rule's colon-separated event convention.
-
-```vue annotate="remove:3,4,5"
-<template>
-  <AudioPlayer
-    @playAudio="play"
-    @pauseAudio="pause"
-    @reloadAudio="reload"
-  />
-</template>
-```
+[Bad](./vue.md#vue-scoped-event-names-bad)
 
 <span id="vue-scoped-event-names-good"></span>
 
-**Good**
+[Good](./vue.md#vue-scoped-event-names-good)
 
-`audio:play`, `audio:pause`, and `audio:reload` share an explicit `audio:` scope. The emitting component must use the same names.
-
-```vue annotate="add:3,4,5"
-<template>
-  <AudioPlayer
-    @audio:play="play"
-    @audio:pause="pause"
-    @audio:reload="reload"
-  />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/scoped_event_names.rs#L30) · [All rules](all.md)
+[Group examples](./vue.md#vue-scoped-event-names) · [Rule reference](./reference/vue-scoped-event-names.md)
 
 ### `vue/sfc-element-order`
 
 Enforce consistent order of SFC top-level elements
 
-[Bad](#vue-sfc-element-order-bad) · [Good](#vue-sfc-element-order-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: See [typed options and defaults](options.md).
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/sfc-element-order": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-sfc-element-order-bad"></span>
 
-**Bad**
-
-The style block precedes the script block, contrary to the configured SFC block order.
-
-```vue annotate="remove:2,6,7,8"
-<style scoped>
-.panel {
-  color: red;
-}
-</style>
-<script setup lang="ts">
-const label = "Save";
-</script>
-```
+[Bad](./vue.md#vue-sfc-element-order-bad)
 
 <span id="vue-sfc-element-order-good"></span>
 
-**Good**
+[Good](./vue.md#vue-sfc-element-order-good)
 
-The blocks follow script → template → style. Projects can choose a different order through this rule's typed option.
-
-```vue annotate="add:1,2,3,4,5,6,7,8,10"
-<script setup lang="ts">
-const label = "Save";
-</script>
-
-<template>
-  <p>{{ label }}</p>
-</template>
-
-<style scoped>
-p {
-  color: red;
-}
-</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/sfc_element_order.rs#L50) · [All rules](all.md)
+[Group examples](./vue.md#vue-sfc-element-order) · [Rule reference](./reference/vue-sfc-element-order.md)
 
 ### `vue/single-style-block`
 
 Recommend having a single style block
 
-[Bad](#vue-single-style-block-bad) · [Good](#vue-single-style-block-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/single-style-block": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-single-style-block-bad"></span>
 
-**Bad**
-
-The component splits its scoped panel and title styles across two style blocks.
-
-```vue annotate="remove:5,6,7"
-<style scoped>
-.panel {
-  color: red;
-}
-</style>
-
-<style scoped>
-.title {
-  color: blue;
-}
-</style>
-```
+[Bad](./vue.md#vue-single-style-block-bad)
 
 <span id="vue-single-style-block-good"></span>
 
-**Good**
+[Good](./vue.md#vue-single-style-block-good)
 
-Both selectors stay scoped in one style block, satisfying the single-block convention without dropping either style.
-
-```vue
-<style scoped>
-.panel {
-  color: red;
-}
-.title {
-  color: blue;
-}
-</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/single_style_block.rs#L41) · [All rules](all.md)
+[Group examples](./vue.md#vue-single-style-block) · [Rule reference](./reference/vue-single-style-block.md)
 
 ### `vue/slot-name-casing`
 
 Enforce kebab-case for named slots used via v-slot
 
-[Bad](#vue-slot-name-casing-bad) · [Good](#vue-slot-name-casing-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/slot-name-casing": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-slot-name-casing-bad"></span>
 
-**Bad**
-
-The named slot `mySlot` uses camelCase where the rule requires a hyphenated name.
-
-```vue annotate="remove:2"
-<template>
-<MyCard><template #mySlot>Content</template></MyCard>
-</template>
-```
+[Bad](./vue.md#vue-slot-name-casing-bad)
 
 <span id="vue-slot-name-casing-good"></span>
 
-**Good**
+[Good](./vue.md#vue-slot-name-casing-good)
 
-`#my-slot` uses kebab-case. Rename the corresponding slot outlet to the same name.
-
-```vue annotate="add:2"
-<template>
-<MyCard><template #my-slot>Content</template></MyCard>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/slot_name_casing.rs#L34) · [All rules](all.md)
+[Group examples](./vue.md#vue-slot-name-casing) · [Rule reference](./reference/vue-slot-name-casing.md)
 
 ### `vue/this-in-template`
 
 Disallow `this.` in template expressions
 
-[Bad](#vue-this-in-template-bad) · [Good](#vue-this-in-template-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/this-in-template": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-this-in-template-bad"></span>
 
-**Bad**
-
-Template expressions explicitly access `this.message`, `this.className`, and `this.handleClick`, although Vue exposes those bindings directly.
-
-```vue annotate="remove:2,3,4"
-<template>
-<div>{{ this.message }}</div>
-<div :class="this.className"></div>
-<button @click="this.handleClick()"></button>
-</template>
-```
+[Bad](./vue.md#vue-this-in-template-bad)
 
 <span id="vue-this-in-template-good"></span>
 
-**Good**
+[Good](./vue.md#vue-this-in-template-good)
 
-Use `message`, `className`, and `handleClick` directly. The literal string `'this.is.a.string'` stays unchanged because it is not a member access.
-
-```vue annotate="add:2,3,4,5"
-<template>
-<div>{{ message }}</div>
-<div :class="className"></div>
-<button @click="handleClick()"></button>
-<div>{{ 'this.is.a.string' }}</div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/this_in_template.rs#L33) · [All rules](all.md)
+[Group examples](./vue.md#vue-this-in-template) · [Rule reference](./reference/vue-this-in-template.md)
 
 ### `vue/v-on-event-hyphenation`
 
 Enforce hyphenation of custom event names in v-on on components
 
-[Bad](#vue-v-on-event-hyphenation-bad) · [Good](#vue-v-on-event-hyphenation-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: See [typed options and defaults](options.md).
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/v-on-event-hyphenation": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-v-on-event-hyphenation-bad"></span>
 
-**Bad**
-
-The custom component listener uses `@myEvent` instead of a hyphenated event name.
-
-```vue annotate="remove:2,3"
-<template>
-<MyComponent @myEvent="handler" />
-<MyComponent v-on:myEvent="handler" />
-</template>
-```
+[Bad](./vue.md#vue-v-on-event-hyphenation-bad)
 
 <span id="vue-v-on-event-hyphenation-good"></span>
 
-**Good**
+[Good](./vue.md#vue-v-on-event-hyphenation-good)
 
-`@my-event` uses the required custom-event spelling. Native-element listeners and dynamic event arguments shown below are outside this check.
-
-```vue annotate="add:2,3,4"
-<template>
-<MyComponent @my-event="handler" />
-<div @myEvent="handler" />
-<MyComponent @[dynamicEvent]="handler" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs#L35) · [All rules](all.md)
+[Group examples](./vue.md#vue-v-on-event-hyphenation) · [Rule reference](./reference/vue-v-on-event-hyphenation.md)
 
 ### `vue/v-on-handler-style`
 
 Enforce writing v-on handlers as a method reference or an inline function
 
-[Bad](#vue-v-on-handler-style-bad) · [Good](#vue-v-on-handler-style-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/v-on-handler-style": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-v-on-handler-style-bad"></span>
 
-**Bad**
-
-The handlers put mutations and multiple statements directly in the event attribute.
-
-```vue annotate="remove:2,3,4"
-<template>
-<button @click="count++"></button>
-<button @click="doThis(); doThat()"></button>
-<button @click="foo = bar"></button>
-</template>
-```
+[Bad](./vue.md#vue-v-on-handler-style-bad)
 
 <span id="vue-v-on-handler-style-good"></span>
 
-**Good**
+[Good](./vue.md#vue-v-on-handler-style-good)
 
-Use a handler reference, or an arrow/function expression when inline logic is needed. The function boundary makes the handler form explicit.
-
-```vue annotate="add:2,3,4,5"
-<template>
-<button @click="handler"></button>
-<button @click="foo.bar"></button>
-<button @click="() => count++"></button>
-<button @click="function () { count++ }"></button>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L33) · [All rules](all.md)
+[Group examples](./vue.md#vue-v-on-handler-style) · [Rule reference](./reference/vue-v-on-handler-style.md)
 
 ### `vue/warn-custom-block`
 
 Warn about custom blocks in SFC files
 
-[Bad](#vue-warn-custom-block-bad) · [Good](#vue-warn-custom-block-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/warn-custom-block": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-warn-custom-block-bad"></span>
 
-**Bad**
-
-The SFC contains an `<i18n>` custom block, which needs an external integration beyond ordinary template/script/style processing.
-
-```vue annotate="remove:1,2,3,4"
-<i18n>
-{ "en": { "hello": "Hello" } }
-</i18n>
-
-<template>
-  <p>{{ hello }}</p>
-</template>
-```
+[Bad](./vue.md#vue-warn-custom-block-bad)
 
 <span id="vue-warn-custom-block-good"></span>
 
-**Good**
+[Good](./vue.md#vue-warn-custom-block-good)
 
-The example uses standard template and script-setup blocks. This optional portability warning does not mean every custom block is invalid Vue.
-
-```vue annotate="add:4,5,6,7"
-<template>
-  <p>{{ hello }}</p>
-</template>
-
-<script setup lang="ts">
-const hello = "Hello";
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/warn_custom_block.rs#L50) · [All rules](all.md)
+[Group examples](./vue.md#vue-warn-custom-block) · [Rule reference](./reference/vue-warn-custom-block.md)
 
 ### `vue/warn-custom-directive`
 
 Warn about custom directives that need registration
 
-[Bad](#vue-warn-custom-directive-bad) · [Good](#vue-warn-custom-directive-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/warn-custom-directive": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-warn-custom-directive-bad"></span>
 
-**Bad**
-
-`v-focus`, `v-mask`, and `v-click-outside` require project-specific directive implementations that this optional convention flags.
-
-```vue annotate="remove:2,3,4"
-<template>
-  <input v-focus />
-  <input v-mask="'###-####'" />
-  <div v-click-outside="handleClose"></div>
-</template>
-```
+[Bad](./vue.md#vue-warn-custom-directive-bad)
 
 <span id="vue-warn-custom-directive-good"></span>
 
-**Good**
+[Good](./vue.md#vue-warn-custom-directive-good)
 
-The example uses built-in `v-if`, `v-model`, and `v-on`. A correctly registered custom directive can still be valid Vue when this policy is disabled.
-
-```vue annotate="add:2,3,4"
-<template>
-  <div v-if="ready"></div>
-  <input v-model="value" />
-  <button type="button" @click="onClick">Save</button>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/warn_custom_directive.rs#L44) · [All rules](all.md)
+[Group examples](./vue.md#vue-warn-custom-directive) · [Rule reference](./reference/vue-warn-custom-directive.md)
 
 ### `a11y/alt-text`
 
 Require alternative text for media elements
 
-[Bad](#a11y-alt-text-bad) · [Good](#a11y-alt-text-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/alt-text": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-alt-text-bad"></span>
 
-**Bad**
-
-The image submit control supplies only its image URL; it has no `alt` text describing the action.
-
-```vue annotate="remove:2"
-<template>
-  <input type="image" src="/submit.png" />
-</template>
-```
+[Bad](./accessibility.md#a11y-alt-text-bad)
 
 <span id="a11y-alt-text-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-alt-text-good)
 
-`alt="Submit search"` gives the image control an accessible name that describes submitting the search.
-
-```vue annotate="add:2"
-<template>
-  <input type="image" src="/submit.png" alt="Submit search" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/alt_text.rs#L33) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-alt-text) · [Rule reference](./reference/a11y-alt-text.md)
 
 ### `a11y/anchor-has-content`
 
 Require anchor elements to have accessible content
 
-[Bad](#a11y-anchor-has-content-bad) · [Good](#a11y-anchor-has-content-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/anchor-has-content": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-anchor-has-content-bad"></span>
 
-**Bad**
-
-The `/settings` link has no text or other naming content, so its destination has no accessible description.
-
-```vue annotate="remove:2"
-<template>
-  <a href="/settings"></a>
-</template>
-```
+[Bad](./accessibility.md#a11y-anchor-has-content-bad)
 
 <span id="a11y-anchor-has-content-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-anchor-has-content-good)
 
-The visible `Settings` text supplies content for the same destination link.
-
-```vue annotate="add:2"
-<template>
-  <a href="/settings">Settings</a>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_has_content.rs#L16) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-anchor-has-content) · [Rule reference](./reference/a11y-anchor-has-content.md)
 
 ### `a11y/anchor-is-valid`
 
 Enforce valid href on anchor elements
 
-[Bad](#a11y-anchor-is-valid-bad) · [Good](#a11y-anchor-is-valid-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/anchor-is-valid": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-anchor-is-valid-bad"></span>
 
-**Bad**
-
-The first anchor uses `#` for an action; the second uses a JavaScript URL. Neither provides an ordinary navigation destination.
-
-```vue annotate="remove:2,3"
-<template>
-  <a href="#" @click="openPanel">Open panel</a>
-  <a href="JaVaScRiPt:void(0)">Run action</a>
-</template>
-```
+[Bad](./accessibility.md#a11y-anchor-is-valid-bad)
 
 <span id="a11y-anchor-is-valid-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-anchor-is-valid-good)
 
-A native button performs `openPanel`, while the remaining anchor has the real `/docs/javascript-urls` destination.
-
-```vue annotate="add:2,3"
-<template>
-  <button type="button" @click="openPanel">Open panel</button>
-  <a href="/docs/javascript-urls">JavaScript URL guide</a>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_is_valid.rs#L30) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-anchor-is-valid) · [Rule reference](./reference/a11y-anchor-is-valid.md)
 
 ### `a11y/aria-props`
 
 Disallow invalid ARIA attributes
 
-[Bad](#a11y-aria-props-bad) · [Good](#a11y-aria-props-good)
-
-Default severity: `error`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/aria-props": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-aria-props-bad"></span>
 
-**Bad**
-
-`aria-lable` is misspelled and is not a supported ARIA attribute.
-
-```vue annotate="remove:2"
-<template>
-  <button aria-lable="Save changes">Save</button>
-</template>
-```
+[Bad](./accessibility.md#a11y-aria-props-bad)
 
 <span id="a11y-aria-props-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-aria-props-good)
 
-The supported `aria-label` attribute supplies the button name.
-
-```vue annotate="add:2"
-<template>
-  <button aria-label="Save changes">Save</button>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/aria_props.rs#L18) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-aria-props) · [Rule reference](./reference/a11y-aria-props.md)
 
 ### `a11y/aria-role`
 
 Elements with ARIA roles must use a valid, non-abstract ARIA role
 
-[Bad](#a11y-aria-role-bad) · [Good](#a11y-aria-role-good)
-
-Default severity: `error`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/aria-role": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-aria-role-bad"></span>
 
-**Bad**
-
-`datepicker` is not a recognized ARIA role for this section.
-
-```vue annotate="remove:2"
-<template>
-  <section role="datepicker">...</section>
-</template>
-```
+[Bad](./accessibility.md#a11y-aria-role-bad)
 
 <span id="a11y-aria-role-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-aria-role-good)
 
-The section uses the recognized `dialog` role and a label describing the date selection.
-
-```vue annotate="add:2"
-<template>
-  <section role="dialog" aria-label="Choose a date">...</section>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/aria_role.rs#L21) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-aria-role) · [Rule reference](./reference/a11y-aria-role.md)
 
 ### `a11y/aria-unsupported-elements`
 
 Disallow ARIA attributes on elements that do not support them
 
-[Bad](#a11y-aria-unsupported-elements-bad) · [Good](#a11y-aria-unsupported-elements-good)
-
-Default severity: `error`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/aria-unsupported-elements": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-aria-unsupported-elements-bad"></span>
 
-**Bad**
-
-The metadata element carries `aria-hidden`, although `meta` does not support ARIA attributes.
-
-```vue annotate="remove:2"
-<template>
-  <meta charset="utf-8" aria-hidden="true" />
-</template>
-```
+[Bad](./accessibility.md#a11y-aria-unsupported-elements-bad)
 
 <span id="a11y-aria-unsupported-elements-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-aria-unsupported-elements-good)
 
-Removing the ARIA attribute leaves the charset declaration intact.
-
-```vue annotate="add:2"
-<template>
-  <meta charset="utf-8" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/aria_unsupported_elements.rs#L18) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-aria-unsupported-elements) · [Rule reference](./reference/a11y-aria-unsupported-elements.md)
 
 ### `a11y/click-events-have-key-events`
 
 Require keyboard event handlers with click events
 
-[Bad](#a11y-click-events-have-key-events-bad) · [Good](#a11y-click-events-have-key-events-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-Checks non-interactive elements without an interactive role. Native buttons and elements with an interactive ARIA role are outside this rule's finding.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/click-events-have-key-events": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-click-events-have-key-events-bad"></span>
 
-**Bad**
-
-The non-interactive `div` has a click handler but no keyboard event handling.
-
-```vue annotate="remove:2"
-<template>
-<div @click="activate">Activate</div>
-</template>
-```
+[Bad](./accessibility.md#a11y-click-events-have-key-events-bad)
 
 <span id="a11y-click-events-have-key-events-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-click-events-have-key-events-good)
 
-A native `button` provides keyboard activation for the same `activate` handler.
-
-```vue annotate="add:2"
-<template>
-<button @click="activate">Activate</button>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/click_events_have_key_events.rs#L17) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-click-events-have-key-events) · [Rule reference](./reference/a11y-click-events-have-key-events.md)
 
 ### `a11y/form-control-has-label`
 
 Require form controls to have associated labels
 
-[Bad](#a11y-form-control-has-label-bad) · [Good](#a11y-form-control-has-label-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/form-control-has-label": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-form-control-has-label-bad"></span>
 
-**Bad**
-
-The search input has no label identifying what the user should enter.
-
-```vue annotate="remove:2"
-<template>
-  <input type="search" />
-</template>
-```
+[Bad](./accessibility.md#a11y-form-control-has-label-bad)
 
 <span id="a11y-form-control-has-label-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-form-control-has-label-good)
 
-Wrapping the input in a label associates the visible `Search` text with the control.
-
-```vue annotate="add:2,3,4,5"
-<template>
-  <label>
-    Search
-    <input type="search" />
-  </label>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/form_control_has_label.rs#L19) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-form-control-has-label) · [Rule reference](./reference/a11y-form-control-has-label.md)
 
 ### `a11y/heading-has-content`
 
 Require heading elements to have accessible content
 
-[Bad](#a11y-heading-has-content-bad) · [Good](#a11y-heading-has-content-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/heading-has-content": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-heading-has-content-bad"></span>
 
-**Bad**
-
-The `h2` contributes a heading level but has no heading content.
-
-```vue annotate="remove:2"
-<template>
-  <h2></h2>
-</template>
-```
+[Bad](./accessibility.md#a11y-heading-has-content-bad)
 
 <span id="a11y-heading-has-content-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-heading-has-content-good)
 
-`Billing settings` supplies the content of the existing level-two heading.
-
-```vue annotate="add:2"
-<template>
-  <h2>Billing settings</h2>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/heading_has_content.rs#L17) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-heading-has-content) · [Rule reference](./reference/a11y-heading-has-content.md)
 
 ### `a11y/heading-levels`
 
 Disallow skipping heading levels
 
-[Bad](#a11y-heading-levels-bad) · [Good](#a11y-heading-levels-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/heading-levels": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-heading-levels-bad"></span>
 
-**Bad**
-
-The heading sequence jumps directly from `h1` to `h3`, skipping level two.
-
-```vue annotate="remove:3"
-<template>
-  <h1>Account</h1>
-  <h3>Billing</h3>
-</template>
-```
+[Bad](./accessibility.md#a11y-heading-levels-bad)
 
 <span id="a11y-heading-levels-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-heading-levels-good)
 
-Changing the billing heading to `h2` preserves a consecutive heading hierarchy.
-
-```vue annotate="add:3"
-<template>
-  <h1>Account</h1>
-  <h2>Billing</h2>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/heading_levels.rs#L34) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-heading-levels) · [Rule reference](./reference/a11y-heading-levels.md)
 
 ### `a11y/iframe-has-title`
 
 Require iframe elements to have a title attribute
 
-[Bad](#a11y-iframe-has-title-bad) · [Good](#a11y-iframe-has-title-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/iframe-has-title": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-iframe-has-title-bad"></span>
 
-**Bad**
-
-The checkout frame has a source URL but no `title` describing the embedded content.
-
-```vue annotate="remove:2"
-<template>
-  <iframe src="/checkout"></iframe>
-</template>
-```
+[Bad](./accessibility.md#a11y-iframe-has-title-bad)
 
 <span id="a11y-iframe-has-title-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-iframe-has-title-good)
 
-`title="Checkout preview"` names the content of that frame.
-
-```vue annotate="add:2"
-<template>
-  <iframe src="/checkout" title="Checkout preview"></iframe>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/iframe_has_title.rs#L15) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-iframe-has-title) · [Rule reference](./reference/a11y-iframe-has-title.md)
 
 ### `a11y/img-alt`
 
 Require alt attribute on images for accessibility
 
-[Bad](#a11y-img-alt-bad) · [Good](#a11y-img-alt-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/img-alt": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-img-alt-bad"></span>
 
-**Bad**
-
-The avatar image is missing its `alt` attribute.
-
-```vue annotate="remove:2"
-<template>
-  <img src="/avatar.png" />
-</template>
-```
+[Bad](./accessibility.md#a11y-img-alt-bad)
 
 <span id="a11y-img-alt-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-img-alt-good)
 
-`alt="User avatar"` supplies a text alternative for the avatar.
-
-```vue annotate="add:2"
-<template>
-  <img src="/avatar.png" alt="User avatar" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/img_alt.rs#L16) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-img-alt) · [Rule reference](./reference/a11y-img-alt.md)
 
 ### `a11y/interactive-supports-focus`
 
 Require interactive role elements to be focusable
 
-[Bad](#a11y-interactive-supports-focus-bad) · [Good](#a11y-interactive-supports-focus-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/interactive-supports-focus": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-interactive-supports-focus-bad"></span>
 
-**Bad**
-
-Giving a `span` the button role and a click handler does not make the element keyboard-focusable.
-
-```vue annotate="remove:2"
-<template>
-  <span role="button" @click="open">Open</span>
-</template>
-```
+[Bad](./accessibility.md#a11y-interactive-supports-focus-bad)
 
 <span id="a11y-interactive-supports-focus-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-interactive-supports-focus-good)
 
-The native button is focusable and retains the same `open` action.
-
-```vue annotate="add:2"
-<template>
-  <button type="button" @click="open">Open</button>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/interactive_supports_focus.rs#L31) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-interactive-supports-focus) · [Rule reference](./reference/a11y-interactive-supports-focus.md)
 
 ### `a11y/label-has-for`
 
 Require labels to have associated form controls
 
-[Bad](#a11y-label-has-for-bad) · [Good](#a11y-label-has-for-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/label-has-for": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-label-has-for-bad"></span>
 
-**Bad**
-
-The separate label is neither associated through `for` nor wrapped around the input.
-
-```vue annotate="remove:2"
-<template>
-  <label>Email</label>
-  <input id="email" />
-</template>
-```
+[Bad](./accessibility.md#a11y-label-has-for-bad)
 
 <span id="a11y-label-has-for-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-label-has-for-good)
 
-`for="email"` matches the input ID and explicitly associates the two elements.
-
-```vue annotate="add:2"
-<template>
-  <label for="email">Email</label>
-  <input id="email" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/label_has_for.rs#L27) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-label-has-for) · [Rule reference](./reference/a11y-label-has-for.md)
 
 ### `a11y/landmark-roles`
 
 Validate landmark role placement and uniqueness
 
-[Bad](#a11y-landmark-roles-bad) · [Good](#a11y-landmark-roles-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/landmark-roles": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-landmark-roles-bad"></span>
 
-**Bad**
-
-Two `main` elements declare duplicate main landmarks in the same template.
-
-```vue annotate="remove:3"
-<template>
-  <main>Dashboard</main>
-  <main>Settings</main>
-</template>
-```
+[Bad](./accessibility.md#a11y-landmark-roles-bad)
 
 <span id="a11y-landmark-roles-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-landmark-roles-good)
 
-The dashboard remains the main landmark; the settings area becomes a named navigation landmark.
-
-```vue annotate="add:3"
-<template>
-  <main>Dashboard</main>
-  <nav aria-label="Settings">...</nav>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/landmark_roles.rs#L44) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-landmark-roles) · [Rule reference](./reference/a11y-landmark-roles.md)
 
 ### `a11y/media-has-caption`
 
 Require media elements to have captions
 
-[Bad](#a11y-media-has-caption-bad) · [Good](#a11y-media-has-caption-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/media-has-caption": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-media-has-caption-bad"></span>
 
-**Bad**
-
-The video has playback controls but no caption track.
-
-```vue annotate="remove:2"
-<template>
-  <video src="/demo.mp4" controls />
-</template>
-```
+[Bad](./accessibility.md#a11y-media-has-caption-bad)
 
 <span id="a11y-media-has-caption-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-media-has-caption-good)
 
-A `track` with `kind="captions"` supplies the English captions for the same video.
-
-```vue annotate="add:2,3,4"
-<template>
-  <video src="/demo.mp4" controls>
-    <track kind="captions" src="/demo.en.vtt" srclang="en" label="English" />
-  </video>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/media_has_caption.rs#L30) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-media-has-caption) · [Rule reference](./reference/a11y-media-has-caption.md)
 
 ### `a11y/mouse-events-have-key-events`
 
 Require focus/blur events with mouse events
 
-[Bad](#a11y-mouse-events-have-key-events-bad) · [Good](#a11y-mouse-events-have-key-events-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/mouse-events-have-key-events": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-mouse-events-have-key-events-bad"></span>
 
-**Bad**
-
-Preview visibility changes only through mouse enter and leave handlers.
-
-```vue annotate="remove:2"
-<template>
-  <div @mouseenter="showPreview" @mouseleave="hidePreview">Preview</div>
-</template>
-```
+[Bad](./accessibility.md#a11y-mouse-events-have-key-events-bad)
 
 <span id="a11y-mouse-events-have-key-events-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-mouse-events-have-key-events-good)
 
-The same preview actions run on focus and blur, and the button can receive keyboard focus.
-
-```vue annotate="add:2,3,4,5,6,7,8,9,10"
-<template>
-  <button
-    type="button"
-    @focus="showPreview"
-    @blur="hidePreview"
-    @mouseenter="showPreview"
-    @mouseleave="hidePreview"
-  >
-    Preview
-  </button>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/mouse_events_have_key_events.rs#L30) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-mouse-events-have-key-events) · [Rule reference](./reference/a11y-mouse-events-have-key-events.md)
 
 ### `a11y/no-access-key`
 
 Disallow the use of the accesskey attribute
 
-[Bad](#a11y-no-access-key-bad) · [Good](#a11y-no-access-key-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-access-key": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-no-access-key-bad"></span>
 
-**Bad**
-
-The `accesskey="s"` shortcut may conflict with browser or assistive-technology shortcuts.
-
-```vue annotate="remove:2"
-<template>
-  <button accesskey="s">Save</button>
-</template>
-```
+[Bad](./accessibility.md#a11y-no-access-key-bad)
 
 <span id="a11y-no-access-key-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-no-access-key-good)
 
-Removing `accesskey` keeps the ordinary Save button available.
-
-```vue annotate="add:2"
-<template>
-  <button>Save</button>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_access_key.rs#L19) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-no-access-key) · [Rule reference](./reference/a11y-no-access-key.md)
 
 ### `a11y/no-aria-hidden-on-focusable`
 
 Disallow aria-hidden="true" on focusable elements
 
-[Bad](#a11y-no-aria-hidden-on-focusable-bad) · [Good](#a11y-no-aria-hidden-on-focusable-good)
-
-Default severity: `error`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-aria-hidden-on-focusable": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-no-aria-hidden-on-focusable-bad"></span>
 
-**Bad**
-
-The focusable Close button is hidden from the accessibility tree with `aria-hidden="true"`.
-
-```vue annotate="remove:2"
-<template>
-  <button aria-hidden="true" @click="close">Close</button>
-</template>
-```
+[Bad](./accessibility.md#a11y-no-aria-hidden-on-focusable-bad)
 
 <span id="a11y-no-aria-hidden-on-focusable-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-no-aria-hidden-on-focusable-good)
 
-The button remains exposed and receives a `Close` label instead of being hidden.
-
-```vue annotate="add:2"
-<template>
-  <button aria-label="Close" @click="close">Close</button>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_aria_hidden_on_focusable.rs#L19) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-no-aria-hidden-on-focusable) · [Rule reference](./reference/a11y-no-aria-hidden-on-focusable.md)
 
 ### `a11y/no-autofocus`
 
 Disallow the use of the autofocus attribute
 
-[Bad](#a11y-no-autofocus-bad) · [Good](#a11y-no-autofocus-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-autofocus": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-no-autofocus-bad"></span>
 
-**Bad**
-
-The input requests automatic focus when it appears.
-
-```vue annotate="remove:2"
-<template>
-  <input autofocus name="query" />
-</template>
-```
+[Bad](./accessibility.md#a11y-no-autofocus-bad)
 
 <span id="a11y-no-autofocus-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-no-autofocus-good)
 
-Removing `autofocus` avoids this automatic focus request while retaining the query input.
-
-```vue annotate="add:2"
-<template>
-  <input name="query" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_autofocus.rs#L19) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-no-autofocus) · [Rule reference](./reference/a11y-no-autofocus.md)
 
 ### `a11y/no-distracting-elements`
 
 Disallow distracting elements like &lt;marquee&gt; and &lt;blink&gt;
 
-[Bad](#a11y-no-distracting-elements-bad) · [Good](#a11y-no-distracting-elements-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-distracting-elements": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-no-distracting-elements-bad"></span>
 
-**Bad**
-
-The `marquee` element introduces automatically moving text.
-
-```vue annotate="remove:2"
-<template>
-  <marquee>Limited offer</marquee>
-</template>
-```
+[Bad](./accessibility.md#a11y-no-distracting-elements-bad)
 
 <span id="a11y-no-distracting-elements-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-no-distracting-elements-good)
 
-A paragraph displays the same offer without the distracting marquee element.
-
-```vue annotate="add:2"
-<template>
-  <p>Limited offer</p>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_distracting_elements.rs#L16) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-no-distracting-elements) · [Rule reference](./reference/a11y-no-distracting-elements.md)
 
 ### `a11y/no-i-for-icon`
 
 Disallow using &lt;i&gt; element for icons
 
-[Bad](#a11y-no-i-for-icon-bad) · [Good](#a11y-no-i-for-icon-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-i-for-icon": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-no-i-for-icon-bad"></span>
 
-**Bad**
-
-The icon is rendered through `i`, whose text semantics do not describe an icon-only action.
-
-```vue annotate="remove:3"
-<template>
-  <button>
-    <i class="material-icons">delete</i>
-  </button>
-</template>
-```
+[Bad](./accessibility.md#a11y-no-i-for-icon-bad)
 
 <span id="a11y-no-i-for-icon-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-no-i-for-icon-good)
 
-A decorative span hides the icon glyph, while the separate `Delete item` text names the button action.
-
-```vue annotate="add:3,4"
-<template>
-  <button>
-    <span class="material-icons" aria-hidden="true">delete</span>
-    <span class="sr-only">Delete item</span>
-  </button>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_i_for_icon.rs#L35) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-no-i-for-icon) · [Rule reference](./reference/a11y-no-i-for-icon.md)
 
 ### `a11y/no-redundant-roles`
 
 Disallow redundant ARIA roles
 
-[Bad](#a11y-no-redundant-roles-bad) · [Good](#a11y-no-redundant-roles-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: Available for supported findings  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-redundant-roles": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-no-redundant-roles-bad"></span>
 
-**Bad**
-
-The native button already has the button role, so `role="button"` repeats its implicit semantics.
-
-```vue annotate="remove:2"
-<template>
-  <button role="button">Save</button>
-</template>
-```
+[Bad](./accessibility.md#a11y-no-redundant-roles-bad)
 
 <span id="a11y-no-redundant-roles-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-no-redundant-roles-good)
 
-Removing the repeated role keeps the button semantics supplied by HTML.
-
-```vue annotate="add:2"
-<template>
-  <button>Save</button>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_redundant_roles/report.rs#L31) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-no-redundant-roles) · [Rule reference](./reference/a11y-no-redundant-roles.md)
 
 ### `a11y/no-refer-to-non-existent-id`
 
 Disallow references to non-existent IDs
 
-[Bad](#a11y-no-refer-to-non-existent-id-bad) · [Good](#a11y-no-refer-to-non-existent-id-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-refer-to-non-existent-id": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-no-refer-to-non-existent-id-bad"></span>
 
-**Bad**
-
-`aria-labelledby` points to `save-label`, but no element declares that ID.
-
-```vue
-<template>
-  <button aria-labelledby="save-label">Save</button>
-</template>
-```
+[Bad](./accessibility.md#a11y-no-refer-to-non-existent-id-bad)
 
 <span id="a11y-no-refer-to-non-existent-id-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-no-refer-to-non-existent-id-good)
 
-Adding the matching span resolves the reference and provides the button label.
-
-```vue annotate="add:2"
-<template>
-  <span id="save-label">Save changes</span>
-  <button aria-labelledby="save-label">Save</button>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_refer_to_non_existent_id.rs#L37) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-no-refer-to-non-existent-id) · [Rule reference](./reference/a11y-no-refer-to-non-existent-id.md)
 
 ### `a11y/no-role-presentation-on-focusable`
 
 Disallow role="presentation" or role="none" on focusable elements
 
-[Bad](#a11y-no-role-presentation-on-focusable-bad) · [Good](#a11y-no-role-presentation-on-focusable-good)
-
-Default severity: `error`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-role-presentation-on-focusable": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-no-role-presentation-on-focusable-bad"></span>
 
-**Bad**
-
-The focusable billing link requests role=presentation, which conflicts with its interactive link role; browsers must ignore that presentation request.
-
-```vue annotate="remove:2"
-<template>
-  <a href="/billing" role="presentation">Billing</a>
-</template>
-```
+[Bad](./accessibility.md#a11y-no-role-presentation-on-focusable-bad)
 
 <span id="a11y-no-role-presentation-on-focusable-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-no-role-presentation-on-focusable-good)
 
-Remove the conflicting presentation request and rely on the native link role and billing destination.
-
-```vue annotate="add:2"
-<template>
-  <a href="/billing">Billing</a>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_role_presentation_on_focusable.rs#L19) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-no-role-presentation-on-focusable) · [Rule reference](./reference/a11y-no-role-presentation-on-focusable.md)
 
 ### `a11y/no-static-element-interactions`
 
 Disallow event handlers on static elements
 
-[Bad](#a11y-no-static-element-interactions-bad) · [Good](#a11y-no-static-element-interactions-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-static-element-interactions": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-no-static-element-interactions-bad"></span>
 
-**Bad**
-
-A static section receives an Enter-key action without an interactive role.
-
-```vue annotate="remove:2"
-<template>
-  <section @keydown.enter="select">Select</section>
-</template>
-```
+[Bad](./accessibility.md#a11y-no-static-element-interactions-bad)
 
 <span id="a11y-no-static-element-interactions-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-no-static-element-interactions-good)
 
-A native button carries the same action with an appropriate interactive element.
-
-```vue annotate="add:2"
-<template>
-  <button type="button" @keydown.enter="select">Select</button>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_static_element_interactions.rs#L31) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-no-static-element-interactions) · [Rule reference](./reference/a11y-no-static-element-interactions.md)
 
 ### `a11y/placeholder-label-option`
 
 Require disabled or hidden on select placeholder option
 
-[Bad](#a11y-placeholder-label-option-bad) · [Good](#a11y-placeholder-label-option-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/placeholder-label-option": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-placeholder-label-option-bad"></span>
 
-**Bad**
-
-The empty-value prompt remains selectable as if it were a country value.
-
-```vue annotate="remove:3"
-<template>
-  <select v-model="country">
-    <option value="">Choose a country</option>
-    <option value="jp">Japan</option>
-  </select>
-</template>
-```
+[Bad](./accessibility.md#a11y-placeholder-label-option-bad)
 
 <span id="a11y-placeholder-label-option-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-placeholder-label-option-good)
 
-Adding `disabled` distinguishes the prompt from the selectable Japan option.
-
-```vue annotate="add:3"
-<template>
-  <select v-model="country">
-    <option value="" disabled>Choose a country</option>
-    <option value="jp">Japan</option>
-  </select>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/placeholder_label_option.rs#L36) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-placeholder-label-option) · [Rule reference](./reference/a11y-placeholder-label-option.md)
 
 ### `a11y/role-has-required-aria-props`
 
 Require ARIA roles to have required properties
 
-[Bad](#a11y-role-has-required-aria-props-bad) · [Good](#a11y-role-has-required-aria-props-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/role-has-required-aria-props": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-role-has-required-aria-props-bad"></span>
 
-**Bad**
-
-The checkbox role omits `aria-checked`, which conveys the checkbox state.
-
-```vue annotate="remove:2"
-<template>
-  <span role="checkbox">Receive updates</span>
-</template>
-```
+[Bad](./accessibility.md#a11y-role-has-required-aria-props-bad)
 
 <span id="a11y-role-has-required-aria-props-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-role-has-required-aria-props-good)
 
-`aria-checked="false"` supplies the state required by the checkbox role.
-
-```vue annotate="add:2"
-<template>
-  <span role="checkbox" aria-checked="false">Receive updates</span>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/role_has_required_aria_props.rs#L30) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-role-has-required-aria-props) · [Rule reference](./reference/a11y-role-has-required-aria-props.md)
 
 ### `a11y/tabindex-no-positive`
 
 Disallow positive tabindex values
 
-[Bad](#a11y-tabindex-no-positive-bad) · [Good](#a11y-tabindex-no-positive-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/tabindex-no-positive": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-tabindex-no-positive-bad"></span>
 
-**Bad**
-
-A positive tabindex of 3 creates a custom focus order ahead of ordinary controls.
-
-```vue annotate="remove:2"
-<template>
-  <button tabindex="3">Save</button>
-</template>
-```
+[Bad](./accessibility.md#a11y-tabindex-no-positive-bad)
 
 <span id="a11y-tabindex-no-positive-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-tabindex-no-positive-good)
 
-The button uses its native focus order without a positive tabindex.
-
-```vue annotate="add:2"
-<template>
-  <button>Save</button>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/tabindex_no_positive.rs#L16) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-tabindex-no-positive) · [Rule reference](./reference/a11y-tabindex-no-positive.md)
 
 ### `a11y/use-list`
 
 Suggest using list elements for bullet-like text
 
-[Bad](#a11y-use-list-bad) · [Good](#a11y-use-list-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/use-list": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="a11y-use-list-bad"></span>
 
-**Bad**
-
-The task items are separate paragraphs with typed dash markers rather than list elements.
-
-```vue annotate="remove:2,3"
-<template>
-  <p>- First task</p>
-  <p>- Second task</p>
-</template>
-```
+[Bad](./accessibility.md#a11y-use-list-bad)
 
 <span id="a11y-use-list-good"></span>
 
-**Good**
+[Good](./accessibility.md#a11y-use-list-good)
 
-An unordered list and list items express the same tasks with list semantics.
-
-```vue annotate="add:2,3,4,5"
-<template>
-  <ul>
-    <li>First task</li>
-    <li>Second task</li>
-  </ul>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/use_list.rs#L36) · [All rules](all.md)
+[Group examples](./accessibility.md#a11y-use-list) · [Rule reference](./reference/a11y-use-list.md)
 
 ### `vue/use-unique-element-ids`
 
 Enforce unique element IDs using useId() instead of static literals
 
-[Bad](#vue-use-unique-element-ids-bad) · [Good](#vue-use-unique-element-ids-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vue/use-unique-element-ids": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vue-use-unique-element-ids-bad"></span>
 
-**Bad**
-
-The literal `email` ID is reused by every instance of this component, which can misdirect its label when several instances are rendered.
-
-```vue annotate="remove:2,3"
-<template>
-  <label for="email">Email</label>
-  <input id="email" />
-</template>
-```
+[Bad](./vue.md#vue-use-unique-element-ids-bad)
 
 <span id="vue-use-unique-element-ids-good"></span>
 
-**Good**
+[Good](./vue.md#vue-use-unique-element-ids-good)
 
-`useId()` produces the instance's `emailId`; bind the same value to the label's `for` and the input's `id`.
-
-```vue annotate="add:1,2,3,4,5,6,8,9"
-<script setup>
-import { useId } from "vue";
-
-const emailId = useId();
-</script>
-
-<template>
-  <label :for="emailId">Email</label>
-  <input :id="emailId" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/use_unique_element_ids.rs#L52) · [All rules](all.md)
+[Group examples](./vue.md#vue-use-unique-element-ids) · [Rule reference](./reference/vue-use-unique-element-ids.md)
 
 ### `html/deprecated-attr`
 
 Disallow deprecated HTML attributes
 
-[Bad](#html-deprecated-attr-bad) · [Good](#html-deprecated-attr-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "html/deprecated-attr": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="html-deprecated-attr-bad"></span>
 
-**Bad**
-
-The paragraph uses the deprecated presentational `align` attribute.
-
-```vue annotate="remove:1,2,3"
-<template>
-<p align="center">Notice</p>
-</template>
-```
+[Bad](./html.md#html-deprecated-attr-bad)
 
 <span id="html-deprecated-attr-good"></span>
 
-**Good**
+[Good](./html.md#html-deprecated-attr-good)
 
-The class and `text-align: center` declaration express the alignment through CSS.
-
-```vue annotate="add:1,2"
-<template><p class="notice">Notice</p></template>
-<style scoped>.notice { text-align: center; }</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/deprecated_attr.rs#L32) · [All rules](all.md)
+[Group examples](./html.md#html-deprecated-attr) · [Rule reference](./reference/html-deprecated-attr.md)
 
 ### `html/deprecated-element`
 
 Disallow deprecated HTML elements
 
-[Bad](#html-deprecated-element-bad) · [Good](#html-deprecated-element-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "html/deprecated-element": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="html-deprecated-element-bad"></span>
 
-**Bad**
-
-The `center` element uses a deprecated HTML presentation element.
-
-```vue annotate="remove:2"
-<template>
-  <center>Profile</center>
-</template>
-```
+[Bad](./html.md#html-deprecated-element-bad)
 
 <span id="html-deprecated-element-good"></span>
 
-**Good**
+[Good](./html.md#html-deprecated-element-good)
 
-A section and a styling class replace the deprecated element while preserving the content.
-
-```vue annotate="add:2"
-<template>
-  <section class="profile">Profile</section>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/deprecated_element.rs#L33) · [All rules](all.md)
+[Group examples](./html.md#html-deprecated-element) · [Rule reference](./reference/html-deprecated-element.md)
 
 ### `html/id-duplication`
 
 Disallow duplicate element IDs
 
-[Bad](#html-id-duplication-bad) · [Good](#html-id-duplication-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "html/id-duplication": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="html-id-duplication-bad"></span>
 
-**Bad**
-
-Both the input and help paragraph declare `id="email"`, so the label target is ambiguous.
-
-```vue annotate="remove:3,4"
-<template>
-  <label for="email">Email</label>
-  <input id="email" />
-  <p id="email">Required</p>
-</template>
-```
+[Bad](./html.md#html-id-duplication-bad)
 
 <span id="html-id-duplication-good"></span>
 
-**Good**
+[Good](./html.md#html-id-duplication-good)
 
-The input keeps `email`; the help paragraph uses `email-help`, and aria-describedby refers to that distinct ID.
-
-```vue annotate="add:3,4"
-<template>
-  <label for="email">Email</label>
-  <input id="email" aria-describedby="email-help" />
-  <p id="email-help">Required</p>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/id_duplication.rs#L36) · [All rules](all.md)
+[Group examples](./html.md#html-id-duplication) · [Rule reference](./reference/html-id-duplication.md)
 
 ### `html/no-consecutive-br`
 
 Disallow consecutive &lt;br&gt; elements
 
-[Bad](#html-no-consecutive-br-bad) · [Good](#html-no-consecutive-br-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "html/no-consecutive-br": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="html-no-consecutive-br-bad"></span>
 
-**Bad**
-
-Two consecutive break elements create spacing between blocks inside a single paragraph.
-
-```vue annotate="remove:2"
-<template>
-  <p>First line<br /><br />Second block</p>
-</template>
-```
+[Bad](./html.md#html-no-consecutive-br-bad)
 
 <span id="html-no-consecutive-br-good"></span>
 
-**Good**
+[Good](./html.md#html-no-consecutive-br-good)
 
-Separate paragraphs express the two content blocks without repeated break elements.
-
-```vue annotate="add:2,3"
-<template>
-  <p>First line</p>
-  <p>Second block</p>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_consecutive_br.rs#L30) · [All rules](all.md)
+[Group examples](./html.md#html-no-consecutive-br) · [Rule reference](./reference/html-no-consecutive-br.md)
 
 ### `html/no-dupe-style-properties`
 
 Disallow duplicate properties in inline style attributes
 
-[Bad](#html-no-dupe-style-properties-bad) · [Good](#html-no-dupe-style-properties-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "html/no-dupe-style-properties": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="html-no-dupe-style-properties-bad"></span>
 
-**Bad**
-
-Each static style repeats one property; `margin` and `MARGIN` also count as the same property.
-
-```vue annotate="remove:2,3"
-<template>
-  <div style="color: red; color: blue">text</div>
-  <div style="margin: 0; MARGIN: 1px">text</div>
-</template>
-```
+[Bad](./html.md#html-no-dupe-style-properties-bad)
 
 <span id="html-no-dupe-style-properties-good"></span>
 
-**Good**
+[Good](./html.md#html-no-dupe-style-properties-good)
 
-The static style uses distinct color and background properties. Dynamic style bindings are outside this static-attribute check.
-
-```vue annotate="add:2,3"
-<template>
-  <div style="color: red; background: blue">text</div>
-  <div :style="{ color: a, color: b }">text</div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/html/no_dupe_style_properties.rs#L37) · [All rules](all.md)
+[Group examples](./html.md#html-no-dupe-style-properties) · [Rule reference](./reference/html-no-dupe-style-properties.md)
 
 ### `html/no-duplicate-class`
 
 Disallow duplicate class names in a static class attribute
 
-[Bad](#html-no-duplicate-class-bad) · [Good](#html-no-duplicate-class-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "html/no-duplicate-class": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="html-no-duplicate-class-bad"></span>
 
-**Bad**
-
-The static class list repeats the `btn` token.
-
-```vue annotate="remove:2"
-<template>
-  <div class="btn btn primary">click</div>
-</template>
-```
+[Bad](./html.md#html-no-duplicate-class-bad)
 
 <span id="html-no-duplicate-class-good"></span>
 
-**Good**
+[Good](./html.md#html-no-duplicate-class-good)
 
-The class list keeps one `btn` token and the distinct `primary` token.
-
-```vue annotate="add:2"
-<template>
-  <div class="btn primary">click</div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/html/no_duplicate_class.rs#L32) · [All rules](all.md)
+[Group examples](./html.md#html-no-duplicate-class) · [Rule reference](./reference/html-no-duplicate-class.md)
 
 ### `html/no-duplicate-dt`
 
 Disallow duplicate &lt;dt&gt; names in &lt;dl&gt;
 
-[Bad](#html-no-duplicate-dt-bad) · [Good](#html-no-duplicate-dt-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "html/no-duplicate-dt": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="html-no-duplicate-dt-bad"></span>
 
-**Bad**
-
-The same definition list repeats the `API` term for two descriptions.
-
-```vue annotate="remove:5"
-<template>
-  <dl>
-    <dt>API</dt>
-    <dd>Public interface</dd>
-    <dt>API</dt>
-    <dd>Internal service</dd>
-  </dl>
-</template>
-```
+[Bad](./html.md#html-no-duplicate-dt-bad)
 
 <span id="html-no-duplicate-dt-good"></span>
 
-**Good**
+[Good](./html.md#html-no-duplicate-dt-good)
 
-One API term is followed by both descriptions, avoiding the repeated term.
-
-```vue
-<template>
-  <dl>
-    <dt>API</dt>
-    <dd>Public interface</dd>
-    <dd>Internal service</dd>
-  </dl>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_duplicate_dt.rs#L41) · [All rules](all.md)
+[Group examples](./html.md#html-no-duplicate-dt) · [Rule reference](./reference/html-no-duplicate-dt.md)
 
 ### `html/no-empty-palpable-content`
 
 Disallow empty elements that expect visible content
 
-[Bad](#html-no-empty-palpable-content-bad) · [Good](#html-no-empty-palpable-content-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: See [typed options and defaults](options.md).
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "html/no-empty-palpable-content": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="html-no-empty-palpable-content-bad"></span>
 
-**Bad**
-
-The paragraph, list item, and table cell all have empty palpable content.
-
-```vue annotate="remove:2,3,4"
-<template>
-  <p></p>
-  <li></li>
-  <td></td>
-</template>
-```
+[Bad](./html.md#html-no-empty-palpable-content-bad)
 
 <span id="html-no-empty-palpable-content-good"></span>
 
-**Good**
+[Good](./html.md#html-no-empty-palpable-content-good)
 
-Text fills the paragraph, interpolation supplies the list item, and aria-label explicitly names the otherwise empty cell.
-
-```vue annotate="add:2,3,4"
-<template>
-  <p>Overview</p>
-  <li>{{ item.label }}</li>
-  <td aria-label="No value"></td>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_empty_palpable_content.rs#L32) · [All rules](all.md)
+[Group examples](./html.md#html-no-empty-palpable-content) · [Rule reference](./reference/html-no-empty-palpable-content.md)
 
 ### `html/require-datetime`
 
 Require datetime attribute on &lt;time&gt; element
 
-[Bad](#html-require-datetime-bad) · [Good](#html-require-datetime-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "html/require-datetime": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="html-require-datetime-bad"></span>
 
-**Bad**
-
-The time element contains a human-readable date but no machine-readable datetime value.
-
-```vue annotate="remove:2"
-<template>
-  <time>May 13, 2026</time>
-</template>
-```
+[Bad](./html.md#html-require-datetime-bad)
 
 <span id="html-require-datetime-good"></span>
 
-**Good**
+[Good](./html.md#html-require-datetime-good)
 
-`datetime="2026-05-13"` supplies the corresponding machine-readable date.
-
-```vue annotate="add:2"
-<template>
-  <time datetime="2026-05-13">May 13, 2026</time>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/require_datetime.rs#L34) · [All rules](all.md)
+[Group examples](./html.md#html-require-datetime) · [Rule reference](./reference/html-require-datetime.md)
 
 ### `type/no-floating-promises`
 
 Disallow floating (unhandled) Promises
 
-[Bad](#type-no-floating-promises-bad) · [Good](#type-no-floating-promises-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Type information in Vue SFC scripts and templates, for the constructs shown below  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-Type-aware checks use the native Corsa runtime and the TypeScript project. `typeAware` alone does not enable an opt-in rule.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "type/no-floating-promises": "warn"
-      },
-      "typeAware": true
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="type-no-floating-promises-bad"></span>
 
-**Bad**
-
-The async `save` function returns a Promise, but the standalone `save()` call neither awaits nor returns it and does not explicitly mark intentional disposal.
-
-```vue annotate="remove:3"
-<script setup lang="ts">
-async function save(): Promise<void> {}
-save();
-</script>
-```
+[Bad](./type-and-script.md#type-no-floating-promises-bad)
 
 <span id="type-no-floating-promises-good"></span>
 
-**Good**
+[Good](./type-and-script.md#type-no-floating-promises-good)
 
-`void save()` explicitly marks the fire-and-forget intent accepted by this rule. This is an explicit disposal marker, not a rejection handler.
-
-```vue annotate="add:3"
-<script setup lang="ts">
-async function save(): Promise<void> {}
-void save();
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_floating_promises.rs#L13) · [All rules](all.md)
+[Group examples](./type-and-script.md#type-no-floating-promises) · [Rule reference](./reference/type-no-floating-promises.md)
 
 ### `type/no-reactivity-loss`
 
 Disallow plain snapshots of reactive values across assignments and calls
 
-[Bad](#type-no-reactivity-loss-bad) · [Good](#type-no-reactivity-loss-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Type information in Vue SFC scripts and templates, for the constructs shown below  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-Type-aware checks use the native Corsa runtime and the TypeScript project. `typeAware` alone does not enable an opt-in rule.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "type/no-reactivity-loss": "warn"
-      },
-      "typeAware": true
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="type-no-reactivity-loss-bad"></span>
 
-**Bad**
-
-`const count = state.count` takes a plain numeric snapshot of the reactive property, so later updates of `state.count` are not reflected in that binding.
-
-```vue annotate="remove:2,4"
-<script setup lang="ts">
-import { reactive } from "vue";
-const state = reactive({ count: 0 });
-const count = state.count;
-</script>
-```
+[Bad](./type-and-script.md#type-no-reactivity-loss-bad)
 
 <span id="type-no-reactivity-loss-good"></span>
 
-**Good**
+[Good](./type-and-script.md#type-no-reactivity-loss-good)
 
-`toRef(state, "count")` keeps `count` linked to the original reactive property rather than copying its current primitive value.
-
-```vue annotate="add:2,4"
-<script setup lang="ts">
-import { reactive, toRef } from "vue";
-const state = reactive({ count: 0 });
-const count = toRef(state, "count");
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_reactivity_loss.rs#L12) · [All rules](all.md)
+[Group examples](./type-and-script.md#type-no-reactivity-loss) · [Rule reference](./reference/type-no-reactivity-loss.md)
 
 ### `type/no-unsafe-template-binding`
 
 Disallow template bindings that resolve to unsafe types
 
-[Bad](#type-no-unsafe-template-binding-bad) · [Good](#type-no-unsafe-template-binding-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Type information in Vue SFC scripts and templates, for the constructs shown below  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-Type-aware checks use the native Corsa runtime and the TypeScript project. `typeAware` alone does not enable an opt-in rule.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "type/no-unsafe-template-binding": "warn"
-      },
-      "typeAware": true
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="type-no-unsafe-template-binding-bad"></span>
 
-**Bad**
-
-The interpolated `value` is explicitly typed as `any`, so the checker cannot give the template binding a safe concrete type.
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-const value: any = "Hello";
-</script>
-<template><p>{{ value }}</p></template>
-```
+[Bad](./type-and-script.md#type-no-unsafe-template-binding-bad)
 
 <span id="type-no-unsafe-template-binding-good"></span>
 
-**Good**
+[Good](./type-and-script.md#type-no-unsafe-template-binding-good)
 
-Changing the annotation to `string` gives the same interpolation a concrete, checkable type without changing the rendered value.
-
-```vue annotate="add:2"
-<script setup lang="ts">
-const value: string = "Hello";
-</script>
-<template><p>{{ value }}</p></template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_unsafe_template_binding.rs#L12) · [All rules](all.md)
+[Group examples](./type-and-script.md#type-no-unsafe-template-binding) · [Rule reference](./reference/type-no-unsafe-template-binding.md)
 
 ### `type/require-typed-emits`
 
 Require type definition for defineEmits
 
-[Bad](#type-require-typed-emits-bad) · [Good](#type-require-typed-emits-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Type information in Vue SFC scripts and templates, for the constructs shown below  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-Type-aware checks use the native Corsa runtime and the TypeScript project. `typeAware` alone does not enable an opt-in rule.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "type/require-typed-emits": "warn"
-      },
-      "typeAware": true
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="type-require-typed-emits-bad"></span>
 
-**Bad**
-
-The array-only `defineEmits(["save"])` declares the event name without a typed payload contract.
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-defineEmits(["save"]);
-</script>
-```
+[Bad](./type-and-script.md#type-require-typed-emits-bad)
 
 <span id="type-require-typed-emits-good"></span>
 
-**Good**
+[Good](./type-and-script.md#type-require-typed-emits-good)
 
-`defineEmits<{ save: [] }>()` declares the typed `save` event with an empty payload tuple, explicitly stating that it takes no payload arguments.
-
-```vue annotate="add:2"
-<script setup lang="ts">
-defineEmits<{ save: [] }>();
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/require_typed_emits.rs#L54) · [All rules](all.md)
+[Group examples](./type-and-script.md#type-require-typed-emits) · [Rule reference](./reference/type-require-typed-emits.md)
 
 ### `type/require-typed-props`
 
 Require type definition for defineProps
 
-[Bad](#type-require-typed-props-bad) · [Good](#type-require-typed-props-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Type information in Vue SFC scripts and templates, for the constructs shown below  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-Type-aware checks use the native Corsa runtime and the TypeScript project. `typeAware` alone does not enable an opt-in rule.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "type/require-typed-props": "warn"
-      },
-      "typeAware": true
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="type-require-typed-props-bad"></span>
 
-**Bad**
-
-The array-only `defineProps(["title"])` declares `title` by name without giving it a type.
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-defineProps(["title"]);
-</script>
-```
+[Bad](./type-and-script.md#type-require-typed-props-bad)
 
 <span id="type-require-typed-props-good"></span>
 
-**Good**
+[Good](./type-and-script.md#type-require-typed-props-good)
 
-`defineProps<{ title: string }>()` gives `title` an explicit string type instead of a name-only runtime declaration.
-
-```vue annotate="add:2"
-<script setup lang="ts">
-defineProps<{ title: string }>();
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/require_typed_props.rs#L57) · [All rules](all.md)
+[Group examples](./type-and-script.md#type-require-typed-props) · [Rule reference](./reference/type-require-typed-props.md)
 
 ### `type/strict-boolean-expressions`
 
 Require safe boolean expressions in script and template conditions
 
-[Bad](#type-strict-boolean-expressions-bad) · [Good](#type-strict-boolean-expressions-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Type information in Vue SFC scripts and templates, for the constructs shown below  
-Options: See [typed options and defaults](options.md).
-
-Enable typeAware and this rule explicitly. The default disallows nullable numbers, while non-null numbers are allowed.
-
-Type-aware checks use the native Corsa runtime and the TypeScript project. `typeAware` alone does not enable an opt-in rule.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "type/strict-boolean-expressions": "warn"
-      },
-      "typeAware": true
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="type-strict-boolean-expressions-bad"></span>
 
-**Bad**
-
-`if (count)` relies on the truthiness of a nullable numeric binding instead of an explicit boolean test; it also conflates zero with absence.
-
-```vue annotate="remove:3"
-<script setup lang="ts">
-const count: number | undefined = undefined;
-if (count) console.log(count);
-</script>
-```
+[Bad](./type-and-script.md#type-strict-boolean-expressions-bad)
 
 <span id="type-strict-boolean-expressions-good"></span>
 
-**Good**
+[Good](./type-and-script.md#type-strict-boolean-expressions-good)
 
-`count !== undefined && count > 0` separately tests presence and positivity, producing an explicit boolean condition after narrowing the optional value.
-
-```vue annotate="add:3"
-<script setup lang="ts">
-const count: number | undefined = undefined;
-if (count !== undefined && count > 0) console.log(count);
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/strict_boolean_expressions.rs#L7) · [All rules](all.md)
+[Group examples](./type-and-script.md#type-strict-boolean-expressions) · [Rule reference](./reference/type-strict-boolean-expressions.md)
 
 ### `script/no-get-current-instance`
 
 Disallow getCurrentInstance() in Vapor mode (returns null)
 
-[Bad](#script-no-get-current-instance-bad) · [Good](#script-no-get-current-instance-good)
-
-Default severity: `error`  
-Presets: `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vapor-oriented script checks; explicit enablement also applies the restriction to ordinary scripts  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-get-current-instance": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-get-current-instance-bad"></span>
 
-**Bad**
-
-The Vapor-marked setup imports and calls `getCurrentInstance`, relying on an instance API this rule disallows for Vapor-oriented components.
-
-```vue annotate="remove:2,3"
-<script setup lang="ts" vapor>
-import { getCurrentInstance } from "vue";
-const instance = getCurrentInstance();
-</script>
-```
+[Bad](./type-and-script.md#script-no-get-current-instance-bad)
 
 <span id="script-no-get-current-instance-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-get-current-instance-good)
 
-`inject("app-config")` obtains the explicitly provided configuration without importing or calling `getCurrentInstance`.
-
-```vue annotate="add:2,3"
-<script setup lang="ts" vapor>
-import { inject } from "vue";
-const appConfig = inject("app-config");
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_get_current_instance.rs#L38) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-get-current-instance) · [Rule reference](./reference/script-no-get-current-instance.md)
 
 ### `script/no-next-tick`
 
 Disallow nextTick() usage in Vapor-oriented components
 
-[Bad](#script-no-next-tick-bad) · [Good](#script-no-next-tick-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Vapor-oriented script checks; explicit enablement also applies the restriction to ordinary scripts  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-next-tick": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-next-tick-bad"></span>
 
-**Bad**
-
-The Vapor-oriented component imports and awaits `nextTick`, introducing the DOM-flush scheduling dependency that this migration rule rejects.
-
-```vue annotate="remove:2,3"
-<script setup lang="ts" vapor>
-import { nextTick } from "vue";
-await nextTick();
-</script>
-```
+[Bad](./type-and-script.md#script-no-next-tick-bad)
 
 <span id="script-no-next-tick-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-next-tick-good)
 
-The input is obtained through `useTemplateRef` and focused at `onMounted`. The explicit mount boundary replaces the example’s `nextTick` dependency.
-
-```vue annotate="add:2,3,4,6"
-<script setup lang="ts" vapor>
-import { onMounted, useTemplateRef } from "vue";
-const input = useTemplateRef<HTMLInputElement>("input");
-onMounted(() => { input.value?.focus(); });
-</script>
-<template><input ref="input"></template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_next_tick.rs#L40) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-next-tick) · [Rule reference](./reference/script-no-next-tick.md)
 
 ### `script/no-options-api`
 
 Disallow Options API patterns in Vapor mode
 
-[Bad](#script-no-options-api-bad) · [Good](#script-no-options-api-good)
-
-Default severity: `error`  
-Presets: `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vapor-oriented script checks; explicit enablement also applies the restriction to ordinary scripts  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-options-api": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-options-api-bad"></span>
 
-**Bad**
-
-The default-export object declares Options API `data()`, a component option form prohibited by this rule.
-
-```vue annotate="remove:1,2,3,4,5,6"
-<script lang="ts">
-export default {
-  data() {
-    return { count: 0 };
-  },
-};
-</script>
-```
+[Bad](./type-and-script.md#script-no-options-api-bad)
 
 <span id="script-no-options-api-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-options-api-good)
 
-The component state becomes a Composition API `ref` in Vapor `<script setup>`, removing the Options API object and its `data` option.
-
-```vue annotate="add:1,2"
-<script setup lang="ts" vapor>
-const count = ref(0);
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_options_api.rs#L43) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-options-api) · [Rule reference](./reference/script-no-options-api.md)
 
 ### `vapor/no-inline-template`
 
 Disallow deprecated inline-template attribute
 
-[Bad](#vapor-no-inline-template-bad) · [Good](#vapor-no-inline-template-good)
-
-Default severity: `error`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vapor/no-inline-template": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vapor-no-inline-template-bad"></span>
 
-**Bad**
-
-LegacyCard uses the inline-template attribute for its child markup.
-
-```vue annotate="remove:2,3"
-<template>
-  <LegacyCard inline-template>
-    <p>Profile</p>
-  </LegacyCard>
-</template>
-```
+[Bad](./vapor.md#vapor-no-inline-template-bad)
 
 <span id="vapor-no-inline-template-good"></span>
 
-**Good**
+[Good](./vapor.md#vapor-no-inline-template-good)
 
-The markup is passed through the default slot instead of an inline template.
-
-```vue annotate="add:2,3,4,5"
-<template>
-  <LegacyCard>
-    <template #default>
-      <p>Profile</p>
-    </template>
-  </LegacyCard>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/no_inline_template.rs#L31) · [All rules](all.md)
+[Group examples](./vapor.md#vapor-no-inline-template) · [Rule reference](./reference/vapor-no-inline-template.md)
 
 ### `vapor/no-vue-lifecycle-events`
 
 Disallow @vue:xxx per-element lifecycle events (not supported in Vapor)
 
-[Bad](#vapor-no-vue-lifecycle-events-bad) · [Good](#vapor-no-vue-lifecycle-events-good)
-
-Default severity: `error`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vapor/no-vue-lifecycle-events": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vapor-no-vue-lifecycle-events-bad"></span>
 
-**Bad**
-
-The input uses the @vue:mounted template lifecycle event.
-
-```vue annotate="remove:2"
-<template>
-  <input @vue:mounted="focusInput" />
-</template>
-```
+[Bad](./vapor.md#vapor-no-vue-lifecycle-events-bad)
 
 <span id="vapor-no-vue-lifecycle-events-good"></span>
 
-**Good**
+[Good](./vapor.md#vapor-no-vue-lifecycle-events-good)
 
-onMounted accesses the named template reference and focuses the input through the supported script lifecycle hook.
-
-```vue annotate="add:1,2,3,4,5,6,7,8,10"
-<script setup lang="ts" vapor>
-const input = useTemplateRef<HTMLInputElement>("input");
-
-onMounted(() => {
-  input.value?.focus();
-});
-</script>
-
-<template>
-  <input ref="input" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vapor/no_vue_lifecycle_events.rs#L34) · [All rules](all.md)
+[Group examples](./vapor.md#vapor-no-vue-lifecycle-events) · [Rule reference](./reference/vapor-no-vue-lifecycle-events.md)
 
 ### `vapor/prefer-static-class`
 
 Prefer static class over dynamic class binding for string literals
 
-[Bad](#vapor-prefer-static-class-bad) · [Good](#vapor-prefer-static-class-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: Available for supported findings  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vapor/prefer-static-class": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vapor-prefer-static-class-bad"></span>
 
-**Bad**
-
-The class binding evaluates a constant string even though the class does not change.
-
-```vue annotate="remove:2"
-<template>
-  <section :class="'panel panel-primary'">Profile</section>
-</template>
-```
+[Bad](./vapor.md#vapor-prefer-static-class-bad)
 
 <span id="vapor-prefer-static-class-good"></span>
 
-**Good**
+[Good](./vapor.md#vapor-prefer-static-class-good)
 
-A static class attribute expresses the same panel classes without a binding.
-
-```vue annotate="add:2"
-<template>
-  <section class="panel panel-primary">Profile</section>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/prefer_static_class.rs#L31) · [All rules](all.md)
+[Group examples](./vapor.md#vapor-prefer-static-class) · [Rule reference](./reference/vapor-prefer-static-class.md)
 
 ### `vapor/require-vapor-attribute`
 
 Suggest adding vapor attribute to script setup
 
-[Bad](#vapor-require-vapor-attribute-bad) · [Good](#vapor-require-vapor-attribute-good)
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: Not implemented for SFC lint  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-Current support: `no-sfc-finding`
-
-This rule is a placeholder with an empty callback. Adding vapor selects Vapor compilation; the current linter does not report this catalog ID for its absence.
-
-**Configured ID (currently no SFC finding)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "vapor/require-vapor-attribute": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="vapor-require-vapor-attribute-bad"></span>
 
-**Bad**
-
-The script setup block lacks the Vapor compilation attribute. This is an intended convention: the current empty rule callback does not diagnose it.
-
-```vue annotate="remove:1"
-<script setup>
-const count = 0;
-</script>
-<template><p>{{ count }}</p></template>
-```
+[Bad](./vapor.md#vapor-require-vapor-attribute-bad)
 
 <span id="vapor-require-vapor-attribute-good"></span>
 
-**Good**
+[Good](./vapor.md#vapor-require-vapor-attribute-good)
 
-Adding vapor selects Vapor compilation. It demonstrates the intended repair and does not imply that the current linter emits this catalog rule.
-
-```vue annotate="add:1"
-<script setup vapor>
-const count = 0;
-</script>
-<template><p>{{ count }}</p></template>
-```
-
-Good illustrates the intended convention; the current SFC path emits neither side's rule-specific finding.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/require_vapor_attribute.rs#L17) · [All rules](all.md)
+[Group examples](./vapor.md#vapor-require-vapor-attribute) · [Rule reference](./reference/vapor-require-vapor-attribute.md)
 
 ### `ecosystem/nuxt-prefer-nuxt-link`
 
 Prefer NuxtLink for internal application links
 
-[Bad](#ecosystem-nuxt-prefer-nuxt-link-bad) · [Good](#ecosystem-nuxt-prefer-nuxt-link-good)
-
-Default severity: `warning`  
-Presets: `nuxt`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "ecosystem/nuxt-prefer-nuxt-link": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="ecosystem-nuxt-prefer-nuxt-link-bad"></span>
 
-**Bad**
-
-The internal settings destination uses a plain anchor in a Nuxt application.
-
-```vue annotate="remove:2"
-<template>
-  <a href="/settings">Settings</a>
-</template>
-```
+[Bad](./ecosystem.md#ecosystem-nuxt-prefer-nuxt-link-bad)
 
 <span id="ecosystem-nuxt-prefer-nuxt-link-good"></span>
 
-**Good**
+[Good](./ecosystem.md#ecosystem-nuxt-prefer-nuxt-link-good)
 
-NuxtLink handles the same internal destination through the Nuxt router.
-
-```vue annotate="add:2"
-<template>
-  <NuxtLink to="/settings">Settings</NuxtLink>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/nuxt_prefer_nuxt_link.rs#L14) · [All rules](all.md)
+[Group examples](./ecosystem.md#ecosystem-nuxt-prefer-nuxt-link) · [Rule reference](./reference/ecosystem-nuxt-prefer-nuxt-link.md)
 
 ### `ecosystem/pinia-prefer-store-to-refs`
 
 Prefer storeToRefs() when destructuring Pinia stores
 
-[Bad](#ecosystem-pinia-prefer-store-to-refs-bad) · [Good](#ecosystem-pinia-prefer-store-to-refs-good)
-
-Default severity: `warning`  
-Presets: `ecosystem`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "ecosystem/pinia-prefer-store-to-refs": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="ecosystem-pinia-prefer-store-to-refs-bad"></span>
 
-**Bad**
-
-Destructuring `name` directly from the store separates the value from its reactive store access.
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-const { name } = useUserStore();
-</script>
-```
+[Bad](./ecosystem.md#ecosystem-pinia-prefer-store-to-refs-bad)
 
 <span id="ecosystem-pinia-prefer-store-to-refs-good"></span>
 
-**Good**
+[Good](./ecosystem.md#ecosystem-pinia-prefer-store-to-refs-good)
 
-The store remains intact and storeToRefs creates a reactive reference for name.
-
-```vue annotate="add:2,3"
-<script setup lang="ts">
-const store = useUserStore();
-const { name } = storeToRefs(store);
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/pinia_prefer_store_to_refs.rs#L20) · [All rules](all.md)
+[Group examples](./ecosystem.md#ecosystem-pinia-prefer-store-to-refs) · [Rule reference](./reference/ecosystem-pinia-prefer-store-to-refs.md)
 
 ### `ecosystem/router-link-require-to`
 
 Require a `to` target on RouterLink and NuxtLink components
 
-[Bad](#ecosystem-router-link-require-to-bad) · [Good](#ecosystem-router-link-require-to-good)
-
-Default severity: `error`  
-Presets: `ecosystem`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-A single SFC root link may inherit its target from parent attributes. This example uses a nested link, whose target must be explicit.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "ecosystem/router-link-require-to": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="ecosystem-router-link-require-to-bad"></span>
 
-**Bad**
-
-The nested RouterLink has no `to` destination; it cannot rely on root attribute fallthrough.
-
-```vue annotate="remove:2"
-<template>
-<nav><RouterLink>Settings</RouterLink></nav>
-</template>
-```
+[Bad](./ecosystem.md#ecosystem-router-link-require-to-bad)
 
 <span id="ecosystem-router-link-require-to-good"></span>
 
-**Good**
+[Good](./ecosystem.md#ecosystem-router-link-require-to-good)
 
-`to="/settings"` explicitly supplies the nested link destination.
-
-```vue annotate="add:2"
-<template>
-<nav><RouterLink to="/settings">Settings</RouterLink></nav>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/router_link_require_to.rs#L14) · [All rules](all.md)
+[Group examples](./ecosystem.md#ecosystem-router-link-require-to) · [Rule reference](./reference/ecosystem-router-link-require-to.md)
 
 ### `ecosystem/void-link-require-href`
 
 Require `href` on Void Vue Link components
 
-[Bad](#ecosystem-void-link-require-href-bad) · [Good](#ecosystem-void-link-require-href-good)
-
-Default severity: `error`  
-Presets: `ecosystem`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "ecosystem/void-link-require-href": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="ecosystem-void-link-require-href-bad"></span>
 
-**Bad**
-
-The Link imported from @void/vue omits its href destination.
-
-```vue annotate="remove:6"
-<script setup>
-import { Link } from "@void/vue";
-</script>
-
-<template>
-  <Link>Settings</Link>
-</template>
-```
+[Bad](./ecosystem.md#ecosystem-void-link-require-href-bad)
 
 <span id="ecosystem-void-link-require-href-good"></span>
 
-**Good**
+[Good](./ecosystem.md#ecosystem-void-link-require-href-good)
 
-The same imported Link receives the settings destination through href.
-
-```vue annotate="add:6"
-<script setup>
-import { Link } from "@void/vue";
-</script>
-
-<template>
-  <Link href="/settings">Settings</Link>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/void_link_require_href.rs#L13) · [All rules](all.md)
+[Group examples](./ecosystem.md#ecosystem-void-link-require-href) · [Rule reference](./reference/ecosystem-void-link-require-href.md)
 
 ### `ecosystem/void-link-valid-method`
 
 Validate static Void Vue Link method props
 
-[Bad](#ecosystem-void-link-valid-method-bad) · [Good](#ecosystem-void-link-valid-method-good)
-
-Default severity: `warning`  
-Presets: `ecosystem`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "ecosystem/void-link-valid-method": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="ecosystem-void-link-valid-method-bad"></span>
 
-**Bad**
-
-The DELETE action requests prefetching, although prefetch is intended for navigation requests.
-
-```vue annotate="remove:6"
-<script setup>
-import { Link } from "@void/vue";
-</script>
-
-<template>
-  <Link href="/posts/1" method="DELETE" prefetch>Delete</Link>
-</template>
-```
+[Bad](./ecosystem.md#ecosystem-void-link-valid-method-bad)
 
 <span id="ecosystem-void-link-valid-method-good"></span>
 
-**Good**
+[Good](./ecosystem.md#ecosystem-void-link-valid-method-good)
 
-Removing prefetch keeps the DELETE action without prefetching that non-GET request.
-
-```vue annotate="add:6"
-<script setup>
-import { Link } from "@void/vue";
-</script>
-
-<template>
-  <Link href="/posts/1" method="DELETE">Delete</Link>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/void_link_valid_method.rs#L14) · [All rules](all.md)
+[Group examples](./ecosystem.md#ecosystem-void-link-valid-method) · [Rule reference](./reference/ecosystem-void-link-valid-method.md)
 
 ### `ecosystem/vue-i18n-no-missing-key`
 
 Report static vue-i18n keys that are absent from local SFC messages
 
-[Bad](#ecosystem-vue-i18n-no-missing-key-bad) · [Good](#ecosystem-vue-i18n-no-missing-key-good)
-
-Default severity: `warning`  
-Presets: `ecosystem`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "ecosystem/vue-i18n-no-missing-key": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="ecosystem-vue-i18n-no-missing-key-bad"></span>
 
-**Bad**
-
-The template requests auth.missing, but the local English messages declare only auth.login.
-
-```vue annotate="remove:1"
-<template>{{ $t("auth.missing") }}</template>
-
-<i18n lang="json">
-{ "en": { "auth": { "login": "Log in" } } }
-</i18n>
-```
+[Bad](./ecosystem.md#ecosystem-vue-i18n-no-missing-key-bad)
 
 <span id="ecosystem-vue-i18n-no-missing-key-good"></span>
 
-**Good**
+[Good](./ecosystem.md#ecosystem-vue-i18n-no-missing-key-good)
 
-The template requests the auth.login key that exists in the local messages.
-
-```vue annotate="add:1"
-<template>{{ $t("auth.login") }}</template>
-
-<i18n lang="json">
-{ "en": { "auth": { "login": "Log in" } } }
-</i18n>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/i18n_no_missing_key.rs#L17) · [All rules](all.md)
+[Group examples](./ecosystem.md#ecosystem-vue-i18n-no-missing-key) · [Rule reference](./reference/ecosystem-vue-i18n-no-missing-key.md)
 
 ### `ecosystem/vue-router-prefer-named-link`
 
 Prefer named route objects over static path strings in RouterLink
 
-[Bad](#ecosystem-vue-router-prefer-named-link-bad) · [Good](#ecosystem-vue-router-prefer-named-link-good)
-
-Default severity: `warning`  
-Presets: `ecosystem`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "ecosystem/vue-router-prefer-named-link": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="ecosystem-vue-router-prefer-named-link-bad"></span>
 
-**Bad**
-
-The RouterLink destination is a literal path rather than a named route.
-
-```vue annotate="remove:2"
-<template>
-  <RouterLink to="/settings">Settings</RouterLink>
-</template>
-```
+[Bad](./ecosystem.md#ecosystem-vue-router-prefer-named-link-bad)
 
 <span id="ecosystem-vue-router-prefer-named-link-good"></span>
 
-**Good**
+[Good](./ecosystem.md#ecosystem-vue-router-prefer-named-link-good)
 
-The bound route object identifies the destination by its settings route name.
-
-```vue annotate="add:2"
-<template>
-  <RouterLink :to="{ name: 'settings' }">Settings</RouterLink>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/vue_router_prefer_named_link.rs#L15) · [All rules](all.md)
+[Group examples](./ecosystem.md#ecosystem-vue-router-prefer-named-link) · [Rule reference](./reference/ecosystem-vue-router-prefer-named-link.md)
 
 ### `ecosystem/vue-router-prefer-named-push`
 
 Prefer named route objects for Vue Router programmatic navigation
 
-[Bad](#ecosystem-vue-router-prefer-named-push-bad) · [Good](#ecosystem-vue-router-prefer-named-push-good)
-
-Default severity: `warning`  
-Presets: `ecosystem`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "ecosystem/vue-router-prefer-named-push": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="ecosystem-vue-router-prefer-named-push-bad"></span>
 
-**Bad**
-
-router.push receives a path string that is tied to the current URL spelling.
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-router.push("/settings");
-</script>
-```
+[Bad](./ecosystem.md#ecosystem-vue-router-prefer-named-push-bad)
 
 <span id="ecosystem-vue-router-prefer-named-push-good"></span>
 
-**Good**
+[Good](./ecosystem.md#ecosystem-vue-router-prefer-named-push-good)
 
-router.push receives a route object with the stable settings name.
-
-```vue annotate="add:2"
-<script setup lang="ts">
-router.push({ name: "settings" });
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/vue_router_prefer_named_push.rs#L19) · [All rules](all.md)
+[Group examples](./ecosystem.md#ecosystem-vue-router-prefer-named-push) · [Rule reference](./reference/ecosystem-vue-router-prefer-named-push.md)
 
 ### `ecosystem/vue-test-utils-no-html-snapshot`
 
 Avoid snapshotting wrapper.html() in Vue Test Utils tests
 
-[Bad](#ecosystem-vue-test-utils-no-html-snapshot-bad) · [Good](#ecosystem-vue-test-utils-no-html-snapshot-good)
-
-Default severity: `warning`  
-Presets: `ecosystem`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "ecosystem/vue-test-utils-no-html-snapshot": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="ecosystem-vue-test-utils-no-html-snapshot-bad"></span>
 
-**Bad**
-
-The assertion snapshots the complete wrapper HTML instead of checking the expected behavior.
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-expect(wrapper.html()).toMatchSnapshot();
-</script>
-```
+[Bad](./ecosystem.md#ecosystem-vue-test-utils-no-html-snapshot-bad)
 
 <span id="ecosystem-vue-test-utils-no-html-snapshot-good"></span>
 
-**Good**
+[Good](./ecosystem.md#ecosystem-vue-test-utils-no-html-snapshot-good)
 
-The assertion checks that the rendered text contains Saved.
-
-```vue annotate="add:2"
-<script setup lang="ts">
-expect(wrapper.text()).toContain("Saved");
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/vue_test_utils_no_html_snapshot.rs#L15) · [All rules](all.md)
+[Group examples](./ecosystem.md#ecosystem-vue-test-utils-no-html-snapshot) · [Rule reference](./reference/ecosystem-vue-test-utils-no-html-snapshot.md)
 
 ### `css/no-display-none`
 
 Suggest using v-show instead of display: none
 
-[Bad](#css-no-display-none-bad) · [Good](#css-no-display-none-good)
-
-Default severity: `warning`  
-Presets: `opinionated`, `nuxt`  
-Automatic fix: None; review the suggested change  
-Applies to: CSS inside SFC style blocks  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "css/no-display-none": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="css-no-display-none-bad"></span>
 
-**Bad**
-
-The `.message` declaration hides the local paragraph through CSS rather than a template visibility condition.
-
-```vue annotate="remove:2,4,5,6,7,8,9"
-<template>
-  <p class="message">Saved</p>
-</template>
-
-<style scoped>
-.message {
-  display: none;
-}
-</style>
-```
+[Bad](./musea-and-css.md#css-no-display-none-bad)
 
 <span id="css-no-display-none-good"></span>
 
-**Good**
+[Good](./musea-and-css.md#css-no-display-none-good)
 
-`v-show="isSaved"` makes the visibility condition explicit on the local paragraph and removes `display: none`.
-
-```vue annotate="add:2"
-<template>
-  <p v-show="isSaved" class="message">Saved</p>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_display_none.rs#L27) · [All rules](all.md)
+[Group examples](./musea-and-css.md#css-no-display-none) · [Rule reference](./reference/css-no-display-none.md)
 
 ### `css/no-hardcoded-values`
 
 Suggest using CSS variables instead of hardcoded values
 
-[Bad](#css-no-hardcoded-values-bad) · [Good](#css-no-hardcoded-values-good)
-
-Default severity: `warning`  
-Presets: `opinionated`, `nuxt`  
-Automatic fix: None; review the suggested change  
-Applies to: CSS inside SFC style blocks  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "css/no-hardcoded-values": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="css-no-hardcoded-values-bad"></span>
 
-**Bad**
-
-The button embeds spacing numbers and a hexadecimal color directly in the declarations.
-
-```vue annotate="remove:3,4"
-<style scoped>
-.button {
-  padding: 12px 16px;
-  color: #174ea6;
-}
-</style>
-```
+[Bad](./musea-and-css.md#css-no-hardcoded-values-bad)
 
 <span id="css-no-hardcoded-values-good"></span>
 
-**Good**
+[Good](./musea-and-css.md#css-no-hardcoded-values-good)
 
-The declarations refer to named spacing and color custom properties, so these values can be maintained as tokens.
-
-```vue annotate="add:3,4"
-<style scoped>
-.button {
-  padding: var(--space-3) var(--space-4);
-  color: var(--color-action-text);
-}
-</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_hardcoded_values.rs#L30) · [All rules](all.md)
+[Group examples](./musea-and-css.md#css-no-hardcoded-values) · [Rule reference](./reference/css-no-hardcoded-values.md)
 
 ### `css/no-id-selectors`
 
 Discourage use of ID selectors in CSS
 
-[Bad](#css-no-id-selectors-bad) · [Good](#css-no-id-selectors-good)
-
-Default severity: `warning`  
-Presets: `opinionated`, `nuxt`  
-Automatic fix: None; review the suggested change  
-Applies to: CSS inside SFC style blocks  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "css/no-id-selectors": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="css-no-id-selectors-bad"></span>
 
-**Bad**
-
-`#submit` ties the style rule to an ID selector.
-
-```vue annotate="remove:2"
-<style scoped>
-#submit {
-  font-weight: 600;
-}
-</style>
-```
+[Bad](./musea-and-css.md#css-no-id-selectors-bad)
 
 <span id="css-no-id-selectors-good"></span>
 
-**Good**
+[Good](./musea-and-css.md#css-no-id-selectors-good)
 
-The `.submit` class expresses the reusable styling hook without an ID selector.
-
-```vue annotate="add:2"
-<style scoped>
-.submit {
-  font-weight: 600;
-}
-</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_id_selectors.rs#L19) · [All rules](all.md)
+[Group examples](./musea-and-css.md#css-no-id-selectors) · [Rule reference](./reference/css-no-id-selectors.md)
 
 ### `css/no-important`
 
 Discourage use of !important in CSS
 
-[Bad](#css-no-important-bad) · [Good](#css-no-important-good)
-
-Default severity: `warning`  
-Presets: `opinionated`, `nuxt`  
-Automatic fix: None; review the suggested change  
-Applies to: CSS inside SFC style blocks  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "css/no-important": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="css-no-important-bad"></span>
 
-**Bad**
-
-The color declaration overrides normal cascade priority with `!important`.
-
-```vue annotate="remove:3"
-<style scoped>
-.button {
-  color: red !important;
-}
-</style>
-```
+[Bad](./musea-and-css.md#css-no-important-bad)
 
 <span id="css-no-important-good"></span>
 
-**Good**
+[Good](./musea-and-css.md#css-no-important-good)
 
-The color comes from a custom property without an important declaration.
-
-```vue annotate="add:3"
-<style scoped>
-.button {
-  color: var(--button-color);
-}
-</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_important.rs#L14) · [All rules](all.md)
+[Group examples](./musea-and-css.md#css-no-important) · [Rule reference](./reference/css-no-important.md)
 
 ### `css/no-utility-classes`
 
 Warn against implementing utility classes in component styles
 
-[Bad](#css-no-utility-classes-bad) · [Good](#css-no-utility-classes-good)
-
-Default severity: `warning`  
-Presets: `opinionated`, `nuxt`  
-Automatic fix: None; review the suggested change  
-Applies to: CSS inside SFC style blocks  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "css/no-utility-classes": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="css-no-utility-classes-bad"></span>
 
-**Bad**
-
-The authored selectors use utility-shaped names such as `.flex`, `.mt-4`, and `.text-center`.
-
-```vue annotate="remove:2,3,4"
-<style scoped>
-.flex { display: flex; }
-.mt-4 { margin-top: 1rem; }
-.text-center { text-align: center; }
-</style>
-```
+[Bad](./musea-and-css.md#css-no-utility-classes-bad)
 
 <span id="css-no-utility-classes-good"></span>
 
-**Good**
+[Good](./musea-and-css.md#css-no-utility-classes-good)
 
-A component-specific `.my-component` selector groups the component styling under one semantic name.
-
-```vue annotate="add:2"
-<style scoped>
-.my-component { display: flex; margin-top: 1rem; }
-</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_utility_classes.rs#L37) · [All rules](all.md)
+[Group examples](./musea-and-css.md#css-no-utility-classes) · [Rule reference](./reference/css-no-utility-classes.md)
 
 ### `css/no-v-bind-performance`
 
 Warn about performance cost of CSS v-bind()
 
-[Bad](#css-no-v-bind-performance-bad) · [Good](#css-no-v-bind-performance-good)
-
-Default severity: `warning`  
-Presets: `opinionated`, `nuxt`  
-Automatic fix: None; review the suggested change  
-Applies to: CSS inside SFC style blocks  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "css/no-v-bind-performance": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="css-no-v-bind-performance-bad"></span>
 
-**Bad**
-
-The stylesheet reads the changing `offset` through the SFC CSS `v-bind()` mechanism.
-
-```vue annotate="remove:1,2,3,4,5"
-<style scoped>
-.card {
-  transform: translateX(v-bind(offset));
-}
-</style>
-```
+[Bad](./musea-and-css.md#css-no-v-bind-performance-bad)
 
 <span id="css-no-v-bind-performance-good"></span>
 
-**Good**
+[Good](./musea-and-css.md#css-no-v-bind-performance-good)
 
-The element receives the changing transform directly through its style binding.
-
-```vue annotate="add:1,2,3"
-<template>
-  <article :style="{ transform: `translateX(${offset}px)` }" class="card" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_v_bind_performance.rs#L20) · [All rules](all.md)
+[Group examples](./musea-and-css.md#css-no-v-bind-performance) · [Rule reference](./reference/css-no-v-bind-performance.md)
 
 ### `css/prefer-logical-properties`
 
 Recommend CSS logical properties for better i18n support
 
-[Bad](#css-prefer-logical-properties-bad) · [Good](#css-prefer-logical-properties-good)
-
-Default severity: `warning`  
-Presets: `opinionated`, `nuxt`  
-Automatic fix: None; review the suggested change  
-Applies to: CSS inside SFC style blocks  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "css/prefer-logical-properties": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="css-prefer-logical-properties-bad"></span>
 
-**Bad**
-
-`margin-left` fixes the margin to a physical side regardless of writing direction.
-
-```vue annotate="remove:3"
-<style scoped>
-.panel {
-  margin-left: 1rem;
-}
-</style>
-```
+[Bad](./musea-and-css.md#css-prefer-logical-properties-bad)
 
 <span id="css-prefer-logical-properties-good"></span>
 
-**Good**
+[Good](./musea-and-css.md#css-prefer-logical-properties-good)
 
-`margin-inline-start` follows the start of the inline direction instead.
-
-```vue annotate="add:3"
-<style scoped>
-.panel {
-  margin-inline-start: 1rem;
-}
-</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_logical_properties.rs#L15) · [All rules](all.md)
+[Group examples](./musea-and-css.md#css-prefer-logical-properties) · [Rule reference](./reference/css-prefer-logical-properties.md)
 
 ### `css/prefer-nested-selectors`
 
 Recommend using CSS nesting for descendant selectors
 
-[Bad](#css-prefer-nested-selectors-bad) · [Good](#css-prefer-nested-selectors-good)
-
-Default severity: `warning`  
-Presets: `opinionated`, `nuxt`  
-Automatic fix: None; review the suggested change  
-Applies to: CSS inside SFC style blocks  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "css/prefer-nested-selectors": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="css-prefer-nested-selectors-bad"></span>
 
-**Bad**
-
-The `.card .title` descendant selector repeats the parent selector in a flat rule.
-
-```vue annotate="remove:2"
-<style scoped>
-.card .title { color: red; }
-</style>
-```
+[Bad](./musea-and-css.md#css-prefer-nested-selectors-bad)
 
 <span id="css-prefer-nested-selectors-good"></span>
 
-**Good**
+[Good](./musea-and-css.md#css-prefer-nested-selectors-good)
 
-The `.title` rule is nested inside `.card`, keeping the parent-child styling relationship together.
-
-```vue annotate="add:2"
-<style scoped>
-.card { .title { color: red; } }
-</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_nested_selectors.rs#L14) · [All rules](all.md)
+[Group examples](./musea-and-css.md#css-prefer-nested-selectors) · [Rule reference](./reference/css-prefer-nested-selectors.md)
 
 ### `css/prefer-slotted`
 
 Recommend ::v-slotted() for styling slot content
 
-[Bad](#css-prefer-slotted-bad) · [Good](#css-prefer-slotted-good)
-
-Default severity: `warning`  
-Presets: `opinionated`, `nuxt`  
-Automatic fix: None; review the suggested change  
-Applies to: CSS inside SFC style blocks  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "css/prefer-slotted": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="css-prefer-slotted-bad"></span>
 
-**Bad**
-
-The scoped stylesheet targets the `slot` outlet rather than the elements supplied through the slot.
-
-```vue annotate="remove:2"
-<style scoped>
-slot { color: red; }
-</style>
-```
+[Bad](./musea-and-css.md#css-prefer-slotted-bad)
 
 <span id="css-prefer-slotted-good"></span>
 
-**Good**
+[Good](./musea-and-css.md#css-prefer-slotted-good)
 
-`:slotted(.label)` targets the supplied label element through the scoped slot selector.
-
-```vue annotate="add:2"
-<style scoped>
-:slotted(.label) { color: red; }
-</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_slotted.rs#L34) · [All rules](all.md)
+[Group examples](./musea-and-css.md#css-prefer-slotted) · [Rule reference](./reference/css-prefer-slotted.md)
 
 ### `css/require-font-display`
 
 Require font-display in @font-face rules
 
-[Bad](#css-require-font-display-bad) · [Good](#css-require-font-display-good)
-
-Default severity: `warning`  
-Presets: `opinionated`, `nuxt`  
-Automatic fix: None; review the suggested change  
-Applies to: CSS inside SFC style blocks  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "css/require-font-display": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="css-require-font-display-bad"></span>
 
-**Bad**
-
-The font-face declaration defines the font source but omits its font-display policy.
-
-```vue
-<style>
-@font-face {
-  font-family: "Inter";
-  src: url("/inter.woff2") format("woff2");
-}
-</style>
-```
+[Bad](./musea-and-css.md#css-require-font-display-bad)
 
 <span id="css-require-font-display-good"></span>
 
-**Good**
+[Good](./musea-and-css.md#css-require-font-display-good)
 
-`font-display: swap` explicitly selects the fallback-to-font display policy.
-
-```vue annotate="add:5"
-<style>
-@font-face {
-  font-family: "Inter";
-  src: url("/inter.woff2") format("woff2");
-  font-display: swap;
-}
-</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/require_font_display.rs#L13) · [All rules](all.md)
+[Group examples](./musea-and-css.md#css-require-font-display) · [Rule reference](./reference/css-require-font-display.md)
 
 ### `musea/no-empty-variant`
 
 Disallow empty &lt;variant&gt; blocks
 
-[Bad](#musea-no-empty-variant-bad) · [Good](#musea-no-empty-variant-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Musea .art.vue art, variant, and style blocks  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "musea/no-empty-variant": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="musea-no-empty-variant-bad"></span>
 
-**Bad**
-
-The named primary variant is empty, so it provides no preview content.
-
-```vue annotate="remove:2"
-<art title="Button" component="./Button.vue">
-  <variant name="primary" />
-</art>
-```
+[Bad](./musea-and-css.md#musea-no-empty-variant-bad)
 
 <span id="musea-no-empty-variant-good"></span>
 
-**Good**
+[Good](./musea-and-css.md#musea-no-empty-variant-good)
 
-The variant renders a primary Button with its Save content.
-
-```vue annotate="add:2,3,4"
-<art title="Button" component="./Button.vue">
-  <variant name="primary">
-    <Button tone="primary">Save</Button>
-  </variant>
-</art>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/no_empty_variant.rs#L8) · [All rules](all.md)
+[Group examples](./musea-and-css.md#musea-no-empty-variant) · [Rule reference](./reference/musea-no-empty-variant.md)
 
 ### `musea/prefer-design-tokens`
 
 Prefer design token CSS variables over hardcoded primitive values
 
-[Bad](#musea-prefer-design-tokens-bad) · [Good](#musea-prefer-design-tokens-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Musea .art.vue art, variant, and style blocks  
-Options: See [typed options and defaults](options.md).
-
-Requires an .art.vue file and the token inventory shown below. It does not infer a token from an arbitrary color.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "musea/prefer-design-tokens": "warn"
-      },
-      "ruleOptions": {
-        "musea/prefer-design-tokens": {
-          "tokens": [
-            {
-              "path": "color.primary",
-              "value": "#3b82f6",
-              "tier": "semantic"
-            }
-          ]
-        }
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="musea-prefer-design-tokens-bad"></span>
 
-**Bad**
-
-The art example uses the literal blue color instead of the configured primary design token.
-
-`Button.art.vue`
-
-```vue annotate="remove:6"
-<art title="Button" component="Button">
-<variant name="Primary"><Button /></variant>
-</art>
-<style scoped>
-.button {
-  color: #3b82f6;
-}
-</style>
-```
+[Bad](./musea-and-css.md#musea-prefer-design-tokens-bad)
 
 <span id="musea-prefer-design-tokens-good"></span>
 
-**Good**
+[Good](./musea-and-css.md#musea-prefer-design-tokens-good)
 
-The style refers to --color-primary, the token configured for this example.
-
-`Button.art.vue`
-
-```vue annotate="add:6"
-<art title="Button" component="Button">
-<variant name="Primary"><Button /></variant>
-</art>
-<style scoped>
-.button {
-  color: var(--color-primary);
-}
-</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/prefer_design_tokens.rs#L32) · [All rules](all.md)
+[Group examples](./musea-and-css.md#musea-prefer-design-tokens) · [Rule reference](./reference/musea-prefer-design-tokens.md)
 
 ### `musea/require-component`
 
 Require component attribute in &lt;art&gt; block
 
-[Bad](#musea-require-component-bad) · [Good](#musea-require-component-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Musea .art.vue art, variant, and style blocks  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "musea/require-component": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="musea-require-component-bad"></span>
 
-**Bad**
-
-The art block supplies a title but does not identify the component being previewed.
-
-```vue annotate="remove:1"
-<art title="Button">
-  <variant name="primary" />
-</art>
-```
+[Bad](./musea-and-css.md#musea-require-component-bad)
 
 <span id="musea-require-component-good"></span>
 
-**Good**
+[Good](./musea-and-css.md#musea-require-component-good)
 
-defineArt supplies ./Button.vue as the component for the art block.
-
-```vue annotate="add:1,2,3,4,5"
-<script setup>
-defineArt("./Button.vue", { title: "Button" });
-</script>
-
-<art>
-  <variant name="primary" />
-</art>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_component.rs#L11) · [All rules](all.md)
+[Group examples](./musea-and-css.md#musea-require-component) · [Rule reference](./reference/musea-require-component.md)
 
 ### `musea/require-title`
 
 Require title attribute in &lt;art&gt; block
 
-[Bad](#musea-require-title-bad) · [Good](#musea-require-title-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Musea .art.vue art, variant, and style blocks  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "musea/require-title": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="musea-require-title-bad"></span>
 
-**Bad**
-
-The art block identifies Button.vue but supplies no title.
-
-```vue annotate="remove:1"
-<art component="./Button.vue">
-  <variant name="primary" />
-</art>
-```
+[Bad](./musea-and-css.md#musea-require-title-bad)
 
 <span id="musea-require-title-good"></span>
 
-**Good**
+[Good](./musea-and-css.md#musea-require-title-good)
 
-The defineArt options supply the Button title for the art block.
-
-```vue annotate="add:1,2,3,4,5"
-<script setup>
-defineArt("./Button.vue", { title: "Button" });
-</script>
-
-<art>
-  <variant name="primary" />
-</art>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_title.rs#L31) · [All rules](all.md)
+[Group examples](./musea-and-css.md#musea-require-title) · [Rule reference](./reference/musea-require-title.md)
 
 ### `musea/unique-variant-names`
 
 Require unique variant names
 
-[Bad](#musea-unique-variant-names-bad) · [Good](#musea-unique-variant-names-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Musea .art.vue art, variant, and style blocks  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "musea/unique-variant-names": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="musea-unique-variant-names-bad"></span>
 
-**Bad**
-
-Two variants in the same art block both use the primary name.
-
-```vue annotate="remove:3"
-<art title="Button" component="./Button.vue">
-  <variant name="primary" />
-  <variant name="primary" />
-</art>
-```
+[Bad](./musea-and-css.md#musea-unique-variant-names-bad)
 
 <span id="musea-unique-variant-names-good"></span>
 
-**Good**
+[Good](./musea-and-css.md#musea-unique-variant-names-good)
 
-The variants have distinct primary and secondary names.
-
-```vue annotate="add:3"
-<art title="Button" component="./Button.vue">
-  <variant name="primary" />
-  <variant name="secondary" />
-</art>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/unique_variant_names.rs#L10) · [All rules](all.md)
+[Group examples](./musea-and-css.md#musea-unique-variant-names) · [Rule reference](./reference/musea-unique-variant-names.md)
 
 ### `musea/valid-variant`
 
 Require name attribute in &lt;variant&gt; blocks
 
-[Bad](#musea-valid-variant-bad) · [Good](#musea-valid-variant-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Musea .art.vue art, variant, and style blocks  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "musea/valid-variant": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="musea-valid-variant-bad"></span>
 
-**Bad**
-
-The variant omits the name needed to identify the preview.
-
-```vue annotate="remove:2"
-<art title="Button" component="./Button.vue">
-  <variant />
-</art>
-```
+[Bad](./musea-and-css.md#musea-valid-variant-bad)
 
 <span id="musea-valid-variant-good"></span>
 
-**Good**
+[Good](./musea-and-css.md#musea-valid-variant-good)
 
-The primary name identifies that variant.
-
-```vue annotate="add:2"
-<art title="Button" component="./Button.vue">
-  <variant name="primary" />
-</art>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/valid_variant.rs#L8) · [All rules](all.md)
+[Group examples](./musea-and-css.md#musea-valid-variant) · [Rule reference](./reference/musea-valid-variant.md)
 
 ### `script/component-options-name-casing`
 
 Enforce PascalCase for the component `name` option
 
-[Bad](#script-component-options-name-casing-bad) · [Good](#script-component-options-name-casing-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/component-options-name-casing": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-component-options-name-casing-bad"></span>
 
-**Bad**
-
-The component option `name: 'my-component'` is kebab-case, whereas this rule requires a literal component name in PascalCase.
-
-```vue annotate="remove:3"
-<script lang="ts">
-export default {
-  name: 'my-component' // kebab-case
-}
-</script>
-```
+[Bad](./type-and-script.md#script-component-options-name-casing-bad)
 
 <span id="script-component-options-name-casing-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-component-options-name-casing-good)
 
-`MyComponent` begins with an uppercase letter and contains only alphanumeric characters, satisfying the name check.
-
-```vue annotate="add:3"
-<script lang="ts">
-export default {
-  name: 'MyComponent'
-}
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/component_options_name_casing.rs#L44) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-component-options-name-casing) · [Rule reference](./reference/script-component-options-name-casing.md)
 
 ### `script/custom-event-name-casing`
 
 Enforce camelCase for emitted custom event names
 
-[Bad](#script-custom-event-name-casing-bad) · [Good](#script-custom-event-name-casing-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: See [typed options and defaults](options.md).
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/custom-event-name-casing": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-custom-event-name-casing-bad"></span>
 
-**Bad**
-
-The emitted string `my-event` contains a hyphen and violates the default camelCase event naming policy.
-
-```vue annotate="remove:2,3"
-<script setup lang="ts">
-const emit = defineEmits(['my-event'])
-emit('my-event')         // kebab-case → report
-</script>
-```
+[Bad](./type-and-script.md#script-custom-event-name-casing-bad)
 
 <span id="script-custom-event-name-casing-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-custom-event-name-casing-good)
 
-Both the declaration and call use `myEvent`, preserving agreement between the event name and its emission while satisfying the default casing policy. A configured kebab-case policy has a different expectation.
-
-```vue annotate="add:2,3"
-<script setup lang="ts">
-const emit = defineEmits(['myEvent'])
-emit('myEvent')
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L61) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-custom-event-name-casing) · [Rule reference](./reference/script-custom-event-name-casing.md)
 
 ### `script/define-emits-declaration`
 
 Enforce the type-based defineEmits&lt;{}&gt;() form over the runtime/array form
 
-[Bad](#script-define-emits-declaration-bad) · [Good](#script-define-emits-declaration-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/define-emits-declaration": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-define-emits-declaration-bad"></span>
 
-**Bad**
-
-`defineEmits(["change"])` uses a runtime array declaration; this style rule prefers a type-based declaration.
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-const emit = defineEmits(["change"]);
-emit("change", 1);
-</script>
-```
+[Bad](./type-and-script.md#script-define-emits-declaration-bad)
 
 <span id="script-define-emits-declaration-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-define-emits-declaration-good)
 
-`defineEmits<{ change: [id: number] }>()` moves the event declaration into a type argument and explicitly describes the numeric payload used by `emit("change", 1)`.
-
-```vue annotate="add:2"
-<script setup lang="ts">
-const emit = defineEmits<{ change: [id: number] }>();
-emit("change", 1);
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_emits_declaration.rs#L39) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-define-emits-declaration) · [Rule reference](./reference/script-define-emits-declaration.md)
 
 ### `script/define-macros-order`
 
 Enforce a consistent order of the Vue compiler macros in &lt;script setup&gt;
 
-[Bad](#script-define-macros-order-bad) · [Good](#script-define-macros-order-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/define-macros-order": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-define-macros-order-bad"></span>
 
-**Bad**
-
-`defineProps` appears before `defineModel`, although `defineModel` has the earlier rank in the canonical macro order.
-
-```vue annotate="remove:2,3"
-<script setup lang="ts">
-// defineProps before defineModel (out of canonical order)
-const props = defineProps<{ count: number }>()
-const model = defineModel<string>()
-</script>
-```
+[Bad](./type-and-script.md#script-define-macros-order-bad)
 
 <span id="script-define-macros-order-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-define-macros-order-good)
 
-The declarations follow the exact sequence `defineOptions`, `defineModel`, `defineProps`, `defineEmits`, `defineSlots`, before unrelated runtime statements.
-
-```vue annotate="add:2,4,5,6"
-<script setup lang="ts">
-defineOptions({ name: 'MyComponent' })
-const model = defineModel<string>()
-const props = defineProps<{ count: number }>()
-const emit = defineEmits<{ change: [value: string] }>()
-defineSlots<{ default(props: {}): any }>()
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L46) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-define-macros-order) · [Rule reference](./reference/script-define-macros-order.md)
 
 ### `script/define-props-declaration`
 
 Enforce type-based defineProps&lt;{ ... }&gt;() over the runtime/object form
 
-[Bad](#script-define-props-declaration-bad) · [Good](#script-define-props-declaration-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/define-props-declaration": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-define-props-declaration-bad"></span>
 
-**Bad**
-
-`defineProps({ title: String })` supplies a runtime object, which conflicts with this rule’s preference for type-based props.
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-const props = defineProps({ title: String });
-console.log(props.title);
-</script>
-```
+[Bad](./type-and-script.md#script-define-props-declaration-bad)
 
 <span id="script-define-props-declaration-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-define-props-declaration-good)
 
-`defineProps<{ title: string }>()` declares `title` in the type argument and retains the `props.title` access without a runtime declaration argument.
-
-```vue annotate="add:2"
-<script setup lang="ts">
-const props = defineProps<{ title: string }>();
-console.log(props.title);
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_declaration.rs#L40) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-define-props-declaration) · [Rule reference](./reference/script-define-props-declaration.md)
 
 ### `script/define-props-destructuring`
 
 Enforce consistent style for defineProps destructuring in &lt;script setup&gt;
 
-[Bad](#script-define-props-destructuring-bad) · [Good](#script-define-props-destructuring-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: See [typed options and defaults](options.md).
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/define-props-destructuring": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-define-props-destructuring-bad"></span>
 
-**Bad**
-
-`defineProps` is assigned to the single `props` binding rather than destructured, contrary to the default destructuring preference.
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-const props = defineProps<{ foo: string }>()
-</script>
-```
+[Bad](./type-and-script.md#script-define-props-destructuring-bad)
 
 <span id="script-define-props-destructuring-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-define-props-destructuring-good)
 
-The object pattern binds `foo` and `bar` directly and gives the optional `bar` a default. This relies on Vue 3.5+ reactive props destructuring; the configurable `never` mode prefers the opposite form.
-
-```vue annotate="add:2"
-<script setup lang="ts">
-const { foo, bar = 'default' } = defineProps<{ foo: string; bar?: string }>()
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_destructuring.rs#L29) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-define-props-destructuring) · [Rule reference](./reference/script-define-props-destructuring.md)
 
 ### `script/no-arrow-functions-in-watch`
 
 Disallow arrow functions as Options API watch handlers
 
-[Bad](#script-no-arrow-functions-in-watch-bad) · [Good](#script-no-arrow-functions-in-watch-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-arrow-functions-in-watch": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-arrow-functions-in-watch-bad"></span>
 
-**Bad**
-
-The Options API watcher `value` and the nested `other.handler` are arrow functions. An arrow captures its surrounding `this` rather than receiving the component instance.
-
-```vue annotate="remove:4,5,9"
-<script lang="ts">
-export default {
-  watch: {
-    // `this` is not the component instance inside an arrow function.
-    value: () => {
-      this.doSomething()
-    },
-    other: {
-      handler: () => {}
-    }
-  }
-}
-</script>
-```
+[Bad](./type-and-script.md#script-no-arrow-functions-in-watch-bad)
 
 <span id="script-no-arrow-functions-in-watch-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-arrow-functions-in-watch-good)
 
-Both handlers become ordinary methods, allowing Vue to bind `this` to the component. The `deep: true` watcher option remains compatible with the object form.
-
-```vue annotate="add:4,8,9"
-<script lang="ts">
-export default {
-  watch: {
-    value(newValue, oldValue) {
-      this.doSomething()
-    },
-    other: {
-      handler(newValue) {},
-      deep: true
-    }
-  }
-}
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_arrow_functions_in_watch.rs#L59) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-arrow-functions-in-watch) · [Rule reference](./reference/script-no-arrow-functions-in-watch.md)
 
 ### `script/no-async-in-computed`
 
 Disallow async functions in computed properties
 
-[Bad](#script-no-async-in-computed-bad) · [Good](#script-no-async-in-computed-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-async-in-computed": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-async-in-computed-bad"></span>
 
-**Bad**
-
-The `computed` getter is `async`, so the fetch produces a Promise instead of a synchronously derived computed value.
-
-```vue annotate="remove:2,3,4,5"
-<script setup lang="ts">
-import { computed } from "vue";
-const data = computed(async () => {
-  const response = await fetch("/api/data");
-  return response.json();
-});
-</script>
-```
+[Bad](./type-and-script.md#script-no-async-in-computed-bad)
 
 <span id="script-no-async-in-computed-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-async-in-computed-good)
 
-The asynchronous fetch moves into `watch` and stores its result in `data.value`. Cleanup aborts the old request and prevents an inactive callback from writing a stale result; no async computed getter remains.
-
-```vue annotate="add:2,3,4,5,6,7,8,9,10,11"
-<script setup lang="ts">
-import { ref, watch } from "vue";
-const query = ref("");
-const data = ref<unknown>(null);
-watch(query, async (value, _oldValue, onCleanup) => {
-  const controller = new AbortController();
-  let active = true;
-  onCleanup(() => { active = false; controller.abort(); });
-  const response = await fetch(`/api/data?q=${encodeURIComponent(value)}`, { signal: controller.signal });
-  const next: unknown = await response.json();
-  if (active) data.value = next;
-});
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_async_in_computed.rs#L46) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-async-in-computed) · [Rule reference](./reference/script-no-async-in-computed.md)
 
 ### `script/no-boolean-default`
 
 Disallow a default on a Boolean prop
 
-[Bad](#script-no-boolean-default-bad) · [Good](#script-no-boolean-default-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-boolean-default": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-boolean-default-bad"></span>
 
-**Bad**
-
-Both `disabled` and `checked` declare a `default` on a prop whose sole constructor is `Boolean`; the rule rejects even an explicit `false` default.
-
-```vue annotate="remove:4,5,6"
-<script lang="ts">
-export default {
-  props: {
-    // Boolean props already default to false; an explicit default is confusing.
-    disabled: { type: Boolean, default: true },
-    checked: { type: Boolean, default: false }
-  }
-}
-</script>
-```
+[Bad](./type-and-script.md#script-no-boolean-default-bad)
 
 <span id="script-no-boolean-default-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-boolean-default-good)
 
-The Boolean-only props omit `default`, using Vue’s implicit false value. The `[Boolean, String]` union and the Number prop illustrate that this check is limited to the sole `Boolean` constructor.
-
-```vue annotate="add:4,5,6,7,8,9,10"
-<script lang="ts">
-export default {
-  props: {
-    // No explicit default: defaults to false.
-    disabled: { type: Boolean },
-    disabled2: Boolean,
-    // Union type may legitimately need a default.
-    value: { type: [Boolean, String], default: '' },
-    // Non-Boolean prop.
-    count: { type: Number, default: 0 }
-  }
-}
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_boolean_default.rs#L54) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-boolean-default) · [Rule reference](./reference/script-no-boolean-default.md)
 
 ### `script/no-deep-destructure-in-props`
 
 Disallow deeply nested destructuring in defineProps
 
-[Bad](#script-no-deep-destructure-in-props-bad) · [Good](#script-no-deep-destructure-in-props-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-deep-destructure-in-props": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-deep-destructure-in-props-bad"></span>
 
-**Bad**
-
-The binding pattern descends through `user` to destructure `name`, exceeding the default shallow props-destructuring depth.
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-const { user: { name } } = defineProps<{ user: { name: string } }>();
-</script>
-```
+[Bad](./type-and-script.md#script-no-deep-destructure-in-props-bad)
 
 <span id="script-no-deep-destructure-in-props-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-deep-destructure-in-props-good)
 
-The props object remains intact, and a computed getter reads `props.user.name`. The nested access stays explicit without a deeply nested binding pattern.
-
-```vue annotate="add:2,3,4"
-<script setup lang="ts">
-import { computed } from "vue";
-const props = defineProps<{ user: { name: string } }>();
-const userName = computed(() => props.user.name);
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L37) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-deep-destructure-in-props) · [Rule reference](./reference/script-no-deep-destructure-in-props.md)
 
 ### `script/no-deprecated-data-object-declaration`
 
 Disallow an object literal as the component data option (Vue 3 requires a function)
 
-[Bad](#script-no-deprecated-data-object-declaration-bad) · [Good](#script-no-deprecated-data-object-declaration-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-deprecated-data-object-declaration": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-deprecated-data-object-declaration-bad"></span>
 
-**Bad**
-
-The Options API `data` option is an object literal, a Vue 2 form that Vue 3 no longer accepts.
-
-```vue annotate="remove:3,4,5"
-<script lang="ts">
-export default {
-  // `data` must be a function in Vue 3, not an object literal.
-  data: {
-    count: 0
-  }
-}
-</script>
-```
+[Bad](./type-and-script.md#script-no-deprecated-data-object-declaration-bad)
 
 <span id="script-no-deprecated-data-object-declaration-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-deprecated-data-object-declaration-good)
 
-`data()` returns a new `{ count: 0 }` object, providing the function-based data declaration required by Vue 3.
-
-```vue annotate="add:3,4"
-<script lang="ts">
-export default {
-  data() {
-    return { count: 0 }
-  }
-}
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_data_object_declaration.rs#L48) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-deprecated-data-object-declaration) · [Rule reference](./reference/script-no-deprecated-data-object-declaration.md)
 
 ### `script/no-deprecated-destroyed-lifecycle`
 
 Disallow deprecated destroyed and beforeDestroy lifecycle hooks
 
-[Bad](#script-no-deprecated-destroyed-lifecycle-bad) · [Good](#script-no-deprecated-destroyed-lifecycle-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: Available for supported findings  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-deprecated-destroyed-lifecycle": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-deprecated-destroyed-lifecycle-bad"></span>
 
-**Bad**
-
-`beforeDestroy` is the removed Vue 2 lifecycle option used for the timer cleanup.
-
-```vue annotate="remove:2"
-<script lang="ts">
-export default { beforeDestroy() { clearTimeout(this.timer); } };
-</script>
-```
+[Bad](./type-and-script.md#script-no-deprecated-destroyed-lifecycle-bad)
 
 <span id="script-no-deprecated-destroyed-lifecycle-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-deprecated-destroyed-lifecycle-good)
 
-Renaming the hook to `beforeUnmount` preserves the cleanup body under its Vue 3 lifecycle name.
-
-```vue annotate="add:2"
-<script lang="ts">
-export default { beforeUnmount() { clearTimeout(this.timer); } };
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_destroyed_lifecycle.rs#L17) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-deprecated-destroyed-lifecycle) · [Rule reference](./reference/script-no-deprecated-destroyed-lifecycle.md)
 
 ### `script/no-deprecated-dollar-listeners-api`
 
 Disallow the $listeners instance property removed in Vue 3 (merged into $attrs)
 
-[Bad](#script-no-deprecated-dollar-listeners-api-bad) · [Good](#script-no-deprecated-dollar-listeners-api-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-deprecated-dollar-listeners-api": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-deprecated-dollar-listeners-api-bad"></span>
 
-**Bad**
-
-The member reads and the bare argument reference all use `$listeners`, which Vue 3 removed after merging listeners into attributes.
-
-```vue annotate="remove:2,3,4"
-<script setup lang="ts">
-const handlers = this.$listeners
-const forwarded = ctx.$listeners
-emit('input', $listeners)
-</script>
-```
+[Bad](./type-and-script.md#script-no-deprecated-dollar-listeners-api-bad)
 
 <span id="script-no-deprecated-dollar-listeners-api-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-deprecated-dollar-listeners-api-good)
 
-The reads move to `this.$attrs` and setup-context `ctx.attrs`. These replace the removed listener surface; the illustrated receivers must exist in the surrounding component context.
-
-```vue annotate="add:2,3"
-<script setup lang="ts">
-const handlers = this.$attrs
-const forwarded = ctx.attrs
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_listeners_api.rs#L40) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-deprecated-dollar-listeners-api) · [Rule reference](./reference/script-no-deprecated-dollar-listeners-api.md)
 
 ### `script/no-deprecated-dollar-scopedslots-api`
 
 Disallow the $scopedSlots instance property removed in Vue 3 (use $slots)
 
-[Bad](#script-no-deprecated-dollar-scopedslots-api-bad) · [Good](#script-no-deprecated-dollar-scopedslots-api-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-deprecated-dollar-scopedslots-api": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-deprecated-dollar-scopedslots-api-bad"></span>
 
-**Bad**
-
-`this.$scopedSlots`, `ctx.$scopedSlots`, and the bare `$scopedSlots` reference use the Vue 2 scoped-slot API removed in Vue 3.
-
-```vue annotate="remove:2,3,4"
-<script setup lang="ts">
-const header = this.$scopedSlots.header
-const footer = ctx.$scopedSlots.footer
-render($scopedSlots.default)
-</script>
-```
+[Bad](./type-and-script.md#script-no-deprecated-dollar-scopedslots-api-bad)
 
 <span id="script-no-deprecated-dollar-scopedslots-api-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-deprecated-dollar-scopedslots-api-good)
 
-Replacing `$scopedSlots` with `$slots` uses the unified slot surface. The example removes the deprecated spelling rather than establishing a setup context for the receivers.
-
-```vue annotate="add:2,3,4"
-<script setup lang="ts">
-const header = this.$slots.header
-const footer = ctx.$slots.footer
-render($slots.default)
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_scopedslots_api.rs#L44) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-deprecated-dollar-scopedslots-api) · [Rule reference](./reference/script-no-deprecated-dollar-scopedslots-api.md)
 
 ### `script/no-deprecated-events-api`
 
 Disallow the removed Vue 2 events API ($on / $off / $once)
 
-[Bad](#script-no-deprecated-events-api-bad) · [Good](#script-no-deprecated-events-api-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-deprecated-events-api": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-deprecated-events-api-bad"></span>
 
-**Bad**
-
-The `$on`, `$once`, and `$off` calls use the instance event-bus methods removed in Vue 3.
-
-```vue annotate="remove:2,3,4,5"
-<script setup lang="ts">
-this.$on('event', handler)
-this.$once('event', handler)
-this.$off('event', handler)
-emitter.$off('event')
-</script>
-```
+[Bad](./type-and-script.md#script-no-deprecated-events-api-bad)
 
 <span id="script-no-deprecated-events-api-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-deprecated-events-api-good)
 
-`$emit` remains valid, while event-bus subscription moves to the external emitter’s `on` method. The repair separates parent-directed emission from an external event bus.
-
-```vue annotate="add:2,3,4,5,6,7,8"
-<script setup lang="ts">
-// $emit is still valid in Vue 3
-this.$emit('event', payload)
-
-// Use an external emitter instead
-import mitt from 'mitt'
-const emitter = mitt()
-emitter.on('event', handler)
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L42) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-deprecated-events-api) · [Rule reference](./reference/script-no-deprecated-events-api.md)
 
 ### `script/no-deprecated-props-default-this`
 
 Disallow `this` inside a prop default/validator function (removed in Vue 3)
 
-[Bad](#script-no-deprecated-props-default-this-bad) · [Good](#script-no-deprecated-props-default-this-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-deprecated-props-default-this": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-deprecated-props-default-this-bad"></span>
 
-**Bad**
-
-The prop default and validator read `this`, but those functions cannot rely on the component instance in Vue 3.
-
-```vue annotate="remove:6,7,8,13,14"
-<script lang="ts">
-export default {
-  props: {
-    size: {
-      type: Number,
-      // `this` is not the component instance in Vue 3.
-      default() {
-        return this.defaultSize
-      }
-    },
-    value: {
-      type: Number,
-      validator() {
-        return this.value > 0
-      }
-    }
-  }
-}
-</script>
-```
+[Bad](./type-and-script.md#script-no-deprecated-props-default-this-bad)
 
 <span id="script-no-deprecated-props-default-this-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-deprecated-props-default-this-good)
 
-The default reads `props.baseSize` from its argument, and the validator tests its `value` argument. Both stop depending on an unavailable instance receiver.
-
-```vue annotate="add:6,7,8,13,14"
-<script lang="ts">
-export default {
-  props: {
-    size: {
-      type: Number,
-      // Vue 3 passes the raw props as the first argument instead.
-      default(props) {
-        return props.baseSize
-      }
-    },
-    value: {
-      type: Number,
-      validator(value) {
-        return value > 0
-      }
-    }
-  }
-}
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_props_default_this.rs#L71) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-deprecated-props-default-this) · [Rule reference](./reference/script-no-deprecated-props-default-this.md)
 
 ### `script/no-dupe-keys`
 
 Disallow duplicate keys across Options API props/data/computed/methods/setup/inject
 
-[Bad](#script-no-dupe-keys-bad) · [Good](#script-no-dupe-keys-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-dupe-keys": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-dupe-keys-bad"></span>
 
-**Bad**
-
-`foo` is declared by both props and data, and `bar` by both computed and methods. Those declarations compete for the same component instance keys.
-
-```vue annotate="remove:5,8,9,10,11"
-<script lang="ts">
-export default {
-  props: ['foo'],
-  data() {
-    return { foo: 1 } // duplicate of prop `foo`
-  },
-  computed: {
-    bar() { return 2 }
-  },
-  methods: {
-    bar() {} // duplicate of computed `bar`
-  }
-}
-</script>
-```
+[Bad](./type-and-script.md#script-no-dupe-keys-bad)
 
 <span id="script-no-dupe-keys-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-dupe-keys-good)
 
-The prop, data, and computed declarations use distinct names (`foo`, `bar`, and `baz`), eliminating both cross-option collisions.
-
-```vue annotate="add:5,8"
-<script lang="ts">
-export default {
-  props: ['foo'],
-  data() {
-    return { bar: 1 }
-  },
-  computed: {
-    baz() { return 2 }
-  }
-}
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_dupe_keys.rs#L52) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-dupe-keys) · [Rule reference](./reference/script-no-dupe-keys.md)
 
 ### `script/no-duplicate-attr-inheritance`
 
 Flag a component that applies its fallthrough attributes twice
 
-[Bad](#script-no-duplicate-attr-inheritance-bad) · [Good](#script-no-duplicate-attr-inheritance-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-duplicate-attr-inheritance": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-duplicate-attr-inheritance-bad"></span>
 
-**Bad**
-
-The explicit `inheritAttrs: true` values restate Vue’s default. This rule reports that redundant literal even when no root `$attrs` spread is shown.
-
-```vue annotate="remove:2,3"
-<script lang="ts">
-defineOptions({ inheritAttrs: true })
-export default { inheritAttrs: true }
-</script>
-```
+[Bad](./type-and-script.md#script-no-duplicate-attr-inheritance-bad)
 
 <span id="script-no-duplicate-attr-inheritance-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-duplicate-attr-inheritance-good)
 
-`inheritAttrs: false` expresses a real opt-out, while the empty options object leaves default inheritance implicit. Neither restates the redundant `true` value.
-
-```vue annotate="add:2,3"
-<script lang="ts">
-defineOptions({ inheritAttrs: false }) // intentional opt-out
-export default {}                      // default inheritance, unstated
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs#L73) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-duplicate-attr-inheritance) · [Rule reference](./reference/script-no-duplicate-attr-inheritance.md)
 
 ### `script/no-export-in-script-setup`
 
 Disallow export statements inside &lt;script setup&gt;
 
-[Bad](#script-no-export-in-script-setup-bad) · [Good](#script-no-export-in-script-setup-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-export-in-script-setup": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-export-in-script-setup-bad"></span>
 
-**Bad**
-
-`export const count` attempts to expose a module export from `<script setup>`, where runtime exports are prohibited.
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-export const count = 1;
-</script>
-```
+[Bad](./type-and-script.md#script-no-export-in-script-setup-bad)
 
 <span id="script-no-export-in-script-setup-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-export-in-script-setup-good)
 
-Removing `export` keeps `count` as a setup binding rather than a module export.
-
-```vue annotate="add:2"
-<script setup lang="ts">
-const count = 1;
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_export_in_script_setup.rs#L49) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-export-in-script-setup) · [Rule reference](./reference/script-no-export-in-script-setup.md)
 
 ### `script/no-import-compiler-macros`
 
 Disallow importing Vue compiler macros that are auto-imported
 
-[Bad](#script-no-import-compiler-macros-bad) · [Good](#script-no-import-compiler-macros-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-import-compiler-macros": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-import-compiler-macros-bad"></span>
 
-**Bad**
-
-The `vue` import includes `defineProps` and `defineEmits`, although these are compiler macros available directly in `<script setup>`.
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-import { defineProps, defineEmits } from "vue";
-const props = defineProps<{ title: string }>();
-const emit = defineEmits<{ save: [id: number] }>();
-</script>
-```
+[Bad](./type-and-script.md#script-no-import-compiler-macros-bad)
 
 <span id="script-no-import-compiler-macros-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-import-compiler-macros-good)
 
-Removing the macro imports leaves both typed macro calls intact; no runtime import is needed for either declaration.
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{ title: string }>();
-const emit = defineEmits<{ save: [id: number] }>();
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_import_compiler_macros.rs#L39) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-import-compiler-macros) · [Rule reference](./reference/script-no-import-compiler-macros.md)
 
 ### `script/no-internal-imports`
 
 Disallow importing from Vue internal modules
 
-[Bad](#script-no-internal-imports-bad) · [Good](#script-no-internal-imports-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-internal-imports": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-internal-imports-bad"></span>
 
-**Bad**
-
-Both imports address internal `dist` files rather than Vue’s public package entry point, coupling the component to build-file paths.
-
-```vue annotate="remove:2,3"
-<script setup lang="ts">
-import { foo } from '@vue/runtime-core/dist/runtime-core.esm-bundler'
-import { bar } from 'vue/dist/vue.esm-bundler'
-</script>
-```
+[Bad](./type-and-script.md#script-no-internal-imports-bad)
 
 <span id="script-no-internal-imports-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-internal-imports-good)
 
-Importing the required helpers from `vue` removes the dependency on internal distribution file locations.
-
-```vue annotate="add:2"
-<script setup lang="ts">
-import { ref, computed } from 'vue'
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_internal_imports.rs#L28) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-internal-imports) · [Rule reference](./reference/script-no-internal-imports.md)
 
 ### `script/no-multiple-slot-args`
 
 Disallow passing more than one argument to a scoped-slot function call
 
-[Bad](#script-no-multiple-slot-args-bad) · [Good](#script-no-multiple-slot-args-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-multiple-slot-args": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-multiple-slot-args-bad"></span>
 
-**Bad**
-
-The slot calls pass multiple positional arguments or spread an unknown argument list. Vue slots receive one props object, not a positional parameter list.
-
-```vue annotate="remove:2,3,4,5,6"
-<script setup lang="ts">
-slots.default(foo, bar)
-$slots.header(a, b)
-this.$scopedSlots.item(x, y)
-useSlots().default(a, b)
-slots.default(...args)
-</script>
-```
+[Bad](./type-and-script.md#script-no-multiple-slot-args-bad)
 
 <span id="script-no-multiple-slot-args-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-multiple-slot-args-good)
 
-`{ foo, bar }` combines the data into one argument; `slotProps` and the argument-free call also stay within the supported slot-call shape.
-
-```vue annotate="add:2,3,4"
-<script setup lang="ts">
-slots.default({ foo, bar })
-slots.default(slotProps)
-slots.default()
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_multiple_slot_args.rs#L61) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-multiple-slot-args) · [Rule reference](./reference/script-no-multiple-slot-args.md)
 
 ### `script/no-potential-component-option-typo`
 
 Flag likely typos in Options API component option names
 
-[Bad](#script-no-potential-component-option-typo-bad) · [Good](#script-no-potential-component-option-typo-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-potential-component-option-typo": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-potential-component-option-typo-bad"></span>
 
-**Bad**
-
-The option is spelled `method`, one edit away from the recognized `methods` option; Vue would not treat it as the intended methods declaration.
-
-```vue annotate="remove:2"
-<script lang="ts">
-export default { method: { save() {} } };
-</script>
-```
+[Bad](./type-and-script.md#script-no-potential-component-option-typo-bad)
 
 <span id="script-no-potential-component-option-typo-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-potential-component-option-typo-good)
 
-Changing the key to `methods` places `save()` under the recognized component option.
-
-```vue annotate="add:2"
-<script lang="ts">
-export default { methods: { save() {} } };
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_potential_component_option_typo.rs#L19) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-potential-component-option-typo) · [Rule reference](./reference/script-no-potential-component-option-typo.md)
 
 ### `script/no-reactive-destructure`
 
 Disallow destructuring reactive objects which loses reactivity
 
-[Bad](#script-no-reactive-destructure-bad) · [Good](#script-no-reactive-destructure-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-reactive-destructure": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-reactive-destructure-bad"></span>
 
-**Bad**
-
-`const { count, name } = state` copies primitive properties out of the `reactive` object, losing their connection to subsequent property changes.
-
-```vue annotate="remove:2,4"
-<script setup lang="ts">
-import { reactive } from "vue";
-const state = reactive({ count: 0, name: "Ada" });
-const { count, name } = state;
-</script>
-```
+[Bad](./type-and-script.md#script-no-reactive-destructure-bad)
 
 <span id="script-no-reactive-destructure-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-reactive-destructure-good)
 
-Destructuring `toRefs(state)` creates refs for `count` and `name`, keeping each binding linked to the original reactive property.
-
-```vue annotate="add:2,4"
-<script setup lang="ts">
-import { reactive, toRefs } from "vue";
-const state = reactive({ count: 0, name: "Ada" });
-const { count, name } = toRefs(state);
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reactive_destructure.rs#L43) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-reactive-destructure) · [Rule reference](./reference/script-no-reactive-destructure.md)
 
 ### `script/no-ref-as-operand`
 
 Require ref-bound variables to be accessed via `.value` when used as an operand
 
-[Bad](#script-no-ref-as-operand-bad) · [Good](#script-no-ref-as-operand-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-ref-as-operand": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-ref-as-operand-bad"></span>
 
-**Bad**
-
-`count + 1` uses the ref object itself as the arithmetic operand instead of the number it wraps.
-
-```vue annotate="remove:4"
-<script setup lang="ts">
-import { ref } from "vue";
-const count = ref(0);
-const next = count + 1;
-</script>
-```
+[Bad](./type-and-script.md#script-no-ref-as-operand-bad)
 
 <span id="script-no-ref-as-operand-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-ref-as-operand-good)
 
-`count.value + 1` reads the wrapped number before adding one; script arithmetic requires this explicit ref access.
-
-```vue annotate="add:4"
-<script setup lang="ts">
-import { ref } from "vue";
-const count = ref(0);
-const next = count.value + 1;
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_ref_as_operand.rs#L41) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-ref-as-operand) · [Rule reference](./reference/script-no-ref-as-operand.md)
 
 ### `script/no-required-prop-with-default`
 
 Disallow a prop that is both required: true and has a default
 
-[Bad](#script-no-required-prop-with-default-bad) · [Good](#script-no-required-prop-with-default-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-required-prop-with-default": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-required-prop-with-default-bad"></span>
 
-**Bad**
-
-`title` is both required and given the fallback `"Untitled"`, combining a required-input contract with a default intended for missing input.
-
-```vue annotate="remove:2"
-<script lang="ts">
-export default { props: { title: { type: String, required: true, default: "Untitled" } } };
-</script>
-```
+[Bad](./type-and-script.md#script-no-required-prop-with-default-bad)
 
 <span id="script-no-required-prop-with-default-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-required-prop-with-default-good)
 
-Removing `required: true` makes `title` optional and leaves `"Untitled"` as its coherent fallback.
-
-```vue annotate="add:2"
-<script lang="ts">
-export default { props: { title: { type: String, default: "Untitled" } } };
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs#L29) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-required-prop-with-default) · [Rule reference](./reference/script-no-required-prop-with-default.md)
 
 ### `script/no-reserved-identifiers`
 
 Disallow using Vue compiler reserved identifiers
 
-[Bad](#script-no-reserved-identifiers-bad) · [Good](#script-no-reserved-identifiers-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-reserved-identifiers": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-reserved-identifiers-bad"></span>
 
-**Bad**
-
-The bindings `__props`, `__emit`, and `__sfc__` use identifiers reserved for generated Vue compiler code.
-
-```vue annotate="remove:2,3,4"
-<script setup lang="ts">
-const __props = { name: "Ada" };
-const __emit = () => {};
-const __sfc__ = {};
-</script>
-```
+[Bad](./type-and-script.md#script-no-reserved-identifiers-bad)
 
 <span id="script-no-reserved-identifiers-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-reserved-identifiers-good)
 
-The ordinary names `props`, `emit`, and `componentData` avoid those generated identifiers while retaining props and emits declarations.
-
-```vue annotate="add:2,3,4"
-<script setup lang="ts">
-const props = defineProps<{ name: string }>();
-const emit = defineEmits<{ save: [] }>();
-const componentData = {};
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reserved_identifiers.rs#L49) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-reserved-identifiers) · [Rule reference](./reference/script-no-reserved-identifiers.md)
 
 ### `script/no-reserved-keys`
 
 Disallow Vue-reserved names as Options API props/data/computed/methods/setup/inject keys
 
-[Bad](#script-no-reserved-keys-bad) · [Good](#script-no-reserved-keys-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-reserved-keys": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-reserved-keys-bad"></span>
 
-**Bad**
-
-The returned data key `$el` collides with Vue’s built-in component-instance property and also uses a reserved `$` prefix.
-
-```vue annotate="remove:2"
-<script lang="ts">
-export default { data() { return { $el: "custom" }; } };
-</script>
-```
+[Bad](./type-and-script.md#script-no-reserved-keys-bad)
 
 <span id="script-no-reserved-keys-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-reserved-keys-good)
 
-Renaming the application data to `elementLabel` avoids the built-in instance surface and reserved prefix.
-
-```vue annotate="add:2"
-<script lang="ts">
-export default { data() { return { elementLabel: "custom" }; } };
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reserved_keys.rs#L32) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-reserved-keys) · [Rule reference](./reference/script-no-reserved-keys.md)
 
 ### `script/no-reserved-props`
 
 Disallow reserved names in a component's props declaration
 
-[Bad](#script-no-reserved-props-bad) · [Good](#script-no-reserved-props-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-reserved-props": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-reserved-props-bad"></span>
 
-**Bad**
-
-The object-form `ref` and `$foo`, plus the array-form `key`, are reserved prop names. `ref` and `key` are framework controls, and `$`-prefixed names are rejected.
-
-```vue annotate="remove:4,5,8,9,10,11"
-<script lang="ts">
-export default {
-  props: {
-    ref: String,   // reserved
-    $foo: Number    // `$`-prefixed names are reserved
-  }
-}
-
-export default {
-  props: ['key']    // reserved (array form)
-}
-</script>
-```
+[Bad](./type-and-script.md#script-no-reserved-props-bad)
 
 <span id="script-no-reserved-props-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-reserved-props-good)
 
-The ordinary prop names `name` and `refValue` avoid the reserved names in both spelling and prefix.
-
-```vue annotate="add:4,5"
-<script lang="ts">
-export default {
-  props: {
-    name: String,
-    refValue: Number
-  }
-}
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_reserved_props.rs#L53) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-reserved-props) · [Rule reference](./reference/script-no-reserved-props.md)
 
 ### `script/no-restricted-globals`
 
 Disallow references to runtime-environment globals that must go through a typed wrapper
 
-[Bad](#script-no-restricted-globals-bad) · [Good](#script-no-restricted-globals-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: See [typed options and defaults](options.md).
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-restricted-globals": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-restricted-globals-bad"></span>
 
-**Bad**
-
-The example reads the default restricted globals `process`, `localStorage`, and `sessionStorage` directly, bypassing the project’s explicit config and storage helpers.
-
-```vue annotate="remove:2,3,4"
-<script setup lang="ts">
-const flag = process.env.FEATURE_FLAG
-const token = localStorage.getItem('auth.token')
-sessionStorage.setItem('view.scroll', String(window.scrollY))
-</script>
-```
+[Bad](./type-and-script.md#script-no-restricted-globals-bad)
 
 <span id="script-no-restricted-globals-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-restricted-globals-good)
 
-`useFeatureFlag`, `authStorage.read`, and `viewStorage.write` remove those direct restricted-global references. The remaining `window.scrollY` is not a default restriction of this rule; SSR safety is a separate concern.
-
-```vue annotate="add:2,3,4,5,6,7"
-<script setup lang="ts">
-// Use a typed config helper that distinguishes server vs. client.
-const flag = useFeatureFlag('FEATURE_FLAG')
-
-// Use a typed wrapper that scopes keys and handles SSR / disabled storage.
-const token = authStorage.read('auth.token')
-viewStorage.write('view.scroll', String(window.scrollY))
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_restricted_globals.rs#L57) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-restricted-globals) · [Rule reference](./reference/script-no-restricted-globals.md)
 
 ### `script/no-restricted-members`
 
 Disallow project-configured object.property member accesses
 
-[Bad](#script-no-restricted-members-bad) · [Good](#script-no-restricted-members-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: See [typed options and defaults](options.md).
-
-This example configures window.localStorage. The rule has no default deny list; enabling it alone does not report a member.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-restricted-members": "error"
-      },
-      "ruleOptions": {
-        "script/no-restricted-members": {
-          "members": [
-            {
-              "object": "window",
-              "property": "localStorage"
-            }
-          ]
-        }
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-restricted-members-bad"></span>
 
-**Bad**
-
-With `{ object: "window", property: "localStorage" }` configured in `ruleOptions`, `window.localStorage` accesses the forbidden object/member pair. This rule has no default forbidden members.
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-const token = window.localStorage.getItem("token");
-</script>
-```
+[Bad](./type-and-script.md#script-no-restricted-members-bad)
 
 <span id="script-no-restricted-members-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-restricted-members-good)
 
-`authStorage.read("token")` delegates the read to the application’s storage helper and no longer accesses the configured `window.localStorage` member.
-
-```vue annotate="add:2"
-<script setup lang="ts">
-const token = authStorage.read("token");
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_restricted_members.rs#L53) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-restricted-members) · [Rule reference](./reference/script-no-restricted-members.md)
 
 ### `script/no-side-effects-in-computed-properties`
 
 Disallow side effects in Options API computed getters
 
-[Bad](#script-no-side-effects-in-computed-properties-bad) · [Good](#script-no-side-effects-in-computed-properties-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-side-effects-in-computed-properties": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-side-effects-in-computed-properties-bad"></span>
 
-**Bad**
-
-`doubled` assigns to `this.count`, and `reversed` mutates `this.items` through `reverse()`. Both getters modify the state they are supposed to derive from.
-
-```vue annotate="remove:8,9,12"
-<script lang="ts">
-export default {
-  data() {
-    return { count: 0, items: [] }
-  },
-  computed: {
-    doubled() {
-      this.count = this.count * 2 // side effect: assigns to data
-      return this.count
-    },
-    reversed() {
-      return this.items.reverse() // side effect: mutates the array
-    }
-  }
-}
-</script>
-```
+[Bad](./type-and-script.md#script-no-side-effects-in-computed-properties-bad)
 
 <span id="script-no-side-effects-in-computed-properties-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-side-effects-in-computed-properties-good)
 
-`doubled` returns the multiplication without assignment. `reversed` copies the array before reversing it, so the original component state is unchanged by the getter.
-
-```vue annotate="add:8,11"
-<script lang="ts">
-export default {
-  data() {
-    return { count: 0, items: [] }
-  },
-  computed: {
-    doubled() {
-      return this.count * 2
-    },
-    reversed() {
-      return [...this.items].reverse() // operate on a copy
-    }
-  }
-}
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_side_effects_in_computed.rs#L70) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-side-effects-in-computed-properties) · [Rule reference](./reference/script-no-side-effects-in-computed-properties.md)
 
 ### `script/no-top-level-ref-in-script`
 
 Disallow top-level ref/reactive to prevent Cross-Request State Pollution
 
-[Bad](#script-no-top-level-ref-in-script-bad) · [Good](#script-no-top-level-ref-in-script-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-top-level-ref-in-script": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-top-level-ref-in-script-bad"></span>
 
-**Bad**
-
-The ordinary `<script>` initializes `count` and `user` at module scope. During SSR, these state objects can be shared across component instances and requests.
-
-```vue annotate="remove:1,2,4,8"
-<script>
-// This state is shared across all requests in SSR!
-const count = ref(0)
-const user = reactive({ name: '' })
-
-export default {
-  setup() {
-    return { count, user }
-  }
-}
-</script>
-```
+[Bad](./type-and-script.md#script-no-top-level-ref-in-script-bad)
 
 <span id="script-no-top-level-ref-in-script-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-top-level-ref-in-script-good)
 
-The setup ref is initialized per component instance; the ordinary script keeps only a constant, a state-producing function, and a ref created inside `setup()`. None creates reactive state at ordinary module scope.
-
-```vue annotate="add:1,2,4,6,7,8,9,10,11,12,13,14,17,18,19"
-<script setup>
-// Script setup creates fresh state per request
-const count = ref(0)
-</script>
-
-<script>
-// Constants are fine
-const API_URL = 'https://api.example.com'
-
-// Functions that create state are fine
-function createState() {
-  return reactive({ count: 0 })
-}
-
-export default {
-  setup() {
-    // Create state inside setup
-    const count = ref(0)
-    return { count }
-  }
-}
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_top_level_ref_in_script.rs#L63) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-top-level-ref-in-script) · [Rule reference](./reference/script-no-top-level-ref-in-script.md)
 
 ### `script/no-unstable-nested-components`
 
 Disallow component definitions inside setup or render functions
 
-[Bad](#script-no-unstable-nested-components-bad) · [Good](#script-no-unstable-nested-components-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-unstable-nested-components": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-unstable-nested-components-bad"></span>
 
-**Bad**
-
-`defineComponent` runs inside the parent’s `setup()`, creating a new `Child` component definition whenever that setup executes.
-
-```vue annotate="remove:3"
-<script lang="ts">
-import { defineComponent } from "vue";
-export default { setup() { const Child = defineComponent({ render() { return null; } }); return { Child }; } };
-</script>
-```
+[Bad](./type-and-script.md#script-no-unstable-nested-components-bad)
 
 <span id="script-no-unstable-nested-components-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-unstable-nested-components-good)
 
-The `Child` definition moves to module scope, and `setup()` returns that existing definition instead of recreating it.
-
-```vue annotate="add:3,4"
-<script lang="ts">
-import { defineComponent } from "vue";
-const Child = defineComponent({ render() { return null; } });
-export default { setup() { return { Child }; } };
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_unstable_nested_components.rs#L19) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-unstable-nested-components) · [Rule reference](./reference/script-no-unstable-nested-components.md)
 
 ### `script/no-unused-emit-declarations`
 
 Flag declared events that are never emitted
 
-[Bad](#script-no-unused-emit-declarations-bad) · [Good](#script-no-unused-emit-declarations-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-unused-emit-declarations": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-unused-emit-declarations-bad"></span>
 
-**Bad**
-
-`defineEmits` declares both `change` and `unused`, but the captured `emit` function only emits the literal event `change`.
-
-```vue annotate="remove:2,4"
-<script setup lang="ts">
-const emit = defineEmits(['change', 'unused'])
-emit('change')
-// `unused` is never emitted
-</script>
-```
+[Bad](./type-and-script.md#script-no-unused-emit-declarations-bad)
 
 <span id="script-no-unused-emit-declarations-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-unused-emit-declarations-good)
 
-Removing `unused` makes the declared event list match the observed emission. The example uses a captured, unescaped emit binding so this local usage conclusion is available.
-
-```vue annotate="add:2"
-<script setup lang="ts">
-const emit = defineEmits(['change'])
-emit('change')
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_unused_emit_declarations.rs#L74) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-unused-emit-declarations) · [Rule reference](./reference/script-no-unused-emit-declarations.md)
 
 ### `script/no-use-computed-property-like-method`
 
 Disallow calling an Options API computed property like a method
 
-[Bad](#script-no-use-computed-property-like-method-bad) · [Good](#script-no-use-computed-property-like-method-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-use-computed-property-like-method": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-use-computed-property-like-method-bad"></span>
 
-**Bad**
-
-`this.total()` calls the value exposed by the computed getter; the getter returns `3`, which is not callable.
-
-```vue annotate="remove:2"
-<script lang="ts">
-export default { computed: { total() { return 3; } }, methods: { log() { console.log(this.total()); } } };
-</script>
-```
+[Bad](./type-and-script.md#script-no-use-computed-property-like-method-bad)
 
 <span id="script-no-use-computed-property-like-method-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-use-computed-property-like-method-good)
 
-`this.total` reads the computed value without call parentheses, so `log` prints the derived number.
-
-```vue annotate="add:2"
-<script lang="ts">
-export default { computed: { total() { return 3; } }, methods: { log() { console.log(this.total); } } };
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_use_computed_property_like_method.rs#L44) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-use-computed-property-like-method) · [Rule reference](./reference/script-no-use-computed-property-like-method.md)
 
 ### `script/no-with-defaults`
 
 Discourage withDefaults in favor of destructuring defaults (Vue 3.5+)
 
-[Bad](#script-no-with-defaults-bad) · [Good](#script-no-with-defaults-good)
-
-Default severity: `warning`  
-Presets: `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-with-defaults": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-no-with-defaults-bad"></span>
 
-**Bad**
-
-`withDefaults` wraps the typed props declaration solely to supply `count` and `name` defaults, instead of the Vue 3.5+ destructuring-default style preferred here.
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-const props = withDefaults(defineProps<{ count?: number; name?: string }>(), { count: 0, name: "Ada" });
-</script>
-```
+[Bad](./type-and-script.md#script-no-with-defaults-bad)
 
 <span id="script-no-with-defaults-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-no-with-defaults-good)
 
-The destructuring pattern puts `count = 0` and `name = "Ada"` beside their bindings and removes the `withDefaults` wrapper.
-
-```vue annotate="add:2"
-<script setup lang="ts">
-const { count = 0, name = "Ada" } = defineProps<{ count?: number; name?: string }>();
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_with_defaults.rs#L41) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-no-with-defaults) · [Rule reference](./reference/script-no-with-defaults.md)
 
 ### `script/prefer-computed`
 
 Prefer computed() for derived reactive state
 
-[Bad](#script-prefer-computed-bad) · [Good](#script-prefer-computed-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-The watcher must only derive the destination. Editable copies and callbacks with other side effects are allowed.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/prefer-computed": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-prefer-computed-bad"></span>
 
-**Bad**
-
-The watcher only copies a derivation of `count` into a second ref, `doubled`, so the derived state is maintained through manual synchronization.
-
-```vue annotate="remove:2,4,5"
-<script setup lang="ts">
-import { ref, watch } from "vue";
-const count = ref(0);
-const doubled = ref(0);
-watch(count, (value) => { doubled.value = value * 2; });
-</script>
-```
+[Bad](./type-and-script.md#script-prefer-computed-bad)
 
 <span id="script-prefer-computed-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-prefer-computed-good)
 
-`computed(() => count.value * 2)` expresses the derivation directly and removes both the extra writable ref and its synchronization watcher.
-
-```vue annotate="add:2,4"
-<script setup lang="ts">
-import { ref, computed } from "vue";
-const count = ref(0);
-const doubled = computed(() => count.value * 2);
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_computed.rs#L41) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-prefer-computed) · [Rule reference](./reference/script-prefer-computed.md)
 
 ### `script/prefer-define-options`
 
 Prefer defineOptions() over a plain &lt;script&gt; that only sets name/inheritAttrs
 
-[Bad](#script-prefer-define-options-bad) · [Good](#script-prefer-define-options-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/prefer-define-options": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-prefer-define-options-bad"></span>
 
-**Bad**
-
-The plain script’s only meaningful statement exports an object containing just `name` and `inheritAttrs`; these options can be expressed by `defineOptions`.
-
-```vue annotate="remove:2"
-<script lang="ts">
-export default { name: 'MyComponent', inheritAttrs: false }
-</script>
-```
+[Bad](./type-and-script.md#script-prefer-define-options-bad)
 
 <span id="script-prefer-define-options-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-prefer-define-options-good)
 
-The shown `data()` method makes the script carry real Options API logic, so it falls outside this rule’s conservative options-only suggestion. This Good demonstrates an allowed exception; the direct migration would put `defineOptions({ name: 'MyComponent', inheritAttrs: false })` in `<script setup>`.
-
-```vue annotate="add:2,3,4,5,6"
-<script lang="ts">
-// Real options logic — keep the plain script.
-export default {
-  name: 'MyComponent',
-  data() { return { count: 0 } },
-}
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_define_options.rs#L52) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-prefer-define-options) · [Rule reference](./reference/script-prefer-define-options.md)
 
 ### `script/prefer-import-from-vue`
 
 Prefer importing from 'vue' instead of internal packages
 
-[Bad](#script-prefer-import-from-vue-bad) · [Good](#script-prefer-import-from-vue-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: Available for supported findings  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/prefer-import-from-vue": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-prefer-import-from-vue-bad"></span>
 
-**Bad**
-
-`ref` and `h` are imported from the internal `@vue/runtime-core` and `@vue/runtime-dom` packages rather than the public `vue` package.
-
-```vue annotate="remove:2,3"
-<script setup lang="ts">
-import { ref } from '@vue/runtime-core'
-import { h } from '@vue/runtime-dom'
-</script>
-```
+[Bad](./type-and-script.md#script-prefer-import-from-vue-bad)
 
 <span id="script-prefer-import-from-vue-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-prefer-import-from-vue-good)
 
-Both helpers are imported together from `vue`, using the public package entry point instead of either internal package.
-
-```vue annotate="add:2"
-<script setup lang="ts">
-import { ref, h } from 'vue'
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L32) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-prefer-import-from-vue) · [Rule reference](./reference/script-prefer-import-from-vue.md)
 
 ### `script/prefer-ref-over-reactive`
 
 Recommend using ref() over reactive() for state management
 
-[Bad](#script-prefer-ref-over-reactive-bad) · [Good](#script-prefer-ref-over-reactive-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/prefer-ref-over-reactive": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-prefer-ref-over-reactive-bad"></span>
 
-**Bad**
-
-The state is created with `reactive`, contrary to this opinionated rule’s preference for refs. The example illustrates a style preference, not an inherently invalid reactive object.
-
-```vue annotate="remove:2,3,4,5,6"
-<script setup lang="ts">
-// reactive requires careful handling to avoid losing reactivity
-const state = reactive({
-  count: 0,
-  name: 'foo'
-})
-</script>
-```
+[Bad](./type-and-script.md#script-prefer-ref-over-reactive-bad)
 
 <span id="script-prefer-ref-over-reactive-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-prefer-ref-over-reactive-good)
 
-The examples create both scalar and object state with `ref`; related fields may also be split into separate refs. This satisfies the preferred state-construction form.
-
-```vue annotate="add:2,3,4,5,6,7,8,9,10,11"
-<script setup lang="ts">
-// ref is more explicit and safer
-const count = ref(0)
-const name = ref('foo')
-
-// For objects, ref still works
-const user = ref({ name: 'foo', age: 20 })
-
-// Or use multiple refs for related data
-const userName = ref('foo')
-const userAge = ref(20)
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_ref_over_reactive.rs#L44) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-prefer-ref-over-reactive) · [Rule reference](./reference/script-prefer-ref-over-reactive.md)
 
 ### `script/prefer-use-attrs`
 
 Recommend using useAttrs() over context.attrs
 
-[Bad](#script-prefer-use-attrs-bad) · [Good](#script-prefer-use-attrs-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/prefer-use-attrs": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-prefer-use-attrs-bad"></span>
 
-**Bad**
-
-`setup` obtains `attrs` by destructuring its context parameter, which this rule asks to replace with the Composition API helper.
-
-```vue annotate="remove:2"
-<script lang="ts">
-export default { setup(_props, { attrs }) { console.log(attrs.class); } };
-</script>
-```
+[Bad](./type-and-script.md#script-prefer-use-attrs-bad)
 
 <span id="script-prefer-use-attrs-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-prefer-use-attrs-good)
 
-`useAttrs()` supplies `attrs` inside setup, retaining the `attrs.class` read without depending on the second setup parameter.
-
-```vue annotate="add:2,3"
-<script lang="ts">
-import { useAttrs } from "vue";
-export default { setup() { const attrs = useAttrs(); console.log(attrs.class); } };
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_attrs.rs#L44) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-prefer-use-attrs) · [Rule reference](./reference/script-prefer-use-attrs.md)
 
 ### `script/prefer-use-id`
 
 Recommend using useId() for generating unique IDs (Vue 3.5+)
 
-[Bad](#script-prefer-use-id-bad) · [Good](#script-prefer-use-id-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/prefer-use-id": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-prefer-use-id-bad"></span>
 
-**Bad**
-
-`id` contains `Math.random()`, so the generated input/label identifier can differ between server and client rendering. Its ID-named binding is the rule’s recognized generation context.
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-const id = `input-${Math.random()}`;
-</script>
-<template><label :for="id">Name</label><input :id="id" /></template>
-```
+[Bad](./type-and-script.md#script-prefer-use-id-bad)
 
 <span id="script-prefer-use-id-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-prefer-use-id-good)
 
-Vue 3.5+ `useId()` generates the identifier, and both `:for` and `:id` continue reading the same binding instead of independently generating random values.
-
-```vue annotate="add:2,3"
-<script setup lang="ts">
-import { useId } from "vue";
-const id = useId();
-</script>
-<template><label :for="id">Name</label><input :id="id" /></template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_id.rs#L48) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-prefer-use-id) · [Rule reference](./reference/script-prefer-use-id.md)
 
 ### `script/prefer-use-slots`
 
 Recommend using useSlots() over context.slots
 
-[Bad](#script-prefer-use-slots-bad) · [Good](#script-prefer-use-slots-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/prefer-use-slots": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-prefer-use-slots-bad"></span>
 
-**Bad**
-
-`setup` destructures `slots` from its context argument, the access form this rule prefers to replace.
-
-```vue annotate="remove:2,4"
-<script lang="ts">
-import { defineComponent, h } from "vue";
-export default defineComponent({
-  setup(_props, { slots }) { return () => h("div", slots.default?.()); },
-});
-</script>
-```
+[Bad](./type-and-script.md#script-prefer-use-slots-bad)
 
 <span id="script-prefer-use-slots-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-prefer-use-slots-good)
 
-`useSlots()` retrieves the slots inside setup, preserving the render function and its optional default-slot call without a context parameter.
-
-```vue annotate="add:2,4,5,6,7"
-<script lang="ts">
-import { defineComponent, h, useSlots } from "vue";
-export default defineComponent({
-  setup() {
-    const slots = useSlots();
-    return () => h("div", slots.default?.());
-  },
-});
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_slots.rs#L44) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-prefer-use-slots) · [Rule reference](./reference/script-prefer-use-slots.md)
 
 ### `script/prefer-use-template-ref`
 
 Recommend useTemplateRef over ref for template references (Vue 3.5+)
 
-[Bad](#script-prefer-use-template-ref-bad) · [Good](#script-prefer-use-template-ref-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/prefer-use-template-ref": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-prefer-use-template-ref-bad"></span>
 
-**Bad**
-
-The nullable `input` ref is paired with the template’s literal `ref="input"`, identifying it as an element reference rather than ordinary nullable data.
-
-```vue annotate="remove:2,3"
-<script setup lang="ts">
-import { ref } from 'vue'
-const input = ref<HTMLInputElement | null>(null)
-</script>
-<template>
-  <input ref="input" />
-</template>
-```
+[Bad](./type-and-script.md#script-prefer-use-template-ref-bad)
 
 <span id="script-prefer-use-template-ref-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-prefer-use-template-ref-good)
 
-Vue 3.5+ `useTemplateRef<HTMLInputElement>('input')` makes that template reference explicit. The unpaired `error = ref(null)` remains ordinary data and is intentionally outside this rule.
-
-```vue annotate="add:2,3,4,5,6,10"
-<script setup lang="ts">
-import { ref, useTemplateRef } from 'vue'
-// Paired with the template ref below.
-const input = useTemplateRef<HTMLInputElement>('input')
-// A nullable data ref the template never binds as a ref.
-const error = ref(null)
-</script>
-<template>
-  <input ref="input" />
-  <p>{{ error }}</p>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_template_ref.rs#L75) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-prefer-use-template-ref) · [Rule reference](./reference/script-prefer-use-template-ref.md)
 
 ### `script/require-default-prop`
 
 Require a default value for every optional, non-Boolean prop
 
-[Bad](#script-require-default-prop-bad) · [Good](#script-require-default-prop-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/require-default-prop": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-require-default-prop-bad"></span>
 
-**Bad**
-
-`name` and `age` are optional non-Boolean runtime props without defaults, leaving their omitted-input values unspecified.
-
-```vue annotate="remove:4,5,6"
-<script lang="ts">
-export default {
-  props: {
-    // optional, non-Boolean, no default
-    name: String,
-    age: { type: Number },
-  }
-}
-</script>
-```
+[Bad](./type-and-script.md#script-require-default-prop-bad)
 
 <span id="script-require-default-prop-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-require-default-prop-good)
 
-`name` receives `default: ''`. `enabled` uses Boolean’s implicit false default, and required `id` needs no fallback, illustrating both exemptions.
-
-```vue annotate="add:4,5,6"
-<script lang="ts">
-export default {
-  props: {
-    name: { type: String, default: '' },
-    enabled: Boolean,                 // Boolean defaults to false
-    id: { type: Number, required: true },
-  }
-}
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_default_prop.rs#L58) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-require-default-prop) · [Rule reference](./reference/script-require-default-prop.md)
 
 ### `script/require-explicit-emits`
 
 Require emitted events to be declared in defineEmits or the emits option
 
-[Bad](#script-require-explicit-emits-bad) · [Good](#script-require-explicit-emits-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/require-explicit-emits": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-require-explicit-emits-bad"></span>
 
-**Bad**
-
-The captured emit function emits `save`, but `defineEmits([])` declares no such event.
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-const emit = defineEmits([]);
-emit("save");
-</script>
-```
+[Bad](./type-and-script.md#script-require-explicit-emits-bad)
 
 <span id="script-require-explicit-emits-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-require-explicit-emits-good)
 
-Adding `"save"` to the declaration makes the emitted literal event part of the component’s explicit event contract.
-
-```vue annotate="add:2"
-<script setup lang="ts">
-const emit = defineEmits(["save"]);
-emit("save");
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_explicit_emits.rs#L61) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-require-explicit-emits) · [Rule reference](./reference/script-require-explicit-emits.md)
 
 ### `script/require-explicit-slots`
 
 Require slots consumed via useSlots() to be explicitly typed with defineSlots&lt;...&gt;()
 
-[Bad](#script-require-explicit-slots-bad) · [Good](#script-require-explicit-slots-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/require-explicit-slots": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-require-explicit-slots-bad"></span>
 
-**Bad**
-
-The typed `defineProps<{ id: number }>()` establishes TypeScript syntax, but setup uses `useSlots()` without a `defineSlots` declaration. The rule therefore finds consumed slots without an explicit slot contract.
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-const props = defineProps<{ id: number }>()
-const slots = useSlots()
-</script>
-```
+[Bad](./type-and-script.md#script-require-explicit-slots-bad)
 
 <span id="script-require-explicit-slots-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-require-explicit-slots-good)
 
-`defineSlots` declares a `default` slot whose props include `msg: string`; `useSlots()` now appears alongside an explicit typed slot contract.
-
-```vue annotate="add:2"
-<script setup lang="ts">
-defineSlots<{ default(props: { msg: string }): unknown }>()
-const slots = useSlots()
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_explicit_slots.rs#L92) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-require-explicit-slots) · [Rule reference](./reference/script-require-explicit-slots.md)
 
 ### `script/require-function-return-type`
 
 Require return type annotations on functions
 
-[Bad](#script-require-function-return-type-bad) · [Good](#script-require-function-return-type-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/require-function-return-type": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-require-function-return-type-bad"></span>
 
-**Bad**
-
-Both `add` and `greet` annotate their parameters but omit a return-type annotation; inferred returns do not satisfy this explicit-annotation policy.
-
-```vue annotate="remove:2,6"
-<script setup lang="ts">
-const add = (a: number, b: number) => {
-  return a + b
-}
-
-function greet(name: string) {
-  return `Hello, ${name}`
-}
-</script>
-```
+[Bad](./type-and-script.md#script-require-function-return-type-bad)
 
 <span id="script-require-function-return-type-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-require-function-return-type-good)
 
-`add` declares `: number`, and `greet` declares `: string`, making the return contracts explicit without changing either body.
-
-```vue annotate="add:2,6"
-<script setup lang="ts">
-const add = (a: number, b: number): number => {
-  return a + b
-}
-
-function greet(name: string): string {
-  return `Hello, ${name}`
-}
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_function_return_type.rs#L49) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-require-function-return-type) · [Rule reference](./reference/script-require-function-return-type.md)
 
 ### `script/require-prop-type-constructor`
 
 Require prop `type` values to be constructors rather than string literals
 
-[Bad](#script-require-prop-type-constructor-bad) · [Good](#script-require-prop-type-constructor-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/require-prop-type-constructor": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-require-prop-type-constructor-bad"></span>
 
-**Bad**
-
-The prop declarations use strings `"String"` and `"Number"` as runtime types, including inside the constructor array. Those strings are not constructor functions.
-
-```vue annotate="remove:4,5,6,7"
-<script lang="ts">
-export default {
-  props: {
-    // The type should be the `String` constructor, not the string "String".
-    name: "String",
-    age: { type: "Number" },
-    id: { type: ["String", "Number"] }
-  }
-}
-</script>
-```
+[Bad](./type-and-script.md#script-require-prop-type-constructor-bad)
 
 <span id="script-require-prop-type-constructor-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-require-prop-type-constructor-good)
 
-The declarations use the actual `String` and `Number` identifiers, including the union array `[String, Number]`.
-
-```vue annotate="add:4,5,6"
-<script lang="ts">
-export default {
-  props: {
-    name: String,
-    age: { type: Number },
-    id: { type: [String, Number] }
-  }
-}
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_prop_type_constructor.rs#L59) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-require-prop-type-constructor) · [Rule reference](./reference/script-require-prop-type-constructor.md)
 
 ### `script/require-prop-types`
 
 Require every prop to declare a type
 
-[Bad](#script-require-prop-types-bad) · [Good](#script-require-prop-types-good)
-
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/require-prop-types": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-require-prop-types-bad"></span>
 
-**Bad**
-
-The array entry declares only the name `status`; the `null` value and empty descriptor declare no runtime prop type either.
-
-```vue annotate="remove:3,4,5,6,8,9"
-<script lang="ts">
-export default {
-  props: ['status']            // array form: no types
-}
-
-export default {
-  props: {
-    status: null,              // no type
-    other: {}                  // empty descriptor: no type
-  }
-}
-</script>
-```
+[Bad](./type-and-script.md#script-require-prop-types-bad)
 
 <span id="script-require-prop-types-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-require-prop-types-good)
 
-`status: String` supplies a shorthand constructor, and `other` supplies `type: Number` inside its descriptor. Both props now carry type declarations.
-
-```vue annotate="add:4,5"
-<script lang="ts">
-export default {
-  props: {
-    status: String,
-    other: { type: Number, default: 0 }
-  }
-}
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_prop_types.rs#L58) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-require-prop-types) · [Rule reference](./reference/script-require-prop-types.md)
 
 ### `script/require-symbol-provide`
 
 Recommend using Symbol as injection key for provide/inject
 
-[Bad](#script-require-symbol-provide-bad) · [Good](#script-require-symbol-provide-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/require-symbol-provide": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-require-symbol-provide-bad"></span>
 
-**Bad**
-
-`provide` and `inject` use literal string keys such as `'user'` and `'theme'`, which can collide with another provider using the same spelling.
-
-```vue annotate="remove:1,2,3,4,6,7"
-<script setup lang="ts">
-// String keys can collide
-provide('user', user)
-const user = inject('user')
-
-// Magic strings are error-prone
-provide('theme', { dark: true })
-</script>
-```
+[Bad](./type-and-script.md#script-require-symbol-provide-bad)
 
 <span id="script-require-symbol-provide-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-require-symbol-provide-good)
 
-The shared `UserKey` is created with `Symbol` and annotated as `InjectionKey<User>`; both calls pass that key instead of a literal string.
-
-```vue annotate="add:1,2,3,5,6,7,8,9"
-<script lang="ts">
-// Define injection key with Symbol
-export const UserKey: InjectionKey<User> = Symbol('user')
-
-// Provide with Symbol
-provide(UserKey, user)
-
-// Inject with Symbol
-const user = inject(UserKey)
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_symbol_provide.rs#L39) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-require-symbol-provide) · [Rule reference](./reference/script-require-symbol-provide.md)
 
 ### `script/require-typed-object-prop`
 
 Require an explicit type on a prop whose runtime type is `Object` or `Array`
 
-[Bad](#script-require-typed-object-prop-bad) · [Good](#script-require-typed-object-prop-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/require-typed-object-prop": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-require-typed-object-prop-bad"></span>
 
-**Bad**
-
-Bare `Object` and `Array` constructors describe only broad runtime categories, so neither `user` nor the `items` element shape has an explicit static type.
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-const props = defineProps({ user: Object, items: { type: Array } });
-</script>
-```
+[Bad](./type-and-script.md#script-require-typed-object-prop-bad)
 
 <span id="script-require-typed-object-prop-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-require-typed-object-prop-good)
 
-`PropType<User>` and `PropType<User[]>` add the object and element types while retaining the same runtime constructors.
-
-```vue annotate="add:2,3,4,5,6,7"
-<script setup lang="ts">
-import type { PropType } from "vue";
-interface User { name: string }
-const props = defineProps({
-  user: Object as PropType<User>,
-  items: { type: Array as PropType<User[]> },
-});
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_typed_object_prop.rs#L63) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-require-typed-object-prop) · [Rule reference](./reference/script-require-typed-object-prop.md)
 
 ### `script/require-typed-ref`
 
 Require an explicit type argument on a ref() initialized with no value, null, or undefined
 
-[Bad](#script-require-typed-ref-bad) · [Good](#script-require-typed-ref-good)
-
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/require-typed-ref": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-require-typed-ref-bad"></span>
 
-**Bad**
-
-The imported `ref` calls have neither a type argument nor a useful initial value: no argument, `null`, and `undefined` cannot infer the intended future value type.
-
-```vue annotate="remove:4,5,6"
-<script setup lang="ts">
-import { ref } from 'vue'
-
-const a = ref()           // Ref<undefined>
-const b = ref(null)       // Ref<null>
-const c = ref(undefined)  // Ref<undefined>
-</script>
-```
+[Bad](./type-and-script.md#script-require-typed-ref-bad)
 
 <span id="script-require-typed-ref-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-require-typed-ref-good)
 
-Explicit type arguments describe the string and nullable User refs. `ref(0)` already has a concrete numeric initializer and can rely on inference.
-
-```vue annotate="add:4,5,6"
-<script setup lang="ts">
-import { ref } from 'vue'
-
-const a = ref<string>()
-const b = ref<User | null>(null)
-const c = ref(0)          // inferred Ref<number>
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_typed_ref.rs#L55) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-require-typed-ref) · [Rule reference](./reference/script-require-typed-ref.md)
 
 ### `script/require-valid-default-prop`
 
 Require a prop's default value to be valid for its declared type
 
-[Bad](#script-require-valid-default-prop-bad) · [Good](#script-require-valid-default-prop-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/require-valid-default-prop": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-require-valid-default-prop-bad"></span>
 
-**Bad**
-
-The Number and Boolean props receive mismatched scalar defaults, and the Array and Object props use shared literal values instead of factories.
-
-```vue annotate="remove:4,5,6,7"
-<script lang="ts">
-export default {
-  props: {
-    count: { type: Number, default: '0' },     // string default for Number
-    enabled: { type: Boolean, default: 1 },     // non-boolean default for Boolean
-    items: { type: Array, default: [] },        // literal must be a factory
-    config: { type: Object, default: {} }       // literal must be a factory
-  }
-}
-</script>
-```
+[Bad](./type-and-script.md#script-require-valid-default-prop-bad)
 
 <span id="script-require-valid-default-prop-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-require-valid-default-prop-good)
 
-The scalar defaults become `0` and `false`; the array and object defaults become functions returning fresh values. The `[String, Number]` example accepts its string default because it matches one declared type.
-
-```vue annotate="add:4,5,6,7,8"
-<script lang="ts">
-export default {
-  props: {
-    count: { type: Number, default: 0 },
-    enabled: { type: Boolean, default: false },
-    items: { type: Array, default: () => [] },
-    config: { type: Object, default: () => ({}) },
-    label: { type: [String, Number], default: '' }
-  }
-}
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_valid_default_prop.rs#L68) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-require-valid-default-prop) · [Rule reference](./reference/script-require-valid-default-prop.md)
 
 ### `script/return-in-computed-property`
 
 Require a return value in every computed getter
 
-[Bad](#script-return-in-computed-property-bad) · [Good](#script-return-in-computed-property-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/return-in-computed-property": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-return-in-computed-property-bad"></span>
 
-**Bad**
-
-The block-bodied computed getter evaluates `1 + 2` but never returns it, leaving the computed value undefined.
-
-```vue annotate="remove:3"
-<script setup lang="ts">
-import { computed } from "vue";
-const total = computed(() => { 1 + 2; });
-</script>
-```
+[Bad](./type-and-script.md#script-return-in-computed-property-bad)
 
 <span id="script-return-in-computed-property-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-return-in-computed-property-good)
 
-`return 1 + 2` turns the expression into the getter’s returned value. The rule looks for a value-returning return in the getter itself, not merely an expression statement.
-
-```vue annotate="add:3"
-<script setup lang="ts">
-import { computed } from "vue";
-const total = computed(() => { return 1 + 2; });
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/return_in_computed_property.rs#L31) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-return-in-computed-property) · [Rule reference](./reference/script-return-in-computed-property.md)
 
 ### `script/return-in-emits-validator`
 
 Require a return value in every Options API emits validator
 
-[Bad](#script-return-in-emits-validator-bad) · [Good](#script-return-in-emits-validator-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-Use a block-body arrow for the currently supported SFC filter. The underlying validator also handles method shorthand, but the current SFC prefilter does not reliably dispatch that shape.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/return-in-emits-validator": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-return-in-emits-validator-bad"></span>
 
-**Bad**
-
-The `submit` validator logs the payload but does not return a validation result, so its block body yields undefined.
-
-```vue annotate="remove:2"
-<script lang="ts">
-export default { emits: { submit: (payload: unknown) => { console.log(payload); } } };
-</script>
-```
+[Bad](./type-and-script.md#script-return-in-emits-validator-bad)
 
 <span id="script-return-in-emits-validator-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-return-in-emits-validator-good)
 
-`return payload != null` supplies a boolean validation result for the submitted payload instead of ending without a returned value.
-
-```vue annotate="add:2"
-<script lang="ts">
-export default { emits: { submit: (payload: unknown) => { return payload != null; } } };
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs#L59) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-return-in-emits-validator) · [Rule reference](./reference/script-return-in-emits-validator.md)
 
 ### `script/valid-define-emits`
 
 Enforce valid defineEmits() usage (no type+runtime args, no local references, single call)
 
-[Bad](#script-valid-define-emits-bad) · [Good](#script-valid-define-emits-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/valid-define-emits": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-valid-define-emits-bad"></span>
 
-**Bad**
-
-The same `defineEmits` call supplies both a type argument and the runtime array `["save"]`, mixing two mutually exclusive declarations.
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-defineEmits<{ save: [] }>(["save"]);
-</script>
-```
+[Bad](./type-and-script.md#script-valid-define-emits-bad)
 
 <span id="script-valid-define-emits-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-valid-define-emits-good)
 
-Removing the runtime argument leaves a single type-based event declaration for `save`.
-
-```vue annotate="add:2"
-<script setup lang="ts">
-defineEmits<{ save: [] }>();
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_emits.rs#L45) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-valid-define-emits) · [Rule reference](./reference/script-valid-define-emits.md)
 
 ### `script/valid-define-options`
 
 Enforce valid defineOptions() usage (single object arg, no props/emits/expose/slots)
 
-[Bad](#script-valid-define-options-bad) · [Good](#script-valid-define-options-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/valid-define-options": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-valid-define-options-bad"></span>
 
-**Bad**
-
-The first call puts the dedicated `props` declaration inside `defineOptions`; the later calls also repeat the macro and include a non-object argument. These illustrate the forbidden shape and repeated-call constraints.
-
-```vue annotate="remove:2,3,4,5"
-<script setup lang="ts">
-defineOptions({ props: ['foo'] })   // use defineProps instead
-defineOptions({ name: 'Foo' })
-defineOptions({ name: 'Bar' })      // duplicate call
-defineOptions('Foo')                // not an object literal
-</script>
-```
+[Bad](./type-and-script.md#script-valid-define-options-bad)
 
 <span id="script-valid-define-options-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-valid-define-options-good)
 
-One `defineOptions` call receives an object containing only the supported ordinary options `name` and `inheritAttrs`.
-
-```vue annotate="add:2"
-<script setup lang="ts">
-defineOptions({ name: 'Foo', inheritAttrs: false })
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_options.rs#L41) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-valid-define-options) · [Rule reference](./reference/script-valid-define-options.md)
 
 ### `script/valid-define-props`
 
 Enforce valid defineProps() usage (single call, not both type and runtime args, no local references)
 
-[Bad](#script-valid-define-props-bad) · [Good](#script-valid-define-props-good)
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/valid-define-props": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-valid-define-props-bad"></span>
 
-**Bad**
-
-The same `defineProps` call supplies both `{ title: string }` as a type argument and `{ title: String }` as a runtime argument, which the compiler does not permit together.
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-defineProps<{ title: string }>({ title: String });
-</script>
-```
+[Bad](./type-and-script.md#script-valid-define-props-bad)
 
 <span id="script-valid-define-props-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-valid-define-props-good)
 
-Removing the runtime object leaves one type-based declaration for `title` instead of combining both declaration forms.
-
-```vue annotate="add:2"
-<script setup lang="ts">
-defineProps<{ title: string }>();
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_props.rs#L44) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-valid-define-props) · [Rule reference](./reference/script-valid-define-props.md)
 
 ### `script/valid-next-tick`
 
 Require the result of a nextTick() call to be awaited, chained, or given a callback
 
-[Bad](#script-valid-next-tick-bad) · [Good](#script-valid-next-tick-good)
-
-Default severity: `warning`  
-Presets: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "script/valid-next-tick": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="script-valid-next-tick-bad"></span>
 
-**Bad**
-
-The imported `nextTick()` is a bare expression with no callback, so its returned Promise is ignored and no work waits for the DOM flush.
-
-```vue annotate="remove:3"
-<script setup lang="ts">
-import { nextTick } from "vue";
-nextTick();
-</script>
-```
+[Bad](./type-and-script.md#script-valid-next-tick-bad)
 
 <span id="script-valid-next-tick-good"></span>
 
-**Good**
+[Good](./type-and-script.md#script-valid-next-tick-good)
 
-`await nextTick()` consumes the Promise and explicitly waits for the next DOM update before subsequent setup code continues.
-
-```vue annotate="add:3"
-<script setup lang="ts">
-import { nextTick } from "vue";
-await nextTick();
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_next_tick.rs#L55) · [All rules](all.md)
+[Group examples](./type-and-script.md#script-valid-next-tick) · [Rule reference](./reference/script-valid-next-tick.md)
 
 ### `nuxt/no-nuxt-config-test-key`
 
 Disallow setting `test` key in Nuxt config
 
-[Bad](#nuxt-no-nuxt-config-test-key-bad) · [Good](#nuxt-no-nuxt-config-test-key-good)
-
-Default severity: `error`  
-Presets: `nuxt`  
-Automatic fix: None; review the suggested change  
-Applies to: Nuxt configuration files (nuxt.config.ts)  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "nuxt/no-nuxt-config-test-key": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="nuxt-no-nuxt-config-test-key-bad"></span>
 
-**Bad**
-
-The exported Nuxt config sets the identifier key `test` to the boolean `true`, the obsolete config shape this rule rejects.
-
-`nuxt.config.ts`
-
-```ts annotate="remove:1"
-export default defineNuxtConfig({ test: true });
-```
+[Bad](./ecosystem.md#nuxt-no-nuxt-config-test-key-bad)
 
 <span id="nuxt-no-nuxt-config-test-key-good"></span>
 
-**Good**
+[Good](./ecosystem.md#nuxt-no-nuxt-config-test-key-good)
 
-The empty config removes that boolean `test` property. This example does not forbid a test configuration object.
-
-`nuxt.config.ts`
-
-```ts annotate="add:1"
-export default defineNuxtConfig({});
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_nuxt_config_test_key.rs#L16) · [All rules](all.md)
+[Group examples](./ecosystem.md#nuxt-no-nuxt-config-test-key) · [Rule reference](./reference/nuxt-no-nuxt-config-test-key.md)
 
 ### `nuxt/no-page-meta-runtime-values`
 
 Disallow runtime context values inside `definePageMeta` at the eager level, which is extracted into a separate chunk at build time and runs before component setup
 
-[Bad](#nuxt-no-page-meta-runtime-values-bad) · [Good](#nuxt-no-page-meta-runtime-values-good)
-
-Default severity: `error`  
-Presets: `nuxt`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "nuxt/no-page-meta-runtime-values": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="nuxt-no-page-meta-runtime-values-bad"></span>
 
-**Bad**
-
-`useRoute()` is evaluated immediately while building the `definePageMeta` object, although the macro hoists that metadata outside the setup runtime context.
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-definePageMeta({ title: useRoute() });
-</script>
-```
+[Bad](./ecosystem.md#nuxt-no-page-meta-runtime-values-bad)
 
 <span id="nuxt-no-page-meta-runtime-values-good"></span>
 
-**Good**
+[Good](./ecosystem.md#nuxt-no-page-meta-runtime-values-good)
 
-`validate` receives a callback, so its `useRoute().params.id` access is deferred until the callback runs. The rule distinguishes deferred function bodies from eager metadata values.
-
-```vue annotate="add:2"
-<script setup lang="ts">
-definePageMeta({ validate: () => Boolean(useRoute().params.id) });
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_page_meta_runtime_values.rs#L25) · [All rules](all.md)
+[Group examples](./ecosystem.md#nuxt-no-page-meta-runtime-values) · [Rule reference](./reference/nuxt-no-page-meta-runtime-values.md)
 
 ### `nuxt/nuxt-config-keys-order`
 
 Prefer recommended order of Nuxt config properties
 
-[Bad](#nuxt-nuxt-config-keys-order-bad) · [Good](#nuxt-nuxt-config-keys-order-good)
-
-Default severity: `error`  
-Presets: `nuxt`  
-Automatic fix: Available for supported findings  
-Applies to: Nuxt configuration files (nuxt.config.ts)  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "nuxt/nuxt-config-keys-order": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="nuxt-nuxt-config-keys-order-bad"></span>
 
-**Bad**
-
-The config places `ssr` before `modules`, reversing their order in the rule’s recommended Nuxt config key sequence.
-
-`nuxt.config.ts`
-
-```ts annotate="remove:1"
-export default defineNuxtConfig({ ssr: true, modules: [] });
-```
+[Bad](./ecosystem.md#nuxt-nuxt-config-keys-order-bad)
 
 <span id="nuxt-nuxt-config-keys-order-good"></span>
 
-**Good**
+[Good](./ecosystem.md#nuxt-nuxt-config-keys-order-good)
 
-Putting `modules` before `ssr` preserves both values while satisfying the prescribed order; the repair changes layout rather than either option’s meaning.
-
-`nuxt.config.ts`
-
-```ts annotate="add:1"
-export default defineNuxtConfig({ modules: [], ssr: true });
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/nuxt_config_keys_order.rs#L24) · [All rules](all.md)
+[Group examples](./ecosystem.md#nuxt-nuxt-config-keys-order) · [Rule reference](./reference/nuxt-nuxt-config-keys-order.md)
 
 ### `nuxt/prefer-import-meta`
 
 Prefer using `import.meta.*` over `process.*`
 
-[Bad](#nuxt-prefer-import-meta-bad) · [Good](#nuxt-prefer-import-meta-good)
-
-Default severity: `error`  
-Presets: `nuxt`  
-Automatic fix: Available for supported findings  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-**Configuration (Vite+)**
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: {
-      "preset": "incremental",
-      "rules": {
-        "nuxt/prefer-import-meta": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
 <span id="nuxt-prefer-import-meta-bad"></span>
 
-**Bad**
-
-`process.client` uses a legacy Nuxt environment flag that the rule asks to migrate to `import.meta`.
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-if (process.client) console.log("browser");
-</script>
-```
+[Bad](./ecosystem.md#nuxt-prefer-import-meta-bad)
 
 <span id="nuxt-prefer-import-meta-good"></span>
 
-**Good**
+[Good](./ecosystem.md#nuxt-prefer-import-meta-good)
 
-`import.meta.client` keeps the browser-only branch explicit using the replacement environment flag.
-
-```vue annotate="add:2"
-<script setup lang="ts">
-if (import.meta.client) console.log("browser");
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_meta.rs#L18) · [All rules](all.md)
+[Group examples](./ecosystem.md#nuxt-prefer-import-meta) · [Rule reference](./reference/nuxt-prefer-import-meta.md)
 
 
 ## Project examples
@@ -16699,6736 +3866,922 @@ Good avoids this rule's finding under the configuration above; other rules may s
 
 The name is absent from the complete installed router.
 
-Default severity: error  
-Applies to: Reachable project declarations and imported components  
-Options: crossFile; rule severity (off/warn/error)  
-Automatic fix: None
-
-The complete installed router must be reachable from the application's createApp(...).use(router). Unknown/dynamic route tables do not prove unknown-name findings. Missing params are warnings because navigation may inherit a value from the current route.
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "ecosystem/vue-router-unknown-route": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/src/main.ts"></script>
-```
-
-`src/main.ts`
-
-```ts
-import { createApp } from "vue";
-import App from "./App.vue";
-import { router } from "./router";
-createApp(App).use(router).mount("#app");
-```
-
-`src/App.vue`
-
-```vue
-<script setup lang="ts">
-import { RouterView } from "vue-router";
-</script>
-<template><RouterView /></template>
-```
-
-`src/router.ts`
-
-```ts
-import { createRouter, createWebHistory } from "vue-router";
-import UserPost from "./UserPost.vue";
-export const router = createRouter({
-  history: createWebHistory(),
-  routes: [{ path: "/users/:userId/posts/:postId", name: "user-post", component: UserPost }],
-});
-```
-
 <span id="ecosystem-vue-router-unknown-route-bad"></span>
 
-**Bad**
-
-The reachable installed router declares `user-post`, but navigation uses the misspelled `user-posts` name.
-
-`src/UserPost.vue`
-
-```vue annotate="remove:4"
-<script setup lang="ts">
-import { useRouter } from "vue-router";
-const router = useRouter();
-router.push({ name: "user-posts", params: { userId: "1", postId: "2" } });
-</script>
-<template><p>Post</p></template>
-```
+[Bad](./cross-file.md#ecosystem-vue-router-unknown-route-bad)
 
 <span id="ecosystem-vue-router-unknown-route-good"></span>
 
-**Good**
+[Good](./cross-file.md#ecosystem-vue-router-unknown-route-good)
 
-Use the registered `user-post` name while retaining both declared path parameters.
-
-`src/UserPost.vue`
-
-```vue annotate="add:4"
-<script setup lang="ts">
-import { useRouter } from "vue-router";
-const router = useRouter();
-router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
-</script>
-<template><p>Post</p></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#ecosystem-vue-router-unknown-route) · [Rule reference](./project/ecosystem-vue-router-unknown-route.md)
 
 ### `ecosystem/vue-router-extra-param`
 
 The route does not declare tab; Vue Router discards it.
 
-Default severity: error  
-Applies to: Reachable project declarations and imported components  
-Options: crossFile; rule severity (off/warn/error)  
-Automatic fix: None
-
-The complete installed router must be reachable from the application's createApp(...).use(router). Unknown/dynamic route tables do not prove unknown-name findings. Missing params are warnings because navigation may inherit a value from the current route.
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "ecosystem/vue-router-extra-param": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/src/main.ts"></script>
-```
-
-`src/main.ts`
-
-```ts
-import { createApp } from "vue";
-import App from "./App.vue";
-import { router } from "./router";
-createApp(App).use(router).mount("#app");
-```
-
-`src/App.vue`
-
-```vue
-<script setup lang="ts">
-import { RouterView } from "vue-router";
-</script>
-<template><RouterView /></template>
-```
-
-`src/router.ts`
-
-```ts
-import { createRouter, createWebHistory } from "vue-router";
-import UserPost from "./UserPost.vue";
-export const router = createRouter({
-  history: createWebHistory(),
-  routes: [{ path: "/users/:userId/posts/:postId", name: "user-post", component: UserPost }],
-});
-```
-
 <span id="ecosystem-vue-router-extra-param-bad"></span>
 
-**Bad**
-
-The `user-post` path declares `userId` and `postId`, but the navigation also supplies undeclared `tab` as a path parameter.
-
-`src/UserPost.vue`
-
-```vue annotate="remove:4"
-<script setup lang="ts">
-import { useRouter } from "vue-router";
-const router = useRouter();
-router.push({ name: "user-post", params: { userId: "1", postId: "2", tab: "a" } });
-</script>
-<template><p>Post</p></template>
-```
+[Bad](./cross-file.md#ecosystem-vue-router-extra-param-bad)
 
 <span id="ecosystem-vue-router-extra-param-good"></span>
 
-**Good**
+[Good](./cross-file.md#ecosystem-vue-router-extra-param-good)
 
-Remove `tab` from params and retain only the keys present in the route path. Use query separately if the application needs a tab selection.
-
-`src/UserPost.vue`
-
-```vue annotate="add:4"
-<script setup lang="ts">
-import { useRouter } from "vue-router";
-const router = useRouter();
-router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
-</script>
-<template><p>Post</p></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#ecosystem-vue-router-extra-param) · [Rule reference](./project/ecosystem-vue-router-extra-param.md)
 
 ### `ecosystem/vue-router-param-type`
 
 postId is not repeatable, so an array is invalid.
 
-Default severity: error  
-Applies to: Reachable project declarations and imported components  
-Options: crossFile; rule severity (off/warn/error)  
-Automatic fix: None
-
-The complete installed router must be reachable from the application's createApp(...).use(router). Unknown/dynamic route tables do not prove unknown-name findings. Missing params are warnings because navigation may inherit a value from the current route.
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "ecosystem/vue-router-param-type": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/src/main.ts"></script>
-```
-
-`src/main.ts`
-
-```ts
-import { createApp } from "vue";
-import App from "./App.vue";
-import { router } from "./router";
-createApp(App).use(router).mount("#app");
-```
-
-`src/App.vue`
-
-```vue
-<script setup lang="ts">
-import { RouterView } from "vue-router";
-</script>
-<template><RouterView /></template>
-```
-
-`src/router.ts`
-
-```ts
-import { createRouter, createWebHistory } from "vue-router";
-import UserPost from "./UserPost.vue";
-export const router = createRouter({
-  history: createWebHistory(),
-  routes: [{ path: "/users/:userId/posts/:postId", name: "user-post", component: UserPost }],
-});
-```
-
 <span id="ecosystem-vue-router-param-type-bad"></span>
 
-**Bad**
-
-`postId` is a scalar path parameter, but the navigation gives it the array `["2"]`.
-
-`src/UserPost.vue`
-
-```vue annotate="remove:4"
-<script setup lang="ts">
-import { useRouter } from "vue-router";
-const router = useRouter();
-router.push({ name: "user-post", params: { userId: "1", postId: ["2"] } });
-</script>
-<template><p>Post</p></template>
-```
+[Bad](./cross-file.md#ecosystem-vue-router-param-type-bad)
 
 <span id="ecosystem-vue-router-param-type-good"></span>
 
-**Good**
+[Good](./cross-file.md#ecosystem-vue-router-param-type-good)
 
-Pass the scalar `"2"` for the non-repeatable `postId` segment.
-
-`src/UserPost.vue`
-
-```vue annotate="add:4"
-<script setup lang="ts">
-import { useRouter } from "vue-router";
-const router = useRouter();
-router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
-</script>
-<template><p>Post</p></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#ecosystem-vue-router-param-type) · [Rule reference](./project/ecosystem-vue-router-param-type.md)
 
 ### `ecosystem/vue-router-missing-param`
 
 Required postId is missing; relying on the current route is fragile.
 
-Default severity: warning  
-Applies to: Reachable project declarations and imported components  
-Options: crossFile; rule severity (off/warn/error)  
-Automatic fix: None
-
-The complete installed router must be reachable from the application's createApp(...).use(router). Unknown/dynamic route tables do not prove unknown-name findings. Missing params are warnings because navigation may inherit a value from the current route.
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "ecosystem/vue-router-missing-param": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/src/main.ts"></script>
-```
-
-`src/main.ts`
-
-```ts
-import { createApp } from "vue";
-import App from "./App.vue";
-import { router } from "./router";
-createApp(App).use(router).mount("#app");
-```
-
-`src/App.vue`
-
-```vue
-<script setup lang="ts">
-import { RouterView } from "vue-router";
-</script>
-<template><RouterView /></template>
-```
-
-`src/router.ts`
-
-```ts
-import { createRouter, createWebHistory } from "vue-router";
-import UserPost from "./UserPost.vue";
-export const router = createRouter({
-  history: createWebHistory(),
-  routes: [{ path: "/users/:userId/posts/:postId", name: "user-post", component: UserPost }],
-});
-```
-
 <span id="ecosystem-vue-router-missing-param-bad"></span>
 
-**Bad**
-
-The navigation omits required `postId` from the `user-post` path. This is a warning because Vue Router may inherit a value from the current route.
-
-`src/UserPost.vue`
-
-```vue annotate="remove:4"
-<script setup lang="ts">
-import { useRouter } from "vue-router";
-const router = useRouter();
-router.push({ name: "user-post", params: { userId: "1" } });
-</script>
-<template><p>Post</p></template>
-```
+[Bad](./cross-file.md#ecosystem-vue-router-missing-param-bad)
 
 <span id="ecosystem-vue-router-missing-param-good"></span>
 
-**Good**
+[Good](./cross-file.md#ecosystem-vue-router-missing-param-good)
 
-Pass both `userId` and `postId` explicitly so navigation does not depend on the current route's parameter state.
-
-`src/UserPost.vue`
-
-```vue annotate="add:4"
-<script setup lang="ts">
-import { useRouter } from "vue-router";
-const router = useRouter();
-router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
-</script>
-<template><p>Post</p></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#ecosystem-vue-router-missing-param) · [Rule reference](./project/ecosystem-vue-router-missing-param.md)
 
 ### `html/cross-component-nesting`
 
 Check actual HTML nesting after imported components are composed.
 
-Default severity: warning  
-Applies to: Reachable project declarations and imported components  
-Options: crossFile; rule severity (off/warn/error)  
-Automatic fix: None
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "html/cross-component-nesting": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./App.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="html-cross-component-nesting-bad"></span>
 
-**Bad**
-
-The parent's `<p>` contains a resolved child whose root is `<div>`, producing invalid paragraph/block nesting after composition.
-
-`App.vue`
-
-```vue annotate="remove:4"
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><p><Child /></p></template>
-```
-
-`Child.vue`
-
-```vue
-<template><div>Block content</div></template>
-```
+[Bad](./cross-file.md#html-cross-component-nesting-bad)
 
 <span id="html-cross-component-nesting-good"></span>
 
-**Good**
+[Good](./cross-file.md#html-cross-component-nesting-good)
 
-Use a `<section>` container that can contain the child's block element; the child stays unchanged.
-
-`App.vue`
-
-```vue annotate="add:4"
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><section><Child /></section></template>
-```
-
-`Child.vue`
-
-```vue
-<template><div>Block content</div></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#html-cross-component-nesting) · [Rule reference](./project/html-cross-component-nesting.md)
 
 ### `vue/cross-file-attrs-fallthrough`
 
 A parent passes attributes to a resolved child whose root cannot inherit them and does not explicitly use $attrs.
 
-Default severity: warning  
-Applies to: Reachable project declarations and imported components  
-Options: crossFile; rule severity (off/warn/error)  
-Automatic fix: None
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "vue/cross-file-attrs-fallthrough": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./App.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vue-cross-file-attrs-fallthrough-bad"></span>
 
-**Bad**
-
-The parent passes `class="notice"` to a resolved fragment child that has no automatic attribute target and never reads `$attrs`.
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child class="notice" /></template>
-```
-
-`Child.vue`
-
-```vue annotate="remove:1"
-<template><main>Content</main><aside>Help</aside></template>
-```
+[Bad](./cross-file.md#vue-cross-file-attrs-fallthrough-bad)
 
 <span id="vue-cross-file-attrs-fallthrough-good"></span>
 
-**Good**
+[Good](./cross-file.md#vue-cross-file-attrs-fallthrough-good)
 
-The child chooses `<main>` as its target by binding `$attrs` there; its sibling `<aside>` remains separate.
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child class="notice" /></template>
-```
-
-`Child.vue`
-
-```vue annotate="add:1"
-<template><main v-bind="$attrs">Content</main><aside>Help</aside></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vue-cross-file-attrs-fallthrough) · [Rule reference](./project/vue-cross-file-attrs-fallthrough.md)
 
 ### `vize:croquis/cf/array-mutation`
 
 This producer-free contract uses a historical Vue 2.7 array-index assignment scenario. Vue 2 does not notify updates for direct index assignment; Vue 3 tracks such assignments. The Bad/Good files illustrate the Vue 2 repair, not a Vue 3 defect.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
-
-Historical Vue 2.7 only: use matching Vue 2.7 and SFC compiler dependencies for this scenario. Vue 3 proxies track array index assignment, so `items[0] = next` is reactive in Vue 3 and is not a Vue 3 defect. This published code has no current producer.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import Vue from 'vue';
-import App from './App.vue';
-new Vue({ render: h => h(App) }).$mount('#app');
-
-```
-
-`index.html`
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
-<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
-
-```
-
-`App.vue`
-
-```vue
-<script lang="ts">
-import Vue from 'vue';
-import { replaceFirst } from './replace-first';
-export default Vue.extend({
-  data() { return { items: ['Before'] }; },
-  methods: { replace() { replaceFirst(this.items, 'After'); } },
-});
-</script>
-<template><section><p>{{ items[0] }}</p><button @click="replace">Replace</button></section></template>
-
-```
-
 <span id="vize-croquis-cf-array-mutation-bad"></span>
 
-**Bad**
-
-In this historical Vue 2.7 project, `items[0] = next` changes the array without notifying Vue 2’s array observer, so the displayed first item need not update.
-
-`replace-first.ts`
-
-```ts annotate="remove:2"
-export function replaceFirst(items: string[], next: string): void {
-  items[0] = next;
-}
-
-```
+[Bad](./cross-file.md#vize-croquis-cf-array-mutation-bad)
 
 <span id="vize-croquis-cf-array-mutation-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-array-mutation-good)
 
-`splice(0, 1, next)` uses the array mutation method observed by Vue 2, allowing the same replacement to update the view.
-
-`replace-first.ts`
-
-```ts annotate="add:2"
-export function replaceFirst(items: string[], next: string): void {
-  items.splice(0, 1, next);
-}
-
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-array-mutation) · [Rule reference](./project/vize-croquis-cf-array-mutation.md)
 
 ### `vize:croquis/cf/async-boundary`
 
 Reactive state crosses an async boundary and can be observed stale.
 
-Default severity: error  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/async-boundary": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./SearchPage.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
-`api.ts`
-
-```ts
-export interface Result { items: string[]; }
-export async function load(query: string, options?: { signal?: AbortSignal }): Promise<Result> {
-  const response = await fetch(`/search?q=${encodeURIComponent(query)}`, options);
-  return response.json();
-}
-```
-
 <span id="vize-croquis-cf-async-boundary-bad"></span>
 
-**Bad**
-
-A slower old query can finish after a newer query and overwrite `result`, because the watcher has no invalidation cleanup.
-
-`SearchPage.vue`
-
-```vue
-<script setup lang="ts">
-import { ref } from "vue";
-import SearchResults from "./SearchResults.vue";
-
-const query = ref("");
-</script>
-
-<template>
-  <SearchResults :query="query" />
-</template>
-```
-
-`SearchResults.vue`
-
-```vue annotate="remove:10,11"
-<script setup lang="ts">
-import { load, type Result } from "./api";
-import { ref, watch } from "vue";
-
-const props = defineProps<{ query: string }>();
-const result = ref<Result | null>(null);
-
-watch(
-  () => props.query,
-  async (value) => {
-    result.value = await load(value);
-  },
-);
-</script>
-```
+[Bad](./cross-file.md#vize-croquis-cf-async-boundary-bad)
 
 <span id="vize-croquis-cf-async-boundary-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-async-boundary-good)
 
-Register cleanup before awaiting: abort the old request and invalidate its `active` flag, then assign only a still-active response.
-
-`SearchPage.vue`
-
-```vue
-<script setup lang="ts">
-import { ref } from "vue";
-import SearchResults from "./SearchResults.vue";
-
-const query = ref("");
-</script>
-
-<template>
-  <SearchResults :query="query" />
-</template>
-```
-
-`SearchResults.vue`
-
-```vue annotate="add:10,11,12,13,14,15,16,17,18,19,20"
-<script setup lang="ts">
-import { load, type Result } from "./api";
-import { ref, watch } from "vue";
-
-const props = defineProps<{ query: string }>();
-const result = ref<Result | null>(null);
-
-watch(
-  () => props.query,
-  async (value, _oldValue, onCleanup) => {
-    const controller = new AbortController();
-    let active = true;
-
-    onCleanup(() => {
-      active = false;
-      controller.abort();
-    });
-
-    const next = await load(value, { signal: controller.signal });
-    if (active) result.value = next;
-  },
-);
-</script>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/race_conditions/diagnostics.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-async-boundary) · [Rule reference](./project/vize-croquis-cf-async-boundary.md)
 
 ### `vize:croquis/cf/async-no-suspense`
 
 An async component is rendered without a Suspense boundary.
 
-Default severity: warning  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-The experimental Rust CrossFileAnalyzer has a producer for this code. The CLI pass does not emit this individual code; configuring its ID does not enable that Rust pass. These scenarios describe the analyzer's supported graph/facts, not a Vite+ promise.
-
-Current support: `no-source-async-fact`
-
-The boundary producer reads macros.is_async(), but source parsing currently records top-level await on the script-setup scope instead. The complete Bad/Good source pair below therefore produces no async-no-suspense finding through the current CLI. It explains the Suspense convention; supplying the missing macro fact is implementation follow-up work.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./App.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-async-no-suspense-bad"></span>
 
-**Bad**
-
-The child has top-level await but its parent supplies no `<Suspense>` boundary. Current source parsing does not supply the macro fact required to emit this code.
-
-`App.vue`
-
-```vue annotate="remove:4"
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child /></template>
-```
-
-`Child.vue`
-
-```vue
-<script setup lang="ts">
-const greeting = await Promise.resolve("Hello");
-</script>
-<template><p>{{ greeting }}</p></template>
-```
+[Bad](./cross-file.md#vize-croquis-cf-async-no-suspense-bad)
 
 <span id="vize-croquis-cf-async-no-suspense-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-async-no-suspense-good)
 
-The parent wraps the same async child in `<Suspense>` with a loading fallback. This demonstrates the convention; both source alternatives remain non-emitted by the current pass.
-
-`App.vue`
-
-```vue annotate="add:4"
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Suspense><Child /><template #fallback><p>Loading</p></template></Suspense></template>
-```
-
-`Child.vue`
-
-```vue
-<script setup lang="ts">
-const greeting = await Promise.resolve("Hello");
-</script>
-<template><p>{{ greeting }}</p></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/boundary.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-async-no-suspense) · [Rule reference](./project/vize-croquis-cf-async-no-suspense.md)
 
 ### `vize:croquis/cf/browser-api-ssr`
 
 A browser-only API is used where the component can render on the server.
 
-Default severity: warning  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/browser-api-ssr": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./App.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-browser-api-ssr-bad"></span>
 
-**Bad**
-
-`window.innerWidth` runs during setup, where an SSR environment has no browser `window`.
-
-`App.vue`
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-const width = window.innerWidth;
-</script>
-<template><p>Content</p></template>
-```
+[Bad](./cross-file.md#vize-croquis-cf-browser-api-ssr-bad)
 
 <span id="vize-croquis-cf-browser-api-ssr-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-browser-api-ssr-good)
 
-Initialize a ref to a server-safe value and read `window` inside `onMounted`, which runs after client mounting.
-
-`App.vue`
-
-```vue annotate="add:2,3,4"
-<script setup lang="ts">
-import { onMounted, ref } from "vue";
-const width = ref(0);
-onMounted(() => { width.value = window.innerWidth; });
-</script>
-<template><p>Content</p></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/boundary.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-browser-api-ssr) · [Rule reference](./project/vize-croquis-cf-browser-api-ssr.md)
 
 ### `vize:croquis/cf/circular-dep`
 
 Components import each other in a cycle.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
-
-This illustrates a concrete eager-initialization cycle. A recursive Vue component or every circular import is not automatically erroneous. No current producer emits this contract code.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from 'vue';
-import App from './App.vue';
-createApp(App).mount('#app');
-
-```
-
-`index.html`
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
-<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
-
-```
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import { aLabel } from './a';
-</script>
-
-<template>
-<p>{{ aLabel }}</p>
-</template>
-
-```
-
-`labels.ts`
-
-```ts
-export const aPrefix = 'A';
-export const bPrefix = 'B';
-
-```
-
 <span id="vize-croquis-cf-circular-dep-bad"></span>
 
-**Bad**
-
-`a.ts` imports `b.ts`, which imports `a.ts` back. Both eagerly initialize a constant from the other module’s still-uninitialized constant, creating a temporal-dead-zone failure.
-
-`a.ts`
-
-```ts annotate="remove:1,2"
-import { bLabel } from './b';
-export const aLabel = 'A' + bLabel;
-
-```
-
-`b.ts`
-
-```ts annotate="remove:1,2"
-import { aLabel } from './a';
-export const bLabel = 'B' + aLabel;
-
-```
+[Bad](./cross-file.md#vize-croquis-cf-circular-dep-bad)
 
 <span id="vize-croquis-cf-circular-dep-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-circular-dep-good)
 
-Both modules read initialized prefixes from the independent `labels.ts` module, removing the cycle and the eager cross-read.
-
-`a.ts`
-
-```ts annotate="add:1,2"
-import { bPrefix } from './labels';
-export const aLabel = 'A' + bPrefix;
-
-```
-
-`b.ts`
-
-```ts annotate="add:1,2"
-import { aPrefix } from './labels';
-export const bLabel = 'B' + aPrefix;
-
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-circular-dep) · [Rule reference](./project/vize-croquis-cf-circular-dep.md)
 
 ### `vize:croquis/cf/circular-reactive-dependency`
 
 Reactive computations depend on each other in a cycle.
 
-Default severity: context-dependent  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/circular-reactive-dependency": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-Example qualification: `illustrative-source-pair`
-
-The complete Vue project below illustrates update feedback and its repair. It is not a qualified CLI finding witness: the diagnostic producer requires retained reactive-flow reference identities and edges, as shown by the accompanying graph. These sources do not establish that the current source path will emit this exact code. Dedicated tracked-ID graph finding controls remain separate from source grammar checks.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from 'vue';
-import App from './App.vue';
-createApp(App).mount('#app');
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
-`count-key.ts`
-
-```ts
-import type { InjectionKey, Ref } from 'vue';
-export const countKey: InjectionKey<Ref<number>> = Symbol('count');
-```
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import { provide, ref } from 'vue';
-import { countKey } from './count-key';
-import CycleView from './CycleView.vue';
-const count = ref(1); // A: the provider-owned source.
-provide(countKey, count);
-</script>
-<template>
-  <button @click="count++">Increment</button>
-  <CycleView />
-</template>
-```
-
 <span id="vize-croquis-cf-circular-reactive-dependency-bad"></span>
 
-**Bad**
-
-App owns and provides count (A). CycleView derives nextCount (B), then immediately writes each derived value back into the same injected count. Every write changes the input to the computation again, creating update feedback A → B → A. The identities in the retained graph below represent these two references, not unrelated bindings with matching names.
-
-`CycleView.vue`
-
-```vue annotate="remove:2,6"
-<script setup lang="ts">
-import { computed, inject, watch } from 'vue';
-import { countKey } from './count-key';
-const count = inject(countKey)!; // App provides this same A reference.
-const nextCount = computed(() => count.value + 1); // B: the derived consumer.
-watch(nextCount, value => { count.value = value; }, { immediate: true });
-</script>
-<template><p>{{ nextCount }}</p></template>
-```
-
-```text annotate="remove:2"
-Tracked references: A = provider source; B = consumer reference
-Tracked flows: A -> B; B -> A
-```
+[Bad](./cross-file.md#vize-croquis-cf-circular-reactive-dependency-bad)
 
 <span id="vize-croquis-cf-circular-reactive-dependency-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-circular-reactive-dependency-good)
 
-Remove the watcher that writes B back into A. App keeps ownership of count and changes it only through its explicit Increment action; CycleView reads the derived nextCount without feeding the result back. The same references retain only the A → B dependency.
-
-`CycleView.vue`
-
-```vue annotate="add:2"
-<script setup lang="ts">
-import { computed, inject } from 'vue';
-import { countKey } from './count-key';
-const count = inject(countKey)!; // App provides this same A reference.
-const nextCount = computed(() => count.value + 1); // B: the derived consumer.
-</script>
-<template><p>{{ nextCount }}</p></template>
-```
-
-```text annotate="add:2"
-Tracked references: A = provider source; B = consumer reference
-Tracked flows: A -> B
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/cross_file_reactivity/diagnostics.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-circular-reactive-dependency) · [Rule reference](./project/vize-croquis-cf-circular-reactive-dependency.md)
 
 ### `vize:croquis/cf/closure-captures-reactive`
 
 A closure captures a reactive value and will not see later updates.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from 'vue';
-import App from './App.vue';
-createApp(App).mount('#app');
-
-```
-
-`index.html`
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
-<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
-
-```
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import { computed, ref } from 'vue';
-import { makeReader } from './reader';
-const count = ref(0);
-const read = makeReader(count);
-const shown = computed(read);
-</script>
-
-<template>
-<button @click="count++">Increment {{ count }}</button><p>{{ shown }}</p>
-</template>
-
-```
-
 <span id="vize-croquis-cf-closure-captures-reactive-bad"></span>
 
-**Bad**
-
-`makeReader` copies `count.value` before creating the closure. The computed reader then returns that initial number without reading a reactive dependency.
-
-`reader.ts`
-
-```ts annotate="remove:3,4"
-import type { Ref } from 'vue';
-export function makeReader(count: Ref<number>): () => number {
-  const captured = count.value;
-  return () => captured;
-}
-
-```
+[Bad](./cross-file.md#vize-croquis-cf-closure-captures-reactive-bad)
 
 <span id="vize-croquis-cf-closure-captures-reactive-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-closure-captures-reactive-good)
 
-The closure reads `count.value` when invoked, so the computed getter can track the ref and update `shown` after increments.
-
-`reader.ts`
-
-```ts annotate="add:3"
-import type { Ref } from 'vue';
-export function makeReader(count: Ref<number>): () => number {
-  return () => count.value;
-}
-
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-closure-captures-reactive) · [Rule reference](./project/vize-croquis-cf-closure-captures-reactive.md)
 
 ### `vize:croquis/cf/composable-outside-setup`
 
 A composable is called outside `setup`.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
-
-The concern is this lifecycle-dependent composable, not a blanket ban on ordinary utility functions or all Composition API calls outside setup. This contract has no current producer.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from 'vue';
-import App from './App.vue';
-createApp(App).mount('#app');
-
-```
-
-`index.html`
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
-<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
-
-```
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import { useTitle } from './use-title';
-const title = useTitle();
-</script>
-
-<template>
-<h1>{{ title }}</h1>
-</template>
-
-```
-
 <span id="vize-croquis-cf-composable-outside-setup-bad"></span>
 
-**Bad**
-
-Importing `use-title.ts` registers `onMounted` before a component setup is active. Calling its exported function later only returns that module-level ref; it cannot repair the missed lifecycle ownership.
-
-`use-title.ts`
-
-```ts annotate="remove:2,3,4"
-import { onMounted, ref } from 'vue';
-const title = ref('Before mount');
-onMounted(() => { title.value = 'Mounted'; });
-export function useTitle() { return title; }
-
-```
+[Bad](./cross-file.md#vize-croquis-cf-composable-outside-setup-bad)
 
 <span id="vize-croquis-cf-composable-outside-setup-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-composable-outside-setup-good)
 
-Both state creation and hook registration move into `useTitle`, which App calls synchronously inside setup. The mounted hook now belongs to that App instance.
-
-`use-title.ts`
-
-```ts annotate="add:2,3,4,5,6"
-import { onMounted, ref } from 'vue';
-export function useTitle() {
-  const title = ref('Before mount');
-  onMounted(() => { title.value = 'Mounted'; });
-  return title;
-}
-
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-composable-outside-setup) · [Rule reference](./project/vize-croquis-cf-composable-outside-setup.md)
 
 ### `vize:croquis/cf/computed-side-effects`
 
 A computed getter writes state or performs another side effect.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from 'vue';
-import App from './App.vue';
-createApp(App).mount('#app');
-
-```
-
-`index.html`
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
-<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
-
-```
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import { useDouble } from './use-double';
-const { count, doubled, lastCalculated } = useDouble();
-</script>
-
-<template>
-<button @click="count++">Increment {{ count }}</button><p>{{ doubled }} / {{ lastCalculated }}</p>
-</template>
-
-```
-
 <span id="vize-croquis-cf-computed-side-effects-bad"></span>
 
-**Bad**
-
-Evaluating `doubled` writes `lastCalculated`, so reading a computed value also mutates separate state. That couples the side effect to when the lazy getter is read.
-
-`use-double.ts`
-
-```ts annotate="remove:1,5,6,7,8,9"
-import { computed, ref } from 'vue';
-export function useDouble() {
-  const count = ref(0);
-  const lastCalculated = ref(0);
-  const doubled = computed(() => {
-    const next = count.value * 2;
-    lastCalculated.value = next;
-    return next;
-  });
-  return { count, doubled, lastCalculated };
-}
-
-```
+[Bad](./cross-file.md#vize-croquis-cf-computed-side-effects-bad)
 
 <span id="vize-croquis-cf-computed-side-effects-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-computed-side-effects-good)
 
-The getter only returns the derived number. A separate watcher owns the write to `lastCalculated` when `count` changes, including its initial value.
-
-`use-double.ts`
-
-```ts annotate="add:1,5,6"
-import { computed, ref, watch } from 'vue';
-export function useDouble() {
-  const count = ref(0);
-  const lastCalculated = ref(0);
-  const doubled = computed(() => count.value * 2);
-  watch(count, next => { lastCalculated.value = next * 2; }, { immediate: true });
-  return { count, doubled, lastCalculated };
-}
-
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-computed-side-effects) · [Rule reference](./project/vize-croquis-cf-computed-side-effects.md)
 
 ### `vize:croquis/cf/deep-import`
 
 An import chain is deeper than the project allows.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
-
-This is an explicitly chosen project layout policy; it does not invent a supported depth threshold or option. There is no current diagnostic producer for this contract.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from 'vue';
-import App from './App.vue';
-createApp(App).mount('#app');
-
-```
-
-`index.html`
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
-<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
-
-```
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import { label } from './entry';
-</script>
-
-<template>
-<p>{{ label }}</p>
-</template>
-
-```
-
-`value.ts`
-
-```ts
-export const label = 'Notice';
-
-```
-
-`level-one.ts`
-
-```ts
-export { label } from './level-two';
-
-```
-
-`level-two.ts`
-
-```ts
-export { label } from './level-three';
-
-```
-
-`level-three.ts`
-
-```ts
-export { label } from './value';
-
-```
-
-`public-api.ts`
-
-```ts
-export { label } from './value';
-
-```
-
 <span id="vize-croquis-cf-deep-import-bad"></span>
 
-**Bad**
-
-The entry routes a simple value through `level-one`, `level-two`, and `level-three`, creating an unnecessarily deep import chain for a project that wants a shallow public boundary.
-
-`entry.ts`
-
-```ts annotate="remove:1"
-export { label } from './level-one';
-
-```
+[Bad](./cross-file.md#vize-croquis-cf-deep-import-bad)
 
 <span id="vize-croquis-cf-deep-import-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-deep-import-good)
 
-The entry uses `public-api.ts`, which re-exports the value directly. The consumer keeps the same imported name while the chain becomes shorter.
-
-`entry.ts`
-
-```ts annotate="add:1"
-export { label } from './public-api';
-
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-deep-import) · [Rule reference](./project/vize-croquis-cf-deep-import.md)
 
 ### `vize:croquis/cf/destructuring-breaks-reactivity`
 
 Destructuring a reactive object copies the fields and drops tracking.
 
-Default severity: error  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/destructuring-breaks-reactivity": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./UserPage.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-destructuring-breaks-reactivity-bad"></span>
 
-**Bad**
-
-Ordinary destructuring of the `props` object copies its current `item` value; this is separate from direct Vue 3.5 `defineProps()` destructuring.
-
-`UserPage.vue`
-
-```vue
-<script setup lang="ts">
-import { reactive } from "vue";
-import UserSummary from "./UserSummary.vue";
-
-const user = reactive({ name: "Ada" });
-</script>
-
-<template>
-  <UserSummary :item="user" />
-</template>
-```
-
-`UserSummary.vue`
-
-```vue annotate="remove:3"
-<script setup lang="ts">
-const props = defineProps<{ item: { name: string } }>();
-const { item } = props;
-</script>
-```
+[Bad](./cross-file.md#vize-croquis-cf-destructuring-breaks-reactivity-bad)
 
 <span id="vize-croquis-cf-destructuring-breaks-reactivity-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-destructuring-breaks-reactivity-good)
 
-`toRef(props, "item")` retains the connection to the property on `props`.
-
-`UserPage.vue`
-
-```vue
-<script setup lang="ts">
-import { reactive } from "vue";
-import UserSummary from "./UserSummary.vue";
-
-const user = reactive({ name: "Ada" });
-</script>
-
-<template>
-  <UserSummary :item="user" />
-</template>
-```
-
-`UserSummary.vue`
-
-```vue annotate="add:2,3,5"
-<script setup lang="ts">
-import { toRef } from "vue";
-
-const props = defineProps<{ item: { name: string } }>();
-const item = toRef(props, "item");
-</script>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/cross_file_reactivity/diagnostics.rs)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/provide_inject/analysis.rs)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/reactivity/diagnostics.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-destructuring-breaks-reactivity) · [Rule reference](./project/vize-croquis-cf-destructuring-breaks-reactivity.md)
 
 ### `vize:croquis/cf/di-outside-setup`
 
 `provide` or `inject` is called outside `setup`.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
-
-This example uses component provide/inject. `app.provide` and supported `app.runWithContext` injection are different valid ownership surfaces, not prohibited by this scenario. No current producer emits this contract code.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from 'vue';
-import App from './App.vue';
-createApp(App).mount('#app');
-
-```
-
-`index.html`
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
-<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
-
-```
-
-`theme.ts`
-
-```ts
-import { inject, provide } from 'vue';
-import type { InjectionKey } from 'vue';
-export const ThemeKey: InjectionKey<string> = Symbol('theme');
-export function provideTheme() { provide(ThemeKey, 'dark'); }
-export function useTheme() { return inject(ThemeKey, 'light'); }
-
-```
-
-`ThemedText.vue`
-
-```vue
-<script setup lang="ts">
-import { useTheme } from './theme';
-const theme = useTheme();
-</script>
-
-<template>
-<p>{{ theme }}</p>
-</template>
-
-```
-
 <span id="vize-croquis-cf-di-outside-setup-bad"></span>
 
-**Bad**
-
-`main.ts` calls component `provide` with no active component instance. The child’s `inject` therefore cannot receive this intended ancestor value and uses `light`.
-
-`main.ts`
-
-```ts annotate="remove:1,2,3,4,5,6"
-import { createApp } from 'vue';
-import App from './App.vue';
-import { provideTheme } from './theme';
-provideTheme();
-createApp(App).mount('#app');
-
-```
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import ThemedText from './ThemedText.vue';
-</script>
-
-<template>
-<ThemedText />
-</template>
-
-```
+[Bad](./cross-file.md#vize-croquis-cf-di-outside-setup-bad)
 
 <span id="vize-croquis-cf-di-outside-setup-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-di-outside-setup-good)
 
-App calls the provider from its setup before rendering the child. The child now inherits the `dark` value from its component ancestor.
-
-`App.vue`
-
-```vue annotate="add:3,4"
-<script setup lang="ts">
-import ThemedText from './ThemedText.vue';
-import { provideTheme } from './theme';
-provideTheme();
-</script>
-
-<template>
-<ThemedText />
-</template>
-
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-di-outside-setup) · [Rule reference](./project/vize-croquis-cf-di-outside-setup.md)
 
 ### `vize:croquis/cf/dom-access-without-next-tick`
 
 The DOM is read before Vue has flushed the update.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from 'vue';
-import App from './App.vue';
-createApp(App).mount('#app');
-
-```
-
-`index.html`
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
-<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
-
-```
-
-`read-label.ts`
-
-```ts
-export function readLabel(node: HTMLElement | null): string {
-  return node?.textContent ?? '';
-}
-
-```
-
 <span id="vize-croquis-cf-dom-access-without-next-tick-bad"></span>
 
-**Bad**
-
-The click handler increments `count` and immediately reads the rendered paragraph, before Vue flushes the scheduled DOM update. `sampled` can contain the previous count.
-
-`App.vue`
-
-```vue annotate="remove:2,7"
-<script setup lang="ts">
-import { ref } from 'vue';
-import { readLabel } from './read-label';
-const count = ref(0);
-const label = ref<HTMLElement | null>(null);
-const sampled = ref('');
-function increment() {
-  count.value++;
-  sampled.value = readLabel(label.value);
-}
-</script>
-
-<template>
-<button @click="increment">Increment</button><p ref="label">{{ count }}</p><p>DOM sample: {{ sampled }}</p>
-</template>
-
-```
+[Bad](./cross-file.md#vize-croquis-cf-dom-access-without-next-tick-bad)
 
 <span id="vize-croquis-cf-dom-access-without-next-tick-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-dom-access-without-next-tick-good)
 
-Awaiting `nextTick()` after the state write lets Vue update the paragraph before `readLabel` samples its text.
-
-`App.vue`
-
-```vue annotate="add:2,7,9"
-<script setup lang="ts">
-import { nextTick, ref } from 'vue';
-import { readLabel } from './read-label';
-const count = ref(0);
-const label = ref<HTMLElement | null>(null);
-const sampled = ref('');
-async function increment() {
-  count.value++;
-  await nextTick();
-  sampled.value = readLabel(label.value);
-}
-</script>
-
-<template>
-<button @click="increment">Increment</button><p ref="label">{{ count }}</p><p>DOM sample: {{ sampled }}</p>
-</template>
-
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-dom-access-without-next-tick) · [Rule reference](./project/vize-croquis-cf-dom-access-without-next-tick.md)
 
 ### `vize:croquis/cf/duplicate-id`
 
 The same element id is used in more than one component.
 
-Default severity: warning  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/duplicate-id": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./CheckoutForm.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-duplicate-id-bad"></span>
 
-**Bad**
-
-The reachable shipping and billing components both render `id="postal-code"`, so their labels share an ambiguous document target.
-
-`CheckoutForm.vue`
-
-```vue
-<script setup lang="ts">
-import BillingAddress from "./BillingAddress.vue";
-import ShippingAddress from "./ShippingAddress.vue";
-</script>
-
-<template>
-  <ShippingAddress />
-  <BillingAddress />
-</template>
-```
-
-`ShippingAddress.vue`
-
-```vue annotate="remove:2,3"
-<template>
-  <label for="postal-code">Shipping postal code</label>
-  <input id="postal-code" />
-</template>
-```
-
-`BillingAddress.vue`
-
-```vue annotate="remove:2,3"
-<template>
-  <label for="postal-code">Billing postal code</label>
-  <input id="postal-code" />
-</template>
-```
+[Bad](./cross-file.md#vize-croquis-cf-duplicate-id-bad)
 
 <span id="vize-croquis-cf-duplicate-id-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-duplicate-id-good)
 
-Each component calls `useId()` and binds its own value to both label and input, preserving the association without a repeated literal ID.
-
-`CheckoutForm.vue`
-
-```vue
-<script setup lang="ts">
-import BillingAddress from "./BillingAddress.vue";
-import ShippingAddress from "./ShippingAddress.vue";
-</script>
-
-<template>
-  <ShippingAddress />
-  <BillingAddress />
-</template>
-```
-
-`ShippingAddress.vue`
-
-```vue annotate="add:1,2,3,4,5,6,8,9"
-<script setup lang="ts">
-import { useId } from "vue";
-
-const postalCodeId = useId();
-</script>
-
-<template>
-  <label :for="postalCodeId">Shipping postal code</label>
-  <input :id="postalCodeId" />
-</template>
-```
-
-`BillingAddress.vue`
-
-```vue annotate="add:1,2,3,4,5,6,8,9"
-<script setup lang="ts">
-import { useId } from "vue";
-
-const postalCodeId = useId();
-</script>
-
-<template>
-  <label :for="postalCodeId">Billing postal code</label>
-  <input :id="postalCodeId" />
-</template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/element_id.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-duplicate-id) · [Rule reference](./project/vize-croquis-cf-duplicate-id.md)
 
 ### `vize:croquis/cf/event-listener-leak`
 
 An event listener is registered and never removed.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from 'vue';
-import App from './App.vue';
-createApp(App).mount('#app');
-
-```
-
-`index.html`
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
-<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
-
-```
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import { useWidth } from './use-width';
-const width = useWidth();
-</script>
-
-<template>
-<p>{{ width }}</p>
-</template>
-
-```
-
 <span id="vize-croquis-cf-event-listener-leak-bad"></span>
 
-**Bad**
-
-Mounting adds a window resize listener that captures the component’s width ref, but unmounting never removes it. Repeated mounts can retain unused listeners and state.
-
-`use-width.ts`
-
-```ts annotate="remove:1"
-import { onMounted, ref } from 'vue';
-export function useWidth() {
-  const width = ref(0);
-  const resize = () => { width.value = window.innerWidth; };
-  onMounted(() => { resize(); window.addEventListener('resize', resize); });
-  return width;
-}
-
-```
+[Bad](./cross-file.md#vize-croquis-cf-event-listener-leak-bad)
 
 <span id="vize-croquis-cf-event-listener-leak-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-event-listener-leak-good)
 
-`onUnmounted` removes the exact same `resize` function registered at mount, ending that instance’s external listener lifetime.
-
-`use-width.ts`
-
-```ts annotate="add:1,6"
-import { onMounted, onUnmounted, ref } from 'vue';
-export function useWidth() {
-  const width = ref(0);
-  const resize = () => { width.value = window.innerWidth; };
-  onMounted(() => { resize(); window.addEventListener('resize', resize); });
-  onUnmounted(() => { window.removeEventListener('resize', resize); });
-  return width;
-}
-
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-event-listener-leak) · [Rule reference](./project/vize-croquis-cf-event-listener-leak.md)
 
 ### `vize:croquis/cf/event-modifier`
 
 An event listener uses a modifier the emit does not support.
 
-Default severity: info  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-The experimental Rust CrossFileAnalyzer has a producer for this code. The CLI pass does not emit this individual code; configuring its ID does not enable that Rust pass. These scenarios describe the analyzer's supported graph/facts, not a Vite+ promise.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./App.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-event-modifier-bad"></span>
 
-**Bad**
-
-`.stop` assumes a native event's propagation method on the child's custom `save` event, whose payload need not be a DOM Event.
-
-`App.vue`
-
-```vue annotate="remove:4"
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child @save.stop="() => {}" /></template>
-```
-
-`Child.vue`
-
-```vue
-<script setup lang="ts">
-const emit = defineEmits<{ save: [] }>();
-emit("save");
-</script>
-<template><p>Content</p></template>
-```
+[Bad](./cross-file.md#vize-croquis-cf-event-modifier-bad)
 
 <span id="vize-croquis-cf-event-modifier-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-event-modifier-good)
 
-Remove `.stop` from the custom-event listener; handle native propagation at the actual DOM listener when needed.
-
-`App.vue`
-
-```vue annotate="add:4"
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child @save="() => {}" /></template>
-```
-
-`Child.vue`
-
-```vue
-<script setup lang="ts">
-const emit = defineEmits<{ save: [] }>();
-emit("save");
-</script>
-<template><p>Content</p></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/event_bubbling.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-event-modifier) · [Rule reference](./project/vize-croquis-cf-event-modifier.md)
 
 ### `vize:croquis/cf/hydration-risk`
 
 This code groups several reactivity findings, including a prop copied into a ref. It does not imply that every Date.now() expression is detected by the cross-file pass.
 
-Default severity: error  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/hydration-risk": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./App.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-hydration-risk-bad"></span>
 
-**Bad**
-
-The child initializes `ref(props.count)` once, so its local count no longer follows later parent prop changes. This is the current prop-to-ref producer, not a general nondeterministic-SSR example.
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child :count="0" /></template>
-```
-
-`Child.vue`
-
-```vue annotate="remove:2,4"
-<script setup lang="ts">
-import { ref } from "vue";
-const props = defineProps<{ count: number }>();
-const count = ref(props.count);
-</script>
-<template><p>{{ count }}</p></template>
-```
+[Bad](./cross-file.md#vize-croquis-cf-hydration-risk-bad)
 
 <span id="vize-croquis-cf-hydration-risk-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-hydration-risk-good)
 
-`toRef(props, "count")` points to the prop instead of copying its initial value into independent state.
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child :count="0" /></template>
-```
-
-`Child.vue`
-
-```vue annotate="add:2,4"
-<script setup lang="ts">
-import { toRef } from "vue";
-const props = defineProps<{ count: number }>();
-const count = toRef(props, "count");
-</script>
-<template><p>{{ count }}</p></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/cross_file_reactivity/diagnostics.rs)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/reactivity/diagnostics.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-hydration-risk) · [Rule reference](./project/vize-croquis-cf-hydration-risk.md)
 
 ### `vize:croquis/cf/inherit-attrs-unused`
 
 `inheritAttrs: false` is set and the component never reads the attributes.
 
-Default severity: warning  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-The experimental Rust CrossFileAnalyzer has a producer for this code. The CLI pass does not emit this individual code; configuring its ID does not enable that Rust pass. These scenarios describe the analyzer's supported graph/facts, not a Vite+ promise.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./App.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-inherit-attrs-unused-bad"></span>
 
-**Bad**
-
-The child sets `inheritAttrs: false` but never forwards the parent's `class="notice"` attribute.
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child class="notice" /></template>
-```
-
-`Child.vue`
-
-```vue annotate="remove:4"
-<script setup lang="ts">
-defineOptions({ inheritAttrs: false });
-</script>
-<template><main>Content</main></template>
-```
+[Bad](./cross-file.md#vize-croquis-cf-inherit-attrs-unused-bad)
 
 <span id="vize-croquis-cf-inherit-attrs-unused-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-inherit-attrs-unused-good)
 
-Keep explicit inheritance control and bind `$attrs` to the intended `<main>` target.
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child class="notice" /></template>
-```
-
-`Child.vue`
-
-```vue annotate="add:4"
-<script setup lang="ts">
-defineOptions({ inheritAttrs: false });
-</script>
-<template><main v-bind="$attrs">Content</main></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/fallthrough.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-inherit-attrs-unused) · [Rule reference](./project/vize-croquis-cf-inherit-attrs-unused.md)
 
 ### `vize:croquis/cf/inject-without-symbol`
 
 `inject` uses a plain key instead of an `InjectionKey` symbol.
 
-Default severity: warning  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/inject-without-symbol": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./ThemeProvider.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
-`keys/theme.ts`
-
-```ts
-import type { InjectionKey, Ref } from "vue";
-export interface Theme { color: string; }
-export const ThemeKey: InjectionKey<Ref<Theme>> = Symbol("theme");
-```
-
 <span id="vize-croquis-cf-inject-without-symbol-bad"></span>
 
-**Bad**
-
-The consumer injects the untyped string key `"theme"`, which offers no symbol identity shared with the provider.
-
-`ThemeProvider.vue`
-
-```vue annotate="remove:6"
-<script setup lang="ts">
-import { provide, ref } from "vue";
-import ThemeLabel from "./ThemeLabel.vue";
-
-const theme = ref({ color: "blue" });
-provide("theme", theme);
-</script>
-
-<template>
-  <ThemeLabel />
-</template>
-```
-
-`ThemeLabel.vue`
-
-```vue annotate="remove:4"
-<script setup lang="ts">
-import { inject } from "vue";
-
-const theme = inject("theme");
-</script>
-```
+[Bad](./cross-file.md#vize-croquis-cf-inject-without-symbol-bad)
 
 <span id="vize-croquis-cf-inject-without-symbol-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-inject-without-symbol-good)
 
-The consumer and provider import the same `ThemeKey` instead of duplicating string names.
-
-`ThemeProvider.vue`
-
-```vue annotate="add:4,7"
-<script setup lang="ts">
-import { provide, ref } from "vue";
-import ThemeLabel from "./ThemeLabel.vue";
-import { ThemeKey } from "./keys/theme";
-
-const theme = ref({ color: "blue" });
-provide(ThemeKey, theme);
-</script>
-
-<template>
-  <ThemeLabel />
-</template>
-```
-
-`ThemeLabel.vue`
-
-```vue annotate="add:3,5"
-<script setup lang="ts">
-import { inject } from "vue";
-import { ThemeKey } from "./keys/theme";
-
-const theme = inject(ThemeKey);
-</script>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/provide_inject/keys.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-inject-without-symbol) · [Rule reference](./project/vize-croquis-cf-inject-without-symbol.md)
 
 ### `vize:croquis/cf/injected-async-mutation-race`
 
 An injected value is mutated from an async task that can race.
 
-Default severity: error  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/injected-async-mutation-race": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./StoreProvider.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
-`api.ts`
-
-```ts
-export async function loadCount(query: string, options?: { signal?: AbortSignal }): Promise<number> {
-  const response = await fetch(`/count?q=${encodeURIComponent(query)}`, options);
-  return Number(await response.text());
-}
-```
-
-`CountSummary.vue`
-
-```vue
-<script setup lang="ts">
-import { inject } from "vue";
-import { StoreKey } from "./keys/store";
-const store = inject(StoreKey)!;
-</script>
-<template><p>{{ store.count }}</p></template>
-```
-
 <span id="vize-croquis-cf-injected-async-mutation-race-bad"></span>
 
-**Bad**
-
-`CountLoader.vue` writes an awaited result directly into the injected store shared with `CountSummary.vue`, letting stale work affect both consumers.
-
-`keys/store.ts`
-
-```ts
-import type { InjectionKey } from "vue";
-
-export interface Store {
-  count: number;
-}
-
-export const StoreKey: InjectionKey<Store> = Symbol("store");
-```
-
-`StoreProvider.vue`
-
-```vue annotate="remove:12"
-<script setup lang="ts">
-import { provide, reactive } from "vue";
-import CountLoader from "./CountLoader.vue";
-import CountSummary from "./CountSummary.vue";
-import { StoreKey, type Store } from "./keys/store";
-
-const store = reactive<Store>({ count: 0 });
-provide(StoreKey, store);
-</script>
-
-<template>
-  <CountLoader />
-  <CountSummary />
-</template>
-```
-
-`CountLoader.vue`
-
-```vue annotate="remove:3,4,6,9,10"
-<script setup lang="ts">
-import { loadCount } from "./api";
-import { inject, ref, watch } from "vue";
-import { StoreKey } from "./keys/store";
-
-const store = inject(StoreKey)!;
-const query = ref("");
-
-watch(query, async (value) => {
-  store.count = await loadCount(value);
-});
-</script>
-```
+[Bad](./cross-file.md#vize-croquis-cf-injected-async-mutation-race-bad)
 
 <span id="vize-croquis-cf-injected-async-mutation-race-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-injected-async-mutation-race-good)
 
-The loader cancels invalidated work and emits only an active result. The provider owns the store mutation through `applyLoadedCount`.
-
-`keys/store.ts`
-
-```ts
-import type { InjectionKey } from "vue";
-
-export interface Store {
-  count: number;
-}
-
-export const StoreKey: InjectionKey<Store> = Symbol("store");
-```
-
-`StoreProvider.vue`
-
-```vue annotate="add:9,10,11,12,16"
-<script setup lang="ts">
-import { provide, reactive } from "vue";
-import CountLoader from "./CountLoader.vue";
-import CountSummary from "./CountSummary.vue";
-import { StoreKey, type Store } from "./keys/store";
-
-const store = reactive<Store>({ count: 0 });
-provide(StoreKey, store);
-
-function applyLoadedCount(count: number) {
-  store.count = count;
-}
-</script>
-
-<template>
-  <CountLoader @loaded="applyLoadedCount" />
-  <CountSummary />
-</template>
-```
-
-`CountLoader.vue`
-
-```vue annotate="add:3,5,8,9,10,11,12,13,14,15,16,17,18"
-<script setup lang="ts">
-import { loadCount } from "./api";
-import { ref, watch } from "vue";
-
-const emit = defineEmits<{ loaded: [count: number] }>();
-const query = ref("");
-
-watch(query, async (value, _oldValue, onCleanup) => {
-  const controller = new AbortController();
-  let active = true;
-
-  onCleanup(() => {
-    active = false;
-    controller.abort();
-  });
-
-  const count = await loadCount(value, { signal: controller.signal });
-  if (active) emit("loaded", count);
-});
-</script>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/race_conditions/diagnostics.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-injected-async-mutation-race) · [Rule reference](./project/vize-croquis-cf-injected-async-mutation-race.md)
 
 ### `vize:croquis/cf/lifecycle-outside-setup`
 
 A lifecycle hook is registered outside `setup`.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from 'vue';
-import App from './App.vue';
-createApp(App).mount('#app');
-
-```
-
-`index.html`
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
-<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
-
-```
-
-`install-title.ts`
-
-```ts
-import { onMounted } from 'vue';
-export function installTitle() {
-  onMounted(() => { document.title = 'Mounted application'; });
-}
-
-```
-
 <span id="vize-croquis-cf-lifecycle-outside-setup-bad"></span>
 
-**Bad**
-
-The entry calls `installTitle()` before mounting an app, so `onMounted` is registered without an active component setup context.
-
-`main.ts`
-
-```ts annotate="remove:1,2,3,4,5,6"
-import { createApp } from 'vue';
-import App from './App.vue';
-import { installTitle } from './install-title';
-installTitle();
-createApp(App).mount('#app');
-
-```
-
-`App.vue`
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-
-</script>
-
-<template>
-<p>Application</p>
-</template>
-
-```
+[Bad](./cross-file.md#vize-croquis-cf-lifecycle-outside-setup-bad)
 
 <span id="vize-croquis-cf-lifecycle-outside-setup-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-lifecycle-outside-setup-good)
 
-Calling the same helper synchronously from App’s setup attaches the lifecycle callback to that instance’s mount.
-
-`App.vue`
-
-```vue annotate="add:2,3"
-<script setup lang="ts">
-import { installTitle } from './install-title';
-installTitle();
-</script>
-
-<template>
-<p>Application</p>
-</template>
-
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-lifecycle-outside-setup) · [Rule reference](./project/vize-croquis-cf-lifecycle-outside-setup.md)
 
 ### `vize:croquis/cf/lifecycle-without-cleanup`
 
 A lifecycle hook starts work and never cleans it up.
 
-Default severity: warning  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-The experimental Rust CrossFileAnalyzer has a producer for this code. The CLI pass does not emit this individual code; configuring its ID does not enable that Rust pass. These scenarios describe the analyzer's supported graph/facts, not a Vite+ promise.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./App.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-lifecycle-without-cleanup-bad"></span>
 
-**Bad**
-
-Mounting registers a window resize listener, but unmounting never removes the same callback.
-
-`App.vue`
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-import { onMounted } from "vue";
-const resize = () => {};
-onMounted(() => { window.addEventListener("resize", resize); });
-</script>
-<template><p>Content</p></template>
-```
+[Bad](./cross-file.md#vize-croquis-cf-lifecycle-without-cleanup-bad)
 
 <span id="vize-croquis-cf-lifecycle-without-cleanup-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-lifecycle-without-cleanup-good)
 
-`onUnmounted` removes the listener with the same event name and function identity used by `addEventListener`.
-
-`App.vue`
-
-```vue annotate="add:2,5"
-<script setup lang="ts">
-import { onMounted, onUnmounted } from "vue";
-const resize = () => {};
-onMounted(() => { window.addEventListener("resize", resize); });
-onUnmounted(() => { window.removeEventListener("resize", resize); });
-</script>
-<template><p>Content</p></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/setup_context.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-lifecycle-without-cleanup) · [Rule reference](./project/vize-croquis-cf-lifecycle-without-cleanup.md)
 
 ### `vize:croquis/cf/missing-required-prop`
 
 A required prop is not passed.
 
-Default severity: error  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-The experimental Rust CrossFileAnalyzer has a producer for this code. The CLI pass does not emit this individual code; configuring its ID does not enable that Rust pass. These scenarios describe the analyzer's supported graph/facts, not a Vite+ promise.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./App.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-missing-required-prop-bad"></span>
 
-**Bad**
-
-The parent renders `<Child />` without the child's required `title: string` prop.
-
-`App.vue`
-
-```vue annotate="remove:4"
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child /></template>
-```
-
-`Child.vue`
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{ title: string }>();
-</script>
-<template><p>{{ props.title }}</p></template>
-```
+[Bad](./cross-file.md#vize-croquis-cf-missing-required-prop-bad)
 
 <span id="vize-croquis-cf-missing-required-prop-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-missing-required-prop-good)
 
-`title="Hello"` supplies the required prop declared by the resolved child.
-
-`App.vue`
-
-```vue annotate="add:4"
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child title="Hello" /></template>
-```
-
-`Child.vue`
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{ title: string }>();
-</script>
-<template><p>{{ props.title }}</p></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/props_validation.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-missing-required-prop) · [Rule reference](./project/vize-croquis-cf-missing-required-prop.md)
 
 ### `vize:croquis/cf/missing-suspense`
 
 An async dependency is used outside a Suspense boundary.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from 'vue';
-import App from './App.vue';
-createApp(App).mount('#app');
-
-```
-
-`index.html`
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
-<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
-
-```
-
-`AsyncCard.vue`
-
-```vue
-<script setup lang="ts">
-const message = await Promise.resolve('Ready');
-</script>
-
-<template>
-<p>{{ message }}</p>
-</template>
-
-```
-
 <span id="vize-croquis-cf-missing-suspense-bad"></span>
 
-**Bad**
-
-`AsyncCard` has top-level await, making its setup asynchronous, but App renders it without a Suspense boundary to coordinate that dependency.
-
-`App.vue`
-
-```vue annotate="remove:6"
-<script setup lang="ts">
-import AsyncCard from './AsyncCard.vue';
-</script>
-
-<template>
-<AsyncCard />
-</template>
-
-```
+[Bad](./cross-file.md#vize-croquis-cf-missing-suspense-bad)
 
 <span id="vize-croquis-cf-missing-suspense-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-missing-suspense-good)
 
-App wraps the async child in `Suspense` and supplies a loading fallback until the child setup resolves.
-
-`App.vue`
-
-```vue annotate="add:2,7"
-<script setup lang="ts">
-import { Suspense } from 'vue';
-import AsyncCard from './AsyncCard.vue';
-</script>
-
-<template>
-<Suspense><AsyncCard /><template #fallback><p>Loading…</p></template></Suspense>
-</template>
-
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-missing-suspense) · [Rule reference](./project/vize-croquis-cf-missing-suspense.md)
 
 ### `vize:croquis/cf/module-scope-reactive`
 
 Reactive state is created at module scope and shared by every caller.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
-
-Module-scope reactive state is legal for intentional application stores. This example assumes component/request isolation; the published contract currently has no producer.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from 'vue';
-import App from './App.vue';
-createApp(App).mount('#app');
-
-```
-
-`index.html`
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
-<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
-
-```
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import Counter from './Counter.vue';
-</script>
-
-<template>
-<Counter /><Counter />
-</template>
-
-```
-
-`Counter.vue`
-
-```vue
-<script setup lang="ts">
-import { createCounter } from './counter';
-const { count } = createCounter();
-</script>
-
-<template>
-<button @click="count++">{{ count }}</button>
-</template>
-
-```
-
 <span id="vize-croquis-cf-module-scope-reactive-bad"></span>
 
-**Bad**
-
-The module initializes `count` once, and both Counter instances receive the same ref. Clicking one changes both counters even though this example intends independent instance state.
-
-`counter.ts`
-
-```ts annotate="remove:2,3"
-import { ref } from 'vue';
-const count = ref(0);
-export function createCounter() { return { count }; }
-
-```
+[Bad](./cross-file.md#vize-croquis-cf-module-scope-reactive-bad)
 
 <span id="vize-croquis-cf-module-scope-reactive-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-module-scope-reactive-good)
 
-Creating the ref inside `createCounter` gives each synchronous setup call a separate state object, so each button owns its counter.
-
-`counter.ts`
-
-```ts annotate="add:2,3,4,5"
-import { ref } from 'vue';
-export function createCounter() {
-  const count = ref(0);
-  return { count };
-}
-
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-module-scope-reactive) · [Rule reference](./project/vize-croquis-cf-module-scope-reactive.md)
 
 ### `vize:croquis/cf/multi-root-attrs`
 
 A multi-root component receives attributes and has nowhere to put them.
 
-Default severity: warning  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-The experimental Rust CrossFileAnalyzer has a producer for this code. The CLI pass does not emit this individual code; configuring its ID does not enable that Rust pass. These scenarios describe the analyzer's supported graph/facts, not a Vite+ promise.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./App.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-multi-root-attrs-bad"></span>
 
-**Bad**
-
-The child has `<main>` and `<aside>` roots, so Vue has no single root that can automatically receive the parent's class.
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child class="notice" /></template>
-```
-
-`Child.vue`
-
-```vue annotate="remove:1"
-<template><main>Content</main><aside>Help</aside></template>
-```
+[Bad](./cross-file.md#vize-croquis-cf-multi-root-attrs-bad)
 
 <span id="vize-croquis-cf-multi-root-attrs-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-multi-root-attrs-good)
 
-Forward `$attrs` explicitly to `<main>` while keeping the second root.
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child class="notice" /></template>
-```
-
-`Child.vue`
-
-```vue annotate="add:1"
-<template><main v-bind="$attrs">Content</main><aside>Help</aside></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/fallthrough.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-multi-root-attrs) · [Rule reference](./project/vize-croquis-cf-multi-root-attrs.md)
 
 ### `vize:croquis/cf/mutated-after-escape`
 
 A reactive object is mutated after it has escaped its owner.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
-
-This is an explicit immutable-history ownership policy, not a general prohibition on passing or later mutating reactive objects. No current producer emits this contract.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from 'vue';
-import App from './App.vue';
-createApp(App).mount('#app');
-
-```
-
-`index.html`
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
-<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
-
-```
-
-`archive.ts`
-
-```ts
-export interface Profile { name: string }
-const records: Readonly<Profile>[] = [];
-export function publish(profile: Readonly<Profile>): void { records.push(profile); }
-export function latestName(): string { return records.at(-1)?.name ?? ''; }
-
-```
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import { publishProfile } from './profile';
-import { latestName } from './archive';
-publishProfile();
-const archivedName = latestName();
-</script>
-
-<template>
-<p>Archived name: {{ archivedName }}</p>
-</template>
-
-```
-
 <span id="vize-croquis-cf-mutated-after-escape-bad"></span>
 
-**Bad**
-
-The archive retains the same object passed to `publish`. The owner then changes its name, retroactively changing the supposedly historical record to Grace. TypeScript’s Readonly parameter does not copy the object.
-
-`profile.ts`
-
-```ts annotate="remove:5"
-import { reactive } from 'vue';
-import { publish } from './archive';
-export function publishProfile(): void {
-  const profile = reactive({ name: 'Ada' });
-  publish(profile);
-  profile.name = 'Grace';
-}
-
-```
+[Bad](./cross-file.md#vize-croquis-cf-mutated-after-escape-bad)
 
 <span id="vize-croquis-cf-mutated-after-escape-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-mutated-after-escape-good)
 
-Publishing a plain copy separates the archived Ada record from later edits of the reactive profile. The archive’s snapshot policy is now maintained.
-
-`profile.ts`
-
-```ts annotate="add:5"
-import { reactive } from 'vue';
-import { publish } from './archive';
-export function publishProfile(): void {
-  const profile = reactive({ name: 'Ada' });
-  publish({ ...profile });
-  profile.name = 'Grace';
-}
-
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-mutated-after-escape) · [Rule reference](./project/vize-croquis-cf-mutated-after-escape.md)
 
 ### `vize:croquis/cf/non-reactive-provide`
 
 A provided value is not reactive, so descendants will not see updates.
 
-Default severity: context-dependent  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/non-reactive-provide": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./ThemeProvider.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-non-reactive-provide-bad"></span>
 
-**Bad**
-
-`ThemeProvider.vue` provides a plain object. Mutating that object's fields does not give the injected consumer a Vue reactive dependency.
-
-`keys/theme.ts`
-
-```ts
-export const ThemeKey = Symbol("theme");
-```
-
-`ThemeProvider.vue`
-
-```vue annotate="remove:2,6"
-<script setup lang="ts">
-import { provide } from "vue";
-import ThemeLabel from "./ThemeLabel.vue";
-import { ThemeKey } from "./keys/theme";
-
-const theme = { color: "blue" };
-provide(ThemeKey, theme);
-</script>
-
-<template>
-  <ThemeLabel />
-</template>
-```
-
-`ThemeLabel.vue`
-
-```vue
-<script setup lang="ts">
-import { inject } from "vue";
-import { ThemeKey } from "./keys/theme";
-
-const theme = inject(ThemeKey);
-</script>
-```
+[Bad](./cross-file.md#vize-croquis-cf-non-reactive-provide-bad)
 
 <span id="vize-croquis-cf-non-reactive-provide-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-non-reactive-provide-good)
 
-The provider wraps the theme in `ref`; the same injected reference can track later changes.
-
-`keys/theme.ts`
-
-```ts
-export const ThemeKey = Symbol("theme");
-```
-
-`ThemeProvider.vue`
-
-```vue annotate="add:2,6"
-<script setup lang="ts">
-import { provide, ref } from "vue";
-import ThemeLabel from "./ThemeLabel.vue";
-import { ThemeKey } from "./keys/theme";
-
-const theme = ref({ color: "blue" });
-provide(ThemeKey, theme);
-</script>
-
-<template>
-  <ThemeLabel />
-</template>
-```
-
-`ThemeLabel.vue`
-
-```vue
-<script setup lang="ts">
-import { inject } from "vue";
-import { ThemeKey } from "./keys/theme";
-
-const theme = inject(ThemeKey);
-</script>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/cross_file_reactivity/diagnostics.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-non-reactive-provide) · [Rule reference](./project/vize-croquis-cf-non-reactive-provide.md)
 
 ### `vize:croquis/cf/non-unique-id`
 
 An element id inside a loop is not unique per item.
 
-Default severity: error  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/non-unique-id": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./ResultsList.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-non-unique-id-bad"></span>
 
-**Bad**
-
-Every `v-for` iteration renders the same literal `result-title` ID; the loop's key does not make DOM IDs unique.
-
-`ResultsList.vue`
-
-```vue annotate="remove:6"
-<script setup lang="ts">
-const results = [{ id: "first", title: "First result" }, { id: "second", title: "Second result" }];
-</script>
-<template>
-  <article v-for="result in results" :key="result.id">
-    <h2 id="result-title">{{ result.title }}</h2>
-  </article>
-</template>
-```
+[Bad](./cross-file.md#vize-croquis-cf-non-unique-id-bad)
 
 <span id="vize-croquis-cf-non-unique-id-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-non-unique-id-good)
 
-The heading ID includes the result's stable ID, producing a distinct document identifier for each item.
-
-`ResultsList.vue`
-
-```vue annotate="add:6"
-<script setup lang="ts">
-const results = [{ id: "first", title: "First result" }, { id: "second", title: "Second result" }];
-</script>
-<template>
-  <article v-for="result in results" :key="result.id">
-    <h2 :id="`result-${result.id}-title`">{{ result.title }}</h2>
-  </article>
-</template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/element_id.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-non-unique-id) · [Rule reference](./project/vize-croquis-cf-non-unique-id.md)
 
 ### `vize:croquis/cf/object-identity-comparison`
 
 A raw object and its reactive proxy have distinct object identities, and toRaw() returns the original object. This contract illustrates comparing stable record IDs when record identity is intended.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
-
-The example assumes IDs uniquely identify records. Comparing two references to the same reactive proxy remains valid; this contract has no current producer.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from 'vue';
-import App from './App.vue';
-createApp(App).mount('#app');
-
-```
-
-`index.html`
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
-<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
-
-```
-
-`user.ts`
-
-```ts
-import { reactive } from 'vue';
-export function makeUser() {
-  const raw = { id: 7, name: 'Ada' };
-  return { raw, proxy: reactive(raw) };
-}
-
-```
-
 <span id="vize-croquis-cf-object-identity-comparison-bad"></span>
 
-**Bad**
-
-`proxy === raw` compares wrapper identity, so it is false even though both represent the same user record. The application intended record identity, not object-wrapper identity.
-
-`App.vue`
-
-```vue annotate="remove:4"
-<script setup lang="ts">
-import { makeUser } from './user';
-const { raw, proxy } = makeUser();
-const sameRecord = proxy === raw;
-</script>
-
-<template>
-<p>Same record: {{ sameRecord }}</p>
-</template>
-
-```
+[Bad](./cross-file.md#vize-croquis-cf-object-identity-comparison-bad)
 
 <span id="vize-croquis-cf-object-identity-comparison-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-object-identity-comparison-good)
 
-Comparing the stable record `id` answers the intended question without depending on whether the object is raw or proxied.
-
-`App.vue`
-
-```vue annotate="add:4"
-<script setup lang="ts">
-import { makeUser } from './user';
-const { raw, proxy } = makeUser();
-const sameRecord = proxy.id === raw.id;
-</script>
-
-<template>
-<p>Same record: {{ sameRecord }}</p>
-</template>
-
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-object-identity-comparison) · [Rule reference](./project/vize-croquis-cf-object-identity-comparison.md)
 
 ### `vize:croquis/cf/pinia-getter`
 
 This contract illustrates copying a Pinia getter's current primitive value during setup, leaving a snapshot that no longer follows updates. Direct getter reads within a tracked computation or template remain reactive; storeToRefs() is the extraction repair shown here.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
-
-Pinia must be installed, and main.ts installs its plugin before mounting. Reading `store.doubled` directly inside a tracked computation or template is valid; the defect here is taking a plain snapshot. This contract currently has no producer.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from 'vue';
-import { createPinia } from 'pinia';
-import App from './App.vue';
-createApp(App).use(createPinia()).mount('#app');
-
-```
-
-`index.html`
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
-<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
-
-```
-
-`counter-store.ts`
-
-```ts
-import { defineStore } from 'pinia';
-export const useCounterStore = defineStore('counter', {
-  state: () => ({ count: 0 }),
-  getters: { doubled: state => state.count * 2 },
-});
-
-```
-
 <span id="vize-croquis-cf-pinia-getter-bad"></span>
 
-**Bad**
-
-`const doubled = store.doubled` copies the getter’s current number during setup. The copied number does not follow later `store.count` updates.
-
-`App.vue`
-
-```vue annotate="remove:4"
-<script setup lang="ts">
-import { useCounterStore } from './counter-store';
-const store = useCounterStore();
-const doubled = store.doubled;
-</script>
-
-<template>
-<button @click="store.count++">{{ store.count }}</button><p>{{ doubled }}</p>
-</template>
-
-```
+[Bad](./cross-file.md#vize-croquis-cf-pinia-getter-bad)
 
 <span id="vize-croquis-cf-pinia-getter-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-pinia-getter-good)
 
-`storeToRefs(store)` supplies a reactive getter ref that can be destructured and unwrapped by the template while staying connected to the store.
-
-`App.vue`
-
-```vue annotate="add:2,5"
-<script setup lang="ts">
-import { storeToRefs } from 'pinia';
-import { useCounterStore } from './counter-store';
-const store = useCounterStore();
-const { doubled } = storeToRefs(store);
-</script>
-
-<template>
-<button @click="store.count++">{{ store.count }}</button><p>{{ doubled }}</p>
-</template>
-
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-pinia-getter) · [Rule reference](./project/vize-croquis-cf-pinia-getter.md)
 
 ### `vize:croquis/cf/prop-type-mismatch`
 
 A passed prop value does not match the declared type.
 
-Default severity: error  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-The experimental Rust CrossFileAnalyzer has a producer for this code. The CLI pass does not emit this individual code; configuring its ID does not enable that Rust pass. These scenarios describe the analyzer's supported graph/facts, not a Vite+ promise.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./App.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-prop-type-mismatch-bad"></span>
 
-**Bad**
-
-The parent passes the numeric expression `42` to the resolved child's `title: string` prop.
-
-`App.vue`
-
-```vue annotate="remove:4"
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child :title="42" /></template>
-```
-
-`Child.vue`
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{ title: string }>();
-</script>
-<template><p>{{ props.title }}</p></template>
-```
+[Bad](./cross-file.md#vize-croquis-cf-prop-type-mismatch-bad)
 
 <span id="vize-croquis-cf-prop-type-mismatch-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-prop-type-mismatch-good)
 
-The literal `title="Hello"` supplies a string matching the child's declaration.
-
-`App.vue`
-
-```vue annotate="add:4"
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child title="Hello" /></template>
-```
-
-`Child.vue`
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{ title: string }>();
-</script>
-<template><p>{{ props.title }}</p></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/props_validation.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-prop-type-mismatch) · [Rule reference](./project/vize-croquis-cf-prop-type-mismatch.md)
 
 ### `vize:croquis/cf/provide-inject-type`
 
 A provided value and its inject do not have the same type.
 
-Default severity: warning  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/provide-inject-type": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-This check compares explicit provider/consumer type annotations, not inferred literal value types. Keep the provider's `as string` annotation in this example.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./App.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-provide-inject-type-bad"></span>
 
-**Bad**
-
-The provider explicitly annotates `title` as `string`, while the descendant requests `inject<number>` for the same key.
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import { provide } from "vue";
-import Child from "./Child.vue";
-provide("title", "Hello" as string);
-</script>
-<template><Child /></template>
-```
-
-`Child.vue`
-
-```vue annotate="remove:3"
-<script setup lang="ts">
-import { inject } from "vue";
-const title = inject<number>("title");
-</script>
-<template><p>Content</p></template>
-```
+[Bad](./cross-file.md#vize-croquis-cf-provide-inject-type-bad)
 
 <span id="vize-croquis-cf-provide-inject-type-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-provide-inject-type-good)
 
-The consumer's explicit `inject<string>` agrees with the provider annotation. Keep `as string`: this producer compares explicit annotations, not inferred literal types.
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import { provide } from "vue";
-import Child from "./Child.vue";
-provide("title", "Hello" as string);
-</script>
-<template><Child /></template>
-```
-
-`Child.vue`
-
-```vue annotate="add:3"
-<script setup lang="ts">
-import { inject } from "vue";
-const title = inject<string>("title");
-</script>
-<template><p>Content</p></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/provide_inject/analysis/diagnostics.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-provide-inject-type) · [Rule reference](./project/vize-croquis-cf-provide-inject-type.md)
 
 ### `vize:croquis/cf/provide-without-symbol`
 
 `provide` uses a plain key instead of an `InjectionKey` symbol.
 
-Default severity: warning  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/provide-without-symbol": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./ThemeProvider.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-provide-without-symbol-bad"></span>
 
-**Bad**
-
-Both components use the string `"theme"`; unrelated features can accidentally reuse that key.
-
-`ThemeProvider.vue`
-
-```vue annotate="remove:5,6"
-<script setup lang="ts">
-import { provide, ref } from "vue";
-import ThemeLabel from "./ThemeLabel.vue";
-
-const theme = ref({ color: "blue" });
-provide("theme", theme);
-</script>
-
-<template>
-  <ThemeLabel />
-</template>
-```
-
-`ThemeLabel.vue`
-
-```vue annotate="remove:4"
-<script setup lang="ts">
-import { inject } from "vue";
-
-const theme = inject("theme");
-</script>
-```
+[Bad](./cross-file.md#vize-croquis-cf-provide-without-symbol-bad)
 
 <span id="vize-croquis-cf-provide-without-symbol-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-provide-without-symbol-good)
 
-Export one typed `ThemeKey` symbol and import that same value at both provide and inject sites. Creating separate symbols with the same description would not connect them.
-
-`ThemeProvider.vue`
-
-```vue annotate="add:4,6,7"
-<script setup lang="ts">
-import { provide, ref } from "vue";
-import ThemeLabel from "./ThemeLabel.vue";
-import { ThemeKey, type Theme } from "./keys/theme";
-
-const theme = ref<Theme>({ color: "blue" });
-provide(ThemeKey, theme);
-</script>
-
-<template>
-  <ThemeLabel />
-</template>
-```
-
-`ThemeLabel.vue`
-
-```vue annotate="add:3,5"
-<script setup lang="ts">
-import { inject } from "vue";
-import { ThemeKey } from "./keys/theme";
-
-const theme = inject(ThemeKey);
-</script>
-```
-
-`keys/theme.ts`
-
-```ts annotate="add:1,2,3,4,5,6,7"
-import type { InjectionKey, Ref } from "vue";
-
-export interface Theme {
-  color: string;
-}
-
-export const ThemeKey: InjectionKey<Ref<Theme>> = Symbol("theme");
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/provide_inject/keys.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-provide-without-symbol) · [Rule reference](./project/vize-croquis-cf-provide-without-symbol.md)
 
 ### `vize:croquis/cf/reactive-export`
 
 Reactive state is exported from the module.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
-
-Intentional shared application stores may export reactive state. This scenario requires isolated state and does not claim every reactive export is invalid. No current producer emits this contract.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from 'vue';
-import App from './App.vue';
-createApp(App).mount('#app');
-
-```
-
-`index.html`
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
-<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
-
-```
-
 <span id="vize-croquis-cf-reactive-export-bad"></span>
 
-**Bad**
-
-The module exports one initialized reactive object, so every importer receives the same count. In an SSR module shared between requests, this defeats the example’s per-instance/request state isolation.
-
-`state.ts`
-
-```ts annotate="remove:2"
-import { reactive } from 'vue';
-export const state = reactive({ count: 0 });
-
-```
-
-`App.vue`
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-import { state } from './state';
-</script>
-
-<template>
-<button @click="state.count++">{{ state.count }}</button>
-</template>
-
-```
+[Bad](./cross-file.md#vize-croquis-cf-reactive-export-bad)
 
 <span id="vize-croquis-cf-reactive-export-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-reactive-export-good)
 
-The module exports a factory, and App invokes it inside setup. Each instance obtains a fresh reactive count rather than the exported singleton.
-
-`state.ts`
-
-```ts annotate="add:2"
-import { reactive } from 'vue';
-export function createState() { return reactive({ count: 0 }); }
-
-```
-
-`App.vue`
-
-```vue annotate="add:2,3"
-<script setup lang="ts">
-import { createState } from './state';
-const state = createState();
-</script>
-
-<template>
-<button @click="state.count++">{{ state.count }}</button>
-</template>
-
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-reactive-export) · [Rule reference](./project/vize-croquis-cf-reactive-export.md)
 
 ### `vize:croquis/cf/reactivity-outside-setup`
 
 A reactive API is called outside `setup`.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
-
-Vue permits ref/reactive/computed outside component setup. The risk here is unwanted ownership/sharing under an explicit instance-isolation policy, not API illegality. This contract has no current producer.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from 'vue';
-import App from './App.vue';
-createApp(App).mount('#app');
-
-```
-
-`index.html`
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
-<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
-
-```
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import Counter from './Counter.vue';
-</script>
-
-<template>
-<Counter /><Counter />
-</template>
-
-```
-
-`Counter.vue`
-
-```vue
-<script setup lang="ts">
-import { useCounter } from './use-counter';
-const { count, doubled } = useCounter();
-</script>
-
-<template>
-<button @click="count++">{{ count }}</button><p>{{ doubled }}</p>
-</template>
-
-```
-
 <span id="vize-croquis-cf-reactivity-outside-setup-bad"></span>
 
-**Bad**
-
-Both reactive APIs run while the module loads. The two Counter instances therefore share one ref and computed value despite the intended independent counters.
-
-`use-counter.ts`
-
-```ts annotate="remove:2,3,4"
-import { computed, ref } from 'vue';
-const count = ref(0);
-const doubled = computed(() => count.value * 2);
-export function useCounter() { return { count, doubled }; }
-
-```
+[Bad](./cross-file.md#vize-croquis-cf-reactivity-outside-setup-bad)
 
 <span id="vize-croquis-cf-reactivity-outside-setup-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-reactivity-outside-setup-good)
 
-`useCounter` creates the ref and computed synchronously inside each component setup call, giving each widget its own state and tracked derivation.
-
-`use-counter.ts`
-
-```ts annotate="add:2,3,4,5,6"
-import { computed, ref } from 'vue';
-export function useCounter() {
-  const count = ref(0);
-  const doubled = computed(() => count.value * 2);
-  return { count, doubled };
-}
-
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-reactivity-outside-setup) · [Rule reference](./project/vize-croquis-cf-reactivity-outside-setup.md)
 
 ### `vize:croquis/cf/reassignment-breaks-reactivity`
 
 Reassigning a reactive binding replaces it with a plain value.
 
-Default severity: error  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/reassignment-breaks-reactivity": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./UserPage.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-reassignment-breaks-reactivity-bad"></span>
 
-**Bad**
-
-The child creates a prop ref and then overwrites the variable with `props.user`, discarding that ref connection.
-
-`UserPage.vue`
-
-```vue
-<script setup lang="ts">
-import { reactive } from "vue";
-import UserSummary from "./UserSummary.vue";
-
-const user = reactive({ name: "Ada" });
-</script>
-
-<template>
-  <UserSummary :user="user" />
-</template>
-```
-
-`UserSummary.vue`
-
-```vue annotate="remove:5,6,7"
-<script setup lang="ts">
-import { toRef } from "vue";
-
-const props = defineProps<{ user: { name: string } }>();
-let user = toRef(props, "user");
-
-user = props.user;
-</script>
-```
+[Bad](./cross-file.md#vize-croquis-cf-reassignment-breaks-reactivity-bad)
 
 <span id="vize-croquis-cf-reassignment-breaks-reactivity-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-reassignment-breaks-reactivity-good)
 
-Keep the `toRef` in a `const` binding and remove the reassignment that replaces it.
-
-`UserPage.vue`
-
-```vue
-<script setup lang="ts">
-import { reactive } from "vue";
-import UserSummary from "./UserSummary.vue";
-
-const user = reactive({ name: "Ada" });
-</script>
-
-<template>
-  <UserSummary :user="user" />
-</template>
-```
-
-`UserSummary.vue`
-
-```vue annotate="add:5"
-<script setup lang="ts">
-import { toRef } from "vue";
-
-const props = defineProps<{ user: { name: string } }>();
-const user = toRef(props, "user");
-</script>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/reactivity/diagnostics.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-reassignment-breaks-reactivity) · [Rule reference](./project/vize-croquis-cf-reassignment-breaks-reactivity.md)
 
 ### `vize:croquis/cf/reference-escapes-scope`
 
 A reactive reference escapes the scope that owns its lifetime.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
-
-Refs may legitimately be returned from composables or shared across scopes. This example explicitly requires a snapshot cache; it does not claim that unmount invalidates a ref. No current producer emits this contract.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from 'vue';
-import App from './App.vue';
-createApp(App).mount('#app');
-
-```
-
-`index.html`
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
-<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
-
-```
-
-`saved.ts`
-
-```ts
-import type { Ref } from 'vue';
-let saved: Ref<number> | number | undefined;
-export function remember(value: Ref<number> | number): void { saved = value; }
-export function remembered(): Ref<number> | number | undefined { return saved; }
-
-```
-
 <span id="vize-croquis-cf-reference-escapes-scope-bad"></span>
 
-**Bad**
-
-The process-level cache retains the component’s live count ref. It can keep that instance state reachable after unmount and can observe later edits, although this cache is intended to store a snapshot.
-
-`App.vue`
-
-```vue annotate="remove:5"
-<script setup lang="ts">
-import { ref } from 'vue';
-import { remember } from './saved';
-const count = ref(0);
-remember(count);
-</script>
-
-<template>
-<button @click="count++">{{ count }}</button>
-</template>
-
-```
+[Bad](./cross-file.md#vize-croquis-cf-reference-escapes-scope-bad)
 
 <span id="vize-croquis-cf-reference-escapes-scope-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-reference-escapes-scope-good)
 
-The cache receives the current plain number, so it keeps a snapshot without retaining the component-owned ref.
-
-`App.vue`
-
-```vue annotate="add:5"
-<script setup lang="ts">
-import { ref } from 'vue';
-import { remember } from './saved';
-const count = ref(0);
-remember(count.value);
-</script>
-
-<template>
-<button @click="count++">{{ count }}</button>
-</template>
-
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-reference-escapes-scope) · [Rule reference](./project/vize-croquis-cf-reference-escapes-scope.md)
 
 ### `vize:croquis/cf/setup-context-violation`
 
 This experimental analyzer scenario places ref(0) at normal script module scope rather than per-instance setup. Vue permits this reactive state; the example requires each component instance to own its own count. The CLI does not emit this individual code.
 
-Default severity: context-dependent  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-The experimental Rust CrossFileAnalyzer has a producer for this code. The CLI pass does not emit this individual code; configuring its ID does not enable that Rust pass. These scenarios describe the analyzer's supported graph/facts, not a Vite+ promise.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./App.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-setup-context-violation-bad"></span>
 
-**Bad**
-
-`ref(0)` is created at normal script module scope, outside the per-instance setup context represented by this analyzer scenario.
-
-`App.vue`
-
-```vue annotate="remove:1,4,6"
-<script lang="ts">
-import { ref } from "vue";
-const count = ref(0);
-export default {};
-</script>
-<template><p>Count</p></template>
-```
+[Bad](./cross-file.md#vize-croquis-cf-setup-context-violation-bad)
 
 <span id="vize-croquis-cf-setup-context-violation-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-setup-context-violation-good)
 
-Move the binding into script setup, where each component instance owns its count and the template can read it.
-
-`App.vue`
-
-```vue annotate="add:1,5"
-<script setup lang="ts">
-import { ref } from "vue";
-const count = ref(0);
-</script>
-<template><p>{{ count }}</p></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/setup_context.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-setup-context-violation) · [Rule reference](./project/vize-croquis-cf-setup-context-violation.md)
 
 ### `vize:croquis/cf/shallow-deep-access`
 
 A deep property of a `shallowReactive` or `shallowRef` value is read as if it were tracked.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from 'vue';
-import App from './App.vue';
-createApp(App).mount('#app');
-
-```
-
-`index.html`
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
-<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
-
-```
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import { makeProfile } from './profile';
-const profile = makeProfile();
-</script>
-
-<template>
-<p>{{ profile.user.name }}</p><button @click="profile.user.name = 'Grace'">Rename</button>
-</template>
-
-```
-
 <span id="vize-croquis-cf-shallow-deep-access-bad"></span>
 
-**Bad**
-
-`shallowReactive` tracks the root `user` property but leaves the nested object raw. Changing `profile.user.name` does not notify the template as a tracked deep mutation.
-
-`profile.ts`
-
-```ts annotate="remove:1,2"
-import { shallowReactive } from 'vue';
-export function makeProfile() { return shallowReactive({ user: { name: 'Ada' } }); }
-
-```
+[Bad](./cross-file.md#vize-croquis-cf-shallow-deep-access-bad)
 
 <span id="vize-croquis-cf-shallow-deep-access-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-shallow-deep-access-good)
 
-Deep `reactive` wraps the nested user object, so the same name assignment can trigger the displayed name’s update.
-
-`profile.ts`
-
-```ts annotate="add:1,2"
-import { reactive } from 'vue';
-export function makeProfile() { return reactive({ user: { name: 'Ada' } }); }
-
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-shallow-deep-access) · [Rule reference](./project/vize-croquis-cf-shallow-deep-access.md)
 
 ### `vize:croquis/cf/spread-breaks-reactivity`
 
 Spreading a reactive object copies its values and drops the tracking.
 
-Default severity: error  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/spread-breaks-reactivity": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./UserPage.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-spread-breaks-reactivity-bad"></span>
 
-**Bad**
-
-`UserSummary.vue` spreads `props.user` into a new object, taking a snapshot of the incoming reactive data.
-
-`UserPage.vue`
-
-```vue
-<script setup lang="ts">
-import { reactive } from "vue";
-import UserSummary from "./UserSummary.vue";
-
-const user = reactive({ name: "Ada", role: "admin" });
-</script>
-
-<template>
-  <UserSummary :user="user" />
-</template>
-```
-
-`UserSummary.vue`
-
-```vue annotate="remove:3"
-<script setup lang="ts">
-const props = defineProps<{ user: { name: string; role: string } }>();
-const copiedUser = { ...props.user };
-</script>
-```
+[Bad](./cross-file.md#vize-croquis-cf-spread-breaks-reactivity-bad)
 
 <span id="vize-croquis-cf-spread-breaks-reactivity-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-spread-breaks-reactivity-good)
 
-`toRef(props, "user")` keeps a reference to the incoming prop instead of copying its fields.
-
-`UserPage.vue`
-
-```vue
-<script setup lang="ts">
-import { reactive } from "vue";
-import UserSummary from "./UserSummary.vue";
-
-const user = reactive({ name: "Ada", role: "admin" });
-</script>
-
-<template>
-  <UserSummary :user="user" />
-</template>
-```
-
-`UserSummary.vue`
-
-```vue annotate="add:2,3,5"
-<script setup lang="ts">
-import { toRef } from "vue";
-
-const props = defineProps<{ user: { name: string; role: string } }>();
-const user = toRef(props, "user");
-</script>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/reactivity/diagnostics.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-spread-breaks-reactivity) · [Rule reference](./project/vize-croquis-cf-spread-breaks-reactivity.md)
 
 ### `vize:croquis/cf/suspense-no-fallback`
 
 `<Suspense>` has no fallback content.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
-
-Suspense without a fallback is valid Vue syntax. This is a chosen loading-UI convention, not a compiler error; the published contract has no current producer.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from 'vue';
-import App from './App.vue';
-createApp(App).mount('#app');
-
-```
-
-`index.html`
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
-<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
-
-```
-
-`AsyncCard.vue`
-
-```vue
-<script setup lang="ts">
-const message = await Promise.resolve('Ready');
-</script>
-
-<template>
-<p>{{ message }}</p>
-</template>
-
-```
-
 <span id="vize-croquis-cf-suspense-no-fallback-bad"></span>
 
-**Bad**
-
-The Suspense boundary has an async child but no fallback content, leaving no loading content for this example’s pending state.
-
-`App.vue`
-
-```vue annotate="remove:7"
-<script setup lang="ts">
-import { Suspense } from 'vue';
-import AsyncCard from './AsyncCard.vue';
-</script>
-
-<template>
-<Suspense><AsyncCard /></Suspense>
-</template>
-
-```
+[Bad](./cross-file.md#vize-croquis-cf-suspense-no-fallback-bad)
 
 <span id="vize-croquis-cf-suspense-no-fallback-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-suspense-no-fallback-good)
 
-The `#fallback` slot supplies an explicit loading paragraph until the async child resolves.
-
-`App.vue`
-
-```vue annotate="add:7"
-<script setup lang="ts">
-import { Suspense } from 'vue';
-import AsyncCard from './AsyncCard.vue';
-</script>
-
-<template>
-<Suspense><AsyncCard /><template #fallback><p>Loading…</p></template></Suspense>
-</template>
-
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-suspense-no-fallback) · [Rule reference](./project/vize-croquis-cf-suspense-no-fallback.md)
 
 ### `vize:croquis/cf/template-ref-timing`
 
 A template ref is read before the component is mounted.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from 'vue';
-import App from './App.vue';
-createApp(App).mount('#app');
-
-```
-
-`index.html`
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
-<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
-
-```
-
-`focus-input.ts`
-
-```ts
-export function focusInput(input: HTMLInputElement | null): void { input?.focus(); }
-
-```
-
 <span id="vize-croquis-cf-template-ref-timing-bad"></span>
 
-**Bad**
-
-Setup reads the template ref before mounting, when its value is still null. The optional focus call therefore performs no focus action.
-
-`App.vue`
-
-```vue annotate="remove:2,5"
-<script setup lang="ts">
-import { ref } from 'vue';
-import { focusInput } from './focus-input';
-const input = ref<HTMLInputElement | null>(null);
-focusInput(input.value);
-</script>
-
-<template>
-<input ref="input" aria-label="Name" />
-</template>
-
-```
+[Bad](./cross-file.md#vize-croquis-cf-template-ref-timing-bad)
 
 <span id="vize-croquis-cf-template-ref-timing-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-template-ref-timing-good)
 
-`onMounted` defers the read until Vue has assigned the input element to the template ref, allowing the focus helper to act on it.
-
-`App.vue`
-
-```vue annotate="add:2,5"
-<script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { focusInput } from './focus-input';
-const input = ref<HTMLInputElement | null>(null);
-onMounted(() => { focusInput(input.value); });
-</script>
-
-<template>
-<input ref="input" aria-label="Name" />
-</template>
-
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-template-ref-timing) · [Rule reference](./project/vize-croquis-cf-template-ref-timing.md)
 
 ### `vize:croquis/cf/toraw-mutation`
 
 `toRaw` is used and the raw object is then mutated.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from 'vue';
-import App from './App.vue';
-createApp(App).mount('#app');
-
-```
-
-`index.html`
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
-<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
-
-```
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import { makeProfile, rename } from './profile';
-const profile = makeProfile();
-</script>
-
-<template>
-<p>{{ profile.name }}</p><button @click="rename(profile)">Rename</button>
-</template>
-
-```
-
 <span id="vize-croquis-cf-toraw-mutation-bad"></span>
 
-**Bad**
-
-`rename` obtains the raw target and writes `raw.name`, bypassing the proxy setter that would notify the displayed reactive name.
-
-`profile.ts`
-
-```ts annotate="remove:1,4,5"
-import { reactive, toRaw } from 'vue';
-export function makeProfile() { return reactive({ name: 'Ada' }); }
-export function rename(profile: { name: string }): void {
-  const raw = toRaw(profile);
-  raw.name = 'Grace';
-}
-
-```
+[Bad](./cross-file.md#vize-croquis-cf-toraw-mutation-bad)
 
 <span id="vize-croquis-cf-toraw-mutation-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-toraw-mutation-good)
 
-Writing `profile.name` through the passed reactive proxy preserves the same rename while notifying its dependents.
-
-`profile.ts`
-
-```ts annotate="add:1,4"
-import { reactive } from 'vue';
-export function makeProfile() { return reactive({ name: 'Ada' }); }
-export function rename(profile: { name: string }): void {
-  profile.name = 'Grace';
-}
-
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-toraw-mutation) · [Rule reference](./project/vize-croquis-cf-toraw-mutation.md)
 
 ### `vize:croquis/cf/uncaught-error`
 
 A component can throw and no error boundary catches it.
 
-Default severity: info  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/uncaught-error": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-The current producer scans template expressions such as JSON.parse(input). It does not report a throw statement that exists only in the script block.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./App.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-uncaught-error-bad"></span>
 
-**Bad**
-
-The child's template calls `JSON.parse` on malformed input, and the reachable parent has no error-capture boundary.
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child /></template>
-```
-
-`Child.vue`
-
-```vue
-<script setup lang="ts">
-const input = "{";
-</script>
-<template><button @click="JSON.parse(input)">Parse</button></template>
-```
+[Bad](./cross-file.md#vize-croquis-cf-uncaught-error-bad)
 
 <span id="vize-croquis-cf-uncaught-error-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-uncaught-error-good)
 
-The parent registers `onErrorCaptured` around that child. Returning `false` stops propagation; a production boundary should also present useful recovery UI.
-
-`App.vue`
-
-```vue annotate="add:2,4"
-<script setup lang="ts">
-import { onErrorCaptured } from "vue";
-import Child from "./Child.vue";
-onErrorCaptured(() => false);
-</script>
-<template><Child /></template>
-```
-
-`Child.vue`
-
-```vue
-<script setup lang="ts">
-const input = "{";
-</script>
-<template><button @click="JSON.parse(input)">Parse</button></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/boundary.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-uncaught-error) · [Rule reference](./project/vize-croquis-cf-uncaught-error.md)
 
 ### `vize:croquis/cf/undeclared-emit`
 
 The component emits an event that is not declared.
 
-Default severity: error  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-The experimental Rust CrossFileAnalyzer has a producer for this code. The CLI pass does not emit this individual code; configuring its ID does not enable that Rust pass. These scenarios describe the analyzer's supported graph/facts, not a Vite+ promise.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./App.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-undeclared-emit-bad"></span>
 
-**Bad**
-
-The child calls `emit("save")` but its `defineEmits` contract declares only `cancel`.
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child /></template>
-```
-
-`Child.vue`
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-const emit = defineEmits<{ cancel: [] }>();
-emit("save");
-</script>
-<template><p>Content</p></template>
-```
+[Bad](./cross-file.md#vize-croquis-cf-undeclared-emit-bad)
 
 <span id="vize-croquis-cf-undeclared-emit-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-undeclared-emit-good)
 
-Declare `save` with its empty argument tuple so the emitted event agrees with the component contract.
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child /></template>
-```
-
-`Child.vue`
-
-```vue annotate="add:2"
-<script setup lang="ts">
-const emit = defineEmits<{ save: [] }>();
-emit("save");
-</script>
-<template><p>Content</p></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/emit.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-undeclared-emit) · [Rule reference](./project/vize-croquis-cf-undeclared-emit.md)
 
 ### `vize:croquis/cf/undeclared-prop`
 
 A parent passes a prop the child does not declare.
 
-Default severity: warning  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-The experimental Rust CrossFileAnalyzer has a producer for this code. The CLI pass does not emit this individual code; configuring its ID does not enable that Rust pass. These scenarios describe the analyzer's supported graph/facts, not a Vite+ promise.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./App.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-undeclared-prop-bad"></span>
 
-**Bad**
-
-The parent passes `typo` even though the resolved child declares only `title`. This analyzer convention is separate from Vue's general fallthrough-attribute behavior.
-
-`App.vue`
-
-```vue annotate="remove:4"
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child title="Hello" :typo="true" /></template>
-```
-
-`Child.vue`
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{ title: string }>();
-</script>
-<template><p>{{ props.title }}</p></template>
-```
+[Bad](./cross-file.md#vize-croquis-cf-undeclared-prop-bad)
 
 <span id="vize-croquis-cf-undeclared-prop-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-undeclared-prop-good)
 
-Remove the unintended `typo` binding and retain the declared `title` prop.
-
-`App.vue`
-
-```vue annotate="add:4"
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child title="Hello" /></template>
-```
-
-`Child.vue`
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{ title: string }>();
-</script>
-<template><p>{{ props.title }}</p></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/props_validation.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-undeclared-prop) · [Rule reference](./project/vize-croquis-cf-undeclared-prop.md)
 
 ### `vize:croquis/cf/undefined-slot`
 
 A parent fills a slot the child does not expose.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from 'vue';
-import App from './App.vue';
-createApp(App).mount('#app');
-
-```
-
-`index.html`
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
-<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
-
-```
-
-`Card.vue`
-
-```vue
-<script setup lang="ts">
-defineSlots<{ header(): unknown }>();
-</script>
-
-<template>
-<article><header><slot name="header" /></header></article>
-</template>
-
-```
-
 <span id="vize-croquis-cf-undefined-slot-bad"></span>
 
-**Bad**
-
-App supplies a `footer` slot, but Card declares and renders only `header`. The supplied Notice content has no matching slot outlet in this child.
-
-`App.vue`
-
-```vue annotate="remove:6"
-<script setup lang="ts">
-import Card from './Card.vue';
-</script>
-
-<template>
-<Card><template #footer>Notice</template></Card>
-</template>
-
-```
+[Bad](./cross-file.md#vize-croquis-cf-undefined-slot-bad)
 
 <span id="vize-croquis-cf-undefined-slot-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-undefined-slot-good)
 
-App supplies `header`, matching both the child’s typed slot declaration and its rendered outlet, so Notice appears there.
-
-`App.vue`
-
-```vue annotate="add:6"
-<script setup lang="ts">
-import Card from './Card.vue';
-</script>
-
-<template>
-<Card><template #header>Notice</template></Card>
-</template>
-
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-undefined-slot) · [Rule reference](./project/vize-croquis-cf-undefined-slot.md)
 
 ### `vize:croquis/cf/unhandled-event`
 
 A child emits an event that no parent handles.
 
-Default severity: info  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-The experimental Rust CrossFileAnalyzer has a producer for this code. The CLI pass does not emit this individual code; configuring its ID does not enable that Rust pass. These scenarios describe the analyzer's supported graph/facts, not a Vite+ promise.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./App.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-unhandled-event-bad"></span>
 
-**Bad**
-
-`Child.vue` emits `save`, but its immediate wrapper does not listen for it; component events do not automatically bubble through wrappers.
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import Wrapper from "./Wrapper.vue";
-</script>
-<template><Wrapper /></template>
-```
-
-`Wrapper.vue`
-
-```vue annotate="remove:4"
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child /></template>
-```
-
-`Child.vue`
-
-```vue
-<script setup lang="ts">
-const emit = defineEmits<{ save: [] }>();
-emit("save");
-</script>
-<template><p>Content</p></template>
-```
+[Bad](./cross-file.md#vize-croquis-cf-unhandled-event-bad)
 
 <span id="vize-croquis-cf-unhandled-event-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-unhandled-event-good)
 
-`Wrapper.vue` attaches a `save` listener to its direct child. The empty callback demonstrates handling for this rule, not a complete save implementation.
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import Wrapper from "./Wrapper.vue";
-</script>
-<template><Wrapper /></template>
-```
-
-`Wrapper.vue`
-
-```vue annotate="add:4"
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child @save="() => {}" /></template>
-```
-
-`Child.vue`
-
-```vue
-<script setup lang="ts">
-const emit = defineEmits<{ save: [] }>();
-emit("save");
-</script>
-<template><p>Content</p></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/event_bubbling.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-unhandled-event) · [Rule reference](./project/vize-croquis-cf-unhandled-event.md)
 
 ### `vize:croquis/cf/unmatched-inject`
 
 `inject` names a key that no ancestor provides.
 
-Default severity: error / warning (with default)  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/unmatched-inject": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./App.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-unmatched-inject-bad"></span>
 
-**Bad**
-
-`ThemeLabel.vue` injects `ThemeKey`, but its reachable `App.vue` ancestor never provides that key.
-
-`keys/theme.ts`
-
-```ts
-import type { InjectionKey, Ref } from "vue";
-
-export interface Theme {
-  color: string;
-}
-
-export const ThemeKey: InjectionKey<Ref<Theme>> = Symbol("theme");
-```
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import ThemeLabel from "./ThemeLabel.vue";
-</script>
-
-<template>
-  <ThemeLabel />
-</template>
-```
-
-`ThemeLabel.vue`
-
-```vue
-<script setup lang="ts">
-import { inject } from "vue";
-import { ThemeKey } from "./keys/theme";
-
-const theme = inject(ThemeKey);
-</script>
-```
+[Bad](./cross-file.md#vize-croquis-cf-unmatched-inject-bad)
 
 <span id="vize-croquis-cf-unmatched-inject-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-unmatched-inject-good)
 
-`App.vue` provides a reactive theme using the same exported `ThemeKey`, before rendering the descendant that injects it.
-
-`keys/theme.ts`
-
-```ts
-import type { InjectionKey, Ref } from "vue";
-
-export interface Theme {
-  color: string;
-}
-
-export const ThemeKey: InjectionKey<Ref<Theme>> = Symbol("theme");
-```
-
-`App.vue`
-
-```vue annotate="add:2,4,5,6,7"
-<script setup lang="ts">
-import { provide, ref } from "vue";
-import ThemeLabel from "./ThemeLabel.vue";
-import { ThemeKey, type Theme } from "./keys/theme";
-
-const theme = ref<Theme>({ color: "blue" });
-provide(ThemeKey, theme);
-</script>
-
-<template>
-  <ThemeLabel />
-</template>
-```
-
-`ThemeLabel.vue`
-
-```vue
-<script setup lang="ts">
-import { inject } from "vue";
-import { ThemeKey } from "./keys/theme";
-
-const theme = inject(ThemeKey);
-</script>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/provide_inject/analysis/diagnostics.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-unmatched-inject) · [Rule reference](./project/vize-croquis-cf-unmatched-inject.md)
 
 ### `vize:croquis/cf/unmatched-listener`
 
 A parent listens for an event the child does not emit.
 
-Default severity: warning  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-The experimental Rust CrossFileAnalyzer has a producer for this code. The CLI pass does not emit this individual code; configuring its ID does not enable that Rust pass. These scenarios describe the analyzer's supported graph/facts, not a Vite+ promise.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./App.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-unmatched-listener-bad"></span>
 
-**Bad**
-
-The parent listens for `save`, while the resolved child declares only `cancel`.
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child @save="() => {}" /></template>
-```
-
-`Child.vue`
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-const emit = defineEmits<{ cancel: [] }>();
-</script>
-<template><p>Content</p></template>
-```
+[Bad](./cross-file.md#vize-croquis-cf-unmatched-listener-bad)
 
 <span id="vize-croquis-cf-unmatched-listener-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-unmatched-listener-good)
 
-The child declares and emits `save`, matching the parent's listener name.
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child @save="() => {}" /></template>
-```
-
-`Child.vue`
-
-```vue annotate="add:2,3"
-<script setup lang="ts">
-const emit = defineEmits<{ save: [] }>();
-emit("save");
-</script>
-<template><p>Content</p></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/emit.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-unmatched-listener) · [Rule reference](./project/vize-croquis-cf-unmatched-listener.md)
 
 ### `vize:croquis/cf/unregistered-component`
 
 A template uses a component that is not registered or imported.
 
-Default severity: error  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-The experimental Rust CrossFileAnalyzer has a producer for this code. The CLI pass does not emit this individual code; configuring its ID does not enable that Rust pass. These scenarios describe the analyzer's supported graph/facts, not a Vite+ promise.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./App.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-unregistered-component-bad"></span>
 
-**Bad**
-
-A `Child.vue` file exists, but the parent neither imports nor otherwise registers `Child` for its template.
-
-`App.vue`
-
-```vue
-<template><Child /></template>
-```
-
-`Child.vue`
-
-```vue
-<template><p>Child</p></template>
-```
+[Bad](./cross-file.md#vize-croquis-cf-unregistered-component-bad)
 
 <span id="vize-croquis-cf-unregistered-component-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-unregistered-component-good)
 
-Import `Child` in the parent's script setup so the template resolves the component binding.
-
-`App.vue`
-
-```vue annotate="add:1,2,3"
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child /></template>
-```
-
-`Child.vue`
-
-```vue
-<template><p>Child</p></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/component_resolution.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-unregistered-component) · [Rule reference](./project/vize-croquis-cf-unregistered-component.md)
 
 ### `vize:croquis/cf/unresolved-import`
 
 An import does not resolve to a module.
 
-Default severity: error  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-The experimental Rust CrossFileAnalyzer has a producer for this code. The CLI pass does not emit this individual code; configuring its ID does not enable that Rust pass. These scenarios describe the analyzer's supported graph/facts, not a Vite+ promise.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./App.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-unresolved-import-bad"></span>
 
-**Bad**
-
-The parent imports `./Missing.vue`, but the project contains `Child.vue` rather than that path.
-
-`App.vue`
-
-```vue annotate="remove:2"
-<script setup lang="ts">
-import Child from "./Missing.vue";
-</script>
-<template><Child /></template>
-```
-
-`Child.vue`
-
-```vue
-<template><p>Child</p></template>
-```
+[Bad](./cross-file.md#vize-croquis-cf-unresolved-import-bad)
 
 <span id="vize-croquis-cf-unresolved-import-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-unresolved-import-good)
 
-Point the import at the existing `./Child.vue` file, retaining the same template binding.
-
-`App.vue`
-
-```vue annotate="add:2"
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child /></template>
-```
-
-`Child.vue`
-
-```vue
-<template><p>Child</p></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/component_resolution.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-unresolved-import) · [Rule reference](./project/vize-croquis-cf-unresolved-import.md)
 
 ### `vize:croquis/cf/unused-attrs`
 
 Fallthrough attributes are passed to a multi-root component that does not use them.
 
-Default severity: info  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-The experimental Rust CrossFileAnalyzer has a producer for this code. The CLI pass does not emit this individual code; configuring its ID does not enable that Rust pass. These scenarios describe the analyzer's supported graph/facts, not a Vite+ promise.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./App.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-unused-attrs-bad"></span>
 
-**Bad**
-
-The parent's `tracking-code` is neither consumed as a prop nor forwarded by the multi-root child.
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child tracking-code="notice" /></template>
-```
-
-`Child.vue`
-
-```vue annotate="remove:1"
-<template><main>Content</main><aside>Help</aside></template>
-```
+[Bad](./cross-file.md#vize-croquis-cf-unused-attrs-bad)
 
 <span id="vize-croquis-cf-unused-attrs-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-unused-attrs-good)
 
-Binding `$attrs` on `<main>` gives that fallthrough attribute an explicit destination.
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child tracking-code="notice" /></template>
-```
-
-`Child.vue`
-
-```vue annotate="add:1"
-<template><main v-bind="$attrs">Content</main><aside>Help</aside></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/fallthrough.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-unused-attrs) · [Rule reference](./project/vize-croquis-cf-unused-attrs.md)
 
 ### `vize:croquis/cf/unused-emit`
 
 A declared emit is never used.
 
-Default severity: warning  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-The experimental Rust CrossFileAnalyzer has a producer for this code. The CLI pass does not emit this individual code; configuring its ID does not enable that Rust pass. These scenarios describe the analyzer's supported graph/facts, not a Vite+ promise.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./App.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-unused-emit-bad"></span>
 
-**Bad**
-
-The child declares `save` but never calls the emitted-event function with that name.
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child /></template>
-```
-
-`Child.vue`
-
-```vue
-<script setup lang="ts">
-const emit = defineEmits<{ save: [] }>();
-</script>
-<template><p>Content</p></template>
-```
+[Bad](./cross-file.md#vize-croquis-cf-unused-emit-bad)
 
 <span id="vize-croquis-cf-unused-emit-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-unused-emit-good)
 
-The example calls `emit("save")`, making the declared event used. Real interactions should emit it when the corresponding action occurs.
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import Child from "./Child.vue";
-</script>
-<template><Child /></template>
-```
-
-`Child.vue`
-
-```vue annotate="add:3"
-<script setup lang="ts">
-const emit = defineEmits<{ save: [] }>();
-emit("save");
-</script>
-<template><p>Content</p></template>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/emit.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-unused-emit) · [Rule reference](./project/vize-croquis-cf-unused-emit.md)
 
 ### `vize:croquis/cf/unused-provide`
 
 A provided key is never injected.
 
-Default severity: warning  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/unused-provide": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./App.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
-`keys/theme.ts`
-
-```ts
-import type { InjectionKey, Ref } from "vue";
-export interface Theme { color: string; }
-export const ThemeKey: InjectionKey<Ref<Theme>> = Symbol("theme");
-```
-
 <span id="vize-croquis-cf-unused-provide-bad"></span>
 
-**Bad**
-
-`App.vue` provides `ThemeKey`, but its rendered `Dashboard.vue` subtree has no consumer of that key.
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import { provide, ref } from "vue";
-import Dashboard from "./Dashboard.vue";
-import { ThemeKey, type Theme } from "./keys/theme";
-
-const theme = ref<Theme>({ color: "blue" });
-provide(ThemeKey, theme);
-</script>
-
-<template>
-  <Dashboard />
-</template>
-```
-
-`Dashboard.vue`
-
-```vue annotate="remove:2"
-<template>
-  <h1>Dashboard</h1>
-</template>
-```
+[Bad](./cross-file.md#vize-croquis-cf-unused-provide-bad)
 
 <span id="vize-croquis-cf-unused-provide-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-unused-provide-good)
 
-The dashboard now renders `ThemeLabel.vue`, which injects the ancestor's exact `ThemeKey` identity.
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import { provide, ref } from "vue";
-import Dashboard from "./Dashboard.vue";
-import { ThemeKey, type Theme } from "./keys/theme";
-
-const theme = ref<Theme>({ color: "blue" });
-provide(ThemeKey, theme);
-</script>
-
-<template>
-  <Dashboard />
-</template>
-```
-
-`Dashboard.vue`
-
-```vue annotate="add:1,2,3,4,6"
-<script setup lang="ts">
-import ThemeLabel from "./ThemeLabel.vue";
-</script>
-
-<template>
-  <ThemeLabel />
-</template>
-```
-
-`ThemeLabel.vue`
-
-```vue annotate="add:1,2,3,4,5,6"
-<script setup lang="ts">
-import { inject } from "vue";
-import { ThemeKey } from "./keys/theme";
-
-const theme = inject(ThemeKey);
-</script>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/provide_inject/analysis.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-unused-provide) · [Rule reference](./project/vize-croquis-cf-unused-provide.md)
 
 ### `vize:croquis/cf/value-extraction-breaks-reactivity`
 
 Reading a reactive value out into a local drops later updates.
 
-Default severity: error  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/value-extraction-breaks-reactivity": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./UserPage.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
 <span id="vize-croquis-cf-value-extraction-breaks-reactivity-bad"></span>
 
-**Bad**
-
-Vue 3.5's reactive destructured `item` is read into `itemSnapshot` once; later prop replacement does not update that snapshot.
-
-`UserPage.vue`
-
-```vue
-<script setup lang="ts">
-import { reactive } from "vue";
-import UserSummary from "./UserSummary.vue";
-
-const user = reactive({ name: "Ada" });
-</script>
-
-<template>
-  <UserSummary :item="user" />
-</template>
-```
-
-`UserSummary.vue`
-
-```vue annotate="remove:3"
-<script setup lang="ts">
-const { item } = defineProps<{ item: { name: string } }>();
-const itemSnapshot = item;
-</script>
-```
+[Bad](./cross-file.md#vize-croquis-cf-value-extraction-breaks-reactivity-bad)
 
 <span id="vize-croquis-cf-value-extraction-breaks-reactivity-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-value-extraction-breaks-reactivity-good)
 
-Read `item` inside `computed`, so Vue's reactive props-destructuring transform can track each evaluation.
-
-`UserPage.vue`
-
-```vue
-<script setup lang="ts">
-import { reactive } from "vue";
-import UserSummary from "./UserSummary.vue";
-
-const user = reactive({ name: "Ada" });
-</script>
-
-<template>
-  <UserSummary :item="user" />
-</template>
-```
-
-`UserSummary.vue`
-
-```vue annotate="add:2,3,5"
-<script setup lang="ts">
-import { computed } from "vue";
-
-const { item } = defineProps<{ item: { name: string } }>();
-const itemView = computed(() => item);
-</script>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/reactivity/diagnostics.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-value-extraction-breaks-reactivity) · [Rule reference](./project/vize-croquis-cf-value-extraction-breaks-reactivity.md)
 
 ### `vize:croquis/cf/watch-can-be-computed`
 
 A watcher only copies a value into state and can be a computed.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
-
-This illustrates the published preference for purely derived state. Watchers remain appropriate for external effects or independently writable state; no current producer emits this contract.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from 'vue';
-import App from './App.vue';
-createApp(App).mount('#app');
-
-```
-
-`index.html`
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
-<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
-
-```
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import { useDouble } from './use-double';
-const { count, doubled } = useDouble();
-</script>
-
-<template>
-<button @click="count++">{{ count }}</button><p>{{ doubled }}</p>
-</template>
-
-```
-
 <span id="vize-croquis-cf-watch-can-be-computed-bad"></span>
 
-**Bad**
-
-The watcher performs no external effect; it only keeps a second writable ref synchronized with twice `count`. This example has no independent writes to that derived value.
-
-`use-double.ts`
-
-```ts annotate="remove:1,4,5"
-import { ref, watch } from 'vue';
-export function useDouble() {
-  const count = ref(0);
-  const doubled = ref(0);
-  watch(count, next => { doubled.value = next * 2; }, { immediate: true });
-  return { count, doubled };
-}
-
-```
+[Bad](./cross-file.md#vize-croquis-cf-watch-can-be-computed-bad)
 
 <span id="vize-croquis-cf-watch-can-be-computed-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-watch-can-be-computed-good)
 
-A computed getter expresses the same derivation directly and removes the manual synchronization and extra writable state.
-
-`use-double.ts`
-
-```ts annotate="add:1,4"
-import { computed, ref } from 'vue';
-export function useDouble() {
-  const count = ref(0);
-  const doubled = computed(() => count.value * 2);
-  return { count, doubled };
-}
-
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-watch-can-be-computed) · [Rule reference](./project/vize-croquis-cf-watch-can-be-computed.md)
 
 ### `vize:croquis/cf/watcheffect-async`
 
 The async watchEffect shown here has no invalidation cleanup or stale-response guard. Vue supports cleanup for watchEffect; the Good example uses an explicit watch source and cancels invalidated work.
 
-Default severity: error  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/watcheffect-async": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from "vue";
-import Root from "./SearchPage.vue";
-createApp(Root).mount("#app");
-```
-
-`index.html`
-
-```html
-<div id="app"></div>
-<script type="module" src="/main.ts"></script>
-```
-
-`api.ts`
-
-```ts
-export interface Result { items: string[]; }
-export async function load(query: string, options?: { signal?: AbortSignal }): Promise<Result> {
-  const response = await fetch(`/search?q=${encodeURIComponent(query)}`, options);
-  return response.json();
-}
-```
-
 <span id="vize-croquis-cf-watcheffect-async-bad"></span>
 
-**Bad**
-
-The async `watchEffect` mixes implicit dependency collection with an awaited request and no invalidation guard.
-
-`SearchPage.vue`
-
-```vue
-<script setup lang="ts">
-import { ref } from "vue";
-import SearchResults from "./SearchResults.vue";
-
-const query = ref("");
-</script>
-
-<template>
-  <SearchResults :query="query" />
-</template>
-```
-
-`SearchResults.vue`
-
-```vue annotate="remove:3,8,9,10"
-<script setup lang="ts">
-import { load, type Result } from "./api";
-import { ref, watchEffect } from "vue";
-
-const props = defineProps<{ query: string }>();
-const result = ref<Result | null>(null);
-
-watchEffect(async () => {
-  result.value = await load(props.query);
-});
-</script>
-```
+[Bad](./cross-file.md#vize-croquis-cf-watcheffect-async-bad)
 
 <span id="vize-croquis-cf-watcheffect-async-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-watcheffect-async-good)
 
-An explicit `watch(() => props.query, ...)` declares the source, registers request cleanup, and refuses a stale response after invalidation.
-
-`SearchPage.vue`
-
-```vue
-<script setup lang="ts">
-import { ref } from "vue";
-import SearchResults from "./SearchResults.vue";
-
-const query = ref("");
-</script>
-
-<template>
-  <SearchResults :query="query" />
-</template>
-```
-
-`SearchResults.vue`
-
-```vue annotate="add:3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22"
-<script setup lang="ts">
-import { load, type Result } from "./api";
-import { ref, watch } from "vue";
-
-const props = defineProps<{ query: string }>();
-const result = ref<Result | null>(null);
-
-watch(
-  () => props.query,
-  async (value, _oldValue, onCleanup) => {
-    const controller = new AbortController();
-    let active = true;
-
-    onCleanup(() => {
-      active = false;
-      controller.abort();
-    });
-
-    const next = await load(value, { signal: controller.signal });
-    if (active) result.value = next;
-  },
-);
-</script>
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/race_conditions/diagnostics.rs)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-watcheffect-async) · [Rule reference](./project/vize-croquis-cf-watcheffect-async.md)
 
 ### `vize:croquis/cf/watcher-outside-setup`
 
 `watch` or `watchEffect` is called outside `setup`.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
-
-Module-scope watchers are valid when their owner keeps and calls a stop handle or intentionally gives them application lifetime. This example requires component-owned lifetimes; the contract has no current producer.
-
-**Shared project files**
-
-Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
-
-`main.ts`
-
-```ts
-import { createApp } from 'vue';
-import App from './App.vue';
-createApp(App).mount('#app');
-
-```
-
-`index.html`
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
-<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
-
-```
-
-`App.vue`
-
-```vue
-<script setup lang="ts">
-import Observer from './Observer.vue';
-</script>
-
-<template>
-<Observer /><Observer />
-</template>
-
-```
-
-`Observer.vue`
-
-```vue
-<script setup lang="ts">
-import { useObserver } from './use-observer';
-const { count, observed } = useObserver();
-</script>
-
-<template>
-<button @click="count++">{{ count }}</button><p>{{ observed }}</p>
-</template>
-
-```
-
 <span id="vize-croquis-cf-watcher-outside-setup-bad"></span>
 
-**Bad**
-
-The watcher is created at module load, outside either Observer’s setup, and both instances share its refs. It is not automatically stopped when a particular Observer unmounts.
-
-`use-observer.ts`
-
-```ts annotate="remove:2,3,4,5"
-import { ref, watch } from 'vue';
-const count = ref(0);
-const observed = ref(0);
-watch(count, next => { observed.value = next; });
-export function useObserver() { return { count, observed }; }
-
-```
+[Bad](./cross-file.md#vize-croquis-cf-watcher-outside-setup-bad)
 
 <span id="vize-croquis-cf-watcher-outside-setup-good"></span>
 
-**Good**
+[Good](./cross-file.md#vize-croquis-cf-watcher-outside-setup-good)
 
-Each synchronous setup call creates its own refs and watcher inside `useObserver`. Vue associates that watcher with the calling component’s lifetime.
-
-`use-observer.ts`
-
-```ts annotate="add:2,3,4,5,6,7"
-import { ref, watch } from 'vue';
-export function useObserver() {
-  const count = ref(0);
-  const observed = ref(0);
-  watch(count, next => { observed.value = next; });
-  return { count, observed };
-}
-
-```
-
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
-
-[Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
-
-[Cross-file index](cross-file.md)
+[Group examples](./cross-file.md#vize-croquis-cf-watcher-outside-setup) · [Rule reference](./project/vize-croquis-cf-watcher-outside-setup.md)

@@ -9,6 +9,7 @@ import { verifyRenderedCategoryPackets } from "./category-rule-render-assertions
 import { categoryFiles } from "./rules/catalogue-routes.ts";
 import { catalogueSubgroups } from "./rules/catalogue-subgroups.ts";
 import { verifyJapaneseRuleEditorial } from "./ja-rule-editorial-render-assertions.ts";
+import { verifyRenderedRuleOverview } from "./all-rules-overview-render-assertions.ts";
 
 export const ruleRenderRoutes = [
   "/rules/all",
@@ -32,11 +33,12 @@ export async function verifyRenderedRulePackets(page: Page, route: string) {
     category &&
     (categoryFiles.includes(category[2] as (typeof categoryFiles)[number]) ||
       category[2] === "cross-file" ||
-      (category[1] && category[1] !== "ja/" && category[2] === "all") ||
       (!category[1] && category[2] in catalogueSubgroups))
   )
     return { ...(await verifyRenderedCategoryPackets(page, route)), japaneseEditorial };
-  if (!/^\/(?:ja\/)?rules\/all$/.test(route)) return null;
+  if (!/^\/(?:ja\/|zh-CN\/|pt-BR\/|fr\/)?rules\/all$/.test(route)) return null;
+  const overview = await verifyRenderedRuleOverview(page, route);
+  if (!/^\/(?:ja\/)?rules\/all$/.test(route)) return { overview, japaneseEditorial };
   const ja = route.startsWith("/ja/");
   const locale = ja ? "ja/" : "";
   const indentation = await verifyRenderedRuleIndentation(page, locale);
@@ -67,49 +69,6 @@ export async function verifyRenderedRulePackets(page: Page, route: string) {
     }),
   );
   assert.equal(expected.length, 317, "251 source rules plus 66 project entries per locale");
-  const inline = await page.evaluate(
-    (expected) => {
-      const ids = new Map(
-        expected.map(({ id }) => [id.replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase(), id]),
-      );
-      const packets: Record<string, { code: string[]; bad: boolean; good: boolean }> = {};
-      let current: string | undefined;
-      const content = document.querySelector(".content");
-      if (!content) throw new Error("Inline rule catalogue requires its content authority");
-      const contentIds = [...content.querySelectorAll("[id]")].map((element) => element.id);
-      if (new Set(contentIds).size !== contentIds.length)
-        throw new Error("Inline rule catalogue contains duplicate IDs");
-      for (const element of content.querySelectorAll("h3[id], pre code")) {
-        const id = ids.get(element.id);
-        if (id !== undefined) {
-          current = id;
-          if (packets[current]) throw new Error(`Duplicate inline rule ${current}`);
-          packets[current] = {
-            code: [],
-            bad: Boolean(document.getElementById(`${element.id}-bad`)),
-            good: Boolean(document.getElementById(`${element.id}-good`)),
-          };
-        } else if (element.parentElement?.tagName === "PRE" && current) {
-          if (
-            element.closest(".vize-command-tabs") &&
-            !element.hasAttribute("data-command-tabs-original")
-          )
-            continue;
-          const text = element.textContent;
-          if (text === null) throw new Error(`Missing inline rule code ${current}`);
-          packets[current].code.push(text.replace(/\n$/, ""));
-        }
-      }
-      return packets;
-    },
-    expected.map(({ id }) => ({ id })),
-  );
-  assert.equal(Object.keys(inline).length, expected.length, "every rule is on the same page");
-  for (const authored of expected) {
-    assert.equal(inline[authored.id]?.bad, true, `${authored.id}: inline Bad anchor`);
-    assert.equal(inline[authored.id]?.good, true, `${authored.id}: inline Good anchor`);
-    assert.deepEqual(inline[authored.id]?.code, authored.code, `${authored.id}: whole inline code`);
-  }
   const receipts = [];
   for (let offset = 0; offset < expected.length; offset += 12) {
     const packet = expected.slice(offset, offset + 12);
@@ -163,5 +122,6 @@ export async function verifyRenderedRulePackets(page: Page, route: string) {
     receipts,
     indentation,
     japaneseEditorial,
+    overview,
   };
 }
