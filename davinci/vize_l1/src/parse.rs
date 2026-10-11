@@ -1,8 +1,10 @@
 //! The parse entry: L1's moved tokenizer → event stream → surface tree,
 //! with the byte-fidelity verifier asserted on every construction.
 
-use crate::dialect::{SurfacePolicy, VueSink};
+mod namespace;
+
 use crate::markup::{Component, LexOptions, Lexer};
+use namespace::NamespaceSink;
 use vize_l0::ErrorCode;
 use vize_l0::{Allocator, Vec};
 
@@ -82,10 +84,9 @@ fn parse_projection<'a>(
     Option<SurfaceTree<'a>>,
     Vec<'a, SurfaceError>,
 ) {
-    let mut unsupported = Vec::new_in(&allocator);
     construct::<false>(allocator, source, authored, |events, errors| {
         let recorder = Recorder { events, errors };
-        let sink = VueSink::<ProjectionPolicy>::new(allocator, source, recorder, &mut unsupported);
+        let sink = NamespaceSink::new(allocator, source, recorder);
         Lexer::<Component, _>::new(
             source,
             sink,
@@ -96,19 +97,6 @@ fn parse_projection<'a>(
         )
         .run();
     })
-}
-
-/// The generic projection owns namespace recovery but retains its historical
-/// no-admission and no-v-pre policy. Complete headers need no policy scan.
-struct ProjectionPolicy;
-
-impl SurfacePolicy for ProjectionPolicy {
-    type Boundary = core::convert::Infallible;
-    const RESOLVE_HEADERS: bool = false;
-
-    fn pre(_raw: &str, _offset: u32, _source: &str) -> Result<bool, Self::Boundary> {
-        Ok(false)
-    }
 }
 
 /// Both lexer entry points share the source limit, recovery and projection

@@ -57,11 +57,12 @@ Native checks additionally verify byte fidelity. These are parser controls;
 they confer no published compiler or browser execution credit.
 
 The generic L1 projection also needs this live namespace owner. Reuse the same
-native component lexer and Vue sink with a neutral policy that admits every
-existing head and never suppresses interpolation for `v-pre`. This route now
-uses the owner's arena-backed ancestry frames; it adds no lexer pass, pipeline
-stage, serialization or legacy dependency. Its const-false header policy avoids
-scanning attributes for admission. Preserve the original eleven corpus rows
+native component lexer with a generic namespace-recording sink. It retains
+authored heads without scanning for admission or suppressing interpolation for
+`v-pre`. This route uses arena-backed ancestry frames and the existing generic
+structural recovery; it adds no lexer pass, pipeline stage, serialization or
+legacy dependency. Version-specific header and lint policies remain in their
+dialect owners. Preserve the original eleven corpus rows
 byte-for-byte and append the whole SVG/path/title conditional control minimized
 from the exact canonical vue-data-ui gitlink. Both native component and generic
 projection consume all twelve controls with byte fidelity; Armature checks the
@@ -80,6 +81,16 @@ allocates or grows. Update only its exact inventory row as required by the
 storage boundary. The owner's ancestry-frame allocation is recorded above;
 all storage scanners, source limits and protected instruction ceilings remain
 active. This plan failure and skipped dependent jobs confer no qualification.
+
+Exact bfda165 source Check 38154268375 passed physical Chromium and full
+canonical DOM/SSR comparisons, but the unchanged L1 isolation law rejected the
+generic parse route importing Vue policy. Keep that law active. Replace this
+policy dependency with the generic namespace-recording sink described above;
+remove its unused dialect re-export, const switch and empty admission buffer.
+The strict storage ledger records the new generic ancestry owner and restores
+`parse.rs` to its previous count. Preserve the whole failed tooling log identity
+and passing observer job identities in the same failed-source packet. These
+partial successes do not qualify the complete failed head or a publication.
 
 The original third-party sources, six original control rows, and two authored
 physical SVG controls stay unchanged. This additive namespace campaign does

@@ -76,5 +76,58 @@
     "compilerExecuted": false,
     "browserExecuted": false,
     "publicationQualification": false
+  },
+  "successorIsolationFailure": {
+    "head": "bfda165de64040bea1cae0ca6137502406075b21",
+    "run": 38154268375,
+    "job": 114514381537,
+    "rawLogSha256": "e5beac1a8306e031150d0d4642bb10e6dad83286f9e93f5c39bbc4bdca69d202",
+    "rawLogPath": "/tmp/vize-namespace-bfda-tooling3.log",
+    "completeFailure": "2026-10-11T16:17:54.9520341Z test at tests/tooling/davinci-l1-dialect-isolation.test.ts:43:1\n2026-10-11T16:17:54.9520656Z \u2716 generic L1 construction, rendering and lexer never depend on dialect policy (17.439098ms)\n2026-10-11T16:17:54.9520943Z   AssertionError [ERR_ASSERTION]: /home/runner/_work/vize/vize/davinci/vize_l1/src/parse.rs\n2026-10-11T16:17:54.9521290Z       at assertGenericIsolation (file:///home/runner/_work/vize/vize/tests/tooling/davinci-l1-dialect-isolation.test.ts:39:12)\n2026-10-11T16:17:54.9521675Z       at TestContext.<anonymous> (file:///home/runner/_work/vize/vize/tests/tooling/davinci-l1-dialect-isolation.test.ts:45:3)\n2026-10-11T16:17:54.9521959Z       at Test.runInAsyncScope (node:async_hooks:228:14)\n2026-10-11T16:17:54.9522139Z       at Test.run (node:internal/test_runner/test:1118:25)\n2026-10-11T16:17:54.9522329Z       at Test.start (node:internal/test_runner/test:1015:17)\n2026-10-11T16:17:54.9522957Z       at startSubtestAfterBootstrap (node:internal/test_runner/harness:358:17) {\n2026-10-11T16:17:54.9523373Z     generatedMessage: false,\n2026-10-11T16:17:54.9523502Z     code: 'ERR_ASSERTION',\n2026-10-11T16:17:54.9530121Z     actual: \"                                                                        \\n                                                                   \\n\\nuse crate::dialect::{SurfacePolicy, VueSink};\\nuse crate::markup::{Component, LexOptions, Lexer};\\nuse vize_l0::ErrorCode;\\nuse vize_l0::{Allocator, Vec};\\n\\nuse crate::build::build;\\nuse crate::event::{Event, Recorder};\\nuse crate::render::check_fidelity;\\nuse crate::surface::{SurfaceChild, SurfaceTree, Token};\\n\\n                                                     \\n#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]\\npub struct SurfaceParseOptions {\\n                                                                         \\n    pub experimental_in_tag_comments: bool,\\n}\\n\\n                                                                         \\n                                                                         \\n                                                            \\n#[derive(Debug, Clone, Copy)]\\npub struct SurfaceError {\\n    pub code: ErrorCode,\\n    pub offset: u32,\\n}\\n\\n                                                           \\n   \\n                                                                         \\n                                                                        \\n                                                                      \\n                                                                    \\n                                \\n   \\n                                                                  \\n                                                                     \\n                                                                       \\n                                                                 \\n   \\n                                                    \\npub fn parse<'a>(\\n    allocator: &'a Allocator,\\n    source: &'a str,\\n) -> (SurfaceTree<'a>, Vec<'a, SurfaceError>) {\\n    parse_with_options(allocator, source, SurfaceParseOptions::default())\\n}\\n\\n                                              \\npub fn parse_with_options<'a>(\\n    allocator: &'a Allocator,\\n    source: &'a str,\\n    options: SurfaceParseOptions,\\n) -> (SurfaceTree<'a>, Vec<'a, SurfaceError>) {\\n    let (tree, _, errors) = parse_projection(allocator, source, options, false);\\n    (tree, errors)\\n}\\n\\n                                                                             \\n                                                                        \\n                                                                          \\npub fn parse_with_authored<'a>(\\n    allocator: &'a Allocator,\\n    source: &'a str,\\n) -> (\\n    SurfaceTree<'a>,\\n    Option<SurfaceTree<'a>>,\\n    Vec<'a, SurfaceError>,\\n) {\\n    parse_projection(allocator, source, SurfaceParseOptions::default(), true)\\n}\\n\\nfn parse_projection<'a>(\\n    allocator: &'a Allocator,\\n    source: &'a str,\\n    options: SurfaceParseOptions,\\n    authored: bool,\\n) -> (\\n    SurfaceTree<'a>,\\n    Option<SurfaceTree<'a>>,\\n    Vec<'a, SurfaceError>,\\n) {\\n    let mut unsupported = Vec::new_in(&allocator);\\n    construct::<false>(allocator, source, authored, |events, errors| {\\n        let recorder = Recorder { events, errors };\\n        let sink = VueSink::<ProjectionPolicy>::new(allocator, source, recorder, &mut unsupported);\\n        Lexer::<Component, _>::new(\\n            source,\\n            sink,\\n            LexOptions {\\n                in_tag_comments: options.experimental_in_tag_comments,\\n                ..LexOptions::default()\\n            },\\n        )\\n        .run();\\n    })\\n}\\n\\n                                                                             \\n                                                                           \\nstruct ProjectionPolicy;\\n\\nimpl SurfacePolicy for ProjectionPolicy {\\n    type Boundary = core::convert::Infallible;\\n    const RESOLVE_HEADERS: bool = false;\\n\\n    fn pre(_raw: &str, _offset: u32, _source: &str) -> Result<bool, Self::Boundary> {\\n        Ok(false)\\n    }\\n}\\n\\n                                                                           \\n                                                                               \\npub(crate) fn construct<'a, const RAW: bool>(\\n    allocator: &'a Allocator,\\n    source: &'a str,\\n    authored: bool,\\n    record: impl FnOnce(&mut Vec<'a, Event>, &mut Vec<'a, SurfaceError>),\\n) -> (\\n    SurfaceTree<'a>,\\n    Option<SurfaceTree<'a>>,\\n    Vec<'a, SurfaceError>,\\n) {\\n    construct_with_lint::<RAW, false>(allocator, source, authored, record)\\n}\\n\\n                                                                            \\n                                                                  \\npub(crate) fn construct_with_lint<'a, const RAW: bool, const LINT: bool>(\\n    allocator: &'a Allocator,\\n    source: &'a str,\\n    authored: bool,\\n    record: impl FnOnce(&mut Vec<'a, Event>, &mut Vec<'a, SurfaceError>),\\n) -> (\\n    SurfaceTree<'a>,\\n    Option<SurfaceTree<'a>>,\\n    Vec<'a, SurfaceError>,\\n) {\\n    let mut events: Vec<'a, Event> = Vec::new_in(&allocator);\\n    let mut errors: Vec<'a, SurfaceError> = Vec::new_in(&allocator);\\n                                                                          \\n                                                                             \\n    if u32::try_from(source.len()).is_err() {\\n        let mut children = Vec::new_in(&allocator);\\n        let hole = Token::present(crate::slice::range(source, 0, 0), source);\\n        children.push(SurfaceChild::Unexpected(hole));\\n        return (SurfaceTree { source, children }, None, errors);\\n    }\\n    record(&mut events, &mut errors);\\n    let (tree, repaired) = build::<RAW, LINT>(allocator, source, &events, true);\\n    let authored =\\n        (authored && repaired).then(|| build::<RAW, LINT>(allocator, source, &events, false).0);\\n    debug_assert!(\\n        check_fidelity(&tree).is_ok(),\\n                                             \\n    );\\n    if let Some(authored) = &authored {\\n        debug_assert!(check_fidelity(authored).is_ok(),                       );\\n    }\\n    (tree, authored, errors)\\n}\\n\",\n2026-10-11T16:17:54.9536955Z     expected: /\\b(?:dialect|vue[0-3]|petite|quirks|LegacyCaps|LegacyDialectCapabilities|LegacyVueVersion|VueVersion)\\b/u,\n2026-10-11T16:17:54.9537217Z     operator: 'doesNotMatch',\n2026-10-11T16:17:54.9537346Z     diff: 'simple'\n2026-10-11T16:17:54.9537448Z   }\n2026-10-11T16:17:54.9577657Z \n2026-10-11T16:17:54.9578439Z ---\n2026-10-11T16:17:54.9578677Z vp run: 0/3 cache hit (0%), 1 failed. (Run `vp run --last-details` for full details)\n2026-10-11T16:17:54.9650381Z ##[error]Process completed with exit code 1.\n2026-10-11T16:17:54.9698994Z Prepare all required actions\n2026-10-11T16:17:54.9699251Z Getting action download info\n2026-10-11T16:17:55.0414498Z Download action repository 'actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a' (SHA:043fb46d1a93c77aae656e7c1c64a875d1fc6a0a)\n2026-10-11T16:17:55.0901463Z ##[group]Run ./.github/actions/upload-formatter-api-corpus-evidence\n2026-10-11T16:17:55.0901658Z with:\n2026-10-11T16:17:55.0901758Z   shard: 3\n2026-10-11T16:17:55.0901876Z env:\n2026-10-11T16:17:55.0901977Z   CARGO_TERM_COLOR: always\n2026-10-11T16:17:55.0902108Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true\n2026-10-11T16:17:55.0902298Z   NODE_OPTIONS: --disable-warning=DEP0040 --disable-warning=DEP0169\n2026-10-11T16:17:55.0902477Z   CARGO_BUILD_JOBS: 12\n2026-10-11T16:17:55.0902679Z   VIZE_SOURCE_CLI_RECEIPT_SHA256: 122e1acb97a1f1b25926f41e79c54e1d1a24a889243710268dc8328469c184ef",
+    "passingObservers": [
+      {
+        "job": 114514038211,
+        "observer": "physical Chromium",
+        "conclusion": "success"
+      },
+      {
+        "job": 114514038402,
+        "observer": "canonical DOM",
+        "conclusion": "success"
+      },
+      {
+        "job": 114514038405,
+        "observer": "canonical SSR",
+        "conclusion": "success"
+      }
+    ],
+    "sourceQualification": false,
+    "publicationQualification": false,
+    "genericOwnershipRepair": {
+      "sourceTests": [
+        "native_svg_title: 2/2 including all12 complete ordered corpus rows",
+        "surface_corpus: 4/4",
+        "generic L1 isolation and exact storage laws: 10/10"
+      ],
+      "logs": [
+        {
+          "path": "/tmp/vize-namespace-generic-sink-controls.log",
+          "sha256": "8d406ace2eae301ddef21dc7910bb5a76a908e8ee1b80dc659d356336a45e9b9",
+          "bytes": 1303
+        },
+        {
+          "path": "/tmp/vize-namespace-generic-surface-controls.log",
+          "sha256": "6e0abc4ef44c9cdf1003ecbfa3188120ca28b7677ca5de88a181d6a92a4e7818",
+          "bytes": 1020
+        },
+        {
+          "path": "/tmp/vize-namespace-generic-isolation-local.log",
+          "sha256": "2eeaf1e2c82dddf19191f513a1a9e0b5a98723e717d27254ef9c386f132eba3c",
+          "bytes": 982
+        }
+      ],
+      "sourceQualification": false,
+      "publicationQualification": false
+    }
   }
 }

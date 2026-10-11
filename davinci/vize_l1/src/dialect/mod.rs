@@ -13,5 +13,4 @@ pub mod vue2;
 pub mod vue3;
 
 pub use template::LegacyCaps;
-pub(crate) use vue::surface::{SurfacePolicy, sink::VueSink};
 pub use vue::{DirectiveArgStyle, LegacyDialectCapabilities, LegacyVueVersion};

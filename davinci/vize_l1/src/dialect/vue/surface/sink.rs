@@ -88,7 +88,7 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
                 .last()
                 .is_some_and(|frame| frame.recovery_context);
         let recovery_context = entry_recovery || inherited_recovery;
-        let (heads, exact_head) = if inherited || !P::RESOLVE_HEADERS {
+        let (heads, exact_head) = if inherited {
             (HeaderPolicy::default(), false)
         } else {
             self.resolve_heads()

@@ -16,7 +16,6 @@ pub(crate) struct HeaderPolicy {
 pub(crate) trait SurfacePolicy {
     type Boundary;
     const LINT_TAGS: bool = false;
-    const RESOLVE_HEADERS: bool = true;
 
     fn pre(raw: &str, offset: u32, source: &str) -> Result<bool, Self::Boundary>;
 
