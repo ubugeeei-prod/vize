@@ -24,6 +24,7 @@ pub fn transform_v_bind<'a>(
         element: element_id,
         prop: IRProp::new(key, values, el.tag_type == ElementType::Component),
         tag: el.tag,
+        namespace: el.ns,
         camel: has_modifier(dir, "camel"),
         prop_modifier: has_modifier(dir, "prop"),
     };
