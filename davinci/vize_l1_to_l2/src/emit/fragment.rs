@@ -26,7 +26,7 @@ pub(super) fn root_needs_fragment(root: &Region<'_>) -> bool {
     let mut count = 0u32;
     let mut compound = false;
     for op in root.ops.iter() {
-        if sfc_style::is_carrier(op) {
+        if sfc_style::is_carrier(op) || super::annotations::is_annotation(op) {
             continue;
         }
         if is_whitespace_text(op) {
@@ -53,6 +53,9 @@ pub(super) fn emit_root(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), Em
     }
     let mut found = false;
     for op in root.ops.iter() {
+        if super::annotations::skip(cx, op) {
+            continue;
+        }
         if let Op::Element(element) = op
             && sfc_style::is_carrier_element(element)
         {
@@ -137,6 +140,9 @@ fn emit_fragment(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), EmitError
     // text VNode, matching the legacy root fragment.
     let bounds = meaningful_bounds(root);
     for (index, op) in root.ops.iter().enumerate() {
+        if super::annotations::skip(cx, op) {
+            continue;
+        }
         if let Op::Element(element) = op
             && sfc_style::is_carrier_element(element)
         {
@@ -261,7 +267,10 @@ fn meaningful_bounds(root: &Region<'_>) -> Option<(usize, usize)> {
     let mut first = None;
     let mut last = None;
     for (index, op) in root.ops.iter().enumerate() {
-        if sfc_style::is_carrier(op) || is_whitespace_text(op) {
+        if sfc_style::is_carrier(op)
+            || is_whitespace_text(op)
+            || super::annotations::is_annotation(op)
+        {
             continue;
         }
         if first.is_none() {

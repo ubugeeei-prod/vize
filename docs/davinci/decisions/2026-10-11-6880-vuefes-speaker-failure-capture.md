@@ -1,4 +1,4 @@
-# VueFes speaker failure evidence
+# VueFes development comment hydration
 
 This decision belongs to [compiler fix history #6880](https://github.com/ubugeeei-prod/vize/issues/6880)
 and the unfinished original VueFes qualifier on [PR #8609](https://github.com/ubugeeei-prod/vize/pull/8609).
@@ -33,9 +33,53 @@ all 38 original route and mode combinations. It requires capture of both
 observed dev failures and distinct artifact directories, while the
 existing corpus witness verifies the complete protected original bodies.
 
-This change provides diagnosis, not a compiler fix or visual acceptance.
-The remaining work is to run the composed exact head on Actions, compare
-the actual speaker HTML and served modules with the hydrated DOM, add a
-durable product regression for the identified cause, and pass the complete
-unchanged 38-case qualifier before queue admission. Keep the known-failing
-top layer out of the protected merge queue until then.
+The observer ran on exact head `61970dd2ffd7cf844fbe88200ebfd022a8314020`
+in [Actions run 38143695149](https://github.com/ubugeeei-prod/vize/actions/runs/38143695149).
+The original speaker screenshot failed again. Its retry-zero final packet
+is complete, has no missing facets, and identifies that head and the pinned
+VueFes source `8eff3cd7dd79a7f47bbf2b78202b9aa2070ec5a6`.
+
+The candidate SSR document contains all 29 correct headshots and omits the
+leading `eslint-disable-next-line` comment. The actual served speaker
+client module emits that comment before the heading. Hydration therefore
+aligns different child lists: it removes the first Session section, treats
+Lightning Talk cards as Session cards, repairs their text, and retains the
+old image attributes. The captured candidate DOM shows exactly the first
+eight wrong photos from the screenshots. The reference document, module,
+and DOM keep the correct pairs. A real local Nuxt `4.0.3` hydration with the
+complete original speaker/data sources and Vue `3.6.0-alpha.2` reproduces
+the same mismatch; that local experiment used the public `0.443.0` native
+addon and does not substitute for exact-source qualification.
+
+The minimized regression belongs to [#8652](https://github.com/ubugeeei-prod/vize/issues/8652).
+Omit lint/Vize annotations at the selected native DOM emitter's existing
+child-emission boundary. Keep annotation ops during lowering and transform:
+the lint facade needs their custody, and ordinary development comments
+affect whitespace, text flags and static analysis. Consume the omitted
+ops' original page IDs so later bindings, text facts and slot facts remain
+aligned. No additional stage or serialization is introduced. The existing
+SSR compiler and its byte output remain unchanged.
+
+Dropping annotations during lowering was rejected: it added a TEXT patch
+flag to `a <!--eslint-disable rule--> b {{ value }}`, whereas the existing
+transform observes the annotation and omits that flag. Complete selected
+DOM/compatibility output comparisons pin this neighboring behavior.
+Compatibility component-slot and template-list codegen also leave an array hole for a
+stripped annotation. Preserve that legacy implementation; the corrected
+native slot output is pinned to the complete plain-slot counterpart and
+to real SSR hydration, where an absent annotation must not create a child.
+
+The source-owned differential corpus contains the minimized leading
+annotation template and a complete SFC with two groups of images and names.
+The Rust regressions compare complete DOM output, preserve ordinary and
+similar-looking comments, and execute complete native development DOM/SSR
+modules through real Vue hydration. They check the original SSR pairs,
+hydrated pairs, retained ordinary comments and hydration warnings across
+all eight eslint/oxlint pragmas and ordinary-comment controls.
+
+Remaining acceptance: qualify the composed exact source head with normal
+Actions and the entire unchanged 38-case VueFes matrix before queue
+admission, then carry the actual merged fix through an official release
+and installed consumer acceptance. Keep the top layer draft and outside
+the protected queue until those pre-merge checks pass. Prior failed runs
+remain diagnostic evidence, not visual acceptance.

@@ -38,6 +38,9 @@ pub(super) fn collect_pieces(
         return Ok(());
     }
     for op in children.ops.iter() {
+        if crate::emit::annotations::skip(cx, op) {
+            continue;
+        }
         match op {
             Op::Comment(_)
                 if facts

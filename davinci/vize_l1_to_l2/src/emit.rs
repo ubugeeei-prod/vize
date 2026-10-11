@@ -48,6 +48,7 @@
 //! compatibility codegen. Compatibility codegen remains available only for
 //! unsupported option surfaces.
 
+mod annotations;
 mod budget;
 mod buf;
 mod builtin;

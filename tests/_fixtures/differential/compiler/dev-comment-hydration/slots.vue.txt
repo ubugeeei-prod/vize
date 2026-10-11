@@ -1,0 +1,22 @@
+<script setup>
+const sessions = [{ name: 'Session', image: '/session.png' }]
+const lightningTalks = [{ name: 'Lightning Talk', image: '/lightning.png' }]
+</script>
+<template>
+  <div>
+    <h1>Speaker</h1>
+    <Group>
+      <!-- eslint-disable-next-line @intlify/vue-i18n/no-raw-text -->
+      <article v-for="person in sessions" :key="person.name">
+        <img :src="person.image">
+        <p>{{ person.name }}</p>
+      </article>
+    </Group>
+    <Group>
+      <article v-for="person in lightningTalks" :key="person.name">
+        <img :src="person.image">
+        <p>{{ person.name }}</p>
+      </article>
+    </Group>
+  </div>
+</template>
