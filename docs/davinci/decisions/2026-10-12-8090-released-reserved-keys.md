@@ -1,7 +1,7 @@
 # Separately installed reserved-key acceptance (#8090)
 
-Status: source observer preparation. The alias actual merge, observer
-source/protected qualification, actual observer merge and fresh
+Status: source observer preparation. All three product fixes actually merged.
+Observer source/protected qualification, actual observer merge and fresh
 official public acceptance remain pending.
 
 ## Decision and retained authorities
@@ -10,8 +10,11 @@ The bare-name correction #8668 actually merged at
 `19e8fa700d3c79631166bcaed4e3cfe65dda1903`. Prefix/group correction #8677
 actually merged at `0de4eb3969cf230c2464e0d1edf1734b0dc388b8`; all five
 protected workflows passed at that exact commit. Registered suppression #8684
-still requires its actual merge before a released source contains the complete
-corrected policy.
+actually merged at `38af95bc04d6a8872cc5f045d60412bcaf19f70f`; all five
+protected merge-group workflows passed at that exact commit. The observer pins
+all three actual SHAs, own-repository PR identities and H ancestry before and
+after execution. Missing, foreign, unmerged, behind or diverged authorities
+refuse, even when the unchanged positive and negative controls match.
 
 Retain the existing installed **392 = 56 + 80 + 144 + 112** contract and the
 separate setup-emits **357** contract. Add a separately declared reserved-key
@@ -62,6 +65,15 @@ hosted consumer outside the checkout, exact version and loaded bytes, and full
 per-process packets. Reauthenticate official and actual-fix ancestry after the
 whole run. Preserve raw pre/post metadata while comparing stable identities.
 Only the root operator may trigger the official public workflows.
+The existing 392 observer retains its counts and original vectors; the distinct
+357 observer and shared complete packet loop actually merged via #8689 at
+`beab8ab773f6e9f82af3d77d44fd485b9ad9bb7e`. This supplement reuses that
+loaded-byte-checked loop and stable post-observation identities. It independently
+enforces all three suite counts and every whole packet before reporting success.
+Its manual workflow requires reviewed main, the exact workflow source checkout,
+fresh external GNU/runtime paths and absent preload/native overrides before Node.
+All original/new 26 source custody, refusal and workflow laws pass without skips;
+that is source law coverage, not actual hosted installed execution.
 
 No source-build substitution, observed-oracle rewrite, previous public green,
 failed 0.446 publication, or denominator replacement is permitted. Unsupported
