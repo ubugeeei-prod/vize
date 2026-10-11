@@ -223,3 +223,22 @@ Explicitly await the initial granted permission query before revocation in both
 direct and embedded checks. Retain the exact denied/restored readout assertions,
 actual clipboard operation results, and the original strict hydration laws.
 Require a fresh full capture and Actions before publishing this prepared slice.
+
+## Delivery from the merged twenty-example parent
+
+Replay only the four clipboard/scroll/size/visibility examples onto actual main
+`d55b8238f89bab4418a1a961bd8db1c84911cb42`, after #8461 actually merged. Preserve
+every previous twenty-example SFC byte and all existing interaction/hydration
+laws. This is an independent PR; the later 28/32-example preparations remain
+separate and do not supply delivery credit. Fresh source Actions, full Docs,
+protected actual merge and official deployed browser proof remain mandatory.
+
+Retain the later preparation's failed native 360px clipboard observation:
+the read correctly reported permission-denied while the subscribed readout
+remained prompt after an earlier diagnostic query. Move that same native denied
+query and assertion after the unchanged subscribed denied/error readout. Keep
+every denial, retained-text, restored-permission, timer, whitespace and hydration
+assertion. Failure-only diagnostics capture the actual DOM before any extra
+query. The previously recorded bounded order comparison does not establish
+general stability; this replay requires its own complete fresh Actions capture.
+No package API changes or provider-fix claim are made. #8374 and #6101 stay open.

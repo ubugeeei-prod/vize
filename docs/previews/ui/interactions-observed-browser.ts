@@ -84,6 +84,31 @@ export async function exerciseObservedBrowserExample(page: Page, name: string): 
     const origin = new URL(page.url()).origin;
     await page.context().clearPermissions();
     await page.context().grantPermissions(["clipboard-write"], { origin });
+    await activate(page, "Read clipboard text");
+    await outputContains(page, "Read did not complete: permission-denied.");
+    assert.equal(await page.locator("code").textContent(), readText);
+    try {
+      await page
+        .getByText("Clipboard read permission: denied · Last failure: permission-denied")
+        .waitFor();
+    } catch (error) {
+      const displayed = await page.evaluate(() => ({
+        paragraphs: [...document.querySelectorAll("p")].map((element) => element.textContent),
+        output: document.querySelector("output")?.textContent,
+        text: document.querySelector("code")?.textContent,
+        viewport: { width: innerWidth, height: innerHeight },
+        hydration: document.documentElement.dataset.previewHydrationRetained,
+        now: Date.now(),
+      }));
+      throw new Error(
+        `Subscribed clipboard permission did not update: ${JSON.stringify(displayed)}`,
+        {
+          cause: error,
+        },
+      );
+    }
+    // Query only after observing the subscribed state. Chromium shares its native
+    // PermissionStatus listener and query can update it without a change event.
     assert.equal(
       await page.evaluate(
         async () =>
@@ -92,12 +117,6 @@ export async function exerciseObservedBrowserExample(page: Page, name: string): 
       "denied",
       "actual browser read permission is denied",
     );
-    await activate(page, "Read clipboard text");
-    await outputContains(page, "Read did not complete: permission-denied.");
-    assert.equal(await page.locator("code").textContent(), readText);
-    await page
-      .getByText("Clipboard read permission: denied · Last failure: permission-denied")
-      .waitFor();
     await page.context().grantPermissions(["clipboard-read", "clipboard-write"], { origin });
     await activate(page, "Read clipboard text");
     await outputContains(page, "Read the clipboard text. Recently copied: no.");
