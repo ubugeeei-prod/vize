@@ -89,6 +89,19 @@ void test("Japanese experimentals guide retains complete recipes, syntax and pub
     5,
     "the English pattern retains all three cells",
   );
+  for (const locale of ["", "ja/"]) {
+    const details = readFileSync(
+      resolve(content, `${locale}guide/experimentals-vue-rfcs.md`),
+      "utf8",
+    );
+    const referenceOr = details.split("\n").find((line) => line.startsWith("| Or |"));
+    assert.ok(referenceOr);
+    assert.equal(
+      referenceOr.split(/(?<!\\)\|/).length,
+      5,
+      `${locale}RFC details retain the whole pattern and original explanation`,
+    );
+  }
   assert.match(japanese, /すべての機能は既定で無効/);
   assert.match(japanese, /変数を束縛する構文は未対応/);
   assert.match(japanese, /実行時の出力も生成しません/);

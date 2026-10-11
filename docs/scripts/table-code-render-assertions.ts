@@ -41,9 +41,22 @@ export async function verifyTableCodeReadability(page: Page, route: string) {
       );
     }
   }
-  if (route === "/guide/experimentals" || route === "/ja/guide/experimentals") {
+  if (
+    route === "/guide/experimentals" ||
+    route === "/ja/guide/experimentals" ||
+    route === "/guide/experimentals-vue-rfcs" ||
+    route === "/ja/guide/experimentals-vue-rfcs"
+  ) {
     const japanese = route.startsWith("/ja/");
-    const label = japanese ? "または" : "Or";
+    const reference = route.endsWith("/experimentals-vue-rfcs");
+    const label = japanese && !reference ? "または" : "Or";
+    const limitation = reference
+      ? japanese
+        ? "alternatives を左から右に試す"
+        : "tries alternatives from left to right"
+      : japanese
+        ? "左から右に調べます。それぞれの選択肢の中で変数を束縛する構文は未対応です。"
+        : "Alternatives match left to right; bindings inside alternatives are not supported yet";
     const rows = await page
       .locator(".content table tr")
       .evaluateAll(
@@ -55,15 +68,7 @@ export async function verifyTableCodeReadability(page: Page, route: string) {
       );
     assert.deepEqual(
       rows,
-      [
-        [
-          label,
-          `v-when="'idle' | 'loading'"`,
-          japanese
-            ? "左から右に調べます。それぞれの選択肢の中で変数を束縛する構文は未対応です。"
-            : "Alternatives match left to right; bindings inside alternatives are not supported yet",
-        ],
-      ],
+      [[label, `v-when="'idle' | 'loading'"`, limitation]],
       `${route}: the complete or-pattern and its limitation must occupy their own native cells`,
     );
   }

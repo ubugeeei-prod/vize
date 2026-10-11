@@ -114,7 +114,7 @@ binding は branch-local です。`v-when` を持つ element、attribute/directi
 | Object shorthand | `v-when="{ kind: 'ok', const data }"` | `{ const data }` は `{ data: const data }` |
 | Object rest | `v-when="{ kind: 'error', ...const payload }"` | 残りの own enumerable property を bind。lone `...` も accepted |
 | Array / tuple | `v-when="[const first, ...const rest]"` | `Array.isArray` を要求。rest は追加 item を許容 |
-| Or | `v-when="'idle' | 'loading'"` | alternatives を左から右に試す |
+| Or | `v-when="'idle' \| 'loading'"` | alternatives を左から右に試す |
 | As binding | `v-when="{ kind: 'ok' } as whole"` | matched value を `whole` として bind |
 | Guard | `v-when="{ error: const e } if (e.retriable)"` | pattern 成功後に実行 |
 

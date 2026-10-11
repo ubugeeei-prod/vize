@@ -45,3 +45,12 @@ original capture phases/checkpoints remain exact. Existing whole-site and More
 route manifests include both pages at both viewport widths. Fresh actual built
 and deployed native success remain required; source assertions alone do not
 establish that browser result.
+
+A complete current-content scan of inline code in Markdown tables finds the
+same two remaining pipes in the linked English and Japanese RFC-detail Or rows.
+Actual public source `d55b8238f89bab4418a1a961bd8db1c84911cb42` reproduces
+both native failures: the example splits into two cells and its explanation
+disappears. Escape only those two source characters; every RFC-detail prose
+clause, code fence and destination remains exact. Extend the original native
+table phase to all four affected routes, including each complete original
+explanation. The broader RFC-detail Japanese editorial review remains separate.
