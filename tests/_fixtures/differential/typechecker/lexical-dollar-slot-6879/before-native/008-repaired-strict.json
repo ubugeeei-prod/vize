@@ -1,0 +1,73 @@
+{
+  "case": "repaired-strict",
+  "receipt": "008-native-cli.json",
+  "receiptSha256": "ee5019599a6fa22528fc18aece0b4ff396045a2d5106b8e2ac3da575c733656c",
+  "argv": [
+    "--checkers",
+    "1",
+    "--pretty",
+    "false",
+    "--project",
+    "/Users/ubugeeei/Library/Caches/vize/canon/projects/7436a2ceeb74474e7c1f15fb7e3fdd29555fc1d224ba9e5297a55322dc9d6b44/tsconfig.json"
+  ],
+  "configSha256": "d177d1ef882b089d59f954f3558d9858129281b660b6d34e89114e52b108b228",
+  "rawStdout": "src/App.vue.ts(70,48): error TS2339: Property '$form' does not exist on type '__VizeStrictTemplateContext'.\nsrc/App.vue.ts(72,40): error TS2339: Property '$form' does not exist on type '__VizeStrictTemplateContext'.\nsrc/App.vue.ts(74,49): error TS2339: Property '$field' does not exist on type '__VizeStrictTemplateContext'.\nsrc/App.vue.ts(76,48): error TS2339: Property '$item' does not exist on type '__VizeStrictTemplateContext'.\nsrc/App.vue.ts(78,40): error TS2339: Property '$form' does not exist on type '__VizeStrictTemplateContext'.\nsrc/App.vue.ts(80,40): error TS2339: Property '$field' does not exist on type '__VizeStrictTemplateContext'.\n",
+  "rawStderr": "",
+  "nativeExit": 1,
+  "diagnostics": [
+    {
+      "blockType": "template",
+      "code": 2339,
+      "column": 20,
+      "file": "src/App.vue",
+      "line": 7,
+      "message": "Property '$form' does not exist on type '__VizeStrictTemplateContext'.",
+      "severity": 1
+    },
+    {
+      "blockType": "template",
+      "code": 2339,
+      "column": 24,
+      "file": "src/App.vue",
+      "line": 10,
+      "message": "Property '$form' does not exist on type '__VizeStrictTemplateContext'.",
+      "severity": 1
+    },
+    {
+      "blockType": "template",
+      "code": 2339,
+      "column": 54,
+      "file": "src/App.vue",
+      "line": 10,
+      "message": "Property '$field' does not exist on type '__VizeStrictTemplateContext'.",
+      "severity": 1
+    },
+    {
+      "blockType": "template",
+      "code": 2339,
+      "column": 60,
+      "file": "src/App.vue",
+      "line": 11,
+      "message": "Property '$item' does not exist on type '__VizeStrictTemplateContext'.",
+      "severity": 1
+    },
+    {
+      "blockType": "template",
+      "code": 2339,
+      "column": 45,
+      "file": "src/App.vue",
+      "line": 14,
+      "message": "Property '$form' does not exist on type '__VizeStrictTemplateContext'.",
+      "severity": 1
+    },
+    {
+      "blockType": "template",
+      "code": 2339,
+      "column": 31,
+      "file": "src/App.vue",
+      "line": 11,
+      "message": "Property '$field' does not exist on type '__VizeStrictTemplateContext'.",
+      "severity": 1
+    }
+  ]
+}

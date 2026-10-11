@@ -20,9 +20,9 @@ use crate::batch::virtual_project::{
 
 mod diagnostic_paths;
 #[cfg(test)]
-mod native_test_receipt;
-#[cfg(test)]
 mod lexical_dollar_receipt;
+#[cfg(test)]
+mod native_test_receipt;
 mod snapshot;
 
 use diagnostic_paths::extend_diagnostic_path_uris;

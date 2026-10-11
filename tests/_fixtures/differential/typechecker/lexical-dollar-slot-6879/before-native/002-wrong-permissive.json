@@ -1,0 +1,28 @@
+{
+  "case": "wrong-permissive",
+  "receipt": "002-native-cli.json",
+  "receiptSha256": "74e83acc7b8bc8ac54d9021f15408e91b9d9763eb85a473b3876f9efda982766",
+  "argv": [
+    "--checkers",
+    "1",
+    "--pretty",
+    "false",
+    "--project",
+    "/Users/ubugeeei/Library/Caches/vize/canon/projects/beef2a3f4a068bef24a820e48e9e9044a3125681cd4e154aca9436008e461baa/tsconfig.json"
+  ],
+  "configSha256": "d177d1ef882b089d59f954f3558d9858129281b660b6d34e89114e52b108b228",
+  "rawStdout": "src/App.vue.ts(82,32): error TS2339: Property 'missing' does not exist on type '{ label: string; items: { label: string; }[]; }'.\n",
+  "rawStderr": "",
+  "nativeExit": 1,
+  "diagnostics": [
+    {
+      "blockType": "template",
+      "code": 2339,
+      "column": 61,
+      "file": "src/App.vue",
+      "line": 10,
+      "message": "Property 'missing' does not exist on type '{ label: string; items: { label: string; }[]; }'.",
+      "severity": 1
+    }
+  ]
+}

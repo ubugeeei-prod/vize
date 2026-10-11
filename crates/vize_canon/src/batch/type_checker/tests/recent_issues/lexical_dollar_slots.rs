@@ -108,7 +108,18 @@ fn lexical_dollar_slots_preserve_complete_native_diagnostics_and_repairs() {
         }
         std::fs::remove_dir_all(root).expect("remove only own temporary fixture");
     }
-    let expected: Value = serde_json::from_str(include_str!("../../../../../../../tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/expected.json")).unwrap();
+    let expected_body = include_str!(
+        "../../../../../../../tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/expected.json"
+    );
+    assert_eq!(
+        json!(expected_body.len()),
+        custody["expected"]["byteLength"]
+    );
+    assert_eq!(
+        json!(digest(expected_body.as_bytes())),
+        custody["expected"]["sha256"]
+    );
+    let expected: Value = serde_json::from_str(expected_body).unwrap();
     for (observed, expected) in observations.iter().zip(expected.as_array().unwrap()) {
         assert_eq!(observed["case"], expected["case"]);
         assert_eq!(

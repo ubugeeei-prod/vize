@@ -53,7 +53,7 @@ pub(super) fn completed(receipt: Option<(PathBuf, Value)>, output: &std::io::Res
     match output {
         Ok(value) => {
             packet["completion"] = json!("REAPED");
-            packet["status"] = json!(format!("{}", value.status));
+            packet["status"] = json!(vize_l0::cstr!("{}", value.status));
             packet["exitCode"] = json!(value.status.code());
             packet["success"] = json!(value.status.success());
             packet["rawStdoutBytes"] = json!(value.stdout);
@@ -61,7 +61,7 @@ pub(super) fn completed(receipt: Option<(PathBuf, Value)>, output: &std::io::Res
         }
         Err(error) => {
             packet["completion"] = json!("IO_ERROR");
-            packet["ioError"] = json!(format!("{error}"));
+            packet["ioError"] = json!(vize_l0::cstr!("{error}"));
         }
     }
     fs::write(path, serde_json::to_vec_pretty(&packet).unwrap()).unwrap();

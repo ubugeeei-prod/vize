@@ -1,0 +1,63 @@
+{
+  "schema": "vize-lexical-dollar-before-v1",
+  "source": "5a3e78423ee113a1085bf2527c4057778d511a92",
+  "nativeSha256": "a82f731365ad69d5c4c15f5e18fba4584bf3b7b839960172a76c3462b5114bf2",
+  "nativeVersion": "7.0.2",
+  "scope": "local normal native CLI; all nine complete output and diagnostic vectors, no timing or API/LSP credit",
+  "observations": [
+    {
+      "case": "valid-strict",
+      "path": "before-native/000-valid-strict.json",
+      "byteLength": 2653,
+      "sha256": "26bb550e225d9f1316a9d2fea9754966f342db545296c73e5c2be37b5b6c3dc7"
+    },
+    {
+      "case": "wrong-strict",
+      "path": "before-native/001-wrong-strict.json",
+      "byteLength": 3049,
+      "sha256": "bf283673c385811194a3a764eb2d823d3222893ec804e1968568614bae9222bc"
+    },
+    {
+      "case": "wrong-permissive",
+      "path": "before-native/002-wrong-permissive.json",
+      "byteLength": 943,
+      "sha256": "76c399dce9cf1bdef3da55d38e5d85f0f125278d5cf8d5a413e5a10b6e91917a"
+    },
+    {
+      "case": "escape-strict",
+      "path": "before-native/003-escape-strict.json",
+      "byteLength": 3009,
+      "sha256": "0f2f1331d7f7c2af5b8d5025238671060c4ba818f169dc675622a693524f3cdc"
+    },
+    {
+      "case": "foreign-strict",
+      "path": "before-native/004-foreign-strict.json",
+      "byteLength": 902,
+      "sha256": "8ee75f581972ddac224f32dc8b90b090c43d5116807e93018a411689fce57a21"
+    },
+    {
+      "case": "loop-source-strict",
+      "path": "before-native/005-loop-source-strict.json",
+      "byteLength": 1256,
+      "sha256": "a36ed525fa19810e6397252834c69bdd30cae9f4c63e15b692a6d32ca2d2d996"
+    },
+    {
+      "case": "globals-strict",
+      "path": "before-native/006-globals-strict.json",
+      "byteLength": 908,
+      "sha256": "2700ccca92273de6bf15fb01002cdc7d3a61e94d93f9b0e2fd5229a086d69d05"
+    },
+    {
+      "case": "globals-permissive",
+      "path": "before-native/007-globals-permissive.json",
+      "byteLength": 548,
+      "sha256": "55008d77bb7ee1fb36ac880704f466953977713c462525759c09789cebd47fbd"
+    },
+    {
+      "case": "repaired-strict",
+      "path": "before-native/008-repaired-strict.json",
+      "byteLength": 2656,
+      "sha256": "103850edc6fb7c8c8d06a4046a19bc0fea11094b92b72694ac05337df67a0514"
+    }
+  ]
+}

@@ -44,5 +44,19 @@
       "byteLength": 112,
       "sha256": "0251f10ec5850bb2c99fb304ef04769e0b194e6efae89f22d329d91a149681b4"
     }
-  ]
+  ],
+  "nativeLaw": {
+    "moduleRegistration": "crates/vize_canon/src/batch/type_checker/tests/recent_issues.rs",
+    "source": "crates/vize_canon/src/batch/type_checker/tests/recent_issues/lexical_dollar_slots.rs",
+    "test": "batch::type_checker::tests::recent_issues::lexical_dollar_slots::lexical_dollar_slots_preserve_complete_native_diagnostics_and_repairs",
+    "requirement": "VIZE_TEST_REQUIRE_TSGO=1; genuine installed Vue; complete nine observations",
+    "historicalDifferentialCredit": false
+  },
+  "expected": {
+    "path": "expected.json",
+    "byteLength": 3340,
+    "sha256": "54c2ff42c61dfa94bb15e9f72dea283c94191637d2e5687a2a30bac5d7d6f122",
+    "observations": 9,
+    "comparison": "complete ordered diagnostic vector, success and exit code for every case"
+  }
 }

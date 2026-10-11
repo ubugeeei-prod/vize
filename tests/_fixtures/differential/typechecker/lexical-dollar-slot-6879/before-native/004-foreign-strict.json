@@ -1,0 +1,28 @@
+{
+  "case": "foreign-strict",
+  "receipt": "004-native-cli.json",
+  "receiptSha256": "575d7cf4540219cfe81cc2f993eeb42b455a64845d3926039871786c028b7658",
+  "argv": [
+    "--checkers",
+    "1",
+    "--pretty",
+    "false",
+    "--project",
+    "/Users/ubugeeei/Library/Caches/vize/canon/projects/8c880a2a8a5f8346d7b9de687a7c74f91bc97e4959e67f41b76cfe9eb3d503a9/tsconfig.json"
+  ],
+  "configSha256": "d177d1ef882b089d59f954f3558d9858129281b660b6d34e89114e52b108b228",
+  "rawStdout": "src/App.vue.ts(62,51): error TS2339: Property '$foreign' does not exist on type '__VizeStrictTemplateContext'.\n",
+  "rawStderr": "",
+  "nativeExit": 1,
+  "diagnostics": [
+    {
+      "blockType": "template",
+      "code": 2339,
+      "column": 17,
+      "file": "src/App.vue",
+      "line": 5,
+      "message": "Property '$foreign' does not exist on type '__VizeStrictTemplateContext'.",
+      "severity": 1
+    }
+  ]
+}

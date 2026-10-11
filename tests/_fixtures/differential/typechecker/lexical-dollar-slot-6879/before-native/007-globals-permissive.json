@@ -1,0 +1,18 @@
+{
+  "case": "globals-permissive",
+  "receipt": "007-native-cli.json",
+  "receiptSha256": "ae14978e9cb68f4f92d9541f442c1f56529ef59b44e3deaa8d461950f2f83ef4",
+  "argv": [
+    "--checkers",
+    "1",
+    "--pretty",
+    "false",
+    "--project",
+    "/Users/ubugeeei/Library/Caches/vize/canon/projects/ce538cdab85e6d3f763984a09042df61b884a6f163c0b2347ec51fae46190c33/tsconfig.json"
+  ],
+  "configSha256": "d177d1ef882b089d59f954f3558d9858129281b660b6d34e89114e52b108b228",
+  "rawStdout": "",
+  "rawStderr": "",
+  "nativeExit": 0,
+  "diagnostics": []
+}

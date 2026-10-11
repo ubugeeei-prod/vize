@@ -1,0 +1,28 @@
+{
+  "case": "globals-strict",
+  "receipt": "006-native-cli.json",
+  "receiptSha256": "42f58933d1facf88f91d49fbeb9fa6a050aa46a230483f796959f98845d55763",
+  "argv": [
+    "--checkers",
+    "1",
+    "--pretty",
+    "false",
+    "--project",
+    "/Users/ubugeeei/Library/Caches/vize/canon/projects/612c8f998de6af8bc492f9f38edf8e8595fbf18800cfd2db29abbaa63bba7733/tsconfig.json"
+  ],
+  "configSha256": "d177d1ef882b089d59f954f3558d9858129281b660b6d34e89114e52b108b228",
+  "rawStdout": "src/App.vue.ts(61,54): error TS2339: Property '$undeclared' does not exist on type '__VizeStrictTemplateContext'.\n",
+  "rawStderr": "",
+  "nativeExit": 1,
+  "diagnostics": [
+    {
+      "blockType": "template",
+      "code": 2339,
+      "column": 17,
+      "file": "src/App.vue",
+      "line": 4,
+      "message": "Property '$undeclared' does not exist on type '__VizeStrictTemplateContext'.",
+      "severity": 1
+    }
+  ]
+}

@@ -25,16 +25,16 @@ fn output(strict: bool) -> VirtualTsOutput {
     };
     if let Some(dir) = std::env::var_os("VIZE_LEXICAL_DOLLAR_CAPTURE_DIR") {
         std::fs::create_dir_all(&dir).unwrap();
-        std::fs::write(std::path::Path::new(&dir).join(format!("producer-scopes-{strict}.json")), serde_json::to_vec_pretty(&serde_json::json!({
+        std::fs::write(std::path::Path::new(&dir).join(vize_l0::cstr!("producer-scopes-{strict}.json").as_str()), serde_json::to_vec_pretty(&serde_json::json!({
             "script": SCRIPT, "template": TEMPLATE, "templateOffset": 1000,
-            "strictInstanceGlobals": strict, "completeSummary": format!("{summary:#?}"),
+            "strictInstanceGlobals": strict, "completeSummary": vize_l0::cstr!("{summary:#?}"),
             "expressions": summary.template_expressions.iter().map(|expr| serde_json::json!({
                 "source":expr.content.as_str(),"start":expr.start,"end":expr.end,"scopeId":expr.scope_id.as_u32(),
             })).collect::<Vec<_>>(),
             "scopes": summary.scopes.iter().map(|scope|serde_json::json!({
                 "id":scope.id.as_u32(),"parent":scope.parent().map(|parent|parent.as_u32()),
-                "kind":format!("{:?}",scope.kind),"span":format!("{:?}",scope.span),
-                "data":format!("{:?}",scope.data()),"bindings":scope.bindings().map(|(name,data)|serde_json::json!({"name":name,"data":format!("{data:?}")})).collect::<Vec<_>>(),
+                "kind":vize_l0::cstr!("{:?}",scope.kind),"span":vize_l0::cstr!("{:?}",scope.span),
+                "data":vize_l0::cstr!("{:?}",scope.data()),"bindings":scope.bindings().map(|(name,data)|serde_json::json!({"name":name,"data":vize_l0::cstr!("{data:?}")})).collect::<Vec<_>>(),
             })).collect::<Vec<_>>(),
         })).unwrap()).unwrap();
     }
