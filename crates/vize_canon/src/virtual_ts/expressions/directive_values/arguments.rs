@@ -36,7 +36,7 @@ mod tests {
             " v-click-outside:[popperRef].once = \"handler\"",
             " v-Custom:[caseArg] v-click-outside:static=\"handler\"",
             " v-bind:[bindArg]=\"value\" v-model:[modelArg]=\"value\"",
-            " v-slot:[slotArg] v-on:[eventArg]=\"handler\" />",
+            " v-slot:[slotArg] v-on:[eventArg]=\"handler\"></div>",
         );
         let allocator = vize_carton::Allocator::new();
         let (root, errors) = vize_armature::parse(&allocator, source);

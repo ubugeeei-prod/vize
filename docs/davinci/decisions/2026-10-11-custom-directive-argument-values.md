@@ -39,3 +39,12 @@ Baseline reproduction, exact-head Actions, full protected qualification,
 actual merge, and release acceptance remain pending. The frozen matrix's
 three original controls and full 224-case coverage/budgets remain unchanged;
 a green minimized corpus does not grant full-project or release acceptance.
+
+The first `af35244` hosted source passed the complete genuine native baseline,
+candidate negative/repair and built-in controls, then its Rust shard retained
+one new unit-fixture failure: standalone HTML parsing reports the original
+ExtendPoint warning for self-closing non-void `div`. Use an explicit closing
+tag in that unit input; keep the whole no-error parser expectation and exact
+argument spans. The production classification and all original diagnostic,
+projection, budget and golden contracts remain unchanged. Fresh complete
+source/native/protected qualification is required.
