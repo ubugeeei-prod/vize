@@ -110,12 +110,12 @@ Both used the one source-built native SHA-256
 Rust 1.99.0, Cargo 1.99.0 and Node 24.14.0. Build setup is outside the paired
 controller timings; it ran once for both arms.
 
-| Complete controller phase | Sequential | Overlap |
-| ------------------------- | ---------: | ------: |
-| Baseline and historical reference preparation | 197.272 s | 206.126 s |
-| Both complete pinned host workers | 381.293 s | 408.558 s |
-| Final native and diagnostic aggregation | 10.317 s | 10.346 s |
-| Complete original-project qualification, including cleanup | 595.993 s | 423.791 s |
+| Complete controller phase                                  | Sequential |   Overlap |
+| ---------------------------------------------------------- | ---------: | --------: |
+| Baseline and historical reference preparation              |  197.272 s | 206.126 s |
+| Both complete pinned host workers                          |  381.293 s | 408.558 s |
+| Final native and diagnostic aggregation                    |   10.317 s |  10.346 s |
+| Complete original-project qualification, including cleanup |  595.993 s | 423.791 s |
 
 This paired observation reduces the complete controller wall time by
 172.202 seconds, or 28.9%. It is one sequential-then-overlap comparison,
