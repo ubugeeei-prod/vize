@@ -18,3 +18,18 @@ fn reported_svg_branches_and_dynamic_class_style_match_locked_vue() {
         include_str!("../../../tests/_fixtures/differential/compiler/vapor-svg-8624/controls.json"),
     );
 }
+
+#[test]
+fn reported_renamed_and_nested_slot_props_match_locked_vue() {
+    report::compare(
+        include_str!(
+            "../../../tests/_fixtures/differential/compiler/vapor-slot-destructure-8626/App.vue.txt"
+        ),
+        include_str!(
+            "../../../tests/_fixtures/differential/compiler/vapor-slot-destructure-8626/Child.vue.txt"
+        ),
+        include_str!(
+            "../../../tests/_fixtures/differential/compiler/vapor-slot-destructure-8626/controls.json"
+        ),
+    );
+}

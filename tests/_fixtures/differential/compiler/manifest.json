@@ -74,6 +74,12 @@
       "sha256": "8d08763722784735ada72df9da76a86f96668893c4ea72c5f6644b94c83b16e1",
       "adapter": "compiler-rust-whole-source-runtime-v1",
       "workflow": ".github/workflows/check.yml"
+    },
+    {
+      "path": "vapor-hebilicious-8626.manifest.json",
+      "sha256": "6ea1d79fe1dbd55b63da024b4d9431f2f2dc104241ac737ca46a0576b323acb8",
+      "adapter": "compiler-rust-whole-source-runtime-v1",
+      "workflow": ".github/workflows/check.yml"
     }
   ]
 }

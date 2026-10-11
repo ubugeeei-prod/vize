@@ -1,0 +1,36 @@
+[
+  {
+    "name": "original-renamed-and-nested-slot",
+    "childModule": "./SlotOwner.vue",
+    "expectedTree": [
+      {
+        "tag": "div",
+        "attributes": {},
+        "children": [
+          {
+            "tag": "button",
+            "attributes": {
+              "id": "slot-trigger",
+              "type": "button"
+            },
+            "children": [
+              "Open"
+            ],
+            "disabled": false
+          },
+          {
+            "tag": "span",
+            "attributes": {
+              "id": "nested-label"
+            },
+            "children": [
+              "Open"
+            ]
+          }
+        ]
+      }
+    ],
+    "context": {},
+    "steps": []
+  }
+]
