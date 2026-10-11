@@ -10,7 +10,6 @@ use vize_atelier_sfc::{
 };
 use vize_l0::Allocator;
 
-#[path = "script_import_meta_tests.rs"]
 mod import_meta_tests;
 
 #[test]

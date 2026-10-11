@@ -2,7 +2,7 @@ use super::super::{META, script_reads, script_tests::linter};
 use oxc_span::SourceType;
 
 const CORPUS: &str = include_str!(
-    "../../../../../../tests/_fixtures/differential/linter/ssr-import-meta-guards/ClientGuards.vue.txt"
+    "../../../../../../../tests/_fixtures/differential/linter/ssr-import-meta-guards/ClientGuards.vue.txt"
 );
 
 fn names(source: &str) -> Vec<vize_l0::String> {
