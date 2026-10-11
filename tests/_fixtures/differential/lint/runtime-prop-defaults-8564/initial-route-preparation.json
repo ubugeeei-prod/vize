@@ -1,0 +1,20 @@
+{
+  "schema": "vize.lint.runtime-prop-defaults-initial-route-preparation",
+  "version": 1,
+  "authority": "Preserve the initial source-derived eighteen-case target/provider vectors and unexecuted seven-route preparation byte-exact. The initial Incremental/n8n zero vectors were not paired with the actual explicit rule-admission semantics, and never qualified current API/CLI execution. New scoped-route-contract.json is the exact primary route contract. No target diagnostic metadata, source, provider message, prior stream or old denominator changes.",
+  "initialCases": {
+    "path": "cases.json",
+    "sha256": "95453a7cecb70ab2deb0cd2a3585d218aa6caef7a9832078e98865dbc9930ad9"
+  },
+  "initialSourceLaw": {
+    "path": "source-law.json",
+    "sha256": "1412b36aa2ea22c31941c15058a61aa7b6e519965edebba161da15a7cc19fe62"
+  },
+  "successor": {
+    "path": "scoped-route-contract.json",
+    "sha256": "639ab77d684f5fbb20284136a3132057ef0497f899148523f0764241d9367cc0"
+  },
+  "discardedQualifications": 0,
+  "executedInitialPreparationRoutes": 0,
+  "recapturedExpectedVectors": 0
+}

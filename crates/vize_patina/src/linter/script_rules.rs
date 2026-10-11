@@ -16,6 +16,8 @@ pub(crate) use sfc::append_builtin_script_diagnostics;
 mod template_context;
 
 #[cfg(test)]
+mod runtime_props_dispatch_tests;
+#[cfg(test)]
 mod setup_emits_dispatch_tests;
 
 use html_scripts::extract_inline_scripts;
@@ -23,7 +25,8 @@ use prefilter::{script_rule_applies_to_filename, script_rule_may_match};
 pub use registry::BuiltinScriptRuleMeta;
 use registry::{
     ALL_BUILTIN_SCRIPT_RULE_NAMES, BUILTIN_SCRIPT_RULES, BuiltinScriptRuleEntry,
-    RULE_NO_GET_CURRENT_INSTANCE, RULE_RETURN_IN_EMITS_VALIDATOR,
+    RULE_NO_GET_CURRENT_INSTANCE, RULE_NO_REQUIRED_PROP_WITH_DEFAULT,
+    RULE_RETURN_IN_EMITS_VALIDATOR,
 };
 
 #[cfg(test)]
@@ -170,6 +173,7 @@ fn run_builtin_script_rule(
     parsed: Option<&oxc_parser::ParserReturn<'_>>,
     sfc: SfcScriptContext<'_>,
     emits_module: Option<EmitsModuleScript<'_>>,
+    runtime_props_eligible: bool,
     result: &mut LintResult,
 ) {
     if !entry_may_match(linter, entry, source, result.filename.as_str()) {
@@ -198,6 +202,14 @@ fn run_builtin_script_rule(
                     )
                 );
             }
+        } else if runtime_props_eligible
+            && entry.rule_name == RULE_NO_REQUIRED_PROP_WITH_DEFAULT
+            && let Some(props_rule) = rule.as_setup_props_defaults()
+        {
+            profile!(entry.profile_name, {
+                rule.check_program_with_sfc(&parsed.program, source, offset, sfc, &mut lint);
+                props_rule.check_setup_runtime(&parsed.program, offset, &mut lint);
+            });
         } else {
             profile!(
                 entry.profile_name,
@@ -269,6 +281,7 @@ pub(crate) fn append_builtin_script_rules_for_source(
             parsed.as_ref(),
             SfcScriptContext::default(),
             None,
+            false,
             result,
         );
     }

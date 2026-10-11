@@ -9,14 +9,12 @@ use oxc_ast::ast::{
 use oxc_ast_visit::Visit;
 use oxc_syntax::scope::ScopeFlags;
 
-const MACRO: &str = "defineEmits";
-
-pub(super) fn shadowed(program: &Program<'_>) -> bool {
+pub(super) fn shadowed(program: &Program<'_>, name: &str) -> bool {
     program.body.iter().any(|statement| {
-        declaration(statement).is_some_and(|d| declaration_binds(d, MACRO))
-            || import_binds(statement, MACRO, true)
-            || default_export_binds(statement, MACRO)
-    }) || hoisted_var_binds(program, MACRO)
+        declaration(statement).is_some_and(|d| declaration_binds(d, name))
+            || import_binds(statement, name, true)
+            || default_export_binds(statement, name)
+    }) || hoisted_var_binds(program, name)
 }
 
 pub(super) fn declaration<'a>(statement: &'a Statement<'a>) -> Option<&'a Declaration<'a>> {
@@ -83,7 +81,7 @@ pub(super) fn import_binds(statement: &Statement<'_>, name: &str, allow_vue_macr
                     && specifier.local.name == name
                     && !(allow_vue_macro
                         && import.source.value == "vue"
-                        && specifier.imported.name() == MACRO)
+                        && specifier.imported.name() == name)
             }
             ImportDeclarationSpecifier::ImportDefaultSpecifier(specifier) => {
                 specifier.local.name == name

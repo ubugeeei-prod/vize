@@ -193,6 +193,11 @@ pub trait ScriptRule: Send + Sync {
         None
     }
 
+    /// Actual runtime props capability; configured namesakes keep default dispatch.
+    fn as_setup_props_defaults(&self) -> Option<&NoRequiredPropWithDefault> {
+        None
+    }
+
     /// AST rules return true for shared check_program/check_program_with_sfc
     /// dispatch; byte-only rules return false.
     #[inline]

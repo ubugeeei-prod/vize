@@ -1,0 +1,318 @@
+{
+  "claim": "Read-only concrete source proposal; no current-source binary/implementation/whole-project Matrix or installed acceptance credit",
+  "actualMain": "a6633fb68b110d07abd5ee5a6049bc15f20f9c7f",
+  "sourceOwnership": [
+    {
+      "path": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs",
+      "blob": "af511b0b2a53a6cae12acada663dc6a01b5de28c",
+      "sha256": "5b3ae15fd4fc769f5fa418ec3b14039a8b30d8b1d7e06cd8f5ba6f872b12274c",
+      "bytes": 10626
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default/typed.rs",
+      "blob": "897c711329161538d8fefe536e46815aea76a043",
+      "sha256": "0749c7e672b42572d4c509404af7c82ba415590de5ef04988d577cdc23806c83",
+      "bytes": 8807
+    },
+    {
+      "path": "crates/vize_patina/src/linter/script_rules/prefilter.rs",
+      "blob": "de5aea6c9ce67bb69dc05189901d6ce339f14768",
+      "sha256": "2bfb6e6243dae77b6984b33ab330761f5c4a3bd372cc216ae15a990413c20e53",
+      "bytes": 13327
+    },
+    {
+      "path": "crates/vize_patina/src/linter/script_rules/sfc.rs",
+      "blob": "128d57a9377398133f450ae2440b251073bbda63",
+      "sha256": "cacbe030dc59399908463b3170cc80999c73a8a6bee486f580d54fd1b35f27df",
+      "bytes": 7312
+    },
+    {
+      "path": "crates/vize_patina/src/linter/script_rules.rs",
+      "blob": "c6a052bf5eb6db4b1041104c475d0edb895ca1db",
+      "sha256": "bdab1932f2d6d0f80d2a4b93372fa69c2294a4acd5700fd2174913ab85eaabb0",
+      "bytes": 8744
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script.rs",
+      "blob": "f7faef169ee467fb7f45598454a592ba0525fad1",
+      "sha256": "ce0a4fdd7e6f09b269da94fcd361067b839e0208ecbf2fd3cb42b12f33820fb4",
+      "bytes": 7329
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/sfc_context.rs",
+      "blob": "91c389ae260fe1b2ae32d9cba433be7da6ab2c4c",
+      "sha256": "5d258bcd33f2acc37c14534c1a419e7b6de3897b21f5f8017653622d74d2c7a5",
+      "bytes": 4946
+    }
+  ],
+  "providerAndOldPublicWholePacket": "/tmp/vize-8564-defaults-readonly-sources-20261012/read-only-original-provider-and-public-packets.json",
+  "providerAndOldPublicWholePacketSha256": "357840d6ec0c740e52f40e0ffd95d020477dc4abdad3acfb15c3e7820860d5a0",
+  "initialObserverRefusal": "authoring assertion counted one original foreign undefined-rule configuration message rather than the already fixed Matrix enabled-rule identity projection; retained complete raw packet, no expected/source/provider messages changed",
+  "targetProviderExactOriginalMatrixFindings": 16,
+  "originalWholeProjectUnusableReason": "eslint-plugin-vue could not parse 1 compared file(s)",
+  "runs": [
+    {
+      "id": "original-1",
+      "targetProviderFindings": 2,
+      "completeForeignProviderMessages": [],
+      "expectedNewRuntimeCount": 2,
+      "oldPublicWholeJson": [
+        {
+          "file": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-runtime-props-readonly-wRCDGV/original-1-ExampleResponse.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "original-2",
+      "targetProviderFindings": 1,
+      "completeForeignProviderMessages": [
+        {
+          "ruleId": "@typescript-eslint/ban-ts-comment",
+          "message": "Definition for rule '@typescript-eslint/ban-ts-comment' was not found.",
+          "line": 775,
+          "column": 7,
+          "endLine": 775,
+          "endColumn": 68,
+          "severity": 2,
+          "nodeType": null
+        }
+      ],
+      "expectedNewRuntimeCount": 1,
+      "oldPublicWholeJson": [
+        {
+          "file": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-runtime-props-readonly-wRCDGV/original-2-ImportExport.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "original-3",
+      "targetProviderFindings": 3,
+      "completeForeignProviderMessages": [],
+      "expectedNewRuntimeCount": 3,
+      "oldPublicWholeJson": [
+        {
+          "file": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-runtime-props-readonly-wRCDGV/original-3-MyCollections.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "original-4",
+      "targetProviderFindings": 3,
+      "completeForeignProviderMessages": [],
+      "expectedNewRuntimeCount": 3,
+      "oldPublicWholeJson": [
+        {
+          "file": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-runtime-props-readonly-wRCDGV/original-4-Request.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "original-5",
+      "targetProviderFindings": 4,
+      "completeForeignProviderMessages": [],
+      "expectedNewRuntimeCount": 4,
+      "oldPublicWholeJson": [
+        {
+          "file": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-runtime-props-readonly-wRCDGV/original-5-TeamCollections.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "original-6",
+      "targetProviderFindings": 2,
+      "completeForeignProviderMessages": [],
+      "expectedNewRuntimeCount": 2,
+      "oldPublicWholeJson": [
+        {
+          "file": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-runtime-props-readonly-wRCDGV/original-6-Base.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "original-7",
+      "targetProviderFindings": 1,
+      "completeForeignProviderMessages": [],
+      "expectedNewRuntimeCount": 1,
+      "oldPublicWholeJson": [
+        {
+          "file": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-runtime-props-readonly-wRCDGV/original-7-Modal.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "runtime-required",
+      "targetProviderFindings": 1,
+      "completeForeignProviderMessages": [],
+      "expectedNewRuntimeCount": 1,
+      "oldPublicWholeJson": [
+        {
+          "file": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-runtime-props-readonly-wRCDGV/runtime-required-runtime-required.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "runtime-direct-statement",
+      "targetProviderFindings": 1,
+      "completeForeignProviderMessages": [],
+      "expectedNewRuntimeCount": 1,
+      "oldPublicWholeJson": [
+        {
+          "file": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-runtime-props-readonly-wRCDGV/runtime-direct-statement-runtime-direct-statement.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "runtime-crlf-unicode",
+      "targetProviderFindings": 1,
+      "completeForeignProviderMessages": [],
+      "expectedNewRuntimeCount": 1,
+      "oldPublicWholeJson": [
+        {
+          "file": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-runtime-props-readonly-wRCDGV/runtime-crlf-unicode-runtime-crlf-unicode.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "runtime-optional",
+      "targetProviderFindings": 0,
+      "completeForeignProviderMessages": [],
+      "expectedNewRuntimeCount": 0,
+      "oldPublicWholeJson": [
+        {
+          "file": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-runtime-props-readonly-wRCDGV/runtime-optional-runtime-optional.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "runtime-no-default",
+      "targetProviderFindings": 0,
+      "completeForeignProviderMessages": [],
+      "expectedNewRuntimeCount": 0,
+      "oldPublicWholeJson": [
+        {
+          "file": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-runtime-props-readonly-wRCDGV/runtime-no-default-runtime-no-default.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "runtime-no-required",
+      "targetProviderFindings": 0,
+      "completeForeignProviderMessages": [],
+      "expectedNewRuntimeCount": 0,
+      "oldPublicWholeJson": [
+        {
+          "file": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-runtime-props-readonly-wRCDGV/runtime-no-required-runtime-no-required.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "ordinary-normal-script",
+      "targetProviderFindings": 0,
+      "completeForeignProviderMessages": [],
+      "expectedNewRuntimeCount": 0,
+      "oldPublicWholeJson": [
+        {
+          "file": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-runtime-props-readonly-wRCDGV/ordinary-normal-script-ordinary-normal-script.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "runtime-shadowed-function",
+      "targetProviderFindings": 1,
+      "completeForeignProviderMessages": [],
+      "expectedNewRuntimeCount": 0,
+      "oldPublicWholeJson": [
+        {
+          "file": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-runtime-props-readonly-wRCDGV/runtime-shadowed-function-runtime-shadowed-function.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "runtime-foreign-import",
+      "targetProviderFindings": 1,
+      "completeForeignProviderMessages": [],
+      "expectedNewRuntimeCount": 0,
+      "oldPublicWholeJson": [
+        {
+          "file": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-runtime-props-readonly-wRCDGV/runtime-foreign-import-runtime-foreign-import.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "runtime-sibling-shadow",
+      "targetProviderFindings": 1,
+      "completeForeignProviderMessages": [],
+      "expectedNewRuntimeCount": 0,
+      "oldPublicWholeJson": [
+        {
+          "file": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-runtime-props-readonly-wRCDGV/runtime-sibling-shadow-runtime-sibling-shadow.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "runtime-external-setup",
+      "targetProviderFindings": 1,
+      "completeForeignProviderMessages": [],
+      "expectedNewRuntimeCount": 0,
+      "oldPublicWholeJson": [
+        {
+          "file": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-runtime-props-readonly-wRCDGV/runtime-external-setup-runtime-external-setup.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    }
+  ]
+}

@@ -30,7 +30,7 @@ const MACRO: &str = "defineEmits";
 
 /// Inspect the already parsed setup AST before requesting sibling evidence.
 pub(crate) fn has_candidate(program: &Program<'_>) -> bool {
-    !shadowed(program)
+    !shadowed(program, MACRO)
         && program.body.iter().any(|statement| {
             for_each_call(statement, |call| {
                 is_macro_call(call) && call.type_arguments.is_none() && !call.arguments.is_empty()
@@ -44,12 +44,12 @@ pub(super) fn check<'a>(
     module: EmitsModuleScript<'a>,
     result: &mut ScriptLintResult,
 ) {
-    if shadowed(program) {
+    if shadowed(program, MACRO) {
         return;
     }
     match module {
         EmitsModuleScript::Unavailable => return,
-        EmitsModuleScript::Parsed { program, .. } if shadowed(program) => return,
+        EmitsModuleScript::Parsed { program, .. } if shadowed(program, MACRO) => return,
         _ => {}
     }
     for statement in &program.body {
@@ -180,4 +180,3 @@ fn binding<'a>(program: &'a Program<'a>, name: &str) -> Binding<'a> {
         Binding::Absent
     }
 }
-

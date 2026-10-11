@@ -1,0 +1,3 @@
+<script setup lang="ts">
+import { other as defineProps } from "vue"; const props = defineProps({ value: { required: true, default: 1 } });
+</script>
