@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFileSync, spawnSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { tmpdir } from "node:os";
@@ -8,13 +8,33 @@ import { parse } from "yaml";
 import {
   adaptDriver,
   assertSuiteCensus,
+  digest,
   drivers,
   materialize,
 } from "../../tools/support/release/musea_literal_acceptance/fixtures.ts";
 
 const sourceHead = "15e116fa258c7aaba5c6fdd2456442535605abe8";
-const original = (file: string) =>
-  execFileSync("git", ["--no-replace-objects", "cat-file", "blob", `${sourceHead}:${file}`]);
+const authority = new URL("../_fixtures/release/musea-literal-443/", import.meta.url);
+const manifest = JSON.parse(fs.readFileSync(new URL("manifest.json", authority), "utf8")) as {
+  source: string;
+  files: { source: string; file: string; sha256: string }[];
+};
+assert.equal(manifest.source, sourceHead);
+assert.equal(manifest.files.length, 5);
+assert.equal(new Set(manifest.files.map((row) => row.source)).size, 5);
+const originals = new Map(
+  manifest.files.map((row) => {
+    assert.equal(path.basename(row.file), row.file);
+    const bytes = fs.readFileSync(new URL(row.file, authority));
+    assert.equal(digest(bytes), row.sha256, `complete original H bytes: ${row.source}`);
+    return [row.source, bytes];
+  }),
+);
+const original = (file: string) => {
+  const bytes = originals.get(file);
+  assert.ok(bytes, `retained complete H fixture: ${file}`);
+  return bytes;
+};
 
 void test("literal public adapters preserve both complete original H laws and every assertion", () => {
   for (const file of drivers) {

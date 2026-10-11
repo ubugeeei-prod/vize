@@ -25,6 +25,11 @@ preserve the independent path/NUL/name SHA-256 static identity contract, and add
 serialized iframe HTML. All original assertions, selectors, timeouts and async
 execution remain. Changed or omitted source bytes and zero-work/skip/duplicate TAP
 summaries fail the observer's own negative controls.
+The [first source run](https://github.com/ubugeeei-prod/vize/actions/runs/38154541093)
+could not resolve historical H fixture paths in its checkout. Keep all five whole H
+files as hashed offline text fixtures for those laws; a fresh empty Git checkout
+without H objects passed all four laws with zero skips. The production reader
+continues to authenticate and copy raw H bytes with the original fixed hashes.
 
 The denominator is two original browser laws with zero skips: five physical static
 previews and five gallery frames, ordinary Controls `Default`/`Custom theme`, and
