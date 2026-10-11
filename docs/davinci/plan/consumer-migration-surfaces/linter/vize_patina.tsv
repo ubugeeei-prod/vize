@@ -205,11 +205,12 @@ linter	Linter	test/dev	crates/vize_patina/src/linter/native_type_aware/tests.rs	
 linter	Linter	test/dev	crates/vize_patina/src/linter/native_type_aware/unsafe_template_tests.rs	92	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/linter/restricted_rules.rs	22	l0	L0	stage	vize_l0	preferred	3
 linter	Linter	source	crates/vize_patina/src/linter/rule_selection.rs	3	l0	L0	stage	vize_l0	preferred	1
-linter	Linter	source	crates/vize_patina/src/linter/script_rules.rs	3	l0	L0	stage	vize_l0	preferred	1
-linter	Linter	source	crates/vize_patina/src/linter/script_rules.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
-linter	Linter	source	crates/vize_patina/src/linter/script_rules.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-linter	Linter	test/dev	crates/vize_patina/src/linter/script_rules.rs	107	old_ast	old AST/parser	old	vize_relief	legacy	1
-linter	Linter	test/dev	crates/vize_patina/src/linter/script_rules.rs	107	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+linter	Linter	source	crates/vize_patina/src/linter/script_rules.rs	6	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	source	crates/vize_patina/src/linter/script_rules.rs	6	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+linter	Linter	source	crates/vize_patina/src/linter/script_rules.rs	6	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+linter	Linter	test/dev	crates/vize_patina/src/linter/script_rules.rs	113	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	test/dev	crates/vize_patina/src/linter/script_rules.rs	113	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+linter	Linter	test/dev	crates/vize_patina/src/linter/script_rules/setup_emits_dispatch_tests.rs	4	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/linter/severity.rs	3	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/src/linter/tests.rs	3	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/src/linter/tests/jsx_streaming.rs	13	l0	L0	stage	vize_l0	preferred	1
@@ -845,9 +846,12 @@ linter	Linter	source	crates/vize_patina/src/rules/script/props_emits/require_typ
 linter	Linter	source	crates/vize_patina/src/rules/script/props_emits/require_typed_object_prop.rs	54	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/props_emits/require_valid_default_prop.rs	59	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/script/props_emits/require_valid_default_prop.rs	59	raw_oxc	raw OXC	raw	oxc_ast	raw	1
-linter	Linter	source	crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs	48	raw_oxc	raw OXC	raw	oxc_ast	raw	1
-linter	Linter	source	crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs	48	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
-linter	Linter	source	crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs	48	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
+linter	Linter	source	crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs	47	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+linter	Linter	source	crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs	47	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
+linter	Linter	source	crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs	47	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
+linter	Linter	source	crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator/setup.rs	7	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+linter	Linter	source	crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator/setup.rs	7	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
+linter	Linter	source	crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator/setup.rs	7	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/props_emits/template_emits.rs	21	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/src/rules/script/require_explicit_slots.rs	82	l0	L0	stage	vize_l0	preferred	2
 linter	Linter	test/dev	crates/vize_patina/src/rules/script/require_explicit_slots.rs	82	raw_oxc	raw OXC	raw	oxc_ast	raw	1
