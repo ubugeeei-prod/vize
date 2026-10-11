@@ -8,41 +8,41 @@ on:
         type: string
   pull_request:
     types: [opened, synchronize, reopened, edited]
-    paths:
-      - ".github/workflows/typechecker-native-phases.yml"
-      - "tools/benchmarks/scripts/typechecker-native-*.mjs"
-      - "tools/support/compat/github/native-phase-artifact*"
-      - "tools/benchmarks/scripts/type-snapshot-cli-*.mjs"
-      - "crates/vize/tests/check_*_cli.rs"
-      - "tests/fixtures/typechecker/model-modifier-ranges/**"
-      - "crates/vize/tests/lint_unchecked_indexed_access_cli**"
-      - "crates/vize_patina/src/linter/corsa_session/paths/**"
-      - "tests/_fixtures/differential/linter/unchecked-index-access/**"
-      - "crates/vize_maestro/src/ide/diagnostics/editor_typecheck_emit_tests.rs"
-      - "docs/davinci/decisions/2026-10-04-typechecker-*.md"
-      - "tools/benchmarks/scripts/generate.mjs"
-      - "tools/benchmarks/scripts/check-gate-*.mjs"
-      - "tools/benchmarks/scripts/typecheck-command.mjs"
-      - "tools/benchmarks/scripts/benchmark-binary.mjs"
-      - "tests/_fixtures/differential/typechecker/**"
-      - "crates/vize_canon/**"
-      - "crates/vize_atelier_jsx/**"
-      - "tests/_fixtures/differential/typecheck/jsx-*/**"
-      - ".github/actions/check-*/**"
-      - "tests/tooling/**"
-      - "tests/_fixtures/differential/lsp/**"
-      - "crates/vize/tests/lsp_*_cli.rs"
-      - "crates/vize_maestro/src/ide/hover/component_prop**"
-      - "crates/vize_maestro/src/ide/completion**"
-      - "crates/vize_maestro/src/ide/inlay_hint/**"
-      - "crates/vize_maestro/src/ide/inlay_hint.rs"
-      - "crates/vize_croquis/src/**"
-      - "crates/vize/tests/support/**"
-      - "crates/vize/src/**"
-      - "crates/vize_maestro/src/ide/diagnostics/editor_typecheck_defaults_tests.rs"
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - "pnpm-lock.yaml"
+    # prettier-ignore
+    paths: [".github/workflows/typechecker-native-phases.yml", "tools/benchmarks/scripts/typechecker-native-*.mjs", "tools/support/compat/github/native-phase-artifact*", "tools/benchmarks/scripts/type-snapshot-cli-*.mjs",
+      "crates/vize/tests/check_*_cli.rs",
+      "tests/fixtures/typechecker/model-modifier-ranges/**",
+      "crates/vize/tests/lint_unchecked_indexed_access_cli**",
+      "crates/vize_patina/src/linter/corsa_session/paths/**",
+      "tests/_fixtures/differential/linter/unchecked-index-access/**",
+      "crates/vize_maestro/src/ide/diagnostics/editor_typecheck_emit_tests.rs",
+      "docs/davinci/decisions/2026-10-04-typechecker-*.md",
+      "tools/benchmarks/scripts/generate.mjs",
+      "tools/benchmarks/scripts/check-gate-*.mjs",
+      "tools/benchmarks/scripts/typecheck-command.mjs",
+      "tools/benchmarks/scripts/benchmark-binary.mjs",
+      "tests/_fixtures/differential/typechecker/**",
+      "crates/vize_canon/**",
+      "crates/vize_atelier_jsx/**",
+      "tests/_fixtures/differential/typecheck/jsx-*/**",
+      ".github/actions/check-*/**",
+      "tests/tooling/**",
+      "!tests/tooling/release-input-scopes.test.mjs",
+      "!tests/tooling/release/release-public-acceptance.test.ts",
+      "!tests/tooling/support/release-retirement-transport-law.ts",
+      "tests/_fixtures/differential/lsp/**",
+      "crates/vize/tests/lsp_*_cli.rs",
+      "crates/vize_maestro/src/ide/hover/component_prop**",
+      "crates/vize_maestro/src/ide/completion**",
+      "crates/vize_maestro/src/ide/inlay_hint/**",
+      "crates/vize_maestro/src/ide/inlay_hint.rs",
+      "crates/vize_croquis/src/**",
+      "crates/vize/tests/support/**",
+      "crates/vize/src/**",
+      "crates/vize_maestro/src/ide/diagnostics/editor_typecheck_defaults_tests.rs",
+      "Cargo.toml",
+      "Cargo.lock",
+      "pnpm-lock.yaml"]
 permissions: { contents: read }
 concurrency:
   # Inert edits must not replace a pending run or cancel genuine source evidence.
