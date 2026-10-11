@@ -1,0 +1,107 @@
+[
+  {
+    "name": "article folding, ignored slash, attributes and following sibling",
+    "frames": [
+      [
+        "article",
+        "<ARTICLE Data-X='猫&amp;amp;&#13;\r\n\u0000' data-x=lost disabled xmlns=\"http://www.w3.org/2000/svg\"/>",
+        "</ARTICLE>",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "aside folding, ignored slash, attributes and following sibling",
+    "frames": [
+      [
+        "aside",
+        "<ASIDE Data-X='猫&amp;amp;&#13;\r\n\u0000' data-x=lost disabled xmlns=\"http://www.w3.org/2000/svg\"/>",
+        "</ASIDE>",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "footer folding, ignored slash, attributes and following sibling",
+    "frames": [
+      [
+        "footer",
+        "<FOOTER Data-X='猫&amp;amp;&#13;\r\n\u0000' data-x=lost disabled xmlns=\"http://www.w3.org/2000/svg\"/>",
+        "</FOOTER>",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "header folding, ignored slash, attributes and following sibling",
+    "frames": [
+      [
+        "header",
+        "<HEADER Data-X='猫&amp;amp;&#13;\r\n\u0000' data-x=lost disabled xmlns=\"http://www.w3.org/2000/svg\"/>",
+        "</HEADER>",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "main folding, ignored slash, attributes and following sibling",
+    "frames": [
+      [
+        "main",
+        "<MAIN Data-X='猫&amp;amp;&#13;\r\n\u0000' data-x=lost disabled xmlns=\"http://www.w3.org/2000/svg\"/>",
+        "</MAIN>",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "nav folding, ignored slash, attributes and following sibling",
+    "frames": [
+      [
+        "nav",
+        "<NAV Data-X='猫&amp;amp;&#13;\r\n\u0000' data-x=lost disabled xmlns=\"http://www.w3.org/2000/svg\"/>",
+        "</NAV>",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "section folding, ignored slash, attributes and following sibling",
+    "frames": [
+      [
+        "section",
+        "<SECTION Data-X='猫&amp;amp;&#13;\r\n\u0000' data-x=lost disabled xmlns=\"http://www.w3.org/2000/svg\"/>",
+        "</SECTION>",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "seven semantic containers remain body siblings",
+    "frames": [
+      ["article", "<article>", "</article>", false],
+      ["aside", "<aside>", "</aside>", false],
+      ["footer", "<footer>", "</footer>", false],
+      ["header", "<header>", "</header>", false],
+      ["main", "<main>", "</main>", false],
+      ["nav", "<nav>", "</nav>", false],
+      ["section", "<section>", "</section>", false]
+    ]
+  },
+  {
+    "name": "seven explicitly nested semantic containers preserve every parent",
+    "frames": [
+      ["article", "<article>", "</article>", false],
+      ["aside", "<aside>", "</aside>", false],
+      ["footer", "<footer>", "</footer>", false],
+      ["header", "<header>", "</header>", false],
+      ["main", "<main>", "</main>", false],
+      ["nav", "<nav>", "</nav>", false],
+      ["section", "<section>", "</section>", false]
+    ]
+  },
+  {
+    "name": "existing div span and void packet is unchanged",
+    "frames": []
+  }
+]

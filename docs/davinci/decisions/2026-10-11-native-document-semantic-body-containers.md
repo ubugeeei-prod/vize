@@ -26,7 +26,8 @@ slash, duplicate/Boolean attributes, harmless `xmlns`, Unicode, reference and
 literal CRLF/NUL boundaries, children and a following sibling. Three whole
 sources cover all seven siblings, all seven nested parents and unchanged old
 tags. Each packet includes every element parent, effective attribute and direct
-body-subtree child. Both native laws fail against the unchanged parent source
+body-subtree child. Exact authored opening/closing and ignored-slash frames are independently
+recorded for whole native comparison. Both native laws fail against the unchanged parent source
 and pass after the implementation; the same browser packets pass.
 
 Forty typed refusal controls retain wrong-head mode, omitted or misnested

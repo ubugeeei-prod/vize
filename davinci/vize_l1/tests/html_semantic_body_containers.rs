@@ -10,6 +10,7 @@ const CORPORA: [&str; 2] = [
     include_str!("fixtures/document/html-semantic-body-containers.json"),
     include_str!("fixtures/document/html-semantic-body-nesting.json"),
 ];
+const FRAMES: &str = include_str!("fixtures/document/html-semantic-body-frames.json");
 const TAGS: [&str; 7] = [
     "article", "aside", "footer", "header", "main", "nav", "section",
 ];
@@ -20,8 +21,11 @@ fn original_semantic_containers_match_complete_browser_packets() {
         .into_iter()
         .flat_map(|corpus| serde_json::from_str::<Vec<Value>>(corpus).unwrap())
         .collect();
+    let frames: Vec<Value> = serde_json::from_str(FRAMES).unwrap();
     assert_eq!(cases.len(), 10);
-    for case in &cases {
+    assert_eq!(frames.len(), 10);
+    for (case, expected_frames) in cases.iter().zip(&frames) {
+        assert_eq!(case["name"], expected_frames["name"]);
         let label = case["name"].as_str().unwrap();
         let source = case["source"].as_str().unwrap();
         let arena = Allocator::default();
@@ -52,6 +56,19 @@ fn original_semantic_containers_match_complete_browser_packets() {
             })
             .collect();
         assert_eq!(json!(actual), case["elements"], "{label}");
+        let frames: Vec<_> = elements
+            .iter()
+            .filter(|element| TAGS.contains(&element.name()))
+            .map(|element| {
+                json!([
+                    element.name(),
+                    element.opening(),
+                    element.closing_span().expect(label).slice(source),
+                    element.ignored_self_closing_slash()
+                ])
+            })
+            .collect();
+        assert_eq!(json!(frames), expected_frames["frames"], "{label}");
         let nodes: Vec<_> = elements
             .iter()
             .filter(|element| !matches!(element.name(), "html" | "head"))
@@ -81,18 +98,6 @@ fn original_semantic_containers_match_complete_browser_packets() {
                         }
                     })
                     .collect();
-                if TAGS.contains(&element.name()) {
-                    let closing = element.closing_span().expect(label).slice(source);
-                    assert!(closing.eq_ignore_ascii_case(&cstr!("</{}>", element.name())));
-                    assert_eq!(
-                        element.ignored_self_closing_slash(),
-                        element.opening().ends_with("/>")
-                    );
-                    assert_eq!(
-                        element.children().count(),
-                        children.iter().filter(|child| child[0] == 1).count()
-                    );
-                }
                 json!([element.name(), children])
             })
             .collect();

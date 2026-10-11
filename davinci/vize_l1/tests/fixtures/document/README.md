@@ -60,3 +60,8 @@ attribute duplicates, harmless `xmlns` attributes, literal/reference CRLF/NUL,
 complete sibling and nested parent boundaries, and an existing-tag control.
 All containers require explicit matching ends; implied-end/table policies,
 foreign namespaces, formatting/raw elements and Vue syntax remain refused.
+
+`html-semantic-body-frames.json` independently records every admitted semantic
+container's exact authored opening/closing bytes and ignored-slash flag. Native
+Rust compares the whole frame packet, including case, CRLF/NUL and attribute
+spelling; it does not infer an expected slash from a suffix of actual output.
