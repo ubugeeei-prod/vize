@@ -75,3 +75,8 @@ and all configured checks, followed by the protected full/performance queue,
 actual merge and a successful official successor release with installed
 acceptance. Public-before proofs and source review grant no candidate or
 release completion credit. The root delivery operator owns release triggers.
+
+The module's invalid example now uses the actual prefixed `$emit` spelling.
+Native explain loads these examples from the module source, so its three
+locale snapshots change only that authored example line. The incorrect bare
+`emit` snapshot remains historical evidence; no diagnostic packet is recaptured.

@@ -2563,7 +2563,7 @@ script/no-reserved-keys · lint 规则
   export default {
     props: ['$el'],       // reserved: starts with `$`
     computed: { _foo() { return 1 } }, // reserved: starts with `_`
-    methods: { emit() {} } // reserved: Vue built-in instance name
+    methods: { $emit() {} } // prefixed instance name
   }
 === script/no-reserved-props
 script/no-reserved-props · lint 规则
