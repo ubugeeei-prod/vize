@@ -200,7 +200,6 @@ void test("the actual full local imports and physical source bytes match one ato
   const rootCounts = pins.reviews.map((review) => review.presentRoots.length);
   assert.deepEqual(rootCounts, [2, 3, 3, 3, 3, 3]);
 });
-
 void test("a native command with unchanged imports fails for both roots and transitive helpers", (t) => {
   for (const member of [excluded[0], "tools/support/release/retirement_evidence.ts"]) {
     const directory = sourceFixture(t);
