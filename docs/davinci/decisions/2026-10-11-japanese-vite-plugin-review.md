@@ -28,3 +28,13 @@ desktop and mobile viewports; do not replace or shorten that campaign.
 Exact-head Actions, protected queue, actual merge and publication, followed by
 deployed reading verification, remain required. Other generated Japanese
 guides and the complete #8372 acceptance remain unfinished.
+
+The independently prepared configuration guide #8447 updates the English shared
+native settings section. Its declared successor can retain the original Japanese
+dedicated-reference destination alongside the current English destinations.
+Qualification requires the actual shared-native English heading, top-level `vize`
+contract and optional dedicated-format sentence; other changes remain rejected.
+Both source generations retain the frozen complete original Japanese URL vector,
+all ten complete examples, every current option and the old dedicated-heading
+bookmark. The composed Japanese successor is reviewed separately; it is not
+substituted into this source guide before the configuration behavior is delivered.

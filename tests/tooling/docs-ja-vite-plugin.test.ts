@@ -27,14 +27,42 @@ void test("Japanese Vite guide retains published recipes and every current integ
   assert.deepEqual(optionKeys(japanese), optionKeys(english), "no current option row is lost");
   const hrefs = (source: string) =>
     [...source.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)].map((match) => match[1]);
+  assert.equal(
+    createHash("sha256")
+      .update(JSON.stringify(hrefs(japanese)))
+      .digest("hex"),
+    "2ec48e6036e0e99366c6ff7832e3b7e90ce9b5c208a1e1d4b7f8dec26fd74ce8",
+    "all original Japanese destinations retain their order and multiplicity",
+  );
+  // #8447 introduces shared native settings in the same Vite config and
+  // retains dedicated formats as an optional path. Only that actual English
+  // contract allows the original Japanese dedicated-reference destination.
+  const sharedNativeSettings =
+    english.includes("## Shared native settings") &&
+    english.includes("same Vite config's top-level `vize` object") &&
+    english.includes("Existing dedicated formats remain an optional reference path.");
+  const authoredExtra = sharedNativeSettings
+    ? "./configuration-reference.md"
+    : "./configuration.md";
   assert.deepEqual(
-    hrefs(japanese).filter((href) => href !== "./configuration.md"),
+    hrefs(japanese).filter((href) => href !== authoredExtra),
     hrefs(english),
     "all English reading destinations retain their order and multiplicity",
   );
-  assert.equal(hrefs(japanese).filter((href) => href === "./configuration.md").length, 1);
+  assert.equal(hrefs(japanese).filter((href) => href === authoredExtra).length, 1);
   for (const id of ["drop-in-scope", "compiler-options", "置換の定義", "nuxt-の互換性"]) {
     assert.equal(japanese.split(`<span id="${id}"></span>`).length - 1, 1, id);
+  }
+  if (sharedNativeSettings) {
+    assert.equal(
+      japanese.split('<span id="単独-cli-lsp-と共有する設定-任意"></span>').length - 1,
+      1,
+    );
+    assert.match(japanese, /同じ Vite 設定のトップレベルの `vize`/);
+    assert.match(japanese, /`vize\.config\.\*` が Vite 設定より優先/);
+    assert.match(japanese, /`config: false` で設定ファイルの自動検索を無効/);
+  } else {
+    assert.equal(japanese.split("## 単独 CLI/LSP と共有する設定（任意）").length - 1, 1);
   }
   assert.doesNotMatch(japanese, /蒸気モード|レーヨン|それでおしまい|構成されています/);
   assert.match(japanese, /Vize は `\.vue` ファイルをコンパイルせず/);
