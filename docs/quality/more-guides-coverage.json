@@ -83,9 +83,9 @@
     },
     {
       "route": "/guide/doctor",
-      "locales": ["en"],
+      "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Practical first-run, source inspection, exit policy and JSON report guidance precede the retained complete filter/scoring reference. Actual CLI arguments and reporter reviewed; native desktop/mobile and deployed acceptance remain required."
+      "note": "Complete authored Japanese guide retains every original command, filter token, category, confidence, exit policy, scoring boundary and English heading alias. Existing practical English guidance remains byte-exact. Native desktop/mobile, actual next-step links and stable deployed acceptance remain required."
     },
     {
       "route": "/guide/experimentals",
