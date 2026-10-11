@@ -89,8 +89,19 @@ allowance or transfer the earlier `607b397` green source result.
 
 The shared repair is now the real parent PR #8707 at
 `13cd6c9cd1e5bd709875bcd355e04ce4501a538b`. To overlap the urgent casing
-qualification, the genuine native Stack is #8707 → #8705 → #8645; the middle
-source is `294050d2a2bc023dc0bab96451f45d08e38424a6`. Preserve every incoming
+qualification, the genuine native Stack is #8707 → #8705 → #8645; its first middle
+source was `294050d2a2bc023dc0bab96451f45d08e38424a6`. Preserve every incoming
 clause, the exact observer runtime/fixture/four-cohort bodies and the owned
 154/324 suffixes. The repaired cheap guard authenticates the complete current
 compiled tree; fresh source Actions and protected prefix merges remain required.
+
+Source `d2c12038` [Check 38179452173](https://github.com/ubugeeei-prod/vize/actions/runs/38179452173)
+failed the synthetic docs concurrency fixture's required loaded CSS ownership
+check. Its complete job log retains 692,617 bytes and SHA256
+`34fb0b6fb6f2e0b4a54ebcb43720682f02ac16c2b1f3b8ea4dd3f9dae31ed9e0`.
+The reviewed middle successor `1731d7fa115c459d121fdacb3caaa41bcb5128a3`
+serves three complete unchanged product CSS files over fixture HTTP. All 14
+ownership and computed-style checks, and the original concurrency, deadline,
+failed-page and pixel controls remain exact. Replay onto that real parent keeps
+this observer's complete runtime, fixtures and four finite cohort bodies exact;
+fresh source/native Actions and protected qualification remain required.
