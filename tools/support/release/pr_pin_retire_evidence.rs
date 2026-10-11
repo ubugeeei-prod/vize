@@ -263,6 +263,8 @@ pub(super) fn collect(
     let mut observations = Vec::new();
     let mut logs = BTreeMap::new();
     let mut total_log_bytes = 0usize;
+    let mut raw_log_bytes = 0usize;
+    let mut raw_log_sources = BTreeMap::new();
     for run in runs {
         pr_budget::check(budget)?;
         let id = run["id"].as_u64().ok_or("Missing diagnostic run ID")?;
@@ -288,15 +290,23 @@ pub(super) fn collect(
             if job["conclusion"] == "failure" || job["conclusion"] == "timed_out" {
                 let job_id = job["id"].as_u64().ok_or("Missing failure job ID")?;
                 pr_budget::check(budget)?;
-                let bytes = logs::capture(repository, job_id, root)?;
+                let raw = logs::capture(repository, job_id, root)?;
                 pr_budget::check(budget)?;
+                raw_log_bytes = raw_log_bytes
+                    .checked_add(raw.len())
+                    .filter(|total| *total <= super::retire_archive::MAX_BYTES)
+                    .ok_or("Complete decoded failure logs exceed bounded 64 MiB")?;
+                let raw_oid = super::retire_log_storage::blob_identity(&raw, root)?;
+                let bytes = super::retire_log_storage::gzip(&raw)?;
                 total_log_bytes = total_log_bytes
                     .checked_add(bytes.len())
                     .ok_or("Failure log size overflow")?;
                 if total_log_bytes > super::retire_archive::MAX_LOG_BYTES {
-                    return Err("Complete failure logs exceed bounded 8 MiB aggregate; preserve originals and stop".into());
+                    return Err("Complete compressed failure logs exceed bounded 8 MiB aggregate; preserve originals and stop".into());
                 }
-                logs.insert(format!("failure/{job_id}.log"), bytes);
+                let path = format!("failure/{job_id}.log.gz");
+                raw_log_sources.insert(path.clone(), json!({"oid":raw_oid,"bytes":raw.len()}));
+                logs.insert(path, bytes);
             }
         }
         let (artifact_pages, artifacts) = inventory(
@@ -325,6 +335,7 @@ pub(super) fn collect(
     pr_budget::check(budget)?;
     Ok((
         json!({"HRunPages":run_pages,"observations":observations,
+        "failureLogEncoding":"gzip","failureLogSources":raw_log_sources,
         "artifactCustody":"Metadata/provider digests and original Actions URLs/expiry only; binary bodies were not copied, are not permanently held, and cannot qualify a replacement cut.",
         "pendingDiagnosticRows":"Old source/full-H diagnostics may finish independently; their current states are retained honestly and are not new retirement gates."}),
         logs,

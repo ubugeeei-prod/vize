@@ -10,6 +10,9 @@ use std::{
     thread::sleep,
     time::{Duration, Instant},
 };
+#[cfg(test)]
+#[path = "pr_pin_budget_tests.rs"]
+mod budget_tests;
 #[path = "pr_pin_candidate.rs"]
 mod candidate;
 #[path = "pr_pin_catalog.rs"]
@@ -17,9 +20,6 @@ mod catalog;
 #[cfg(test)]
 #[path = "pr_pin_catalog_tests.rs"]
 mod catalog_tests;
-#[cfg(test)]
-#[path = "pr_pin_budget_tests.rs"]
-mod budget_tests;
 pub use candidate::{check_candidate, verify_candidate};
 #[path = "pr_pin_delivery.rs"]
 mod delivery;
@@ -45,15 +45,17 @@ mod retire_archive;
 mod retire_evidence;
 #[path = "pr_pin_retire_guard.rs"]
 mod retire_guard;
-#[path = "pr_pin_retire_release.rs"]
-mod retire_release;
 #[path = "pr_pin_retire_ledger.rs"]
 mod retire_ledger;
-#[path = "pr_pin_retire_source.rs"]
-mod retire_source;
 #[cfg(test)]
 #[path = "pr_pin_retire_lifecycle_tests.rs"]
 mod retire_lifecycle_tests;
+#[path = "pr_pin_retire_log_storage.rs"]
+mod retire_log_storage;
+#[path = "pr_pin_retire_release.rs"]
+mod retire_release;
+#[path = "pr_pin_retire_source.rs"]
+mod retire_source;
 #[cfg(test)]
 #[path = "pr_pin_retire_tests.rs"]
 mod retire_tests;

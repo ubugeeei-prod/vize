@@ -113,7 +113,7 @@ pub fn retire(
             return Err("Original cut changed during evidence collection".into());
         }
         let final_absence = guard::absence(&source, budget.as_ref(), root)?;
-        let receipt = json!({"schema":"vize-unpublished-retirement-v1","identity":fresh["identity"],"guards":final_guards,
+        let receipt = json!({"schema":"vize-unpublished-retirement-v2","identity":fresh["identity"],"guards":final_guards,
             "createdAtUnixSeconds":SystemTime::now().duration_since(UNIX_EPOCH).map_err(|e|e.to_string())?.as_secs(),
             "registryAbsence":final_absence,"originalEvidence":original_evidence,
             "artifactCustody":"Original Actions metadata/digests/expiry only; no permanent binary artifact body custody or reuse qualification",

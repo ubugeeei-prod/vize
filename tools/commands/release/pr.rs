@@ -2,11 +2,12 @@
 //! ```cargo
 //! [dependencies]
 //! serde_json = "1"
+//! flate2 = { version = "1", default-features = false, features = ["rust_backend"] }
 //!
 //! [package]
 //! edition = "2024"
 //! ```
-//! Driver source pin: pinned-raw-parent-custody-v13.
+//! Driver source pin: compressed-retirement-custody-v14.
 
 #[path = "../../support/release/pr_budget.rs"]
 mod pr_budget;
