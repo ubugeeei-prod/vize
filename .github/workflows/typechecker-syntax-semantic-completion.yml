@@ -1,0 +1,68 @@
+name: Native syntax and semantic completion
+on:
+  pull_request:
+    paths:
+      - crates/vize_canon/src/batch/executor.rs
+      - crates/vize_canon/src/batch/executor/cli/**
+      - crates/vize_canon/tests/native_syntax_semantics.rs
+      - tests/_fixtures/differential/typechecker/native-syntax-semantic-completion/**
+      - .github/workflows/typechecker-syntax-semantic-completion.yml
+permissions:
+  contents: read
+concurrency:
+  group: typechecker-syntax-completion-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CARGO_TERM_COLOR: always
+  QUALIFIER_SHA: ${{ github.event.pull_request.head.sha }}
+jobs:
+  native-syntax-completion:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 105
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ env.QUALIFIER_SHA }}
+          persist-credentials: false
+      - name: Authenticate the complete source
+        run: |
+          test "$(git rev-parse HEAD)" = "$QUALIFIER_SHA"
+          mkdir -p target/native-syntax-completion
+          git rev-parse HEAD > target/native-syntax-completion/source.sha
+          git ls-files -s > target/native-syntax-completion/whole-source-index.txt
+      - name: Original complete App E2E check row, sharing its native build
+        uses: ./.github/actions/app-e2e-row
+        with:
+          profile: full
+          suite: check
+          shard: all
+          task: test:check
+          timeout: 75m
+          needs-playwright: "false"
+          cache-key: app-e2e-full-check-all
+          worktree-id: ci-app-e2e-full-check-all
+          artifact-stem: full-check-all
+      - name: Actual generator and native completion controls
+        if: ${{ !cancelled() }}
+        env:
+          VIZE_TEST_REQUIRE_TSGO: "1"
+          VIZE_NATIVE_SYNTAX_CAPTURE_DIR: ${{ github.workspace }}/target/native-syntax-completion/packets
+        run: |
+          set -euo pipefail
+          unset VIZE_TEST_DISABLE_TSGO
+          cargo test --locked --profile ci -p vize_canon --lib anchors::tests:: -- --nocapture 2>&1 | tee target/native-syntax-completion/anchors.log
+          cargo test --locked --profile ci -p vize_canon --lib jsx_codegen::nested_tests:: -- --nocapture 2>&1 | tee target/native-syntax-completion/jsx.log
+          cargo test --locked --profile ci -p vize_canon --test native_syntax_semantics -- --nocapture --test-threads=1 2>&1 | tee target/native-syntax-completion/native.log
+      - name: Retain all whole-source qualification packets
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: native-syntax-completion-${{ github.run_id }}-${{ github.run_attempt }}-${{ env.QUALIFIER_SHA }}
+          path: |
+            target/native-syntax-completion/
+            target/app-e2e-logs/
+            tests/app/results/
+            tests/snapshots/check/**/__snapshots__/*.snap.actual
+          if-no-files-found: error
+          retention-days: 7

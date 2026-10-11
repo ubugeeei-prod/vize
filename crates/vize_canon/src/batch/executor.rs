@@ -149,7 +149,7 @@ impl CorsaExecutor {
             }
         }
 
-        match profile!(
+        let cli_error = match profile!(
             "canon.corsa.cli",
             check_with_cli(&self.corsa_path, project, self.checkers())
         ) {
@@ -159,10 +159,17 @@ impl CorsaExecutor {
                 // runner usable with runtimes whose CLI diagnostics are not
                 // available or not parseable.
                 warn_fallback(FallbackStep::CliToSession, &cli_error);
+                cli_error
             }
-        }
+        };
 
         self.check_with_project_session(project)
+            .map_err(|session_error| CorsaError::CorsaExecution {
+                exit_code: 1,
+                message: cstr!(
+                    "{cli_error}\nSame-config native diagnostic completion failed: {session_error}"
+                ),
+            })
     }
 
     /// Emit declaration files from the materialized virtual project.

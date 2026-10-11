@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const __vizeIntentionalTypeError: number = "not-a-number";
+</script>
+
+<template>
+  <div>{{ __vizeIntentionalTypeError }}</div>
+</template>

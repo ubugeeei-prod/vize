@@ -1,0 +1,29 @@
+{
+  "upstreamRepository": "https://github.com/hoppscotch/hoppscotch",
+  "upstreamCommit": "1acb8a3a7581e4db32ba0d529170c4669a2e1053",
+  "producerSource": "605429c660b328bb03bec5bbfef15961e59fcaf0",
+  "originalRun": 38111801880,
+  "recoveryRun": 38115632497,
+  "providerWholeArtifact": 11693483031,
+  "providerWholeSHA256": "034d99bcf5216bb332078fd481d393a17481b55b9080421dc22a24df0882516b",
+  "nativeOriginal": "post-request.d.cts(1294,1): error TS1128: Declaration or statement expected.",
+  "injectionRequired": "error:2:7 [TS2322] Type string is not assignable to type number.",
+  "files": [
+    {
+      "path": "post-request.d.ts.txt",
+      "sha256": "fdb91805ae8d684329e03af828f49d2b1d29f88ac3c906a33016fdc4d000d9ab",
+      "bytes": 36738
+    },
+    {
+      "path": "original-broken.vue.txt",
+      "sha256": "d7e877b3c2d52c691c0cf2e068380451cfa11bcb25c29c23e3487f690aeaba5c",
+      "bytes": 164
+    },
+    {
+      "path": "original-broken.vue.ts.txt",
+      "sha256": "90dfb9a972fe3e963c3f52c5bb11b9d115cc89b06949f7fa6f589d6aab9544d2",
+      "bytes": 3659
+    }
+  ],
+  "controlAuthority": "Independent finite native mechanism fixture; original whole authored declaration and injected SFC unchanged, independently authored config selects these two roots; original full consumer suite remains required"
+}
