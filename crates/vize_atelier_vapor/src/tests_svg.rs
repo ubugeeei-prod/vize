@@ -113,6 +113,8 @@ fn html_anchor_bindings_keep_html_semantics_at_svg_integration_points() {
     for source in [
         r#"<a :class="c" :style="s" :title="t" />"#,
         r#"<svg><foreignObject><a :class="c" :style="s" :title="t" /></foreignObject></svg>"#,
+        r#"<svg><desc><a :class="c" :style="s" :title="t" /></desc></svg>"#,
+        r#"<svg><title><a :class="c" :style="s" :title="t" /></title></svg>"#,
     ] {
         for retained in [false, true] {
             let code = compile(source, retained);

@@ -92,6 +92,19 @@ pub fn compare(app: &str, child: &str, controls: &str) {
         if let Some(expected) = row.get("expectedNamespaces") {
             assert_eq!(&current[0]["namespaces"], expected, "{}", row["name"]);
         }
+        if let Some(expected) = row.get("expectedNamespacePhases") {
+            assert_eq!(
+                Value::Array(
+                    current
+                        .iter()
+                        .map(|phase| phase["namespaces"].clone())
+                        .collect()
+                ),
+                *expected,
+                "{}: authored complete ordered namespace phases",
+                row["name"]
+            );
+        }
         if let Some(expected) = row.get("expectedTree") {
             assert_eq!(&current[0]["tree"], expected, "{}", row["name"]);
         }

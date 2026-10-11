@@ -10,16 +10,21 @@ Carry the parser's existing namespace on `SetPropIRNode` and select SVG binding
 helpers from that value. Both legacy lowering paths copy `ElementNode.ns`;
 the checked native emitter currently accepts HTML elements only and retains
 its explicit HTML namespace. This adds no parsing, pipeline stage or
-serialization. Remove the redundant generator tag list; parser classification
-and HTML integration-point rules remain authoritative.
+serialization. Remove the redundant generator tag list. Review also exposed
+the retained parser callback checking the child instead of its parent for SVG
+integration points. Let HTML children of `foreignObject`, `desc` and `title`
+use the existing Armature namespace inheritance; SVG element classification
+and MathML behavior remain unchanged.
 
 The separate `vapor-svg-namespace-8624` differential corpus contains a whole SFC
 with SVG `a`, `filter`, `feGaussianBlur`, `view` and `switch`, an ordinary HTML
 `a`, and an HTML `a` inside `foreignObject`. Independently authored complete
 mount, update, class/style removal and unmount trees accompany its namespace,
 class and computed-color vectors. The existing locked rc.9 VDOM oracle compares
-the product's complete runtime trace. Focused compiler controls exercise both
-the default and retained lowering paths.
+the product's complete runtime trace and every authored tree and namespace phase.
+The class and computed-color vectors are separate physical rc.10 assertions;
+the source runtime does not claim browser class ownership or computed styles.
+Focused compiler controls exercise both the default and retained lowering paths.
 
 The original third-party sources, six original control rows, and two authored
 physical SVG controls stay unchanged. This additive namespace campaign does
