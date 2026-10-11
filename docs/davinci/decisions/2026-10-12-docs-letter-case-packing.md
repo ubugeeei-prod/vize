@@ -74,3 +74,26 @@ provider repair; this child genuinely branches from its reviewed real head
 parent prefix may proceed without waiting for this child's manual Docs
 campaign. All source, full Docs, protected and public evidence must qualify
 the successor head anew; old checks are not transferred.
+
+The successor `294050d2` tooling run `38179266804` preserves a separate
+integration failure: job `114589072320` rejects the existing concurrency
+fixture's bare HTML because it has no theme stylesheet. Its four original
+desktop/mobile `/a/b` and `/a-b` jobs cannot supply the mandatory owned
+`.entry-page .features::before` rule. The dependent release child retains the
+same genuine failure separately in job `114589191555`.
+
+Repair only that fixture's dependency setup: serve byte-exact production
+`style.css`, `features.css` and `letter-case.css` over its real HTTP server and
+link them before the unchanged original body. These three files contain the
+complete finite CSS ownership required by the new gate. No rules or elements
+are invented, and the production gate receives no route or scope exception.
+The concurrency fixture is not a substitute for actual built-site packing
+or public acceptance. An independent peer reverses this narrow addition to
+the exact original whole driver and verifies all routes, workers, deadline,
+serial/parallel equality, failed-page custody, links and capture controls
+remain intact. The unchanged real-Chromium law passes with zero skips in
+36.94 seconds; this fixture measurement grants no full-site speed claim.
+All seven production/sidecar/import-dependency blobs remain exact `294050d2`.
+Fresh exact successor Actions, protected delivery and actual-source official
+Docs/public native casing remain required; all earlier campaigns and failed
+or cancelled source runs stay separately identified.
