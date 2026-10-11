@@ -19,6 +19,8 @@ export function inlineReference(reference: string, id: string) {
       output.push(line);
       continue;
     }
+    // This bookmark belongs to each standalone page, not its combined examples.
+    if (line === '<span id="設定できる-id-現在の-sfc-検出なし"></span>') continue;
     if (line.startsWith("# ")) {
       output.push(`<span id="${slug}"></span>`, "", `### ${line.slice(2)}`);
       continue;

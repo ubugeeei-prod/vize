@@ -98,6 +98,24 @@ heading bookmark `設定できる-id-現在の-sfc-検出なし` and AllRules pr
 `プロジェクト-ルールと-analyzer-契約-66` remain native targets. The availability bookmark
 stays standalone, avoiding duplicate IDs when references are composed into a catalogue.
 
+The original full Docs runs for #8574 (`38114235444`) and #8587 (`38114496671`)
+exposed an incomplete embedding boundary in this slice. Both devices rejected
+`/ja/rules/vue`: its three unsupported-rule references repeated the standalone
+availability bookmark. The native category used the common `inlineReference`
+helper, while only the alternate native embedding helper had excluded this ID.
+Those full runs failed; their other successful pages do not qualify the source.
+
+The common helper now excludes only this standalone bookmark outside fenced
+examples. All three standalone targets, complete original source blocks, prose
+and Bad/Good bookmarks remain intact. The complete generated Vue category changes
+only by removing those three span lines. A source regression reads all 104 actual
+Vue references and compares every complete code fence; a separate literal-source
+case ensures bookmark markup inside a fenced example is preserved. Both fail
+before the correction. Actual local SSG on desktop and mobile also reproduces the
+unchanged strict duplicate-ID failure before correction. Fresh exact-head full
+Docs and its original whole category controls remain required after the coherent
+Stack replay; the earlier successful captures are not new-source executions.
+
 Local generator reproducibility and all 17 original and new rule/accessibility
 tooling tests pass with the original project-oracle dependencies installed. The
 complete native Docs suite remains an Actions gate. Original public before-text is
