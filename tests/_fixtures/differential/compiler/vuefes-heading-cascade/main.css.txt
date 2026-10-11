@@ -1,0 +1,287 @@
+@import "../fonts/index.css";
+@import "./custom-media-query.css";
+@import "./reset.css";
+
+/**
+ * Colors
+  ------------------------------------------ */
+
+:root {
+  --color-primary-base: #007f62;
+  --color-purple-base: #8314d3;
+  --color-orange-base: #f66c21;
+  --color-navy-base: #385fcc;
+
+  --color-primary-sub: #fae8e4;
+  --color-purple-sub: #d0edf2;
+  --color-orange-sub: #def7d1;
+  --color-navy-sub: #ffdaff;
+
+  --color-primary-accent: #007f62;
+  --color-purple-accent: #8314d3;
+  --color-orange-accent: #f66c21;
+  --color-navy-accent: #385fcc;
+
+  --color-primary-accent-hover: #245846;
+  --color-purple-accent-hover: #54178e;
+  --color-orange-accent-hover: #a05227;
+  --color-navy-accent-hover: #2d428a;
+}
+
+:root {
+  --color-text-default: #3c576f;
+  --color-divider: #dae1e8;
+  --color-divider-light: #efefef;
+  --color-place-holder: #bbb;
+  --color-black: #333;
+  --color-grey: #eee;
+  --color-white-transparent: rgba(256, 256, 256, 0.85);
+  --color-gray-transparent: rgba(238, 238, 238, 0.8);
+  --color-white: #fff;
+  --color-alert: #db0000;
+}
+
+/**
+ * Z-index layers
+  ------------------------------------------ */
+
+:root {
+  /* Background layers */
+  --z-index-background: -1;
+
+  /* Base content layers */
+  --z-index-base: 1;
+  --z-name-badge-highlight: 2;
+
+  /* UI layers */
+  --z-index-header: 100;
+  --z-index-navigation: 200;
+
+  /* Overlay layers */
+  --z-index-overlay: 300;
+  --z-index-modal: 400;
+
+  /* Special layers */
+  --z-index-focused-name-badge: 9999;
+}
+
+body {
+  color: var(--color-text-default);
+  background-color: var(--color-sub);
+
+  * {
+    transition: background-color linear 0.5s;
+  }
+
+  *:hover,
+  *:focus {
+    transition: all linear 0.1s;
+  }
+
+  h1 {
+    color: var(--color-base);
+  }
+
+  h2,
+  h3 {
+    color: var(--color-text-default);
+    margin-bottom: 0.5rem;
+  }
+
+  h2 {
+    margin-top: 2.5rem;
+  }
+
+  h3 {
+    margin-top: 2rem;
+  }
+
+  /* pre-rendered by nuxt module */
+  [data-vf-mdc] {
+    a {
+      color: var(--color-base);
+
+      @media (any-hover: hover) {
+        &:hover {
+          color: var(--color-accent-hover);
+        }
+      }
+    }
+  }
+
+  &,
+  &.theme-primary {
+    --color-base: var(--color-primary-base);
+    --color-sub: var(--color-primary-sub);
+    --color-accent: var(--color-primary-accent);
+    --color-accent-hover: var(--color-primary-accent-hover);
+  }
+  &.theme-purple {
+    --color-base: var(--color-purple-base);
+    --color-sub: var(--color-purple-sub);
+    --color-accent: var(--color-purple-accent);
+    --color-accent-hover: var(--color-purple-accent-hover);
+  }
+  &.theme-orange {
+    --color-base: var(--color-orange-base);
+    --color-sub: var(--color-orange-sub);
+    --color-accent: var(--color-orange-accent);
+    --color-accent-hover: var(--color-orange-accent-hover);
+  }
+  &.theme-navy {
+    --color-base: var(--color-navy-base);
+    --color-sub: var(--color-navy-sub);
+    --color-accent: var(--color-navy-accent);
+    --color-accent-hover: var(--color-navy-accent-hover);
+  }
+}
+
+/**
+ * Typography (token)
+  ------------------------------------------ */
+:root {
+  --typography-h1-size: 20px;
+  --typography-h1-line-height: 30px;
+  --typography-h2-size: 18px;
+  --typography-h2-line-height: 27px;
+  --typography-h3-size: 16px;
+  --typography-h3-line-height: 24px;
+  --typography-body1-size: 16px;
+  --typography-body1-line-height: 24px;
+  --typography-body2-size: 14px;
+  --typography-body2-line-height: 21px;
+  --typography-body3-size: 13px;
+  --typography-body3-line-height: 19.5px;
+  --typography-caption-size: 11px;
+  --typography-caption-line-height: 16.5px;
+
+  @media (--mobile) {
+    --typography-h1-size: 18px;
+    --typography-h1-line-height: 27px;
+    --typography-h2-size: 16px;
+    --typography-h2-line-height: 24px;
+    --typography-h3-size: 14px;
+    --typography-h3-line-height: 21px;
+    --typography-body1-size: 14px;
+    --typography-body1-line-height: 21px;
+    --typography-body2-size: 12px;
+    --typography-body2-line-height: 18px;
+    --typography-body3-size: 11px;
+    --typography-body3-line-height: 15px;
+    --typography-caption-size: 10px;
+    --typography-caption-line-height: 15px;
+  }
+}
+
+/**
+ * Typography
+  ------------------------------------------ */
+
+:root {
+  /* align to BODY1 */
+  * {
+    font-size: var(--typography-body1-size);
+    line-height: var(--typography-body1-line-height);
+  }
+
+  h1 {
+    font-size: var(--typography-h1-size);
+    line-height: var(--typography-h1-line-height);
+  }
+
+  h2 {
+    font-size: var(--typography-h2-size);
+    line-height: var(--typography-h2-line-height);
+  }
+
+  h3 {
+    font-size: var(--typography-h3-size);
+    line-height: var(--typography-h3-line-height);
+  }
+
+  /**
+   * utilities
+   ------------------------------------------ */
+
+  .text-body-1 {
+    font-size: var(--typography-body1-size);
+    line-height: var(--typography-body1-line-height);
+  }
+
+  .text-body-2 {
+    font-size: var(--typography-body2-size);
+    line-height: var(--typography-body2-line-height);
+  }
+
+  .text-body-3 {
+    font-size: var(--typography-body3-size);
+    line-height: var(--typography-body3-line-height);
+  }
+
+  .text-caption {
+    font-size: var(--typography-caption-size);
+    line-height: var(--typography-caption-line-height);
+  }
+}
+
+:root,
+[lang="ja"],
+[lang="ja-JP"] {
+  * {
+    font-family: IBMPlexSansJP-Medium;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: IBMPlexSansJP-Bold;
+  }
+}
+[lang="en"],
+[lang="en-US"] {
+  * {
+    font-family: JetBrainsMono-Regular;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: JetBrainsMono-Bold;
+    text-wrap-style: auto;
+  }
+}
+
+/**
+ * Radius
+  ------------------------------------------ */
+
+:root {
+  --radius-m: 1.25rem;
+
+  @media (--mobile) {
+    --radius-m: 0.625rem;
+  }
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+/**
+  * Smooth Scroll
+  ------------------------------------------ */
+
+html:has(#pages-index) {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

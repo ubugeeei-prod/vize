@@ -1,0 +1,67 @@
+{
+  "schema": "vize.differential.manifest",
+  "version": 1,
+  "baseRevision": "605429c660b328bb03bec5bbfef15961e59fcaf0",
+  "product": "compiler",
+  "cases": [
+    {
+      "id": "compiler/sfc/vuefes-heading-ssr-style-dependencies",
+      "state": "active",
+      "targets": [
+        "dom",
+        "ssr"
+      ],
+      "inputs": {
+        "root": "vuefes-heading-cascade",
+        "files": [
+          {
+            "path": "VFHeading.vue.txt",
+            "sha256": "b9fb535067387fc7ef37d72d3e09727b84cba72525af074b05c787f2e5ef2738",
+            "role": "entry"
+          },
+          {
+            "path": "main.css.txt",
+            "sha256": "07cb348b47d8514539d832386910654dc73685b78fe393080a91a53d15c18e99",
+            "role": "stylesheet"
+          },
+          {
+            "path": "corpus.json",
+            "sha256": "67367c2c0bee27cf688184335528c724f5d3cd166474da1c344cd880c08f9127",
+            "role": "source-custody"
+          }
+        ]
+      },
+      "reference": {
+        "path": "vuefes-heading-cascade/expected.json",
+        "sha256": "0eb79adb7edc3729a8f5edf416342fbed12d44664689be70058ecb255eaaf55e",
+        "source": "tools/support/compat/vuefes/ssr-style-dependencies.mjs:complete official/native runtime differential; npm/builder/vite/src/compiler-ssr-style-dependencies.test.ts:actual native metadata corpus"
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/6880",
+        "reporter": "ubugeeei",
+        "upstreamCommit": "8eff3cd7dd79a7f47bbf2b78202b9aa2070ec5a6",
+        "originalFailure": "https://github.com/ubugeeei-prod/vize/actions/runs/38111801880/job/114388841982"
+      },
+      "adapters": {
+        "legacy": "compiler-vuefes-ssr-style-dependencies-v1",
+        "native": null,
+        "reasons": {
+          "native": "This exercises the existing compiler through its freshly built native addon and public Vite adapter; no Davinci native-stage readiness or replacement claim."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-whole-sfc-ssr-style-dependencies-v1",
+        "requiredFacets": [
+          "whole-pinned-source-and-assets",
+          "real-ssr-style-dependency-edges",
+          "official-native-complete-ssr-html",
+          "official-native-complete-cold-dom",
+          "official-native-complete-hydrated-dom",
+          "original-desktop-css-cascade",
+          "missing-edge-negative-control",
+          "unchanged-original-full-vuefes-vrt"
+        ]
+      }
+    }
+  ]
+}

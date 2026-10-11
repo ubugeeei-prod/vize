@@ -1,0 +1,16 @@
+{
+  "ssrStyleEdges": 1,
+  "desktop": {
+    "fontSize": "20px",
+    "lineHeight": "34px"
+  },
+  "negativeControls": {
+    "missingSsrEdge": 0,
+    "reversedCssOrder": {
+      "fontSize": "18px",
+      "lineHeight": "27px"
+    }
+  },
+  "warnings": [],
+  "authority": "Complete original VFHeading h2 declarations (1.25rem and 1.7), original main.css :root h2 declarations (1.125rem and 1.5), desktop1280px viewport, original props/slot inputs and independently compiled official Vue 3.6.0-alpha.2. Whole HTML is compared between actual official/native producers without output normalization."
+}

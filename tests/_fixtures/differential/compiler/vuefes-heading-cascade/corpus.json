@@ -1,0 +1,75 @@
+{
+  "schema": "vize.vuefes-heading-cascade",
+  "version": 1,
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/6880",
+  "upstream": {
+    "repository": "https://github.com/vuejs-jp/vuefes-2025-website",
+    "commit": "8eff3cd7dd79a7f47bbf2b78202b9aa2070ec5a6"
+  },
+  "files": {
+    "VFHeading.vue.txt": {
+      "bytes": 1359,
+      "sha256": "b9fb535067387fc7ef37d72d3e09727b84cba72525af074b05c787f2e5ef2738",
+      "upstreamPath": "app/components/heading/VFHeading.vue",
+      "gitBlob": "e9067539f972d8dd830a585669ed68cea1c3a37e"
+    },
+    "main.css.txt": {
+      "bytes": 5959,
+      "sha256": "07cb348b47d8514539d832386910654dc73685b78fe393080a91a53d15c18e99",
+      "upstreamPath": "app/assets/styles/main.css",
+      "gitBlob": "4e916096a68c577477ee0e87f4fce6847f9c8d67"
+    }
+  },
+  "originalFailure": {
+    "sourceSha": "605429c660b328bb03bec5bbfef15961e59fcaf0",
+    "run": 38111801880,
+    "job": 114388841982,
+    "maxDiffRatio": 0.002,
+    "diffRatio": 0.1235105465
+  },
+  "actualRuntimeEvidence": {
+    "run": 38115253920,
+    "job": 114398771782,
+    "artifact": 11693093826,
+    "artifactSha256": "0d096e86f6f556e2b2493328782b7050b59223ef1822e6f7152a8bee7c1ee546",
+    "headings": 14,
+    "reference": {
+      "fontSize": "20px",
+      "lineHeight": "34px",
+      "scopeSheetIndex": 6,
+      "globalSheetIndex": 0,
+      "documentHeight": 17968
+    },
+    "candidate": {
+      "fontSize": "18px",
+      "lineHeight": "27px",
+      "scopeSheetIndex": 2,
+      "globalSheetIndex": 9,
+      "documentHeight": 17870
+    },
+    "scopeAttributePresent": true,
+    "terminal": "failure",
+    "supplementalCompleteness": "failure: HTTP 304 revalidations have no response body",
+    "strictSourceIdentity": "failure: complete generated npm/native/index.d.ts delta retained"
+  },
+  "oracle": {
+    "vue": "3.6.0-alpha.2",
+    "vite": "7.1.5",
+    "pluginVue": "6.0.0",
+    "scopeIdStrategy": "Official plugin-vue componentIdGenerator explicitly uses the same absolute-filename SHA256 as the native adapter, without changing either output.",
+    "authority": "The original full SFC and CSS, original literal props/slot contents, actual official Vue runtime, and complete SSR/DOM/hydrated DOM. No expectation copied from the corrected compiler."
+  },
+  "expected": {
+    "desktop": {
+      "fontSize": "20px",
+      "lineHeight": "34px"
+    },
+    "reversedCssOrder": {
+      "fontSize": "18px",
+      "lineHeight": "27px"
+    },
+    "ssrStyleEdges": 1,
+    "hydrationWarnings": []
+  },
+  "qualification": "Real Vite SSR module dependencies plus official/native SSR, cold DOM and hydration. Full original 38-case VueFes VRT remains the app acceptance gate; a fixture pass alone does not prove cascade repair."
+}

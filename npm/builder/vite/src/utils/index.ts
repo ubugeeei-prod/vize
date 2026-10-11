@@ -113,17 +113,14 @@ export interface GenerateOutputOptions {
 /**
  * Whether the SFC's `<style>` blocks are handed to Vite as virtual imports.
  *
- * Every client-side SFC style block goes through Vite's CSS pipeline. This is
- * also necessary during development and tests: the user's CSS transformer and
- * targets must run before the stylesheet reaches the browser or jsdom.
+ * Every SFC style block goes through Vite's CSS pipeline. SSR imports retain
+ * the dependency edges used by frameworks to discover styles in module order;
+ * omitting plain CSS there can change the cascade after hydration. The user's
+ * CSS transformer and targets also apply during development and tests.
  * `compiled.css` remains a fallback for callers without block metadata.
  */
 function usesStyleImports(compiled: CompiledModule, options: GenerateOutputOptions): boolean {
-  return (
-    !!options.filePath &&
-    !!compiled.styles?.length &&
-    (options.customElement || hasDelegatedStyles(compiled) || !options.ssr)
-  );
+  return !!options.filePath && !!compiled.styles?.length;
 }
 
 /**
@@ -137,8 +134,8 @@ function usesStyleImports(compiled: CompiledModule, options: GenerateOutputOptio
  *
  * That guard matters because resolving `@import`s reads and inlines files and
  * crosses the native boundary with the whole stylesheet. A production client
- * build hands plain `<style>` blocks to Vite as virtual imports and an SSR build
- * emits no CSS at all, so in both cases the resolved text was previously built
+ * build and an SSR build hand `<style>` blocks to Vite as virtual imports, so
+ * in both cases the resolved text was previously built
  * and discarded, once per styled SFC on every build (270 discarded calls on the
  * 300-file bench corpus).
  */
@@ -173,8 +170,7 @@ export function generateOutputWithMap(
   const { emitted, hasExportDefault } = assembleComponentOutput(compiled);
 
   // Determine whether to use style imports or inline CSS injection.
-  // Import client styles through Vite in every mode so its configured CSS
-  // transformer applies to development and test runs as well as builds.
+  // Import styles through Vite in every mode, including SSR dependency discovery.
   const useStyleImports = usesStyleImports(compiled, options);
 
   if (useStyleImports) {

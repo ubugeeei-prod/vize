@@ -1,0 +1,89 @@
+name: VueFes SSR style dependencies
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_sha:
+        description: Exact source SHA; the dispatch ref must point at it
+        required: true
+        type: string
+  pull_request:
+    paths:
+      - npm/builder/vite/src/utils/index.ts
+      - npm/builder/vite/src/compiler-ssr-style-dependencies.test.ts
+      - tests/_fixtures/differential/compiler/vuefes-heading-cascade/**
+      - tests/_fixtures/differential/compiler/vuefes-heading-cascade.manifest.json
+      - tools/support/compat/vuefes/**
+      - .github/workflows/vuefes-ssr-style-dependencies.yml
+
+concurrency:
+  group: vuefes-ssr-style-dependencies-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CARGO_TERM_COLOR: always
+  QUALIFIER_SHA: ${{ inputs.target_sha || github.event.pull_request.head.sha }}
+
+jobs:
+  vuefes-ssr-style-dependencies:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ env.QUALIFIER_SHA }}
+          persist-credentials: false
+      - name: Authenticate the source and retain original declarations
+        env:
+          RUN_HEAD_SHA: ${{ github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$QUALIFIER_SHA"
+          if [[ "${{ github.event_name }}" == workflow_dispatch ]]; then
+            test "$RUN_HEAD_SHA" = "$QUALIFIER_SHA"
+          fi
+          mkdir -p target/vuefes-ssr-style-dependencies
+          git show HEAD:npm/native/index.d.ts > target/vuefes-ssr-style-dependencies/original-index.d.ts
+      - name: Original full VueFes VRT, with one native build
+        uses: ./.github/actions/app-e2e-row
+        with:
+          profile: full
+          suite: vrt
+          shard: vuefes
+          task: test:vrt:vuefes
+          timeout: 15m
+          needs-playwright: "true"
+          cache-key: app-e2e-full-vrt-vuefes
+          worktree-id: ci-app-e2e-full-vrt-vuefes
+          artifact-stem: full-vrt-vuefes
+      - name: Preserve complete generated declarations
+        if: ${{ always() }}
+        run: |
+          cp npm/native/index.d.ts target/vuefes-ssr-style-dependencies/generated-index.d.ts
+          git diff --binary -- npm/native/index.d.ts > target/vuefes-ssr-style-dependencies/generated-index.diff
+      - name: Install exact original Vue runtime oracle
+        if: ${{ !cancelled() }}
+        working-directory: tools/support/compat/vuefes/fixtures/heading-cascade
+        run: npm ci --no-audit --no-fund
+      - name: Native metadata corpus and existing Vite contracts
+        if: ${{ !cancelled() }}
+        run: vp run --filter './npm/builder/vite' test:prepared
+      - name: Complete official/native SSR, DOM and hydration differential
+        if: ${{ !cancelled() }}
+        run: node tools/support/compat/vuefes/ssr-style-dependencies.mjs
+      - name: Retain all qualification evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: vuefes-ssr-style-dependencies-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            target/vuefes-ssr-style-dependencies/
+            !target/vuefes-ssr-style-dependencies/project-*/node_modules/**
+            target/app-e2e-logs/
+            .vize/artifacts/vuefes-vrt/
+            tests/app/results/
+          if-no-files-found: error
+          retention-days: 7
