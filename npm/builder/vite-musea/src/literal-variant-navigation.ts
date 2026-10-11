@@ -17,7 +17,7 @@ export async function observeVariantNavigation(
 ) {
   try {
     const state = await page.locator(".variant-toc-item").evaluateAll((items) => {
-      const read = (item: Element) => {
+      const bounded = items.slice(0, 3).map((item) => {
         const ariaControls = item.getAttribute("aria-controls");
         const section = ariaControls ? document.getElementById(ariaControls) : null;
         const rect = section?.getBoundingClientRect();
@@ -29,13 +29,38 @@ export async function observeVariantNavigation(
           sectionBottom: rect?.bottom ?? null,
           sectionParentScrollTop: section?.parentElement?.scrollTop ?? null,
         };
-      };
-      const bounded = items.slice(0, 3).map(read);
+      });
       return {
         wallTimestamp: new Date().toISOString(),
         monotonicMs: performance.now(),
-        requestedFirst: items[0] ? read(items[0]) : null,
-        requestedLast: items.length ? read(items[items.length - 1]) : null,
+        requestedFirst:
+          items.slice(0, 1).map((item) => {
+            const ariaControls = item.getAttribute("aria-controls");
+            const section = ariaControls ? document.getElementById(ariaControls) : null;
+            const rect = section?.getBoundingClientRect();
+            return {
+              name: item.querySelector(".variant-toc-name")?.textContent ?? null,
+              ariaCurrent: item.getAttribute("aria-current"),
+              ariaControls,
+              sectionTop: rect?.top ?? null,
+              sectionBottom: rect?.bottom ?? null,
+              sectionParentScrollTop: section?.parentElement?.scrollTop ?? null,
+            };
+          })[0] ?? null,
+        requestedLast:
+          items.slice(-1).map((item) => {
+            const ariaControls = item.getAttribute("aria-controls");
+            const section = ariaControls ? document.getElementById(ariaControls) : null;
+            const rect = section?.getBoundingClientRect();
+            return {
+              name: item.querySelector(".variant-toc-name")?.textContent ?? null,
+              ariaCurrent: item.getAttribute("aria-current"),
+              ariaControls,
+              sectionTop: rect?.top ?? null,
+              sectionBottom: rect?.bottom ?? null,
+              sectionParentScrollTop: section?.parentElement?.scrollTop ?? null,
+            };
+          })[0] ?? null,
         tocItemCount: items.length,
         tocItems: bounded,
         activeItems: bounded.filter((item) => item.ariaCurrent === "true"),
