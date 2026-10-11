@@ -2,6 +2,7 @@ use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString};
 
 mod members;
 use members::{Member, parse_members, render_members};
+mod union;
 
 pub(crate) fn build_interface_type_source(
     source: &str,
@@ -102,6 +103,7 @@ pub(crate) fn resolve_type_args(
     let content = type_args.trim();
     if content.starts_with('{')
         && (content.contains(" in ") || split_top_level(content, '&').len() == 1)
+        && split_top_level(content, '|').len() == 1
     {
         return content.to_compact_string();
     }
@@ -160,6 +162,11 @@ fn resolve_type_to_object_body_inner(
         return None;
     }
 
+    let union_parts = split_top_level(trimmed, '|');
+    if union_parts.len() > 1 {
+        return union::resolve_members(&union_parts, interfaces, type_aliases, stack);
+    }
+
     let parts = split_top_level(trimmed, '&');
     if parts.len() > 1 {
         let mut merged = String::default();
@@ -184,6 +191,13 @@ fn resolve_type_to_object_body_inner(
         }
 
         return Some(merged);
+    }
+
+    if let Some(inner) = trimmed
+        .strip_prefix('(')
+        .and_then(|rest| rest.strip_suffix(')'))
+    {
+        return resolve_type_to_object_body_inner(inner, interfaces, type_aliases, stack);
     }
 
     if let Some(inner) = trimmed
