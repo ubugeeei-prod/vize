@@ -30,6 +30,7 @@ void test("walltime comparisons use the same source and runner without publishin
       "n8n-preparation",
       "native",
       "rust",
+      "rust-archive-window",
     ],
   );
   for (const key of ["docs", "js", "native", "rust"]) {
@@ -72,6 +73,7 @@ void test("baseline input partitions are manual-only, build once and retain both
     "n8n-baseline",
     "n8n-preparation",
     "artifact-payload",
+    "rust-archive-window",
   ]);
   assert.equal(workflow.concurrency["cancel-in-progress"], false);
   const job = workflow.jobs["n8n-baseline"];
@@ -241,15 +243,60 @@ void test("whole artifact payload trial is manual-only with a separate complete 
     if (step.run) assert.equal(step.shell, "bash");
   }
   const upload = action.runs.steps.find((step) => step.with?.["compression-level"] === 0);
-  const download = consumer.steps.find((step) =>
+  const restoreAction = parse(
+    readFileSync(
+      new URL("../../.github/actions/restore-artifact-payload/action.yml", import.meta.url),
+      "utf8",
+    ),
+  );
+  assert.equal(consumer.steps[1].uses, "./.github/actions/restore-artifact-payload");
+  assert.deepEqual(consumer.steps[1].with, {
+    artifact_id: "${{ inputs.artifact_id }}",
+    artifact_source_sha: "${{ inputs.artifact_source_sha }}",
+  });
+  assert.equal(restoreAction.runs.using, "composite");
+  for (const step of restoreAction.runs.steps) {
+    assert.equal(step["continue-on-error"], undefined);
+    if (step.run) assert.equal(step.shell, "bash");
+  }
+  const download = restoreAction.runs.steps.find((step) =>
     step.uses?.startsWith("actions/download-artifact@"),
   );
   assert.equal(upload.with.name, download.with.name);
   assert.equal(upload.with["if-no-files-found"], "error");
-  const restore = consumer.steps.find((step) => step.run?.includes("artifact_payload.py restore"));
+  assert.equal(download.with.path, "${{ runner.temp }}/payload-envelope");
+  const restore = restoreAction.runs.steps.find((step) =>
+    step.run?.includes("artifact_payload.py restore"),
+  );
   assert.match(
     restore.run,
     /--source-sha "\$PAYLOAD_SOURCE_SHA" --driver-sha "\$GITHUB_SHA" --artifact-id "\$PAYLOAD_ARTIFACT_ID"/,
   );
+  assert.deepEqual(restore.env, {
+    PAYLOAD_ARTIFACT_ID: "${{ inputs.artifact_id }}",
+    PAYLOAD_SOURCE_SHA: "${{ inputs.artifact_source_sha }}",
+  });
+  const receiptAction = parse(
+    readFileSync(
+      new URL("../../.github/actions/upload-artifact-payload-receipt/action.yml", import.meta.url),
+      "utf8",
+    ),
+  );
+  assert.equal(consumer.steps.at(-1).uses, "./.github/actions/upload-artifact-payload-receipt");
+  assert.equal(consumer.steps.at(-1).if, "${{ always() }}");
+  assert.equal(receiptAction.runs.using, "composite");
+  assert.equal(receiptAction.runs.steps.length, 1);
+  const receipt = receiptAction.runs.steps[0];
+  assert.equal(receipt.if, "${{ always() }}");
+  assert.equal(
+    receipt.with.name,
+    "artifact-payload-consumer-${{ github.sha }}-${{ github.run_attempt }}",
+  );
+  assert.equal(
+    receipt.with.path,
+    "${{ runner.temp }}/payload-restore.json\n${{ runner.temp }}/payload-restore-resources.txt\n",
+  );
+  assert.equal(receipt.with["if-no-files-found"], "error");
+  assert.equal(receipt.with["retention-days"], 14);
   assert.equal(workflow.on.workflow_dispatch.inputs.component.default, "all");
 });

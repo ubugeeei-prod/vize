@@ -1,0 +1,24 @@
+name: Restore complete artifact payload
+description: Restore and verify every independent file from the measured envelope
+inputs:
+  artifact_id:
+    description: Authenticated original artifact identity
+    required: true
+  artifact_source_sha:
+    description: Authenticated original source identity
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Download the complete experimental envelope into a fresh consumer
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        name: artifact-payload-envelope-${{ github.sha }}-${{ github.run_attempt }}
+        path: ${{ runner.temp }}/payload-envelope
+    - name: Restore and verify every independent file, mode and complete inventory
+      shell: bash
+      env:
+        PAYLOAD_ARTIFACT_ID: ${{ inputs.artifact_id }}
+        PAYLOAD_SOURCE_SHA: ${{ inputs.artifact_source_sha }}
+      run: |
+        /usr/bin/time -v -o "$RUNNER_TEMP/payload-restore-resources.txt" python3 -B tools/support/compat/github/artifact_payload.py restore "$RUNNER_TEMP/payload-envelope" "$RUNNER_TEMP/payload-restored" --source-sha "$PAYLOAD_SOURCE_SHA" --driver-sha "$GITHUB_SHA" --artifact-id "$PAYLOAD_ARTIFACT_ID" --report "$RUNNER_TEMP/payload-restore.json"

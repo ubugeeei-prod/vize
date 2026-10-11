@@ -1,0 +1,84 @@
+# Same-built Rust archive window trial
+
+This manual experiment is a child of the complete artifact transport trial
+[#8692](https://github.com/ubugeeei-prod/vize/pull/8692). It changes no existing
+producer, qualification, profile, compiler stage, partition or upload default.
+Global adoption remains unfinished until full producer/consumer integration and
+current physical qualification are proved separately.
+
+The existing manual walltime workflow delegates only its explicit
+`rust-archive-window` choice to the reusable experiment, with read-only contents
+and Actions permissions. PR events and the `all` choice do not admit this job.
+The artifact trial consumer keeps its checkout and delegates the identical
+ordered download and source-bound restore steps to `restore-artifact-payload`;
+its caller passes the same two identity inputs. Receipt upload stays a separate
+job-level `always()` step through `upload-artifact-payload-receipt`, with the
+original inner upload also `always()`, preserving failed-checkout and cancelled
+step retention independently of the restore composite's success boundary.
+This extraction leaves space for all incoming manual choices and jobs within
+the shared 350-line budget without suppressing normal YAML formatting.
+
+The frozen original is artifact `11706049605` from run `38151499533`.
+Its API source is `1f463e566cee76d093b3f0c41ee30b7bd1314cdb`; its original build
+receipt binds physical source `e057b3dd9e8ebed0dee7f4239a34daa2b410f7a0`, tree
+`133c282d0c7404fddaf8ce7d3d159ac6cd3d5a86`, Rust `1.99.0`, nextest `0.9.146`
+and Cargo profile `ci`. These are distinct identities and remain explicit.
+The original ZIP is 4,821,748,890 bytes, with two STORED members: a 607-byte
+receipt and `tests.tar.zst` (4,821,747,915 bytes).
+
+The receipt records the original PR runtime: `VIZE_TEST_DISABLE_TSGO=1`, no
+`VIZE_TEST_REQUIRE_TSGO`, and `VIZE_NUXT_CONFIG_ITERATIONS=100`. Both arms preserve
+that envelope, profile `pr`, `RUST_TEST_THREADS=4`, `CARGO_BUILD_JOBS=12`, source
+fixtures and pinned Pkl runtime. This trial provides no full-native or current
+whole-gate qualification. It neither introduces nor widens a test exclusion.
+
+Prior prefix inspection found 1,137 test executables and seven other outputs;
+that inspection did not authenticate the complete ZIP or tar. Common linked
+code is a possible compression opportunity, not measured equality between
+distinct executables. No executable is removed or treated as identical.
+
+The new manual workflow first authenticates the full original API identity,
+ZIP byte count and SHA-256, then reads both complete members and their ZIP CRCs.
+It keeps the complete original ZIP for 14 days before the one-day original
+expires. Signed download URLs, credentials and request headers are not stored.
+
+The producer streams the entire decoded tar, including end padding and any
+appended members, and records every member path, type, mode, link metadata,
+header metadata and regular-file body SHA-256. It re-encodes that identical tar
+with `zstd -3 --long=27 -T4 -c`, bounding the window at 128 MiB. It verifies the
+complete candidate frame, decoded tar SHA-256 and exact member/body inventory.
+The original build receipt remains unchanged; a separate transport receipt
+binds both compressed bodies, raw tar, inventories, codec and driver source.
+Every producer and staged consumer helper body and mode is bound to its real
+Git driver source, with replacement objects disabled.
+
+Eight fresh consumer jobs run baseline/candidate × original hash partitions
+`1/4`, `2/4`, `3/4`, `4/4`. Each authenticates the frozen source, toolchain,
+runtime envelope, complete archive body and decoded inventory. Pinned nextest
+consumes each archive with the original extraction/remap/profile/partition
+command, without an increased decoder-memory flag or another Rust archive build.
+Each arm also captures the complete unpartitioned PR listing for coverage.
+The final job requires all eight source-bound receipts, identical per-partition
+listings, exact actual JUnit coverage of each selected case/result vector, disjoint partitions, and their
+complete union. Every stdout/stderr stream, listing, JUnit packet, inventory,
+decode/list/run resource report and failure result remains an artifact.
+
+The pinned [list command](https://github.com/nextest-rs/nextest/blob/cargo-nextest-0.9.146/cargo-nextest/src/dispatch/core/list.rs)
+uses the same [default ignored-test filter](https://github.com/nextest-rs/nextest/blob/cargo-nextest-0.9.146/nextest-runner/src/test_filter.rs)
+as the run command: ignored cases remain listed with a mismatch reason and do
+not become selected executions. The exact case requirement applies to matching
+cases. A control keeps an authored ignored case in both complete listings while
+accepting its original omission from JUnit; no ignored-test run flag is added.
+
+Small controls cover CRC-colliding distinct bodies, modes and hidden raw paths,
+whole-frame truncation/corruption, removed zero trailer bytes, ZIP digest and
+member inventory, original receipt drift, candidate/source/driver drift, and
+missing, failed or changed partitions. They run normally and with Python `-O`.
+Equal omissions, extras or duplicated actual cases in both arms still refuse;
+unknown nextest releases, helper body/mode drift and borrowed Git bodies refuse.
+
+Full authenticated remote capture, pinned-decoder acceptance, all four paired
+physical partitions, byte savings and walltime/RSS measurements remain pending.
+Fewer bytes alone will not be reported as an end-to-end CI speedup. Re-encoding,
+verification and extra diagnostic uploads have costs; this retained experiment
+adds storage while leaving original production evidence intact.
