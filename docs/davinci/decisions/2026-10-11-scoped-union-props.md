@@ -131,3 +131,5 @@ all lane counts, exact ledger removals and the unchanged-control output hashes.
 The full source artifact retains all nine emitted native modules and every
 original raw fixture output. Fresh current-PR Actions, protected merge and
 released consumer acceptance remain delivery gates.
+
+Original scoped-union decision: [Scoped union props](./2026-10-11-scoped-union-props.md) records the confirmed Icon/IconButton accessibility loss under #6100/#6880: collect union keys in the existing parsed traversal, preserve authored optionality and module ownership, and require whole native/official SSR/DOM/Vapor before/after evidence plus all original controls before any ledger ratchet or delivery credit.
