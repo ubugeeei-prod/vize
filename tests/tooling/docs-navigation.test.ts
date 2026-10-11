@@ -79,6 +79,7 @@ void test("locale render controls import without starting browser or native tran
       "locale-render-assertions",
       "locale-responsive-assertions",
       "theme-render-assertions",
+      "letter-case-render-assertions",
     ]) {
       fs.copyFileSync(
         path.join(repoRoot, `docs/scripts/${basename}.ts`),
@@ -99,6 +100,10 @@ void test("importing theme assertions does not resolve or execute native annotat
   try {
     const file = path.join(isolated, "theme-render-assertions.ts");
     fs.copyFileSync(path.join(repoRoot, "docs/scripts/theme-render-assertions.ts"), file);
+    fs.copyFileSync(
+      path.join(repoRoot, "docs/scripts/letter-case-render-assertions.ts"),
+      path.join(isolated, "letter-case-render-assertions.ts"),
+    );
     const module = await import(pathToFileURL(file).href);
     assert.equal(typeof module.verifyThemeReadability, "function");
     assert.equal(typeof module.verifySidebarMotion, "function");

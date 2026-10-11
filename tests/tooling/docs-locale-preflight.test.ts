@@ -35,6 +35,7 @@ for (const mode of ["missing source", "gitless checkout"] as const) {
         "locale-render-assertions",
         "locale-responsive-assertions",
         "theme-render-assertions",
+        "letter-case-render-assertions",
       ]) {
         await copySource(root, `docs/scripts/${basename}.ts`);
       }

@@ -1,7 +1,5 @@
 /* === Vize — Editorial Flyer Theme === */
 
-@import "./letter-case.css";
-
 /* Override logo assets for dark mode */
 [data-theme="dark"] .header-title img {
   content: url("/logo-light.svg");

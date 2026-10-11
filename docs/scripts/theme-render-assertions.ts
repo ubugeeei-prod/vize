@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import type { Page } from "playwright";
+import { verifyAuthoredLetterCase } from "./letter-case-render-assertions.ts";
 
 const annotationSource =
   'const label: string = "Readable";\n// Comment outside the focused line\nconst ready = true;';
@@ -142,6 +143,7 @@ export async function verifySidebarMotion(page: Page, device: string) {
 }
 
 export async function verifyThemeReadability(page: Page) {
+  await verifyAuthoredLetterCase(page);
   const require = createRequire(import.meta.url);
   const native = createRequire(require.resolve("@ox-content/vite-plugin"))("@ox-content/napi") as {
     transform(
