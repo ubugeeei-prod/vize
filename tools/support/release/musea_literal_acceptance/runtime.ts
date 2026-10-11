@@ -41,8 +41,7 @@ const receipt: Record<string, unknown> = {
   arch: process.arch,
   preparation,
   success: false,
-  scope:
-    `Installed public native/compiler/plugin (${process.platform}/${process.arch}) with original five literal/ordinary static previews and Controls2/Keys3 real dev RunVRT New-to-Pass zero-difference repeats. No aggregate, hosted companion/HTTPS, general VRT update/ownership/tombstone, LSP or broader n8n credit.`,
+  scope: `Installed public native/compiler/plugin (${process.platform}/${process.arch}) with original five literal/ordinary static previews and Controls2/Keys3 real dev RunVRT New-to-Pass zero-difference repeats. No aggregate, hosted companion/HTTPS, general VRT update/ownership/tombstone, LSP or broader n8n credit.`,
 };
 const persist = () =>
   fs.writeFileSync(path.join(output, "receipt.json"), JSON.stringify(receipt, null, 2) + "\n");
