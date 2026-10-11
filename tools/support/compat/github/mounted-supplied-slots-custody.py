@@ -62,7 +62,8 @@ def forward(command, environment, directory, stdin, stdout, stderr):
                     data = reader.read1(65536) if hasattr(reader, "read1") else reader.read(65536)
                     if not data:
                         break
-                    assert retained.write(data) == len(data), "Incomplete retained write"
+                    retained_count = retained.write(data)
+                    assert retained_count == len(data), "Incomplete retained write"
                     if enabled:
                         try:
                             view = memoryview(data)

@@ -57,3 +57,10 @@ and actual merge, one explicitly reviewed dispatch may run. Its full artifact
 and original negative remain preserved. A successful observed subset is one
 nonreproduction under diagnostic mediation; it neither erases the original
 failure nor establishes historical cause or #7951 completion.
+
+The review correction performs each retained-byte write before asserting its
+count, so Python optimization cannot remove the capture operation. Normal and
+optimized stand-in controls retain the complete stdin/stdout/stderr bytes; the
+original optimized helper provides the failing control. The canonical record
+is a separate clause after the complete extension sentence. Fresh source gates
+remain required before the independently authorized diagnostic dispatch.
