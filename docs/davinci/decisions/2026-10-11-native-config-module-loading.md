@@ -41,3 +41,8 @@ original pinned Misskey, Naive UI, npmx and VOICEVOX configurations still requir
 their complete dependency closures and factory environments. Those full rows,
 the exact-head Actions, protected merge and subsequent release must succeed
 before this release blocker is considered delivered.
+
+The original paired source clauses are retained below after the decision
+collection became canonical. They describe their originally qualified versions.
+
+**2026-10-11 native configuration module compatibility (#8371):** Use the selected project's installed Vite public bundle loader through a temporary namespace adapter; retain the original config and raw source factory, one evaluation, selected-file authority, and fail-closed imports/errors. Dependency-free configs retain native Node loading; broken installed Vite never falls back. Seven real-loader/embedded-script laws cover JSON, extensionless and JS-to-TS helpers, file scope, factory authority, errors, and cleanup. Full pinned-project/Actions/merge/release acceptance remains required; see [decision](./2026-10-11-native-config-module-loading.md).
