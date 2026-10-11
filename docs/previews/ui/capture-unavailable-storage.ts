@@ -1,8 +1,8 @@
 /** Verify the writable fallback with Chromium's actual localStorage capability disabled. */
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { saveScreenshot } from "./screenshot-file.ts";
 import { chromium } from "playwright";
 import { resolvePuppeteerExecutablePath } from "../../browser-path.js";
 import { previewComposableExamples } from "./build-config.ts";
@@ -67,14 +67,14 @@ export async function verifyUnavailableStorage(baseUrl: string, outputRoot: stri
         "unavailable-storage presentation must fit the mobile viewport",
       );
       assert.deepEqual(diagnostics, []);
-      const file = `use-storage-unavailable-360-${state}.png`;
-      await page.screenshot({ path: path.join(outputRoot, file), fullPage: true });
+      const screenshot = saveScreenshot(
+        outputRoot,
+        `use-storage-unavailable-360-${state}`,
+        await page.screenshot({ fullPage: true }),
+      );
       screenshots.push({
         state,
-        file,
-        sha256: createHash("sha256")
-          .update(readFileSync(path.join(outputRoot, file)))
-          .digest("hex"),
+        ...screenshot,
       });
     }
     const reloaded = await page.reload({ waitUntil: "networkidle" });

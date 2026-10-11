@@ -1,6 +1,7 @@
 /** Practical SFC examples: one source packet owns the displayed code and live demo. */
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { previewImageUrl } from "../../../../docs/previews/ui/screenshot-file.ts";
 import { COMPOSABLE_CATALOG } from "../../../compose/core/src/catalog.ts";
 import { blocks, table } from "./markdown.ts";
 import { asyncEffectExamples } from "./async-effect-examples.ts";
@@ -111,9 +112,9 @@ export function composableExampleSection(packageRoot: string, name: string): str
     composablePreviewMarkup(name, example.title),
     `**What to observe:** ${example.observe}`,
     example.context,
-    `<details><summary>Compare the initial and interacted states</summary><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:16px"><figure style="margin:0"><img src="/component-previews/composables/${name}-720-initial.png" alt="${example.title}: initial state" loading="lazy" style="width:100%" /><figcaption>Initial state</figcaption></figure><figure style="margin:0"><img src="/component-previews/composables/${name}-720-interacted.png" alt="${example.title}: state after the verified interactions" loading="lazy" style="width:100%" /><figcaption>After the verified interactions</figcaption></figure></div></details>`,
+    `<details><summary>Compare the initial and interacted states</summary><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:16px"><figure style="margin:0"><img src="${previewImageUrl(`composables/${name}-720-initial.png`)}" alt="${example.title}: initial state" loading="lazy" style="width:100%" /><figcaption>Initial state</figcaption></figure><figure style="margin:0"><img src="${previewImageUrl(`composables/${name}-720-interacted.png`)}" alt="${example.title}: state after the verified interactions" loading="lazy" style="width:100%" /><figcaption>After the verified interactions</figcaption></figure></div></details>`,
     name === "use-storage"
-      ? '<details><summary>When browser storage is unavailable</summary><p>Choices still change in this tab. Reloading restores Getting started because the browser cannot save the choice. This capture uses actual Chromium with localStorage disabled.</p><img src="/component-previews/composables/use-storage-unavailable-360-interacted.png" alt="Publishing selected in this tab while browser storage is unavailable" loading="lazy" width="360" style="max-width:100%" /></details>'
+      ? `<details><summary>When browser storage is unavailable</summary><p>Choices still change in this tab. Reloading restores Getting started because the browser cannot save the choice. This capture uses actual Chromium with localStorage disabled.</p><img src="${previewImageUrl("composables/use-storage-unavailable-360-interacted.png")}" alt="Publishing selected in this tab while browser storage is unavailable" loading="lazy" width="360" style="max-width:100%" /></details>`
       : "",
     "## Copy the example",
     "Save this complete SFC in your Vue project. Its public imports and source are the same ones executed in the preview.",

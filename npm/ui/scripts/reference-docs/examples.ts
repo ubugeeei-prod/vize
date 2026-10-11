@@ -1,6 +1,7 @@
 /** Public-import versions of the examples maintained beside the component source. */
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { previewImageUrl } from "../../../../docs/previews/ui/screenshot-file.ts";
 
 import { uiFamilyCatalog } from "../../src/catalog/family-catalog.ts";
 import type { UiFamilyCatalogEntry } from "../../src/catalog/family-catalog-types.ts";
@@ -58,7 +59,7 @@ export function previewMarkup(family: string, title: string, screenshot = false)
     "",
     `[Open the interactive example](${url}) · [Styling these components](../ui-styles.md)`,
     screenshot
-      ? `\n![${title} example rendered in a real browser](/component-previews/${family}.png)`
+      ? `\n![${title} example rendered in a real browser](${previewImageUrl(`${family}.png`)})`
       : "",
   ].join("\n");
 }

@@ -1,8 +1,8 @@
 /** Assert observable effects of the complete source-owned composable examples. */
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { saveScreenshot } from "./screenshot-file.ts";
 import type { Browser, Page } from "playwright";
 import { previewComposableExamples } from "./build-config.ts";
 import { asyncEffectExamples } from "../../../npm/ui/scripts/reference-docs/async-effect-examples.ts";
@@ -250,14 +250,14 @@ export async function captureComposablePreviews(
             `${example.name}: ${width}px overflow`,
           );
           assert.deepEqual(diagnostics, [], `${example.name}: browser diagnostics`);
-          const file = `${example.name}-${width}-${state}.png`;
-          await page.screenshot({ path: path.join(outputRoot, file), fullPage: true });
+          const screenshot = saveScreenshot(
+            outputRoot,
+            `${example.name}-${width}-${state}`,
+            await page.screenshot({ fullPage: true }),
+          );
           screenshots.push({
             state,
-            file,
-            sha256: createHash("sha256")
-              .update(readFileSync(path.join(outputRoot, file)))
-              .digest("hex"),
+            ...screenshot,
             interactions,
           });
         }

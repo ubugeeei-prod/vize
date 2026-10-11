@@ -2,6 +2,7 @@
 import { featuredExamples } from "./examples.ts";
 import { uiFamilyCatalog } from "../../src/catalog/family-catalog.ts";
 import { blocks } from "./markdown.ts";
+import { previewImageUrl } from "../../../../docs/previews/ui/screenshot-file.ts";
 
 export function uiHub(locale: string, linkPrefix: string): string {
   const ja = locale === "ja";
@@ -47,7 +48,7 @@ export function uiHub(locale: string, linkPrefix: string): string {
   const cards = featuredExamples
     .map(
       (family) =>
-        `<a href="${linkPrefix}${family}.md" style="display:block;color:inherit;text-decoration:none"><img src="/component-previews/${family}.png" alt="${title(family)} browser-rendered example" loading="lazy" style="width:100%;border:1px solid #8885;border-radius:8px" /><strong>${title(family)}</strong></a>`,
+        `<a href="${linkPrefix}${family}.md" style="display:block;color:inherit;text-decoration:none"><img src="${previewImageUrl(`${family}.png`)}" alt="${title(family)} browser-rendered example" loading="lazy" style="width:100%;border:1px solid #8885;border-radius:8px" /><strong>${title(family)}</strong></a>`,
     )
     .join("\n");
   return blocks(
