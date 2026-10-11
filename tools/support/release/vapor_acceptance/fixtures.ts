@@ -4,6 +4,7 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 
 export const reportedVue = "3.6.0-rc.10";
+export const reportedRuntimeEntry = "vue/dist/vue.runtime.esm-bundler.js";
 export const campaigns = [
   {
     issue: 8624,

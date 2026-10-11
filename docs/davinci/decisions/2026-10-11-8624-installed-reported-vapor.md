@@ -31,3 +31,18 @@ alone cannot qualify a workflow with a separate startup refusal.
 This decision is paired with the report comment and the short link in the
 [architectural decision record](./2026-09-27-level-restructure.md).
 The full release companion retains the original consumer requirements.
+
+The first fresh public rc.10 browser preparation found an absent alias:
+`vue/dist/vue.runtime-with-vapor.esm-bundler.js` is not shipped. The complete
+published package's standard `vue.runtime.esm-bundler.js` exports both
+runtime-dom and runtime-vapor. Queue candidate `ade67a7a` was removed before
+merging; its source success is historical. Preserve the failed isolated
+consumer/log and use the actual standard entry, with a published-file inventory
+regression and fresh physical browser observation. Original six
+reporter/two authored controls and release/public-native custody stay unchanged.
+
+The fresh isolated public rc.10 reference consumer confirms `createApp` and
+`createVaporApp` are functions through this exact entry. Its shared physical
+browser callback completed four namespace/control phases; receipt SHA-256
+`55b9a0a1a28baa23d4535d6a3433b014955ce3cdf5147184b12594bebccb4090`
+is a stock-reference diagnostic, with no installed Vize or publication credit.

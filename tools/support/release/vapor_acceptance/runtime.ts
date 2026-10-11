@@ -4,7 +4,7 @@ import path from "node:path";
 import { createRequire } from "node:module";
 import type { Plugin } from "vite";
 import { publicNative } from "../public_acceptance/installed.ts";
-import { assertTrace, digest, reportedVue, type Row } from "./fixtures.ts";
+import { assertTrace, digest, reportedRuntimeEntry, reportedVue, type Row } from "./fixtures.ts";
 
 const output = path.resolve(process.env.PUBLIC_OUTPUT!);
 const preparation = JSON.parse(fs.readFileSync(path.join(output, "preparation.json"), "utf8"));
@@ -27,7 +27,7 @@ const compiler = require("@vue/compiler-sfc");
 assert.equal(compiler.version, reportedVue);
 assert.equal(require("vue/package.json").version, reportedVue);
 assert.equal(require("@vue/runtime-vapor/package.json").version, reportedVue);
-const runtimeEntry = require.resolve("vue/dist/vue.runtime-with-vapor.esm-bundler.js");
+const runtimeEntry = require.resolve(reportedRuntimeEntry);
 const manifest = fs.readFileSync(path.join(root, "package.json"));
 assert.equal(digest(manifest), preparation.manifestSha256);
 const lock = JSON.parse(fs.readFileSync(path.join(root, "package-lock.json"), "utf8"));

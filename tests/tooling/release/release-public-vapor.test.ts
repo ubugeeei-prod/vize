@@ -10,8 +10,37 @@ import {
   campaigns,
   digest,
   materializeFixtures,
+  reportedRuntimeEntry,
+  reportedVue,
   type Row,
 } from "../../../tools/support/release/vapor_acceptance/fixtures.ts";
+
+test("reported rc.10 resolves its actual published bundler entry with VDOM and Vapor exports", () => {
+  const packet = JSON.parse(
+    fs.readFileSync(
+      new URL("../../_fixtures/release/reported-vue-rc10-runtime.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  assert.equal(packet.version, reportedVue);
+  const manifest = JSON.parse(packet.manifestUtf8);
+  assert.equal(manifest.version, reportedVue);
+  assert.equal(manifest.exports["./dist/*"], "./dist/*");
+  const resolve = (request: string) => {
+    assert.ok(request.startsWith("vue/"));
+    const file = request.slice("vue/".length);
+    assert.ok(packet.distFiles.includes(file), `absent from actual public archive: ${file}`);
+    return file;
+  };
+  assert.equal(resolve(reportedRuntimeEntry), packet.module.file);
+  assert.throws(
+    () => resolve("vue/dist/vue.runtime-with-vapor.esm-bundler.js"),
+    /absent from actual public archive/u,
+  );
+  assert.equal(digest(packet.module.utf8), packet.module.sha256);
+  assert.match(packet.module.utf8, /export \* from "@vue\/runtime-dom"/u);
+  assert.match(packet.module.utf8, /export \* from "@vue\/runtime-vapor"/u);
+});
 
 type Workflow = {
   jobs: Record<
