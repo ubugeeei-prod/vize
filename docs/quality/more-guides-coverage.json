@@ -91,7 +91,7 @@
       "route": "/guide/experimentals",
       "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Complete Japanese guide reviewed against the current English contract: seven flags, disabled defaults, precedence, original examples and public aliases; practical Canon single-file trial retains its project-check boundary."
+      "note": "Complete Japanese guide reviewed against the current English contract: seven flags, disabled defaults, precedence, original examples and public aliases; practical Canon single-file trial retains its project-check boundary. English/Japanese or-pattern cells now preserve the complete literal and limitation in the original native flow."
     },
     {
       "route": "/guide/experimentals-reference",

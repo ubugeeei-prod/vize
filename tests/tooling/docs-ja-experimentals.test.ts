@@ -82,6 +82,13 @@ void test("Japanese experimentals guide retains complete recipes, syntax and pub
     5,
     "the pattern's pipe stays inside its code cell",
   );
+  const englishOr = english.split("\n").find((line) => line.startsWith("| Or |"));
+  assert.ok(englishOr);
+  assert.equal(
+    englishOr.split(/(?<!\\)\|/).length,
+    5,
+    "the English pattern retains all three cells",
+  );
   assert.match(japanese, /すべての機能は既定で無効/);
   assert.match(japanese, /変数を束縛する構文は未対応/);
   assert.match(japanese, /実行時の出力も生成しません/);

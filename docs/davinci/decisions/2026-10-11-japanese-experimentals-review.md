@@ -18,9 +18,8 @@ as do all original eleven ordered link destinations and eighty-eight distinct
 inline syntax/field/value names. Include the current English Canon Playground
 trial and its single-file Monaco boundary, previously absent in Japanese.
 Do not claim CLI/project-wide Corsa acceptance from that browser example.
-Keep old heading bookmarks as native aliases. Escape only the prose table's
-or-pattern pipe so it stays inside the example cell; the fenced original
-patterns and inputs remain exact.
+Keep old heading bookmarks as native aliases. Escape the prose tables' or-pattern pipe in English and Japanese so it stays
+inside the example cell; the fenced original patterns and inputs remain exact.
 
 Mark the full guide as reviewed so locale regeneration retains it. Update only
 its More coverage row, retaining every route and existing render oracle. Existing
@@ -34,3 +33,15 @@ Exact-source Actions, full original Docs render campaigns, protected actual merg
 and source-identified public reading acceptance remain required evidence. This
 page is a bounded part of the Japanese and More review; neither whole-site issue
 is complete. The reference and RFC-detail Japanese bodies remain separate work.
+
+A real Chrome inspection at public source
+`a51e57b18631c086348248f9f26aad83baa79ea4` confirms both original Or rows
+split the literal at its pipe, retain raw backticks and discard the complete
+limitation cell. The native table assertion rejects both actual original
+pages with whole-cell differences. Extend only the existing table-code phase
+on these two routes to require all three native cells, the complete original
+code and full limitation text; all previous glyph/cell-boundary controls and
+original capture phases/checkpoints remain exact. Existing whole-site and More
+route manifests include both pages at both viewport widths. Fresh actual built
+and deployed native success remain required; source assertions alone do not
+establish that browser result.

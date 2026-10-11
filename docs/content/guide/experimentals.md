@@ -177,7 +177,7 @@ Supported patterns include:
 | Object shorthand | `v-when="{ kind: 'ok', const data }"` | `{ const data }` means `{ data: const data }` |
 | Object rest | `v-when="{ kind: 'error', ...const payload }"` | Rest bindings must use `const`; lone `...` is accepted |
 | Array / tuple | `v-when="[const first, ...const rest]"` | Requires `Array.isArray`; rest allows additional items |
-| Or | `v-when="'idle' | 'loading'"` | Alternatives match left to right; bindings inside alternatives are not supported yet |
+| Or | `v-when="'idle' \| 'loading'"` | Alternatives match left to right; bindings inside alternatives are not supported yet |
 | As binding | `v-when="{ kind: 'ok', const data } as entry"` | Binds the matched value in addition to nested bindings |
 | Guard | `v-when="{ kind: 'error', error: const e } if (e.retriable)"` | The guard runs after the pattern matches |
 

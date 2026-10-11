@@ -41,5 +41,31 @@ export async function verifyTableCodeReadability(page: Page, route: string) {
       );
     }
   }
+  if (route === "/guide/experimentals" || route === "/ja/guide/experimentals") {
+    const japanese = route.startsWith("/ja/");
+    const label = japanese ? "または" : "Or";
+    const rows = await page
+      .locator(".content table tr")
+      .evaluateAll(
+        (elements, label) =>
+          elements
+            .filter((row) => row.querySelector("td")?.textContent?.trim() === label)
+            .map((row) => [...row.querySelectorAll("td")].map((cell) => cell.textContent?.trim())),
+        label,
+      );
+    assert.deepEqual(
+      rows,
+      [
+        [
+          label,
+          `v-when="'idle' | 'loading'"`,
+          japanese
+            ? "左から右に調べます。それぞれの選択肢の中で変数を束縛する構文は未対応です。"
+            : "Alternatives match left to right; bindings inside alternatives are not supported yet",
+        ],
+      ],
+      `${route}: the complete or-pattern and its limitation must occupy their own native cells`,
+    );
+  }
   return codes;
 }
