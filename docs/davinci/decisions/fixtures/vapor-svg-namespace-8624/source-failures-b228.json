@@ -65,5 +65,16 @@
         "bytes": 2762
       }
     ]
+  },
+  "successorPlanFailure": {
+    "head": "d9138948ad31fa65f7acce1a24363f5f66ccd5b9",
+    "run": 38153816463,
+    "job": 114512539467,
+    "rawLogSha256": "18514539214da685ec58a199eec03360840683f6e4bec99dedc2748425118c14",
+    "rawLogPath": "/tmp/vize-namespace-d913-source-plan.log",
+    "message": "davinci/vize_l1/src/parse.rs: arenaVec actual=1/16 inventory=1/15",
+    "compilerExecuted": false,
+    "browserExecuted": false,
+    "publicationQualification": false
   }
 }

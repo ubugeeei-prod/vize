@@ -71,6 +71,16 @@ the stateless facade still checks its frozen complete SVG title raw stream.
 Local controls pass, but fresh full canonical DOM/SSR and protected instruction
 ceilings remain required before this source is qualified.
 
+Exact d913894 source Check 38153816463 stopped at source planning before any
+compiler or browser execution: the strict storage inventory detected one new
+arena `Vec` use in `parse.rs` (1/15 to 1/16). Review that site as the empty
+`Vec<Infallible>` required by the shared sink interface: the neutral policy
+cannot produce a boundary and skips header resolution, so this buffer never
+allocates or grows. Update only its exact inventory row as required by the
+storage boundary. The owner's ancestry-frame allocation is recorded above;
+all storage scanners, source limits and protected instruction ceilings remain
+active. This plan failure and skipped dependent jobs confer no qualification.
+
 The original third-party sources, six original control rows, and two authored
 physical SVG controls stay unchanged. This additive namespace campaign does
 not inherit their acceptance credit. Its runtime manifest reports rc.10 as
