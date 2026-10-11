@@ -1,5 +1,12 @@
 # Indentation width
 
+Choose the indentation width that matches your project. Space or tab settings change the layout around template content; authored raw text stays intact.
+
+Check [shared formatter configuration and current release availability](./configuration.md)
+before choosing where to put these settings.
+
+## Configure indentation
+
 `tabWidth` controls the number of spaces per indentation level. Its default is
 `2`. Set it in the existing formatter configuration:
 

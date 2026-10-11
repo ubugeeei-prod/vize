@@ -1,5 +1,12 @@
 # Property quotes
 
+Choose when script object keys need quotes. Use the preserve mode to retain authored quoted keys, or the other modes to make quoting follow the object structure.
+
+Check [shared formatter configuration and current release availability](./configuration.md)
+before choosing where to put these settings.
+
+## Configure property quotes
+
 Set `fmt.vize.quoteProps` in your existing Vite+ configuration to choose how
 script object keys are quoted:
 

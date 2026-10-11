@@ -1,5 +1,12 @@
 # Formatter line endings
 
+Keep formatter line endings consistent across a Vue file. Use an explicit mode for a project convention, or auto mode to follow the first source line ending without rewriting raw text.
+
+Check [shared formatter configuration and current release availability](./configuration.md)
+before choosing where to put these settings.
+
+## Configure line endings
+
 Set `fmt.vize.endOfLine` in your existing Vite+ configuration:
 
 ```ts

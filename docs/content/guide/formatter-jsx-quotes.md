@@ -1,5 +1,12 @@
 # JSX attribute quotes
 
+Choose JSX attribute quotes independently of ordinary JavaScript strings. Use this for JSX/TSX code, including Vue script blocks, when the two kinds of strings need different conventions.
+
+Check [shared formatter configuration and current release availability](./configuration.md)
+before choosing where to put these settings.
+
+## Configure JSX quotes
+
 Set `formatter.jsxSingleQuote` to prefer single quotes in JSX/TSX attributes:
 
 ```ts

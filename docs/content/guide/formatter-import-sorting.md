@@ -1,5 +1,12 @@
 # Sort imports in Vue scripts
 
+Sort Vue script imports consistently with the rest of a Vite+ project. Use this when you want stable import groups, while keeping side-effect initialization order unless you deliberately opt in.
+
+Check [shared formatter configuration and current release availability](./configuration.md)
+before choosing where to put these settings.
+
+## Configure import sorting
+
 Enable import sorting with `fmt.vize.sortImports` in your existing Vite+ configuration:
 
 ```ts

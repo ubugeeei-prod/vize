@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
@@ -8,6 +9,7 @@ import {
   moreGuidesCoverage,
   renderedMoreGuideRoutes,
 } from "../../docs/scripts/more-guides-coverage.ts";
+import { collectReviewedTranslations } from "../../docs/scripts/i18n/reviewed.ts";
 
 function content(locale: string, route: string) {
   return readFileSync(
@@ -103,4 +105,92 @@ test("practical instructions precede long implementation reference tables", () =
   }
   assert.match(content("ja", "/guide/cli"), /<span id="check"><\/span>/);
   assert.match(content("ja", "/architecture/crates"), /^title: クレート$/m);
+});
+
+test("formatter guide regeneration keeps all original recipes, tokens and localized next steps", async () => {
+  const originals = [
+    [
+      "import-sorting",
+      "2094b899570049b87991c18f3ee4a0b754cba5b802fb0bd817ae2d812fbba3fb",
+      "6570d40104a970bfb804a862b7d1d2d8faff83de9029bf4d69749b24567b90b9",
+    ],
+    [
+      "indent-width",
+      "d29b37d752e1c1bb07ece7fdf300a4a331b9f6104966171764740a489305d756",
+      "0b5fc51768ea324e69ff95903d939c2bd0b45b4825e6497dd52c56220cd18644",
+    ],
+    [
+      "jsx-quotes",
+      "5c4ae10a714327c1705d6f449e2c67ab96d15111ea69a27e70932cd8785ad434",
+      "b42d45e8eafe3509203ce10e496ea5c8e52ca36d6c8e745d36f8de720c43729a",
+    ],
+    [
+      "line-endings",
+      "701828afcfdb9f309c4e6aadb434b472ac345297184664dae0cc03dd687562f1",
+      "b4a3f307e274256a8e2d175bf95e595e8440e7b4c04ab49e1f1da2556025fa3b",
+    ],
+    [
+      "property-quotes",
+      "01dc9a31371198ea51aa08851c01fa1b73ac105580b7ad34e485fa31132af36e",
+      "fb203dbd8b92f299f05bb964653db6ec96a055b01e6907d2ac269965c453a749",
+    ],
+  ];
+  const sourcePaths = originals.map(([slug]) => `guide/formatter-${slug}.md`);
+  const retained = await collectReviewedTranslations(
+    sourcePaths,
+    path.join(docsRoot, "content/ja"),
+  );
+  assert.equal(
+    retained.size,
+    originals.length,
+    "all five complete authored guides survive regeneration",
+  );
+  const digest = (value: string) => createHash("sha256").update(value).digest("hex");
+  const fencePattern = /^```[^\n]*\n[\s\S]*?^```[^\n]*$/gm;
+  const fences = (source: string) => [...source.matchAll(fencePattern)].map(([whole]) => whole);
+  const tokens = (source: string) =>
+    [
+      ...new Set(
+        [...source.replace(fencePattern, "").matchAll(/(?<!`)`([^`\n]+)`(?!`)/g)].map(
+          ([, value]) => value,
+        ),
+      ),
+    ].sort();
+  const links = (source: string) =>
+    [...source.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)].map(([, href]) => href);
+  for (const [slug, fenceDigest, tokenDigest] of originals) {
+    const route = `/guide/formatter-${slug}`;
+    const english = content("en", route);
+    const japanese = content("ja", route);
+    assert.equal(
+      retained.get(`guide/formatter-${slug}.md`),
+      japanese,
+      `${slug}: entire reviewed input`,
+    );
+    assert.equal(
+      digest(fences(english).join("\n")),
+      fenceDigest,
+      `${slug}: frozen original complete recipes`,
+    );
+    assert.deepEqual(fences(japanese), fences(english), `${slug}: byte-exact translated recipes`);
+    assert.equal(
+      digest(JSON.stringify(tokens(english))),
+      tokenDigest,
+      `${slug}: frozen original inline contracts`,
+    );
+    assert.deepEqual(
+      tokens(japanese),
+      tokens(english),
+      `${slug}: all original options and raw examples`,
+    );
+    assert.deepEqual(links(japanese), links(english), `${slug}: complete ordered destinations`);
+    for (const href of links(japanese)) {
+      assert.ok(!href.startsWith("/guide/"), `${slug}: retain localized relative navigation`);
+      readFileSync(path.resolve(docsRoot, "content/ja/guide", href));
+    }
+  }
+  assert.match(
+    content("ja", "/guide/formatter-jsx-quotes"),
+    /native Node[^\n]*`jsxSingleQuote` をまだ指定できません/,
+  );
 });

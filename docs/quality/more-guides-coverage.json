@@ -107,33 +107,33 @@
     },
     {
       "route": "/guide/formatter-import-sorting",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Concrete setting and example retained; complete reader-flow review remains pending."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "English purpose, usage choice and descriptive shared-configuration next step added; complete authored Japanese preserves all original examples, defaults, raw-text rules and Node/WASM availability. Regeneration retains the entire reviewed body; fresh native desktop/mobile and deployed reading acceptance remain required."
     },
     {
       "route": "/guide/formatter-indent-width",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Concrete setting and example retained; complete reader-flow review remains pending."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "English purpose, usage choice and descriptive shared-configuration next step added; complete authored Japanese preserves all original examples, defaults, raw-text rules and Node/WASM availability. Regeneration retains the entire reviewed body; fresh native desktop/mobile and deployed reading acceptance remain required."
     },
     {
       "route": "/guide/formatter-jsx-quotes",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Concrete setting and example retained; complete reader-flow review remains pending."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "English purpose, usage choice and descriptive shared-configuration next step added; complete authored Japanese preserves all original examples, defaults, raw-text rules and Node/WASM availability. Regeneration retains the entire reviewed body; fresh native desktop/mobile and deployed reading acceptance remain required."
     },
     {
       "route": "/guide/formatter-line-endings",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Concrete setting and example retained; complete reader-flow review remains pending."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "English purpose, usage choice and descriptive shared-configuration next step added; complete authored Japanese preserves all original examples, defaults, raw-text rules and Node/WASM availability. Regeneration retains the entire reviewed body; fresh native desktop/mobile and deployed reading acceptance remain required."
     },
     {
       "route": "/guide/formatter-property-quotes",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Concrete setting and example retained; complete reader-flow review remains pending."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "English purpose, usage choice and descriptive shared-configuration next step added; complete authored Japanese preserves all original examples, defaults, raw-text rules and Node/WASM availability. Regeneration retains the entire reviewed body; fresh native desktop/mobile and deployed reading acceptance remain required."
     },
     {
       "route": "/guide/init",
