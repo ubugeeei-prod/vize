@@ -10,18 +10,26 @@ outside the application's initial HTML scan and replaces its optimizer
 generation while that gallery is loading. This also blocks configuration
 parent #8398; it is independent of the supplied-slot child-process failures.
 
-Before server startup, register the source gallery's existing eager external
-imports in the resolved client optimizer. Resolve each from the actual gallery
-importer with Vite's existing resolver, preserving the user's Vue alias and
-package-local module identity. Preserve application entry inference, existing
-includes and explicit dependency exclusions. Explicit optimizer disablement,
-build commands and the bundled gallery retain their existing paths. The lazy
-Monaco editor remains lazy; no test navigation, retry or deadline changes.
+Include the real source-gallery HTML entry in the initial client dependency
+scan. This discovers its complete graph under the bare import IDs used by
+browser requests, including the editor's dynamic import. Absolute source-file
+includes were insufficient: Actions
+[38106426042](https://github.com/ubugeeei-prod/vize/actions/runs/38106426042)
+proved that bare Highlight.js/Marked and Monaco imports still caused reloads.
+Preserve existing app entry patterns or explicit build inputs; otherwise retain
+Vite's HTML inference and test/coverage exclusions. Existing includes, package
+exclusions, user aliases and explicit optimizer disablement remain in force.
+Build commands and the bundled gallery keep their existing paths. The Monaco
+editor remains lazy at runtime; no test navigation, retry or deadline changes.
 
-The regression uses a genuinely empty cold app: the original Vite optimizer
-has no dependencies, while the corrected initial optimizer contains every
-actual highlighting module and the explicit user Vue runtime. Separate
-controls retain disablement, package exclusions, existing includes and builds.
+The regression uses a genuinely empty cold app: the original optimizer has no
+dependencies. The corrected real dev server serves its optimized Vue import and
+contains every highlighting module, Marked and Monaco under their browser
+import IDs in that first generation, with no newly discovered dependencies.
+It retains the explicit user Vue runtime, unrelated application HTML discovery,
+default test/coverage exclusions, explicit entry patterns and aliased build
+inputs (including literal glob characters). Separate controls retain optimizer
+disablement, dependency exclusions, existing includes and build behavior.
 Local optimizer/source laws and lint are preparation only. Fresh source and
 unchanged native Self/global/document-identity browser Actions, protected actual
 merge, and any included public-release acceptance remain required. No failed
