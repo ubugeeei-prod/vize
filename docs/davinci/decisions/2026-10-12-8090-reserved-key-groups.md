@@ -89,6 +89,21 @@ from the candidate.
 
 ## Remaining work and delivery
 
+The parent actually merged at `19e8fa700d3c79631166bcaed4e3cfe65dda1903`
+after all five current protected workflows succeeded. Rebase onto main
+`67e3d0e6775cc3a1f29bfb9309d991252f9e75ff` preserves all 64 historical
+fixture files and the reserved-key predicate byte for byte. The incoming
+canonical record remains complete at 350 lines with only owned row 209 added.
+The already merged setup-emits change
+`2284cb1d47009c5d19a4c626e7029d5c22d6bdda` relocated the SFC dispatcher;
+the old full-file source hash correctly refused that new main. Its complete
+failure log and the original API-order authority remain frozen. A separate
+`api-order-main-source-custody.json` pins the five current producer files,
+retains the previous source records, and proves the active rule iterator is
+byte-exact. The moved loop still appends each rule's whole normal/setup results
+before the next rule. Every output vector and its order remains unchanged;
+fresh source and protected qualification are required after this rebase.
+
 The shared descriptor does not expose asyncData and this rule has no
 compiler-owned defineProps provider. Those named false negatives remain
 unfinished; this slice does not add macro shadowing or declaration semantics.

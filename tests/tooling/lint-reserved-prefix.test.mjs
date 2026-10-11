@@ -54,6 +54,9 @@ await test("exact reserved membership and groups preserve complete CLI packets",
   assert.equal(projection.linter.rules[corpus.rule], undefined);
 
   const custodyPaths = [
+    "api-order-successors.json",
+    "api-order-main-source-custody.json",
+    "api-order-main-source-refusal.log.gz",
     "cases.json",
     "originals.json",
     "original-sources.json",
@@ -81,6 +84,7 @@ await test("exact reserved membership and groups preserve complete CLI packets",
       "tests/tooling/lint-default-correctness-reference.mjs",
       "tests/tooling/lint-reserved-prefix.test.mjs",
       "tests/tooling/reserved-prefix-reference.test.mjs",
+      "tests/tooling/reserved-prefix-api-order.test.mjs",
       "tests/differential/build-receipt.ts",
       "tests/_fixtures/n8n-cli-adoption.json",
     ].map((file) => ({ path: file, sha256: sha256(fs.readFileSync(path.join(root, file))) })),
