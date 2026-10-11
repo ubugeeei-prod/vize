@@ -3,6 +3,57 @@
 
 use super::*;
 
+fn parse_error_count(source: &str, source_type: oxc_span::SourceType) -> usize {
+    oxc_parser::Parser::new(&oxc_allocator::Allocator::default(), source, source_type)
+        .parse()
+        .errors
+        .len()
+}
+
+#[test]
+fn original_element_plus_spread_array_keeps_plain_ts_component_checks() {
+    let corpus = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../tests/_fixtures/differential/typechecker/jsx-spread-nested-roots");
+    let source = std::fs::read_to_string(corpus.join("tab-nav.tsx.txt")).unwrap();
+    let before = std::fs::read_to_string(corpus.join("tab-nav.original-h.ts.txt")).unwrap();
+    assert_eq!(parse_error_count(&source, oxc_span::SourceType::tsx()), 0);
+    assert!(parse_error_count(&before, oxc_span::SourceType::ts()) > 0);
+    assert!(before.contains("<TabBar"));
+    let after = generate_jsx_virtual_ts(Path::new("tab-nav.tsx"), &source, JsxLang::Tsx).unwrap();
+    assert_eq!(
+        parse_error_count(&after.code, oxc_span::SourceType::ts()),
+        0
+    );
+    assert!(!after.code.contains("<TabBar"));
+    assert!(after.code.contains("__vize_jsx_component__(TabBar"));
+    for token in ["tabBarRef", "[...props.panes]", "tabRefsMap.value"] {
+        assert!(
+            after.mappings.iter().any(|mapping| {
+                source.get(mapping.src_range.clone()) == Some(token)
+                    && after.code.get(mapping.gen_range.clone()) == Some(token)
+            }),
+            "original component argument {token} must remain mapped"
+        );
+    }
+}
+
+#[test]
+fn spread_nested_callbacks_keep_component_props_and_original_scope() {
+    let source = "const Child = (props: { count: number }) => <span>{props.count}</span>; const view = <div>{...[1].map(item => item ? <Child count={item.toFixed(1)} /> : null)}</div>;";
+    let generated = generate_jsx_virtual_ts(Path::new("Spread.tsx"), source, JsxLang::Tsx).unwrap();
+    assert_eq!(
+        parse_error_count(&generated.code, oxc_span::SourceType::ts()),
+        0
+    );
+    assert!(generated.code.contains("[1].map(item => item ? __vize_jsx"));
+    assert!(generated.code.contains("__vize_jsx_component__(Child"));
+    let token = "item.toFixed(1)";
+    assert!(generated.mappings.iter().any(|mapping| {
+        source.get(mapping.src_range.clone()) == Some(token)
+            && generated.code.get(mapping.gen_range.clone()) == Some(token)
+    }));
+}
+
 #[test]
 fn nested_native_roots_preserve_callback_scope_and_exact_token_maps() {
     let source = "// 日本語 😀\r\nconst view = <Host>{{ content: () => <div>{Array.from({ length: 3 }, (_, i) => <p>{i.toFixed(1)}{(() => <span>{i + 1}</span>)()}</p>)}{(() => <aside>{42}</aside>)()}{String(\"<p>literal</p>\")}</div> }}</Host>;";

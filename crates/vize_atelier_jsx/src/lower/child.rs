@@ -135,6 +135,9 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
 
     /// `{...children}` spreads the value into the children, as JSX does (#6888).
     fn lower_spread_child(&mut self, spread: &JSXSpreadChild<'_>) -> TemplateChildNode<'a> {
+        // Analysis keeps the original array/conditional/callback scope while
+        // Canon replaces each nested JSX root in the copied expression.
+        self.retain_nested_typecheck_roots(&spread.expression);
         if self.uses_babel_vdom_compat() {
             let expression = self.dyn_simple_expr(spread.expression.span());
             let mut compound =
