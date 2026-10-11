@@ -45,7 +45,12 @@ impl<'a> SsrCodegenContext<'a> {
             is_dynamic_component,
             css_vars && !inherit_attrs,
         );
-        let props = self.with_scope_id_prop(props);
+        // createVNode captures the rendering component's scope ID itself.
+        let props = if is_dynamic_component {
+            props
+        } else {
+            self.with_scope_id_prop(props)
+        };
         let props = self.with_fallthrough_attrs(props, inherit_attrs);
 
         if is_dynamic_component {

@@ -1,0 +1,16 @@
+---
+source: crates/vize_atelier_ssr/src/l4/differential_tests/scoped_dynamic.rs
+expression: "std::format!(\"preamble:\\n{}\\ncode:\\n{}\\nmap:{:?}\", result.preamble,\nresult.code, result.map)"
+---
+preamble:
+import { ssrRenderComponent as _ssrRenderComponent, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+import { resolveComponent as _resolveComponent, mergeProps as _mergeProps, normalizeProps as _normalizeProps, guardReactiveProps as _guardReactiveProps } from "vue"
+
+code:
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<div${_ssrRenderAttrs(_attrs)} data-v-control>`)
+  _push(_ssrRenderComponent(_resolveComponent("Foo"), _mergeProps(_mergeProps({ id: "child" }, _normalizeProps(_guardReactiveProps(_ctx.$attrs))), { "data-v-control": "" }), null, _parent))
+  _push(`</div>`)
+}
+
+map:None

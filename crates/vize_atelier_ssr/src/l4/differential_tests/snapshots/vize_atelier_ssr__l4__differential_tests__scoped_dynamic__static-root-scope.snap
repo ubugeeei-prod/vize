@@ -1,0 +1,23 @@
+---
+source: crates/vize_atelier_ssr/src/l4/differential_tests/scoped_dynamic.rs
+expression: "std::format!(\"preamble:\\n{}\\ncode:\\n{}\\nmap:{:?}\", result.preamble,\nresult.code, result.map)"
+---
+preamble:
+import { ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer"
+import { createElementVNode as _createElementVNode, resolveComponent as _resolveComponent, mergeProps as _mergeProps, withCtx as _withCtx } from "vue"
+
+code:
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("NuxtLink"), _mergeProps(_mergeProps({ to: "/news", class: "news__link" }, { "data-v-control": "" }), _attrs), {
+    default: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`<span data-v-control>News</span>`)
+      } else {
+        return [_createElementVNode("span", { "data-v-control": "" }, "News")]
+      }
+    }),
+    _: 1
+  }, _parent))
+}
+
+map:None

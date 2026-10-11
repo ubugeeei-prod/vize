@@ -219,7 +219,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let callee = self.dynamic_callee(attached)?;
         let props =
             self.component_props_with_css_vars(&without_is(attached), css_vars && !inherit)?;
-        let props = self.with_scope_id_prop(props);
+        // createVNode captures the rendering component's scope ID itself.
         let props = self.with_fallthrough_attrs(props, inherit);
         let slots = if component.children.ops.is_empty() {
             "null".to_compact_string()

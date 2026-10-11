@@ -10,6 +10,7 @@
 mod component_fixtures;
 mod control_fixtures;
 mod fixtures;
+mod scoped_dynamic;
 mod slot_fixtures;
 mod ssr_key_boundaries;
 mod vue_align_fixtures;

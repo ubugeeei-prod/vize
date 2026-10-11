@@ -1,0 +1,69 @@
+{
+  "issue": 6880,
+  "sourceRun": 38117641371,
+  "sourceHead": "e23560400b7642e4925c98e6da513b628ce64709",
+  "oracle": {
+    "vue": "3.6.0-alpha.2",
+    "compiler": "3.6.0-alpha.2",
+    "serverRenderer": "3.6.0-alpha.2",
+    "vite": "7.1.5",
+    "pluginVue": "6.0.0"
+  },
+  "originalPackets": {
+    "official": {
+      "sha256": "f8878bff8487147bc77ea89e11cca4fd94270c6e3a7fe612d763869639298dbb"
+    },
+    "native": {
+      "sha256": "fae60b021e8b69f731a7a60c4e5d24278ffd3553383a9d26f65e2a72e6c3aca1"
+    },
+    "identity": {
+      "sha256": "1349b32d983c612f1ae4ac471174e7e11895b29b98ae9269ca20fbb2c9aabd7b"
+    }
+  },
+  "files": {
+    "VFHeading.vue.txt": {
+      "bytes": 1359,
+      "sha256": "b9fb535067387fc7ef37d72d3e09727b84cba72525af074b05c787f2e5ef2738"
+    },
+    "scope.expected.ssr.json": {
+      "bytes": 1448,
+      "sha256": "418e5f4bc92786912b6a227478b168b1d34c301587cf7169268849d83f2abcbd"
+    },
+    "scope.original-failure.ssr.json": {
+      "bytes": 1576,
+      "sha256": "f0b468259c1853bb57242e7d4daee8af401b632cd0e033073da7da60296585d6"
+    }
+  },
+  "workload": {
+    "props": [
+      {},
+      {
+        "id": "anchor"
+      },
+      {
+        "nth": 1
+      },
+      {
+        "nth": 3,
+        "id": "anchor-three"
+      }
+    ],
+    "slots": ["text", "span"],
+    "cases": 8
+  },
+  "observed": {
+    "originalNativeHtmlBytes": 1501,
+    "officialHtmlBytes": 1373,
+    "originalNativeWarnings": [],
+    "officialWarnings": []
+  },
+  "localSourceTest": {
+    "vue": "3.5.35",
+    "serverRenderer": "3.5.35",
+    "assembly": "unchanged public Vite component __scopeId attachment",
+    "before": "original complete expected SSR assertion fails on duplicate dynamic scope",
+    "after": "original complete SSR object equal; zero warnings"
+  },
+  "scope": "only dynamic createVNode explicit scope props; static scope goldens frozen before source changes",
+  "composition": "normal and original whole VueFes checks required on new composed head; no release acceptance credit"
+}
