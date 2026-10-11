@@ -47,9 +47,42 @@ are retained.
 A new observer preflight on the same authenticated public v0.443.0 macOS arm64
 consumer passed both complete original laws and all the above cases, with ten PNGs,
 zero skips and unchanged package files, actual provider and lock. This is separately
-scoped local evidence. The new Linux workflow has not yet executed; its successful
-official run and exact tuple/receipts remain required before recommending #8489
-closed. Historical v0.441.0 aggregate success and v0.442.0 partial success do not
+scoped local evidence; it does not substitute for Linux qualification. Historical v0.441.0 aggregate success and v0.442.0 partial success do not
 transfer to this release or this issue. This gate grants no aggregate release,
 broader VRT update/ownership/tombstone, hosted HTTPS companion, LSP, complete platform
 matrix or broader n8n acceptance credit; #8501 and #8482 retain their own oracles.
+
+Official Linux [run 38159247065](https://github.com/ubugeeei-prod/vize/actions/runs/38159247065)
+completed successfully on actual main observer `67e3d0e6775cc3a1f29bfb9309d991252f9e75ff`
+after [#8681](https://github.com/ubugeeei-prod/vize/pull/8681) actually merged and
+protected [Check 38157570276](https://github.com/ubugeeei-prod/vize/actions/runs/38157570276)
+passed. The independently audited [terminal receipt](./fixtures/8489-public443-literal/literal-linux-audit.json)
+authenticates GitHub artifact `11709144782`, ZIP SHA-256
+`bf63a82c91d1eb78ae0ebc0b486c401353cbeb4721d73dbc1c25c1724d16ea9c`,
+and every one of its 485 files. Six public package archives and all 282 Vize package
+files match their npm integrity and complete installed file sets. The actually
+executed GNU native SHA-256 is
+`39f7d1eea6749af6fb76ad7fd37f70ecc040bee48dd3f59da1e8345dbac9f46f`.
+The final runtime receipt SHA-256 is
+`aaf13d8fd4c9da1c4c954aedb43d0b60b0ce1bbab588b8621788c9d1ba049725`.
+
+Both whole original browser laws passed with zero skips: all five static previews,
+five physical gallery frames, own literal dictionaries and safe script/navigation,
+and Controls2/Keys3 VRT groups. All ten actual PNG observations have five distinct
+initial owners, paths and hashes; every repeated comparison has unchanged paths and
+bytes with zero difference. Original H sources/assertions, reversible adapters,
+providers, lock and observer hashes remain unchanged; complete HTTP/iframe DOM,
+response and JSON/HTML report packets are retained without browser errors.
+The separately audited [original static controls](./fixtures/8489-public443-literal/original-static-linux-audit.json)
+from [run 38153597885](https://github.com/ubugeeei-prod/vize/actions/runs/38153597885)
+retain all eight colon/collision/ordinary previews and Self's six variants through
+three complete globals/Document phases on the **identical** C/H/R and executed
+native digest. This completes #8489's original installed public Linux oracle;
+#8501 and #8482 remain separate and unfinished.
+
+The first [dispatch 38159026112](https://github.com/ubugeeei-prod/vize/actions/runs/38159026112)
+failed before installation because its C input had an extra `e`. The unchanged
+full-SHA guard correctly refused it; the [complete prepare output](./fixtures/8489-public443-literal/failed-C-38159026112.log.txt)
+and authenticated artifact `11709598284` (ZIP SHA-256
+`084555964cd9d62c957fcdd052429422454816005b1da0004b0e160f3ae93297`)
+remain historical input-refusal evidence, without product or browser failure credit.
