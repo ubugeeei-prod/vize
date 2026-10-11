@@ -83,6 +83,11 @@ checks. Focused local Rust tests pass (three tests, including these six runtime
 controls). The actual source-built Vite loader regression is red on the
 unchanged 511d binary and green with the candidate transform.
 
+The first source Check 38151702928 at `5cd97cc2` rejected two unformatted
+Rust re-export declarations. Correct only their formatting and retain this
+failed head. The superseded full-38 dispatch 38151728085 is canceled before
+qualification; a fresh dispatch must authenticate the corrected final head.
+
 Exact final-head Actions, the combined original full-38 qualifier with every
 existing case/retry/ceiling unchanged, the protected Stack prefix, actual merge
 and a later included official release remain required. No failed parent is
