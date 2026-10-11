@@ -108,3 +108,17 @@ changed head. Released acceptance requires a successful official release that
 actually includes the merge and a separately declared installed corpus. The
 failed 0.446 preflight and the older 392-packet installed wrapper confer no
 qualification on this source slice.
+
+After the bare-name parent actually merged at
+`19e8fa700d3c79631166bcaed4e3cfe65dda1903`, the prefix was rebased onto fresh
+main and this child was rebased explicitly from old prefix `83fb46be` onto
+`1f7e61c2fb04fda23d51bd8f58b2e63557a8bc85`. All 40 child fixture files and
+the six-line production mapping remain byte-exact. Canonical incoming clauses
+remain complete at 350 lines. The inherited prefix separately retains its old
+source authority and the initial moved-dispatcher hash refusal, with current
+source custody; no output vector or oracle was changed by either rebase.
+The earlier `c5d22e54` hosted whole CLI packets matched all 169 child, 161 prefix
+and 113 bare observations with full custody (child receipt SHA-256
+`85abe0d58df92086d2a7b3c602fd1a859d2546aaae214bacd4848014ce893dd9`).
+Those earlier process results remain historical; the rebased source and its
+protected queue candidate must qualify independently.
