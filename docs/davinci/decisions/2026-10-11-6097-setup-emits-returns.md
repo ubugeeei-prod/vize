@@ -38,7 +38,12 @@ the public `SfcScriptContext` struct or add a new all-rule forwarding stage.
 Compiler ownership must account for value imports and declarations in both
 blocks, including destructuring and hoisted `var`. Exact unaliased named Vue
 macro imports remain compiler-owned; foreign and local value bindings do not.
-Type-only declarations do not create runtime bindings. Nested calls, ordinary
+Type imports, interfaces, aliases, and ambient declarations do not create
+runtime bindings. Nonambient namespaces remain conservatively treated as
+potential value bindings, including namespaces containing only interfaces or
+aliases. That named false-negative limitation is pinned beside the existing
+value-namespace suppression; namespace runtime-emission analysis is unfinished.
+Nested calls, ordinary
 JavaScript files, inline HTML scripts, unknown or mutable object bindings, and
 type-only `defineEmits` declarations cannot produce validator findings.
 
@@ -48,14 +53,22 @@ This dependent PR is initially a draft; this record is a decision and work
 boundary, not passing implementation evidence. The ready parent can enter the
 protected queue as a native Stack prefix while this extension is qualified.
 
-The implementation now has 42 source-authored positive and negative full
+An external `src` on either script block cannot prove the loaded bindings or
+inline compiler ownership. Only this macro extension receives unavailable
+ownership evidence; existing Options and other-rule dispatch remain unchanged.
+The extension never forces a parse of an external sibling's fallback content.
+
+The implementation now has 51 source-authored positive and negative full
 diagnostic vectors, UTF-8 and sibling offsets, preset and explicit-off controls,
 and legacy fixtures. The separately retained authenticated public v0.443.0
 baseline matches every complete before vector. Existing import-macro and local
 reference findings remain in the vectors; following a setup const does not make
 that forbidden hoisted reference valid. Source-build CLI Actions execute the
-same cases across seven routes (294 packets) and preserve the original 51-rule
+same cases across seven routes (357 packets) and preserve the original 51-rule
 n8n projection. A namesake configured rule exercises its unchanged SFC dispatch.
+The original 42 complete vectors remain unchanged; nine review controls cover
+external blocks, module-chain scope, Vue alias calls, mixed type/runtime
+arguments, constant cycles, and the conservative namespace limitation.
 
 The conservative byte escape candidate also admits the existing Options
 producer's escaped `emits` key; an explicit legacy fixture records this restored

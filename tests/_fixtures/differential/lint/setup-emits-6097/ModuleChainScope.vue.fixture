@@ -1,0 +1,1 @@
+<script>const base = { submit(payload) { void payload } }; const validators = base;</script><script setup>const base = { submit(payload) { return !!payload } }; const emit = defineEmits(validators)</script>

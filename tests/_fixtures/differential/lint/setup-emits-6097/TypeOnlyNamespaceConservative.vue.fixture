@@ -1,0 +1,2 @@
+<script setup lang="ts">namespace defineEmits { export interface Payload { text: string } }
+const emit = defineEmits({ submit(payload) { void payload } })</script>

@@ -1,0 +1,1 @@
+<script setup>import { defineEmits as makeEmits } from "vue"; const emit = makeEmits({ submit(payload) { void payload } })</script>

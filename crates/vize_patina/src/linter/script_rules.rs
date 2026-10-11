@@ -170,7 +170,19 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
             })
         })
         .and_then(|entry| resolved_rule(linter, entry).as_setup_emits_validator());
-    let needs_emits_module = emits_setup_rule.is_some()
+    // An external block's content cannot establish its loaded bindings. Keep
+    // ordinary rule dispatch unchanged, but never infer macro ownership from
+    // parsing an empty external sibling or a fallback setup body.
+    let inline_emits_blocks = descriptor
+        .script
+        .as_ref()
+        .is_none_or(|block| block.src.is_none())
+        && descriptor
+            .script_setup
+            .as_ref()
+            .is_none_or(|block| block.src.is_none());
+    let needs_emits_module = inline_emits_blocks
+        && emits_setup_rule.is_some()
         && script_setup_parsed.as_ref().is_some_and(|parsed| {
             !parsed.panicked
                 && parsed.diagnostics.is_empty()
@@ -189,9 +201,12 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
                 Parser::new(&script_alloc, source, script_source_type()).parse()
             )
         });
-    let emits_module = match (script_source, script_parsed.as_ref()) {
-        (None, _) => EmitsModuleScript::Absent,
-        (Some((_, offset)), Some(parsed)) if !parsed.panicked && parsed.diagnostics.is_empty() => {
+    let emits_module = match (inline_emits_blocks, script_source, script_parsed.as_ref()) {
+        (false, _, _) => EmitsModuleScript::Unavailable,
+        (true, None, _) => EmitsModuleScript::Absent,
+        (true, Some((_, offset)), Some(parsed))
+            if !parsed.panicked && parsed.diagnostics.is_empty() =>
+        {
             EmitsModuleScript::Parsed {
                 program: &parsed.program,
                 offset,

@@ -1,0 +1,4 @@
+<script src="./foreign.ts"></script>
+<script setup lang="ts">
+const emit = defineEmits({ submit(payload) { void payload } })
+</script>

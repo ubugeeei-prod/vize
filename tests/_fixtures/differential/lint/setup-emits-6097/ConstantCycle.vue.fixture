@@ -1,0 +1,1 @@
+<script>const first = second; const second = first;</script><script setup>const emit = defineEmits(first)</script>

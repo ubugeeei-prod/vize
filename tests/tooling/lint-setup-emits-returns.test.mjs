@@ -15,7 +15,7 @@ await test("setup emits validators preserve compiler ownership and complete CLI 
   const projection = JSON.parse(
     fs.readFileSync(path.join(root, "tests/_fixtures/n8n-cli-adoption.json"), "utf8"),
   );
-  assert.equal(corpus.cases.length, 42);
+  assert.equal(corpus.cases.length, 51);
   assert.equal(Object.keys(projection.linter.rules).length, 51);
   for (const rule of corpus.rules) assert.equal(projection.linter.rules[rule], undefined);
   const artifact = path.join(root, "target/differential/lint-setup-emits.json");
@@ -115,7 +115,7 @@ await test("setup emits validators preserve compiler ownership and complete CLI 
       }
       fs.unlinkSync(file);
     }
-    assert.equal(evidence.runs.length, 294);
+    assert.equal(evidence.runs.length, 357);
   } finally {
     persist();
     fs.rmSync(directory, { recursive: true, force: true });

@@ -12,7 +12,7 @@
     "status": "observed-separate-receipt",
     "scope": "Setup runtime validators and escaped Options keys are absent from the public producer/gate; existing unrelated diagnostics remain in beforeDiagnostics.",
     "receipt": "original-public-baseline.json.gz",
-    "receiptSha256": "c1a0003f4cd908706b38a130b01690f0edf433fba26492483812ff9b9e0cd053"
+    "receiptSha256": "be4057f62219c321c53aeda61f12ef13b52c5fdd2f7fae1c14d2f1f9fe4c47a0"
   },
   "cases": [
     {
@@ -875,6 +875,222 @@
           "fix": null
         }
       ],
+      "beforeDiagnostics": [],
+      "disabledDiagnostics": [],
+      "projectionDiagnostics": []
+    },
+    {
+      "id": "external-normal-empty",
+      "filename": "ExternalNormalEmpty.vue",
+      "source": "<script src=\"./foreign.ts\"></script>\n<script setup lang=\"ts\">\nconst emit = defineEmits({ submit(payload) { void payload } })\n</script>\n",
+      "sourceSha256": "3276bdb5c9083258e829f6303772d5f1e2f4c2bcd3593fa47dff30c91348afea",
+      "rationale": "An empty external normal block cannot prove absence of imported or local macro bindings.",
+      "diagnostics": [],
+      "beforeDiagnostics": [],
+      "disabledDiagnostics": [],
+      "projectionDiagnostics": []
+    },
+    {
+      "id": "external-normal-body",
+      "filename": "ExternalNormalBody.vue",
+      "source": "<script src=\"./foreign.ts\">const validators = { submit(payload) { void payload } }</script>\n<script setup lang=\"ts\">\nconst emit = defineEmits(validators)\n</script>\n",
+      "sourceSha256": "16a8ecb97bb19f3d393faa2011eecf1bc3f1aea728878792f82a2fcb3e6211dc",
+      "rationale": "Fallback content of an external normal block cannot resolve the loaded validator binding.",
+      "diagnostics": [],
+      "beforeDiagnostics": [],
+      "disabledDiagnostics": [],
+      "projectionDiagnostics": []
+    },
+    {
+      "id": "external-setup-body",
+      "filename": "ExternalSetupBody.vue",
+      "source": "<script setup src=\"./foreign.ts\">\nconst emit = defineEmits({ submit(payload) { void payload } })\n</script>\n",
+      "sourceSha256": "6cc4548c8e6d809dee59a5068e9c301ce724f9b2cb45519270038bcea9c1e40a",
+      "rationale": "An external setup body does not establish compiler-owned inline macro execution.",
+      "diagnostics": [],
+      "beforeDiagnostics": [],
+      "disabledDiagnostics": [],
+      "projectionDiagnostics": []
+    },
+    {
+      "id": "external-setup-options-control",
+      "filename": "ExternalSetupOptionsControl.vue",
+      "source": "<script>\nexport default { emits: { submit: function (payload) { void payload } } }\n</script>\n<script setup src=\"./foreign.ts\">\nconst emit = defineEmits({ submit(payload) { void payload } })\n</script>\n",
+      "sourceSha256": "d66a8c738ef02396309a18621f3aec8ceca3447b916765ab4fc3ac6b556b0c72",
+      "rationale": "Unavailable setup ownership suppresses only the new macro extension; the already admitted Options validator and whole diagnostic remain.",
+      "diagnostics": [
+        {
+          "rule_name": "script/return-in-emits-validator",
+          "severity": "error",
+          "message": "Expected to return a boolean value in this emits validator.",
+          "start": 43,
+          "end": 78,
+          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "labels": [
+            {
+              "message": "emits validator without a return value",
+              "start": 43,
+              "end": 78
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeDiagnostics": [
+        {
+          "rule_name": "script/return-in-emits-validator",
+          "severity": "error",
+          "message": "Expected to return a boolean value in this emits validator.",
+          "start": 43,
+          "end": 78,
+          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "labels": [
+            {
+              "message": "emits validator without a return value",
+              "start": 43,
+              "end": 78
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "disabledDiagnostics": [],
+      "projectionDiagnostics": []
+    },
+    {
+      "id": "module-chain-scope",
+      "filename": "ModuleChainScope.vue",
+      "source": "<script>const base = { submit(payload) { void payload } }; const validators = base;</script><script setup>const base = { submit(payload) { return !!payload } }; const emit = defineEmits(validators)</script>",
+      "sourceSha256": "c9954257e2505e6914b2b98c186a10f07733382fd3a3ff2b90eae3a528457b13",
+      "rationale": "A normal-module initializer resolves its chain in normal-module scope despite a same-name setup base.",
+      "diagnostics": [
+        {
+          "rule_name": "script/return-in-emits-validator",
+          "severity": "error",
+          "message": "Expected to return a boolean value in this emits validator.",
+          "start": 29,
+          "end": 55,
+          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "labels": [
+            {
+              "message": "emits validator without a return value",
+              "start": 29,
+              "end": 55
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeDiagnostics": [],
+      "disabledDiagnostics": [],
+      "projectionDiagnostics": []
+    },
+    {
+      "id": "vue-macro-alias-call",
+      "filename": "VueMacroAliasCall.vue",
+      "source": "<script setup>import { defineEmits as makeEmits } from \"vue\"; const emit = makeEmits({ submit(payload) { void payload } })</script>",
+      "sourceSha256": "68a1aa7534f80493a5575764baebd10995384d6cf2a60f93062cfdc6c9cadb47",
+      "rationale": "An aliased Vue import call is not the bare compiler macro; retain the existing import finding.",
+      "diagnostics": [
+        {
+          "rule_name": "script/no-import-compiler-macros",
+          "severity": "error",
+          "message": "Do not import 'defineEmits' - compiler macros are automatically available in <script setup>",
+          "start": 23,
+          "end": 34,
+          "help": "Remove the macro from the import statement. Compiler macros are auto-imported.",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "beforeDiagnostics": [
+        {
+          "rule_name": "script/no-import-compiler-macros",
+          "severity": "error",
+          "message": "Do not import 'defineEmits' - compiler macros are automatically available in <script setup>",
+          "start": 23,
+          "end": 34,
+          "help": "Remove the macro from the import statement. Compiler macros are auto-imported.",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "disabledDiagnostics": [
+        {
+          "rule_name": "script/no-import-compiler-macros",
+          "severity": "error",
+          "message": "Do not import 'defineEmits' - compiler macros are automatically available in <script setup>",
+          "start": 23,
+          "end": 34,
+          "help": "Remove the macro from the import statement. Compiler macros are auto-imported.",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "projectionDiagnostics": []
+    },
+    {
+      "id": "mixed-type-runtime-control",
+      "filename": "MixedTypeRuntimeControl.vue",
+      "source": "<script setup lang=\"ts\">const emit = defineEmits<{ submit: [payload: string] }>({ submit(payload) { void payload } })</script>",
+      "sourceSha256": "c1c10be82f6f924b6d211fdee02350f4758fef0122bd7743e8641e6c7873c77f",
+      "rationale": "Mixed type and runtime arguments retain the existing validity finding without a new validator finding.",
+      "diagnostics": [
+        {
+          "rule_name": "script/valid-define-emits",
+          "severity": "error",
+          "message": "defineEmits() cannot accept both a type argument and a runtime argument.",
+          "start": 37,
+          "end": 117,
+          "help": "Declare emitted events either with the type argument (`defineEmits<{ change: [id: number] }>()`) or with a runtime argument (`defineEmits(['change'])`), not both.",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "beforeDiagnostics": [
+        {
+          "rule_name": "script/valid-define-emits",
+          "severity": "error",
+          "message": "defineEmits() cannot accept both a type argument and a runtime argument.",
+          "start": 37,
+          "end": 117,
+          "help": "Declare emitted events either with the type argument (`defineEmits<{ change: [id: number] }>()`) or with a runtime argument (`defineEmits(['change'])`), not both.",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "disabledDiagnostics": [
+        {
+          "rule_name": "script/valid-define-emits",
+          "severity": "error",
+          "message": "defineEmits() cannot accept both a type argument and a runtime argument.",
+          "start": 37,
+          "end": 117,
+          "help": "Declare emitted events either with the type argument (`defineEmits<{ change: [id: number] }>()`) or with a runtime argument (`defineEmits(['change'])`), not both.",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "projectionDiagnostics": []
+    },
+    {
+      "id": "constant-cycle",
+      "filename": "ConstantCycle.vue",
+      "source": "<script>const first = second; const second = first;</script><script setup>const emit = defineEmits(first)</script>",
+      "sourceSha256": "786019376df9a714c8e39a07f05eed002065a91e555912c569e10c5a096a95c5",
+      "rationale": "A normal-module constant cycle terminates without evaluating or inventing a validator.",
+      "diagnostics": [],
+      "beforeDiagnostics": [],
+      "disabledDiagnostics": [],
+      "projectionDiagnostics": []
+    },
+    {
+      "id": "type-only-namespace-conservative",
+      "filename": "TypeOnlyNamespaceConservative.vue",
+      "source": "<script setup lang=\"ts\">namespace defineEmits { export interface Payload { text: string } }\nconst emit = defineEmits({ submit(payload) { void payload } })</script>",
+      "sourceSha256": "5384856041c2283a6dba65646c9a9fd72924ef91ccbcd197037263d4381c0699",
+      "rationale": "Named limitation: nonambient namespaces remain conservatively treated as potential value bindings even when their contents are type-only; no new finding is claimed.",
+      "diagnostics": [],
       "beforeDiagnostics": [],
       "disabledDiagnostics": [],
       "projectionDiagnostics": []

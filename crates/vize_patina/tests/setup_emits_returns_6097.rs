@@ -23,7 +23,7 @@ fn setup_emits_return_checks_preserve_owned_macros_and_sibling_offsets() {
     ))
     .unwrap();
     let cases = corpus["cases"].as_array().unwrap();
-    assert_eq!(cases.len(), 42);
+    assert_eq!(cases.len(), 51);
     let rules = corpus["rules"].as_array().unwrap();
     let disabled = rules
         .iter()
