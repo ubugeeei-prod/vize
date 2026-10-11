@@ -5,7 +5,10 @@ import os from "node:os";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { test } from "node:test";
-import { validateCiRequest } from "../../npm/native/scripts/formatter-history-ci-request.mjs";
+import {
+  ciRequestPath,
+  validateCiRequest,
+} from "../../npm/native/scripts/formatter-history-ci-request.mjs";
 import {
   ciBuildCommand,
   validateCiBuildCommand,
@@ -120,6 +123,30 @@ function scratch(run) {
     fs.rmSync(directory, { recursive: true, force: true });
   }
 }
+void test("a capture request cannot silently select ordinary build mode when Task removes the flag", () =>
+  scratch((nativeDir) => {
+    // Missing native source/host authority must stop before either controlled process.
+    const file = ciRequestPath(nativeDir);
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, "{}\n");
+    const previous = process.env.VIZE_NATIVE_CI_FORMATTER_HISTORY;
+    delete process.env.VIZE_NATIVE_CI_FORMATTER_HISTORY;
+    let count = 0;
+    try {
+      assert.throws(() =>
+        runCiBuild(nativeDir, {
+          run: () => {
+            count++;
+            return { status: 0 };
+          },
+        }),
+      );
+      assert.equal(count, 0, "a request requires strict admission before native execution");
+    } finally {
+      if (previous === undefined) delete process.env.VIZE_NATIVE_CI_FORMATTER_HISTORY;
+      else process.env.VIZE_NATIVE_CI_FORMATTER_HISTORY = previous;
+    }
+  }));
 void test("only the two actual generated outputs can differ; debug clean-source gate stays strict", () =>
   scratch((root) => {
     const files = {

@@ -122,7 +122,14 @@ lock data, dependency versions and integrity hashes remain unchanged.
 Fresh `npm ci` fails before this generator correction and installs all 676
 packages afterward. The original alpha.2 compiler/runtime lock is unchanged.
 The typed-lint failure in the stream-custody control is corrected with named
-records, preserving both full stream checks. Fourteen admission controls and
+records, preserving both full stream checks. Fifteen admission controls and
 the complete original-app source bridge pass locally. These repairs qualify
 preparation only; actual full-app cascade repair still requires source proof
 and the unchanged original 38-case Actions verdict.
+
+A bounded before/after control uses the complete frozen `0dd6a7b` wrapper
+and corrected wrapper with the flag absent and an invalid request present.
+The old wrapper silently invokes both controlled process callbacks; the
+corrected wrapper rejects admission before either callback. No native process
+executes in this control. Its regression belongs to the original tooling
+suite and prevents a file-based request from falling back to ordinary mode.
