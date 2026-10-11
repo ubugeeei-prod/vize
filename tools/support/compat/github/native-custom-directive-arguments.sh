@@ -7,7 +7,7 @@ export VIZE_TEST_REQUIRE_TSGO=1
 capture="$RUNNER_TEMP/native-source-recipe-custom-directive-arguments"
 mkdir -p "$capture"
 cd "$NATIVE_PHASE_SOURCE_ROOT"
-baseline=006c564067bacd05be9eac5660e34992e0bdabe8
+baseline=67e3d0e6775cc3a1f29bfb9309d991252f9e75ff
 git cat-file -e "$baseline^{commit}" || git fetch --no-tags origin "$baseline"
 paths=(
   crates/vize_canon/src/virtual_ts/expressions/directive_values.rs

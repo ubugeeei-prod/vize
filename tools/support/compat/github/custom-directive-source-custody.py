@@ -76,7 +76,7 @@ for path in production - expected.keys():
     assert not Path(path).exists(), path
 driver = [member(path, after[path]) for path in sorted(changed & neutral)]
 packet = {
-    "label": "006c564 production + candidate neutral test driver" if phase == "baseline"
+    "label": f"{baseline[:7]} production + candidate neutral test driver" if phase == "baseline"
              else "candidate production + candidate neutral test driver",
     "baseline": baseline, "candidate": candidate, "productionDelta": sorted(production),
     "compiledSourceManifest": compiled, "neutralDriverManifest": driver,
