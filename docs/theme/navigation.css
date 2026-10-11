@@ -66,6 +66,11 @@ body:not(.entry-page) summary.nav-title:focus-visible {
   overflow-wrap: normal;
 }
 
+.content table code:not(pre code) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 .content pre {
   max-width: 100%;
   overflow-x: auto;

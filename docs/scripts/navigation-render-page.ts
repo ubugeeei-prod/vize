@@ -10,6 +10,7 @@ import {
   switchDocsTheme,
 } from "./theme-render-assertions.ts";
 import { verifyCommandTabs } from "./command-tab-render-assertions.ts";
+import { verifyTableCodeReadability } from "./table-code-render-assertions.ts";
 import type { MeasureRenderPhase, RenderJob } from "./navigation-render-concurrency.ts";
 
 type FontUsage = { familyName: string; glyphCount: number };
@@ -50,6 +51,7 @@ function readPageMetrics() {
   };
 }
 export type RouteReceipt = ReturnType<typeof readPageMetrics> & {
+  tableCode: Awaited<ReturnType<typeof verifyTableCodeReadability>>;
   codeContrast: Awaited<ReturnType<typeof verifyThemeReadability>>;
   route: string;
   device: string;
@@ -159,6 +161,7 @@ export async function verifyNavigationRenderJob(
     return japaneseFonts;
   });
   const metrics = await phase("metrics", () => page.evaluate(readPageMetrics));
+  const tableCode = await phase("table-code", () => verifyTableCodeReadability(page, route));
   await phase("navigation-assertions", async () => {
     await verifyIntroductoryNavigation(page, route);
     await verifySidebarMotion(page, device);
@@ -290,6 +293,7 @@ export async function verifyNavigationRenderJob(
     return themeScreenshots;
   });
   return {
+    tableCode,
     route,
     device,
     screenshot,

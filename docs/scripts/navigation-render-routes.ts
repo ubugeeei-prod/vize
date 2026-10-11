@@ -18,6 +18,7 @@ export const navigationRenderRoutes = [
     `${locale}/philosophy`,
     `${locale}/guide/content-mapper`,
     `${locale}/guide/testing`,
+    `${locale}/guide/jsx-babel-compat`,
   ]),
   "/zh-CN/getting-started",
   "/pt-BR/getting-started",
