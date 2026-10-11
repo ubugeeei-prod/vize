@@ -1,0 +1,3 @@
+<script setup lang="ts">
+const emit = defineEmits?.({ submit(payload) { void payload } })
+</script>

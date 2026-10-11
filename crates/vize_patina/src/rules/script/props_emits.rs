@@ -25,4 +25,4 @@ pub use require_explicit_emits::RequireExplicitEmits;
 pub use require_prop_types::RequirePropTypes;
 pub use require_typed_object_prop::RequireTypedObjectProp;
 pub use require_valid_default_prop::RequireValidDefaultProp;
-pub use return_in_emits_validator::ReturnInEmitsValidator;
+pub use return_in_emits_validator::{EmitsModuleScript, ReturnInEmitsValidator};

@@ -1,5 +1,8 @@
 use super::{LintResult, Linter, severity::append_with_rule_overrides};
-use crate::rules::script::{ScriptLintResult, SfcScriptContext, script_source_type};
+use crate::rules::script::{
+    EmitsModuleScript, ReturnInEmitsValidator, ScriptLintResult, SfcScriptContext,
+    script_source_type,
+};
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use vize_atelier_sfc::{SfcDescriptor, SfcParseOptions, parse_sfc};
@@ -11,6 +14,9 @@ mod prefilter;
 mod registry;
 mod template_context;
 
+#[cfg(test)]
+mod setup_emits_dispatch_tests;
+
 use html_scripts::extract_inline_scripts;
 use prefilter::{
     descriptor_scripts_may_match_ecosystem_rule, has_only_active_ecosystem_script_rules,
@@ -19,7 +25,7 @@ use prefilter::{
 pub use registry::BuiltinScriptRuleMeta;
 use registry::{
     ALL_BUILTIN_SCRIPT_RULE_NAMES, BUILTIN_SCRIPT_RULES, BuiltinScriptRuleEntry,
-    RULE_NO_GET_CURRENT_INSTANCE,
+    RULE_NO_GET_CURRENT_INSTANCE, RULE_RETURN_IN_EMITS_VALIDATOR,
 };
 
 #[cfg(test)]
@@ -126,26 +132,13 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
 
     // Parse each block at most once and only when an active AST rule could
     // match it. Byte rules run directly against the source.
-    let script = descriptor
+    let script_source = descriptor
         .script
         .as_ref()
-        .map(|block| (block.content.as_ref(), block.loc.start))
-        .filter(|(source, _)| {
-            block_has_active_rule(linter, vapor_component, source, result.filename.as_str())
-        });
-    let script_alloc = Allocator::default();
-    let script_parsed = script
-        .filter(|(source, _)| {
-            block_has_active_ast_rule(linter, vapor_component, source, result.filename.as_str())
-        })
-        .map(|(source, _)| {
-            let parsed = profile!(
-                "patina.script_rule.parse",
-                Parser::new(&script_alloc, source, script_source_type()).parse()
-            );
-            parsed
-        });
-
+        .map(|block| (block.content.as_ref(), block.loc.start));
+    let script = script_source.filter(|(source, _)| {
+        block_has_active_rule(linter, vapor_component, source, result.filename.as_str())
+    });
     let script_setup = descriptor
         .script_setup
         .as_ref()
@@ -165,6 +158,47 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
             );
             parsed
         });
+
+    // Only the actual active return-validator rule can request normal-script
+    // ownership evidence. Other rules retain their existing dispatch and parse
+    // conditions. Inspect the shared setup AST before forcing a sibling parse.
+    let emits_setup_rule = active_builtin_script_rule_entries(linter, vapor_component)
+        .find(|entry| entry.rule_name == RULE_RETURN_IN_EMITS_VALIDATOR)
+        .filter(|entry| {
+            script_setup.is_some_and(|(source, _)| {
+                entry_may_match(linter, entry, source, result.filename.as_str())
+            })
+        })
+        .and_then(|entry| resolved_rule(linter, entry).as_setup_emits_validator());
+    let needs_emits_module = emits_setup_rule.is_some()
+        && script_setup_parsed.as_ref().is_some_and(|parsed| {
+            !parsed.panicked
+                && parsed.diagnostics.is_empty()
+                && ReturnInEmitsValidator::setup_needs_module(&parsed.program)
+        });
+    let script_alloc = Allocator::default();
+    let script_parsed = script_source
+        .filter(|(source, _)| {
+            needs_emits_module || {
+                block_has_active_ast_rule(linter, vapor_component, source, result.filename.as_str())
+            }
+        })
+        .map(|(source, _)| {
+            profile!(
+                "patina.script_rule.parse",
+                Parser::new(&script_alloc, source, script_source_type()).parse()
+            )
+        });
+    let emits_module = match (script_source, script_parsed.as_ref()) {
+        (None, _) => EmitsModuleScript::Absent,
+        (Some((_, offset)), Some(parsed)) if !parsed.panicked && parsed.diagnostics.is_empty() => {
+            EmitsModuleScript::Parsed {
+                program: &parsed.program,
+                offset,
+            }
+        }
+        _ => EmitsModuleScript::Unavailable,
+    };
 
     // Share raw template text and the validated AST with rules that correlate
     // script declarations and template evidence.
@@ -202,6 +236,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
                 offset,
                 script_parsed.as_ref(),
                 sfc_context,
+                None,
                 result,
             );
         }
@@ -217,6 +252,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
                     is_script_setup: true,
                     ..sfc_context
                 },
+                emits_setup_rule.map(|_| emits_module),
                 result,
             );
         }
@@ -290,6 +326,7 @@ fn run_builtin_script_rule(
     offset: usize,
     parsed: Option<&oxc_parser::ParserReturn<'_>>,
     sfc: SfcScriptContext<'_>,
+    emits_module: Option<EmitsModuleScript<'_>>,
     result: &mut LintResult,
 ) {
     if !entry_may_match(linter, entry, source, result.filename.as_str()) {
@@ -303,10 +340,27 @@ fn run_builtin_script_rule(
         if parsed.panicked || !parsed.diagnostics.is_empty() {
             return;
         }
-        profile!(
-            entry.profile_name,
-            rule.check_program_with_sfc(&parsed.program, source, offset, sfc, &mut lint)
-        );
+        if let Some(module) =
+            emits_module.filter(|_| entry.rule_name == RULE_RETURN_IN_EMITS_VALIDATOR)
+        {
+            if let Some(rule) = rule.as_setup_emits_validator() {
+                profile!(
+                    entry.profile_name,
+                    rule.check_setup_with_module(
+                        &parsed.program,
+                        source,
+                        offset,
+                        module,
+                        &mut lint
+                    )
+                );
+            }
+        } else {
+            profile!(
+                entry.profile_name,
+                rule.check_program_with_sfc(&parsed.program, source, offset, sfc, &mut lint)
+            );
+        }
     } else {
         profile!(entry.profile_name, rule.check(source, offset, &mut lint));
     }
@@ -371,6 +425,7 @@ pub(crate) fn append_builtin_script_rules_for_source(
             offset,
             parsed.as_ref(),
             SfcScriptContext::default(),
+            None,
             result,
         );
     }

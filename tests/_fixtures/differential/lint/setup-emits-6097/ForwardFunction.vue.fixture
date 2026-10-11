@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const emit = defineEmits({ submit(payload) { void payload } })
+function defineEmits(value) { return value }
+</script>

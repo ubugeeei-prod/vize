@@ -1,0 +1,6 @@
+<script setup lang="ts">
+const emit = defineEmits(validators)
+</script>
+<script lang="ts">
+const validators = { submit(payload) { void payload } }
+</script>

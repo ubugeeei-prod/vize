@@ -1,0 +1,6 @@
+<script lang="ts">
+const validators = { submit(payload) { void payload } };
+</script>
+<script setup lang="ts">
+let validators = remote; const emit = defineEmits(validators)
+</script>

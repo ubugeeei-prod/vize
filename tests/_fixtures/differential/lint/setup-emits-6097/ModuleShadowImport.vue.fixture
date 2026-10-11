@@ -1,0 +1,6 @@
+<script lang="ts">
+import { defineEmits } from "./foreign"
+</script>
+<script setup lang="ts">
+const emit = defineEmits({ submit(payload) { void payload } })
+</script>

@@ -78,6 +78,7 @@ use crate::diagnostic::{LintDiagnostic, Severity};
 use vize_l0::profile;
 
 pub use exports::*;
+pub use props_emits::EmitsModuleScript;
 pub use sfc_context::SfcScriptContext;
 
 /// Metadata for a script-level rule
@@ -184,6 +185,12 @@ pub trait ScriptRule: Send + Sync {
 
     /// Actual configured native SFC capability; default refusal prevents namesake admission.
     fn as_native_sfc_setup_rule(&self) -> Option<&dyn crate::native::sfc::NativeSfcSetupRule> {
+        None
+    }
+
+    /// Actual return-validator capability. Namesake configured rules preserve
+    /// their existing dispatch and cannot request a sibling-module parse.
+    fn as_setup_emits_validator(&self) -> Option<&ReturnInEmitsValidator> {
         None
     }
 

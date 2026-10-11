@@ -72,7 +72,12 @@ pub(super) fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
         RULE_RETURN_IN_EMITS_VALIDATOR => {
             // Method shorthand and trivia before an arrow body have no fixed
             // function spelling. The existing AST producer owns that decision.
-            source_may_declare_emits(bytes) && contains(bytes, b"{")
+            // Setup calls can refer to a normal-script const without a brace
+            // in this block. Escaped identifiers are decoded by the AST; the
+            // conservative escape candidate never proves macro ownership.
+            contains(bytes, b"defineEmits")
+                || contains(bytes, b"\\u")
+                || (source_may_declare_emits(bytes) && contains(bytes, b"{"))
         }
         RULE_REQUIRE_VALID_DEFAULT_PROP => {
             source_may_declare_props(bytes)

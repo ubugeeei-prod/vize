@@ -8,7 +8,11 @@ this runtime validator, even though it has no value-returning return:
 
 ```vue
 <script setup lang="ts">
-const emit = defineEmits({ submit(payload) { void payload } })
+const emit = defineEmits({
+  submit(payload) {
+    void payload;
+  },
+});
 </script>
 ```
 
@@ -44,9 +48,22 @@ This dependent PR is initially a draft; this record is a decision and work
 boundary, not passing implementation evidence. The ready parent can enter the
 protected queue as a native Stack prefix while this extension is qualified.
 
-Before the child is ready: add source-authored positive and negative full
-diagnostic vectors, UTF-8 and sibling offsets, explicit-off and preset controls,
-legacy fixtures, and source-build CLI evidence on Actions. Preserve the existing
-corpus and instruction gates. Public installed acceptance requires a successful
-official release that includes the actual merged change. #6097 and broader
-default-linter coverage remain unfinished until their remaining scope is proven.
+The implementation now has 42 source-authored positive and negative full
+diagnostic vectors, UTF-8 and sibling offsets, preset and explicit-off controls,
+and legacy fixtures. The separately retained authenticated public v0.443.0
+baseline matches every complete before vector. Existing import-macro and local
+reference findings remain in the vectors; following a setup const does not make
+that forbidden hoisted reference valid. Source-build CLI Actions execute the
+same cases across seven routes (294 packets) and preserve the original 51-rule
+n8n projection. A namesake configured rule exercises its unchanged SFC dispatch.
+
+The conservative byte escape candidate also admits the existing Options
+producer's escaped `emits` key; an explicit legacy fixture records this restored
+finding. It never establishes ownership itself. Escaped identifier spelling is
+decoded by the shared AST. The unrelated computed-name prefilter is unchanged.
+
+Local package compilation and the two integration tests passed. Exact-head
+Actions and protected corpus/instruction gates remain required. Public installed
+acceptance requires a successful official release that includes the actual
+merged change. #6097 and broader default-linter coverage remain unfinished until
+their remaining scope is proven.
