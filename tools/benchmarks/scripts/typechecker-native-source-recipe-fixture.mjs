@@ -150,6 +150,7 @@ export function commit(root) {
 }
 export function fixture(run, { workflow } = {}) {
   const root = mkdtempSync(join(os.tmpdir(), "native-source-recipe-"));
+  let pending = false;
   try {
     git(root, "init", "--initial-branch=main");
     git(root, "config", "user.name", "Recipe control");
@@ -204,7 +205,7 @@ export function fixture(run, { workflow } = {}) {
       GITHUB_WORKFLOW_SHA: source,
       GITHUB_WORKFLOW_REF: `ubugeeei-prod/vize/${WORKFLOW}@refs/pull/8249/merge`,
     };
-    run({
+    const result = run({
       root,
       cut,
       source,
@@ -214,7 +215,12 @@ export function fixture(run, { workflow } = {}) {
       permission: { role_name: "maintain" },
       parse,
     });
+    if (result?.then) {
+      pending = true;
+      return result.finally(() => rmSync(root, { recursive: true, force: true }));
+    }
+    return result;
   } finally {
-    rmSync(root, { recursive: true, force: true });
+    if (!pending) rmSync(root, { recursive: true, force: true });
   }
 }
