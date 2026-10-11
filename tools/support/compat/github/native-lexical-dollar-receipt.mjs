@@ -140,15 +140,15 @@ export function validateLexicalDollarPackets(root) {
   const packets = fs
     .readdirSync(path.join(root, "native"))
     .filter((name) => name.endsWith("-native-cli.json"))
-    .sort();
+    .sort((a, b) => a.localeCompare(b));
   assert.deepEqual(
-    fs.readdirSync(path.join(root, "native")).sort(),
-    [...packets, "normal-batch-results.json"].sort(),
+    fs.readdirSync(path.join(root, "native")).sort((a, b) => a.localeCompare(b)),
+    [...packets, "normal-batch-results.json"].sort((a, b) => a.localeCompare(b)),
   );
-  assert.deepEqual(fs.readdirSync(path.join(root, "producer")).sort(), [
-    "producer-scopes-false.json",
-    "producer-scopes-true.json",
-  ]);
+  assert.deepEqual(
+    fs.readdirSync(path.join(root, "producer")).sort((a, b) => a.localeCompare(b)),
+    ["producer-scopes-false.json", "producer-scopes-true.json"],
+  );
   const ownerSource = text(
     "source/crates/vize_canon/src/virtual_ts/scope/globals/instance/tests/lexical_scope.rs",
   );
@@ -198,7 +198,7 @@ export function validateLexicalDollarPackets(root) {
     assert.equal(observation.vueManifestPath, actual[0].vueManifestPath);
     assert.equal(observation.vueManifestBytes, actual[0].vueManifestBytes);
     assert.equal(packet.nativeBinary, metadata.native.path);
-    assert.equal(observation.nativeBinary, metadata.native.path);
+    assert.equal(fs.realpathSync(observation.nativeBinary), metadata.native.path);
     assert.equal(packet.nativeSha256, metadata.native.sha256);
     assert.equal(observation.nativeSha256, metadata.native.sha256);
     assert.equal(packet.route, "native-cli");

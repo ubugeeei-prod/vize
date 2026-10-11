@@ -150,6 +150,14 @@ refusals. These parser laws execute no native process and grant no native or
 performance credit. Hosted lexical execution remains pending until the actual
 exact-head run and complete artifact pass these checks.
 
+The first hosted run at `83f4965f8faf6d665bca47bd7571fc5abe27dc29`
+executed all six producer tests and all nine native vectors, then refused its
+receipt because the configured native path retained a pnpm symlink spelling.
+Keep that raw path and require its real path to equal the independently
+attested actual Command executable. A missing target, foreign executable or
+distinct same-byte copy still refuses custody; the original whole binary,
+package, config, source and diagnostic checks remain required.
+
 TODO: the whole App/Stack remains blocked independently. The authenticated 7be
 full App vector leaves ReKa's three `TS7006` and one `TS2305` errors; Nuxt UI has
 534 `TS2308` collisions involving synthetic `Props`/`Emits`/`Slots` exported

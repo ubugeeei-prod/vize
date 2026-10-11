@@ -128,6 +128,29 @@ fixtureTest(
       "metadata.json",
       (metadata) => (metadata.compilerArtifact.features = ["default"]),
     );
+    const observationsFile = "native/normal-batch-results.json";
+    const observations = fs.readFileSync(path.join(fixture.root, observationsFile));
+    const alias = path.join(fixture.root, "configured-native-alias");
+    const foreign = path.join(fixture.root, "foreign-native");
+    fs.symlinkSync(fixture.metadata.native.path, alias);
+    try {
+      editJson(fixture.root, observationsFile, (rows) => {
+        for (const row of rows) row.nativeBinary = alias;
+      });
+      assert.doesNotThrow(() => validateLexicalDollarPackets(fixture.root));
+      fs.unlinkSync(alias);
+      fs.symlinkSync(path.join(fixture.root, "missing-native"), alias);
+      assert.throws(() => validateLexicalDollarPackets(fixture.root));
+      fs.unlinkSync(alias);
+      write(fixture.root, "foreign-native", "foreign executable bytes");
+      fs.symlinkSync(foreign, alias);
+      assert.throws(() => validateLexicalDollarPackets(fixture.root));
+      fs.copyFileSync(fixture.metadata.native.path, foreign);
+      assert.deepEqual(fs.readFileSync(foreign), fs.readFileSync(fixture.metadata.native.path));
+      assert.throws(() => validateLexicalDollarPackets(fixture.root));
+    } finally {
+      write(fixture.root, observationsFile, observations);
+    }
     const stdout = fs.readFileSync(path.join(fixture.root, "cargo.stdout"));
     try {
       write(
