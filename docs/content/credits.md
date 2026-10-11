@@ -6,7 +6,10 @@ description: People and community feedback that have shaped Vize.
 # Credits
 
 Vize is shaped by practical feedback from people using it against real applications, adjacent
-tooling, and ecosystem experiments. In particular, thank you to:
+tooling, and ecosystem experiments. To help with development or report a problem, start with the
+[Contributing guide](./contributing.md).
+
+In particular, thank you to:
 
 - [Blacksmith](https://www.blacksmith.sh/) for sponsoring high-performance CI/CD runners and Testbox infrastructure, giving Vize the compute needed to run frequent benchmarks and compatibility checks across real projects.
 - [Mates Inc.](https://eng.mates.education/) for allowing ubugeeei, its employee, to dedicate discretionary work time to OSS and for adopting Vize in the build for the company's engineering website.

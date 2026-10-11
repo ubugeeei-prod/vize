@@ -42,14 +42,14 @@
     {
       "route": "/contributing",
       "locales": ["en", "ja"],
-      "entry": "audited",
-      "note": "Purpose and setup present; Japanese body still needs review."
+      "entry": "revised",
+      "note": "Complete Japanese contribution guide reviewed against current English setup, checks, public report/publication and reporter-credit policy. Every original command, link and bookmark is retained; native desktop/mobile and deployed reading acceptance remain required."
     },
     {
       "route": "/credits",
       "locales": ["en", "ja"],
-      "entry": "audited",
-      "note": "Attribution retained; Japanese prose still needs body review."
+      "entry": "revised",
+      "note": "Complete Japanese acknowledgements reviewed with all original identities, links, figures and support dates retained. Both locales add a descriptive contribution next step; native desktop/mobile and deployed reading acceptance remain required."
     },
     {
       "route": "/guide/auto-imports",

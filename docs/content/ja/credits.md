@@ -1,31 +1,31 @@
 ---
 title: クレジット
-description: Vize を形作る人々とコミュニティのフィードバック。
+description: Vize の開発を支える方々と、コミュニティからの協力への感謝。
 ---
 
-<!-- Generated translation; source: credits.md -->
+<!-- Reviewed translation; source: credits.md -->
 
 # クレジット
 
-Vize は、実際のアプリケーションに対して使用している人々からの実践的なフィードバックによって形成されています。
-ツールやエコシステムの実験など。特に以下の方々に感謝します。
+Vize の改善は、実際のアプリケーションや関連ツールで使い、問題や活用方法を共有してくださる方々に支えられています。
+開発への参加や不具合の報告については、[コントリビュートのガイド](./contributing.md)を参照してください。
 
-- [Blacksmith](https://www.blacksmith.sh/) は、高性能 CI/CD ランナーとテストボックス インフラストラクチャのスポンサーとなり、実際のプロジェクト間で頻繁にベンチマークと互換性チェックを実行するために必要なコンピューティングを Vize に提供します。
-- [Mates Inc.](https://eng.mates.education/) 従業員の ubugeeei に裁量労働時間を OSS に充てることを許可し、同社のエンジニアリング Web サイトのビルドに Vize を採用したことに対して感謝します。
-- Anthropic は、[Claude for Open Source](https://claude.com/contact-sales/claude-for-oss) を通じて、Vize の継続的なオープンソース開発を支援してくれています。
-- [OpenAI Codex for Open Source](https://openai.com/form/codex-for-oss/) による、Vize のオープンソース開発への過去の支援にも感謝します。この支援は 2026 年 9 月に終了しました。
-- [かっこかり](https://github.com/kakkokari-gtyih) は、[Misskey](https://github.com/misskey-dev/misskey) (586 SFC 全体で約 103,000 行の Vue を含む Vue アプリケーション) で Vize のコンパイラーと Vite プラグインを継続的にテストし、実装の変更に応じてタイムリーなレポートを送信します ([レポート](https://github.com/ubugeeei-prod/vize/discussions/71))。
-- [ushironoko](https://github.com/ushironoko) プロジェクトのコンパイラ、リンター、CLI 側からの修正レポート、および困難なケースの修正および再現リポジトリのリファレンス実装。
-- [dannote](https://github.com/dannote)、Vize 上に構築された Elixir ネイティブ フロントエンド ツールチェーンである [Volt](https://hexdocs.pm/volt/readme.html) を通じて Elixir コミュニティに Vize を導入し、Volt が基盤として Vize を採用した際に欠落部分を報告し、PR を送信してくれました。
-- [umbrella22](https://github.com/umbrella22) は、実際のプロジェクトの検証を通じて Rspack プラグインの統合を形成するためのもので、ネイティブ CSS の処理に関するレポート、Rspack 1.x と 2.x 間の互換性フィードバック、および古い Rspack セットアップを退行させることなく新しいネイティブ CSS の動作を使用可能な状態に保つデフォルトに関するガイダンスです。
-- [n13u](https://x.com/%5Fn13u%5F) と `#frontend_phpcon_do` チームは、Vize で Nuxt ベースのカンファレンス Web サイトを構築しながら修正ケースを継続的に報告し、その検証を実稼働環境の採用に至るまで実行してくれました ([レポート](https://x.com/%5Fn13u%5F/status/2061408599788892230?s=20)、[記事](https://www.n13u.dev/ja/blog/detail/nYZKQ3UmslmWfXaP))。
-- yamanoku は、Vize に関するアクセシビリティに重点を置いたフィードバックと、v-tokyo Meetup #25 の LT ノート ([書き込み](https://scrapbox.io/yamanoku/%E3%81%A8%E3%81%82%E3%82%8B%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8Ckingnize%E3%81%95%E3%82%8C%E3%82%8B%E3%81%BE%E3%81%A7%EF%BD%9ENuxt%E3%81%8B%E3%82%89vuerend_%26_Vize%E3%81%B8)) に記載されている Vue Fes Japan のスピーカー サイト移行でのプロジェクトの使用について感謝しています。
-- [sevenc-nanashi](https://github.com/sevenc-nanashi) は、コンパイラーの精度を向上させ、実稼働アプリのギャップを具体的なフィードバックに変えるための実際のターゲットとして、[VOICEVOX](https://github.com/VOICEVOX/voicevox) エディター (128 SFC にわたって約 26,000 行の Vue を含む Electron ベースの Vue アプリケーション) を使用するためのものです ([レポート](https://github.com/ubugeeei-prod/vize/discussions/955))。
+特に、以下の方々に感謝します。
 
-コミュニティ内で Vize について言及、共有、テスト、増幅していただいた皆様にも感謝します。
-その作品に関わる全ての人へ。これらのシグナルにより、ツールチェーンがどこにあるかを簡単に確認できるようになります。
-役に立つか、どこで壊れるか、次にどうなるか。
+- [Blacksmith](https://www.blacksmith.sh/): 高性能な CI/CD ランナーと Testbox の提供。実際のプロジェクトで、ベンチマークと互換性の検証を繰り返し実行できるよう支援してくださっています。
+- [Mates Inc.](https://eng.mates.education/): 従業員である ubugeeei が勤務時間の一部を OSS に充てることへの理解と、同社の技術サイトのビルドへの Vize の採用。
+- Anthropic: [Claude for Open Source](https://claude.com/contact-sales/claude-for-oss) を通じた、Vize の継続的な OSS 開発への支援。
+- [OpenAI Codex for Open Source](https://openai.com/form/codex-for-oss/): Vize の OSS 開発への過去の支援。この支援は 2026 年 9 月に終了しました。
+- [かっこかり](https://github.com/kakkokari-gtyih): [Misskey](https://github.com/misskey-dev/misskey) でのコンパイラと Vite Plugin の継続的な検証と、実装の変更に合わせた不具合報告。Misskey は 586 個の SFC に約 10.3 万行の Vue コードを持つアプリケーションです（[報告](https://github.com/ubugeeei-prod/vize/discussions/71)）。
+- [ushironoko](https://github.com/ushironoko): コンパイラ、リンター、CLI の不具合報告に加え、修正の参考実装や、難しい問題の再現用リポジトリの提供。
+- [dannote](https://github.com/dannote): Vize を基盤とする Elixir 向けフロントエンドツールチェーン [Volt](https://hexdocs.pm/volt/readme.html) を通じた、Elixir コミュニティへの紹介。導入中に見つかった不足機能の報告と PR の提供。
+- [umbrella22](https://github.com/umbrella22): 実際のプロジェクトでの Rspack Plugin の検証、ネイティブ CSS に関する不具合報告、Rspack 1.x と 2.x の互換性確認。古い環境の挙動を保ちながら新しいネイティブ CSS を使える既定値の検討にも協力してくださいました。
+- [n13u](https://x.com/%5Fn13u%5F) と `#frontend_phpcon_do` チーム: Vize を使った Nuxt 製カンファレンスサイトの開発中の不具合報告から、本番環境での採用までの継続的な検証（[報告](https://x.com/%5Fn13u%5F/status/2061408599788892230?s=20)、[記事](https://www.n13u.dev/ja/blog/detail/nYZKQ3UmslmWfXaP)）。
+- yamanoku: アクセシビリティに関する意見と、Vue Fes Japan の登壇者サイトの移行での Vize の利用。v-tokyo Meetup #25 の LT メモに、その取り組みがまとめられています（[記事](https://scrapbox.io/yamanoku/%E3%81%A8%E3%81%82%E3%82%8B%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8Ckingnize%E3%81%95%E3%82%8C%E3%82%8B%E3%81%BE%E3%81%A7%EF%BD%9ENuxt%E3%81%8B%E3%82%89vuerend_%26_Vize%E3%81%B8)）。
+- [sevenc-nanashi](https://github.com/sevenc-nanashi): [VOICEVOX](https://github.com/VOICEVOX/voicevox) エディタを使った、コンパイラの正確さを高めるための検証と不具合報告。VOICEVOX は Electron を使い、128 個の SFC に約 2.6 万行の Vue コードを持つアプリケーションです（[報告](https://github.com/ubugeeei-prod/vize/discussions/955)）。
 
-Vize は ubugeeei による個人プロジェクトであり、MIT ライセンスに基づいてライセンスされ、
-非営利の OSS の取り組み。これは特定の企業によって所有されておらず、オープンなままにすることが意図されており、
-買収を念頭に置いて構築されていません。
+Vize を紹介し、情報を共有し、試してくださった皆様と、その活動に関わった方々にも感謝します。
+こうした声が、ツールチェーンの役立つ場面や問題点を知り、次に改善する機能を考える助けになっています。
+
+Vize は ubugeeei による個人の非営利 OSS プロジェクトで、MIT ライセンスで公開しています。
+特定の企業が所有するものではなく、今後もオープンなプロジェクトとして続ける方針です。売却を目的にはしていません。

@@ -87,3 +87,30 @@ void test("Japanese stability retains every current public package, crate and AP
   }
   assert.doesNotMatch(japanese, /未成年|木箱|木枠|貨物|ノード フロア/);
 });
+
+void test("Japanese contribution and credits preserve complete recipes and attribution on regeneration", async () => {
+  const root = resolve(import.meta.dirname, "../..");
+  const paths = ["contributing.md", "credits.md"];
+  const retained = await collectReviewedTranslations(paths, resolve(root, "docs/content/ja"));
+  assert.equal(retained.size, paths.length);
+  for (const path of paths) {
+    const english = readFileSync(resolve(root, "docs/content", path), "utf8");
+    const japanese = readFileSync(resolve(root, "docs/content/ja", path), "utf8");
+    assert.equal(retained.get(path), japanese, `${path}: retain the entire reviewed input`);
+    const fences = (source: string) =>
+      [...source.matchAll(/^```[^\n]*\n[\s\S]*?^```[^\n]*$/gm)].map((match) => match[0]);
+    assert.deepEqual(fences(japanese), fences(english), `${path}: complete runnable recipes`);
+    const links = (source: string) =>
+      [...source.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)].map((match) => match[1]);
+    assert.deepEqual(
+      links(japanese),
+      links(english),
+      `${path}: ordered attribution and support links`,
+    );
+  }
+  const contribution = retained.get("contributing.md")!;
+  assert.equal(contribution.split('<span id="言語プロセッサの規律変更"></span>').length, 2);
+  assert.match(contribution, /Conventional Commits/);
+  assert.match(contribution, /`Co-authored-by`/);
+  assert.match(contribution, /`ID\+LOGIN@users\.noreply\.github\.com`/);
+});
