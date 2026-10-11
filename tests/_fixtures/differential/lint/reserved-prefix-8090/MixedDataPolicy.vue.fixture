@@ -1,0 +1,3 @@
+<script lang="ts">
+export default { data() { return { $data: 0, _private: 0, $host: 0, $dataExtra: 0, data: 0, _: 0 } } }
+</script>

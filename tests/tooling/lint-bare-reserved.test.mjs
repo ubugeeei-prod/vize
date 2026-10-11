@@ -9,14 +9,27 @@ import { expectedBuildIdentity, validateBuildReceipt } from "../differential/bui
 import { sha256, wholeJson } from "./lint-default-correctness-reference.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-await test("bare instance names preserve complete CLI packets and existing prefix behavior", () => {
+await test("bare instance names use complete explicit prefix-policy successor packets", () => {
   const fixture = path.join(root, "tests/_fixtures/differential/lint/bare-reserved-8090");
   const corpusPath = path.join(fixture, "cases.json");
   const corpus = JSON.parse(fs.readFileSync(corpusPath, "utf8"));
-  const companions = JSON.parse(
-    fs.readFileSync(path.join(fixture, "default-route-companions.json"), "utf8"),
+  const successorsPath = path.join(
+    root,
+    "tests/_fixtures/differential/lint/reserved-prefix-8090/bare-parent-successors.json",
   );
-  assert.equal(companions.cases.length, 16);
+  const successors = JSON.parse(fs.readFileSync(successorsPath, "utf8"));
+  const routeSuccessorsPath = path.join(
+    path.dirname(successorsPath),
+    "bare-parent-route-successors.json",
+  );
+  const routeSuccessors = JSON.parse(fs.readFileSync(routeSuccessorsPath, "utf8"));
+  const routePackets = new Map(routeSuccessors.cases.map((entry) => [entry.id, entry]));
+  assert.equal(routeSuccessors.cases.length, 16);
+  assert.equal(routeSuccessors.targetSuccessors.sha256, sha256(fs.readFileSync(successorsPath)));
+  assert.equal(
+    routeSuccessors.cases.reduce((count, entry) => count + entry.combinedCliDiagnostics.length, 0),
+    11,
+  );
   const projectionPath = path.join(root, "tests/_fixtures/n8n-cli-adoption.json");
   const projection = JSON.parse(fs.readFileSync(projectionPath, "utf8"));
   const original = JSON.parse(
@@ -26,6 +39,21 @@ await test("bare instance names preserve complete CLI packets and existing prefi
   assert.equal(corpus.schema, "vize.lint.bare-reserved");
   assert.equal(corpus.version, 1);
   assert.equal(corpus.cases.length, 16);
+  assert.equal(successors.cases.length, 16);
+  assert.equal(
+    successors.cases.reduce((count, entry) => count + entry.diagnostics.length, 0),
+    9,
+  );
+  assert.equal(successors.parentCorpus.sha256, sha256(fs.readFileSync(corpusPath)));
+  const successorPackets = new Map(successors.cases.map((entry) => [entry.id, entry]));
+  for (const entry of corpus.cases) {
+    const successor = successorPackets.get(entry.id);
+    assert.equal(successor.filename, entry.filename);
+    assert.equal(successor.sourceSha256, entry.sourceSha256);
+    const route = routePackets.get(entry.id);
+    assert.equal(route.sourceSha256, entry.sourceSha256);
+    assert.deepEqual(route.targetDiagnostics, successor.diagnostics);
+  }
   assert.equal(corpus.removedBareNames.length, 14);
   assert.equal(
     corpus.cases.reduce((count, entry) => count + entry.beforeDiagnostics.length, 0),
@@ -40,9 +68,8 @@ await test("bare instance names preserve complete CLI packets and existing prefi
 
   const custodyPaths = [
     "tests/_fixtures/differential/lint/bare-reserved-8090/cases.json",
-    "tests/_fixtures/differential/lint/bare-reserved-8090/default-route-companions.json",
-    "tests/_fixtures/differential/lint/bare-reserved-8090/default-route-public-before.json",
-    "tests/_fixtures/differential/lint/bare-reserved-8090/default-route-initial-failure.json",
+    "tests/_fixtures/differential/lint/reserved-prefix-8090/bare-parent-successors.json",
+    "tests/_fixtures/differential/lint/reserved-prefix-8090/bare-parent-route-successors.json",
     "tests/_fixtures/differential/lint/bare-reserved-8090/observe-before.mjs",
     "tests/_fixtures/differential/lint/bare-reserved-8090/primary-sources.json",
     "tests/_fixtures/differential/lint/bare-reserved-8090/original-public-before.json",
@@ -69,6 +96,8 @@ await test("bare instance names preserve complete CLI packets and existing prefi
     schema: "vize.lint.bare-reserved-cli",
     version: 1,
     corpus,
+    successors,
+    routeSuccessors,
     custody: custody(),
     runs: [],
   };
@@ -82,32 +111,27 @@ await test("bare instance names preserve complete CLI packets and existing prefi
     evidence.build = { expected: build, receipt };
     persist();
     validateBuildReceipt(receipt, build);
-    const scenarios = corpus.cases.flatMap((entry, index) => {
-      const companion = companions.cases[index];
-      assert.equal(companion.id, entry.id);
-      assert.equal(companion.sourceSha256, entry.sourceSha256);
-      return [
-        ...[null, "recommended", "essential", "ecosystem"].map((preset) => ({
-          entry,
-          preset,
-          config: null,
-          findings: companion.combinedCliDiagnostics,
-        })),
-        { entry, preset: "incremental", config: null, findings: [] },
-        {
-          entry,
-          preset: null,
-          findings: companion.diagnostics,
-          config: JSON.stringify({ linter: { rules: { [corpus.rule]: "off" } } }) + "\n",
-        },
-        {
-          entry,
-          preset: null,
-          findings: [],
-          config: JSON.stringify({ linter: projection.linter }) + "\n",
-        },
-      ];
-    });
+    const scenarios = corpus.cases.flatMap((entry) => [
+      ...[null, "recommended", "essential", "ecosystem"].map((preset) => ({
+        entry,
+        preset,
+        config: null,
+        findings: routePackets.get(entry.id).combinedCliDiagnostics,
+      })),
+      { entry, preset: "incremental", config: null, findings: [] },
+      {
+        entry,
+        preset: null,
+        findings: routePackets.get(entry.id).diagnostics,
+        config: JSON.stringify({ linter: { rules: { [corpus.rule]: "off" } } }) + "\n",
+      },
+      {
+        entry,
+        preset: null,
+        findings: [],
+        config: JSON.stringify({ linter: projection.linter }) + "\n",
+      },
+    ]);
     scenarios.push({
       entry: original,
       preset: null,

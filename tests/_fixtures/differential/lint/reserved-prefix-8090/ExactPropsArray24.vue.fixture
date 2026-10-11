@@ -1,0 +1,3 @@
+<script lang="ts">
+export default { props: ["$data", "$props", "$el", "$options", "$parent", "$root", "$children", "$slots", "$scopedSlots", "$refs", "$isServer", "$attrs", "$listeners", "$watch", "$set", "$delete", "$on", "$once", "$off", "$emit", "$mount", "$forceUpdate", "$nextTick", "$destroy"] }
+</script>

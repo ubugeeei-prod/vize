@@ -1,0 +1,19 @@
+{
+  "schema": "vize.lint.reserved-prefix-historical",
+  "version": 1,
+  "authority": "Original tracked snapshot and authored test source retained verbatim from the stack parent, before removing the provider-invalid computed-underscore diagnostic.",
+  "sourceCommit": "30637987a17857bdb69a7a0f33b72d5cc36422d2",
+  "originalPath": "crates/vize_patina/src/rules/script/snapshots/vize_patina__rules__script__no_reserved_keys__tests__computed_underscore_prefixed.snap",
+  "originalGitBlob": "00b790eba2c632c235eed78f25241b4d62f808d4",
+  "snapshotFile": "historical-computed-underscore.snap.fixture",
+  "snapshotSha256": "0a8da7c3ca5c01a349be45f96c8a610b61f3b2287c229db5f3ce1eb54e5eb7fe",
+  "sourceFile": "historical-computed-underscore.ts.fixture",
+  "sourceSha256": "d37d7479c65bddefaa55cce918e5976f6300271ebc0efb79d9c0fe0c2913d9db",
+  "beforeMessage": "Reserved key '_foo'",
+  "sourceRange": {
+    "start": 36,
+    "end": 40
+  },
+  "diagnostics": [],
+  "providerDiagnostics": []
+}

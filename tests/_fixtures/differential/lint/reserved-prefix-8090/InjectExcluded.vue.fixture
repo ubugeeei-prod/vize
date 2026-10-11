@@ -1,0 +1,3 @@
+<script lang="ts">
+export default { inject: { $data: "token", $props: "token", $el: "token", $options: "token", $parent: "token", $root: "token", $children: "token", $slots: "token", $scopedSlots: "token", $refs: "token", $isServer: "token", $attrs: "token", $listeners: "token", $watch: "token", $set: "token", $delete: "token", $on: "token", $once: "token", $off: "token", $emit: "token", $mount: "token", $forceUpdate: "token", $nextTick: "token", $destroy: "token", _private: "token", $custom: "token" } }
+</script>

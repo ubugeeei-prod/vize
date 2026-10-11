@@ -17,18 +17,29 @@ fn whole(result: &LintResult) -> Value {
 }
 
 #[test]
-fn bare_instance_spellings_are_valid_and_prefix_packets_are_preserved() {
+fn bare_instance_spellings_are_valid_with_explicit_prefix_policy_successors() {
     let corpus: Value = serde_json::from_str(include_str!(
         "../../../tests/_fixtures/differential/lint/bare-reserved-8090/cases.json"
     ))
     .unwrap();
-    let api_order: Value = serde_json::from_str(include_str!(
-        "../../../tests/_fixtures/differential/lint/bare-reserved-8090/api-route-order-successors.json"
-    )).unwrap();
-    let companions: Value = serde_json::from_str(include_str!(
-        "../../../tests/_fixtures/differential/lint/bare-reserved-8090/default-route-companions.json"
-    )).unwrap();
-    assert_eq!(companions["cases"].as_array().unwrap().len(), 16);
+    let successors: Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/lint/reserved-prefix-8090/bare-parent-successors.json"
+    ))
+    .unwrap();
+    let successor_cases = successors["cases"].as_array().unwrap();
+    let route_successors: Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/lint/reserved-prefix-8090/bare-parent-route-successors.json"
+    ))
+    .unwrap();
+    let route_cases = route_successors["cases"].as_array().unwrap();
+    assert_eq!(route_cases.len(), 16);
+    assert_eq!(
+        route_cases
+            .iter()
+            .map(|case| case["combinedApiDiagnostics"].as_array().unwrap().len())
+            .sum::<usize>(),
+        11
+    );
     let projection: Value = serde_json::from_str(include_str!(
         "../../../tests/_fixtures/n8n-cli-adoption.json"
     ))
@@ -37,6 +48,7 @@ fn bare_instance_spellings_are_valid_and_prefix_packets_are_preserved() {
     let rule = corpus["rule"].as_str().unwrap();
     let projected_rules = projection["linter"]["rules"].as_object().unwrap();
     assert_eq!(cases.len(), 16);
+    assert_eq!(successor_cases.len(), 16);
     assert_eq!(corpus["removedBareNames"].as_array().unwrap().len(), 14);
     assert_eq!(projected_rules.len(), 51);
     assert!(!projected_rules.contains_key(rule));
@@ -54,20 +66,36 @@ fn bare_instance_spellings_are_valid_and_prefix_packets_are_preserved() {
             .sum::<usize>(),
         17
     );
+    assert_eq!(
+        successor_cases
+            .iter()
+            .map(|case| case["diagnostics"].as_array().unwrap().len())
+            .sum::<usize>(),
+        9
+    );
 
-    for (index, case) in cases.iter().enumerate() {
+    for case in cases {
         let filename = case["filename"].as_str().unwrap();
         let source = case["source"].as_str().unwrap();
-        let companion = &companions["cases"][index];
-        assert_eq!(companion["id"], case["id"]);
-        assert_eq!(companion["sourceSha256"], case["sourceSha256"]);
-        assert_eq!(api_order["cases"][index]["id"], case["id"]);
+        let successor = successor_cases
+            .iter()
+            .find(|successor| successor["id"] == case["id"])
+            .unwrap();
+        assert_eq!(successor["filename"], case["filename"]);
+        assert_eq!(successor["sourceSha256"], case["sourceSha256"]);
+        let route_successor = route_cases
+            .iter()
+            .find(|entry| entry["id"] == case["id"])
+            .unwrap();
+        assert_eq!(route_successor["sourceSha256"], case["sourceSha256"]);
         assert_eq!(
-            api_order["cases"][index]["sourceSha256"],
-            case["sourceSha256"]
+            route_successor["targetDiagnostics"],
+            successor["diagnostics"]
         );
-        let diagnostics = api_order["cases"][index]["diagnostics"].as_array().unwrap();
-        let off_diagnostics = companion["diagnostics"].as_array().unwrap();
+        let diagnostics = route_successor["combinedApiDiagnostics"]
+            .as_array()
+            .unwrap();
+        let off_diagnostics = route_successor["diagnostics"].as_array().unwrap();
         let projected = projected_rules
             .keys()
             .map(|name| name.as_str().into())
