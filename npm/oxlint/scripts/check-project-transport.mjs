@@ -15,6 +15,7 @@ import {
 } from "./ci-host-concurrency.mjs";
 import { stageProjectNative } from "./project-native-staging.ts";
 import { qualifyMixedDirectory8507 } from "./mixed-directory-8507-qualification.mjs";
+import { runQualificationBranches } from "./project-qualification-branches.mjs";
 import {
   nativeHistoryReceipt,
   validateNativeHistoryBuild,
@@ -71,97 +72,116 @@ try {
       process.env.GITHUB_OUTPUT,
       `staging-directory=${artifacts}\nphase-walltime=${path.join(artifacts, "phase-walltime.json")}\n`,
     );
-  const mixedDirectory8507 = await timed("mixedDirectory8507", () =>
-    qualifyMixedDirectory8507({ root, packageDir, artifacts, receipt, binary }),
-  );
-  const n8nReplay = await timed("baselinePreparation", () =>
-    beginN8nReplay({ root, packageDir, artifacts, receipt, binary }),
-  );
-  const worker = fileURLToPath(new URL("./ci-host-worker.mjs", import.meta.url));
-  const jobs = hostVersions.map(({ version, types }) => {
-    const output = path.join(artifacts, version);
-    fs.mkdirSync(output);
-    const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-oxlint-project-host-"));
-    temporaryDirectories.push(temporary);
-    const configuration = path.join(output, "worker-config.json");
-    fs.writeFileSync(
-      configuration,
-      JSON.stringify(
-        {
-          packageDir,
-          artifacts,
-          binary,
-          version,
-          types,
-          temporary,
-          replay: {
-            output: n8nReplay.output,
-            custody: n8nReplay.custody,
-            reference: n8nReplay.reference,
-          },
+  const [mixedDirectory8507, qualifications] = await runQualificationBranches(
+    [
+      {
+        id: "mixedDirectory8507",
+        run: () =>
+          timed("mixedDirectory8507", () =>
+            qualifyMixedDirectory8507({ root, packageDir, artifacts, receipt, binary }),
+          ),
+      },
+      {
+        id: "n8n",
+        run: async () => {
+          const n8nReplay = await timed("baselinePreparation", () =>
+            beginN8nReplay({ root, packageDir, artifacts, receipt, binary }),
+          );
+          const worker = fileURLToPath(new URL("./ci-host-worker.mjs", import.meta.url));
+          const jobs = hostVersions.map(({ version, types }) => {
+            const output = path.join(artifacts, version);
+            fs.mkdirSync(output);
+            const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-oxlint-project-host-"));
+            temporaryDirectories.push(temporary);
+            const configuration = path.join(output, "worker-config.json");
+            fs.writeFileSync(
+              configuration,
+              JSON.stringify(
+                {
+                  packageDir,
+                  artifacts,
+                  binary,
+                  version,
+                  types,
+                  temporary,
+                  replay: {
+                    output: n8nReplay.output,
+                    custody: n8nReplay.custody,
+                    reference: n8nReplay.reference,
+                  },
+                },
+                null,
+                2,
+              ) + "\n",
+            );
+            return {
+              id: version,
+              output,
+              command: process.execPath,
+              args: [worker, configuration],
+              cwd: packageDir,
+              // All worker-created temporary projects, including n8n, live inside this
+              // owned directory so parent cleanup also handles timeout or interruption.
+              env: { ...process.env, TMPDIR: temporary, TMP: temporary, TEMP: temporary },
+            };
+          });
+          const results = await timed("hosts", () =>
+            runHostProcesses(jobs, { workers: options.workers }),
+          );
+          timing.hosts = results.map((result, index) => {
+            const file = path.join(jobs[index].output, "phase-walltime.json");
+            const phases = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : {};
+            return {
+              ...hostVersions[index],
+              status: result.status === 0 && !result.signal && !result.error ? "passed" : "failed",
+              elapsedMs: result.elapsedMs,
+              phaseWalltimeMs: phases.phaseWalltimeMs ?? {},
+            };
+          });
+          requireSuccessfulHosts(results); // Every host settles and saves evidence first.
+          return timed("aggregation", () => {
+            const qualifications = jobs.map(({ output }, index) => {
+              const { qualification, n8nHost, n8nCustody } = JSON.parse(
+                fs.readFileSync(path.join(output, "host-worker-result.json"), "utf8"),
+              );
+              assert.equal(qualification.version, hostVersions[index].version);
+              assert.equal(qualification.types, hostVersions[index].types);
+              assert.equal(n8nHost.version, hostVersions[index].version);
+              n8nReplay.hosts.push(n8nHost);
+              n8nReplay.hostCustodies.push({ version: n8nHost.version, custody: n8nCustody });
+              return qualification;
+            });
+            validateNativeHistoryBuild(nativeDir, receipt);
+            assert.equal(hash(fs.readFileSync(binary)), receipt.frozen.sha256);
+            finishN8nReplay(n8nReplay);
+            return qualifications;
+          });
         },
-        null,
-        2,
-      ) + "\n",
-    );
-    return {
-      id: version,
-      output,
-      command: process.execPath,
-      args: [worker, configuration],
-      cwd: packageDir,
-      // All worker-created temporary projects, including n8n, live inside this
-      // owned directory so parent cleanup also handles timeout or interruption.
-      env: { ...process.env, TMPDIR: temporary, TMP: temporary, TEMP: temporary },
-    };
-  });
-  const results = await timed("hosts", () => runHostProcesses(jobs, { workers: options.workers }));
-  timing.hosts = results.map((result, index) => {
-    const file = path.join(jobs[index].output, "phase-walltime.json");
-    const phases = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : {};
-    return {
-      ...hostVersions[index],
-      status: result.status === 0 && !result.signal && !result.error ? "passed" : "failed",
-      elapsedMs: result.elapsedMs,
-      phaseWalltimeMs: phases.phaseWalltimeMs ?? {},
-    };
-  });
-  requireSuccessfulHosts(results); // Every host settles and saves evidence first.
-  await timed("aggregation", () => {
-    const qualifications = jobs.map(({ output }, index) => {
-      const { qualification, n8nHost, n8nCustody } = JSON.parse(
-        fs.readFileSync(path.join(output, "host-worker-result.json"), "utf8"),
-      );
-      assert.equal(qualification.version, hostVersions[index].version);
-      assert.equal(qualification.types, hostVersions[index].types);
-      assert.equal(n8nHost.version, hostVersions[index].version);
-      n8nReplay.hosts.push(n8nHost);
-      n8nReplay.hostCustodies.push({ version: n8nHost.version, custody: n8nCustody });
-      return qualification;
-    });
-    validateNativeHistoryBuild(nativeDir, receipt);
-    assert.equal(hash(fs.readFileSync(binary)), receipt.frozen.sha256);
-    finishN8nReplay(n8nReplay);
-    fs.writeFileSync(
-      path.join(artifacts, "qualification.json"),
-      JSON.stringify(
-        {
-          source: receipt.source,
-          toolchain: receipt.toolchain,
-          binarySha256: receipt.frozen.sha256,
-          qualifications,
-          mixedDirectory8507,
-          limits: [
-            "authored wrapper controls only",
-            "full licensed native/Vize-layer replay is qualified separately in n8n/qualification.json",
-            "direct51 scriptless, excluded n8n-local plugins and installed acceptance remain unfinished",
-          ],
-        },
-        null,
-        2,
-      ) + "\n",
-    );
-  });
+      },
+    ],
+    path.join(artifacts, "branch-outcomes.json"),
+  );
+  validateNativeHistoryBuild(nativeDir, receipt);
+  assert.equal(hash(fs.readFileSync(binary)), receipt.frozen.sha256);
+  fs.writeFileSync(
+    path.join(artifacts, "qualification.json"),
+    JSON.stringify(
+      {
+        source: receipt.source,
+        toolchain: receipt.toolchain,
+        binarySha256: receipt.frozen.sha256,
+        qualifications,
+        mixedDirectory8507,
+        limits: [
+          "authored wrapper controls only",
+          "full licensed native/Vize-layer replay is qualified separately in n8n/qualification.json",
+          "direct51 scriptless, excluded n8n-local plugins and installed acceptance remain unfinished",
+        ],
+      },
+      null,
+      2,
+    ) + "\n",
+  );
   timing.status = "passed";
 } finally {
   for (const temporary of temporaryDirectories)

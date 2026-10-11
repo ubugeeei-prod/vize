@@ -100,8 +100,16 @@ export function joinMixedCaptures(plan, custody, captures) {
   };
 }
 
-export async function runMixedWorkers({ packageDir, output, custody, preload, environment }) {
+export async function runMixedWorkers({
+  packageDir,
+  output,
+  custody,
+  preload,
+  environment,
+  deadlineMs = 180_000,
+}) {
   assert.notEqual(process.platform, "win32", "source Actions requires owned POSIX process groups");
+  assert.ok(Number.isSafeInteger(deadlineMs) && deadlineMs > 0 && deadlineMs <= 180_000);
   const argv = ["src/mixed-directory-8507.test.mjs"];
   const records = [0, 1].map((index) => {
     const directory = path.join(output, `worker-${index}`);
@@ -129,20 +137,33 @@ export async function runMixedWorkers({ packageDir, output, custody, preload, en
   const started = performance.now();
   let failure = null;
   let totalOutputBytes = 0;
-  const stop = (reason) => {
-    failure ??= reason;
-    for (const { index, child, closed } of children) {
-      if (closed || !child.pid) continue;
-      records[index].terminationReason ??= reason;
-      try {
-        // Each child owns its process group, including its original stock/wrapper descendants.
-        process.kill(-child.pid, "SIGTERM");
-      } catch (error) {
-        if (error.code !== "ESRCH") records[index].terminationError = wholeError(error);
-      }
+  let escalation;
+  const killGroup = ({ index, child }, signal) => {
+    if (!child.pid) return;
+    try {
+      // A leader's close does not prove its ignored-stdio descendants ended.
+      process.kill(-child.pid, signal);
+    } catch (error) {
+      if (error.code !== "ESRCH") records[index].terminationError = wholeError(error);
     }
   };
-  const deadline = setTimeout(() => stop("shared 180s deadline"), 180_000);
+  const kill = (signal) => {
+    for (const owned of children) if (!owned.closed || failure) killGroup(owned, signal);
+  };
+  const stop = (reason) => {
+    failure ??= reason;
+    for (const { index, closed } of children)
+      if (!closed) records[index].terminationReason ??= failure;
+    kill("SIGTERM");
+    escalation ??= setTimeout(() => kill("SIGKILL"), 200);
+  };
+  const onInterrupt = () => stop("interrupted by SIGINT");
+  const onTerminate = () => stop("interrupted by SIGTERM");
+  const onExit = () => kill("SIGKILL");
+  process.once("SIGINT", onInterrupt);
+  process.once("SIGTERM", onTerminate);
+  process.once("exit", onExit);
+  const deadline = setTimeout(() => stop(`shared ${deadlineMs / 1000}s deadline`), deadlineMs);
   const completions = records.map(
     (record) =>
       new Promise((resolve) => {
@@ -196,6 +217,7 @@ export async function runMixedWorkers({ packageDir, output, custody, preload, en
           if (status !== 0 || signal !== null) stop(`worker ${index} fatal terminal`);
         });
         child.on("close", (status, signal) => {
+          killGroup(owned, "SIGKILL");
           owned.closed = true;
           record.status = status;
           record.signal = signal;
@@ -203,7 +225,7 @@ export async function runMixedWorkers({ packageDir, output, custody, preload, en
           record.stdoutBytes = Array.from(Buffer.concat(streams.stdout));
           record.stderrBytes = Array.from(Buffer.concat(streams.stderr));
           save();
-          if (status !== 0 || signal !== null || record.error !== null)
+          if (status !== 0 || signal !== null || record.error !== null || record.terminationError)
             stop(`worker ${index} fatal terminal`);
           resolve();
         });
@@ -213,10 +235,17 @@ export async function runMixedWorkers({ packageDir, output, custody, preload, en
   try {
     await Promise.all(completions);
   } finally {
+    // A failed leader may close before a detached-group descendant. Finish that
+    // owned group before joining; it cannot continue writing after upload starts.
+    if (failure) kill("SIGKILL");
     clearTimeout(deadline);
+    clearTimeout(escalation);
+    process.removeListener("SIGINT", onInterrupt);
+    process.removeListener("SIGTERM", onTerminate);
+    process.removeListener("exit", onExit);
   }
   const packet = {
-    deadlineMs: 180_000,
+    deadlineMs,
     maxBufferBytes: 64 * 1024 * 1024,
     totalOutputBytes,
     failure,
