@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
+import { lstatSync, readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
 import { join, relative, resolve, sep } from "node:path";
 
 export const rawPaths = JSON.parse(
@@ -16,15 +16,17 @@ export function fileManifest(root, patterns = rawPaths) {
   const files = new Map();
   const hashes = new Map();
   let uniqueBytes = 0;
+  const inspect = patterns === null ? lstatSync : statSync;
   function visit(path, ancestors = new Set()) {
     let stat;
     try {
-      stat = statSync(path, { bigint: true });
+      stat = inspect(path, { bigint: true });
     } catch (error) {
       // Pinned upload-artifact follows links and omits broken links/disappeared paths.
       if (error.code === "ENOENT") return;
       throw error;
     }
+    assert(!stat.isSymbolicLink(), `symbolic link in reconstructed native evidence: ${path}`);
     if (stat.isDirectory()) {
       const real = realpathSync(path);
       // Match @actions/glob's traversal-chain cycle exclusion; retain all aliases.
@@ -42,7 +44,7 @@ export function fileManifest(root, patterns = rawPaths) {
     if (!sha256) {
       const bytes = readFileSync(path);
       assert.equal(
-        revision(statSync(path, { bigint: true })),
+        revision(inspect(path, { bigint: true })),
         key,
         `changed native evidence: ${name}`,
       );
@@ -59,7 +61,12 @@ export function fileManifest(root, patterns = rawPaths) {
   }
   if (patterns === null) {
     for (const name of readdirSync(root).sort()) {
-      if (name !== manifestName) visit(join(root, name));
+      if (name === manifestName) {
+        assert(
+          lstatSync(join(root, name)).isFile(),
+          "reconstructed manifest must be a regular file",
+        );
+      } else visit(join(root, name));
     }
   } else {
     for (const pattern of patterns) {

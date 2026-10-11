@@ -92,6 +92,34 @@ function independentFiles(root) {
   return names.sort((left, right) => left.localeCompare(right, "en"));
 }
 
+function rebuildArchive(f, restored, paths) {
+  const archive = join(f.output, "native-phase-evidence.tar.zst");
+  const list = join(f.temporary, "repacked.nul");
+  writeFileSync(list, paths.map((path) => `${path}\0`).join(""));
+  const result = spawnSync(
+    tarBinary,
+    [
+      "--create",
+      "--no-recursion",
+      "--null",
+      "--use-compress-program=zstd -T4 -3",
+      "--file",
+      archive,
+      "--directory",
+      restored,
+      "--files-from",
+      list,
+    ],
+    { encoding: "utf8" },
+  );
+  assert.equal(result.status, 0, result.stderr);
+  const receiptPath = join(f.output, "receipt.json");
+  const receipt = JSON.parse(readFileSync(receiptPath, "utf8"));
+  receipt.archiveSha256 = hash(readFileSync(archive));
+  writeFileSync(receiptPath, JSON.stringify(receipt));
+  return archive;
+}
+
 void test("21 actual shared-inode aliases reconstruct every original file and unchanged source bytes", (t) => {
   const f = fixture(t);
   const original = statSync(join(f.dependencies, "opaque.bin"), { bigint: true });
@@ -153,37 +181,11 @@ void test("damaged transport, missing raw files and changed reconstructed bytes 
   );
 
   // A recomputed outer transport hash cannot disguise an omitted raw payload.
-  const archive = join(f.output, "native-phase-evidence.tar.zst");
-  const list = join(f.temporary, "missing.nul");
-  writeFileSync(
-    list,
-    [...f.expected.keys()]
-      .filter((path) => path !== missing)
-      .concat(manifestName)
-      .map((path) => `${path}\0`)
-      .join(""),
+  const archive = rebuildArchive(
+    f,
+    restored,
+    [...f.expected.keys()].filter((path) => path !== missing).concat(manifestName),
   );
-  const result = spawnSync(
-    tarBinary,
-    [
-      "--create",
-      "--no-recursion",
-      "--null",
-      "--use-compress-program=zstd -T4 -3",
-      "--file",
-      archive,
-      "--directory",
-      restored,
-      "--files-from",
-      list,
-    ],
-    { encoding: "utf8" },
-  );
-  assert.equal(result.status, 0, result.stderr);
-  const receiptPath = join(f.output, "receipt.json");
-  const receipt = JSON.parse(readFileSync(receiptPath, "utf8"));
-  receipt.archiveSha256 = hash(readFileSync(archive));
-  writeFileSync(receiptPath, JSON.stringify(receipt));
   assert.throws(
     () => reconstruct(f.output, join(f.temporary, "incomplete"), { tarBinary }),
     /reconstruction differs/,
@@ -195,4 +197,35 @@ void test("damaged transport, missing raw files and changed reconstructed bytes 
     () => reconstruct(f.output, join(f.temporary, "damaged"), { tarBinary }),
     /damaged native evidence archive/,
   );
+});
+
+void test("external raw file, directory and manifest symlinks fail with a rebuilt transport hash", (t) => {
+  for (const kind of ["file", "directory", "manifest"]) {
+    const f = fixture(t);
+    pack(f.root, f.output, { sourceSha, tarBinary });
+    const restored = join(f.temporary, "restored");
+    reconstruct(f.output, restored, { tarBinary });
+    let paths = [...f.expected.keys()].concat(manifestName);
+    if (kind === "file") {
+      const name = "native-source-recipe.json";
+      rmSync(join(restored, name));
+      symlinkSync(join(f.root, name), join(restored, name));
+    } else if (kind === "directory") {
+      const prefix = "jsx-slot-parameter-types/case-20/node_modules";
+      rmSync(join(restored, prefix), { recursive: true });
+      symlinkSync(f.dependencies, join(restored, prefix), "dir");
+      paths = paths.filter((path) => !path.startsWith(`${prefix}/`)).concat(prefix);
+    } else {
+      const external = join(f.temporary, "external-manifest.json");
+      writeFileSync(external, readFileSync(join(restored, manifestName)));
+      rmSync(join(restored, manifestName));
+      symlinkSync(external, join(restored, manifestName));
+    }
+    rebuildArchive(f, restored, paths);
+    assert.throws(
+      () => reconstruct(f.output, join(f.temporary, "substituted"), { tarBinary }),
+      /symbolic link in reconstructed native evidence|reconstructed manifest must be a regular file/,
+      `${kind} symlink must not borrow raw bytes from outside the reconstructed tree`,
+    );
+  }
 });

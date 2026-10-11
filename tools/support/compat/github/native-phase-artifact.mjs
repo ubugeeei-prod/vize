@@ -4,6 +4,7 @@ import { spawnSync } from "node:child_process";
 import {
   appendFileSync,
   existsSync,
+  lstatSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -55,7 +56,9 @@ export function reconstruct(output, destination, { tarBinary = "tar" } = {}) {
     ["--extract", "--zstd", "--same-permissions", "--file", archive, "--directory", destination],
     tarBinary,
   );
-  const bytes = readFileSync(join(destination, manifestName));
+  const manifestPath = join(destination, manifestName);
+  assert(lstatSync(manifestPath).isFile(), "reconstructed manifest must be a regular file");
+  const bytes = readFileSync(manifestPath);
   assert.equal(digest(bytes), receipt.manifestSha256, "damaged native evidence manifest");
   const manifest = JSON.parse(bytes);
   assert.equal(manifest.schema, 1);
