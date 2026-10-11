@@ -61,6 +61,7 @@ struct Launch {
 struct FixtureTypecheckTsconfig {
     relative_path: String,
     cleanup_path: Option<PathBuf>,
+    script_scope: Option<Value>,
 }
 
 impl Drop for FixtureTypecheckTsconfig {
@@ -641,13 +642,37 @@ fn run_tool(
             Err(error) => payload["parseError"] = Value::String(error.to_string()),
         }
         if payload.get("parseError").is_none() && tool == "typechecker" {
-            match validate_typechecker_output(
+            let scope = typechecker_fixture_tsconfig
+                .as_ref()
+                .and_then(|config| config.script_scope.as_ref());
+            if let Some(scope) = scope {
+                payload["typecheckerSourceScan"] = scope.clone();
+            }
+            match validate_typechecker_output_with_scope(
                 project,
                 &payload["parsed"],
                 output.exit_code.unwrap_or(1),
                 expected_tool_files.as_deref(),
                 authored_files.as_deref().unwrap_or(&[]),
-            ) {
+                scope,
+            )
+            .and_then(|coverage| {
+                if let Some(scope) = scope {
+                    let config_path = cwd.join(scope["tsconfig"].as_str().unwrap_or(""));
+                    let config_bytes = fs::read(config_path).map_err(|error| error.to_string())?;
+                    if scope["configSha256"] != format!("{:x}", Sha256::digest(config_bytes)) {
+                        return Err(
+                            "generated fixture config bytes changed during checking".to_string()
+                        );
+                    }
+                    if prepare_script_scope(&cwd, scope["tsconfig"].as_str().unwrap_or(""))?
+                        != *scope
+                    {
+                        return Err("fixture script bytes changed during checking".to_string());
+                    }
+                }
+                Ok(coverage)
+            }) {
                 Ok(coverage) => payload["typecheckerCoverage"] = coverage,
                 Err(error) => payload["validationError"] = Value::String(error),
             }
@@ -759,7 +784,12 @@ fn tool_args(
         .concat()),
         "typechecker" => {
             let mut values = vec!["check".to_string()];
-            values.extend(typecheck_corpus_globs(project)?);
+            if !(typecheck_tsconfig_override.is_some()
+                && typecheck_source_tsconfig_path(project).is_none()
+                && project.get("expectedVueFileCount").and_then(Value::as_u64) == Some(0))
+            {
+                values.extend(typecheck_corpus_globs(project)?);
+            }
             values.extend(
                 ["--format", "json", "--no-config"]
                     .iter()
@@ -833,10 +863,25 @@ fn prepare_typechecker_fixture_tsconfig(
         return Ok(Some(FixtureTypecheckTsconfig {
             relative_path,
             cleanup_path: None,
+            script_scope: None,
         }));
     }
     let absolute_path = cwd.join(&relative_path);
-    fs::write(&absolute_path, "{\n  \"compilerOptions\": {}\n}\n").map_err(|error| {
+    let script_scope = if project.get("expectedVueFileCount").and_then(Value::as_u64) == Some(0) {
+        if !collect_vue_input_paths(cwd, &typecheck_corpus_globs(project)?)?.is_empty() {
+            return Err("zero-Vue fixture unexpectedly owns Vue inputs".to_string());
+        }
+        Some(prepare_script_scope(cwd, &relative_path)?)
+    } else {
+        None
+    };
+    let config = script_scope
+        .as_ref()
+        .map(|scope| scope["config"].clone())
+        .unwrap_or_else(|| json!({"compilerOptions": {}}));
+    let config_bytes =
+        serde_json::to_string_pretty(&config).map_err(|error| error.to_string())? + "\n";
+    fs::write(&absolute_path, &config_bytes).map_err(|error| {
         format!(
             "cannot write fixture-local typechecker tsconfig {}: {error}",
             absolute_path.display()
@@ -845,7 +890,186 @@ fn prepare_typechecker_fixture_tsconfig(
     Ok(Some(FixtureTypecheckTsconfig {
         relative_path,
         cleanup_path: Some(absolute_path),
+        script_scope,
     }))
+}
+
+fn prepare_script_scope(cwd: &Path, tsconfig: &str) -> Result<Value, String> {
+    let files = fixture_inputs::collect_owned_script_files(cwd)?;
+    let roots = files
+        .iter()
+        .filter(|file| !is_script_declaration(file))
+        .cloned()
+        .collect::<Vec<_>>();
+    if roots.is_empty() {
+        return Err(
+            "zero-Vue fixture has no physical script roots; no files may be reported checked"
+                .to_string(),
+        );
+    }
+    let records = files.iter().map(|file| {
+        let bytes = fs::read(cwd.join(file)).map_err(|error| error.to_string())?;
+        Ok(json!({"file": file, "bytes": bytes.len(), "sha256": format!("{:x}", Sha256::digest(&bytes))}))
+    }).collect::<Result<Vec<Value>, String>>()?;
+    let config = json!({"compilerOptions": {"allowJs": true, "checkJs": true, "jsx": "preserve"}, "files": files, "include": []});
+    let config_bytes =
+        serde_json::to_string_pretty(&config).map_err(|error| error.to_string())? + "\n";
+    Ok(
+        json!({"schema": "vize.fixtureScriptSourceScan", "version": 1, "tsconfig": tsconfig,
+        "files": records, "roots": roots, "config": config,
+        "configSha256": format!("{:x}", Sha256::digest(config_bytes.as_bytes()))}),
+    )
+}
+
+fn is_script_declaration(file: &str) -> bool {
+    [".d.ts", ".d.mts", ".d.cts"]
+        .iter()
+        .any(|suffix| file.ends_with(suffix))
+}
+
+fn validate_script_scope(
+    project: &Value,
+    output: &Value,
+    expected_files: Option<&[String]>,
+    authored_files: &[String],
+    scope: &Value,
+) -> Result<(), String> {
+    if project.get("expectedVueFileCount").and_then(Value::as_u64) != Some(0)
+        || typecheck_source_tsconfig_path(project).is_some()
+        || expected_files != Some(&[][..])
+    {
+        return Err(
+            "script scope is only valid for an owned generated zero-Vue project".to_string(),
+        );
+    }
+    let object = require_record(scope, "script scope", "typechecker")?;
+    require_exact_keys(
+        object,
+        &[
+            "config",
+            "configSha256",
+            "files",
+            "roots",
+            "schema",
+            "tsconfig",
+            "version",
+        ],
+        "script scope",
+        "typechecker",
+    )?;
+    let expected_tsconfig = format!(
+        ".vize-fixture-typecheck-{}.tsconfig.json",
+        fixture_project_id(project)?
+    );
+    if scope["schema"] != "vize.fixtureScriptSourceScan"
+        || scope["version"] != 1
+        || scope["tsconfig"] != expected_tsconfig
+    {
+        return Err("script scope identity is invalid".to_string());
+    }
+    let records = scope["files"]
+        .as_array()
+        .ok_or_else(|| "script scope has no physical files".to_string())?;
+    let files = records
+        .iter()
+        .map(|record| {
+            let object = require_record(record, "script file", "typechecker")?;
+            require_exact_keys(
+                object,
+                &["bytes", "file", "sha256"],
+                "script file",
+                "typechecker",
+            )?;
+            non_negative_json_int(&record["bytes"], "script file bytes", "typechecker")?;
+            let hash = record["sha256"].as_str().unwrap_or("");
+            if hash.len() != 64
+                || !hash
+                    .bytes()
+                    .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+            {
+                return Err("script file bytes/hash are invalid".to_string());
+            }
+            record["file"]
+                .as_str()
+                .map(str::to_string)
+                .ok_or_else(|| "invalid script file".to_string())
+        })
+        .collect::<Result<Vec<_>, String>>()?;
+    validate_manifest_input(&files, "physical script files", |file| {
+        is_typecheck_source(file)
+            && !file.ends_with(".vue")
+            && !file.contains('\0')
+            && !file
+                .split('/')
+                .any(|part| matches!(part, ".git" | ".yarn" | "node_modules"))
+    })?;
+    if files.iter().any(|file| !authored_files.contains(file)) {
+        return Err("physical script file is not an authored fixture source".to_string());
+    }
+    let expected_roots = files
+        .iter()
+        .filter(|file| !is_script_declaration(file))
+        .cloned()
+        .collect::<Vec<_>>();
+    let config = json!({"compilerOptions": {"allowJs": true, "checkJs": true, "jsx": "preserve"}, "files": files, "include": []});
+    let config_bytes =
+        serde_json::to_string_pretty(&config).map_err(|error| error.to_string())? + "\n";
+    if expected_roots.is_empty()
+        || scope["roots"] != json!(expected_roots)
+        || scope["config"] != config
+        || scope["configSha256"] != format!("{:x}", Sha256::digest(config_bytes.as_bytes()))
+    {
+        return Err("script scope config/files/roots are inconsistent".to_string());
+    }
+    let roots = scope["roots"]
+        .as_array()
+        .ok_or_else(|| "script scope has no roots".to_string())?;
+    if roots.is_empty() {
+        return Err("script scope checked no roots".to_string());
+    }
+    let checked = output["files"]
+        .as_array()
+        .ok_or_else(|| "script scope has no checked files".to_string())?;
+    let count = output["fileCount"].as_u64().unwrap_or(0) as usize;
+    for root in roots {
+        let file = root
+            .as_str()
+            .ok_or_else(|| "invalid script root".to_string())?;
+        if !authored_files.iter().any(|path| path == file)
+            || !is_typecheck_source(file)
+            || is_script_declaration(file)
+            || !checked
+                .iter()
+                .take(count)
+                .any(|entry| entry["file"] == *root)
+        {
+            return Err(format!("physical script root was not checked: {file}"));
+        }
+    }
+    let programs = output["programs"]
+        .as_array()
+        .ok_or_else(|| "script scope has no owning program".to_string())?;
+    if programs.len() != 1
+        || programs[0]["root"] != "."
+        || programs[0]["tsconfig"] != scope["tsconfig"]
+        || programs[0]["compilerOptions"] != scope["config"]["compilerOptions"]
+    {
+        return Err("script scope has a foreign or altered owning program".to_string());
+    }
+    let program_files = programs[0]["files"]
+        .as_array()
+        .ok_or_else(|| "script scope has no program files".to_string())?;
+    for root in roots {
+        if !program_files.contains(root) {
+            return Err("script root is missing from its owning program".to_string());
+        }
+    }
+    if program_files.iter().any(|file| {
+        !files.iter().any(|path| file == path) && !file.as_str().is_some_and(is_dependency_source)
+    }) {
+        return Err("script root is foreign to its owning program".to_string());
+    }
+    Ok(())
 }
 
 fn fixture_project_id(project: &Value) -> Result<String, String> {
@@ -1749,6 +1973,27 @@ fn validate_typechecker_output(
     expected_files: Option<&[String]>,
     authored_files: &[String],
 ) -> Result<Value, String> {
+    validate_typechecker_output_with_scope(
+        project,
+        output,
+        exit_code,
+        expected_files,
+        authored_files,
+        None,
+    )
+}
+
+fn validate_typechecker_output_with_scope(
+    project: &Value,
+    output: &Value,
+    exit_code: i32,
+    expected_files: Option<&[String]>,
+    authored_files: &[String],
+    script_scope: Option<&Value>,
+) -> Result<Value, String> {
+    if let Some(scope) = script_scope {
+        validate_script_scope(project, output, expected_files, authored_files, scope)?;
+    }
     let object = require_record(output, "envelope", "typechecker")?;
     let expected_output_keys = if output.get("programs").is_some_and(Value::is_array) {
         &[
@@ -1776,7 +2021,10 @@ fn validate_typechecker_output(
             files.len()
         ))?;
     }
-    if project.get("expectedVueFileCount").and_then(Value::as_u64) == Some(0) && file_count != 0 {
+    if project.get("expectedVueFileCount").and_then(Value::as_u64) == Some(0)
+        && file_count != 0
+        && script_scope.is_none()
+    {
         typechecker_invalid(&format!(
             "expected zero checked files, received {file_count}"
         ))?;
@@ -2416,6 +2664,225 @@ mod native_hint_contract_tests {
         ] {
             assert!(
                 validate_typechecker_output(&project, &output(diagnostic), 0, None, &[]).is_err()
+            );
+        }
+    }
+}
+
+#[cfg(test)]
+mod generated_script_ownership_tests {
+    use super::*;
+
+    fn controls() -> (tempfile::TempDir, Value, Value, Value, Vec<String>) {
+        let directory = tempfile::tempdir().unwrap();
+        fs::create_dir(directory.path().join("src")).unwrap();
+        fs::write(
+            directory.path().join("src/entry.js"),
+            "/** @type {number} */\nexport const value = 'wrong';\n",
+        )
+        .unwrap();
+        fs::write(
+            directory.path().join("src/second.ts"),
+            "export const value: number = 'wrong';\n",
+        )
+        .unwrap();
+        fs::write(
+            directory.path().join("src/types.d.ts"),
+            "declare const name: string;\n",
+        )
+        .unwrap();
+        fs::write(directory.path().join("src/Ignored.JS"), "not selected").unwrap();
+        let project = json!({"id":"scripts", "expectedVueFileCount":0, "vueGlobs":["**/*.vue"]});
+        let scope = prepare_script_scope(
+            directory.path(),
+            ".vize-fixture-typecheck-scripts.tsconfig.json",
+        )
+        .unwrap();
+        let roots = scope["roots"].as_array().unwrap();
+        let output = json!({"files": roots.iter().map(|file| json!({"file":file,"diagnostics":["error:2:14 [TS2322] Type 'string' is not assignable to type 'number'."]})).collect::<Vec<_>>(),
+            "programs":[{"root":".","tsconfig":scope["tsconfig"],"compilerOptions":scope["config"]["compilerOptions"],"files":roots}],
+            "errorCount":2,"warningCount":0,"fileCount":2});
+        let files = scope["config"]["files"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|file| file.as_str().unwrap().to_string())
+            .collect();
+        (directory, project, scope, output, files)
+    }
+
+    #[test]
+    fn generated_owner_checks_all_script_roots_and_keeps_full_diagnostics() {
+        let (directory, project, scope, output, files) = controls();
+        assert_eq!(files, ["src/entry.js", "src/second.ts", "src/types.d.ts"]);
+        let original = output.clone();
+        let coverage = validate_typechecker_output_with_scope(
+            &project,
+            &output,
+            1,
+            Some(&[]),
+            &files,
+            Some(&scope),
+        )
+        .unwrap();
+        assert_eq!(coverage["requested"]["fileCount"], 0);
+        assert_eq!(coverage["transitiveAuthored"]["files"], scope["roots"]);
+        assert_eq!(output, original);
+        assert!(validate_typechecker_output(&project, &output, 1, Some(&[]), &files).is_err());
+        let config = prepare_typechecker_fixture_tsconfig(
+            &project,
+            "typechecker",
+            false,
+            directory.path(),
+            true,
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(
+            serde_json::from_str::<Value>(
+                &fs::read_to_string(directory.path().join(&config.relative_path)).unwrap()
+            )
+            .unwrap(),
+            scope["config"]
+        );
+        assert_eq!(
+            tool_args(
+                &project,
+                "typechecker",
+                "unused",
+                Some(&config.relative_path)
+            )
+            .unwrap(),
+            [
+                "check",
+                "--format",
+                "json",
+                "--no-config",
+                "--tsconfig",
+                &config.relative_path
+            ]
+        );
+    }
+
+    #[test]
+    fn script_scope_rejects_foreign_owner_missing_roots_and_invalid_custody() {
+        let (_directory, project, scope, output, files) = controls();
+        for (path, value) in [
+            ("root", json!("../foreign")),
+            ("tsconfig", json!("foreign.json")),
+            ("compilerOptions", json!({"allowJs":false})),
+        ] {
+            let mut changed = output.clone();
+            changed["programs"][0][path] = value;
+            assert!(
+                validate_typechecker_output_with_scope(
+                    &project,
+                    &changed,
+                    1,
+                    Some(&[]),
+                    &files,
+                    Some(&scope)
+                )
+                .is_err()
+            );
+        }
+        let mut missing = output.clone();
+        missing["files"].as_array_mut().unwrap().pop();
+        missing["fileCount"] = json!(1);
+        missing["errorCount"] = json!(1);
+        assert!(
+            validate_typechecker_output_with_scope(
+                &project,
+                &missing,
+                1,
+                Some(&[]),
+                &files,
+                Some(&scope)
+            )
+            .is_err()
+        );
+        let mut foreign = output.clone();
+        foreign["programs"][0]["files"]
+            .as_array_mut()
+            .unwrap()
+            .push(json!("unknown.ts"));
+        assert!(
+            validate_typechecker_output_with_scope(
+                &project,
+                &foreign,
+                1,
+                Some(&[]),
+                &files,
+                Some(&scope)
+            )
+            .is_err()
+        );
+        for (path, value) in [
+            ("configSha256", json!("0".repeat(64))),
+            ("roots", json!([])),
+            ("extra", json!(true)),
+        ] {
+            let mut changed = scope.clone();
+            changed[path] = value;
+            assert!(
+                validate_typechecker_output_with_scope(
+                    &project,
+                    &output,
+                    1,
+                    Some(&[]),
+                    &files,
+                    Some(&changed)
+                )
+                .is_err()
+            );
+        }
+        let empty = json!({"files":[],"programs":[],"errorCount":0,"warningCount":0,"fileCount":0});
+        assert!(
+            validate_typechecker_output_with_scope(
+                &project,
+                &empty,
+                0,
+                Some(&[]),
+                &files,
+                Some(&scope)
+            )
+            .is_err()
+        );
+    }
+
+    #[test]
+    fn physical_source_scan_is_case_sensitive_and_never_accepts_empty_work() {
+        let directory = tempfile::tempdir().unwrap();
+        fs::write(directory.path().join("Ignored.JS"), "unknown").unwrap();
+        assert!(prepare_script_scope(directory.path(), "owned.json").is_err());
+        fs::write(
+            directory.path().join("types.d.ts"),
+            "declare const name: string;",
+        )
+        .unwrap();
+        assert!(prepare_script_scope(directory.path(), "owned.json").is_err());
+        fs::write(directory.path().join("entry.js"), "export {};").unwrap();
+        for name in [".git", ".yarn", "node_modules"] {
+            fs::create_dir(directory.path().join(name)).unwrap();
+            fs::write(directory.path().join(name).join("ignored.js"), "unknown").unwrap();
+        }
+        assert_eq!(
+            fixture_inputs::collect_owned_script_files(directory.path()).unwrap(),
+            ["entry.js", "types.d.ts"]
+        );
+        #[cfg(unix)]
+        {
+            let foreign = tempfile::tempdir().unwrap();
+            fs::write(foreign.path().join("foreign.js"), "export {};").unwrap();
+            std::os::unix::fs::symlink(
+                foreign.path().join("foreign.js"),
+                directory.path().join("escape.js"),
+            )
+            .unwrap();
+            assert!(
+                prepare_script_scope(directory.path(), "owned.json")
+                    .unwrap_err()
+                    .contains("escapes root")
             );
         }
     }

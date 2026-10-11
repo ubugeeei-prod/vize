@@ -1,6 +1,7 @@
 import { Buffer } from "node:buffer";
 import { createHash } from "node:crypto";
 import { isAbsolute } from "node:path";
+import { validateScriptScope } from "./tool-matrix-inputs.mjs";
 
 const outputKeys = ["errorCount", "fileCount", "files", "programs", "warningCount"];
 const fileKeys = ["diagnostics", "file"];
@@ -13,7 +14,10 @@ export function validateTypecheckerOutput(
   exitCode,
   expectedFiles = null,
   authoredFiles = expectedFiles,
+  scriptScope = null,
 ) {
+  if (scriptScope != null)
+    validateScriptScope(project, output, expectedFiles, authoredFiles, scriptScope);
   requireRecord(output, "envelope");
   const expectedOutputKeys = Array.isArray(output.programs)
     ? outputKeys
@@ -28,7 +32,7 @@ export function validateTypecheckerOutput(
   if (output.fileCount > output.files.length) {
     invalid(`fileCount ${output.fileCount} exceeds ${output.files.length} file entries`);
   }
-  if (project.expectedVueFileCount === 0 && output.fileCount !== 0) {
+  if (project.expectedVueFileCount === 0 && output.fileCount !== 0 && scriptScope == null) {
     invalid(`expected zero checked files, received ${output.fileCount}`);
   }
   if (project.expectedVueFileCount !== 0 && output.fileCount === 0) {
