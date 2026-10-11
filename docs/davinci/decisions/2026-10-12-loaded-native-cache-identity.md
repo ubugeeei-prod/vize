@@ -124,7 +124,8 @@ require-cache entry and loads the same filename again. Node returns a new
 JavaScript binding, but all fourteen complete results remain from the old
 mapped image. The first implementation incorrectly assigns the replacement
 file's SHA-256 to that binding. A fresh process returns the complete successor
-authority. This is an unresolved correctness failure; PR #8704 stays off queue.
+authority. This was a correctness failure in the disk-hash attempt. Keep that failure
+packet; only the reviewed image-token successor below may qualify PR #8704.
 
 The full original twenty-eight results and fresh successor authority are
 retained under `/tmp/vize-native-cache-os-reload-diagnostic-20261012`.
@@ -142,8 +143,8 @@ share path history among helper copies in one isolate; it is not proof of
 process-wide ownership. A path absent from an OS report does not by itself
 prove which native body executes. Preserve all previous scoped receipts.
 
-TODO: qualify a bounded refusal guard with the unchanged native bodies, all
-fourteen original whole modules and the frozen dependency/browser plane.
+The bounded-refusal proposal was superseded by the image-token decision below:
+retain the healthy cross-process restore while refusing unknown images.
 Avoid adding loader waits: [Node 24.14.0's report implementation](https://github.com/nodejs/node/blob/v24.14.0/src/node_report.cc)
 synchronously collects child-worker reports, while its
 [loaded-library implementation](https://github.com/nodejs/node/blob/v24.14.0/src/debug_utils.cc)
@@ -219,5 +220,89 @@ claimed available. The partial embedded plugin-host revision corroborates
 `9c1` but cannot establish full image authority. Preserve raw generated and
 committed declarations and their complete difference independently. Reuse this
 one actual image; source-only successors retain their separate exact Actions
-requirements. Frozen fourteen-module/154-entry/eleven-assertion and four actual
-OS reload controls remain pending. No duplicate native builder is required.
+requirements. No duplicate native builder is required.
+
+### Actual OS image-reuse acceptance
+
+The same selected image passes wrapper reload, helperless preload followed by
+cache eviction, two independent helper copies and a fresh Worker isolate.
+Each new owned APFS slot initially loads the authenticated image, then swaps
+only its disk file to the old published body and evicts only that `.node`
+require-cache entry. The mapped image retains its embedded token and every
+field of all fourteen complete successor results. A fresh child of the same
+path loads the old body, receives a process nonce and returns all fourteen
+complete old results. The Worker exit is awaited with code zero; these
+controls invoke no process-report API. Both old uninstrumented bodies retain
+stable frozen nonces within a binding and cannot claim persistent identity.
+
+The forty-one-file complete index is
+`actual-image-token-os-controls-index.json`, SHA-256
+`a1e63216752fd01fe58f6164c87b291faea5b49ba1fff5da3af4451babda9c68`,
+under the separate controller root recorded by
+`/tmp/vize-native-image-token-acceptance-controller-index-20261012.json`.
+The independent parent readback rehashes every file and compares all complete
+result arrays, sources and options to the retained old/successor authorities:
+`/tmp/vize-native-image-token-os-independent-parent-readback-20261012.json`,
+SHA-256 `d67343110800e48721289da077f231b6c27ac2484b2b428b3d915b6750f3523b`.
+Nothing is normalized and every original negative packet remains unchanged.
+
+### Finite declaration boundary for runtime qualification
+
+Preserve both complete generated and curated declarations. All 199 names
+exist in both; 196 shared structures match exactly. The three preexisting
+differences are `EndOfLineNapi` enum versus the same four string literals,
+`OxlintHtmlRule.authoredOptions` and `OxlintHtmlDiagnostic.fix` curated unknown
+versus raw any types. Four preexisting documentation groups and declaration order also
+differ. The owned getter documentation and nullable return type match exactly;
+a nonnullable mutation is rejected. Every old declaration and documentation
+body is unchanged from the original source; only the getter is added.
+
+The complete two-declaration AST review is
+`complete-declaration-authority-review.json`, SHA-256
+`ccff5d6a707b0a9fcda948500cef398d285ffba4973d557ec721b3c2c474c516`,
+in the same controller receipts. This explicit existing boundary permits
+only the bounded runtime controls using the unchanged curated-source package
+and authenticated image. It does not establish broad declaration or shipping
+API equivalence and authorizes no declaration rewrite.
+
+### Complete unchanged browser and cache acceptance
+
+Both default and configured-cache consumers preserve all twenty-five original
+committed blobs, including the twenty-three unchanged runtime/config/test
+files. The candidate plugin pin and Vize lock entries are the only dependency
+changes. Each physical pnpm store retains all 154 original non-Vize package,
+snapshot and importer entries, with the same actual runtime versions.
+
+All eight original eleven-assertion browser runs are retained. The old public
+body produces six passes and five known failures in both consumers. Without
+clearing either cache, replacing only the owned native slot with the selected
+image causes fourteen recompilations on the first server, then fourteen disk
+restores on the second; all eleven assertions pass. A fresh unchanged-image
+process restores fourteen modules without recompilation on both servers and
+again passes all eleven. Only after these results, move both owned caches
+intact to receipts and run an independent same-path cold control. All eleven
+assertions pass; every field of all fourteen complete modules and the entire
+compressed manifest match automatic and warm results exactly. Both original
+old manifests remain byte-exact. No source, assertion or output is normalized.
+
+The complete 291-file index is
+`/tmp/vize-native-image-token-complete-independent-controls-20261012.json`,
+SHA-256 `d8a12e6b704349c465a27b0709ca264af42d3dd9836250f3758ca0c96b4f5718`.
+Independent readback verifies every file, committed input, physical lock plane,
+actual native load/getter, complete result and cache byte:
+`/tmp/vize-native-image-token-complete-independent-parent-readback-20261012.json`,
+SHA-256 `a7b65661c99be23209daf379cc966762cd1b364d09c8332472a0986fc627add4`.
+
+The ordinary source plugin tar is
+`3025bfef5c958fff15336d93e166dfd1565442044df693449a5b5c2b88116919`;
+the unchanged curated-source wrapper/declaration tar is
+`de90c4607cd9df89afc255079ab2c310d560cf16345a76adca2b20eca663b587`.
+The image remains the genuine selected `9c1` artifact, never a rebuilt
+successor image. Native Rust, loaders, token producers and Vite runtime retain
+those qualified bytes. Exact
+source `3b7ea1dc16127853f34ef6c6adeff9b501bf0502` passes 41 ordinary Actions
+checks with no failures; eighteen normally skipped lanes remain skipped.
+Rebasing this evidence record requires fresh exact-source Actions. Full
+protected integration, actual merge and fresh official installed acceptance
+remain separate required gates. The original #8623/#8631 release observers
+continue independently; this same-version follow-up does not delay them.
