@@ -82,6 +82,7 @@ class FakeGDB:
         elif command == "continue":
             self.continues += 1
             if self.mode == "foreign-continued": self.inferior.pid += 1
+            if self.mode == "postfault-exit" and self.continues == 2: self.inferior.pid = 0
             self.events.cont.emit(types.SimpleNamespace())
             if self.mode == "cancel": raise KeyboardInterrupt()
             if self.mode == "normal" or self.continues == 2:
@@ -212,6 +213,12 @@ class GDBLaws(unittest.TestCase):
         self.assertNotIn("queue-signal 0", adapter.commands)
         self.assertFalse(any(packet.get("phase") == "inferior-running" for packet in packets))
         self.assertEqual(closed, [77])
+
+    def test_readiness_is_once_and_does_not_reinspect_expected_postfault_death(self):
+        adapter, packets, signals, closed = self.run_fixture("postfault-exit")
+        self.assertEqual(sum(packet.get("phase") == "inferior-running" for packet in packets), 1)
+        self.assertFalse(any(packet.get("gap", "").startswith("ContinuedActor") for packet in packets))
+        self.assertEqual([packet["status"] for packet in packets if packet["status"] != "debugger-phase"], ["attached", "SIGSEGV", "exited"])
 
 
 if __name__ == "__main__":

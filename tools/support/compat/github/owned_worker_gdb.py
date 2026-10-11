@@ -103,6 +103,7 @@ def run(config):
     detaching = False
     inferior_number = None
     pending_signal = None
+    continued_observed = False
     exited = []
     def owned_inferior():
         inferior = gdb.selected_inferior()
@@ -120,6 +121,9 @@ def run(config):
         exited.append(getattr(event, "exit_code", None))
         if len(exited) == 1: publish({"status": "exited", "exitCode": exited[-1]})
     def continued(event):
+        nonlocal continued_observed
+        if continued_observed: return  # Readiness is the first actual resume, not post-fault death.
+        continued_observed = True
         try:
             owned_inferior()
         except Exception as error:
