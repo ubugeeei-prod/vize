@@ -71,3 +71,18 @@ replay on that real main preserves all 350 incoming rows and appends only the
 exact owned suffixes at 154, 324 and 341. Every consumer/runtime/fixture and
 native-cohort law body remains byte-identical. The replay still requires its
 own fresh source and protected qualification before actual merge and release.
+
+Later actual main `43a7691750824e33f86bb2f90ca61774b9cd214c` added an
+independent hydration record at 341. Relocate only this observer's exact short
+cohort link into its existing reserved Vapor paragraph at 154, preserving every
+incoming clause, the terminal retirement suffix at 324 and all 350 rows.
+Runtime, fixture and cohort-law bytes stay exact; this avoids another collision
+at the shared CI paragraph without changing qualification or publication gates.
+
+The next source submission waits for the common current-head custom-directive
+custody repair. A cheap candidate-phase probe at exact local `4c517a55`
+refuses its historical `67e3d0e` whole-tree delta before any Cargo build
+(17,480 retained log bytes, SHA256
+`b37cb81f58f5eb0fec8db4010ec09fd9d157a4288a4dff12488e861366057087`).
+The native owner is repairing that shared guard; do not add an observer-local
+allowance or transfer the earlier `607b397` green source result.
