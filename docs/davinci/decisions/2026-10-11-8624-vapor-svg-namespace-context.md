@@ -47,14 +47,29 @@ The focused SVG `title` compiler control exposed a separate tokenizer defect:
 the HTML RCDATA mode escaped its child markup. Resolve only an opening `title`
 from each parser owner's existing live parent scope, after the name callback.
 SVG parents permit children; HTML integration points (`foreignObject`, `desc`
-and `title`) preserve HTML RCDATA. This adds no namespace stack, allocation,
-input walk or dependency from a level crate to a legacy crate. Stateless raw
-callback consumers retain their existing token stream. Both production parser
-owners consume a separately registered eleven-row complete ordered-tree/text
+and `title`) preserve HTML RCDATA. For those existing parser owners the query
+adds no namespace stack, allocation, input walk or dependency from a level
+crate to a legacy crate. Stateless raw callback consumers retain their existing
+token stream. The parser owners consume a separately registered twelve-row complete ordered-tree/text
 corpus, including HTML title/textarea, nested SVG, integration points,
 self-closing/sibling boundaries, MathML and a similarly named ordinary tag.
 Native checks additionally verify byte fidelity. These are parser controls;
 they confer no published compiler or browser execution credit.
+
+The generic L1 projection also needs this live namespace owner. Reuse the same
+native component lexer and Vue sink with a neutral policy that admits every
+existing head and never suppresses interpolation for `v-pre`. This route now
+uses the owner's arena-backed ancestry frames; it adds no lexer pass, pipeline
+stage, serialization or legacy dependency. Its const-false header policy avoids
+scanning attributes for admission. Preserve the original eleven corpus rows
+byte-for-byte and append the whole SVG/path/title conditional control minimized
+from the exact canonical vue-data-ui gitlink. Both native component and generic
+projection consume all twelve controls with byte fidelity; Armature checks the
+same complete ordered streams. Additional old/new controls preserve neutral
+`v-pre`, dynamic arguments, entities, in-tag comments and exact error offsets;
+the stateless facade still checks its frozen complete SVG title raw stream.
+Local controls pass, but fresh full canonical DOM/SSR and protected instruction
+ceilings remain required before this source is qualified.
 
 The original third-party sources, six original control rows, and two authored
 physical SVG controls stay unchanged. This additive namespace campaign does
