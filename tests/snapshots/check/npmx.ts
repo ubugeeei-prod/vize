@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { npmxApp, CORSA_BIN, VIZE_BIN, requireVizeAndCorsaBins } from "../../_helpers/apps.ts";
 import { assertSnapshot } from "../../_helpers/snapshot.ts";
 import { stringifyDiagnosticSnapshot } from "../../_helpers/vize-check.ts";
+import { retainAppCheckPacket } from "../../_helpers/app-check-packet.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SNAPSHOT_DIR = path.join(__dirname, "__snapshots__");
@@ -36,6 +37,23 @@ describe(`${app.name} check (type checker)`, () => {
     }
 
     const parsed = JSON.parse(stdout);
+    retainAppCheckPacket({
+      name: app.name,
+      stdout,
+      parsed,
+      cwd: checkConfig.cwd,
+      command: cmd,
+      argv: [
+        VIZE_BIN,
+        "check",
+        ...checkConfig.patterns,
+        "--format",
+        "json",
+        "--quiet",
+        "--corsa-path",
+        CORSA_BIN,
+      ],
+    });
     console.log(`fileCount=${parsed.fileCount}, errorCount=${parsed.errorCount}`);
     assert.ok(parsed.fileCount > 0, "fileCount should be > 0");
 

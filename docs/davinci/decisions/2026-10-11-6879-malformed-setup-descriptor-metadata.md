@@ -93,6 +93,22 @@ source runs finish. The App E2E owner publishes the fourth child and runs one
 complete composed qualifier. No second parent build or separate full observer
 is added for this slice.
 
+The fourth Stack layer first moves the complete existing ElementPlus native
+projection control into its own test module without changing its 3,195-byte
+function. The parent test file drops from 390 to 320 lines; the same native test
+binary still runs all four controls.
+
+The single composed qualifier also enables retention immediately after the
+five original application JSON parses. It saves raw stdout, the unmodified
+report and programs, authored argv/cwd, reported source/config bytes, config
+extends, package contracts and physical generated-config observations before
+unchanged assertions. Native execution-time config/options and dependency
+reads remain explicitly unproved when the public report does not provide them;
+source-derived cache paths are observations, not invented selection receipts.
+The shared App suite keeps its existing behavior when the capture environment
+variable is absent. No expected snapshot, diagnostic, count, deadline or
+program selection changes in this layer.
+
 The exact composed `888a4898a8` qualifier 38129574946 remains failed. Its
 whole #5071 programs retain their real malformed import, so the existing OXC
 whole-program parser refuses its AST both before and after; both actual import

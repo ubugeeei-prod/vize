@@ -7,6 +7,7 @@ import { nuxtUiApp, CORSA_BIN, VIZE_BIN, requireVizeAndCorsaBins } from "../../_
 import { assertSnapshot } from "../../_helpers/snapshot.ts";
 import { stringifyDiagnosticSnapshot } from "../../_helpers/vize-check.ts";
 import { normalizeTargetParameterLabels } from "../_helpers/diagnostics.ts";
+import { retainAppCheckPacket } from "../../_helpers/app-check-packet.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SNAPSHOT_DIR = path.join(__dirname, "__snapshots__");
@@ -36,7 +37,25 @@ describe(`${app.name} check (type checker)`, () => {
       }
     }
 
-    const parsed = normalizeTargetParameterLabels(JSON.parse(stdout));
+    const rawParsed = JSON.parse(stdout);
+    retainAppCheckPacket({
+      name: app.name,
+      stdout,
+      parsed: rawParsed,
+      cwd: checkConfig.cwd,
+      command: cmd,
+      argv: [
+        VIZE_BIN,
+        "check",
+        ...checkConfig.patterns,
+        "--format",
+        "json",
+        "--quiet",
+        "--corsa-path",
+        CORSA_BIN,
+      ],
+    });
+    const parsed = normalizeTargetParameterLabels(rawParsed);
     console.log(`fileCount=${parsed.fileCount}, errorCount=${parsed.errorCount}`);
     assert.ok(parsed.fileCount > 0, "fileCount should be > 0");
 

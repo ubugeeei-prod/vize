@@ -32,6 +32,8 @@ jobs:
           git rev-parse HEAD > target/native-syntax-completion/source.sha
           git ls-files -s > target/native-syntax-completion/whole-source-index.txt
       - name: Original complete App E2E check row, sharing its native build
+        env:
+          VIZE_APP_CHECK_CAPTURE_DIR: ${{ github.workspace }}/target/native-syntax-completion/original-app-packets
         uses: ./.github/actions/app-e2e-row
         with:
           profile: full
