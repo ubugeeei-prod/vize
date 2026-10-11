@@ -1,8 +1,9 @@
 # Rust compilation inventory for protected Check
 
 Issue: [#6830](https://github.com/ubugeeei-prod/vize/issues/6830).
-Status: measured inventory and private CLI/SFC-sharing prototype. No hosted
-qualification, measured saving, PR, or merge is claimed for the prototype.
+Status: measured inventory and [CLI/SFC-sharing PR #8617](https://github.com/ubugeeei-prod/vize/pull/8617)
+under Actions qualification. No complete source qualification, measured saving,
+or merge is claimed for the prototype.
 
 ## Source and observations
 
@@ -158,9 +159,31 @@ Do not wait for the workspace archive producer: its job finished at
 drop profile/feature checks, or adopt Bazel/Ninja from this evidence. Cargo
 already supplies the needed compilation/archive mechanisms.
 
-TODO: review the private producer/consumer source and complete transport/DAG
-laws, pair this record with one concise #6830 comment when publishing, then
-qualify actual same-source Actions and all original job/workload outcomes.
+## Initial hosted qualification
+
+[Check 38133096382](https://github.com/ubugeeei-prod/vize/actions/runs/38133096382)
+checks original head `5c6513b0bf2198b7f95f80cb33095c7aa725adbf` using actual PR
+merge source `48526ca27f944f706974bc055aff7127439ad036`. Its shared producer
+and all four strict restorations succeeded. Cargo printed 36.57 s for CLI
+and 17.62 s for oracle; the complete build step took 63 s, packing 7 s,
+uploading 1 s, and each restore 4–5 s. The 53,180,406-byte artifact's complete
+four-member content and modes were independently checked without executing it.
+The actual producer became available 89 s after the plan, and tooling began
+90–91 s after it. This is slower than the earlier 65–75 s availability estimate;
+the initialization delay remains a cost to assess in the complete queue run.
+
+That source remains red: the original evidence-upload law still required
+consumer-local receipt creation, and the source-preflight law still required
+tooling's former single dependency. Their full original job logs are retained
+as 888,794 bytes / SHA256 `ff1acc4e62bedd563aad7661fee5314724840d589dc9110a4f0156f1ce8f151d`
+and 679,834 bytes / SHA256 `e0e0581bc717d0b26be838b6aab993e3aef94278289981f290cfca236898b3ef`.
+The bounded correction follows the genuine producer, strict restoration,
+original receipt and final always-upload path, and preserves every failed-plan
+refusal with tooling's exact two dependencies. Product and transport bytes
+remain unchanged. Fresh corrected-head Actions must qualify all original gates;
+these initial successful boundaries provide no credit to that later source.
+
+TODO: qualify actual same-source Actions and all original job/workload outcomes.
 Compare aggregate compile command wall removed, packing/transfer/validation
 added, and overall critical path independently. The current JS job
 took 1,216 s in both protected runs and was the longest job. Removing repeated
