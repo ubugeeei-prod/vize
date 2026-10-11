@@ -7,7 +7,8 @@ title: JSX と TSX
 # JSX と TSX
 
 > **対応状況:** JSX/TSX はコンパイラ、リンター、型チェッカー、LSP、フォーマッタで扱えます。
-> 型情報を使う検査は明示的に有効にします。React の `.tsx` ファイルを誤って Vue JSX として検査しないためです。
+> 専用の `vize.config.*` がない新規プロジェクトでは、Vue JSX の型チェックを既定で有効にします。専用設定がある場合は明示的に有効にしてください。
+> 新規プロジェクトの既定値のリリース検証は未完了です。React が混在するプロジェクトでは、Vue JSX の型チェックを明示的に無効にしてください。
 > スタンドアロンの `.jsx`/`.tsx` モジュールでは、HMR 対応が主な未完了項目です。
 
 Vize は `.jsx`/`.tsx` の Vue コンポーネントを、`.vue` ファイルと同じコンパイラクレートでコンパイルします。
@@ -344,8 +345,9 @@ vize fmt src --write
 
 ## 型チェック
 
-JSX/TSX の型チェックは、`typeChecker.jsxTypecheck` を明示的に有効にして使います。デフォルトは **`false`** です。
-Vue と React が混在するリポジトリで、React の `.tsx` を Vue JSX として検査しないためです。
+専用の `vize.config.*` がないプロジェクトでは、Vue JSX の型チェックを既定で**有効**にする方針です。
+専用設定がある場合、`typeChecker.jsxTypecheck` は明示的に有効にするまで `false` のままです。
+新規プロジェクトの既定値のリリース検証は未完了です。Vue と React が混在する場合は、[Vue JSX の型チェックを明示的に無効にしてください](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/decisions/2026-10-10-fresh-lsp-capability-policy.md#react-owned-projects)。Vue SFC の型チェックは引き続き利用できます。
 
 ```ts
 // vize.config.ts
@@ -411,7 +413,7 @@ LSP と CLI は同じ変換を使うため、Corsa の診断はエディター�
 
 ドキュメントシンボル、セマンティックトークン、scoped スタイルの診断、コードアクションは、解析した文書から利用できます。
 型情報を使う診断、ホバー、補完、定義への移動、参照、名前変更には `typeChecker.jsxTypecheck` の有効化が必要です。
-エディターでも React の `.tsx` を誤って Vue JSX として扱わないようにしています。
+React が混在するプロジェクトでは、エディターでも Vue JSX の型チェックを明示的に無効にしてください。
 
 <span id="糸くず"></span>
 
@@ -466,7 +468,7 @@ lint と型チェックの仕組みは[静的解析](./static-analysis.md)を、
 
 現在の制限は次のとおりです。
 
-- **型チェックは明示的に有効にします。** `typeChecker.jsxTypecheck` のデフォルトは `false` で、Vue/React が混在するリポジトリで誤って React TSX を検査しないためです。
+- **新規プロジェクトの既定値のリリース検証は未完了です。** 専用設定がある場合は、型チェックを明示的に有効にします。Vue と React が混在する場合は、Vue JSX の型チェックを明示的に無効にしてください。
 - **`.jsx`/`.tsx` モジュールの HMR は未対応です。** VDOM は元の import、export、ブロック内の setup 状態、JSX の引数のデフォルト値とスコープを保持します。ただし、バンドラーが Vue の HMR 境界を登録しないため、編集時は通常の再読み込みになります。
 - **Vapor と SSR で元のモジュールを保持する処理は未完了です。** スタンドアロンのレンダラーが保持できない import、export、setup 文、捕捉したローカルの束縛は診断します。静的なスタンドアロンのレンダラーとコンポーネント単位の出力は利用できます。
 - **実行時ヘルパーの別名は隠せません。** `_openBlock` などの生成するヘルパーと元の束縛が衝突すると、不正なモジュールを出力せず診断します。
