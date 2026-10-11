@@ -19,6 +19,11 @@ await test("typed prop defaults reach the whole default CLI packet without polic
     fs.readFileSync(path.join(root, "tests/_fixtures/n8n-cli-adoption.json"), "utf8"),
   );
   assert.equal(corpus.cases.length, 8);
+  assert.deepEqual(
+    corpus.cases.filter((entry) => entry.diagnostics.length > 0).map((entry) => entry.id),
+    ["original-vaul", "with-defaults", "destructure-alias", "unicode-crlf"],
+    "fixture must retain the four authored positive cases",
+  );
   assert.equal(Object.keys(projection.linter.rules).length, 51);
   assert.equal(projection.linter.rules[corpus.rule], undefined);
   const artifact = path.join(root, "target/differential/lint-typed-prop-default-prefilter.json");

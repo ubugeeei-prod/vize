@@ -23,7 +23,23 @@ fn typed_prop_defaults_reach_default_sfc_dispatch_with_complete_controls() {
     ))
     .unwrap();
     let rule = corpus["rule"].as_str().unwrap();
-    for case in corpus["cases"].as_array().unwrap() {
+    let cases = corpus["cases"].as_array().unwrap();
+    assert_eq!(cases.len(), 8);
+    assert_eq!(
+        cases
+            .iter()
+            .filter(|case| !case["diagnostics"].as_array().unwrap().is_empty())
+            .map(|case| case["id"].as_str().unwrap())
+            .collect::<Vec<_>>(),
+        [
+            "original-vaul",
+            "with-defaults",
+            "destructure-alias",
+            "unicode-crlf"
+        ],
+        "fixture must retain the four authored positive cases"
+    );
+    for case in cases {
         let source = case["source"].as_str().unwrap();
         let filename = case["filename"].as_str().unwrap();
         for preset in [
