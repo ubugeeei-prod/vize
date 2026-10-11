@@ -1,7 +1,7 @@
 import { parseJsonText, readTextEntry, sha256 } from "./release-preflight-artifact-entries.mjs";
 
-// Strict callers can require exact typecheck parity. Release preflight can pass
-// `enforceParity: false` while typechecker parity is tracked as its own ratchet.
+// Release preflight requires exact parity. Explicit observational callers may
+// inspect incomplete evidence without making it release eligible.
 export const releaseTypecheckParityEnforced = true;
 
 export function assertReleaseTypecheckShardArtifacts({

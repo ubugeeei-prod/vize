@@ -304,8 +304,8 @@ export async function verifyReleasePreflight(env = process.env, { bootstrap = tr
   await assertRealProjectMatrixReleaseArtifacts({
     run: realProjectMatrixRun,
     artifacts,
-    enforceParity: false,
-    requireTypecheckArtifacts: false,
+    enforceParity: true,
+    requireTypecheckArtifacts: true,
     readArtifactEntries: async (artifact) => downloadArtifactEntries({ artifact, token }),
   });
   verifyGitReleaseTarget(tag, sha, version);

@@ -1,4 +1,8 @@
 import { createHash } from "node:crypto";
+import {
+  createRealProjectSurfaceVerdict,
+  realProjectSurfaceNames,
+} from "../../../tools/support/compat/fixtures/real-project-surface-verdict.mjs";
 
 import { requiredRealProjectMatrixShardCount } from "../../../tools/support/compat/github/release-preflight-matrix-evidence.mjs";
 import { releaseSha, successfulReleaseRun } from "../support/release-preflight.ts";
@@ -47,14 +51,33 @@ export function shardEntries(
       evidence: { commitSha: releaseSha },
       command: { shardIndex: shard, shardCount: requiredRealProjectMatrixShardCount },
     }),
-    "surface-verdict.json": json({ status: "success" }),
+    "surface-verdict.json": json(
+      createRealProjectSurfaceVerdict(
+        realProjectSurfaceNames.map((name) => ({
+          name,
+          outcome: "success",
+          rawOutcome: "success",
+          budgetMode: "enforce",
+        })),
+        { GITHUB_SHA: releaseSha, FIXTURE_SHARD_INDEX: String(shard) },
+      ),
+    ),
     "lint-divergence-summary.json": json({
       schema: "vize.fixtureLintDivergenceIndex",
       version: 1,
       evidence: { commitSha: releaseSha },
       projectCount: 1,
       projects: [{ project: "fixture" }],
-      budget: { status: "failure", passed: false },
+      budget: {
+        status: "success",
+        passed: true,
+        projectCount: 1,
+        passedCount: 1,
+        failedCount: 0,
+        unusableCount: 0,
+        breachedCount: 0,
+        failedProjects: [],
+      },
     }),
   };
   if (projectId == null) return entries;

@@ -5,6 +5,10 @@ import { fileURLToPath } from "node:url";
 import { typecheckPerformanceProjectIds } from "../fixtures/typecheck-performance-shard.mjs";
 import { readJsonEntry, readTextEntry } from "./release-preflight-artifact-entries.mjs";
 import {
+  assertReleaseLintBudget,
+  assertReleaseSurfaceVerdict,
+} from "./release-preflight-surface-evidence.mjs";
+import {
   assertReleaseTypecheckCoverage,
   assertReleaseTypecheckShardArtifacts,
 } from "./release-preflight-typecheck-evidence.mjs";
@@ -98,9 +102,7 @@ function assertRealProjectShardArtifact({
   }
 
   const surface = readJsonEntry(entries, "surface-verdict.json", artifactName);
-  if (surface.status !== "success") {
-    throw new Error(`${artifactName} surface verdict is ${String(surface.status)}`);
-  }
+  assertReleaseSurfaceVerdict({ artifactName, headSha: run.head_sha, shard, verdict: surface });
   assertReleaseLintDivergenceSummary({
     artifactName,
     run,
@@ -130,6 +132,7 @@ function assertReleaseLintDivergenceSummary({ artifactName, run, summary }) {
   ) {
     throw new Error(`${artifactName} lint divergence summary is not exact release evidence`);
   }
+  assertReleaseLintBudget({ artifactName, summary });
 }
 
 function readDefaultTypecheckRegistry() {

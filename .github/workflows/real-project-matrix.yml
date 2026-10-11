@@ -1,5 +1,12 @@
 name: Real Project Matrix
-run-name: Real Project Matrix @ ${{ github.sha }}
+run-name: >-
+  Real Project Matrix ${{ (inputs.core_tools_mode || 'enforce') == 'enforce' &&
+  (inputs.typecheck_dependencies_mode || 'enforce') == 'enforce' &&
+  (inputs.lint_divergence_mode || 'enforce') == 'enforce' &&
+  (inputs.lsp_mode || 'enforce') == 'enforce' &&
+  (inputs.typecheck_divergence_mode || 'enforce') == 'enforce' &&
+  (inputs.davinci_dom_corpus_mode || 'enforce') == 'enforce' &&
+  'enforced' || 'observational' }} @ ${{ github.sha }}
 
 on:
   workflow_dispatch:

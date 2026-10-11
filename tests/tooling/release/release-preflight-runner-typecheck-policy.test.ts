@@ -8,7 +8,7 @@ import { test } from "node:test";
 import { repoRoot } from "../_helpers/moonbit.ts";
 import { createReleasePreflightVerifyOnlyFixture } from "../support/release-preflight-runner-fixture.ts";
 
-test("verify-only mode accepts shards without optional typecheck divergence artifacts", () => {
+test("verify-only mode rejects shards without required typecheck divergence artifacts", () => {
   const tempDir = fs.mkdtempSync(path.join(tmpdir(), "vize-release-optional-typecheck-"));
   try {
     const fixture = createReleasePreflightVerifyOnlyFixture(tempDir, {
@@ -32,8 +32,8 @@ test("verify-only mode accepts shards without optional typecheck divergence arti
       },
     );
     assert.ifError(result.error);
-    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
-    assert.match(result.stdout, new RegExp(`Release preflight passed for ${fixture.tag}`));
+    assert.equal(result.status, 1, `${result.stderr}\n${result.stdout}`.trim());
+    assert.match(result.stderr, /typecheck dependency artifact count/);
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });
   }

@@ -1,5 +1,47 @@
 use super::*;
 
+#[test]
+fn release_matrix_dispatch_enforces_every_primary_surface_input() {
+    let target = target();
+    let plans =
+        create_release_gate_dispatch_plans("release/v0.435.1", &target.sha, &target.base_sha)
+            .unwrap();
+    let matrix = plans
+        .iter()
+        .find(|plan| plan.workflow_name == "Real Project Matrix")
+        .unwrap();
+    assert_eq!(matrix.inputs.as_object().unwrap().len(), 6);
+    assert!(
+        matrix
+            .inputs
+            .as_object()
+            .unwrap()
+            .values()
+            .all(|value| value == "enforce")
+    );
+    assert_eq!(
+        matrix.expected_run_name,
+        format!("Real Project Matrix enforced @ {}", target.sha)
+    );
+    let mut runs = green_runs(&target, false);
+    runs.iter_mut()
+        .find(|run| run["path"] == ".github/workflows/real-project-matrix.yml")
+        .unwrap()["display_title"] = json!(format!(
+        "Real Project Matrix observational @ {}",
+        target.sha
+    ));
+    assert!(
+        select_required_workflow_runs(
+            &runs,
+            &target.sha,
+            &release_evidence_shas(&target, true),
+            &plans,
+            None
+        )
+        .is_err()
+    );
+}
+
 fn target() -> ReleaseTarget {
     ReleaseTarget {
         tag: "v0.435.1".into(),

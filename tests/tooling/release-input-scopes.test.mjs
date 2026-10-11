@@ -35,18 +35,18 @@ void test("audited release contracts have complete imports and leave unresolved 
   assert.equal(installedHttpsContracts.length, 8);
   assert.equal(new Set(installedHttpsContracts).size, 8);
   assert.ok(installedHttpsContracts.every((file) => unscoped.includes(file)));
-  assert.equal(releaseFiles.length, 37 + 2 + 1 + installedHttpsContracts.length);
+  assert.equal(releaseFiles.length, 38 + 2 + 1 + installedHttpsContracts.length);
   assert.equal(
     releaseFiles.filter((file) => file !== configFreeInitContract).length,
-    39 + installedHttpsContracts.length,
+    40 + installedHttpsContracts.length,
   );
   assert.equal(
     releaseFiles.filter(
       (file) => file !== configFreeInitContract && !deliveredInitContracts.includes(file),
     ).length,
-    37 + installedHttpsContracts.length,
+    38 + installedHttpsContracts.length,
   );
-  assert.equal(scoped.length, 31);
+  assert.equal(scoped.length, 32);
   const historicalUnscoped = unscoped.filter(
     (file) =>
       file !== configFreeInitContract &&
@@ -118,6 +118,21 @@ void test("Matrix attempt selectors select the new audited evidence contract", (
     "tools/support/release/preflight_matrix_selection.rs",
     "tools/support/compat/github/release-preflight-matrix-selection.mjs",
     "tests/tooling/support/release-matrix-attempt-fixture.ts",
+  ]) {
+    assert.ok(selected(input).includes(contract), input);
+  }
+});
+
+void test("Matrix enforcement inputs select the complete actual-runtime contract", () => {
+  const contract = "tests/tooling/release/release-matrix-enforcement.test.ts";
+  assert.ok(scoped.includes(contract));
+  assert.equal(localImportInputs(contract).complete, true);
+  for (const input of [
+    ".github/workflows/real-project-matrix.yml",
+    "tools/commands/fixtures/real-project-surface-verdict.rs",
+    "tools/commands/ci/github/release-preflight.rs",
+    "tools/support/release/preflight_surface_evidence.rs",
+    "tools/support/compat/github/release-preflight-surface-evidence.mjs",
   ]) {
     assert.ok(selected(input).includes(contract), input);
   }

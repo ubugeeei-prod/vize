@@ -1,3 +1,5 @@
+#[path = "preflight_surface_evidence.rs"]
+mod surface_evidence;
 use regex::Regex;
 use serde_json::Value;
 use sha2::{Digest, Sha256};
@@ -24,7 +26,6 @@ static SCRATCH_COUNTER: AtomicU64 = AtomicU64::new(0);
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ReleaseTypecheckEvidencePolicy {
     Enforce,
-    Optional,
 }
 
 pub fn assert_real_project_matrix_release_artifacts_with_typecheck_policy<F>(
@@ -337,12 +338,7 @@ fn assert_real_project_shard_artifact(
     }
 
     let surface = read_json_entry(entries, "surface-verdict.json", artifact_name)?;
-    if string_field(&surface, "status") != Some("success") {
-        return Err(format!(
-            "{artifact_name} surface verdict is {}",
-            value_display(surface.get("status"))
-        ));
-    }
+    surface_evidence::assert_release_surface_verdict(artifact_name, run_head_sha, shard, &surface)?;
     let lint_summary = read_json_entry(entries, "lint-divergence-summary.json", artifact_name)?;
     assert_release_lint_divergence_summary(artifact_name, run, &lint_summary)?;
     assert_release_typecheck_shard_artifacts(
@@ -375,7 +371,7 @@ fn assert_release_lint_divergence_summary(
             "{artifact_name} lint divergence summary is not exact release evidence"
         ));
     }
-    Ok(())
+    surface_evidence::assert_release_lint_budget(artifact_name, summary)
 }
 
 fn assert_release_typecheck_shard_artifacts(

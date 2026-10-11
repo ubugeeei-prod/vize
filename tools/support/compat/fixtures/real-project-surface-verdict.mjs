@@ -16,44 +16,31 @@ export const realProjectSurfaceNames = [
 const validOutcomes = new Set(["success", "failure", "cancelled", "skipped"]);
 
 function recordOnlyVerdict(outcome, mode) {
-  return mode === "record-only" && outcome === "failure" ? "success" : outcome;
+  return (mode === "record-only" && outcome === "failure") ||
+    (mode === "skip" && outcome === "skipped")
+    ? "success"
+    : outcome;
 }
 
 export function createRealProjectSurfaceResultsFromWorkflow(environment = process.env) {
   return [
-    { name: "waiver-audit", outcome: environment.VIZE_WAIVER_AUDIT_OUTCOME },
-    {
-      name: "typecheck-dependencies",
-      outcome: recordOnlyVerdict(
-        environment.VIZE_TYPECHECK_DEPENDENCIES_OUTCOME,
-        environment.TYPECHECK_DEPENDENCIES_MODE,
-      ),
-    },
-    {
-      name: "core-tools",
-      outcome: recordOnlyVerdict(environment.VIZE_CORE_TOOLS_OUTCOME, environment.CORE_TOOLS_MODE),
-    },
-    {
-      name: "lsp",
-      outcome: recordOnlyVerdict(environment.VIZE_LSP_OUTCOME, environment.LSP_MODE),
-    },
-    {
-      name: "lint-divergence",
-      outcome: recordOnlyVerdict(
-        environment.VIZE_LINT_DIVERGENCE_OUTCOME,
-        environment.LINT_DIVERGENCE_MODE,
-      ),
-    },
-    { name: "syntax-highlighter", outcome: environment.VIZE_SYNTAX_HIGHLIGHTER_OUTCOME },
-    { name: "glyph", outcome: environment.VIZE_GLYPH_OUTCOME },
-    {
-      name: "typecheck-divergence",
-      outcome: recordOnlyVerdict(
-        environment.VIZE_TYPECHECK_DIVERGENCE_OUTCOME,
-        environment.TYPECHECK_DIVERGENCE_MODE,
-      ),
-    },
-  ];
+    ["waiver-audit", "VIZE_WAIVER_AUDIT_OUTCOME"],
+    [
+      "typecheck-dependencies",
+      "VIZE_TYPECHECK_DEPENDENCIES_OUTCOME",
+      "TYPECHECK_DEPENDENCIES_MODE",
+    ],
+    ["core-tools", "VIZE_CORE_TOOLS_OUTCOME", "CORE_TOOLS_MODE"],
+    ["lsp", "VIZE_LSP_OUTCOME", "LSP_MODE"],
+    ["lint-divergence", "VIZE_LINT_DIVERGENCE_OUTCOME", "LINT_DIVERGENCE_MODE"],
+    ["syntax-highlighter", "VIZE_SYNTAX_HIGHLIGHTER_OUTCOME"],
+    ["glyph", "VIZE_GLYPH_OUTCOME"],
+    ["typecheck-divergence", "VIZE_TYPECHECK_DIVERGENCE_OUTCOME", "TYPECHECK_DIVERGENCE_MODE"],
+  ].map(([name, outcome, mode]) => {
+    const rawOutcome = environment[outcome];
+    const budgetMode = mode ? environment[mode] : "enforce";
+    return { name, outcome: recordOnlyVerdict(rawOutcome, budgetMode), rawOutcome, budgetMode };
+  });
 }
 
 export function createRealProjectSurfaceVerdict(results, environment = process.env) {
@@ -81,11 +68,18 @@ export function createRealProjectSurfaceVerdict(results, environment = process.e
   const failed = results.filter((result) => result.outcome !== "success");
   return {
     schema: "vize.realProjectSurfaceVerdict",
-    version: 1,
+    version: 2,
     sourceCommit: environment.GITHUB_SHA ?? null,
     shardIndex: environment.FIXTURE_SHARD_INDEX ?? null,
     status: failed.length === 0 ? "success" : "failure",
-    surfaces: realProjectSurfaceNames.map((name) => results.find((result) => result.name === name)),
+    surfaces: realProjectSurfaceNames.map((name) => {
+      const result = results.find((result) => result.name === name);
+      return {
+        ...result,
+        rawOutcome: result.rawOutcome ?? result.outcome,
+        budgetMode: result.budgetMode ?? "enforce",
+      };
+    }),
     failedSurfaceNames: failed
       .map((result) => result.name)
       .sort((left, right) => left.localeCompare(right)),

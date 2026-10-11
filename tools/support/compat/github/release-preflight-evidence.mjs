@@ -1,9 +1,8 @@
 import { requiredRealProjectMatrixShardCount } from "./release-preflight-matrix-evidence.mjs";
 
 /**
- * Real Project Matrix stays on the release path for shard-level smoke evidence.
- * Typecheck parity can be skipped by the release bootstrap while the stricter
- * ratchet stays available on manual and scheduled matrix runs.
+ * Real Project Matrix release evidence requires every enforced surface and
+ * complete typecheck parity, corpus, mutation, and preparation proofs.
  */
 export const requiredReleaseWorkflows = [
   "Check",

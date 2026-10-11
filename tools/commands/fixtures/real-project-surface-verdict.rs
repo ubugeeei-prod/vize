@@ -26,9 +26,12 @@ const SURFACE_NAMES: &[&str] = &[
 ];
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
 struct SurfaceResult {
     name: String,
     outcome: String,
+    raw_outcome: String,
+    budget_mode: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -104,6 +107,8 @@ fn parse_args(args: impl Iterator<Item = String>) -> Result<Args, String> {
                 results.push(SurfaceResult {
                     name: name.to_string(),
                     outcome: outcome.to_string(),
+                    raw_outcome: outcome.to_string(),
+                    budget_mode: "enforce".to_string(),
                 });
             }
             _ => return Err(format!("unknown or incomplete argument: {argument}")),
@@ -123,53 +128,48 @@ fn parse_args(args: impl Iterator<Item = String>) -> Result<Args, String> {
 }
 
 fn results_from_workflow_env() -> Vec<SurfaceResult> {
-    vec![
-        result("waiver-audit", env_value("VIZE_WAIVER_AUDIT_OUTCOME")),
-        result(
+    [
+        ("waiver-audit", "VIZE_WAIVER_AUDIT_OUTCOME", None),
+        (
             "typecheck-dependencies",
-            record_only_verdict(
-                env_value("VIZE_TYPECHECK_DEPENDENCIES_OUTCOME"),
-                env_value("TYPECHECK_DEPENDENCIES_MODE"),
-            ),
+            "VIZE_TYPECHECK_DEPENDENCIES_OUTCOME",
+            Some("TYPECHECK_DEPENDENCIES_MODE"),
         ),
-        result(
+        (
             "core-tools",
-            record_only_verdict(
-                env_value("VIZE_CORE_TOOLS_OUTCOME"),
-                env_value("CORE_TOOLS_MODE"),
-            ),
+            "VIZE_CORE_TOOLS_OUTCOME",
+            Some("CORE_TOOLS_MODE"),
         ),
-        result(
-            "lsp",
-            record_only_verdict(env_value("VIZE_LSP_OUTCOME"), env_value("LSP_MODE")),
-        ),
-        result(
+        ("lsp", "VIZE_LSP_OUTCOME", Some("LSP_MODE")),
+        (
             "lint-divergence",
-            record_only_verdict(
-                env_value("VIZE_LINT_DIVERGENCE_OUTCOME"),
-                env_value("LINT_DIVERGENCE_MODE"),
-            ),
+            "VIZE_LINT_DIVERGENCE_OUTCOME",
+            Some("LINT_DIVERGENCE_MODE"),
         ),
-        result(
+        (
             "syntax-highlighter",
-            env_value("VIZE_SYNTAX_HIGHLIGHTER_OUTCOME"),
+            "VIZE_SYNTAX_HIGHLIGHTER_OUTCOME",
+            None,
         ),
-        result("glyph", env_value("VIZE_GLYPH_OUTCOME")),
-        result(
+        ("glyph", "VIZE_GLYPH_OUTCOME", None),
+        (
             "typecheck-divergence",
-            record_only_verdict(
-                env_value("VIZE_TYPECHECK_DIVERGENCE_OUTCOME"),
-                env_value("TYPECHECK_DIVERGENCE_MODE"),
-            ),
+            "VIZE_TYPECHECK_DIVERGENCE_OUTCOME",
+            Some("TYPECHECK_DIVERGENCE_MODE"),
         ),
     ]
-}
-
-fn result(name: &str, outcome: String) -> SurfaceResult {
-    SurfaceResult {
-        name: name.to_string(),
-        outcome,
-    }
+    .into_iter()
+    .map(|(name, outcome, mode)| {
+        let raw_outcome = env_value(outcome);
+        let budget_mode = mode.map(env_value).unwrap_or_else(|| "enforce".into());
+        SurfaceResult {
+            name: name.into(),
+            outcome: record_only_verdict(raw_outcome.clone(), budget_mode.clone()),
+            raw_outcome,
+            budget_mode,
+        }
+    })
+    .collect()
 }
 
 fn env_value(name: &str) -> String {
@@ -223,7 +223,7 @@ fn create_verdict(results: Vec<SurfaceResult>) -> Result<Verdict, String> {
     failed_sorted.sort();
     Ok(Verdict {
         schema: "vize.realProjectSurfaceVerdict",
-        version: 1,
+        version: 2,
         source_commit: env::var("GITHUB_SHA").ok(),
         shard_index: env::var("FIXTURE_SHARD_INDEX").ok(),
         status: if failed_sorted.is_empty() {

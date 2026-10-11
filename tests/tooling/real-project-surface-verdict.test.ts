@@ -71,7 +71,14 @@ test("the real-project surface verdict accepts only a complete successful set", 
   assert.equal(verdict.sourceCommit, "0123456789abcdef");
   assert.equal(verdict.shardIndex, "7");
   assert.deepEqual(verdict.failedSurfaceNames, []);
-  assert.deepEqual(verdict.surfaces, successfulResults);
+  assert.deepEqual(
+    verdict.surfaces,
+    successfulResults.map((surface) => ({
+      ...surface,
+      rawOutcome: "success",
+      budgetMode: "enforce",
+    })),
+  );
 });
 
 for (const outcome of ["failure", "cancelled", "skipped"] as const) {
@@ -128,14 +135,34 @@ test("workflow surface inputs preserve enforce modes and soften only record-only
   assert.equal(result.status, 1);
 
   assert.deepEqual(verdict.surfaces, [
-    { name: "waiver-audit", outcome: "success" },
-    { name: "typecheck-dependencies", outcome: "success" },
-    { name: "core-tools", outcome: "success" },
-    { name: "lsp", outcome: "cancelled" },
-    { name: "lint-divergence", outcome: "success" },
-    { name: "syntax-highlighter", outcome: "success" },
-    { name: "glyph", outcome: "success" },
-    { name: "typecheck-divergence", outcome: "success" },
+    { name: "waiver-audit", outcome: "success", rawOutcome: "success", budgetMode: "enforce" },
+    {
+      name: "typecheck-dependencies",
+      outcome: "success",
+      rawOutcome: "failure",
+      budgetMode: "record-only",
+    },
+    { name: "core-tools", outcome: "success", rawOutcome: "success", budgetMode: "enforce" },
+    { name: "lsp", outcome: "cancelled", rawOutcome: "cancelled", budgetMode: "record-only" },
+    {
+      name: "lint-divergence",
+      outcome: "success",
+      rawOutcome: "failure",
+      budgetMode: "record-only",
+    },
+    {
+      name: "syntax-highlighter",
+      outcome: "success",
+      rawOutcome: "success",
+      budgetMode: "enforce",
+    },
+    { name: "glyph", outcome: "success", rawOutcome: "success", budgetMode: "enforce" },
+    {
+      name: "typecheck-divergence",
+      outcome: "success",
+      rawOutcome: "failure",
+      budgetMode: "record-only",
+    },
   ]);
 });
 
@@ -161,6 +188,6 @@ test("workflow surface inputs accept explicitly skipped typecheck divergence", (
   assert.deepEqual(verdict.failedSurfaceNames, []);
   assert.deepEqual(
     verdict.surfaces.find((surface: { name: string }) => surface.name === "typecheck-divergence"),
-    { name: "typecheck-divergence", outcome: "success" },
+    { name: "typecheck-divergence", outcome: "success", rawOutcome: "skipped", budgetMode: "skip" },
   );
 });

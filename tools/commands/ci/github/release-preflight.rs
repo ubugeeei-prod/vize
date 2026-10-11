@@ -248,7 +248,7 @@ fn verify_release_preflight(bootstrap: bool) -> Result<(), String> {
             &repo_root()?,
             run,
             &selection.artifacts,
-            matrix_evidence::ReleaseTypecheckEvidencePolicy::Optional,
+            matrix_evidence::ReleaseTypecheckEvidencePolicy::Enforce,
             |artifact| matrix_evidence::download_artifact_entries(&token, artifact),
         )?;
     }
@@ -397,14 +397,14 @@ fn create_release_gate_dispatch_plans(
             workflow_id: "real-project-matrix.yml",
             ref_name: ref_name.to_string(),
             inputs: json!({
-                "core_tools_mode": "record-only",
-                "typecheck_dependencies_mode": "record-only",
-                "lint_divergence_mode": "record-only",
-                "lsp_mode": "record-only",
-                "typecheck_divergence_mode": "skip",
-                "davinci_dom_corpus_mode": "record-only",
+                "core_tools_mode": "enforce",
+                "typecheck_dependencies_mode": "enforce",
+                "lint_divergence_mode": "enforce",
+                "lsp_mode": "enforce",
+                "typecheck_divergence_mode": "enforce",
+                "davinci_dom_corpus_mode": "enforce",
             }),
-            expected_run_name: format!("Real Project Matrix @ {head_sha}"),
+            expected_run_name: format!("Real Project Matrix enforced @ {head_sha}"),
             accepts_scheduled_evidence: false,
         },
     ])
