@@ -1,0 +1,28 @@
+{
+  "sourceHead": "2b367c41b569e3d4a1bc78d03f3d9f4c8698f13c",
+  "run": 38115805398,
+  "job": 114400465871,
+  "runConclusion": "failure",
+  "lintCasesPassed": 13,
+  "lintCasesRequired": 15,
+  "artifactId": 11692924427,
+  "artifactSha256": "400533862993ac7e3d43c520bc511008a27d46532eba5134d83585cbd7b7cf4f",
+  "jobRawLogSha256": "42be29366a01c3a8caedd9a2bd655d3687867477b255f2cacfec5b941b84f18e",
+  "originalZipEntries": [
+    "target/app-e2e-logs/full-lint-all.log",
+    "tests/snapshots/lint/__snapshots__/misskey-lint.snap.actual",
+    "tests/snapshots/lint/__snapshots__/npmx.dev-lint.snap.actual",
+    ".vize/artifacts/lint-fixtures/misskey.json",
+    ".vize/artifacts/lint-fixtures/naive-ui.json",
+    ".vize/artifacts/lint-fixtures/npmx.dev.json",
+    ".vize/artifacts/lint-fixtures/voicevox.json"
+  ],
+  "filesRequired": 803,
+  "changedWholePackets": 216,
+  "removedMessages": 285,
+  "addedMessages": 150,
+  "wholeMessageDeltas": 435,
+  "directGuardFalsePositivesRequiringSourceCorrection": 2,
+  "indirectStateBoundaryUnproven": 1,
+  "noCompletionClaim": true
+}

@@ -1,0 +1,152 @@
+[
+  {
+    "path": "8589-corrected-lint-all-114400465871.log.gz",
+    "bytes": 54101,
+    "sha256": "1ff2ea3f5d309a8e20968828eedefd383cdfd019c8bd1858585f32a14aa0a89b"
+  },
+  {
+    "path": "binding.json",
+    "bytes": 1068,
+    "sha256": "f223fe2dd66cecf57d665a56efcd02f486530d644cca96e097b6b3a8c8633731"
+  },
+  {
+    "path": "build-misskey-full-policy-review.py.gz",
+    "bytes": 5438,
+    "sha256": "08f5d89eb33c9c9fa09b4cdbf10c4952dd74c020ce265766c83d2d1a624f2cdc"
+  },
+  {
+    "path": "capture-misskey-official-52.mjs.gz",
+    "bytes": 1146,
+    "sha256": "f2b25f1cda5f0b0ef3f6718109d8030e331a6c9449abdf80f79c4f6a9f2c8d40"
+  },
+  {
+    "path": "capture-misskey-official-all51.mjs.gz",
+    "bytes": 960,
+    "sha256": "fad36a7e947663348ecf9086ca20365952a95095413f5f819cd326b74cbb70b7"
+  },
+  {
+    "path": "capture-npmx-new-oracle.mjs.gz",
+    "bytes": 722,
+    "sha256": "b3ff4060661c82858b42d60d9ea6857f25a6a0a5e4c9b0a1c2cb45d6b39188e7"
+  },
+  {
+    "path": "misskey-65-ssr-runtime-reference-provenance.json.gz",
+    "bytes": 2646,
+    "sha256": "49c07c5f2cc2af95d4292d8d3b545a6655afd828f62022786b59d3deef43dcee"
+  },
+  {
+    "path": "misskey-all-583-file-packet-source-provenance.json.gz",
+    "bytes": 83568,
+    "sha256": "a3ccce18e170ef606b4c7b0de73bd6025d377d5d6f449bd52163de891eff8c7c"
+  },
+  {
+    "path": "misskey-message-full-source-contexts.json.gz",
+    "bytes": 49163,
+    "sha256": "3b5ce8876d93931a3d65f1777f2fc9ce713d3f58ce0351f21e516599a92c8fe1"
+  },
+  {
+    "path": "misskey-new-whole-policy-review.json.gz",
+    "bytes": 126057,
+    "sha256": "42b7ffa8d2e9b436cc39cbea33b84fc798f0b6d273a6d921995d85563fa6c2f1"
+  },
+  {
+    "path": "misskey-official-52-capture.json.gz",
+    "bytes": 765432,
+    "sha256": "972729ffd9f43f913d8010ac6eff103bd9debd20d1feeb4180bba8f65d81e3dd"
+  },
+  {
+    "path": "misskey-official-52-raw.jsonl.gz",
+    "bytes": 724586,
+    "sha256": "8edc99c38794347670fc62d1eccceb52d5d6865ea8d63c861e21d7dbfc4d1c78"
+  },
+  {
+    "path": "misskey-official-all51-capture.json.gz",
+    "bytes": 410141,
+    "sha256": "f9143ab4153241e22588d839fcafef05ef17704707b3fc5b128fa1bd6537504f"
+  },
+  {
+    "path": "misskey-official-all51-raw.jsonl.gz",
+    "bytes": 722751,
+    "sha256": "371d268c6ac82c884887641c0cc760dfaefc617424b1ee09238268d0f49f3b93"
+  },
+  {
+    "path": "misskey-reviewed-producer-sources.json.gz",
+    "bytes": 39164,
+    "sha256": "f0a439cdfe4f91ae96efa95f264ffd76b130245cf428518fb08ba0a3bbbcb0cf"
+  },
+  {
+    "path": "misskey-ssr-reference-audit.mjs.gz",
+    "bytes": 1726,
+    "sha256": "0f124959aa3787c66c286dd9cafef9a98509de10f553892e1bbc19d8646224ce"
+  },
+  {
+    "path": "misskey-unsafe-url-source-sinks.json.gz",
+    "bytes": 7264,
+    "sha256": "f95b0ebcff093be68083834f5966cdd6fba57233cfffd2ba068878f0ba54a5a8"
+  },
+  {
+    "path": "npmx-all-220-file-packet-source-provenance.json.gz",
+    "bytes": 31782,
+    "sha256": "6bf27c2dae35dcc2515f4e5c3a7176888d8a7fbc463a5228a3eec8457bb11001"
+  },
+  {
+    "path": "npmx-new-whole-policy-review.json.gz",
+    "bytes": 15240,
+    "sha256": "e05d561154d6449a875e8031f3c639858200cc1dbf6e659e9686d42fddfce033"
+  },
+  {
+    "path": "npmx-reviewed-producer-sources.json.gz",
+    "bytes": 13092,
+    "sha256": "0d069fe82a5558e2162275a2cbc697d7896f28ebaa7451076b966f466ff65bc9"
+  },
+  {
+    "path": "official-51-npmx-new-capture.json.gz",
+    "bytes": 100315,
+    "sha256": "34fd7788b5acd754d3dbc1d7412c6dc2159590061049ef8ce1380ea921a699c5"
+  },
+  {
+    "path": "official-51-npmx-new-fixture.json.gz",
+    "bytes": 88421,
+    "sha256": "a95f190c6da5677b471cb4c496cc2c003dff10fa99b7e1ad463b9cc869403d67"
+  },
+  {
+    "path": "official-51-npmx-new-raw.ndjson.gz",
+    "bytes": 184999,
+    "sha256": "c7560ee64a8670b2ab7c3a2cf1b3633d852917cf67612cf6bbf2188e81967d64"
+  },
+  {
+    "path": "official-51-npmx-new-summary.json.gz",
+    "bytes": 1129,
+    "sha256": "fd3cae3c68d1ab8c347259bc514ffe47db9154570a0bdb979877a2e8fe11b3f7"
+  },
+  {
+    "path": "original-provider-artifact.zip",
+    "bytes": 91109,
+    "sha256": "400533862993ac7e3d43c520bc511008a27d46532eba5134d83585cbd7b7cf4f"
+  },
+  {
+    "path": "original-provider-packets.json.gz",
+    "bytes": 68611,
+    "sha256": "4f76b944fb5732c1048e6129bded68a4227bcdf68ee140e67bddc9efdac17fd8"
+  },
+  {
+    "path": "packet-deltas.json.gz",
+    "bytes": 62841,
+    "sha256": "0836ef2d007250c646422a90afa30103b2720bf3a48407700e2ead7495f897f0"
+  },
+  {
+    "path": "provider-run-metadata.json.gz",
+    "bytes": 1941,
+    "sha256": "0a29e628bb7e671f70b223d9096cf479c077fa7a19c42b4b8189ed6f9fe00cf7"
+  },
+  {
+    "path": "review-npmx-new.py.gz",
+    "bytes": 3582,
+    "sha256": "10c5c900125c0ad1bff1389c844898fa81ecdd57e52abb8cd4a977ebcd39f39f"
+  },
+  {
+    "path": "runtime-fixture-receipts.json.gz",
+    "bytes": 8672,
+    "sha256": "4f5d988e9b5f4e0a90f2fc7dddd219841cd43b4c3105655a45389bac577db1a7"
+  }
+]

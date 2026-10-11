@@ -124,6 +124,75 @@ checks their complete packets, original provider bytes, file ordering and
 policy accounting. The configuration dependency helpers emit runtime receipts
 under `.vize/artifacts/lint-fixtures/` for the existing App E2E artifact upload.
 
+## Newly executable configurations
+
+The corrected setup at `2b367c41b569e3d4a1bc78d03f3d9f4c8698f13c`
+ran the original full fifteen lint cases in
+[38115805398](https://github.com/ubugeeei-prod/vize/actions/runs/38115805398).
+All four complete configuration dependency preparations succeeded, all five
+previously reviewed snapshots passed, and Naive/VOICEVOX retained their
+original performance budgets. Thirteen cases passed; Misskey and npmx
+revealed additional whole snapshot differences previously hidden behind
+their configuration crashes. This is a genuinely red observation.
+
+Its original artifact `11692924427` contains exactly seven entries: the full
+lint log, two whole `.snap.actual` files and four configuration/runtime
+receipts. Its complete ZIP SHA256 is
+`400533862993ac7e3d43c520bc511008a27d46532eba5134d83585cbd7b7cf4f`;
+the unabridged job log SHA256 is
+`42be29366a01c3a8caedd9a2bd655d3687867477b255f2cacfec5b941b84f18e`.
+All original 10,341 source blobs, nested Gitlinks, modes, exact package
+managers and original/migrated locks remain authenticated at runtime.
+
+### Newly executable source review
+
+All 803 original ordered file packets are authenticated: Misskey has 414
+identical and 169 changed packets; npmx has 173 identical and 47 changed.
+Every field of all 435 added/removed diagnostic packets is retained in
+`tests/_fixtures/_projects/lint-review/2026-10-11-executable-configs/`.
+The original provider ZIP and raw job log are separate from agent-created
+review companions. Their complete bytes, provider metadata, source Git
+blobs, current producer sources and reproduction scripts remain available.
+
+| Fixture  | Whole diagnostic review            | Qualification                                                                                                                                                    |
+| -------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Misskey  | 231 removed and 120 added messages | All 351 have original source witnesses for the existing policies.                                                                                                |
+| npmx.dev | 54 removed and 30 added messages   | 81 existing-policy changes reviewed; two direct client-guard false positives require producer correction; one indirect reactive-state boundary remains unproven. |
+
+Misskey's 139 removed unsafe-URL warnings are 76 image, four source and
+59 component bindings, with no active DOM sink removed. All 70 removed
+image aliases retain complete original `a11y/alt-text` packets. All sixteen
+unused-component pairs change only coordinates to exact authored imports.
+The 65 new SSR reads are 61 setup-level value reads and four reads in directly
+invoked local functions; two removed reads are type assertions. The 33
+physical filename findings, two negative-tabindex removals, two camelCase
+`dataSet` removals and one unused prop match their committed source policies.
+
+All five new required/default errors have original required type declarations
+and authored `withDefaults` values. The unchanged official 51-rule projection
+does not include that rule. A separate explicit 52-rule capture adds only
+`vue/no-required-prop-with-default`, preserves all original 51 settings and
+independently confirms all five prop identities at severity 2, with complete
+suggestions and ranges. See the
+[official Vue rule](https://eslint.vuejs.org/rules/no-required-prop-with-default.html).
+Both complete official captures cover all 169 changed original Misskey SFCs.
+The original 51-rule capture also covers all 47 changed npmx SFCs. All
+providers load, no fatal packet is omitted, and authored unused-disable
+warnings remain intact. CamelCase aria/data exemptions intentionally differ
+from official always-mode results; complete differing official fixes remain
+explicit. This does not claim full official/native rule parity.
+
+npmx's `app/app.vue:127` and
+`app/components/Diff/MobileSidebarDrawer.vue:26` read `document` under direct
+`import.meta.client` branches. The current typeof-only SSR analyzer falsely
+warns. These packets must not be blessed by refreshing expectations. A
+separate essential producer correction will precede this fixture layer.
+The read at `app/pages/package/[[org]]/[name].vue:258` depends on a const
+boolean and `shallowRef.value`; current lexical analysis does not prove that
+reactive chain. Its full packet remains an explicit unproven boundary, not
+proof that the original Nuxt server execution crashes. Top-level reads in
+physical `.client` files retain the existing configured filename policy.
+
 ## Required follow-through
 
 Run the original full lint suite and all required App E2E rows on the composed
