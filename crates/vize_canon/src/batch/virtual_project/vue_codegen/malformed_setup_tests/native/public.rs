@@ -23,8 +23,7 @@ fn original_public_projects_keep_only_their_complete_authored_syntax_vectors() {
         checker.set_checker_count(Some(1));
         checker.scan_project().unwrap();
         let result = checker.check_project();
-        let mirror = crate::project_virtual_root(&root);
-        let config = mirror.join("tsconfig.json");
+        let (mirror, config) = checker.native_project_paths_for_test();
         let files = checker.virtual_files();
         let canonical = root.canonicalize().unwrap();
         let uris = files
@@ -122,7 +121,17 @@ fn original_public_projects_keep_only_their_complete_authored_syntax_vectors() {
                 ("withoutScript.vue", 1, 25, Some(1005), 1, "';' expected."),
             ]
         } else {
-            vec![("main.vue", 5, 12, Some(1109), 1, "Expression expected.")]
+            vec![
+                (
+                    "main.vue",
+                    1,
+                    8,
+                    Some(6133),
+                    2,
+                    "'info' is declared but its value is never read.",
+                ),
+                ("main.vue", 5, 12, Some(1109), 1, "Expression expected."),
+            ]
         };
         assert_eq!(actual, expected, "{packet}");
         assert!(

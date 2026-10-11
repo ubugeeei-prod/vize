@@ -82,6 +82,14 @@ pub struct BatchTypeChecker {
 }
 
 impl BatchTypeChecker {
+    #[cfg(test)]
+    pub(crate) fn native_project_paths_for_test(&self) -> (PathBuf, PathBuf) {
+        (
+            self.project.virtual_root().to_path_buf(),
+            self.project.generated_tsconfig_path(),
+        )
+    }
+
     /// Set the number of parallel Corsa CLI processes the project check is
     /// partitioned across. `None` (the default) auto-tunes from the machine
     /// width and the number of registered Vue files.

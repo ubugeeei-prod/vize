@@ -92,3 +92,30 @@ installed release qualification remain pending until their exact composed
 source runs finish. The App E2E owner publishes the fourth child and runs one
 complete composed qualifier. No second parent build or separate full observer
 is added for this slice.
+
+The exact composed `888a4898a8` qualifier 38129574946 remains failed. Its
+whole #5071 programs retain their real malformed import, so the existing OXC
+whole-program parser refuses its AST both before and after; both actual import
+collector vectors are empty. A nonempty AST premise was unsupported. The law
+now records the parser panic, complete diagnostics and body length and requires
+that exact refusal, while retaining the actual once-emitted module prefix,
+authored source mappings and complete native/public import controls. Repaired
+successful scripts require the same collector to see the genuine Vue specifier.
+The genuine #5823 unused `info` TS6133 suggestion appears in both before/after
+native vectors and in the public result; its complete public oracle preserves
+that suggestion alongside TS1109 without filtering diagnostics.
+
+The CR comment packet retained raw TS1109 while its mapped vector was empty:
+the old source-map helper counted LF only and selected `void broken` instead
+of `const broken = ;`. Public VirtualProject position mapping used that same
+helper. The correction delegates to the existing Carton LSP/UTF-16 authority:
+CR, LF and CRLF have their actual boundaries, LS/PS stay inside LSP lines,
+and invalid UTF-16/surrogate or out-of-range positions remain refused. Compiler
+diagnostics keep their existing separate TypeScript convention. The exact CR
+SFC is retained as a corpus fixture and checked against the literal prior
+converter; the public bidirectional mapping also has genuine positive and
+invalid-position controls. Native comment vectors retain every original case.
+A test-only accessor returns both actual materialized root and actual generated
+config path from the existing project, avoiding guessed root config names.
+Preparation is not source/native acceptance; fresh combined Actions remains
+required and no projection snapshot or upstream baseline is changed here.

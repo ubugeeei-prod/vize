@@ -56,63 +56,23 @@ impl CompositeSourceMap {
     }
 }
 
-/// Convert byte offset to line and column (0-based).
+/// Convert a byte offset to zero-based LSP line/UTF-16 coordinates.
 pub fn offset_to_line_col(content: &str, offset: u32) -> Option<(u32, u32)> {
-    let offset = offset as usize;
-    if offset > content.len() {
-        return None;
-    }
-
-    let mut line = 0u32;
-    let mut col = 0u32;
-    let mut current = 0;
-
-    for ch in content.chars() {
-        if current >= offset {
-            break;
-        }
-        if ch == '\n' {
-            line += 1;
-            col = 0;
-        } else {
-            col += 1;
-        }
-        current += ch.len_utf8();
-    }
-
-    Some((line, col))
+    let offset = usize::try_from(offset).ok()?;
+    (offset <= content.len())
+        .then(|| vize_carton::line_index::LineBreaks::Lsp.offset_to_position(content, offset))
 }
 
-/// Convert line and column to byte offset (0-based).
+/// Convert zero-based LSP line/UTF-16 coordinates to a byte offset.
+/// Compiler diagnostics use their separate TypeScript line-break convention.
 pub fn line_col_to_offset(content: &str, line: u32, col: u32) -> Option<u32> {
-    let mut current_line = 0u32;
-    let mut current_col = 0u32;
-    let mut offset = 0u32;
-
-    for ch in content.chars() {
-        if current_line == line && current_col == col {
-            return Some(offset);
-        }
-        if ch == '\n' {
-            if current_line == line {
-                // Column out of bounds on this line
-                return None;
-            }
-            current_line += 1;
-            current_col = 0;
-        } else {
-            current_col += 1;
-        }
-        offset += ch.len_utf8() as u32;
-    }
-
-    // Handle end of file
-    if current_line == line && current_col == col {
-        return Some(offset);
-    }
-
-    None
+    let offset = vize_carton::line_index::LineBreaks::Lsp.position_to_offset(content, line, col)?;
+    u32::try_from(offset).ok()
 }
+
+#[cfg(test)]
+#[path = "source_map/native_coordinate_tests.rs"]
+mod native_coordinate_tests;
 
 #[cfg(test)]
 mod tests {

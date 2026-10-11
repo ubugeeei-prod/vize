@@ -24,3 +24,9 @@ the false generic/import diagnostics must disappear, and real TS2304/TS2322
 diagnostics must remain. No upstream snapshot or Vize difference is waived.
 
 Decision: `docs/davinci/decisions/2026-10-11-6879-malformed-setup-descriptor-metadata.md`.
+
+`valid-cr-import.vue.txt` retains the exact lone-CR boundary that native Corsa
+reported correctly while the older LF-only source coordinate converter lost
+the mapped expression diagnostic. The same input is checked against the prior
+converter and the existing Carton LSP/UTF-16 authority; LS/PS remain within LSP
+lines, while compiler diagnostics retain their separate TypeScript convention.

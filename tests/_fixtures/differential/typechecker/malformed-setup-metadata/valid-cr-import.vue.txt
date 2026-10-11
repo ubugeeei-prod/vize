@@ -1,0 +1,5 @@
+<script setup lang="ts">
+import { ref } from 'vue'/*comment*/ref('');
+const broken = ;
+void broken;
+</script>

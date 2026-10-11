@@ -14,6 +14,15 @@ fn commented_import_boundaries_preserve_only_genuine_authored_syntax_errors() {
     inputs.push(super::super::quoted_import_source());
     inputs.push(super::super::overlapping_import_source());
     for (index, source) in inputs.into_iter().enumerate() {
+        if index == 5 {
+            assert_eq!(
+                source,
+                std::fs::read_to_string(
+                    std::path::Path::new(super::super::CORPUS).join("valid-cr-import.vue.txt")
+                )
+                .unwrap()
+            );
+        }
         let temporary = tempfile::tempdir().unwrap();
         let root = install(temporary.path(), "5071");
         let (before, after, projection) = project(&source);

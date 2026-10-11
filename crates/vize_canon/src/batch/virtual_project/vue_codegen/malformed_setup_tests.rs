@@ -181,13 +181,25 @@ fn full_malformed_descriptors_keep_their_setup_role_and_generic_without_recoveri
                             .any(|specifier| specifier == "vue")
                     );
                 }
-                assert!(
-                    packet["after"]["wholeActualImportRewriterSpecifiers"]
-                        .as_array()
-                        .unwrap()
-                        .iter()
-                        .any(|specifier| specifier == "vue")
-                );
+                // The genuine missing terminator refuses the whole OXC AST,
+                // even after the authored import is retained at module scope.
+                for phase in ["before", "after"] {
+                    assert_eq!(
+                        packet[phase]["wholeOxcParser"]["panicked"], true,
+                        "{packet}"
+                    );
+                    assert_eq!(
+                        packet[phase]["wholeOxcParser"]["programBodyLength"], 0,
+                        "{packet}"
+                    );
+                    assert_eq!(
+                        packet[phase]["wholeActualImportRewriterSpecifiers"],
+                        serde_json::json!([]),
+                        "{packet}"
+                    );
+                }
+                assert_eq!(after.code.matches("import { ref } from 'vue'").count(), 1);
+                assert!(after.code[import..].starts_with("import { ref } from 'vue'export {};"));
             }
             assert!(!after.code.contains("async function __setup"));
         }
@@ -212,6 +224,18 @@ fn successful_setup_analysis_keeps_the_complete_original_projection_and_maps() {
                 assert_eq!(before.semantic_links, after.semantic_links);
                 assert_eq!(before.prop_default_key_links, after.prop_default_key_links);
                 assert_authored_maps(&source, &after);
+                if issue == "5071" {
+                    for phase in ["before", "after"] {
+                        assert_eq!(packet[phase]["wholeOxcParser"]["panicked"], false);
+                        assert!(
+                            packet[phase]["wholeActualImportRewriterSpecifiers"]
+                                .as_array()
+                                .unwrap()
+                                .iter()
+                                .any(|specifier| specifier == "vue")
+                        );
+                    }
+                }
             }
         }
     }
