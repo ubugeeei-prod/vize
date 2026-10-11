@@ -184,9 +184,17 @@ explicit. This does not claim full official/native rule parity.
 
 npmx's `app/app.vue:127` and
 `app/components/Diff/MobileSidebarDrawer.vue:26` read `document` under direct
-`import.meta.client` branches. The current typeof-only SSR analyzer falsely
-warns. These packets must not be blessed by refreshing expectations. A
-separate essential producer correction will precede this fixture layer.
+`import.meta.client` branches. The observed `2b367c41` typeof-only SSR analyzer
+falsely warned. These packets must not be blessed by refreshing expectations.
+The essential producer correction in
+[#8595](https://github.com/ubugeeei-prod/vize/pull/8595), authenticated source
+`1edd0aab0bf708a84d23a3e41ccf42f818ebdf13`, now precedes this fixture layer.
+It recognizes literal OXC `import.meta.client`/`server` and logical negation
+in the correct if, conditional and direct short-circuit arms. Unsafe opposite
+branches, top-level values, computed/optional/aliased tests and the indirect
+reactive read remain covered by complete controls, including LF and CRLF.
+Its actual corrected real-project capture is still required before these
+expectations can be refreshed.
 The read at `app/pages/package/[[org]]/[name].vue:258` depends on a const
 boolean and `shallowRef.value`; current lexical analysis does not prove that
 reactive chain. Its full packet remains an explicit unproven boundary, not
