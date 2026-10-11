@@ -24,7 +24,7 @@ const compiled = (name) =>
 // Offline real-Git boundary laws use exactly two explicit test-only identity
 // substitutions. Actual pinned whole-body/native proof stays in full-history
 // Actions; no authority predicate, source scope, or native oracle is replaced.
-test("integrated replay authenticates both complete source arms and refuses foreign bodies", () => {
+void test("integrated replay authenticates both complete source arms and refuses foreign bodies", () => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-directive-custody-"));
   const checkout = path.join(temporary, "source");
   const replaceBase = `refs/custody-law/${path.basename(temporary)}/`;
