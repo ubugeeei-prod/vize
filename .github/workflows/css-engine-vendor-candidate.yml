@@ -10,6 +10,8 @@ on:
       - ".github/workflows/css-engine-vendor-candidate.yml"
   workflow_dispatch: {}
 permissions: { contents: read }
+defaults:
+  run: { shell: bash }
 concurrency:
   group: css-vendor-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true

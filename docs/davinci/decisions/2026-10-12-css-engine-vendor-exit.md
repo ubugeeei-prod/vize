@@ -15,8 +15,9 @@ closure. Fork publication and main-bound merge remain held for the API,
 licensing and complete consumer evidence below.
 
 The isolated candidate starts on actual main
-`a6633fb68b110d07abd5ee5a6049bc15f20f9c7f`. Its first source-only import commit
-`c4719eb804` contains unchanged selected source files. Packaging, migration,
+`a6633fb68b110d07abd5ee5a6049bc15f20f9c7f`, then replays onto actual main
+`6d7aaacc45e9d9d9cb0ed65052c61fa93b5b04c5`. Its source-only import commit
+`7199c4601c` contains unchanged selected source files. Packaging, migration,
 regressions and this decision follow separately. The importer authenticates both
 archives before creating either destination and refuses overwrite; each vendor
 `UPSTREAM-IMPORT.json` records every selected original file's complete checksum.
