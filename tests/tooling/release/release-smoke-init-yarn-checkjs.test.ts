@@ -39,6 +39,8 @@ void test("Yarn checkJs is cell eight after the unchanged complete original seve
   assert.deepEqual(FRESH_INIT_MATRIX, [
     ...authored.originalSevenCells,
     authored.proposedEighthCell,
+    { packageManager: "bun", shape: "vite-vue-js-checkjs" },
+    { packageManager: "vp", shape: "vite-vue-js-checkjs" },
   ]);
   assert.deepEqual(authored.proposedEighthCell, {
     packageManager: "yarn",
