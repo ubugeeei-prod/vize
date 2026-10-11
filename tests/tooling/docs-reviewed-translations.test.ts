@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { test } from "node:test";
 import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import {
   collectReviewedTranslations,
   isReviewedTranslation,
@@ -113,4 +114,27 @@ void test("Japanese contribution and credits preserve complete recipes and attri
   assert.match(contribution, /Conventional Commits/);
   assert.match(contribution, /`Co-authored-by`/);
   assert.match(contribution, /`ID\+LOGIN@users\.noreply\.github\.com`/);
+});
+
+void test("Japanese Content Mapper review survives regeneration with every whole original recipe", async () => {
+  const root = resolve(import.meta.dirname, "../..");
+  const path = "guide/content-mapper.md";
+  const english = readFileSync(resolve(root, "docs/content", path), "utf8");
+  const japanese = readFileSync(resolve(root, "docs/content/ja", path), "utf8");
+  const retained = await collectReviewedTranslations([path], resolve(root, "docs/content/ja"));
+  assert.equal(retained.get(path), japanese, "regeneration retains the complete authored review");
+  const fences = (source: string) =>
+    [...source.matchAll(/^```[^\n]*\n[\s\S]*?^```[^\n]*$/gm)].map((match) => match[0]);
+  assert.deepEqual(fences(japanese), fences(english), "all five full runnable examples remain");
+  const digest = createHash("sha256")
+    .update(JSON.stringify(fences(japanese)))
+    .digest("hex");
+  assert.equal(digest, "8940b963ebe24b35e139a63098e85a348de702114d24b7d243b4497cf01ffcea");
+  const links = (source: string) =>
+    [...source.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)].map((match) => match[1]);
+  assert.deepEqual(
+    links(japanese),
+    links(english),
+    "all current setup and historical destinations agree",
+  );
 });
