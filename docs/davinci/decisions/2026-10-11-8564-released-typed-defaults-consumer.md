@@ -42,6 +42,15 @@ Release R38111825534. Its original App E2E gate failed, so the official release
 was retired without publishing a tag or supplying public acceptance. A new
 successful immutable tuple must supply actual publication evidence.
 
+Source preparation used that H's actual Git tree object
+`1528ac699262a415e59531c2c2b1a22db7c4b3fc`. Querying a tree through a commit
+identifier makes GitHub echo the commit in the response's `sha`, so the runner
+queries the authenticated tree object directly and keeps strict tree identity
+checks. The real API capture verified all 40 authored files and the 280 whole
+expected vectors. Its receipt SHA is
+`c8229d74dcb6a981535d31e69bc7840afa3a964dcfd6f1d892b59da7d55fa0da`;
+it contains zero product executions and supplies no public CLI acceptance.
+
 The complete behavior vectors were frozen from the original typed observer
 (`e88410bc963607719124f66e8edf27fa6516b45a69b18e069563938fe95c7619`) and
 compatibility observer

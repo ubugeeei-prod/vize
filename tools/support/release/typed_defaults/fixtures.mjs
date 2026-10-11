@@ -19,8 +19,8 @@ export const originals = {
 };
 
 export async function loadFixtures(head, destination, json, treeSha) {
-  const tree = await json(`${apiRoot}/git/trees/${head}?recursive=1`);
   assert.match(treeSha ?? "", /^[0-9a-f]{40}$/);
+  const tree = await json(`${apiRoot}/git/trees/${treeSha}?recursive=1`);
   assert.equal(tree.sha, treeSha, "original tree must belong to authenticated H");
   assert.equal(tree.truncated, false, "complete immutable source tree required");
   const files = new Map(tree.tree.map((entry) => [entry.path, entry]));

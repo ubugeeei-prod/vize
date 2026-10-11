@@ -20,7 +20,7 @@ export function corpusFixture() {
     treeSha = "b".repeat(40),
     rows = new Map();
   const tree = { sha: treeSha, truncated: false, tree: [] };
-  rows.set(`${apiRoot}/git/trees/${head}?recursive=1`, tree);
+  rows.set(`${apiRoot}/git/trees/${treeSha}?recursive=1`, tree);
   function add(name, bytes) {
     const sha = gitBlob(bytes);
     tree.tree.push({ path: name, type: "blob", mode: "100644", sha });
