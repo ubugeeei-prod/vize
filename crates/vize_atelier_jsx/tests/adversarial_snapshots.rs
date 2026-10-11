@@ -233,7 +233,7 @@ fn tsx_syntax_edge_snapshots() {
     assert_lower_snapshot("tsx_syntax_edges", TSX_SYNTAX_EDGES, JsxLang::Tsx);
     assert_vdom_snapshot("tsx_syntax_edges", TSX_SYNTAX_EDGES, JsxLang::Tsx);
     assert_vapor_snapshot(
-        "tsx_syntax_edges",
+        "tsx_syntax_edges_root_fallthrough_8625",
         TSX_SYNTAX_EDGES,
         JsxLang::Tsx,
         VaporCompileOptions::default(),

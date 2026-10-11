@@ -47,8 +47,8 @@ Fresh exact-head Actions and protected gates still qualify the resulting source.
 Fresh Check 38143613522 executes the original report and all four added KeepAlive
 runtime controls successfully. Its two red shards expose three stale downstream
 expectations: a JSX component among sibling roots, the nested AfsButton in the
-#8441 actions slot, and the checked KeepAlive no-props child. Update only the two
-focused snapshot flag bytes shown by the actual run. Preserve #8441's entire
+#8441 actions slot, and the checked KeepAlive no-props child. Update only the checked KeepAlive
+snapshot flag shown by the actual run; give the JSX snapshot its own successor. Preserve #8441's entire
 historical runtime packet and `runtime-baseline.json`; register a separately
 hashed complete successor that changes only AfsButton's enclosing-render root
 flag. The existing complete-packet test selects that successor only for the
@@ -60,3 +60,10 @@ records their version, control and output digests; this compiler diagnosis gives
 no installed public Vize or release-consumer credit. KeepAlive's authored VDOM
 runtime expectations govern its previously recorded omission. Fresh source and
 protected merge-group qualification remain required.
+
+The keyed-fragment TSX authority also pins the previous live producer and whole
+JSX snapshot. Preserve that authority and snapshot byte-exact, freeze the complete
+previous producer, and dispatch only this one test to the complete #8625 successor.
+The custody guard verifies both producer hashes, the exact one-name dispatch
+change, and the exact one-flag snapshot change. It still verifies the original
+source slice and every former authority hash; no historical guard is weakened.

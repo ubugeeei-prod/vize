@@ -87,7 +87,45 @@ await test("whole TSX reference authority preserves the actual original source a
       ),
   );
   const producer = readFileSync(new URL(authority.producerSourcePath, repository));
-  assert.equal(createHash("sha256").update(producer).digest("hex"), authority.producerSourceSha256);
+  const successor = JSON.parse(
+    readFileSync(new URL("tsx-syntax-edges-root-fallthrough-8625-successor-authority.json", root)),
+  );
+  assert.equal(
+    createHash("sha256")
+      .update(readFileSync(new URL(successor.previousAuthority, root)))
+      .digest("hex"),
+    successor.previousAuthoritySha256,
+  );
+  const originalProducer = readFileSync(new URL(successor.previousProducerPath, root));
+  assert.equal(
+    createHash("sha256").update(originalProducer).digest("hex"),
+    authority.producerSourceSha256,
+  );
+  assert.equal(successor.currentProducerPath, authority.producerSourcePath);
+  assert.equal(
+    createHash("sha256").update(producer).digest("hex"),
+    successor.currentProducerSha256,
+  );
+  const previousDispatch = 'assert_vapor_snapshot(\n        "tsx_syntax_edges",';
+  const nextDispatch = 'assert_vapor_snapshot(\n        "tsx_syntax_edges_root_fallthrough_8625",';
+  assert.equal(originalProducer.toString("utf8").split(previousDispatch).length, 2);
+  assert.equal(
+    producer.toString("utf8"),
+    originalProducer.toString("utf8").replace(previousDispatch, nextDispatch),
+  );
+  const corrected = readFileSync(new URL(successor.successorReferencePath, repository));
+  assert.equal(corrected.length, successor.successorReferenceBytes);
+  assert.equal(
+    createHash("sha256").update(corrected).digest("hex"),
+    successor.successorReferenceSha256,
+  );
+  const oldFlag = "_component_List, { items: () => (items) }, null, true)";
+  const oldGolden = readFileSync(new URL(authority.referencePath, repository), "utf8");
+  assert.equal(oldGolden.split(oldFlag).length, 2);
+  assert.equal(
+    corrected.toString("utf8"),
+    oldGolden.replace(oldFlag, oldFlag.replace("true)", "false)")),
+  );
   const source = producer.toString("utf8");
   const start =
     source.indexOf('const TSX_SYNTAX_EDGES: &str = r#"') +
