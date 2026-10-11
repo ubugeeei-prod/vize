@@ -17,6 +17,8 @@ use vize_canon::CorsaBridge;
 
 mod import_target;
 #[cfg(feature = "native")]
+mod locations;
+#[cfg(feature = "native")]
 mod template_props;
 
 use super::{IdeContext, component_event, module_specifier, script};
@@ -282,7 +284,7 @@ impl super::DefinitionService {
             && !locations.is_empty()
         {
             let locations = corsa_support::map_canonical_corsa_locations(ctx, &doc, locations);
-            if let Some(response) = Self::convert_locations(locations) {
+            if let Some(response) = locations::convert(locations) {
                 return Some(response);
             }
         }
@@ -318,7 +320,7 @@ impl super::DefinitionService {
 
         let locations = template_props::declarations(bridge, &doc, locations).await?;
         let locations = corsa_support::map_canonical_corsa_locations(ctx, &doc, locations);
-        let mapped = Self::convert_locations(locations);
+        let mapped = locations::convert(locations);
         if attribute.is_some() {
             Some(mapped)
         } else {
@@ -333,17 +335,6 @@ impl super::DefinitionService {
         ctx: &IdeContext<'_>,
     ) -> Option<GotoDefinitionResponse> {
         let locations = corsa_support::map_corsa_locations(ctx, locations);
-        Self::convert_locations(locations)
-    }
-
-    #[cfg(feature = "native")]
-    fn convert_locations(
-        locations: Vec<tower_lsp::lsp_types::Location>,
-    ) -> Option<GotoDefinitionResponse> {
-        match locations.as_slice() {
-            [] => None,
-            [location] => Some(GotoDefinitionResponse::Scalar(location.clone())),
-            _ => Some(GotoDefinitionResponse::Array(locations)),
-        }
+        locations::convert(locations)
     }
 }
