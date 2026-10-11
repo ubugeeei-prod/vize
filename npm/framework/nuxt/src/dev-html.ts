@@ -25,6 +25,7 @@ export function sanitizeNuxtDevStylesheetLinks(html: string, buildAssetsDir = "/
       pathPart.startsWith("@id/") ||
       pathPart.startsWith("assets/") ||
       pathPart.startsWith("virtual:") ||
+      /^(?:[^/\\]+\/)*[^/\\]+\.vue\.__vize_style_\d+\.css$/i.test(pathPart) ||
       /^__[\w.-]+\.css$/i.test(pathPart) ||
       /^[\w.-]+\.css$/i.test(pathPart)
     );

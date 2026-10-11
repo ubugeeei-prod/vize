@@ -5,6 +5,7 @@ import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { sanitizeNuxtDevStylesheetLinks } from "../../../../npm/framework/nuxt/src/dev-html.ts";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const directory = path.join(root, "tests/_fixtures/differential/compiler/vuefes-heading-cascade");
@@ -62,7 +63,8 @@ fs.symlinkSync(
 );
 fs.writeFileSync(path.join(project, "package.json"), '{"private":true,"type":"module"}\n');
 fs.cpSync(path.join(upstream, "app/assets"), path.join(project, "assets"), { recursive: true });
-const headingPath = path.join(project, "VFHeading.vue");
+const headingPath = path.join(project, "components/heading/VFHeading.vue");
+fs.mkdirSync(path.dirname(headingPath), { recursive: true });
 const original = fs.readFileSync(path.join(directory, "VFHeading.vue.txt"));
 fs.writeFileSync(headingPath, original);
 assert.equal(
@@ -76,7 +78,7 @@ fs.writeFileSync(
   `
 import { h } from 'vue';
 import './assets/styles/main.css';
-import Heading from './VFHeading.vue';
+import Heading from './components/heading/VFHeading.vue';
 const props = [{}, { id: 'anchor' }, { nth: 1 }, { nth: 3, id: 'anchor-three' }];
 export const Root = { render: () => h('main', props.flatMap((props, index) =>
   ['text', 'span'].map(kind => h('section', { 'data-case': index + '-' + kind }, [
@@ -189,14 +191,21 @@ try {
           const hydrate =
             new URL(request.url, "http://localhost").searchParams.get("mode") === "hydrate";
           response.setHeader("Content-Type", "text/html");
-          response.end(
-            `<!doctype html><html><head>${servedSheets.map((url) => `<link rel="stylesheet" href="${(url.includes("?") ? url.replace("?", "?direct&") : `${url}?direct`).replaceAll("&", "&amp;")}">`).join("")}</head><body><div id="app">${hydrate ? servedSsr.html : ""}</div><script type="module" src="/client.mjs"></script></body></html>`,
-          );
+          // Real browser stylesheet requests let Vite insert `direct` itself.
+          // Preserve the complete generated dependency query and stylesheet order.
+          const originalHtml = `<!doctype html><html><head>${servedSheets.map((url) => `<link rel="stylesheet" href="${`/_nuxt${url}`.replaceAll("&", "&amp;")}">`).join("")}</head><body><div id="app">${hydrate ? servedSsr.html : ""}</div><script type="module" src="/_nuxt/client.mjs"></script></body></html>`;
+          const sanitizedHtml =
+            producer === "official" ? originalHtml : sanitizeNuxtDevStylesheetLinks(originalHtml);
+          packet.transport ??= [];
+          packet.transport.push({ mode: hydrate ? "hydrate" : "dom", originalHtml, sanitizedHtml });
+          write(`${producer}.json`, packet);
+          response.end(sanitizedHtml);
         });
       },
     };
     const server = await createServer({
       root: project,
+      base: "/_nuxt/",
       configFile: false,
       plugins: [componentPlugin, negative, transport],
       resolve: { alias: { "~": project } },
@@ -246,21 +255,53 @@ try {
           responses = [],
           responseTasks = [];
         page.on("pageerror", (error) => errors.push(String(error.stack ?? error)));
-        page.on("response", (response) => {
+        const captureResponse = (response) => {
           if (!response.url().includes(".css") && !response.url().includes("VFHeading.vue")) return;
+          const record = {
+            order: responses.length,
+            url: response.url(),
+            status: response.status(),
+            statusText: response.statusText(),
+            headers: response.headers(),
+            request: {
+              method: response.request().method(),
+              resourceType: response.request().resourceType(),
+              redirectedFrom: response.request().redirectedFrom()?.url() ?? null,
+            },
+            bytes: null,
+            sha256: null,
+            text: null,
+            bodyNullReason: "capture pending",
+          };
+          responses.push(record);
           responseTasks.push(
-            response.body().then((body) =>
-              responses.push({
-                url: response.url(),
-                status: response.status(),
-                headers: response.headers(),
-                bytes: body.length,
-                sha256: hash(body),
-                text: body.toString(),
-              }),
-            ),
+            (async () => {
+              try {
+                record.headers = await response.allHeaders();
+                const body = await response.body();
+                record.bytes = body.length;
+                record.sha256 = hash(body);
+                record.text = body.toString();
+                record.bodyNullReason = null;
+              } catch (error) {
+                // Redirects may have no body through Playwright. Retain the full
+                // status, headers and explicit API failure instead of losing the
+                // packet to an unhandled late rejection. Completeness is checked
+                // separately after complete SSR/DOM/hydration comparisons.
+                record.bodyNullReason = String(error.stack ?? error);
+              }
+            })(),
           );
-        });
+        };
+        page.on("response", captureResponse);
+        const settleResponses = async () => {
+          let settled = 0;
+          while (settled < responseTasks.length) {
+            const pending = responseTasks.slice(settled);
+            settled = responseTasks.length;
+            await Promise.all(pending);
+          }
+        };
         try {
           await page.goto(`http://127.0.0.1:${address.port}/fixture?mode=${mode}`);
           await page.waitForFunction(() => window.__vuefesFixture?.complete);
@@ -280,9 +321,9 @@ try {
               rules: [...sheet.cssRules].map((rule) => rule.cssText),
             })),
           }));
-          await Promise.all(responseTasks);
           packet.runtime.push({ mode, observation, errors, responses });
           write(`${producer}.json`, packet);
+          await settleResponses();
           assert.deepEqual(errors, []);
           assert.deepEqual(observation.result.warnings, []);
           assert.equal(observation.headings.length, 4);
@@ -294,16 +335,18 @@ try {
             // An explicit diagnostic counterexample moves the same complete
             // global sheet after scoped sheets, without editing any CSS rule.
             // This is separate from the production-order positive observation.
-            packet.reversedCssOrder = await page.evaluate(() => {
-              const globals = [
-                ...document.head.querySelectorAll("style,link[rel=stylesheet]"),
-              ].filter((node) =>
-                (node.getAttribute("data-vite-dev-id") ?? node.getAttribute("href") ?? "").includes(
-                  "/assets/styles/main.css",
-                ),
+            packet.reversedCssOrder = await page.evaluate(async () => {
+              const globals = [...document.head.querySelectorAll("style[data-vite-dev-id]")].filter(
+                (node) =>
+                  (node.getAttribute("data-vite-dev-id") ?? "").includes("/assets/styles/main.css"),
               );
               if (!globals.length) throw Error("original global stylesheet missing");
               for (const node of globals) document.head.append(node);
+              // The complete injected global sheet moves; original HTTP links
+              // and every rule stay intact. Let style invalidation settle before
+              // reading both computed properties in the same observation.
+              await new Promise(requestAnimationFrame);
+              await new Promise(requestAnimationFrame);
               return {
                 html: document.documentElement.outerHTML,
                 headings: [...document.querySelectorAll("h2")].map((heading) => ({
@@ -329,7 +372,11 @@ try {
             }
           }
         } finally {
+          await settleResponses();
           await context.close();
+          page.off("response", captureResponse);
+          await settleResponses();
+          write(`${producer}.json`, packet);
         }
       }
       receipts.push(packet);
@@ -346,6 +393,27 @@ try {
       official.runtime[index].observation.innerHtml,
       `complete ${official.runtime[index].mode} DOM equals official Vue`,
     );
+  for (const packet of [official, native]) {
+    for (const transport of packet.transport)
+      assert.equal(
+        transport.sanitizedHtml,
+        transport.originalHtml,
+        "complete generated HTML preserves stylesheet dependencies and order",
+      );
+    for (const runtime of packet.runtime) {
+      assert.deepEqual(
+        runtime.responses.filter((response) => response.bodyNullReason !== null),
+        [],
+        "whole response capture completeness remains a separate gate",
+      );
+      for (const response of runtime.responses.filter(
+        (response) => response.request.resourceType === "stylesheet",
+      )) {
+        assert.equal(response.status, 200, "actual browser stylesheet requests must succeed");
+        assert.match(response.headers["content-type"], /text\/css/);
+      }
+    }
+  }
   write("result.json", {
     status: "passed",
     producers: receipts.map((item) => item.producer),

@@ -24,11 +24,12 @@ export function createStyleVirtualId(id: string): string {
 /** Recover the authored SFC before native classification and cache lookup. */
 export function normalizeStyleVirtualId(id: string): string {
   const withoutPrefix = id.startsWith("\0") ? id.slice(1) : id;
-  if (!withoutPrefix.includes("?vue")) return id;
-
   const start = withoutPrefix.indexOf("?");
+  if (start < 0) return id;
   const query = withoutPrefix.slice(start + 1);
-  const source = new URLSearchParams(query).get("vize-file");
+  const params = new URLSearchParams(query);
+  if (!params.has("vue")) return id;
+  const source = params.get("vize-file");
   if (source && withoutPrefix.slice(0, start).includes(STYLE_MARKER)) {
     return `${source}?${query}`;
   }
