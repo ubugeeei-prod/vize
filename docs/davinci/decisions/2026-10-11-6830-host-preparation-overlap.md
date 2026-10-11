@@ -100,8 +100,54 @@ gh workflow run ci-walltime-benchmark.yml \
   --ref <reviewed-branch> -f component=n8n-preparation
 ```
 
-TODO: obtain both successful same-source arms, report their measured wall
-times and native identities, and carry this source through the complete
-protected queue before calling the optimization qualified. Inspect trusted
-main cache seeding separately: merge-group restores remain read-only, and
-oversized tooling targets must not be aliased into a smaller cache role.
+## First completed same-source result
+
+[Actions 38144141051](https://github.com/ubugeeei-prod/vize/actions/runs/38144141051)
+completed both full arms on `03c034f34a6f7a4817726dcb087270bdb5211458`, tree
+`989a5ffe3240f2c4fce6c4d4197836e4a2557410`, with an empty working diff.
+Both used the one source-built native SHA-256
+`2e953850ee1e763fde77e5122a40a1bf56746918e1ce9d331f25250787faeaa3`,
+Rust 1.99.0, Cargo 1.99.0 and Node 24.14.0. Build setup is outside the paired
+controller timings; it ran once for both arms.
+
+| Complete controller phase | Sequential | Overlap |
+| ------------------------- | ---------: | ------: |
+| Baseline and historical reference preparation | 197.272 s | 206.126 s |
+| Both complete pinned host workers | 381.293 s | 408.558 s |
+| Final native and diagnostic aggregation | 10.317 s | 10.346 s |
+| Complete original-project qualification, including cleanup | 595.993 s | 423.791 s |
+
+This paired observation reduces the complete controller wall time by
+172.202 seconds, or 28.9%. It is one sequential-then-overlap comparison,
+not a p50/p90 estimate or a complete Check workflow result. Contention also
+increased baseline, transport and HTML durations; the recorded benefit comes
+from overlap despite that cost, rather than faster individual commands.
+The independent mixed-directory branch took 163.268 and 184.100 seconds.
+Readiness wait remained within the unchanged host deadline: 0.907/0.885 seconds
+for sequential hosts and 2.375/1.599 seconds for overlap hosts.
+
+Both arms passed with equal source, toolchain, physical native binary,
+n8n fixture commit/tree, requirements configuration, projected layer,
+complete diagnostic totals, limits, 1,369 original files, 291,633 native
+events and 34 native processes. Both original hosts retained all six replay
+modes and the same complete diagnostic vector SHA-256
+`cf980b3e52dab3ee9d2124eb9cc77d3a80e67f5a25ec2e38e506d649e1bb06f0`.
+Each retained 74 wrapper calls, 18 batch calls, 99 transport processes,
+41 original HTML cases, 36 whole native calls and 57 whole host phases.
+Historical reference commit, complete physical source records and limits
+matched. Native-call ledger bytes differ because each arm owns fresh process
+and staging identities; every original ledger is retained and qualified.
+
+The retained artifact is
+`ci-walltime-n8n-preparation-03c034f34a6f7a4817726dcb087270bdb5211458`,
+ID `11704466680`, 441,993,007 bytes, GitHub digest SHA-256
+`8fc413ffcd0ee757e4490a74f3d02fe31f3abe205442cc7ed510c4b288002afd`.
+Its sequential staging directory is `run-7v1V5B`; overlap is `run-riamtB`.
+The controller and per-host phase receipts, whole qualification packets,
+readiness/outcome packets and source-build receipt remain in that artifact.
+
+TODO: carry the final source through fresh exact-head Actions and the
+complete protected queue before calling the optimization delivered.
+Inspect trusted main cache seeding separately: merge-group restores remain
+read-only, and oversized tooling targets must not be aliased into a smaller
+cache role. The #6830 three/six-minute targets and #6863 remain unfinished.
