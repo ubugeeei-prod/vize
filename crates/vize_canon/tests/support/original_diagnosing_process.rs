@@ -6,6 +6,9 @@ use std::{
     time::{Duration, Instant},
 };
 
+#[path = "process_stat_observation.rs"]
+mod process_stat_observation;
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ProcessLife {
     pub pid: u32,
@@ -116,11 +119,9 @@ pub fn native_process(root: &Path, executable: &Path, role: &[u8]) -> ProcessLif
 pub fn assert_reaped(life: &ProcessLife) {
     let path = PathBuf::from(vize_l0::cstr!("/proc/{}/stat", life.pid).as_str());
     let deadline = Instant::now() + Duration::from_secs(5);
-    while path.exists() {
-        let stat = match std::fs::read_to_string(&path) {
-            Ok(stat) => stat,
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return,
-            Err(error) => panic!("cannot observe owned native life: {error}"),
+    loop {
+        let Some(stat) = process_stat_observation::observed(std::fs::read_to_string(&path)) else {
+            return;
         };
         let birth = stat
             .rsplit_once(") ")
