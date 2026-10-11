@@ -132,6 +132,21 @@ an upstream copyright notice. Root reviewed this exact archive/tree provenance
 and preserved MPL/MIT/author metadata for the concrete candidate; no new human
 approval flow is inferred from the absent file. No package has been published.
 
+A real package-only attempt on source18734 rejects explicit inclusion of the
+reserved `Cargo.toml.orig` filename. Both repository originals remain byte-exact;
+the packaging successor includes their exact copies as `UPSTREAM-Cargo.toml` and
+lets Cargo generate its own `Cargo.toml.orig` for the effective fork manifest.
+The custody guard compares both complete original/copy byte buffers. Packaging
+verification still grants no compilation, registry or publication credit.
+
+The repaired Parcel source package succeeds: fourteen files, complete original
+manifest copied byte-exact, normalized active rkyv `=0.8.18` and unchanged MIT
+metadata. LightningCSS's actual package attempt then correctly refuses because
+the exact `vize_parcel_sourcemap` prerequisite is absent from crates.io. This
+establishes the publication-order blocker, not a successful published graph.
+The two forks must precede their Vize consumers; no registry patch or source
+path qualification substitutes for that proof.
+
 Renaming a package changes Rust nominal type identity despite retaining its
 library spelling. In particular, the public
 `vize_patina::style::ParsedStyleSheet::new` and `raw` methods accept and return

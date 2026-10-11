@@ -12,7 +12,7 @@ keywords = [
 ]
 license = "MIT"
 repository = "https://github.com/ubugeeei-prod/vize"
-include = ["/src", "/tests", "/Cargo.toml.orig", "/UPSTREAM.md", "/UPSTREAM-IMPORT.json"]
+include = ["/src", "/tests", "/UPSTREAM-Cargo.toml", "/UPSTREAM.md", "/UPSTREAM-IMPORT.json"]
 
 [lib]
 name = "parcel_sourcemap"

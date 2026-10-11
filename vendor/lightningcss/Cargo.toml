@@ -19,7 +19,7 @@ keywords = [
 ]
 license = "MPL-2.0"
 repository = "https://github.com/ubugeeei-prod/vize"
-include = ["/src", "/tests", "/examples", "/benches", "/Cargo.toml.orig", "/LICENSE", "/README.md", "/UPSTREAM.md", "/UPSTREAM-IMPORT.json", "/rustfmt.toml"]
+include = ["/src", "/tests", "/examples", "/benches", "/UPSTREAM-Cargo.toml", "/LICENSE", "/README.md", "/UPSTREAM.md", "/UPSTREAM-IMPORT.json", "/rustfmt.toml"]
 
 [package.metadata.docs.rs]
 all-features = true

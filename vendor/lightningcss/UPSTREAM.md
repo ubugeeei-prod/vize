@@ -42,8 +42,10 @@ The following changes are deliberately separate from that import:
   third-party Clippy policy to this implementation. `deny(missing_docs)` remains
   intact; all first-party check commands remain unchanged.
 
-`Cargo.toml.orig` remains the original archive manifest. The unreleased upstream
-NonNegative restructuring is not imported. Published dependency identity changes
+Repository `Cargo.toml.orig` remains the original archive manifest. Its byte-exact
+copy `UPSTREAM-Cargo.toml` ships in the package because Cargo reserves and
+generates `Cargo.toml.orig` for the effective fork manifest. The unreleased
+upstream NonNegative restructuring is not imported. Published dependency identity changes
 can affect Rust consumers accepting upstream LightningCSS types; the paired
 [decision](../../docs/davinci/decisions/2026-10-12-css-engine-vendor-exit.md)
 records qualification and publication blockers. This source candidate grants no

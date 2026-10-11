@@ -7,6 +7,8 @@ Its recorded source revision is
 [`a136bd6ba9f1d3cded501ae824341be0a54c5ce3`](https://github.com/parcel-bundler/source-map/tree/a136bd6ba9f1d3cded501ae824341be0a54c5ce3).
 `UPSTREAM-IMPORT.json` records every original file and checksum;
 `Cargo.toml.orig` remains byte-exact.
+Its byte-exact copy `UPSTREAM-Cargo.toml` ships in the package; Cargo reserves and
+generates package `Cargo.toml.orig` for the effective fork manifest.
 
 The original package declares `license = "MIT"` and author
 `Jasper De Moor <jasperdemoor@gmail.com>`. Both metadata fields and all source

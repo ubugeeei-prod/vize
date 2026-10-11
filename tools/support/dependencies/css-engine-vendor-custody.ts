@@ -31,6 +31,11 @@ for (const [name, count, archive] of [
   );
   assert.equal(manifest.archiveSha256, archive);
   assert.equal(manifest.files.length, count);
+  assert.deepEqual(
+    fs.readFileSync(path.join(root, "vendor", name, "UPSTREAM-Cargo.toml")),
+    fs.readFileSync(path.join(root, "vendor", name, "Cargo.toml.orig")),
+    `${name} packaged upstream manifest`,
+  );
   for (const row of manifest.files) {
     const key = `${name}/${row.path}`;
     const bytes = fs.readFileSync(path.join(root, "vendor", key));
