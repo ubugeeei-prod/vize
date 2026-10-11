@@ -12,6 +12,7 @@ import { observedBrowserExamples } from "./observed-browser-examples.ts";
 import { scopedInputExamples } from "./scoped-input-examples.ts";
 import { preferenceBrowserExamples } from "./preference-browser-examples.ts";
 import { environmentExamples } from "./environment-examples.ts";
+import { pointerSelectionExamples } from "./pointer-selection-examples.ts";
 
 const stateExamples = [
   {
@@ -86,6 +87,7 @@ export const composableExamples = [
   ...scopedInputExamples,
   ...preferenceBrowserExamples,
   ...environmentExamples,
+  ...pointerSelectionExamples,
 ] as const;
 
 export function composableExampleSource(packageRoot: string, name: string): string {
@@ -127,7 +129,7 @@ export function composableHub(locale: string, linkPrefix: string): string {
   return blocks(
     ja ? "## 動作から選ぶ" : "## Try a behavior",
     ja
-      ? "入力、検証、検索、履歴、ページ切り替え、非同期処理、タイマー、保存、画面サイズ、フォーカス、フォーム、手順、選択、循環する案内、クリップボード、スクロール、要素のサイズと表示範囲、通信状態、配色、画面幅に応じた表示を実例で試せます。各リンクのプレビューと表示コードは同じ Vue SFC を使っています (英語)。"
+      ? "入力、検証、検索、履歴、ページ切り替え、非同期処理、タイマー、保存、画面サイズ、フォーカス、フォーム、手順、選択、循環する案内、クリップボード、スクロール、要素のサイズと表示範囲、通信状態、配色、画面幅に応じた表示、ポインター座標、ドラッグ、文書のテキスト選択を実例で試せます。各リンクのプレビューと表示コードは同じ Vue SFC を使っています (英語)。"
       : "See how reactive state changes an interface. Each live preview and its copyable code come from the same complete Vue SFC.",
     table(
       [ja ? "やりたいこと" : "Goal", "Composable"],

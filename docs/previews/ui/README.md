@@ -39,7 +39,7 @@ browser checks with its normal OG-image configuration.
 
 ## Composable examples
 
-Thirty-two complete SFCs in `npm/compose/core/examples/` demonstrate disclosure,
+Thirty-six complete SFCs in `npm/compose/core/examples/` demonstrate disclosure,
 bounded quantities, debounced local search, blur validation, undo/redo, and
 pagination, plus async results, interval/timeout controls, browser storage,
 media queries, document focus, form submission, multistep navigation, bounded
@@ -47,7 +47,9 @@ selection, cyclic tips, individual/group focus, outside dismissal, scoped keyboa
 shortcuts, retargetable native input observation, explicit clipboard operations,
 element scrolling, panel size observation, bounded-root card visibility, native
 border-box geometry, delayed pointer guidance, held actions, typing focus, actual
-connectivity, color preference, and viewport-dependent detail and card layout.
+connectivity, color preference, viewport-dependent detail and card layout,
+actual pointer snapshots, element-relative mouse geometry, bounded note dragging,
+and native document selection in an editable excerpt.
 Their displayed source and compiled preview share the same complete SFC packet,
 with a SHA-256 identity exposed by each iframe. They use public composable
 imports and can be copied into a Vue 3.5+ project. The preview shell's CSS is
@@ -91,7 +93,14 @@ colors, and the dedicated storage key across reload. A chosen mode is not labell
 saved when persistence is unavailable. `interactions-environment.ts` crosses actual
 480/768px breakpoint and 640px grid boundaries, compares native window dimensions,
 and preserves explicit layout choices, measurement visibility, and exact drafts.
-One hundred twenty-eight real PNGs and a JSON receipt record source hashes, image hashes,
+`interactions-pointer-selection.ts` checks actual PointerEvent coordinates and
+pressure, target removal/replacement, transformed relative rectangles, outside
+freezing and independent client subscriptions after stop. It exercises a native
+drag handle with whole-note bounds, reactive axis/disabled state, explicit
+keyboard placement, listener removal and exact draft retention. Native keyboard
+selection and editing refresh the same platform Selection object; real Range
+geometry, no ranges and a collapsed caret remain distinct.
+One hundred forty-four real PNGs and a JSON receipt record source hashes, image hashes,
 and individual interaction results under the ignored
 `public/component-previews/composables/` build output. Each reference page
 offers initial/after images in a native disclosure alongside its live preview.
@@ -103,8 +112,8 @@ reload returns to the default. The storage page shows that fallback capture.
 Field status reports only recorded validation until the next blur. The batching
 law uses meaningful whitespace trimming and requires Undo to restore it exactly.
 
-After the real SSG build, `check-site.ts` verifies forty-two routes at desktop
-and mobile widths, including the thirty-two exact displayed SFC packets and their
+After the real SSG build, `check-site.ts` verifies forty-six routes at desktop
+and mobile widths, including the thirty-six exact displayed SFC packets and their
 iframe identities, then runs the unchanged composable interaction checks.
 The clipboard route also exercises keyboard copy/read inside the actual rendered
 iframe, including denied and restored browser read permission.
@@ -119,6 +128,6 @@ vp node docs/previews/ui/check-site.ts --site https://vizejs.dev --output docs-r
 ```
 
 The supplied deployed URL must expose the expected source hashes; an older
-deployment fails instead of receiving current-source credit. These thirty-two
+deployment fails instead of receiving current-source credit. These thirty-six
 examples are a bounded acceptance slice, not complete live coverage of the
 composable catalogue. #8374 and the broader #6101 remain open for that work.

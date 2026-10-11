@@ -21,6 +21,8 @@ import { preferenceBrowserExamples } from "../../../npm/ui/scripts/reference-doc
 import { exercisePreferenceBrowserExample } from "./interactions-preference-browser.ts";
 import { environmentExamples } from "../../../npm/ui/scripts/reference-docs/environment-examples.ts";
 import { exerciseEnvironmentExample } from "./interactions-environment.ts";
+import { pointerSelectionExamples } from "../../../npm/ui/scripts/reference-docs/pointer-selection-examples.ts";
+import { exercisePointerSelectionExample } from "./interactions-pointer-selection.ts";
 import { verifyUnavailableStorage } from "./capture-unavailable-storage.ts";
 
 async function activate(page: Page, label: string): Promise<void> {
@@ -45,6 +47,8 @@ async function exercise(page: Page, name: string): Promise<string[]> {
     return exercisePreferenceBrowserExample(page, name);
   if (environmentExamples.some((example) => example.name === name))
     return exerciseEnvironmentExample(page, name);
+  if (pointerSelectionExamples.some((example) => example.name === name))
+    return exercisePointerSelectionExample(page, name);
   if (name === "use-toggle") {
     assert.equal(await page.getByText("Free delivery in 2–3 business days.").count(), 0);
     await activate(page, "Show delivery details");
