@@ -1159,7 +1159,7 @@
     "test": "vp test run && vp test run --config vite.production-vue.config.ts",
     "check:catalog": "vp test run src/catalog/family-catalog.test.ts",
     "check:static": "vp check src scripts vite.config.ts tsconfig.typecheck.json && vue-tsc --noEmit -p tsconfig.typecheck.json",
-    "check:vapor-runtime": "vp exec node scripts/check-vapor-runtime.ts",
+    "check:vapor-runtime": "vp exec node --test scripts/vapor-runtime/css-properties-hydration.test.ts && vp exec node scripts/check-vapor-runtime.ts",
     "check:story-testbed": "vp exec node scripts/story-testbed.ts check --format json",
     "check": "pnpm lint:sfc && pnpm check:static && pnpm check:story-testbed && pnpm check:vapor-runtime",
     "check:fix": "vp check --fix src scripts vite.config.ts tsconfig.typecheck.json",
@@ -1184,10 +1184,11 @@
     "vite-plus": "catalog:vite-stack",
     "vue": "catalog:vue-stable",
     "vue-tsc": "catalog:typescript",
-    "vue-vapor-runtime": "npm:vue@3.6.0-rc.9"
+    "vue-vapor-runtime": "npm:vue@3.6.0-rc.9",
+    "vue-vapor-runtime-supported": "npm:vue@3.6.0-rc.11"
   },
   "peerDependencies": {
-    "vue": "^3.5.0"
+    "vue": "^3.5.0 || ^3.6.0-rc.11"
   },
   "engines": {
     "node": ">=22"

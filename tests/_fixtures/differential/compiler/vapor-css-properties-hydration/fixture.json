@@ -1,0 +1,22 @@
+{
+  "issue": 4906,
+  "upstreamFix": "f76516717f8e2be454cb277666bc152edf0d47f4",
+  "originalVue": "3.6.0-rc.9",
+  "supportedVue": "3.6.0-rc.11",
+  "inputs": [
+    {
+      "path": "static.vue.txt",
+      "sha256": "c5814471173cad8745cd3a42b0c0fb648c54ef9573d5c02a7680520fc681a9c0"
+    },
+    {
+      "path": "dynamic.vue.txt",
+      "sha256": "e5114201c054cbbe390dda8580b32cde2e0556754fbfd0900418216b0d2d2532"
+    }
+  ],
+  "expected": {
+    "property": "--percent",
+    "initial": "50%",
+    "updated": "75%",
+    "originalError": "Cannot read properties of undefined (reading 'nodes')"
+  }
+}

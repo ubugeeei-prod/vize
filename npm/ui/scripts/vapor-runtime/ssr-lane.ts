@@ -1,6 +1,7 @@
 /**
- * SSR lane (child process): render every runtime fixture with Vue 3.5's
- * server renderer, using components compiled by the native SSR lane, and
+ * SSR lane (child process): render every runtime fixture with the matching
+ * server renderer (rc.11 supported, Vue 3.5 original reference), using
+ * components compiled by the native SSR lane, and
  * write `{ name, sourceFile, html }` records as JSON to the path in argv[2].
  */
 import { writeFileSync } from "node:fs";
@@ -21,10 +22,11 @@ const records: { name: string; sourceFile: string; html: string | null; error: s
 for (const fixture of await loadRuntimeFixtures()) {
   try {
     const root = defineComponent({ name: `VaporSsr${fixture.name}`, setup: () => fixture.render });
+    const html = await withoutBrowserGlobals(() => renderToString(createSSRApp(root)));
     records.push({
       name: fixture.name,
       sourceFile: fixture.sourceFile,
-      html: await withoutBrowserGlobals(() => renderToString(createSSRApp(root))),
+      html,
       error: null,
     });
   } catch (error) {

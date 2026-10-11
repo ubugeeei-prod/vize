@@ -5,10 +5,10 @@
  * this check executes the output. For every runtime conformance fixture
  * (`src/conformance/runtime-conformance*.ts`, which cover every shipped SFC):
  *
- * 1. `ssr` — a child process renders the fixture with Vue 3.5's server
+ * 1. `ssr` — a child process renders the fixture with the matching Vue server
  *    renderer, compiling each `.vue` through the native VDOM SSR lane, with no
  *    browser globals (a real Node server);
- * 2. `mount` — a child process running Vue 3.6 (`vue-vapor-runtime`)
+ * 2. `mount` — a child process running Vue 3.6 (`vue-vapor-runtime-supported`)
  *    compiles each `.vue` through the native Vapor lane and client-mounts
  *    the fixture (VDOM root + `vaporInteropPlugin`) in happy-dom;
  * 3. `hydrate` — the same Vapor build hydrates the SSR markup.
@@ -17,6 +17,10 @@
  * `assertHydratedDom` fails a fixture. Coverage is catalog-driven: every
  * family in `uiFamilyCatalog` that ships an SFC must be exercised by at least
  * one fixture.
+ *
+ * `VIZE_UI_VAPOR_RUNTIME=reference` retains the original Vue 3.5 SSR / rc.9
+ * Vapor pairing and its original ledger. The supported lane pairs rc.11 SSR
+ * and Vapor so slot fallback markers have the same contract.
  *
  * Known failures are tracked in `scripts/vapor-runtime/known-failures.json`
  * as a ratchet: a new failure fails the check, and so does a listed fixture
@@ -29,6 +33,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { uiFamilyCatalog } from "../src/catalog/family-catalog.ts";
+import { runtimeTrack } from "./vapor-runtime/sfc-hooks.ts";
 
 type Lane = "ssr" | "mount" | "hydrate";
 
@@ -43,7 +48,10 @@ interface KnownFailures {
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const laneDirectory = path.join(packageRoot, "scripts/vapor-runtime");
-const ledgerFile = path.join(laneDirectory, "known-failures.json");
+const ledgerFile = path.join(
+  laneDirectory,
+  runtimeTrack() === "reference" ? "reference-known-failures.json" : "known-failures.json",
+);
 const updateLedger = process.argv.includes("--update-known-failures");
 const workDirectory = mkdtempSync(path.join(tmpdir(), "vize-ui-vapor-"));
 const failures: string[] = [];
@@ -175,6 +183,7 @@ if (updateLedger) {
 console.log(
   JSON.stringify({
     check: "@vizejs/ui Vapor runtime conformance",
+    runtime: runtimeTrack(),
     fixtures: lanes.ssr.length,
     familiesWithSfcs: uiFamilyCatalog.filter((family) =>
       family.sourceFiles.some((file) => file.endsWith(".vue")),
