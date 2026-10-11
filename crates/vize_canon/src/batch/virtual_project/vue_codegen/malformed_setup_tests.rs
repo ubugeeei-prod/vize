@@ -252,6 +252,10 @@ fn quoted_import_source() -> std::string::String {
     std::fs::read_to_string(Path::new(CORPUS).join("valid-quoted-import.vue.txt")).unwrap()
 }
 
+fn overlapping_import_source() -> std::string::String {
+    std::fs::read_to_string(Path::new(CORPUS).join("overlapping-imports.vue.txt")).unwrap()
+}
+
 #[test]
 fn valid_commented_imports_remain_module_declarations_when_a_later_setup_parse_panics() {
     for tail in commented_imports() {
@@ -287,4 +291,18 @@ fn valid_commented_imports_remain_module_declarations_when_a_later_setup_parse_p
             < after.code.find("function __setup()").unwrap(),
         "{packet}"
     );
+    let source = overlapping_import_source();
+    let (_, after, packet) = project(&source);
+    assert_eq!(packet["analyzedSetup"], false, "{packet}");
+    assert_authored_maps(&source, &after);
+    for import in [
+        "import { ref } from 'vue'",
+        "import { computed } from 'vue'",
+    ] {
+        assert_eq!(after.code.matches(import).count(), 1, "{packet}");
+        assert!(
+            after.code.find(import).unwrap() < after.code.find("function __setup()").unwrap(),
+            "{packet}"
+        );
+    }
 }

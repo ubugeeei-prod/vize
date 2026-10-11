@@ -42,7 +42,12 @@ new lone scanner also distinguishes quoted imported names from the genuine
 module source: `import { 'ref' as ref } from 'vue'` is a valid terminated import,
 not a missing terminator at `as`. Its complete corpus SFC and same-config native
 vector retain only the genuine later expression error.
-first full qualifier 38122497358 is also retained as failed, with no green credit.
+When the new lone section contains an already recovered leading import, its
+contained AST spans are replaced by that encompassing section so the complete
+authored declarations are emitted once. The two-import corpus/native control
+requires only its genuine missing-terminator TS1005; old two-block planning
+does not change.
+The first full qualifier 38122497358 is also retained as failed, with no green credit.
 Its original full App row passed all 15 negative diagnostic controls. Its
 same-config native LSP #5071 before vector already contained exactly the two
 original TS1005 diagnostics and no TS2307; the initial native test's once-TS2307

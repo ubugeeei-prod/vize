@@ -59,11 +59,17 @@ impl GluedImportSection {
         module_spans: &mut Vec<(u32, u32)>,
     ) -> Option<Self> {
         let script = script?;
-        let glued = Self::find(script, split).or_else(|| {
-            recover_lone_setup
+        let glued = if let Some(glued) = Self::find(script, split) {
+            glued
+        } else {
+            let glued = recover_lone_setup
                 .then(|| Self::find_lone_setup(script))
-                .flatten()
-        })?;
+                .flatten()?;
+            // The recovered prefix AST can own an earlier valid import inside
+            // this whole lone section. Emit that authored text only once.
+            module_spans.retain(|span| span.0 < glued.span.0 || span.1 > glued.span.1);
+            glued
+        };
         module_spans.push(glued.span);
         module_spans.sort_unstable();
         Some(glued)
