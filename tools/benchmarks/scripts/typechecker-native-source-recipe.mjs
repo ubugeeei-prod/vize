@@ -182,12 +182,14 @@ export async function awaitReleasePreparation({
   const initial = releaseIdentity(root, env, event.pull_request, permission, true);
   const started = now(),
     observations = [];
-  let advertisedPin;
-  while (true) {
+  const deadline = (stage = "") =>
     assert.ok(
       now() - started <= timeoutMs,
-      "Immutable release preparation timed out; no source recipe selected",
+      `Immutable release preparation timed out${stage}; no source recipe selected`,
     );
+  let advertisedPin;
+  while (true) {
+    deadline();
     const observed = await observe();
     const live = releaseIdentity(root, env, observed.pullRequest, permission, true);
     for (const key of ["source", "cut", "old", "next", "number", "author"])
@@ -210,16 +212,10 @@ export async function awaitReleasePreparation({
     });
     if (live.integration !== null) {
       assert.ok(observed.pin !== null, "Complete release receipt has no immutable pin");
-      assert.ok(
-        now() - started <= timeoutMs,
-        "Immutable release preparation timed out; no source recipe selected",
-      );
+      deadline();
       const pin = await loadPin(observed.pin);
       assert.equal(pin, observed.pin, "Fetched immutable pin changed");
-      assert.ok(
-        now() - started <= timeoutMs,
-        "Immutable release preparation timed out during pin fetch",
-      );
+      deadline(" during pin fetch");
       const selected = selectSourceRecipe({
         root,
         env,
@@ -228,6 +224,7 @@ export async function awaitReleasePreparation({
         pin,
         parse,
       });
+      deadline(" during source recipe authentication");
       selected.authentication.preparation = {
         initialPullRequest: event.pull_request,
         observations,

@@ -232,3 +232,19 @@ await test("a pin advertised during preparation cannot disappear or change befor
     );
   });
 });
+
+await test("whole metadata and real YAML recipe authentication must finish within the same preparation deadline", async () => {
+  await fixture(async (f) => {
+    let clock = 0;
+    const slow = preparation(f, [observation(f)], {
+      now: () => clock,
+      parse: (bytes) => {
+        const value = f.parse(bytes);
+        clock = 6_001;
+        return value;
+      },
+    });
+    await assert.rejects(slow.run(), /preparation timed out during source recipe authentication/u);
+    assert.equal(slow.counts().loads, 1);
+  });
+});
