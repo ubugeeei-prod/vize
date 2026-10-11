@@ -11,5 +11,42 @@
   "capturedActionsRun": 38143613522,
   "capturedActionsJob": 114484144005,
   "productHead": "5758c393f30916da542c0ab3945974918dc836a5",
-  "qualification": "Fresh complete-packet source Actions and merge-group gates remain required."
+  "qualification": "Fresh complete-packet source Actions and merge-group gates remain required.",
+  "officialVueEmissionControls": [
+    {
+      "id": "ordinary-slot",
+      "source": "<Dialog><template #actions><Button>Next</Button></template></Dialog>",
+      "version": "3.6.0-rc.9",
+      "codeSha256": "9b2736f2f0aa14ff824fd57c033b2c80b419e291855f89fc8c19c313bb7a51e7"
+    },
+    {
+      "id": "ordinary-slot",
+      "source": "<Dialog><template #actions><Button>Next</Button></template></Dialog>",
+      "version": "3.6.0-rc.10",
+      "codeSha256": "9b2736f2f0aa14ff824fd57c033b2c80b419e291855f89fc8c19c313bb7a51e7"
+    },
+    {
+      "id": "sibling-root",
+      "source": "<List :items=\"items\"/><input/>",
+      "version": "3.6.0-rc.9",
+      "codeSha256": "adb7a4efff4b8fb447a28c7cf9d775d68030d431d58b9532b5067687b6dc367b"
+    },
+    {
+      "id": "sibling-root",
+      "source": "<List :items=\"items\"/><input/>",
+      "version": "3.6.0-rc.10",
+      "codeSha256": "adb7a4efff4b8fb447a28c7cf9d775d68030d431d58b9532b5067687b6dc367b"
+    }
+  ],
+  "officialVueOracleLocks": [
+    {
+      "version": "3.6.0-rc.9",
+      "sha256": "d711d836975844a9cd924b3db5efade51d62b04f287aadf95e1bb99f6124c21d"
+    },
+    {
+      "version": "3.6.0-rc.10",
+      "sha256": "ac9a72e9edf9149006e51b4cefbb9dec4d1aaae0f0e1ee0b939786c0beff9238"
+    }
+  ],
+  "reportedVueOracleCredit": "Independent official compiler emission diagnostic; no installed public Vize or release-consumer credit."
 }
