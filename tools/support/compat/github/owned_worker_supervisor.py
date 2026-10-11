@@ -70,12 +70,15 @@ def debugger_error_reader(stream, directory, receipt):
 
 def reap_debugger(child, receipt):
     if child.poll() is None:
-        for method in [lambda: child.send_signal(signal.SIGINT), child.terminate, child.kill]:
+        for name, method in [("SIGINT", lambda: child.send_signal(signal.SIGINT)), ("SIGTERM", child.terminate), ("SIGKILL", child.kill)]:
+            receipt.setdefault("cleanupSignalAttempts", []).append({"signal": name, "atMonotonicNs": time.monotonic_ns()})
             method()  # Unreaped actual debugger child; no numeric PID lookup.
             try:
                 child.wait(timeout=3)
+                receipt["cleanupSignalAttempts"][-1]["wait"] = "reaped"
                 break
             except subprocess.TimeoutExpired:
+                receipt["cleanupSignalAttempts"][-1]["wait"] = "timeout"
                 receipt["forcedDebuggerExit"] = True
     receipt["debuggerReturnCode"] = child.wait(timeout=0)
     receipt["debuggerReaped"] = True

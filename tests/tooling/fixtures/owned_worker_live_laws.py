@@ -46,6 +46,10 @@ def cleanup_case(child, debugger, reader, packets, worker, leader, profile, root
         worker.close()
         receipt["workerCleanup"] = list(worker.events)
         try:
+            if "ESRCH-observation-gap" in worker.events:
+                receipt["cleanupWorkerGone"] = "pidfd-ESRCH-observation-gap"
+                safe_release = False
+                raise ProcessLookupError()
             worker.check()
             receipt["cleanupWorkerBirthVerified"] = True
             receipt["cleanupTracerPid"] = worker.tracer()
@@ -54,7 +58,10 @@ def cleanup_case(child, debugger, reader, packets, worker, leader, profile, root
                 safe_release = False
             if "owned-worker-continued" not in worker.events: safe_release = False
         except ProcessLookupError:
-            receipt["liveCleanupGap"] = "ESRCH-observation-gap"
+            receipt["cleanupObservationGap"] = "ESRCH-observation-gap"
+            safe_release = False
+        except FileNotFoundError:
+            receipt["cleanupObservationGap"] = "ProcFileMissing"
             safe_release = False
         except (OSError, ValueError) as error:
             receipt["liveCleanupGap"] = "WorkerCleanup" + type(error).__name__
@@ -71,6 +78,33 @@ def cleanup_case(child, debugger, reader, packets, worker, leader, profile, root
             child.kill()  # Only our own still-unreaped authored runner.
             try: receipt["cleanupOriginalReturnCode"] = child.wait(timeout=5)
             except subprocess.TimeoutExpired: receipt["liveCleanupGap"] = "ToyRunnerUnreaped"
+
+
+def validate_case(receipt, mode, status):
+    if status != (1 if mode in ["fault", "original-interrupt"] else 0):
+        raise ValueError("Live control original runner status changed")
+    packets = receipt.get("gdbPackets", [])
+    statuses = [packet["status"] for packet in packets]
+    if statuses.count("attached") != 1 or statuses.count("SIGSEGV") != (1 if mode == "fault" else 0):
+        raise ValueError("Live control actor or fault attribution differs")
+    if mode != "cancel" and statuses.count("exited") != 1:
+        raise ValueError("Actual owned inferior exit event missing or duplicated")
+    allowed = {"UnexpectedWorkerStop", "InterruptOriginObserved", "DiagnosticCleanupInterrupt"} if mode in ["cancel", "original-interrupt"] else set()
+    for packet in packets:
+        if packet["status"] == "unavailable" and (packet.get("gap") not in allowed or
+                (packet.get("gap") == "UnexpectedWorkerStop" and packet.get("signal") != "SIGINT")):
+            raise ValueError("Unexpected or incomplete debugger stop")
+    cleanup = [packet for packet in packets if packet["status"] == "debugger-cleanup"]
+    if len(cleanup) != 1 or not cleanup[0]["debuggerReaped"] or cleanup[0].get("gap") or cleanup[0].get("forcedDebuggerExit") or cleanup[0].get("debuggerReturnCode") != 0:
+        raise ValueError("Live control debugger was not actually reaped cleanly")
+    if any(receipt.get(key) for key in ["markerGap", "readerGap", "gdbGap", "faultProviderGap", "faultProviderCustodyGap", "acknowledgementGap"]):
+        raise ValueError("Live control source, provider or debugger observation incomplete")
+    if mode == "cancel" and (receipt.get("cancellationTracerPid") != 0 or not cleanup[0].get("workerResumed") or
+            not any(packet.get("diagnosticInterruptOriginMatch") is True for packet in packets) or
+            not any(packet.get("phase") == "diagnostic-signal-discarded" for packet in packets) or "detached" not in statuses):
+        raise ValueError("Actual cancellation detach, origin, discard or resume proof missing")
+    if mode == "original-interrupt" and not any(packet.get("diagnosticInterruptOriginMatch") is False for packet in packets):
+        raise ValueError("Genuine worker SIGINT was not distinguished during cancellation")
 
 
 def run_case(root, stage, directory, mode):
@@ -124,12 +158,18 @@ watcher.close();const mode=readFileSync(directory+'/release','utf8');if(mode==='
             drain_packets(packets, debugger, worker, leader, profile, root, stage, receipt)
             return any(packet["status"] == "attached" for packet in receipt.get("gdbPackets", []))
         wait_for(attached)
+        def running():
+            drain_packets(packets, debugger, worker, leader, profile, root, stage, receipt)
+            return any(packet.get("phase") == "inferior-running" and packet.get("pid") == worker.identity["pid"] for packet in receipt.get("gdbPackets", []))
+        wait_for(running)
         if mode == "cancel":
             debugger.stdin.write(b"detach\n"); debugger.stdin.flush()
             close_gdb(debugger, reader, receipt)
             drain_packets(packets, debugger, worker, leader, profile, root, stage, receipt)
             worker.close()
-            if worker.tracer() != 0: raise ValueError("Debugger remained attached after cancellation")
+            worker.check()
+            receipt["cancellationTracerPid"] = worker.tracer()
+            if receipt["cancellationTracerPid"] != 0: raise ValueError("Debugger remained attached after cancellation")
             (controls / "release").write_text("normal")
         else:
             if mode == "original-interrupt": (stage / "gdb-private/detach-requested").write_text("")
@@ -141,18 +181,7 @@ watcher.close();const mode=readFileSync(directory+'/release','utf8');if(mode==='
             close_gdb(debugger, reader, receipt)
             drain_packets(packets, debugger, worker, leader, profile, root, stage, receipt)
         status = child.wait(timeout=5)
-        if status != (1 if mode in ["fault", "original-interrupt"] else 0):
-            raise ValueError("Live control original runner status changed")
-        statuses = [packet["status"] for packet in receipt.get("gdbPackets", [])]
-        if ("SIGSEGV" in statuses) != (mode == "fault"):
-            raise ValueError("Live control fault attribution differs")
-        cleanup = [packet for packet in receipt.get("gdbPackets", []) if packet["status"] == "debugger-cleanup"]
-        if len(cleanup) != 1 or not cleanup[0]["debuggerReaped"] or cleanup[0].get("gap") or cleanup[0].get("forcedDebuggerExit"):
-            raise ValueError("Live control debugger was not actually reaped")
-        if mode == "fault" and receipt.get("faultProviderCustodyGap"):
-            raise ValueError("Live fault provider bodies changed or were not bound before capture")
-        if mode == "original-interrupt" and not any(packet.get("diagnosticInterruptOriginMatch") is False for packet in receipt.get("gdbPackets", [])):
-            raise ValueError("Genuine worker SIGINT was not distinguished from GDB during cancellation")
+        validate_case(receipt, mode, status)
         receipt["originalReturnCode"] = status
         receipt["debuggerActuallyReaped"] = True
     except Exception as error:

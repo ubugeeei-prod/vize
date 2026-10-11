@@ -86,30 +86,53 @@ def configure():
                     "set debuginfod enabled off", "set print frame-arguments none",
                     "set print entry-values no", "set follow-fork-mode parent",
                     "set detach-on-fork on", "handle SIGSEGV stop print pass",
+                    "handle SIGCONT nostop noprint pass",
                     "handle SIGSTOP nostop noprint nopass"]:
         gdb.execute(setting, to_string=True)
-    text = gdb.execute("info signals SIGSEGV", to_string=True)
-    rows = [line.split() for line in text.splitlines() if line.split()[:1] == ["SIGSEGV"]]
-    if len(text.encode()) > 8192 or len(rows) != 1 or rows[0][1:4] != ["Yes", "Yes", "Yes"]:
-        raise ValueError("Actual debugger SIGSEGV stop/pass policy differs")
+    for name, flags in [("SIGSEGV", ["Yes", "Yes", "Yes"]), ("SIGCONT", ["No", "No", "Yes"])]:
+        text = gdb.execute("info signals " + name, to_string=True)
+        rows = [line.split() for line in text.splitlines() if line.split()[:1] == [name]]
+        if len(text.encode()) > 8192 or len(rows) != 1 or rows[0][1:4] != flags:
+            raise ValueError("Actual debugger signal stop/pass policy differs")
     publish({"status": "debugger-phase", "phase": "signal-policy-verified",
-             "sigsegvStop": True, "sigsegvPass": True})
+             "sigsegvStop": True, "sigsegvPass": True, "sigcontStop": False, "sigcontPass": True})
 
 
 def run(config):
     attached = False
+    detaching = False
+    inferior_number = None
     pending_signal = None
     exited = []
+    def owned_inferior():
+        inferior = gdb.selected_inferior()
+        if inferior_number is None or inferior.num != inferior_number or inferior.pid != config["worker"]["actor"]["pid"]:
+            raise ValueError("Different owned inferior")
+        return verified(config)
     def stopped(event):
         nonlocal pending_signal
         pending_signal = event.stop_signal if isinstance(event, gdb.SignalEvent) else "UnexpectedStop"
     def exit_event(event):
+        if detaching: return  # Detach events do not prove the worker exited.
+        if inferior_number is None or event.inferior.num != inferior_number:
+            publish({"status": "unavailable", "gap": "ForeignExitedInferior"})
+            return
         exited.append(getattr(event, "exit_code", None))
-    gdb.events.stop.connect(stopped)
-    gdb.events.exited.connect(exit_event)
+        if len(exited) == 1: publish({"status": "exited", "exitCode": exited[-1]})
+    def continued(event):
+        try:
+            owned_inferior()
+        except Exception as error:
+            publish({"status": "unavailable", "gap": "ContinuedActor" + type(error).__name__})
+            return
+        publish({"status": "debugger-phase", "phase": "inferior-running",
+                 "pid": config["worker"]["actor"]["pid"]})
+    hooks = []
     owned_fd = None
     try:
         configure()
+        for registry, handler in [(gdb.events.stop, stopped), (gdb.events.exited, exit_event), (gdb.events.cont, continued)]:
+            registry.connect(handler); hooks.append((registry, handler))
         if not same_birth(state(config["worker"]["actor"]["pid"]), config["worker"]["actor"]):
             raise ValueError("Worker birth changed before opening GDB pidfd")
         owned_fd = os.pidfd_open(config["worker"]["actor"]["pid"])
@@ -122,18 +145,18 @@ def run(config):
         verified(config)
         if gdb.selected_inferior().pid != config["worker"]["actor"]["pid"]:
             raise ValueError("GDB selected a different inferior")
+        inferior_number = gdb.selected_inferior().num
         publish({"status": "attached", "pid": config["worker"]["actor"]["pid"],
                  "startTicks": config["worker"]["actor"]["startTicks"],
                  "numericAttachIntervalNs": [attach_started, attach_finished],
                  "numericAttachAtomic": False})
         signal.pidfd_send_signal(config["pidfd"], signal.SIGCONT)
         pending_signal = None
-        gdb.execute("continue", to_string=True)
+        gdb.execute("continue", to_string=False)  # Event markers bypass command-output capture.
         if exited:
             attached = False
-            publish({"status": "exited", "exitCode": exited[-1]})
             return
-        verified(config)
+        owned_inferior()
         if pending_signal != "SIGSEGV":
             publish({"status": "unavailable", "gap": "UnexpectedWorkerStop", "signal": pending_signal})
             return
@@ -143,44 +166,47 @@ def run(config):
         acknowledgement = sys.stdin.readline(32)
         if acknowledgement != "captured\n":
             publish({"status": "unavailable", "gap": "MissingProviderAcknowledgement"})
-        verified(config)
+        owned_inferior()
         pending_signal = None
-        gdb.execute("continue", to_string=True)  # handle SIGSEGV pass preserves it.
+        gdb.execute("continue", to_string=False)  # handle SIGSEGV pass preserves it.
         if exited:
             attached = False
-            publish({"status": "exited", "exitCode": exited[-1]})
         else:
             publish({"status": "unavailable", "gap": "PostFaultStop"})
     except Exception as error:
         publish({"status": "unavailable", "gap": type(error).__name__})
     finally:
         if attached:
-            diagnostic_interrupt = cleanup_interrupt(pending_signal)
+            can_pass = False
+            try: owned_inferior(); can_pass = True
+            except Exception as error: publish({"status": "unavailable", "gap": "CleanupActor" + type(error).__name__})
+            diagnostic_interrupt = cleanup_interrupt(pending_signal) if can_pass else False
             if diagnostic_interrupt:
                 publish({"status": "unavailable", "gap": "DiagnosticCleanupInterrupt"})
                 try:
                     gdb.execute("queue-signal 0", to_string=True)
+                    publish({"status": "debugger-phase", "phase": "diagnostic-signal-discarded"})
                 except Exception as error:
                     publish({"status": "unavailable", "gap": "DiscardDiagnosticSignal" + type(error).__name__})
-            if pending_signal and not diagnostic_interrupt and pending_signal.startswith("SIG") and hasattr(signal, pending_signal):
+            if can_pass and pending_signal and not diagnostic_interrupt and pending_signal.startswith("SIG") and hasattr(signal, pending_signal):
                 try:
                     # A diagnostic exception must not consume the original fault.
                     original_signal = pending_signal
                     pending_signal = None
-                    gdb.execute("signal " + original_signal, to_string=True)
+                    gdb.execute("signal " + original_signal, to_string=False)
                 except Exception as error:
                     publish({"status": "unavailable", "gap": "PassSignal" + type(error).__name__})
             if not exited:
                 try:
                 # Detach the currently held inferior; no PID lookup or tree walk.
+                    detaching = True
                     gdb.execute("detach", to_string=True)
                     publish({"status": "detached"})
                 except Exception as error:
                     publish({"status": "unavailable", "gap": "Detach" + type(error).__name__})
         if owned_fd is not None:
             os.close(owned_fd)
-        gdb.events.stop.disconnect(stopped)
-        gdb.events.exited.disconnect(exit_event)
+        for registry, handler in reversed(hooks): registry.disconnect(handler)
 
 
 if __name__ == "__main__":

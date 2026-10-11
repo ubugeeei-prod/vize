@@ -55,6 +55,10 @@ The [official signal policy](https://sourceware.org/gdb/current/onlinedocs/gdb.h
 defines `noprint` as implying `nostop`; use `stop print pass` and verify the
 actual bounded `info signals SIGSEGV` row before attaching. Missing or changed
 stop/pass evidence refuses attachment. Printed startup remains excluded.
+Pass SIGCONT without stopping, verifying its actual No/No/Yes policy before
+attach. Require an authenticated actual continued-inferior event before authored
+release/cancellation; capture actual exit events once, excluding detach events.
+Continuation output remains in the private pipe with non-marker text hash-only.
 Publish bounded marked backtraces, registers and library identities; hash actual
 executable mappings/providers before attachment and at the stopped fault before
 continuing the original signal. No raw core, environment, argv, startup output,
@@ -115,6 +119,20 @@ zero does not prove attachment or cleanup. The late-packet failure path and
 local composite post-hook manifest lookup require repair before another run.
 Artifact `11718068707` has whole ZIP SHA256
 `b14b7b481b8b589d8f8cac75153896b80888c7536cef78e9e150881eb772d5a4`.
+
+The reviewed corrective driver `7b5db392372dc5d21cad78b664c1061b0e156b42`
+ran [38184042465](https://github.com/ubugeeei-prod/vize/actions/runs/38184042465),
+attempt 1, job `114602459092`, against the same fresh SDK source. Actual policy,
+private actor matching and attachment were retained. Its normal control stopped
+unexpectedly at the diagnostic SIGCONT, returned original status 0 without an
+actual inferior exit marker, and was incorrectly admitted by the old control
+law. Cancellation retained actual debugger reaping and pidfd resume but required
+forced escalation; it failed. Fault/original-SIGINT controls and the original SDK
+runner did not run; all 29,059 physical source bodies remained equal. Preserve
+this failure, require actual exit/clean cancellation proof, and record each
+bounded cleanup signal attempt/wait result without waiving escalation. The
+earlier unmarked startup cause remains unknown. Artifact `11718886828` has SHA256
+`2fa480bb9f7247b08ce9655f0ff73c56222e3fc202cdb19ae182bf0b456582e7`.
 
 ## Qualification and remaining work
 

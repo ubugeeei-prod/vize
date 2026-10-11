@@ -17,10 +17,30 @@ from owned_worker_capture import write_json
 
 
 class RunnerLaws(unittest.TestCase):
-    def test_failed_live_control_drains_late_reap_packet_before_proven_resume_and_release(self):
+    def load_live(self):
         spec = importlib.util.spec_from_file_location("owned_live_cleanup_law", Path(__file__).with_name("owned_worker_live_laws.py"))
         live = importlib.util.module_from_spec(spec)
         with patch.object(sys, "argv", ["fixture", str(helpers)]): spec.loader.exec_module(live)
+        return live
+
+    def test_real_partial_normal_packet_and_forced_cancel_cannot_receive_control_credit(self):
+        live = self.load_live()
+        cleanup = {"status": "debugger-cleanup", "debuggerReaped": True, "debuggerReturnCode": 0, "workerResumed": True}
+        attached = {"status": "attached", "pid": 123}
+        exited = {"status": "exited", "exitCode": 0}
+        partial = {"gdbPackets": [attached, {"status": "unavailable", "gap": "UnexpectedWorkerStop", "signal": "SIGCONT"}, cleanup]}
+        with self.assertRaises(ValueError): live.validate_case(partial, "normal", 0)
+        with self.assertRaises(ValueError): live.validate_case({"gdbPackets": [attached, exited, {**cleanup, "forcedDebuggerExit": True}]}, "normal", 0)
+        live.validate_case({"gdbPackets": [attached, exited, cleanup]}, "normal", 0)
+        for packets, tracer in [([attached, cleanup], 0), ([attached, {"status": "detached"}, {**cleanup, "forcedDebuggerExit": True}], 0)]:
+            with self.assertRaises(ValueError): live.validate_case({"gdbPackets": packets, "cancellationTracerPid": tracer}, "cancel", 0)
+        cancel = {"gdbPackets": [attached, {"status": "unavailable", "gap": "InterruptOriginObserved", "diagnosticInterruptOriginMatch": True}, {"status": "debugger-phase", "phase": "diagnostic-signal-discarded"}, {"status": "detached"}, cleanup], "cancellationTracerPid": 0}
+        live.validate_case(cancel, "cancel", 0)
+        cancel["cancellationTracerPid"] = 9
+        with self.assertRaises(ValueError): live.validate_case(cancel, "cancel", 0)
+
+    def test_failed_live_control_drains_late_reap_packet_before_proven_resume_and_release(self):
+        live = self.load_live()
         for birth, tracer, reaped, released in [(True, 0, True, True), (False, 0, True, False), (True, 9, True, False), (True, 0, False, False)]:
             with tempfile.TemporaryDirectory() as temporary:
                 directory = Path(temporary); receipt = {}; packets = queue.Queue(16); calls = []

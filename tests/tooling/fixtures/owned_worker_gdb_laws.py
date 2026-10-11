@@ -36,15 +36,15 @@ class FakeGDB:
     SignalEvent = SignalEvent
     def __init__(self, mode):
         self.mode, self.commands, self.text, self.continues = mode, [], [], 0
-        self.policy = {"stop": True, "print": True, "pass": True}
-        self.events = types.SimpleNamespace(stop=Event(), exited=Event())
+        self.policy = {name: {"stop": True, "print": True, "pass": True} for name in ["SIGSEGV", "SIGCONT", "SIGSTOP"]}
+        self.events = types.SimpleNamespace(stop=Event(), exited=Event(), cont=Event())
         def thread(number):
             actor = types.SimpleNamespace(num=number, ptid=(123, number, 0))
             actor.switch = lambda: setattr(self, "selected", actor)
             return actor
         self.original = thread(7)
         self.selected = self.original
-        self.inferior = types.SimpleNamespace(pid=0, threads=lambda: [self.original, thread(11)])
+        self.inferior = types.SimpleNamespace(pid=0, num=1, threads=lambda: [self.original, thread(11)])
     def write(self, body):
         self.text.append(body)
     def flush(self):
@@ -61,29 +61,37 @@ class FakeGDB:
                 "$_siginfo._sifields._kill.si_uid": os.getuid()}[expression]
     def execute(self, command, to_string=False):
         self.commands.append(command)
-        if command.startswith("handle SIGSEGV "):
+        if command.startswith("handle "):
+            policy = self.policy[command.split()[1]]
             for word in command.split()[2:]:
-                if word == "stop": self.policy.update(stop=True, print=True)
-                elif word == "noprint": self.policy.update(stop=False, print=False)
-                elif word == "print": self.policy["print"] = True
-                elif word == "pass": self.policy["pass"] = True
-        elif command == "info signals SIGSEGV":
-            flags = ["Yes" if self.policy[key] else "No" for key in ["stop", "print", "pass"]]
-            if self.mode == "policy-refusal": flags[0] = "No"
-            return "Signal Stop Print Pass to program Description\nSIGSEGV " + " ".join(flags) + " Segmentation fault\n"
+                if word == "stop": policy.update(stop=True, print=True)
+                elif word == "nostop": policy["stop"] = False
+                elif word == "noprint": policy.update(stop=False, print=False)
+                elif word == "print": policy["print"] = True
+                elif word == "pass": policy["pass"] = True
+                elif word == "nopass": policy["pass"] = False
+        elif command.startswith("info signals "):
+            name = command.split()[-1]
+            flags = ["Yes" if self.policy[name][key] else "No" for key in ["stop", "print", "pass"]]
+            if self.mode == "policy-refusal" and name == "SIGSEGV": flags[0] = "No"
+            if self.mode == "cont-policy-refusal" and name == "SIGCONT": flags[0] = "Yes"
+            return "Signal Stop Print Pass to program Description\n" + name + " " + " ".join(flags) + " Signal description\n"
         elif command.startswith("attach "):
             self.inferior.pid = int(command.split()[1])
             if self.mode == "partial-attach-failure": raise RuntimeError("private startup arguments")
         elif command == "continue":
             self.continues += 1
+            if self.mode == "foreign-continued": self.inferior.pid += 1
+            self.events.cont.emit(types.SimpleNamespace())
             if self.mode == "cancel": raise KeyboardInterrupt()
             if self.mode == "normal" or self.continues == 2:
-                self.events.exited.emit(types.SimpleNamespace(exit_code=0 if self.mode == "normal" else None))
+                self.events.exited.emit(types.SimpleNamespace(exit_code=0 if self.mode == "normal" else None, inferior=self.inferior))
                 self.inferior.pid = 0
             else:
                 self.events.stop.emit(SignalEvent("SIGINT" if self.mode in ["interrupt", "original-interrupt", "missing-siginfo"] else "SIGTERM" if self.mode == "other-signal" else "SIGSEGV"))
         elif command.startswith("signal "):
-            self.events.exited.emit(types.SimpleNamespace(exit_code=None))
+            self.events.cont.emit(types.SimpleNamespace())
+            self.events.exited.emit(types.SimpleNamespace(exit_code=None, inferior=self.inferior))
             self.inferior.pid = 0
         elif command == "bt 32":
             if self.mode == "backtrace-failure": raise ValueError("private secret")
@@ -91,6 +99,7 @@ class FakeGDB:
         elif command == "info registers":
             return "registers-thread-" + str(self.selected.num)
         elif command == "detach":
+            self.events.exited.emit(types.SimpleNamespace(inferior=self.inferior))
             self.inferior.pid = 0
         return "bounded diagnostic identity\n"
 
@@ -118,6 +127,8 @@ class GDBLaws(unittest.TestCase):
             packets.append(json.loads(lines[1]))
         self.assertEqual(adapter.events.stop.handlers, [])
         self.assertEqual(adapter.events.exited.handlers, [])
+        self.assertEqual(adapter.events.cont.handlers, [])
+        self.assertLessEqual(sum(packet.count('"status":"exited"') for packet in adapter.text), 1)
         self.assertEqual(adapter.flushed, len(adapter.text))
         self.assertNotIn("private secret", "".join(adapter.text))
         self.assertNotIn("private startup arguments", "".join(adapter.text))
@@ -186,12 +197,21 @@ class GDBLaws(unittest.TestCase):
     def test_noprint_implies_nostop_and_actual_policy_must_refuse_before_attach(self):
         adapter = FakeGDB("fault")
         adapter.execute("handle SIGSEGV stop noprint pass")
-        self.assertFalse(adapter.policy["stop"])
-        adapter, packets, signals, closed = self.run_fixture("policy-refusal")
-        self.assertFalse(any(command.startswith("attach ") for command in adapter.commands))
-        self.assertEqual(signals, [])
-        self.assertEqual(closed, [])
-        self.assertTrue(any(packet.get("gap") == "ValueError" for packet in packets))
+        self.assertFalse(adapter.policy["SIGSEGV"]["stop"])
+        for mode in ["policy-refusal", "cont-policy-refusal"]:
+            adapter, packets, signals, closed = self.run_fixture(mode)
+            self.assertFalse(any(command.startswith("attach ") for command in adapter.commands))
+            self.assertEqual(signals, [])
+            self.assertEqual(closed, [])
+            self.assertTrue(any(packet.get("gap") == "ValueError" for packet in packets))
+
+    def test_changed_continued_inferior_has_no_fault_credit_or_forwarded_signal(self):
+        adapter, packets, signals, closed = self.run_fixture("foreign-continued")
+        self.assertNotIn("SIGSEGV", [packet["status"] for packet in packets])
+        self.assertNotIn("signal SIGSEGV", adapter.commands)
+        self.assertNotIn("queue-signal 0", adapter.commands)
+        self.assertFalse(any(packet.get("phase") == "inferior-running" for packet in packets))
+        self.assertEqual(closed, [77])
 
 
 if __name__ == "__main__":

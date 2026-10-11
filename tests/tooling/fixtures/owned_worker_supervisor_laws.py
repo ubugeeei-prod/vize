@@ -49,6 +49,7 @@ class SupervisorLaws(unittest.TestCase):
         supervisor.reap_debugger(child, receipt)
         self.assertEqual([call[0] for call in child.calls], ["signal", "wait", "terminate", "wait", "kill", "wait", "wait"])
         self.assertTrue(receipt["forcedDebuggerExit"] and receipt["debuggerReaped"])
+        self.assertEqual([(item["signal"], item["wait"]) for item in receipt["cleanupSignalAttempts"]], [("SIGINT", "timeout"), ("SIGTERM", "timeout"), ("SIGKILL", "reaped")])
         self.assertNotIn("private", json.dumps(receipt))
 
     def test_already_exited_debugger_has_no_signal_or_pid_lookup(self):
