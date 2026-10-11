@@ -20,10 +20,15 @@ async function stock(source, filename) {
   assert.deepEqual(parsed.errors, []);
   const descriptor = parsed.descriptor;
   const isTS = descriptor.scriptSetup?.lang === "ts" || descriptor.script?.lang === "ts";
-  const script = compiler.compileScript(descriptor, {
-    id: "slot-defaults",
-    genDefaultAs: "__component",
-  });
+  // The independent target is VDOM even when the unchanged source requests
+  // Vapor. Vue also drops empty script blocks while parsing: those components
+  // use its normal empty-script component and unchanged compiled template.
+  const script = descriptor.script || descriptor.scriptSetup
+    ? compiler.compileScript({ ...descriptor, vapor: false }, {
+        id: "slot-defaults",
+        genDefaultAs: "__component",
+      })
+    : { content: "const __component = {};", bindings: {} };
   const template = compiler.compileTemplate({
     source: descriptor.template.content,
     filename,

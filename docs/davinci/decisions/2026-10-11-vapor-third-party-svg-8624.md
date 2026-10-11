@@ -24,3 +24,14 @@ declaration in the integration target. Every original input, runtime comparison
 and authored assertion remains unchanged. Native Stack #8638 orders #8634,
 #8635, #8636 and #8637; each repaired exact head and the protected candidate still
 require fresh Actions evidence.
+
+The repaired source plan exposed two real reference-harness failures in the
+registered whole-SFC tests: Check 38142193165's Rust shard 1 rejects an empty
+script block, and Check 38142212288's shard 2 creates a Vapor component inside
+the intended independent VDOM tree. Vue omits empty script blocks from its parsed
+descriptor, so use the normal empty component plus the unchanged compiled
+template in that case. For the VDOM reference only, clear the parsed descriptor's
+Vapor target before `compileScript`; preserve every raw source byte and compile
+the same template. Product compilation remains Vapor. These corrections retain
+the full comparison, diagnostics and expected DOM assertions without adding
+interop to the VDOM oracle or changing any historical input.
