@@ -44,10 +44,15 @@ fn nested_analysis_keeps_complete_normal_vdom_and_vapor_packets() {
             ("vdom", JsxOutputMode::Vdom),
             ("vapor", JsxOutputMode::Vapor),
         ] {
-            let expected: Value = serde_json::from_slice(
-                &std::fs::read(fixture.join(format!("{name}.{label}.runtime.json.txt"))).unwrap(),
-            )
-            .unwrap();
+            // The frozen #8441 packet still records the former nested-root bug.
+            // #8625 has an explicit whole successor for this one Vapor packet.
+            let output = if name == "AfsStepperDialog.stories" && label == "vapor" {
+                "AfsStepperDialog.stories.vapor.root-fallthrough-8625.runtime.json.txt".to_owned()
+            } else {
+                format!("{name}.{label}.runtime.json.txt")
+            };
+            let expected: Value =
+                serde_json::from_slice(&std::fs::read(fixture.join(output)).unwrap()).unwrap();
             assert_eq!(
                 complete_runtime_packet(&source, mode),
                 expected,

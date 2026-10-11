@@ -1,0 +1,15 @@
+{
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/8625",
+  "originalBaseline": "runtime-baseline.json",
+  "originalOutput": "AfsStepperDialog.stories.vapor.runtime.json.txt",
+  "originalOutputSha256": "5c259e1823d7289cb0defd73dcf3f42ad4533f144bc664fab28af013d98549ac",
+  "successorOutput": "AfsStepperDialog.stories.vapor.root-fallthrough-8625.runtime.json.txt",
+  "successorOutputSha256": "6300a9b6d103a0ea8211421ac97af24795a6f9690a68f88fc5173959537d95c2",
+  "source": "AfsStepperDialog.stories.tsx.txt",
+  "sourceSha256": "8b46599f16d4ac31ed91677a729c9058087ebf2978fd5e62490d512db9e04b8f",
+  "change": "Only the nested AfsButton actions-slot component is no longer the enclosing Stepper render root; retain the Dialog root, other components, diagnostics, module, and all source-map fields.",
+  "capturedActionsRun": 38143613522,
+  "capturedActionsJob": 114484144005,
+  "productHead": "5758c393f30916da542c0ab3945974918dc836a5",
+  "qualification": "Fresh complete-packet source Actions and merge-group gates remain required."
+}

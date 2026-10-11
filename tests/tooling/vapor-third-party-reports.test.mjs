@@ -36,3 +36,28 @@ void test("third-party Vapor runtime packs retain the original report and every 
     assert.equal(pack.runtime.lockedVue, "3.6.0-rc.9");
   }
 });
+
+void test("the JSX root successor retains the immutable complete #8441 packet", () => {
+  const root = new URL(
+    "../_fixtures/differential/typecheck/jsx-nested-native-expressions-8441/",
+    import.meta.url,
+  );
+  const fixture = (path) => readFileSync(new URL(path, root));
+  const successor = JSON.parse(fixture("root-fallthrough-8625-successor.json"));
+  const baseline = JSON.parse(fixture(successor.originalBaseline));
+  const original = fixture(successor.originalOutput);
+  const corrected = fixture(successor.successorOutput);
+  assert.equal(hash(original), successor.originalOutputSha256);
+  assert.equal(hash(corrected), successor.successorOutputSha256);
+  assert.equal(hash(fixture(successor.source)), successor.sourceSha256);
+  assert.equal(
+    baseline.cases.find((row) => row.output === successor.originalOutput).outputSha256,
+    successor.originalOutputSha256,
+  );
+  const expected = JSON.parse(original);
+  const component = expected.components.find((row) => row.name === "Stepper");
+  const old = "      }, true)\n      return n3";
+  assert.equal(component.code.split(old).length, 2);
+  component.code = component.code.replace(old, "      }, false)\n      return n3");
+  assert.deepEqual(JSON.parse(corrected), expected);
+});

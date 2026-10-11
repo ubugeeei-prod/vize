@@ -43,3 +43,20 @@ rc.9 Vapor itself omits inherited attrs on the direct KeepAlive child; VDOM and
 the authored full DOM expectations are the semantic authority for this case.
 Both retained compiler lanes also cover Transition and TransitionGroup emission.
 Fresh exact-head Actions and protected gates still qualify the resulting source.
+
+Fresh Check 38143613522 executes the original report and all four added KeepAlive
+runtime controls successfully. Its two red shards expose three stale downstream
+expectations: a JSX component among sibling roots, the nested AfsButton in the
+#8441 actions slot, and the checked KeepAlive no-props child. Update only the two
+focused snapshot flag bytes shown by the actual run. Preserve #8441's entire
+historical runtime packet and `runtime-baseline.json`; register a separately
+hashed complete successor that changes only AfsButton's enclosing-render root
+flag. The existing complete-packet test selects that successor only for the
+reported Vapor packet, and a custody law verifies every remaining field and
+original hash. The independently installed official Vue compiler 3.6.0-rc.9 and
+3.6.0-rc.10 produce identical complete emissions for the mixed-root and ordinary-
+slot controls, omitting the nested component root flag. The separate successor
+records their version, control and output digests; this compiler diagnosis gives
+no installed public Vize or release-consumer credit. KeepAlive's authored VDOM
+runtime expectations govern its previously recorded omission. Fresh source and
+protected merge-group qualification remain required.
