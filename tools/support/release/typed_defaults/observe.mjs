@@ -6,7 +6,7 @@ import { assertLoadedBinary } from "./distribution.mjs";
 import { sha256 } from "./custody.mjs";
 import { inputObservation, verifyPacket } from "./packet.mjs";
 
-export function observe(fixtures, distribution, consumer, output) {
+export function observePackets(fixtures, distribution, consumer, output) {
   const observations = [];
   const packets = path.join(output, "packets");
   fs.mkdirSync(packets);
@@ -88,15 +88,21 @@ export function observe(fixtures, distribution, consumer, output) {
       `${JSON.stringify(observations, null, 2)}\n`,
     );
   }
-  assert.equal(observations.length, 392);
-  assert.equal(observations.filter((entry) => entry.suite === "typed").length, 56);
-  assert.equal(observations.filter((entry) => entry.suite === "first").length, 80);
-  assert.equal(observations.filter((entry) => entry.suite === "second").length, 144);
-  assert.equal(observations.filter((entry) => entry.suite === "returns").length, 112);
   assertLoadedBinary(distribution.member.binary, distribution.member, consumer);
   assert(
     observations.every((entry) => entry.passed),
     "original whole public CLI expectations failed; inspect every retained packet",
   );
+  return observations;
+}
+
+/** Original 392-packet contract remains mandatory for the existing workflow. */
+export function observe(fixtures, distribution, consumer, output) {
+  const observations = observePackets(fixtures, distribution, consumer, output);
+  assert.equal(observations.length, 392);
+  assert.equal(observations.filter((entry) => entry.suite === "typed").length, 56);
+  assert.equal(observations.filter((entry) => entry.suite === "first").length, 80);
+  assert.equal(observations.filter((entry) => entry.suite === "second").length, 144);
+  assert.equal(observations.filter((entry) => entry.suite === "returns").length, 112);
   return observations;
 }
