@@ -26,6 +26,9 @@ runtime. It compares both complete four-phase traces and every authored tree,
 namespace, class and computed-color vector, SVGAnimatedString ownership, physical
 bounds, style removal and retained-node disposal. The unchanged whole App and
 controls are hash-checked before compilation, with separate emission digests.
+The provider must be the actually loaded `.node` binding inside this checkout's
+`npm/native`; retain its digest and actual Git checkout alongside both emissions.
+Actions must successfully build that artifact before the existing browser test.
 Focused compiler controls exercise both the default and retained lowering paths.
 
 The original third-party sources, six original control rows, and two authored

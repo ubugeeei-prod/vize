@@ -32,6 +32,8 @@ declare module "virtual:vize-svg-namespace-8624/controls" {
     sourceSha256: string;
     controlsSha256: string;
     runtimeVersion: string;
+    checkout: string;
+    bindingSha256: string;
     productProvider: string;
     oracleProvider: string;
     publicationQualification: false;

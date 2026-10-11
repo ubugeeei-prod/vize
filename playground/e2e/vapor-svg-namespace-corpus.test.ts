@@ -43,6 +43,12 @@ it("executes the whole inherited SVG corpus against independent VDOM in Chromium
   expect(vaporHash).toMatch(/^[a-f0-9]{64}$/u);
   expect(vdomHash).toMatch(/^[a-f0-9]{64}$/u);
   expect(vaporHash).not.toBe(vdomHash);
+  expect(custody.checkout).toMatch(/^[a-f0-9]{40}$/u);
+  expect(custody.bindingSha256).toMatch(/^[a-f0-9]{64}$/u);
+  console.info(
+    "namespace-8624 source custody",
+    JSON.stringify({ ...custody, vaporHash, vdomHash }),
+  );
   expect(Vapor).toHaveProperty("__vapor", true);
   expect(Vdom).not.toHaveProperty("__vapor", true);
   const traces = [];

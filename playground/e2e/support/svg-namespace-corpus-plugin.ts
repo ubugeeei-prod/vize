@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { readFileSync, realpathSync } from "node:fs";
 import { createRequire } from "node:module";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { Plugin } from "vite-plus";
 import native from "../../../npm/native/index.js";
 
@@ -45,6 +48,23 @@ export function svgNamespaceCorpusPlugin(): Plugin {
       const controls = JSON.parse(readFileSync(new URL(pack.reference.path, root), "utf8"));
       assert.equal(controls.length, 1);
       if (name === "controls") {
+        const fromNative = createRequire(new URL("../../../npm/native/index.js", import.meta.url));
+        const bindings = Object.values(fromNative.cache).filter(
+          (module) =>
+            module?.filename.endsWith(".node") && module.exports.compileSfc === native.compileSfc,
+        );
+        assert.equal(bindings.length, 1, "one actual native compiler binding");
+        const binding = realpathSync(bindings[0]!.filename);
+        assert.equal(
+          dirname(binding),
+          realpathSync(new URL("../../../npm/native/", import.meta.url)),
+          "the browser gate must use this checkout's freshly built NAPI artifact",
+        );
+        const checkout = execFileSync("git", ["rev-parse", "HEAD"], {
+          cwd: fileURLToPath(new URL("../../../", import.meta.url)),
+          encoding: "utf8",
+        }).trim();
+        if (process.env.GITHUB_SHA) assert.equal(checkout, process.env.GITHUB_SHA);
         return `export default ${JSON.stringify(controls[0])}; export const custody = ${JSON.stringify(
           {
             sourceSha256: pack.inputs.files.find(
@@ -52,6 +72,8 @@ export function svgNamespaceCorpusPlugin(): Plugin {
             ).sha256,
             controlsSha256: pack.reference.sha256,
             runtimeVersion: compiler.version,
+            checkout,
+            bindingSha256: hash(readFileSync(binding)),
             productProvider: "fresh-source-napi",
             oracleProvider: "independent-stock-vdom",
             publicationQualification: false,
