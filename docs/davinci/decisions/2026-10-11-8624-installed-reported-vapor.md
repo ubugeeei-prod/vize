@@ -46,3 +46,19 @@ The fresh isolated public rc.10 reference consumer confirms `createApp` and
 browser callback completed four namespace/control phases; receipt SHA-256
 `55b9a0a1a28baa23d4535d6a3433b014955ce3cdf5147184b12594bebccb4090`
 is a stock-reference diagnostic, with no installed Vize or publication credit.
+
+A separate fresh stock-reference consumer passed all eight original/authored
+rows with the same browser callback on public rc.10; receipt SHA-256
+`c6b524b7a6ca36888af9ad19526e39e6301d8dcd0398bba12f2c285ed31f6516`
+retains complete DOM, namespace, events, physical SVG updates/removal and empty
+host traces. This verifies the reference runtime, not published Vize behavior.
+
+Protected candidate `f68b29a58027a8f1677327f6e5683ed40b7e0a88` failed three
+whole-cohort review laws in
+[Check38154715716](https://github.com/ubugeeei-prod/vize/actions/runs/38154715716).
+The new native-input guard had not existed at source `80204926`; its release
+inventory body now includes the installed reported-runtime contract. Remove the
+candidate, preserve the full failed log, and review every import and body before
+adding one finite approved cohort. Existing cohorts and unknown/native-input
+refusals stay intact. Original eight consumer rows and runtime code are unchanged;
+fresh exact-source and protected checks remain required.
