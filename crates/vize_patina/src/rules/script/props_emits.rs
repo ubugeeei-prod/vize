@@ -4,6 +4,7 @@
 //! `defineProps`/`defineEmits` declarations and their Options API equivalents,
 //! so the parent `script` module file does not grow per added rule.
 
+mod compiler_macro_bindings;
 mod emits_source;
 mod no_required_prop_with_default;
 mod no_reserved_props;
