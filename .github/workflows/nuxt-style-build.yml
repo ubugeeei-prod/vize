@@ -53,6 +53,11 @@ jobs:
         run: vize-ci-apt-retry vp exec playwright install --with-deps chromium
       - name: Verify stock, released failure, and candidate critical CSS without JavaScript
         run: vp exec node tools/support/compat/nuxt/critical-css-build.mjs "$RUNNER_TEMP/nuxt-critical-css-proof"
+      - name: Install the pinned Nuxt dev SSR regression
+        working-directory: tests/_fixtures/_projects/nuxt-dev-ssr-style
+        run: npm ci --no-audit --no-fund
+      - name: Verify first dev SSR styles, stylesheet transport, and hydration stability
+        run: vp exec node tools/support/compat/nuxt/dev-ssr-style.mjs "$RUNNER_TEMP/nuxt-dev-style-proof"
       - name: Upload build and SSR evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -61,4 +66,5 @@ jobs:
           path: |
             ${{ runner.temp }}/nuxt-style-proof
             ${{ runner.temp }}/nuxt-critical-css-proof
+            ${{ runner.temp }}/nuxt-dev-style-proof
           if-no-files-found: ignore

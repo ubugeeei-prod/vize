@@ -1,0 +1,12 @@
+{
+  "name": "vize-repro-8631",
+  "private": true,
+  "type": "module",
+  "scripts": { "dev": "nuxt dev" },
+  "dependencies": {
+    "@vizejs/nuxt": "0.443.0",
+    "nuxt": "4.5.0",
+    "vue": "3.5.40"
+  },
+  "devDependencies": { "typescript": "7" }
+}
