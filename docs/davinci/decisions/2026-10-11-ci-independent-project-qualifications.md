@@ -33,10 +33,17 @@ ordered packets and refusal controls remain. A failed or interrupted worker
 group is terminated and joined, including descendants whose leader exits first.
 Real-process laws cover successful overlap, red/cancelled/timed-out children,
 parent cancellation, complete raw outcomes, and remaining-branch completion.
+Keep command waits asynchronous in the owning parent, including input laws,
+submodule preparation, reference extraction/build and historical comparisons.
+The same commands, arguments, input bytes, output caps and timeouts remain.
+Otherwise a sibling's synchronous wait can delay another live group's deadline:
+the original counterexample let both 500ms workers write at 800ms during a
+1,500ms wait. The repaired real-process controls refuse before those writes,
+join the remaining command, and drain descendants. Perform the complete final
+aggregation only after both workload branches settle.
 
 The 162.382-second independent phase is an ideal upper bound on savings, not a
-measured speedup. Its existing synchronous historical segment can still block
-the parent briefly; additional CPU/memory contention is unmeasured. Existing
+measured speedup. Additional CPU/memory contention is unmeasured. Existing
 receipts record wall time, not CPU/RSS. Qualify the sealed source with the
 existing JS gate and compare the same complete workload before claiming a
 result. No result cache, additional native build, workflow, job, fixture

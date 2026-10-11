@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { captureProjectCommand } from "./project-command-capture.mjs";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -12,10 +12,10 @@ export const referenceSource = {
   tree: "d8b53477cfc2886a0ae4b739975adad2ee23ce41",
 };
 
-export function prepareReferenceSource(output) {
+export async function prepareReferenceSource(output) {
   assert.equal(process.env.GITHUB_ACTIONS, "true");
-  const run = (command, args, options = {}) => {
-    const result = spawnSync(command, args, {
+  const run = async (command, args, options = {}) => {
+    const result = await captureProjectCommand(command, args, {
       cwd: repository,
       encoding: "utf8",
       timeout: 120_000,
@@ -27,18 +27,22 @@ export function prepareReferenceSource(output) {
     assert.equal(result.status, 0, result.stderr);
     return result;
   };
-  const exists = spawnSync("git", ["cat-file", "-e", referenceSource.head + "^{commit}"], {
-    cwd: repository,
-  });
+  const exists = await captureProjectCommand(
+    "git",
+    ["cat-file", "-e", referenceSource.head + "^{commit}"],
+    {
+      cwd: repository,
+    },
+  );
   if (exists.status !== 0) {
-    const fetched = run("git", ["fetch", "--depth=1", "origin", referenceSource.head]);
+    const fetched = await run("git", ["fetch", "--depth=1", "origin", referenceSource.head]);
     fs.writeFileSync(
       path.join(output, "reference-fetch.json"),
       JSON.stringify(fetched, null, 2) + "\n",
     );
   }
   assert.equal(
-    run("git", ["rev-parse", referenceSource.head + "^{tree}"]).stdout.trim(),
+    (await run("git", ["rev-parse", referenceSource.head + "^{tree}"])).stdout.trim(),
     referenceSource.tree,
   );
   const prefix = "npm/oxlint/";
@@ -46,33 +50,38 @@ export function prepareReferenceSource(output) {
   // Preserve built bundles explicitly, never recursively archive node_modules.
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-n8n-reference-package-"));
   process.once("exit", () => fs.rmSync(root, { recursive: true, force: true }));
-  const entries = run("git", ["ls-tree", "-rz", referenceSource.head, "--", prefix])
-    .stdout.split("\0")
-    .filter(Boolean)
-    .map((entry) => {
-      const [metadata, filename] = entry.split("\t");
-      const [mode, kind, blob] = metadata.split(" ");
-      assert.equal(kind, "blob");
-      assert.ok(["100644", "100755"].includes(mode));
-      assert.ok(filename.startsWith(prefix) && !filename.split("/").includes(".."));
-      const physical = path.join(root, filename.slice(prefix.length));
-      fs.mkdirSync(path.dirname(physical), { recursive: true });
-      const bytes = spawnSync("git", ["cat-file", "blob", blob], {
-        cwd: repository,
-        maxBuffer: 32 * 1024 * 1024,
-      });
-      assert.equal(bytes.error, undefined);
-      assert.equal(bytes.status, 0);
-      fs.writeFileSync(physical, bytes.stdout, {
-        flag: "wx",
-        mode: mode === "100755" ? 0o755 : 0o644,
-      });
-      assert.ok(fs.readFileSync(physical).equals(bytes.stdout));
-      return { filename, mode, blob, sha256: sha256(bytes.stdout), bytes: bytes.stdout.length };
+  const listing = await run("git", ["ls-tree", "-rz", referenceSource.head, "--", prefix]);
+  const entries = [];
+  for (const entry of listing.stdout.split("\0").filter(Boolean)) {
+    const [metadata, filename] = entry.split("\t");
+    const [mode, kind, blob] = metadata.split(" ");
+    assert.equal(kind, "blob");
+    assert.ok(["100644", "100755"].includes(mode));
+    assert.ok(filename.startsWith(prefix) && !filename.split("/").includes(".."));
+    const physical = path.join(root, filename.slice(prefix.length));
+    fs.mkdirSync(path.dirname(physical), { recursive: true });
+    const bytes = await captureProjectCommand("git", ["cat-file", "blob", blob], {
+      cwd: repository,
+      maxBuffer: 32 * 1024 * 1024,
     });
+    assert.equal(bytes.error, undefined);
+    assert.equal(bytes.status, 0);
+    fs.writeFileSync(physical, bytes.stdout, {
+      flag: "wx",
+      mode: mode === "100755" ? 0o755 : 0o644,
+    });
+    assert.ok(fs.readFileSync(physical).equals(bytes.stdout));
+    entries.push({
+      filename,
+      mode,
+      blob,
+      sha256: sha256(bytes.stdout),
+      bytes: bytes.stdout.length,
+    });
+  }
   fs.symlinkSync(path.join(repository, "npm/oxlint/node_modules"), path.join(root, "node_modules"));
   const args = ["pack"];
-  const built = spawnSync(path.join(repository, "node_modules/.bin/vp"), args, {
+  const built = await captureProjectCommand(path.join(repository, "node_modules/.bin/vp"), args, {
     cwd: root,
     encoding: "utf8",
     timeout: 120_000,

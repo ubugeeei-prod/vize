@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { spawnSync } from "node:child_process";
+import { captureProjectCommand } from "./project-command-capture.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -53,7 +53,7 @@ export async function beginN8nReplay({ root, packageDir, artifacts, receipt, bin
     assert.ok(!process.env[key], `ambient ${key} cannot qualify the replay`);
   const output = path.join(artifacts, "n8n");
   fs.mkdirSync(output, { recursive: true });
-  const laws = spawnSync(
+  const laws = await captureProjectCommand(
     process.execPath,
     [
       "--test",
@@ -62,6 +62,7 @@ export async function beginN8nReplay({ root, packageDir, artifacts, receipt, bin
       "scripts/ci-host-concurrency.test.mjs",
       "scripts/n8n-baseline-partitions.test.mjs",
       "scripts/project-qualification-branches.test.mjs",
+      "scripts/project-command-capture.test.mjs",
     ],
     {
       cwd: packageDir,
@@ -74,7 +75,7 @@ export async function beginN8nReplay({ root, packageDir, artifacts, receipt, bin
   assert.equal(laws.error, undefined);
   assert.equal(laws.signal, null);
   assert.equal(laws.status, 0);
-  const hydrate = spawnSync(
+  const hydrate = await captureProjectCommand(
     "git",
     ["submodule", "update", "--init", "--depth", "1", "--", fixturePath],
     {
@@ -118,13 +119,17 @@ export async function beginN8nReplay({ root, packageDir, artifacts, receipt, bin
   if (baselineMode() === "partitioned") {
     await runBaselineWorkers({ packageDir, output, custody, inventory, environment });
   } else {
-    const result = spawnSync("vp", ["test", "run", "src/n8n-full-replay.test.ts"], {
-      cwd: packageDir,
-      env: { ...process.env, ...environment },
-      encoding: "utf8",
-      timeout: 900_000,
-      maxBuffer: 32 * 1024 * 1024,
-    });
+    const result = await captureProjectCommand(
+      "vp",
+      ["test", "run", "src/n8n-full-replay.test.ts"],
+      {
+        cwd: packageDir,
+        env: { ...process.env, ...environment },
+        encoding: "utf8",
+        timeout: 900_000,
+        maxBuffer: 32 * 1024 * 1024,
+      },
+    );
     fs.writeFileSync(
       path.join(output, "bridge-tests.json"),
       JSON.stringify(result, null, 2) + "\n",
@@ -135,7 +140,7 @@ export async function beginN8nReplay({ root, packageDir, artifacts, receipt, bin
     assert.equal(result.signal, null);
     assert.equal(result.status, 0);
   }
-  const reference = prepareReferenceSource(output);
+  const reference = await prepareReferenceSource(output);
   return { output, custody, inventory, reference, hosts: [], hostCustodies: [] };
 }
 

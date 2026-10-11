@@ -43,7 +43,7 @@ export async function qualifyMixedDirectory8507({ root, packageDir, artifacts, r
   );
   let qualified;
   try {
-    const provider = installMixedHost(temporary, path.join(output, "source"));
+    const provider = await installMixedHost(temporary, path.join(output, "source"));
     const custody = {
       schema: "vize.oxlint.source-native",
       version: 1,
@@ -104,7 +104,7 @@ export async function qualifyMixedDirectory8507({ root, packageDir, artifacts, r
     qualified = {
       sourceAfter: capture.passed,
       provider,
-      historicalBefore: qualifyHistoricalMixedDirectory({
+      historicalBefore: await qualifyHistoricalMixedDirectory({
         root,
         output: path.join(output, "before"),
       }),

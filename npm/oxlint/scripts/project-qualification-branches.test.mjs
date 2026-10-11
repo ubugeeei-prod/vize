@@ -6,6 +6,7 @@ import path from "node:path";
 import test from "node:test";
 import { runHostProcesses, requireSuccessfulHosts } from "./ci-host-concurrency.mjs";
 import { runQualificationBranches } from "./project-qualification-branches.mjs";
+import { captureProjectCommand } from "./project-command-capture.mjs";
 import { runMixedWorkers } from "../src/test-support/mixed-directory-8507-workers.mjs";
 
 const read = (file) => JSON.parse(fs.readFileSync(file));
@@ -40,6 +41,8 @@ fs.writeSync(1,"whole stdout " + index + "\\n");
 fs.writeSync(2,"whole stderr " + index + "\\n");
 fs.writeFileSync(path.join(root, index + ".ready.json"), JSON.stringify({pid:process.pid,child:child.pid}));
 if (mode === "timeout") process.on("SIGTERM",()=>{});
+if (mode === "deadline-prefix" || mode === "deadline-history")
+ setTimeout(()=>fs.writeFileSync(path.join(root,index+".after-deadline"),"late"),800);
 const timer = setInterval(() => {
   if (!fs.existsSync(path.join(root, "remaining.started"))) return;
   if (mode === "success" || (mode === "closed-leader-red" && index === "0")) { clearInterval(timer); process.exit(0); }
@@ -75,6 +78,7 @@ const timer = setInterval(() => {
     preload,
     environment,
     ...(mode === "timeout" ? { deadlineMs: 1000 } : {}),
+    ...(mode.startsWith("deadline-") ? { deadlineMs: 500 } : {}),
   };
   const remaining = {
     id: "remaining",
@@ -238,3 +242,29 @@ test("fixed worker membership and production budget cannot be widened", async ()
   await assert.rejects(runQualificationBranches([{ id: "same" }, { id: "same" }], "unused"));
   await assert.rejects(runMixedWorkers({ deadlineMs: 180_001 }));
 });
+
+for (const mode of ["deadline-prefix", "deadline-history"])
+  test(`${mode}: original500ms budget survives an adjacent real1500ms command wait`, async (t) => {
+    const f = fixture(t, mode);
+    let remaining;
+    const delayedCommand = async () => {
+      remaining = await captureProjectCommand(process.execPath, ["-e", "setTimeout(()=>{},1500)"], {
+        timeout: 3000,
+        maxBuffer: 1024,
+      });
+      assert.equal(remaining.error, undefined);
+      assert.equal(remaining.status, 0);
+    };
+    const branches = [
+      { id: "mixedDirectory8507", run: () => runMixedWorkers(f.mixedOptions) },
+      { id: "n8n", run: delayedCommand },
+    ];
+    if (mode === "deadline-history") branches.reverse();
+    await assert.rejects(runQualificationBranches(branches, f.outcomes), AggregateError);
+    const packet = read(path.join(f.output, "source-process.json"));
+    assert.equal(packet.deadlineMs, 500);
+    assert.ok(packet.walltimeMs < 1000, `deadline must not wait for sibling: ${packet.walltimeMs}`);
+    assert.ok(!fs.readdirSync(f.root).some((name) => name.endsWith(".after-deadline")));
+    assert.equal(read(f.outcomes).branches.find(({ id }) => id === "n8n").status, "fulfilled");
+    await assertNoActiveDescendants(f);
+  });

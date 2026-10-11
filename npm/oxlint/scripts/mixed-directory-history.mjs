@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
+import { captureProjectCommand } from "./project-command-capture.mjs";
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import {
@@ -49,7 +49,7 @@ const authorities = (cwd) => {
   }
 };
 
-export function installMixedHost(directory, output, version) {
+export async function installMixedHost(directory, output, version) {
   fs.mkdirSync(output, { recursive: true });
   const args = [
     "install",
@@ -60,7 +60,7 @@ export function installMixedHost(directory, output, version) {
     "oxlint@1.81.0",
     ...(version ? [`oxlint-plugin-vize@${version}`] : []),
   ];
-  const result = spawnSync("npm", args, {
+  const result = await captureProjectCommand("npm", args, {
     cwd: directory,
     env: sanitized(),
     timeout: 180_000,
@@ -105,7 +105,7 @@ export function installMixedHost(directory, output, version) {
   };
 }
 
-export function qualifyHistoricalMixedDirectory({ root, output }) {
+export async function qualifyHistoricalMixedDirectory({ root, output }) {
   const corpus = path.join(root, "tests/_fixtures/differential/lint/oxlint-mixed-directory-8507");
   const plan = JSON.parse(fs.readFileSync(path.join(corpus, "controls.json")));
   const capture = {
@@ -140,7 +140,7 @@ export function qualifyHistoricalMixedDirectory({ root, output }) {
       capture.attempts.push(attempt);
       save();
       try {
-        const provider = installMixedHost(installation, directory, version);
+        const provider = await installMixedHost(installation, directory, version);
         attempt.phase = "cases";
         save();
         const plugin = path.join(installation, "node_modules/oxlint-plugin-vize");
@@ -203,12 +203,16 @@ export function qualifyHistoricalMixedDirectory({ root, output }) {
               VIZE_OXLINT_HISTORY_INSTALL: installation,
               VIZE_OXLINT_HISTORY_CALLS: calls,
             };
-            const result = spawnSync(process.execPath, [wrapper, ...fixture.argv], {
-              cwd,
-              env,
-              timeout: 60_000,
-              maxBuffer: 64 * 1024 * 1024,
-            });
+            const result = await captureProjectCommand(
+              process.execPath,
+              [wrapper, ...fixture.argv],
+              {
+                cwd,
+                env,
+                timeout: 60_000,
+                maxBuffer: 64 * 1024 * 1024,
+              },
+            );
             const record = {
               version,
               environment: Object.fromEntries(

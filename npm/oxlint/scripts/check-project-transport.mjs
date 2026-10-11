@@ -72,7 +72,7 @@ try {
       process.env.GITHUB_OUTPUT,
       `staging-directory=${artifacts}\nphase-walltime=${path.join(artifacts, "phase-walltime.json")}\n`,
     );
-  const [mixedDirectory8507, qualifications] = await runQualificationBranches(
+  const [mixedDirectory8507, n8nResults] = await runQualificationBranches(
     [
       {
         id: "mixedDirectory8507",
@@ -139,28 +139,30 @@ try {
             };
           });
           requireSuccessfulHosts(results); // Every host settles and saves evidence first.
-          return timed("aggregation", () => {
-            const qualifications = jobs.map(({ output }, index) => {
-              const { qualification, n8nHost, n8nCustody } = JSON.parse(
-                fs.readFileSync(path.join(output, "host-worker-result.json"), "utf8"),
-              );
-              assert.equal(qualification.version, hostVersions[index].version);
-              assert.equal(qualification.types, hostVersions[index].types);
-              assert.equal(n8nHost.version, hostVersions[index].version);
-              n8nReplay.hosts.push(n8nHost);
-              n8nReplay.hostCustodies.push({ version: n8nHost.version, custody: n8nCustody });
-              return qualification;
-            });
-            validateNativeHistoryBuild(nativeDir, receipt);
-            assert.equal(hash(fs.readFileSync(binary)), receipt.frozen.sha256);
-            finishN8nReplay(n8nReplay);
-            return qualifications;
-          });
+          return { jobs, n8nReplay };
         },
       },
     ],
     path.join(artifacts, "branch-outcomes.json"),
   );
+  const { jobs, n8nReplay } = n8nResults;
+  const qualifications = await timed("aggregation", () => {
+    const qualifications = jobs.map(({ output }, index) => {
+      const { qualification, n8nHost, n8nCustody } = JSON.parse(
+        fs.readFileSync(path.join(output, "host-worker-result.json"), "utf8"),
+      );
+      assert.equal(qualification.version, hostVersions[index].version);
+      assert.equal(qualification.types, hostVersions[index].types);
+      assert.equal(n8nHost.version, hostVersions[index].version);
+      n8nReplay.hosts.push(n8nHost);
+      n8nReplay.hostCustodies.push({ version: n8nHost.version, custody: n8nCustody });
+      return qualification;
+    });
+    validateNativeHistoryBuild(nativeDir, receipt);
+    assert.equal(hash(fs.readFileSync(binary)), receipt.frozen.sha256);
+    finishN8nReplay(n8nReplay);
+    return qualifications;
+  });
   validateNativeHistoryBuild(nativeDir, receipt);
   assert.equal(hash(fs.readFileSync(binary)), receipt.frozen.sha256);
   fs.writeFileSync(
