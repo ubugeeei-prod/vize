@@ -50,3 +50,19 @@ fn reported_nested_component_rejects_owner_fallthrough_attrs() {
         ),
     );
 }
+
+#[test]
+fn keepalive_wrappers_only_forward_attrs_to_their_single_slot_root() {
+    report::compare(
+        &serde_json::from_str::<String>(include_str!(
+            "../../../tests/_fixtures/differential/compiler/vapor-root-fallthrough-8625/App.vue.json"
+        ))
+        .expect("whole original FallthroughOuter source"),
+        include_str!(
+            "../../../tests/_fixtures/differential/compiler/vapor-root-fallthrough-8625/Child.vue.txt"
+        ),
+        include_str!(
+            "../../../tests/_fixtures/differential/compiler/vapor-root-fallthrough-8625/wrapper-controls.json"
+        ),
+    );
+}

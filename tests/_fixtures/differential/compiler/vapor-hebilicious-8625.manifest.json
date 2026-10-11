@@ -28,6 +28,10 @@
           {
             "path": "reported.vue.txt",
             "sha256": "f74c5705996ebc9d0bdc3f5cc5fd99ec7462e61dcbced5fe9271544bb6a42a8d"
+          },
+          {
+            "path": "wrapper-controls.json",
+            "sha256": "3a19a5ea2c64b15351a5429d532dfed2e3deea9f938226dac422ce86b96dc05b"
           }
         ]
       },

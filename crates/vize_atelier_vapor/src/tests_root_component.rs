@@ -5,7 +5,7 @@
 //! roots or inside `v-for`.
 
 use super::{VaporCompilerOptions, compile_vapor};
-use vize_carton::{Allocator, String};
+use vize_carton::{Allocator, String, cstr};
 
 fn compile(source: &str, davinci_retained_lane: bool) -> String {
     let allocator = Allocator::new();
@@ -75,5 +75,32 @@ fn a_keyed_or_wrapped_single_root_component_stays_the_root() {
 
         let transition = compile(r#"<Transition><Child :a="a" /></Transition>"#, retained);
         assert_eq!(root_flags(&transition), 1, "{transition}");
+    }
+}
+
+#[test]
+fn transparent_wrappers_only_forward_to_their_single_slot_root() {
+    for retained in [false, true] {
+        for wrapper in ["KeepAlive", "Transition"] {
+            for child in [
+                "<Child />",
+                r#"<Child :a="a" />"#,
+                r#"<Child v-if="ok" :a="a" />"#,
+                r#"<Child :key="k" :a="a" />"#,
+            ] {
+                let source = cstr!("<{wrapper}>{child}</{wrapper}>");
+                let code = compile(&source, retained);
+                assert_eq!(root_flags(&code), 1, "{source}\n{code}");
+            }
+            let source = cstr!("<{wrapper}><section><Child :a=\"a\" /></section></{wrapper}>");
+            let code = compile(&source, retained);
+            assert_eq!(root_flags(&code), 0, "{source}\n{code}");
+        }
+
+        for child in [r#"<Child :a="a" />"#, r#"<Child :a="a" /><Other :b="b" />"#] {
+            let source = cstr!("<TransitionGroup>{child}</TransitionGroup>");
+            let code = compile(&source, retained);
+            assert_eq!(root_flags(&code), 0, "{source}\n{code}");
+        }
     }
 }
