@@ -29,3 +29,8 @@ rebase onto that delivered main and move only this record's canonical clause
 from the shared JSX row to the existing product tracking paragraph. Preserve
 all foreign canonical bytes and owned reader/test sources; fresh exact-head
 Actions and deployed proof remain required.
+
+On 2026-10-11, replay the three original reference commits on actual main
+`b7ec71ecd3`, retaining the reviewed reader bodies, fixtures and assertions
+byte-for-byte. Incoming canonical decisions remain additive; exact source
+Actions and full Docs on the new head are required before Ready.
