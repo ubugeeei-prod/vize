@@ -15,6 +15,8 @@ import {
   documentIdentity,
 } from "../../../../tools/support/release/public_acceptance/gallery.ts";
 
+import { nativeStartupInventory, observeNativeFailedResponses } from "./native-failed-responses.ts";
+
 const repository = fileURLToPath(new URL("../../../../", import.meta.url));
 const defaults = { brand: "default", scheme: "light", locale: "en" };
 const changed = { brand: "ocean", scheme: "dark", locale: "ja" };
@@ -83,6 +85,13 @@ export default function publicSetup(app, context) {
     });
     const browser = await chromium.launch();
     const page = await browser.newPage();
+    const nativeFailures = observeNativeFailedResponses(
+      page,
+      nativeStartupInventory(server.config, repository),
+    );
+    let failed = false;
+    let evidenceFailure: unknown;
+    let evidenceFailed = false;
     const errors: string[] = [];
     const responses: { url: string; status: number }[] = [];
     page.on("pageerror", (error) => errors.push(String(error)));
@@ -167,6 +176,7 @@ export default function publicSetup(app, context) {
         ),
       );
     } catch (error) {
+      failed = true;
       const documents = await Promise.all(
         page
           .frames()
@@ -179,9 +189,28 @@ export default function publicSetup(app, context) {
       await page.screenshot({ path: path.join(output, "failure.png"), fullPage: true });
       throw error;
     } finally {
-      await browser.close();
-      await server.close();
-      await rm(root, { recursive: true, force: true });
+      try {
+        const diagnostic = await nativeFailures.finish();
+        await writeFile(path.join(output, "failed-responses.json"), diagnostic.json);
+        if (failed) console.error("MUSEA_NATIVE_RESPONSE_EVIDENCE " + diagnostic.summary);
+        assert.deepEqual(diagnostic.collectionErrors, []);
+      } catch (error) {
+        evidenceFailure = error;
+        evidenceFailed = true;
+        console.error(
+          "MUSEA_NATIVE_RESPONSE_EVIDENCE_FAILED " +
+            JSON.stringify({
+              originalNativeFailure: failed,
+              name: error instanceof Error ? error.name.slice(0, 64) : typeof error,
+            }),
+        );
+        if (failed) process.exitCode ||= 1;
+      } finally {
+        await browser.close();
+        await server.close();
+        await rm(root, { recursive: true, force: true });
+      }
     }
+    if (evidenceFailed) throw evidenceFailure;
   },
 );

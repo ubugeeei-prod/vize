@@ -20,6 +20,11 @@ import {
 } from "./hosted-vrt-network.fixtures.ts";
 import { previews, variants } from "./literal-variant-browser.fixture.ts";
 
+import {
+  observeVariantNavigation,
+  waitForFirstCurrentVariant,
+} from "./literal-variant-navigation.ts";
+
 const sectionIds = {
   Controls: ["variant-default", "variant-custom-theme"],
   Keys: ["variant-proto", "variant-constructor", "variant-hasownproperty"],
@@ -211,13 +216,29 @@ void test(
                   ).href,
             ),
           );
+          await observeVariantNavigation(page, observations, {
+            phase: "literal-nav-before-clicks",
+            title,
+            capturePhase: phase,
+          });
           await page.locator(".variant-toc-item").last().click();
           await page.locator(".variant-toc-item").first().click();
-          await page.locator('.variant-toc-item[aria-current="true"]').first().waitFor();
-          assert.equal(
-            await page.locator(".variant-toc-item").first().getAttribute("aria-current"),
-            "true",
-          );
+          try {
+            await waitForFirstCurrentVariant(
+              page.locator(".variant-toc-item"),
+              page.locator('.variant-toc-item[aria-current="true"]'),
+            );
+            assert.equal(
+              await page.locator(".variant-toc-item").first().getAttribute("aria-current"),
+              "true",
+            );
+          } finally {
+            await observeVariantNavigation(page, observations, {
+              phase: "literal-nav-after-synchronization",
+              title,
+              capturePhase: phase,
+            });
+          }
           await page.getByRole("button", { name: "VRT", exact: true }).click();
           await page
             .getByRole("textbox", { name: "VRT endpoint", exact: true })
