@@ -59,9 +59,11 @@ they confer no published compiler or browser execution credit.
 The generic L1 projection also needs this live namespace owner. Reuse the same
 native component lexer with a generic namespace-recording sink. It retains
 authored heads without scanning for admission or suppressing interpolation for
-`v-pre`. This route uses arena-backed ancestry frames and the existing generic
-structural recovery; it adds no lexer pass, pipeline stage, serialization or
-legacy dependency. Version-specific header and lint policies remain in their
+`v-pre`. The first `title` name callback initializes arena-backed ancestry
+and existing generic recovery from the already recorded structural events,
+once; following callbacks retain that live scope. Sources without `title`
+do not run a second recovery. This adds no lexer pass, attribute interpretation,
+pipeline stage, serialization or legacy dependency. Version-specific header and lint policies remain in their
 dialect owners. Preserve the original eleven corpus rows
 byte-for-byte and append the whole SVG/path/title conditional control minimized
 from the exact canonical vue-data-ui gitlink. Both native component and generic
@@ -91,6 +93,20 @@ The strict storage ledger records the new generic ancestry owner and restores
 `parse.rs` to its previous count. Preserve the whole failed tooling log identity
 and passing observer job identities in the same failed-source packet. These
 partial successes do not qualify the complete failed head or a publication.
+
+Retired protected candidate 58b8f7d, Check 38157122911, passed the source
+gates but exceeded four instruction ceilings: DOM small/medium, Vapor
+stress-interpolation and Musea legacy attributes. The [complete failed
+measurement packet](./fixtures/vapor-svg-namespace-8624/source-instruction-failure-58b.json)
+preserves all 100 whole workloads, input digests and three measurements beside
+the exact a499 baseline with the same methodology. The composed sources differ;
+this comparison alone does not isolate every change. The new generic live
+owner duplicated structural classification even on sources without `title`.
+Initialize it only when that lexer callback needs scope, as described above,
+and short-circuit the equivalent interactive-tag predicate before its HTML
+lookup. Keep the candidate off the queue until fresh complete measured gates
+pass. No ceiling, fixture, workload or check is reduced; neither a source pass
+nor this failed protected packet grants publication acceptance.
 
 The original third-party sources, six original control rows, and two authored
 physical SVG controls stay unchanged. This additive namespace campaign does

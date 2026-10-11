@@ -94,5 +94,5 @@ fn namespace<'a, F: Frame<'a>>(stack: &[F], tag: &str) -> Namespace {
 }
 
 fn interactive(tag: &str) -> bool {
-    is_html_tag(tag) && (tag.eq_ignore_ascii_case("a") || tag.eq_ignore_ascii_case("button"))
+    (tag.eq_ignore_ascii_case("a") || tag.eq_ignore_ascii_case("button")) && is_html_tag(tag)
 }

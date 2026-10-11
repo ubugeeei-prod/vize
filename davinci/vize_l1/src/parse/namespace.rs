@@ -3,7 +3,7 @@
 use vize_l0::{Allocator, Namespace, Vec, is_void_tag};
 
 use crate::build::scope::{Frame, Recovery};
-use crate::event::Recorder;
+use crate::event::{EventKind, Recorder};
 use crate::markup::entity::DecodedEntity;
 use crate::markup::{LexErrorCode, QuoteType, Sink};
 
@@ -28,6 +28,7 @@ pub(super) struct NamespaceSink<'a, 'v> {
     stack: Vec<'a, OpenFrame<'a>>,
     recovery: Recovery<'a>,
     tag: Option<&'a str>,
+    live: bool,
 }
 
 impl<'a, 'v> NamespaceSink<'a, 'v> {
@@ -42,6 +43,35 @@ impl<'a, 'v> NamespaceSink<'a, 'v> {
             stack: Vec::new_in(&allocator),
             recovery: Recovery::new(allocator, true),
             tag: None,
+            live: false,
+        }
+    }
+
+    // The live owner is needed only when the lexer reaches its first title.
+    // Replay recorded structural heads once; do not lex or inspect attributes.
+    fn activate(&mut self) {
+        for index in 0..self.recorder.events.len() {
+            let event = self.recorder.events[index];
+            match event.kind {
+                EventKind::OpenTagName => {
+                    self.tag = self.source.get(event.start as usize..event.end as usize);
+                }
+                EventKind::OpenTagEnd => self.finish_tag(false),
+                EventKind::SelfClosingTag => self.finish_tag(true),
+                EventKind::CloseTag => {
+                    if let Some(tag) = self.source.get(event.start as usize..event.end as usize) {
+                        self.close_tag(tag);
+                    }
+                }
+                _ => {}
+            }
+        }
+        self.live = true;
+    }
+
+    fn close_tag(&mut self, tag: &str) {
+        if let Some(depth) = self.recovery.close(&self.stack, tag) {
+            self.stack.truncate(depth);
         }
     }
 
@@ -88,7 +118,13 @@ impl Sink for NamespaceSink<'_, '_> {
     }
 
     fn on_open_tag_name(&mut self, start: usize, end: usize) {
-        self.tag = self.source.get(start..end);
+        let tag = self.source.get(start..end);
+        if !self.live && tag.is_some_and(|tag| tag.eq_ignore_ascii_case("title")) {
+            self.activate();
+        }
+        if self.live {
+            self.tag = tag;
+        }
         self.recorder.on_open_tag_name(start, end);
     }
 
@@ -99,20 +135,24 @@ impl Sink for NamespaceSink<'_, '_> {
     }
 
     fn on_open_tag_end(&mut self, end: usize) {
-        self.finish_tag(false);
+        if self.live {
+            self.finish_tag(false);
+        }
         self.recorder.on_open_tag_end(end);
     }
 
     fn on_self_closing_tag(&mut self, end: usize) {
-        self.finish_tag(true);
+        if self.live {
+            self.finish_tag(true);
+        }
         self.recorder.on_self_closing_tag(end);
     }
 
     fn on_close_tag(&mut self, start: usize, end: usize) {
-        if let Some(tag) = self.source.get(start..end)
-            && let Some(depth) = self.recovery.close(&self.stack, tag)
+        if self.live
+            && let Some(tag) = self.source.get(start..end)
         {
-            self.stack.truncate(depth);
+            self.close_tag(tag);
         }
         self.recorder.on_close_tag(start, end);
     }
