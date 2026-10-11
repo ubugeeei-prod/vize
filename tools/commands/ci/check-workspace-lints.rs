@@ -31,10 +31,10 @@ fn main() -> ExitCode {
 fn run(check: bool) -> Result<(), String> {
     let root = fs::read_to_string("Cargo.toml").map_err(|err| format!("Cargo.toml: {err}"))?;
     // Third-party source keeps its upstream lint policy; publication membership
-    // must not impose Vize's panic-free implementation contract on Oxc.
+    // must not impose Vize's panic-free implementation contract on upstream source.
     let members: Vec<_> = workspace_members(&root)
         .into_iter()
-        .filter(|member| member != "vendor/oxc_parser" && member != "vendor/oxc_formatter" && member != "vendor/oxlint_html_renderer186")
+        .filter(|member| member != "vendor/oxc_parser" && member != "vendor/oxc_formatter" && member != "vendor/oxlint_html_renderer186" && member != "vendor/lightningcss" && member != "vendor/parcel_sourcemap")
         .collect();
     if members.is_empty() {
         return Err("no workspace members found in Cargo.toml".into());

@@ -38,6 +38,9 @@ The following changes are deliberately separate from that import:
   `bundler.rs`, `lib.rs` and `selector.rs` and removes one selector blank line for
   current Rustfmt. Complete original source hashes remain in the import record;
   the custody guard authenticates each of these exact formatted successors.
+- An explicit vendor-policy compatibility commit applies the existing Oxc
+  third-party Clippy policy to this implementation. `deny(missing_docs)` remains
+  intact; all first-party check commands remain unchanged.
 
 `Cargo.toml.orig` remains the original archive manifest. The unreleased upstream
 NonNegative restructuring is not imported. Published dependency identity changes

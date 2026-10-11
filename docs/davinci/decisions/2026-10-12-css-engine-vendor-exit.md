@@ -78,6 +78,14 @@ hashes are authenticated alongside the complete original import hashes. No
 parser, selector, bundler or original test expression changes in that commit;
 the existing `cargo fmt --all -- --check` command remains unchanged.
 
+Root and the independent reviewer accepted the explicit vendor-policy follow-up:
+only the two named imported packages join existing third-party exceptions to the
+first-party workspace lint opt-in ratchet. LightningCSS uses the same
+implementation-style Clippy policy as the existing Oxc fork and retains
+`deny(missing_docs)`; Parcel retains its original `deny(clippy::all)`. The pending
+first-party list remains empty and every first-party Clippy/format command and
+contract remains unchanged. Current Clippy still has to execute on Actions.
+
 ## Packaging, licenses and public API impact
 
 `vize_lightningcss` retains Rust library name `lightningcss`;

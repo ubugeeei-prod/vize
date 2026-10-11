@@ -12,10 +12,8 @@ const modified: Record<string, string | null> = {
     "967f295af4d48ac2ce4a663dc7215e2ab9f99c2e25a55087c581335994075332",
   "lightningcss/src/values/color.rs":
     "97fd2d02f455bd38c4caad26d639acf00403de7bd05eb641a74b082753cb2d2a",
-  "lightningcss/src/bundler.rs":
-    "532b321252c008f1c581a1613fda4cc6e57369bf2bf712b95618f3ca60a0b5ed",
-  "lightningcss/src/lib.rs":
-    "5f2a88be826a18d8771c34b136a9bf2fd2536506ff584849e4b4fe600419340a",
+  "lightningcss/src/bundler.rs": "532b321252c008f1c581a1613fda4cc6e57369bf2bf712b95618f3ca60a0b5ed",
+  "lightningcss/src/lib.rs": "8d6453cc1ae51e4e8c0e99f82f0114a4603c2952e7ca1d0928b49e4e3e027ffa",
   "lightningcss/src/selector.rs":
     "ffd28f41d263e9590c7b63633ed474a607449cdc967f25945be79c16ff5e1ecf",
   "parcel_sourcemap/Cargo.toml": null,

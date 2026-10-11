@@ -14,6 +14,9 @@
 //! module also can be used to combine a CSS file and all of its dependencies together into a single
 //! style sheet. See the individual module documentation for more details and examples.
 
+// This third-party fork retains upstream implementation style. Workspace
+// membership is for distribution and regression tests, not Vize style rules.
+#![allow(clippy::all, clippy::wildcard_imports)]
 #![deny(missing_docs)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
