@@ -129,7 +129,7 @@ test("source gates cover PRs and merge groups while full JS qualification also r
   assert.ok(inventory);
   assert.equal(
     inventory.if,
-    "${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
+    "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
   );
   assert.equal(inventory.uses, "./.github/actions/check-level-inventories");
   const inventoryAction = parse(

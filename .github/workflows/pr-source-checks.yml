@@ -41,6 +41,10 @@ jobs:
           if [[ ! "$comparison_base" =~ ^0+$ ]]; then
             git fetch --no-tags --depth=1 origin "$comparison_base"
           fi
+      - name: Check Davinci source inventories
+        uses: ./.github/actions/check-level-inventories
+      - name: Check ordinary Rust module layout
+        run: node --test tests/tooling/davinci-module-layout.test.ts
       - name: Plan source checks
         id: plan
         env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
@@ -148,10 +152,7 @@ jobs:
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
-        with:
-          node-version-file: "package.json"
-          cache: true
-          run-install: false
+        with: { node-version-file: "package.json", cache: true, run-install: false }
       - uses: ./.github/actions/setup-moonbit
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
@@ -284,10 +285,7 @@ jobs:
         run: moon run --target native tools/moon/cmd/github/build_vitrine_wasm -- playground/src/wasm
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
-        with:
-          node-version-file: "package.json"
-          cache: true
-          run-install: false
+        with: { node-version-file: "package.json", cache: true, run-install: false }
       - name: Install JS dependencies
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
         run: vp install --frozen-lockfile --prefer-offline
