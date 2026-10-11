@@ -66,3 +66,18 @@ fn keepalive_wrappers_only_forward_attrs_to_their_single_slot_root() {
         ),
     );
 }
+
+#[test]
+fn reported_typed_native_element_handler_runs_the_authored_callback() {
+    report::compare(
+        include_str!(
+            "../../../tests/_fixtures/differential/compiler/vapor-typed-element-handler-8627/App.vue.txt"
+        ),
+        include_str!(
+            "../../../tests/_fixtures/differential/compiler/vapor-typed-element-handler-8627/Child.vue.txt"
+        ),
+        include_str!(
+            "../../../tests/_fixtures/differential/compiler/vapor-typed-element-handler-8627/controls.json"
+        ),
+    );
+}

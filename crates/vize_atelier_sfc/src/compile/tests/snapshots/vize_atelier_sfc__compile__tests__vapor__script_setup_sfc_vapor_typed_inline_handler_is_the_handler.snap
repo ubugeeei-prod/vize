@@ -10,7 +10,7 @@ _delegateEvents("click")
 
 function render(_ctx, $props, $emit, $attrs, $slots) {
   const _component_Child = _ctx.Child
-  const n0 = _createComponentWithFallback(_component_Child, { onKeydown: () => ((event: _ctx.KeyboardEvent) => _ctx.emit('key', event.key)) }, null, true)
+  const n0 = _createComponentWithFallback(_component_Child, { onKeydown: () => ((event: _ctx.KeyboardEvent) => _ctx.emit('key', event.key)) }, null, false)
   const n1 = t0()
   n1.$evtclick = _createInvoker((event: _ctx.MouseEvent) => _ctx.emit('key', event.type))
   return [n0, n1]

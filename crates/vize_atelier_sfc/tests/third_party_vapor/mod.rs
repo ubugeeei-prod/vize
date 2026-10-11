@@ -95,6 +95,14 @@ pub fn compare(app: &str, child: &str, controls: &str) {
         if let Some(expected) = row.get("expectedTree") {
             assert_eq!(&current[0]["tree"], expected, "{}", row["name"]);
         }
+        if let Some(expected) = row.get("expectedTrees") {
+            assert_eq!(
+                Value::Array(current.iter().map(|phase| phase["tree"].clone()).collect()),
+                *expected,
+                "{}: authored complete ordered DOM phases",
+                row["name"]
+            );
+        }
         if let Some(expected) = row.get("expectedEvents") {
             assert_eq!(
                 &current[current.len() - 2]["events"],

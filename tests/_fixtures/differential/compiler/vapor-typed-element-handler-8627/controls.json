@@ -1,0 +1,70 @@
+[
+  {
+    "name": "original-typed-click",
+    "steps": [
+      {
+        "click": "#typed-click"
+      }
+    ],
+    "context": {},
+    "expectedTrees": [
+      [
+        {
+          "tag": "div",
+          "attributes": {},
+          "children": [
+            {
+              "tag": "button",
+              "attributes": {
+                "id": "typed-click",
+                "type": "button"
+              },
+              "children": [
+                "Click"
+              ],
+              "disabled": false
+            },
+            {
+              "tag": "span",
+              "attributes": {
+                "id": "typed-clicked"
+              },
+              "children": [
+                "none"
+              ]
+            }
+          ]
+        }
+      ],
+      [
+        {
+          "tag": "div",
+          "attributes": {},
+          "children": [
+            {
+              "tag": "button",
+              "attributes": {
+                "id": "typed-click",
+                "type": "button"
+              },
+              "children": [
+                "Click"
+              ],
+              "disabled": false
+            },
+            {
+              "tag": "span",
+              "attributes": {
+                "id": "typed-clicked"
+              },
+              "children": [
+                "click"
+              ]
+            }
+          ]
+        }
+      ],
+      []
+    ]
+  }
+]
