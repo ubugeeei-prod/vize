@@ -111,8 +111,40 @@ and explicit outer driver identity, then execs only the original nextest
 The Actions/receipt driver namespace stays unchanged; runtime receipts must
 bind the physical test SHA. No original provenance assertion is edited or skipped.
 The five Node laws keep their complete registrations within the zero-warning
-budget. Fresh source qualification and all four successful paired physical
-partitions remain pending for these repairs.
+budget. The corrective record-only run below qualifies the frozen PR-runtime
+transport pair; fresh current-source full gates remain separate.
+
+Corrective run [38184043589](https://github.com/ubugeeei-prod/vize/actions/runs/38184043589)
+at driver `563594f41d214ca507233e8c6be9fe841d097b4f` finished successfully:
+producer, all eight consumers and complete aggregate comparison passed. Each
+consumer bound actual Git source and child `GITHUB_SHA` to physical `e057`,
+while retaining the separate orchestration driver identity. Original assertions,
+fixtures, ignored-case policy, profile and hash partitions stayed unchanged.
+The earlier `8c20` provenance and runner-post failures remain recorded above.
+
+Independent reads authenticated the complete API ZIP SHA-256, size and every
+member CRC for custody `11718603717`, all eight worker packets and comparison
+`11718897532`. Complete listing and JUnit body hashes, exact actual case identities
+and successful outcomes, disjoint partitions and their complete unpartitioned
+union passed: 4,556 / 4,251 / 4,169 / 4,391 cases, or 17,367 cases per arm.
+Every raw stream and original case result remains in the retained worker packets.
+
+The complete original ZIP is retained again as `11718976738`; its wrapper ZIP
+SHA differs from the unchanged authenticated inner original ZIP SHA. Candidate
+`11719185576` preserves the same decoded tar and all 1,158 complete members.
+The candidate again has 3,542,835,210 bytes, 26.52% fewer than the original zstd.
+Encoding took 23.860 s; full decode and inventory took 38.500 / 38.191 s, with
+peak RSS 24,532 / 136,448 KiB. Original download plus digest took 42.471 s, and
+whole preparation took 108.00 s with peak RSS 163,328 KiB. These retained
+diagnostic costs and eight consumers provide one paired observation, not a
+whole-CI speedup or permission to change production uploads.
+
+Current full-source qualification, protected queue and actual merge remain
+unfinished. The parent full Check refused the shared Playground setup's missing
+`vue-vapor-runtime/package.json`; its independently owned prerequisite
+[#8715](https://github.com/ubugeeei-prod/vize/pull/8715) must actually integrate
+before fresh source qualification. Historical frozen transport acceptance does
+not transfer green status to a changed head or replace current native gates.
 Fewer bytes alone will not be reported as an end-to-end CI speedup. Re-encoding,
 verification and extra diagnostic uploads have costs; this retained experiment
 adds storage while leaving original production evidence intact.
