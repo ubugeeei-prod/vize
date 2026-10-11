@@ -1,0 +1,28 @@
+{
+  "schema": "vize.lint.reserved-family-old-public-authority",
+  "version": 1,
+  "acceptance": false,
+  "processes": 443,
+  "refusedCorrectedSuccessors": 163,
+  "matchedControls": 280,
+  "contractSha256": "a8ecd6d5638eb36b0b0853e6078df2a33c0665316e622df1950bf4ca3191dfdd",
+  "publicOptions": {
+    "cut": "123c0f363d90bfa20cbf669f52ddb85343332568",
+    "head": "15e116fa258c7aaba5c6fdd2456442535605abe8",
+    "tag": "v0.443.0",
+    "sourcePr": "8541",
+    "run": "38081199501"
+  },
+  "archiveSha256": "6378e10d0fa0568a0c1798b48d99b18a01f3e842f8c765fb11b80b638f39a73e",
+  "binarySha256": "9ad7cf956351265a152a9bbfa08b8c50c85dadacef66529474bbb6170267e254",
+  "retainedInitialMetadataIssue": "Initial receipt overwrote schema version with CLI version observation; exact initial helper/record and all443 whole packets are retained. Corrected replay keeps every input/config/vector and actual stream/status equal.",
+  "files": {
+    "authorities.json": "108fb93819bad4dc59cace1441a955a55aaa5b5b122aeb5a0602a2c987d649df",
+    "inert-provider.json.gz": "b28cb16f0383e4d942af9613f43151b0005c9750424e65e9ee69c8d39581e0e1",
+    "source-equivalence.json": "c60a29d3c12e0c64124de3afed9bfa7771245f8a3d6105ba8adb729c07badfc2",
+    "observe-public-before.mjs": "b86954c52af96faf2c5a96058a13cd8fd7f961a469f998ee96e82c0f33b6b41e",
+    "original-public-red.json.gz": "7ab4e565d6c894b32d5f432b27bb7cebfb98f9ae9ebc4a40941941fcefd08483",
+    "initial-old-public-red.json.gz": "74c7a2a06c23cc8303bcd89f4407adf92abd21009d809f738a0bbb115df34857",
+    "initial-old-public-observer.mjs.fixture": "751816aceda2e9d800b4c08a6f4e61e63eb025b9e2a4c4dcff746217af205cd9"
+  }
+}
