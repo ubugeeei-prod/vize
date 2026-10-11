@@ -61,9 +61,9 @@ void test("Japanese RFC details retain complete syntax, destinations and authore
     assert.equal(japanese.split(`<span id="${id}"></span>`).length - 1, 1, id);
   }
   const keys = (source: string) =>
-    [...source.matchAll(/^\|\s*\[#\d+\]\([^)]+\)[^\n]*?\|\s*(`[^`]+`)\s*\|\s*(`[^`]+`)\s*\|/gm)].map(
-      (match) => [match[1], match[2]],
-    );
+    [
+      ...source.matchAll(/^\|\s*\[#\d+\]\([^)]+\)[^\n]*?\|\s*(`[^`]+`)\s*\|\s*(`[^`]+`)\s*\|/gm),
+    ].map((match) => [match[1], match[2]]);
   assert.equal(keys(japanese).length, 4);
   assert.deepEqual(keys(japanese), keys(english), "all opt-in and direct compiler fields remain");
   const orPattern = japanese.split("\n").find((line) => /^\| または\s*\|/.test(line));
