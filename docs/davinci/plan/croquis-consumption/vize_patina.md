@@ -50,7 +50,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `ScriptParseResult`                       |     3 |     3 |
 | `ScriptParserOptions`                     |     2 |     2 |
 | `SfcCustomBlock`                          |     1 |     2 |
-| `SfcDescriptor`                           |    17 |    26 |
+| `SfcDescriptor`                           |    18 |    26 |
 | `SfcError`                                |     1 |     2 |
 | `SfcParseOptions`                         |    14 |    15 |
 | `SfcScriptBlock`                          |     2 |     2 |
