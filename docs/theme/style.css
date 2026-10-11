@@ -28,6 +28,18 @@ body {
   background-image: none !important;
 }
 
+/* Preserve authored spelling in the default theme's labels and headings. */
+.nav-title,
+.toc-title,
+.mobile-footer-label,
+.search-result-scope,
+.content .ox-callout-title,
+.content .ox-api-entry__section h4,
+.content .ox-api-entry__member-group > h5,
+.content .ox-api-entry__member-detail-section h6 {
+  text-transform: none;
+}
+
 /* Canvas */
 #vein-canvas {
   position: fixed;
@@ -364,7 +376,6 @@ body.entry-page {
   font-weight: 500 !important;
   font-size: 0.8125rem !important;
   letter-spacing: 0.04em !important;
-  text-transform: uppercase !important;
   padding: 0.75rem 2rem !important;
   transition: all 0.15s ease !important;
 }
@@ -379,7 +390,6 @@ body.entry-page {
   font-weight: 500 !important;
   font-size: 0.8125rem !important;
   letter-spacing: 0.04em !important;
-  text-transform: uppercase !important;
   padding: 0.75rem 2rem !important;
   transition: all 0.15s ease !important;
 }
@@ -863,7 +873,6 @@ body.entry-page .entry-content .content > h2 + p > img {
     order: 3 !important;
     font-size: 0.5rem !important;
     font-weight: 400 !important;
-    text-transform: uppercase !important;
     letter-spacing: 0.22em !important;
     line-height: 2.1 !important;
     text-align: center !important;
@@ -962,7 +971,6 @@ body.entry-page .entry-content .content > h2 + p > img {
   font-family: var(--octc-font-mono);
   font-size: 0.75rem;
   letter-spacing: 0.08em;
-  text-transform: uppercase;
   color: var(--octc-color-text-muted);
 }
 
@@ -1065,7 +1073,6 @@ body.entry-page .entry-content .content > h2 + p > img {
   font-family: var(--octc-font-mono);
   font-size: 0.72rem;
   letter-spacing: 0.08em;
-  text-transform: uppercase;
   color: var(--octc-color-text-muted);
 }
 

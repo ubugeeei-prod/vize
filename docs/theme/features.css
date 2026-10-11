@@ -21,7 +21,6 @@
   font-weight: 500 !important;
   letter-spacing: 0.22em !important;
   line-height: 1 !important;
-  text-transform: uppercase;
 }
 
 html[lang="ja"] .entry-page .features::before {
