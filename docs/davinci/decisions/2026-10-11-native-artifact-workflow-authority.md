@@ -38,3 +38,10 @@ each missing authority closure member refuse while preserving all 22 fallback
 paths. Original damaged/missing/raw-symlink and shared-inode laws remain intact.
 Local eight laws pass without skips; fresh exact-source Actions and protected
 merge qualification are required before this workflow fix is complete.
+
+The first adf537 source run retained a genuine source-length failure: the inline
+workflow grew from 334 to 371 lines across the unchanged 350-line ceiling. Store
+the same 22 literal fallback paths in a Bash array and print identical output;
+the workflow now stays within that original limit. Retain the failed execution,
+rerun the original length guard and all eight laws, and require fresh source
+Actions without any budget or workload change.
