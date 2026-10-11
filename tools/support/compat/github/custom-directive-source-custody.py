@@ -7,6 +7,9 @@ from pathlib import Path
 import subprocess
 import sys
 
+if sys.flags.optimize:
+    raise RuntimeError("optimized Python cannot authenticate source custody")
+
 baseline, candidate, phase, destination = sys.argv[1:]
 historical_before = "67e3d0e6775cc3a1f29bfb9309d991252f9e75ff"
 integrated_after = "0f39ac834eebdb02821acd4bd81ce8d2a3c48bd1"

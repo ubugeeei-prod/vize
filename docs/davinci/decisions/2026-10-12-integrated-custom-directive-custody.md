@@ -47,10 +47,15 @@ existing qualification gate changes.
 
 ## Qualification boundary
 
-An isolated real current-head Git worktree runs both arms with original pinned
-bodies, checks every compiled member and the exact four substitutions, and
-refuses missing/dirty/foreign/committed production, unknown identity and changed
-mode controls. These source laws perform no Rust build.
+The local actual-source law runs both arms in an isolated current-head Git
+worktree with the original pinned bodies and complete manifests. Durable offline
+tooling laws use a small isolated real-Git repository and exactly two explicit
+test-only historical/integrated identity substitutions in the unchanged helper.
+They preserve every authority predicate and path scope, authenticate accepted
+current common changes in both arms, and refuse missing/dirty/foreign/committed
+production, unknown identity, changed mode and replacement-object forgery.
+These source laws perform no Rust build. Actual pinned native behavior remains
+qualified separately by the unchanged full-history Actions replay.
 
 Fresh exact-head Actions must rerun the unchanged actual native RED-to-GREEN
 and all original CLI/editor suites before protected queue admission. Full
