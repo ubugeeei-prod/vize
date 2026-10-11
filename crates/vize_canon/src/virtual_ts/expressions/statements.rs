@@ -290,7 +290,7 @@ fn emit_expression_statement(
     }
 
     if expr.kind == TemplateExpressionKind::CustomDirective
-        && let Some(directive_value) = checks.directive_values.get(&(expr.start, expr.end))
+        && let Some(directive_value) = checks.directive_values.values.get(&(expr.start, expr.end))
     {
         generate_directive_value_statement(
             ts,
@@ -304,7 +304,12 @@ fn emit_expression_statement(
         return;
     }
 
-    if expr.kind == TemplateExpressionKind::DynamicDirectiveArgument {
+    if expr.kind == TemplateExpressionKind::DynamicDirectiveArgument
+        && !checks
+            .directive_values
+            .dynamic_arguments
+            .contains(&(expr.start, expr.end))
+    {
         super::dynamic_arguments::generate(
             ts,
             mappings,

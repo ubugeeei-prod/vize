@@ -1,0 +1,24 @@
+{
+  "revision": "20298a21ae54a5417955373b80130ae7c548a6bb",
+  "repository": "https://github.com/element-plus/element-plus",
+  "sources": [
+    {
+      "path": "packages/components/cascader/src/cascader.vue",
+      "blob": "ca2215a662f6a7cb684b992de219676c9306d68d",
+      "line": 22,
+      "expression": "v-clickoutside:[contentRef]=\"handleClickOutside\""
+    },
+    {
+      "path": "packages/components/select-v2/src/select.vue",
+      "blob": "443ecda040bfdf88bbe7ad4bd4169fb8ec0b9971",
+      "line": 4,
+      "expression": "v-click-outside:[popperRef]=\"handleClickOutside\""
+    },
+    {
+      "path": "packages/components/select/src/select.vue",
+      "blob": "c0e69e7f85dc220acc5c860e45d6c0685b5f2853",
+      "line": 4,
+      "expression": "v-click-outside:[popperRef]=\"handleClickOutside\""
+    }
+  ]
+}

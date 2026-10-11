@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import type { DirectiveBinding } from 'vue';
+const vClickOutside = (_el: HTMLElement, _binding: DirectiveBinding<() => void>) => {};
+const vClickoutside = vClickOutside;
+const contentRef = ref(document.createElement('div'));
+const popperRef = ref(document.createElement('div'));
+const handleClickOutside = () => {};
+const wrongHandler = 123;
+</script>
+<template>
+  <div v-clickoutside:[contentRef]="handleClickOutside" />
+  <div v-click-outside:[popperRef]="handleClickOutside" />
+  <div v-click-outside:[popperRef]="handleClickOutside" />
+</template>

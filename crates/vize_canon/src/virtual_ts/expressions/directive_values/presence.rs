@@ -14,6 +14,7 @@ pub(crate) fn generate_valueless_directive_presence(
         return;
     }
     let mut bindings: Vec<_> = bindings
+        .values
         .values()
         .filter(|binding| !binding.has_value)
         .collect();
