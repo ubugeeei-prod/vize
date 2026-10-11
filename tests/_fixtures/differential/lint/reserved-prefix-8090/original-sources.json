@@ -1,0 +1,1612 @@
+{
+  "schema": "vize.lint.reserved-prefix-original-sources",
+  "version": 1,
+  "authority": "Complete immutable original Vue files and whole historical Matrix packets. Ranges transcribed from retained historical findings and checked against original bytes; new complete expected vectors must be authored separately before reference observation. Matrix budgets and unrelated findings are preserved as unfinished evidence, not reduced or recaptured.",
+  "sources": [
+    {
+      "id": "original-element-examples-components-theme-configurator-editor-color-picker-src-main",
+      "project": "element",
+      "repository": "https://github.com/ElemeFE/element",
+      "revision": "c345bb453bf11badb4831a6a3f600c9372b3a336",
+      "path": "examples/components/theme-configurator/editor/color-picker/src/main.vue",
+      "url": "https://raw.githubusercontent.com/ElemeFE/element/c345bb453bf11badb4831a6a3f600c9372b3a336/examples/components/theme-configurator/editor/color-picker/src/main.vue",
+      "filename": "original-element-examples-components-theme-configurator-editor-color-picker-src-main.vue",
+      "sourceFile": "original-element-examples-components-theme-configurator-editor-color-picker-src-main.vue.fixture",
+      "matrixPath": "original-matrix-element.json.gz",
+      "matrixPrefixFindings": [
+        {
+          "column": 7,
+          "endColumn": 22,
+          "endLine": 76,
+          "file": "examples/components/theme-configurator/editor/color-picker/src/main.vue",
+          "line": 76,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "matrixAllReservedFindings": [
+        {
+          "column": 7,
+          "endColumn": 22,
+          "endLine": 76,
+          "file": "examples/components/theme-configurator/editor/color-picker/src/main.vue",
+          "line": 76,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "bytes": 4870,
+      "sourceSha256": "372f095ae77b2e425cc1835ef252b1ec9f96836e69d8d37ac03d2efec8175e08",
+      "originalRanges": [
+        {
+          "name": "_elFormItemSize",
+          "start": 1985,
+          "end": 2000,
+          "line": 76,
+          "column": 7,
+          "token": "_elFormItemSize"
+        }
+      ]
+    },
+    {
+      "id": "original-element-packages-button-src-button",
+      "project": "element",
+      "repository": "https://github.com/ElemeFE/element",
+      "revision": "c345bb453bf11badb4831a6a3f600c9372b3a336",
+      "path": "packages/button/src/button.vue",
+      "url": "https://raw.githubusercontent.com/ElemeFE/element/c345bb453bf11badb4831a6a3f600c9372b3a336/packages/button/src/button.vue",
+      "filename": "original-element-packages-button-src-button.vue",
+      "sourceFile": "original-element-packages-button-src-button.vue.fixture",
+      "matrixPath": "original-matrix-element.json.gz",
+      "matrixPrefixFindings": [
+        {
+          "column": 7,
+          "endColumn": 22,
+          "endLine": 61,
+          "file": "packages/button/src/button.vue",
+          "line": 61,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "matrixAllReservedFindings": [
+        {
+          "column": 7,
+          "endColumn": 22,
+          "endLine": 61,
+          "file": "packages/button/src/button.vue",
+          "line": 61,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "bytes": 1659,
+      "sourceSha256": "2d1955586f9a61bcfe1feb2c5f6736a496c3466fbd7c2327491dfce9995a19b7",
+      "originalRanges": [
+        {
+          "name": "_elFormItemSize",
+          "start": 1207,
+          "end": 1222,
+          "line": 61,
+          "column": 7,
+          "token": "_elFormItemSize"
+        }
+      ]
+    },
+    {
+      "id": "original-element-packages-checkbox-src-checkbox-button",
+      "project": "element",
+      "repository": "https://github.com/ElemeFE/element",
+      "revision": "c345bb453bf11badb4831a6a3f600c9372b3a336",
+      "path": "packages/checkbox/src/checkbox-button.vue",
+      "url": "https://raw.githubusercontent.com/ElemeFE/element/c345bb453bf11badb4831a6a3f600c9372b3a336/packages/checkbox/src/checkbox-button.vue",
+      "filename": "original-element-packages-checkbox-src-checkbox-button.vue",
+      "sourceFile": "original-element-packages-checkbox-src-checkbox-button.vue.fixture",
+      "matrixPath": "original-matrix-element.json.gz",
+      "matrixPrefixFindings": [
+        {
+          "column": 7,
+          "endColumn": 21,
+          "endLine": 119,
+          "file": "packages/checkbox/src/checkbox-button.vue",
+          "line": 119,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_checkboxGroup'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 7,
+          "endColumn": 22,
+          "endLine": 145,
+          "file": "packages/checkbox/src/checkbox-button.vue",
+          "line": 145,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "matrixAllReservedFindings": [
+        {
+          "column": 7,
+          "endColumn": 21,
+          "endLine": 119,
+          "file": "packages/checkbox/src/checkbox-button.vue",
+          "line": 119,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_checkboxGroup'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 7,
+          "endColumn": 22,
+          "endLine": 145,
+          "file": "packages/checkbox/src/checkbox-button.vue",
+          "line": 145,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "bytes": 5255,
+      "sourceSha256": "44b73d020e410c8628b1dfd20d66356923fdbc2206ff5a200a84a1f2ba14a90a",
+      "originalRanges": [
+        {
+          "name": "_checkboxGroup",
+          "start": 2927,
+          "end": 2941,
+          "line": 119,
+          "column": 7,
+          "token": "_checkboxGroup"
+        },
+        {
+          "name": "_elFormItemSize",
+          "start": 3615,
+          "end": 3630,
+          "line": 145,
+          "column": 7,
+          "token": "_elFormItemSize"
+        }
+      ]
+    },
+    {
+      "id": "original-element-packages-checkbox-src-checkbox-group",
+      "project": "element",
+      "repository": "https://github.com/ElemeFE/element",
+      "revision": "c345bb453bf11badb4831a6a3f600c9372b3a336",
+      "path": "packages/checkbox/src/checkbox-group.vue",
+      "url": "https://raw.githubusercontent.com/ElemeFE/element/c345bb453bf11badb4831a6a3f600c9372b3a336/packages/checkbox/src/checkbox-group.vue",
+      "filename": "original-element-packages-checkbox-src-checkbox-group.vue",
+      "sourceFile": "original-element-packages-checkbox-src-checkbox-group.vue.fixture",
+      "matrixPath": "original-matrix-element.json.gz",
+      "matrixPrefixFindings": [
+        {
+          "column": 7,
+          "endColumn": 22,
+          "endLine": 28,
+          "file": "packages/checkbox/src/checkbox-group.vue",
+          "line": 28,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "matrixAllReservedFindings": [
+        {
+          "column": 7,
+          "endColumn": 22,
+          "endLine": 28,
+          "file": "packages/checkbox/src/checkbox-group.vue",
+          "line": 28,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "bytes": 895,
+      "sourceSha256": "2d7534e22623e52238e0b992b7c187f66da80f6f65ecd5809371c2c2c4ac4acf",
+      "originalRanges": [
+        {
+          "name": "_elFormItemSize",
+          "start": 434,
+          "end": 449,
+          "line": 28,
+          "column": 7,
+          "token": "_elFormItemSize"
+        }
+      ]
+    },
+    {
+      "id": "original-element-packages-checkbox-src-checkbox",
+      "project": "element",
+      "repository": "https://github.com/ElemeFE/element",
+      "revision": "c345bb453bf11badb4831a6a3f600c9372b3a336",
+      "path": "packages/checkbox/src/checkbox.vue",
+      "url": "https://raw.githubusercontent.com/ElemeFE/element/c345bb453bf11badb4831a6a3f600c9372b3a336/packages/checkbox/src/checkbox.vue",
+      "filename": "original-element-packages-checkbox-src-checkbox.vue",
+      "sourceFile": "original-element-packages-checkbox-src-checkbox.vue.fixture",
+      "matrixPath": "original-matrix-element.json.gz",
+      "matrixPrefixFindings": [
+        {
+          "column": 7,
+          "endColumn": 22,
+          "endLine": 152,
+          "file": "packages/checkbox/src/checkbox.vue",
+          "line": 152,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "matrixAllReservedFindings": [
+        {
+          "column": 7,
+          "endColumn": 22,
+          "endLine": 152,
+          "file": "packages/checkbox/src/checkbox.vue",
+          "line": 152,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "bytes": 6171,
+      "sourceSha256": "69e631d30dd287b36883900b77b0ff2cea2952c70506a8da4397681e208b502a",
+      "originalRanges": [
+        {
+          "name": "_elFormItemSize",
+          "start": 4138,
+          "end": 4153,
+          "line": 152,
+          "column": 7,
+          "token": "_elFormItemSize"
+        }
+      ]
+    },
+    {
+      "id": "original-element-packages-color-picker-src-main",
+      "project": "element",
+      "repository": "https://github.com/ElemeFE/element",
+      "revision": "c345bb453bf11badb4831a6a3f600c9372b3a336",
+      "path": "packages/color-picker/src/main.vue",
+      "url": "https://raw.githubusercontent.com/ElemeFE/element/c345bb453bf11badb4831a6a3f600c9372b3a336/packages/color-picker/src/main.vue",
+      "filename": "original-element-packages-color-picker-src-main.vue",
+      "sourceFile": "original-element-packages-color-picker-src-main.vue.fixture",
+      "matrixPath": "original-matrix-element.json.gz",
+      "matrixPrefixFindings": [
+        {
+          "column": 7,
+          "endColumn": 22,
+          "endLine": 74,
+          "file": "packages/color-picker/src/main.vue",
+          "line": 74,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "matrixAllReservedFindings": [
+        {
+          "column": 7,
+          "endColumn": 22,
+          "endLine": 74,
+          "file": "packages/color-picker/src/main.vue",
+          "line": 74,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "bytes": 4794,
+      "sourceSha256": "f85b661a41d8e7d4ccc9d4605cec595ae89ab2e0eaeb2acf4b3fc9386331694a",
+      "originalRanges": [
+        {
+          "name": "_elFormItemSize",
+          "start": 1931,
+          "end": 1946,
+          "line": 74,
+          "column": 7,
+          "token": "_elFormItemSize"
+        }
+      ]
+    },
+    {
+      "id": "original-element-packages-date-picker-src-picker",
+      "project": "element",
+      "repository": "https://github.com/ElemeFE/element",
+      "revision": "c345bb453bf11badb4831a6a3f600c9372b3a336",
+      "path": "packages/date-picker/src/picker.vue",
+      "url": "https://raw.githubusercontent.com/ElemeFE/element/c345bb453bf11badb4831a6a3f600c9372b3a336/packages/date-picker/src/picker.vue",
+      "filename": "original-element-packages-date-picker-src-picker.vue",
+      "sourceFile": "original-element-packages-date-picker-src-picker.vue.fixture",
+      "matrixPath": "original-matrix-element.json.gz",
+      "matrixPrefixFindings": [
+        {
+          "column": 5,
+          "endColumn": 20,
+          "endLine": 567,
+          "file": "packages/date-picker/src/picker.vue",
+          "line": 567,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "matrixAllReservedFindings": [
+        {
+          "column": 5,
+          "endColumn": 20,
+          "endLine": 567,
+          "file": "packages/date-picker/src/picker.vue",
+          "line": 567,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "bytes": 25813,
+      "sourceSha256": "8218a95ed6ded8efcbc052978e3aef792843684b4de10495af49a97e49dbdf7a",
+      "originalRanges": [
+        {
+          "name": "_elFormItemSize",
+          "start": 14584,
+          "end": 14599,
+          "line": 567,
+          "column": 5,
+          "token": "_elFormItemSize"
+        }
+      ]
+    },
+    {
+      "id": "original-element-packages-form-src-form-item",
+      "project": "element",
+      "repository": "https://github.com/ElemeFE/element",
+      "revision": "c345bb453bf11badb4831a6a3f600c9372b3a336",
+      "path": "packages/form/src/form-item.vue",
+      "url": "https://raw.githubusercontent.com/ElemeFE/element/c345bb453bf11badb4831a6a3f600c9372b3a336/packages/form/src/form-item.vue",
+      "filename": "original-element-packages-form-src-form-item.vue",
+      "sourceFile": "original-element-packages-form-src-form-item.vue.fixture",
+      "matrixPath": "original-matrix-element.json.gz",
+      "matrixPrefixFindings": [
+        {
+          "column": 7,
+          "endColumn": 16,
+          "endLine": 173,
+          "file": "packages/form/src/form-item.vue",
+          "line": 173,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_formSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "matrixAllReservedFindings": [
+        {
+          "column": 7,
+          "endColumn": 16,
+          "endLine": 173,
+          "file": "packages/form/src/form-item.vue",
+          "line": 173,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_formSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "bytes": 9298,
+      "sourceSha256": "f0d54700fc15f05a391403a5d1ac739c785b1913dcc232f65ade6b6108b3654d",
+      "originalRanges": [
+        {
+          "name": "_formSize",
+          "start": 4884,
+          "end": 4893,
+          "line": 173,
+          "column": 7,
+          "token": "_formSize"
+        }
+      ]
+    },
+    {
+      "id": "original-element-packages-input-number-src-input-number",
+      "project": "element",
+      "repository": "https://github.com/ElemeFE/element",
+      "revision": "c345bb453bf11badb4831a6a3f600c9372b3a336",
+      "path": "packages/input-number/src/input-number.vue",
+      "url": "https://raw.githubusercontent.com/ElemeFE/element/c345bb453bf11badb4831a6a3f600c9372b3a336/packages/input-number/src/input-number.vue",
+      "filename": "original-element-packages-input-number-src-input-number.vue",
+      "sourceFile": "original-element-packages-input-number-src-input-number.vue.fixture",
+      "matrixPath": "original-matrix-element.json.gz",
+      "matrixPrefixFindings": [
+        {
+          "column": 7,
+          "endColumn": 22,
+          "endLine": 164,
+          "file": "packages/input-number/src/input-number.vue",
+          "line": 164,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 7,
+          "endColumn": 16,
+          "endLine": 210,
+          "file": "packages/input-number/src/input-number.vue",
+          "line": 210,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_increase'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 7,
+          "endColumn": 16,
+          "endLine": 217,
+          "file": "packages/input-number/src/input-number.vue",
+          "line": 217,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_decrease'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "matrixAllReservedFindings": [
+        {
+          "column": 7,
+          "endColumn": 22,
+          "endLine": 164,
+          "file": "packages/input-number/src/input-number.vue",
+          "line": 164,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 7,
+          "endColumn": 16,
+          "endLine": 210,
+          "file": "packages/input-number/src/input-number.vue",
+          "line": 210,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_increase'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 7,
+          "endColumn": 16,
+          "endLine": 217,
+          "file": "packages/input-number/src/input-number.vue",
+          "line": 217,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_decrease'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "bytes": 8631,
+      "sourceSha256": "c9586e0a57b2960c19cfde6c4872fea8fb3eb59998f96494b0e18748501522fb",
+      "originalRanges": [
+        {
+          "name": "_elFormItemSize",
+          "start": 4337,
+          "end": 4352,
+          "line": 164,
+          "column": 7,
+          "token": "_elFormItemSize"
+        },
+        {
+          "name": "_increase",
+          "start": 5875,
+          "end": 5884,
+          "line": 210,
+          "column": 7,
+          "token": "_increase"
+        },
+        {
+          "name": "_decrease",
+          "start": 6264,
+          "end": 6273,
+          "line": 217,
+          "column": 7,
+          "token": "_decrease"
+        }
+      ]
+    },
+    {
+      "id": "original-element-packages-input-src-input",
+      "project": "element",
+      "repository": "https://github.com/ElemeFE/element",
+      "revision": "c345bb453bf11badb4831a6a3f600c9372b3a336",
+      "path": "packages/input/src/input.vue",
+      "url": "https://raw.githubusercontent.com/ElemeFE/element/c345bb453bf11badb4831a6a3f600c9372b3a336/packages/input/src/input.vue",
+      "filename": "original-element-packages-input-src-input.vue",
+      "sourceFile": "original-element-packages-input-src-input.vue.fixture",
+      "matrixPath": "original-matrix-element.json.gz",
+      "matrixPrefixFindings": [
+        {
+          "column": 7,
+          "endColumn": 22,
+          "endLine": 196,
+          "file": "packages/input/src/input.vue",
+          "line": 196,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "matrixAllReservedFindings": [
+        {
+          "column": 7,
+          "endColumn": 22,
+          "endLine": 196,
+          "file": "packages/input/src/input.vue",
+          "line": 196,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "bytes": 12935,
+      "sourceSha256": "a8bd891ea1cb3319087b86610d10c630452353c0518048fef15a223e99019676",
+      "originalRanges": [
+        {
+          "name": "_elFormItemSize",
+          "start": 5570,
+          "end": 5585,
+          "line": 196,
+          "column": 7,
+          "token": "_elFormItemSize"
+        }
+      ]
+    },
+    {
+      "id": "original-element-packages-radio-src-radio-button",
+      "project": "element",
+      "repository": "https://github.com/ElemeFE/element",
+      "revision": "c345bb453bf11badb4831a6a3f600c9372b3a336",
+      "path": "packages/radio/src/radio-button.vue",
+      "url": "https://raw.githubusercontent.com/ElemeFE/element/c345bb453bf11badb4831a6a3f600c9372b3a336/packages/radio/src/radio-button.vue",
+      "filename": "original-element-packages-radio-src-radio-button.vue",
+      "sourceFile": "original-element-packages-radio-src-radio-button.vue.fixture",
+      "matrixPath": "original-matrix-element.json.gz",
+      "matrixPrefixFindings": [
+        {
+          "column": 7,
+          "endColumn": 18,
+          "endLine": 74,
+          "file": "packages/radio/src/radio-button.vue",
+          "line": 74,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_radioGroup'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 7,
+          "endColumn": 22,
+          "endLine": 93,
+          "file": "packages/radio/src/radio-button.vue",
+          "line": 93,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "matrixAllReservedFindings": [
+        {
+          "column": 7,
+          "endColumn": 18,
+          "endLine": 74,
+          "file": "packages/radio/src/radio-button.vue",
+          "line": 74,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_radioGroup'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 7,
+          "endColumn": 22,
+          "endLine": 93,
+          "file": "packages/radio/src/radio-button.vue",
+          "line": 93,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "bytes": 2758,
+      "sourceSha256": "5817498ceeea3606a95299901cf29d2a1713b8340fb1ebe9d81221b47249af40",
+      "originalRanges": [
+        {
+          "name": "_radioGroup",
+          "start": 1529,
+          "end": 1540,
+          "line": 74,
+          "column": 7,
+          "token": "_radioGroup"
+        },
+        {
+          "name": "_elFormItemSize",
+          "start": 2119,
+          "end": 2134,
+          "line": 93,
+          "column": 7,
+          "token": "_elFormItemSize"
+        }
+      ]
+    },
+    {
+      "id": "original-element-packages-radio-src-radio-group",
+      "project": "element",
+      "repository": "https://github.com/ElemeFE/element",
+      "revision": "c345bb453bf11badb4831a6a3f600c9372b3a336",
+      "path": "packages/radio/src/radio-group.vue",
+      "url": "https://raw.githubusercontent.com/ElemeFE/element/c345bb453bf11badb4831a6a3f600c9372b3a336/packages/radio/src/radio-group.vue",
+      "filename": "original-element-packages-radio-src-radio-group.vue",
+      "sourceFile": "original-element-packages-radio-src-radio-group.vue.fixture",
+      "matrixPath": "original-matrix-element.json.gz",
+      "matrixPrefixFindings": [
+        {
+          "column": 7,
+          "endColumn": 22,
+          "endLine": 42,
+          "file": "packages/radio/src/radio-group.vue",
+          "line": 42,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 7,
+          "endColumn": 13,
+          "endLine": 45,
+          "file": "packages/radio/src/radio-group.vue",
+          "line": 45,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elTag'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "matrixAllReservedFindings": [
+        {
+          "column": 7,
+          "endColumn": 22,
+          "endLine": 42,
+          "file": "packages/radio/src/radio-group.vue",
+          "line": 42,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 7,
+          "endColumn": 13,
+          "endLine": 45,
+          "file": "packages/radio/src/radio-group.vue",
+          "line": 45,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elTag'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "bytes": 2914,
+      "sourceSha256": "32f849881b72089443a19948913b61dd431eb816b908285a073d65290f2adb24",
+      "originalRanges": [
+        {
+          "name": "_elFormItemSize",
+          "start": 652,
+          "end": 667,
+          "line": 42,
+          "column": 7,
+          "token": "_elFormItemSize"
+        },
+        {
+          "name": "_elTag",
+          "start": 742,
+          "end": 748,
+          "line": 45,
+          "column": 7,
+          "token": "_elTag"
+        }
+      ]
+    },
+    {
+      "id": "original-element-packages-radio-src-radio",
+      "project": "element",
+      "repository": "https://github.com/ElemeFE/element",
+      "revision": "c345bb453bf11badb4831a6a3f600c9372b3a336",
+      "path": "packages/radio/src/radio.vue",
+      "url": "https://raw.githubusercontent.com/ElemeFE/element/c345bb453bf11badb4831a6a3f600c9372b3a336/packages/radio/src/radio.vue",
+      "filename": "original-element-packages-radio-src-radio.vue",
+      "sourceFile": "original-element-packages-radio-src-radio.vue.fixture",
+      "matrixPath": "original-matrix-element.json.gz",
+      "matrixPrefixFindings": [
+        {
+          "column": 7,
+          "endColumn": 22,
+          "endLine": 106,
+          "file": "packages/radio/src/radio.vue",
+          "line": 106,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "matrixAllReservedFindings": [
+        {
+          "column": 7,
+          "endColumn": 22,
+          "endLine": 106,
+          "file": "packages/radio/src/radio.vue",
+          "line": 106,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "bytes": 3269,
+      "sourceSha256": "b040e9366a7a4f9fb2a69715e2a73e0a6f195bb91a6d0cfd379916daf91d3bc4",
+      "originalRanges": [
+        {
+          "name": "_elFormItemSize",
+          "start": 2380,
+          "end": 2395,
+          "line": 106,
+          "column": 7,
+          "token": "_elFormItemSize"
+        }
+      ]
+    },
+    {
+      "id": "original-element-packages-select-src-select",
+      "project": "element",
+      "repository": "https://github.com/ElemeFE/element",
+      "revision": "c345bb453bf11badb4831a6a3f600c9372b3a336",
+      "path": "packages/select/src/select.vue",
+      "url": "https://raw.githubusercontent.com/ElemeFE/element/c345bb453bf11badb4831a6a3f600c9372b3a336/packages/select/src/select.vue",
+      "filename": "original-element-packages-select-src-select.vue",
+      "sourceFile": "original-element-packages-select-src-select.vue.fixture",
+      "matrixPath": "original-matrix-element.json.gz",
+      "matrixPrefixFindings": [
+        {
+          "column": 7,
+          "endColumn": 22,
+          "endLine": 179,
+          "file": "packages/select/src/select.vue",
+          "line": 179,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "matrixAllReservedFindings": [
+        {
+          "column": 7,
+          "endColumn": 22,
+          "endLine": 179,
+          "file": "packages/select/src/select.vue",
+          "line": 179,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_elFormItemSize'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 9,
+          "endColumn": 16,
+          "endLine": 312,
+          "file": "packages/select/src/select.vue",
+          "line": 312,
+          "message": "[vize:script/no-reserved-keys] Reserved key 'options'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "bytes": 28155,
+      "sourceSha256": "ef4ea92e16c16d241c94504bca96a410e13e4900d405b811c6fb139345015f94",
+      "originalRanges": [
+        {
+          "name": "_elFormItemSize",
+          "start": 6223,
+          "end": 6238,
+          "line": 179,
+          "column": 7,
+          "token": "_elFormItemSize"
+        },
+        {
+          "name": "options",
+          "start": 9863,
+          "end": 9870,
+          "line": 312,
+          "column": 9,
+          "token": "options"
+        }
+      ]
+    },
+    {
+      "id": "original-vue-uploader-src-components-file",
+      "project": "vue-uploader",
+      "repository": "https://github.com/simple-uploader/vue-uploader",
+      "revision": "0be2f9571644ac2f7d3348420baf8fb8105c5555",
+      "path": "src/components/file.vue",
+      "url": "https://raw.githubusercontent.com/simple-uploader/vue-uploader/0be2f9571644ac2f7d3348420baf8fb8105c5555/src/components/file.vue",
+      "filename": "original-vue-uploader-src-components-file.vue",
+      "sourceFile": "original-vue-uploader-src-components-file.vue.fixture",
+      "matrixPath": "original-matrix-vue-uploader.json.gz",
+      "matrixPrefixFindings": [
+        {
+          "column": 7,
+          "endColumn": 19,
+          "endLine": 180,
+          "file": "src/components/file.vue",
+          "line": 180,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_actionCheck'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 7,
+          "endColumn": 20,
+          "endLine": 220,
+          "file": "src/components/file.vue",
+          "line": 220,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_fileProgress'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 7,
+          "endColumn": 19,
+          "endLine": 228,
+          "file": "src/components/file.vue",
+          "line": 228,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_fileSuccess'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 7,
+          "endColumn": 20,
+          "endLine": 237,
+          "file": "src/components/file.vue",
+          "line": 237,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_fileComplete'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 7,
+          "endColumn": 17,
+          "endLine": 240,
+          "file": "src/components/file.vue",
+          "line": 240,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_fileError'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "matrixAllReservedFindings": [
+        {
+          "column": 7,
+          "endColumn": 19,
+          "endLine": 180,
+          "file": "src/components/file.vue",
+          "line": 180,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_actionCheck'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 7,
+          "endColumn": 20,
+          "endLine": 220,
+          "file": "src/components/file.vue",
+          "line": 220,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_fileProgress'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 7,
+          "endColumn": 19,
+          "endLine": 228,
+          "file": "src/components/file.vue",
+          "line": 228,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_fileSuccess'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 7,
+          "endColumn": 20,
+          "endLine": 237,
+          "file": "src/components/file.vue",
+          "line": 237,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_fileComplete'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 7,
+          "endColumn": 17,
+          "endLine": 240,
+          "file": "src/components/file.vue",
+          "line": 240,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_fileError'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "bytes": 13682,
+      "sourceSha256": "88ffa33bb18b5c2efd1dc2d640d39e69784a92669386fc2e8a061339c7b39683",
+      "originalRanges": [
+        {
+          "name": "_actionCheck",
+          "start": 5725,
+          "end": 5737,
+          "line": 180,
+          "column": 7,
+          "token": "_actionCheck"
+        },
+        {
+          "name": "_fileProgress",
+          "start": 6761,
+          "end": 6774,
+          "line": 220,
+          "column": 7,
+          "token": "_fileProgress"
+        },
+        {
+          "name": "_fileSuccess",
+          "start": 7078,
+          "end": 7090,
+          "line": 228,
+          "column": 7,
+          "token": "_fileSuccess"
+        },
+        {
+          "name": "_fileComplete",
+          "start": 7328,
+          "end": 7341,
+          "line": 237,
+          "column": 7,
+          "token": "_fileComplete"
+        },
+        {
+          "name": "_fileError",
+          "start": 7390,
+          "end": 7400,
+          "line": 240,
+          "column": 7,
+          "token": "_fileError"
+        }
+      ]
+    },
+    {
+      "id": "original-vue-element-admin-src-views-components-demo-count-to",
+      "project": "vue-element-admin",
+      "repository": "https://github.com/PanJiaChen/vue-element-admin",
+      "revision": "6858a9ad67483025f6a9432a926beb9327037be3",
+      "path": "src/views/components-demo/count-to.vue",
+      "url": "https://raw.githubusercontent.com/PanJiaChen/vue-element-admin/6858a9ad67483025f6a9432a926beb9327037be3/src/views/components-demo/count-to.vue",
+      "filename": "original-vue-element-admin-src-views-components-demo-count-to.vue",
+      "sourceFile": "original-vue-element-admin-src-views-components-demo-count-to.vue.fixture",
+      "matrixPath": "original-matrix-vue-element-admin.json.gz",
+      "matrixPrefixFindings": [
+        {
+          "column": 5,
+          "endColumn": 14,
+          "endLine": 72,
+          "file": "src/views/components-demo/count-to.vue",
+          "line": 72,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_startVal'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 5,
+          "endColumn": 12,
+          "endLine": 79,
+          "file": "src/views/components-demo/count-to.vue",
+          "line": 79,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_endVal'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 5,
+          "endColumn": 14,
+          "endLine": 86,
+          "file": "src/views/components-demo/count-to.vue",
+          "line": 86,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_duration'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 5,
+          "endColumn": 14,
+          "endLine": 93,
+          "file": "src/views/components-demo/count-to.vue",
+          "line": 93,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_decimals'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 5,
+          "endColumn": 15,
+          "endLine": 104,
+          "file": "src/views/components-demo/count-to.vue",
+          "line": 104,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_separator'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 5,
+          "endColumn": 12,
+          "endLine": 107,
+          "file": "src/views/components-demo/count-to.vue",
+          "line": 107,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_suffix'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 5,
+          "endColumn": 12,
+          "endLine": 110,
+          "file": "src/views/components-demo/count-to.vue",
+          "line": 110,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_prefix'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "matrixAllReservedFindings": [
+        {
+          "column": 5,
+          "endColumn": 14,
+          "endLine": 72,
+          "file": "src/views/components-demo/count-to.vue",
+          "line": 72,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_startVal'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 5,
+          "endColumn": 12,
+          "endLine": 79,
+          "file": "src/views/components-demo/count-to.vue",
+          "line": 79,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_endVal'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 5,
+          "endColumn": 14,
+          "endLine": 86,
+          "file": "src/views/components-demo/count-to.vue",
+          "line": 86,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_duration'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 5,
+          "endColumn": 14,
+          "endLine": 93,
+          "file": "src/views/components-demo/count-to.vue",
+          "line": 93,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_decimals'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 5,
+          "endColumn": 15,
+          "endLine": 104,
+          "file": "src/views/components-demo/count-to.vue",
+          "line": 104,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_separator'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 5,
+          "endColumn": 12,
+          "endLine": 107,
+          "file": "src/views/components-demo/count-to.vue",
+          "line": 107,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_suffix'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 5,
+          "endColumn": 12,
+          "endLine": 110,
+          "file": "src/views/components-demo/count-to.vue",
+          "line": 110,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_prefix'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "bytes": 5088,
+      "sourceSha256": "019fa97282c2bbc654c7bdc16651f4510d8f56eebb75c0b7ff36da9f15844438",
+      "originalRanges": [
+        {
+          "name": "_startVal",
+          "start": 2360,
+          "end": 2369,
+          "line": 72,
+          "column": 5,
+          "token": "_startVal"
+        },
+        {
+          "name": "_endVal",
+          "start": 2487,
+          "end": 2494,
+          "line": 79,
+          "column": 5,
+          "token": "_endVal"
+        },
+        {
+          "name": "_duration",
+          "start": 2608,
+          "end": 2617,
+          "line": 86,
+          "column": 5,
+          "token": "_duration"
+        },
+        {
+          "name": "_decimals",
+          "start": 2737,
+          "end": 2746,
+          "line": 93,
+          "column": 5,
+          "token": "_decimals"
+        },
+        {
+          "name": "_separator",
+          "start": 3014,
+          "end": 3024,
+          "line": 104,
+          "column": 5,
+          "token": "_separator"
+        },
+        {
+          "name": "_suffix",
+          "start": 3071,
+          "end": 3078,
+          "line": 107,
+          "column": 5,
+          "token": "_suffix"
+        },
+        {
+          "name": "_prefix",
+          "start": 3122,
+          "end": 3129,
+          "line": 110,
+          "column": 5,
+          "token": "_prefix"
+        }
+      ]
+    },
+    {
+      "id": "original-habitica-website-client-src-components-chat-chatmessages",
+      "project": "habitica",
+      "repository": "https://github.com/HabitRPG/habitica",
+      "revision": "19b2ce531c3bb1c3f95a75388b1176b345cbbca2",
+      "path": "website/client/src/components/chat/chatMessages.vue",
+      "url": "https://raw.githubusercontent.com/HabitRPG/habitica/19b2ce531c3bb1c3f95a75388b1176b345cbbca2/website/client/src/components/chat/chatMessages.vue",
+      "filename": "original-habitica-website-client-src-components-chat-chatmessages.vue",
+      "sourceFile": "original-habitica-website-client-src-components-chat-chatmessages.vue.fixture",
+      "matrixPath": "original-matrix-habitica.json.gz",
+      "matrixPrefixFindings": [
+        {
+          "column": 11,
+          "endColumn": 28,
+          "endLine": 226,
+          "file": "website/client/src/components/chat/chatMessages.vue",
+          "line": 226,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_loadProfileCache'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "matrixAllReservedFindings": [
+        {
+          "column": 11,
+          "endColumn": 28,
+          "endLine": 226,
+          "file": "website/client/src/components/chat/chatMessages.vue",
+          "line": 226,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_loadProfileCache'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "bytes": 8534,
+      "sourceSha256": "ea7073e2dd2964187b97850a923788e990c37c9daf489fcd0ca290d0ebecf0d0",
+      "originalRanges": [
+        {
+          "name": "_loadProfileCache",
+          "start": 5285,
+          "end": 5302,
+          "line": 226,
+          "column": 11,
+          "token": "_loadProfileCache"
+        }
+      ]
+    },
+    {
+      "id": "original-habitica-website-client-src-components-chat-emojiautocomplete",
+      "project": "habitica",
+      "repository": "https://github.com/HabitRPG/habitica",
+      "revision": "19b2ce531c3bb1c3f95a75388b1176b345cbbca2",
+      "path": "website/client/src/components/chat/emojiAutoComplete.vue",
+      "url": "https://raw.githubusercontent.com/HabitRPG/habitica/19b2ce531c3bb1c3f95a75388b1176b345cbbca2/website/client/src/components/chat/emojiAutoComplete.vue",
+      "filename": "original-habitica-website-client-src-components-chat-emojiautocomplete.vue",
+      "sourceFile": "original-habitica-website-client-src-components-chat-emojiautocomplete.vue.fixture",
+      "matrixPath": "original-matrix-habitica.json.gz",
+      "matrixPrefixFindings": [
+        {
+          "column": 5,
+          "endColumn": 24,
+          "endLine": 252,
+          "file": "website/client/src/components/chat/emojiAutoComplete.vue",
+          "line": 252,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_measureCaretCoords'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "matrixAllReservedFindings": [
+        {
+          "column": 5,
+          "endColumn": 24,
+          "endLine": 252,
+          "file": "website/client/src/components/chat/emojiAutoComplete.vue",
+          "line": 252,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_measureCaretCoords'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "bytes": 8480,
+      "sourceSha256": "08d5559ebff4e3d2f8a0d9612ce829e36d6a4fc9f6b592a70a5c561c09d51754",
+      "originalRanges": [
+        {
+          "name": "_measureCaretCoords",
+          "start": 7589,
+          "end": 7608,
+          "line": 252,
+          "column": 5,
+          "token": "_measureCaretCoords"
+        }
+      ]
+    },
+    {
+      "id": "original-habitica-website-client-src-components-ui-custommenudropdown",
+      "project": "habitica",
+      "repository": "https://github.com/HabitRPG/habitica",
+      "revision": "19b2ce531c3bb1c3f95a75388b1176b345cbbca2",
+      "path": "website/client/src/components/ui/customMenuDropdown.vue",
+      "url": "https://raw.githubusercontent.com/HabitRPG/habitica/19b2ce531c3bb1c3f95a75388b1176b345cbbca2/website/client/src/components/ui/customMenuDropdown.vue",
+      "filename": "original-habitica-website-client-src-components-ui-custommenudropdown.vue",
+      "sourceFile": "original-habitica-website-client-src-components-ui-custommenudropdown.vue.fixture",
+      "matrixPath": "original-matrix-habitica.json.gz",
+      "matrixPrefixFindings": [
+        {
+          "column": 5,
+          "endColumn": 22,
+          "endLine": 98,
+          "file": "website/client/src/components/ui/customMenuDropdown.vue",
+          "line": 98,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_clickOutListener'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "matrixAllReservedFindings": [
+        {
+          "column": 5,
+          "endColumn": 22,
+          "endLine": 98,
+          "file": "website/client/src/components/ui/customMenuDropdown.vue",
+          "line": 98,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_clickOutListener'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "bytes": 2300,
+      "sourceSha256": "dfff3e351a99deccb3e817361bc31e57fb8317220a037c85b4830c34b01c61a6",
+      "originalRanges": [
+        {
+          "name": "_clickOutListener",
+          "start": 2032,
+          "end": 2049,
+          "line": 98,
+          "column": 5,
+          "token": "_clickOutListener"
+        }
+      ]
+    },
+    {
+      "id": "original-bootstrap-vue-docs-pages-play",
+      "project": "bootstrap-vue",
+      "repository": "https://github.com/bootstrap-vue/bootstrap-vue",
+      "revision": "9a246f45fc813f161df291fc7d6197febf8afaf4",
+      "path": "docs/pages/play.vue",
+      "url": "https://raw.githubusercontent.com/bootstrap-vue/bootstrap-vue/9a246f45fc813f161df291fc7d6197febf8afaf4/docs/pages/play.vue",
+      "filename": "original-bootstrap-vue-docs-pages-play.vue",
+      "sourceFile": "original-bootstrap-vue-docs-pages-play.vue.fixture",
+      "matrixPath": "original-matrix-bootstrap-vue.json.gz",
+      "matrixPrefixFindings": [
+        {
+          "column": 5,
+          "endColumn": 15,
+          "endLine": 763,
+          "file": "docs/pages/play.vue",
+          "line": 763,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_compileJs'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 5,
+          "endColumn": 9,
+          "endLine": 789,
+          "file": "docs/pages/play.vue",
+          "line": 789,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_run'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "matrixAllReservedFindings": [
+        {
+          "column": 5,
+          "endColumn": 15,
+          "endLine": 763,
+          "file": "docs/pages/play.vue",
+          "line": 763,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_compileJs'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 5,
+          "endColumn": 9,
+          "endLine": 789,
+          "file": "docs/pages/play.vue",
+          "line": 789,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_run'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "bytes": 28652,
+      "sourceSha256": "9297e6f5dd8e25dda9df68de21967150cd60727a97ea992a7b0ce835de29e469",
+      "originalRanges": [
+        {
+          "name": "_compileJs",
+          "start": 23577,
+          "end": 23587,
+          "line": 763,
+          "column": 5,
+          "token": "_compileJs"
+        },
+        {
+          "name": "_run",
+          "start": 24355,
+          "end": 24359,
+          "line": 789,
+          "column": 5,
+          "token": "_run"
+        }
+      ]
+    },
+    {
+      "id": "original-vue-select-src-components-select",
+      "project": "vue-select",
+      "repository": "https://github.com/sagalbot/vue-select",
+      "revision": "35897ade99e750a452e67df3b38e156d0c1fff42",
+      "path": "src/components/Select.vue",
+      "url": "https://raw.githubusercontent.com/sagalbot/vue-select/35897ade99e750a452e67df3b38e156d0c1fff42/src/components/Select.vue",
+      "filename": "original-vue-select-src-components-select.vue",
+      "sourceFile": "original-vue-select-src-components-select.vue.fixture",
+      "matrixPath": "original-matrix-vue-select.json.gz",
+      "matrixPrefixFindings": [
+        {
+          "column": 7,
+          "endColumn": 13,
+          "endLine": 681,
+          "file": "src/components/Select.vue",
+          "line": 681,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_value'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "matrixAllReservedFindings": [
+        {
+          "column": 5,
+          "endColumn": 12,
+          "endLine": 187,
+          "file": "src/components/Select.vue",
+          "line": 187,
+          "message": "[vize:script/no-reserved-keys] Reserved key 'options'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        },
+        {
+          "column": 7,
+          "endColumn": 13,
+          "endLine": 681,
+          "file": "src/components/Select.vue",
+          "line": 681,
+          "message": "[vize:script/no-reserved-keys] Reserved key '_value'",
+          "ruleId": "script/no-reserved-keys",
+          "severity": "error"
+        }
+      ],
+      "bytes": 35649,
+      "sourceSha256": "12f3b27bb0d85e07ab538f2813e7f3ddaaf8708ed4167b95c50a366f4cfd9b68",
+      "originalRanges": [
+        {
+          "name": "options",
+          "start": 5990,
+          "end": 5997,
+          "line": 187,
+          "column": 5,
+          "token": "options"
+        },
+        {
+          "name": "_value",
+          "start": 18163,
+          "end": 18169,
+          "line": 681,
+          "column": 7,
+          "token": "_value"
+        }
+      ]
+    }
+  ],
+  "matrices": [
+    {
+      "project": "element",
+      "repository": "https://github.com/ElemeFE/element",
+      "revision": "c345bb453bf11badb4831a6a3f600c9372b3a336",
+      "path": "original-matrix-element.json.gz",
+      "sha256": "b72c121f7c8490bf09e5ab552579d142eca67025a1380934ba6c919a6f6e47c8",
+      "bytes": 277670,
+      "uncompressedSha256": "727cf5dcf70841076c1afdc839d7ce88f353ebfd1ce7fe9e5f711d3078617f0f",
+      "uncompressedBytes": 9012499,
+      "sourceCommit": "9466fdbb90bfae8803d5e57ae267b656be051721",
+      "budget": {
+        "falseNegativePassed": false,
+        "falsePositivePassed": false,
+        "maxFalseNegativeCount": 0,
+        "maxFalsePositiveCount": 0,
+        "passed": false,
+        "unusableReason": null,
+        "verdict": "breached"
+      },
+      "falsePositiveCount": 52,
+      "falseNegativeCount": 27
+    },
+    {
+      "project": "vue-uploader",
+      "repository": "https://github.com/simple-uploader/vue-uploader",
+      "revision": "0be2f9571644ac2f7d3348420baf8fb8105c5555",
+      "path": "original-matrix-vue-uploader.json.gz",
+      "sha256": "90190932fa32f461654f243d87d6a5c57ad28180163945a8aa21ec75c0d74c04",
+      "bytes": 10701,
+      "uncompressedSha256": "7a1e9a334207be177c4b3317948e051d02cc859ba96c0c8abfeb0f83cd98f06f",
+      "uncompressedBytes": 298986,
+      "sourceCommit": "9466fdbb90bfae8803d5e57ae267b656be051721",
+      "budget": {
+        "falseNegativePassed": false,
+        "falsePositivePassed": false,
+        "maxFalseNegativeCount": 0,
+        "maxFalsePositiveCount": 0,
+        "passed": false,
+        "unusableReason": null,
+        "verdict": "breached"
+      },
+      "falsePositiveCount": 9,
+      "falseNegativeCount": 1
+    },
+    {
+      "project": "vue-element-admin",
+      "repository": "https://github.com/PanJiaChen/vue-element-admin",
+      "revision": "6858a9ad67483025f6a9432a926beb9327037be3",
+      "path": "original-matrix-vue-element-admin.json.gz",
+      "sha256": "40070f38dba8c0687fb90112ec5a8d62b66677e3ff0a00d140317f6301e3457e",
+      "bytes": 103718,
+      "uncompressedSha256": "5b7182cd651533f64fd384d442c9901808f0a3b8d907269b962246b8a91ebd6b",
+      "uncompressedBytes": 2499951,
+      "sourceCommit": "9466fdbb90bfae8803d5e57ae267b656be051721",
+      "budget": {
+        "falseNegativePassed": false,
+        "falsePositivePassed": false,
+        "maxFalseNegativeCount": 0,
+        "maxFalsePositiveCount": 0,
+        "passed": false,
+        "unusableReason": "eslint-plugin-vue reported 2 finding(s) with invalid source ranges",
+        "verdict": "unusable"
+      },
+      "falsePositiveCount": 102,
+      "falseNegativeCount": 99
+    },
+    {
+      "project": "habitica",
+      "repository": "https://github.com/HabitRPG/habitica",
+      "revision": "19b2ce531c3bb1c3f95a75388b1176b345cbbca2",
+      "path": "original-matrix-habitica.json.gz",
+      "sha256": "a4a644db0f056083fa346614bb60898e4f1ae8a670c5ad42c023447e96eb1d1c",
+      "bytes": 403884,
+      "uncompressedSha256": "df9e283f4af80e478b23c7d52d346fff76ea0bfdebf0a70f6439808019d3fbcb",
+      "uncompressedBytes": 10151153,
+      "sourceCommit": "9466fdbb90bfae8803d5e57ae267b656be051721",
+      "budget": {
+        "falseNegativePassed": false,
+        "falsePositivePassed": false,
+        "maxFalseNegativeCount": 0,
+        "maxFalsePositiveCount": 0,
+        "passed": false,
+        "unusableReason": "eslint-plugin-vue reported 24 finding(s) with invalid source ranges",
+        "verdict": "unusable"
+      },
+      "falsePositiveCount": 72,
+      "falseNegativeCount": 197
+    },
+    {
+      "project": "bootstrap-vue",
+      "repository": "https://github.com/bootstrap-vue/bootstrap-vue",
+      "revision": "9a246f45fc813f161df291fc7d6197febf8afaf4",
+      "path": "original-matrix-bootstrap-vue.json.gz",
+      "sha256": "fa6d3bfde7762e0381e9dc997093427d50f6bd10a4207cc4cca42d5e32f80c47",
+      "bytes": 31265,
+      "uncompressedSha256": "e98209aabd9d427991f5b33061a499c2bb65a77a18d1eed81e5a985e42c20761",
+      "uncompressedBytes": 750645,
+      "sourceCommit": "9466fdbb90bfae8803d5e57ae267b656be051721",
+      "budget": {
+        "falseNegativePassed": true,
+        "falsePositivePassed": false,
+        "maxFalseNegativeCount": 0,
+        "maxFalsePositiveCount": 0,
+        "passed": false,
+        "unusableReason": "eslint-plugin-vue reported 4 finding(s) with invalid source ranges",
+        "verdict": "unusable"
+      },
+      "falsePositiveCount": 3,
+      "falseNegativeCount": 0
+    },
+    {
+      "project": "vue-select",
+      "repository": "https://github.com/sagalbot/vue-select",
+      "revision": "35897ade99e750a452e67df3b38e156d0c1fff42",
+      "path": "original-matrix-vue-select.json.gz",
+      "sha256": "ff6e5a65d231048fa49f8bd2c6cde53bdac749b17f608893a3b1125e69af7531",
+      "bytes": 14703,
+      "uncompressedSha256": "1426239ce142b512fcd71534197d485e81ede1e4b4427f34ce697682c09b9f13",
+      "uncompressedBytes": 302667,
+      "sourceCommit": "9466fdbb90bfae8803d5e57ae267b656be051721",
+      "budget": {
+        "falseNegativePassed": false,
+        "falsePositivePassed": false,
+        "maxFalseNegativeCount": 0,
+        "maxFalsePositiveCount": 0,
+        "passed": false,
+        "unusableReason": "eslint-plugin-vue reported 2 finding(s) with invalid source ranges",
+        "verdict": "unusable"
+      },
+      "falsePositiveCount": 10,
+      "falseNegativeCount": 11
+    }
+  ]
+}
