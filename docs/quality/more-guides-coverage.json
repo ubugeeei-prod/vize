@@ -149,9 +149,9 @@
     },
     {
       "route": "/guide/lint-execution",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Configuration example present; purpose and next action still need review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "English purpose and descriptive CLI/cross-file next steps added; complete authored Japanese retains the full Vite+ example, every option and rule token, file-selection scope, explicit-off precedence and warning/default/invalid-limit boundaries. Native and stable deployed reading acceptance remain required."
     },
     {
       "route": "/guide/musea-capture",
