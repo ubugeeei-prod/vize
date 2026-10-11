@@ -70,10 +70,10 @@ mod tests {
     #[test]
     fn unknown_and_recursive_branches_do_not_become_partial_object_literals() {
         let aliases = FxHashMap::from_iter([
-            (cstr!("Cycle"), cstr!("Cycle | { known: string }")),
+            (cstr!("Cycle"), String::from("Cycle | { known: string }")),
             (
                 cstr!("Nested"),
-                cstr!("{ known: string } | (Missing | { enabled?: boolean })"),
+                String::from("{ known: string } | (Missing | { enabled?: boolean })"),
             ),
         ]);
         for expression in [
