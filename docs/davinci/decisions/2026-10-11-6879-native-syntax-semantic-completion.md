@@ -53,3 +53,9 @@ TS5102 packet remains retained and its existing option-probe policy is
 unchanged. This is the top dependent slice after quoted setup-anchor and JSX
 spread-root generator repairs. Source-built Actions, complete native controls,
 original full consumer qualification, protected merge and release are pending.
+
+## Required fixture preparation in Rust queue shards
+
+The original merge candidates `3ab0b1d78cbf34218014de06c013a2851f09d5b0` and `40a0c19f927e16fdebf0a94a704deee2dd602fd5` each ran 4,385 tests in shard 4: 4,384 passed and the full ElementPlus projection law refused before parsing. The unhydrated fixture directory made `git -C` observe the outer candidate repository instead of the required immutable ElementPlus commit `20298a21ae54a5417955373b80130ae7c548a6bb`. Both whole failed logs are retained; this is a preparation failure, not a native semantic verdict.
+
+The existing Rust shard workflow now hydrates only that exact Gitlink before the original merge-group nextest run. The entire ElementPlus test, authored sources, original producer projections, parser vectors, fixed pin, native requirement and all shard/archive/deadline controls stay unchanged. No package installation or Rust rebuild is added. The original failing test provides the before control; actual new Actions and the composed full App/native acceptance remain required.

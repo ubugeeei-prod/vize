@@ -239,6 +239,9 @@ jobs:
           path: .artifacts/rust-test-archive
       - name: Verify Rust archive identity
         run: node tools/support/compat/github/rust-test-archive.mjs verify .artifacts/rust-test-archive/tests.tar.zst .artifacts/rust-test-archive/receipt.json
+      - name: Hydrate the required ElementPlus projection fixture
+        if: ${{ github.event_name == 'merge_group' }}
+        run: git submodule update --init --depth 1 -- tests/_fixtures/_git/element-plus
       - name: Prepare required typechecker observations
         if: ${{ github.event_name == 'merge_group' }}
         run: |
