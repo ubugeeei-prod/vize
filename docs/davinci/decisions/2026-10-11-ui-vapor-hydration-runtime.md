@@ -62,19 +62,53 @@ failed DOM assertion remains fatal unless already present in the original
 ledger. No new failure exemptions or expanded budgets are permitted.
 
 The original server lane checks rendering success; it does not invoke each
-fixture's `assertServerMarkup`. A separate local diagnostic applying that
-additional oracle exposed failures for `icon`, `icon-button`,
-`media-player-time-display`, `scrubber-preview-time`, `signature-pad-canvas`,
-`webcam-capture-start-button` and `webcam-capture-shutter`. TODO: reproduce
-and repair those server-markup gaps before making that additional oracle a
-required whole-corpus gate. They are not new ledger exemptions. The added
-minimal regression already compares complete native and official SSR output.
+fixture's `assertServerMarkup`. A separate local diagnostic with published
+native 0.443 exposed prop loss in `icon` and `icon-button` under both providers:
+the icon lost its accessible title/description and the button lost its ARIA
+label. Official Vue compilation preserves those props. The rc.11
+provider additionally fails four old assertions solely because of its new
+fallback comment markers: `media-player-time-display`, `scrubber-preview-time`,
+`webcam-capture-start-button` and `webcam-capture-shutter`. TODO: confirm the
+two candidate defects against the current source and repair them; qualify
+the additional server-markup oracle for the real provider's marker contract
+while retaining its existing content assertions and original reference
+coverage. These observations create no ledger exemptions. The added minimal
+regression already compares complete native and official SSR output.
+
+`signature-pad-canvas` also fails the existing uppercase `viewBox` regex with
+both native and official Vue SSR, which emit lowercase `viewbox`. HTML parsing
+[adjusts that SVG attribute to `viewBox`](https://html.spec.whatwg.org/multipage/parsing.html#adjust-svg-attributes).
+Do not classify this as a native rendering defect from raw spelling alone;
+retain the original assertion until its byte and browser semantics are
+qualified independently. The official full-corpus diagnostic also exposes
+literal-tag assertions that reject scoped slot attributes in `masonry`,
+`master-detail`, `responsive-show` and `visually-hidden`. These observations
+describe additional oracle work, not permission to weaken existing checks.
 
 Local execution with published native 0.443 and the existing 527-fixture main
 corpus observed SSR 527 passing, mount 502 passing / 25 remaining failures,
 and hydration 479 passing / 48 remaining failures with same-version rc.11
 providers. This is diagnosis, not current-source Actions or protected queue
-credit. Remove only ledger entries genuinely passing in exact-source Actions.
-Replay all 529 fixtures after #8553 and all 533 after #8555; retain the four
-finite-range fixtures as required successes in the supported lane. Actual
-merge and a release containing the changes remain required.
+credit.
+
+The source-built UI job in
+[Actions 38107550411](https://github.com/ubugeeei-prod/vize/actions/runs/38107550411/job/114376553931),
+at PR head `c3ee6f2dc96d6442421fa559bd5efa2805434e8f`, confirmed those same
+527-fixture counts and the complete twelve-cell minimal regression. It failed
+solely because 149 rows now passed while still listed in the supported ledger.
+Those rows represent 145 distinct entries: 35 mount and 110 hydration entries.
+The summary records every remaining failure name; none overlaps a newly passing
+name, including duplicate fixture names. This change removes only that exact
+source-proven subset and preserves every remaining reason and the byte-exact
+original reference ledger.
+
+| Supported lane | Passing rows | Original known entries | Retained known entries |
+| -------------- | -----------: | ---------------------: | ---------------------: |
+| SSR            |          527 |                      0 |                      0 |
+| Mount          |          502 |                     60 |                     25 |
+| Hydration      |          479 |                    158 |                     48 |
+
+The stale-ledger diagnostic does not make the overall Check run green. Replay
+all 529 fixtures after #8553 and all 533 after #8555; retain the four finite-range
+fixtures as required successes in the supported lane. Actual merge and a release
+containing the changes remain required.
