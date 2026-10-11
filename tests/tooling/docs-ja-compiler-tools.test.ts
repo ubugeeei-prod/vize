@@ -71,8 +71,12 @@ void test("reviewed JSX guidance keeps fresh defaults, dedicated compatibility a
   assert.match(japanese, /専用設定がある場合、`typeChecker\.jsxTypecheck`[^\n]*`false`/);
   assert.match(japanese, /既定値のリリース検証は未完了/);
   assert.match(japanese, /エディターでも Vue JSX の型チェックを明示的に無効/);
-  assert.doesNotMatch(japanese, /JSX\/TSX の型チェック[^\n]*(?:デフォルト|既定値)は \*\*`false`\*\*/);
-  const reactPolicy = "https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/decisions/2026-10-10-fresh-lsp-capability-policy.md#react-owned-projects";
+  assert.doesNotMatch(
+    japanese,
+    /JSX\/TSX の型チェック[^\n]*(?:デフォルト|既定値)は \*\*`false`\*\*/,
+  );
+  const reactPolicy =
+    "https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/decisions/2026-10-10-fresh-lsp-capability-policy.md#react-owned-projects";
   assert.ok(japanese.includes(reactPolicy));
   assert.ok(english.includes(reactPolicy));
 });
