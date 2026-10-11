@@ -67,7 +67,7 @@ void test("worker ptrace is explicit manual-only and every original gate stays u
     "set debuginfod enabled off",
     "set print frame-arguments none",
     "set print entry-values no",
-    "handle SIGSEGV stop noprint pass",
+    "handle SIGSEGV stop print pass",
   ])
     assert.ok(debuggerSource.includes(command));
 });

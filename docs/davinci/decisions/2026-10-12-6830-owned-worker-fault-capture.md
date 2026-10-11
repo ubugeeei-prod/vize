@@ -51,6 +51,10 @@ for its actual stopped state and recheck the complete actor before attaching.
 GDB independently opens and verifies a pidfd and the same private actor before
 and after its numeric attach. Disable autoload and debuginfod, omit frame
 arguments and entry values, trace only this inferior, and stop/pass SIGSEGV.
+The [official signal policy](https://sourceware.org/gdb/current/onlinedocs/gdb.html/Signals.html)
+defines `noprint` as implying `nostop`; use `stop print pass` and verify the
+actual bounded `info signals SIGSEGV` row before attaching. Missing or changed
+stop/pass evidence refuses attachment. Printed startup remains excluded.
 Publish bounded marked backtraces, registers and library identities; hash actual
 executable mappings/providers before attachment and at the stopped fault before
 continuing the original signal. No raw core, environment, argv, startup output,

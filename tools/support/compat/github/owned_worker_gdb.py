@@ -81,6 +81,21 @@ def cleanup_interrupt(pending_signal):
         return False
 
 
+def configure():
+    for setting in ["set pagination off", "set confirm off", "set auto-load off",
+                    "set debuginfod enabled off", "set print frame-arguments none",
+                    "set print entry-values no", "set follow-fork-mode parent",
+                    "set detach-on-fork on", "handle SIGSEGV stop print pass",
+                    "handle SIGSTOP nostop noprint nopass"]:
+        gdb.execute(setting, to_string=True)
+    text = gdb.execute("info signals SIGSEGV", to_string=True)
+    rows = [line.split() for line in text.splitlines() if line.split()[:1] == ["SIGSEGV"]]
+    if len(text.encode()) > 8192 or len(rows) != 1 or rows[0][1:4] != ["Yes", "Yes", "Yes"]:
+        raise ValueError("Actual debugger SIGSEGV stop/pass policy differs")
+    publish({"status": "debugger-phase", "phase": "signal-policy-verified",
+             "sigsegvStop": True, "sigsegvPass": True})
+
+
 def run(config):
     attached = False
     pending_signal = None
@@ -94,6 +109,7 @@ def run(config):
     gdb.events.exited.connect(exit_event)
     owned_fd = None
     try:
+        configure()
         if not same_birth(state(config["worker"]["actor"]["pid"]), config["worker"]["actor"]):
             raise ValueError("Worker birth changed before opening GDB pidfd")
         owned_fd = os.pidfd_open(config["worker"]["actor"]["pid"])
@@ -169,10 +185,4 @@ def run(config):
 
 if __name__ == "__main__":
     publish({"status": "debugger-phase", "phase": "script-started"})
-    for setting in ["set pagination off", "set confirm off", "set auto-load off",
-                    "set debuginfod enabled off", "set print frame-arguments none",
-                    "set print entry-values no", "set follow-fork-mode parent",
-                    "set detach-on-fork on", "handle SIGSEGV stop noprint pass",
-                    "handle SIGSTOP nostop noprint nopass"]:
-        gdb.execute(setting, to_string=True)
     run(json.loads(Path(__file__).with_name("attach-private.json").read_text()))

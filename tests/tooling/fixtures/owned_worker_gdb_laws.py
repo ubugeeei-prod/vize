@@ -36,6 +36,7 @@ class FakeGDB:
     SignalEvent = SignalEvent
     def __init__(self, mode):
         self.mode, self.commands, self.text, self.continues = mode, [], [], 0
+        self.policy = {"stop": True, "print": True, "pass": True}
         self.events = types.SimpleNamespace(stop=Event(), exited=Event())
         def thread(number):
             actor = types.SimpleNamespace(num=number, ptid=(123, number, 0))
@@ -60,7 +61,17 @@ class FakeGDB:
                 "$_siginfo._sifields._kill.si_uid": os.getuid()}[expression]
     def execute(self, command, to_string=False):
         self.commands.append(command)
-        if command.startswith("attach "):
+        if command.startswith("handle SIGSEGV "):
+            for word in command.split()[2:]:
+                if word == "stop": self.policy.update(stop=True, print=True)
+                elif word == "noprint": self.policy.update(stop=False, print=False)
+                elif word == "print": self.policy["print"] = True
+                elif word == "pass": self.policy["pass"] = True
+        elif command == "info signals SIGSEGV":
+            flags = ["Yes" if self.policy[key] else "No" for key in ["stop", "print", "pass"]]
+            if self.mode == "policy-refusal": flags[0] = "No"
+            return "Signal Stop Print Pass to program Description\nSIGSEGV " + " ".join(flags) + " Segmentation fault\n"
+        elif command.startswith("attach "):
             self.inferior.pid = int(command.split()[1])
             if self.mode == "partial-attach-failure": raise RuntimeError("private startup arguments")
         elif command == "continue":
@@ -115,7 +126,7 @@ class GDBLaws(unittest.TestCase):
 
     def test_exact_owned_fault_is_marked_and_original_segv_is_passed(self):
         adapter, packets, signals, closed = self.run_fixture("fault")
-        self.assertEqual([packet["status"] for packet in packets], ["attached", "SIGSEGV", "exited"])
+        self.assertEqual([packet["status"] for packet in packets if packet["status"] != "debugger-phase"], ["attached", "SIGSEGV", "exited"])
         self.assertEqual(adapter.commands.count("continue"), 2)
         fault = next(packet for packet in packets if packet["status"] == "SIGSEGV")
         self.assertEqual(fault["faultingThread"]["number"], 7)
@@ -129,7 +140,7 @@ class GDBLaws(unittest.TestCase):
             adapter, packets, signals, closed = self.run_fixture("fault", match=match, birth=birth)
             self.assertFalse(any(command.startswith("attach ") for command in adapter.commands))
             self.assertFalse(any(sig == signal.SIGCONT for fd, sig in signals))
-            self.assertEqual(packets[0]["status"], "unavailable")
+            self.assertEqual(packets[-1]["status"], "unavailable")
 
     def test_partial_attach_failure_and_cancellation_attempt_detach(self):
         for mode in ["partial-attach-failure", "cancel"]:
@@ -153,7 +164,7 @@ class GDBLaws(unittest.TestCase):
         self.assertIn("signal SIGTERM", adapter.commands)
         self.assertNotIn("SIGSEGV", [packet["status"] for packet in packets])
         adapter, packets, signals, closed = self.run_fixture("normal")
-        self.assertEqual([packet["status"] for packet in packets], ["attached", "exited"])
+        self.assertEqual([packet["status"] for packet in packets if packet["status"] != "debugger-phase"], ["attached", "exited"])
         self.assertEqual(adapter.commands.count("continue"), 1)
 
     def test_only_proven_diagnostic_interrupt_is_discarded_before_detach(self):
@@ -171,6 +182,16 @@ class GDBLaws(unittest.TestCase):
         self.assertIn("signal SIGINT", adapter.commands)
         self.assertTrue(any(packet.get("gap") == "InterruptOriginValueError" for packet in packets))
         self.assertNotIn("private siginfo expression", json.dumps(packets))
+
+    def test_noprint_implies_nostop_and_actual_policy_must_refuse_before_attach(self):
+        adapter = FakeGDB("fault")
+        adapter.execute("handle SIGSEGV stop noprint pass")
+        self.assertFalse(adapter.policy["stop"])
+        adapter, packets, signals, closed = self.run_fixture("policy-refusal")
+        self.assertFalse(any(command.startswith("attach ") for command in adapter.commands))
+        self.assertEqual(signals, [])
+        self.assertEqual(closed, [])
+        self.assertTrue(any(packet.get("gap") == "ValueError" for packet in packets))
 
 
 if __name__ == "__main__":
