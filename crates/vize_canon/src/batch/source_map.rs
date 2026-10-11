@@ -71,7 +71,6 @@ pub fn line_col_to_offset(content: &str, line: u32, col: u32) -> Option<u32> {
 }
 
 #[cfg(test)]
-#[path = "source_map/native_coordinate_tests.rs"]
 mod native_coordinate_tests;
 
 #[cfg(test)]
