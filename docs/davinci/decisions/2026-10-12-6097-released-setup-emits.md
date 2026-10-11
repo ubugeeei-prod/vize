@@ -55,6 +55,18 @@ in its own packet. Reauthenticate the official release/assets and actual merge
 ancestry after all 357 observations. No workspace binary or source build supplies
 installed evidence.
 
+Read-only peer review found a false refusal in the raw pre/post asset-array
+comparison: downloading an unchanged asset can update `download_count` and
+`updated_at`. Whole merged-PR metadata is also mutable. Preserve all raw API
+responses and both complete authenticated receipts, then compare stable
+custody: asset ID/name/size/digest/state/API and download URLs/content type;
+release ID/tag/publication/URLs; annotated tag, source H/repositories, terminal
+Release attempt and jobs, H tree/parents, and actual fix merge/repositories/
+ancestry. Asset ordering, counters, labels and PR discussion metadata are not
+byte identity. This same bounded final-observation correction serves the
+existing 392 entry point and the new 357 entry point. Fresh authentication,
+loaded-byte guards, original vectors, packet loop and all denominators remain.
+
 ## Verification and unfinished delivery
 
 Source laws reject seven full-vector mutations (source, severity, range, compiler
@@ -64,6 +76,14 @@ substitutions. The existing 392 original/custody/loaded-byte/raw-packet/workflow
 laws remain mandatory. The new manual workflow conserves the exact existing
 shell guard and resolved step-scoped consumer paths, while using a distinct
 main entry point and evidence directory.
+
+Two additional source laws reproduce the raw mutable-metadata refusal, accept
+the same stable identities after download-counter/discussion updates, and
+reject 24 changed asset/release/tag/source/run/job/tree/typed-fix authorities
+plus six changed actual-fix/ancestry authorities. These inert laws do not
+observe a public binary. Independent peer comparison confirms all 357 wrapper
+vectors and 55 source hashes equal the qualified original source receipt;
+the shared packet loop and original 392 assertions remain exact.
 
 Source-only refusal laws are not public runtime acceptance. The failed 0.446
 preflight, historical source green or older 392 observer do not qualify this

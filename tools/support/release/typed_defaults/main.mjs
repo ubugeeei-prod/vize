@@ -7,6 +7,7 @@ import { authenticate, consumerPaths, githubReader, optionsFrom, sha256 } from "
 import { acquireDistribution, assertLoadedBinary } from "./distribution.mjs";
 import { loadFixtures } from "./fixtures.mjs";
 import { observe } from "./observe.mjs";
+import { assertStableFix, assertStableOfficial } from "./post_observation.mjs";
 import { originalContracts, originalObservers, originalScenarios } from "./contracts.mjs";
 import {
   authenticateReturnFix,
@@ -104,14 +105,11 @@ try {
   receipt.observations = observe(fixtures, distribution, consumer, output);
   const final = await authenticate(options, json);
   const finalReturnFix = await authenticateReturnFix(options.head, json);
-  assert.deepEqual(finalReturnFix, receipt.returnFix);
-  assert.equal(final.releaseRun.run_attempt, official.releaseRun.run_attempt);
-  assert.equal(final.release.id, official.release.id);
-  assert.deepEqual(
-    final.release.assets,
-    official.release.assets,
-    "official assets changed during public observation",
-  );
+  receipt.finalOfficial = final;
+  receipt.finalReturnFix = finalReturnFix;
+  persist();
+  assertStableFix(receipt.returnFix, finalReturnFix);
+  assertStableOfficial(official, final);
   assertLoadedBinary(distribution.member.binary, distribution.member, consumer);
   receipt.completedAt = new Date().toISOString();
   receipt.success = true;

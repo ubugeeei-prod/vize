@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { authenticate, consumerPaths, githubReader, optionsFrom, sha256 } from "./custody.mjs";
 import { acquireDistribution, assertLoadedBinary } from "./distribution.mjs";
 import { observePackets } from "./observe.mjs";
+import { assertStableFix, assertStableOfficial } from "./post_observation.mjs";
 import {
   authenticateSetupFix,
   loadSetupFixtures,
@@ -97,14 +98,11 @@ try {
   assert(receipt.observations.every((entry) => entry.suite === "setup"));
   const final = await authenticate(options, json);
   const finalSetupFix = await authenticateSetupFix(options.head, json);
-  assert.deepEqual(finalSetupFix, receipt.setupFix);
-  assert.equal(final.releaseRun.run_attempt, official.releaseRun.run_attempt);
-  assert.equal(final.release.id, official.release.id);
-  assert.deepEqual(
-    final.release.assets,
-    official.release.assets,
-    "official assets changed during public observation",
-  );
+  receipt.finalOfficial = final;
+  receipt.finalSetupFix = finalSetupFix;
+  persist();
+  assertStableFix(receipt.setupFix, finalSetupFix);
+  assertStableOfficial(official, final);
   assertLoadedBinary(distribution.member.binary, distribution.member, consumer);
   receipt.completedAt = new Date().toISOString();
   receipt.success = true;
