@@ -64,9 +64,9 @@ fn public_virtual_project_mapping_keeps_actual_cr_and_utf16_positions() {
         project.map_to_virtual(&path, 1, 15),
         Some((virtual_path.clone(), 1, 15))
     );
-    assert_eq!(project.map_to_original(&virtual_path, 0, 16), None);
+    assert!(project.map_to_original(&virtual_path, 0, 16).is_none());
     assert_eq!(project.map_to_virtual(&path, 0, 16), None);
-    assert_eq!(project.map_to_original(&virtual_path, 3, 0), None);
+    assert!(project.map_to_original(&virtual_path, 3, 0).is_none());
     assert_eq!(project.map_to_virtual(&path, 3, 0), None);
     assert_eq!(legacy_lf_offset(source, 1, 15), None);
 }

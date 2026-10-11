@@ -119,3 +119,11 @@ A test-only accessor returns both actual materialized root and actual generated
 config path from the existing project, avoiding guessed root config names.
 Preparation is not source/native acceptance; fresh combined Actions remains
 required and no projection snapshot or upstream baseline is changed here.
+
+### Actual source compilation correction
+
+The exact-source Rust gate at `59f6d6f63c` rejected two refusal assertions because
+`Option<OriginalPosition>` does not implement the equality required by
+`assert_eq!(..., None)`. Use `is_none()` for the same invalid UTF-16 and
+out-of-range positions. Product code, coordinates and complete diagnostic
+expectations remain unchanged; the failed job `114456639491` is preserved.
