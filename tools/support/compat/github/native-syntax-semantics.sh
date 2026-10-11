@@ -4,7 +4,7 @@ set -euo pipefail
 if [[ "$GITHUB_EVENT_NAME" != pull_request ]]; then exit 0; fi
 unset VIZE_TEST_DISABLE_TSGO
 export VIZE_TEST_REQUIRE_TSGO=1
-export VIZE_NATIVE_SYNTAX_CAPTURE_DIR="$RUNNER_TEMP/config-scoped-vue-helpers/native-transport-refusal"
+export VIZE_NATIVE_SYNTAX_CAPTURE_DIR="$RUNNER_TEMP/native-source-recipe-transport-refusal"
 cd "$NATIVE_PHASE_SOURCE_ROOT"
 git submodule update --init --depth 1 -- tests/_fixtures/_git/element-plus
 cargo test --locked --profile ci-opt -p vize_canon --test native_syntax_semantics \

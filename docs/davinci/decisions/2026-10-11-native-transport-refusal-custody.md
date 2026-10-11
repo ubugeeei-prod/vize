@@ -24,8 +24,9 @@ semantic pair and pinned Element Plus control remain required.
 PR native phases run the complete `native_syntax_semantics` integration suite
 with required native execution before the existing source CLI/editor controls,
 using the same `ci-opt` build profile and dependencies. Its complete packets
-join the existing config-scoped Vue helper artifact directory, whose existing
-packer retains and verifies every recursive member. No gate, fixture, budget,
+occupy the dedicated `native-source-recipe-transport-refusal` directory, whose
+existing `native-source-recipe*` artifact glob retains every recursive member.
+No gate, fixture, budget,
 timeout or original source recipe is removed or relaxed.
 
 Hosted exact-head source/native qualification and actual protected merge are
@@ -41,3 +42,11 @@ the exact `20298a21` pin/source/config checks remain intact. Its source-plan
 gate also retained the shifted Carton-use line in the generated inventory;
 regenerating only that row preserves the same dependency classification.
 Fresh complete exact-head Actions remain required.
+
+The `ba1d928` source passed all four native laws and the original CLI/editor
+runtime tests, then correctly failed the Vue helper's exact six-case receipt
+because the new capture directory shared that original case namespace. Move
+only the new evidence to the dedicated wildcard-selected sibling directory;
+the six original cases, receipt and all diagnostic/projection oracles remain
+unchanged. The immutable artifact collector must retain all whole new packets
+from this location, and fresh complete Actions remain required.
