@@ -88,9 +88,32 @@ Rust re-export declarations. Correct only their formatting and retain this
 failed head. The superseded full-38 dispatch 38151728085 is canceled before
 qualification; a fresh dispatch must authenticate the corrected final head.
 
+Corrected source `7ef568265c28e6090376407f1e797defd1dbe070` passes source
+Check 38151949747, actual CLI phases 38151949697 and the complete unchanged
+VueFes qualifier 38151964793. All 19 development and 19 production-preview
+routes pass. Retained receipts authenticate the clean source before building,
+the single native artifact, full SSR/DOM/hydration equality and the negative
+missing-style-edge control.
+
+The first protected prefix then exposes a genuine composition failure:
+candidate `ef240c6755fcd889148aa5affe797ff4687ddb55` fails the original Photo
+compiler packet after the independently qualified Vapor root repair. The
+parent owns an explicit successor for two nested-component flags in four
+Vapor/Nuxt/map coordinates; the original packet and every other field remain
+fixed. The child also conflicts in this foundation and the generated Croquis
+consumer table. Dequeuing the parent clears both native Stack entries, avoiding
+a stalled prefix. Replay onto actual merged `main`, preserve every CSS product
+and original corpus byte, union the complete incoming foundation within its
+350-row ceiling, regenerate canonical references from the composed source,
+and require new exact-head source Actions and the unchanged full-38 qualifier.
+The earlier successful source and failed queue candidates remain historical
+evidence; neither qualifies the successor.
+
 Exact final-head Actions, the combined original full-38 qualifier with every
 existing case/retry/ceiling unchanged, the protected Stack prefix, actual merge
 and a later included official release remain required. No failed parent is
 queued independently and no published consumer acceptance is inferred from
-these source controls. Third-party #8631 and #8623 remain open until their
-separate fresh installed-public oracles pass on an authenticated included cut.
+these source controls. Third-party #8631 and #8623 delivery remains pending
+until their separate fresh installed-public oracles pass on an authenticated
+included cut. GitHub already closed #8623 through its source merge lifecycle;
+that closure does not establish installed release acceptance.
