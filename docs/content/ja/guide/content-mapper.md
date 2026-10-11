@@ -16,6 +16,8 @@ Content Mapper は、TypeScript が直接解析できない種類のファイル
 [microsoft/typescript-go#4712](https://github.com/microsoft/typescript-go/pull/4712) で
 マージされました。この開発用リポジトリは現在アーカイブされており、ネイティブ TypeScript の
 開発は [microsoft/TypeScript](https://github.com/microsoft/TypeScript) で続いています。
+[Content Mapper の準拠性検証ワークフロー](https://github.com/ubugeeei-prod/vize/blob/main/.github/workflows/content-mapper-conformance.yml)
+で、このページに示すホストの正確な取得方法とビルド手順を確認できます。
 
 Vize の Content Mapper は `vize` npm パッケージに同梱されています。対応する `tsgo` が
 `vize content-mapper` を起動して `.vue` ファイルを直接検査します。ホバー、定義への移動、
@@ -53,9 +55,8 @@ vp install -D vize
 
 外部マッパーの実行には明示的な許可が必要です。次のコマンドは、Vize の準拠性検証で
 `tsgo` という名前にしている Content Mapper 対応バイナリを使います。検証ワークフローは
-現在のネイティブコンパイラーのエントリーポイント `tsc/cmd/tsc` をビルドします。
-この名前は、古い `@typescript/native-preview` パッケージや、公開済みのすべての `tsc` が
-マッパー API に対応していることを意味しません。
+現在のネイティブコンパイラーのエントリーポイント `tsc/cmd/tsc` を、このページで示す
+正確なリビジョンからビルドします。
 
 ```bash
 tsgo --runExternalCode --noEmit -p tsconfig.json
@@ -142,5 +143,5 @@ Vize は現在の Content Mapper の初期化仕様に従います。番号つ�
   [microsoft/typescript-go#4860](https://github.com/microsoft/typescript-go/issues/4860)
   は、第2段階の変更で完了しています。Vize は検証対象のホストでマップの出力と
   パックした利用側からの移動を確認しています。他のホストは、それぞれ動作確認が必要です。
-- 本番の型チェックでは、引き続き `vize check` がサポート対象です。上流でのマージだけで、
-  インストールしたパッケージやエディターの動作確認を済ませたとは扱いません。
+- 本番の型チェックでは、引き続き `vize check` がサポート対象です。マッパーを使う前に、
+  インストールしたホストとエディターがこの連携に対応していることを確認してください。

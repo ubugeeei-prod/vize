@@ -49,3 +49,9 @@ provider, package, editor, workflow, conformance oracle or upstream file is
 changed. This slice requires exact-source Actions, the original full Docs,
 protected actual merge and native public desktop/mobile reading acceptance.
 The whole Japanese and More guides issues remain open.
+
+The first source Actions run rejects naming the retired native-preview
+package in published guidance, even as a negative example. Preserve the
+existing package-runtime guard and describe only the actual pinned native
+entrypoint and binary name in both guides. All five whole recipes and
+destinations remain exact; fresh source qualification is required.
