@@ -80,6 +80,41 @@ pub(super) fn combine(
     }
 }
 
+/// Vue merges the public keys of each union branch. A shared key is optional
+/// when either authored declaration is optional; branch-local keys retain
+/// their authored optionality, matching the macro compiler's runtime contract.
+pub(super) fn combine_union(output: &mut ScopedTypeProperties, additions: ScopedTypeProperties) {
+    output.complete &= additions.complete;
+    for prop in additions.properties {
+        if let Some(previous) = output
+            .properties
+            .iter_mut()
+            .find(|previous| previous.name == prop.name)
+        {
+            previous.optional |= prop.optional;
+            // A single textual member cannot own two lexical scopes. Retain
+            // the public key but never resolve foreign aliases in the first
+            // branch's module or in the root SFC.
+            if previous.module != prop.module {
+                output.complete = false;
+                previous.prop_type = None;
+            } else if previous.prop_type != prop.prop_type {
+                match (&previous.prop_type, &prop.prop_type) {
+                    (Some(left), Some(right)) => {
+                        previous.prop_type = Some(cstr!("({left}) | ({right})"));
+                    }
+                    _ => {
+                        output.complete = false;
+                        previous.prop_type = None;
+                    }
+                }
+            }
+        } else {
+            output.properties.push(prop);
+        }
+    }
+}
+
 pub(super) fn parameters(parameters: Option<&str>) -> FxHashSet<CompactString> {
     let Some(parameters) = parameters else {
         return FxHashSet::default();

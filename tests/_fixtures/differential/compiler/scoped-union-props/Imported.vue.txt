@@ -1,0 +1,5 @@
+<script setup lang="ts">
+import type { Props } from "./Props";
+defineProps<Props>();
+</script>
+<template><button :aria-label="ariaLabel" :data-enabled="enabled" :data-decorative="decorative">{{ title }}</button></template>

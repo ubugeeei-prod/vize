@@ -1,0 +1,11 @@
+<script setup lang="ts">
+interface Props {
+  id?: string;
+  decorative?: boolean;
+  enabled?: boolean;
+  title?: string;
+  ariaLabel?: string;
+}
+defineProps<Props>();
+</script>
+<template><button :aria-label="ariaLabel" :data-enabled="enabled" :data-decorative="decorative">{{ title }}</button></template>

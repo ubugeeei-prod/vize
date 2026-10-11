@@ -1,0 +1,5 @@
+type Base = { id?: string };
+export type Props = Base & (
+  | { decorative?: true; enabled?: true; title?: never; ariaLabel?: never }
+  | { decorative?: false; enabled?: false; title: string; ariaLabel: string }
+);

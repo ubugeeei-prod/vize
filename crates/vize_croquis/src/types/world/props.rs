@@ -86,6 +86,19 @@ impl ResolvedTypeWorld {
                 }
                 output
             }
+            TSType::TSUnionType(union) => {
+                let mut output = ScopedTypeProperties {
+                    complete: true,
+                    ..ScopedTypeProperties::default()
+                };
+                for part in &union.types {
+                    helpers::combine_union(
+                        &mut output,
+                        self.properties_ast(module, source, part, bound, visiting),
+                    );
+                }
+                output
+            }
             TSType::TSTypeReference(reference) => {
                 let name = helpers::text(source, reference.type_name.span());
                 if bound.contains(&name) {
