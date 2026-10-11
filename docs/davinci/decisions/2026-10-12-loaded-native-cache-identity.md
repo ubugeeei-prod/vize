@@ -200,3 +200,24 @@ browser-assertion controls and all four actual OS reload cases. Preserve the
 ordinary healthy cross-process fourteen-module restore. No local duplicate
 native builder is authorized for this qualification. Source Actions, exact
 protected integration, actual merge and public acceptance remain pending.
+
+### Actual selected image and missing producer receipt
+
+Selected source `9c1acd36e2e2b6484f553c248931021cfb2cd2be`, run
+`38182345080`, attempt 1, passes all three real full-package Moon laws before
+the existing CLI/native builds. Artifact `11718247253` has complete ZIP SHA-256
+`34dbd8080f81e0c4e7cf2ac68d0a536fd10125631c97467cdac678db5bc84040`.
+The uploader excludes the hidden producer JSON despite a successful capture
+step; preserve the original strict authentication failure. Future explicit
+uploads include hidden files only from the existing finite path list.
+
+An independent local observer authenticates every member CRC and complete
+native body, actual getter token, unchanged generated JavaScript/helpers and
+genuine source bindings against the successful run and ZIP. This is distinct
+observer authority; the absent Actions producer JSON is never reconstructed or
+claimed available. The partial embedded plugin-host revision corroborates
+`9c1` but cannot establish full image authority. Preserve raw generated and
+committed declarations and their complete difference independently. Reuse this
+one actual image; source-only successors retain their separate exact Actions
+requirements. Frozen fourteen-module/154-entry/eleven-assertion and four actual
+OS reload controls remain pending. No duplicate native builder is required.

@@ -129,6 +129,7 @@ jobs:
         with:
           name: native-image-${{ github.sha }}-${{ matrix.target }}-${{ github.run_attempt }}
           if-no-files-found: error
+          include-hidden-files: true
           path: |
             npm/native/*.node
             npm/native/index.js

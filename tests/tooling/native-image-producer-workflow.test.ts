@@ -15,7 +15,13 @@ const original = fs.readFileSync(
 );
 type Job = {
   if?: string;
-  steps: Array<{ name?: string; run?: string; uses?: string; "working-directory"?: string }>;
+  steps: Array<{
+    name?: string;
+    run?: string;
+    uses?: string;
+    "working-directory"?: string;
+    with?: Record<string, unknown>;
+  }>;
   [key: string]: unknown;
 };
 const before = parse(original.toString()) as {
@@ -73,4 +79,6 @@ test("the explicitly selected producer reuses every host step and is not full ma
   assert.equal(extra[0]["working-directory"], "tools/moon");
   assert.equal(extra[1].run, "node npm/native/scripts/native-build-receipt.mjs");
   assert.match(extra[2].uses ?? "", /^actions\/upload-artifact@/);
+  assert.equal(extra[2].with?.["include-hidden-files"], true);
+  assert.equal(extra[2].with?.["if-no-files-found"], "error");
 });
