@@ -2,7 +2,8 @@
 //!
 //! Native CLI commands still need to support `vize.config.ts` / `.mjs`. Rather
 //! than embed a JS runtime, the loader shells out to the local Node runtime,
-//! imports the config as ESM, calls function exports with the default env, and
+//! loads the config with the project's Vite bundle loader when installed,
+//! calls function exports with the default env, and
 //! returns JSON for Rust deserialization.
 
 use std::{
@@ -23,12 +24,11 @@ pub(super) fn parse_js_config(path: &Path) -> Result<ConfigDocument, Box<dyn std
     let config_path = config_path.canonicalize().unwrap_or(config_path);
     let script = [
         include_str!("vite-runtime.mjs"),
+        include_str!("module-runtime.mjs"),
         r#"
-import { pathToFileURL } from "node:url";
-
 const configPath = process.argv[1];
 console.log = (...args) => console.error(...args);
-const module = await import(pathToFileURL(configPath).href);
+const module = await importConfigModule(configPath);
 const exported = module.default ?? module;
 const config = isViteConfigFile(configPath)
   ? await resolveViteConfigExport(exported)
