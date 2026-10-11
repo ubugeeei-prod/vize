@@ -88,15 +88,18 @@ export function installedLspRuntime(output: string, planPath: string) {
     }
     assert.ok(wire.child.pid);
     const journal = fs.readFileSync(journalPath, "utf8");
+    const observation = capture();
+    assert.ok(observation.wire.exitStatus !== null, "actual installed LSP exit is required");
     validateNativeJournal(journal, {
       ...observer,
       node: authority.node.path,
       argv: [authority.node.path, authority.cli.binPath, "lsp"],
       pid: wire.child.pid,
-      status: 0,
+      status: observation.wire.exitStatus,
+      signal: observation.wire.signal,
+      error: observation.wire.processError ?? undefined,
       corsaPath: authority.bundledCorsa.path,
     });
-    const observation = capture();
     for (const stream of ["clientWireBase64", "serverWireBase64"] as const)
       decodeFrames(Buffer.from(observation.wire[stream], "base64"));
   };
