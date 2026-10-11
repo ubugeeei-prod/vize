@@ -7,8 +7,8 @@
     reason = "regressions retain complete original sources and runtime packets"
 )]
 
-#[path = "support/third_party_vapor.rs"]
-mod report;
+mod third_party_vapor;
+use third_party_vapor as report;
 
 #[test]
 fn reported_svg_branches_and_dynamic_class_style_match_locked_vue() {

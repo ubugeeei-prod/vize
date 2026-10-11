@@ -16,3 +16,11 @@ original fork PR Draft and source intact; carry the reviewed changes in small
 same-repository layers with credited original commits and squash through the
 protected merge queue. Exact Actions, actual merge and installed release
 verification remain required before reporting the issue complete.
+
+The first source plan failed the existing ordinary-module layout guard before
+executing Rust or runtime checks. Preserve the guard and move the complete shared
+report helper into `tests/third_party_vapor/mod.rs`, with an ordinary module
+declaration in the integration target. Every original input, runtime comparison
+and authored assertion remains unchanged. Native Stack #8638 orders #8634,
+#8635, #8636 and #8637; each repaired exact head and the protected candidate still
+require fresh Actions evidence.
