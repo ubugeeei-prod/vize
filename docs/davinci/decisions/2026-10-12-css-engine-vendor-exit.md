@@ -269,6 +269,10 @@ in both assertion-enabled and release qualification.
   maintainer's bounded pre-1.0 API migration choice before main-bound delivery.
 - Preserve the reviewed source provenance/licensing and inspect normalized package contents; verify both
   aliases are published before their consumers when publication is authorized.
+- The concrete publication plan orders `vize_parcel_sourcemap`, then
+  `vize_lightningcss`, before every consumer. Both new crate ownership and Trusted
+  Publishing bootstrap remain unverified; configuration grants no registry or
+  handoff credit and must be completed before an authorized publication.
 - Produce an actual isolated registry dependency graph with neither root patches
   nor workspace paths and no rkyv 0.7 route. Current local Cargo metadata and lock
   resolution are source graph evidence only and grant no published credit.
