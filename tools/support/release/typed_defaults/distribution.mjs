@@ -39,7 +39,7 @@ export function verifyAssets(assets, archive, checksum) {
 
 const loadedIdentities = new WeakMap();
 
-export function assertLoadedBinary(binary, receipt, consumer, forceHash = false) {
+export function assertLoadedBinary(binary, receipt, consumer) {
   const real = fs.realpathSync(binary);
   assert.equal(
     real,
@@ -54,16 +54,14 @@ export function assertLoadedBinary(binary, receipt, consumer, forceHash = false)
   const prior = loadedIdentities.get(receipt);
   if (prior)
     assert.deepEqual(identity, prior, "loaded public CLI identity changed during observation");
-  // Hash before the first execution and again at completion. Between invocations,
-  // inode and nanosecond change times prevent silently swapping or rewriting it.
-  if (!prior || forceHash) {
-    assert.equal(
-      sha256(fs.readFileSync(binary)),
-      receipt.sha256,
-      "loaded public CLI bytes differ from archived member",
-    );
-    loadedIdentities.set(receipt, identity);
-  }
+  // Filesystem timestamps can collide during same-size rewrites. Every consumer
+  // boundary must verify the complete bytes, even when all metadata is unchanged.
+  assert.equal(
+    sha256(fs.readFileSync(binary)),
+    receipt.sha256,
+    "loaded public CLI identity changed: bytes differ from archived member",
+  );
+  if (!prior) loadedIdentities.set(receipt, identity);
 }
 
 export async function acquireDistribution(release, tag, consumer) {

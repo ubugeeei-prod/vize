@@ -63,6 +63,7 @@ try {
   const distribution = await acquireDistribution(official.release, options.tag, consumer);
   receipt.distribution = distribution;
   persist();
+  assertLoadedBinary(distribution.member.binary, distribution.member, consumer);
   const version = spawnSync(distribution.member.binary, ["--version"], {
     cwd: consumer,
     timeout: 60_000,
@@ -84,6 +85,7 @@ try {
     error: version.error ? String(version.error) : null,
   };
   persist();
+  assertLoadedBinary(distribution.member.binary, distribution.member, consumer);
   assert.equal(version.error, undefined);
   assert.equal(version.signal, null);
   assert.equal(version.status, 0);
@@ -98,7 +100,7 @@ try {
     official.release.assets,
     "official assets changed during public observation",
   );
-  assertLoadedBinary(distribution.member.binary, distribution.member, consumer, true);
+  assertLoadedBinary(distribution.member.binary, distribution.member, consumer);
   receipt.completedAt = new Date().toISOString();
   receipt.success = true;
   receipt.evidence =

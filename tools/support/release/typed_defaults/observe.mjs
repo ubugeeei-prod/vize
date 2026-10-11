@@ -90,7 +90,7 @@ export function observe(fixtures, distribution, consumer, output) {
   }
   assert.equal(observations.length, 280);
   assert.equal(observations.filter((entry) => entry.suite === "typed").length, 56);
-  assertLoadedBinary(distribution.member.binary, distribution.member, consumer, true);
+  assertLoadedBinary(distribution.member.binary, distribution.member, consumer);
   assert(
     observations.every((entry) => entry.passed),
     "original whole public CLI expectations failed; inspect every retained packet",
