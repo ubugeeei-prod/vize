@@ -15,6 +15,8 @@ import { domInteractionExamples } from "../../../npm/ui/scripts/reference-docs/d
 import { exerciseDomExample } from "./interactions-dom.ts";
 import { observedBrowserExamples } from "../../../npm/ui/scripts/reference-docs/observed-browser-examples.ts";
 import { exerciseObservedBrowserExample } from "./interactions-observed-browser.ts";
+import { scopedInputExamples } from "../../../npm/ui/scripts/reference-docs/scoped-input-examples.ts";
+import { exerciseScopedInputExample } from "./interactions-scoped-input.ts";
 import { verifyUnavailableStorage } from "./capture-unavailable-storage.ts";
 
 async function activate(page: Page, label: string): Promise<void> {
@@ -33,6 +35,8 @@ async function exercise(page: Page, name: string): Promise<string[]> {
     return exerciseDomExample(page, name);
   if (observedBrowserExamples.some((example) => example.name === name))
     return exerciseObservedBrowserExample(page, name);
+  if (scopedInputExamples.some((example) => example.name === name))
+    return exerciseScopedInputExample(page, name);
   if (name === "use-toggle") {
     assert.equal(await page.getByText("Free delivery in 2–3 business days.").count(), 0);
     await activate(page, "Show delivery details");

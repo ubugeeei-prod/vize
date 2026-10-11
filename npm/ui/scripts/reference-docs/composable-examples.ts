@@ -8,6 +8,7 @@ import { browserEffectExamples } from "./browser-effect-examples.ts";
 import { formStateExamples } from "./form-state-examples.ts";
 import { domInteractionExamples } from "./dom-interaction-examples.ts";
 import { observedBrowserExamples } from "./observed-browser-examples.ts";
+import { scopedInputExamples } from "./scoped-input-examples.ts";
 
 const stateExamples = [
   {
@@ -79,6 +80,7 @@ export const composableExamples = [
   ...formStateExamples,
   ...domInteractionExamples,
   ...observedBrowserExamples,
+  ...scopedInputExamples,
 ] as const;
 
 export function composableExampleSource(packageRoot: string, name: string): string {
