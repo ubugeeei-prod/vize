@@ -3,7 +3,7 @@
 
 const { readFileSync } = require("node:fs");
 const { execFileSync } = require("node:child_process");
-
+const { requireWithBindingIdentity } = require("./native-binding-identity");
 const binaryName = "vize-vitrine";
 const packageVersion = require("./package.json").version;
 
@@ -107,7 +107,7 @@ function nativeTargets(loadErrors) {
 
 function requireTargetPackage(target) {
   const packageName = `@vizejs/native-${target}`;
-  const binding = require(packageName);
+  const binding = requireWithBindingIdentity(require, packageName);
   const bindingPackageVersion = require(`${packageName}/package.json`).version;
 
   if (
@@ -125,7 +125,7 @@ function requireTargetPackage(target) {
 function loadTarget(target, loadErrors) {
   const localBinding = `./${binaryName}.${target}.node`;
   try {
-    return require(localBinding);
+    return requireWithBindingIdentity(require, localBinding);
   } catch (error) {
     markMissingModuleForSpecifier(error, localBinding);
     loadErrors.push(error);
