@@ -99,10 +99,45 @@ fn whole_original_photo_metadata_has_no_unrelated_component_dependencies() {
             );
         }
     }
+    // #8636 fixes nested Vapor components inside Photo's actual <div> root.
+    // Preserve the captured before packet and permit only its two root flags.
+    for (index, nuxt, source_map) in [
+        (12, false, false),
+        (13, false, true),
+        (14, true, false),
+        (15, true, true),
+    ] {
+        let observation = &mut expected[index];
+        assert_eq!(observation["shape"], "vapor");
+        assert_eq!(observation["nuxt"], nuxt);
+        assert_eq!(observation["sourceMap"], source_map);
+        let mut code = observation["compileResult"]["code"]
+            .as_str()
+            .expect("complete captured Vapor code")
+            .to_owned();
+        for (old, new) in [
+            (
+                "      return n3;\n    } }, true);",
+                "      return n3;\n    } }, false);",
+            ),
+            (
+                "    return [n5, n6];\n  } }, true);",
+                "    return [n5, n6];\n  } }, false);",
+            ),
+        ] {
+            assert_eq!(
+                code.matches(old).count(),
+                1,
+                "one original nested root flag"
+            );
+            code = code.replacen(old, new, 1);
+        }
+        observation["compileResult"]["code"] = json!(code);
+    }
     assert_eq!(
         json!(observations),
         expected,
-        "whole ordinary code, CSS, maps, errors, warnings, bindings and artifact provenance stay exact"
+        "whole code, CSS, maps, errors, warnings, bindings and provenance stay exact outside the metadata repair and two nested Vapor root flags"
     );
 }
 

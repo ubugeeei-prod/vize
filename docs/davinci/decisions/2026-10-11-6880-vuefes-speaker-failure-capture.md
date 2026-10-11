@@ -109,6 +109,35 @@ replayed files outside the foundation record matched their previous blobs
 exactly. Its existing and incoming clauses are preserved at 350 rows.
 Require fresh Actions on the resulting source.
 
+The resulting `1f463e56` passed its normal source checks, including all
+24 real comment hydration observations. The composed CSS child `7ef56826`
+passed all 38 original visual cases in
+[run 38151964793](https://github.com/ubugeeei-prod/vize/actions/runs/38151964793).
+The protected merge candidate `ef240c67` nevertheless failed the complete
+original Photo compiler fixture in
+[run 38153802214](https://github.com/ubugeeei-prod/vize/actions/runs/38153802214).
+Keep that failure: [#8636](https://github.com/ubugeeei-prod/vize/pull/8636)
+corrected Vapor component fallthrough after the original packet was captured.
+Photo has an HTML `div` root; its nested `VFSection` and `i18n-t` components
+must use native `false` root flags. Independent complete-source Vue Vapor
+`3.6.0-rc.9` and `3.6.0-rc.10` compilations both omit their fourth argument,
+using the provider's nonroot default. Their complete template code hashes
+match at `81dc1c8518457612120225d1b3d1613cfefc527083ef58151c7133dcf58fe1e7`.
+
+Preserve the original Photo source (`f20ac13971ce5918afc30ec93e74a7f36dd734050ce8610e1c820c9f6e6b9e3b`)
+and frozen compiler packet (`5fc8c639143e8a3091b437b6959f2d5adf6c981be1b20f1c235905d913207ecc`).
+Derive only the expected successor: at observations 12–15, assert the exact
+Vapor/Nuxt/source-map coordinates and require exactly one occurrence of each
+captured component context before replacing its `true` root flag with `false`.
+Keep the existing metadata repair and compare all 20 complete observations;
+every other code byte, CSS, map, diagnostic, binding and provenance field
+must remain exact. An independent comparison matched this finite successor
+to all 20 actual merge-candidate observations. Rebase the 19 parent commits
+onto actual main `a49936db24d9540e0630b42474654190d575294b`, which includes
+merged #8636/#8637. Before this finite test and decision update, all 77
+owned files outside the foundation record retain their previous blobs.
+The foundation's existing clauses remain at 350 rows.
+
 Remaining acceptance: qualify the composed exact source head with normal
 Actions and the entire unchanged 38-case VueFes matrix before queue
 admission, then carry the actual merged fix through an official release
