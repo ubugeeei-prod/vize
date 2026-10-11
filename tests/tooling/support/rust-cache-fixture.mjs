@@ -46,8 +46,9 @@ if (request.kind === "sticky") {
   }
   trace({...request, mounted: !request.fail});
 } else if (request.kind === "cache") {
-  const match = request.storedCache && entries.find(entry => entry.version===request.version &&
-    (entry.key===request.key || (request.restorePrefix && entry.key.startsWith(request.restorePrefix))));
+  const match = request.storedCache &&
+    (entries.find(entry => entry.version===request.version && entry.key===request.key) ||
+    entries.find(entry => entry.version===request.version && request.restorePrefix && entry.key.startsWith(request.restorePrefix)));
   if (request.storedCache) {
     request.hit=match ? match.key===request.key || "partial" : false;
     request.matchedKey=match?.key;

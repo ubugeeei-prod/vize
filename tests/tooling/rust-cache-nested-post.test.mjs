@@ -30,7 +30,7 @@ await test("nested cache posts save the validated target inputs after step outpu
       assert.equal(secondary.saved, "sticky clone");
       const firstUnmount = result.trace.findIndex((row) => row.kind === "sticky-post");
       assert.ok(seeds.every((row) => result.trace.indexOf(row) < firstUnmount));
-      assert.equal(target.key, result.outputs["cache-policy"]["target-key"]);
+      assert.equal(target.key, result.outputs["cache-policy"]["target-seed-key"]);
     });
 });
 
@@ -153,10 +153,14 @@ await test("an absolute-path reader cannot use a relative-path seed despite an i
   );
   for (const step of action.runs.steps)
     if (step.uses?.startsWith("actions/cache/restore@")) {
-      if (step.with.path === "${{ inputs.target-path }}")
+      if (step.with.path === "${{ inputs.target-path }}") {
         step.with.path = "${{ steps.cache-policy.outputs.target-path }}";
-      if (step.with.path === "${{ inputs.secondary-target-path }}")
+        step.with.key = "${{ steps.cache-policy.outputs.target-seed-key }}";
+      }
+      if (step.with.path === "${{ inputs.secondary-target-path }}") {
         step.with.path = "${{ steps.cache-policy.outputs.secondary-path }}";
+        step.with.key = "${{ steps.cache-policy.outputs.secondary-seed-key }}";
+      }
     }
   cacheFixture((fixture) => {
     const paths = {

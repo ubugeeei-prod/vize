@@ -85,8 +85,9 @@ runs:
       run: node "$GITHUB_ACTION_PATH/cache-policy.mjs" --mounted
 
     # Trusted sticky clones are already mounted. Lookup-only never extracts a
-    # second cache into them; the pinned action saves a missing seed in post,
-    # before the earlier sticky actions unmount their filesystems.
+    # second cache into them. A mounted target seeds once per lock/toolchain/role,
+    # before sticky unmount; exact seed hits avoid re-archiving at every main SHA.
+    # A failed mount or GitHub-hosted runner retains the per-checkout save key.
     - name: Cache Cargo registry or seed it from the trusted sticky clone
       if: ${{ steps.cache-policy.outputs.trusted == 'true' }}
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
@@ -110,7 +111,7 @@ runs:
         # Nested post steps retain inputs, but not this action's step outputs.
         # The policy has already validated this path inside the workspace.
         path: ${{ inputs.target-path }}
-        key: ${{ steps.cache-policy.outputs.target-key }}
+        key: ${{ steps.cache-mounts.outputs.target == 'true' && steps.cache-policy.outputs.target-seed-key || steps.cache-policy.outputs.target-key }}
         restore-keys: ${{ steps.cache-policy.outputs.target-restore }}
         lookup-only: ${{ steps.cache-mounts.outputs.target == 'true' }}
     - name: Cache the secondary Rust target or seed its trusted clone
@@ -118,7 +119,7 @@ runs:
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         path: ${{ inputs.secondary-target-path }}
-        key: ${{ steps.cache-policy.outputs.secondary-key }}
+        key: ${{ steps.cache-mounts.outputs.secondary == 'true' && steps.cache-policy.outputs.secondary-seed-key || steps.cache-policy.outputs.secondary-key }}
         restore-keys: ${{ steps.cache-policy.outputs.secondary-restore }}
         lookup-only: ${{ steps.cache-mounts.outputs.secondary == 'true' }}
 

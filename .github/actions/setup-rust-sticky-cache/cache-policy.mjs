@@ -96,6 +96,7 @@ export function rustCachePolicy(context, { cwd = sourceRoot, workspace = cwd } =
     "registry-key": `${base}-registry`,
     "git-key": `${base}-git`,
     "target-key": `${target}${checkoutSha}`,
+    "target-seed-key": `${target}seed`,
     "target-restore": target,
     "target-path": primaryPath,
     "target-save": String(trusted && !restoreOnlyTargetRoles.has(role)),
@@ -121,6 +122,7 @@ export function rustCachePolicy(context, { cwd = sourceRoot, workspace = cwd } =
     const secondaryFingerprint = fingerprint(parent, cwd);
     const secondary = `rust-cache-v1-${repository}-${runnerOs}-${runnerArch}-${secondarySuffix}-${secondaryFingerprint}-${secondaryRole}-target-`;
     output["secondary-key"] = `${secondary}${checkoutSha}`;
+    output["secondary-seed-key"] = `${secondary}seed`;
     output["secondary-restore"] = secondary;
     output["secondary-path"] = secondaryPath;
     output["secondary-save"] = String(trusted && !restoreOnlyTargetRoles.has(secondaryRole));
