@@ -11,6 +11,7 @@ on:
     paths:
       - ".github/workflows/typechecker-native-phases.yml"
       - "tools/benchmarks/scripts/typechecker-native-*.mjs"
+      - "tools/support/compat/github/native-phase-artifact*"
       - "tools/benchmarks/scripts/type-snapshot-cli-*.mjs"
       - "crates/vize/tests/check_*_cli.rs"
       - "tests/fixtures/typechecker/model-modifier-ranges/**"
@@ -317,34 +318,17 @@ jobs:
           });
           writeFileSync(join(root, 'receipts.json'), JSON.stringify({ sourceSha: process.env.SOURCE_SHA, matchedCompleteExpectations: true, cases: receipts, fullInputsAndOutputs: files(root).map(path => ({ path: path.slice(root.length + 1), sha256: hash(path) })) }, null, 2) + '\n');
           JS
+      - name: Pack complete native evidence and prove reconstruction
+        id: native-artifact-pack
+        if: always()
+        run: node tools/support/compat/github/native-phase-artifact.mjs pack "$RUNNER_TEMP" "$RUNNER_TEMP/native-phase-artifact"
       - name: Upload raw native phases, memberships, full reports and generated sources
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: typechecker-native-phases
-          path: |
-            ${{ runner.temp }}/outside-import-types/
-            ${{ runner.temp }}/typechecker-native-source-custody.json
-            ${{ runner.temp }}/native-source-recipe*
-            ${{ runner.temp }}/reference-path-module/
-            ${{ runner.temp }}/typechecker-native-phases.json
-            ${{ runner.temp }}/typechecker-native-phases.json.samples/provenance.json
-            ${{ runner.temp }}/template-dollar-emit/
-            ${{ runner.temp }}/config-scoped-vue-helpers/
-            ${{ runner.temp }}/tsconfig-types-extends/
-            ${{ runner.temp }}/jsx-slot-parameter-types/
-            ${{ runner.temp }}/canon-selected-alias/
-            ${{ runner.temp }}/lsp-passive-3952/
-            ${{ runner.temp }}/unchecked-index-access/
-            ${{ runner.temp }}/unknown-template-options/
-            ${{ runner.temp }}/template-emit-ts40-projection/
-            ${{ runner.temp }}/typechecker-native-phases.json.samples/failure.json
-            ${{ runner.temp }}/typechecker-native-phases.json.samples/inputs/
-            ${{ runner.temp }}/typechecker-native-phases.json.samples/raw/
-            ${{ runner.temp }}/typechecker-native-phases.json.samples/native/
-            ${{ runner.temp }}/typechecker-native-phases.json.samples/projections/
-            ${{ runner.temp }}/typechecker-native-phases.json.samples/virtual-ts/
-            ${{ runner.temp }}/undefined-default-props/
+          path: ${{ steps.native-artifact-pack.outcome == 'success' && format('{0}/native-phase-artifact', runner.temp) || steps.native-artifact-pack.outputs.raw_paths }}
+          compression-level: ${{ steps.native-artifact-pack.outcome == 'success' && '0' || '6' }}
           if-no-files-found: error
           retention-days: 30
           include-hidden-files: true
