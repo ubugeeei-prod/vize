@@ -20,6 +20,10 @@ void test("third-party Vapor runtime packs retain the original report and every 
     const original = read(`${pack.inputs.root}/original-issue.md`).toString();
     const reported = [...original.matchAll(/```vue\n([\s\S]*?)```/gu)][0][1];
     assert.equal(read(`${pack.inputs.root}/reported.vue.txt`).toString(), reported);
+    if (pack.inputs.root === "vapor-slot-destructure-8626") {
+      const owner = reported.split("<!-- SlotConsumer.vue -->\n")[0].replace("<!-- SlotOwner.vue -->\n", "");
+      assert.equal(JSON.parse(read(`${pack.inputs.root}/Child.vue.json`)), owner);
+    }
     assert.equal(pack.runtime.nativeHandled, 0);
     assert.equal(pack.runtime.lockedVue, "3.6.0-rc.9");
   }

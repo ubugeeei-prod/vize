@@ -14,8 +14,8 @@
             "sha256": "e3538783380d66451c19d15af4d9ba6d8868039d6bba9a8780dc7572126f3e9c"
           },
           {
-            "path": "Child.vue.txt",
-            "sha256": "a1325e3edcbc9d968db333bf3b303304d530ba80128d5fa57dc19745eaf5c3a2"
+            "path": "Child.vue.json",
+            "sha256": "bc11c7b3e05d9ae6074dea96b055ba67e5ea63819b98fe77f3b9558ad431878b"
           },
           {
             "path": "controls.json",
