@@ -85,7 +85,7 @@ function providerPacket(run, entry, directory) {
   assert.deepEqual(run.actual, expected, entry.id);
 }
 
-test("bare reserved-name authority retains complete frozen references and prefix packets", () => {
+await test("bare reserved-name authority retains complete frozen references and prefix packets", () => {
   for (const [filename, digest] of Object.entries(frozen)) {
     assert.equal(sha256(read(filename)), digest, filename);
   }
