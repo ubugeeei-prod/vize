@@ -105,3 +105,48 @@ fn generic_projection_retains_neutral_heads_entities_comments_and_errors() {
     );
     assert_eq!(errors[0].offset, 13);
 }
+
+fn pinned_vue36_scope_controls(generic: bool) {
+    let corpus = include_str!(
+        "../../../tests/_fixtures/differential/compiler/vapor-svg-title-scope-8624/controls.tsv"
+    );
+    let mut snapshots = Vec::new();
+    let mut expected = Vec::new();
+    for row in corpus.lines() {
+        let fields: Vec<_> = row.split('\t').collect();
+        assert_eq!(fields.len(), 3);
+        let allocator = Allocator::new();
+        let mut actual = Vec::new();
+        if generic {
+            let (tree, errors) = vize_l1::parse(&allocator, fields[1]);
+            assert!(errors.is_empty(), "{}: {errors:?}", fields[0]);
+            assert_eq!(check_fidelity(&tree), Ok(()));
+            observe(&tree.children, &mut actual);
+        } else {
+            let parsed = parse_component(&allocator, fields[1]).unwrap();
+            assert!(
+                parsed.errors.is_empty(),
+                "{}: {:?}",
+                fields[0],
+                parsed.errors
+            );
+            assert!(parsed.unsupported.is_empty(), "{}", fields[0]);
+            assert_eq!(check_fidelity(&parsed.tree), Ok(()));
+            observe(&parsed.tree.children, &mut actual);
+        }
+        snapshots.push((fields[0], actual));
+        expected.push((fields[0], fields[2].split('|').map(str::to_owned).collect()));
+    }
+    assert_eq!(snapshots.len(), 11, "all additional whole controls execute");
+    assert_eq!(snapshots, expected, "complete pinned Vue 3.6 scope corpus");
+}
+
+#[test]
+fn native_svg_title_matches_pinned_vue36_scope() {
+    pinned_vue36_scope_controls(false);
+}
+
+#[test]
+fn generic_svg_title_matches_pinned_vue36_scope() {
+    pinned_vue36_scope_controls(true);
+}

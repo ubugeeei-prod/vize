@@ -50,3 +50,25 @@ fn svg_title_children_preserve_complete_html_rcdata_controls() {
     }
     assert_eq!(count, 12, "all authored controls execute");
 }
+
+#[test]
+fn svg_title_matches_pinned_vue36_scope() {
+    let corpus = include_str!(
+        "../../../../tests/_fixtures/differential/compiler/vapor-svg-title-scope-8624/controls.tsv"
+    );
+    let mut snapshots = Vec::new();
+    let mut expected = Vec::new();
+    for row in corpus.lines() {
+        let fields: Vec<_> = row.split('\t').collect();
+        assert_eq!(fields.len(), 3);
+        let allocator = Allocator::new();
+        let (root, errors) = parse(&allocator, fields[1]);
+        assert!(errors.is_empty(), "{}: {errors:?}", fields[0]);
+        let mut actual = Vec::new();
+        observe(&root.children, &mut actual);
+        snapshots.push((fields[0], actual));
+        expected.push((fields[0], fields[2].split('|').map(str::to_owned).collect()));
+    }
+    assert_eq!(snapshots.len(), 11, "all additional whole controls execute");
+    assert_eq!(snapshots, expected, "complete pinned Vue 3.6 scope corpus");
+}

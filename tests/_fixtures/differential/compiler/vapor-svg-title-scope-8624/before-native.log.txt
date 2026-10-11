@@ -1,0 +1,25 @@
+warning: patch `oxc_parser v0.142.0 (/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-vapor-svg-title-scope-8624-20261012/vendor/oxc_parser_compat)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+   Compiling vize_l0_derive v0.443.0 (/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-vapor-svg-title-scope-8624-20261012/davinci/vize_l0_derive)
+   Compiling vize_oxc_parser v0.443.0 (/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-vapor-svg-title-scope-8624-20261012/vendor/oxc_parser)
+   Compiling vize_l0 v0.443.0 (/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-vapor-svg-title-scope-8624-20261012/davinci/vize_l0)
+   Compiling vize_carton v0.443.0 (/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-vapor-svg-title-scope-8624-20261012/crates/vize_carton)
+   Compiling davinci_test_support v0.443.0 (/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-vapor-svg-title-scope-8624-20261012/tests/davinci_test_support)
+   Compiling vize_relief v0.443.0 (/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-vapor-svg-title-scope-8624-20261012/crates/vize_relief)
+   Compiling vize_l1 v0.443.0 (/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-vapor-svg-title-scope-8624-20261012/davinci/vize_l1)
+   Compiling davinci_harness v0.443.0 (/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-vapor-svg-title-scope-8624-20261012/tools/benchmarks/crates/davinci_harness)
+   Compiling vize_armature v0.443.0 (/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-vapor-svg-title-scope-8624-20261012/crates/vize_armature)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 14.16s
+     Running tests/native_svg_title.rs (/tmp/vize-svg-title-target-20261012/debug/deps/native_svg_title-923a5e41d7fd94cb)
+
+running 4 tests
+test generic_projection_retains_neutral_heads_entities_comments_and_errors ... ok
+test native_svg_title_requires_entered_scope ... ok
+test generic_svg_title_requires_entered_scope ... ok
+test native_svg_title_children_preserve_complete_html_rcdata_controls ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

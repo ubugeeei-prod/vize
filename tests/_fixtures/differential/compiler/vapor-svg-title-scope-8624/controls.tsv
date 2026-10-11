@@ -1,0 +1,11 @@
+bare-circle-title	<circle><title><span>hi</span></title></circle>	+circle|+title|+span|=hi|-span|-title|-circle
+div-circle-title	<div><circle><title><span>hi</span></title></circle></div>	+div|+circle|+title|+span|=hi|-span|-title|-circle|-div
+svg-circle-title	<svg><circle><title><span>hi</span></title></circle></svg>	+svg|+circle|+title|+span|=hi|-span|-title|-circle|-svg
+foreignobject-circle-title	<svg><foreignObject><circle><title><span>hi</span></title></circle></foreignObject></svg>	+svg|+foreignObject|+circle|+title|+span|=hi|-span|-title|-circle|-foreignObject|-svg
+desc-circle-title	<svg><desc><circle><title><span>hi</span></title></circle></desc></svg>	+svg|+desc|+circle|+title|+span|=hi|-span|-title|-circle|-desc|-svg
+title-circle-title	<svg><title><circle><title><span>hi</span></title></circle></title></svg>	+svg|+title|+circle|+title|+span|=hi|-span|-title|-circle|-title|-svg
+foreignobject-circle-svg-reentry	<svg><foreignObject><circle><svg><title><span>hi</span></title></svg></circle></foreignObject></svg>	+svg|+foreignObject|+circle|+svg|+title|+span|=hi|-span|-title|-svg|-circle|-foreignObject|-svg
+math-text-svg-entry	<math><mtext><circle><svg><title><span>hi</span></title></svg></circle></mtext></math>	+math|+mtext|+circle|+svg|+title|+span|=hi|-span|-title|-svg|-circle|-mtext|-math
+math-annotation-html-svg-entry	<math><annotation-xml encoding="text/html"><circle><svg><title><span>hi</span></title></svg></circle></annotation-xml></math>	+math|+annotation-xml|+circle|+svg|+title|+span|=hi|-span|-title|-svg|-circle|-annotation-xml|-math
+math-annotation-html-entity-svg-entry	<math><annotation-xml encoding="text&sol;html"><circle><svg><title><span>hi</span></title></svg></circle></annotation-xml></math>	+math|+annotation-xml|+circle|+svg|+title|+span|=hi|-span|-title|-svg|-circle|-annotation-xml|-math
+math-annotation-direct-svg-entry	<math><annotation-xml><svg><title><span>hi</span></title></svg></annotation-xml></math>	+math|+annotation-xml|+svg|+title|+span|=hi|-span|-title|-svg|-annotation-xml|-math

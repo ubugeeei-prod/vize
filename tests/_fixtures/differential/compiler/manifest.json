@@ -96,6 +96,12 @@
       "sha256": "58ffa04961106339bfdf1ac3f76a7cdf2b16623c682fdb26e4c2a0844a3a80c6",
       "adapter": "compiler-rust-whole-source-parser-v1",
       "workflow": ".github/workflows/check.yml"
+    },
+    {
+      "path": "vapor-svg-title-scope-8624.manifest.json",
+      "sha256": "59a85ffc56dab9b67a7e3f658d12e58531877401f2972dd2125efc2fc6bb5a08",
+      "adapter": "compiler-rust-whole-source-parser-v1",
+      "workflow": ".github/workflows/check.yml"
     }
   ]
 }
