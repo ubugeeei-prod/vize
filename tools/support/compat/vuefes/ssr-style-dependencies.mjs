@@ -338,6 +338,12 @@ try {
             // This is separate from the production-order positive observation.
             packet.reversedCssOrder = await page.evaluate(observeReversedCssOrder);
             write(`${producer}.json`, packet);
+            for (const transition of packet.reversedCssOrder.transitionEvidence)
+              assert.equal(
+                transition.status,
+                "finished",
+                "the original finite transition must complete",
+              );
             for (const heading of packet.reversedCssOrder.headings) {
               assert.equal(heading.fontSize, expected.negativeControls.reversedCssOrder.fontSize);
               assert.equal(

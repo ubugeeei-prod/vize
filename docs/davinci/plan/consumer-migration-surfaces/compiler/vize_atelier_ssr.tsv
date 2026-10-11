@@ -12,7 +12,7 @@ compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/component_binding.r
 compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/component_resolution.rs	2	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element.rs	24	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/component_props.rs	250	l0	L0	stage	vize_l0	preferred	1
-compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/component.rs	542	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/component.rs	524	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/directive_props.rs	10	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/merged.rs	23	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/plain.rs	55	l0	L0	stage	vize_l0	preferred	5
@@ -37,7 +37,8 @@ compiler	Compiler	source	crates/vize_atelier_ssr/src/l4.rs	20	old_ast	old AST/pa
 compiler	Compiler	source	crates/vize_atelier_ssr/src/l4.rs	20	old_ast	old AST/parser	old	vize_armature	legacy	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/bindings.rs	4	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/croquis.rs	12	croquis	Croquis analysis	old	vize_croquis	legacy	3
-compiler	Compiler	test/dev	crates/vize_atelier_ssr/src/l4/differential_tests.rs	19	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_ssr/src/l4/differential_tests.rs	20	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/differential_tests/scoped_dynamic.rs	6	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/differential_tests/ssr_key_boundaries.rs	9	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit.rs	32	l0	L0	stage	vize_l0	preferred	9
 compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit.rs	32	l2	L2	stage	vize_l2	preferred	1

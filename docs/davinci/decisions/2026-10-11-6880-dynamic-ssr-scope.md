@@ -63,3 +63,47 @@ SSR output or CSS cascade behavior is complete. The five retained UI markup
 failures (media player time, scrubber preview time, signature pad canvas and
 the two webcam controls) remain unresolved under their original oracles;
 their inputs, expectations and failure ledgers are unchanged.
+
+## Composed source evidence and source gates
+
+The immutable [composed run on `399e71b`](https://github.com/ubugeeei-prod/vize/actions/runs/38120403216)
+retains the complete original 38-case workload and its failure artifacts.
+The dev home case failed all three original attempts with a diff ratio of
+`0.1235105465271594` against the unchanged `0.002` budget; 37 cases did not
+run. The stylesheet fixes have not repaired that actual app result.
+
+The same run freshly built the native addon and captured both entire
+original eight-case SSR objects. Both are 1,373 bytes with zero warnings,
+without duplicate own scope attributes. Their full cold DOM and hydrated
+DOM also match. These bounded observations prove the dynamic scope repair;
+the complete fixture driver remains failed. Its reversed CSS observation
+read a 100ms `font-size` transition at `19.666px`, before the original
+`18px`/`27px` counterexample settled. Its final assertions were not reached.
+The supplementary Vite package tests also lacked the actual formatter
+history build receipt and live preparation owner. Both failures remain
+visible; no source, rule, expectation or check is removed to hide them.
+
+The ordinary source checks found two maintenance requirements: the existing
+350-line growth gate rejected the component module's five additional lines,
+and the deterministic consumer migration inventory was stale. A separate
+move-only commit places the complete dynamic VNode method in
+`codegen/element/component/dynamic.rs`. Only its visibility changes to allow
+its original caller; the complete 794-byte method and comments are kept.
+The original module shrinks from 687 to 664 lines, and the new module has
+30 lines. All 82 SSR library tests and seven complete SFC scope/slot controls
+pass after the move; both pre-fix static module snapshots remain byte-exact.
+The actual Rust generator updates the complete 19-file inventory and its
+strict check passes. The existing growth limit, compiler behavior and corpus
+inputs remain unchanged. Exact composed Actions and full app acceptance
+are still required before queue entry.
+
+The counterexample observer forces actual layout and awaits only the original
+finite `CSSTransition.finished` promises. It retains every observed target,
+property, timing, keyframe and completion or cancellation status before the
+unchanged four `18px`/`27px` assertions. The whole original evaluator first
+moves to a maintained helper in its own move-only commit; the original source
+and CSS order, positive observations and stylesheet rules stay intact. The
+exact helper passed a separate full-source official alpha.2 control, including
+the actual 100ms hovered-heading transition from `20px` to `18px`/`27px`.
+This local observer control does not qualify the native full app or retire
+any original Actions failure.
