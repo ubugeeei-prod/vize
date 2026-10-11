@@ -70,7 +70,7 @@ import { mobileRuntimeFixtures } from "../families/layout/runtime-conformance-mo
 import { formCompositeRuntimeFixtures } from "../families/form/runtime-conformance-form-composite-fixtures.ts";
 import { formStructureRuntimeFixtures } from "../families/form/runtime-conformance-form-structure-fixtures.ts";
 import { interactionHooksRuntimeFixture } from "../families/interaction/interaction-hooks/runtime-conformance-interaction-hooks-fixtures.ts";
-import { progressBarRuntimeFixture } from "../families/feedback/progress-bar/runtime-conformance-progress-bar-fixtures.ts";
+import { progressBarRuntimeFixtures } from "../families/feedback/progress-bar/runtime-conformance-progress-bar-fixtures.ts";
 import { progressRuntimeFixture } from "../families/feedback/progress/runtime-conformance-progress-fixtures.ts";
 import { ratingRuntimeFixture } from "../families/form/rating/runtime-conformance-rating-fixtures.ts";
 import { richRuntimeFixtures } from "./runtime-conformance-rich-fixtures.ts";
@@ -411,7 +411,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
     },
   },
   progressRuntimeFixture,
-  progressBarRuntimeFixture,
+  ...progressBarRuntimeFixtures,
   {
     name: "visually-hidden",
     sourceFile: "families/accessibility/visually-hidden/visually-hidden.vue",

@@ -24,6 +24,8 @@ export interface ProgressBarStateOptions {
 
   /**
    * Raw maximum. Values less than or equal to `min` are repaired to `min + 100`.
+   * If that addition rounds back to `min`, the collapsed finite range reports
+   * zero ratio/percent and invalid state without changing the completion policy.
    *
    * @default PROGRESS_BAR_DEFAULT_MAX
    */
@@ -66,12 +68,20 @@ export function getProgressBarState(
     invalid = invalid || options.max != null;
     max = min + PROGRESS_BAR_DEFAULT_MAX;
   }
+  invalid = invalid || max === min;
 
   const value = finite(options.value) ? clamp(options.value, min, max) : null;
   invalid =
     invalid || (options.value != null && (!finite(options.value) || options.value !== value));
   const indeterminate = value === null;
-  const ratio = indeterminate ? null : (value - min) / (max - min);
+  const span = max - min;
+  const ratio = indeterminate
+    ? null
+    : span === 0
+      ? 0
+      : Number.isFinite(span)
+        ? (value - min) / span
+        : (value / 2 - min / 2) / (max / 2 - min / 2);
   const percent = ratio === null ? null : ratio * 100;
   const complete = value !== null && value >= max;
 

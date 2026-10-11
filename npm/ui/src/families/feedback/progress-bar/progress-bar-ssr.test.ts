@@ -112,3 +112,31 @@ test("renders indeterminate server markup without aria-valuenow", async () => {
   assert.match(html, /data-indeterminate="true"/);
   assert.doesNotMatch(html, /aria-valuenow|data-value=/);
 });
+
+test("renders finite wide and collapsed ARIA and CSS identically across SSR requests", async () => {
+  for (const [min, max, value, percent, invalid, complete] of [
+    [-Number.MAX_VALUE, Number.MAX_VALUE, 0, 50, false, false],
+    [-Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, 100, false, true],
+    [0, Number.MAX_VALUE, Number.MAX_VALUE, 100, false, true],
+    [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, 0, true, true],
+    [-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, 0, true, true],
+  ] as const) {
+    const probe = {
+      setup: () => () => h(ProgressBar, { id: "finite-progress", min, max, value }),
+    };
+    const outputs = await Promise.all([
+      renderToString(createSSRApp(probe)),
+      renderToString(createSSRApp(probe)),
+    ]);
+    assert.equal(outputs[0], outputs[1]);
+    const html = outputs[0] ?? "";
+    assert.ok(html.includes(`aria-valuemin="${min}"`));
+    assert.ok(html.includes(`aria-valuemax="${max}"`));
+    assert.ok(html.includes(`aria-valuenow="${value}"`));
+    assert.ok(html.includes(`data-percent="${percent}"`));
+    assert.ok(html.includes(`data-complete="${complete}"`));
+    assert.ok(html.includes(`--vize-ui-progress-bar-percent:${percent}%`));
+    assert.equal(html.includes('data-invalid="true"'), invalid);
+    assert.doesNotMatch(html, /NaN|Infinity/);
+  }
+});

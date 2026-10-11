@@ -46,7 +46,12 @@ const {
   /** Lower bound for the progress range. @default 0 */
   readonly min?: number | null;
 
-  /** Upper bound for the progress range. @default 100 */
+  /**
+   * Upper bound. Values less than or equal to `min` are repaired to `min + 100`.
+   * If that addition rounds back to `min`, the collapsed finite range reports
+   * zero ratio/percent and invalid state without changing the completion policy.
+   * @default 100
+   */
   readonly max?: number | null;
 
   /** Reading direction for inline-start fill and indeterminate motion. @default "ltr" */
