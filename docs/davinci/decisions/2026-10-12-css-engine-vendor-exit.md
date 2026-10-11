@@ -132,6 +132,21 @@ wording difference at `browserslist_targets_exclusive`; no original assertion is
 silently rewritten or normalized. Actual failures must retain their complete
 before packet and receive a narrowly reviewed compatibility solution.
 
+Exact514 all-features run38184220273 compiles but CLI genuinely fails dev24/27
+and release10/27. Clap4 rejects the internal `output_file` group/argument ID
+collision; the same `css_modules` collision yields release AnyValue type panics.
+The narrow successor changes only four internal group/require references,
+preserving all public flags, typed fields and output algorithms. Complete original
+CLI source is frozen and hash-authenticated in packaged `cli-original.rs.txt`;
+all 27 original test bodies remain unchanged. Both full red logs are retained.
+
+The same source's normal JS format gate rejects eleven immutable upstream
+metadata/manifests/config/test CSS files plus three owned TOMLs. Owned TOMLs are
+formatted normally; five scoped format patterns protect only the authenticated
+upstream originals/testdata, replacing destructive byte rewrites with the complete
+custody checks and original functional tests. First-party files and other format
+checks remain unchanged; the new exclusion still requires peer/Actions review.
+
 ## Packaging, licenses and public API impact
 
 `vize_lightningcss` retains Rust library name `lightningcss`;

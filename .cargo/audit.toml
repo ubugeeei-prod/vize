@@ -8,5 +8,4 @@
 # enforces that shape.
 
 [advisories]
-ignore = [
-]
+ignore = []

@@ -24,10 +24,10 @@ struct CliArgs {
   #[clap(value_parser)]
   input_file: Vec<String>,
   /// Destination file for the output
-  #[clap(short, long, group = "output_file", value_parser)]
+  #[clap(short, long, group = "output_destination", value_parser)]
   output_file: Option<String>,
   /// Destination directory to output into.
-  #[clap(short = 'd', long, group = "output_file", value_parser)]
+  #[clap(short = 'd', long, group = "output_destination", value_parser)]
   output_dir: Option<String>,
   /// Minify the output
   #[clap(short, long, value_parser)]
@@ -46,14 +46,14 @@ struct CliArgs {
   /// Enable CSS modules in output.
   /// If no filename is provided, <output_file>.json will be used.
   /// If no --output-file is specified, code and exports will be printed to stdout as JSON.
-  #[clap(long, group = "css_modules", value_parser)]
+  #[clap(long, group = "css_module_options", value_parser)]
   css_modules: Option<Option<String>>,
   #[clap(long, requires = "css_modules", value_parser)]
   css_modules_pattern: Option<String>,
   #[clap(long, requires = "css_modules", value_parser)]
   css_modules_dashed_idents: bool,
   /// Enable sourcemap, at <output_file>.map
-  #[clap(long, requires = "output_file", value_parser)]
+  #[clap(long, requires = "output_destination", value_parser)]
   sourcemap: bool,
   #[clap(long, value_parser)]
   bundle: bool,

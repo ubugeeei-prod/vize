@@ -45,6 +45,11 @@ The following changes are deliberately separate from that import:
   to retire the old atty/proc-macro-error advisory paths. Entire original CLI
   source and tests are retained; all-features debug/release execution is required,
   including any diagnostic wording differences observed during qualification.
+- After actual Clap4 failures, four internal CLI group references use distinct
+  group IDs while preserving flag/field names and output algorithms. The complete
+  original CLI source stays frozen in `tests/vize_fixtures/cli-original.rs.txt`
+  and authenticated against its original import hash; all27 original tests stay
+  unchanged. Actual all-features replay is still mandatory.
 
 Repository `Cargo.toml.orig` remains the original archive manifest. Its byte-exact
 copy `UPSTREAM-Cargo.toml` ships in the package because Cargo reserves and
