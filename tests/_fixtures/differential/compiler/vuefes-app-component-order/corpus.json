@@ -1,0 +1,24 @@
+{
+  "issue": 6880,
+  "kind": "original full VueFes app root component-import placement",
+  "upstream": {
+    "repository": "https://github.com/vuejs-jp/vuefes-2025-website",
+    "commit": "8eff3cd7dd79a7f47bbf2b78202b9aa2070ec5a6",
+    "path": "app/app.vue"
+  },
+  "input": {
+    "file": "app.vue.txt",
+    "bytes": 840,
+    "sha256": "b346f9e9d1d9205c09184335607868dd14abf029c543ef829f4042c43513bc3c",
+    "gitBlob": "0aab7af1996da3f97e6d3cd22c928e416d8e297c"
+  },
+  "oracle": {
+    "nuxt": "4.0.3",
+    "unimport": "5.2.0",
+    "compilerSfc": "3.6.0-alpha.2",
+    "transformSource": "https://raw.githubusercontent.com/nuxt/nuxt/v4.0.3/packages/nuxt/src/components/plugins/transform.ts",
+    "transformSourceBytes": 4846,
+    "transformSourceSha256": "229b33a703af61a63604e1623a207b3a802728a754b368dac8e20dfb983087b6"
+  },
+  "acceptance": "original38 VRT unchanged; source fixture does not establish full-app runtime cascade by itself"
+}

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createComponentBridge } from "./component-bridge.mjs";
 import { createMissingSsrEdgeControl } from "./missing-ssr-edge-control.mjs";
 import { observeReversedCssOrder } from "./reversed-css-order.mjs";
 import fs from "node:fs";
@@ -80,7 +81,7 @@ fs.writeFileSync(
   `
 import { h } from 'vue';
 import './assets/styles/main.css';
-import Heading from './components/heading/VFHeading.vue';
+import { Heading } from '#components';
 const props = [{}, { id: 'anchor' }, { nth: 1 }, { nth: 3, id: 'anchor-three' }];
 export const Root = { render: () => h('main', props.flatMap((props, index) =>
   ['text', 'span'].map(kind => h('section', { 'data-case': index + '-' + kind }, [
@@ -144,6 +145,12 @@ const receipts = [];
 try {
   for (const producer of ["official", "native", "native-missing-ssr-edge"]) {
     const missingEdges = [];
+    const bridgeModules = [];
+    const componentBridge = createComponentBridge(producer, {
+      entry: path.join(project, "root.mjs"),
+      heading: headingPath,
+      modules: bridgeModules,
+    });
     const componentPlugin =
       producer === "official"
         ? vue({ compiler, features: { componentIdGenerator: () => hash(headingPath).slice(0, 8) } })
@@ -176,7 +183,7 @@ try {
       root: project,
       base: "/_nuxt/",
       configFile: false,
-      plugins: [componentPlugin, negative, transport],
+      plugins: [componentPlugin, componentBridge, negative, transport],
       resolve: { alias: { "~": project } },
       server: { host: "127.0.0.1", port: 0 },
       css: { transformer: "lightningcss", lightningcss: { drafts: { customMedia: true } } },
@@ -198,7 +205,7 @@ try {
       const heading = graph.find((item) => item.id?.split("?")[0] === headingPath);
       assert.ok(heading, "the original full SFC must be loaded in the real SSR module graph");
       const styleEdges = heading.imports.filter((url) => /[?&]type=style\b/.test(url));
-      packet = { producer, ssr, graph, styleEdges, missingEdges, runtime: [] };
+      packet = { producer, ssr, graph, styleEdges, missingEdges, bridgeModules, runtime: [] };
       write(`${producer}.json`, packet);
       if (producer === "native-missing-ssr-edge") {
         assert.equal(styleEdges.length, 0);

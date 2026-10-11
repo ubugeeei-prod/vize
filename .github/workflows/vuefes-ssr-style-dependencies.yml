@@ -60,6 +60,13 @@ jobs:
         if: ${{ !cancelled() }}
         working-directory: tools/support/compat/vuefes/fixtures/heading-cascade
         run: npm ci --no-audit --no-fund
+      - name: Install exact Nuxt component transform oracle
+        if: ${{ !cancelled() }}
+        working-directory: tools/support/compat/vuefes/fixtures/app-component-order
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Complete original VueFes app component import differential
+        if: ${{ !cancelled() }}
+        run: node tools/support/compat/vuefes/app-component-order.mjs
       - name: Native metadata corpus and existing Vite contracts
         if: ${{ !cancelled() }}
         run: vp run --filter './npm/builder/vite' test:prepared

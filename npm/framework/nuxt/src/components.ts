@@ -391,5 +391,4 @@ export function createNuxtComponentResolver(options: NuxtComponentResolverOption
   };
 }
 
-
 export { injectNuxtComponentImports } from "./component-imports.ts";

@@ -124,6 +124,7 @@ export function injectNuxtComponentImports(
   const codeWithComponentImports = code.replace(
     COMPONENTS_IMPORT_RE,
     (match: string, specifiers: string) => {
+      const explicitComponentImports: string[] = [];
       const unresolvedSpecifiers: string[] = [];
       let changed = false;
 
@@ -142,7 +143,7 @@ export function injectNuxtComponentImports(
 
         changed = true;
         const result = addResolvedComponentBinding(
-          componentImports,
+          explicitComponentImports,
           resolved,
           specifier.localName,
           `__nuxt_import_component_${importCounter++}_raw`,
@@ -155,11 +156,14 @@ export function injectNuxtComponentImports(
         return match;
       }
 
-      if (unresolvedSpecifiers.length === 0) {
-        return "";
+      // Keep explicit component dependencies at their authored import position.
+      // Only template resolveComponent bindings belong in the leading preamble.
+      if (unresolvedSpecifiers.length > 0) {
+        explicitComponentImports.push(
+          `import { ${unresolvedSpecifiers.join(", ")} } from "#components";`,
+        );
       }
-
-      return `import { ${unresolvedSpecifiers.join(", ")} } from "#components";`;
+      return explicitComponentImports.join("\n");
     },
   );
 
@@ -190,8 +194,8 @@ export function injectNuxtComponentImports(
     },
   );
 
-  if (componentImports.length === 0) {
-    return code;
+  if (componentImports.length === 0 && !needsDefineAsyncComponent && !needsCreateClientOnly) {
+    return codeWithComponentImports;
   }
 
   const preamble = [
