@@ -13,6 +13,7 @@ import {
   type MisskeyHmrTarget,
 } from "./misskey-hmr-targets";
 import { installSourceRestores } from "./source-restore";
+import { isVizeClientModuleUrl, logVizeClientModules } from "./vize-client-module";
 
 const targets = MISSKEY_HMR_TARGETS;
 
@@ -87,26 +88,16 @@ export function prepareMisskeyHmrFixture(cwd: string): MisskeyHmrFixture {
   };
 }
 
-function hmrUrlMatches(urlValue: string, target: MisskeyHmrTarget): boolean {
-  const url = new URL(urlValue);
-  return (
-    url.pathname.endsWith(target.moduleSuffix) &&
-    url.searchParams.has("t") &&
-    url.searchParams.has("vize")
-  );
+function hmrUrlMatches(urlValue: string, target: MisskeyHmrTarget, page: Page): boolean {
+  return isVizeClientModuleUrl(urlValue, target.moduleSuffix, new URL(page.url()).origin, true);
 }
 
 function moduleUrlMatches(urlValue: string, target: MisskeyHmrTarget): boolean {
   return new URL(urlValue).pathname.endsWith(target.moduleSuffix);
 }
 
-function initialModuleMatches(urlValue: string, target: MisskeyHmrTarget): boolean {
-  const url = new URL(urlValue);
-  return (
-    url.pathname.endsWith(target.moduleSuffix) &&
-    url.searchParams.has("vize") &&
-    !url.searchParams.has("vize-ssr")
-  );
+function initialModuleMatches(urlValue: string, target: MisskeyHmrTarget, page: Page): boolean {
+  return isVizeClientModuleUrl(urlValue, target.moduleSuffix, new URL(page.url()).origin);
 }
 
 async function waitForNextChangeEventWindow(
@@ -155,9 +146,12 @@ async function waitForFreshTransform(
 ): Promise<Response> {
   let response: Response;
   try {
-    response = await page.waitForResponse((candidate) => hmrUrlMatches(candidate.url(), target), {
-      timeout: 60_000,
-    });
+    response = await page.waitForResponse(
+      (candidate) => hmrUrlMatches(candidate.url(), target, page),
+      {
+        timeout: 60_000,
+      },
+    );
   } catch (error) {
     const relevantFrames = observations.frames.filter((frame) =>
       frame.includes(target.moduleSuffix),
@@ -228,12 +222,12 @@ export async function verifyMisskeyAuthoredSourceHmr(options: {
   });
   const initialModules = targets.map((target) =>
     page.waitForResponse(
-      (response) => response.ok() && initialModuleMatches(response.url(), target),
+      (response) => response.ok() && initialModuleMatches(response.url(), target, page),
       { timeout: 120_000 },
     ),
   );
   await goto("");
-  await Promise.all(initialModules);
+  logVizeClientModules("Misskey", await Promise.all(initialModules));
   await expect(page.locator(mountSelector)).toBeAttached();
   await expect(page.locator("[data-cy-signup]")).toBeVisible();
 
@@ -248,7 +242,8 @@ export async function verifyMisskeyAuthoredSourceHmr(options: {
       if (moduleUrlMatches(request.url(), target)) {
         moduleRequests.get(target.marker)?.push(request.url());
       }
-      if (hmrUrlMatches(request.url(), target)) hmrRequests.get(target.marker)?.push(request.url());
+      if (hmrUrlMatches(request.url(), target, page))
+        hmrRequests.get(target.marker)?.push(request.url());
     }
   });
   page.on("response", (response) => {
@@ -258,7 +253,7 @@ export async function verifyMisskeyAuthoredSourceHmr(options: {
           .get(target.marker)
           ?.push(`${response.status()} ${response.statusText()} ${response.url()}`);
       }
-      if (hmrUrlMatches(response.url(), target)) {
+      if (hmrUrlMatches(response.url(), target, page)) {
         hmrResponses
           .get(target.marker)
           ?.push(`${response.status()} ${response.statusText()} ${response.url()}`);

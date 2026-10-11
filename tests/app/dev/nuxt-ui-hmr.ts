@@ -9,6 +9,11 @@ import {
 } from "../../_helpers/assertions";
 import { getProcessLogs } from "../../_helpers/server";
 import { installSourceRestore } from "./source-restore";
+import {
+  isVizeClientModuleUrl,
+  logVizeClientModules,
+  NUXT_UI_HMR_MODULE_PATH,
+} from "./vize-client-module";
 
 const OPTIMIZE_RELOAD = /optimized dependencies changed\. reloading/i;
 const ROUTE_RULES_RELOAD = /page reload virtual:nuxt:.*route-rules\.mjs/i;
@@ -17,9 +22,9 @@ const ROUTE_RULES_RELOAD = /page reload virtual:nuxt:.*route-rules\.mjs/i;
 // so the authored SFC is addressed by a root-relative module URL instead of its
 // repo-relative path. Match the root-relative suffix, which also holds if Nuxt
 // ever serves the file through `/@fs/<absolute path>`.
-const PROBE_MODULE_PATH = "/components/Matrix.vue.ts";
-const PROBE_HMR_UPDATE = /hmr update .*\/components\/Matrix\.vue\.ts\?vue&vize/;
-const PROBE_HOT_UPDATED = /\[vite\] hot updated: .*\/components\/Matrix\.vue\.ts\?vue&vize/;
+const PROBE_MODULE_PATH = NUXT_UI_HMR_MODULE_PATH;
+const PROBE_HMR_UPDATE = /hmr update .*\/components\/Matrix\.vue\?vue&vize/;
+const PROBE_HOT_UPDATED = /\[vite\] hot updated: .*\/components\/Matrix\.vue\?vue&vize/;
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -176,12 +181,9 @@ export async function verifyNuxtUiAuthoredSourceHmr(options: {
   const hydrationErrors = await collectHydrationErrors(page);
   const initialClientModule = page.waitForResponse(
     (response) => {
-      const url = new URL(response.url());
       return (
         response.ok() &&
-        url.pathname.endsWith(PROBE_MODULE_PATH) &&
-        url.searchParams.has("vize") &&
-        !url.searchParams.has("vize-ssr")
+        isVizeClientModuleUrl(response.url(), PROBE_MODULE_PATH, new URL(page.url()).origin)
       );
     },
     { timeout: 180_000 },
@@ -195,7 +197,7 @@ export async function verifyNuxtUiAuthoredSourceHmr(options: {
   await expect(warmup).toHaveCount(0);
   await expect(updated).toHaveCount(0);
   await waitForHydration();
-  await initialClientModule;
+  logVizeClientModules("Nuxt UI", [await initialClientModule]);
   await waitForNuxtUiHmrReady(page, devServer, startupLogStart, async () => {
     await expect(original).toBeVisible();
     await waitForHydration();
@@ -204,13 +206,8 @@ export async function verifyNuxtUiAuthoredSourceHmr(options: {
   const hmrRequests: string[] = [];
   const completedHmrUpdates: string[] = [];
   page.on("request", (request) => {
-    const url = new URL(request.url());
-    if (
-      url.pathname.endsWith(PROBE_MODULE_PATH) &&
-      url.searchParams.has("t") &&
-      url.searchParams.has("vize")
-    )
-      hmrRequests.push(url.href);
+    if (isVizeClientModuleUrl(request.url(), PROBE_MODULE_PATH, new URL(page.url()).origin, true))
+      hmrRequests.push(request.url());
   });
   page.on("console", (message) => {
     if (PROBE_HOT_UPDATED.test(message.text())) completedHmrUpdates.push(message.text());
