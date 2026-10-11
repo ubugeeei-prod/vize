@@ -1,0 +1,33 @@
+{
+  "schema": "vize.fixtureTypecheckerHintEvidence",
+  "version": 1,
+  "run": 38147644073,
+  "sourceCommit": "9466fdbb90bfae8803d5e57ae267b656be051721",
+  "authority": "Authenticated original CLI stdout bytes; project inputs, counts and diagnostic arrays are not rewritten.",
+  "reports": [
+    {
+      "project": "hoppscotch",
+      "artifactId": 11704559698,
+      "artifactSha256": "15c248fc30e21cbabd362203f08e87cb3071824ab1c8be3b8e98cfd685948f24",
+      "stdoutSha256": "d24d8073295543cbdcf6121b8cb877f7dec47db55d5de34c90868c3aeb62f40d",
+      "stdoutBytes": 386436,
+      "exitCode": 1,
+      "errorCount": 1121,
+      "warningCount": 17,
+      "hintCount": 356,
+      "fileCount": 754
+    },
+    {
+      "project": "vue-element-admin",
+      "artifactId": 11704909722,
+      "artifactSha256": "76b81650e5429a6e681a1166f2a4562af3d255dfd4be289144e441465f411140",
+      "stdoutSha256": "507318b47ae0976b71d933e41898223f2a4b999cbaf2fde71b70cb455c053caf",
+      "stdoutBytes": 24310,
+      "exitCode": 1,
+      "errorCount": 2,
+      "warningCount": 0,
+      "hintCount": 6,
+      "fileCount": 169
+    }
+  ]
+}

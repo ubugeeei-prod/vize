@@ -1712,6 +1712,36 @@ fn linter_invalid<T>(message: &str) -> Result<T, String> {
     Err(format!("invalid linter JSON output: {message}"))
 }
 
+fn validate_hint_diagnostic(diagnostic: &str, file: &str) -> Result<(), String> {
+    let malformed = || {
+        format!(
+            "invalid typechecker JSON output: hint must have positive safe location/code and non-empty message: {file}"
+        )
+    };
+    let (position, typed) = diagnostic
+        .strip_prefix("hint:")
+        .and_then(|body| body.split_once(' '))
+        .ok_or_else(malformed)?;
+    let (line, column) = position.split_once(':').ok_or_else(malformed)?;
+    let (code, message) = typed
+        .strip_prefix("[TS")
+        .and_then(|body| body.split_once("] "))
+        .ok_or_else(malformed)?;
+    for field in [line, column, code] {
+        if !field.bytes().all(|byte| byte.is_ascii_digit()) {
+            return Err(malformed());
+        }
+        let value = field.parse::<u64>().map_err(|_| malformed())?;
+        if value == 0 || value > 9_007_199_254_740_991 {
+            return Err(malformed());
+        }
+    }
+    if message.trim().is_empty() {
+        return Err(malformed());
+    }
+    Ok(())
+}
+
 fn validate_typechecker_output(
     project: &Value,
     output: &Value,
@@ -1802,6 +1832,8 @@ fn validate_typechecker_output(
                 error_count += 1;
             } else if diagnostic.starts_with("warning:") {
                 warning_count += 1;
+            } else if diagnostic.starts_with("hint:") {
+                validate_hint_diagnostic(diagnostic, file_path)?;
             } else {
                 typechecker_invalid(&format!(
                     "diagnostic has no error or warning prefix: {file_path}"
@@ -2335,5 +2367,56 @@ mod tests {
             error.contains("messages[0] keys must be"),
             "unexpected error: {error}"
         );
+    }
+}
+
+#[cfg(test)]
+mod native_hint_contract_tests {
+    use super::*;
+
+    fn output(diagnostic: &str) -> Value {
+        json!({
+            "files": [{ "file": "src/App.vue", "diagnostics": [diagnostic] }],
+            "errorCount": 0, "warningCount": 0, "fileCount": 1
+        })
+    }
+
+    #[test]
+    fn hints_preserve_whole_reports_and_error_warning_status_laws() {
+        let report = output("hint:77:22 [TS6385] 'typescript' is deprecated.");
+        let original = report.clone();
+        let project = json!({ "id": "hints" });
+        let coverage = validate_typechecker_output(&project, &report, 0, None, &[]).unwrap();
+        assert_eq!(coverage["checked"]["fileCount"], 1);
+        assert_eq!(report, original);
+        for field in ["errorCount", "warningCount"] {
+            let mut corrupted = report.clone();
+            corrupted[field] = json!(1);
+            assert!(validate_typechecker_output(&project, &corrupted, 0, None, &[]).is_err());
+        }
+        assert!(validate_typechecker_output(&project, &report, 1, None, &[]).is_err());
+    }
+
+    #[test]
+    fn malformed_hint_geometry_and_types_are_not_absence_or_success() {
+        let project = json!({ "id": "hints" });
+        for diagnostic in [
+            "info:77:22 [TS6385] deprecated",
+            "hint: malformed",
+            "hint:0:22 [TS6385] deprecated",
+            "hint:77:0 [TS6385] deprecated",
+            "hint:-1:22 [TS6385] deprecated",
+            "hint:1.5:22 [TS6385] deprecated",
+            "hint:9007199254740992:22 [TS6385] deprecated",
+            "hint:77:9007199254740992 [TS6385] deprecated",
+            "hint:77:22 [TS0] deprecated",
+            "hint:77:22 [TS9007199254740992] deprecated",
+            "hint:77:22 [TS6385]",
+            "hint:77:22 [TS6385]   ",
+        ] {
+            assert!(
+                validate_typechecker_output(&project, &output(diagnostic), 0, None, &[]).is_err()
+            );
+        }
     }
 }

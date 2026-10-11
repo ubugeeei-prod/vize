@@ -62,6 +62,7 @@ export function validateTypecheckerOutput(
       }
       if (diagnostic.startsWith("error:")) errorCount += 1;
       else if (diagnostic.startsWith("warning:")) warningCount += 1;
+      else if (diagnostic.startsWith("hint:")) validateHintDiagnostic(diagnostic, file.file);
       else invalid(`diagnostic has no error or warning prefix: ${file.file}`);
     }
   }
@@ -284,4 +285,18 @@ function requireProgramPath(value, label) {
 
 function invalid(message) {
   throw new Error(`invalid typechecker JSON output: ${message}`);
+}
+
+function validateHintDiagnostic(diagnostic, file) {
+  const match = /^hint:(\d+):(\d+) \[TS(\d+)\] ([\s\S]+)$/.exec(diagnostic);
+  if (
+    match == null ||
+    match.slice(1, 4).some((field) => {
+      const value = Number(field);
+      return !Number.isSafeInteger(value) || value < 1;
+    }) ||
+    match[4].trim().length === 0
+  ) {
+    invalid(`hint must have positive safe location/code and non-empty message: ${file}`);
+  }
 }
