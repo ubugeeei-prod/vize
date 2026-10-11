@@ -145,7 +145,19 @@ test("VRT runs independently after completed original probes while the original 
     job.steps.filter((item: { run?: string }) => item.run?.includes("npm install ")).length,
     1,
   );
-  assert.match(step.run, /^node vrt_observer\.ts "\$PUBLIC_VERSION" "\$PUBLIC_OUTPUT\/vrt\.json"/);
+  assert.equal(
+    step.run,
+    [
+      'export VRT_RETAINED_OUTPUT="$PUBLIC_OUTPUT"',
+      'PUBLIC_OUTPUT="$(mktemp -d "$RUNNER_TEMP/vize-public-vrt.XXXXXX")"',
+      'node vrt_observer.ts "$PUBLIC_VERSION" "$PUBLIC_OUTPUT/vrt.json" > "$PUBLIC_OUTPUT/vrt.log" 2>&1 || vrt_status=$?',
+      'if ! node vrt_retained.ts "$PUBLIC_OUTPUT/vrt.log" "$VRT_RETAINED_OUTPUT"; then',
+      '  exit "${vrt_status:-1}"',
+      "fi",
+      'exit "${vrt_status:-0}"',
+      "",
+    ].join("\n"),
+  );
   assert.equal(step["working-directory"], "${{ env.PUBLIC_CONSUMER }}");
   const prerequisiteIds = ["guard", "prepare", "install", "chromium"];
   const ids = [...prerequisiteIds, "native", "browser", "vrt"];

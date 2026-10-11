@@ -17,8 +17,50 @@ void test("the installed VRT source closure uses real strict Browser types", () 
   const root = fileURLToPath(new URL("../../", import.meta.url));
   const vrtProject = join(root, "tsconfig.public-vrt.json");
   const config = JSON.parse(readFileSync(vrtProject, "utf8"));
-  const files = vrtHarness.map((file) => `tools/support/release/public_acceptance/${file}`).sort();
-  assert.deepEqual(config.files, files);
+  const comparePaths = (left: string, right: string) => (left < right ? -1 : left > right ? 1 : 0);
+  const additionalModules = [
+    "installed.ts",
+    "vrt_literal.ts",
+    "vrt_retained.ts",
+    "vrt_retained_scan.ts",
+    "vrt_secrets.ts",
+    "vrt_service_announcement.ts",
+    "vrt_service_process.ts",
+    "vrt_trusted_color_build.ts",
+    "vrt_trusted_color_capture.ts",
+    "vrt_trusted_colors.ts",
+    "vrt_trusted_failures.ts",
+    "vrt_trusted_gallery.ts",
+    "vrt_trusted_network.ts",
+    "vrt_trusted_observation.ts",
+    "vrt_trusted_report_isolation.ts",
+    "vrt_trusted_surface.ts",
+    "vrt_trusted_ui.ts",
+    "vrt_tunnel.ts",
+    "vrt_tunnel_metadata.ts",
+    "vrt_tunnel_process.ts",
+    "vrt_tunnel_setup.ts",
+  ];
+  const additionalTargets = [
+    "tests/tooling/fixtures/release/vrt-log-barrier/observer.fixture.ts",
+    "tests/tooling/release/release-public-quick-tunnel.test.ts",
+    "tests/tooling/release/release-public-trusted-vrt-color.test.ts",
+    "tests/tooling/release/release-public-trusted-vrt.test.ts",
+    "tests/tooling/release/release-public-vrt-announcement.test.ts",
+    "tests/tooling/release/release-public-vrt-literal-inputs.test.ts",
+    "tests/tooling/release/release-public-vrt-log-barrier.test.ts",
+    "tests/tooling/release/release-public-vrt-tunnel-inputs.test.ts",
+    "tests/tooling/release/release-public-vrt-upload-refusal.test.ts",
+  ];
+  const files = [
+    ...[...vrtHarness, ...additionalModules].map(
+      (file) => `tools/support/release/public_acceptance/${file}`,
+    ),
+    ...additionalTargets,
+  ].sort(comparePaths);
+  assert.equal(files.length, 38);
+  assert.equal(new Set(files).size, files.length);
+  assert.deepEqual([...config.files].sort(comparePaths), files);
   const require = createRequire(new URL("../../docs/package.json", import.meta.url));
   const manifest = realpathSync(require.resolve("playwright/package.json"));
   assert.equal(JSON.parse(readFileSync(manifest, "utf8")).version, "1.62.1");
@@ -37,7 +79,11 @@ void test("the installed VRT source closure uses real strict Browser types", () 
     .sort();
   assert.deepEqual(
     closure,
-    [...files, "tools/support/release/public_acceptance/installed.ts"]
+    [
+      ...files.filter((file) => file.startsWith("tools/support/release/public_acceptance/")),
+      "tools/support/release/public_acceptance/inputs.ts",
+      "tools/support/release/public_acceptance/plan.ts",
+    ]
       .map((file) => normalize(join(root, file)))
       .sort(),
   );

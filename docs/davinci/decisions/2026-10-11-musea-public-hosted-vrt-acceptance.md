@@ -112,3 +112,9 @@ Primary references: [Cloudflare Quick Tunnels](https://developers.cloudflare.com
 [GitHub release assets](https://docs.github.com/en/rest/releases/assets),
 [Chrome Local Network Access](https://developer.chrome.com/blog/local-network-access),
 and the [tagged cloudflared source](https://github.com/cloudflare/cloudflared/tree/18cdfe0a6fc7b72a0702d255a1f984e776ce0498).
+
+Source qualification keeps the original strict Browser and invalid-viewport witnesses,
+expands the exact project inventory from eight to 38 targets and the release inventory
+from 40 to 48 contracts, and keeps the eight added contracts conservatively broad.
+The nearest source project extends the same strict configuration and real Playwright
+types; the workflow contract binds the complete private writer step and unchanged argv.

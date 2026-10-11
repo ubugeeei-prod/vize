@@ -95,7 +95,7 @@ export class VrtSecrets {
   async seal(log: string, retainedRoot?: string): Promise<void> {
     assert.equal(this.#closed, false);
     this.#closed = true;
-    await Promise.allSettled([...this.#writes]);
+    await Promise.allSettled(this.#writes);
     if (this.#writeFailures > 0) {
       console.error("VRT retained writer failure; acceptance refused");
       process.exitCode ||= 1;
