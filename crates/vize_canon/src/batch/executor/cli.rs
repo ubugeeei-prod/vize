@@ -19,6 +19,7 @@ mod partition;
 mod patterns;
 mod project_diagnostics;
 mod shard_sizing;
+mod syntax_abort;
 mod union_find;
 
 pub(super) use checkers::checker_count;
@@ -76,6 +77,19 @@ fn run_cli_for_config(
             .arg(config_path)
             .output()
     })?;
+    // Native CLI stops before semantic checking when the program has a parser
+    // error. Classify the actual reported file bodies before mapping can hide
+    // their diagnostics, then require the same-config session to complete the
+    // semantic phase. Its CLI degradation must refuse this outcome as well.
+    if syntax_abort::output_aborted_on_syntax(&output, project) {
+        return Err(CorsaError::CorsaExecution {
+            exit_code: output.status.code().unwrap_or(1),
+            message: cstr!(
+                "Corsa CLI semantic diagnostics are incomplete after a syntax error:\n{}",
+                output_message(&output)
+            ),
+        });
+    }
     let diagnostics = profile!(
         "canon.corsa.cli.parse",
         parse_output_diagnostics(&output, project, owns)
@@ -100,9 +114,9 @@ fn run_cli_for_config(
     // A non-zero exit is a runner failure only when the output carries no
     // diagnostic-shaped lines at all (bad invocation, crash, missing CLI
     // support). Recognizable diagnostics whose every entry was suppressed or
-    // failed source mapping still prove the CLI ran the project; falling back
-    // to the per-file project-session API there costs orders of magnitude
-    // more wall time for the same answer.
+    // failed source mapping still prove the CLI ran the project. Parser-abort
+    // outcomes have already been refused above; ordinary scoped semantic
+    // findings retain this fast path.
     if !output.status.success()
         && diagnostics.is_empty()
         && !output_contains_diagnostic_lines(&output)
