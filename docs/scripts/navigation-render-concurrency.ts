@@ -24,6 +24,7 @@ export type RenderPhase =
   | "rule-packets"
   | "command-tabs"
   | "layout"
+  | "table-code"
   | "links"
   | "capture"
   | "theme-captures"

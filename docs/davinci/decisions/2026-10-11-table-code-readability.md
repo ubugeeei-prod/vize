@@ -13,7 +13,11 @@ all authored text, and every original browser check. The navigation observer
 additionally captures every visible inline code text fragment and owning cell
 rectangle, requiring the complete rendered text to stay inside that cell at the
 existing one-pixel layout rounding tolerance. Exclude fenced blocks, which retain
-their own scrolling contract.
+their own scrolling contract. The first full Docs run additionally found existing
+mobile architecture-table text drawn beyond its capped cell. Explicitly allow
+normal whitespace wrapping on cells as well as inline code: inherited nowrap
+otherwise places code's first fragment after the overflowing surrounding prose.
+The original cell limits and table scrolling remain intact.
 
 The original public page fails this geometry observer. Applying the two changed
 CSS properties to that same page removes the overlap without changing its whole

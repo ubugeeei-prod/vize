@@ -55,6 +55,7 @@ body:not(.entry-page) summary.nav-title:focus-visible {
 .content :is(th, td) {
   min-width: 8rem;
   max-width: 28rem;
+  white-space: normal;
   word-break: normal;
   overflow-wrap: normal;
   vertical-align: top;
