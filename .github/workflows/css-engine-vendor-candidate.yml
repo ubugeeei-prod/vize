@@ -109,6 +109,8 @@ jobs:
             ${{ runner.temp }}/css-engine-identity/*/Cargo.toml
             ${{ runner.temp }}/css-engine-identity/*/Cargo.lock
             ${{ runner.temp }}/css-engine-identity/*.txt
+            ${{ runner.temp }}/css-engine-identity/source.sha256
+            ${{ runner.temp }}/css-engine-identity/consumer.rs
             ${{ runner.temp }}/css-engine-identity/semver.log
           if-no-files-found: error
           retention-days: 14
