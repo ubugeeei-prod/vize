@@ -17,14 +17,12 @@ void test("walltime comparisons use the same source and runner without publishin
   );
   assert.deepEqual(workflow.permissions, { contents: "read" });
   assert.deepEqual(workflow.on.pull_request.types, ["opened", "reopened", "labeled"]);
-  assert.deepEqual(Object.keys(workflow.jobs).sort(), [
-    "docs",
-    "js",
-    "n8n-baseline",
-    "n8n-preparation",
-    "native",
-    "rust",
-  ]);
+  assert.deepEqual(
+    Object.keys(workflow.jobs)
+      .filter((name) => name !== "js-native-fault-diagnostic")
+      .sort(),
+    ["docs", "js", "n8n-baseline", "n8n-preparation", "native", "rust"],
+  );
   for (const key of ["docs", "js", "native", "rust"]) {
     const job = workflow.jobs[key];
     assert.equal(job["runs-on"], "blacksmith-32vcpu-ubuntu-2404");

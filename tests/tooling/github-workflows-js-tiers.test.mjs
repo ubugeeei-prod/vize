@@ -58,7 +58,10 @@ void test("PR and merge queue preserve native declaration, type and complete UI 
   );
   assert.equal(steps[0].uses, historyActionPath);
   const testStep = history.runs.steps.find((step) => step.name === "Test JS packages");
-  assert.equal(testStep.run, "vp run --workspace-root test:js");
+  assert.equal(
+    testStep.run,
+    "python3 .github/actions/test-js-packages-with-history/native-fault-evidence.py -- vp run --workspace-root test:js",
+  );
   assert.ok(workflow.jobs["source-report"].needs.includes("pr-js-packages"));
   for (const result of ["failure", "cancelled", "skipped"]) {
     assert.equal(aggregateNeedsResults({ "pr-js-packages": { result } }).exitCode, 1);
@@ -109,11 +112,14 @@ void test("public native evidence remains reachable after prior build or package
   assert.equal(seam.if, selectedHistory);
   assert.equal(seam["continue-on-error"], undefined);
   assert.equal(history.runs.using, "composite");
-  assert.equal(history.runs.steps.length, 6);
+  assert.equal(history.runs.steps.length, 7);
   const [execute, qualification, upload, style, oxlint, cleanup] = history.runs.steps;
   assert.equal(execute.if, "${{ success() && job.status == 'success' }}");
   assert.equal(execute.shell, "bash");
-  assert.equal(execute.run, "vp run --workspace-root test:js");
+  assert.equal(
+    execute.run,
+    "python3 .github/actions/test-js-packages-with-history/native-fault-evidence.py -- vp run --workspace-root test:js",
+  );
   assert.equal(execute["continue-on-error"], undefined);
   assert.equal(qualification.if, "${{ success() && job.status == 'success' }}");
   assert.equal(qualification.shell, "bash");

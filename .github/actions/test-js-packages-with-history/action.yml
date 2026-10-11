@@ -7,7 +7,7 @@ runs:
     - name: Test JS packages
       if: ${{ success() && job.status == 'success' }}
       shell: bash
-      run: vp run --workspace-root test:js
+      run: python3 .github/actions/test-js-packages-with-history/native-fault-evidence.py -- vp run --workspace-root test:js
     - name: Qualify original project checks with both real Oxlint hosts
       id: original-project-qualification
       if: ${{ success() && job.status == 'success' }}
@@ -51,3 +51,11 @@ runs:
       env:
         VIZE_OXLINT_STAGING_DIRECTORY: ${{ steps.original-project-qualification.outputs.staging-directory }}
       run: node npm/oxlint/scripts/project-native-staging.ts --cleanup
+    - name: Preserve bounded JS native fault diagnostics
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: js-native-fault-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}
+        path: ${{ runner.temp }}/js-native-fault-evidence-*/**/*.json
+        if-no-files-found: warn
+        retention-days: 14
