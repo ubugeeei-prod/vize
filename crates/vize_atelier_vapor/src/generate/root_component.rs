@@ -39,4 +39,3 @@ fn collect_if_branch_roots(if_node: &IfIRNode<'_>, roots: &mut FxHashSet<usize>)
         }
     });
 }
-

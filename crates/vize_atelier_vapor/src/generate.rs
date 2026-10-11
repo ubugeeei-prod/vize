@@ -9,8 +9,8 @@ mod expression_retained;
 mod helpers;
 mod names;
 mod operations;
-mod root_key;
 mod root_component;
+mod root_key;
 mod setup;
 pub(crate) mod spans;
 
@@ -18,7 +18,6 @@ use crate::ir::{BlockIRNode, CreateComponentIRNode, NegativeBranch, OperationNod
 use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString, ensure_sufficient_stack};
 
 use context::GenerateContext;
-use root_component::collect_single_root_returns;
 pub(crate) use entry::generate_vapor_with_spans;
 pub use entry::{
     VaporGenerateExperimentalOptions, VaporGenerateOptions, VaporGenerateResult, generate_vapor,
@@ -26,6 +25,7 @@ pub use entry::{
 };
 use helpers::generate_effect;
 use operations::generate_operation;
+use root_component::collect_single_root_returns;
 pub(crate) use setup::escape_js_string_literal;
 
 fn block_has_template_refs(block: &BlockIRNode<'_>) -> bool {
@@ -328,7 +328,6 @@ fn collect_root_if_templates_guarded(
         }
     }
 }
-
 
 #[cfg(test)]
 mod tests;
