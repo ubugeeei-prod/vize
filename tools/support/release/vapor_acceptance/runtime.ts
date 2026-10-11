@@ -4,10 +4,18 @@ import path from "node:path";
 import { createRequire } from "node:module";
 import type { Plugin } from "vite";
 import { publicNative } from "../public_acceptance/installed.ts";
-import { assertTrace, digest, reportedRuntimeEntry, reportedVue, type Row } from "./fixtures.ts";
+import { assertTrace, digest, reportedRuntimeEntry, reportedVue } from "./fixtures.ts";
+import {
+  assertNamespaceTrace,
+  campaignDefinition,
+  type Binding,
+  type PhysicalRow,
+} from "./namespace.ts";
 
 const output = path.resolve(process.env.PUBLIC_OUTPUT!);
 const preparation = JSON.parse(fs.readFileSync(path.join(output, "preparation.json"), "utf8"));
+const campaign = campaignDefinition(preparation.campaign.name);
+assert.deepEqual(preparation.campaign, campaign, "reviewed campaign identity and denominator");
 const publication = JSON.parse(fs.readFileSync(path.join(output, "publication.json"), "utf8"));
 const root = fs.realpathSync(process.cwd());
 assert.equal(root, preparation.consumer);
@@ -48,7 +56,8 @@ const runtimes = [
 for (const entry of preparation.harness)
   assert.equal(digest(fs.readFileSync(path.join(root, entry.file))), entry.sha256, entry.file);
 const receipt: Record<string, unknown> = {
-  schema: "vize-public-reported-vapor-v1",
+  schema: campaign.schema,
+  campaign,
   source: preparation.source,
   version: preparation.version,
   reportedVue,
@@ -105,7 +114,9 @@ async function stock(source: string, filename: string) {
 
 const browser = await chromium.launch({ headless: true });
 const servers: Awaited<ReturnType<typeof createServer>>[] = [];
-const rows = preparation.fixtures.rows as Row[];
+const rows = preparation.fixtures.rows as PhysicalRow[];
+assert.equal(rows.length, campaign.rows);
+assert.equal(new Set(rows.map((row) => row.name)).size, campaign.rows);
 const executedSources: { file: string; sha256: string }[] = [];
 try {
   const traces = new Map<string, unknown>();
@@ -234,6 +245,7 @@ try {
               namespaces: string[];
               events: unknown[];
               svg: unknown;
+              bindings?: Binding[];
             }[] = [];
             const capture = () => {
               const svg = host.querySelector("svg");
@@ -275,6 +287,31 @@ try {
                 namespaces: [...host.querySelectorAll("*")].map((node) => node.namespaceURI!),
                 events: [...events],
                 svg: svgObservation,
+                ...(row.boundIds
+                  ? {
+                      bindings:
+                        host.childNodes.length === 0
+                          ? []
+                          : row.boundIds.map((id) => {
+                              const node = host.querySelector(`#${id}`);
+                              if (!(node instanceof SVGElement || node instanceof HTMLElement))
+                                throw new Error(`missing physical binding ${id}`);
+                              return {
+                                id,
+                                namespace: node.namespaceURI!,
+                                classNameType: Object.prototype.toString.call(node.className),
+                                classAttribute: node.getAttribute("class"),
+                                classProperty:
+                                  node instanceof SVGElement
+                                    ? node.className.baseVal
+                                    : node.className,
+                                styleAttribute: node.getAttribute("style"),
+                                styleColor: node.style.color,
+                                computedColor: getComputedStyle(node).color,
+                              };
+                            }),
+                    }
+                  : {}),
               });
             };
             try {
@@ -331,7 +368,14 @@ try {
         disposal = await page.evaluate(() => Reflect.get(window, "__publicVaporDisposal"));
         assert.equal(disposal.hostChildNodes, 0);
         assert.deepEqual(disposal.afterInvalidation, disposal.retainedMarkup);
-        assertTrace(row, trace);
+        if (campaign.name === "reported") {
+          assert.equal(
+            row.boundIds,
+            undefined,
+            "authored namespace rows cannot enter original campaign",
+          );
+          assertTrace(row, trace);
+        } else assertNamespaceTrace(row, trace);
         if (backend === "vapor") traces.set(row.name, trace);
         else
           assert.deepEqual(
@@ -356,8 +400,8 @@ try {
   }
   assert.equal(
     (receipt.observations as unknown[]).length,
-    16,
-    "sixteen complete traces with actual disposal receipts",
+    campaign.observations,
+    "complete separate campaign traces with actual disposal receipts",
   );
   for (const entry of preparation.harness)
     assert.equal(digest(fs.readFileSync(path.join(root, entry.file))), entry.sha256);
@@ -378,14 +422,15 @@ try {
   fs.copyFileSync(path.join(root, "package-lock.json"), path.join(output, "package-lock.json"));
   receipt.success = true;
   receipt.scope =
-    "Six unchanged original report controls and two authored live SVG/update/removal controls on installed public Vize and exact reported Vue 3.6.0-rc.10 in real Chromium, with complete independent VDOM traces, physical SVG dimensions/computed color and actual unmount. No SSR, full Vapor parity or n8n umbrella credit.";
+    campaign.name === "reported"
+      ? "Six unchanged original report controls and two authored live SVG/update/removal controls on installed public Vize and exact reported Vue 3.6.0-rc.10 in real Chromium, with complete independent VDOM traces, physical SVG dimensions/computed color and actual unmount. No SSR, full Vapor parity or n8n umbrella credit."
+      : "One separately authored inherited SVG/HTML integration-point case on installed public Vize and exact Vue 3.6.0-rc.10 in real Chromium: complete independent VDOM mount/update/clear/unmount traces, five physical SVGAnimatedString and two HTML class bindings, inline style removal and actual disposal. No original six-report, SSR, full Vapor parity or n8n umbrella credit.";
   persist();
   console.log(
     JSON.stringify({
       source: preparation.source,
       reportedVue,
-      original: 6,
-      authored: 2,
+      ...campaign,
       success: true,
     }),
   );

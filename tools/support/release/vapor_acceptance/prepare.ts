@@ -8,11 +8,14 @@ import { rejectOverrides } from "../public_acceptance/installed.ts";
 import { derivePublicationPlan, readRawBlob } from "../public_acceptance/plan.ts";
 import { verifyPublication } from "../public_acceptance/registry.ts";
 import { digest, materializeFixtures, reportedVue } from "./fixtures.ts";
+import { campaignDefinition, materializeNamespaceFixtures } from "./namespace.ts";
 
 rejectOverrides();
 assert.equal(process.env.GITHUB_REPOSITORY, "ubugeeei-prod/vize");
 assert.equal(process.env.GITHUB_REF, "refs/heads/main");
 const root = fs.realpathSync(process.cwd());
+assert.ok(process.argv.length <= 3, "one explicit reviewed campaign selector at most");
+const campaign = campaignDefinition(process.argv[2] ?? "reported");
 const source = publicInputs(process.env);
 const plan = derivePublicationPlan(root, source.head);
 const publication = await verifyPublication(plan, source);
@@ -22,7 +25,12 @@ const consumer = fs.mkdtempSync(
   path.join(fs.realpathSync(process.env.RUNNER_TEMP!), "vize-public-vapor-"),
 );
 assert.ok(!consumer.startsWith(root + path.sep));
-const fixtures = materializeFixtures(consumer, (file) => readRawBlob(root, source.head, file));
+const read = (file: string) => readRawBlob(root, source.head, file);
+const fixtures =
+  campaign.name === "reported"
+    ? materializeFixtures(consumer, read)
+    : materializeNamespaceFixtures(consumer, read);
+assert.equal(fixtures.rows.length, campaign.rows);
 const dependencies = Object.fromEntries(
   [
     "vize",
@@ -56,6 +64,7 @@ const directory = fileURLToPath(new URL("./", import.meta.url));
 const harness = [
   ["vapor_acceptance/runtime.ts", path.join(directory, "runtime.ts")],
   ["vapor_acceptance/fixtures.ts", path.join(directory, "fixtures.ts")],
+  ["vapor_acceptance/namespace.ts", path.join(directory, "namespace.ts")],
   ["public_acceptance/installed.ts", path.join(directory, "../public_acceptance/installed.ts")],
 ].map(([file, origin]) => {
   const bytes = fs.readFileSync(origin);
@@ -71,6 +80,7 @@ save("preparation.json", {
   consumer,
   version: plan.version,
   reportedVue,
+  campaign,
   fixtures,
   harness,
   observer: execFileSync("git", ["--no-replace-objects", "rev-parse", "HEAD"], {
@@ -83,4 +93,4 @@ fs.appendFileSync(
   process.env.GITHUB_ENV!,
   `PUBLIC_VAPOR_CONSUMER=${consumer}\nPUBLIC_VERSION=${plan.version}\n`,
 );
-console.log(JSON.stringify({ source, reportedVue, original: 6, authored: 2, prepared: true }));
+console.log(JSON.stringify({ source, reportedVue, ...campaign, prepared: true }));
