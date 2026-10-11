@@ -1,0 +1,358 @@
+{
+  "schema": "vize.lint.bare-reserved-primary-sources",
+  "version": 1,
+  "authority": "Pinned primary sources and package byte custody retained before observation. The corpus supplies independently authored complete expectations; the observer does not capture or update them.",
+  "provider": {
+    "packages": [
+      {
+        "name": "eslint",
+        "version": "9.39.1",
+        "resolved": "https://registry.npmjs.org/eslint/-/eslint-9.39.1.tgz",
+        "integrity": "sha512-BhHmn2yNOFA9H9JmmIVKJmd288g9hrVRDkdoIgRCRuSySRUHH7r/DI6aAXW9T1WwUuY3DFgrcaqB+deURBLR5g==",
+        "packageJsonSha256": "57420ad8ec78eaf062f2cae77ce801e6ece8297ce6a9c2f48e320fa7dc61ac53",
+        "installedFileCount": 426,
+        "installedFileTreeSha256": "41b149f77239ad3cec6f3cd0fce91723b2d5ae736c868b4adad58f8ba37c36d8"
+      },
+      {
+        "name": "eslint-plugin-vue",
+        "version": "10.9.2",
+        "resolved": "https://registry.npmjs.org/eslint-plugin-vue/-/eslint-plugin-vue-10.9.2.tgz",
+        "integrity": "sha512-4g7ZP3pYcuqd7Zp0pzUKcos0W+RkjBz4EGdhJ92FcYk6v03Ti/GK5NwjgsjxHK+98eXDbHeK7VtX1az7/8doZA==",
+        "packageJsonSha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761",
+        "installedFileCount": 340,
+        "installedFileTreeSha256": "57749c05bdfebd6fca26c239eda9e8a49b110b1eb888d1bbf1d04f18a1a0e9c0"
+      },
+      {
+        "name": "vue-eslint-parser",
+        "version": "10.4.1",
+        "resolved": "https://registry.npmjs.org/vue-eslint-parser/-/vue-eslint-parser-10.4.1.tgz",
+        "integrity": "sha512-Gk6gRDj0n/fkRa3C3l0bBheoBckUq/Rs0F/TvMWIS6nzzx67amAViMe9CkNgsP2tXyQONvGiHQESHwFtZ3aYDA==",
+        "packageJsonSha256": "1fc15ea1c21b91e7764982691b84c599e00f9ed7953b2956a659fa16c68580b2",
+        "installedFileCount": 6,
+        "installedFileTreeSha256": "df7a552b1002fc4923f9ff0196f259681aba05c03a7a7e2ae54ec95e0727e92d"
+      }
+    ],
+    "repositoryCommit": "9aa463a4aa4ad3c37d7facacda2e40ad7880ea92",
+    "npmGitHeadVerified": true,
+    "packageLockSha256": "9a98150fd107ca689c057a48e6848e0becb36ba3519724f60032fe97c7183f1f",
+    "files": [
+      {
+        "path": "package.json",
+        "sha256": "5efb3bb5d55d3b14c933394f493d551e3d93cf17e68acd48d4930d20f6f4fad8",
+        "bytes": 160
+      },
+      {
+        "path": "node_modules/eslint/package.json",
+        "sha256": "57420ad8ec78eaf062f2cae77ce801e6ece8297ce6a9c2f48e320fa7dc61ac53",
+        "bytes": 7225
+      },
+      {
+        "path": "node_modules/eslint/lib/api.js",
+        "sha256": "c1d8fefc086c8f938db6e8992b56173f183f7949743c9300f674c83c3191f55e",
+        "bytes": 1609
+      },
+      {
+        "path": "node_modules/eslint/lib/eslint/eslint.js",
+        "sha256": "546a6a9dcb2a6f73ad0961492ef6a346a57a4ae88fe300fb05f44f2ffd0c2773",
+        "bytes": 42128
+      },
+      {
+        "path": "node_modules/eslint/lib/eslint/eslint-helpers.js",
+        "sha256": "82e8a293c3491a43361acb1f58c75aa823f4bd361aad63eb7500c22b4d532d8c",
+        "bytes": 45262
+      },
+      {
+        "path": "node_modules/eslint-plugin-vue/package.json",
+        "sha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761",
+        "bytes": 4437
+      },
+      {
+        "path": "node_modules/eslint-plugin-vue/dist/index.js",
+        "sha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017",
+        "bytes": 268
+      },
+      {
+        "path": "node_modules/eslint-plugin-vue/dist/rules/no-reserved-keys.js",
+        "sha256": "f1a390ef50439b87ee88f348d14e276b8edff14733d87f2c374754aff7157652",
+        "bytes": 2481
+      },
+      {
+        "path": "node_modules/eslint-plugin-vue/dist/utils/vue-reserved.js",
+        "sha256": "2aab87c42b5c53542e317c34bf65e8d926c34d3d5bbb11b69806a3581f713695",
+        "bytes": 678
+      },
+      {
+        "path": "node_modules/eslint-plugin-vue/dist/utils/index.js",
+        "sha256": "4727c10651f789ee6308b4311f3694dd302faae9e5b821ae4b31432c3b105925",
+        "bytes": 80367
+      },
+      {
+        "path": "node_modules/vue-eslint-parser/package.json",
+        "sha256": "1fc15ea1c21b91e7764982691b84c599e00f9ed7953b2956a659fa16c68580b2",
+        "bytes": 2524
+      },
+      {
+        "path": "node_modules/vue-eslint-parser/dist/index.cjs",
+        "sha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087",
+        "bytes": 319510
+      }
+    ],
+    "packageLock": {
+      "encoding": "gzip-base64",
+      "rawBytes": 41638,
+      "sha256": "9a98150fd107ca689c057a48e6848e0becb36ba3519724f60032fe97c7183f1f",
+      "completePacket": "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"
+    }
+  },
+  "primarySources": {
+    "eslintPluginVueCommit": "9aa463a4aa4ad3c37d7facacda2e40ad7880ea92",
+    "vueCommit": "8be32d654f5c99de2801d6815e0dc798fb1f7d00",
+    "files": [
+      {
+        "path": "no-reserved-keys.js",
+        "url": "https://raw.githubusercontent.com/vuejs/eslint-plugin-vue/9aa463a4aa4ad3c37d7facacda2e40ad7880ea92/lib/rules/no-reserved-keys.js",
+        "sha256": "bd74a8aaf14c0a8fbaae23a45d190cab6813193f3a5f3e2a347682c4c9335f23",
+        "bytes": 2579
+      },
+      {
+        "path": "vue-reserved.json",
+        "url": "https://raw.githubusercontent.com/vuejs/eslint-plugin-vue/9aa463a4aa4ad3c37d7facacda2e40ad7880ea92/lib/utils/vue-reserved.json",
+        "sha256": "7d9c94287911392a3cabf58933b2be807a4a33cf419caf67b7df19ac717f086d",
+        "bytes": 307
+      },
+      {
+        "path": "componentPublicInstance.ts",
+        "url": "https://raw.githubusercontent.com/vuejs/core/8be32d654f5c99de2801d6815e0dc798fb1f7d00/packages/runtime-core/src/componentPublicInstance.ts",
+        "sha256": "13a917fcccc2bc0e0fa9b03f971b7a5d15bc4ee4fdf5a0a239467fa69216db94",
+        "bytes": 20526
+      },
+      {
+        "path": "componentOptions.ts",
+        "url": "https://raw.githubusercontent.com/vuejs/core/8be32d654f5c99de2801d6815e0dc798fb1f7d00/packages/runtime-core/src/componentOptions.ts",
+        "sha256": "83837043d83cffd2f0904760f97e6a31ae74e6559d95e14e844dd8a529cbd889",
+        "bytes": 32887
+      }
+    ]
+  },
+  "referenceContract": {
+    "reservedKeys": [
+      "$data",
+      "$props",
+      "$el",
+      "$options",
+      "$parent",
+      "$root",
+      "$children",
+      "$slots",
+      "$scopedSlots",
+      "$refs",
+      "$isServer",
+      "$attrs",
+      "$listeners",
+      "$watch",
+      "$set",
+      "$delete",
+      "$on",
+      "$once",
+      "$off",
+      "$emit",
+      "$mount",
+      "$forceUpdate",
+      "$nextTick",
+      "$destroy"
+    ],
+    "groups": ["props", "computed", "data", "asyncData", "methods", "setup"],
+    "underscoreGroups": ["data", "asyncData"],
+    "injectIncluded": false,
+    "bareNamesReserved": false,
+    "vueRuntimePublicMap": {
+      "path": "packages/runtime-core/src/componentPublicInstance.ts",
+      "startLine": 361,
+      "endLine": 393
+    },
+    "vueRuntimeDataExposure": {
+      "path": "packages/runtime-core/src/componentOptions.ts",
+      "startLine": 640,
+      "endLine": 650
+    },
+    "retainedProviderDifferences": [
+      "Patina reserves arbitrary $-prefixed keys; provider reserves only exact vue-reserved.json names.",
+      "Patina reserves arbitrary underscore-prefixed keys across its tracked groups; provider underscore check is limited to data/asyncData.",
+      "Patina tracks inject while the provider default no-reserved-keys groups omit inject; asyncData provider behavior is not added by this narrow correction."
+    ]
+  },
+  "publicBefore": {
+    "tag": "v0.443.0",
+    "sourceCommit": "15e116fa258c7aaba5c6fdd2456442535605abe8",
+    "binarySha256": "9ad7cf956351265a152a9bbfa08b8c50c85dadacef66529474bbb6170267e254",
+    "archiveSha256": "6378e10d0fa0568a0c1798b48d99b18a01f3e842f8c765fb11b80b638f39a73e",
+    "publicReleaseRun": 38081199501,
+    "referencePacket": "original-public-before.json"
+  },
+  "matrix": {
+    "path": "original-matrix-packet.json.gz",
+    "sha256": "8dd2c90853351ff15bc180098bdcdf4e711276e59ee1c99a25fe7588b89b8cd2",
+    "bytes": 115100,
+    "uncompressedSha256": "721a5cc74a1cdc9ca5a01bc029e75848edb661edad7034eeb6c6d821cb7b5ca3",
+    "uncompressedBytes": 3009814,
+    "project": "wave-ui",
+    "revision": "a95a3bb1d65369de9befed6341bdc56bb5de075a",
+    "sourceCommit": "9466fdbb90bfae8803d5e57ae267b656be051721",
+    "comparedFiles": 219,
+    "falsePositiveCount": 83,
+    "falseNegativeCount": 0,
+    "allFalsePositivesRule": "script/no-reserved-keys"
+  },
+  "observer": {
+    "path": "observe-before.mjs",
+    "sha256": "e99f90b8276748938160b997a58f67015744652656efbdad6e7a9134426bc80a",
+    "wholeJson": {
+      "path": "tests/tooling/lint-default-correctness-reference.mjs",
+      "sha256": "d0fe46840f15d3aee0cad8b0394b4c67dd1f738a9ddaba39f55073fefd9df6b7"
+    },
+    "nativeConfig": {
+      "linter": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-reserved-keys": "error"
+        }
+      }
+    },
+    "providerConfig": {
+      "files": ["**/*.vue"],
+      "parser": "vue-eslint-parser@10.4.1",
+      "languageOptions": {
+        "ecmaVersion": 2022,
+        "sourceType": "module",
+        "parserOptions": {
+          "ecmaVersion": 2022,
+          "sourceType": "module"
+        }
+      },
+      "plugins": ["eslint-plugin-vue@10.9.2"],
+      "rules": {
+        "vue/no-reserved-keys": "error"
+      },
+      "overrideConfigFile": true,
+      "ignore": false
+    },
+    "projectionCorrection": {
+      "reason": "Initial observer removed help for help-level none, but the pinned rule unconditionally attaches help and the pinned JSON serializer unconditionally retains it. Full source-authored diagnostics and provider vectors remain unchanged. The complete failed receipt is retained as compressed priorAttempt bytes in original-public-before.json.",
+      "initialHelperSha256": "add1101b5b4e01f4e4ef9323740e6140435c60bea555c002589bf2d36b619cd1",
+      "initialNativeReceiptSha256": "2c656187eb54af51457b0cbf664d2039b5da26809acc358508a5f6524e7aa263",
+      "evidence": [
+        {
+          "path": "crates/vize_patina/src/rules/script/no_reserved_keys.rs",
+          "url": "https://raw.githubusercontent.com/ubugeeei-prod/vize/15e116fa258c7aaba5c6fdd2456442535605abe8/crates/vize_patina/src/rules/script/no_reserved_keys.rs",
+          "sha256": "8a927171640508346d4d62846433ace2d6919b3b7fbcdb4f85a540302fb98fdd",
+          "bytes": 9052
+        },
+        {
+          "path": "crates/vize_patina/src/output/json.rs",
+          "url": "https://raw.githubusercontent.com/ubugeeei-prod/vize/15e116fa258c7aaba5c6fdd2456442535605abe8/crates/vize_patina/src/output/json.rs",
+          "sha256": "32937f0714c101c226814a2fe3c3a3ae7aadab54a289aafcbe84809b7f146fdc",
+          "bytes": 2810
+        }
+      ]
+    }
+  },
+  "corpus": {
+    "path": "cases.json",
+    "sha256": "498ecc06838197424a3f59113a48c8bb45f9acd70cd7542f837607d5cd2a9131",
+    "cases": [
+      {
+        "id": "bare-data-all14",
+        "filename": "BareData.vue",
+        "sourceSha256": "5e94563d15bcbf152f5e973a5bf23b22e5fb2ff5ec4db4ea1eb7f35b7d47df21"
+      },
+      {
+        "id": "bare-props-object-all14",
+        "filename": "BarePropsObject.vue",
+        "sourceSha256": "5213c38212f3093c3140e7b5c47927d1252aa7ba95c8c5c610c53bbd5b650188"
+      },
+      {
+        "id": "bare-props-array-all14",
+        "filename": "BarePropsArray.vue",
+        "sourceSha256": "f9c1b06ee30ed31cd44a3817e10e12570ba2b461add449b5334348a8af926292"
+      },
+      {
+        "id": "bare-computed-all14",
+        "filename": "BareComputed.vue",
+        "sourceSha256": "65823e8579fb0dae7ad0b1d9d5d8a9e7f4f47080d32418cab98c0c0b41d26745"
+      },
+      {
+        "id": "bare-methods-all14",
+        "filename": "BareMethods.vue",
+        "sourceSha256": "ac6d25a29ca5641b98b1277851ac3733e5a42c4b5cd39342704716f008e5db90"
+      },
+      {
+        "id": "bare-setup-return-all14",
+        "filename": "BareSetup.vue",
+        "sourceSha256": "7922f88e6b96ee2c1735546e4597d33f68b996884d3f60ef131c2f76610e1517"
+      },
+      {
+        "id": "bare-inject-object-all14",
+        "filename": "BareInjectObject.vue",
+        "sourceSha256": "4d7d97d115fdaeb292254f9f226d36d94a32d7a8d478d2a9ecf5171e684bcbf5"
+      },
+      {
+        "id": "bare-inject-array-all14",
+        "filename": "BareInjectArray.vue",
+        "sourceSha256": "59ef5583a9e70a21076012ec8c0c99bccea9f472e637e98f856675adfd3b6136"
+      },
+      {
+        "id": "mixed-bare-and-prefix-data",
+        "filename": "MixedData.vue",
+        "sourceSha256": "868fa8bb41df3cbc5a44e69766ee967998ea88a9979c07bf46212134245515af"
+      },
+      {
+        "id": "prefix-props-policy-control",
+        "filename": "PrefixProps.vue",
+        "sourceSha256": "e7bd9bbcf3b86397b585b956cae2d605454c15dfe57d645680472fb7a6119ab9"
+      },
+      {
+        "id": "prefix-computed-methods-control",
+        "filename": "PrefixComputedMethods.vue",
+        "sourceSha256": "aa5fbd18e7d4f73dba492c7f17080999cb2d51931e3f292e752541a526cab6a2"
+      },
+      {
+        "id": "prefix-setup-inject-control",
+        "filename": "PrefixSetupInject.vue",
+        "sourceSha256": "578f351b6658c9fc045dcad601a17767a44dfb7858ca095d8433c67529a2694e"
+      },
+      {
+        "id": "similar-and-case-different-names",
+        "filename": "NearNames.vue",
+        "sourceSha256": "81d4bdd4fd16fb3aa268ae6f4929b3870c6f32b741f8c6ca3938b1fdeaa3c3a9"
+      },
+      {
+        "id": "untracked-option-groups",
+        "filename": "OutsideGroups.vue",
+        "sourceSha256": "096101aea0639c2e11a2f940c9608addcd12ea9409603d26a96d92c4e3767199"
+      },
+      {
+        "id": "script-setup-locals",
+        "filename": "SetupLocals.vue",
+        "sourceSha256": "19b35fb7cd3da449291cc73c0d27d62537636f9d787b29c724a92e7fb6cee284"
+      },
+      {
+        "id": "quoted-escaped-utf8-crlf",
+        "filename": "QuotedUnicode.vue",
+        "sourceSha256": "8aa46fc777281cb5c98286977fcc7cfce9b12f5062dc155f39995340450c4c27"
+      }
+    ],
+    "initialFrozenSha256": "8a10a85f25da50635b743b9dd73273c32c59aa57a990d6dc92d765fbed9c82cd"
+  },
+  "realFile": {
+    "repository": "https://github.com/antoniandre/wave-ui",
+    "revision": "a95a3bb1d65369de9befed6341bdc56bb5de075a",
+    "originalPath": "src/documentation/views/ui-components/accordion/api.vue",
+    "path": "original-wave-ui-accordion.vue.fixture",
+    "url": "https://raw.githubusercontent.com/antoniandre/wave-ui/a95a3bb1d65369de9befed6341bdc56bb5de075a/src/documentation/views/ui-components/accordion/api.vue",
+    "sha256": "3312b54575de99e7026851bcbac68c7edef605374718ecd8a727f656e7d903d6",
+    "bytes": 11190,
+    "evidenceStatus": "expectations-authored-before-real-file-observation",
+    "expectationsPath": "original-wave-ui-accordion.json",
+    "expectationsSha256": "8e5e4ab869cacd0a746cb1907e6cb1f9ae170bb5dd65c6f59fe8c37d1420010a"
+  }
+}

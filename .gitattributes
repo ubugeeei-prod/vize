@@ -110,3 +110,6 @@ tests/_fixtures/differential/lsp/data-aria-attributes-8015/** -text whitespace=c
 tests/_fixtures/differential/lint/oxlint-script-safe-carrier-7903/** -text whitespace=cr-at-eol
 tests/_fixtures/differential/formatter-regressions/sole-child-width-7876/** -text
 tests/_fixtures/differential/formatter-regressions/closing-child-width-7876/** -text
+
+# Authored bare-name diagnostics retain quoted Unicode and CRLF source bytes.
+tests/_fixtures/differential/lint/bare-reserved-8090/QuotedUnicode.vue.fixture -text whitespace=cr-at-eol

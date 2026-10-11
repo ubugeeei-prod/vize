@@ -1,0 +1,4 @@
+<script lang="ts">
+const café = "😀";
+export default { data() { return { "data": 0, 'props': 0, '\u0065mit': 0, '$data': 0, '_private': 0 } } }
+</script>

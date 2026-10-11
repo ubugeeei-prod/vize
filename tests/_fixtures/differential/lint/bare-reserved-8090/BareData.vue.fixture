@@ -1,0 +1,3 @@
+<script lang="ts">
+export default { data() { return { el: 0, data: 0, props: 0, attrs: 0, slots: 0, refs: 0, parent: 0, root: 0, options: 0, emit: 0, nextTick: 0, watch: 0, forceUpdate: 0, isMounted: 0 } } }
+</script>
