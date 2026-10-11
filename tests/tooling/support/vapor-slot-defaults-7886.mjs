@@ -23,12 +23,16 @@ async function stock(source, filename) {
   // The independent target is VDOM even when the unchanged source requests
   // Vapor. Vue also drops empty script blocks while parsing: those components
   // use its normal empty-script component and unchanged compiled template.
-  const script = descriptor.script || descriptor.scriptSetup
-    ? compiler.compileScript({ ...descriptor, vapor: false }, {
-        id: "slot-defaults",
-        genDefaultAs: "__component",
-      })
-    : { content: "const __component = {};", bindings: {} };
+  const script =
+    descriptor.script || descriptor.scriptSetup
+      ? compiler.compileScript(
+          { ...descriptor, vapor: false },
+          {
+            id: "slot-defaults",
+            genDefaultAs: "__component",
+          },
+        )
+      : { content: "const __component = {};", bindings: {} };
   const template = compiler.compileTemplate({
     source: descriptor.template.content,
     filename,
