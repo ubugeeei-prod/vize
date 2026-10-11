@@ -25,8 +25,10 @@ represents a base change with `ref.from` and `sha.from`, separately from
 `changes.body` and `changes.title`.
 
 Metadata-only edits use a unique run-ID concurrency group and skip the job.
-Their check is named `Native phase metadata edit ignored`, keeping the genuine
-`Actual CLI shard native phase evidence` check intact. A job condition alone
+Their configured name selects `Native phase metadata edit ignored`, keeping
+the genuine `Actual CLI shard native phase evidence` check intact. GitHub leaves
+a skipped job name expression unevaluated; that literal context also remains
+distinct from the genuine evidence context. A job condition alone
 would still cancel genuine work at workflow concurrency admission. Reusing the
 genuine check name for a skipped metadata event would also confuse current
 evidence. [GitHub's concurrency documentation](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#concurrency)
@@ -46,7 +48,11 @@ prove that both running and pending genuine evidence survive, and retain all
 source/new-head/manual/base-change execution. The old shared-group policy is a
 counterfactual cancellation control.
 
-Fresh exact-head Actions and protected merge qualification remain required.
+Hosted source `9d58deb` metadata run [38107363044](https://github.com/ubugeeei-prod/vize/actions/runs/38107363044)
+skipped while genuine native run [38107284879](https://github.com/ubugeeei-prod/vize/actions/runs/38107284879)
+stayed active. That unchanged-source routing witness is historical after any
+successor; all fresh exact-head Actions and protected merge qualification remain
+required.
 After actual merge, verify that a genuine source run stays active during a
 necessary metadata edit and that a real base retarget still reruns the workload.
 This event-routing fix grants no type-checker performance or accuracy credit.

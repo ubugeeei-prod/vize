@@ -55,10 +55,12 @@ function evaluate(value, github) {
 }
 
 function plan(github) {
+  const runs = Boolean(evaluate(job.if, github));
   return {
     group: evaluate(workflow.concurrency.group, github),
-    name: evaluate(job.name, github),
-    runs: Boolean(evaluate(job.if, github)),
+    // Hosted skipped jobs retain their literal name expression.
+    name: runs ? evaluate(job.name, github) : job.name,
+    runs,
   };
 }
 
@@ -66,7 +68,7 @@ function displacedBy(active, incoming) {
   return active.group === incoming.group && workflow.concurrency["cancel-in-progress"];
 }
 
-test("body/title edits neither restart nor replace running or pending source evidence", () => {
+void test("body/title edits neither restart nor replace running or pending source evidence", () => {
   const source = plan(pullRequest("synchronize", undefined, 99));
   assert.equal(workflow.concurrency["cancel-in-progress"], true);
   for (const changes of [bodyChange, titleChange, { ...bodyChange, ...titleChange }, {}]) {
@@ -87,7 +89,7 @@ test("body/title edits neither restart nor replace running or pending source evi
   assert.equal(displacedBy({ group: oldGroup }, { group: oldGroup }), true);
 });
 
-test("real base retargets keep the original evidence name and supersede stale source runs", () => {
+void test("real base retargets keep the original evidence name and supersede stale source runs", () => {
   const original = plan(pullRequest("synchronize", undefined, 99));
   for (const changes of [baseChange, { ...baseChange, ...bodyChange, ...titleChange }]) {
     const retarget = plan(pullRequest("edited", changes));
@@ -98,7 +100,7 @@ test("real base retargets keep the original evidence name and supersede stale so
   }
 });
 
-test("all source/new-head triggers and immutable manual evidence remain enabled", () => {
+void test("all source/new-head triggers and immutable manual evidence remain enabled", () => {
   assert.deepEqual(workflow.on.pull_request.types, ["opened", "synchronize", "reopened", "edited"]);
   assert.equal(workflow.on.workflow_dispatch.inputs.source_sha.required, true);
   assert.ok(
