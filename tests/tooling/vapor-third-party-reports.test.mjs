@@ -85,6 +85,26 @@ void test("KeepAlive coverage uses one explicit successor and preserves every or
   );
   assert.equal(authority.source, "<KeepAlive><Component /></KeepAlive>");
   assert.equal(authority.publicationQualification, false);
+  const captured = file(authority.currentPublicEmissions);
+  assert.equal(hash(captured), authority.currentPublicEmissionsSha256);
+  const emissions = JSON.parse(captured);
+  assert.equal(emissions.diagnosticOnly, true);
+  assert.equal(emissions.publicationQualification, false);
+  assert.deepEqual(
+    emissions.rows.map((row) => row.version),
+    ["3.6.0-rc.9", "3.6.0-rc.10"],
+  );
+  for (const row of emissions.rows) {
+    assert.equal(row.source, authority.source);
+    assert.equal(hash(row.source), row.sourceSha256);
+    assert.equal(hash(row.code), row.codeSha256);
+    assert.ok(row.registry.startsWith("https://registry.npmjs.org/@vue/compiler-vapor/"));
+    assert.ok(row.integrity.startsWith("sha512-"));
+  }
+  assert.equal(
+    emissions.rows[0].code.replace(authority.onlyChange.before, authority.onlyChange.after),
+    emissions.rows[1].code,
+  );
   const producer = file("tests/vize_test_runner/src/expectation_successors.rs").toString();
   assert.ok(producer.includes('path.ends_with("tests/expected/vapor/component.snap")'));
   assert.ok(producer.includes('case.name == "KeepAlive"'));

@@ -78,3 +78,11 @@ only for the exact canonical path, original case name and whole source. Pin both
 whole authorities and the existing authored full VDOM KeepAlive control hashes.
 Every original fixture still executes; coverage minima and failure policy stay
 unchanged. Source and protected successor checks must pass before readmission.
+
+Fresh public compiler diagnosis additionally captures the complete rc.9 and
+rc.10 KeepAlive emissions, exact whole input/options and npm registry/SRI/lock
+identities. Rc.10 corrects precisely the omitted no-props child root arguments;
+every other complete emission byte equals rc.9. That current official behavior
+corroborates the successor call. Retain the original historical snapshot's slot
+representation and every other byte, alongside the full authored VDOM controls.
+Compiler-only receipts provide no installed Vize or publication acceptance.
