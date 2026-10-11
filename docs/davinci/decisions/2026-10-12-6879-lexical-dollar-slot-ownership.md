@@ -120,3 +120,40 @@ no historical checkout, network fetch or unavailable-history skip. Runtime
 admission still hashes both actual Git source sides through the existing
 regular-blob reader. This is finite source enrollment and grants no native,
 original400 result, performance, full App or release credit.
+
+## Hosted supplemental enrollment
+
+The existing native-phase driver invokes a purpose-specific lexical helper only
+after its original default-prop/imported-runtime/editor receipt is complete.
+It requires that same official native 7.0.2 executable and package SHA, successful
+version probe and source identity. One cached `ci-opt` Canon library `--no-run`
+builder emits the executable receipt; that same executable runs the six exact
+producer laws and the one exact nine-observation native law. Default features,
+Rust/Cargo 1.99.0, the original profile arguments and required-native environment
+are retained. This does not introduce another full Vize builder.
+
+The observer binds its copied helpers, nine Rust bodies, 21 complete corpus
+bodies and build inputs to actual no-replace Git HEAD/tree/mode/blob identities.
+It retains the complete Cargo artifact/argv/status, test and native binary bytes
+by SHA/size, the original native receipt, installed Vue manifest, six test names,
+complete producer scope packets and unique ordered `000` through `008` CLI
+packets. Each observation must match its complete expected vector, authored
+inputs, actual cwd/config/runtime, generated code and nonempty complete source
+maps. Whole raw native streams and terminal status must agree with that result.
+Generated source-map custody supplies no independently derived mapped semantics.
+PID, engine-normalized options and engine loaded-file membership remain explicitly
+unobserved. Existing original400, App and performance gates keep their authority.
+
+Separate nonexecuted packet fixtures exercise the observer's complete positive
+contract and missing/skipped/partial/wrong-runtime/changed-source/vector/config
+refusals. These parser laws execute no native process and grant no native or
+performance credit. Hosted lexical execution remains pending until the actual
+exact-head run and complete artifact pass these checks.
+
+TODO: the whole App/Stack remains blocked independently. The authenticated 7be
+full App vector leaves ReKa's three `TS7006` and one `TS2305` errors; Nuxt UI has
+534 `TS2308` collisions involving synthetic `Props`/`Emits`/`Slots` exported
+through authored star barrels (source attribution only). Prove authored
+star-barrel exports against a genuine native baseline and retain real duplicate
+authored-export refusals before a separate repair or any golden migration.
+No barrel production or test body changes belong to this lexical slice.
