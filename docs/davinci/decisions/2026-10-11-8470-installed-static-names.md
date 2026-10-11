@@ -30,8 +30,22 @@ started. Initialize the evidence path from `RUNNER_TEMP` in the first bash step 
 
 The original eight previews and the complete six-Self/globals browser law passed in
 a fresh public v0.443.0 macOS arm64 review. That observation is local evidence, not
-Linux delivery completion. A successful official Linux workflow run with its exact
-tuple and retained receipts remains required before recommending these issues closed.
+Linux delivery completion. The official Linux workflow subsequently passed on
+[run 38153597885](https://github.com/ubugeeei-prod/vize/actions/runs/38153597885),
+after [#8654](https://github.com/ubugeeei-prod/vize/pull/8654) actually merged as
+`c03cc461134dc62d77a3936c666cad4bcd98cd71` with protected full Check success.
+The dispatch observer is `a5625e141eb1194cf635dd58e5674e356145137e`; the accepted
+public v0.443.0 tuple is C `123c0f363d90bfa20cbf669f52ddb85343332568`,
+H `15e116fa258c7aaba5c6fdd2456442535605abe8`, source PR #8541 and successful
+Release R `38081199501`. Authenticated artifact `11707318747` has ZIP SHA-256
+`7712154a17cd7cf4af32d04219ea46bd375653275e956de74d0ed2fc384344a1`; independent
+download comparison retained all 413 files, six public archives and 282 authenticated
+package-file hashes, actual loaded GNU native/provider and plugin identities.
+The full three-law census passes with zero skips: eight reported/ordinary previews,
+all twenty serialized inline documents, six Self variants across three globals
+phases, unchanged Documents/setup counts on globals updates, and eight physical PNGs.
+Original H sources, reversible adapters, HTTP bytes, package lock and provider hashes
+remain unchanged. This completes the narrow #8470/#8478 public Linux terminal oracles.
 This observer grants no aggregate release, literal-object-key, VRT, hosted HTTPS
 companion, LSP, complete platform matrix or broader n8n acceptance credit. Those
 issues retain their independent terminal oracles.
