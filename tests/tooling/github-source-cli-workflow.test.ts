@@ -19,6 +19,7 @@ type Job = {
   steps?: Step[];
   with?: Record<string, string>;
   env?: Record<string, string>;
+  outputs?: Record<string, string>;
 };
 const source = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as {
   jobs: Record<string, Job>;
@@ -76,7 +77,7 @@ void test("one original CLI/oracle build supplies each digest-strict consumer wi
     assert.equal(step.if, "${{ inputs.run-cli }}");
     assert.notEqual(step["continue-on-error"], true);
   }
-  const name = "source-cli-${{ github.run_id }}-${{ github.run_attempt }}";
+  const name = "source-cli-${{ github.run_id }}-${{ steps.pack.outputs.producer-attempt }}";
   assert.equal(steps[upload].with?.name, name);
   assert.equal(steps[upload].with?.["if-no-files-found"], "error");
   assert.equal(
@@ -90,11 +91,23 @@ void test("one original CLI/oracle build supplies each digest-strict consumer wi
   );
   const tests = consumers.findIndex((step) => step.name === "Test selected PR tooling scripts");
   assert.ok(restore >= 0 && restore < tests);
-  assert.equal(restoreAction.runs.steps[0].with?.name, name);
-  assert.equal(restoreAction.runs.steps[0].with?.["digest-mismatch"], "error");
-  assert.equal(restoreAction.runs.steps[0].with?.["run-id"], undefined);
-  assert.equal(consumers[restore].with?.sha256, "${{ needs.pr-source-cli.outputs.sha256 }}");
-  assert.match(restoreAction.runs.steps[1].run ?? "", /source-cli-artifact\.ts restore/);
+  assert.equal(
+    restoreAction.runs.steps[1].with?.name,
+    "source-cli-${{ github.run_id }}-${{ steps.producer.outputs.producer-attempt }}",
+  );
+  assert.equal(
+    producer.on.workflow_call.outputs["producer-attempt"].value,
+    "${{ jobs.cli.outputs.producer-attempt }}",
+  );
+  assert.equal(
+    producer.jobs.cli.outputs?.["producer-attempt"],
+    "${{ steps.pack.outputs.producer-attempt }}",
+  );
+  assert.equal(consumers[restore].with?.producer, "${{ toJSON(needs.pr-source-cli.outputs) }}");
+  assert.equal(restoreAction.inputs.producer.required, true);
+  assert.equal(restoreAction.runs.steps[1].with?.["digest-mismatch"], "error");
+  assert.equal(restoreAction.runs.steps[1].with?.["run-id"], undefined);
+  assert.match(restoreAction.runs.steps[2].run ?? "", /source-cli-artifact\.ts restore/);
   assert.doesNotMatch(
     consumers.map((step) => step.run ?? "").join("\n"),
     /cargo build --profile ci -p vize|build-receipt\.ts/,

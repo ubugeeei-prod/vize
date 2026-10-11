@@ -6,6 +6,7 @@ on:
     outputs:
       sha256: { value: "${{ jobs.cli.outputs.sha256 }}" }
       receipt-sha256: { value: "${{ jobs.cli.outputs.receipt-sha256 }}" }
+      producer-attempt: { value: "${{ jobs.cli.outputs.producer-attempt }}" }
 permissions: { contents: read }
 env:
   CARGO_TERM_COLOR: always
@@ -19,6 +20,7 @@ jobs:
     outputs:
       sha256: ${{ steps.pack.outputs.sha256 }}
       receipt-sha256: ${{ steps.pack.outputs.receipt-sha256 }}
+      producer-attempt: ${{ steps.pack.outputs.producer-attempt }}
     steps:
       - name: Explain unrelated skip
         if: ${{ !inputs.run-cli }}
@@ -50,7 +52,7 @@ jobs:
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ inputs.run-cli }}
         with:
-          name: source-cli-${{ github.run_id }}-${{ github.run_attempt }}
+          name: source-cli-${{ github.run_id }}-${{ steps.pack.outputs.producer-attempt }}
           path: ${{ runner.temp }}/source-cli.tar.gz
           if-no-files-found: error
           compression-level: 0
