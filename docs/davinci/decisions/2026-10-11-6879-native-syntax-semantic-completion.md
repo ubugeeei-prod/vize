@@ -25,6 +25,21 @@ changes only the injected assignment and retains TS1128. An unavailable
 API/LSP control still uses the actual CLI and must fail explicitly with the
 original body rather than reporting empty clean.
 
+The unavailable-transport wrapper selects the genuine async JSON-RPC runtime
+class through its `.bin` location. Its refusal is compared against the entire
+same-config direct-native CLI body and complete failure message. The ordinary
+semantic-only control proves that no diagnostic transport is required on the
+completed CLI fast path. Required generator and native controls all execute
+and retain separate exit statuses even when an earlier control fails.
+
+After the unchanged original App E2E row hydrates Element Plus, the native lane
+also authenticates its original Git pin and whole Popover/Tooltip source bytes.
+Fresh complete projections use the production document generator at their
+original physical paths and import graph. Whole before/after projections,
+mapping, root config, package manifest and parser diagnostics are retained;
+the literal original producer must fail parsing and the fresh projection must
+parse successfully.
+
 No source member, config field, declaration suffix, syntax error, native
 diagnostic or original consumer deadline is removed. The original whole
 TS5102 packet remains retained and its existing option-probe policy is

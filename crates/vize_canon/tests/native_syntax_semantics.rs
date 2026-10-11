@@ -43,6 +43,18 @@ fn native() -> Option<PathBuf> {
     )
 }
 
+fn retain_packet(name: &str, packet: &serde_json::Value) {
+    if let Some(destination) = std::env::var_os("VIZE_NATIVE_SYNTAX_CAPTURE_DIR") {
+        let directory = PathBuf::from(destination);
+        fs::create_dir_all(&directory).unwrap();
+        fs::write(
+            directory.join(format!("{name}.json")),
+            serde_json::to_vec_pretty(packet).unwrap(),
+        )
+        .unwrap();
+    }
+}
+
 fn install(root: &Path, broken: bool) {
     fs::write(root.join("tsconfig.json"), CONFIG).unwrap();
     fs::write(
@@ -141,7 +153,10 @@ fn rows(
 }
 
 fn without_transport(root: &Path, native: &Path) -> PathBuf {
-    let wrapper = root.join("native-without-diagnostic-transport.sh");
+    // Match the actual runtime's async JSON-RPC authority. An arbitrary shell
+    // filename would instead select the legacy msgpack transport.
+    fs::create_dir_all(root.join(".bin")).unwrap();
+    let wrapper = root.join(".bin/native-without-diagnostic-transport");
     let quoted = native.to_string_lossy().replace('\'', "'\"'\"'");
     fs::write(&wrapper, format!("#!/bin/sh\ncase \"$1\" in --api|--lsp) echo 'native diagnostic transport intentionally unavailable' >&2; exit 41;; esac\nexec '{quoted}' \"$@\"\n")).unwrap();
     fs::set_permissions(&wrapper, fs::Permissions::from_mode(0o755)).unwrap();
@@ -169,19 +184,25 @@ fn actual_native_syntax_and_semantic_errors_survive_and_repair_clears_only_the_s
         .current_dir(before.path())
         .output()
         .unwrap();
-    assert!(!output.status.success());
     let original_stdout = String::from_utf8(output.stdout).unwrap();
-    assert!(
-        original_stdout.contains(
-            "post-request.d.ts(1294,1): error TS1128: Declaration or statement expected."
-        ),
-        "{original_stdout}"
+    let original_stderr = String::from_utf8(output.stderr).unwrap();
+    retain_packet(
+        "literal-cli-before",
+        &serde_json::json!({
+            "native":native, "cwd":before.path(),
+            "argv":["--checkers","1","--pretty","false","--project",before.path().join("tsconfig.json").to_str().unwrap()],
+            "wholeConfig":CONFIG,
+            "wholeInjectedGeneratedSource":fs::read_to_string(before.path().join("Injected.vue.ts")).unwrap(),
+            "wholeAuthoredDeclaration":fs::read_to_string(before.path().join("post-request.d.ts")).unwrap(),
+            "exitCode":output.status.code(), "wholeStdout":original_stdout, "wholeStderr":original_stderr,
+        }),
     );
-    assert!(
-        !original_stdout.contains("TS2322"),
-        "literal native CLI abort control: {original_stdout}"
+    assert!(!output.status.success());
+    assert_eq!(
+        original_stdout,
+        "post-request.d.ts(1294,1): error TS1128: Declaration or statement expected.\n"
     );
-    assert!(output.stderr.is_empty());
+    assert_eq!(original_stderr, "");
 
     let syntax = (
         "post-request.d.ts".to_string(),
@@ -227,16 +248,118 @@ fn unavailable_native_semantic_transport_cannot_report_empty_clean() {
     let wrapper = without_transport(project.path(), &native);
     let error = check(project.path(), &wrapper)
         .expect_err("incomplete native semantics must fail explicitly");
-    let whole = error.to_string();
-    assert!(
-        whole.contains("semantic diagnostics are incomplete after a syntax error"),
-        "{whole}"
+    let virtual_root = vize_canon::project_virtual_root(project.path());
+    let direct = Command::new(&native)
+        .args(["--checkers", "1", "--pretty", "false", "--project"])
+        .arg(virtual_root.join("tsconfig.json"))
+        .current_dir(&virtual_root)
+        .output()
+        .unwrap();
+    let stdout = String::from_utf8(direct.stdout).unwrap();
+    let stderr = String::from_utf8(direct.stderr).unwrap();
+    retain_packet(
+        "unavailable-transport",
+        &serde_json::json!({
+            "native":native, "wrapper":wrapper,
+            "wholeWrapper":fs::read_to_string(&wrapper).unwrap(),
+            "cwd":virtual_root, "wholeGeneratedConfig":fs::read_to_string(virtual_root.join("tsconfig.json")).unwrap(),
+            "exitCode":direct.status.code(), "wholeStdout":stdout, "wholeStderr":stderr,
+            "wholeError":format!("{error:#?}"),
+        }),
     );
-    assert!(
-        whole.contains("TS1128: Declaration or statement expected."),
-        "original native body must survive transport failure: {whole}"
+    assert!(!direct.status.success());
+    assert_eq!(
+        stdout,
+        "post-request.d.cts(1294,1): error TS1128: Declaration or statement expected.\n"
     );
-    println!("{whole}");
+    assert_eq!(stderr, "");
+    let cli_error = format!(
+        "corsa error (exit code {}): Corsa CLI semantic diagnostics are incomplete after a syntax error:\n{}",
+        direct.status.code().unwrap(),
+        stdout.trim()
+    );
+    let vize_canon::CorsaError::CorsaExecution { exit_code, message } = error else {
+        panic!("native completion must return an execution failure: {error:#?}");
+    };
+    assert_eq!(exit_code, 1);
+    assert_eq!(
+        message.as_str(),
+        format!("{cli_error}\nSame-config native diagnostic completion failed: {cli_error}")
+    );
+    println!("{message}");
+}
+
+#[test]
+fn full_pinned_element_plus_projections_parse_through_their_original_import_graph() {
+    let Some(_native) = native() else { return };
+    let repo = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    let original_root = repo.join("tests/_fixtures/_git/element-plus");
+    let pin = Command::new("git")
+        .args(["rev-parse", "HEAD"])
+        .current_dir(&original_root)
+        .output()
+        .unwrap();
+    assert!(pin.status.success());
+    let pin = String::from_utf8(pin.stdout).unwrap();
+    assert_eq!(pin, "20298a21ae54a5417955373b80130ae7c548a6bb\n");
+    let corpus = repo.join("tests/_fixtures/differential/typechecker/quoted-prop-setup-anchors");
+    for name in ["popover", "tooltip"] {
+        let original_path =
+            original_root.join(format!("packages/components/{name}/src/{name}.vue"));
+        let source = fs::read_to_string(&original_path).unwrap();
+        assert_eq!(
+            source,
+            fs::read_to_string(corpus.join(format!("{name}.vue.txt"))).unwrap()
+        );
+        let generated = vize_canon::batch::generate_vue_document_virtual_ts(
+            &original_path,
+            &source,
+            &vize_canon::virtual_ts::VirtualTsOptions::default(),
+            &vize_canon::batch::ImportRewriter::new(),
+            false,
+        )
+        .unwrap();
+        let before =
+            fs::read_to_string(corpus.join(format!("{name}.original-h.vue.ts.txt"))).unwrap();
+        let allocator = oxc_allocator::Allocator::default();
+        let before_parse =
+            oxc_parser::Parser::new(&allocator, &before, oxc_span::SourceType::ts()).parse();
+        let after_parse = oxc_parser::Parser::new(
+            &allocator,
+            &generated.pre_rewrite_code,
+            oxc_span::SourceType::ts(),
+        )
+        .parse();
+        retain_packet(
+            &format!("original-element-plus-{name}"),
+            &serde_json::json!({
+                "upstreamPin":pin, "originalRoot":original_root, "originalPath":original_path,
+                "wholeOriginalRootConfig":fs::read_to_string(original_root.join("tsconfig.json")).unwrap(),
+                "wholeOriginalPackageManifest":fs::read_to_string(original_root.join("package.json")).unwrap(),
+                "wholeAuthoredSource":source, "wholeOriginalProducerProjection":before,
+                "wholeFreshProjection":generated.pre_rewrite_code.as_str(),
+                "wholeFreshRewrittenProjection":generated.code.as_str(),
+                "wholeFreshMapping":format!("{:?}",generated.mapping),
+                "wholeFreshImportMap":format!("{:?}",generated.import_source_map),
+                "wholeBeforeParserDiagnostics":format!("{:#?}",before_parse.diagnostics),
+                "wholeAfterParserDiagnostics":format!("{:#?}",after_parse.diagnostics),
+            }),
+        );
+        assert!(
+            !before_parse.diagnostics.is_empty(),
+            "whole original producer is the regression control"
+        );
+        assert_eq!(
+            after_parse.diagnostics.len(),
+            0,
+            "{name}: {:#?}",
+            after_parse.diagnostics
+        );
+    }
 }
 
 #[test]
