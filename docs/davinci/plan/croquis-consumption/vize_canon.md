@@ -13,7 +13,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `Analyzer`                     | type  | `analyzer`          |    50 |   178 |
 | `AnalyzerOptions`              | type  | `analyzer`          |    50 |   174 |
 | `ComponentUsage`               | type  | `croquis::template` |    22 |    48 |
-| `Croquis`                      | type  | `croquis`           |    94 |   225 |
+| `Croquis`                      | type  | `croquis`           |    95 |   226 |
 | `EventHandlerScopeData`        | type  | `scope`             |     7 |     9 |
 | `EventListener`                | type  | `croquis::template` |     2 |     3 |
 | `MacroTracker`                 | type  | `macros`            |     1 |     2 |
@@ -24,7 +24,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `ScopeChain`                   | type  | `scope`             |     2 |     7 |
 | `ScopeData`                    | type  | `scope`             |    19 |    35 |
 | `ScopeId`                      | type  | `scope`             |     8 |    23 |
-| `ScopeKind`                    | type  | `scope`             |    17 |    59 |
+| `ScopeKind`                    | type  | `scope`             |    18 |    60 |
 | `SlotUsage`                    | type  | `croquis::template` |     1 |     1 |
 | `SpreadProp`                   | type  | `croquis::template` |     4 |     6 |
 | `TemplateExpression`           | type  | `croquis`           |    11 |    22 |
@@ -41,7 +41,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `Croquis.pattern_diagnostics`  | field | `croquis`           |     2 |     4 |
 | `Croquis.re_exports`           | field | `croquis`           |     1 |     1 |
 | `Croquis.reactivity`           | field | `croquis`           |     1 |     2 |
-| `Croquis.scopes`               | field | `croquis`           |    31 |    60 |
+| `Croquis.scopes`               | field | `croquis`           |    32 |    61 |
 | `Croquis.setup_context`        | field | `croquis`           |     1 |     1 |
 | `Croquis.template_expressions` | field | `croquis`           |    12 |    14 |
 | `Croquis.template_info`        | field | `croquis`           |     2 |     4 |
@@ -74,7 +74,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `ReactivityLossKind`           |     1 |    11 |
 | `SfcDescriptor`                |    10 |    26 |
 | `SfcError`                     |     2 |     2 |
-| `SfcParseOptions`              |    15 |    21 |
+| `SfcParseOptions`              |    16 |    23 |
 | `SfcTemplateBlock`             |     2 |     2 |
 | `UndefinedRefs`                |     3 |     7 |
 | `ViolationSeverity`            |     1 |     3 |
