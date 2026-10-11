@@ -150,9 +150,20 @@ void test("browser controls reuse the existing post-failure qualifier step and r
     /node npm\/native\/scripts\/test-preparation\.mjs vp run --filter '\.\/npm\/builder\/vite' test:prepared \|\| vuefes_contract_rc=\$\?/,
   );
   assert.match(contracts.run, /exit "\$vuefes_contract_rc"/);
+  assert.match(
+    contracts.run,
+    /node --experimental-vm-modules tools\/support\/compat\/vuefes\/page-meta-dependencies\.mjs \|\| vuefes_contract_rc=\$\?/,
+  );
   assert.equal(steps.filter((step) => step.uses === "./.github/actions/app-e2e-row").length, 1);
   const upload = steps.find((step) => step.uses?.startsWith("actions/upload-artifact@"));
   assert.equal(upload.if, "${{ always() }}");
+  assert.equal(upload.with["include-hidden-files"], true);
+  for (const extension of ["json", "bin", "diff", "node"])
+    assert(
+      upload.with.path
+        .split("\n")
+        .includes(`npm/native/.artifacts/native/formatter-history/*.${extension}`),
+    );
   for (const binary of [
     "npm/native/.artifacts/native/formatter-history/*.node",
     "npm/native/*.node",

@@ -83,3 +83,11 @@ contract step for the new native/oracle dependency consumer. Preserve the
 failed run and its full pixels. Actual source-bound consumer and release
 acceptance remain required; no earlier fixture green qualifies the failed
 application.
+
+The fd8 archive lacks every selected hidden formatter-history receipt,
+raw Cargo stream and frozen binding: the actual upload used
+`include-hidden-files: false`. Its two retained emitted/local ELF files do
+not restore those missing producer records. Enable hidden files in the same
+existing upload, retain its exact selected JSON/bin/diff/node paths, and
+assert that source policy. The next actual archive must establish complete
+custody; the policy test alone does not prove runtime upload membership.
