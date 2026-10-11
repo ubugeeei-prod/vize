@@ -28,6 +28,20 @@ await test("whole default-route companions retain independent before proof and f
   const companions = json("default-route-companions.json");
   const receipt = json("default-route-public-before.json");
   const failure = json("default-route-initial-failure.json");
+  const apiOrder = json("api-route-order-successors.json");
+  assert.equal(
+    sha256(read("api-route-order-successors.json")),
+    "79ecb574f8f5cf5de955ff98cbf22faa7387e30cc70b5c4115cffecc3e1582a7",
+  );
+  assert.equal(apiOrder.schema, "vize.lint.api-route-order-successors");
+  assert.equal(apiOrder.cases.length, 16);
+  for (const source of apiOrder.producer)
+    assert.equal(sha256(fs.readFileSync(path.join(root, source.path))), source.sha256);
+  const apiFailure = gunzipSync(Buffer.from(apiOrder.initialFailure.log.packet, "base64"));
+  assert.equal(sha256(apiFailure), apiOrder.initialFailure.log.sha256);
+  assert.equal(apiFailure.length, apiOrder.initialFailure.log.rawBytes);
+  assert.equal(apiOrder.initialFailure.workflowRun, 38153184272);
+  assert.equal(apiOrder.initialFailure.job, 114511898269);
   assert.equal(companions.schema, "vize.lint.default-route-companions");
   assert.equal(companions.version, 1);
   assert.equal(companions.rule, "script/no-reserved-props");
@@ -74,6 +88,12 @@ await test("whole default-route companions retain independent before proof and f
     const companion = companions.cases[index];
     assert.equal(companion.id, entry.id);
     assert.equal(companion.sourceSha256, entry.sourceSha256);
+    assert.equal(apiOrder.cases[index].id, entry.id);
+    assert.equal(apiOrder.cases[index].sourceSha256, entry.sourceSha256);
+    assert.deepEqual(apiOrder.cases[index].diagnostics, [
+      ...entry.diagnostics,
+      ...companion.diagnostics,
+    ]);
     const combine = (findings) =>
       [...findings, ...companion.diagnostics].sort(
         (a, b) => a.start - b.start || a.end - b.end || a.rule_name.localeCompare(b.rule_name),

@@ -22,6 +22,9 @@ fn bare_instance_spellings_are_valid_and_prefix_packets_are_preserved() {
         "../../../tests/_fixtures/differential/lint/bare-reserved-8090/cases.json"
     ))
     .unwrap();
+    let api_order: Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/lint/bare-reserved-8090/api-route-order-successors.json"
+    )).unwrap();
     let companions: Value = serde_json::from_str(include_str!(
         "../../../tests/_fixtures/differential/lint/bare-reserved-8090/default-route-companions.json"
     )).unwrap();
@@ -58,7 +61,12 @@ fn bare_instance_spellings_are_valid_and_prefix_packets_are_preserved() {
         let companion = &companions["cases"][index];
         assert_eq!(companion["id"], case["id"]);
         assert_eq!(companion["sourceSha256"], case["sourceSha256"]);
-        let diagnostics = companion["combinedApiDiagnostics"].as_array().unwrap();
+        assert_eq!(api_order["cases"][index]["id"], case["id"]);
+        assert_eq!(
+            api_order["cases"][index]["sourceSha256"],
+            case["sourceSha256"]
+        );
+        let diagnostics = api_order["cases"][index]["diagnostics"].as_array().unwrap();
         let off_diagnostics = companion["diagnostics"].as_array().unwrap();
         let projected = projected_rules
             .keys()

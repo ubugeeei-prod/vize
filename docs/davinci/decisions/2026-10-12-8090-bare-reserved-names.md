@@ -92,3 +92,10 @@ packets, including incremental, target-off and n8n controls. The initial failed
 64-run Actions artifact and raw job log are retained in full. This fixes the
 observer's missing existing diagnostics; it changes no production rule or
 preset. Current-head API/CLI and protected qualification are still required.
+
+The subsequent full Rust API assertion exposed a second observer assumption:
+template-free SFCs return the existing registry append order before the engine's
+merge sort. A separate API successor preserves all target diagnostics followed
+by all companion diagnostics, while CLI identity-sorted expectations and every
+initial vector remain unchanged. The whole failed Rust job log is retained.
+This follows the existing producer and makes no production ordering change.
