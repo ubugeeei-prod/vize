@@ -256,3 +256,25 @@ opinionated `css/prefer-nested-selectors` rule. Nest the same input declaration;
 retain actual content-box dimensions and native keyboard controls. The local
 24-example capture passes after these corrections, but fresh complete source
 and Docs Actions remain required before protected queue admission or delivery.
+
+The next exact-head [Docs run](https://github.com/ubugeeei-prod/vize/actions/runs/38143622223)
+passes all twenty-four first-pass browser laws, genuine SSG, and 1423 OG images,
+then fails the repeated post-SSG scroll bottom assertion. Await each actual
+geometry-derived offset and matching reactive readout before the next native
+Enter activation; keep the original 25-step bound and exact final bottom,
+disabled-control, reset, PageDown, idle and surrounding-document assertions.
+Record each completed native step for failure diagnosis. No product scroll
+change, retry, deadline expansion or previous-run acceptance is introduced.
+The failed run's existing render-evidence artifact remains preserved. Require
+fresh complete source and Docs qualification on the corrected head.
+
+A fresh local full capture after per-step synchronization fails the added
+reset-scrollend requirement. An independently instrumented direct scroll case
+passes at both widths; that does not establish the full-capture cause. The
+public scroll contract supports a 200ms idle fallback rather than promising
+scrollend for every programmatic reset. Require actual zero offset and the
+observed idle readout after that unchanged clock interval before PageDown.
+Remove only the new reset-event dependency; keep the original real PageDown
+scrollend/deadline and every prior edge, geometry, idle and hydration assertion.
+Preserve the failed local observation and require complete fresh Actions; do
+not infer a product defect or claim general stability from the direct cases.

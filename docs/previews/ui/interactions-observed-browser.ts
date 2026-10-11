@@ -157,11 +157,29 @@ export async function exerciseObservedBrowserExample(page: Page, name: string): 
     await activate(page, "Next guide section");
     await outputContains(page, "Vertical offset: 120 pixels · At beginning: no");
     assert.equal(await preview.evaluate((element) => element.scrollTop), 120);
+    const scrollSteps = [];
     for (let step = 0; step < 25; step += 1) {
       if (await page.getByRole("button", { name: "Next guide section" }).isDisabled()) break;
+      const before = await preview.evaluate((element) => element.scrollTop);
+      const maximum = await preview.evaluate(
+        (element) => element.scrollHeight - element.clientHeight,
+      );
+      const expected = Math.min(before + 120, maximum);
       await activate(page, "Next guide section");
+      await outputContains(page, `Vertical offset: ${Math.round(expected)} pixels ·`);
+      const observed = await preview.evaluate((element) => element.scrollTop);
+      scrollSteps.push({ before, expected, observed });
+      assert.equal(
+        observed,
+        expected,
+        "each native activation reaches its geometry-derived offset",
+      );
     }
-    assert.equal(await page.getByRole("button", { name: "Next guide section" }).isDisabled(), true);
+    assert.equal(
+      await page.getByRole("button", { name: "Next guide section" }).isDisabled(),
+      true,
+      `bounded native scrolling must reach the bottom: ${JSON.stringify(scrollSteps)}`,
+    );
     await outputContains(page, "At end: yes");
     assert.equal(
       await preview.evaluate(
@@ -169,15 +187,11 @@ export async function exerciseObservedBrowserExample(page: Page, name: string): 
       ),
       true,
     );
-    const resetEnd = preview.evaluate(
-      (element) =>
-        new Promise<void>((resolve) => {
-          element.addEventListener("scrollend", () => resolve(), { once: true });
-        }),
-    );
     await activate(page, "Return to the beginning");
-    await nativeScrollCompleted(resetEnd, "Native reset");
     await outputContains(page, "Vertical offset: 0 pixels · At beginning: yes");
+    assert.equal(await preview.evaluate((element) => element.scrollTop), 0);
+    await page.clock.runFor(250);
+    await page.getByText("Scrolling activity: idle", { exact: true }).waitFor();
     await preview.focus();
     const scrollEnd = preview.evaluate(
       (element) =>
