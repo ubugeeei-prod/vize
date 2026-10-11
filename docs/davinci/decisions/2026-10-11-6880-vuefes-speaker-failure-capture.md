@@ -91,6 +91,14 @@ without implied-eval warnings. The canonical consumer inventory includes
 the new DOM regression's L0 import; regenerate it with the existing
 producer rather than excluding the test from source checks.
 
+The next exact-head [normal check](https://github.com/ubugeeei-prod/vize/actions/runs/38149112945)
+on `511d0c0fa3e48fe91b05c69be82c23c0d90dbd37` rejected one partial
+assertion in the ordinary-comment controls. Keep the complete compatibility
+comparison and additionally pin the entire import preamble and render body
+for all seven ordinary, similar-word and non-ASCII inputs. This prevents
+both implementations from silently dropping the same comment and checks
+the surrounding rendered child. The assertion allowlist remains unchanged.
+
 Remaining acceptance: qualify the composed exact source head with normal
 Actions and the entire unchanged 38-case VueFes matrix before queue
 admission, then carry the actual merged fix through an official release

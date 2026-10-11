@@ -91,6 +91,12 @@ fn ordinary_comments_and_similar_words_keep_their_rendered_children() {
         let source = format!("<div><!--{content}--><span>kept</span></div>");
         let selected = compile(&source, false);
         assert_eq!(selected, compile(&source, true), "{source}");
-        assert!(selected.1.contains("_createCommentVNode("), "{source}");
+        let expected = (
+            "const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode } = Vue\n".to_owned(),
+            format!(
+                "function render(_ctx, _cache, $props, $setup, $data, $options) {{\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createCommentVNode(\"{content}\"),\n    _createElementVNode(\"span\", null, \"kept\")\n  ]))\n}}"
+            ),
+        );
+        assert_eq!(selected, expected, "{source}");
     }
 }
