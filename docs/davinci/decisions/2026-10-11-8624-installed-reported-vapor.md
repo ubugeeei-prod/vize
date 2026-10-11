@@ -79,10 +79,18 @@ incoming clause, the terminal retirement suffix at 324 and all 350 rows.
 Runtime, fixture and cohort-law bytes stay exact; this avoids another collision
 at the shared CI paragraph without changing qualification or publication gates.
 
-The next source submission waits for the common current-head custom-directive
+The next source submission was held for the common current-head custom-directive
 custody repair. A cheap candidate-phase probe at exact local `4c517a55`
 refuses its historical `67e3d0e` whole-tree delta before any Cargo build
 (17,480 retained log bytes, SHA256
 `b37cb81f58f5eb0fec8db4010ec09fd9d157a4288a4dff12488e861366057087`).
 The native owner is repairing that shared guard; do not add an observer-local
 allowance or transfer the earlier `607b397` green source result.
+
+The shared repair is now the real parent PR #8707 at
+`13cd6c9cd1e5bd709875bcd355e04ce4501a538b`. To overlap the urgent casing
+qualification, the genuine native Stack is #8707 → #8705 → #8645; the middle
+source is `294050d2a2bc023dc0bab96451f45d08e38424a6`. Preserve every incoming
+clause, the exact observer runtime/fixture/four-cohort bodies and the owned
+154/324 suffixes. The repaired cheap guard authenticates the complete current
+compiled tree; fresh source Actions and protected prefix merges remain required.
