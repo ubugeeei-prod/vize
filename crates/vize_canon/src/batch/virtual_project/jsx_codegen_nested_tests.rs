@@ -10,6 +10,38 @@ fn parse_error_count(source: &str, source_type: oxc_span::SourceType) -> usize {
         .len()
 }
 
+// Source/provenance comments may contain authored JSX. Only executable OXC
+// nodes decide whether lowering retained a JSX node or the component check.
+fn jsx_and_tab_bar_calls(source: &str) -> (usize, usize) {
+    use oxc_ast::ast::{Argument, CallExpression, Expression, JSXElement};
+    use oxc_ast_visit::{Visit, walk};
+    #[derive(Default)]
+    struct Calls {
+        jsx: usize,
+        tab_bar: usize,
+    }
+    impl<'a> Visit<'a> for Calls {
+        fn visit_jsx_element(&mut self, element: &JSXElement<'a>) {
+            self.jsx += 1;
+            walk::walk_jsx_element(self, element);
+        }
+        fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
+            if matches!(&call.callee, Expression::Identifier(identifier) if identifier.name == "__vize_jsx_component__")
+                && matches!(call.arguments.first(), Some(Argument::Identifier(identifier)) if identifier.name == "TabBar")
+            {
+                self.tab_bar += 1;
+            }
+            walk::walk_call_expression(self, call);
+        }
+    }
+    let allocator = oxc_allocator::Allocator::default();
+    let parsed = oxc_parser::Parser::new(&allocator, source, oxc_span::SourceType::tsx()).parse();
+    assert_eq!(parsed.diagnostics.len(), 0);
+    let mut calls = Calls::default();
+    calls.visit_program(&parsed.program);
+    (calls.jsx, calls.tab_bar)
+}
+
 #[test]
 fn original_element_plus_spread_array_keeps_plain_ts_component_checks() {
     let corpus = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -24,8 +56,7 @@ fn original_element_plus_spread_array_keeps_plain_ts_component_checks() {
         parse_error_count(&after.code, oxc_span::SourceType::ts()),
         0
     );
-    assert!(!after.code.contains("<TabBar"));
-    assert!(after.code.contains("__vize_jsx_component__(TabBar"));
+    assert_eq!(jsx_and_tab_bar_calls(&after.code), (0, 1));
     for token in ["tabBarRef", "[...props.panes]", "tabRefsMap.value"] {
         assert!(
             after.mappings.iter().any(|mapping| {
