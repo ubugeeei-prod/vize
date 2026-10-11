@@ -50,15 +50,15 @@ The same source-identified public bundle was inspected with real Chrome and
 existing source-owned rule packet controls at 1440 and 390 widths in all five
 locales: English, Japanese, Chinese, Portuguese and French.
 
-| Reader contract | Verified coverage |
-| --- | --- |
-| Complete inline owning groups | All 10 groups and all 317 distinct original rules in every locale and width |
-| All Rules overview | 317 retained identities, visible purposes, code-free summaries and native owning example/reference destinations |
-| Existing individual references and project packets | All 317 English and 317 Japanese pages; complete original code and packet vectors |
-| Original indentation references | 40 whole Vue, TypeScript, HTML and CSS checks across locales and widths |
-| Real overview navigation | 10 native overview-to-group/reference flows |
-| Real category/example navigation | 10 native category-to-rule-to-Bad/Good flows |
-| Visible reading review | Fully loaded fonts, actual main opacity 1, native fragment scrolling settled; nested Japanese Bad/Good examples, French Vapor, Japanese cross-file and English overview inspected |
+| Reader contract                                    | Verified coverage                                                                                                                                                                 |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Complete inline owning groups                      | All 10 groups and all 317 distinct original rules in every locale and width                                                                                                       |
+| All Rules overview                                 | 317 retained identities, visible purposes, code-free summaries and native owning example/reference destinations                                                                   |
+| Existing individual references and project packets | All 317 English and 317 Japanese pages; complete original code and packet vectors                                                                                                 |
+| Original indentation references                    | 40 whole Vue, TypeScript, HTML and CSS checks across locales and widths                                                                                                           |
+| Real overview navigation                           | 10 native overview-to-group/reference flows                                                                                                                                       |
+| Real category/example navigation                   | 10 native category-to-rule-to-Bad/Good flows                                                                                                                                      |
+| Visible reading review                             | Fully loaded fonts, actual main opacity 1, native fragment scrolling settled; nested Japanese Bad/Good examples, French Vapor, Japanese cross-file and English overview inspected |
 
 Other locales intentionally use English individual reference routes, as authored
 by `docs/scripts/rules/all-rules-overview.ts`. No nonexistent translated reference
