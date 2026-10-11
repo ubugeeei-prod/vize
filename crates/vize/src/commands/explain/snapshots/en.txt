@@ -3181,7 +3181,7 @@ autofix: no
 docs: docs/content/rules/type-and-script.md
 === script/return-in-emits-validator
 script/return-in-emits-validator · lint rule
-Require a return value in every Options API emits validator
+Require a return value in every Vue emits validator
 
 tier: complete
 domain: Options API component definitions written as object literals

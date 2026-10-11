@@ -68,7 +68,7 @@ Every rule on this page includes its purpose, prerequisites, configuration, and 
 | [`script/require-typed-ref`](#script-require-typed-ref) | [Bad](#script-require-typed-ref-bad) · [Good](#script-require-typed-ref-good) | Require an explicit type argument on a ref() initialized with no value, null, or undefined |
 | [`script/require-valid-default-prop`](#script-require-valid-default-prop) | [Bad](#script-require-valid-default-prop-bad) · [Good](#script-require-valid-default-prop-good) | Require a prop's default value to be valid for its declared type |
 | [`script/return-in-computed-property`](#script-return-in-computed-property) | [Bad](#script-return-in-computed-property-bad) · [Good](#script-return-in-computed-property-good) | Require a return value in every computed getter |
-| [`script/return-in-emits-validator`](#script-return-in-emits-validator) | [Bad](#script-return-in-emits-validator-bad) · [Good](#script-return-in-emits-validator-good) | Require a return value in every Options API emits validator |
+| [`script/return-in-emits-validator`](#script-return-in-emits-validator) | [Bad](#script-return-in-emits-validator-bad) · [Good](#script-return-in-emits-validator-good) | Require a return value in every Vue emits validator |
 | [`script/valid-define-emits`](#script-valid-define-emits) | [Bad](#script-valid-define-emits-bad) · [Good](#script-valid-define-emits-good) | Enforce valid defineEmits() usage (no type+runtime args, no local references, single call) |
 | [`script/valid-define-options`](#script-valid-define-options) | [Bad](#script-valid-define-options-bad) · [Good](#script-valid-define-options-good) | Enforce valid defineOptions() usage (single object arg, no props/emits/expose/slots) |
 | [`script/valid-define-props`](#script-valid-define-props) | [Bad](#script-valid-define-props-bad) · [Good](#script-valid-define-props-good) | Enforce valid defineProps() usage (single call, not both type and runtime args, no local references) |
@@ -4099,7 +4099,7 @@ Good avoids this rule's finding under the configuration above; other rules may s
 
 ### `script/return-in-emits-validator`
 
-Require a return value in every Options API emits validator
+Require a return value in every Vue emits validator
 
 [Bad](#script-return-in-emits-validator-bad) · [Good](#script-return-in-emits-validator-good)
 
@@ -4158,7 +4158,7 @@ export default { emits: { submit: (payload: unknown) => { return payload != null
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs#L59) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs#L61) · [All rules](all.md)
 
 ### `script/valid-define-emits`
 

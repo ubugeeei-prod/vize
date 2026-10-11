@@ -4,7 +4,7 @@ title: "script/return-in-emits-validator"
 
 # `script/return-in-emits-validator`
 
-Require a return value in every Options API emits validator
+Require a return value in every Vue emits validator
 
 [Bad](#bad) · [Good](#good)
 
@@ -59,4 +59,4 @@ export default { emits: { submit: (payload: unknown) => { return payload != null
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs#L59) · [All rules](../all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs#L61) · [All rules](../all.md)

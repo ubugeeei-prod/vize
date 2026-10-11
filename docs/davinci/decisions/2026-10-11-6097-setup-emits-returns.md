@@ -70,6 +70,16 @@ The original 42 complete vectors remain unchanged; nine review controls cover
 external blocks, module-chain scope, Vue alias calls, mixed type/runtime
 arguments, constant cycles, and the conservative namespace limitation.
 
+Source qualification exposed existing dispatcher file-length obligations and
+the expanded rule description's generated references/localized explain pages.
+Keep the unchanged dispatch bodies in separate modules in a move-only commit,
+retain the public type and trait paths, and update only this rule's description
+in all three native locales and their committed explain snapshots. Regenerate
+the existing reference and migration manifests; no limit or expectation is
+relaxed. The 357 complete source CLI packets passed on the prior source while
+its unrelated qualification obligations were red, so the repaired head still
+requires fresh exact-head/full qualification.
+
 The conservative byte escape candidate also admits the existing Options
 producer's escaped `emits` key; an explicit legacy fixture records this restored
 finding. It never establishes ownership itself. Escaped identifier spelling is

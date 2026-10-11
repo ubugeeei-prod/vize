@@ -174,9 +174,9 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
     ),
     (
         "script/return-in-emits-validator.description",
-        "Require a return value in every Options API emits validator",
-        "Options API のすべての emits バリデーターで値を返すことを必須にする",
-        "要求选项式 API 的每个 emits 校验函数都有返回值",
+        "Require a return value in every Vue emits validator",
+        "Vue のすべての emits バリデーターで値を返すことを必須にする",
+        "要求 Vue 的每个 emits 校验函数都有返回值",
     ),
     (
         "script/valid-define-emits.description",
