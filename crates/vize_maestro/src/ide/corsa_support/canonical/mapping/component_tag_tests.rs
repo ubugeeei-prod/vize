@@ -4,7 +4,7 @@ use crate::ide::DiagnosticService;
 use serde::Deserialize;
 use std::ops::Range;
 use tower_lsp::lsp_types::Url;
-use vize_carton::String;
+use vize_carton::{String, cstr};
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -32,12 +32,12 @@ fn component_tag_anchors_preserve_their_complete_authored_ranges_and_native_valu
     ))
     .unwrap();
     for case in cases {
-        let prefix = format!(
+        let prefix = cstr!(
             "<script setup lang=\"ts\">\n{}\n</script>\n<template>",
             case.script
         );
         assert!(prefix.len() <= case.template_offset);
-        let source = format!(
+        let source = cstr!(
             "{prefix}{}{}</template>",
             " ".repeat(case.template_offset - prefix.len()),
             case.template

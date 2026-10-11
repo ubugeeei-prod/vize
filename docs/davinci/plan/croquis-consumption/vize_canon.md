@@ -12,7 +12,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | ------------------------------ | ----- | ------------------- | ----: | ----: |
 | `Analyzer`                     | type  | `analyzer`          |    50 |   178 |
 | `AnalyzerOptions`              | type  | `analyzer`          |    50 |   174 |
-| `ComponentUsage`               | type  | `croquis::template` |    22 |    48 |
+| `ComponentUsage`               | type  | `croquis::template` |    23 |    49 |
 | `Croquis`                      | type  | `croquis`           |    95 |   226 |
 | `EventHandlerScopeData`        | type  | `scope`             |     7 |     9 |
 | `EventListener`                | type  | `croquis::template` |     2 |     3 |

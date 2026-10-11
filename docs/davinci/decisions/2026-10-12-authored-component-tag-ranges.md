@@ -35,3 +35,9 @@ failure to a pass with the unchanged method source, first-byte query and
 three complete scalar responses. The four canonical mapping controls,
 including all seven new source cases, also pass. These local controls do not
 replace the pending exact-source Linux/full Matrix qualification.
+
+Source 8dc5238 full Check 38156814430 stopped before native execution because
+the new projection test used the forbidden `format!` macro; check-js also
+identified the new helper's unregenerated Croquis consumer row. Adopt `cstr!`
+and regenerate that exact row. Those original failed gate receipts remain
+failed; they provide no Linux native success evidence.
