@@ -70,3 +70,10 @@ namespace assertions. Original third-party Rust targets and their checks remain
 active. No new workflow, pipeline dependency, runtime normalization or namespace
 expectation exception is introduced; source and protected browser checks still
 must pass, and they grant no installed/public rc.10 acceptance credit.
+
+TODO: separately qualify retained Vapor's broader namespace callback, which
+still seeds SVG-known names such as standalone HTML title from a tag list.
+This packet covers inherited SVG binding targets and ordinary/foreignObject
+HTML anchors; it does not confer acceptance on unrelated standalone foreign-tag
+classification. Keep the current source campaign and original report denominator
+fixed, and require independently authored full controls for that follow-up.
