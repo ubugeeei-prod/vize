@@ -21,6 +21,20 @@ and each repair. The existing spread and dynamic-name native controls remain
 required. Full original source/projection/diagnostic packets are retained in
 the existing `native-source-recipe*` immutable artifact namespace.
 
+The hosted baseline uses the fixed actual main merge `006c564`: the three
+modified preexisting source files are retained, temporarily restored to that
+commit's exact blobs, and the new argument-metadata module is made absent.
+The complete compiled-source manifest verifies all other production/Cargo/lock
+bytes; this is labeled `006c564 production + candidate neutral test driver`,
+not an exact whole baseline tree. Rebuild with the same native corpus and
+dependency cache. Require the entire original three-row TS2464 vector, then restore the
+candidate files, require the exact original tracked HEAD tree/source hash,
+and run every clean/negative/repair vector. An exit trap
+also restores the candidate on failure. Neither another target/builder nor
+a generic tolerated baseline failure is introduced; both source identities,
+whole files and runtime packets are retained. Run this before the original
+native suite so the candidate's Canon build is reused by subsequent controls.
+
 Baseline reproduction, exact-head Actions, full protected qualification,
 actual merge, and release acceptance remain pending. The frozen matrix's
 three original controls and full 224-case coverage/budgets remain unchanged;

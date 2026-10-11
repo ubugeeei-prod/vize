@@ -7,6 +7,7 @@
     reason = "complete native fixture packets use std strings"
 )]
 
+use sha2::{Digest, Sha256};
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -104,6 +105,7 @@ fn check(native: &Path, name: &str, source: &str) -> Vec<String> {
             .collect();
         fs::write(directory.join(format!("{name}.json")), serde_json::to_vec_pretty(&serde_json::json!({
             "native": native,
+            "nativeSha256": Sha256::digest(fs::read(native).unwrap()).iter().map(|byte| format!("{byte:02x}")).collect::<String>(),
             "source": source,
             "configuration": CONFIG,
             "originalCustody": fs::read_to_string(format!("{CORPUS}original-custody.json")).unwrap(),
@@ -122,6 +124,12 @@ fn custom_directive_arguments_keep_native_expression_and_hook_value_errors() {
     };
     let cases: serde_json::Value =
         serde_json::from_str(&fs::read_to_string(format!("{CORPUS}cases.json")).unwrap()).unwrap();
+    if std::env::var("VIZE_CUSTOM_DIRECTIVE_BASELINE").as_deref() == Ok("1") {
+        let expected: Vec<String> =
+            serde_json::from_value(cases["baselineDiagnostics"].clone()).unwrap();
+        assert_eq!(check(&native, "baseline", ORIGINAL), expected);
+        return;
+    }
     for case in cases["cases"].as_array().unwrap() {
         let name = case["name"].as_str().unwrap();
         let mut source = ORIGINAL.to_owned();
