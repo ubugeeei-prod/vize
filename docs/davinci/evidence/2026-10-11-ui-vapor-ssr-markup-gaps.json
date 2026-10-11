@@ -5,9 +5,7 @@
   "sourceBinding": {
     "head": "591667c9a6d98b10a7ed9cd3631a2c2e1c0bde30",
     "expected": "/home/runner/_work/vize/vize/npm/native/vize-vitrine.linux-x64-gnu.node",
-    "loaded": [
-      "/home/runner/_work/vize/vize/npm/native/vize-vitrine.linux-x64-gnu.node"
-    ],
+    "loaded": ["/home/runner/_work/vize/vize/npm/native/vize-vitrine.linux-x64-gnu.node"],
     "sha256": "88340391f6735404a96281ca0a477f55059391f1e35fe05f87990d9199af5d68"
   },
   "oracle": "Unchanged authored assertServerMarkup functions executed against complete raw source-built SSR records. Component modules were loaded locally only to access the pure authored assertions; no local rendering or local native result receives source credit.",
