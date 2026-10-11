@@ -65,3 +65,13 @@ qualification, full Docs renderer, genuine review and protected actual merge.
 Keep #8363 open until representative nested Vue/TypeScript/HTML/CSS source and
 rendered text qualify on the actual deployed site with whole artifact custody.
 Do not infer publication or stability from a local test, old parent or queued PR.
+
+## Completed public acceptance (2026-10-11)
+
+The contract above reached actual public acceptance and its issue is closed.
+[The acceptance record](./2026-10-11-rule-reader-public-acceptance.md) binds the
+complete Docs build, immutable Pages publication and public manifest to source
+`b8ab77aa7325b28f1531f7b195898e4652d744b6`, with all original rule packets,
+indentation references and actual native reading flows qualified. Earlier
+pending delivery paragraphs describe the original required gates; they do not
+reopen this completed historical acceptance or qualify later source heads.
