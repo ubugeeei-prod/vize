@@ -1,5 +1,8 @@
 //! Generic live namespace recovery; authored heads are recorded uninterpreted.
 
+#[cfg(test)]
+mod tests;
+
 use vize_l0::{Allocator, Namespace, Vec, is_void_tag};
 
 use crate::build::scope::{Frame, Recovery};

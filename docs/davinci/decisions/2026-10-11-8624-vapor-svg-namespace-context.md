@@ -73,6 +73,12 @@ same complete ordered streams. Additional old/new controls preserve neutral
 the stateless facade still checks its frozen complete SVG title raw stream.
 Local controls pass, but fresh full canonical DOM/SSR and protected instruction
 ceilings remain required before this source is qualified.
+The deferred-owner law additionally compares every event and exact diagnostic
+against the previous eager transitions over thirteen whole inputs: prior
+completed heads, multiple titles, uppercase title, integration points, malformed
+ancestor closures, redundant interactive closures, self-closing boundaries,
+MathML, a dynamic-argument error, an incomplete head and a title-free input.
+Its arena buffers are test-only and explicitly recorded in the storage ledger.
 
 Exact d913894 source Check 38153816463 stopped at source planning before any
 compiler or browser execution: the strict storage inventory detected one new
@@ -107,6 +113,13 @@ and short-circuit the equivalent interactive-tag predicate before its HTML
 lookup. Keep the candidate off the queue until fresh complete measured gates
 pass. No ceiling, fixture, workload or check is reduced; neither a source pass
 nor this failed protected packet grants publication acceptance.
+
+An independent review also suggested narrowing bare `circle`/`title` scope
+from an initial Vue 3.5.35 comparison. The [complete reference decision](./2026-10-12-svg-title-scope-reference.md)
+preserves that provider separately: pinned Vue 3.6 rc.9 and rc.10 agree with
+the unchanged producer on all eleven added whole controls. Actual pre-change
+native/generic and Armature checks passed; no RED justified production
+narrowing. This parser reference adds no browser or installed-release credit.
 
 The original third-party sources, six original control rows, and two authored
 physical SVG controls stay unchanged. This additive namespace campaign does
