@@ -9,13 +9,13 @@
 > [remarks-format.md](./remarks-format.md)), ranked by corpus hits: the
 > optimization backlog the P3-13 remarks mine for continuous task C-13.
 
-Corpus: 500 files, 1090 remarks (200 applied, 890 missed), 24 missed reasons.
+Corpus: 502 files, 1094 remarks (202 applied, 892 missed), 24 missed reasons.
 
 1. `s2.hoist-static static-subtree` `blocker="child" op="ui.interpolation"` - 188 hits in 84 files; first at `tests/_fixtures/_projects/class-component/src/App.vue` @354:376
 2. `s2.hoist-static static-props` `blocker="binding" op="ui.on"` - 155 hits in 61 files; first at `tests/_fixtures/_projects/class-component/src/HelloDecorator.vue` @544:608
-3. `s2.hoist-static static-props` `blocker="binding" op="ui.bind" rule="non-constant"` - 101 hits in 59 files; first at `tests/_fixtures/_projects/compiler-macros/src/DefineModelType.vue` @179:208
+3. `s2.hoist-static static-props` `blocker="binding" op="ui.bind" rule="non-constant"` - 102 hits in 60 files; first at `tests/_fixtures/_projects/compiler-macros/src/DefineModelType.vue` @179:208
 4. `s2.hoist-static static-subtree` `blocker="binding" op="ui.on"` - 92 hits in 33 files; first at `tests/_fixtures/_projects/class-component/src/HelloDecorator.vue` @544:608
-5. `s2.hoist-static static-subtree` `blocker="binding" op="ui.bind" rule="non-constant"` - 45 hits in 26 files; first at `tests/_fixtures/_projects/compiler-macros/src/DefineModelType.vue` @179:208
+5. `s2.hoist-static static-subtree` `blocker="binding" op="ui.bind" rule="non-constant"` - 46 hits in 27 files; first at `tests/_fixtures/_projects/compiler-macros/src/DefineModelType.vue` @179:208
 6. `s2.hoist-static static-props` `blocker="binding" op="ui.model"` - 41 hits in 16 files; first at `tests/_fixtures/_projects/ecosystem-products/src/ComposablesAndRouting.vue` @3622:3772
 7. `s2.hoist-static static-props` `blocker="binding" op="ui.slot-content"` - 41 hits in 26 files; first at `tests/_fixtures/_projects/ecosystem-products/src/UiLibraries.vue` @3108:3144
 8. `s2.hoist-static static-subtree` `blocker="binding" op="ui.slot-content"` - 32 hits in 20 files; first at `tests/_fixtures/_projects/ecosystem-products/src/UiLibraries.vue` @3108:3144

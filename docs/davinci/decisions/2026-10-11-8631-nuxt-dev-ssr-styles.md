@@ -37,6 +37,16 @@ changes stylesheet integration. Fresh exact-head Actions and release acceptance
 remain separate delivery gates. Original public adapter package bytes, fixture
 inputs and candidate adapter hashes are recorded.
 
+Register the fixture's two SFCs in both generated TS-32 remarks corpora and the
+C-13 backlog. The full native-phase Actions gate observes 502 files and four new
+L2 remarks (two applied, two missed); all existing 500 files and remarks remain
+unchanged. Regenerate with `UPDATE_REMARKS_BASELINE=1` and rerun the strict gates.
+Incremental equivalence retains the complete old 71-file plane and its original
+68/3-file partition accounting, then independently pins the added two-file plane:
+12 edit scripts, 60 applied steps, 74 comparisons and 154 blocks, with no mismatch.
+The seeded stale-cache control must retain its old 667 defects and observe 20 new
+defects. Keep the complete sweeps, exact accounting and regression checks.
+
 ## Remaining delivery
 
 Carry #8602 through protected checks and the native Stack merge queue. Rebase the
