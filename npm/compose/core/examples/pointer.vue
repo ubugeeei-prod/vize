@@ -32,8 +32,8 @@ const { state, isInside } = usePointer({ target: pad, pointerTypes: ["mouse"] })
     </dl>
     <p>
       These readonly values describe the latest accepted event in this iframe's client coordinates,
-      not the pad's local coordinates. This example accepts mouse input only; touch and pen input
-      are filtered out.
+      not the pad's local coordinates. This example records mouse snapshots only; its checks cover
+      mouse input.
     </p>
     <p>
       Leaving the pad changes Inside without clearing the last snapshot. Hiding it removes its

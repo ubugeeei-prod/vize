@@ -16,7 +16,9 @@ Do not modify the active theme-casing build repair, its helpers or configuration
 Keep this preparation local until shared native-phase CI integration #8707
 actually lands on main; it does not provide new composable production APIs.
 
-The pointer example observes its real reactive target with a mouse-only filter.
+The pointer example observes its real reactive target with a mouse-only snapshot
+filter on pointerdown, pointermove and pointerup. Pointerleave clears Inside
+regardless of that filter.
 Verify trusted native movement, pressure during press/release, leave retention,
 removed-target silence and observation of the replacement. Its coordinates are
 client coordinates in the iframe; touch/pen coverage is not claimed.
