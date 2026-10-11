@@ -5,7 +5,14 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { dirname as moduleConfigDirectory, join } from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
+
+// Keep an absolute filesystem specifier in Vite's bundle graph. Converting
+// the existing file URL removes Windows' verbatim prefix without changing
+// the selected filesystem path or externalizing TypeScript imports in Vite 7.
+export function configModuleImportPath(configURL, windows = process.platform === "win32") {
+  return fileURLToPath(configURL, { windows });
+}
 
 export async function importConfigModule(configPath) {
   const configURL = pathToFileURL(configPath);
@@ -26,7 +33,7 @@ export async function importConfigModule(configPath) {
     // dependency externalizer treats a file: URL as an external module.
     await writeFile(
       adapter,
-      `import * as original from ${JSON.stringify(configPath)};\nexport default { namespace: original };\n`,
+      `import * as original from ${JSON.stringify(configModuleImportPath(configURL))};\nexport default { namespace: original };\n`,
       { flag: "wx", mode: 0o600 },
     );
     const loaded = await loadConfigFromFile(
