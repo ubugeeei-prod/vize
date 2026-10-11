@@ -94,10 +94,10 @@ jobs:
           built="$GITHUB_WORKSPACE/.artifacts/rust-window/built"
           mkdir -p target/tmp
           if [[ "$SHARD" == 1 ]]; then
-            cargo nextest list --archive-file "$built/tests.tar.zst" --extract-to "$GITHUB_WORKSPACE" --extract-overwrite --workspace-remap "$GITHUB_WORKSPACE" --profile "$NEXTEST_PROFILE" --message-format json > "$evidence/unpartitioned.json" 2> "$evidence/unpartitioned.stderr"
+            python3 -B "$RUNNER_TEMP/rust-window-driver/rust_archive_workers.py" execute "$GITHUB_SHA" cargo nextest list --archive-file "$built/tests.tar.zst" --extract-to "$GITHUB_WORKSPACE" --extract-overwrite --workspace-remap "$GITHUB_WORKSPACE" --profile "$NEXTEST_PROFILE" --message-format json > "$evidence/unpartitioned.json" 2> "$evidence/unpartitioned.stderr"
           fi
-          /usr/bin/time -v -o "$evidence/list.resources" cargo nextest list --archive-file "$built/tests.tar.zst" --extract-to "$GITHUB_WORKSPACE" --extract-overwrite --workspace-remap "$GITHUB_WORKSPACE" --profile "$NEXTEST_PROFILE" --partition "hash:$SHARD/4" --message-format json > "$evidence/tests.json" 2> "$evidence/list.stderr"
-          if /usr/bin/time -v -o "$evidence/run.resources" cargo nextest run --archive-file "$built/tests.tar.zst" --extract-to "$GITHUB_WORKSPACE" --extract-overwrite --workspace-remap "$GITHUB_WORKSPACE" --profile "$NEXTEST_PROFILE" --partition "hash:$SHARD/4" --no-tests=pass > "$evidence/run.stdout" 2> "$evidence/run.stderr"; then phase_exit=0; else phase_exit=$?; fi
+          /usr/bin/time -v -o "$evidence/list.resources" python3 -B "$RUNNER_TEMP/rust-window-driver/rust_archive_workers.py" execute "$GITHUB_SHA" cargo nextest list --archive-file "$built/tests.tar.zst" --extract-to "$GITHUB_WORKSPACE" --extract-overwrite --workspace-remap "$GITHUB_WORKSPACE" --profile "$NEXTEST_PROFILE" --partition "hash:$SHARD/4" --message-format json > "$evidence/tests.json" 2> "$evidence/list.stderr"
+          if /usr/bin/time -v -o "$evidence/run.resources" python3 -B "$RUNNER_TEMP/rust-window-driver/rust_archive_workers.py" execute "$GITHUB_SHA" cargo nextest run --archive-file "$built/tests.tar.zst" --extract-to "$GITHUB_WORKSPACE" --extract-overwrite --workspace-remap "$GITHUB_WORKSPACE" --profile "$NEXTEST_PROFILE" --partition "hash:$SHARD/4" --no-tests=pass > "$evidence/run.stdout" 2> "$evidence/run.stderr"; then phase_exit=0; else phase_exit=$?; fi
           mkdir -p "$evidence/source-results"
           cp -R target/nextest/pr/. "$evidence/source-results/"
           python3 -B "$RUNNER_TEMP/rust-window-driver/rust_archive_workers.py" record "$evidence" "$ARM" "$SHARD" "$GITHUB_SHA" "$built/tests.tar.zst" "$RUNNER_TEMP/rust-window-custody/trial" "$phase_exit"

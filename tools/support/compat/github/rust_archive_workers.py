@@ -22,6 +22,13 @@ def pinned_nextest(banner):
     require(re.match(r"^cargo-nextest 0\.9\.146(?:\s|$)", banner), "runtime nextest release differs")
 
 
+def frozen_test_environment(driver):
+    source = command("git", "--no-replace-objects", "rev-parse", "HEAD")
+    require(source == SOURCE and os.environ.get("GITHUB_SHA") == driver,
+            "test source or orchestration identity differs")
+    return {**os.environ, "GITHUB_SHA": source}
+
+
 def context(custody):
     receipt = json.loads((Path(custody) / "original-receipt.json").read_bytes())
     validate_receipt(receipt)
@@ -40,6 +47,7 @@ def context(custody):
     require(not command("git", "--no-replace-objects", "status", "--porcelain", "--untracked-files=no"),
             "frozen tracked source is dirty")
     return {"sourceSha": SOURCE, "sourceTree": TREE, "environment": expected,
+            "testGitHubSha": SOURCE,
             "rustcVersion": receipt["rustcVersion"], "nextestVersion": "0.9.146",
             "nextestConfigSha256": digest_file(".config/nextest.toml"),
             "cargoLockSha256": digest_file("Cargo.lock"), "packageLockSha256": digest_file("pnpm-lock.yaml"),
@@ -51,7 +59,8 @@ def record(root, arm, shard, driver, archive, custody, run_exit):
     require(arm in ("baseline", "candidate") and shard in range(1, 5), "unknown worker vector")
     report = verify(custody, arm, archive, driver)
     runtime = json.loads((root / "runtime.json").read_bytes())
-    require(runtime["sourceSha"] == SOURCE and runtime["sourceTree"] == TREE, "worker source differs")
+    require(runtime["sourceSha"] == SOURCE and runtime["sourceTree"] == TREE
+            and runtime.get("testGitHubSha") == SOURCE, "worker source differs")
     result = {"schemaVersion": 1, "driverSha": driver, "artifactId": ARTIFACT,
               "sourceSha": SOURCE, "arm": arm, "shard": shard, "partition": f"hash:{shard}/4",
               "profile": "pr", "runExit": run_exit, "archiveSha256": report[arm]["archiveSha256"],
@@ -94,6 +103,7 @@ def aggregate(root, driver):
         require(key not in workers, "worker repeats")
         require(receipt["schemaVersion"] == 1 and receipt["driverSha"] == driver
                 and receipt["artifactId"] == ARTIFACT and receipt["sourceSha"] == SOURCE
+                and receipt["runtime"].get("testGitHubSha") == SOURCE
                 and receipt["profile"] == "pr" and receipt["partition"] == f"hash:{key[1]}/4"
                 and receipt["runExit"] == 0, "worker provenance/result differs")
         folder = path.parent
@@ -132,7 +142,13 @@ def aggregate(root, driver):
 
 
 if __name__ == "__main__":
-    if sys.argv[1] == "context":
+    if sys.argv[1] == "execute":
+        invocation = sys.argv[3:]
+        require(invocation[:2] == ["cargo", "nextest"]
+                and len(invocation) > 2 and invocation[2] in ("list", "run"),
+                "only the original nextest list and run commands are permitted")
+        os.execvpe(invocation[0], invocation, frozen_test_environment(sys.argv[2]))
+    elif sys.argv[1] == "context":
         result = context(sys.argv[2])
         Path(sys.argv[3]).write_bytes(json_bytes(result))
     elif sys.argv[1] == "record":

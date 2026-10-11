@@ -75,6 +75,11 @@ void test("the original whole ZIP, complete tar proof and all raw observations r
 
 void test("frozen consumer source, profile, fixtures and pinned decoder remain unchanged", () => {
   const steps = consumer.runs.steps;
+  assert.equal(workflow.jobs.consumer.steps[0].uses.startsWith("actions/checkout@"), true);
+  assert.equal(
+    steps.some((step) => step.uses?.startsWith("./")),
+    false,
+  );
   const checkout = steps.find((step) => step.uses?.startsWith("actions/checkout@"));
   assert.equal(checkout.with.ref, "e057b3dd9e8ebed0dee7f4239a34daa2b410f7a0");
   assert.equal(checkout.with["persist-credentials"], false);
@@ -90,6 +95,16 @@ void test("frozen consumer source, profile, fixtures and pinned decoder remain u
     /--profile "\$NEXTEST_PROFILE" --partition "hash:\$SHARD\/4" --no-tests=pass/,
   );
   assert.match(commands, /unpartitioned\.json/);
+  assert.equal(
+    (
+      commands.match(
+        /rust_archive_workers\.py" execute "\$GITHUB_SHA" cargo nextest (?:list|run)/g,
+      ) || []
+    ).length,
+    3,
+  );
+  assert.match(commands, /record .*"\$GITHUB_SHA"/);
+  assert.doesNotMatch(commands, /export GITHUB_SHA|GITHUB_SHA=/);
   assert.match(commands, /run\.stdout.*run\.stderr/);
   assert.doesNotMatch(
     commands,
@@ -113,6 +128,6 @@ void test("real whole-frame, source, missing-partition and result controls survi
       },
     );
     assert.equal(result.status, 0, result.stderr);
-    assert.match(result.stderr, /Ran 10 tests/);
+    assert.match(result.stderr, /Ran 11 tests/);
   }
 });

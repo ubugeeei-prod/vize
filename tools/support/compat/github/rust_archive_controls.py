@@ -170,7 +170,8 @@ class Controls(unittest.TestCase):
                 receipt = {"schemaVersion": 1, "driverSha": "a" * 40, "artifactId": transport.ARTIFACT,
                            "sourceSha": transport.SOURCE, "profile": "pr", "partition": f"hash:{shard}/4",
                            "arm": arm, "shard": shard, "runExit": 0, "tarSha256": self.before["tarSha256"],
-                           "runtime": {"sourceSha": transport.SOURCE, "sourceTree": transport.TREE},
+                           "runtime": {"sourceSha": transport.SOURCE, "sourceTree": transport.TREE,
+                                       "testGitHubSha": transport.SOURCE},
                            "driverFiles": transport.driver_files(Path(__file__).parent),
                            "testsSha256": digest_file(folder / "tests.json"),
                            "junitSha256": digest_file(folder / workers.JUNIT)}
@@ -269,6 +270,38 @@ class Controls(unittest.TestCase):
             self.assertEqual(ignored, {"ignored": True, "filter-match": {"status": "mismatch", "reason": "ignored"}})
             self.assertNotIn(("binary", "original-ignored"), workers.selected(listing))
             self.assertEqual(len(workers.outcomes(root / f"{arm}-1" / workers.JUNIT, listing)), 1)
+
+    def test_frozen_test_identity_matches_real_git_without_changing_driver(self):
+        repo = self.root / "test-source"
+        repo.mkdir()
+        def git(*args):
+            return subprocess.check_output(["git", "-C", str(repo), *args], text=True).strip()
+        git("init", "--quiet")
+        (repo / "fixture").write_text("original provenance check\n")
+        git("add", ".")
+        git("-c", "user.name=Archive control", "-c", "user.email=archive-control@example.invalid",
+            "commit", "--quiet", "-m", "physical source")
+        source = git("--no-replace-objects", "rev-parse", "HEAD")
+        driver = "d" * 40
+        previous = Path.cwd()
+        try:
+            os.chdir(repo)
+            with patch.object(workers, "SOURCE", source), patch.dict(os.environ, {"GITHUB_SHA": driver}):
+                environment = workers.frozen_test_environment(driver)
+                check = ["python3", "-c", "import os,subprocess; "
+                         "head=subprocess.check_output(['git','--no-replace-objects','rev-parse','HEAD'],"
+                         "text=True).strip(); assert head==os.environ['GITHUB_SHA']"]
+                inherited = subprocess.run(check, capture_output=True)
+                self.assertNotEqual(inherited.returncode, 0)
+                self.assertEqual(subprocess.run(check, env=environment, capture_output=True).returncode, 0)
+                self.assertEqual(os.environ["GITHUB_SHA"], driver)
+                with self.assertRaises(ValueError):
+                    workers.frozen_test_environment("b" * 40)
+            with patch.object(workers, "SOURCE", "b" * 40), patch.dict(os.environ, {"GITHUB_SHA": driver}):
+                with self.assertRaises(ValueError):
+                    workers.frozen_test_environment(driver)
+        finally:
+            os.chdir(previous)
 
 
 if __name__ == "__main__":

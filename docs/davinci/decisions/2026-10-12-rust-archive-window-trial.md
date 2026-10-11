@@ -77,8 +77,42 @@ missing, failed or changed partitions. They run normally and with Python `-O`.
 Equal omissions, extras or duplicated actual cases in both arms still refuse;
 unknown nextest releases, helper body/mode drift and borrowed Git bodies refuse.
 
-Full authenticated remote capture, pinned-decoder acceptance, all four paired
-physical partitions, byte savings and walltime/RSS measurements remain pending.
+Run [38182205691](https://github.com/ubugeeei-prod/vize/actions/runs/38182205691)
+at driver `8c20ec1a99623e50709a66c17fab5798f0152044` authenticated the complete
+original ZIP and both CRCs, then retained it for 14 days as artifact `11718407805`.
+The complete decoded tar has 1,158 members and 26,503,957,504 bytes, SHA-256
+`53d50ee07861c57b2a47352fc1d417864f9915946661875e5e505b571a4e733f`.
+Both complete member inventories have SHA-256
+`77b58ccc09958c878a8309ac8c1fbe4af3c3b009433b5f5b61a4932e59f9be1f`.
+
+| Producer observation              |      Original |   Long window |
+| --------------------------------- | ------------: | ------------: |
+| Complete zstd bytes               | 4,821,747,915 | 3,542,835,210 |
+| Complete tar decode and inventory |      38.765 s |      38.300 s |
+| Decode peak RSS                   |    24,628 KiB |   136,192 KiB |
+
+The candidate is 26.52% smaller; encoding takes 22.546 s. These are producer
+observations, with the extra diagnostic storage and verification work retained.
+All eight worker packets were authenticated by complete API ZIP SHA-256/size,
+ZIP CRCs and listing/JUnit body hashes. Pinned nextest decoded both frames.
+Partitions 1/2/3 passed 4,556/4,251/4,169 cases in both arms. Partition 4 ran
+4,391 cases in each arm and refused the same original component-slot provenance
+case: its real Git checkout was `e057`, but it inherited the orchestration
+`GITHUB_SHA=8c20`. The aggregate correctly failed; no paired green is claimed.
+
+Each worker also failed runner post processing because its local composite
+manifest disappeared during the frozen checkout. Consumer steps are now planned
+directly in the reusable workflow, preserving all ordered commands, conditions,
+shells and resolved matrix inputs without adding a source overlay. The move has
+its own commit. A real Git control reproduces the provenance refusal with an
+inherited driver SHA. A finite launcher now requires the actual frozen Git HEAD
+and explicit outer driver identity, then execs only the original nextest
+`list`/`run` commands with child-only `GITHUB_SHA` equal to that verified HEAD.
+The Actions/receipt driver namespace stays unchanged; runtime receipts must
+bind the physical test SHA. No original provenance assertion is edited or skipped.
+The five Node laws keep their complete registrations within the zero-warning
+budget. Fresh source qualification and all four successful paired physical
+partitions remain pending for these repairs.
 Fewer bytes alone will not be reported as an end-to-end CI speedup. Re-encoding,
 verification and extra diagnostic uploads have costs; this retained experiment
 adds storage while leaving original production evidence intact.
