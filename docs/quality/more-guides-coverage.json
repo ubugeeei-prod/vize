@@ -59,9 +59,9 @@
     },
     {
       "route": "/guide/check-performance",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Concrete worker/profile commands present; standalone purpose and safety context still need reader-flow review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "English purpose and complete authored Japanese worker/profile guidance preserve both original commands, all inline API tokens, the one-worker default and the historical diagnostic limitation; fresh native browser and deployed reader acceptance remain pending."
     },
     {
       "route": "/guide/cli",
