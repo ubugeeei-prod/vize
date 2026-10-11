@@ -1,0 +1,29 @@
+{
+  "observedSourceHead": "bb9da4ac8ab014948b1da9cd591aa7e1a3786fd2",
+  "observedSSRSourceHead": "1edd0aab0bf708a84d23a3e41ccf42f818ebdf13",
+  "genericBoundaryCorrectionHead": "0106fc97ed29aa499c46c485d388038acebb7510",
+  "run": 38118859501,
+  "job": 114409356937,
+  "runConclusion": "failure",
+  "lintCasesPassed": 12,
+  "lintCasesRequired": 15,
+  "artifactId": 11694658468,
+  "artifactSha256": "268719dbfcc174f69af07b90b8dba263156f2fe2b511c36ee89adf95b7576c99",
+  "jobRawLogSha256": "0ad5eacc674919e5efdeadb03f79c02b08adac1aa3682c28a8ed3082b3c146a7",
+  "originalZipEntries": [
+    "target/app-e2e-logs/full-lint-all.log",
+    "tests/snapshots/lint/__snapshots__/npmx.dev-lint.snap.actual",
+    "tests/snapshots/lint/__snapshots__/misskey-lint.snap.actual",
+    "tests/snapshots/lint/__snapshots__/vuefes-2025-lint.snap.actual",
+    ".vize/artifacts/lint-fixtures/misskey.json",
+    ".vize/artifacts/lint-fixtures/naive-ui.json",
+    ".vize/artifacts/lint-fixtures/npmx.dev.json",
+    ".vize/artifacts/lint-fixtures/voicevox.json"
+  ],
+  "filesRequired": 874,
+  "misskeyWholePacketsUnchanged": 583,
+  "changedWholePackets": 3,
+  "removedWholeMessages": 3,
+  "indirectStateBoundaryUnproven": 1,
+  "finalCorrectedSourceFull15StillRequired": true
+}

@@ -848,17 +848,6 @@
     "file": "app/pages/timetable/index.vue",
     "messages": [
       {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'window' is a browser-only global and is not available in SSR",
-        "line": 55,
-        "column": 3,
-        "endLine": 55,
-        "endColumn": 9,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -882,7 +871,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "app/pages/tokusho/index.vue",

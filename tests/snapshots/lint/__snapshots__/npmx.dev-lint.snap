@@ -19,72 +19,15 @@
   },
   {
     "file": "app/components/About/GovernanceList.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 27,
-        "column": 11,
-        "endLine": 27,
-        "endColumn": 45,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/About/LogoImg.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 15,
-        "column": 7,
-        "endLine": 15,
-        "endColumn": 17,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 24,
-        "column": 7,
-        "endLine": 24,
-        "endColumn": 22,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 33,
-        "column": 7,
-        "endLine": 33,
-        "endColumn": 22,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 40,
-        "column": 7,
-        "endLine": 40,
-        "endColumn": 23,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 0
   },
   {
     "file": "app/components/About/LogoList.vue",
@@ -104,38 +47,16 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 42,
-        "column": 23,
-        "endLine": 42,
-        "endColumn": 39,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
         "line": 65,
         "column": 15,
         "endLine": 65,
         "endColumn": 36,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 72,
-        "column": 29,
-        "endLine": 72,
-        "endColumn": 50,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 2
   },
   {
     "file": "app/components/Alert.vue",
@@ -259,21 +180,9 @@
   },
   {
     "file": "app/components/AuthorAvatar.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 37,
-        "column": 7,
-        "endLine": 37,
-        "endColumn": 27,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/AuthorList.vue",
@@ -341,34 +250,12 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 65,
-        "column": 9,
-        "endLine": 65,
-        "endColumn": 37,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
         "line": 89,
         "column": 11,
         "endLine": 89,
         "endColumn": 70,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 96,
-        "column": 13,
-        "endLine": 96,
-        "endColumn": 41,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
       {
         "ruleId": "vue/no-unsafe-url",
@@ -415,17 +302,6 @@
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       },
       {
-        "ruleId": "a11y/anchor-has-content",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/anchor-has-content] <a> elements must have accessible content",
-        "line": 149,
-        "column": 9,
-        "endLine": 156,
-        "endColumn": 10,
-        "help": "Fix options:\n1. Add text content:\n  <a href=\"/about\">About Us</a>\n2. Add aria-label for icon-only links:\n  <a href=\"/settings\" aria-label=\"Settings\">\n  <IconSettings />\n  </a>\n3. Include image with alt:\n  <a href=\"/\"><img src=\"logo.png\" alt=\"Home\"></a>"
-      },
-      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -435,17 +311,6 @@
         "endLine": 152,
         "endColumn": 31,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 158,
-        "column": 13,
-        "endLine": 158,
-        "endColumn": 29,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
       {
         "ruleId": "vue/no-unsafe-url",
@@ -462,17 +327,6 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 176,
-        "column": 11,
-        "endLine": 176,
-        "endColumn": 46,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
         "line": 224,
         "column": 11,
@@ -482,7 +336,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 14
+    "warningCount": 9
   },
   {
     "file": "app/components/BlueskyComments.vue",
@@ -502,17 +356,6 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 32,
-        "column": 15,
-        "endLine": 32,
-        "endColumn": 39,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
         "line": 50,
         "column": 13,
@@ -522,7 +365,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "app/components/Brand/Customize.vue",
@@ -780,32 +623,9 @@
   },
   {
     "file": "app/components/Code/DirectoryListing.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 93,
-        "column": 22,
-        "endLine": 93,
-        "endColumn": 83,
-        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 124,
-        "column": 19,
-        "endLine": 124,
-        "endColumn": 133,
-        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 0
   },
   {
     "file": "app/components/Code/FileTree.vue",
@@ -820,32 +640,10 @@
         "endLine": 74,
         "endColumn": 98,
         "help": "Reorder attributes to follow the recommended order"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 83,
-        "column": 15,
-        "endLine": 83,
-        "endColumn": 134,
-        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 128,
-        "column": 18,
-        "endLine": 128,
-        "endColumn": 75,
-        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 1
   },
   {
     "file": "app/components/Code/Header.vue",
@@ -868,6 +666,17 @@
   {
     "file": "app/components/Code/MobileTreeDrawer.vue",
     "messages": [
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'document' is a browser-only global and is not available in SSR",
+        "line": 22,
+        "column": 32,
+        "endLine": 22,
+        "endColumn": 40,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
       {
         "ruleId": "a11y/click-events-have-key-events",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
@@ -903,7 +712,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 4
   },
   {
     "file": "app/components/Code/SkeletonLoader.vue",
@@ -938,28 +747,6 @@
         "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
       },
       {
-        "ruleId": "a11y/img-alt",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
-        "line": 9,
-        "column": 3,
-        "endLine": 13,
-        "endColumn": 5,
-        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 10,
-        "column": 5,
-        "endLine": 10,
-        "endColumn": 25,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -972,7 +759,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 2
   },
   {
     "file": "app/components/ColumnPicker.vue",
@@ -1006,6 +793,28 @@
   {
     "file": "app/components/CommandPalette.client.vue",
     "messages": [
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'document' is a browser-only global and is not available in SSR",
+        "line": 278,
+        "column": 18,
+        "endLine": 278,
+        "endColumn": 26,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'CommandPalette.client' should be PascalCase or kebab-case",
+        "line": 281,
+        "column": 11,
+        "endLine": 281,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
       {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -1041,7 +850,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 5
   },
   {
     "file": "app/components/Compare/ComparisonGrid.vue",
@@ -1520,6 +1329,17 @@
     "file": "app/components/Header/AccountMenu.client.vue",
     "messages": [
       {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'AccountMenu.client' should be PascalCase or kebab-case",
+        "line": 58,
+        "column": 11,
+        "endLine": 58,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
+      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1531,28 +1351,6 @@
         "help": "Reorder attributes to follow the recommended order"
       },
       {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 76,
-        "column": 11,
-        "endLine": 76,
-        "endColumn": 27,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 92,
-        "column": 11,
-        "endLine": 92,
-        "endColumn": 36,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1562,42 +1360,43 @@
         "endLine": 150,
         "endColumn": 18,
         "help": "Reorder attributes to follow the recommended order"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 154,
-        "column": 17,
-        "endLine": 154,
-        "endColumn": 33,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 196,
-        "column": 17,
-        "endLine": 196,
-        "endColumn": 42,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 3
   },
   {
     "file": "app/components/Header/AccountMenu.server.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'AccountMenu.server' should be PascalCase or kebab-case",
+        "line": 1,
+        "column": 11,
+        "endLine": 1,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/Header/AuthModal.client.vue",
     "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'AuthModal.client' should be PascalCase or kebab-case",
+        "line": 71,
+        "column": 11,
+        "endLine": 71,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
       {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -1633,7 +1432,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 4
   },
   {
     "file": "app/components/Header/ConnectorModal.vue",
@@ -1712,26 +1511,26 @@
     "file": "app/components/Header/MobileMenu.client.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 131,
-        "column": 19,
-        "endLine": 131,
-        "endColumn": 35,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'document' is a browser-only global and is not available in SSR",
+        "line": 58,
+        "column": 32,
+        "endLine": 58,
+        "endColumn": 40,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       },
       {
-        "ruleId": "vue/no-unsafe-url",
+        "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 156,
-        "column": 19,
-        "endLine": 156,
-        "endColumn": 44,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'MobileMenu.client' should be PascalCase or kebab-case",
+        "line": 64,
+        "column": 11,
+        "endLine": 64,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -1843,17 +1642,6 @@
         "help": "Reorder attributes to follow the recommended order"
       },
       {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 77,
-        "column": 13,
-        "endLine": 77,
-        "endColumn": 33,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1863,6 +1651,17 @@
         "endLine": 77,
         "endColumn": 33,
         "help": "Reorder attributes to follow the recommended order"
+      },
+      {
+        "ruleId": "a11y/no-aria-hidden-on-focusable",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 2,
+        "message": "[vize:a11y/no-aria-hidden-on-focusable] aria-hidden=\"true\" must not be used on focusable elements",
+        "line": 79,
+        "column": 11,
+        "endLine": 86,
+        "endColumn": 12,
+        "help": "Remove aria-hidden=\"true\". tabindex=\"-1\" is still programmatically focusable"
       },
       {
         "ruleId": "vue/attribute-order",
@@ -1887,8 +1686,8 @@
         "help": "Reorder attributes to follow the recommended order"
       }
     ],
-    "errorCount": 0,
-    "warningCount": 6
+    "errorCount": 1,
+    "warningCount": 5
   },
   {
     "file": "app/components/Input/Base.vue",
@@ -2067,6 +1866,17 @@
     "file": "app/components/Modal.client.vue",
     "messages": [
       {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'Modal.client' should be PascalCase or kebab-case",
+        "line": 49,
+        "column": 11,
+        "endLine": 49,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
+      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2079,7 +1889,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "app/components/Noodle/Artemis/Logo.vue",
@@ -2187,21 +1997,10 @@
         "endLine": 181,
         "endColumn": 33,
         "help": "Reorder attributes to follow the recommended order"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 187,
-        "column": 17,
-        "endLine": 187,
-        "endColumn": 33,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "app/components/Noodle/ListCard.vue",
@@ -2261,15 +2060,15 @@
     "file": "app/components/OgImage/BlogPost.takumi.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unsafe-url",
+        "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 91,
-        "column": 15,
-        "endLine": 91,
-        "endColumn": 35,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'BlogPost.takumi' should be PascalCase or kebab-case",
+        "line": 60,
+        "column": 11,
+        "endLine": 60,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -2277,42 +2076,54 @@
   },
   {
     "file": "app/components/OgImage/Compare.takumi.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'Compare.takumi' should be PascalCase or kebab-case",
+        "line": 119,
+        "column": 11,
+        "endLine": 119,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/OgImage/Noodle.takumi.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unsafe-url",
+        "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 47,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'Noodle.takumi' should be PascalCase or kebab-case",
+        "line": 14,
         "column": 11,
-        "endLine": 47,
-        "endColumn": 26,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 60,
-        "column": 11,
-        "endLine": 60,
-        "endColumn": 24,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+        "endLine": 14,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/OgImage/Package.takumi.vue",
     "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'Package.takumi' should be PascalCase or kebab-case",
+        "line": 245,
+        "column": 11,
+        "endLine": 245,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
       {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -2356,56 +2167,82 @@
         "endLine": 385,
         "endColumn": 7,
         "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
-      },
-      {
-        "ruleId": "a11y/img-alt",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
-        "line": 380,
-        "column": 5,
-        "endLine": 385,
-        "endColumn": 7,
-        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 382,
-        "column": 7,
-        "endLine": 382,
-        "endColumn": 26,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
     "errorCount": 3,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "app/components/OgImage/Page.takumi.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'Page.takumi' should be PascalCase or kebab-case",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/OgImage/Profile.takumi.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'Profile.takumi' should be PascalCase or kebab-case",
+        "line": 22,
+        "column": 11,
+        "endLine": 22,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/OgImage/Splash.takumi.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'Splash.takumi' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/OgImage/UserProfile.takumi.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'UserProfile.takumi' should be PascalCase or kebab-case",
+        "line": 19,
+        "column": 11,
+        "endLine": 19,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/OgLayout.vue",
@@ -2761,6 +2598,17 @@
     "file": "app/components/Package/Header.vue",
     "messages": [
       {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'window' is a browser-only global and is not available in SSR",
+        "line": 60,
+        "column": 34,
+        "endLine": 60,
+        "endColumn": 40,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2839,7 +2687,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 7
+    "warningCount": 8
   },
   {
     "file": "app/components/Package/InstallScripts.vue",
@@ -3526,17 +3374,6 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 907,
-        "column": 22,
-        "endLine": 907,
-        "endColumn": 78,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 950,
         "column": 13,
         "endLine": 950,
@@ -3699,7 +3536,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 17
+    "warningCount": 16
   },
   {
     "file": "app/components/Package/TimelineChartDepSizeSvgSlot.vue",
@@ -3762,17 +3599,6 @@
         "endLine": 1402,
         "endColumn": 22,
         "help": "Reorder attributes to follow the recommended order"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 1411,
-        "column": 16,
-        "endLine": 1411,
-        "endColumn": 67,
-        "help": "Use kebab-case for attribute names"
       },
       {
         "ruleId": "vue/attribute-order",
@@ -3995,17 +3821,6 @@
         "help": "Reorder attributes to follow the recommended order"
       },
       {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 2039,
-        "column": 17,
-        "endLine": 2039,
-        "endColumn": 32,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -4018,7 +3833,7 @@
       }
     ],
     "errorCount": 1,
-    "warningCount": 23
+    "warningCount": 21
   },
   {
     "file": "app/components/Package/VersionDistribution.vue",
@@ -4498,13 +4313,47 @@
   },
   {
     "file": "app/components/ScrollToTop.client.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'window' is a browser-only global and is not available in SSR",
+        "line": 13,
+        "column": 36,
+        "endLine": 13,
+        "endColumn": 42,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ScrollToTop.client' should be PascalCase or kebab-case",
+        "line": 26,
+        "column": 11,
+        "endLine": 26,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 2
   },
   {
     "file": "app/components/SearchProviderToggle.client.vue",
     "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'SearchProviderToggle.client' should be PascalCase or kebab-case",
+        "line": 20,
+        "column": 11,
+        "endLine": 20,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
       {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -4529,13 +4378,25 @@
       }
     ],
     "errorCount": 2,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/SearchProviderToggle.server.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'SearchProviderToggle.server' should be PascalCase or kebab-case",
+        "line": 1,
+        "column": 11,
+        "endLine": 1,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/SearchSuggestionCard.vue",
@@ -4613,15 +4474,15 @@
     "file": "app/components/Settings/Toggle.client.vue",
     "messages": [
       {
-        "ruleId": "a11y/role-has-required-aria-props",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:a11y/role-has-required-aria-props] Elements with role=\"switch\" must have the 'aria-checked' attribute",
-        "line": 56,
-        "column": 5,
-        "endLine": 63,
-        "endColumn": 7,
-        "help": "Role switch requires: aria-checked\nExample:\n  <div role=\"switch\" aria-checked=\"...\">\n  Content\n  </div>"
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'Toggle.client' should be PascalCase or kebab-case",
+        "line": 27,
+        "column": 11,
+        "endLine": 27,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       },
       {
         "ruleId": "vue/attribute-order",
@@ -4651,9 +4512,21 @@
   },
   {
     "file": "app/components/Settings/Toggle.server.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'Toggle.server' should be PascalCase or kebab-case",
+        "line": 20,
+        "column": 11,
+        "endLine": 20,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/Settings/TranslationHelper.vue",
@@ -4834,27 +4707,27 @@
   },
   {
     "file": "app/components/Translation/StatusByFile.unused.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "app/components/User/Avatar.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unsafe-url",
+        "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 56,
-        "column": 7,
-        "endLine": 56,
-        "endColumn": 25,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'StatusByFile.unused' should be PascalCase or kebab-case",
+        "line": 30,
+        "column": 11,
+        "endLine": 30,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
     "warningCount": 1
+  },
+  {
+    "file": "app/components/User/Avatar.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
   },
   {
     "file": "app/components/UserCombobox.vue",
@@ -4938,21 +4811,10 @@
         "endLine": 51,
         "endColumn": 38,
         "help": "Fix:\n  <video src=\"movie.mp4\">\n  <track kind=\"captions\" src=\"captions.vtt\" />\n  </video>\nAlternatives:\n- Add muted attribute for decorative media\n- Add aria-label for described media"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 51,
-        "column": 25,
-        "endLine": 51,
-        "endColumn": 35,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/ViewModeToggle.vue",
@@ -5010,6 +4872,17 @@
     "file": "app/components/global/BlueskyPostEmbed.client.vue",
     "messages": [
       {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'BlueskyPostEmbed.client' should be PascalCase or kebab-case",
+        "line": 122,
+        "column": 11,
+        "endLine": 122,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
+      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -5046,45 +4919,12 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 149,
-        "column": 9,
-        "endLine": 149,
-        "endColumn": 47,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 172,
-        "column": 9,
-        "endLine": 172,
-        "endColumn": 28,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
         "line": 187,
         "column": 9,
         "endLine": 187,
         "endColumn": 40,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 194,
-        "column": 11,
-        "endLine": 194,
-        "endColumn": 43,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
       {
         "ruleId": "vue/attribute-hyphenation",
@@ -5096,32 +4936,10 @@
         "endLine": 215,
         "endColumn": 22,
         "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 218,
-        "column": 11,
-        "endLine": 218,
-        "endColumn": 37,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 232,
-        "column": 11,
-        "endLine": 232,
-        "endColumn": 30,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
     "errorCount": 0,
-    "warningCount": 10
+    "warningCount": 6
   },
   {
     "file": "app/error.vue",
@@ -5153,21 +4971,10 @@
         "endLine": 251,
         "endColumn": 49,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 258,
-        "column": 23,
-        "endLine": 258,
-        "endColumn": 62,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "app/pages/accessibility.vue",
@@ -5188,28 +4995,6 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 119,
-        "column": 23,
-        "endLine": 119,
-        "endColumn": 38,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 189,
-        "column": 23,
-        "endLine": 189,
-        "endColumn": 55,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
         "line": 320,
         "column": 19,
@@ -5219,25 +5004,13 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 1
   },
   {
     "file": "app/pages/compare.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 383,
-        "column": 22,
-        "endLine": 383,
-        "endColumn": 76,
-        "help": "Use kebab-case for attribute names"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/pages/diff/[[org]]/[packageName]/v/[versionRange].vue",
@@ -5316,17 +5089,6 @@
         "help": "Why: ID reference attributes like for, aria-labelledby, aria-describedby, etc. must point to an existing element with that id. A broken reference silently breaks the association.\nFix: Ensure the referenced ID exists in the template:\n  <label for=\"name\">Name:</label>\n  <input id=\"name\" type=\"text\">"
       },
       {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 70,
-        "column": 19,
-        "endLine": 70,
-        "endColumn": 39,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -5339,58 +5101,13 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "app/pages/leaderboard/likes.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 158,
-        "column": 23,
-        "endLine": 158,
-        "endColumn": 54,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 259,
-        "column": 23,
-        "endLine": 259,
-        "endColumn": 54,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 355,
-        "column": 23,
-        "endLine": 355,
-        "endColumn": 51,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 372,
-        "column": 27,
-        "endLine": 372,
-        "endColumn": 55,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 0
   },
   {
     "file": "app/pages/noodles/[slug].vue",
@@ -5835,6 +5552,17 @@
     "file": "app/pages/package/[[org]]/[name].vue",
     "messages": [
       {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'document' is a browser-only global and is not available in SSR",
+        "line": 258,
+        "column": 8,
+        "endLine": 258,
+        "endColumn": 16,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
         "ruleId": "vue/no-v-html",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -5957,7 +5685,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 11
+    "warningCount": 12
   },
   {
     "file": "app/pages/package/[[org]]/[name]/index.vue",
@@ -5990,17 +5718,6 @@
         "endLine": 173,
         "endColumn": 70,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 180,
-        "column": 23,
-        "endLine": 180,
-        "endColumn": 41,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
       {
         "ruleId": "vue/attribute-order",
@@ -6048,7 +5765,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 5
   },
   {
     "file": "app/pages/privacy.vue",

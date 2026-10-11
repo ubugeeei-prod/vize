@@ -28,9 +28,21 @@ test("reviewed snapshots retain every whole provider packet and all 1977 ordered
   let files = 0,
     changed = 0;
   for (const capture of original) {
+    const corrected = JSON.parse(
+      gunzipSync(
+        fs.readFileSync(
+          path.join(
+            root,
+            "tests/_fixtures/_projects/lint-review/2026-10-11-direct-client-correction/original-provider-packets.json.gz",
+          ),
+        ),
+      ).toString(),
+    ).find((entry: { path: string }) => entry.path === capture.path);
+    const admitted = corrected ?? capture;
     const bytes = fs.readFileSync(path.join(root, capture.path));
-    assert.equal(bytes.toString(), capture.raw, "reviewed whole packet bytes must stay intact");
-    assert.equal(sha256(bytes), capture.sha256);
+    assert.equal(bytes.toString(), admitted.raw, "reviewed whole packet bytes must stay intact");
+    assert.equal(sha256(bytes), admitted.sha256);
+    assert.equal(sha256(capture.raw), capture.sha256, "original producer evidence remains intact");
     const packets = JSON.parse(capture.raw);
     const source = provenance.find(
       (entry: { snapshot: string }) => entry.snapshot === capture.path,

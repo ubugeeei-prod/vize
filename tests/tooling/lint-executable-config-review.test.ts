@@ -13,6 +13,7 @@ const review = path.join(
 );
 const compressed = (name: string) =>
   JSON.parse(gunzipSync(fs.readFileSync(path.join(review, name))).toString());
+const compare = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 const hash = (bytes: string | Buffer) => createHash("sha256").update(bytes).digest("hex");
 function canonical(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
@@ -50,7 +51,12 @@ test("the genuinely red provider run retains its complete ZIP, runtime closures 
     binding.jobRawLogSha256,
   );
   const runtime = compressed("runtime-fixture-receipts.json.gz");
-  assert.deepEqual(Object.keys(runtime).sort(), ["misskey", "naive-ui", "npmx.dev", "voicevox"]);
+  assert.deepEqual(Object.keys(runtime).sort(compare), [
+    "misskey",
+    "naive-ui",
+    "npmx.dev",
+    "voicevox",
+  ]);
   assert.equal(runtime["npmx.dev"].originalFrozenClosure, false);
   assert.equal(
     Object.values(runtime).reduce((total: number, value: any) => total + value.originalFiles, 0),
@@ -101,7 +107,11 @@ test("all 435 whole message deltas are reviewed and direct client-guard defects 
     ),
   ];
   assert.equal(observed.length, 435);
-  assert.deepEqual(observed.sort(), reviewed.sort(), "no message field or rule may be stripped");
+  assert.deepEqual(
+    observed.sort(compare),
+    reviewed.sort(compare),
+    "no message field or rule may be stripped",
+  );
   assert.deepEqual(misskey.unjustifiedChangedMessagesFound, []);
   const defects = npmx.filter((entry: any) => entry.status === "requires_source_correction");
   assert.deepEqual(
@@ -140,5 +150,99 @@ test("the original 51-rule projection and explicit typed-default comparison reta
   assert.equal(findings.length, 5);
   assert.ok(
     findings.every((message: any) => message.severity === 2 && message.suggestions.length > 0),
+  );
+});
+
+test("complete corrected captures retract exactly three positive client-guard warnings and preserve every other field", () => {
+  const directory = path.join(
+    root,
+    "tests/_fixtures/_projects/lint-review/2026-10-11-direct-client-correction",
+  );
+  const read = (name: string) =>
+    JSON.parse(gunzipSync(fs.readFileSync(path.join(directory, name))).toString());
+  const inventory = JSON.parse(fs.readFileSync(path.join(directory, "inventory.json"), "utf8"));
+  for (const entry of inventory) {
+    const bytes = fs.readFileSync(path.join(directory, entry.path));
+    assert.equal(bytes.length, entry.bytes);
+    assert.equal(hash(bytes), entry.sha256);
+  }
+  const binding = JSON.parse(fs.readFileSync(path.join(directory, "binding.json"), "utf8"));
+  assert.equal(binding.runConclusion, "failure");
+  assert.equal(binding.lintCasesPassed, 12);
+  assert.equal(
+    hash(fs.readFileSync(path.join(directory, "original-provider-artifact.zip"))),
+    binding.artifactSha256,
+  );
+  assert.equal(
+    hash(gunzipSync(fs.readFileSync(path.join(directory, "original-job.log.gz")))),
+    binding.jobRawLogSha256,
+  );
+  const captures = read("original-provider-packets.json.gz");
+  const reviews = read("whole-correction-review.json.gz");
+  const witnesses = read("original-source-witnesses.json.gz");
+  const observed: unknown[] = [];
+  let files = 0;
+  for (const capture of captures) {
+    assert.equal(hash(capture.raw), capture.sha256);
+    assert.equal(hash(capture.baselineRaw), capture.baselineSha256);
+    assert.equal(fs.readFileSync(path.join(root, capture.path), "utf8"), capture.raw);
+    const actual = JSON.parse(capture.raw),
+      previous = JSON.parse(capture.baselineRaw);
+    assert.deepEqual(
+      actual.map((packet: any) => packet.file),
+      previous.map((packet: any) => packet.file),
+    );
+    files += actual.length;
+    for (const [index, packet] of actual.entries()) {
+      const before = previous[index];
+      if (canonical(before) === canonical(packet)) continue;
+      const review = reviews.find(
+        (entry: any) => entry.project === capture.project && entry.file === packet.file,
+      );
+      assert.deepEqual(before, review.expected);
+      assert.deepEqual(packet, review.actual);
+      assert.deepEqual(
+        before.messages.filter(
+          (message: any) => canonical(message) === canonical(review.removedWholeMessage),
+        ),
+        [review.removedWholeMessage],
+      );
+      assert.equal(review.removedWholeMessage.ruleId, "ssr/no-browser-globals-in-ssr");
+      const remaining = before.messages.filter(
+        (message: any) => canonical(message) !== canonical(review.removedWholeMessage),
+      );
+      assert.deepEqual(packet, {
+        ...before,
+        messages: remaining,
+        warningCount: before.warningCount - 1,
+      });
+      const source = witnesses.find(
+        (entry: any) => entry.project === capture.project && entry.file === packet.file,
+      );
+      const sourceBytes = Buffer.from(source.source);
+      assert.equal(hash(sourceBytes), source.sourceSha256);
+      assert.equal(
+        createHash("sha1").update(`blob ${sourceBytes.length}\0`).update(sourceBytes).digest("hex"),
+        source.gitBlob,
+      );
+      assert.equal(source.clientGuard, "positive direct import.meta.client");
+      observed.push([capture.project, packet.file]);
+    }
+  }
+  assert.equal(files, 874);
+  assert.equal(reviews.length, 3);
+  assert.deepEqual(observed, [
+    ["npmx.dev", "app/app.vue"],
+    ["npmx.dev", "app/components/Diff/MobileSidebarDrawer.vue"],
+    ["vuefes-2025", "app/pages/timetable/index.vue"],
+  ]);
+  const npmx = JSON.parse(captures.find((entry: any) => entry.project === "npmx.dev").raw);
+  const indirect = npmx.find(
+    (packet: any) => packet.file === "app/pages/package/[[org]]/[name].vue",
+  );
+  assert.ok(
+    indirect.messages.some(
+      (message: any) => message.ruleId === "ssr/no-browser-globals-in-ssr" && message.line === 258,
+    ),
   );
 });

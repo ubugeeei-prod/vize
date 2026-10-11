@@ -188,18 +188,56 @@ npmx's `app/app.vue:127` and
 falsely warned. These packets must not be blessed by refreshing expectations.
 The essential producer correction in
 [#8595](https://github.com/ubugeeei-prod/vize/pull/8595), authenticated source
-`1edd0aab0bf708a84d23a3e41ccf42f818ebdf13`, now precedes this fixture layer.
-It recognizes literal OXC `import.meta.client`/`server` and logical negation
-in the correct if, conditional and direct short-circuit arms. Unsafe opposite
+`0106fc97ed29aa499c46c485d388038acebb7510`, now precedes this fixture layer.
+It recognizes only truthy literal OXC `import.meta.client` and equivalent
+logical negation in the correct if, conditional and direct short-circuit arms.
+The generic SSR context has no Nuxt realm witness; `import.meta.server` may be
+undefined, so both of its arms remain checked. Unsafe opposite
 branches, top-level values, computed/optional/aliased tests and the indirect
 reactive read remain covered by complete controls, including LF and CRLF.
-Its actual corrected real-project capture is still required before these
-expectations can be refreshed.
+Final exact-source full fifteen-case acceptance remains required.
 The read at `app/pages/package/[[org]]/[name].vue:258` depends on a const
 boolean and `shallowRef.value`; current lexical analysis does not prove that
 reactive chain. Its full packet remains an explicit unproven boundary, not
 proof that the original Nuxt server execution crashes. Top-level reads in
 physical `.client` files retain the existing configured filename policy.
+
+### Direct client correction qualification
+
+The next original fifteen-case observation at `bb9da4ac8ab014948b1da9cd591aa7e1a3786fd2`
+completed genuinely red: twelve passed in
+[38118859501](https://github.com/ubugeeei-prod/vize/actions/runs/38118859501).
+The original artifact `11694658468` is 94,614 bytes with complete ZIP SHA256
+`268719dbfcc174f69af07b90b8dba263156f2fe2b511c36ee89adf95b7576c99`.
+The unabridged 245,134-byte job log SHA256 is
+`0ad5eacc674919e5efdeadb03f79c02b08adac1aa3682c28a8ed3082b3c146a7`.
+Both exact original bytes, all eight ZIP entries, source metadata, complete
+runtime closures and whole producer/source packets are retained separately in
+`tests/_fixtures/_projects/lint-review/2026-10-11-direct-client-correction/`.
+
+All 874 ordered file packets were compared with the preceding whole evidence:
+Misskey's 583 are identical; npmx's 220 retract exactly the two witnessed
+positive client-guard warnings; Vue Fes's 71 retract one further warning at
+`app/pages/timetable/index.vue:55`, also inside a positive client guard at line50.
+That third case was missed by an incomplete search over the unhydrated checkout.
+The exact original Vue Fes pin `8eff3cd7dd79a7f47bbf2b78202b9aa2070ec5a6`
+contains Git blob `c1a1d1dedd3ec4d63c9bc94b59470342e803d5ec`, independently
+recomputed from the original source bytes. Its complete source SHA256
+`4a8be71e5b41ffd248178ae73112f70ea16293c30e25e6c7ebef0bbe1c3e0ac1`
+also matches the original source inventory and complete official51 capture.
+The previous whole395 review remains historical evidence; this explicit source
+correction supersedes that one prior SSR packet.
+
+These three complete corrected snapshots preserve every other message field,
+file identity, order and count, including all five typed/default errors and the
+indirect reactive-state boundary. A dedicated law requires exactly the three
+reviewed removals, authenticates original source blobs and provider bytes, and
+compares the admitted snapshots byte-for-byte with the actual full captures.
+The historical observation included a generic server-flag false safety inference;
+its narrowed successor0106 retains all unproved server arms and adds complete
+LF/CRLF controls. The three positive-client proofs remain unchanged.
+The final current-source whole15 run and normal Actions are mandatory; this
+historical red run is not admission or release success.
 
 ## Required follow-through
 
