@@ -63,7 +63,7 @@ export function source7502() {
     observerSourceSha256: sha(sourcePath7502),
     inputPackSha256: sha(`${input}/original_inputs.json`),
     originalReviewedOutputSha256: sha(`${input}/reviewed_output.json`),
-    successorReviewedOutputSha256: sha(`${input}/reviewed_output_v2.json`),
+    successorReviewedOutputSha256: sha(`${input}/reviewed_output_v3.json`),
     runtimePackageSha256: sha("npm/ui/package.json"),
     runtimeLockSha256: sha("pnpm-lock.yaml"),
   };

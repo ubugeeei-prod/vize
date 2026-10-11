@@ -1,5 +1,6 @@
 //! Whole original-selected modules, independent maps and all-or-nothing refusal.
 mod native_vapor {
+    mod class_cases;
     pub(crate) mod class_successor;
 }
 

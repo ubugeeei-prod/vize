@@ -57,6 +57,24 @@ export const stageTests7502 = [
       "--nocapture",
     ],
   },
+  {
+    step: "vapor-class-policy-build",
+    path: "davinci/vize_l3/src/decision/vapor/tests.rs",
+    sha256: "243f60d865902f0795dc0c0131ca78350346bbf0aea859d63a465793dd7026e8",
+    argv: [
+      "test",
+      "--locked",
+      "--profile",
+      "ci",
+      "-p",
+      "vize_l3",
+      "--lib",
+      "decision::vapor::tests::actual_whitespace_headers_tags_and_dynamic_ops_refuse_before_output",
+      "--",
+      "--exact",
+      "--nocapture",
+    ],
+  },
 ] as const;
 interface StageSource7502 {
   step: string;
@@ -82,14 +100,14 @@ export function validateStageHistory7502(receipt: StageHistory7502) {
   exactKeys7502(receipt, ["sourceRevision", "sourceTree", "tests"]);
   assert.equal(receipt.sourceRevision, baseline7502.revision);
   assert.equal(receipt.sourceTree, baseline7502.tree);
-  assert.equal(receipt.tests.length, 3);
+  assert.equal(receipt.tests.length, 4);
   for (const [index, test] of receipt.tests.entries()) {
     exactKeys7502(test, ["step", "testPath", "testSourceSha256"]);
     const expected = stageTests7502[index];
     assert.deepEqual(
       test,
       { step: expected.step, testPath: expected.path, testSourceSha256: expected.sha256 },
-      "all three entire named original tests stay authenticated",
+      "all four entire named original tests stay authenticated",
     );
   }
 }

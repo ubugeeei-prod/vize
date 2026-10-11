@@ -54,7 +54,7 @@ export function validateRuntime7502(output: any, packet: any, mode: string) {
     "executions",
   ]);
   assert.equal(output.schema, "vize.native-attribute-values-7502.runtime");
-  assert.equal(output.version, 2);
+  assert.equal(output.version, 3);
   assert.equal(output.mode, mode);
   assert.equal(output.capturedFromRust, true);
   assert.equal(output.acceptance, "unreviewed");
@@ -62,12 +62,12 @@ export function validateRuntime7502(output: any, packet: any, mode: string) {
   assert.deepEqual(output.counts, {
     originalControls: 14,
     knownIncorrectRc9Clients: 9,
-    positiveNativeExecutions: 76,
+    positiveNativeExecutions: 78,
     lowerRefusalOutcomes: 6,
-    targetRefusalOutcomes: 2,
+    targetRefusalOutcomes: 0,
   });
   assert.equal(output.controls.length, 14);
-  assert.equal(output.executions.length, 76);
+  assert.equal(output.executions.length, 78);
   for (const [index, fixture] of loadInputs7502().fixtures.entries()) {
     const control = output.controls[index];
     exactKeys7502(control, [

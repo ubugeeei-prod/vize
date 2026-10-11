@@ -31,7 +31,7 @@ export function validateCapture7502(packet: any) {
     "summary",
   ]);
   assert.equal(packet.schema, "vize.native-attribute-values-7502.capture");
-  assert.equal(packet.version, 2);
+  assert.equal(packet.version, 3);
   assert.deepEqual(packet.transition, transition7502);
   assert.equal(packet.custody, "once-selected-original");
   assert.equal(packet.fixtureSha256, fixtureSha7502);
@@ -166,9 +166,9 @@ export function validateCapture7502(packet: any) {
   assert.deepEqual(packet.summary, {
     fixtures: 14,
     outcomes: 84,
-    positive: 76,
+    positive: 78,
     lowerRefusals: 6,
-    targetRefusals: 2,
+    targetRefusals: 0,
   });
   unchangedRows7502(packet);
   return packet;

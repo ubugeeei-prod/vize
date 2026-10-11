@@ -13,6 +13,7 @@ import {
 import {
   exactKeys7502,
   archivedCapture7502,
+  previousCapture7502,
   archiveOutputSha7502,
   archiveOutputUrl7502,
   baseline7502,
@@ -71,13 +72,13 @@ test("unfrozen/null, missing fields and incomplete rows cannot grant whole nativ
   const stored = JSON.parse(readFileSync(outputUrl7502, "utf8"));
   exactKeys7502(stored, ["schema", "version", "state", "capture"]);
   assert.equal(stored.schema, "vize.native-attribute-values-7502.reviewed-output");
-  assert.equal(stored.version, 2);
+  assert.equal(stored.version, 3);
   assert(["unfrozen", "reviewed"].includes(stored.state));
   if (stored.state === "unfrozen") assert.equal(stored.capture, null);
   else validateCapture7502(stored.capture); // Schema only; never hosted runtime credit.
   const unfrozen = {
     schema: "vize.native-attribute-values-7502.reviewed-output",
-    version: 2,
+    version: 3,
     state: "unfrozen",
     capture: null,
   };
@@ -128,7 +129,7 @@ test("mandatory hosted paths reject absent capture instead of using fixture nati
 test("the named successor retains every original byte and every unaffected whole row", () => {
   assert.equal(hash7502(readFileSync(archiveOutputUrl7502)), archiveOutputSha7502);
   const archived = archivedCapture7502();
-  const packet = { rows: structuredClone(archived.rows) };
+  const packet = { rows: structuredClone(previousCapture7502().rows) };
   unchangedRows7502(packet);
   const classRows = packet.rows.filter((row: any) => row.id === transition7502.input);
   assert.deepEqual(classRows.map(disposition7502), [
@@ -136,8 +137,8 @@ test("the named successor retains every original byte and every unaffected whole
     "positive",
     "positive",
     "positive",
-    "target-refusal",
-    "target-refusal",
+    "positive",
+    "positive",
   ]);
   assert(classRows.every((row: any) => row.disposition === "lower-refusal"));
   packet.rows[0].observation.file.nodeCount++;
@@ -145,14 +146,14 @@ test("the named successor retains every original byte and every unaffected whole
   assert.throws(() => validateCapture7502(archived));
   assert.throws(() => validateHistory7502({}, {}, "/missing-history"));
   const relabelled = structuredClone(archived);
-  relabelled.version = 2;
+  relabelled.version = 3;
   relabelled.transition = transition7502;
   relabelled.summary = {
     fixtures: 14,
     outcomes: 84,
-    positive: 76,
+    positive: 78,
     lowerRefusals: 6,
-    targetRefusals: 2,
+    targetRefusals: 0,
   };
   assert.throws(() => validateCapture7502(relabelled));
   const commands = historyCommands7502("/baseline", "/history");
@@ -189,7 +190,7 @@ test("pinned history also requires its unchanged whole scriptless Rust and runti
 
 test("pinned history retains the original native Vapor lower-refusal gate", () => {
   const commands = historyCommands7502("/baseline", "/history");
-  assert.equal(commands.length, 12);
+  assert.equal(commands.length, 13);
   assert.deepEqual(commands[8], [
     "cargo",
     [

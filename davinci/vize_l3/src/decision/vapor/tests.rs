@@ -97,10 +97,6 @@ fn actual_whitespace_headers_tags_and_dynamic_ops_refuse_before_output() {
         ("<span> a</span>", VaporUnsupported::TextNormalization),
         ("<span>a\nb</span>", VaporUnsupported::TextNormalization),
         ("<p>x</p>", VaporUnsupported::ElementSemantics),
-        (
-            "<span class=\"x\">ok</span>",
-            VaporUnsupported::AttributeSemantics,
-        ),
         ("<span :title=\"'x'\">ok</span>", VaporUnsupported::Binding),
         ("<span>{{1}}</span>", VaporUnsupported::Operation),
     ] {
@@ -177,4 +173,30 @@ fn original_selected_completion_is_the_sole_target_capability() {
     assert_eq!(analysis.tables().nodes.len(), 5);
     assert_eq!(analysis.vapor().unwrap().unsupported(), []);
     assert_eq!(analysis.vapor().unwrap().roots().len(), 2);
+}
+
+#[test]
+fn original_static_class_header_succeeds_without_widening_other_refusals() {
+    let arena = Allocator::default();
+    let source = "<template><span class=\"x\">ok</span></template>";
+    let observed = lower_sfc_native(&arena, source, options());
+    assert_eq!(observed.issues(), []);
+    let native = observed.admitted().unwrap();
+    let file = native.file().file();
+    let analysis = build_vapor_file_decisions(file).unwrap();
+    assert!(core::ptr::eq(analysis.file(), file));
+    assert!(core::ptr::eq(analysis.artifact().source(), source));
+    let facts = analysis.vapor().unwrap();
+    assert_eq!(facts.unsupported(), []);
+    assert_eq!(facts.roots().len(), 1);
+    let parts = facts.parts(&facts.roots()[0]).unwrap();
+    let VaporPart::Open { element, .. } = parts[0] else {
+        panic!("original class opening");
+    };
+    assert_eq!(parts.len(), 3);
+    assert_eq!(element.tag, "span");
+    assert_eq!(element.attributes.len(), 1);
+    assert_eq!(element.attributes[0].name, "class");
+    assert_eq!(element.attributes[0].value, Some("x"));
+    assert_eq!(element.attributes[0].span, Span::new(16, 25));
 }

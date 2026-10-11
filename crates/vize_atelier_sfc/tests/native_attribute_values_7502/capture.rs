@@ -66,7 +66,7 @@ pub fn packet(inputs: &Inputs) -> Value {
         .filter(|row| row["result"]["classification"] == "target-refusal")
         .count();
     json!({
-        "schema":"vize.native-attribute-values-7502.capture", "version":2,
+        "schema":"vize.native-attribute-values-7502.capture", "version":3,
         "transition":successor::transition(),
         "custody":"once-selected-original", "fixtureSha256":inputs::PACK_SHA256,
         "ledgerSha256":inputs.ledger_sha256,
