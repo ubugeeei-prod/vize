@@ -90,3 +90,12 @@ Actions and protected corpus/instruction gates remain required. Public installed
 acceptance requires a successful official release that includes the actual
 merged change. #6097 and broader default-linter coverage remain unfinished until
 their remaining scope is proven.
+
+The final source replay follows actual main `006c564067`: the new protected
+native phase workflow calls its retained syntax-semantics helper, which is
+absent from the earlier parent-only source. The earlier exact `b494a46` native
+run failed before measuring lint with exit 127 and is retained as failed
+evidence. This replay preserves the owned canonical clause and all incoming
+decisions, with fresh source/357-packet/protected qualification required. The
+unchanged module relocation also refreshes the Croquis consumer shard's file
+count (18 SfcDescriptor files, still 26 sites); no producer or budget changed.
