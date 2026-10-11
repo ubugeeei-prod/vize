@@ -321,7 +321,44 @@ jobs:
       - name: Pack complete native evidence and prove reconstruction
         id: native-artifact-pack
         if: always()
-        run: node tools/support/compat/github/native-phase-artifact.mjs pack "$RUNNER_TEMP" "$RUNNER_TEMP/native-phase-artifact"
+        run: |
+          set -euo pipefail
+          # Retain original raw custody even when immutable helper authority is unavailable.
+          cat >> "$GITHUB_OUTPUT" <<NATIVE_RAW_PATHS_OUTPUT
+          raw_paths<<NATIVE_RAW_PATHS
+          $RUNNER_TEMP/outside-import-types/
+          $RUNNER_TEMP/typechecker-native-source-custody.json
+          $RUNNER_TEMP/native-source-recipe*
+          $RUNNER_TEMP/reference-path-module/
+          $RUNNER_TEMP/typechecker-native-phases.json
+          $RUNNER_TEMP/typechecker-native-phases.json.samples/provenance.json
+          $RUNNER_TEMP/template-dollar-emit/
+          $RUNNER_TEMP/config-scoped-vue-helpers/
+          $RUNNER_TEMP/tsconfig-types-extends/
+          $RUNNER_TEMP/jsx-slot-parameter-types/
+          $RUNNER_TEMP/canon-selected-alias/
+          $RUNNER_TEMP/lsp-passive-3952/
+          $RUNNER_TEMP/unchecked-index-access/
+          $RUNNER_TEMP/unknown-template-options/
+          $RUNNER_TEMP/template-emit-ts40-projection/
+          $RUNNER_TEMP/typechecker-native-phases.json.samples/failure.json
+          $RUNNER_TEMP/typechecker-native-phases.json.samples/inputs/
+          $RUNNER_TEMP/typechecker-native-phases.json.samples/raw/
+          $RUNNER_TEMP/typechecker-native-phases.json.samples/native/
+          $RUNNER_TEMP/typechecker-native-phases.json.samples/projections/
+          $RUNNER_TEMP/typechecker-native-phases.json.samples/virtual-ts/
+          $RUNNER_TEMP/undefined-default-props/
+          NATIVE_RAW_PATHS
+          NATIVE_RAW_PATHS_OUTPUT
+          [[ "$GITHUB_WORKFLOW_SHA" =~ ^[0-9a-f]{40}$ ]]
+          git cat-file -e "$GITHUB_WORKFLOW_SHA^{commit}" || git fetch --no-tags origin "$GITHUB_WORKFLOW_SHA"
+          [[ "$(git cat-file -t "$GITHUB_WORKFLOW_SHA")" == commit ]]
+          helper_root="$(mktemp -d "$RUNNER_TEMP/native-phase-artifact-helper-XXXXXX")"
+          helper_root="$(cd "$helper_root" && pwd -P)"
+          for helper in native-phase-artifact.mjs native-phase-artifact-files.mjs native-phase-artifact-paths.json; do
+            git show "$GITHUB_WORKFLOW_SHA:tools/support/compat/github/$helper" > "$helper_root/$helper"
+          done
+          node "$helper_root/native-phase-artifact.mjs" pack "$RUNNER_TEMP" "$RUNNER_TEMP/native-phase-artifact"
       - name: Upload raw native phases, memberships, full reports and generated sources
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a

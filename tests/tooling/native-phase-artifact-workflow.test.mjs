@@ -48,7 +48,7 @@ void test("packing retains the complete original raw eligibility and failed-pack
   assert.equal(pack.if, "always()");
   assert.match(
     pack.run,
-    /native-phase-artifact\.mjs pack "\$RUNNER_TEMP" "\$RUNNER_TEMP\/native-phase-artifact"/,
+    /native-phase-artifact\.mjs" pack "\$RUNNER_TEMP" "\$RUNNER_TEMP\/native-phase-artifact"/,
   );
   assert.equal(upload.if, "always()");
   assert.equal(upload.uses, "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a");
