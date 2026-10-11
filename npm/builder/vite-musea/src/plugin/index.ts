@@ -40,6 +40,7 @@ import { transformMuseaVirtualModule } from "./virtual-transform.js";
 import { resolvePreviewCssPath } from "./preview-css.js";
 import { resolveStaticPreviewVueVersion } from "./static-preview.js";
 import { attachMuseaOptions } from "./options.js";
+import { registerSourceGalleryDependencies } from "../gallery-dependencies.js";
 
 export function musea(options: MuseaOptions = {}): Plugin[] {
   let include = options.include ?? ["**/*.art.vue"];
@@ -114,6 +115,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
     options: applyMuseaStaticBuildInput,
     async configResolved(resolvedConfig) {
       config = resolvedConfig;
+      await registerSourceGalleryDependencies(resolvedConfig);
 
       const vizeConfig = await resolveMuseaSharedConfig(resolvedConfig);
       if (vizeConfig?.musea) {
