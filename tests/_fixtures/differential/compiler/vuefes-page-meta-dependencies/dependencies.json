@@ -1,0 +1,123 @@
+[
+  {
+    "name": "unrelated-side-effects",
+    "source": "<script setup lang=\"ts\">\nimport Unrelated from './Unrelated.vue';\nimport './unrelated.css';\nimport type { RouteMeta } from './types';\ndefinePageMeta({ prerender: true });\n</script>\n<template><main>whole metadata consumer</main></template>\n<style scoped>main { display: block; }</style>\n",
+    "modules": {},
+    "calls": []
+  },
+  {
+    "name": "import-alias-namespace-order",
+    "source": "<script setup lang=\"ts\">\nimport Default, { first as alias, unused } from '@meta/first';\nimport * as settings from '@meta/second';\nimport Other from './Other.vue';\ndefinePageMeta({ title: settings.title, alias, defaultTitle: Default.title });\n</script>\n<template><main>whole metadata consumer</main></template>\n<style scoped>main { display: block; }</style>\n",
+    "modules": {
+      "@meta/first": {
+        "default": {
+          "title": "default"
+        },
+        "first": "alias",
+        "unused": "retained-whole-import"
+      },
+      "@meta/second": {
+        "title": "namespace"
+      }
+    },
+    "calls": []
+  },
+  {
+    "name": "transitive-local-chain",
+    "source": "<script setup lang=\"ts\">\nimport { base } from '@meta/base';\nimport Component from './Component.vue';\nconst suffix = '-route';\nconst title = base + suffix;\nfunction resolveTitle() { return title; }\ndefinePageMeta({ title: resolveTitle(), middleware: resolveTitle });\n</script>\n<template><main>whole metadata consumer</main></template>\n<style scoped>main { display: block; }</style>\n",
+    "modules": {
+      "@meta/base": {
+        "base": "docs"
+      }
+    },
+    "calls": [
+      {
+        "key": "middleware",
+        "args": []
+      }
+    ]
+  },
+  {
+    "name": "closure-local-shadowing",
+    "source": "<script setup lang=\"ts\">\nimport { title } from '@meta/title';\nimport { input } from './UnusedInput';\nconst middleware = (input) => { const title = input.title; return title; };\ndefinePageMeta({ title, middleware });\n</script>\n<template><main>whole metadata consumer</main></template>\n<style scoped>main { display: block; }</style>\n",
+    "modules": {
+      "@meta/title": {
+        "title": "imported"
+      },
+      "./UnusedInput": {
+        "input": "unused-import-never-read"
+      }
+    },
+    "calls": [
+      {
+        "key": "middleware",
+        "args": [
+          {
+            "title": "local"
+          }
+        ]
+      }
+    ],
+    "oracleShadowingLimit": "Nuxt4.0.3 processDeclaration walks variable initializers by name and retains imported input despite a same-named arrow parameter; native resolved references omit it.",
+    "requiredImports": [
+      "@meta/title"
+    ],
+    "oracleImports": [
+      "@meta/title",
+      "./UnusedInput"
+    ],
+    "expectedNativeModuleCode": "import { title } from '@meta/title';\nconst middleware = (input) => { const title = input.title; return title; };\nconst __nuxt_page_meta = { title, middleware }\nexport default __nuxt_page_meta\n"
+  },
+  {
+    "name": "property-keys-local-function-params",
+    "source": "<script setup lang=\"ts\">\nimport { hidden } from './UnusedHidden';\nimport { guard } from './UnusedGuard';\nfunction middleware(hidden) { const guard = hidden.allowed; return guard; }\ndefinePageMeta({ hidden: 'property-key', middleware });\n</script>\n<template><main>whole metadata consumer</main></template>\n<style scoped>main { display: block; }</style>\n",
+    "modules": {},
+    "calls": [
+      {
+        "key": "middleware",
+        "args": [
+          {
+            "allowed": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "destructured-whole-declaration",
+    "source": "<script setup lang=\"ts\">\nimport { route } from '@meta/route';\nconst { title, unused } = route;\ndefinePageMeta({ title });\n</script>\n<template><main>whole metadata consumer</main></template>\n<style scoped>main { display: block; }</style>\n",
+    "modules": {
+      "@meta/route": {
+        "route": {
+          "title": "destructured",
+          "unused": false
+        }
+      }
+    },
+    "calls": []
+  },
+  {
+    "name": "shared-diamond-dependencies",
+    "source": "<script setup lang=\"ts\">\nimport { first } from '@meta/first';\nimport { second } from '@meta/second';\nconst shared = first + second;\nconst left = shared + '-left';\nconst right = shared + '-right';\nfunction middleware() { return left + right; }\ndefinePageMeta({ title: right, middleware, alias: left });\n</script>\n<template><main>whole metadata consumer</main></template>\n<style scoped>main { display: block; }</style>\n",
+    "modules": {
+      "@meta/first": {
+        "first": "a"
+      },
+      "@meta/second": {
+        "second": "b"
+      }
+    },
+    "calls": [
+      {
+        "key": "middleware",
+        "args": []
+      }
+    ]
+  },
+  {
+    "name": "whole-original-photo",
+    "source": "<script setup lang=\"ts\">\nimport {\n  useI18n,\n  definePageMeta,\n  useRuntimeConfig,\n\n  // NOTE: import useHead to avoid `useHead is not defined` error\n  // eslint-disable-next-line @typescript-eslint/no-unused-vars\n  useHead,\n  useSeoMeta,\n  defineOgImage,\n} from \"#imports\";\nimport { VFSection } from \"#components\";\nimport { PHOTO_CATEGORIES } from \"~~/i18n/photo\";\n\ndefinePageMeta({ prerender: true });\nconst { t } = useI18n();\nconst runtimeConfig = useRuntimeConfig();\n\nconst CC0_URL = \"https://creativecommons.jp/sciencecommons/aboutcc0/\";\n\nfunction getCategoryLabel(id: string): string {\n  return t(`photo.categories.${id}`);\n}\n\ndefineOgImage({\n  url: `${runtimeConfig.public.siteUrl}images/og/photo.png`,\n});\n\nuseSeoMeta({\n  title: t(\"photo.title\"),\n  ogTitle: t(\"photo.title\"),\n  description: t(\"photo.description\"),\n  ogDescription: t(\"photo.description\"),\n});\n</script>\n\n<template>\n  <div id=\"pages-photo\">\n    <h1>{{ $t('photo.title') }}</h1>\n\n    <VFSection>\n      <i18n-t keypath=\"photo.description\" tag=\"p\" class=\"photo-description\">\n        <template #cc0Link>\n          <a\n            :href=\"CC0_URL\"\n            target=\"_blank\"\n            rel=\"noopener noreferrer\"\n            class=\"cc0-link\"\n          >{{ t('photo.cc0LinkText') }}</a>\n        </template>\n      </i18n-t>\n      <ul class=\"photo-list\">\n        <li\n          v-for=\"category in PHOTO_CATEGORIES\"\n          :key=\"category.id\"\n          class=\"photo-list-item\"\n        >\n          <a\n            :href=\"category.url\"\n            target=\"_blank\"\n            rel=\"noopener noreferrer\"\n            class=\"photo-link\"\n          >\n            {{ getCategoryLabel(category.id) }}\n          </a>\n        </li>\n      </ul>\n    </VFSection>\n  </div>\n</template>\n\n<style scoped>\n@import \"~/assets/styles/custom-media-query.css\";\n\n#pages-photo {\n  display: grid;\n  row-gap: 1.5rem;\n\n  @media (--mobile) {\n    row-gap: 1rem;\n  }\n\n  h1 {\n    font-family: \"ClashDisplay-Semibold\";\n    font-size: 3rem;\n    padding: 7.5rem 0;\n    margin: 0;\n\n    @media (--mobile) {\n      padding: 2.5rem 0.75rem;\n    }\n  }\n}\n\n.photo-description {\n  color: var(--color-text-default);\n  font-size: 16px;\n  line-height: 1.8;\n  margin-bottom: 24px;\n\n  @media (--mobile) {\n    font-size: 14px;\n    margin-bottom: 16px;\n  }\n}\n\n.cc0-link {\n  color: var(--color-primary-base);\n  text-decoration: underline;\n  transition: opacity 0.2s ease;\n\n  &:hover {\n    opacity: 0.7;\n  }\n}\n\n.photo-list {\n  list-style: disc;\n  padding-left: 24px;\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n\n  @media (--mobile) {\n    padding-left: 20px;\n    gap: 8px;\n  }\n}\n\n.photo-list-item {\n  color: var(--color-text-default);\n}\n\n.photo-link {\n  color: var(--color-primary-base);\n  text-decoration: none;\n  font-size: 16px;\n  transition: opacity 0.2s ease;\n\n  &:hover {\n    opacity: 0.7;\n    text-decoration: underline;\n  }\n\n  @media (--mobile) {\n    font-size: 14px;\n  }\n}\n</style>\n",
+    "modules": {},
+    "calls": []
+  }
+]

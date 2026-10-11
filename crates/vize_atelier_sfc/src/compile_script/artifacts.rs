@@ -21,6 +21,7 @@ use self::imports::{
 use super::runtime_bindings::collect_runtime_bindings;
 
 mod imports;
+mod page_meta;
 
 pub(crate) fn extract_macro_artifacts(
     content: &str,
@@ -76,7 +77,19 @@ pub(crate) fn extract_macro_artifacts(
             .map(|arg| argument_source(arg, content))
             .filter(|source| !source.trim().is_empty())
             .unwrap_or_else(|| "{}".into());
-        let module_code = build_artifact_module(kind, &payload, &static_imports);
+        let dependencies = (kind == "nuxt.definePageMeta").then(|| {
+            page_meta::collect_dependencies(
+                &ret.program,
+                content,
+                call.arguments.first().map(GetSpan::span),
+                nuxt_page_meta,
+            )
+        });
+        let module_code = build_artifact_module(
+            kind,
+            &payload,
+            dependencies.as_deref().unwrap_or(static_imports.as_str()),
+        );
 
         artifacts.push(SfcMacroArtifact {
             kind: kind.into(),
