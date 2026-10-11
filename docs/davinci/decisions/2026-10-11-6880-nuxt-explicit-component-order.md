@@ -61,3 +61,33 @@ module and eager VFHeading dependency graph were not captured. The import
 compatibility defect is proved; its repair alone does not establish the
 complete app's cascade repair. The same original 38-case VRT must pass on
 the exact composed source before queue readiness or release acceptance.
+
+The dedicated qualifier reuses its one original ci-profile native build. An
+opt-in wrapper retains the original NAPI arguments and entrypoint synchronizer,
+captures complete Cargo JSON and streams, and admits a distinct ci receipt
+only after exact command/profile, source, environment, toolchain, ELF and
+local/frozen byte checks. The existing strict debug receipt stays unchanged.
+The two exact NAPI-generated `index.js`/`index.d.ts` outputs retain their whole
+before/after bytes and complete diff; all other authored source must remain
+unchanged. Generated declarations are never normalized back to source.
+The actual existing live-owner wrapper binds that same addon and post-build
+source diff for supplementary package tests; no second native build is added.
+Negative command, profile, producer, untracked declaration, stream/hash, ELF,
+path and missing-authority controls run in the original tooling suite.
+The original missing-receipt failure remains preserved. Only exact composed
+Actions can qualify this genuine ci capture and complete app acceptance.
+
+A local full-source bridge control caught an adjacent transport-state
+declaration moved into the counterexample helper. Its failure packet and
+log remain retained. Both variables are restored to their original driver
+scope before qualification; the corrected official full-SFC/CSS source
+control preserves complete SSR and both cold/hydrated `20px`/`34px` results.
+This local control is explicitly official-only and gives no native credit.
+
+Local authority controls pass, including the original debug admission
+contracts. Broader local Art boundary verification has no fresh `target/ci/vize`
+in this isolated worktree, and the existing MoonBit package-build control
+fails in its local compiler preparation. Their complete logs remain retained;
+neither is counted as passed. Original hosted tooling/native preparation and
+the exact source qualifier remain mandatory; no check or environment failure
+is replaced with fixture expectations.

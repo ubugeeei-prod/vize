@@ -19,6 +19,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   CARGO_TERM_COLOR: always
   QUALIFIER_SHA: ${{ inputs.target_sha }}
+  VIZE_NATIVE_CI_FORMATTER_HISTORY: "1"
 
 jobs:
   vuefes-ssr-style-dependencies:
@@ -69,7 +70,7 @@ jobs:
         run: node tools/support/compat/vuefes/app-component-order.mjs
       - name: Native metadata corpus and existing Vite contracts
         if: ${{ !cancelled() }}
-        run: vp run --filter './npm/builder/vite' test:prepared
+        run: node npm/native/scripts/test-preparation.mjs vp run --filter './npm/builder/vite' test:prepared
       - name: Complete official/native SSR, DOM and hydration differential
         if: ${{ !cancelled() }}
         run: node tools/support/compat/vuefes/ssr-style-dependencies.mjs
@@ -81,6 +82,9 @@ jobs:
           path: |
             target/vuefes-ssr-style-dependencies/
             !target/vuefes-ssr-style-dependencies/project-*/node_modules/**
+            npm/native/.artifacts/native/formatter-history/*.json
+            npm/native/.artifacts/native/formatter-history/*.bin
+            npm/native/.artifacts/native/formatter-history/*.diff
             target/app-e2e-logs/
             .vize/artifacts/vuefes-vrt/
             tests/app/results/

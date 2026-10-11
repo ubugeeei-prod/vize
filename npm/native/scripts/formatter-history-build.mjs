@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { validateCiBuild } from "./formatter-history-ci-build.mjs";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -46,7 +47,7 @@ function cargoVersion() {
   return execFileSync(globalThis.process.env.CARGO ?? "cargo", ["-V"]).toString();
 }
 
-function napiToolchain(nativeDir) {
+export function napiToolchain(nativeDir) {
   const entry = createRequire(path.join(nativeDir, "package.json")).resolve("@napi-rs/cli");
   const packageRoot = path.resolve(path.dirname(entry), "..");
   const metadata = JSON.parse(fs.readFileSync(path.join(packageRoot, "package.json")));
@@ -177,6 +178,8 @@ export function captureNativeHistoryBuild(nativeDir, before, command, result) {
 }
 
 export function validateNativeHistoryBuild(nativeDir, receipt) {
+  if (receipt.schema === "vize.public-native-formatter-ci-build")
+    return validateCiBuild(nativeDir, receipt);
   assert.equal(receipt.schema, "vize.public-native-formatter-build");
   assert.equal(receipt.version, 1);
   assert.deepEqual(receipt.source, nativeHistorySource(nativeDir));

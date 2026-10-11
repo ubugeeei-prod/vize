@@ -233,10 +233,7 @@ module.exports.compileSfc = nativeBinding.compileSfc
   const manifest = JSON.parse(
     fs.readFileSync(path.join(nativePackageDir, "package.json"), "utf8"),
   ) as { scripts?: Record<string, string> };
-  assert.match(
-    manifest.scripts?.["build:ci"] ?? "",
-    /napi build[\s\S]*&& node \.\/scripts\/sync-entrypoint\.mjs$/,
-  );
+  assert.equal(manifest.scripts?.["build:ci"], "node ./scripts/build-ci.mjs");
   assert.match(
     manifest.scripts?.prepublishOnly ?? "",
     /napi pre-publish[\s\S]*&& node \.\/scripts\/sync-entrypoint\.mjs$/,

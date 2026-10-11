@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { ciBuildCommand } from "../../npm/native/scripts/formatter-history-ci-build.mjs";
 import fs, { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -39,7 +40,8 @@ test("vize native package builds with legacy Vue support", () => {
     scripts?: Record<string, string>;
   };
 
-  assert.match(packageJson.scripts?.["build:ci"] ?? "", /--features napi,legacy(?:\s|$)/);
+  assert.equal(packageJson.scripts?.["build:ci"], "node ./scripts/build-ci.mjs");
+  assert.match(ciBuildCommand.join(" "), /--features napi,legacy(?:\s|$)/);
   assert.match(readRepoFile("npm/native/scripts/build-local.mjs"), /"--features",\s+"napi,legacy"/);
   assert.match(
     readRepoFile("crates/vize_vitrine/Cargo.toml"),
