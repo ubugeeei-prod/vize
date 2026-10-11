@@ -12,6 +12,7 @@ const MEMBERS_PER_RULE = 64;
 const WARMUPS = 2;
 const SAMPLES = 6;
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
+const orderPaths = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
 
 function workloadSource(variant) {
   const member = (name, parameter, value) => {
@@ -135,7 +136,10 @@ export function observeReturnPrefilterCost({ binary, directory, persist }) {
     persist(packet);
 
     const assertInputs = () => {
-      assert.deepEqual(fs.readdirSync(workspace).sort(), [...files, configFile].sort());
+      assert.deepEqual(
+        fs.readdirSync(workspace).sort(orderPaths),
+        [...files, configFile].sort(orderPaths),
+      );
       for (const entry of packet.workload.files) {
         const bytes = fs.readFileSync(path.join(workspace, entry.file));
         assert.equal(bytes.length, entry.bytes, entry.file);
