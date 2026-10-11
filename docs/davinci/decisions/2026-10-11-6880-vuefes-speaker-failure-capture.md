@@ -99,6 +99,16 @@ for all seven ordinary, similar-word and non-ASCII inputs. This prevents
 both implementations from silently dropping the same comment and checks
 the surrounding rendered child. The assertion allowlist remains unchanged.
 
+The [0c050794 native-phase run](https://github.com/ubugeeei-prod/vize/actions/runs/38150828590)
+failed before its type checker controls: dependency installation succeeded,
+but the merge workflow called a helper introduced by main's #8649 while
+checking out the older PR source. Keep that genuine failure record. Rebase
+all 18 parent commits onto actual main `7cb4fc3c5ad08d969df5327f464e2c120cb29220`
+to inherit the helper and its controls. Before this record update, all 77
+replayed files outside the foundation record matched their previous blobs
+exactly. Its existing and incoming clauses are preserved at 350 rows.
+Require fresh Actions on the resulting source.
+
 Remaining acceptance: qualify the composed exact source head with normal
 Actions and the entire unchanged 38-case VueFes matrix before queue
 admission, then carry the actual merged fix through an official release
