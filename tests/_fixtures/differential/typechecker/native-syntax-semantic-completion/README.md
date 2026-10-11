@@ -20,6 +20,14 @@ A transport-refusal control delegates CLI to the same real native executable
 but makes its API/LSP unavailable; the complete error must retain original
 TS1128 and refuse an empty clean result.
 
+The refusal law retains each actual denied `--api`/`--lsp` invocation and the
+complete wrapper, native CLI stdout/stderr, generated config and execution
+error. Only the two observed complete refusals are admitted: same-config CLI
+syntax refusal after fallback, or the API connection closure after a recorded
+API invocation. Both keep exit 1 and the exact original TS1128; an arbitrary
+transport error cannot qualify. The ordinary semantic-error control requires
+the complete TS2322 vector and an empty transport trace.
+
 Run `VIZE_TEST_REQUIRE_TSGO=1 cargo test --locked -p vize_canon --test
 native_syntax_semantics -- --nocapture`. Actual hosted source/native execution
 and the original full consumer suite remain required.

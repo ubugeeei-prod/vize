@@ -1,0 +1,34 @@
+# Native transport refusal custody (#6879)
+
+The protected queue for #8632 retained one native failure in the full Rust
+suite: `unavailable_native_semantic_transport_cannot_report_empty_clean`.
+The native CLI still returned exit 1, empty stderr, and the exact original
+Hoppscotch declaration TS1128 at line 1294. Semantic completion also refused;
+the test had expected its fallback to repeat the CLI syntax refusal, while
+the actual API session returned a closed JSON-RPC connection refusal.
+
+The complete observed execution message is preserved as a second exact
+expectation alongside the original complete CLI fallback message. The law
+requires an actual nonempty denied `--api`/`--lsp` trace, rejects every other
+record or incomplete line, and binds the API connection refusal to a recorded
+`--api` invocation. Each short shell append records the invocation before
+the wrapper exits 41; all CLI calls still delegate to the genuine native
+executable. No production fallback policy or diagnostic oracle changes.
+
+The retained packet includes the entire wrapper and transport trace, genuine
+native path, generated configuration, CLI exit/stdout/stderr and whole error.
+The ordinary semantic control keeps its entire TS2322 vector and requires
+zero denied transport invocations. The original broken/repaired syntax and
+semantic pair and pinned Element Plus control remain required.
+
+PR native phases run the complete `native_syntax_semantics` integration suite
+with required native execution before the existing source CLI/editor controls,
+using the same `ci-opt` build profile and dependencies. Its complete packets
+join the existing config-scoped Vue helper artifact directory, whose existing
+packer retains and verifies every recursive member. No gate, fixture, budget,
+timeout or original source recipe is removed or relaxed.
+
+Hosted exact-head source/native qualification and actual protected merge are
+required. The first failed queue remains failure evidence. This test-only
+repair grants no compiler/typechecker behavior, performance or public-release
+acceptance credit.

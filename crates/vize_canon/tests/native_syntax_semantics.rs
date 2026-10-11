@@ -9,7 +9,6 @@
 
 use std::{
     fs,
-    os::unix::fs::PermissionsExt,
     path::{Path, PathBuf},
     process::Command,
 };
@@ -17,6 +16,9 @@ use vize_canon::{BatchTypeChecker, BatchTypeCheckerOptions, BatchTypeCheckerTrai
 
 #[path = "native_syntax_semantics/element_plus.rs"]
 mod element_plus;
+#[path = "native_syntax_semantics/transport_refusal.rs"]
+mod transport_refusal;
+use transport_refusal::without_transport;
 
 const CORPUS: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -155,17 +157,6 @@ fn rows(
     rows
 }
 
-fn without_transport(root: &Path, native: &Path) -> PathBuf {
-    // Match the actual runtime's async JSON-RPC authority. An arbitrary shell
-    // filename would instead select the legacy msgpack transport.
-    fs::create_dir_all(root.join(".bin")).unwrap();
-    let wrapper = root.join(".bin/native-without-diagnostic-transport");
-    let quoted = native.to_string_lossy().replace('\'', "'\"'\"'");
-    fs::write(&wrapper, format!("#!/bin/sh\ncase \"$1\" in --api|--lsp) echo 'native diagnostic transport intentionally unavailable' >&2; exit 41;; esac\nexec '{quoted}' \"$@\"\n")).unwrap();
-    fs::set_permissions(&wrapper, fs::Permissions::from_mode(0o755)).unwrap();
-    wrapper
-}
-
 #[test]
 fn actual_native_syntax_and_semantic_errors_survive_and_repair_clears_only_the_semantic_error() {
     let Some(native) = native() else { return };
@@ -260,22 +251,38 @@ fn unavailable_native_semantic_transport_cannot_report_empty_clean() {
         .unwrap();
     let stdout = String::from_utf8(direct.stdout).unwrap();
     let stderr = String::from_utf8(direct.stderr).unwrap();
+    let attempts = fs::read_to_string(project.path().join(".bin/denied-transports.log")).unwrap();
     retain_packet(
         "unavailable-transport",
         &serde_json::json!({
             "native":native, "wrapper":wrapper,
             "wholeWrapper":fs::read_to_string(&wrapper).unwrap(),
+            "wholeDeniedTransportTrace":attempts,
             "cwd":virtual_root, "wholeGeneratedConfig":fs::read_to_string(virtual_root.join("tsconfig.json")).unwrap(),
             "exitCode":direct.status.code(), "wholeStdout":stdout, "wholeStderr":stderr,
             "wholeError":format!("{error:#?}"),
         }),
     );
-    assert!(!direct.status.success());
+    assert_eq!(direct.status.code(), Some(1));
     assert_eq!(
         stdout,
         "post-request.d.cts(1294,1): error TS1128: Declaration or statement expected.\n"
     );
     assert_eq!(stderr, "");
+    assert!(
+        !attempts.is_empty(),
+        "semantic completion must try a transport"
+    );
+    assert!(
+        attempts.ends_with('\n'),
+        "transport records must be complete"
+    );
+    assert!(
+        attempts
+            .lines()
+            .all(|argument| matches!(argument, "--api" | "--lsp")),
+        "only actual denied diagnostic transports may enter the trace: {attempts:?}"
+    );
     let cli_error = format!(
         "corsa error (exit code {}): Corsa CLI semantic diagnostics are incomplete after a syntax error:\n{}",
         direct.status.code().unwrap(),
@@ -285,10 +292,21 @@ fn unavailable_native_semantic_transport_cannot_report_empty_clean() {
         panic!("native completion must return an execution failure: {error:#?}");
     };
     assert_eq!(exit_code, 1);
-    assert_eq!(
-        message.as_str(),
-        format!("{cli_error}\nSame-config native diagnostic completion failed: {cli_error}")
+    let cli_completion =
+        format!("{cli_error}\nSame-config native diagnostic completion failed: {cli_error}");
+    let api_completion = format!(
+        "{cli_error}\nSame-config native diagnostic completion failed: corsa error (exit code -1): Failed to start Corsa API session: process is closed: jsonrpc connection"
     );
+    assert!(
+        message.as_str() == cli_completion || message.as_str() == api_completion,
+        "unqualified complete native refusal: {message}"
+    );
+    if message.as_str() == api_completion {
+        assert!(
+            attempts.lines().any(|argument| argument == "--api"),
+            "API connection refusal requires an actual denied API invocation"
+        );
+    }
     println!("{message}");
 }
 
@@ -305,6 +323,17 @@ fn ordinary_semantic_errors_keep_the_cli_fast_path_without_a_diagnostic_transpor
     let wrapper = without_transport(project.path(), &native);
     let result =
         check(project.path(), &wrapper).expect("complete native CLI semantics need no API/LSP");
+    let attempts = fs::read_to_string(project.path().join(".bin/denied-transports.log")).unwrap();
+    retain_packet(
+        "ordinary-semantic-fast-path",
+        &serde_json::json!({
+            "native":native, "wrapper":wrapper,
+            "wholeWrapper":fs::read_to_string(&wrapper).unwrap(),
+            "wholeDeniedTransportTrace":attempts,
+            "wholeResult":format!("{result:#?}"),
+        }),
+    );
+    assert_eq!(attempts, "", "ordinary CLI semantics must not try API/LSP");
     assert!(!result.success);
     assert_eq!(
         rows(project.path(), &result),

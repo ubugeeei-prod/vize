@@ -118,12 +118,12 @@ jobs:
         run: node tools/benchmarks/scripts/typechecker-native-source-custody.mjs "$RUNNER_TEMP/typechecker-native-source-custody.json"
       - name: Install pinned native runtime and shared Vue dependencies
         run: |
-          set -euo pipefail
-          vp install --frozen-lockfile --prefer-offline
+          set -euo pipefail; vp install --frozen-lockfile --prefer-offline
           if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
             [[ ! -e "$NATIVE_PHASE_SOURCE_ROOT/node_modules" ]]
             ln -s "$GITHUB_WORKSPACE/node_modules" "$NATIVE_PHASE_SOURCE_ROOT/node_modules"
           fi
+          bash tools/support/compat/github/native-syntax-semantics.sh
       - name: Qualify declared template emits and config-scoped Vue helpers in the source CLI and editor
         if: github.event_name == 'pull_request'
         env:
