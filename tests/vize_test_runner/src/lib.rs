@@ -18,8 +18,8 @@ use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};
 use vize_l0::{Allocator, String, ToCompactString};
 
 mod chars;
+mod expectation_successors;
 use chars::ch_at;
-
 /// Test fixture file
 #[derive(Debug, Deserialize)]
 pub struct TestFixture {
@@ -690,7 +690,7 @@ pub fn run_fixture_tests(fixture_path: &Path, expected_path: &Path) -> Vec<TestR
         }
     };
 
-    let expected_cases = load_expected(expected_path);
+    let expected_cases = expectation_successors::load(expected_path);
 
     for case in &fixture.cases {
         // Find matching expected case

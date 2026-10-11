@@ -61,3 +61,36 @@ void test("the JSX root successor retains the immutable complete #8441 packet", 
   component.code = component.code.replace(old, "      }, false)\n      return n3");
   assert.deepEqual(JSON.parse(corrected), expected);
 });
+
+void test("KeepAlive coverage uses one explicit successor and preserves every original case", () => {
+  const repository = new URL("../../", import.meta.url);
+  const file = (path) => readFileSync(new URL(path, repository));
+  const authority = JSON.parse(
+    read("vapor-root-fallthrough-8625/keep-alive-successor-authority.json"),
+  );
+  const original = file(authority.originalAuthority);
+  const successor = file(authority.successorAuthority);
+  assert.equal(hash(original), authority.originalAuthoritySha256);
+  assert.equal(hash(successor), authority.successorAuthoritySha256);
+  assert.equal(hash(file(authority.semanticAuthority)), authority.semanticAuthoritySha256);
+  const packet = original
+    .toString()
+    .split("\n===\n")
+    .find((row) => row.startsWith("name: KeepAlive\n"));
+  assert.ok(packet);
+  assert.equal(packet.split(authority.onlyChange.before).length, 2);
+  assert.equal(
+    successor.toString(),
+    `===\n${packet.replace(authority.onlyChange.before, authority.onlyChange.after)}\n===\n`,
+  );
+  assert.equal(authority.source, "<KeepAlive><Component /></KeepAlive>");
+  assert.equal(authority.publicationQualification, false);
+  const producer = file("tests/vize_test_runner/src/expectation_successors.rs").toString();
+  assert.ok(producer.includes('path.ends_with("tests/expected/vapor/component.snap")'));
+  assert.ok(producer.includes('case.name == "KeepAlive"'));
+  assert.ok(producer.includes('case.input == "<KeepAlive><Component /></KeepAlive>"'));
+  const gate = file("tests/vize_test_runner/src/coverage.rs").toString();
+  assert.ok(gate.includes("MIN_VAPOR_PASSED: usize = 117"));
+  assert.ok(gate.includes("MIN_TOTAL_PASSED: usize = 743"));
+  assert.ok(gate.includes("const KNOWN_FAILURES: &[(&str, &str)] = &[]"));
+});

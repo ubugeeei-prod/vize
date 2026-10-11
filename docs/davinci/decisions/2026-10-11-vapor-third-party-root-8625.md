@@ -67,3 +67,14 @@ previous producer, and dispatch only this one test to the complete #8625 success
 The custody guard verifies both producer hashes, the exact one-name dispatch
 change, and the exact one-flag snapshot change. It still verifies the original
 source slice and every former authority hash; no historical guard is weakened.
+
+Protected candidate c82f51c64796245f856f43df1a9cd6190a595d02 failed Check
+38148189461: fixture coverage reported only `vapor/component: KeepAlive`,
+116/117 Vapor cases. Both remaining Stack layers were removed from the queue.
+The unchanged historical component.snap retains the official no-props emission
+that omits the child's required root flag. Add a separate complete KeepAlive
+successor with only that call's explicit null/null/true arguments, dispatched
+only for the exact canonical path, original case name and whole source. Pin both
+whole authorities and the existing authored full VDOM KeepAlive control hashes.
+Every original fixture still executes; coverage minima and failure policy stay
+unchanged. Source and protected successor checks must pass before readmission.
