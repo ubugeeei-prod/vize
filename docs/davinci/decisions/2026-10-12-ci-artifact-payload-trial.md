@@ -27,6 +27,15 @@ damaged objects or substituted source/driver/artifact identity. Empty files,
 opaque raw streams, hidden names, Unicode, newline names and explicit empty
 directories remain covered. Controls also run with Python optimization enabled.
 
+Full Check `38182228212` exposed source pollution from the new control launcher:
+Python wrote `__pycache__` beside imported helpers, and the existing jsconfig
+clean-source oracle correctly refused that checkout. Every payload Python
+launcher now uses `-B`, including normal and optimized controls, pack/download
+and restore. A real temporary Git inventory reproduces the untracked cache
+without `-B` and stays unchanged with it under the Linux source-local cache
+policy. No ignore rule, cleanup, original assertion or qualification is weakened.
+Fresh exact-head full Actions remain required after this repair.
+
 Peer review reproduced a silent inventory omission in the original verifier:
 `os.walk` skipped an unreadable mode-000 directory and could miss an unexpected
 opaque child. Walking errors now refuse full verification, and the restored root

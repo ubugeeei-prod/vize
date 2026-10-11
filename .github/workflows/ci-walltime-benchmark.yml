@@ -308,7 +308,7 @@ jobs:
           PAYLOAD_ARTIFACT_ID: ${{ inputs.artifact_id }}
           PAYLOAD_SOURCE_SHA: ${{ inputs.artifact_source_sha }}
         run: |
-          /usr/bin/time -v -o "$RUNNER_TEMP/payload-restore-resources.txt" python3 tools/support/compat/github/artifact_payload.py restore "$RUNNER_TEMP/payload-envelope" "$RUNNER_TEMP/payload-restored" --source-sha "$PAYLOAD_SOURCE_SHA" --driver-sha "$GITHUB_SHA" --artifact-id "$PAYLOAD_ARTIFACT_ID" --report "$RUNNER_TEMP/payload-restore.json"
+          /usr/bin/time -v -o "$RUNNER_TEMP/payload-restore-resources.txt" python3 -B tools/support/compat/github/artifact_payload.py restore "$RUNNER_TEMP/payload-envelope" "$RUNNER_TEMP/payload-restored" --source-sha "$PAYLOAD_SOURCE_SHA" --driver-sha "$GITHUB_SHA" --artifact-id "$PAYLOAD_ARTIFACT_ID" --report "$RUNNER_TEMP/payload-restore.json"
       - name: Retain the full consumer verification receipt
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
