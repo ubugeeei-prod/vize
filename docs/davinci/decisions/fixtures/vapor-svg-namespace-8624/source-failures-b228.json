@@ -106,7 +106,7 @@
     "genericOwnershipRepair": {
       "sourceTests": [
         "native_svg_title: 2/2 including all12 complete ordered corpus rows",
-        "surface_corpus: 4/4",
+        "surface_corpus: 1/1",
         "generic L1 isolation and exact storage laws: 10/10"
       ],
       "logs": [
