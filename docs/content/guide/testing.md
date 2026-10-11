@@ -4,61 +4,62 @@ title: Testing & Feedback
 
 # Testing & Feedback
 
-Vize is in its **Real World Testing** phase: the focus is correctness, and real-world projects are
-the test suite. This page is for testers — how to inspect what Vize does, where to look, how to
-report findings, how to measure performance, and how to offer your project as a test bed.
+Use this guide when a Vue project produces an unexpected compiler result, type error, lint warning,
+or slowdown. A small reproduction and the command you ran help us investigate the same behavior.
+
+Start with the affected `.vue` file. The [Compiler Inspector guide](./compiler-inspector.md) shows
+how to open it and compare its output. Describe what you expected and share the reproduction.
+You can also contribute performance measurements or offer a project for regression testing.
 
 ## Inspect with the Playground
 
-The playground ships an **inspector** that shows, side by side, the official Vue SFC compiler
-output, Vize's compiler output, the generated Virtual TS, the VIR, and a cross-file graph for local
-batches. It is the fastest way to see exactly where Vize agrees or disagrees with Vue for a given
-`.vue` file.
+Open the [Playground compiler inspector](https://vizejs.dev/play/?tab=inspector) and use the smallest
+`.vue` file that still shows the problem. Compare the official Vue SFC compiler output with Vize's
+output, then copy the permalink so another person can open the same example.
 
-- Open it at <https://vizejs.dev/play/?tab=inspector>.
-- See the [Compiler Inspector](./compiler-inspector.md) guide for what each surface means.
+The inspector also shows generated Virtual TS, VIR, and a cross-file graph for local batches. See
+the [Compiler Inspector guide](./compiler-inspector.md) for these views, DOM/SSR target selection,
+and loading files from a local project.
 
-A playground inspector link makes an excellent fix reproduction.
+## Report Findings
+
+Describe what you ran, what happened, and what you expected. Plain text is welcome. Include the
+Vize and Vue versions, the exact command or editor action, and any relevant error message.
+
+Attach the inspector permalink or a small project that still reproduces the problem. For a
+performance report, include the measurement and profiling output described below. The
+[Contributing guide](../contributing.md) explains how to contribute a fix, and the
+[Support guide](https://github.com/ubugeeei-prod/vize/blob/main/SUPPORT.md) explains where to ask for
+help or report a problem.
 
 ## Read the Test Cases
 
-Vize is tested heavily and in many different ways — compiler fixtures compared against the official
-Vue compiler, type-check parity against `vue-tsc`, lint and formatter snapshots, SSR codegen
-snapshots, fuzz harnesses, and real-world application fixtures. Before filing a report, it often
-helps to skim the existing cases:
+Existing cases are useful when you want to compare a problem with a similar example or contribute
+a regression test. Compiler fixtures compare output against the official Vue compiler, type-check
+cases compare diagnostics against `vue-tsc`, and lint, formatter, and SSR snapshots record expected
+results. Fuzz tests and real-world application fixtures cover additional inputs and workflows.
 
 - Compiler and SFC parity fixtures and snapshots under `tests/` and each crate's `src/snapshots/`.
 - Real-world application fixtures under `tests/_fixtures/` (for example Elk, Misskey, Nuxt UI,
   Reka UI, and VOICEVOX) that drive E2E and VRT.
 
-If a case is missing or a result looks wrong, that is exactly the kind of feedback this phase wants.
-
-## Report Findings
-
-- **Plain text is fine.** A clear description of what you did, what you expected, and what happened
-  is already valuable.
-- **If you can, attach a minimal reproduction** to the GitHub tracker - the smallest `.vue` file (or
-  small project) that still shows the problem. A playground inspector link works great.
-- Fix reports, reproductions, benchmark results, and compatibility findings all help. See the
-  [Contributing](../contributing.md) guide and
-  [Support](https://github.com/ubugeeei-prod/vize/blob/main/SUPPORT.md).
+If you find a missing case, include the example in your report. It can become a regression test
+that protects the fix.
 
 ## Measure Performance
 
-Vize has a built-in **profiling mode**, so you can measure where time goes instead of guessing.
+Run `vize check --profile` in the project that feels slow. It prints a report of the time spent in
+each phase. Share the complete command and report, the Vize version, and the size of the project
+alongside the observed run time.
 
-- In local development, the toolchain exposes profiling across the parser, compiler, analysis, and
-  type-check phases.
-- The CLI has it too: `vize check --profile` runs the check through **vize_curator** and prints a
-  per-phase profiling report. Use it to capture and share performance numbers from your own
-  codebase.
+For a repeatable comparison, follow the [type-check performance measurement guide](./check-performance.md).
+Local development tools also expose profiling for parsing, compilation, analysis, and type checks.
 
 ## Offer Your Project as a Test Bed
 
-Real, sizable codebases find the failures that synthetic examples never will. **Where the license
-allows it, a project can be added to Vize's fixtures and become an E2E / VRT target**, so future
-regressions are caught automatically.
+If you maintain a Vue application, library, framework, or tool, you can propose it as a test
+fixture. Include a link to the project, its license, and the commands needed to install and run it.
+Explain which workflow Vize should check.
 
-If you maintain (or know of) a Vue application, library, framework, or tool that may be used this
-way, please let us know - open a fix request or reach out. The bigger and more real the codebase, the
-more useful the signal.
+With permission and a suitable license, the project can become an end-to-end or visual regression
+test. Running it again after changes helps catch the same problem before it reaches other users.

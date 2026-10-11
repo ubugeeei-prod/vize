@@ -182,8 +182,8 @@
     {
       "route": "/guide/testing",
       "locales": ["en", "ja"],
-      "entry": "audited",
-      "note": "Tester purpose and report steps present; Japanese body still needs review."
+      "entry": "revised",
+      "note": "English and Japanese now lead from a small Inspector reproduction to a useful report, with profiling and project-fixture guidance afterwards. Original headings, commands, source paths, and Support URL are retained. Fresh rendered and deployed reading review remain pending."
     },
     {
       "route": "/guide/troubleshooting",
