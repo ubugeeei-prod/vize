@@ -274,13 +274,9 @@ fn unavailable_native_semantic_transport_cannot_report_empty_clean() {
         "semantic completion must try a transport"
     );
     assert!(
-        attempts.ends_with('\n'),
-        "transport records must be complete"
-    );
-    assert!(
         attempts
-            .lines()
-            .all(|argument| matches!(argument, "--api" | "--lsp")),
+            .split_inclusive('\n')
+            .all(|record| matches!(record, "--api\n" | "--lsp\n")),
         "only actual denied diagnostic transports may enter the trace: {attempts:?}"
     );
     let cli_error = format!(
@@ -303,7 +299,9 @@ fn unavailable_native_semantic_transport_cannot_report_empty_clean() {
     );
     if message.as_str() == api_completion {
         assert!(
-            attempts.lines().any(|argument| argument == "--api"),
+            attempts
+                .split_inclusive('\n')
+                .any(|record| record == "--api\n"),
             "API connection refusal requires an actual denied API invocation"
         );
     }

@@ -50,3 +50,9 @@ only the new evidence to the dedicated wildcard-selected sibling directory;
 the six original cases, receipt and all diagnostic/projection oracles remain
 unchanged. The immutable artifact collector must retain all whole new packets
 from this location, and fresh complete Actions remain required.
+
+The `c06485f` source's tooling gate rejected the suffix assertion used to
+check trace termination. Require every complete newline-inclusive record to
+equal exactly `--api\n` or `--lsp\n` instead; this also rejects partial and
+CRLF records directly. The nonempty trace and whole two-message error oracle
+remain mandatory. No assertion allowlist entry or original oracle changes.
