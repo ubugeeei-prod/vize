@@ -32,3 +32,12 @@ Hosted exact-head source/native qualification and actual protected merge are
 required. The first failed queue remains failure evidence. This test-only
 repair grants no compiler/typechecker behavior, performance or public-release
 acceptance credit.
+
+The first hosted source `c206e4b` passed all three actual native runtime laws;
+the full suite refused the uninitialized Element Plus gitlink rather than
+mistaking the outer checkout for its pinned upstream repository. The existing
+immutable gitlink must be initialized before this complete integration suite;
+the exact `20298a21` pin/source/config checks remain intact. Its source-plan
+gate also retained the shifted Carton-use line in the generated inventory;
+regenerating only that row preserves the same dependency classification.
+Fresh complete exact-head Actions remain required.
