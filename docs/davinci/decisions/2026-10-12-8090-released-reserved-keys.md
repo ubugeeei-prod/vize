@@ -75,6 +75,19 @@ fresh external GNU/runtime paths and absent preload/native overrides before Node
 All original/new 26 source custody, refusal and workflow laws pass without skips;
 that is source law coverage, not actual hosted installed execution.
 
+The first candidate `83fa924` passed source Check
+[38178779282](https://github.com/ubugeeei-prod/vize/actions/runs/38178779282),
+including all 26 laws executed once in its four tooling jobs. Its separate
+mandatory native run
+[38178779340](https://github.com/ubugeeei-prod/vize/actions/runs/38178779340)
+failed the shared historical-tree custody guard; retain that RED separately.
+The bounded guard repair #8707 actually merged at
+`6d7aaacc45e9d9d9cb0ed65052c61fa93b5b04c5`. Rebasing onto that actual main
+preserved all 17 noncanonical owned files byte-exact and every incoming canonical
+clause/350 rows, appending only the reserved paragraph181 link. The successor
+requires its own exact-head source and mandatory native qualification; the
+previous green is not transferred.
+
 No source-build substitution, observed-oracle rewrite, previous public green,
 failed 0.446 publication, or denominator replacement is permitted. Unsupported
 asyncData/defineProps, broader #8090 and full ecosystem Matrix acceptance remain
