@@ -7,7 +7,9 @@
     {
       "id": "compiler/sfc/ssr-slot-scope",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "ssr-slot-scope",
         "files": [
@@ -32,7 +34,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       }
     }
   ],
@@ -58,6 +66,12 @@
     {
       "path": "vapor-slot-defaults-7886.manifest.json",
       "sha256": "4a66edd85a4292ad75fc45d6a87dd4bb8e3efcf0917a7e2bf64ac43addd5b30a",
+      "adapter": "compiler-rust-whole-source-runtime-v1",
+      "workflow": ".github/workflows/check.yml"
+    },
+    {
+      "path": "vapor-hebilicious-8624.manifest.json",
+      "sha256": "8d08763722784735ada72df9da76a86f96668893c4ea72c5f6644b94c83b16e1",
       "adapter": "compiler-rust-whole-source-runtime-v1",
       "workflow": ".github/workflows/check.yml"
     }

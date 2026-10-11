@@ -1,0 +1,49 @@
+{
+  "schema": "vize.differential.runtime-pack",
+  "version": 1,
+  "product": "compiler",
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/8624",
+  "cases": [
+    {
+      "id": "compiler/vapor-svg-8624",
+      "inputs": {
+        "root": "vapor-svg-8624",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "c24edd390f4e25b0c6adf8b28bbb26a92117bf60d64e5f6798de3e447379638e"
+          },
+          {
+            "path": "Child.vue.txt",
+            "sha256": "0f9caf24bef8d5a73b370766f1db5ddbd88d3116b3cbd68d243b41012d7dd3aa"
+          },
+          {
+            "path": "controls.json",
+            "sha256": "cee88cedbd31d0ef0becb21d9888f2fd25366b8c4889d3ec917ce9d3ddf5910a"
+          },
+          {
+            "path": "original-issue.md",
+            "sha256": "2f199e889536c472e69271f12f0b6b8f7297671a7e904fe0cc26b900ce676ae4"
+          },
+          {
+            "path": "reported.vue.txt",
+            "sha256": "c24edd390f4e25b0c6adf8b28bbb26a92117bf60d64e5f6798de3e447379638e"
+          }
+        ]
+      },
+      "reference": {
+        "path": "vapor-svg-8624/controls.json",
+        "sha256": "cee88cedbd31d0ef0becb21d9888f2fd25366b8c4889d3ec917ce9d3ddf5910a",
+        "source": "original whole reported SFCs and independently authored runtime expectations; complete locked Vue VDOM differential packet"
+      },
+      "runtime": {
+        "rustTarget": "crates/vize_atelier_sfc/tests/vapor_third_party_reports.rs",
+        "helper": "tests/tooling/support/vapor-slot-defaults-7886.mjs",
+        "lockedVue": "3.6.0-rc.9",
+        "reportedVue": "3.6.0-rc.10",
+        "reportedVueExecution": "unexecuted",
+        "nativeHandled": 0
+      }
+    }
+  ]
+}

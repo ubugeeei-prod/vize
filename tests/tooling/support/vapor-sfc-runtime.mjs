@@ -78,10 +78,13 @@ async function evaluate(code) {
 }
 
 const child = await evaluate(input.child);
-globalThis.__vaporSfcModules["./Child.vue"] = { default: child };
+globalThis.__vaporSfcModules[input.childModule ?? "./Child.vue"] = { default: child };
 const component = await evaluate(input.code);
 if (input.scopedSelectors) component.__scopeId = "data-v-probe";
-const app = (input.backend === "vapor" ? vue.createVaporApp : vue.createApp)(component);
+const createApp = input.backend === "vapor" ? vue.createVaporApp : vue.createApp;
+const app = Object.hasOwn(input, "rootProps")
+  ? createApp(component, input.rootProps)
+  : createApp(component);
 const diagnostics = [];
 app.config.warnHandler = (message) => diagnostics.push(message);
 app.config.errorHandler = (error) => diagnostics.push(String(error));

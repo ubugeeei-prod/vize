@@ -1,0 +1,42 @@
+[
+  {
+    "name": "original-circle",
+    "rootProps": {
+      "tier": 1
+    },
+    "expectedNamespaces": [
+      "http://www.w3.org/2000/svg",
+      "http://www.w3.org/2000/svg",
+      "http://www.w3.org/2000/svg"
+    ],
+    "context": {},
+    "steps": []
+  },
+  {
+    "name": "original-rect",
+    "rootProps": {
+      "tier": 2
+    },
+    "expectedNamespaces": [
+      "http://www.w3.org/2000/svg",
+      "http://www.w3.org/2000/svg",
+      "http://www.w3.org/2000/svg"
+    ],
+    "context": {},
+    "steps": []
+  },
+  {
+    "name": "unchanged-html-branch",
+    "app": "<script setup>import { state } from \"./fixture\";</script>\n<template><div><span v-if=\"state.ready\">A</span><p v-else>B</p></div></template>",
+    "context": {
+      "ready": true
+    },
+    "steps": [
+      {
+        "patch": {
+          "ready": false
+        }
+      }
+    ]
+  }
+]
