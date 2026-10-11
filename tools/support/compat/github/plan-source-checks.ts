@@ -19,6 +19,13 @@ export function isCensusToolingInput(path: string) {
   );
 }
 
+// This exact authored coverage ledger is consumed by Node Docs quality and
+// rendering checks, with no workspace Rust or product-package consumer.
+// Nearby contracts and scripts remain unknown until separately reviewed.
+export function isDocsQualityToolingInput(path: string) {
+  return path === "docs/quality/more-guides-coverage.json";
+}
+
 // These authored plans are compiled or read by Rust tests and compiler gates.
 // Keep new contracts conservative. The dated completion ledger is verified
 // prose, with no Rust input consumer; tooling still validates its docs.
@@ -49,7 +56,7 @@ export function planSourceChecks(
       result.rust = result.js = result.playground = true;
       continue;
     }
-    if (isCensusToolingInput(path)) {
+    if (isCensusToolingInput(path) || isDocsQualityToolingInput(path)) {
       result.tooling = true;
       continue;
     }

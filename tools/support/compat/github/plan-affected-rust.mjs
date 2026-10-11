@@ -3,7 +3,12 @@ import { appendFileSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { changedPaths, isCensusToolingInput, isSharedRustInput } from "./plan-source-checks.ts";
+import {
+  changedPaths,
+  isCensusToolingInput,
+  isDocsQualityToolingInput,
+  isSharedRustInput,
+} from "./plan-source-checks.ts";
 
 const packageName = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 const contexts = new Set(["pull_request", "merge_group"]);
@@ -84,7 +89,7 @@ export function planAffectedRust(metadata, paths, eventName = "pull_request") {
       reasons.add("invalid changed path");
       continue;
     }
-    if (isCensusToolingInput(path)) continue;
+    if (isCensusToolingInput(path) || isDocsQualityToolingInput(path)) continue;
     if (isSharedRustInput(path)) {
       full = true;
       reasons.add(`shared or unknown input: ${path}`);
