@@ -10,13 +10,13 @@ remote leases. Preserve all original worktrees and their untracked output,
 the original refs in a Git bundle, each original fixture, and every incoming
 canonical decision. Historic green source/Docs runs confer no new-head credit.
 
-| PR | Original reviewed head | Reader scope |
-| --- | --- | --- |
-| [#8440](https://github.com/ubugeeei-prod/vize/pull/8440) | `f5b486e94c27dee7cb7a6150c1617cf6a7f9b306` | Compiler and experimental references |
+| PR                                                       | Original reviewed head                     | Reader scope                                 |
+| -------------------------------------------------------- | ------------------------------------------ | -------------------------------------------- |
+| [#8440](https://github.com/ubugeeei-prod/vize/pull/8440) | `f5b486e94c27dee7cb7a6150c1617cf6a7f9b306` | Compiler and experimental references         |
 | [#8446](https://github.com/ubugeeei-prod/vize/pull/8446) | `1fe9c9abcaec7e456416fd2c1c29eb952c00088f` | JSX, Babel compatibility, Compiler Inspector |
-| [#8452](https://github.com/ubugeeei-prod/vize/pull/8452) | `53a839e2f16dd17e617ff494e1f569aeea477580` | Complete WASM binding guide |
-| [#8455](https://github.com/ubugeeei-prod/vize/pull/8455) | `4696a8c9fac7672b98dca6f2deeb269fec9714ab` | Philosophy, art names and compatibility |
-| [#8465](https://github.com/ubugeeei-prod/vize/pull/8465) | `dc81b3c07a85d8257c1e143f949d018153980618` | Vapor/Musea notes and their indexes |
+| [#8452](https://github.com/ubugeeei-prod/vize/pull/8452) | `53a839e2f16dd17e617ff494e1f569aeea477580` | Complete WASM binding guide                  |
+| [#8455](https://github.com/ubugeeei-prod/vize/pull/8455) | `4696a8c9fac7672b98dca6f2deeb269fec9714ab` | Philosophy, art names and compatibility      |
+| [#8465](https://github.com/ubugeeei-prod/vize/pull/8465) | `dc81b3c07a85d8257c1e143f949d018153980618` | Vapor/Musea notes and their indexes          |
 
 The original source custody and fixtures remain authoritative. Every layer
 keeps its complete examples and inbound bookmarks. Article publication/author
