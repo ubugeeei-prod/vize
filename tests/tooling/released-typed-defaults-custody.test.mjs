@@ -139,6 +139,41 @@ test("runtime override and source checkout consumer substitutions are refused be
   assert.throws(() => consumerPaths(paths, checkout), /fresh public paths/);
 });
 
+test("the actual observer refuses an untrusted branch or unsupported host before product execution", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "typed-untrusted-observer-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const f = officialFixture();
+  const env = {
+    ...process.env,
+    PUBLIC_CUT: f.options.cut,
+    PUBLIC_HEAD: f.options.head,
+    PUBLIC_TAG: f.options.tag,
+    PUBLIC_SOURCE_PR: f.options.sourcePr,
+    PUBLIC_RELEASE_RUN: f.options.run,
+    GITHUB_REPOSITORY: "ubugeeei-prod/vize",
+    GITHUB_REF: "refs/heads/untrusted",
+    RUNNER_TEMP: root,
+    PUB_CONSUMER: path.join(root, "consumer"),
+    PUBLIC_OUTPUT: path.join(root, "evidence"),
+  };
+  for (const key of overrides) delete env[key];
+  const run = spawnSync(
+    process.execPath,
+    [
+      fileURLToPath(
+        new URL("../../tools/support/release/typed_defaults/main.mjs", import.meta.url),
+      ),
+    ],
+    { env, encoding: "utf8", timeout: 10_000 },
+  );
+  assert.equal(run.error, undefined);
+  assert.equal(run.status, 1);
+  assert.match(run.stderr, /reviewed main observer required|actual hosted GNU consumer required/);
+  assert.equal(run.stdout, "");
+  assert.equal(fs.existsSync(env.PUB_CONSUMER), false);
+  assert.equal(fs.existsSync(env.PUBLIC_OUTPUT), false);
+});
+
 function archiveFixture(t, kind = "regular") {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "typed-public-archive-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));

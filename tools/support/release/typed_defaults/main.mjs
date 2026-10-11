@@ -65,22 +65,30 @@ try {
   persist();
   const version = spawnSync(distribution.member.binary, ["--version"], {
     cwd: consumer,
-    encoding: "utf8",
     timeout: 60_000,
+    maxBuffer: 4 * 1024 * 1024,
   });
+  const versionOut = version.stdout ?? Buffer.alloc(0),
+    versionErr = version.stderr ?? Buffer.alloc(0);
   receipt.versionObservation = {
     status: version.status,
     signal: version.signal,
-    stdout: version.stdout,
-    stderr: version.stderr,
+    stdout: versionOut.toString("utf8"),
+    stderr: versionErr.toString("utf8"),
+    raw: {
+      stdoutBase64: versionOut.toString("base64"),
+      stdoutSha256: sha256(versionOut),
+      stderrBase64: versionErr.toString("base64"),
+      stderrSha256: sha256(versionErr),
+    },
     error: version.error ? String(version.error) : null,
   };
   persist();
   assert.equal(version.error, undefined);
   assert.equal(version.signal, null);
   assert.equal(version.status, 0);
-  assert.equal(version.stderr, "");
-  assert.equal(version.stdout, `vize ${options.tag.slice(1)}\n`);
+  assert.deepEqual(versionErr, Buffer.alloc(0));
+  assert.deepEqual(versionOut, Buffer.from(`vize ${options.tag.slice(1)}\n`));
   receipt.observations = observe(fixtures, distribution, consumer, output);
   const final = await authenticate(options, json);
   assert.equal(final.releaseRun.run_attempt, official.releaseRun.run_attempt);

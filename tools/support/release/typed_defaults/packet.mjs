@@ -3,12 +3,14 @@ import fs from "node:fs";
 import { sha256 } from "./custody.mjs";
 
 export function inputObservation(filename, text) {
-  const before = { text, sha256: sha256(Buffer.from(text)) };
+  const before = { text, bytes: Buffer.byteLength(text), sha256: sha256(Buffer.from(text)) };
   try {
     const bytes = fs.readFileSync(filename);
     return {
       ...before,
       afterText: bytes.toString("utf8"),
+      afterBytes: bytes.length,
+      afterBase64: bytes.toString("base64"),
       afterSha256: sha256(bytes),
       readError: null,
     };
@@ -16,6 +18,8 @@ export function inputObservation(filename, text) {
     return {
       ...before,
       afterText: null,
+      afterBytes: null,
+      afterBase64: null,
       afterSha256: null,
       readError: { name: error.name, message: error.message },
     };
