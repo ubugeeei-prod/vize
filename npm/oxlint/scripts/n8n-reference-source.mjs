@@ -34,6 +34,12 @@ export async function prepareReferenceSource(output) {
       cwd: repository,
     },
   );
+  fs.writeFileSync(
+    path.join(output, "reference-exists.json"),
+    JSON.stringify(exists, null, 2) + "\n",
+  );
+  assert.equal(exists.error, undefined);
+  assert.equal(exists.signal, null);
   if (exists.status !== 0) {
     const fetched = await run("git", ["fetch", "--depth=1", "origin", referenceSource.head]);
     fs.writeFileSync(

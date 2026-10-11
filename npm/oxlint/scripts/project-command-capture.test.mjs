@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -78,3 +78,104 @@ test("timeout escalates for ignored SIGTERM and drains descendants after leader 
   const state = spawnSync("ps", ["-p", String(descendant), "-o", "stat="], { encoding: "utf8" });
   assert.ok(state.status === 1 || state.stdout.trim().startsWith("Z"));
 });
+
+for (const mode of ["cancel", "missing-object", "missing-command"])
+  test(`real reference ${mode} keeps fatal cancellation separate from the pinned fetch fallback`, async (t) => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-reference-command-control-"));
+    t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+    fs.mkdirSync(path.join(root, "bin"));
+    fs.mkdirSync(path.join(root, "output"));
+    if (mode !== "missing-command")
+      fs.writeFileSync(
+        path.join(root, "bin/git"),
+        `#!${process.execPath}
+const fs=require('node:fs'),root=process.env.VIZE_REFERENCE_CONTROL,args=process.argv.slice(2);
+fs.appendFileSync(root+'/commands.jsonl',JSON.stringify({pid:process.pid,args})+'\\n');
+if(args[0]==='cat-file') {
+ process.stdout.write('whole exists stdout');process.stderr.write('whole exists stderr');
+ if(process.env.VIZE_REFERENCE_MODE==='cancel') {fs.writeFileSync(root+'/ready',String(process.pid));setInterval(()=>{},1000);}
+ else process.exitCode=128;
+} else if(args[0]==='fetch') process.exitCode=0;
+else {process.stdout.write('refuse invalid tree authority');process.exitCode=0;}
+`,
+        { mode: 0o755 },
+      );
+    const moduleUrl = (name) => JSON.stringify(new URL(name, import.meta.url).href);
+    const driver = path.join(root, "driver.mjs");
+    fs.writeFileSync(
+      driver,
+      `import fs from 'node:fs';
+import {prepareReferenceSource} from ${moduleUrl("./n8n-reference-source.mjs")};
+import {runQualificationBranches} from ${moduleUrl("./project-qualification-branches.mjs")};
+const root=${JSON.stringify(root)},mode=${JSON.stringify(mode)};
+const timer=mode==='cancel'?setInterval(()=>{if(fs.existsSync(root+'/ready')){clearInterval(timer);process.kill(process.pid,'SIGTERM');}},10):null;
+try {await runQualificationBranches([
+ {id:'mixedDirectory8507',run:()=>new Promise(resolve=>setTimeout(()=>{fs.writeFileSync(root+'/remaining.done','complete');resolve();},150))},
+ {id:'n8n',run:()=>prepareReferenceSource(root+'/output')},
+],root+'/branch-outcomes.json');process.exitCode=2;}
+catch {process.exitCode=1;}finally{clearInterval(timer);}
+`,
+    );
+    const child = spawn(process.execPath, [driver], {
+      env: {
+        ...process.env,
+        PATH: path.join(root, "bin"),
+        GITHUB_ACTIONS: "true",
+        VIZE_REFERENCE_CONTROL: root,
+        VIZE_REFERENCE_MODE: mode,
+      },
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    let stdout = "",
+      stderr = "";
+    child.stdout.on("data", (bytes) => (stdout += bytes));
+    child.stderr.on("data", (bytes) => (stderr += bytes));
+    const timeout = setTimeout(() => child.kill("SIGKILL"), 5000);
+    t.after(() => clearTimeout(timeout));
+    const terminal = await new Promise((resolve, reject) => {
+      child.once("error", reject);
+      child.once("close", (status, signal) => resolve({ status, signal }));
+    });
+    assert.deepEqual(terminal, { status: 1, signal: null }, stdout + stderr);
+    const packet = JSON.parse(fs.readFileSync(path.join(root, "output/reference-exists.json")));
+    const outcomes = JSON.parse(fs.readFileSync(path.join(root, "branch-outcomes.json")));
+    assert.equal(outcomes.interrupted, mode === "cancel" ? "SIGTERM" : null);
+    assert.deepEqual(
+      outcomes.branches.map(({ status }) => status),
+      ["fulfilled", "rejected"],
+    );
+    assert.ok(fs.existsSync(path.join(root, "remaining.done")));
+    const commands = fs.existsSync(path.join(root, "commands.jsonl"))
+      ? fs
+          .readFileSync(path.join(root, "commands.jsonl"), "utf8")
+          .trim()
+          .split("\n")
+          .map(JSON.parse)
+      : [];
+    assert.deepEqual(
+      commands.map(({ args }) => args[0]),
+      mode === "missing-object"
+        ? ["cat-file", "fetch", "rev-parse"]
+        : mode === "cancel"
+          ? ["cat-file"]
+          : [],
+    );
+    if (mode === "missing-object") {
+      assert.equal(packet.status, 128);
+      assert.equal(packet.signal, null);
+      assert.deepEqual(commands[1].args, [
+        "fetch",
+        "--depth=1",
+        "origin",
+        "e742ca8ee730d37e7e5e47dddb0d0d08bf693389",
+      ]);
+    } else assert.equal(packet.error.code, mode === "cancel" ? "EINTR" : "ENOENT");
+    if (mode !== "missing-command") {
+      assert.equal(Buffer.from(packet.stdout).toString(), "whole exists stdout");
+      assert.equal(Buffer.from(packet.stderr).toString(), "whole exists stderr");
+    }
+    for (const { pid } of commands) {
+      const state = spawnSync("ps", ["-p", String(pid), "-o", "stat="], { encoding: "utf8" });
+      assert.ok(state.status === 1 || state.stdout.trim().startsWith("Z"));
+    }
+  });

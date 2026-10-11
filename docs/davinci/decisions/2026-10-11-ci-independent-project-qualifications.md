@@ -41,6 +41,9 @@ the original counterexample let both 500ms workers write at 800ms during a
 1,500ms wait. The repaired real-process controls refuse before those writes,
 join the remaining command, and drain descendants. Perform the complete final
 aggregation only after both workload branches settle.
+Preserve the reference existence command's complete outcome before checking it.
+Cancellation or spawn failure refuses immediately; only a normal missing-object
+exit can take the original pinned fetch path. Real-function controls cover both.
 
 The 162.382-second independent phase is an ideal upper bound on savings, not a
 measured speedup. Additional CPU/memory contention is unmeasured. Existing
