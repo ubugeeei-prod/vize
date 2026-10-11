@@ -4,7 +4,7 @@ use crate::ide::DiagnosticService;
 use serde::Deserialize;
 use std::ops::Range;
 use tower_lsp::lsp_types::Url;
-use vize_carton::{String, cstr};
+use vize_l0::{String, cstr};
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
