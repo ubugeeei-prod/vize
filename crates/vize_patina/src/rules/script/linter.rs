@@ -1,4 +1,16 @@
-use super::*;
+use super::{
+    NoAsyncInComputed, NoDeepDestructureInProps, NoDupeKeys, NoGetCurrentInstance,
+    NoImportCompilerMacros, NoInternalImports, NoNextTick, NoOptionsApi, NoPageMetaRuntimeValues,
+    NoReactiveDestructure, NoReservedIdentifiers, NoSideEffectsInComputed, NoTopLevelRefInScript,
+    NoWithDefaults, PiniaPreferStoreToRefs, PreferComputed, PreferImportFromVue, PreferImportMeta,
+    PreferRefOverReactive, PreferUseAttrs, PreferUseId, PreferUseSlots, PreferUseTemplateRef,
+    RequireFunctionReturnType, RequireSymbolProvide, ScriptLintResult, ScriptLinter, ScriptRule,
+    SfcScriptContext, VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot, script_source_type,
+};
+use memchr::memmem;
+use oxc_allocator::Allocator;
+use oxc_parser::Parser;
+use vize_l0::profile;
 
 impl ScriptLinter {
     /// Create a new script linter with default rules (all disabled by default)
@@ -61,7 +73,7 @@ impl ScriptLinter {
     /// Lint a script block.
     ///
     /// AST-based rules share a **single** oxc parse of the source (one
-    /// [`Allocator`] + one [`Program`]) via [`ScriptRule::check_program`],
+    /// [`Allocator`] + one [`oxc_ast::ast::Program`]) via [`ScriptRule::check_program`],
     /// collapsing N redundant per-rule parses into one. Byte-only rules scan
     /// the raw source directly via [`ScriptRule::check`].
     pub fn lint(&self, source: &str, offset: usize) -> ScriptLintResult {

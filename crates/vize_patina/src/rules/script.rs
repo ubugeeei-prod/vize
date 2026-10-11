@@ -69,14 +69,12 @@ mod valid_next_tick;
 mod vue_router_prefer_named_push;
 mod vue_test_utils_no_html_snapshot;
 
-use memchr::memmem;
 use oxc_allocator::Allocator;
 use oxc_ast::ast::Program;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
-use vize_l0::profile;
 
 pub use exports::*;
 pub use props_emits::EmitsModuleScript;
