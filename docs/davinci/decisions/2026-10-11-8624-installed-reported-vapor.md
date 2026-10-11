@@ -62,3 +62,12 @@ candidate, preserve the full failed log, and review every import and body before
 adding one finite approved cohort. Existing cohorts and unknown/native-input
 refusals stay intact. Original eight consumer rows and runtime code are unchanged;
 fresh exact-source and protected checks remain required.
+
+Successor `97751848` passed all 39 applicable source checks, including genuine
+native phases. Its next queue entry was removed for a canonical-record conflict
+with the adjacent pending #8673 paragraphs, without a runtime or cohort failure.
+After #8673 actually merged as `ce5f407ebb10517a0797e15b2e07845fd52003b5`,
+replay on that real main preserves all 350 incoming rows and appends only the
+exact owned suffixes at 154, 324 and 341. Every consumer/runtime/fixture and
+native-cohort law body remains byte-identical. The replay still requires its
+own fresh source and protected qualification before actual merge and release.
