@@ -1,0 +1,51 @@
+{
+  "source": "2324169f204fab687ed71cf4039f9e42698878b6",
+  "phase": "partial-source-successor",
+  "instructionRun": 38159541525,
+  "instructionJob": 114529393191,
+  "instructionConclusion": "success",
+  "measuredCases": 100,
+  "runsPerCase": 3,
+  "completeMeasurements": {
+    "path": "source-instruction-success-232.tsv",
+    "sha256": "d5d702c810321212efd10d9beb603acef23cc6769a1e368ee5262ddcef442cee",
+    "originalMeasurementSha256": "79a448de243b787194fd944e9bcfd63282c531ba72174faa7148a3888df073f8",
+    "methodologySameAsRetired58b": true
+  },
+  "previouslyFailed": [
+    {
+      "bench": "atelier_dom_compile_small",
+      "instructions": 117489,
+      "ceiling": 120449
+    },
+    {
+      "bench": "atelier_dom_compile_medium",
+      "instructions": 1103498,
+      "ceiling": 1125209
+    },
+    {
+      "bench": "atelier_vapor_compile_stress-interp",
+      "instructions": 5308313,
+      "ceiling": 5340048
+    },
+    {
+      "bench": "musea_parse_art_legacy_attrs",
+      "instructions": 67761,
+      "ceiling": 73746
+    }
+  ],
+  "rawInstructionLog": {
+    "url": "https://github.com/ubugeeei-prod/vize/actions/runs/38159541525/job/114529393191",
+    "sha256": "074eadda0ed9386d9bd31d0cbe3c038996737b236ab4aa48011ac9ace614a394"
+  },
+  "sourceFailure": {
+    "run": 38159544982,
+    "job": 114529555982,
+    "error": "clippy::indexing_slicing at davinci/vize_l1/src/parse/namespace.rs:57",
+    "wholeDiagnostic": "error: indexing may panic\n  --> davinci/vize_l1/src/parse/namespace.rs:57:25\n   |\n57 |             let event = self.recorder.events[index];\n   |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n   |\n   = help: consider using `.get(n)` or `.get_mut(n)` instead\n   = note: requested on the command line with `-D clippy::indexing-slicing`",
+    "rawLogSha256": "790112ce1eb27a022750ebd85c7634a2e04349955d396229f7fe40e923f5b6f8",
+    "decision": "Use get(index).copied() during the same once-only replay. Preserve the lint and event-stream laws; require exact successor source checks and fresh full measurement before queue entry."
+  },
+  "sourceQualification": false,
+  "publicationQualification": false
+}

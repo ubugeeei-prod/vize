@@ -114,6 +114,15 @@ lookup. Keep the candidate off the queue until fresh complete measured gates
 pass. No ceiling, fixture, workload or check is reduced; neither a source pass
 nor this failed protected packet grants publication acceptance.
 
+Successor 2324169's explicit instruction run 38159541525 passed every unchanged
+ceiling over all 100 cases and three measurements. The four repaired counts
+are 117489, 1103498, 5308313 and 67761 respectively. Its [complete partial
+successor packet](./fixtures/vapor-svg-namespace-8624/source-successor-232.json)
+also retains the separate failed source Clippy gate: indexing the event vector
+is prohibited even in the bounded replay loop. Use checked `get().copied()`
+without a lint allowance, then repeat exact-source checks and measurements.
+This partial measurement success does not qualify the failed source head.
+
 An independent review also suggested narrowing bare `circle`/`title` scope
 from an initial Vue 3.5.35 comparison. The [complete reference decision](./2026-10-12-svg-title-scope-reference.md)
 preserves that provider separately: pinned Vue 3.6 rc.9 and rc.10 agree with

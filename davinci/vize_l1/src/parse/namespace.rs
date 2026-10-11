@@ -54,7 +54,9 @@ impl<'a, 'v> NamespaceSink<'a, 'v> {
     // Replay recorded structural heads once; do not lex or inspect attributes.
     fn activate(&mut self) {
         for index in 0..self.recorder.events.len() {
-            let event = self.recorder.events[index];
+            let Some(event) = self.recorder.events.get(index).copied() else {
+                break;
+            };
             match event.kind {
                 EventKind::OpenTagName => {
                     self.tag = self.source.get(event.start as usize..event.end as usize);
