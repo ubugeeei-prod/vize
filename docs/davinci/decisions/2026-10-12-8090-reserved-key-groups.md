@@ -48,9 +48,12 @@ incremental and n8n remain empty. The inherited sixteen carriers retain the
 parent's complete target 17/default 19 vectors as historical authorities, while
 separate current successor vectors contain target nine/default eleven findings.
 No observed packet is filtered, normalized or used to replace an old vector.
-Equal-span API ordering is explicitly subject to exact source qualification
-because its existing engine uses an unstable start/end sort; CLI identity
-ordering is specified by the existing aggregate producer.
+The initial API companions incorrectly assumed an interleaved start/end order.
+The template-free SFC source path appends registry diagnostics and returns
+before merge sorting, so a separate literal API successor preserves all target
+findings followed by all companion findings. Initial vectors remain frozen;
+CLI identity order stays defined by the existing aggregate producer. No
+production diagnostic ordering changes. Exact source qualification is required.
 
 Twenty-one immutable complete original Vue files from six projects retain
 37 historical underscore findings: Element 19, uploader 5, Element Admin 7,

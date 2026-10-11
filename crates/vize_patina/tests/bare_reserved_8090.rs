@@ -32,6 +32,12 @@ fn bare_instance_spellings_are_valid_with_explicit_prefix_policy_successors() {
     ))
     .unwrap();
     let route_cases = route_successors["cases"].as_array().unwrap();
+    let api_order: Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/lint/reserved-prefix-8090/api-order-successors.json"
+    ))
+    .unwrap();
+    let api_cases = api_order["bareCases"].as_array().unwrap();
+    assert_eq!(api_cases.len(), 16);
     assert_eq!(route_cases.len(), 16);
     assert_eq!(
         route_cases
@@ -92,9 +98,13 @@ fn bare_instance_spellings_are_valid_with_explicit_prefix_policy_successors() {
             route_successor["targetDiagnostics"],
             successor["diagnostics"]
         );
-        let diagnostics = route_successor["combinedApiDiagnostics"]
-            .as_array()
+        let api_case = api_cases
+            .iter()
+            .find(|entry| entry["id"] == case["id"])
             .unwrap();
+        assert_eq!(api_case["filename"], case["filename"]);
+        assert_eq!(api_case["sourceSha256"], case["sourceSha256"]);
+        let diagnostics = api_case["diagnostics"].as_array().unwrap();
         let off_diagnostics = route_successor["diagnostics"].as_array().unwrap();
         let projected = projected_rules
             .keys()

@@ -39,6 +39,13 @@ fn reserved_names_obey_exact_membership_and_group_policy_with_complete_packets()
         "../../../tests/_fixtures/differential/lint/reserved-prefix-8090/default-route-companions.json"
     ))
     .unwrap();
+    let api_order: Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/lint/reserved-prefix-8090/api-order-successors.json"
+    ))
+    .unwrap();
+    let api_cases = api_order["coreCases"].as_array().unwrap();
+    assert_eq!(api_cases.len(), 20);
+    assert_eq!(api_order["summary"]["coreDiagnosticCount"], 211);
     let projection: Value = serde_json::from_str(include_str!(
         "../../../tests/_fixtures/n8n-cli-adoption.json"
     ))
@@ -82,7 +89,13 @@ fn reserved_names_obey_exact_membership_and_group_policy_with_complete_packets()
             .unwrap();
         assert_eq!(companion["filename"], case["filename"]);
         assert_eq!(companion["sourceSha256"], case["sourceSha256"]);
-        let diagnostics = companion["combinedApiDiagnostics"].as_array().unwrap();
+        let api_case = api_cases
+            .iter()
+            .find(|entry| entry["id"] == case["id"])
+            .unwrap();
+        assert_eq!(api_case["filename"], case["filename"]);
+        assert_eq!(api_case["sourceSha256"], case["sourceSha256"]);
+        let diagnostics = api_case["diagnostics"].as_array().unwrap();
         let off_diagnostics = companion["diagnostics"].as_array().unwrap();
         let projected = projected_rules
             .keys()

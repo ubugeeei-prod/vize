@@ -15,7 +15,8 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `Drawer`                                   | type  | `drawer`                       |     2 |     2 |
 | `DrawerOptions`                            | type  | `drawer`                       |     1 |     1 |
 | `ElementIdKind`                            | type  | `croquis::template`            |     1 |     2 |
-| `OptionMember`                             | type  | `croquis`                      |     2 |     3 |
+| `OptionGroup`                              | type  | `croquis`                      |     1 |     7 |
+| `OptionMember`                             | type  | `croquis`                      |     2 |     4 |
 | `Scope`                                    | type  | `scope`                        |     2 |     2 |
 | `ScopeData`                                | type  | `scope`                        |     2 |     2 |
 | `ScopeKind`                                | type  | `scope`                        |     3 |     4 |
