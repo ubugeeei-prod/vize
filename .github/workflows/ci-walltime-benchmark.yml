@@ -8,22 +8,10 @@ on:
       component:
         description: Compare serial and concurrent execution on the same source
         type: choice
-        options:
-          [
-            all,
-            js,
-            docs,
-            rust,
-            native,
-            n8n-baseline,
-            n8n-preparation,
-            owned-worker-fault,
-            owned-worker-controls,
-          ]
+        # prettier-ignore
+        options: [all, js, docs, rust, native, n8n-baseline, n8n-preparation, owned-worker-fault, owned-worker-controls]
         default: all
-      owned_worker_source_sha:
-        description: Full fresh SDK source SHA for the explicit worker diagnostic
-        type: string
+      owned_worker_source_sha: { description: Fresh full SDK source SHA, type: string }
 permissions: { contents: read }
 concurrency:
   group: ci-walltime-${{ github.sha }}-${{ inputs.component || 'all' }}
