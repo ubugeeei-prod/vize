@@ -43,6 +43,9 @@ in
         cmp \
           ${vize.src}/crates/vize_patina/src/html_content_model/whatwg.tsv \
           ${root + /crates/vize_patina/src/html_content_model/whatwg.tsv}
+        cmp \
+          ${vize.src}/crates/vize_carton/src/config/loader/module-runtime.mjs \
+          ${root + /crates/vize_carton/src/config/loader/module-runtime.mjs}
         test ! -e ${vize.src}/playground/package.json
         test ! -e ${vize.src}/crates/vize_canon/tests/snapshots/patterned_typechecking__patterned_root_virtual_ts.snap
         touch "$out"
