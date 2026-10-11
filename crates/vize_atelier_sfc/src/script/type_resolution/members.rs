@@ -32,7 +32,7 @@ pub(super) fn parse_members(body: &str) -> Vec<Member> {
 
 /// Remove `/* ... */` and `// ...` comments from a type-literal body while
 /// leaving string literal contents untouched.
-fn strip_comments(body: &str) -> String {
+pub(super) fn strip_comments(body: &str) -> String {
     let bytes = body.as_bytes();
     let mut out = String::with_capacity(body.len());
     let mut keep_start = 0;

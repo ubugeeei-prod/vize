@@ -1,6 +1,8 @@
 use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString};
 
 mod members;
+#[cfg(test)]
+use members::strip_comments;
 use members::{Member, parse_members, render_members};
 mod union;
 

@@ -41,11 +41,11 @@ mod tests {
     #[test]
     fn nested_union_intersection_retains_branch_keys_and_common_constructor_types() {
         let aliases = FxHashMap::from_iter([
-            (cstr!("Base"), cstr!("{ id?: string }")),
+            (cstr!("Base"), String::from("{ id?: string }")),
             (
                 cstr!("Props"),
-                cstr!(
-                    "Base & ({ decorative?: true; title?: never } | { decorative?: false; title: string })"
+                String::from(
+                    "Base & ({ decorative?: true; title?: never } | { decorative?: false; title: string })",
                 ),
             ),
         ]);
