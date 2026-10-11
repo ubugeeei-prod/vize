@@ -153,12 +153,12 @@ test("fast app readiness aliases use bounded pinned fixtures", () => {
     [
       {
         marker: "data-vize-hmr-direct",
-        moduleSuffix: "/src/ui/visitor.vue.ts",
+        moduleSuffix: "/src/ui/visitor.vue",
         sourceRelativePath: "src/ui/visitor.vue",
       },
       {
         marker: "data-vize-hmr-dependency",
-        moduleSuffix: "/src/components/MkVisitorDashboard.vue.ts",
+        moduleSuffix: "/src/components/MkVisitorDashboard.vue",
         sourceRelativePath: "src/components/MkVisitorDashboard.hmr.html",
       },
     ],
