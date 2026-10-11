@@ -15,7 +15,7 @@ const CORPUS: &str = concat!(
 fn parse_errors(source: &str) -> usize {
     Parser::new(&Allocator::default(), source, SourceType::ts())
         .parse()
-        .errors
+        .diagnostics
         .len()
 }
 
