@@ -18,10 +18,17 @@ member, diagnostic expectation or consumer deadline changes.
 The corpus in
 `tests/_fixtures/differential/typechecker/quoted-prop-setup-anchors/`
 retains both complete pinned SFCs, both complete original-H generated modules,
-the original MIT license and their source/provider hashes. The test requires
-authored parse success, original projection parse failure, and fresh complete
-projection parse success. It also checks quoted reserved/colon/hyphen keys
-alongside valid Unicode and dollar setup names.
+the original MIT license and their source/provider hashes. Normal Rust tests
+pin the entire anchor emission and unchanged prop inventory for a source
+control declaring real Unicode, dollar and underscore lexical bindings beside
+quoted reserved/colon/hyphen keys. They use OXC's actual identifier and parser
+authorities and the production Vue document generator.
+
+Fresh complete Popover/Tooltip projections are qualified in the dependent
+native lane against their original pinned import graph after the unchanged
+App E2E row hydrates it. A hand-built analysis summary is not a substitute for
+that imported type context. Complete generated text and mappings are retained;
+the original-H projections remain the actual parse-failure controls.
 
 Actual source-built Actions, native Stack delivery and full original consumer
 qualification remain pending. The independent residual JSX and authored

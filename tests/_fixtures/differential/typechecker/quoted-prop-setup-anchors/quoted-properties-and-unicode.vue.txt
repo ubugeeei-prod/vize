@@ -1,0 +1,9 @@
+<script setup lang="ts">
+const props = defineProps({ "onUpdate:visible": Function, "data-id": String, "class": String, "default": String, café: String, $value: String, _private: String })
+const café = props.café
+const $value = props.$value
+const _private = props._private
+const résumé = props.café
+const $setup = props.$value
+</script>
+<template><div>{{ props["onUpdate:visible"] }}{{ props["data-id"] }}{{ props.class }}{{ props.default }}{{ props.café }}{{ props.$value }}{{ props._private }}{{ café }}{{ $value }}{{ _private }}{{ résumé }}{{ $setup }}</div></template>

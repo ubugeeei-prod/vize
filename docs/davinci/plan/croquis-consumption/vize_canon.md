@@ -10,8 +10,8 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 
 | product                        | kind  | module              | files | sites |
 | ------------------------------ | ----- | ------------------- | ----: | ----: |
-| `Analyzer`                     | type  | `analyzer`          |    49 |   177 |
-| `AnalyzerOptions`              | type  | `analyzer`          |    49 |   173 |
+| `Analyzer`                     | type  | `analyzer`          |    50 |   178 |
+| `AnalyzerOptions`              | type  | `analyzer`          |    50 |   174 |
 | `ComponentUsage`               | type  | `croquis::template` |    22 |    48 |
 | `Croquis`                      | type  | `croquis`           |    94 |   225 |
 | `EventHandlerScopeData`        | type  | `scope`             |     7 |     9 |
@@ -36,7 +36,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `VSlotScopeData`               | type  | `scope`             |     1 |     4 |
 | `Croquis.import_statements`    | field | `croquis`           |     4 |     5 |
 | `Croquis.invalid_exports`      | field | `croquis`           |     1 |     1 |
-| `Croquis.macros`               | field | `croquis`           |    29 |    84 |
+| `Croquis.macros`               | field | `croquis`           |    30 |    85 |
 | `Croquis.options_descriptor`   | field | `croquis`           |     2 |     2 |
 | `Croquis.pattern_diagnostics`  | field | `croquis`           |     2 |     4 |
 | `Croquis.re_exports`           | field | `croquis`           |     1 |     1 |
@@ -74,7 +74,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `ReactivityLossKind`           |     1 |    11 |
 | `SfcDescriptor`                |    10 |    26 |
 | `SfcError`                     |     2 |     2 |
-| `SfcParseOptions`              |    14 |    20 |
+| `SfcParseOptions`              |    15 |    21 |
 | `SfcTemplateBlock`             |     2 |     2 |
 | `UndefinedRefs`                |     3 |     7 |
 | `ViolationSeverity`            |     1 |     3 |
