@@ -1,0 +1,118 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { test } from "node:test";
+import { runInNewContext } from "node:vm";
+import { parse } from "yaml";
+
+const workflow = parse(
+  readFileSync(
+    new URL("../../.github/workflows/typechecker-native-phases.yml", import.meta.url),
+    "utf8",
+  ),
+);
+const job = workflow.jobs["native-phases"];
+const evidenceName = "Actual CLI shard native phase evidence";
+const sourceSha = "1".repeat(40);
+const baseSha = "2".repeat(40);
+
+// Official edited-event shape, pinned in the decision record: changes.base is
+// separate from changes.body/title and carries both ref.from and sha.from.
+const baseChange = { base: { ref: { from: "stack-parent" }, sha: { from: baseSha } } };
+const bodyChange = { body: { from: "Previous description" } };
+const titleChange = { title: { from: "Previous title" } };
+
+function pullRequest(action, changes, runId = 100) {
+  return {
+    event_name: "pull_request",
+    run_id: runId,
+    event: {
+      action,
+      ...(changes && { changes }),
+      pull_request: {
+        number: 8561,
+        head: { sha: sourceSha },
+        base: { ref: "main", sha: baseSha },
+      },
+    },
+  };
+}
+
+function evaluate(value, github) {
+  // Execute the actual YAML expression, never a separately maintained policy.
+  // These fixtures use nonempty strings, objects and booleans, for which this
+  // expression subset has the same truthiness as Actions. Missing maps expose
+  // absent properties without inventing a base change.
+  const expression = /^\$\{\{\s*(.*?)\s*\}\}$/.exec(value)?.[1];
+  assert.ok(expression, `expected an Actions expression: ${value}`);
+  assert.doesNotMatch(expression, /\b(?:contains|startsWith|endsWith|fromJSON|toJSON)\b/);
+  return runInNewContext(expression, {
+    github: {
+      ...github,
+      event: { changes: {}, pull_request: {}, ...github.event },
+    },
+    format: (pattern, input) => pattern.replace("{0}", String(input)),
+  });
+}
+
+function plan(github) {
+  return {
+    group: evaluate(workflow.concurrency.group, github),
+    name: evaluate(job.name, github),
+    runs: Boolean(evaluate(job.if, github)),
+  };
+}
+
+function displacedBy(active, incoming) {
+  return active.group === incoming.group && workflow.concurrency["cancel-in-progress"];
+}
+
+test("body/title edits neither restart nor replace running or pending source evidence", () => {
+  const source = plan(pullRequest("synchronize", undefined, 99));
+  assert.equal(workflow.concurrency["cancel-in-progress"], true);
+  for (const changes of [bodyChange, titleChange, { ...bodyChange, ...titleChange }, {}]) {
+    const first = plan(pullRequest("edited", changes, 100));
+    const second = plan(pullRequest("edited", changes, 101));
+    assert.equal(first.runs, false);
+    assert.equal(second.runs, false);
+    assert.notEqual(first.name, evidenceName);
+    assert.notEqual(second.name, evidenceName);
+    assert.notEqual(first.group, second.group, "metadata events have unique groups");
+    assert.equal(displacedBy(source, first), false, "active source evidence survives");
+    assert.equal(displacedBy(source, second), false, "pending source evidence survives");
+    assert.equal(displacedBy(first, source), false, "source updates ignore inert groups");
+  }
+  // This counterfactual is the original bug: merely adding job.if leaves both
+  // genuine and skipped runs in the same group, which cancels genuine work.
+  const oldGroup = "typechecker-native-phases-8561";
+  assert.equal(displacedBy({ group: oldGroup }, { group: oldGroup }), true);
+});
+
+test("real base retargets keep the original evidence name and supersede stale source runs", () => {
+  const original = plan(pullRequest("synchronize", undefined, 99));
+  for (const changes of [baseChange, { ...baseChange, ...bodyChange, ...titleChange }]) {
+    const retarget = plan(pullRequest("edited", changes));
+    assert.equal(retarget.runs, true);
+    assert.equal(retarget.name, evidenceName);
+    assert.equal(retarget.group, "typechecker-native-phases-8561");
+    assert.equal(displacedBy(original, retarget), true);
+  }
+});
+
+test("all source/new-head triggers and immutable manual evidence remain enabled", () => {
+  assert.deepEqual(workflow.on.pull_request.types, ["opened", "synchronize", "reopened", "edited"]);
+  assert.equal(workflow.on.workflow_dispatch.inputs.source_sha.required, true);
+  assert.ok(
+    workflow.on.pull_request.paths.includes(".github/workflows/typechecker-native-phases.yml"),
+  );
+  assert.ok(workflow.on.pull_request.paths.includes("tests/tooling/**"));
+  for (const action of ["opened", "synchronize", "reopened"]) {
+    const source = plan(pullRequest(action));
+    assert.equal(source.runs, true);
+    assert.equal(source.name, evidenceName);
+    assert.equal(source.group, "typechecker-native-phases-8561");
+  }
+  const manual = plan({ event_name: "workflow_dispatch", run_id: 102, event: {} });
+  assert.equal(manual.runs, true);
+  assert.equal(manual.name, evidenceName);
+  assert.equal(manual.group, "typechecker-native-phases-102");
+});

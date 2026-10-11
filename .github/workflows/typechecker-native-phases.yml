@@ -44,7 +44,8 @@ on:
       - "pnpm-lock.yaml"
 permissions: { contents: read }
 concurrency:
-  group: typechecker-native-phases-${{ github.event.pull_request.number || github.run_id }}
+  # Inert edits must not replace a pending run or cancel genuine source evidence.
+  group: ${{ github.event_name == 'pull_request' && github.event.action == 'edited' && !github.event.changes.base && format('typechecker-native-phases-metadata-{0}', github.run_id) || format('typechecker-native-phases-{0}', github.event.pull_request.number || github.run_id) }}
   cancel-in-progress: true
 env:
   CARGO_TERM_COLOR: always
@@ -55,7 +56,8 @@ env:
   CARGO_TARGET_DIR: ${{ github.workspace }}/target
 jobs:
   native-phases:
-    name: Actual CLI shard native phase evidence
+    name: ${{ github.event_name == 'pull_request' && github.event.action == 'edited' && !github.event.changes.base && 'Native phase metadata edit ignored' || 'Actual CLI shard native phase evidence' }}
+    if: ${{ github.event_name != 'pull_request' || github.event.action != 'edited' || github.event.changes.base }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 40
     steps:
