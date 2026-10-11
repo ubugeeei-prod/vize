@@ -47,7 +47,7 @@ def reap_debugger(child, receipt):
                 break
             except subprocess.TimeoutExpired:
                 receipt["forcedDebuggerExit"] = True
-    receipt["debuggerReturnCode"] = child.wait()
+    receipt["debuggerReturnCode"] = child.wait(timeout=0)
     receipt["debuggerReaped"] = True
 
 

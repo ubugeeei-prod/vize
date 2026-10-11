@@ -54,7 +54,14 @@ class SupervisorLaws(unittest.TestCase):
         child, receipt = Child(0), {}
         child.returncode = 0
         supervisor.reap_debugger(child, receipt)
-        self.assertEqual(child.calls, [("wait", None)])
+        self.assertEqual(child.calls, [("wait", 0)])
+
+    def test_all_cleanup_timeouts_refuse_reap_credit_without_unbounded_wait(self):
+        child, receipt = Child(4), {}
+        with self.assertRaises(subprocess.TimeoutExpired): supervisor.reap_debugger(child, receipt)
+        self.assertTrue(receipt["forcedDebuggerExit"])
+        self.assertNotIn("debuggerReaped", receipt)
+        self.assertTrue(all(call[1] is not None for call in child.calls if call[0] == "wait"))
 
     def test_invalid_privileged_owner_refuses_without_child_or_worker(self):
         config = {"worker": {"actor": {"uid": 100}}}
