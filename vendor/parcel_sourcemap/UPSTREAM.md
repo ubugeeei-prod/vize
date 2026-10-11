@@ -12,8 +12,9 @@ The original package declares `license = "MIT"` and author
 `Jasper De Moor <jasperdemoor@gmail.com>`. Both metadata fields and all source
 notices remain intact. Neither the published archive nor that recorded repository
 tree contains a separate LICENSE file. This record does not invent an upstream
-copyright notice. Publication remains held until the maintainer reviews the
-license/provenance packet along with the dependency and API qualification.
+copyright notice. Root reviewed this exact archive/tree provenance and retained
+MIT/author metadata for the concrete candidate. Publication remains held for the
+dependency and API qualification described below.
 
 Reproduce the source-only import with the command in the adjacent LightningCSS
 [provenance record](../lightningcss/UPSTREAM.md).

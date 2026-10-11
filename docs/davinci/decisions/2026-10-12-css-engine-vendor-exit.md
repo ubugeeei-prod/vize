@@ -11,8 +11,8 @@ Rust implementation, original tests, feature surface and CSS `@import` bundler.
 Apply only its two localized panic repairs and the three core parcel source-map
 changes from `dbbd854f83c32fd8cb138489920e043c73da49c0`. This is a source
 candidate, not an upstream release, delivered dependency migration or issue
-closure. Fork publication and main-bound merge remain held for the API,
-licensing and complete consumer evidence below.
+closure. Fork publication and main-bound merge remain held for the API and
+complete consumer evidence below. Root reviewed the preserved source provenance.
 
 The isolated candidate starts on actual main
 `a6633fb68b110d07abd5ee5a6049bc15f20f9c7f`, then replays onto actual main
@@ -91,8 +91,9 @@ LightningCSS keeps the complete original MPL-2.0 LICENSE and author/source
 notices. Parcel 2.1.1 declares MIT and Jasper De Moor's original author metadata,
 but its complete published archive and recorded official tree contain no
 separate LICENSE file. The provenance record retains that fact without inventing
-an upstream copyright notice. Maintainer license/provenance review remains
-required before publication; no package has been published by this work.
+an upstream copyright notice. Root reviewed this exact archive/tree provenance
+and preserved MPL/MIT/author metadata for the concrete candidate; no new human
+approval flow is inferred from the absent file. No package has been published.
 
 Renaming a package changes Rust nominal type identity despite retaining its
 library spelling. In particular, the public
@@ -142,7 +143,7 @@ in both assertion-enabled and release qualification.
   retain full compiler/provider identity, raw outputs, test counts and failures.
 - Review actual public nominal-type and unwaived SemVer reports, then record the
   maintainer's bounded pre-1.0 API migration choice before main-bound delivery.
-- Review source provenance/licensing and normalized package contents; verify both
+- Preserve the reviewed source provenance/licensing and inspect normalized package contents; verify both
   aliases are published before their consumers when publication is authorized.
 - Produce an actual isolated registry dependency graph with neither root patches
   nor workspace paths and no rkyv 0.7 route. Current local Cargo metadata and lock
