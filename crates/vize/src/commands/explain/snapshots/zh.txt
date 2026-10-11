@@ -3242,7 +3242,7 @@ script/return-in-emits-validator · lint 规则
 要求 Vue 的每个 emits 校验函数都有返回值
 
 精度层级: complete
-适用范围: Options API component definitions written as object literals
+适用范围: Vue emits validator functions in resolved Options API objects and compiler-owned inline setup runtime objects or immutable const chains; unavailable external blocks, namespace-shadowed calls and all-path return analysis are outside
 严重级别: 错误
 类别: script
 自动修复: 不支持

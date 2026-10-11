@@ -3135,7 +3135,7 @@ script/return-in-emits-validator · lint ルール
 Vue のすべての emits バリデーターで値を返すことを必須にする
 
 精度: complete
-対象: Options API component definitions written as object literals
+対象: Vue emits validator functions in resolved Options API objects and compiler-owned inline setup runtime objects or immutable const chains; unavailable external blocks, namespace-shadowed calls and all-path return analysis are outside
 重大度: エラー
 カテゴリー: script
 自動修正: なし

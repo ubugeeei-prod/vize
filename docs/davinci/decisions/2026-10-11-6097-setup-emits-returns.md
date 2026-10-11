@@ -99,3 +99,11 @@ evidence. This replay preserves the owned canonical clause and all incoming
 decisions, with fresh source/357-packet/protected qualification required. The
 unchanged module relocation also refreshes the Croquis consumer shard's file
 count (18 SfcDescriptor files, still 26 sites); no producer or budget changed.
+
+The rule's public contract now names the existing supported Options and owned
+inline setup runtime-object/immutable-const domain, explicitly excluding
+unavailable external blocks, namespace-shadowed calls and all-path analysis.
+The existing Complete tier describes that bounded domain; it grants no broad
+#6097 or release completion. Three explain snapshots follow this source-authored
+per-rule contract; the generated rules reference is unchanged and checks clean.
+Other rule contracts and complete diagnostic vectors remain unchanged.
