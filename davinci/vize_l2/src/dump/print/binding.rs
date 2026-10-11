@@ -20,7 +20,13 @@ pub(super) fn print_attribute<W: Write>(
     mode: Style,
 ) -> Result {
     indent(w, depth)?;
-    write!(w, "attr {}", attribute.name)?;
+    w.write_str("attr ")?;
+    let name = attribute.name.as_str();
+    if name.contains(['=', '"']) || name.chars().any(char::is_whitespace) {
+        quoted(w, name)?;
+    } else {
+        w.write_str(name)?;
+    }
     if let Some(value) = &attribute.value {
         w.write_char('=')?;
         quoted(w, value.as_str())?;
