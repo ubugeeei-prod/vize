@@ -64,6 +64,14 @@ Darwin arm64 release. Its archive SHA-256 is
 `aba9ced2dee8d27fecca3dc7feb1a7f9a52caefa1eb46f3271ea66b6e0e6953f`.
 This local pass is not hosted Linux acceptance.
 
+The first hosted Linux scan passes all 72 current workflows and eight actual
+controls. The original matrix-runner inventory then exposed a suffix-match
+bug: it treated the checker's `self-hosted-runner: labels` configuration as a
+matrix `runner` key. Require the complete YAML key boundary while preserving
+all real `host` and `runner` entries, including inline matrix mappings. The
+actual pinned configuration remains the regression input; no runner checks
+or checker diagnostics are waived.
+
 Each hosted scan retains all control sources, original diagnostics, refusals,
 supported-queue observations, workflow file hashes, checker binary hash,
 source SHA and Node version under `target/workflow-syntax`. The validator
