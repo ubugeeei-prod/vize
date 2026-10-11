@@ -13,6 +13,10 @@ await test("bare instance names preserve complete CLI packets and existing prefi
   const fixture = path.join(root, "tests/_fixtures/differential/lint/bare-reserved-8090");
   const corpusPath = path.join(fixture, "cases.json");
   const corpus = JSON.parse(fs.readFileSync(corpusPath, "utf8"));
+  const companions = JSON.parse(
+    fs.readFileSync(path.join(fixture, "default-route-companions.json"), "utf8"),
+  );
+  assert.equal(companions.cases.length, 16);
   const projectionPath = path.join(root, "tests/_fixtures/n8n-cli-adoption.json");
   const projection = JSON.parse(fs.readFileSync(projectionPath, "utf8"));
   const original = JSON.parse(
@@ -36,6 +40,9 @@ await test("bare instance names preserve complete CLI packets and existing prefi
 
   const custodyPaths = [
     "tests/_fixtures/differential/lint/bare-reserved-8090/cases.json",
+    "tests/_fixtures/differential/lint/bare-reserved-8090/default-route-companions.json",
+    "tests/_fixtures/differential/lint/bare-reserved-8090/default-route-public-before.json",
+    "tests/_fixtures/differential/lint/bare-reserved-8090/default-route-initial-failure.json",
     "tests/_fixtures/differential/lint/bare-reserved-8090/observe-before.mjs",
     "tests/_fixtures/differential/lint/bare-reserved-8090/primary-sources.json",
     "tests/_fixtures/differential/lint/bare-reserved-8090/original-public-before.json",
@@ -75,27 +82,32 @@ await test("bare instance names preserve complete CLI packets and existing prefi
     evidence.build = { expected: build, receipt };
     persist();
     validateBuildReceipt(receipt, build);
-    const scenarios = corpus.cases.flatMap((entry) => [
-      ...[null, "recommended", "essential", "ecosystem"].map((preset) => ({
-        entry,
-        preset,
-        config: null,
-        findings: entry.diagnostics,
-      })),
-      { entry, preset: "incremental", config: null, findings: [] },
-      {
-        entry,
-        preset: null,
-        findings: [],
-        config: JSON.stringify({ linter: { rules: { [corpus.rule]: "off" } } }) + "\n",
-      },
-      {
-        entry,
-        preset: null,
-        findings: [],
-        config: JSON.stringify({ linter: projection.linter }) + "\n",
-      },
-    ]);
+    const scenarios = corpus.cases.flatMap((entry, index) => {
+      const companion = companions.cases[index];
+      assert.equal(companion.id, entry.id);
+      assert.equal(companion.sourceSha256, entry.sourceSha256);
+      return [
+        ...[null, "recommended", "essential", "ecosystem"].map((preset) => ({
+          entry,
+          preset,
+          config: null,
+          findings: companion.combinedCliDiagnostics,
+        })),
+        { entry, preset: "incremental", config: null, findings: [] },
+        {
+          entry,
+          preset: null,
+          findings: companion.diagnostics,
+          config: JSON.stringify({ linter: { rules: { [corpus.rule]: "off" } } }) + "\n",
+        },
+        {
+          entry,
+          preset: null,
+          findings: [],
+          config: JSON.stringify({ linter: projection.linter }) + "\n",
+        },
+      ];
+    });
     scenarios.push({
       entry: original,
       preset: null,

@@ -80,3 +80,15 @@ The module's invalid example now uses the actual prefixed `$emit` spelling.
 Native explain loads these examples from the module source, so its three
 locale snapshots change only that authored example line. The incorrect bare
 `emit` snapshot remains historical evidence; no diagnostic packet is recaptured.
+
+The exact `4dcf0e71` source CLI check exposed an observer omission: the
+unchanged default `script/no-reserved-props` also reports `$props` and `$custom`
+in the prefix props carrier. The original 137-before/17-after target vectors and
+all pinned public/ESLint receipts remain untouched. A separate source-authored
+companion freezes these two whole diagnostics, 19 combined default findings and
+139 combined before findings; target-off preserves the two companion findings.
+The authenticated v0.443.0 binary then matched all 112 complete default-route
+packets, including incremental, target-off and n8n controls. The initial failed
+64-run Actions artifact and raw job log are retained in full. This fixes the
+observer's missing existing diagnostics; it changes no production rule or
+preset. Current-head API/CLI and protected qualification are still required.

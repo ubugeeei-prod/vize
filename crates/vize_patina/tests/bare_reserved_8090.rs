@@ -22,6 +22,10 @@ fn bare_instance_spellings_are_valid_and_prefix_packets_are_preserved() {
         "../../../tests/_fixtures/differential/lint/bare-reserved-8090/cases.json"
     ))
     .unwrap();
+    let companions: Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/lint/bare-reserved-8090/default-route-companions.json"
+    )).unwrap();
+    assert_eq!(companions["cases"].as_array().unwrap().len(), 16);
     let projection: Value = serde_json::from_str(include_str!(
         "../../../tests/_fixtures/n8n-cli-adoption.json"
     ))
@@ -48,10 +52,14 @@ fn bare_instance_spellings_are_valid_and_prefix_packets_are_preserved() {
         17
     );
 
-    for case in cases {
+    for (index, case) in cases.iter().enumerate() {
         let filename = case["filename"].as_str().unwrap();
         let source = case["source"].as_str().unwrap();
-        let diagnostics = case["diagnostics"].as_array().unwrap();
+        let companion = &companions["cases"][index];
+        assert_eq!(companion["id"], case["id"]);
+        assert_eq!(companion["sourceSha256"], case["sourceSha256"]);
+        let diagnostics = companion["combinedApiDiagnostics"].as_array().unwrap();
+        let off_diagnostics = companion["diagnostics"].as_array().unwrap();
         let projected = projected_rules
             .keys()
             .map(|name| name.as_str().into())
@@ -81,7 +89,7 @@ fn bare_instance_spellings_are_valid_and_prefix_packets_are_preserved() {
             (
                 "explicit-off",
                 Linter::new().with_disabled_rules(vec![rule.into()]),
-                &[],
+                off_diagnostics.as_slice(),
             ),
             (
                 "n8n-projection",
