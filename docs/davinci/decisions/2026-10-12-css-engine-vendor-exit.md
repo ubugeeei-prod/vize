@@ -138,7 +138,17 @@ collision; the same `css_modules` collision yields release AnyValue type panics.
 The narrow successor changes only four internal group/require references,
 preserving all public flags, typed fields and output algorithms. Complete original
 CLI source is frozen and hash-authenticated in packaged `cli-original.rs.txt`;
-all 27 original test bodies remain unchanged. Both full red logs are retained.
+the group-only repair preserved all27 test bodies. Both full red logs are retained.
+
+The distinct target/browserslist negative in actual514release also fails only the
+original capitalized `The argument` constraint against Clap4's lowercase output.
+Its finite successor changes that single literal byte and preserves the entire
+old27-test file in packaged `cli-original-tests.rs.txt`, authenticated against
+the original import. Official Clap4 formatter and the complete retained514
+stderr corroborate the change; all other original expectations and the27-case
+denominator remain intact. A separate authored contract requires full current
+exit2, empty stdout and literal complete stderr bytes. No generic normalization
+or candidate-wide expected-output recapture substitutes for any original case.
 
 The same source's normal JS format gate rejects eleven immutable upstream
 metadata/manifests/config/test CSS files plus three owned TOMLs. Owned TOMLs are

@@ -104,6 +104,11 @@ name = "vize_engine_exit"
 path = "tests/vize_engine_exit.rs"
 
 [[test]]
+name = "vize_cli_conflict_contract"
+path = "tests/vize_cli_conflict_contract.rs"
+required-features = ["cli"]
+
+[[test]]
 name = "vize_source_map_contract"
 path = "tests/vize_source_map_contract.rs"
 required-features = ["bundler", "sourcemap"]

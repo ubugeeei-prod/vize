@@ -17,6 +17,8 @@ const modified: Record<string, string | null> = {
   "lightningcss/src/selector.rs":
     "ffd28f41d263e9590c7b63633ed474a607449cdc967f25945be79c16ff5e1ecf",
   "lightningcss/src/main.rs": "c3b10422b3da697e0264ea8a183572384ef4e7501f43108b43ccb3aa4e802b47",
+  "lightningcss/tests/cli_integration_tests.rs":
+    "7c8f024acfe2a67d1fd6850e51db5aa8aade41585604a1d398332073ab5bac1e",
   "parcel_sourcemap/Cargo.toml": null,
   "parcel_sourcemap/src/lib.rs": "64dfcee3713a976f2f504b3ddc8ac1d5152698b07f5b69098c74f30677a065a6",
   "parcel_sourcemap/src/sourcemap_error.rs":
@@ -42,6 +44,18 @@ for (const [name, count, archive] of [
       ),
       cli.sha256,
       "whole original CLI source remains frozen",
+    );
+    const tests = manifest.files.find(
+      (row: { path: string }) => row.path === "tests/cli_integration_tests.rs",
+    );
+    assert.equal(
+      sha256(
+        fs.readFileSync(
+          path.join(root, "vendor/lightningcss/tests/vize_fixtures/cli-original-tests.rs.txt"),
+        ),
+      ),
+      tests.sha256,
+      "whole original CLI test authority remains frozen",
     );
   }
   assert.deepEqual(

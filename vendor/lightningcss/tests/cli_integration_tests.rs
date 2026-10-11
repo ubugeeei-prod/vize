@@ -501,7 +501,7 @@ fn browserslist_targets_exclusive() -> Result<(), Box<dyn std::error::Error>> {
   cmd.arg("--targets").arg("defaults");
   cmd.arg("--browserslist");
   cmd.assert().failure().stderr(predicate::str::contains(indoc! {r#"
-    error: The argument '--targets <TARGETS>' cannot be used with '--browserslist'
+    error: the argument '--targets <TARGETS>' cannot be used with '--browserslist'
   "#}));
 
   Ok(())

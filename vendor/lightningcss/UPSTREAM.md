@@ -48,8 +48,14 @@ The following changes are deliberately separate from that import:
 - After actual Clap4 failures, four internal CLI group references use distinct
   group IDs while preserving flag/field names and output algorithms. The complete
   original CLI source stays frozen in `tests/vize_fixtures/cli-original.rs.txt`
-  and authenticated against its original import hash; all27 original tests stay
-  unchanged. Actual all-features replay is still mandatory.
+  and authenticated against its original import hash. That group-only repair
+  preserved all27 test bodies; the distinct finite successor is recorded below.
+- The one original negative target/browserslist conflict prefix has an explicit
+  Clap4 casing successor (`The` to `the`), corroborated by its actual514 release
+  failure and official formatter. The entire original27-test authority remains
+  frozen as `cli-original-tests.rs.txt`; all other expectations stay byte-exact.
+  A separate authored law additionally asserts the complete current exit2,
+  stdout and stderr bytes. No runtime or oracle-wide normalization is applied.
 
 Repository `Cargo.toml.orig` remains the original archive manifest. Its byte-exact
 copy `UPSTREAM-Cargo.toml` ships in the package because Cargo reserves and
