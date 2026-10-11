@@ -70,9 +70,26 @@ The shared observer insertion and adjacent canonical rows require reviewed
 composition with #8667, so existing #8673 becomes its GitHub native Stack
 child. Both complete original Rust test modules remain byte-identical; runtime
 code uses the automatic three-way merge. The frozen project inventories and
-original complete native packet remain unchanged. Fresh composed source
-Actions and a new native packet are required. The ready parent can enter the
-protected queue as a contiguous prefix without waiting for this child.
-Protected suites, actual merge, all four
+original complete native packet remain unchanged. The original composition
+required fresh source Actions and a new native packet. The ready parent could
+enter the protected queue without waiting for this child.
+
+#8667 actually merged at `2026-10-11T16:49:36Z` as
+`0421bce9025f1d533876fa74d0cc987b889f6f07`. Its exact protected Check
+`38155675612` and all four consumer workflows succeeded. Composed child
+`c789dab6c55e2dda802864caf0a57cc09167ede1` separately passed full source Check
+`38153109076`; tooling shard 2, job `114511239433`, retained a new native packet
+with SHA-256 `785e5145578cd1440b13504ef19c16a3a7c3f339ff64fcbf51aae117d86b0815`,
+producer `8acfee3bab0ced9497e58910b0dd5b37c9ce84a6` and binary SHA-256
+`d2b0204e203ec6751d8b804bc9bd5be6b820cc02422d5ad3012aea4c83774608`.
+Its complete before/after stdout, parsed reports, source scope and coverage
+equal the original child packet; producer and binary identity are distinct.
+
+The child is replayed onto the actual parent merge. All 13 runtime, test and
+fixture evidence blobs remain byte-identical to the composed child. The
+canonical resolution preserves all 350 fresh-main rows and appends only the
+owned row 325. The companion records these authorities; a fresh successor
+must repeat source Actions and native packet custody before queue admission.
+Child protected suites, actual merge, all four
 full original-project runs, the remaining Matrix failures and public release
 acceptance remain unfinished. This observer repair claims no measured gain.
