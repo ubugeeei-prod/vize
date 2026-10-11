@@ -8,6 +8,8 @@ number/string mismatch while keeping the original malformed setup expression.
 `valid-commented-import.vue.txt` retains a valid import followed by a block
 comment and newline before a genuine later expression error; its native
 boundary variants must not create additional import or terminator errors.
+`valid-quoted-import.vue.txt` checks a quoted imported binding name against the
+actual separate Vue module source, preserving only its later expression error.
 
 The internal Canon filter `vue_codegen::malformed_setup_tests::` preserves
 complete before/after descriptor, Croquis, generated code and mapping packets.

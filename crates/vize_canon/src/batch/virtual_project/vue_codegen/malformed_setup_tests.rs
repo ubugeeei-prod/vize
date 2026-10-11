@@ -248,6 +248,10 @@ fn commented_imports() -> [&'static str; 6] {
     ]
 }
 
+fn quoted_import_source() -> std::string::String {
+    std::fs::read_to_string(Path::new(CORPUS).join("valid-quoted-import.vue.txt")).unwrap()
+}
+
 #[test]
 fn valid_commented_imports_remain_module_declarations_when_a_later_setup_parse_panics() {
     for tail in commented_imports() {
@@ -271,4 +275,16 @@ fn valid_commented_imports_remain_module_declarations_when_a_later_setup_parse_p
         );
         assert!(!after.code.contains("'vue'export"), "{packet}");
     }
+    let source = quoted_import_source();
+    let (_, after, packet) = project(&source);
+    assert_eq!(packet["analyzedSetup"], false, "{packet}");
+    assert_authored_maps(&source, &after);
+    assert!(
+        after
+            .code
+            .find("import { 'ref' as ref } from 'vue'")
+            .unwrap()
+            < after.code.find("function __setup()").unwrap(),
+        "{packet}"
+    );
 }

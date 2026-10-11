@@ -8,6 +8,8 @@
 //! special layout. A lone setup block without a recovered AST retains that
 //! same section at module scope and reports its actual following setup token.
 
+mod lone;
+
 /// A setup import section glued to the statement that follows it, in offsets
 /// of the merged script.
 pub(super) struct GluedImportSection {
@@ -43,11 +45,18 @@ impl GluedImportSection {
     /// The same unterminated section in an actual, lone `<script setup>`.
     pub(super) fn find_lone_setup(script: &str) -> Option<Self> {
         let section_start = skip_trivia(script, 0);
-        let section_end = glued_section_end(script, section_start)?;
-        let (token_start, terminated) = lone_import_tail(script, section_end)?;
-        if terminated || script.get(token_start..)?.starts_with("import") {
-            return None;
-        }
+        let mut cursor = section_start;
+        let token_start = loop {
+            let section_end = cursor + lone::module_specifier_end(script.get(cursor..)?)?;
+            let (next, terminated) = lone_import_tail(script, section_end)?;
+            if !terminated {
+                if script.get(next..)?.starts_with("import") {
+                    return None;
+                }
+                break next;
+            }
+            cursor = skip_trivia(script, next);
+        };
         let token_len = token_len(script.get(token_start..)?)?;
         Some(Self {
             span: (
@@ -75,7 +84,7 @@ pub(super) fn terminated_lone_import_prefix(source: &str) -> Option<&str> {
         if !after.starts_with(|c: char| c.is_whitespace() || matches!(c, '{' | '*' | '\'' | '"')) {
             return prefix_end.and_then(|end| source.get(..end));
         }
-        let end = cursor + module_specifier_end(rest)?;
+        let end = cursor + lone::module_specifier_end(rest)?;
         let (next, terminated) = lone_import_tail(source, end)?;
         if !terminated {
             return prefix_end.and_then(|end| source.get(..end));
@@ -272,6 +281,7 @@ mod tests {
             "import { ref } from 'vue'/*\ncomment*/const broken = ;",
             "import { ref } from 'vue'/*comment*/\u{2028}const broken = ;",
             "import { ref } from 'vue'/*\u{2029}comment*/const broken = ;",
+            "import { 'ref' as ref } from 'vue';\nconst broken = ;",
             "import('vue')",
             "import.meta.env",
             "ref('');",

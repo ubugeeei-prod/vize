@@ -38,6 +38,10 @@ that returned AST remains the authority for module spans. No parser invocation
 is added. Whole-SFC/native controls require only the genuine later TS1109 for
 six valid comment boundaries, and preserve the real TS1005 for a same-line
 unterminated import. The original two-block finder remains unchanged. The
+new lone scanner also distinguishes quoted imported names from the genuine
+module source: `import { 'ref' as ref } from 'vue'` is a valid terminated import,
+not a missing terminator at `as`. Its complete corpus SFC and same-config native
+vector retain only the genuine later expression error.
 first full qualifier 38122497358 is also retained as failed, with no green credit.
 Its original full App row passed all 15 negative diagnostic controls. Its
 same-config native LSP #5071 before vector already contained exactly the two

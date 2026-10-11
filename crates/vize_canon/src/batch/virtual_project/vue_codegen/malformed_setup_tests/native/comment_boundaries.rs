@@ -5,16 +5,16 @@ use super::{diagnose, install, json, native, project, retain};
 #[test]
 fn commented_import_boundaries_preserve_only_genuine_authored_syntax_errors() {
     let Some(native) = native() else { return };
-    for (index, tail) in super::super::commented_imports()
+    let mut inputs: Vec<_> = super::super::commented_imports()
         .into_iter()
         .chain(["/*comment*/"])
-        .enumerate()
-    {
+        .map(|tail| std::string::String::from(vize_carton::cstr!(
+            "<script setup lang=\"ts\">\nimport {{ ref }} from 'vue'{tail}ref('');\nconst broken = ;\nvoid broken;\n</script>\n"
+        ).as_str())).collect();
+    inputs.push(super::super::quoted_import_source());
+    for (index, source) in inputs.into_iter().enumerate() {
         let temporary = tempfile::tempdir().unwrap();
         let root = install(temporary.path(), "5071");
-        let source = std::string::String::from(vize_carton::cstr!(
-            "<script setup lang=\"ts\">\nimport {{ ref }} from 'vue'{tail}ref('');\nconst broken = ;\nvoid broken;\n</script>\n"
-        ).as_str());
         let (before, after, projection) = project(&source);
         let projection_phase = vize_carton::cstr!("comment-boundary-{index}-projection");
         retain(&root, &projection_phase, &projection);
