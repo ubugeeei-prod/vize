@@ -126,7 +126,8 @@ fn static_class_never_authorizes_nul_ordinary_cr_style_duplicates_or_dynamic_hea
         if row["requiredRefusal"] == "UnsupportedChild" {
             // Independently authored single-template input coordinates, not an
             // error-derived span or a successful L3 admission for refused L2.
-            assert!(source.starts_with("<template>") && source.ends_with("</template>"));
+            assert_eq!(&source[..10], "<template>");
+            assert_eq!(&source[source.len() - 11..], "</template>");
             let span = Span::new(10, u32::try_from(source.len()).unwrap() - 11);
             assert_eq!(owner.selected().component().block().span(), span);
             assert_eq!(

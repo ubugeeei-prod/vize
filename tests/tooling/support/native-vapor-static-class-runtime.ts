@@ -42,7 +42,7 @@ async function mount(loaded: any, configuration: any, html: string | null = null
       ? vue.createApp
       : vue.createSSRApp;
   const app = create(component, configuration.props);
-  assert.equal(app._component, component);
+  assert.deepEqual(app._component, component);
   assert.equal(app._component.render, component.render);
   const diagnostics: string[] = [];
   app.config.warnHandler = (message: string) => diagnostics.push(message);
@@ -79,7 +79,7 @@ async function mount(loaded: any, configuration: any, html: string | null = null
 async function render(loaded: any, configuration: any) {
   loaded.component.inheritAttrs = configuration.inheritAttrs;
   const app = loaded.runtime.createSSRApp(loaded.component, configuration.props);
-  assert.equal(app._component, loaded.component);
+  assert.deepEqual(app._component, loaded.component);
   assert.equal(app._component.ssrRender, loaded.component.ssrRender);
   const diagnostics: string[] = [];
   app.config.warnHandler = (message: string) => diagnostics.push(message);

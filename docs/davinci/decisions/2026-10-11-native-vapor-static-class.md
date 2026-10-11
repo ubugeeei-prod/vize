@@ -43,10 +43,10 @@ compares real component trees to pinned official DOM/SSR in default, fallthrough
 class/title/data attrs, and `inheritAttrs: false` contexts, with clone, hydration,
 unmount, complete maps/links and diagnostics. Original gates are retained in full.
 
-No local compiler or runtime has executed this source yet. Actions must supply
-fresh full checks, the unchanged separate 104 instruction population, native
-capture and protected-queue qualification. No instruction ceiling or allocation
-claim changes. This completes neither Vapor SSR nor the broader compiler issues.
+Actions supply fresh full checks, the unchanged separate 104 instruction
+population, native capture and protected-queue qualification. No instruction
+ceiling or allocation claim changes. This completes neither Vapor SSR nor the
+broader compiler issues.
 
 ## First hosted supplemental correction
 
@@ -95,3 +95,24 @@ command law is corrected from its stale 12 / three count to the actual existing
 Fresh source/full/native, supplemental real runtime, separate 104 instruction
 and protected-queue checks remain required. No cap, provider or production
 behavior beyond the named static-class transition changes.
+
+## Restored Stack qualification
+
+The original commit and all 13 authored corrective files were copied into a
+fresh fourth layer of native Stack #8590; the original worktree and staged index
+remain untouched. Exact public source `ab77d5c5` passed its source-built full
+533 UI controls in run `38115924347` and the separate 104 instruction population
+in run `38115885920`. Remaining original runtime and SSR failure rows retain
+their exact authored oracles and budgets; rendering all 533 is not a claim of
+complete markup correctness.
+
+Normal source checks then exposed two supplemental assertion defects. Official
+Vue creates a shallow copy of an object component, so application ownership is
+checked against the complete component value while its original `render` and
+`ssrRender` function references must remain identical. Complete DOM trees,
+clone separation, SSR-node retention, diagnostics and unmount checks remain
+mandatory. The single-template boundary checks now compare both exact wrapper
+byte slices instead of partial matches; their authored span and refusal-kind
+checks remain unchanged. No production source, input, expected output, original
+archive, reviewed packet, population or budget changes accompany these repairs.
+Fresh exact-head original supplemental and normal checks remain required.
