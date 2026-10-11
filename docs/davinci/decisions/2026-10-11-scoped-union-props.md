@@ -65,11 +65,54 @@ That is genuine negative evidence that scoped metadata alone does not fix the
 product, and requires the text-resolver correction above. No fixture, golden,
 warning/error assertion, ledger or budget is changed in response.
 
-The official-only local rehearsal passes all eighteen official cells. That
-validates the golden contract; it is not evidence that the source-built native
-fix passes. Exact before/after native Actions, the complete original 533 UI
-controls, the original rc.9 negative oracle, protected checks, actual merge and
-release acceptance remain required. Failure ledgers may remove only entries
-proven to pass on that exact source; every remaining reason, fixture and budget
-is preserved. The five other previously recorded SSR markup assertions require
-their separate provider/browser qualification and receive no waiver here.
+The complete actual native source run
+[38112877041](https://github.com/ubugeeei-prod/vize/actions/runs/38112877041)
+retains the unchanged failing-before golden at source
+`2eed646c3293d83bf14d005c02b068e81909867f`, then passes all thirty-six native and
+official cells at corrected source `6a279bc77f531c95abb58ee5b90c634354ef5f3f`.
+Rust formatting and all 28 scoped-world, 9 text-resolution and 32 runtime-prop
+controls pass. Standard and production UI tests each pass all 3,833 tests in
+497 files. Every original source/product step succeeds; the final observer
+fails because it incorrectly expected unsupported rc.9 mount to improve too.
+
+The corrected read-only receipt
+[38113703526](https://github.com/ubugeeei-prod/vize/actions/runs/38113703526)
+succeeds over that immutable run's complete raw outputs. It verifies every
+original product/source step's actual success and rebuilds the exact corrected
+source, requiring the evaluator's native binding SHA to equal the original
+corrected binding. The before binary is
+`de9d8c41b04db0d100afafe62df91394e33573bfde2cd93fbcf0cec776d716bb`;
+the corrected and evaluator binaries are
+`b9c5f92d0dc93571431bdd2bfb7f4691d73836c7d9e0054c9e0782750bdd38fe`.
+All 533 original fixtures, assertions, source files and failure-ledger bytes
+remain in the before/after run. All three plain-control compiler results remain
+byte-identical. Every other client problem record and all other 531 complete
+SSR HTML outputs remain byte-identical for both provider tracks.
+
+| Original 533-fixture lane | Before passing rows | After passing rows | Proven entries removed |
+| --- | ---: | ---: | ---: |
+| Supported rc.11 mount | 508 | 510 | 2 |
+| Supported rc.11 hydrate | 485 | 487 | 2 |
+| Reference rc.9 mount | 471 | 471 | 0 |
+| Reference rc.9 hydrate | 369 | 371 | 2 |
+
+Only the corresponding `icon`/`icon-button` entries ratchet down: supported
+mount/hydrate now retain 23/46 known entries; reference mount/hydrate retain
+60/156. Every other entry and reason is unchanged. The unsupported rc.9 mount
+SVG namespace assertions remain failures, including the nested Icon in
+IconButton, so both mount records are preserved. The four original ProgressBar
+CSS-property exceptions remain required rc.9 negative evidence and never enter
+a failure ledger; all four pass on the supported matching rc.11 providers.
+
+Applying every original authored SSR markup assertion to the complete raw
+outputs improves supported correctness from 526/533 to 528/533 and reference
+correctness from 530/533 to 532/533. Rendering all 533 successfully is a separate
+measurement. The five other supported markup gaps recorded in the original
+runtime decision remain unresolved and receive no assertion change or waiver.
+The [durable source receipt](../evidence/2026-10-11-scoped-union-props-source.json)
+retains whole Icon/IconButton SFCs, their original complete fixture module,
+original assertion functions, complete before/after HTML, native bindings,
+all lane counts, exact ledger removals and the unchanged-control output hashes.
+The full source artifact retains all nine emitted native modules and every
+original raw fixture output. Fresh current-PR Actions, protected merge and
+released consumer acceptance remain delivery gates.

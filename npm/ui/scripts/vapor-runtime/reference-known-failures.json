@@ -113,8 +113,6 @@
     "hotspot-content": "vapor-codegen: provide/inject context lost after an earlier render failure",
     "hotspot-image": "vapor-codegen: provide/inject context lost after an earlier render failure",
     "hotspot-marker": "vapor-codegen: provide/inject context lost after an earlier render failure",
-    "icon": "unclassified: AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:",
-    "icon-button": "unclassified: AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:",
     "image-compare": "unclassified: TypeError: Cannot read properties of undefined (reading 'nodes')",
     "image-compare-after": "unclassified: TypeError: Cannot read properties of undefined (reading 'nodes')",
     "image-compare-before": "unclassified: TypeError: Cannot read properties of undefined (reading 'nodes')",
