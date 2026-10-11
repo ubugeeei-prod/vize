@@ -1,0 +1,154 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import { createHash } from "node:crypto";
+import { createRequire } from "node:module";
+import { test } from "node:test";
+
+const root = new URL("../../", import.meta.url);
+const read = (file) => fs.readFileSync(new URL(file, root), "utf8");
+const corpus = JSON.parse(read("tests/tooling/fixtures/vuefes-failure-sidecar/corpus.json"));
+const original = read("tests/tooling/fixtures/vuefes-failure-sidecar/original-vuefes.spec.ts.txt");
+const current = read("tests/app/vrt/vuefes.spec.ts");
+const { parse } = createRequire(new URL("../package.json", import.meta.url))("@babel/parser");
+const ast = (source) => parse(source, { sourceType: "module", plugins: ["typescript"] }).program;
+const originalAst = ast(original);
+const currentAst = ast(current);
+const callNodes = (node, predicate) => {
+  if (!node || typeof node !== "object") return [];
+  return [
+    ...(predicate(node) ? [node] : []),
+    ...Object.values(node).flatMap((value) =>
+      Array.isArray(value)
+        ? value.flatMap((item) => callNodes(item, predicate))
+        : callNodes(value, predicate),
+    ),
+  ];
+};
+const semantic = (node) =>
+  JSON.parse(
+    JSON.stringify(node, (key, value) =>
+      [
+        "start",
+        "end",
+        "loc",
+        "extra",
+        "leadingComments",
+        "trailingComments",
+        "innerComments",
+      ].includes(key)
+        ? undefined
+        : value,
+    ),
+  );
+const calls = (tree, name) =>
+  callNodes(
+    tree,
+    (node) =>
+      node.type === "CallExpression" &&
+      node.callee.type === "Identifier" &&
+      node.callee.name === name,
+  );
+
+void test("original entire corpus witness and protected full38 bodies authenticate without a threshold/route exemption", () => {
+  assert.equal(corpus.source, "605429c660b328bb03bec5bbfef15961e59fcaf0");
+  for (const [file, identity] of Object.entries(corpus.files)) {
+    const bytes = file.endsWith("vuefes.spec.ts") ? Buffer.from(original) : Buffer.from(read(file));
+    assert.equal(bytes.length, identity.bytes, file);
+    assert.equal(createHash("sha256").update(bytes).digest("hex"), identity.sha256, file);
+  }
+  const originalConstants = original.slice(
+    original.indexOf("const __dirname"),
+    original.indexOf("test.describe("),
+  );
+  const currentConstants = current.slice(
+    current.indexOf("const __dirname"),
+    current.indexOf("test.describe("),
+  );
+  assert.equal(currentConstants, originalConstants);
+  assert.equal(
+    current.slice(current.indexOf("async function setupPage")),
+    original.slice(original.indexOf("async function setupPage")),
+  );
+  for (const name of ["setupPage", "openRoute", "prepareVuefesPage", "expectVisualParity"]) {
+    assert.deepEqual(
+      calls(currentAst, name).map(semantic),
+      calls(originalAst, name).map(semantic),
+      name,
+    );
+  }
+  const contexts = (tree) =>
+    callNodes(
+      tree,
+      (node) =>
+        node.type === "CallExpression" &&
+        node.callee.type === "MemberExpression" &&
+        node.callee.property.name === "newContext",
+    );
+  assert.deepEqual(contexts(currentAst).map(semantic), contexts(originalAst).map(semantic));
+  assert.equal(current.includes("await context.close();"), true);
+});
+
+void test("the only awaited observer follows the original screenshot matcher and identical original error rethrow", () => {
+  const matcher = calls(currentAst, "expectVisualParity");
+  assert.equal(matcher.length, 1);
+  const catches = callNodes(currentAst, (node) => node.type === "CatchClause");
+  const matcherCatch = catches.find((node) =>
+    current.slice(node.start, node.end).includes("sidecar?.failed(error)"),
+  );
+  assert(matcherCatch);
+  assert.equal(matcherCatch.param.name, "error");
+  const rethrows = callNodes(matcherCatch, (node) => node.type === "ThrowStatement");
+  assert.equal(rethrows.length, 1);
+  assert.equal(rethrows[0].argument.name, "error");
+  const installation = calls(currentAst, "createVuefesFailureSidecar");
+  assert.equal(installation.length, 1);
+  assert(installation[0].start < calls(currentAst, "setupPage")[0].start);
+  const observers = ["sidecar", "transport", "cssom", "json"]
+    .map((name) => read(`tests/_helpers/vuefes-failure-${name}.mjs`))
+    .join("\n");
+  assert.doesNotMatch(
+    observers,
+    /\.screenshot\(|\.goto\(|\.reload\(|\.route\(|\.addStyleTag\(|\.waitForTimeout\(|\bfetch\(/,
+  );
+  assert.doesNotMatch(
+    observers,
+    /\.setTimeout\(|testInfo\.duration|TYPECHECK_DIVERGENCE_MODE|VIZE_VUEFES_VRT_OUTPUT_DIR/,
+  );
+  assert.match(observers, /readCiRequest\(nativeDir, ciSourceIdentity\(nativeDir\)\)/);
+  assert.match(observers, /browser-decoded response bytes, not compressed wire bytes/);
+});
+
+void test("browser controls reuse the existing post-failure qualifier step and retain both failure statuses", () => {
+  const { parse: parseYaml } = createRequire(new URL("../../package.json", import.meta.url))(
+    "yaml",
+  );
+  const workflow = parseYaml(read(".github/workflows/vuefes-ssr-style-dependencies.yml"));
+  const steps = workflow.jobs["vuefes-ssr-style-dependencies"].steps;
+  const row = steps.find((step) => step.name === "Original full VueFes VRT, with one native build");
+  assert.equal(row.uses, "./.github/actions/app-e2e-row");
+  assert.deepEqual(row.with, {
+    profile: "full",
+    suite: "vrt",
+    shard: "vuefes",
+    task: "test:vrt:vuefes",
+    timeout: "15m",
+    "needs-playwright": "true",
+    "cache-key": "app-e2e-full-vrt-vuefes",
+    "worktree-id": "ci-app-e2e-full-vrt-vuefes",
+    "artifact-stem": "full-vrt-vuefes",
+  });
+  const contracts = steps.find(
+    (step) => step.name === "Native metadata corpus and existing Vite contracts",
+  );
+  assert.equal(contracts.if, "${{ !cancelled() }}");
+  assert.match(
+    contracts.run,
+    /node --test tests\/tooling\/vuefes-failure-\*\.test\.mjs tools\/support\/compat\/vuefes\/passive-failure-sidecar\.browser\.test\.mjs \|\| vuefes_contract_rc=\$\?/,
+  );
+  assert.match(
+    contracts.run,
+    /node npm\/native\/scripts\/test-preparation\.mjs vp run --filter '\.\/npm\/builder\/vite' test:prepared \|\| vuefes_contract_rc=\$\?/,
+  );
+  assert.match(contracts.run, /exit "\$vuefes_contract_rc"/);
+  assert.equal(steps.filter((step) => step.uses === "./.github/actions/app-e2e-row").length, 1);
+});

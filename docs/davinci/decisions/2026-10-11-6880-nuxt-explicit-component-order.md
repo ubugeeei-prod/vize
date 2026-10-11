@@ -133,3 +133,19 @@ The old wrapper silently invokes both controlled process callbacks; the
 corrected wrapper rejects admission before either callback. No native process
 executes in this control. Its regression belongs to the original tooling
 suite and prevents a file-based request from falling back to ordinary mode.
+
+The missing current-app cascade authority is captured only after the original
+dev-home PNG matcher fails, before its original context teardown. Passive
+listeners retain original document/script/CSS responses, duplicate headers,
+decoded body bytes and explicit redirect, failed or pending states. Ordered
+CSSOM includes imports, layers, media, adopted sheets, all heading computed
+styles and their ancestor context. Its timestamps describe later state,
+not atomic screenshot-time authority. No request is intercepted or fetched.
+
+The sidecar keeps the original error and all 38 cases, screenshots, budgets
+and preparation intact. A five-second diagnostic guard and 30-second reserve
+use an explicitly approximate callback start, excluding framework fixture
+setup; no test timeout is extended. Streamed retry-specific packets remain
+incomplete on refused, missing or late evidence. Late promises cannot finalize
+their partial files. This source correction supports one bounded existing
+Actions discovery run; an expected red is no readiness or acceptance credit.

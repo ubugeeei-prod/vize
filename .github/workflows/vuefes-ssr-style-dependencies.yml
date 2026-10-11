@@ -71,7 +71,11 @@ jobs:
         run: node tools/support/compat/vuefes/app-component-order.mjs
       - name: Native metadata corpus and existing Vite contracts
         if: ${{ !cancelled() }}
-        run: node npm/native/scripts/test-preparation.mjs vp run --filter './npm/builder/vite' test:prepared
+        run: |
+          vuefes_contract_rc=0
+          node --test tests/tooling/vuefes-failure-*.test.mjs tools/support/compat/vuefes/passive-failure-sidecar.browser.test.mjs || vuefes_contract_rc=$?
+          node npm/native/scripts/test-preparation.mjs vp run --filter './npm/builder/vite' test:prepared || vuefes_contract_rc=$?
+          exit "$vuefes_contract_rc"
       - name: Complete official/native SSR, DOM and hydration differential
         if: ${{ !cancelled() }}
         run: node tools/support/compat/vuefes/ssr-style-dependencies.mjs
