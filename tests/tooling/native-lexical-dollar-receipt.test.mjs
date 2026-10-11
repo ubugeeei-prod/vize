@@ -7,7 +7,7 @@ import { validateLexicalDollarPackets } from "../../tools/support/compat/github/
 import { createPacketFixture, editJson, write } from "./support/native-lexical-dollar-fixture.mjs";
 
 function fixtureTest(name, body) {
-  test(name, () => {
+  void test(name, () => {
     const fixture = createPacketFixture();
     try {
       assert.doesNotThrow(() => validateLexicalDollarPackets(fixture.root));

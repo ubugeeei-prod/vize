@@ -207,7 +207,10 @@ export function validateMetadata(output) {
   const manifest = read(
     "source/tests/performance/support/warm-type-backed-lexical-dollar-manifest.json",
   );
-  assert.deepEqual(metadata.copied.map((entry) => entry.file).sort(), sourcePaths(manifest).sort());
+  assert.deepEqual(
+    metadata.copied.map((entry) => entry.file).sort((a, b) => a.localeCompare(b)),
+    sourcePaths(manifest).sort((a, b) => a.localeCompare(b)),
+  );
   for (const name of helperPaths)
     assert.equal(
       metadata.copied.find((entry) => entry.file === name).sha256,
@@ -250,7 +253,10 @@ export function validateMetadata(output) {
   );
   assert.equal(artifact.profile.opt_level, "3");
   assert.equal(artifact.profile.debug_assertions, false);
-  assert.deepEqual([...artifact.features].sort(), ["default", "native"]);
+  assert.deepEqual(
+    [...artifact.features].sort((a, b) => a.localeCompare(b)),
+    ["default", "native"],
+  );
   assert.deepEqual(
     metadata.buildTools.map((item) => item.tool),
     ["cargo", "rustc"],
