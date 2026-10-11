@@ -1,0 +1,18 @@
+[
+  { "left": [10, 20], "right": [15, 15], "intersects": false },
+  { "left": [15, 15], "right": [10, 20], "intersects": false },
+  { "left": [10, 20], "right": [16, 14], "intersects": false },
+  { "left": [16, 14], "right": [10, 20], "intersects": false },
+  { "left": [0, 0], "right": [0, 1], "intersects": false },
+  { "left": [0, 1], "right": [0, 0], "intersects": false },
+  { "left": [10, 20], "right": [10, 10], "intersects": false },
+  { "left": [10, 20], "right": [20, 20], "intersects": false },
+  { "left": [10, 20], "right": [20, 30], "intersects": false },
+  { "left": [10, 20], "right": [19, 30], "intersects": true },
+  { "left": [10, 20], "right": [10, 20], "intersects": true },
+  { "left": [10, 20], "right": [5, 10], "intersects": false },
+  { "left": [4294967294, 4294967295], "right": [4294967295, 4294967295], "intersects": false },
+  { "left": [4294967295, 4294967294], "right": [0, 4294967295], "intersects": false },
+  { "left": [4294967293, 4294967295], "right": [4294967294, 4294967295], "intersects": true },
+  { "left": [0, 4294967295], "right": [4294967294, 4294967295], "intersects": true }
+]

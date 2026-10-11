@@ -58,7 +58,7 @@ impl SourceRange {
     /// Check if this range intersects with another range.
     #[inline]
     pub const fn intersects(&self, other: &Self) -> bool {
-        self.start < other.end && other.start < self.end
+        !self.is_empty() && !other.is_empty() && self.start < other.end && other.start < self.end
     }
 
     /// Get the union of two ranges (smallest range containing both).
