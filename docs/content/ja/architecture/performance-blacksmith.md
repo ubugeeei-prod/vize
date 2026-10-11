@@ -46,7 +46,7 @@ README と全言語のページは、同じコミット済み成果物から生�
 | Prettier             | <code>3.8.3</code>                   | <code>a7a78ad15344be4f14f24832a8c5fa5918bec4339b8d1d0903a5167c34ecb428</code> |
 | Node.js              | <code>v24.14.0</code>                | n/a                                                                           |
 
-Backend: native TypeScript engine ready at <code>/home/runner/&#95;work/vize/vize/node&#95;modules/@typescript/typescript-linux-x64/lib/tsc</code>. Planted-diagnostic gating for the type-check rows lives in tools/benchmarks/scripts/check-gate.mjs (.github/workflows/check-bench.yml).
+バックエンド: ネイティブ TypeScript エンジンを <code>/home/runner/&#95;work/vize/vize/node&#95;modules/@typescript/typescript-linux-x64/lib/tsc</code> で利用できます。型検査の計測では、意図的に追加した診断が検出されることを tools/benchmarks/scripts/check-gate.mjs（.github/workflows/check-bench.yml）で検証します。
 
 </details>
 

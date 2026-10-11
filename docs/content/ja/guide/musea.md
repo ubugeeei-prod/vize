@@ -16,11 +16,9 @@ Musea は、自分のコンポーネントをギャラリーで一覧し、状�
 | props とデザイントークンを確認する             | ギャラリーの props パレットとトークン画面     |
 | 見た目の変更やアクセシビリティの問題を検出する | CI での `musea-vrt`                           |
 
-- `vize_musea` は、`*.art.vue` の解析、ドキュメントの生成、小道具パレットの構築のための Rust コアです。
-  バリエーションの自動生成と VRT データの準備。
-- `@vizejs/vite-plugin-musea` は、現在推奨されるギャラリーおよび開発サーバーのワークフローです。
-- `musea-vrt` は、視覚的な回帰スナップショット、監査、承認、クリーンアップ、および
-  生成されたアートファイル。
+- `vize_musea` は Rust のコアです。`*.art.vue` の解析、ドキュメントと Props パレットの生成、バリエーションの自動生成、VRT データの準備を行います。
+- `@vizejs/vite-plugin-musea` は、現在推奨するギャラリーと開発サーバーの利用方法です。
+- `musea-vrt` は、見た目の回帰テスト、アクセシビリティ監査、スナップショットの承認・整理、art ファイルの生成に使います。
 
 ## 概要
 
@@ -88,8 +86,7 @@ CLI ラッパー、静的ホスト、テストの要件は [Musea のホステ�
 複数のツールで既定値を共有したい場合は、共有設定を使います。
 Vite+ のギャラリーだけなら、上の `vite.config.ts` にオプションをまとめられます。
 
-`musea()` オプションは共有設定をオーバーライドします。安定したプロジェクトのデフォルトを `vize.config.ts` に入れて保持します。
-`vite.config.ts` のプレビュー専用設定。
+`musea()` に渡すオプションは、共有設定より優先されます。複数のツールで使う既定値は `vize.config.ts` に、プレビュー専用の設定は `vite.config.ts` に置いてください。
 
 ```ts
 // vize.config.ts
@@ -106,9 +103,7 @@ export default defineConfig({
 });
 ```
 
-共有構成は現在、`include`、`exclude`、`basePath`、`storybookCompat`、および
-`inlineArt`。 `previewCss`、`previewSetup`、`tokensPath`、`theme`、および `storybookOutDir` を渡す
-`musea()` に直接送信してください。
+共有設定に指定できる項目は、`include`、`exclude`、`basePath`、`storybookCompat`、`inlineArt` です。`previewCss`、`previewSetup`、`tokensPath`、`theme`、`storybookOutDir` は、`musea()` に直接渡してください。
 
 ## アート ファイル
 
@@ -137,24 +132,19 @@ const pressed = ref(false);
 </art>
 ```
 
-`defineArt(source, options)` はコンパイラ マクロです。 Musea がロードするコンポーネントを宣言します。
-加えて、`<art>` に存在していたメタデータも含まれます。次のような相対コンポーネント パス文字列を推奨します。
-`defineArt("./MyButton.vue", { title: "MyButton" })`; Musea はそのコンポーネントを生成されたファイルにインポートします
-ランタイム コードと言語サーバーは、prop とスロット推論に同じソースを使用します。
-ソース文字列は、パス補完、未解決ファイルの診断、ドキュメントのリンク、および
-定義に進みます。
+`defineArt(source, options)` は、Musea が読み込むコンポーネントと、そのメタデータを宣言するコンパイラマクロです。メタデータは、従来 `<art>` に書いていた項目です。
+
+コンポーネントは `defineArt("./MyButton.vue", { title: "MyButton" })` のように相対パスの文字列で指定することを推奨します。Musea は生成する実行時コードからそのコンポーネントをインポートし、言語サーバーも同じソースから Props とスロットを推論します。このパスは、パスの補完、見つからないファイルの診断、ドキュメントリンク、定義への移動にも使います。
 
 render 関数で書いたコンポーネントには、`.ts`、`.tsx`、`.js`、`.jsx` ファイルも指定できます。
 例: `defineArt("./MyButton.ts", { title: "MyButton" })`。Musea は default export を読み込み、
 静的に宣言された runtime `props` と `emits` を分析画面と props パネルに表示します。
 
-`<art title="..." component="...">` は互換性のために引き続き機能し、明示的な `<art>` 属性も機能します
-両方が存在する場合、`defineArt` メタデータをオーバーライドします。
+`<art title="..." component="...">` も互換性のために引き続き使えます。両方を指定した場合、明示的な `<art>` の属性が `defineArt` のメタデータより優先されます。
 
 ### バリアントローカル状態
 
-ルート `<script setup>` 状態は、デフォルトでバリアントごとに分離されます。各バリアントは独自のセットアップを受け取ります
-インスタンスなので、あるバリアントの参照値と計算値が別のバリアントに漏洩することはありません。
+ルートの `<script setup>` の状態は、デフォルトでバリアントごとに分離されます。各バリアントで別々にセットアップを実行するため、あるバリアントの ref や computed の値が、別のバリアントと共有されることはありません。
 
 ```art-vue
 <script setup lang="ts">
@@ -176,8 +166,7 @@ const doubled = computed(() => count.value * 2);
 </art>
 ```
 
-アート ファイルに意図的に 1 つの共有設定が必要な場合にのみ、`<script setup isolate="false">` を使用してください。
-すべてのバリアントにわたるインスタンス:
+すべてのバリアントで1つのセットアップインスタンスを共有したい場合に限り、`<script setup isolate="false">` を使ってください。
 
 ```art-vue
 <script setup lang="ts" isolate="false">
@@ -189,7 +178,9 @@ const sharedCount = ref(0);
 </script>
 ```
 
-### 解剖学
+<span id="解剖学"></span>
+
+### 構成要素
 
 | 要素/マクロ                      | 目的                                           |
 | -------------------------------- | ---------------------------------------------- |
@@ -213,8 +204,7 @@ src/components/Button.vue
 src/components/Button.art.vue
 ```
 
-デザイン システムが多数の横断的なサンプルを所有している場合は、別の `stories` または `art` ディレクトリを使用します。
-または、Nuxt コンポーネントの自動検出がコンポーネント ディレクトリをスキャンするとき:
+多数のコンポーネントを横断する使用例をまとめる場合や、Nuxt がコンポーネントのディレクトリを自動検出する場合は、別の `stories` または `art` ディレクトリに置きます。
 
 ```txt
 src/components/Button.vue
@@ -224,8 +214,7 @@ stories/navigation/Menu.art.vue
 
 ## インラインアート
 
-`inlineArt` が有効な場合、`<art>` ブロックを含む通常の `.vue` ファイルが
-ギャラリー。これは、サンプルが同じファイル内に存在する必要がある小さなコンポーネントに役立ちます。
+`inlineArt` を有効にすると、`<art>` ブロックを含む通常の `.vue` ファイルもギャラリーに表示できます。小さなコンポーネントとその使用例を、同じファイルにまとめたい場合に使えます。
 
 ```ts
 musea({
@@ -241,16 +230,18 @@ musea({
 
 Musea は次のことを実現できます。
 
-- コンポーネントとバリアントのメタデータ
-- プロップパレットの生成
-- トークンビューを設計する
+- コンポーネントとバリアントのメタデータ表示
+- Props パレットの生成
+- デザイントークンの表示
 - アクセシビリティチェック
-- 視覚的な回帰テストヘルパー
-- リクエストに応じてストーリーブック互換の出力
+- 見た目の回帰テストの補助
+- 必要に応じた Storybook 互換形式の出力
 
-## 小道具パレット
+<span id="小道具パレット"></span>
 
-![美術館小道具パネル](/musea-props.png)
+## Props パレット
+
+![Musea の Props パネル](/musea-props.png)
 
 パレット パイプラインは、コンポーネントのメタデータとアート定義からインタラクティブなコントロールを推測できます。
 
@@ -261,10 +252,9 @@ Vue 3.5.41 は、名前が `__proto__` のコンポーネント prop を適用�
 
 ## デザイントークン
 
-![美術館デザイントークン](/musea-tokens.png)
+![Musea のデザイントークン](/musea-tokens.png)
 
-`@vizejs/vite-plugin-musea` は、スタイル ディクショナリと互換性のあるトークン ファイルを取り込み、次の形式で公開できます。
-ギャラリーUI。
+`@vizejs/vite-plugin-musea` は、Style Dictionary と互換性のあるトークンファイルを読み込み、ギャラリーの UI に表示できます。
 
 ```ts
 musea({
@@ -324,17 +314,13 @@ vp dev --host 0.0.0.0
 vp exec musea-vrt --base-url http://localhost:5173 --ci --json
 ```
 
-ワークフロー: スナップショット ディレクトリの下にベースラインをコミットし、スナップショット ディレクトリに対して `musea-vrt --ci --json` を実行します。
-開発サーバーを実行し、`vrt-report.json`/`vrt-report.html` と `snapshots/current` を検査し、
-失敗時は `snapshots/diff`。 `--update` (または選択したバリアントの場合は `approve`) を使用して再実行します。
-意図的な変更を加えず、アート ファイルを削除した後に `clean` を実行して、古いベースラインによってギャップが隠れないようにしてください。
-`--ci` は、視覚的な差分およびプレビュー/キャプチャ エラー (ルートの欠落、ブラウザーの欠落) に対してゼロ以外で終了します
-失敗、セレクタのタイムアウト）;新しいベースラインは `new` として報告されるため、最初に `--update` をローカルで実行します。
+開発サーバーを起動し、`musea-vrt --ci --json` でスナップショットを検証します。ベースラインはスナップショットのディレクトリにコミットしてください。実行後は `vrt-report.json` / `vrt-report.html` と `snapshots/current` を確認し、失敗した場合は `snapshots/diff` も確認します。
 
-サンプル アプリは、Playwright ネイティブの VRT パス (`examples/vite-musea`、経由で実行) も接続します。
-`vp run test:vrt` / `vp run test:vrt:update`)。スナップショットは `e2e/vrt/__snapshots__` に存在します、失敗します
-`e2e/vrt/test-results` のアーティファクト、および `playwright-report` の HTML レポート。 GitHub アクション
-失敗時にそれらをアップロードすることで、レビュー担当者がベースライン、現在、および差分イメージを検査できるようになります。
+意図した変更を確認してから、`--update` で再実行するか、対象のバリアントを `approve` で承認します。art ファイルを削除した場合は `clean` を実行し、古いベースラインが検証の漏れを隠さないようにします。
+
+`--ci` は、画像の差分やプレビュー・撮影のエラー（ルートがない、ブラウザの起動に失敗した、セレクターがタイムアウトした場合）でゼロ以外の終了コードを返します。新しいベースラインは `new` と表示されるため、初回はローカルで `--update` を実行してください。
+
+サンプルアプリ `examples/vite-musea` には、Playwright による VRT もあります。`vp run test:vrt` / `vp run test:vrt:update` で実行できます。スナップショットは `e2e/vrt/__snapshots__`、失敗時の成果物は `e2e/vrt/test-results`、HTML レポートは `playwright-report` に保存します。GitHub Actions は失敗時にこれらをアップロードするため、ベースライン・現在の画像・差分をレビューできます。
 
 ## アート ファイルを生成する
 
@@ -344,12 +330,11 @@ vp exec musea-vrt --base-url http://localhost:5173 --ci --json
 vp exec musea-vrt generate src/components/Button.vue
 ```
 
-生成されたファイルが開始点となります。前に、バリエーション、タイトル、タグ、小道具の範囲を確認してください。
-それをコミットしている。
+生成されたファイルは、使用例を作るための下書きです。コミットする前に、バリエーション、タイトル、タグ、Props の範囲を確認してください。
 
 ## ストーリーブックの出力
 
-Musea アート ファイルを Storybook セットアップにフィードする場合は、Storybook 互換の CSF 生成を有効にします。
+Musea の art ファイルを Storybook で使う場合は、Storybook 互換の CSF 生成を有効にします。
 
 ```ts
 musea({
@@ -360,10 +345,9 @@ musea({
 
 ## CLI ステータス
 
-`vize musea` は Rust CLI に存在しますが、現在推奨されている Musea ワークフローは依然として Vite です
-プラグインのパス。専用のギャラリーのワークフローが安定するまでは、Rust サブコマンドを実験的なものとして扱います。
+Rust CLI にも `vize musea` はありますが、現在推奨するのは Vite プラグインを使う方法です。専用のギャラリー機能が安定するまでは、Rust のサブコマンドは実験的な機能として扱ってください。
 
-Rust サブコマンドは、スターター アート プロジェクトの足場を築くことができます。
+Rust のサブコマンドでは、最初の art プロジェクトを生成できます。
 
 ```bash
 vize musea new

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import type { BrowserContext } from "playwright";
 import { verifyRenderedRulePackets } from "./rule-render-assertions.ts";
+import { verifyJapaneseNonRule } from "./ja-nonrule-render-assertions.ts";
 import { capturePageRender } from "./capture-page-render.ts";
 import type { PageCapture } from "./capture-page-render.ts";
 import {
@@ -68,6 +69,7 @@ export type RouteReceipt = ReturnType<typeof readPageMetrics> & {
   pageErrors: string[];
   japaneseFonts: FontUsage[];
   rulePackets: Awaited<ReturnType<typeof verifyRenderedRulePackets>>;
+  authoredJapanese: Awaited<ReturnType<typeof verifyJapaneseNonRule>>;
 };
 
 export async function verifyNavigationRenderJob(
@@ -166,7 +168,10 @@ export async function verifyNavigationRenderJob(
     await verifySidebarMotion(page, device);
   });
   const codeContrast = await phase("theme-readability", () => verifyThemeReadability(page));
-  const rulePackets = await phase("rule-packets", () => verifyRenderedRulePackets(page, route));
+  const { rulePackets, authoredJapanese } = await phase("rule-packets", async () => ({
+    rulePackets: await verifyRenderedRulePackets(page, route),
+    authoredJapanese: await verifyJapaneseNonRule(page, route),
+  }));
   await phase("command-tabs", () => verifyCommandTabs(page, route));
   await phase("layout", async () => {
     assert(metrics.bodyWidth <= viewport.width + 1, `${route}: page overflows viewport`);
@@ -301,6 +306,7 @@ export async function verifyNavigationRenderJob(
     pageErrors,
     japaneseFonts,
     rulePackets,
+    authoredJapanese,
     codeContrast,
     ...metrics,
   };

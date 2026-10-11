@@ -183,3 +183,39 @@ test("an artifact without provenance says so instead of rendering a blank line",
   ]);
   assert.deepEqual(renderProvenanceLines({}), [UNRECORDED_PROVENANCE_LINE]);
 });
+
+test("Japanese backend provenance preserves escaping, planted-diagnostic scope and unavailable refusal", () => {
+  const data = {
+    versions: READY_VERSIONS,
+    binaries: READY_BINARIES,
+    backend: { ready: true, corsaPath: "/repo/<native>&_runtime" },
+  };
+  const ready = renderProvenanceLines(data, "ja");
+  assert(
+    ready.includes(
+      "バックエンド: ネイティブ TypeScript エンジンを <code>/repo/&lt;native&gt;&amp;&#95;runtime</code> で利用できます。型検査の計測では、意図的に追加した診断が検出されることを tools/benchmarks/scripts/check-gate.mjs（.github/workflows/check-bench.yml）で検証します。",
+    ),
+  );
+  const unavailable = renderProvenanceLines(
+    { ...data, backend: { ready: false, reason: "<missing & unsafe>" } },
+    "ja",
+  );
+  assert(
+    unavailable.includes(
+      "バックエンド: ネイティブ TypeScript エンジンを利用できません（<code>&lt;missing &amp; unsafe&gt;</code>）。この成果物から型検査の計測時間を公開することはできません。",
+    ),
+  );
+  for (const locale of ["fr", "pt-BR", "zh-CN"]) {
+    const text = renderProvenanceLines(data, locale);
+    assert.equal(
+      text.at(-3),
+      renderProvenanceLines(data).at(-3),
+      `${locale}: original backend output`,
+    );
+    assert.deepEqual(
+      text.slice(5, -3),
+      ready.slice(5, -3),
+      `${locale}: complete original version and checksum rows`,
+    );
+  }
+});

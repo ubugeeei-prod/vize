@@ -8,8 +8,8 @@ Vize は、共有 npm パッケージ コマンド、Vite プラグイン、お�
 
 ## 設定ファイル
 
-npm パッケージ コマンドと `@vizejs/vite-plugin` は、このファイルのプロジェクト ルートからこれらのファイルをロードします。
-優先順位:
+npm コマンドと `@vizejs/vite-plugin` は、プロジェクトのルートで次の設定ファイルを探します。
+複数ある場合の優先順位は次のとおりです。
 
 - `vize.config.pkl`
 - `vize.config.ts`
@@ -66,21 +66,15 @@ export default defineConfig(({ command, mode, isSsrBuild }) => ({
 
 ## Vue タイプの解決
 
-Vize は、公開された `vize` パッケージから Vue のタイプ サーフェスを固定しません: `vize check`、言語
-サーバーおよびパッケージのコマンドは、`vue`、`@vue/compiler-sfc`、および関連するアンビエント タイプを解決します。
-プロジェクトが分析されるため、Vue 3 のパッチ、マイナー、プレリリースの選択はそのプロジェクトの制御下に残ります。
-Vize の構築に使用されたバージョンではありません。予測可能な結果を得るには、サポートされている Vue を宣言してください
-ユーザー プロジェクトのバージョン (Vize 内部経由ではない)、`vue`、`@vue/compiler-sfc` を保持し、
-Nuxt などの統合をそこに配置し、プロジェクトのルートまたはポイントから `vize check` を実行します
-ターゲット パッケージの `typeChecker.tsconfig`。 `typeChecker.corsaPath` はチェッカーを選択する場合にのみ使用してください
-バイナリであり、Vue タイプのバージョンを決してオーバーライドしないでください。プロジェクトが複数の Vue 範囲をサポートしている場合は、それぞれをテストします。
-独自のパッケージ マトリックスに組み込まれているため、Vize はハードコーディングされたタイプ パスではなく、アクティブな依存関係グラフに従います。
+`vize check`、言語サーバー、npm コマンドは、解析対象のプロジェクトから `vue`、`@vue/compiler-sfc`、関連するアンビエント型を解決します。Vue の型を、公開された `vize` パッケージや Vize のビルド時のバージョンに固定することはありません。Vue 3 のパッチ版・マイナー版・プレリリース版は、利用するプロジェクト側で選べます。
+
+結果を再現できるよう、利用する Vue のバージョンを自分のプロジェクトに明示し、`vue`、`@vue/compiler-sfc`、Nuxt などの統合を対応するバージョンにそろえてください。`vize check` はプロジェクトのルートから実行するか、`typeChecker.tsconfig` で対象パッケージの設定を指定します。`typeChecker.corsaPath` は型チェッカーの実行ファイルを選ぶ設定であり、Vue の型のバージョンを変更する設定ではありません。
+
+複数の Vue バージョンをサポートするプロジェクトでは、各バージョンをパッケージのテスト行列で検証してください。Vize は固定された型ファイルのパスではなく、その検証環境で有効な依存関係をたどります。
 
 ## 試験的なフラット エントリ
 
-Monorepos では、`entries` を使用して、ルートのデフォルトとパッケージ スコープのオーバーライドを記述することができます。プレーンオブジェクト
-構成は内部で 1 つのエントリに正規化され、配列のエクスポートは `defineConfig` によって受け入れられます。
-ESLint- flat-config スタイルのオーサリング。
+モノレポでは、`entries` でルートの既定値とパッケージごとの上書きを指定できます。通常のオブジェクト形式の設定は、内部で1つのエントリーに正規化されます。`defineConfig` は配列のエクスポートにも対応するため、ESLint の flat config のように設定を書けます。
 
 ```ts
 export default defineConfig({
@@ -206,9 +200,9 @@ export default defineConfig({
 
 ### Lint Rule Options
 
-一部の rule は `linter.ruleOptions` に型付き設定を受け取ります。完全な一覧は
-[ルール オプション](../rules/options.md) を参照してください。重大度は引き続き
-`linter.rules` で設定します。
+一部のルールは、`linter.ruleOptions` で型付きの設定を受け取ります。全項目は
+[ルール オプション](../rules/options.md)を参照してください。診断の重大度は
+引き続き `linter.rules` で指定します。
 
 npm チェック パスには `typeChecker` を使用します。
 
@@ -226,21 +220,13 @@ export default defineConfig({
 });
 ```
 
-`typeChecker.optionsApi` は Vue 3 オプション API テンプレート バインディングを解決します
-(プレーン `<script> export default { ... }` の `data`/`computed`/`methods`/`inject`/`setup`/`props`)。
-標準ビルドで出荷され (`legacy` 機能ではない)、**デフォルトでオン**(`vue-tsc` と一致)、
-また、`<script setup>` 以外のコンポーネントに対してのみ実行されるため、共通パスはゼロコストのままになります。セット
-`optionsApi: false` でオプトアウトします。レガシー Vue 2.7 / Nuxt 2 のサポート (`typeChecker.legacyVue2`、追加)
-Nuxt 2 テンプレート グローバル) は、別の `legacy` ビルド オプトインです。
+`typeChecker.optionsApi` は、Vue 3 の Options API を使ったコンポーネントのテンプレートで、`data`・`computed`・`methods`・`inject`・`setup`・`props` のバインディングを解決します。通常の `<script> export default { ... }` が対象です。標準ビルドに含まれ、`vue-tsc` と同じく **デフォルトで有効**です。`<script setup>` のコンポーネントではこの処理を実行しないため、その経路に追加のコストはかかりません。無効にするには `optionsApi: false` を設定します。
 
-`typeChecker.tsconfig` と `typeChecker.corsaPath` は共有スキーマの一部ですが、
-プロジェクトに基づいた Corsa パスは、今日の Rust CLI サーフェスです。 `corsaPath` は `vize check` によって共有されます。
-タイプ認識の `vize lint` および `vize lsp` (`typeChecker.tsgoPath` は非推奨のエイリアスです)。ランタイム
-スタックは TypeScript 7 の native platform package (`typescript` / `@typescript/typescript-*`) と
-Corsa/corsa-bind API レイヤーです。特定のインストール済み `lib/tsc` 実行ファイルを指定する必要がなければ、
-`corsaPath` は未設定のままにしてください。アンビエント宣言、生成された自動インポート ファイル、パス エイリアス、および Vue を保持します
-プロジェクト `tsconfig.json` 内の `ComponentCustomProperties` 宣言、およびパッケージ スクリプトの使用
-`--tsconfig` または `--corsa-path` オーバーライドの場合は `vize:check:app` など。
+Vue 2.7・Nuxt 2 への対応は、別途 `legacy` ビルドで有効にする機能です。`typeChecker.legacyVue2` によって Nuxt 2 のテンプレートグローバルが追加されます。
+
+`typeChecker.tsconfig` と `typeChecker.corsaPath` は共有スキーマに含まれます。プロジェクトの型情報を使う Corsa の実行経路は、現在の Rust CLI で利用できます。`corsaPath` は `vize check`、型情報を使う `vize lint`、`vize lsp` で共有します。`typeChecker.tsgoPath` は非推奨の別名です。実行時は TypeScript 7 のネイティブプラットフォームパッケージ（`typescript` / `@typescript/typescript-*`）と、Corsa / corsa-bind の API を使います。
+
+インストール済みの特定の `lib/tsc` 実行ファイルを指定する必要がなければ、`corsaPath` は省略してください。アンビエント宣言、自動生成された auto-import ファイル、パスエイリアス、Vue の `ComponentCustomProperties` の宣言は、プロジェクトの `tsconfig.json` に残します。`--tsconfig` や `--corsa-path` をコマンドで上書きする場合は、`vize:check:app` などのパッケージスクリプトにまとめます。
 
 ```json
 {
@@ -250,10 +236,11 @@ Corsa/corsa-bind API レイヤーです。特定のインストール済み `lib
 }
 ```
 
-`typeChecker.servers` は、将来の Corsa ワーカー プール用に予約されています。プロジェクトセッションの直接ランナー
-現在、`1` のみをサポートしています。値を大きくすると、同時実行性を調整する代わりに失敗が早くなります。
+`typeChecker.servers` は、将来の Corsa ワーカープールのために予約された設定です。現在のプロジェクトセッションの直接実行では `1` のみをサポートします。より大きい値を指定すると、並列数が増えるのではなく、エラーになります。
 
-## 美術館のオプション
+<span id="美術館のオプション"></span>
+
+## Musea のオプション
 
 共有構成は現在、ギャラリー ファイル セットとルートをカバーしています。
 
@@ -269,5 +256,4 @@ export default defineConfig({
 });
 ```
 
-`previewCss`、`previewSetup`、`tokensPath`、`theme`、および
-`storybookOutDir` を `vite.config.ts` の `musea()` に直接変換します。
+`previewCss`、`previewSetup`、`tokensPath`、`theme`、`storybookOutDir` など、表示に関する設定は `vite.config.ts` の `musea()` に直接渡してください。

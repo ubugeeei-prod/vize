@@ -11,6 +11,8 @@ const pages = [
   "/guide/vite-plugin",
   "/guide/configuration-reference",
   "/guide/compiler-configuration-reference",
+  "/guide/musea",
+  "/architecture/performance-blacksmith",
   ...ruleRenderRoutes,
 ];
 
