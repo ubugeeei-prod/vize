@@ -48,7 +48,7 @@ compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/compo
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/component.rs	3	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/directives.rs	3	carton	Carton host/compatibility	old	vize_carton	legacy	5
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/dom.rs	3	carton	Carton host/compatibility	old	vize_carton	legacy	2
-compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/events.rs	4	carton	Carton host/compatibility	old	vize_carton	legacy	1
+compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/events.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/for_loop.rs	3	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/generate/operations/for_loop.rs	219	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/if_block.rs	3	carton	Carton host/compatibility	old	vize_carton	legacy	1
