@@ -22,9 +22,11 @@ export async function importConfigModule(configPath) {
     const adapter = join(temporary, "config.mjs");
     // Vite evaluates the adapter's object, leaving the actual default export
     // and its source symbol intact for the existing native config projection.
+    // A literal filesystem path also enters Vite 7's esbuild graph; its
+    // dependency externalizer treats a file: URL as an external module.
     await writeFile(
       adapter,
-      `import * as original from ${JSON.stringify(configURL.href)};\nexport default { namespace: original };\n`,
+      `import * as original from ${JSON.stringify(configPath)};\nexport default { namespace: original };\n`,
       { flag: "wx", mode: 0o600 },
     );
     const loaded = await loadConfigFromFile(

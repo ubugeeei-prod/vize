@@ -3,6 +3,7 @@ import { execFile } from "node:child_process";
 import {
   mkdtemp,
   mkdir,
+  copyFile,
   readFile,
   readdir,
   realpath,
@@ -24,13 +25,17 @@ const require = createRequire(join(process.cwd(), "package.json"));
 const vitePackage = dirname(require.resolve("vite/package.json"));
 const execute = promisify(execFile);
 
-async function project(run: (directory: string) => Promise<void>, withVite = true) {
+async function project(
+  run: (directory: string) => Promise<void>,
+  withVite = true,
+  installedVite = vitePackage,
+) {
   const directory = await realpath(await mkdtemp(join(tmpdir(), "vize-config-original-")));
   try {
     await writeFile(join(directory, "package.json"), '{"type":"module","value":7}');
     if (withVite) {
       await mkdir(join(directory, "node_modules"));
-      await symlink(vitePackage, join(directory, "node_modules/vite"), "junction");
+      await symlink(installedVite, join(directory, "node_modules/vite"), "junction");
     }
     await run(directory);
   } finally {
@@ -176,4 +181,36 @@ await test("the exact script embedded by native Carton loads and projects the or
     assert.equal(await readFile(counter, "utf8"), "module\nsource\n");
     assert.equal(await readFile(selected, "utf8"), authored);
   });
+});
+
+await test("Vite 7's real esbuild loader bundles the original module rather than externalizing its file URL", async () => {
+  const dependencies = await realpath(await mkdtemp(join(tmpdir(), "vize-config-vite7-")));
+  try {
+    for (const file of ["package.json", "package-lock.json"])
+      await copyFile(
+        new URL(`../_fixtures/_projects/native-config-loader-vite7/${file}`, import.meta.url),
+        join(dependencies, file),
+      );
+    await execute(
+      process.platform === "win32" ? "npm.cmd" : "npm",
+      ["ci", "--ignore-scripts", "--no-audit", "--no-fund", "--prefix", dependencies],
+      { timeout: 60_000 },
+    );
+    const installed = join(dependencies, "node_modules/vite");
+    const version = JSON.parse(await readFile(join(installed, "package.json"), "utf8"));
+    assert.equal(version.version, "7.3.1");
+    await project(
+      async (directory) => {
+        const selected = join(directory, "vite.config.ts");
+        const authored = "import pkg from './package.json'; export default {value:pkg.value};";
+        await writeFile(selected, authored);
+        assert.deepEqual((await importConfigModule(selected)).default, { value: 7 });
+        assert.equal(await readFile(selected, "utf8"), authored);
+      },
+      true,
+      installed,
+    );
+  } finally {
+    await rm(dependencies, { recursive: true, force: true });
+  }
 });

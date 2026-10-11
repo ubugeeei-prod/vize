@@ -1,0 +1,8 @@
+{
+  "name": "native-config-loader-vite7",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "vite": "7.3.1"
+  }
+}

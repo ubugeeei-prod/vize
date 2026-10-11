@@ -36,6 +36,15 @@ authority, exact single evaluation, malformed JSON and missing imports, broken
 installed Vite, dependency-free settings, and temporary-file cleanup. Original
 public native configuration tests and failure contracts remain in force.
 
+The full original Misskey configuration exposed a version-specific requirement:
+Vite 7.3.1's esbuild dependency externalizer treats a `file:` adapter import as
+external and therefore loads the original TypeScript through raw Node ESM.
+The adapter imports the authenticated absolute filesystem path instead, so the
+original module enters Vite's bundle graph. The complete source and file scope
+remain original. A frozen Vite 7.3.1 fixture adds this regression to the corpus;
+the original adapter fails its JSON import and the corrected adapter passes.
+The eight laws retain the installed Vite/Vite+ coverage and all refusal controls.
+
 The minimal corpus is separate from full original-project acceptance. The
 original pinned Misskey, Naive UI, npmx and VOICEVOX configurations still require
 their complete dependency closures and factory environments. Those full rows,
@@ -46,3 +55,5 @@ The original paired source clauses are retained below after the decision
 collection became canonical. They describe their originally qualified versions.
 
 **2026-10-11 native configuration module compatibility (#8371):** Use the selected project's installed Vite public bundle loader through a temporary namespace adapter; retain the original config and raw source factory, one evaluation, selected-file authority, and fail-closed imports/errors. Dependency-free configs retain native Node loading; broken installed Vite never falls back. Seven real-loader/embedded-script laws cover JSON, extensionless and JS-to-TS helpers, file scope, factory authority, errors, and cleanup. Full pinned-project/Actions/merge/release acceptance remains required; see [decision](./2026-10-11-native-config-module-loading.md).
+
+**2026-10-11 Vite7 original-module correction (#8371):** Full unchanged Misskey exposed esbuild externalizing a file: adapter URL under its ownVite7.3.1. Import the authenticated absolute filesystem path into the same bundle graph, preserving original file scope and raw factory. A frozen genuineVite7.3.1 corpus fails with the initial adapter and passes with this correction; all eight loader/embedded-script laws pass with original refusal controls. Full original-project and exact-headActions/protected/release qualification remains separate.
