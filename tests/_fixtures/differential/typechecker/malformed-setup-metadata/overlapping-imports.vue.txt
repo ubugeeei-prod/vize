@@ -1,4 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { computed } from 'vue'computed(() => 1);
+void ref;
 </script>
