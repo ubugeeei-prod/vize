@@ -118,6 +118,51 @@ void test("the only awaited observer follows the original screenshot matcher and
   assert.match(observers, /browser-decoded response bytes, not compressed wire bytes/);
 });
 
+void test("both observed dev failures retain isolated packets across the original full38 route matrix", () => {
+  const originalRoutes = originalAst.body
+    .flatMap((node) => (node.type === "VariableDeclaration" ? node.declarations : []))
+    .find((node) => node.id.name === "routes")
+    .init.elements.map(
+      (node) => node.properties.find((property) => property.key.name === "name").value.value,
+    );
+  const observerGuard = callNodes(
+    currentAst,
+    (node) =>
+      node.type === "IfStatement" &&
+      calls(node.consequent, "createVuefesFailureSidecar").length > 0,
+  );
+  assert.equal(observerGuard.length, 1);
+  const selects = new Function(
+    "mode",
+    "route",
+    `return ${current.slice(observerGuard[0].test.start, observerGuard[0].test.end)}`,
+  );
+  const selected = ["dev", "preview"].flatMap((mode) =>
+    originalRoutes.filter((name) => selects(mode, { name })).map((name) => `${mode}-${name}`),
+  );
+  assert.equal(originalRoutes.length * 2, 38);
+  assert.deepEqual(selected, ["dev-home", "dev-speaker"]);
+
+  const output = calls(currentAst, "createVuefesFailureSidecar")[0].arguments[1].properties.find(
+    (property) => property.key?.name === "outputDir",
+  ).value;
+  const outputFor = new Function(
+    "path",
+    "__dirname",
+    "route",
+    `return ${current.slice(output.start, output.end)}`,
+  );
+  const resolve = { resolve: (...segments) => segments.join("/") };
+  assert.equal(
+    outputFor(resolve, "original-directory", { name: "home" }),
+    "original-directory/../../../target/app-e2e-logs/vuefes-cascade",
+  );
+  assert.equal(
+    outputFor(resolve, "original-directory", { name: "speaker" }),
+    "original-directory/../../../target/app-e2e-logs/vuefes-speaker",
+  );
+});
+
 void test("browser controls reuse the existing post-failure qualifier step and retain both failure statuses", () => {
   const { parse: parseYaml } = createRequire(new URL("../../package.json", import.meta.url))(
     "yaml",

@@ -120,7 +120,7 @@ async function compareRoute(
   try {
     const referencePage = await context.newPage();
     const candidatePage = await context.newPage();
-    if (mode === "dev" && route.name === "home") {
+    if (mode === "dev" && (route.name === "home" || route.name === "speaker")) {
       sidecar = createVuefesFailureSidecar(
         [
           { page: referencePage, name: "reference" },
@@ -128,7 +128,12 @@ async function compareRoute(
         ],
         {
           ...failureMetadata,
-          outputDir: path.resolve(__dirname, "../../../target/app-e2e-logs/vuefes-cascade"),
+          outputDir: path.resolve(
+            __dirname,
+            route.name === "speaker"
+              ? "../../../target/app-e2e-logs/vuefes-speaker"
+              : "../../../target/app-e2e-logs/vuefes-cascade",
+          ),
         },
       );
     }
