@@ -13,8 +13,20 @@ compiler inspector, experimentals, experimentals reference, Vue RFC details
 and global preview controls. Use their authored Japanese page titles; the RFC
 label follows the complete authored review in #8680. The label does not change
 that feature's support or publication status. Preserve all original map entries,
-route destinations, groups, English and other locales, blog-title fallback,
+route destinations, groups, all original locale entries, blog-title fallback,
 language selection, navigation behavior and the disabled API-docs generator.
+
+The first exact-source Actions run rejects Japanese-only additions because
+the existing five-locale navigation contract requires identical complete key
+vectors in the same order. Retain that guard and add the same six keys in
+English, Chinese, French and Portuguese. Contribution and Inspector use each
+existing authored page title. Where those locales have no experimental or
+global-controls page, keep the original English fallback label explicitly;
+adding a label does not add or advertise an unavailable translated route.
+All original entries remain exact. The actual existing key/order test now
+passes; fresh exact-head Actions remain required. The earlier unrelated real
+Docker sandbox timeouts are retained as failed evidence, with no CI or test
+timeout changes and no completion credit from a repeat.
 
 This change requires its own exact-source Actions, protected actual merge,
 full Docs and public sidebar reading proof. The existing public pages qualify
