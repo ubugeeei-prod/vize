@@ -1,0 +1,3 @@
+<script setup lang="ts">
+const props = withDefaults(defineProps<{ direction: string }>(), { direction: 'bottom' })
+</script>

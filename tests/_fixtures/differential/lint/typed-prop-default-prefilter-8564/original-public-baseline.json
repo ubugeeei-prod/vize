@@ -1,0 +1,665 @@
+{
+  "schema": "vize.lint.typed-prop-default-prefilter-public-before",
+  "tag": "v0.443.0",
+  "sourceCommit": "15e116fa258c7aaba5c6fdd2456442535605abe8",
+  "binarySha256": "9ad7cf956351265a152a9bbfa08b8c50c85dadacef66529474bbb6170267e254",
+  "qualification": "After vectors were authored from the unchanged typed producer before these observations. The original released default route misses the four positive carriers, while complete negative controls remain empty.",
+  "runs": [
+    {
+      "id": "original-vaul",
+      "argv": [
+        "lint",
+        "--no-config",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "DrawerContent.vue"
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { DrawerContent, type DrawerDirection } from 'vaul-vue'\n\nconst props = withDefaults(defineProps<{\n  direction: DrawerDirection\n}>(), {\n  direction: 'bottom',\n})\n</script>\n\n<template>\n  <DrawerContent\n    data-testid=\"content\"\n    class=\"bg-zinc-100 flex fixed p-6\"\n    :class=\"{\n      'rounded-t-[10px] flex-col h-[50%] bottom-0 left-0 right-0': direction === 'bottom',\n      'rounded-b-[10px] flex-col h-[50%] top-0 left-0 right-0': direction === 'top',\n      'rounded-r-[10px] flex-row w-[50%] left-0 top-0 bottom-0': direction === 'left',\n      'rounded-l-[10px] flex-row w-[50%] right-0 top-0 bottom-0': direction === 'right',\n    }\"\n  >\n    <div\n      class=\"w-full h-full flex rounded-full gap-8\"\n      :class=\"{\n        'flex-col': direction === 'bottom',\n        'flex-col-reverse': direction === 'top',\n        'flex-row-reverse': direction === 'left',\n        'flex-row ': direction === 'right',\n      }\"\n    >\n      <div\n        class=\"rounded-full bg-zinc-300\"\n        :class=\"{\n          'mx-auto w-12 h-1.5': direction === 'top' || direction === 'bottom',\n          'my-auto h-12 w-1.5': direction === 'left' || direction === 'right',\n        }\"\n      />\n\n      <div class=\"grid place-content-center w-full h-full\">\n        <slot />\n      </div>\n    </div>\n  </DrawerContent>\n</template>\n",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "[\n  {\n    \"file\": \"DrawerContent.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expectedOld": [
+        {
+          "file": "DrawerContent.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedAfterApi": [
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'direction' is required but also declares a default",
+          "start": 169,
+          "end": 178,
+          "help": "Make the typed prop optional with `?` or remove the default.",
+          "fix": null,
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 132,
+              "end": 141
+            },
+            {
+              "message": "default declared here",
+              "start": 180,
+              "end": 188
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "original-vaul",
+      "argv": [
+        "lint",
+        "--no-config",
+        "--preset",
+        "ecosystem",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "DrawerContent.vue"
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { DrawerContent, type DrawerDirection } from 'vaul-vue'\n\nconst props = withDefaults(defineProps<{\n  direction: DrawerDirection\n}>(), {\n  direction: 'bottom',\n})\n</script>\n\n<template>\n  <DrawerContent\n    data-testid=\"content\"\n    class=\"bg-zinc-100 flex fixed p-6\"\n    :class=\"{\n      'rounded-t-[10px] flex-col h-[50%] bottom-0 left-0 right-0': direction === 'bottom',\n      'rounded-b-[10px] flex-col h-[50%] top-0 left-0 right-0': direction === 'top',\n      'rounded-r-[10px] flex-row w-[50%] left-0 top-0 bottom-0': direction === 'left',\n      'rounded-l-[10px] flex-row w-[50%] right-0 top-0 bottom-0': direction === 'right',\n    }\"\n  >\n    <div\n      class=\"w-full h-full flex rounded-full gap-8\"\n      :class=\"{\n        'flex-col': direction === 'bottom',\n        'flex-col-reverse': direction === 'top',\n        'flex-row-reverse': direction === 'left',\n        'flex-row ': direction === 'right',\n      }\"\n    >\n      <div\n        class=\"rounded-full bg-zinc-300\"\n        :class=\"{\n          'mx-auto w-12 h-1.5': direction === 'top' || direction === 'bottom',\n          'my-auto h-12 w-1.5': direction === 'left' || direction === 'right',\n        }\"\n      />\n\n      <div class=\"grid place-content-center w-full h-full\">\n        <slot />\n      </div>\n    </div>\n  </DrawerContent>\n</template>\n",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "[\n  {\n    \"file\": \"DrawerContent.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expectedOld": [
+        {
+          "file": "DrawerContent.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedAfterApi": [
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'direction' is required but also declares a default",
+          "start": 169,
+          "end": 178,
+          "help": "Make the typed prop optional with `?` or remove the default.",
+          "fix": null,
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 132,
+              "end": 141
+            },
+            {
+              "message": "default declared here",
+              "start": 180,
+              "end": 188
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "with-defaults",
+      "argv": [
+        "lint",
+        "--no-config",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "WithDefaults.vue"
+      ],
+      "source": "<script setup lang=\"ts\">\nconst props = withDefaults(defineProps<{ direction: string }>(), { direction: 'bottom' })\n</script>\n",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "[\n  {\n    \"file\": \"WithDefaults.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expectedOld": [
+        {
+          "file": "WithDefaults.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedAfterApi": [
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'direction' is required but also declares a default",
+          "start": 92,
+          "end": 101,
+          "help": "Make the typed prop optional with `?` or remove the default.",
+          "fix": null,
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 66,
+              "end": 75
+            },
+            {
+              "message": "default declared here",
+              "start": 103,
+              "end": 111
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "with-defaults",
+      "argv": [
+        "lint",
+        "--no-config",
+        "--preset",
+        "ecosystem",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "WithDefaults.vue"
+      ],
+      "source": "<script setup lang=\"ts\">\nconst props = withDefaults(defineProps<{ direction: string }>(), { direction: 'bottom' })\n</script>\n",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "[\n  {\n    \"file\": \"WithDefaults.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expectedOld": [
+        {
+          "file": "WithDefaults.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedAfterApi": [
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'direction' is required but also declares a default",
+          "start": 92,
+          "end": 101,
+          "help": "Make the typed prop optional with `?` or remove the default.",
+          "fix": null,
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 66,
+              "end": 75
+            },
+            {
+              "message": "default declared here",
+              "start": 103,
+              "end": 111
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "destructure-alias",
+      "argv": [
+        "lint",
+        "--no-config",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Destructure.vue"
+      ],
+      "source": "<script setup lang=\"ts\">\nconst { label: renamed = 'x' } = defineProps<{ label: string }>()\n</script>\n",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "[\n  {\n    \"file\": \"Destructure.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expectedOld": [
+        {
+          "file": "Destructure.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedAfterApi": [
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'label' is required but also declares a default",
+          "start": 33,
+          "end": 38,
+          "help": "Make the typed prop optional with `?` or remove the default.",
+          "fix": null,
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 72,
+              "end": 77
+            },
+            {
+              "message": "default declared here",
+              "start": 50,
+              "end": 53
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "destructure-alias",
+      "argv": [
+        "lint",
+        "--no-config",
+        "--preset",
+        "ecosystem",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Destructure.vue"
+      ],
+      "source": "<script setup lang=\"ts\">\nconst { label: renamed = 'x' } = defineProps<{ label: string }>()\n</script>\n",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "[\n  {\n    \"file\": \"Destructure.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expectedOld": [
+        {
+          "file": "Destructure.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedAfterApi": [
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'label' is required but also declares a default",
+          "start": 33,
+          "end": 38,
+          "help": "Make the typed prop optional with `?` or remove the default.",
+          "fix": null,
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 72,
+              "end": 77
+            },
+            {
+              "message": "default declared here",
+              "start": 50,
+              "end": 53
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unicode-crlf",
+      "argv": [
+        "lint",
+        "--no-config",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Unicode.vue"
+      ],
+      "source": "<script setup lang=\"ts\">\r\nconst emoji = '😀';\r\nconst { café = 1 } = defineProps<{ café: number }>();\r\n</script>\r\n",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "[\n  {\n    \"file\": \"Unicode.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expectedOld": [
+        {
+          "file": "Unicode.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedAfterApi": [
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'café' is required but also declares a default",
+          "start": 57,
+          "end": 62,
+          "help": "Make the typed prop optional with `?` or remove the default.",
+          "fix": null,
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 85,
+              "end": 90
+            },
+            {
+              "message": "default declared here",
+              "start": 65,
+              "end": 66
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unicode-crlf",
+      "argv": [
+        "lint",
+        "--no-config",
+        "--preset",
+        "ecosystem",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Unicode.vue"
+      ],
+      "source": "<script setup lang=\"ts\">\r\nconst emoji = '😀';\r\nconst { café = 1 } = defineProps<{ café: number }>();\r\n</script>\r\n",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "[\n  {\n    \"file\": \"Unicode.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expectedOld": [
+        {
+          "file": "Unicode.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedAfterApi": [
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'café' is required but also declares a default",
+          "start": 57,
+          "end": 62,
+          "help": "Make the typed prop optional with `?` or remove the default.",
+          "fix": null,
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 85,
+              "end": 90
+            },
+            {
+              "message": "default declared here",
+              "start": 65,
+              "end": 66
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "optional-with-defaults",
+      "argv": [
+        "lint",
+        "--no-config",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Optional.vue"
+      ],
+      "source": "<script setup lang=\"ts\">\nconst props = withDefaults(defineProps<{ value?: number }>(), { value: 1 })\n</script>\n",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "[\n  {\n    \"file\": \"Optional.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expectedOld": [
+        {
+          "file": "Optional.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedAfterApi": []
+    },
+    {
+      "id": "optional-with-defaults",
+      "argv": [
+        "lint",
+        "--no-config",
+        "--preset",
+        "ecosystem",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Optional.vue"
+      ],
+      "source": "<script setup lang=\"ts\">\nconst props = withDefaults(defineProps<{ value?: number }>(), { value: 1 })\n</script>\n",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "[\n  {\n    \"file\": \"Optional.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expectedOld": [
+        {
+          "file": "Optional.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedAfterApi": []
+    },
+    {
+      "id": "no-default",
+      "argv": [
+        "lint",
+        "--no-config",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "NoDefault.vue"
+      ],
+      "source": "<script setup lang=\"ts\">\nconst { value } = defineProps<{ value: number }>()\n</script>\n",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "[\n  {\n    \"file\": \"NoDefault.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expectedOld": [
+        {
+          "file": "NoDefault.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedAfterApi": []
+    },
+    {
+      "id": "no-default",
+      "argv": [
+        "lint",
+        "--no-config",
+        "--preset",
+        "ecosystem",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "NoDefault.vue"
+      ],
+      "source": "<script setup lang=\"ts\">\nconst { value } = defineProps<{ value: number }>()\n</script>\n",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "[\n  {\n    \"file\": \"NoDefault.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expectedOld": [
+        {
+          "file": "NoDefault.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedAfterApi": []
+    },
+    {
+      "id": "imported-type",
+      "argv": [
+        "lint",
+        "--no-config",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Imported.vue"
+      ],
+      "source": "<script setup lang=\"ts\">\nimport type { Props } from './props'; const { value = 1 } = defineProps<Props>()\n</script>\n",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "[\n  {\n    \"file\": \"Imported.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expectedOld": [
+        {
+          "file": "Imported.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedAfterApi": []
+    },
+    {
+      "id": "imported-type",
+      "argv": [
+        "lint",
+        "--no-config",
+        "--preset",
+        "ecosystem",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Imported.vue"
+      ],
+      "source": "<script setup lang=\"ts\">\nimport type { Props } from './props'; const { value = 1 } = defineProps<Props>()\n</script>\n",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "[\n  {\n    \"file\": \"Imported.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expectedOld": [
+        {
+          "file": "Imported.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedAfterApi": []
+    },
+    {
+      "id": "shadowed-macro",
+      "argv": [
+        "lint",
+        "--no-config",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Shadowed.vue"
+      ],
+      "source": "<script setup lang=\"ts\">\nfunction defineProps<T>() { return {} as T; } const { value = 1 } = defineProps<{ value: number }>()\n</script>\n",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "[\n  {\n    \"file\": \"Shadowed.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expectedOld": [
+        {
+          "file": "Shadowed.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedAfterApi": []
+    },
+    {
+      "id": "shadowed-macro",
+      "argv": [
+        "lint",
+        "--no-config",
+        "--preset",
+        "ecosystem",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Shadowed.vue"
+      ],
+      "source": "<script setup lang=\"ts\">\nfunction defineProps<T>() { return {} as T; } const { value = 1 } = defineProps<{ value: number }>()\n</script>\n",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "[\n  {\n    \"file\": \"Shadowed.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expectedOld": [
+        {
+          "file": "Shadowed.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedAfterApi": []
+    }
+  ]
+}

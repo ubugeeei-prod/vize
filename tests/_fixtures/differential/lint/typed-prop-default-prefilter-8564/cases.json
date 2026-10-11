@@ -1,0 +1,168 @@
+{
+  "schema": "vize.lint.typed-prop-default-prefilter",
+  "version": 1,
+  "issue": 8564,
+  "rule": "script/no-required-prop-with-default",
+  "original": {
+    "repository": "unovue/vaul-vue",
+    "revision": "fafb0507c8845c34d232ebed51068428685329f1",
+    "file": "playground/src/components/DrawerContent.vue",
+    "sourceSha256": "8c564399e6f16081ae92e1403526172d6cfd02e2cac811a08113acde99faeae4",
+    "matrixRun": 38081352747,
+    "matrixShard": 18,
+    "sourceCommit": "15e116fa258c7aaba5c6fdd2456442535605abe8",
+    "provider": "eslint-plugin-vue@10.9.2",
+    "providerPacketBudget": {
+      "verdict": "breached",
+      "unusableReason": null
+    },
+    "falseNegatives": 1,
+    "falsePositives": 0
+  },
+  "cases": [
+    {
+      "id": "original-vaul",
+      "filename": "DrawerContent.vue",
+      "source": "<script setup lang=\"ts\">\nimport { DrawerContent, type DrawerDirection } from 'vaul-vue'\n\nconst props = withDefaults(defineProps<{\n  direction: DrawerDirection\n}>(), {\n  direction: 'bottom',\n})\n</script>\n\n<template>\n  <DrawerContent\n    data-testid=\"content\"\n    class=\"bg-zinc-100 flex fixed p-6\"\n    :class=\"{\n      'rounded-t-[10px] flex-col h-[50%] bottom-0 left-0 right-0': direction === 'bottom',\n      'rounded-b-[10px] flex-col h-[50%] top-0 left-0 right-0': direction === 'top',\n      'rounded-r-[10px] flex-row w-[50%] left-0 top-0 bottom-0': direction === 'left',\n      'rounded-l-[10px] flex-row w-[50%] right-0 top-0 bottom-0': direction === 'right',\n    }\"\n  >\n    <div\n      class=\"w-full h-full flex rounded-full gap-8\"\n      :class=\"{\n        'flex-col': direction === 'bottom',\n        'flex-col-reverse': direction === 'top',\n        'flex-row-reverse': direction === 'left',\n        'flex-row ': direction === 'right',\n      }\"\n    >\n      <div\n        class=\"rounded-full bg-zinc-300\"\n        :class=\"{\n          'mx-auto w-12 h-1.5': direction === 'top' || direction === 'bottom',\n          'my-auto h-12 w-1.5': direction === 'left' || direction === 'right',\n        }\"\n      />\n\n      <div class=\"grid place-content-center w-full h-full\">\n        <slot />\n      </div>\n    </div>\n  </DrawerContent>\n</template>\n",
+      "sourceSha256": "8c564399e6f16081ae92e1403526172d6cfd02e2cac811a08113acde99faeae4",
+      "diagnostics": [
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'direction' is required but also declares a default",
+          "start": 169,
+          "end": 178,
+          "help": "Make the typed prop optional with `?` or remove the default.",
+          "fix": null,
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 132,
+              "end": 141
+            },
+            {
+              "message": "default declared here",
+              "start": 180,
+              "end": 188
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "with-defaults",
+      "filename": "WithDefaults.vue",
+      "source": "<script setup lang=\"ts\">\nconst props = withDefaults(defineProps<{ direction: string }>(), { direction: 'bottom' })\n</script>\n",
+      "sourceSha256": "f0c625753e970aae7dd623e07256cc2cdf3bc690ff4166b8e060ceb1d020042d",
+      "diagnostics": [
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'direction' is required but also declares a default",
+          "start": 92,
+          "end": 101,
+          "help": "Make the typed prop optional with `?` or remove the default.",
+          "fix": null,
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 66,
+              "end": 75
+            },
+            {
+              "message": "default declared here",
+              "start": 103,
+              "end": 111
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "destructure-alias",
+      "filename": "Destructure.vue",
+      "source": "<script setup lang=\"ts\">\nconst { label: renamed = 'x' } = defineProps<{ label: string }>()\n</script>\n",
+      "sourceSha256": "b180f4a7b65e1eb4771efd572de617bb8fd6e98e619d395ed590c77018a1a17b",
+      "diagnostics": [
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'label' is required but also declares a default",
+          "start": 33,
+          "end": 38,
+          "help": "Make the typed prop optional with `?` or remove the default.",
+          "fix": null,
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 72,
+              "end": 77
+            },
+            {
+              "message": "default declared here",
+              "start": 50,
+              "end": 53
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unicode-crlf",
+      "filename": "Unicode.vue",
+      "source": "<script setup lang=\"ts\">\r\nconst emoji = '😀';\r\nconst { café = 1 } = defineProps<{ café: number }>();\r\n</script>\r\n",
+      "sourceSha256": "5160fd28e2cb355800e45ec8d2d04dd092216645eb7720b5429d3ddc2a88b787",
+      "diagnostics": [
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'café' is required but also declares a default",
+          "start": 57,
+          "end": 62,
+          "help": "Make the typed prop optional with `?` or remove the default.",
+          "fix": null,
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 85,
+              "end": 90
+            },
+            {
+              "message": "default declared here",
+              "start": 65,
+              "end": 66
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "optional-with-defaults",
+      "filename": "Optional.vue",
+      "source": "<script setup lang=\"ts\">\nconst props = withDefaults(defineProps<{ value?: number }>(), { value: 1 })\n</script>\n",
+      "sourceSha256": "d058d769aa8a5079bc637a17f840d04b9fbe20dabba4c6279b4356cf7cf73376",
+      "diagnostics": []
+    },
+    {
+      "id": "no-default",
+      "filename": "NoDefault.vue",
+      "source": "<script setup lang=\"ts\">\nconst { value } = defineProps<{ value: number }>()\n</script>\n",
+      "sourceSha256": "17e89aba6cef81d95e16b29453107bf8613dfb0884c2450f13e861df8ad61244",
+      "diagnostics": []
+    },
+    {
+      "id": "imported-type",
+      "filename": "Imported.vue",
+      "source": "<script setup lang=\"ts\">\nimport type { Props } from './props'; const { value = 1 } = defineProps<Props>()\n</script>\n",
+      "sourceSha256": "f89d67ed3ea5556a9dfefece9fe81984ddfd9d91e14020ea256a3ff440e594eb",
+      "diagnostics": []
+    },
+    {
+      "id": "shadowed-macro",
+      "filename": "Shadowed.vue",
+      "source": "<script setup lang=\"ts\">\nfunction defineProps<T>() { return {} as T; } const { value = 1 } = defineProps<{ value: number }>()\n</script>\n",
+      "sourceSha256": "bc67a2151bca0b8df527acc42fe89b44e98f984ae8f331368dc08fe3170a1f9b",
+      "diagnostics": []
+    }
+  ]
+}

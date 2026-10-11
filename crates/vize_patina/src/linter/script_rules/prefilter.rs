@@ -56,9 +56,12 @@ pub(super) fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
                 && contains(bytes, b"=>")
         }
         RULE_NO_REQUIRED_PROP_WITH_DEFAULT => {
-            source_may_declare_props(bytes)
-                && contains(bytes, b"required")
-                && contains(bytes, b"default")
+            // Typed defaults express requiredness in the type and may use an
+            // assignment pattern rather than a literal `default` member.
+            contains(bytes, b"defineProps")
+                || (source_may_declare_props(bytes)
+                    && contains(bytes, b"required")
+                    && contains(bytes, b"default"))
         }
         RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR => {
             source_may_declare_props(bytes) && contains(bytes, b"type")

@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const emoji = '😀';
+const { café = 1 } = defineProps<{ café: number }>();
+</script>

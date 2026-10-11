@@ -1,0 +1,3 @@
+<script setup lang="ts">
+const { label: renamed = 'x' } = defineProps<{ label: string }>()
+</script>

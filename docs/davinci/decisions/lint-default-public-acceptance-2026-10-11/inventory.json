@@ -1,0 +1,176 @@
+[
+  {
+    "file": "acceptance-receipt.json.gz",
+    "compressedBytes": 5134,
+    "originalBytes": 28433,
+    "originalSha256": "679178a79ed88523bab9cef1f5dea4dc7e8c207bb20ea7ef25a4d9af6b63687d"
+  },
+  {
+    "file": "ecosystem25-source-test-coverage.json.gz",
+    "compressedBytes": 9059,
+    "originalBytes": 106337,
+    "originalSha256": "5def90999a5b1c7524d8a82a6d110737381b65f1e9646e024f1a6be47d59a9ce"
+  },
+  {
+    "file": "installed-cli-defaults.json.gz",
+    "compressedBytes": 19613,
+    "originalBytes": 516877,
+    "originalSha256": "4376d0c9782348fb76bf3c21031bacd4f7cc04f23143efde5cd38df2c5672388"
+  },
+  {
+    "file": "matrix-shard-0.json.gz",
+    "compressedBytes": 1046,
+    "originalBytes": 6169,
+    "originalSha256": "53f7b6519986399c89e87124b52c3cbefed181d059fc82e20deaf13315f86c9a"
+  },
+  {
+    "file": "matrix-shard-1.json.gz",
+    "compressedBytes": 1038,
+    "originalBytes": 6154,
+    "originalSha256": "98bddc6066c2f1f1edf0a3013842e78b0fd8b29ec58991cdf96039efe760fd6f"
+  },
+  {
+    "file": "matrix-shard-10.json.gz",
+    "compressedBytes": 1022,
+    "originalBytes": 6157,
+    "originalSha256": "a812934d40a0610260bfb1b8fb470863dde6b8642ccea5db27041de487f3d9f7"
+  },
+  {
+    "file": "matrix-shard-11.json.gz",
+    "compressedBytes": 1017,
+    "originalBytes": 6142,
+    "originalSha256": "2c432a427b4567ee8e04555072b67c591e24de42921b003549cf7784ae2653a7"
+  },
+  {
+    "file": "matrix-shard-12.json.gz",
+    "compressedBytes": 1057,
+    "originalBytes": 6172,
+    "originalSha256": "5732744c1a12dfc5e17b68bd57bac5c0127ebce0f0f8ef2cdea8e6c87dd57d80"
+  },
+  {
+    "file": "matrix-shard-13.json.gz",
+    "compressedBytes": 958,
+    "originalBytes": 5442,
+    "originalSha256": "3c307ddf8d7b8ad77ab15ae13eec0cb6506572f3da7252f635af591ab22b23ad"
+  },
+  {
+    "file": "matrix-shard-14.json.gz",
+    "compressedBytes": 990,
+    "originalBytes": 5456,
+    "originalSha256": "cd19d8c2e51f2644506b5f81297b83ad005b063728f0d90824a969053c698001"
+  },
+  {
+    "file": "matrix-shard-15.json.gz",
+    "compressedBytes": 1061,
+    "originalBytes": 5571,
+    "originalSha256": "a230a3f8f8a269a4df2565149d53e046ccd9465dadf3529d7583af91b857b743"
+  },
+  {
+    "file": "matrix-shard-16.json.gz",
+    "compressedBytes": 926,
+    "originalBytes": 5396,
+    "originalSha256": "019be34b4b8b1f017303865bb043df5270ccc4d27fb795290a8a0e961b85f176"
+  },
+  {
+    "file": "matrix-shard-17.json.gz",
+    "compressedBytes": 991,
+    "originalBytes": 5446,
+    "originalSha256": "c9f10165dd797ce63eae7448bb5ba81e43ccd9250133dafad465cdb0f3af9b15"
+  },
+  {
+    "file": "matrix-shard-18.json.gz",
+    "compressedBytes": 1017,
+    "originalBytes": 5505,
+    "originalSha256": "1976d72ea412d6e34df8dcc64ffcb6982fce7ae9dea75cd0c5332e9fce83d97f"
+  },
+  {
+    "file": "matrix-shard-19.json.gz",
+    "compressedBytes": 970,
+    "originalBytes": 5413,
+    "originalSha256": "3b687c2cb34aaf91095a04509743232fb406e6cd58d914de3a332b94ea531669"
+  },
+  {
+    "file": "matrix-shard-2.json.gz",
+    "compressedBytes": 1138,
+    "originalBytes": 6289,
+    "originalSha256": "a488f2ace47f8a85f4b413dc6fd657502527b7fafde54755a46c86d1f1082fee"
+  },
+  {
+    "file": "matrix-shard-20.json.gz",
+    "compressedBytes": 995,
+    "originalBytes": 5454,
+    "originalSha256": "f7fd896ba75bf8f05953486e193777e79c7696c5a14a33346b3f5d8f37288054"
+  },
+  {
+    "file": "matrix-shard-21.json.gz",
+    "compressedBytes": 987,
+    "originalBytes": 5446,
+    "originalSha256": "74d740ee8e68a53c1cd68f14b2015fc9f2593cd1dc310036959a12a4621eb502"
+  },
+  {
+    "file": "matrix-shard-3.json.gz",
+    "compressedBytes": 1083,
+    "originalBytes": 6260,
+    "originalSha256": "06d47e177b1a2add02e699dd089d0458f1469f6ecfc4e29e3c1edaf60e1876c2"
+  },
+  {
+    "file": "matrix-shard-4.json.gz",
+    "compressedBytes": 1068,
+    "originalBytes": 6210,
+    "originalSha256": "67b7da8cedf12a1ef80d94890ce1daf42f74b581a2290c5690cfe20471baaf78"
+  },
+  {
+    "file": "matrix-shard-5.json.gz",
+    "compressedBytes": 1132,
+    "originalBytes": 6309,
+    "originalSha256": "9312313eba12233b69345406379617b095cdfb00ab2096acd574f35b3f192d84"
+  },
+  {
+    "file": "matrix-shard-6.json.gz",
+    "compressedBytes": 1113,
+    "originalBytes": 6305,
+    "originalSha256": "b696e812e8e1dfc98387469093e17c5841529999a056068c464ad0474cc42376"
+  },
+  {
+    "file": "matrix-shard-7.json.gz",
+    "compressedBytes": 1077,
+    "originalBytes": 6209,
+    "originalSha256": "325f59cbd4b5e3ea8767542b1042e641d796df93f3bc222ed2fa366298e16e06"
+  },
+  {
+    "file": "matrix-shard-8.json.gz",
+    "compressedBytes": 1079,
+    "originalBytes": 6223,
+    "originalSha256": "d136c54e2bb280e2e26c33176b441b7acd5e33da791b8907b3663a726f1117de"
+  },
+  {
+    "file": "matrix-shard-9.json.gz",
+    "compressedBytes": 967,
+    "originalBytes": 6102,
+    "originalSha256": "9cf6a8172917f77f2e60d46ec772f0a3ecfb26b2a241a736306e23ed53c29b3d"
+  },
+  {
+    "file": "release-metadata.json.gz",
+    "compressedBytes": 15748,
+    "originalBytes": 171983,
+    "originalSha256": "e949f3e545301b8ae065d5b2c08e9031cddfb84d4e9e1cbec9e0bd96c64910c1"
+  },
+  {
+    "file": "release-run.json.gz",
+    "compressedBytes": 1705,
+    "originalBytes": 12795,
+    "originalSha256": "69408de2aeb7cd163e3c690348d9cbc724bd3218b66d01bec3a78f41b65c8892"
+  },
+  {
+    "file": "release-tag-object.json.gz",
+    "compressedBytes": 623,
+    "originalBytes": 1145,
+    "originalSha256": "7ed73425828afded8f4a3931da7d653224830b38011a94e71ca5e4c8758a292a"
+  },
+  {
+    "file": "release-tag-ref.json.gz",
+    "compressedBytes": 218,
+    "originalBytes": 338,
+    "originalSha256": "43c3640b62ab45ff349421c1fa0d047dafe15b8e61e1b53c1bbafbb93e14fa82"
+  }
+]
