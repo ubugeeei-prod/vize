@@ -117,9 +117,7 @@
                         "style": "color: rgb(200, 0, 0);",
                         "title": "mount"
                       },
-                      "children": [
-                        "foreign"
-                      ],
+                      "children": ["foreign"],
                       "tag": "a"
                     }
                   ],
@@ -135,9 +133,7 @@
                 "style": "color: rgb(200, 0, 0);",
                 "title": "mount"
               },
-              "children": [
-                "html"
-              ],
+              "children": ["html"],
               "tag": "a"
             }
           ],
@@ -257,9 +253,7 @@
                         "style": "color: rgb(0, 0, 200);",
                         "title": "update"
                       },
-                      "children": [
-                        "foreign"
-                      ],
+                      "children": ["foreign"],
                       "tag": "a"
                     }
                   ],
@@ -275,9 +269,7 @@
                 "style": "color: rgb(0, 0, 200);",
                 "title": "update"
               },
-              "children": [
-                "html"
-              ],
+              "children": ["html"],
               "tag": "a"
             }
           ],
@@ -391,9 +383,7 @@
                         "id": "foreign-html-a",
                         "title": "clear"
                       },
-                      "children": [
-                        "foreign"
-                      ],
+                      "children": ["foreign"],
                       "tag": "a"
                     }
                   ],
@@ -408,9 +398,7 @@
                 "id": "html-a",
                 "title": "clear"
               },
-              "children": [
-                "html"
-              ],
+              "children": ["html"],
               "tag": "a"
             }
           ],
@@ -537,9 +525,7 @@
                         "style": "color: rgb(200, 0, 0);",
                         "title": "mount"
                       },
-                      "children": [
-                        "foreign"
-                      ],
+                      "children": ["foreign"],
                       "tag": "a"
                     }
                   ],
@@ -555,9 +541,7 @@
                 "style": "color: rgb(200, 0, 0);",
                 "title": "mount"
               },
-              "children": [
-                "html"
-              ],
+              "children": ["html"],
               "tag": "a"
             }
           ],
@@ -677,9 +661,7 @@
                         "style": "color: rgb(0, 0, 200);",
                         "title": "update"
                       },
-                      "children": [
-                        "foreign"
-                      ],
+                      "children": ["foreign"],
                       "tag": "a"
                     }
                   ],
@@ -695,9 +677,7 @@
                 "style": "color: rgb(0, 0, 200);",
                 "title": "update"
               },
-              "children": [
-                "html"
-              ],
+              "children": ["html"],
               "tag": "a"
             }
           ],
@@ -811,9 +791,7 @@
                         "id": "foreign-html-a",
                         "title": "clear"
                       },
-                      "children": [
-                        "foreign"
-                      ],
+                      "children": ["foreign"],
                       "tag": "a"
                     }
                   ],
@@ -828,9 +806,7 @@
                 "id": "html-a",
                 "title": "clear"
               },
-              "children": [
-                "html"
-              ],
+              "children": ["html"],
               "tag": "a"
             }
           ],
