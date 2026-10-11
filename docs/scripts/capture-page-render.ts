@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import path from "node:path";
 import type { JSHandle, Page } from "playwright";
+import type { CaptureTimingSink } from "./capture-render-timings.ts";
 
 type Rectangle = [number, number, number, number];
 type SnapshotEntry = {
@@ -43,22 +44,29 @@ export async function capturePageRender(
   page: Page,
   output: string,
   name: string,
+  timings?: CaptureTimingSink,
 ): Promise<PageCapture> {
+  const timing = timings?.(name);
+  timing?.start("initial-viewport-scroll");
   const viewport = page.viewportSize();
   const scroll = await page.evaluate(() => ({ x: scrollX, y: scrollY }));
+  timing?.finish();
   let original: JSHandle<ContentSnapshot> | undefined;
   try {
+    timing?.start("prepare");
     await page.evaluate(() => scrollTo(0, 0));
     const dimensions = await page.evaluate(() => ({
       width: innerWidth,
       viewportHeight: innerHeight,
       height: Math.ceil(document.documentElement.scrollHeight),
     }));
+    timing?.finish();
     const single = dimensions.height <= 8192;
     let layout: LayoutProof | undefined;
     if (!single && viewport && dimensions.viewportHeight < 8192) {
       // Keep complete node/source/rectangle comparisons in Chromium. Sending
       // hundreds of thousands of descendant rectangles over CDP is unnecessary.
+      timing?.start("layout-before");
       original = await page.evaluateHandle(() => {
         const content = document.querySelector(".content");
         if (!content) throw new Error("Long-page capture requires its content authority");
@@ -83,21 +91,22 @@ export async function capturePageRender(
         const before = snapshot();
         return { content, snapshot, before };
       });
+      timing?.finish();
+      timing?.start("viewport-enlarge");
       await page.setViewportSize({ width: viewport.width, height: 8192 });
       await page.evaluate(() => scrollTo(0, 0));
+      timing?.finish();
+      timing?.start("layout-after-proof");
       layout = await original.evaluate(async ({ content, snapshot, before }) => {
         const after = snapshot();
         const packets = (nodes: SnapshotEntry[]) =>
           nodes.map(({ node: _node, ...packet }) => packet);
         const beforePackets = packets(before);
         const afterPackets = packets(after);
-        const hash = async (packet: Omit<SnapshotEntry, "node">[]) =>
+        const hash = async (serialized: string) =>
           [
             ...new Uint8Array(
-              await crypto.subtle.digest(
-                "SHA-256",
-                new TextEncoder().encode(JSON.stringify(packet)),
-              ),
+              await crypto.subtle.digest("SHA-256", new TextEncoder().encode(serialized)),
             ),
           ]
             .map((byte) => byte.toString(16).padStart(2, "0"))
@@ -106,27 +115,42 @@ export async function capturePageRender(
           document.querySelector(".content") === content &&
           before.length === after.length &&
           before.every((entry, index) => entry.node === after[index].node);
-        return {
+        const counts = {
           descendants: before.length - 1,
           elements: before.filter((entry) => entry.type === Node.ELEMENT_NODE).length,
           textNodes: before.filter((entry) => entry.type === Node.TEXT_NODE).length,
           rectangles: before.reduce((sum, entry) => sum + entry.rectangles.length, 0),
-          beforeSha256: await hash(beforePackets),
-          afterSha256: await hash(afterPackets),
-          identical: sameNodes && JSON.stringify(beforePackets) === JSON.stringify(afterPackets),
+        };
+        // Owned snapshots contain private plain data under the native page intrinsics.
+        // Serialize at the original serial digest points and reuse their exact bytes.
+        const beforeJson = JSON.stringify(beforePackets);
+        const beforeSha256 = await hash(beforeJson);
+        const afterJson = JSON.stringify(afterPackets);
+        const afterSha256 = await hash(afterJson);
+        return {
+          ...counts,
+          beforeSha256,
+          afterSha256,
+          identical: sameNodes && beforeJson === afterJson,
         };
       });
+      timing?.finish();
+      timing?.start("enlarged-dimensions");
       const enlarged = await page.evaluate(() => ({
         width: innerWidth,
         height: innerHeight,
         documentHeight: Math.ceil(document.documentElement.scrollHeight),
       }));
+      timing?.finish();
       layout.identical &&=
         enlarged.width === dimensions.width && enlarged.documentHeight === dimensions.height;
       if (layout.identical) dimensions.viewportHeight = enlarged.height;
       else {
+        timing?.start("fallback-restore");
         await page.setViewportSize(viewport);
         await page.evaluate(() => scrollTo(0, 0));
+        timing?.finish();
+        timing?.start("fallback-proof");
         assert(
           await original.evaluate(({ snapshot, before }) => {
             const restored = snapshot();
@@ -145,6 +169,7 @@ export async function capturePageRender(
           }),
           `${name}: original content layout must restore before fallback capture`,
         );
+        timing?.finish();
       }
       layout.originalViewportHeight = viewport.height;
       layout.captureViewportHeight = dimensions.viewportHeight;
@@ -158,21 +183,36 @@ export async function capturePageRender(
     }
     const tiles: PageCapture["tiles"] = [];
     for (const top of positions) {
+      timing?.start("tile-position", { tileIndex: tiles.length, top });
       await page.evaluate((top) => scrollTo(0, top), top);
       assert.equal(await page.evaluate(() => scrollY), top, `${name}: exact capture position`);
+      timing?.finish();
       const height = single ? dimensions.height : dimensions.viewportHeight;
       const file = single
         ? name
         : name.replace(/\.png$/, `-${String(tiles.length).padStart(3, "0")}.png`);
+      timing?.start("screenshot-call-inclusive-write", {
+        tileIndex: tiles.length,
+        top,
+        file,
+        width: dimensions.width,
+        height,
+        viewportHeight: dimensions.viewportHeight,
+        originalViewportHeight: viewport?.height,
+      });
       const png = await page.screenshot({
         path: path.join(output, file),
         fullPage: single,
         animations: "disabled",
       });
+      timing?.finish();
+      timing?.start("png-validation-hash", { tileIndex: tiles.length, top, file });
       assert.equal(png.readUInt32BE(16), dimensions.width, `${file}: complete page width`);
       assert.equal(png.readUInt32BE(20), height, `${file}: complete tile height`);
       tiles.push({ top, height, file, sha256: createHash("sha256").update(png).digest("hex") });
+      timing?.finish();
     }
+    timing?.start("final-coverage-layout");
     assert.equal(tiles[0].top, 0, `${name}: capture starts at the document top`);
     for (let index = 1; index < tiles.length; index += 1)
       assert(tiles[index].top <= tiles[index - 1].top + tiles[index - 1].height);
@@ -184,10 +224,18 @@ export async function capturePageRender(
       dimensions.height,
       `${name}: layout changed during full-page capture`,
     );
+    timing?.finish();
     return { ...dimensions, mode: single ? "full-page" : "overlapping-viewports", layout, tiles };
   } finally {
+    timing?.finish("failed");
+    timing?.start("restore-viewport");
     if (viewport) await page.setViewportSize(viewport);
+    timing?.finish();
+    timing?.start("restore-scroll");
     await page.evaluate(({ x, y }) => scrollTo(x, y), scroll);
+    timing?.finish();
+    timing?.start("snapshot-dispose");
     await original?.dispose();
+    timing?.finish();
   }
 }

@@ -4,6 +4,7 @@ import { verifyRenderedRulePackets } from "./rule-render-assertions.ts";
 import { verifyJapaneseNonRule } from "./ja-nonrule-render-assertions.ts";
 import { capturePageRender } from "./capture-page-render.ts";
 import type { PageCapture } from "./capture-page-render.ts";
+import type { CaptureTimingSink } from "./capture-render-timings.ts";
 import {
   verifyIntroductoryNavigation,
   verifySidebarMotion,
@@ -80,10 +81,12 @@ export async function verifyNavigationRenderJob(
     origin,
     output,
     linkedPages,
+    captureTimings,
   }: {
     origin: string;
     output: string;
     linkedPages: Map<string, Promise<string>>;
+    captureTimings?: CaptureTimingSink;
   },
 ): Promise<RouteReceipt> {
   const { route, device, viewport, screenshot } = job;
@@ -268,7 +271,9 @@ export async function verifyNavigationRenderJob(
     }
   });
   const initialTheme = await page.locator("html").getAttribute("data-theme");
-  const capture = await phase("capture", () => capturePageRender(page, output, screenshot));
+  const capture = await phase("capture", () =>
+    capturePageRender(page, output, screenshot, captureTimings),
+  );
   const themeScreenshots = await phase("theme-captures", async () => {
     const themeScreenshots: RouteReceipt["themeScreenshots"] = [];
     if (
@@ -284,7 +289,9 @@ export async function verifyNavigationRenderJob(
         const codeContrast = await verifyThemeReadability(page);
         const file = screenshot.replace(/\.png$/, `-${theme}.png`);
         const themeCapture =
-          theme === initialTheme ? capture : await capturePageRender(page, output, file);
+          theme === initialTheme
+            ? capture
+            : await capturePageRender(page, output, file, captureTimings);
         themeScreenshots.push({
           theme,
           screenshot: theme === initialTheme ? screenshot : file,

@@ -3,12 +3,14 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { Browser } from "playwright";
 import { capturePageRender } from "./capture-page-render.ts";
+import type { CaptureTimingSink } from "./capture-render-timings.ts";
 
 /** Falsify the optimization when fixed element boxes hide changing text layout. */
 export async function verifyCaptureRenderControls(
   browser: Browser,
   origin: string,
   output: string,
+  timings?: CaptureTimingSink,
 ) {
   const destination = path.join(output, "capture-controls");
   await mkdir(destination, { recursive: true });
@@ -53,7 +55,7 @@ export async function verifyCaptureRenderControls(
     assert.notDeepEqual(enlarged.text, before.text, "text Range exposes the viewport dependency");
     await page.setViewportSize(viewport);
     await page.evaluate(() => scrollTo(0, 37));
-    const capture = await capturePageRender(page, destination, "viewport-sensitive.png");
+    const capture = await capturePageRender(page, destination, "viewport-sensitive.png", timings);
     assert(capture.layout, "Long capture retains its comparison receipt");
     assert.equal(capture.layout.identical, false, "changing text must reject enlarged capture");
     assert.equal(capture.layout.captureViewportHeight, viewport.height);
