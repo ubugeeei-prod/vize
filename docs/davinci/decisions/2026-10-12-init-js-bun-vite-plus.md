@@ -101,3 +101,13 @@ one composed child campaign covers all eighteen native/fresh-install workers,
 with byte-equal production loader sources and build-graph inputs between layers.
 The child run is not an exact-head parent run and does not prove public release
 acceptance.
+
+After the common guard, docs and rc10 observer actually merge, source
+`734ca32063159de5ac27e6a3671a62f4ad88c5a8` rebases this coverage onto genuine
+main `0e0839fb0842b86352acee1e37adc354c71eb3fb`. The inventory now contains
+51 release contracts: 32 retain complete scoped inputs, and 19 remain broad.
+The new manager contract still has an incomplete ten-file import closure.
+An independently reviewed fifth whole 36-member cohort records this actual
+composition while preserving all four historical cohorts and every refusal.
+Historical composed-host success remains historical evidence; current product
+changes require fresh exact-head qualification of all eighteen workers.
