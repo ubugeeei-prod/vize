@@ -53,6 +53,22 @@ async function observePanel(page: Page, panel: Locator, name: string): Promise<n
   return contentWidth;
 }
 
+async function nativeScrollCompleted(completion: Promise<void>, action: string): Promise<void> {
+  await new Promise<void>((resolve, reject) => {
+    const deadline = setTimeout(() => reject(new Error(`${action} must finish scrolling`)), 10000);
+    completion.then(
+      () => {
+        clearTimeout(deadline);
+        resolve();
+      },
+      (error) => {
+        clearTimeout(deadline);
+        reject(error);
+      },
+    );
+  });
+}
+
 export async function exerciseObservedBrowserExample(page: Page, name: string): Promise<string[]> {
   if (name === "use-clipboard") {
     await page.getByText("Clipboard read permission: granted · Last failure: none").waitFor();
@@ -153,7 +169,14 @@ export async function exerciseObservedBrowserExample(page: Page, name: string): 
       ),
       true,
     );
+    const resetEnd = preview.evaluate(
+      (element) =>
+        new Promise<void>((resolve) => {
+          element.addEventListener("scrollend", () => resolve(), { once: true });
+        }),
+    );
     await activate(page, "Return to the beginning");
+    await nativeScrollCompleted(resetEnd, "Native reset");
     await outputContains(page, "Vertical offset: 0 pixels · At beginning: yes");
     await preview.focus();
     const scrollEnd = preview.evaluate(
@@ -164,25 +187,25 @@ export async function exerciseObservedBrowserExample(page: Page, name: string): 
     );
     await page.keyboard.press("PageDown");
     await page.clock.runFor(250);
-    await new Promise<void>((resolve, reject) => {
-      const deadline = setTimeout(
-        () => reject(new Error("Native PageDown must finish scrolling")),
-        10000,
-      );
-      scrollEnd.then(
-        () => {
-          clearTimeout(deadline);
-          resolve();
-        },
-        (error) => {
-          clearTimeout(deadline);
-          reject(error);
-        },
-      );
-    });
+    await nativeScrollCompleted(scrollEnd, "Native PageDown");
     await page.waitForFunction(() => (document.querySelector("textarea")?.scrollTop ?? 0) > 0);
     await outputContains(page, "At beginning: no");
-    await page.getByText("Scrolling activity: idle", { exact: true }).waitFor();
+    await page.clock.runFor(250);
+    try {
+      await page.getByText("Scrolling activity: idle", { exact: true }).waitFor();
+    } catch (error) {
+      const observed = await preview.evaluate((element) => ({
+        scrollTop: element.scrollTop,
+        scrollHeight: element.scrollHeight,
+        clientHeight: element.clientHeight,
+        output: document.querySelector("output")?.textContent,
+        paragraphs: [...document.querySelectorAll("p")].map((item) => item.textContent),
+        now: Date.now(),
+      }));
+      throw new Error(`Native PageDown did not settle: ${JSON.stringify(observed)}`, {
+        cause: error,
+      });
+    }
     const nativeOffset = await preview.evaluate((element) => Math.round(element.scrollTop));
     await outputContains(page, `Vertical offset: ${nativeOffset} pixels · At beginning: no`);
     assert.equal(await page.evaluate(() => scrollY), outsideOffset);

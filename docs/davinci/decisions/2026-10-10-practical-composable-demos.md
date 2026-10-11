@@ -242,3 +242,17 @@ assertion. Failure-only diagnostics capture the actual DOM before any extra
 query. The previously recorded bounded order comparison does not establish
 general stability; this replay requires its own complete fresh Actions capture.
 No package API changes or provider-fix claim are made. #8374 and #6101 stay open.
+
+The first exact-head [Docs run](https://github.com/ubugeeei-prod/vize/actions/runs/38142919091)
+fails the new native PageDown idle assertion. Keep its real scrollend, final
+offset, idle and surrounding-document checks. Complete the preceding native
+reset before attaching PageDown's completion listener, then advance the existing
+200ms idle fallback after genuine PageDown completion. Preserve the 10-second
+native completion deadlines and capture the actual target/output on failure.
+This is driver sequencing; no product scroll defect is inferred from that run.
+The source [Check](https://github.com/ubugeeei-prod/vize/actions/runs/38142914140)
+also rejects the size example's descendant CSS selector through the unchanged
+opinionated `css/prefer-nested-selectors` rule. Nest the same input declaration;
+retain actual content-box dimensions and native keyboard controls. The local
+24-example capture passes after these corrections, but fresh complete source
+and Docs Actions remain required before protected queue admission or delivery.

@@ -87,9 +87,9 @@ function stopObservation(): void {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-}
-.panel-size-choice input {
-  inline-size: auto;
+  input {
+    inline-size: auto;
+  }
 }
 .guide-panels {
   display: grid;
