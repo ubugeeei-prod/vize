@@ -73,6 +73,41 @@ Vize or optimizer caches, all eleven original browser assertions and unchanged
 successor reuse. Load-time body capture must remain distinct from the file at
 process exit. Preserve every original negative receipt.
 
+## Independent packed-candidate result
+
+The complete eight-phase receipt is
+`/tmp/vize-native-cache-rollover-candidate-independent-acceptance-20261012.json`,
+SHA-256 `679c3c736c146a1bc6950d29e2aaea707e05382daa80e86128387623e0ebdfbc`.
+Its 99 complete evidence files and 36 original committed source blobs were
+independently rehashed. Both default and configured-cache consumers preserve
+the exact original 154 package/snapshot entries and eleven browser assertions.
+
+For each cache location, the old published native body records six passes and
+five failures. Without deleting either old Vize or optimizer cache, the fresh
+successor process recompiles fourteen modules, then restores all fourteen on
+its second instance: all eleven assertions pass. A repeated unchanged-successor
+run recompiles none and passes all eleven again. Only after those receipts are
+frozen, a separate same-path cold authority passes all eleven and matches every
+field of all fourteen complete modules and the entire compressed manifest
+byte-for-byte, without normalization.
+
+The real same-process control retains its frozen old-body identity and all
+fourteen old complete results after an atomic disk replacement. A fresh process
+captures the successor body. Two genuine providers loaded before capture get
+stable-within-process, distinct process nonces and retain all fourteen complete
+successor outputs. The ordinary Vite tarball is SHA-256
+`98a3e0aa3c60802ac022e9ae8d836e25e1344958e1001b757ec4fb959e3698c3`;
+the native JavaScript wrapper is
+`6d74b844240fd58c6e1b7fbbcf51ca9f78aadc34a3a59353950d7d7c4e01b856`.
+The retained native bodies and all original observers are unchanged.
+
+The first source Actions retain an owned type-aware `unbound-method` warning,
+corrected by declaring the getter as a function property; runtime output is
+unchanged. The separate existing custom-directive source-custody guard rejects
+composed current-main files before runtime. Preserve both full failures and
+require the actual shared-guard repair plus fresh exact-source qualification;
+neither failure is waived by these packed-candidate controls.
+
 Fresh exact-source Actions, full protected integration, actual merge and
 installed official-release checks remain required. This bounded repair does
 not block the first fresh official release's original #8623/#8631 acceptance;

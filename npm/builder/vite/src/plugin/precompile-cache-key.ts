@@ -84,7 +84,7 @@ function resolveCompilerIdentity(): unknown {
     const version = (JSON.parse(fs.readFileSync(manifestPath, "utf-8")) as { version?: unknown })
       .version;
     const { getBindingIdentity } = requireNative("@vizejs/native/native-binding-identity.js") as {
-      getBindingIdentity(binding: unknown): BindingIdentity;
+      getBindingIdentity: (binding: unknown) => BindingIdentity;
     };
     const identity = getBindingIdentity(requireNative("@vizejs/native"));
     return {
