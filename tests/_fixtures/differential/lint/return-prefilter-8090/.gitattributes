@@ -1,0 +1,2 @@
+# Preserve the authored Unicode/CRLF bytes and keep ordinary whitespace checks.
+WritableOptions.vue.fixture -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

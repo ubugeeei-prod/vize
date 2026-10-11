@@ -1,0 +1,4 @@
+<script lang="ts">
+const total = computed(() => 1)
+export default { emits: { submit: (payload) => !!payload } }
+</script>

@@ -1,0 +1,5 @@
+<script lang="ts">
+const note = "computed emits"
+const total = useFoo(() => /* body */ { const value = 1 })
+export default { methods: { submit(payload) { void payload } } }
+</script>

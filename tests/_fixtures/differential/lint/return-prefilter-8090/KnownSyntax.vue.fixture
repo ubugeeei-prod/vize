@@ -1,0 +1,6 @@
+<script lang="ts">
+export default {
+  computed: { total: () => { function helper() { return 1 }; helper() } },
+  emits: { submit: function (payload) { void payload } }
+}
+</script>

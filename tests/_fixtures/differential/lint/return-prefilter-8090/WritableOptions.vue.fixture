@@ -1,0 +1,4 @@
+<script lang="ts">
+const café = "😀";
+export default { computed: { total: { get /* read */ () { const value = 1 }, set (value) { void value } } } }
+</script>

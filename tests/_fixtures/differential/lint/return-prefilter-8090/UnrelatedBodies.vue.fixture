@@ -1,0 +1,4 @@
+<script lang="ts">
+const total = useFoo(() => /* body */ { const value = 1 })
+export default { methods: { submit(payload) { void payload } } }
+</script>

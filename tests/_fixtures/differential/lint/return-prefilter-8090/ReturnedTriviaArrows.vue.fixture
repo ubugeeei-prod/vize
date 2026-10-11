@@ -1,0 +1,8 @@
+<script lang="ts">
+export default {
+  computed: { total: () => /* derive */
+	{ return 1 } },
+  emits: { submit: (payload) => /* validate */
+	{ return !!payload } }
+}
+</script>

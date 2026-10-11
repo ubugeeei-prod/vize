@@ -70,7 +70,9 @@ pub(super) fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
             source_may_declare_props(bytes) && contains_any(bytes, RESERVED_PROP_NEEDLES)
         }
         RULE_RETURN_IN_EMITS_VALIDATOR => {
-            source_may_declare_emits(bytes) && contains_any(bytes, BLOCK_FUNCTION_NEEDLES)
+            // Method shorthand and trivia before an arrow body have no fixed
+            // function spelling. The existing AST producer owns that decision.
+            source_may_declare_emits(bytes) && contains(bytes, b"{")
         }
         RULE_REQUIRE_VALID_DEFAULT_PROP => {
             source_may_declare_props(bytes)
@@ -82,9 +84,7 @@ pub(super) fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
         RULE_VALID_DEFINE_OPTIONS => contains(bytes, b"defineOptions"),
         RULE_VALID_NEXT_TICK => contains(bytes, b"nextTick") || contains(bytes, b"$nextTick"),
         RULE_NO_REF_AS_OPERAND => source_may_contain_ref_operand(source),
-        RULE_RETURN_IN_COMPUTED_PROPERTY => {
-            contains(bytes, b"computed") && contains_any(bytes, BLOCK_FUNCTION_NEEDLES)
-        }
+        RULE_RETURN_IN_COMPUTED_PROPERTY => contains(bytes, b"computed") && contains(bytes, b"{"),
         RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD => {
             source_may_define_component_options(bytes) && contains(bytes, b"computed")
         }
@@ -162,7 +162,6 @@ const RESERVED_IDENTIFIER_NEEDLES: &[&[u8]] = &[
     b"_openBlock",
 ];
 const RESERVED_PROP_NEEDLES: &[&[u8]] = &[b"key", b"ref", b"ref_for", b"ref_key", b"is", b"$"];
-const BLOCK_FUNCTION_NEEDLES: &[&[u8]] = &[b"=> {", b"=>{", b"function", b"get("];
 fn contains(haystack: &[u8], needle: &[u8]) -> bool {
     memmem::find(haystack, needle).is_some()
 }

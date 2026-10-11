@@ -1,0 +1,6 @@
+<script lang="ts">
+export default {
+  computed: { total() { return; } },
+  emits: { submit(payload) { return; } }
+}
+</script>

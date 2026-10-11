@@ -1,0 +1,8 @@
+<script lang="ts">
+export default {
+  computed: { total: () =>
+    { const value = 1 } },
+  emits: { submit: (payload) =>
+    { void payload } }
+}
+</script>
