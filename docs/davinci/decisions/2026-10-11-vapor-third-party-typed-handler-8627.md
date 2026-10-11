@@ -18,3 +18,8 @@ protected queue through the highest fully qualified contiguous prefix.
 Legacy runtime parity is separate from Davinci native acceptance and from
 installed release verification. The external issue remains open until actual
 Actions, merge and public-consumer validation establish the delivered fix.
+
+The existing locked VDOM oracle enables its official TypeScript template parser
+and uses the already installed Vite Oxc transform to erase types from complete
+TypeScript modules before evaluating them. JavaScript sources retain their
+existing complete code; all runtime packet comparisons remain enforced.
