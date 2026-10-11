@@ -1,0 +1,42 @@
+name: Validate workflow syntax and contexts
+description: Run the pinned official workflow checker with actual refusal controls
+runs:
+  using: composite
+  steps:
+    - name: Install the pinned workflow checker
+      id: install
+      shell: bash
+      run: |
+        set -euo pipefail
+        directory="$(mktemp -d "${RUNNER_TEMP}/vize-actionlint-1.7.12.XXXXXX")"
+        curl --fail --silent --show-error --location --retry 2 --max-time 30 \
+          https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz \
+          --output "$directory/actionlint.tar.gz"
+        printf '%s  %s\n' \
+          8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8 \
+          "$directory/actionlint.tar.gz" | sha256sum --check --strict
+        tar -xzf "$directory/actionlint.tar.gz" -C "$directory" actionlint
+        "$directory/actionlint" --version
+        printf 'binary=%s\n' "$directory/actionlint" >> "$GITHUB_OUTPUT"
+
+    - name: Qualify complete workflow syntax with actual refusal controls
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+      env:
+        ACTIONLINT_BINARY: ${{ steps.install.outputs.binary }}
+        WORKFLOW_VALIDATOR_ACTION_PATH: ${{ github.action_path }}
+      with:
+        script: |
+          const { execFileSync } = require('node:child_process');
+          execFileSync(process.execPath, [
+            `${process.env.WORKFLOW_VALIDATOR_ACTION_PATH}/check.mjs`,
+            process.env.ACTIONLINT_BINARY,
+          ], { cwd: process.env.GITHUB_WORKSPACE, stdio: 'inherit' });
+
+    - name: Preserve whole workflow validation and refusal packets
+      if: ${{ !cancelled() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: workflow-syntax-${{ github.sha }}-${{ github.run_attempt }}
+        path: target/workflow-syntax
+        retention-days: 14
+        if-no-files-found: error
