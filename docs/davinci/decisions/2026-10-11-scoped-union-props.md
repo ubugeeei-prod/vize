@@ -37,6 +37,21 @@ first module or in the root SFC. An unresolved union branch likewise retains
 observed keys and reports incomplete resolution. This slice does not claim
 complete cross-module union inference.
 
+The text expansion refuses an unresolved or recursive union branch and keeps
+the original expression, rather than replacing it with a partial object
+literal. Scoped completeness is metadata and does not guard the legacy
+compiler's separate AST fallback. That pre-existing fallback accepts known
+branches where official Vue refuses an unresolved reference; foreign helper
+aliases can likewise still resolve in the root's flat compatibility maps.
+These remain compiler TODOs under #6100/#6880, outside this props-retention fix.
+The mandatory whole controls packet retains both unknown-branch orders, a
+cycle, a nested unresolved union, a foreign helper and same-name helpers in
+two foreign modules. It pins all 30 complete official compiler results,
+including the cycle's RangeError and all unresolved-reference codeframes,
+and retains all 18 complete native results for source comparison. The three
+new text-resolver controls require complete, unresolved and cyclic branches
+to remain distinct; branch-local requiredness keeps Vue's original semantics.
+
 The whole corpus packet in
 `tests/_fixtures/differential/compiler/scoped-union-props` contains inline
 and imported versions of the actual base/intersection/union shape, the
@@ -90,11 +105,11 @@ byte-identical. Every other client problem record and all other 531 complete
 SSR HTML outputs remain byte-identical for both provider tracks.
 
 | Original 533-fixture lane | Before passing rows | After passing rows | Proven entries removed |
-| --- | ---: | ---: | ---: |
-| Supported rc.11 mount | 508 | 510 | 2 |
-| Supported rc.11 hydrate | 485 | 487 | 2 |
-| Reference rc.9 mount | 471 | 471 | 0 |
-| Reference rc.9 hydrate | 369 | 371 | 2 |
+| ------------------------- | ------------------: | -----------------: | ---------------------: |
+| Supported rc.11 mount     |                 508 |                510 |                      2 |
+| Supported rc.11 hydrate   |                 485 |                487 |                      2 |
+| Reference rc.9 mount      |                 471 |                471 |                      0 |
+| Reference rc.9 hydrate    |                 369 |                371 |                      2 |
 
 Only the corresponding `icon`/`icon-button` entries ratchet down: supported
 mount/hydrate now retain 23/46 known entries; reference mount/hydrate retain

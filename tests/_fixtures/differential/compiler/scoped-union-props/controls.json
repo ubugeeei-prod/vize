@@ -1,0 +1,275 @@
+{
+  "files": {
+    "Foreign.ts": "type Helper = string; export type Props = { known?: Helper } | { enabled?: boolean };",
+    "A.ts": "type Helper = string; export interface A { known?: Helper }",
+    "B.ts": "type Helper = boolean; export interface B { known?: Helper }"
+  },
+  "cases": [
+    {
+      "name": "UnknownFirst",
+      "source": "<script setup lang=\"ts\">defineProps<Missing | { known: string }>()</script><template><div>{{ known }}</div></template>"
+    },
+    {
+      "name": "UnknownLast",
+      "source": "<script setup lang=\"ts\">defineProps<{ known: string } | Missing>()</script><template><div>{{ known }}</div></template>"
+    },
+    {
+      "name": "Cycle",
+      "source": "<script setup lang=\"ts\">type Cycle = Cycle | { known: string }; defineProps<Cycle>()</script><template><div>{{ known }}</div></template>"
+    },
+    {
+      "name": "Nested",
+      "source": "<script setup lang=\"ts\">type Nested = { known: string } | (Missing | { enabled?: boolean }); defineProps<Nested>()</script><template><div>{{ known }}</div></template>"
+    },
+    {
+      "name": "Foreign",
+      "source": "<script setup lang=\"ts\">import type { Props } from \"./Foreign\"; type Helper = boolean; defineProps<Props>()</script><template><div>{{ known }}</div></template>"
+    },
+    {
+      "name": "Homonym",
+      "source": "<script setup lang=\"ts\">import type { A } from \"./A\"; import type { B } from \"./B\"; type Helper = number; defineProps<A | B>()</script><template><div>{{ known }}</div></template>"
+    }
+  ],
+  "official": [
+    {
+      "name": "UnknownFirst",
+      "provider": "3.5.35",
+      "lane": "ssr",
+      "error": {
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] Unresolvable type reference or unsupported built-in utility type\n\n<fixture>/UnknownFirst.vue\n1  |  <script setup lang=\"ts\">defineProps<Missing | { known: string }>()</script><template><div>{{ known }}</div></template>\n   |                                      ^^^^^^^"
+      }
+    },
+    {
+      "name": "UnknownFirst",
+      "provider": "3.5.35",
+      "lane": "dom",
+      "error": {
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] Unresolvable type reference or unsupported built-in utility type\n\n<fixture>/UnknownFirst.vue\n1  |  <script setup lang=\"ts\">defineProps<Missing | { known: string }>()</script><template><div>{{ known }}</div></template>\n   |                                      ^^^^^^^"
+      }
+    },
+    {
+      "name": "UnknownFirst",
+      "provider": "3.6.0-rc.11",
+      "lane": "ssr",
+      "error": {
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] Unresolvable type reference or unsupported built-in utility type\n\n<fixture>/UnknownFirst.vue\n1  |  <script setup lang=\"ts\">defineProps<Missing | { known: string }>()</script><template><div>{{ known }}</div></template>\n   |                                      ^^^^^^^"
+      }
+    },
+    {
+      "name": "UnknownFirst",
+      "provider": "3.6.0-rc.11",
+      "lane": "dom",
+      "error": {
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] Unresolvable type reference or unsupported built-in utility type\n\n<fixture>/UnknownFirst.vue\n1  |  <script setup lang=\"ts\">defineProps<Missing | { known: string }>()</script><template><div>{{ known }}</div></template>\n   |                                      ^^^^^^^"
+      }
+    },
+    {
+      "name": "UnknownFirst",
+      "provider": "3.6.0-rc.11",
+      "lane": "vapor",
+      "error": {
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] Unresolvable type reference or unsupported built-in utility type\n\n<fixture>/UnknownFirst.vue\n1  |  <script setup lang=\"ts\">defineProps<Missing | { known: string }>()</script><template><div>{{ known }}</div></template>\n   |                                      ^^^^^^^"
+      }
+    },
+    {
+      "name": "UnknownLast",
+      "provider": "3.5.35",
+      "lane": "ssr",
+      "error": {
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] Unresolvable type reference or unsupported built-in utility type\n\n<fixture>/UnknownLast.vue\n1  |  <script setup lang=\"ts\">defineProps<{ known: string } | Missing>()</script><template><div>{{ known }}</div></template>\n   |                                                          ^^^^^^^"
+      }
+    },
+    {
+      "name": "UnknownLast",
+      "provider": "3.5.35",
+      "lane": "dom",
+      "error": {
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] Unresolvable type reference or unsupported built-in utility type\n\n<fixture>/UnknownLast.vue\n1  |  <script setup lang=\"ts\">defineProps<{ known: string } | Missing>()</script><template><div>{{ known }}</div></template>\n   |                                                          ^^^^^^^"
+      }
+    },
+    {
+      "name": "UnknownLast",
+      "provider": "3.6.0-rc.11",
+      "lane": "ssr",
+      "error": {
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] Unresolvable type reference or unsupported built-in utility type\n\n<fixture>/UnknownLast.vue\n1  |  <script setup lang=\"ts\">defineProps<{ known: string } | Missing>()</script><template><div>{{ known }}</div></template>\n   |                                                          ^^^^^^^"
+      }
+    },
+    {
+      "name": "UnknownLast",
+      "provider": "3.6.0-rc.11",
+      "lane": "dom",
+      "error": {
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] Unresolvable type reference or unsupported built-in utility type\n\n<fixture>/UnknownLast.vue\n1  |  <script setup lang=\"ts\">defineProps<{ known: string } | Missing>()</script><template><div>{{ known }}</div></template>\n   |                                                          ^^^^^^^"
+      }
+    },
+    {
+      "name": "UnknownLast",
+      "provider": "3.6.0-rc.11",
+      "lane": "vapor",
+      "error": {
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] Unresolvable type reference or unsupported built-in utility type\n\n<fixture>/UnknownLast.vue\n1  |  <script setup lang=\"ts\">defineProps<{ known: string } | Missing>()</script><template><div>{{ known }}</div></template>\n   |                                                          ^^^^^^^"
+      }
+    },
+    {
+      "name": "Cycle",
+      "provider": "3.5.35",
+      "lane": "ssr",
+      "error": {
+        "name": "RangeError",
+        "message": "Maximum call stack size exceeded"
+      }
+    },
+    {
+      "name": "Cycle",
+      "provider": "3.5.35",
+      "lane": "dom",
+      "error": {
+        "name": "RangeError",
+        "message": "Maximum call stack size exceeded"
+      }
+    },
+    {
+      "name": "Cycle",
+      "provider": "3.6.0-rc.11",
+      "lane": "ssr",
+      "error": {
+        "name": "RangeError",
+        "message": "Maximum call stack size exceeded"
+      }
+    },
+    {
+      "name": "Cycle",
+      "provider": "3.6.0-rc.11",
+      "lane": "dom",
+      "error": {
+        "name": "RangeError",
+        "message": "Maximum call stack size exceeded"
+      }
+    },
+    {
+      "name": "Cycle",
+      "provider": "3.6.0-rc.11",
+      "lane": "vapor",
+      "error": {
+        "name": "RangeError",
+        "message": "Maximum call stack size exceeded"
+      }
+    },
+    {
+      "name": "Nested",
+      "provider": "3.5.35",
+      "lane": "ssr",
+      "error": {
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] Unresolvable type reference or unsupported built-in utility type\n\n<fixture>/Nested.vue\n1  |  <script setup lang=\"ts\">type Nested = { known: string } | (Missing | { enabled?: boolean }); defineProps<Nested>()</script><template><div>{{ known }}</div></template>\n   |                                                             ^^^^^^^"
+      }
+    },
+    {
+      "name": "Nested",
+      "provider": "3.5.35",
+      "lane": "dom",
+      "error": {
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] Unresolvable type reference or unsupported built-in utility type\n\n<fixture>/Nested.vue\n1  |  <script setup lang=\"ts\">type Nested = { known: string } | (Missing | { enabled?: boolean }); defineProps<Nested>()</script><template><div>{{ known }}</div></template>\n   |                                                             ^^^^^^^"
+      }
+    },
+    {
+      "name": "Nested",
+      "provider": "3.6.0-rc.11",
+      "lane": "ssr",
+      "error": {
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] Unresolvable type reference or unsupported built-in utility type\n\n<fixture>/Nested.vue\n1  |  <script setup lang=\"ts\">type Nested = { known: string } | (Missing | { enabled?: boolean }); defineProps<Nested>()</script><template><div>{{ known }}</div></template>\n   |                                                             ^^^^^^^"
+      }
+    },
+    {
+      "name": "Nested",
+      "provider": "3.6.0-rc.11",
+      "lane": "dom",
+      "error": {
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] Unresolvable type reference or unsupported built-in utility type\n\n<fixture>/Nested.vue\n1  |  <script setup lang=\"ts\">type Nested = { known: string } | (Missing | { enabled?: boolean }); defineProps<Nested>()</script><template><div>{{ known }}</div></template>\n   |                                                             ^^^^^^^"
+      }
+    },
+    {
+      "name": "Nested",
+      "provider": "3.6.0-rc.11",
+      "lane": "vapor",
+      "error": {
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] Unresolvable type reference or unsupported built-in utility type\n\n<fixture>/Nested.vue\n1  |  <script setup lang=\"ts\">type Nested = { known: string } | (Missing | { enabled?: boolean }); defineProps<Nested>()</script><template><div>{{ known }}</div></template>\n   |                                                             ^^^^^^^"
+      }
+    },
+    {
+      "name": "Foreign",
+      "provider": "3.5.35",
+      "lane": "ssr",
+      "code": "import { defineComponent as _defineComponent } from 'vue'\nimport { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nimport type { Props } from \"./Foreign\"; type Helper = boolean; \nexport default /*@__PURE__*/_defineComponent({\n  __name: 'Foreign',\n  __ssrInlineRender: true,\n  props: {\n    known: { type: String, required: false },\n    enabled: { type: Boolean, required: false }\n  },\n  setup(__props: any) {\n\nreturn (_ctx: any,_push: any,_parent: any,_attrs: any) => {\n  _push(`<div${\n    _ssrRenderAttrs(_attrs)\n  }>${\n    _ssrInterpolate(__props.known)\n  }</div>`)\n}\n}\n\n})"
+    },
+    {
+      "name": "Foreign",
+      "provider": "3.5.35",
+      "lane": "dom",
+      "code": "import { defineComponent as _defineComponent } from 'vue'\nimport { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nimport type { Props } from \"./Foreign\"; type Helper = boolean; \nexport default /*@__PURE__*/_defineComponent({\n  __name: 'Foreign',\n  props: {\n    known: { type: String, required: false },\n    enabled: { type: Boolean, required: false }\n  },\n  setup(__props: any) {\n\nreturn (_ctx: any,_cache: any) => {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString(__props.known), 1 /* TEXT */))\n}\n}\n\n})"
+    },
+    {
+      "name": "Foreign",
+      "provider": "3.6.0-rc.11",
+      "lane": "ssr",
+      "code": "import { defineComponent as _defineComponent } from 'vue'\nimport { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nimport type { Props } from \"./Foreign\"; type Helper = boolean; \nexport default /*@__PURE__*/_defineComponent({\n  __name: 'Foreign',\n  __ssrInlineRender: true,\n  props: {\n    known: { type: String, required: false },\n    enabled: { type: Boolean, required: false }\n  },\n  setup(__props: any) {\n\nreturn (_ctx: any,_push: any,_parent: any,_attrs: any) => {\n  _push(`<div${\n    _ssrRenderAttrs(_attrs)\n  }>${\n    _ssrInterpolate(__props.known)\n  }</div>`)\n}\n}\n\n})"
+    },
+    {
+      "name": "Foreign",
+      "provider": "3.6.0-rc.11",
+      "lane": "dom",
+      "code": "import { defineComponent as _defineComponent } from 'vue'\nimport { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nimport type { Props } from \"./Foreign\"; type Helper = boolean; \nexport default /*@__PURE__*/_defineComponent({\n  __name: 'Foreign',\n  props: {\n    known: { type: String, required: false },\n    enabled: { type: Boolean, required: false }\n  },\n  setup(__props: any) {\n\nreturn (_ctx: any,_cache: any) => {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString(__props.known), 1 /* TEXT */))\n}\n}\n\n})"
+    },
+    {
+      "name": "Foreign",
+      "provider": "3.6.0-rc.11",
+      "lane": "vapor",
+      "code": "import { defineVaporComponent as _defineVaporComponent } from 'vue'\nimport { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div> \", 1)\nimport type { Props } from \"./Foreign\"; type Helper = boolean; \nexport default /*@__PURE__*/_defineVaporComponent({\n  __name: 'Foreign',\n  props: {\n    known: { type: String, required: false },\n    enabled: { type: Boolean, required: false }\n  },\n  setup(__props: any) {\n\n\n  const n0 = t0()\n  const x0 = _txt(n0)\n  _renderEffect(() => _setText(x0, _toDisplayString(__props.known)))\n  return n0\n\n}\n\n})"
+    },
+    {
+      "name": "Homonym",
+      "provider": "3.5.35",
+      "lane": "ssr",
+      "code": "import { defineComponent as _defineComponent } from 'vue'\nimport { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nimport type { A } from \"./A\"; import type { B } from \"./B\"; type Helper = number; \nexport default /*@__PURE__*/_defineComponent({\n  __name: 'Homonym',\n  __ssrInlineRender: true,\n  props: {\n    known: { type: [String, Boolean], required: false }\n  },\n  setup(__props: any) {\n\nreturn (_ctx: any,_push: any,_parent: any,_attrs: any) => {\n  _push(`<div${\n    _ssrRenderAttrs(_attrs)\n  }>${\n    _ssrInterpolate(__props.known)\n  }</div>`)\n}\n}\n\n})"
+    },
+    {
+      "name": "Homonym",
+      "provider": "3.5.35",
+      "lane": "dom",
+      "code": "import { defineComponent as _defineComponent } from 'vue'\nimport { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nimport type { A } from \"./A\"; import type { B } from \"./B\"; type Helper = number; \nexport default /*@__PURE__*/_defineComponent({\n  __name: 'Homonym',\n  props: {\n    known: { type: [String, Boolean], required: false }\n  },\n  setup(__props: any) {\n\nreturn (_ctx: any,_cache: any) => {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString(__props.known), 1 /* TEXT */))\n}\n}\n\n})"
+    },
+    {
+      "name": "Homonym",
+      "provider": "3.6.0-rc.11",
+      "lane": "ssr",
+      "code": "import { defineComponent as _defineComponent } from 'vue'\nimport { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nimport type { A } from \"./A\"; import type { B } from \"./B\"; type Helper = number; \nexport default /*@__PURE__*/_defineComponent({\n  __name: 'Homonym',\n  __ssrInlineRender: true,\n  props: {\n    known: { type: [String, Boolean], required: false }\n  },\n  setup(__props: any) {\n\nreturn (_ctx: any,_push: any,_parent: any,_attrs: any) => {\n  _push(`<div${\n    _ssrRenderAttrs(_attrs)\n  }>${\n    _ssrInterpolate(__props.known)\n  }</div>`)\n}\n}\n\n})"
+    },
+    {
+      "name": "Homonym",
+      "provider": "3.6.0-rc.11",
+      "lane": "dom",
+      "code": "import { defineComponent as _defineComponent } from 'vue'\nimport { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nimport type { A } from \"./A\"; import type { B } from \"./B\"; type Helper = number; \nexport default /*@__PURE__*/_defineComponent({\n  __name: 'Homonym',\n  props: {\n    known: { type: [String, Boolean], required: false }\n  },\n  setup(__props: any) {\n\nreturn (_ctx: any,_cache: any) => {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString(__props.known), 1 /* TEXT */))\n}\n}\n\n})"
+    },
+    {
+      "name": "Homonym",
+      "provider": "3.6.0-rc.11",
+      "lane": "vapor",
+      "code": "import { defineVaporComponent as _defineVaporComponent } from 'vue'\nimport { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div> \", 1)\nimport type { A } from \"./A\"; import type { B } from \"./B\"; type Helper = number; \nexport default /*@__PURE__*/_defineVaporComponent({\n  __name: 'Homonym',\n  props: {\n    known: { type: [String, Boolean], required: false }\n  },\n  setup(__props: any) {\n\n\n  const n0 = t0()\n  const x0 = _txt(n0)\n  _renderEffect(() => _setText(x0, _toDisplayString(__props.known)))\n  return n0\n\n}\n\n})"
+    }
+  ]
+}

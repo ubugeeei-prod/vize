@@ -1159,7 +1159,7 @@
     "test": "vp test run && vp test run --config vite.production-vue.config.ts",
     "check:catalog": "vp test run src/catalog/family-catalog.test.ts",
     "check:static": "vp check src scripts vite.config.ts tsconfig.typecheck.json && vue-tsc --noEmit -p tsconfig.typecheck.json",
-    "check:vapor-runtime": "vp exec node --test scripts/vapor-runtime/css-properties-hydration.test.ts scripts/vapor-runtime/scoped-union-props.test.ts && vp exec node scripts/check-vapor-runtime.ts",
+    "check:vapor-runtime": "vp exec node --test scripts/vapor-runtime/css-properties-hydration.test.ts scripts/vapor-runtime/scoped-union-props.test.ts scripts/vapor-runtime/scoped-union-controls.test.ts && vp exec node scripts/check-vapor-runtime.ts",
     "check:story-testbed": "vp exec node scripts/story-testbed.ts check --format json",
     "check": "pnpm lint:sfc && pnpm check:static && pnpm check:story-testbed && pnpm check:vapor-runtime",
     "check:fix": "vp check --fix src scripts vite.config.ts tsconfig.typecheck.json",

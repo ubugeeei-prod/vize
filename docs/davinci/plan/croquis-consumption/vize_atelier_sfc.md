@@ -18,9 +18,9 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `Croquis.binding_spans`     | field | `croquis` |     2 |     2 |
 | `Croquis.bindings`          | field | `croquis` |     7 |    23 |
 | `Croquis.import_statements` | field | `croquis` |     1 |     2 |
-| `Croquis.macros`            | field | `croquis` |     6 |    17 |
+| `Croquis.macros`            | field | `croquis` |     7 |    18 |
 | `Croquis.scopes`            | field | `croquis` |     1 |     2 |
-| `Croquis.types`             | field | `croquis` |     4 |    16 |
+| `Croquis.types`             | field | `croquis` |     5 |    18 |
 | `Croquis.unused_bindings`   | field | `croquis` |     4 |     8 |
 
 ## Non-product `vize_croquis` imports
@@ -48,7 +48,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `SfcCustomBlock`                          |     2 |     2 |
 | `SfcDescriptor`                           |    20 |    49 |
 | `SfcError`                                |    22 |    65 |
-| `SfcParseOptions`                         |    26 |   134 |
+| `SfcParseOptions`                         |    27 |   135 |
 | `SfcScriptBlock`                          |     2 |     2 |
 | `SfcStyleBlock`                           |     5 |     8 |
 | `SfcTemplateBlock`                        |     7 |     9 |

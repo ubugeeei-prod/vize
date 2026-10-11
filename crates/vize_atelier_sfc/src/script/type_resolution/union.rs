@@ -14,10 +14,10 @@ pub(super) fn resolve_members(
 ) -> Option<String> {
     let mut members: Vec<Member> = Vec::new();
     for part in parts {
-        let Some(body) = resolve_type_to_object_body_inner(part, interfaces, type_aliases, stack)
-        else {
-            continue;
-        };
+        // Keep the original expression when any branch cannot be expanded.
+        // A partial literal would erase the unresolved branch before the
+        // existing AST resolver has a chance to inspect it.
+        let body = resolve_type_to_object_body_inner(part, interfaces, type_aliases, stack)?;
         for member in parse_members(&body) {
             if let Some(previous) = members.iter_mut().find(|old| old.key == member.key) {
                 previous.optional |= member.optional;
@@ -65,5 +65,27 @@ mod tests {
             ),
             "{ title: string; value?: (string) | (number); choice: 'a' | 'b'; label?: string }"
         );
+    }
+
+    #[test]
+    fn unknown_and_recursive_branches_do_not_become_partial_object_literals() {
+        let aliases = FxHashMap::from_iter([
+            (cstr!("Cycle"), cstr!("Cycle | { known: string }")),
+            (
+                cstr!("Nested"),
+                cstr!("{ known: string } | (Missing | { enabled?: boolean })"),
+            ),
+        ]);
+        for expression in [
+            "Missing | { known: string }",
+            "{ known: string } | Missing",
+            "Cycle",
+            "Nested",
+        ] {
+            assert_eq!(
+                resolve_type_args(expression, &FxHashMap::default(), &aliases),
+                expression,
+            );
+        }
     }
 }
