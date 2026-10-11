@@ -183,9 +183,26 @@ refusal with tooling's exact two dependencies. Product and transport bytes
 remain unchanged. Fresh corrected-head Actions must qualify all original gates;
 these initial successful boundaries provide no credit to that later source.
 
-TODO: qualify actual same-source Actions and all original job/workload outcomes.
+## Retired protected candidate
+
+[Check 38135879923](https://github.com/ubugeeei-prod/vize/actions/runs/38135879923)
+at `872957a02d953bf4afe42f5c3e708f288ce43763` passed all original full source
+workloads: 31 jobs succeeded and 17 retained their existing skips. Its CLI
+and oracle commands took 54.36 s and 17.54 s; the complete build took 81 s,
+packing 6 s, and the four strict restorations 4/4/5/4 s. The producer became
+available 110 s after planning; tooling initialized 117 s after it. JS tests
+took 906 s and UI 140 s. These step walls do not prove CPU or global savings.
+
+The candidate remains red and was dequeued: its original
+[Musea run](https://github.com/ubugeeei-prod/vize/actions/runs/38135879860)
+passed 46 of 47 cases but timed out waiting for the first current variant.
+Both diagnostic callbacks failed with `__name is not defined`, leaving the
+actual navigation state unknown. The [browser payload correction](./2026-10-11-6830-musea-browser-payload.md)
+preserves the original wait and corpus; it repairs collection, not the timeout.
+
+TODO: qualify final composed source and all original job/workload outcomes.
 Compare aggregate compile command wall removed, packing/transfer/validation
-added, and overall critical path independently. The current JS job
+added, and overall critical path independently. The earlier baseline JS job
 took 1,216 s in both protected runs and was the longest job. Removing repeated
 Rust commands could reduce resource use without shortening that observed
 whole Check path; no overall speedup is claimed before measurement.
