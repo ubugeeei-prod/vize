@@ -129,3 +129,31 @@ followed by protected queue and actual merge. Source inclusion in a release is
 separate from installed consumer evidence. #4075 remains open for its larger
 standard-host protocol requirement; #6258's grouped expect-span limitation is
 unchanged. No upstream comments, changes or generic closure claims are made.
+
+## Installed original replay
+
+The owned bridge and its original 20 bound-emitter plus 12 named-model cases
+are already merged through #8233 and #8539. The #4075 body permits this owned
+bridge alternative; the stock Content Mapper's unequal-spelling null/refusal
+remains a distinct host limitation. Public v0.443.0 predates the named-model
+merge, so its source lacks that slice. No installed runtime failure is inferred
+from that absence.
+
+Connect the unchanged two Rust targets and complete 53-body fixture/support
+closure to the existing public release consumer. Authenticate the release's
+GNU CLI archive and exact H-declared TypeScript 7 package, alongside public Vue
+3.5.35. A separate test-only Cargo workspace compiles original Carton/L0/derive
+support and external identities present in H's lock. It neither builds a Vize
+product nor supplies a replacement CLI. Freeze its resolved lock before the
+original tests; retain compiler artifact identities, whole command logs,
+decoded process messages and terminal receipts. Explicitly disable developer
+runtime discovery and reject inherited overrides.
+
+Require all original 32 contexts, 896 model response envelopes and 660 bound
+cursor triples, complete diagnostic guards/repairs and both actual version-2
+application and independent version-3 goldens. The 160 uncontracted bound
+declaration definitions remain observations. Any absent context, foreign
+provider, changed source or partial process receipt prevents acceptance.
+Reviewed source requires exact-head Actions and a fresh published tuple; it
+grants no installed execution or Issue closure claim. Reuse the existing workflow and keep its
+DOM, SSR, gallery and VRT gates and original deadlines intact.

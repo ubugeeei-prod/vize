@@ -19,7 +19,7 @@ export function independentPublicObservationLaw() {
   ) as Workflow;
   const job = workflow.jobs["public-consumer"];
   const prerequisiteIds = ["guard", "prepare", "install", "chromium"];
-  const ids = [...prerequisiteIds, "native", "browser"];
+  const ids = [...prerequisiteIds, "native", "browser", "lsp"];
   for (const id of ids) assert.equal(job.steps.filter((step) => step.id === id).length, 1);
   assert.ok(!job["continue-on-error"]);
   assert.ok(job.steps.every((step) => !step["continue-on-error"]));
@@ -31,7 +31,8 @@ export function independentPublicObservationLaw() {
     cancelled = false,
     success = true,
   ) => {
-    assert.ok(condition?.startsWith("${{") && condition.endsWith("}}"));
+    assert.ok(condition);
+    assert.ok(condition.startsWith("${{") && condition.endsWith("}}"));
     const steps = Object.fromEntries(
       ids.map((id) => [id, { outcome: overrides[id] ?? "success" }]),
     );
@@ -55,7 +56,7 @@ export function independentPublicObservationLaw() {
   assert.equal(evaluate(browser.if, {}, true), false);
   assert.equal(evaluate(seal.if), true);
   assert.equal(evaluate(seal.if, {}, false, false), false);
-  for (const id of ["native", "browser"]) {
+  for (const id of ["native", "browser", "lsp"]) {
     for (const outcome of ["failure", "skipped", "cancelled"] as const)
       assert.equal(evaluate(seal.if, { [id]: outcome }), false);
   }
