@@ -8,7 +8,11 @@ pub(super) fn is_annotation(op: &Op<'_>) -> bool {
     };
     vize_l0::directive::parse_vize_directive(comment.content, 1, 0).is_some()
         || matches!(
-            comment.content.split_whitespace().next(),
+            comment
+                .content
+                .trim_ascii_start()
+                .split_ascii_whitespace()
+                .next(),
             Some(
                 "eslint-disable"
                     | "eslint-disable-line"

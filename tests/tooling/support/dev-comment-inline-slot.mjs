@@ -31,7 +31,7 @@ const corpus = new URL(
 const manifest = JSON.parse(readFileSync(new URL("cases.json", corpus)));
 assert.equal(
   createHash("sha256").update(input.source).digest("hex"),
-  manifest.files.find((file) => file.path === "inline-slot.vue.txt").sha256,
+  manifest.files.find((file) => file.path === input.fixture).sha256,
 );
 async function load(code) {
   const body = code.replace(
@@ -53,7 +53,9 @@ function app(component) {
   return app;
 }
 const html = await server.renderToString(app(await load(input.ssr.code)));
-assert.equal(html, "<div><section>a  b Session</section></div>");
+const expected = manifest.inlineSlots.find((fixture) => fixture.fixture === input.fixture);
+assert.equal(createHash("sha256").update(input.ssr.code).digest("hex"), expected.ssrCodeSha256);
+assert.equal(html, expected.html);
 const root = document.createElement("div");
 root.innerHTML = html;
 document.body.append(root);

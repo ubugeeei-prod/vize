@@ -84,6 +84,9 @@ fn ordinary_comments_and_similar_words_keep_their_rendered_children() {
         "eslint-disableish",
         "oxlint-disablement",
         "note eslint-disable",
+        "eslint-disable\u{00a0}rule",
+        "oxlint-disable\u{2003}rule",
+        "\u{00a0}eslint-disable rule",
     ] {
         let source = format!("<div><!--{content}--><span>kept</span></div>");
         let selected = compile(&source, false);

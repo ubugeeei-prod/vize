@@ -29,38 +29,53 @@ const ORIGINAL: &str = "eslint-disable-next-line @intlify/vue-i18n/no-raw-text";
 
 #[test]
 fn inline_slot_annotation_keeps_hydration_text_grouping() {
-    let source = include_str!(
+    let original = include_str!(
         "../../../tests/_fixtures/differential/compiler/dev-comment-hydration/inline-slot.vue.txt"
     );
-    let input =
-        json!({"source": source, "dom": compile(source, false), "ssr": compile(source, true)});
-    let mut child = Command::new("node")
-        .arg(
-            Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("../../tests/tooling/support/dev-comment-inline-slot.mjs"),
-        )
-        .env("NODE_ENV", "development")
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .expect("real slot hydration");
-    child
-        .stdin
-        .take()
-        .expect("stdin")
-        .write_all(&serde_json::to_vec(&input).expect("complete modules"))
-        .expect("send modules");
-    let output = child.wait_with_output().expect("slot hydration completed");
-    assert!(
-        output.status.success(),
-        "{}\n{}",
-        String::from_utf8_lossy(&output.stderr),
-        String::from_utf8_lossy(&output.stdout)
+    let non_ascii = include_str!(
+        "../../../tests/_fixtures/differential/compiler/dev-comment-hydration/inline-slot-non-ascii.vue.txt"
     );
-    let observed: serde_json::Value =
-        serde_json::from_slice(&output.stdout).expect("complete inline slot observation");
-    retain("dev-comment-inline-slot-runtime.json", &input, &observed);
+    let mut inputs = Vec::new();
+    let mut observations = Vec::new();
+    for (fixture, source) in [
+        ("inline-slot.vue.txt", original),
+        ("inline-slot-non-ascii.vue.txt", non_ascii),
+    ] {
+        let input = json!({"fixture": fixture, "source": source, "dom": compile(source, false), "ssr": compile(source, true)});
+        let mut child = Command::new("node")
+            .arg(
+                Path::new(env!("CARGO_MANIFEST_DIR"))
+                    .join("../../tests/tooling/support/dev-comment-inline-slot.mjs"),
+            )
+            .env("NODE_ENV", "development")
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .expect("real slot hydration");
+        child
+            .stdin
+            .take()
+            .expect("stdin")
+            .write_all(&serde_json::to_vec(&input).expect("complete modules"))
+            .expect("send modules");
+        let output = child.wait_with_output().expect("slot hydration completed");
+        assert!(
+            output.status.success(),
+            "{}\n{}",
+            String::from_utf8_lossy(&output.stderr),
+            String::from_utf8_lossy(&output.stdout)
+        );
+        let observed: serde_json::Value =
+            serde_json::from_slice(&output.stdout).expect("complete inline slot observation");
+        inputs.push(input);
+        observations.push(observed);
+    }
+    retain(
+        "dev-comment-inline-slot-runtime.json",
+        &json!(inputs),
+        &json!(observations),
+    );
 }
 
 fn compile(source: &str, ssr: bool) -> SfcCompileResult {

@@ -80,6 +80,11 @@ An additional complete SFC checks an annotation between inline text and
 interpolation inside a component slot against exact SSR HTML and real
 hydration. Both runtime tests retain their source, complete compiler
 modules and runtime observations in the required test artifacts.
+Lint pragma keywords use the same ASCII whitespace boundary as the
+existing compatibility DOM and SSR paths. Non-breaking or em-space
+lookalikes remain ordinary comments. A complete non-ASCII slot SFC
+reproduced hydration text/children warnings before this alignment;
+the differential controls also cover leading non-breaking whitespace.
 
 The normal checks also validate the observer guard through `node:vm`
 without implied-eval warnings. The canonical consumer inventory includes
