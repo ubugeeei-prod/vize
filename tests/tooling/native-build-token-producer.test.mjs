@@ -6,7 +6,7 @@ import { test } from "node:test";
 import { runCiBuild } from "../../npm/native/scripts/build-ci.mjs";
 import { nativeBuildEnvironment } from "../../npm/native/scripts/native-build-environment.mjs";
 
-test("build invocations override inherited identity while preserving every other environment field", () => {
+void test("build invocations override inherited identity while preserving every other environment field", () => {
   const inherited = {
     PATH: "unchanged-path",
     CUSTOM: "unchanged-value",
@@ -21,7 +21,7 @@ test("build invocations override inherited identity while preserving every other
   assert.equal(inherited.VIZE_NATIVE_BUILD_TOKEN, "stale");
 });
 
-test("the actual CI producer gives each build a fresh token without adding another native build", () => {
+void test("the actual CI producer gives each build a fresh token without adding another native build", () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-native-token-producer-"));
   try {
     const attempts = [];
