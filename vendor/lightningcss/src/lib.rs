@@ -19439,10 +19439,7 @@ mod tests {
     );
 
     // Test in image()
-    minify_test(
-      ".foo { mask: image(alpha(from red / 1))}",
-      ".foo{mask:image(red)}",
-    );
+    minify_test(".foo { mask: image(alpha(from red / 1))}", ".foo{mask:image(red)}");
 
     // Test in linear-gradient()
     minify_test(

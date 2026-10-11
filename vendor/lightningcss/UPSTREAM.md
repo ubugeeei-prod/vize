@@ -34,6 +34,10 @@ The following changes are deliberately separate from that import:
   zero as required by CSS Color 4. The cssparser-color assertion remains intact.
 - Explicit Vize regression test registration and package provenance. The original
   ignored non-root release profile is removed; Vize's workspace profile applies.
+- A separate formatting-only compatibility commit wraps attributes/calls in
+  `bundler.rs`, `lib.rs` and `selector.rs` and removes one selector blank line for
+  current Rustfmt. Complete original source hashes remain in the import record;
+  the custody guard authenticates each of these exact formatted successors.
 
 `Cargo.toml.orig` remains the original archive manifest. The unreleased upstream
 NonNegative restructuring is not imported. Published dependency identity changes

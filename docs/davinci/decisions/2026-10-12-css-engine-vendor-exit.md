@@ -71,6 +71,13 @@ offset, VLQ, JSON and data URL algorithms are not rewritten. rkyv 0.8 archive
 bytes intentionally differ from 0.7; old archive compatibility is not promised
 and the new tests do not execute the unsafe old decoder.
 
+Current Rustfmt exposes three original alpha.72 formatting differences in
+`bundler.rs`, `lib.rs` and `selector.rs`. A separate compatibility commit applies
+only attribute/call wrapping and one blank-line deletion. Its exact successor
+hashes are authenticated alongside the complete original import hashes. No
+parser, selector, bundler or original test expression changes in that commit;
+the existing `cargo fmt --all -- --check` command remains unchanged.
+
 ## Packaging, licenses and public API impact
 
 `vize_lightningcss` retains Rust library name `lightningcss`;
