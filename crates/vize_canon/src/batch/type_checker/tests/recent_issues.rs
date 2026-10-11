@@ -42,6 +42,7 @@ mod split_script_diagnostic_anchors;
 mod spread_props;
 mod spread_scope_bindings;
 mod strict_route_instance_global;
+mod lexical_dollar_slots;
 mod template_handler_block_globals;
 mod template_handler_ts7006;
 mod template_instance_props;
