@@ -62,6 +62,7 @@ watcher.close();if(readFileSync(directory+'/release','utf8')==='fault')process.k
     worker, debugger, reader, packets = None, None, None, None
     receipt = {"control": mode, "qualification": "synthetic control only"}
     try:
+        wait_for(lambda: (controls / "ready").exists())
         leader = state(child.pid)
         def find():
             for entry in Path("/proc").iterdir():
@@ -109,8 +110,10 @@ watcher.close();if(readFileSync(directory+'/release','utf8')==='fault')process.k
         if ("SIGSEGV" in statuses) != (mode == "fault"):
             raise ValueError("Live control fault attribution differs")
         cleanup = [packet for packet in receipt.get("gdbPackets", []) if packet["status"] == "debugger-cleanup"]
-        if len(cleanup) != 1 or not cleanup[0]["debuggerReaped"]:
+        if len(cleanup) != 1 or not cleanup[0]["debuggerReaped"] or cleanup[0].get("gap") or cleanup[0].get("forcedDebuggerExit"):
             raise ValueError("Live control debugger was not actually reaped")
+        if mode == "fault" and receipt.get("faultProviderCustodyGap"):
+            raise ValueError("Live fault provider bodies changed or were not bound before capture")
         receipt["originalReturnCode"] = status
         receipt["debuggerActuallyReaped"] = True
     finally:
