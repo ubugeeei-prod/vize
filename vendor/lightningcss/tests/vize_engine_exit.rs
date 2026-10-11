@@ -29,8 +29,18 @@ fn actual_f32_hue_census_retains_healthy_bits_and_bounds_fallbacks() {
   let mut healthy = 0;
   let mut finite_fallback = 0;
   let mut non_finite = 0;
+  let mut nan = 0;
+  let mut positive_infinity = 0;
+  let mut negative_infinity = 0;
   for high_bits in 0..=u16::MAX {
     let hue = f32::from_bits(u32::from(high_bits) << 16);
+    if hue.is_nan() {
+      nan += 1;
+    } else if hue == f32::INFINITY {
+      positive_infinity += 1;
+    } else if hue == f32::NEG_INFINITY {
+      negative_infinity += 1;
+    }
     // resolve_missing replaces NaN with zero before the original computation.
     let resolved = if hue.is_nan() { 0.0 } else { hue };
     let old_hue = (resolved - 360.0 * (resolved / 360.0).floor()) / 360.0;
@@ -61,7 +71,9 @@ fn actual_f32_hue_census_retains_healthy_bits_and_bounds_fallbacks() {
     assert_eq!(actual.alpha.to_bits(), 1.0_f32.to_bits());
   }
   assert_eq!(healthy + finite_fallback + non_finite, 65_536);
-  assert!(healthy > 60_000 && finite_fallback > 4_000 && non_finite == 2);
+  assert_eq!([healthy, finite_fallback, non_finite], [61_660, 3_874, 2]);
+  assert_eq!([nan, positive_infinity, negative_infinity], [254, 1, 1]);
+  println!("VIZE_HUE_CENSUS_COMPLETE=65536 healthy={healthy} finite={finite_fallback} nonfinite={non_finite} nan={nan} positive_infinity={positive_infinity} negative_infinity={negative_infinity}");
 }
 
 #[test]

@@ -63,6 +63,18 @@ The cssparser-color assertion is not removed. The direct Rust census checks
 65,536 actual f32 high-word inputs and compares full RGB/alpha bits with the
 original conversion on healthy inputs; model arithmetic is not runtime proof.
 
+The first exact-head run `38181994333` on `4e8e537734` genuinely failed its
+new authored aggregate threshold in both profiles, after all 65,536 individual
+RGB/alpha comparisons passed. The threshold incorrectly assumed more than 4000
+finite fallbacks for this high-word domain. Independent std-only Rust recounts
+in assertion-enabled and optimized builds establish exactly 61,660 healthy,
+3874 finite fallbacks, two infinities and 254 NaNs (NaN resolves to missing zero).
+The complete 262,144-byte little-endian input vector has SHA256
+`9207d7eb28680a098c73dbe536d1ff7b94311dc417b9a385e0af6660683e93ca`.
+The successor retains every row comparison and asserts those exact counts plus
+one positive and one negative infinity. The original red logs remain retained;
+this aggregate correction grants no additional product or published credit.
+
 Parcel serialization uses `rkyv::to_bytes`; deserialization uses checked
 `rkyv::from_bytes` with rancor errors mapped to existing `BufferError`.
 No unsafe `archived_root` remains in the migrated core. Existing public method
@@ -85,6 +97,23 @@ implementation-style Clippy policy as the existing Oxc fork and retains
 `deny(missing_docs)`; Parcel retains its original `deny(clippy::all)`. The pending
 first-party list remains empty and every first-party Clippy/format command and
 contract remains unchanged. Current Clippy still has to execute on Actions.
+
+Actual initial Clippy fails on 36 pre-existing Parcel source diagnostics under
+Rust1.99/Vize's configuration: root disallowed std String/format interfaces and
+eight legacy style categories. Rewriting those public types or algorithms would
+expand the bounded migration. A proposed, separately reviewed compatibility
+follow-up retains the original deny-all and names only those actual diagnostics;
+it is not an excuse to suppress first-party checks or change mapping algorithms.
+
+The initial strict audit also exposes original optional CLI's atty0.2.14
+(RUSTSEC-2024-0375/2021-0145) and proc-macro-error1.0.4
+(RUSTSEC-2024-0370), brought by Clap3/clap_derive3. No rkyv0.7 route remains in the
+candidate lock, but that fact does not make the audit green. A proposed one-line
+optional Clap4.5 manifest compatibility change must preserve the entire CLI source,
+feature and original tests and pass their actual debug/release qualification.
+No new advisory waiver is proposed. Initial JS/actionlint and dependency-direction
+jobs additionally failed external download timeouts; their raw red evidence is
+retained and new-source qualification remains required.
 
 ## Packaging, licenses and public API impact
 
@@ -110,13 +139,26 @@ LightningCSS `StyleSheet` types; their typed rule visitors expose related
 LightningCSS rule types. A downstream crate continuing to depend on original
 `lightningcss` cannot assume that its values fit the aliased fork's API.
 
-The focused Actions diagnostic executes the identical whole external consumer
-against three dependency planes: old main plus original alpha.72; candidate plus
-original alpha.72; candidate plus the aliased fork. It requires the first and
-third to execute and captures the candidate/original E0308 nominal mismatch.
+The focused Actions diagnostic retains its first complete new/raw consumer and
+adds two authored whole controls for explicitly typed StyleRule/FontFaceRule
+callbacks and an external CssRule implementation registered and called through
+CssLinter. All three bodies run unchanged against three dependency planes: old
+main plus original alpha.72; candidate plus original alpha.72; candidate plus the
+aliased fork. Each first/third plane must execute; the candidate/original plane
+must expose the respective E0308/E0631/E0053 nominal mismatches. Separate packets
+prevent an early new/raw error from substituting for a trait/callback obligation.
 It also preserves the actual unwaived Patina cargo-semver-checks report and exit
 code. A diagnostic that captures an incompatibility does not make that API
 compatible. Root owns the pre-1.0 migration decision on concrete evidence.
+
+The first three-plane new/raw program actually executed on original main and the
+fork, and the original-engine candidate produced the expected two E0308 errors.
+Its first SemVer run failed earlier: the installed tool rejected Rust1.99's
+rustdoc format v61. That is a tooling failure, not an API verdict. The successor
+uses the existing release SemVer toolchain Rust1.95, records its compiler/tool
+separately from the Rust1.99 downstream execution, and preserves any actual
+comparison nonzero exit. Initial artifact11718281627 and all three full
+consumer/lock/output packets remain retained; complete nine-plane proof is new.
 
 ## Preserved authorities and qualification
 
