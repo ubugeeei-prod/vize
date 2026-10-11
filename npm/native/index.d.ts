@@ -1375,7 +1375,11 @@ export interface TransformPluginNapi {
   run: (arg: string) => string;
 }
 
-export declare function transformViteCssVarsForPipeline(css: string, scopeId: string): string;
+export declare function transformViteCssVarsForPipeline(
+  css: string,
+  scopeId: string,
+  productionFilename?: string | undefined | null,
+): string;
 
 /**
  * Perform type checking on a Vue SFC

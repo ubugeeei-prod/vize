@@ -22,6 +22,7 @@ export interface VirtualStyleOptions {
   scoped: string | null;
   lang: string | null;
   trim?: boolean;
+  productionFilename?: string;
 }
 
 export function getVirtualStyleContent(
@@ -38,5 +39,5 @@ export function getVirtualStyleContent(
     styleContent = scopeCssForPipeline(styleContent, options.scoped);
   }
 
-  return transformCssVarsForPipeline(styleContent, options.scopeId);
+  return transformCssVarsForPipeline(styleContent, options.scopeId, options.productionFilename);
 }

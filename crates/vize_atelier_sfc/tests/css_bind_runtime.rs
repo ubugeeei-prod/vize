@@ -44,6 +44,12 @@ const fogOpacity = ref(0.5)
                 &descriptor.styles[0].content,
                 "data-v-f82a533a",
             );
+            let delegated =
+                vize_atelier_sfc::vite_plugin::transform_css_vars_for_pipeline_with_context(
+                    &descriptor.styles[0].content,
+                    "data-v-f82a533a",
+                    is_prod.then_some("app/pages/index.vue"),
+                );
             serde_json::json!({
                 "name": name,
                 "source": source,
@@ -51,6 +57,9 @@ const fogOpacity = ref(0.5)
                 "ssr": ssr.code.as_str(),
                 "css": client.css.expect("compiled CSS").as_str(),
                 "pipeline": pipeline.as_str(),
+                "delegated": delegated.as_str(),
+                "filename": "app/pages/index.vue",
+                "scopeId": "f82a533a",
                 "expected": expected,
                 "isProd": is_prod,
             })

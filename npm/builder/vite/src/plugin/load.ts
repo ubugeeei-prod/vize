@@ -228,6 +228,7 @@ export function loadHook(
           scoped,
           lang,
           trim: state.mergedOptions.style?.trim,
+          productionFilename: state.isProduction ? realPath : undefined,
         }),
         map: null,
       };
