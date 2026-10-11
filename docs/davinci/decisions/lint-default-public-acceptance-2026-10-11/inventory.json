@@ -172,5 +172,11 @@
     "compressedBytes": 218,
     "originalBytes": 338,
     "originalSha256": "43c3640b62ab45ff349421c1fa0d047dafe15b8e61e1b53c1bbafbb93e14fa82"
+  },
+  {
+    "file": "observe-installed.mjs.gz",
+    "compressedBytes": 2793,
+    "originalBytes": 8388,
+    "originalSha256": "ad832d72b78214d5c3556650af9b93302330744d9342084a82c755391af2eb41"
   }
 ]
