@@ -48,7 +48,13 @@ test("Japanese WASM review retains complete examples, API contracts and bookmark
   );
   assert.deepEqual(
     destinations,
-    ["#インストール", "#sfc-をコンパイルする", "./vite-plugin.md", "../stability.md", ...baseline.links],
+    [
+      "#インストール",
+      "#sfc-をコンパイルする",
+      "./vite-plugin.md",
+      "../stability.md",
+      ...baseline.links,
+    ],
     "complete delivered introduction and original destinations remain in order",
   );
   const contracts = (source: string) =>
