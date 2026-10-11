@@ -90,6 +90,9 @@ jobs:
             npm/native/.artifacts/native/formatter-history/*.json
             npm/native/.artifacts/native/formatter-history/*.bin
             npm/native/.artifacts/native/formatter-history/*.diff
+            npm/native/.artifacts/native/formatter-history/*.node
+            npm/native/*.node
+            target/**/ci/libvize_vitrine.so
             target/app-e2e-logs/
             .vize/artifacts/vuefes-vrt/
             tests/app/results/

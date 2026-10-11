@@ -151,4 +151,12 @@ void test("browser controls reuse the existing post-failure qualifier step and r
   );
   assert.match(contracts.run, /exit "\$vuefes_contract_rc"/);
   assert.equal(steps.filter((step) => step.uses === "./.github/actions/app-e2e-row").length, 1);
+  const upload = steps.find((step) => step.uses?.startsWith("actions/upload-artifact@"));
+  assert.equal(upload.if, "${{ always() }}");
+  for (const binary of [
+    "npm/native/.artifacts/native/formatter-history/*.node",
+    "npm/native/*.node",
+    "target/**/ci/libvize_vitrine.so",
+  ])
+    assert(upload.with.path.split("\n").includes(binary), binary);
 });

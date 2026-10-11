@@ -149,3 +149,53 @@ setup; no test timeout is extended. Streamed retry-specific packets remain
 incomplete on refused, missing or late evidence. Late promises cannot finalize
 their partial files. This source correction supports one bounded existing
 Actions discovery run; an expected red is no readiness or acceptance credit.
+
+The exact `f5824ae` discovery run
+[38130325058](https://github.com/ubugeeei-prod/vize/actions/runs/38130325058)
+did not reach VRT. Its complete retained process packet proves that the
+original NAPI command and entrypoint synchronizer both exited zero; all 478
+Cargo JSON records end with `build-finished: true`. The distinct ci receipt
+was admitted on the actual source. The outer Vite Task then failed with
+`EAGAIN`; the pinned-source and local pressure control support an inference
+that its stdout forwarding failed, without a hosted Linux syscall trace. Its later contract
+step hung after the original browser installation was skipped; no completed
+Linux browser-control packet was retained. The run was cancelled. That
+cancelled run, the earlier failed row and the unexecuted VRT remain separate
+outcomes.
+
+Pinned Vite Task maps output-pipe errors to its `Failed to spawn process`
+message; cache-update failures have different handling. A bounded local
+replay of the entire retained Cargo streams through installed Vite Plus
+0.1.24 succeeds with an active consumer, but fails with actual pipe pressure
+after a producer-completed marker. The task summary records macOS `EAGAIN`.
+This proves the local output path, not an absent Linux syscall trace.
+
+The captured process attempt and complete raw streams are now persisted
+before display. Console output reports stdout's retained path, length and
+hash rather than replaying Cargo artifact and build-script metadata. The
+complete records remain in the raw binary files and process packet;
+diagnostics, unknown JSON, non-JSON stdout, final build result and full
+stderr remain visible. Synchronizer stdout is unchanged. The same local
+pressure replay passes with full retained stdout and byte-identical stderr.
+Native command, exit handling, cache policy, source admission, ci/debug
+receipts and the original 38-case workload stay unchanged.
+
+The original upload omitted the emitted/local/frozen ELF bytes, retaining
+only their admitted hashes. Its producer-time receipt is not retrospective
+whole-binary custody. The existing evidence upload now includes all three
+actual binary paths without another native build. The complete generated
+declaration diff remains recorded; the strict debug source gate is unchanged.
+The generated declaration bytes equal the earlier `0dd6a7b` artifact, whose
+original row built all local packages before reaching the failed VRT.
+Three tracked types differ from generation: `EndOfLineNapi`, the options in
+`OxlintHtmlRule` and the fix in `OxlintHtmlDiagnostic`. This existing public
+type mismatch is not a proved new fatal gate; declarations are not rewritten
+or exempted in this transport correction.
+
+The browser control starts its server and launches Chromium inside its
+existing `try/finally`. A genuine complete-child missing-browser control
+previously needed a five-second watchdog because the server survived launch
+refusal; the correction exits failed promptly and releases the server.
+Its original browser assertions and the app's passive sidecar are unchanged.
+These are preparation and transport repairs. The original current-app
+CSSOM/module packet and complete unchanged VRT remain unqualified.

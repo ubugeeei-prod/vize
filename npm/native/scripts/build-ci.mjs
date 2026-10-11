@@ -2,6 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
+import { ciConsoleOutput } from "./ci-console-output.mjs";
 import { ciRequestPath, writeCiRequest } from "./formatter-history-ci-request.mjs";
 import {
   ciBuildCommand,
@@ -31,21 +32,23 @@ export function runCiBuild(
     maxBuffer: Infinity,
   };
   const build = run(command[0], command.slice(1), options);
-  if (capture) {
-    process.stdout.write(build.stdout ?? Buffer.alloc(0));
-    process.stderr.write(build.stderr ?? Buffer.alloc(0));
-  }
   const buildPacket = capture ? captureCiProcess(command, build) : null;
-  if (capture) preserveCiBuildAttempt(nativeDir, before, buildPacket);
+  if (capture) {
+    preserveCiBuildAttempt(nativeDir, before, buildPacket);
+    const output = ciConsoleOutput(nativeDir, "cargo", buildPacket);
+    process.stdout.write(output.stdout);
+    process.stderr.write(output.stderr);
+  }
   if (build.status !== 0) return build.status ?? 1;
   const syncCommand = [process.execPath, path.join(nativeDir, "scripts/sync-entrypoint.mjs")];
   const sync = run(syncCommand[0], syncCommand.slice(1), { ...options, shell: false });
-  if (capture) {
-    process.stdout.write(sync.stdout ?? Buffer.alloc(0));
-    process.stderr.write(sync.stderr ?? Buffer.alloc(0));
-  }
   const syncPacket = capture ? captureCiProcess(syncCommand, sync) : null;
-  if (capture) preserveCiBuildAttempt(nativeDir, before, buildPacket, syncPacket);
+  if (capture) {
+    preserveCiBuildAttempt(nativeDir, before, buildPacket, syncPacket);
+    const output = ciConsoleOutput(nativeDir, "sync", syncPacket);
+    process.stdout.write(output.stdout);
+    process.stderr.write(output.stderr);
+  }
   if (sync.status !== 0) return sync.status ?? 1;
   if (capture) captureCiBuild(nativeDir, before, buildPacket, syncPacket);
 

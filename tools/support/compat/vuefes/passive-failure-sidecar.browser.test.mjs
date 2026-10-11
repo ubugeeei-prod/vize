@@ -67,9 +67,10 @@ void test("actual browser retains full decoded transport, redirect/failure refus
     response.setHeader("Content-Type", "text/html");
     response.end(html);
   });
-  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
-  const browser = await chromium.launch({ headless: true });
+  let browser;
   try {
+    await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+    browser = await chromium.launch({ headless: true });
     const page = await browser.newPage();
     const sidecar = createVuefesFailureSidecar(
       [{ name: "actual", page }],
@@ -156,7 +157,7 @@ void test("actual browser retains full decoded transport, redirect/failure refus
     );
     assert.equal(final.originalError, original.stack);
   } finally {
-    await browser.close();
+    await browser?.close();
     await new Promise((resolve) => server.close(resolve));
     fs.rmSync(output, { recursive: true, force: true });
   }
