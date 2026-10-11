@@ -11,11 +11,14 @@ name for reports that need them. Its default child alias and no-props mounting
 behavior remain unchanged. This establishes legacy runtime coverage; it does not
 claim a whole-product Davinci native path or acceptance of an unpublished release.
 
-GitHub requires all native Stack branches to live in one repository. Keep the
-original fork PR Draft and source intact; carry the reviewed changes in small
-same-repository layers with credited original commits and squash through the
-protected merge queue. Exact Actions, actual merge and installed release
-verification remain required before reporting the issue complete.
+GitHub requires all native Stack branches to live in one repository. Carry the
+reviewed changes in small same-repository layers with credited original commits
+and squash through the protected merge queue. Stable patch IDs confirm that
+#8634, #8636, #8635 and #8637 preserve the complete original changes from #8619,
+#8620, #8621 and #8622 respectively. Close those duplicate Draft PRs with their
+replacement links; retain their source branches and local backup refs. Exact
+Actions, actual merge and installed release verification remain required before
+reporting any of the four issues complete.
 
 The first source plan failed the existing ordinary-module layout guard before
 executing Rust or runtime checks. Preserve the guard and move the complete shared
