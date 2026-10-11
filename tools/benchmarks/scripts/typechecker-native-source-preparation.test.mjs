@@ -136,66 +136,82 @@ await test("a permanently incomplete preparation fails within its finite deadlin
 });
 
 await test("foreign, stale, closed, changed-author and altered live receipts fail before native recipe selection", async () => {
-  await fixture(async (f) => {
-    const controls = [
-      (row) => {
-        row.pullRequest.head.repo.full_name = "foreign/repository";
-      },
-      (row) => {
-        row.pullRequest.base.repo.full_name = "foreign/repository";
-      },
-      (row) => {
-        row.pullRequest.head.sha = f.cut;
-      },
-      (row) => {
-        row.source = f.cut;
-      },
-      (row) => {
-        row.source = null;
-      },
-      (row) => {
-        row.pullRequest.number++;
-      },
-      (row) => {
-        row.pullRequest.user.login = "other-maintainer";
-      },
-      (row) => {
-        row.pullRequest.state = "closed";
-      },
-      (row) => {
-        row.pullRequest.merged = true;
-      },
-      (row) => {
-        row.pullRequest.draft = false;
-      },
-      (row) => {
-        row.pullRequest.body = row.pullRequest.body.replace(f.cut, f.source);
-      },
-      (row) => {
-        row.pullRequest.body += "\n<!-- vize-release-pin: immutable-v1 -->";
-      },
-    ];
-    for (const alter of controls) {
-      const row = observation(f);
-      alter(row);
-      const forged = preparation(f, [row]);
-      await assert.rejects(forged.run());
-      assert.equal(forged.counts().loads, 0);
-    }
-    const changedIntegration = observation(f);
-    changedIntegration.pullRequest.body = changedIntegration.pullRequest.body.replace(
-      "8250",
-      "8251",
-    );
-    await assert.rejects(
-      preparation(f, [changedIntegration], { event: f.event }).run(),
-      /Complete integration receipt changed/u,
-    );
-    const lost = preparation(f, [observation(f, incomplete(f.event.pull_request))], {
-      event: f.event,
+  for (const integrationCollision of [false, true]) {
+    await fixture(async (f) => {
+      if (integrationCollision)
+        f.event.pull_request.body =
+          "Harmless incident reference: 28056b4f3bca41f2e0ca825017e87605c5c965a3\n" +
+          f.event.pull_request.body;
+      assert.equal(
+        git(f.root, "rev-list", "--parents", "-n", "1", f.source),
+        `${f.source} ${f.cut}`,
+      );
+      const controls = [
+        (row) => {
+          row.pullRequest.head.repo.full_name = "foreign/repository";
+        },
+        (row) => {
+          row.pullRequest.base.repo.full_name = "foreign/repository";
+        },
+        (row) => {
+          row.pullRequest.head.sha = f.cut;
+        },
+        (row) => {
+          row.source = f.cut;
+        },
+        (row) => {
+          row.source = null;
+        },
+        (row) => {
+          row.pullRequest.number++;
+        },
+        (row) => {
+          row.pullRequest.user.login = "other-maintainer";
+        },
+        (row) => {
+          row.pullRequest.state = "closed";
+        },
+        (row) => {
+          row.pullRequest.merged = true;
+        },
+        (row) => {
+          row.pullRequest.draft = false;
+        },
+        (row) => {
+          row.pullRequest.body = row.pullRequest.body.replace(f.cut, f.source);
+        },
+        (row) => {
+          row.pullRequest.body += "\n<!-- vize-release-pin: immutable-v1 -->";
+        },
+      ];
+      for (const alter of controls) {
+        const row = observation(f);
+        alter(row);
+        const forged = preparation(f, [row]);
+        await assert.rejects(forged.run());
+        assert.equal(forged.counts().loads, 0);
+      }
+      const changedIntegration = observation(f);
+      changedIntegration.pullRequest.body = changedIntegration.pullRequest.body.replace(
+        "<!-- vize-release-integration: 8250 -->",
+        "<!-- vize-release-integration: 8251 -->",
+      );
+      assert.equal(
+        changedIntegration.pullRequest.body.replace(
+          "<!-- vize-release-integration: 8251 -->",
+          "<!-- vize-release-integration: 8250 -->",
+        ),
+        f.event.pull_request.body,
+      );
+      const changed = preparation(f, [changedIntegration], { event: f.event });
+      await assert.rejects(changed.run(), /Complete integration receipt changed/u);
+      assert.equal(changed.counts().loads, 0);
+      const lost = preparation(f, [observation(f, incomplete(f.event.pull_request))], {
+        event: f.event,
+      });
+      await assert.rejects(lost.run(), /Complete integration receipt changed/u);
     });
-    await assert.rejects(lost.run(), /Complete integration receipt changed/u);
-  });
+  }
 });
 
 await test("invalid original context and unprivileged author never enter the preparation polling loop", async () => {

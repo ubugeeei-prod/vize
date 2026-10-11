@@ -66,3 +66,14 @@ public package's root and `progress-bar` subpath consumers on a release source
 containing that merge. These are unfinished until their actual evidence exists.
 This numeric slice does not complete the broader feedback/status family in
 #4906.
+
+## Release preparation control
+
+The protected [#8555 candidate](https://github.com/ubugeeei-prod/vize/actions/runs/38134653350)
+exposed a [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) test-input collision:
+replacing the first `8250` changed a real cut SHA before the integration marker.
+Target the complete marker instead. Retain every original receipt, author,
+parent, pin, deadline and exact error assertion; repeat the same negative
+controls with harmless earlier cut-shaped text containing `8250`, retaining
+the authentic Git fixture and whole non-marker bytes. Production,
+runtime fixtures, budgets and the shared decision record remain byte-exact.
