@@ -88,3 +88,16 @@ This narrow matrix repair does not complete #3956. Nuxt/monorepo shapes, musl,
 packaged editor and authored LSP lifecycle acceptance, workspace-trust and
 remaining failure/timing/size evidence remain open. Only the release owner
 starts or publishes official cuts and dispatches their public consumers.
+
+The source Actions inventory law initially rejected the new whole-plan contract
+because the release test directory grew from 49 to 50 files. Its finite successor
+adds only this one delivered init contract to the explicit unscoped inventory and
+updates the two total counts; all existing test identities, scoped inputs and
+whole import-closure laws remain intact.
+
+The native GitHub Stack places the separate Windows config module import fix
+below this manager coverage. Each layer keeps its own exact-head source checks;
+one composed child campaign covers all eighteen native/fresh-install workers,
+with byte-equal production loader sources and build-graph inputs between layers.
+The child run is not an exact-head parent run and does not prove public release
+acceptance.
