@@ -27,3 +27,5 @@ Original rc.9 negative evidence and all five unresolved supported SSR-markup
 assertions remain explicit; render success does not establish markup parity.
 Protected queue qualification, actual merges and released acceptance are still
 required.
+
+Original runtime decision: [UI Vapor hydration runtime pairing](./2026-10-11-ui-vapor-hydration-runtime.md) records #4906’s rc.9 CSS-property interop exception and its published upstream correction: use matching rc.11 SSR/Vapor providers, preserve the original Vue 3.5/rc.9 provider and ledger, and remove only source-proven passing entries. All original 529/533 UI fixtures and remaining failures stay required; fresh Actions, protected merge and release remain delivery gates.
