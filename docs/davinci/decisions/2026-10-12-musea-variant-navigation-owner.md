@@ -101,3 +101,28 @@ The view's actual watchers and ref cleanup remain. Subsequent formatting and
 control adapters execute the complete real helper and view cleanup; the test-only
 module-export transport is reversed byte-exact. Fresh qualification remains
 required for this composition.
+
+Source0a27842 run38195433366 retained source9 and raw native probe1 passing.
+The complete authenticated original artifact11723008109 is 53,111,635 bytes,
+SHA256 `ec0642b8d3a5de67f8e9fd5cc8737b0120090836304ceff0949f512c8394c781`,
+with all1,931 CRCs valid. Its whole97,962-byte observation packet SHA256
+`8ee8385dbba9b74cd290383e99b90b8d0fcdc3d5f6bd5fcdaf7ba680c5072639`
+has no page/console errors. Controls2, both rapid directions, direct hash and
+keyboard navigation pass with seven actual native observers/deliveries. On
+Controls→Keys, all three original previews/IDs render correctly but every old
+observer is disconnected and no new Keys observer is constructed. Actual
+bundle SHA256 `2d453ee17290fdae2480af172f83988e674af8f27b571898293c8582e90e15bf`
+contains the current helper semantics; source checkoutcf9a0fbd and loaded GNU
+provider `efe11781ff1a6ded93ddf25950d4f2184eaad8cabe4d3b103acf925e40304a88`
+are retained. This is a route ref-readiness refusal, not a transport error or an
+initial-mount failure. Place only the existing navigation watcher at `flush: post`
+so its same controller setup runs after view refs update; no mounted hook, timer
+or additional scheduling delay is added. Fresh physical qualification remains.
+
+All authored physical controls use the original default Chromium viewport.
+Its real recorded IO root is y129..346 at1280×720 and post-scroll target ratio
+is0.3799, so the unexecuted extra tall viewport is unnecessary. Manual, retained
+callback and both compiled perturbation assertions/targets remain intact; no
+tall-viewport acceptance is claimed. Competing router requests test rapid
+replacement, while committed pending continuations are qualified by the distinct
+deterministic complete-source controls.

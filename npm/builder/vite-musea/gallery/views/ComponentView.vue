@@ -178,7 +178,7 @@ watch(
     void setupVariantObserver();
     void syncSelectionFromHash();
   },
-  { immediate: true },
+  { immediate: true, flush: "post" },
 );
 
 watch(

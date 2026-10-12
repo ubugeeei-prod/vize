@@ -152,9 +152,8 @@ void test(
         await waitForNewNativeDelivery(page, keyboardCount);
         await assertTarget(page, names.at(-1)!, observations, `${title}:keyboard`);
       }
-      // A taller real viewport gives the unchanged native IO band room to observe manual scrolling.
-      // The rapid controls above retain the original default Chromium viewport.
-      await page.setViewportSize({ width: 1280, height: 1100 });
+      // Keep the original Chromium viewport; real recorded post-scroll entries already
+      // intersect its unchanged IO band (y129..346 at1280x720).
       const firstCount = await observerCount(page);
       await page.locator(".variant-toc-item").first().click();
       await waitForNewNativeDelivery(page, firstCount);
