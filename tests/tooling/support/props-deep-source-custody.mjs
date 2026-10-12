@@ -1,3 +1,4 @@
+import { reviewedNoMutatingSourceReadView } from "./no-mutating-props-source-custody.mjs";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -22,6 +23,7 @@ const blob = (bytes) =>
 
 /** A finite whole family; never substitute its source for an old performance cohort. */
 export function authenticateDeepPropsSourceFamily(root, read = reader(root)) {
+  read = reviewedNoMutatingSourceReadView(root, read);
   const bytes = read(`${directory}/successor.json`);
   assert.equal(sha256(bytes), "de01ccf20b54abc69935b2ffa844705b1704bac8f83c07ee832c339ff9aaa161");
   const manifest = JSON.parse(bytes);
@@ -139,6 +141,7 @@ export function authenticateDeepPropsSourceFamily(root, read = reader(root)) {
 
 /** A whole twelve-body correction; the rejected import family stays immutable. */
 export function authenticateDeepPropsImportCorrection(root, incoming, read = reader(root)) {
+  read = reviewedNoMutatingSourceReadView(root, read);
   const correctionDirectory = `${directory}/import-correction`;
   const bytes = read(`${correctionDirectory}/successor.json`);
   assert.equal(sha256(bytes), "39cf7ab7633378ab462c6af46443fa0e235b070d067db739eaa040760e3e996f");
@@ -196,6 +199,7 @@ export function authenticateDeepPropsImportCorrection(root, incoming, read = rea
 
 /** The missing trait import has its own whole family, never a rewritten old pin. */
 export function authenticateDeepPropsTraitScopeCorrection(root, incoming, read = reader(root)) {
+  read = reviewedNoMutatingSourceReadView(root, read);
   const correctionDirectory = `${directory}/trait-scope-correction`;
   const bytes = read(`${correctionDirectory}/successor.json`);
   assert.equal(sha256(bytes), "9591f993ff7ff20537ffbc532ce84af6ef201ec26e248b99d7788725a7dece59");

@@ -7,16 +7,13 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.ts";
 import { sha256 } from "./lint-default-correctness-reference.mjs";
-import {
-  authenticateDeepPropsSourceFamily,
-  componentValueRetainedGuardSource,
-} from "./support/component-value-retained-guards.ts";
+import { currentJoinDeepPropsNativeSource } from "./support/no-mutating-component-join-native.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const fixture = path.join(root, "tests/_fixtures/differential/lint/props-deep-destructure-8090");
 const rule = "script/no-deep-destructure-in-props";
 
-await test("owned prop destructuring preserves thirty six whole source CLI packets", () => {
+await test("owned prop destructuring preserves thirty six whole source CLI packets", async () => {
   const bytes = fs.readFileSync(path.join(fixture, "cases.json"));
   const corpus = JSON.parse(bytes);
   assert.equal(sha256(bytes), "d522ae6c3fc8a04403c43661c7d66584188a2168b1e01947093044f4239de8c8");
@@ -42,12 +39,12 @@ await test("owned prop destructuring preserves thirty six whole source CLI packe
   }
   const artifact = path.join(root, "target/differential/lint-props-deep-destructure.json");
   fs.mkdirSync(path.dirname(artifact), { recursive: true });
-  const componentSource = componentValueRetainedGuardSource(root);
+  const componentSource = await currentJoinDeepPropsNativeSource(root);
   const evidence = {
     schema: "vize.lint.props-deep-destructure-source-cli",
     version: 1,
     corpusSha256: sha256(bytes),
-    sourceFamily: authenticateDeepPropsSourceFamily(root, componentSource.physicalRead),
+    sourceFamily: componentSource.deepPropsFamily,
     sourceFamilyKind: "retained-predecessor-source-only",
     componentValueSource: componentSource.receipt,
     corpus,

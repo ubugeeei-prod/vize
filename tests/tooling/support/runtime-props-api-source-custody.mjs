@@ -1,3 +1,4 @@
+import { reviewedNoMutatingSourceReadView } from "./no-mutating-props-source-custody.mjs";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -44,6 +45,7 @@ function iterator(bytes) {
 
 /** Original runtime or explicitly complete preset/depth successors; old pins stay literal. */
 export function authenticateRuntimeApiSourceFamily(root, read = reader(root)) {
+  read = reviewedNoMutatingSourceReadView(root, read);
   const bytes = read(`${directory}/successor.json`);
   assert.equal(sha256(bytes), manifestHash, "finite runtime source manifest changed");
   const manifest = JSON.parse(bytes);
@@ -115,6 +117,7 @@ export function authenticateRuntimeApiSourceFamily(root, read = reader(root)) {
 /** Authenticate original carrier pins through explicitly complete source successors. */
 export function assertReservedApiOrderSource(root, source, read = reader(root)) {
   if (matches(read(source.path), source)) return "original";
+  read = reviewedNoMutatingSourceReadView(root, read);
   if (source.path === setupExportRegistry) {
     const incoming = authenticateRuntimeApiSourceFamily(root, read);
     const successor = authenticateSetupExportPresetSourceFamily(root, incoming, read);

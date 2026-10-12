@@ -1,0 +1,188 @@
+{
+  "schema": "vize.no-mutating.current-callers.source-successor",
+  "version": 1,
+  "source": "2489128d5f8fab1b7442a1e5c09b4e1701cbf185",
+  "familyCounts": [
+    12,
+    11
+  ],
+  "moduleLayoutManifestSHA256": "e53d557df855bf8a365e56cdf3cd64772ea33b8032690df34eaed0c6ed444c5e",
+  "closedCurrentModules": [
+    {
+      "path": "tests/tooling/support/no-mutating-props-module-layout-source-custody.mjs",
+      "bytes": 11259,
+      "sha256": "6b3f047011243d9eccac6f4040159ca1a65be93c0f0c0cbc6bdd31969295dde9",
+      "gitBlob": "9eb2d33544818e511c066822c81aa2c8e50e6f52"
+    },
+    {
+      "path": "tests/tooling/support/no-mutating-props-source-custody.mjs",
+      "bytes": 10204,
+      "sha256": "19fd4d91089deb15ee216f8e365e97b9c2c6b54345661bd6c3baa4bc79e400b4",
+      "gitBlob": "4d81a2b6250c33feefe29f03439f9a6825419f99"
+    },
+    {
+      "path": "tests/tooling/support/no-mutating-props-test-correction-source-custody.mjs",
+      "bytes": 5363,
+      "sha256": "53a1af6753ffdab235406c70752cb871c57cf6a9c9971204b42083500a6af7a2",
+      "gitBlob": "a9d6bd8e1158e7959378ac09495051240ee58027"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-default-migration-host.ts",
+      "bytes": 3081,
+      "sha256": "6b6bffc7461f754b82ad996abf62cd6f958998212e95d4af600fa4b9bfa483d5",
+      "gitBlob": "c32f3cebeab5bebabaa076e011af188774f2b031"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-default-migration-manifest.json",
+      "bytes": 3738,
+      "sha256": "73e19d2b74c4488f8feb1214dd6dc15d0d4ff15f744994bc52d9288ee61e6e0d",
+      "gitBlob": "d5e7b8ef26209efe90cad29667607c2c2a2aaeba"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-setup.ts",
+      "bytes": 5704,
+      "sha256": "16fa61566684e0aa675186be50aa6405c3c88d223c7ad19a1d3747bf4cfad5e6",
+      "gitBlob": "2596bee2e95f28a1c6f046bc53279f821965c9b1"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-nodeep.ts",
+      "bytes": 6852,
+      "sha256": "ad25378cc7272fb2fde533d6a6796a9462dec3d3e157217abef13a5a69cf6a96",
+      "gitBlob": "d9e71bdcf154c8b4602ba38067a183c97731c4fd"
+    }
+  ],
+  "rule": {
+    "path": "crates/vize_patina/src/rule.rs",
+    "before": {
+      "path": "crates/vize_patina/src/rule.rs",
+      "bytes": 12547,
+      "sha256": "6dd7a1f3fb7ef88dd13278e1e9f73191cd922ab18e2524af22e7413fb6b15bc1",
+      "gitBlob": "b7dcb6da3168c457e44ac9d0af9da9aa3eae83cd",
+      "archive": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/02-before.fixture"
+    },
+    "after": {
+      "path": "crates/vize_patina/src/rule.rs",
+      "bytes": 12879,
+      "sha256": "6537cc95fb04eb4f8f51afd7dfea9e7a695b81a7f428e01ddb38e208478c34b5",
+      "gitBlob": "20a0e112b3e6434eb05b6c9502a54974aa550301",
+      "archive": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/02-after.fixture"
+    }
+  },
+  "laws": [
+    {
+      "path": "tests/tooling/reserved-suppression-default-routes.test.mjs",
+      "bytes": 6301,
+      "sha256": "c484cd05219c4c8d1e34664544cf9886743c3c2d401c29bcec4660c6537a7243",
+      "gitBlob": "edcdb956668fa8f9dc4e6577f96df175b27074fd",
+      "archive": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/01-original-law.fixture",
+      "cases": 1,
+      "after": {
+        "path": "tests/tooling/reserved-suppression-default-routes.test.mjs",
+        "bytes": 541,
+        "sha256": "3f3721e3aaeeef93f8dd98adbda208e1dd016f9bf8b401f04f1fb5b99a4c5bfe",
+        "gitBlob": "3a08324aec3df6995669e5c5731df4036e37eb92"
+      }
+    },
+    {
+      "path": "tests/tooling/warm-type-backed-default-migration-host.test.ts",
+      "bytes": 6794,
+      "sha256": "5084578fa77c215ee7555708d9cc6284826a36dced1a9f31c5e6b417a1447704",
+      "gitBlob": "d74f30fd0efb7c9412b37605f6c1d28f3b3e5757",
+      "archive": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/02-original-law.fixture",
+      "cases": 7,
+      "after": {
+        "path": "tests/tooling/warm-type-backed-default-migration-host.test.ts",
+        "bytes": 544,
+        "sha256": "f745834866d1507ab5324b2dcc4698541a1a78b0059840609dc16c87c530f8a0",
+        "gitBlob": "ad79fbb78b30e43c4b488f23d7b59594ae738daa"
+      }
+    },
+    {
+      "path": "tests/tooling/warm-type-backed-git-reader-nodeep.test.ts",
+      "bytes": 12629,
+      "sha256": "73527589546b593e96b58dba9f747d8e897bb5d53d476342dc9715cc25b70228",
+      "gitBlob": "03daad285234f476642a5933e179407e7e7bf478",
+      "archive": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/03-original-law.fixture",
+      "cases": 5,
+      "after": {
+        "path": "tests/tooling/warm-type-backed-git-reader-nodeep.test.ts",
+        "bytes": 539,
+        "sha256": "67751253a65713d602036d6356a5ea0bd5228a6f7f5e802810ba7bb5a50f367a",
+        "gitBlob": "76672b5e623a9478ce43c69f02aaf3920265e4fb"
+      }
+    },
+    {
+      "path": "tests/tooling/setup-export-default-reference.test.mjs",
+      "bytes": 13645,
+      "sha256": "63b83fe1266802edad926ab8f4f171e402862ea74a42ae54e3a49834c8fc2e0b",
+      "gitBlob": "09f6c72be7118214102d51cb0d021020a5415357",
+      "archive": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/04-original-law.fixture",
+      "cases": 7,
+      "after": {
+        "path": "tests/tooling/setup-export-default-reference.test.mjs",
+        "bytes": 536,
+        "sha256": "82f83af994c233fc6bd19ad0d718f7b7087eb03128f46f2a69be1d5dc3890799",
+        "gitBlob": "a8f31b7597854e6bda1ee60e4713d6c33bba7c7b"
+      }
+    }
+  ],
+  "historicalFrame": {
+    "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/ci-repair-363/literal-2489-complete-source-frame.json.gz",
+    "bytes": 4242789,
+    "sha256": "c498e0b14257b95acfe7f4ea4e2471d3e25c6e51d70568604af248f59f279d87",
+    "gitBlob": "f22042d597faf550df6205fcf4ccededd1c1509b"
+  },
+  "historicalFrameRows": 425,
+  "completeSubtreeScopes": [
+    "tests/performance/support/",
+    "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/",
+    "tests/_fixtures/differential/lint/setup-export-default-8090/",
+    "tests/_fixtures/differential/lint/props-deep-destructure-8090/",
+    "tests/_fixtures/differential/lint/reserved-suppression-8090/"
+  ],
+  "historicalNullablePaths": [],
+  "credit": {
+    "sourceOnly": true,
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "predecessorSource": "363794932d3776dcdca521531c7cec86c27e5e06",
+  "predecessorManifest": {
+    "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/successor.json",
+    "archive": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/ci-repair-363/00-363-whole-before.fixture",
+    "bytes": 5892,
+    "sha256": "fa45cf8fa852f0c222af9378a981cb77d51d33f2bf58bad346230e4a00f8f532",
+    "gitBlob": "6132ea7c31b474c386715d94eb5fca2a82e58908"
+  },
+  "predecessorSourceBodies": [
+    {
+      "path": "tests/tooling/support/no-mutating-props-current-caller-source-custody.mjs",
+      "archive": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/ci-repair-363/01-363-whole-before.fixture",
+      "bytes": 7391,
+      "sha256": "facaefef2ff091fe2252110391f4587632dc114055c39ab6186fa46b0a3f400d",
+      "gitBlob": "01a2dd65a470b22e5f9dcea75ef5736580037b9c"
+    },
+    {
+      "path": "tests/tooling/support/no-mutating-props-current-caller-frame.mjs",
+      "archive": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/ci-repair-363/02-363-whole-before.fixture",
+      "bytes": 9904,
+      "sha256": "c9b1eebfd15810bf5dfad8c90d2580a16da9a79ffa5083b2239d1d2336628add",
+      "gitBlob": "a95fbe91e57964264ac44cd309dd6a5986ea3f0f"
+    },
+    {
+      "path": "tests/tooling/support/no-mutating-props-current-caller-git.mjs",
+      "archive": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/ci-repair-363/03-363-whole-before.fixture",
+      "bytes": 2398,
+      "sha256": "f9afa9088bf11b52332d0c7562f69fb698cc19495a9fcbfbd7c596e5af09a6b1",
+      "gitBlob": "e1f69fe6b5fe053febe22c2ef0523165aa5434ff"
+    },
+    {
+      "path": "tests/tooling/no-mutating-props-current-callers-source.test.mjs",
+      "archive": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/ci-repair-363/04-363-whole-before.fixture",
+      "bytes": 7602,
+      "sha256": "13287b0b5cba2cba68f682ef8d556999fe2cdf13dd45452413c99be0d8816af8",
+      "gitBlob": "f2eff982bac41712362ec048e5a1d195160922a4"
+    }
+  ]
+}

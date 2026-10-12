@@ -1,0 +1,99 @@
+{
+  "schema": "vize.lint.no-mutating-props-generated-ledger-source-custody",
+  "version": 1,
+  "source": "dd760a4eb1299c88a1e58d4acc921a02e715844d",
+  "command": [
+    "node",
+    "tools/support/compat/davinci/consumer-migration-surfaces.mjs",
+    "--write"
+  ],
+  "ledger": {
+    "path": "docs/davinci/plan/consumer-migration-surfaces/linter/vize_patina.tsv",
+    "before": {
+      "bytes": 158414,
+      "sha256": "8da833fb79d2712de3e802e90a56b15a2383c74d6069b8cc3ab2c68b31d04bd8",
+      "gitBlob": "7f2caf0702127f04cf0e4fbe2cf86e10332a551c",
+      "archive": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/test-namespace-correction/consumer-migration-before.tsv.fixture"
+    },
+    "after": {
+      "bytes": 159840,
+      "sha256": "af2baf60023510bd37b4d3f5eaa655a5e2991bf5e85707c8b6e1f25350221305",
+      "gitBlob": "87cf2c1734aa73ccbc84cc8f9f8a5592e9ff869c",
+      "archive": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/test-namespace-correction/consumer-migration-after.tsv.fixture"
+    },
+    "additions": 14,
+    "removals": 3,
+    "beforeNewlineCount": 1303,
+    "afterNewlineCount": 1314,
+    "beforeSplitLineCount": 1304,
+    "afterSplitLineCount": 1315
+  },
+  "generatorSources": [
+    {
+      "path": "tools/commands/davinci/consumer-migration-surfaces.rs",
+      "bytes": 624,
+      "sha256": "ca773b248aa77fc0495f189d3dddb4faa2b84b1384f8906317063a97a5f36313",
+      "gitBlob": "75539629820350e8a12f6496c6992b1fe121ccaa"
+    },
+    {
+      "path": "tools/support/artifacts.rs",
+      "bytes": 3677,
+      "sha256": "cc089694fa247d978d587f0a505d5893c6c56b25aa4a466736aa5512b7124194",
+      "gitBlob": "4b84c4bfc4fdcb8bfc41ed8c6457acd1a3c65d7b"
+    },
+    {
+      "path": "tools/support/compat/davinci/consumer-migration-surfaces.mjs",
+      "bytes": 2508,
+      "sha256": "76d2297771695af55d5fbd724116b2ead4fd67f2a1d4f2e7478f1e4e44cd9031",
+      "gitBlob": "0810910235c07b804985f9312bf3446e21dabb84"
+    },
+    {
+      "path": "tools/support/compat/davinci/lib/artifact-set.mjs",
+      "bytes": 5121,
+      "sha256": "250a21844948aa772b41499c849cfef5b1123a924576d4058b36c5d93eabbb59",
+      "gitBlob": "c2a38bbaba57fef96d35001168207b27d2c6b856"
+    },
+    {
+      "path": "tools/support/compat/davinci/lib/consumer-migration-render.mjs",
+      "bytes": 11104,
+      "sha256": "7aebff1294349fdfa8b06b738f301428e6d28c7908db41dbb14bce85de55ef88",
+      "gitBlob": "7f08e5b55a411ddddea95a9c1e79db611f2d8ab8"
+    },
+    {
+      "path": "tools/support/compat/davinci/lib/consumer-migration-scan.mjs",
+      "bytes": 9974,
+      "sha256": "6a67a5dce583ca92bbc2b440457bd897ebe4f15adcf211df66765a26089ec590",
+      "gitBlob": "500adf6e07957a75ac7ba489cc8eeebb51bba07f"
+    },
+    {
+      "path": "tools/support/compat/davinci/lib/consumer-migration-summary.mjs",
+      "bytes": 4138,
+      "sha256": "b8cad331da5ae9c7cf4c591d5c688bc4f17388f17cba3d481f58ec42ac3e320c",
+      "gitBlob": "56f7751674200038b91e9a5b2df5a7ab216ea180"
+    },
+    {
+      "path": "tools/support/compat/davinci/lib/markdown.mjs",
+      "bytes": 1718,
+      "sha256": "5e102fc28f97d30213c5ccd48052035ce276cb8bb8b6189fb1c918a1488c6f12",
+      "gitBlob": "c1f748517854ddf2eb9cd9de4c35a775d568dd80"
+    },
+    {
+      "path": "tools/support/compat/davinci/lib/ordering.mjs",
+      "bytes": 320,
+      "sha256": "d6efc2401271777bb800d7a632128971255e9e957749771745c7c4d835921b42",
+      "gitBlob": "aa8a8cb3401ba24159e2cf04dd3a028ef9c319d3"
+    },
+    {
+      "path": "tools/support/compat/davinci/lib/paths.mjs",
+      "bytes": 1152,
+      "sha256": "391983b97b002f7bdd849510d1d60cb60fee30940702166183063a255eea7369",
+      "gitBlob": "e432c7c8fe9f01f164e2132b1bd059b2bf5577f6"
+    },
+    {
+      "path": "tools/support/compat/davinci/lib/rust-source.mjs",
+      "bytes": 6101,
+      "sha256": "5624f91ff9920feab0f839436499a47efb90cc0141bf66c44a089f2aee72803e",
+      "gitBlob": "8f0c0a2e760563e4020660ef2d70f3d769be5fff"
+    }
+  ]
+}

@@ -1,0 +1,2800 @@
+{
+  "schema": "vize.no-mutating-component.complete-source-join",
+  "version": 1,
+  "sources": [
+    "49d95b8e93a9f5bcb73e0c1c307815d4b3a9d570",
+    "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207"
+  ],
+  "completeUnionSize": 206,
+  "families": {
+    "noMutating23": [
+      "crates/vize_patina/src/linter/engine.rs",
+      "crates/vize_patina/src/linter/engine/sfc.rs",
+      "crates/vize_patina/src/linter/script_rules.rs",
+      "crates/vize_patina/src/linter/script_rules/registry/rules.rs",
+      "crates/vize_patina/src/linter/script_rules/sfc.rs",
+      "crates/vize_patina/src/linter/script_rules/sfc/registered_sfc.rs",
+      "crates/vize_patina/src/rule.rs",
+      "crates/vize_patina/src/rules/script.rs",
+      "crates/vize_patina/src/rules/script/props_emits.rs",
+      "crates/vize_patina/src/rules/script/props_emits/compiler_macro_bindings.rs",
+      "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs",
+      "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default/runtime.rs",
+      "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default/typed.rs",
+      "crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator/setup.rs",
+      "crates/vize_patina/src/rules/vue/no_mutating_props.rs",
+      "crates/vize_patina/src/rules/vue/no_mutating_props/options_api.rs",
+      "crates/vize_patina/src/rules/vue/no_mutating_props/options_api/component.rs",
+      "crates/vize_patina/src/rules/vue/no_mutating_props/options_api/mutations.rs",
+      "crates/vize_patina/src/rules/vue/no_mutating_props/options_api/targets.rs",
+      "crates/vize_patina/src/rules/vue/no_mutating_props/options_api/tests.rs",
+      "crates/vize_patina/src/rules/vue/no_mutating_props/script_mutations.rs",
+      "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/class-decorator.vue.txt",
+      "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/input.vue.txt"
+    ],
+    "component81": [
+      "crates/vize/tests/lint_component_value_reads_cli.rs",
+      "crates/vize_croquis/src/binding_occurrences.rs",
+      "crates/vize_croquis/src/drawer/helpers/identifiers.rs",
+      "crates/vize_croquis/src/drawer/helpers/identifiers/ast.rs",
+      "crates/vize_croquis/src/drawer/helpers/identifiers/ast/walk.rs",
+      "crates/vize_croquis/src/drawer/helpers/identifiers/ast/walk/assignment_target.rs",
+      "crates/vize_croquis/src/drawer/helpers/identifiers/ast/walk/facts.rs",
+      "crates/vize_croquis/src/drawer/helpers/identifiers/ast/walk/scopes.rs",
+      "crates/vize_croquis/src/drawer/occurrences.rs",
+      "crates/vize_croquis/src/drawer/template/ids.rs",
+      "crates/vize_croquis/src/setup_context/ssr.rs",
+      "crates/vize_patina/src/linter/engine/rule_sets.rs",
+      "crates/vize_patina/src/linter/engine/sfc.rs",
+      "crates/vize_patina/src/linter/tests/no_unused_components.rs",
+      "crates/vize_patina/src/rules/facts/unused_setup_bindings.rs",
+      "crates/vize_patina/src/rules/facts/unused_setup_bindings/tests.rs",
+      "crates/vize_patina/src/rules/vue/no_unused_components.rs",
+      "crates/vize_patina/src/rules/vue/no_unused_components/dynamic_is.rs",
+      "crates/vize_patina/src/rules/vue/no_unused_components/script_setup_refs.rs",
+      "crates/vize_patina/src/rules/vue/no_unused_components/tests.rs",
+      "crates/vize_patina/tests/component_import_value_reads.rs",
+      "tests/_fixtures/differential/linter/component-cli-runtime-reads/cases.json",
+      "tests/_fixtures/differential/linter/component-cli-runtime-reads/comment-only.vue.txt",
+      "tests/_fixtures/differential/linter/component-cli-runtime-reads/error.config.json",
+      "tests/_fixtures/differential/linter/component-cli-runtime-reads/off.config.json",
+      "tests/_fixtures/differential/linter/component-cli-runtime-reads/template-value.vue.txt",
+      "tests/_fixtures/differential/linter/component-cli-runtime-reads/unused.vue.txt",
+      "tests/_fixtures/differential/linter/component-import-value-reads/arrow-shadow-keeps-import-unread.vue.txt",
+      "tests/_fixtures/differential/linter/component-import-value-reads/cases.json",
+      "tests/_fixtures/differential/linter/component-import-value-reads/comment-only-component.vue.txt",
+      "tests/_fixtures/differential/linter/component-import-value-reads/for-shadow-keeps-import-unread.vue.txt",
+      "tests/_fixtures/differential/linter/component-import-value-reads/generic-capture-refusal-retained.vue.txt",
+      "tests/_fixtures/differential/linter/component-import-value-reads/literal-is-not-read.vue.txt",
+      "tests/_fixtures/differential/linter/component-import-value-reads/member-name-is-not-read.vue.txt",
+      "tests/_fixtures/differential/linter/component-import-value-reads/object-key-is-not-read.vue.txt",
+      "tests/_fixtures/differential/linter/component-import-value-reads/original-current447-whole-vectors.json",
+      "tests/_fixtures/differential/linter/component-import-value-reads/passed-component-in-object-value.vue.txt",
+      "tests/_fixtures/differential/linter/component-import-value-reads/passed-component-prop.vue.txt",
+      "tests/_fixtures/differential/linter/component-import-value-reads/script-only-use-retained.vue.txt",
+      "tests/_fixtures/differential/linter/component-import-value-reads/slot-shadow-keeps-import-unread.vue.txt",
+      "tests/_fixtures/differential/linter/component-import-value-reads/unused-options-alias.vue.txt",
+      "tests/_fixtures/differential/linter/component-import-value-reads/unused-setup-import.vue.txt",
+      "tests/_fixtures/differential/linter/component-import-value-reads/used-options-alias.vue.txt",
+      "tests/_fixtures/differential/linter/component-import-value-reads/whole-frappe-builder.vue.txt",
+      "tests/_fixtures/differential/linter/component-import-value-reads/whole-tiny-rdm.vue.txt",
+      "tests/_fixtures/differential/linter/component-import-value-reads/whole-vue-data-ui.vue.txt",
+      "tests/_fixtures/differential/linter/component-template-runtime-reads/array-default-target-write-only-keeps-warning.vue.txt",
+      "tests/_fixtures/differential/linter/component-template-runtime-reads/array-rest-target-write-only-keeps-warning.vue.txt",
+      "tests/_fixtures/differential/linter/component-template-runtime-reads/array-target-write-only-keeps-warning.vue.txt",
+      "tests/_fixtures/differential/linter/component-template-runtime-reads/as-target-write-only-keeps-warning.vue.txt",
+      "tests/_fixtures/differential/linter/component-template-runtime-reads/assignment-with-rhs-read-remains-unproved.vue.txt",
+      "tests/_fixtures/differential/linter/component-template-runtime-reads/cases.json",
+      "tests/_fixtures/differential/linter/component-template-runtime-reads/javascript-typeof-is-a-read.vue.txt",
+      "tests/_fixtures/differential/linter/component-template-runtime-reads/javascript-typeof-statement-is-a-read.vue.txt",
+      "tests/_fixtures/differential/linter/component-template-runtime-reads/mixed-arrow-runtime-child-type-other-remains-unproved.vue.txt",
+      "tests/_fixtures/differential/linter/component-template-runtime-reads/mixed-arrow-type-child-runtime-other-remains-unproved.vue.txt",
+      "tests/_fixtures/differential/linter/component-template-runtime-reads/mixed-statement-runtime-child-type-other-remains-unproved.vue.txt",
+      "tests/_fixtures/differential/linter/component-template-runtime-reads/mixed-statement-type-child-runtime-other-remains-unproved.vue.txt",
+      "tests/_fixtures/differential/linter/component-template-runtime-reads/nonnull-target-write-only-keeps-warning.vue.txt",
+      "tests/_fixtures/differential/linter/component-template-runtime-reads/object-alias-target-write-only-keeps-warning.vue.txt",
+      "tests/_fixtures/differential/linter/component-template-runtime-reads/object-shorthand-target-write-only-keeps-warning.vue.txt",
+      "tests/_fixtures/differential/linter/component-template-runtime-reads/ordinary-type-cast-keeps-warning.vue.txt",
+      "tests/_fixtures/differential/linter/component-template-runtime-reads/retained-type-query-keeps-warning.vue.txt",
+      "tests/_fixtures/differential/linter/component-template-runtime-reads/satisfies-target-write-only-keeps-warning.vue.txt",
+      "tests/_fixtures/differential/linter/component-template-runtime-reads/statement-type-query-keeps-warning.vue.txt",
+      "tests/_fixtures/differential/linter/component-template-runtime-reads/type-assertion-target-write-only-keeps-warning.vue.txt",
+      "tests/_fixtures/differential/linter/component-template-runtime-reads/write-only-template-keeps-warning.vue.txt",
+      "tests/_fixtures/differential/linter/manifest.json",
+      "tests/_fixtures/differential/lsp/warm-type-backed-requests/case.json",
+      "tests/_fixtures/differential/lsp/warm-type-backed-requests/gen.mjs",
+      "tests/_fixtures/differential/lsp/warm-type-backed-requests/original-report.md",
+      "tests/_fixtures/differential/lsp/warm-type-backed-requests/package.json",
+      "tests/_fixtures/differential/lsp/warm-type-backed-requests/tsconfig.json",
+      "tests/_fixtures/differential/lsp/warm-type-backed-requests/vize.config.json",
+      "tests/differential/component-cli-runtime-reads.ts",
+      "tests/differential/component-import-value-reads.ts",
+      "tests/differential/component-template-runtime-reads.ts",
+      "tests/performance/support/warm-type-backed-component-value-originals.json",
+      "tests/tooling/component-cli-runtime-reads-corpus.test.ts",
+      "tests/tooling/component-import-value-reads-corpus.test.ts",
+      "tests/tooling/component-template-runtime-reads-corpus.test.ts"
+    ],
+    "retained13": [
+      "tests/_fixtures/differential/linter/component-import-value-host-before/retained-guard-callers.json",
+      "tests/tooling/bare-reserved-default-route-reference.test.mjs",
+      "tests/tooling/component-value-retained-guards.test.ts",
+      "tests/tooling/lint-props-deep-destructure.test.mjs",
+      "tests/tooling/props-deep-destructure-reference.test.mjs",
+      "tests/tooling/props-deep-import-source-custody.test.mjs",
+      "tests/tooling/props-deep-trait-scope-source-custody.test.mjs",
+      "tests/tooling/reserved-prefix-api-order.test.mjs",
+      "tests/tooling/reserved-suppression-default-routes.test.mjs",
+      "tests/tooling/runtime-props-api-source-custody.test.mjs",
+      "tests/tooling/setup-export-default-reference.test.mjs",
+      "tests/tooling/support/component-value-retained-guards.ts",
+      "tests/tooling/warm-type-backed-default-migration-host.test.ts"
+    ],
+    "currentReader111": [
+      "crates/vize_maestro/src/ide/diagnostics.rs",
+      "crates/vize_maestro/src/ide/diagnostics/default_migration_tests.rs",
+      "crates/vize_patina/src/linter/compatibility.rs",
+      "crates/vize_patina/src/linter/engine.rs",
+      "crates/vize_patina/src/linter/engine/rule_sets.rs",
+      "crates/vize_patina/src/linter/engine/sfc.rs",
+      "crates/vize_patina/src/linter/script_rules.rs",
+      "crates/vize_patina/src/linter/script_rules/registry/rules.rs",
+      "crates/vize_patina/src/linter/script_rules/sfc.rs",
+      "crates/vize_patina/src/preset.rs",
+      "crates/vize_patina/src/preset/default_migration_tests.rs",
+      "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
+      "crates/vize_patina/src/rule.rs",
+      "crates/vize_patina/src/rule/happy_path.rs",
+      "crates/vize_patina/src/rules/script.rs",
+      "crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs",
+      "crates/vize_patina/src/rules/script/props_emits.rs",
+      "crates/vize_patina/src/rules/script/props_emits/compiler_macro_bindings.rs",
+      "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs",
+      "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default/runtime.rs",
+      "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default/typed.rs",
+      "crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator/setup.rs",
+      "crates/vize_patina/src/rules/vue/no_deprecated_functional_template.rs",
+      "docs/davinci/decisions/2026-10-12-3952-raw-git-body-authority.md",
+      "tests/_fixtures/differential/lint/n8n-cli-config/cases.json",
+      "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/01-after.rs.fixture",
+      "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/06-after.rs.fixture",
+      "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/07-after.rs.fixture",
+      "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/helper-integration/01-after.mjs.fixture",
+      "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/helper-integration/01-before.mjs.fixture",
+      "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/helper-integration/02-after.mjs.fixture",
+      "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/helper-integration/02-before.mjs.fixture",
+      "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/helper-integration/manifest.json",
+      "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/import-correction/script-rules-after.rs.fixture",
+      "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/import-correction/successor.json",
+      "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/original-no-deep.rs.fixture",
+      "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/producer-after.rs.fixture",
+      "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/successor.json",
+      "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/trait-scope-correction/script-rules-after.rs.fixture",
+      "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/trait-scope-correction/successor.json",
+      "tests/_fixtures/differential/lint/reserved-prefix-8090/api-order-main-source-custody.json",
+      "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/01-after.rs.fixture",
+      "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/01-before.rs.fixture",
+      "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/02-after.rs.fixture",
+      "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/03-after.rs.fixture",
+      "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/03-before.rs.fixture",
+      "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/04-after.rs.fixture",
+      "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/04-before.rs.fixture",
+      "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/05-after.rs.fixture",
+      "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/06-after.rs.fixture",
+      "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/06-before.rs.fixture",
+      "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/07-after.rs.fixture",
+      "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/07-before.rs.fixture",
+      "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/08-after.rs.fixture",
+      "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/08-before.rs.fixture",
+      "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/09-after.rs.fixture",
+      "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/09-before.rs.fixture",
+      "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/10-after.rs.fixture",
+      "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/10-before.rs.fixture",
+      "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/11-after.rs.fixture",
+      "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/11-before.rs.fixture",
+      "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/12-after.rs.fixture",
+      "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/12-before.rs.fixture",
+      "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/original-api-order-law.mjs.fixture",
+      "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/successor.json",
+      "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/membership-law.json",
+      "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/original-preset-membership.snap.fixture",
+      "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/original-warm-type-backed-default-migration-host.test.ts.fixture",
+      "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/original-warm-type-backed-default-migration-host.ts.fixture",
+      "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/original-warm-type-backed-default-migration-manifest.json.fixture",
+      "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/policy-caller-integration.json",
+      "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/registry-after.rs.fixture",
+      "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/successor.json",
+      "tests/_fixtures/differential/lsp/warm-type-backed-requests/case.json",
+      "tests/_fixtures/differential/lsp/warm-type-backed-requests/gen.mjs",
+      "tests/_fixtures/differential/lsp/warm-type-backed-requests/original-report.md",
+      "tests/_fixtures/differential/lsp/warm-type-backed-requests/package.json",
+      "tests/_fixtures/differential/lsp/warm-type-backed-requests/tsconfig.json",
+      "tests/_fixtures/differential/lsp/warm-type-backed-requests/vize.config.json",
+      "tests/_fixtures/lint-default-correctness/cases.json",
+      "tests/_fixtures/n8n-cli-adoption.json",
+      "tests/performance/support/warm-type-backed-component-value-manifest.json",
+      "tests/performance/support/warm-type-backed-default-migration-host.ts",
+      "tests/performance/support/warm-type-backed-default-migration-manifest.json",
+      "tests/performance/support/warm-type-backed-git-reader-family-1.json",
+      "tests/performance/support/warm-type-backed-git-reader-family-2.json",
+      "tests/performance/support/warm-type-backed-git-reader-incoming.json",
+      "tests/performance/support/warm-type-backed-git-reader-incoming.ts",
+      "tests/performance/support/warm-type-backed-git-reader-nodeep-family-1.json",
+      "tests/performance/support/warm-type-backed-git-reader-nodeep-family-2.json",
+      "tests/performance/support/warm-type-backed-git-reader-nodeep-family-3.json",
+      "tests/performance/support/warm-type-backed-git-reader-nodeep.json",
+      "tests/performance/support/warm-type-backed-git-reader-nodeep.ts",
+      "tests/performance/support/warm-type-backed-git-reader-setup.json",
+      "tests/performance/support/warm-type-backed-path-host-manifest.json",
+      "tests/performance/support/warm-type-backed-path-host.ts",
+      "tests/tooling/ascii-symbol-original-callers.test.ts",
+      "tests/tooling/lint-default-correctness-reference.mjs",
+      "tests/tooling/support/ascii-symbol-caller-frames.json",
+      "tests/tooling/support/ascii-symbol-original-callers.json",
+      "tests/tooling/support/ascii-symbol-original-callers.ts",
+      "tests/tooling/support/props-deep-source-custody.mjs",
+      "tests/tooling/support/runtime-props-api-source-custody.mjs",
+      "tests/tooling/support/setup-export-preset-source-custody.mjs",
+      "tests/tooling/warm-type-backed-ascii-symbol-host.test.ts",
+      "tests/tooling/warm-type-backed-default-migration-host.test.ts",
+      "tests/tooling/warm-type-backed-git-body-authority.test.ts",
+      "tests/tooling/warm-type-backed-git-reader-incoming.test.ts",
+      "tests/tooling/warm-type-backed-git-reader-nodeep.test.ts",
+      "tests/tooling/warm-type-backed-git-reader-setup.test.ts",
+      "tests/tooling/warm-type-backed-path-host.test.ts"
+    ]
+  },
+  "current": [
+    {
+      "path": "crates/vize/tests/lint_component_value_reads_cli.rs",
+      "mode": "100644",
+      "bytes": 4071,
+      "sha256": "f575e01739e2481c894a3255798726150d2e7d3ea61987d26b1649c1ac549aff",
+      "gitBlob": "fdbaf441b356838e9a637534174a79cc5c554ea2"
+    },
+    {
+      "path": "crates/vize_croquis/src/binding_occurrences.rs",
+      "mode": "100644",
+      "bytes": 8523,
+      "sha256": "91c5637ef5c15d40abe1aec511a5431b8f91df4843fb05f3f5b24ecff6dcdf72",
+      "gitBlob": "ef982a8fb0403933e839d0143e3d7796709c7f93"
+    },
+    {
+      "path": "crates/vize_croquis/src/drawer/helpers/identifiers.rs",
+      "mode": "100644",
+      "bytes": 9476,
+      "sha256": "ad51fd12a99ccb4cff7683a41e9a5c7b291f675b51aea4decc2c09358584217d",
+      "gitBlob": "f65564f485d96e6ee56f1dfb56fe5292b5778cdd"
+    },
+    {
+      "path": "crates/vize_croquis/src/drawer/helpers/identifiers/ast.rs",
+      "mode": "100644",
+      "bytes": 10267,
+      "sha256": "0fe8bf81bb19f9966a44dd9bc0171da20ff7591c2a4147c7c23a846251008c63",
+      "gitBlob": "f69be8a2da49701064d989b823fef8302dbb8ef4"
+    },
+    {
+      "path": "crates/vize_croquis/src/drawer/helpers/identifiers/ast/walk.rs",
+      "mode": "100644",
+      "bytes": 8519,
+      "sha256": "de241830264660bb7a7e731f4c0356da117a7e8d3fa406d5031d5913346c1456",
+      "gitBlob": "574018db9b005a96ce91a5bf6f82fb6844fb12d8"
+    },
+    {
+      "path": "crates/vize_croquis/src/drawer/helpers/identifiers/ast/walk/assignment_target.rs",
+      "mode": "100644",
+      "bytes": 6617,
+      "sha256": "f32bdc76da13cceb08e0c6a57262aa77c2fe87fe95b33ffa0870def505c12cee",
+      "gitBlob": "e886ad4f918b186df6e4f7295c9e75579fcea050"
+    },
+    {
+      "path": "crates/vize_croquis/src/drawer/helpers/identifiers/ast/walk/facts.rs",
+      "mode": "100644",
+      "bytes": 1373,
+      "sha256": "e6656664a56e13a27ec8c425ba64cb97c9e0950a52380102ff181995c2cfdb67",
+      "gitBlob": "bf106eb8d77bd9a8fbed69fffcce7633dec787b4"
+    },
+    {
+      "path": "crates/vize_croquis/src/drawer/helpers/identifiers/ast/walk/scopes.rs",
+      "mode": "100644",
+      "bytes": 9493,
+      "sha256": "f57fbd55887bded6961b435f63cbd19b2694f57d62f7c1a67c60367970b5191e",
+      "gitBlob": "df7dd214dea25e00ebf7d69f0391fc935dd332cc"
+    },
+    {
+      "path": "crates/vize_croquis/src/drawer/occurrences.rs",
+      "mode": "100644",
+      "bytes": 6742,
+      "sha256": "b75c3d8720b8c548d9f97ea7fbd6e2cc06df5ca5eeae75c14cda394ea5bdc70e",
+      "gitBlob": "7496a8b7ac8b5d3158713bb1378d951ab60881ee"
+    },
+    {
+      "path": "crates/vize_croquis/src/drawer/template/ids.rs",
+      "mode": "100644",
+      "bytes": 12998,
+      "sha256": "fd59f0d27b2980ca21853db79f77e6a2285af84dea8c70562e48835e67f98f01",
+      "gitBlob": "94030ebe6488fc9416f4f176c93dbb18a2cbfa52"
+    },
+    {
+      "path": "crates/vize_croquis/src/setup_context/ssr.rs",
+      "mode": "100644",
+      "bytes": 5557,
+      "sha256": "7c8e75fb0f9d44bba60c02a52683973567a316dc08410cf846845cc6069d1224",
+      "gitBlob": "c9c8590197baea0058d7db9af018cd168a766cfc"
+    },
+    {
+      "path": "crates/vize_maestro/src/ide/diagnostics.rs",
+      "mode": "100644",
+      "bytes": 3464,
+      "sha256": "7e61b0bf03d3ad3b17ef530f8db3fcaf9020e4f9402fbab01ecd89a758eab271",
+      "gitBlob": "9c0431cc5a6084608363833a2257e3decb36a91e"
+    },
+    {
+      "path": "crates/vize_maestro/src/ide/diagnostics/default_migration_tests.rs",
+      "mode": "100644",
+      "bytes": 2435,
+      "sha256": "bca60b1f7a8dc6824da8a8c1bb380a0e1601ad71847c8187cb919909eb57669e",
+      "gitBlob": "0d49e3de2462cafac5360e3591c33f6965afaa2f"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/compatibility.rs",
+      "mode": "100644",
+      "bytes": 1858,
+      "sha256": "6e5cef4759637a90b268fafb97c48979b89d4d4ec0679528aef4dfc4d3e81a58",
+      "gitBlob": "5234425df9d3c7684ba147e193c19c69987314ac"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/engine.rs",
+      "mode": "100644",
+      "bytes": 19940,
+      "sha256": "0ee0a7230e1cceca0868d7637eb31978dff372bf3b16c2699f06e0a97b74d9fa",
+      "gitBlob": "bcab2539142ad988f851ef92dd2226395dd53981"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/engine/rule_sets.rs",
+      "mode": "100644",
+      "bytes": 5559,
+      "sha256": "214e90ffb168b2efad7a74d8f29d0775d3ddd82da35bf97a01df3efe64387374",
+      "gitBlob": "ae984c6c149e5adbad9e7e555cf7f60008d17e0b"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/engine/sfc.rs",
+      "mode": "100644",
+      "bytes": 11706,
+      "sha256": "611476399228660a92164be7cb99825b316cdc280eb36b449255deacbfded191",
+      "gitBlob": "031051caa6d8cb079ca8c172a48ddd01dc467f2b"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/script_rules.rs",
+      "mode": "100644",
+      "bytes": 9734,
+      "sha256": "9a3f6978f30b5895c31d5eb0f333175f8ee60c1a52bccc31615d5ceb075f1e2b",
+      "gitBlob": "9eddae3f363f1965b59aedbc487af25ff18f9e94"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/script_rules/registry/rules.rs",
+      "mode": "100644",
+      "bytes": 21922,
+      "sha256": "e0ac436d8735f69bab0fe42465a328047dc24dc58248a22ae2315a828468f7a1",
+      "gitBlob": "cbf9c7f32929b3d92554b1bc8918a5d100c303c4"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/script_rules/sfc.rs",
+      "mode": "100644",
+      "bytes": 7993,
+      "sha256": "4ba51a6cabd3fdb1ce973edfa7cf7bf4dac6d0bf12b6e9294ee75b9c3dd1ba46",
+      "gitBlob": "c36f934e635b6aced245ae92ce0bafa1ddb613bf"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/script_rules/sfc/registered_sfc.rs",
+      "mode": "100644",
+      "bytes": 1366,
+      "sha256": "3c5def49a855e146eaea7db29798f616e31fc6a44e7bf4d9a6b0afcf70805bd3",
+      "gitBlob": "5016a21b8d925696b314a0f5d82c1194c9dd0950"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/tests/no_unused_components.rs",
+      "mode": "100644",
+      "bytes": 9805,
+      "sha256": "ca317ab215f6beeb3661386305cf5610b6bd151d7e8c2c6b7b36946dc3075b78",
+      "gitBlob": "e3fb8ec079019e7bed96572c2bf4292eea4cc284"
+    },
+    {
+      "path": "crates/vize_patina/src/preset.rs",
+      "mode": "100644",
+      "bytes": 5091,
+      "sha256": "6dfcc732d18a76db0907e8152d6bb61d35ef040924200ae1855b1aa4a81e3718",
+      "gitBlob": "ef2b19f5cdb2ed2657f4daa1bf242664ca72e9a5"
+    },
+    {
+      "path": "crates/vize_patina/src/preset/default_migration_tests.rs",
+      "mode": "100644",
+      "bytes": 6248,
+      "sha256": "79ecfdbe72c74890ec84b4f31307bc15bbabac749334732ddf918592dc3e74d3",
+      "gitBlob": "a22b52a650dc6e5c2e02b2976303bc5cbd63b24d"
+    },
+    {
+      "path": "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
+      "mode": "100644",
+      "bytes": 26549,
+      "sha256": "04a0a49982ed941a42ef291a91f2863531902cbfed82365ae3da223e4efcf73b",
+      "gitBlob": "b16e18726c7a2a1ed8452efee3ac768bd1d9ae84"
+    },
+    {
+      "path": "crates/vize_patina/src/rule.rs",
+      "mode": "100644",
+      "bytes": 12879,
+      "sha256": "6537cc95fb04eb4f8f51afd7dfea9e7a695b81a7f428e01ddb38e208478c34b5",
+      "gitBlob": "20a0e112b3e6434eb05b6c9502a54974aa550301"
+    },
+    {
+      "path": "crates/vize_patina/src/rule/happy_path.rs",
+      "mode": "100644",
+      "bytes": 7361,
+      "sha256": "b08dd788756457fe33ca63076d4372c0aa5c511564809ab675c0f3c5fd2f11a8",
+      "gitBlob": "37722e1144c1eefb93e9c1db8af8af7fdf85bbe2"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/facts/unused_setup_bindings.rs",
+      "mode": "100644",
+      "bytes": 7078,
+      "sha256": "355fd748e80ef7edf01834692d458f011fce571365bfb3cc9da8a82f40a244f2",
+      "gitBlob": "e2c431f972ca0e91a0070eb3b8997461cdaa4f0b"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/facts/unused_setup_bindings/tests.rs",
+      "mode": "100644",
+      "bytes": 6460,
+      "sha256": "6a0d72b51b3860cb547c1d6e5ee31d9239b0e0aa085a5ecc9b29d20a086b912d",
+      "gitBlob": "d8159de3dbe410b4db89784378984b16ad2b6830"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script.rs",
+      "mode": "100644",
+      "bytes": 7697,
+      "sha256": "2fcda85b4dba45248c782f475c648b4344b0cb2b008b55d241cd282efa9cf7dd",
+      "gitBlob": "7b54949f6b48abe4c69b27865bf6b0165694a936"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs",
+      "mode": "100644",
+      "bytes": 9635,
+      "sha256": "e3125601808dd6d4d0c7221c8330c9b0e02471a38b4c1819c77d7ca1389fc450",
+      "gitBlob": "ec953122c810abe270b8d4e80804525ad2833bbf"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/props_emits.rs",
+      "mode": "100644",
+      "bytes": 1368,
+      "sha256": "8974083b1d8e5c864f31d3f872d54d6061a84f4a8f7a181c2daa0d3f27ede6ff",
+      "gitBlob": "4a756a4d427286eb83d65e540713051736002831"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/props_emits/compiler_macro_bindings.rs",
+      "mode": "100644",
+      "bytes": 5670,
+      "sha256": "2fa87c69fef9eca8cd8c39d88892a2db91bb40eadcc17fa15c1bec9a991b376f",
+      "gitBlob": "7ba76a4d5a9256270ef258947064d9e60f103077"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs",
+      "mode": "100644",
+      "bytes": 11471,
+      "sha256": "1e3e58cab0ab268e3c9e3ba5eb3e74d54283d47249d10189fe65c608cca504f1",
+      "gitBlob": "85243a519428825cd278e0a5f418bb71b30ff53d"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default/runtime.rs",
+      "mode": "100644",
+      "bytes": 2399,
+      "sha256": "5bed02a5b8cdf759c2939fae2f68fda41c05a3d35508383e9275b28569e4c4b2",
+      "gitBlob": "76b7cfe95c7a8d4121580f11b67c3545036d5025"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default/typed.rs",
+      "mode": "100644",
+      "bytes": 8807,
+      "sha256": "0749c7e672b42572d4c509404af7c82ba415590de5ef04988d577cdc23806c83",
+      "gitBlob": "897c711329161538d8fefe536e46815aea76a043"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator/setup.rs",
+      "mode": "100644",
+      "bytes": 6384,
+      "sha256": "458971904a70de545aca5bb441e0f4241fad91d8573ae0681bd6298a1d3136f1",
+      "gitBlob": "5a0328505ea2d520ecabaa404202dd4bd0861365"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_deprecated_functional_template.rs",
+      "mode": "100644",
+      "bytes": 8773,
+      "sha256": "4807bf0ace61ad9db7f885402a15f8bacb88ced005367142376ac0203bd930db",
+      "gitBlob": "328df640e98257fe589de6070c12aca5e130c516"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_mutating_props.rs",
+      "mode": "100644",
+      "bytes": 11795,
+      "sha256": "06002fab66c451069ada1b21b1a15bf7966dd82d8766562270ef4d620788230c",
+      "gitBlob": "c3396f48f8657921a8fd8d6806b9e6b789d0fe7b"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_mutating_props/options_api.rs",
+      "mode": "100644",
+      "bytes": 2600,
+      "sha256": "5df609daa1ca1c8cb58226907fcd8b091fdf9606b95c10613387f25f33b2a927",
+      "gitBlob": "d065ba04d67c9ab4c77351b5751cabc5d0725cbb"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_mutating_props/options_api/component.rs",
+      "mode": "100644",
+      "bytes": 5011,
+      "sha256": "111ebf7e0d4a58a38aeb20833786139812cae3a6b13a219ff881002f431e638e",
+      "gitBlob": "30d8e77f846d0f093a6bb29070e8123fe04f1cb5"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_mutating_props/options_api/mutations.rs",
+      "mode": "100644",
+      "bytes": 4235,
+      "sha256": "94c333fd81cffb93eb82e0d589d4d96c2fdddb1d17710b16f275c8069e2bf6ae",
+      "gitBlob": "f1f3e83f95510cddc3cda33481dbee533925d173"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_mutating_props/options_api/targets.rs",
+      "mode": "100644",
+      "bytes": 1530,
+      "sha256": "c7e9c0a75885841c5d9aae4ded76608fab45636d8b60bc90481e43f14c728449",
+      "gitBlob": "6dea161ed46ce543029f8660f6ad762ea4a339b2"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_mutating_props/options_api/tests.rs",
+      "mode": "100644",
+      "bytes": 13291,
+      "sha256": "c9e4a7ee85ab8b09ed4fbfad27ce8f546f456f51289559f8d8e56a136565890e",
+      "gitBlob": "58bc5aa0deebd053494e3307ef8fd191d7d5ffbd"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_mutating_props/script_mutations.rs",
+      "mode": "100644",
+      "bytes": 10403,
+      "sha256": "b474379c4a38b27286ea330828ec2889dc4834eecb90d34d2ffaa47d81951d64",
+      "gitBlob": "9871a9fbb0656c2d9fc6c75644530670f13743a9"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_unused_components.rs",
+      "mode": "100644",
+      "bytes": 11430,
+      "sha256": "98fcaaccf76e1d2a50d0e329df06a7a4856250bd3dce6586e14bd9ba82e84321",
+      "gitBlob": "ffd241d4f930e302ae4d3f8b835c91cb647b7cd8"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_unused_components/dynamic_is.rs",
+      "mode": "100644",
+      "bytes": 3729,
+      "sha256": "a1790d5fd9c7f8c9e8176f4e5c153e01e1fd3d712265bdcd25ac483db75c2897",
+      "gitBlob": "6ab7fbc58566456cdaf97391a3df0cfe8a14e2b9"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_unused_components/script_setup_refs.rs",
+      "mode": "100644",
+      "bytes": 4726,
+      "sha256": "63f0338fe4ecf372b6616bbc99d70fd5b6ce9d0aa803432e43a7dbde715f9fe3",
+      "gitBlob": "5c3133ef1b2bc2611058b0d52ae462254708a4e1"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_unused_components/tests.rs",
+      "mode": "100644",
+      "bytes": 3736,
+      "sha256": "cffe3df6579f4f979e9ce26f6fbc72e2eff39f63fc223bf8da854e9ea1fc6c5a",
+      "gitBlob": "210f7f2139a9eca0c58750c0d02f54a284970c8a"
+    },
+    {
+      "path": "crates/vize_patina/tests/component_import_value_reads.rs",
+      "mode": "100644",
+      "bytes": 13957,
+      "sha256": "82754166dcb8db2fc3809a0526c18f93970c546b02ae63815eccfa40a3ed5a24",
+      "gitBlob": "4645364130d3b0c3b08cd5b9825e0374bfe99b34"
+    },
+    {
+      "path": "docs/davinci/decisions/2026-10-12-3952-raw-git-body-authority.md",
+      "mode": "100644",
+      "bytes": 5982,
+      "sha256": "615e60d862c9471662a99db2a6c255646a1c1b7d3c48e92745070e4295f8ed40",
+      "gitBlob": "90359519719c3a705cf16fa3641a2d8679641f82"
+    },
+    {
+      "path": "docs/davinci/plan/consumer-migration-surfaces/linter/vize_patina.tsv",
+      "mode": "100644",
+      "bytes": 161345,
+      "sha256": "2e6aea481b67658a0a55f8b8df79bba8b79b73542f8020072f1e0a4b52d82b05",
+      "gitBlob": "25eb6ca6b79ad74890f78072112e4dc153e16f3c"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/n8n-cli-config/cases.json",
+      "mode": "100644",
+      "bytes": 48071,
+      "sha256": "a909cebe172fbba3d145d10efd90c26c370247299d7ac62450d5867b7b45d695",
+      "gitBlob": "223dad7fc07192e9990a3634bc24af3d2f87fd58"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/01-after.rs.fixture",
+      "mode": "100644",
+      "bytes": 1368,
+      "sha256": "8974083b1d8e5c864f31d3f872d54d6061a84f4a8f7a181c2daa0d3f27ede6ff",
+      "gitBlob": "4a756a4d427286eb83d65e540713051736002831"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/06-after.rs.fixture",
+      "mode": "100644",
+      "bytes": 7697,
+      "sha256": "2fcda85b4dba45248c782f475c648b4344b0cb2b008b55d241cd282efa9cf7dd",
+      "gitBlob": "7b54949f6b48abe4c69b27865bf6b0165694a936"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/07-after.rs.fixture",
+      "mode": "100644",
+      "bytes": 9768,
+      "sha256": "8ffd84a3c10bd6047da99d0bd8ecc9823d94900014830fff503377098d25a962",
+      "gitBlob": "96af9ee168b9c0d5de9b2d091efac3e7f2223b7e"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/helper-integration/01-after.mjs.fixture",
+      "mode": "100644",
+      "bytes": 6045,
+      "sha256": "8c9e884f8099a1125ab0518d5f569baf043f7416509190dfa61b8db212a38d33",
+      "gitBlob": "a8fce88502aa29db93afdfb233c892a15516e99d"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/helper-integration/01-before.mjs.fixture",
+      "mode": "100644",
+      "bytes": 5787,
+      "sha256": "e9a91456ac78d8ec9449a1c8a539a735df3a4a7e67091ad282518c77f9564455",
+      "gitBlob": "50368c6b88ce63186c4c5e246c4b4c0b46725a4b"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/helper-integration/02-after.mjs.fixture",
+      "mode": "100644",
+      "bytes": 5387,
+      "sha256": "8995c93374509bbb37be4fd0df0506df1b8d6bac4737496d5f66410d19527b7a",
+      "gitBlob": "af400a192e7d2384aefdd823483caf257419b93d"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/helper-integration/02-before.mjs.fixture",
+      "mode": "100644",
+      "bytes": 5128,
+      "sha256": "0930abbf603bb8faa5643ad1adca3b74608122f8db63df9bdfbf5155f1e2fd38",
+      "gitBlob": "5a093216152521cc580b95c27e22fc419f947bf3"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/helper-integration/manifest.json",
+      "mode": "100644",
+      "bytes": 1479,
+      "sha256": "0a3c546ac610655d29d6f4d059a6950e195fa1ed380c77c1ebd56aca9105ba9d",
+      "gitBlob": "2fe45facd3184e00d64e40dd984a03aac275e4c8"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/import-correction/script-rules-after.rs.fixture",
+      "mode": "100644",
+      "bytes": 9722,
+      "sha256": "aba99facec3f70369a3e5c53d12b2c045d28ffba1b585d29cfb5fa3ef6bb262d",
+      "gitBlob": "edf0f64adee0f76d0d67d4032d01a30888053954"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/import-correction/successor.json",
+      "mode": "100644",
+      "bytes": 12705,
+      "sha256": "39cf7ab7633378ab462c6af46443fa0e235b070d067db739eaa040760e3e996f",
+      "gitBlob": "dde538cd7ead6f9919cbfefc916063ad6b897fab"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/original-no-deep.rs.fixture",
+      "mode": "100644",
+      "bytes": 10631,
+      "sha256": "c4a0134e786feca78007040fcfd49b9c8686aca3e63af3b24d81df172ad11ab0",
+      "gitBlob": "27b222f88a40cdf5602f63939df27928244d0232"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/producer-after.rs.fixture",
+      "mode": "100644",
+      "bytes": 9635,
+      "sha256": "e3125601808dd6d4d0c7221c8330c9b0e02471a38b4c1819c77d7ca1389fc450",
+      "gitBlob": "ec953122c810abe270b8d4e80804525ad2833bbf"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/successor.json",
+      "mode": "100644",
+      "bytes": 15445,
+      "sha256": "de01ccf20b54abc69935b2ffa844705b1704bac8f83c07ee832c339ff9aaa161",
+      "gitBlob": "549226e039bd92e96f0e65e6083da89f7972c25d"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/trait-scope-correction/script-rules-after.rs.fixture",
+      "mode": "100644",
+      "bytes": 9734,
+      "sha256": "9a3f6978f30b5895c31d5eb0f333175f8ee60c1a52bccc31615d5ceb075f1e2b",
+      "gitBlob": "9eddae3f363f1965b59aedbc487af25ff18f9e94"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/trait-scope-correction/successor.json",
+      "mode": "100644",
+      "bytes": 12331,
+      "sha256": "9591f993ff7ff20537ffbc532ce84af6ef201ec26e248b99d7788725a7dece59",
+      "gitBlob": "8e8db63ce45f1a82a78bcc11beedb8f1bae958cc"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/api-order-main-source-custody.json",
+      "mode": "100644",
+      "bytes": 3733,
+      "sha256": "67cd13b5da7a18095622e1f8b68d15c4d7dcb87116498c7b4d0f33eabfa68945",
+      "gitBlob": "fa3838f8922c92f81da49185dba821dd5e16014d"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/01-after.rs.fixture",
+      "mode": "100644",
+      "bytes": 1142,
+      "sha256": "6ab8bce216974ed76eaee32f2a494c2a039401a62eab5dbc98b90da0e8ed1c2f",
+      "gitBlob": "f80104f94b80d850d6c8b8e3aacdaf3830b05192"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/01-before.rs.fixture",
+      "mode": "100644",
+      "bytes": 1113,
+      "sha256": "f9e158bdb40b830de0d196c90f5a0489a2327de0fcaddf87790a8375d26bb096",
+      "gitBlob": "2cec60a8008cd2761c2e383f49829ed038b25bc7"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/02-after.rs.fixture",
+      "mode": "100644",
+      "bytes": 5670,
+      "sha256": "2fa87c69fef9eca8cd8c39d88892a2db91bb40eadcc17fa15c1bec9a991b376f",
+      "gitBlob": "7ba76a4d5a9256270ef258947064d9e60f103077"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/03-after.rs.fixture",
+      "mode": "100644",
+      "bytes": 6384,
+      "sha256": "458971904a70de545aca5bb441e0f4241fad91d8573ae0681bd6298a1d3136f1",
+      "gitBlob": "5a0328505ea2d520ecabaa404202dd4bd0861365"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/03-before.rs.fixture",
+      "mode": "100644",
+      "bytes": 11589,
+      "sha256": "b688089a3b6ebb55b8250163d190011774c88caa38d0bddd706ce2b85174ee28",
+      "gitBlob": "6897b1de7ea65cc63fdbfc6df87709b78cacb271"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/04-after.rs.fixture",
+      "mode": "100644",
+      "bytes": 11471,
+      "sha256": "1e3e58cab0ab268e3c9e3ba5eb3e74d54283d47249d10189fe65c608cca504f1",
+      "gitBlob": "85243a519428825cd278e0a5f418bb71b30ff53d"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/04-before.rs.fixture",
+      "mode": "100644",
+      "bytes": 10626,
+      "sha256": "5b3ae15fd4fc769f5fa418ec3b14039a8b30d8b1d7e06cd8f5ba6f872b12274c",
+      "gitBlob": "af511b0b2a53a6cae12acada663dc6a01b5de28c"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/05-after.rs.fixture",
+      "mode": "100644",
+      "bytes": 2399,
+      "sha256": "5bed02a5b8cdf759c2939fae2f68fda41c05a3d35508383e9275b28569e4c4b2",
+      "gitBlob": "76b7cfe95c7a8d4121580f11b67c3545036d5025"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/06-after.rs.fixture",
+      "mode": "100644",
+      "bytes": 7512,
+      "sha256": "5836f482fd17f2a6b789d4ac892c8ebf1f191d3cddd7d7a07fda17b6e2b26d7f",
+      "gitBlob": "3510a3c90f696765defb7e3524dfddd4c1e1bb24"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/06-before.rs.fixture",
+      "mode": "100644",
+      "bytes": 7329,
+      "sha256": "ce0a4fdd7e6f09b269da94fcd361067b839e0208ecbf2fd3cb42b12f33820fb4",
+      "gitBlob": "f7faef169ee467fb7f45598454a592ba0525fad1"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/07-after.rs.fixture",
+      "mode": "100644",
+      "bytes": 9310,
+      "sha256": "88ea29b144566d5324df9299009331dd50da1c160ecf753d01d1b001dba0100e",
+      "gitBlob": "3dfc28110d86205541150b7e477cbdc6b82eb014"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/07-before.rs.fixture",
+      "mode": "100644",
+      "bytes": 8744,
+      "sha256": "bdab1932f2d6d0f80d2a4b93372fa69c2294a4acd5700fd2174913ab85eaabb0",
+      "gitBlob": "c6a052bf5eb6db4b1041104c475d0edb895ca1db"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/08-after.rs.fixture",
+      "mode": "100644",
+      "bytes": 7552,
+      "sha256": "cce4c13e30a66479b42ea078dc9f799afc81bbfb8e9d5464f78b75b874c42dc1",
+      "gitBlob": "e4a3c8d0a973ae13ed0c9ba97a4cf4cb72b46320"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/08-before.rs.fixture",
+      "mode": "100644",
+      "bytes": 7312,
+      "sha256": "cacbe030dc59399908463b3170cc80999c73a8a6bee486f580d54fd1b35f27df",
+      "gitBlob": "128d57a9377398133f450ae2440b251073bbda63"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/09-after.rs.fixture",
+      "mode": "100644",
+      "bytes": 8807,
+      "sha256": "0749c7e672b42572d4c509404af7c82ba415590de5ef04988d577cdc23806c83",
+      "gitBlob": "897c711329161538d8fefe536e46815aea76a043"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/09-before.rs.fixture",
+      "mode": "100644",
+      "bytes": 8807,
+      "sha256": "0749c7e672b42572d4c509404af7c82ba415590de5ef04988d577cdc23806c83",
+      "gitBlob": "897c711329161538d8fefe536e46815aea76a043"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/10-after.rs.fixture",
+      "mode": "100644",
+      "bytes": 11157,
+      "sha256": "bcd3c09c4db78c4bf93514bf177848eb816bb1d665f3c9185fe332550c28eb23",
+      "gitBlob": "e153615991646e5549b0c3997c2184251493fe4a"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/10-before.rs.fixture",
+      "mode": "100644",
+      "bytes": 11157,
+      "sha256": "bcd3c09c4db78c4bf93514bf177848eb816bb1d665f3c9185fe332550c28eb23",
+      "gitBlob": "e153615991646e5549b0c3997c2184251493fe4a"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/11-after.rs.fixture",
+      "mode": "100644",
+      "bytes": 19940,
+      "sha256": "0ee0a7230e1cceca0868d7637eb31978dff372bf3b16c2699f06e0a97b74d9fa",
+      "gitBlob": "bcab2539142ad988f851ef92dd2226395dd53981"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/11-before.rs.fixture",
+      "mode": "100644",
+      "bytes": 19940,
+      "sha256": "0ee0a7230e1cceca0868d7637eb31978dff372bf3b16c2699f06e0a97b74d9fa",
+      "gitBlob": "bcab2539142ad988f851ef92dd2226395dd53981"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/12-after.rs.fixture",
+      "mode": "100644",
+      "bytes": 21919,
+      "sha256": "eaa4722cc76a7471137d797c255a8b5e5bcb09aa4d199a9b89624a1d506a6c03",
+      "gitBlob": "b1be5a2b831b556fbc55f43924992acfdbe88ede"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/12-before.rs.fixture",
+      "mode": "100644",
+      "bytes": 21919,
+      "sha256": "eaa4722cc76a7471137d797c255a8b5e5bcb09aa4d199a9b89624a1d506a6c03",
+      "gitBlob": "b1be5a2b831b556fbc55f43924992acfdbe88ede"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/original-api-order-law.mjs.fixture",
+      "mode": "100644",
+      "bytes": 6838,
+      "sha256": "7346d7e4f2b9d7958dff5dfa704d3a9ee158ba5a268e344863fbdf4384439480",
+      "gitBlob": "1a2ca2e2e529f54465cd9c96ebdfe16329d3831d"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/successor.json",
+      "mode": "100644",
+      "bytes": 10298,
+      "sha256": "ea908f5de1c09c19ad59bf9f64bbbabccab676940f584fe754bb8e10f79828cb",
+      "gitBlob": "330f340a2149247814beceb373a3dcbe357c14ea"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/membership-law.json",
+      "mode": "100644",
+      "bytes": 1471,
+      "sha256": "07f1abf28be1e0583a25f9c822beaaf546cec8c863603162ad04688833237dea",
+      "gitBlob": "fc061aaa7fcd065c3361eba75757023956e7eaf4"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/original-preset-membership.snap.fixture",
+      "mode": "100644",
+      "bytes": 26349,
+      "sha256": "810d884d2b275b43799dc097bb8dfee7f63e892a4a7956846a0a7c5c87367da0",
+      "gitBlob": "3c927b145e33fdaf9275f3c63a23ec78b35d0fc2"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/original-warm-type-backed-default-migration-host.test.ts.fixture",
+      "mode": "100644",
+      "bytes": 5783,
+      "sha256": "86ce5a8bcbb25c298e59d211910b6aeca3da3e280f9a2109ce0daee6ace2ca0c",
+      "gitBlob": "cef45230e113a0a9debc181957e77dbb6491f3f4"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/original-warm-type-backed-default-migration-host.ts.fixture",
+      "mode": "100644",
+      "bytes": 3081,
+      "sha256": "6b6bffc7461f754b82ad996abf62cd6f958998212e95d4af600fa4b9bfa483d5",
+      "gitBlob": "c32f3cebeab5bebabaa076e011af188774f2b031"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/original-warm-type-backed-default-migration-manifest.json.fixture",
+      "mode": "100644",
+      "bytes": 3738,
+      "sha256": "73e19d2b74c4488f8feb1214dd6dc15d0d4ff15f744994bc52d9288ee61e6e0d",
+      "gitBlob": "d5e7b8ef26209efe90cad29667607c2c2a2aaeba"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/policy-caller-integration.json",
+      "mode": "100644",
+      "bytes": 7905,
+      "sha256": "5b1065fdafafa9b4e499406a45063f31ffb1b513ec2e200daec75a8865722080",
+      "gitBlob": "b62347b8b4df379cf8299b52b3e3011348609f57"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/registry-after.rs.fixture",
+      "mode": "100644",
+      "bytes": 21922,
+      "sha256": "e0ac436d8735f69bab0fe42465a328047dc24dc58248a22ae2315a828468f7a1",
+      "gitBlob": "cbf9c7f32929b3d92554b1bc8918a5d100c303c4"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/successor.json",
+      "mode": "100644",
+      "bytes": 12489,
+      "sha256": "7a612fc13dfe59fd50cfa31300980eacfa645e84a410cf6e04ea5777bc8d2e4b",
+      "gitBlob": "24956f46a50b7aa95b320596a7d7370f0e431204"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-cli-runtime-reads/cases.json",
+      "mode": "100644",
+      "bytes": 4982,
+      "sha256": "f16d520eede9be98a4f75decf273d70129c57e76357d9bea2d8d7b731059ada1",
+      "gitBlob": "0c0ede85907df68c2748d1a56a4ab74f777ee439"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-cli-runtime-reads/comment-only.vue.txt",
+      "mode": "100644",
+      "bytes": 149,
+      "sha256": "bc066e8e202b39b6dd2513c7278b8c3c24eb103a4787251d333750faad84d901",
+      "gitBlob": "3d0d2efaed71c5c53519e44c1ef8121303679a49"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-cli-runtime-reads/error.config.json",
+      "mode": "100644",
+      "bytes": 112,
+      "sha256": "06b56500f90ee908f148e2db440aaf6f82a4c3332a1351520a74c29fceada84b",
+      "gitBlob": "8c4e3c93013caa456d06cd47b7e80f174e7f5d99"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-cli-runtime-reads/off.config.json",
+      "mode": "100644",
+      "bytes": 110,
+      "sha256": "3df013d6b2ade0ad3f9957108602d0785a00ed4f4cbafd5c5e9f73d95c088467",
+      "gitBlob": "750c7beb6285f28ab321d1ef2ffa23bc3bfc9e79"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-cli-runtime-reads/template-value.vue.txt",
+      "mode": "100644",
+      "bytes": 126,
+      "sha256": "2fb0e0348de9d73bf92540f8cab0c453163ca2738b0f473e43f39f5161b8e356",
+      "gitBlob": "fa42747707c011a80bf9dd474759fdc03f5e419c"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-cli-runtime-reads/unused.vue.txt",
+      "mode": "100644",
+      "bytes": 106,
+      "sha256": "a26d4352176ba9fdcc986146b4ce9ef57609decbd03fb6b6eb9fe167af2365b3",
+      "gitBlob": "9f3ad5a040919036c6d79b7e4bac7c38bc2f3bfd"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-host-before/entries.json",
+      "mode": "100644",
+      "bytes": 217381,
+      "sha256": "4c6a87c8d73e4f41cea74e05616f4bb7d2b1905c57e54f0e816f7d04c9afaecc",
+      "gitBlob": "e1ac210faada2adae371205db258e1248f11035a"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-host-before/host-composition.json",
+      "mode": "100644",
+      "bytes": 2164,
+      "sha256": "a20e2c627c632158ae6f8bf138ff0c8d79af25440dbb7f24623ee3fa32f6dedb",
+      "gitBlob": "7e4927ff5a075556c311c951b3689df8ae730936"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-host-before/host-supplement-before.json",
+      "mode": "100644",
+      "bytes": 8324,
+      "sha256": "6acb21d4f57cfc4ffe2e33b733c85f8c8a1cd10ee3e960955b09a4aa23ae03b2",
+      "gitBlob": "fd9aa635ac6b1eb9ead5095266a0bb910306ba53"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-host-before/retained-guard-callers.json",
+      "mode": "100644",
+      "bytes": 110451,
+      "sha256": "9d0ed3a82979fe10f0ff4afed1747f063c646e77b575346fa2e68c016be0944c",
+      "gitBlob": "325623dae2e79f27f285496ca1c28c4edd7dba03"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/arrow-shadow-keeps-import-unread.vue.txt",
+      "mode": "100644",
+      "bytes": 112,
+      "sha256": "8bff7fe6da176bad8d313b013791c338b955dd742e6d2ad5176fa97b212fffce",
+      "gitBlob": "83e7237f01333c283e79f7f511686a5e3ca99a49"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/cases.json",
+      "mode": "100644",
+      "bytes": 9726,
+      "sha256": "e9d4f77b1a483545ea74622944a56c53a1fc118be2aeae985c0f1ce970481bbb",
+      "gitBlob": "b21c7ef5b5aa49584c6f75c27cb1265af70c4195"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/comment-only-component.vue.txt",
+      "mode": "100644",
+      "bytes": 101,
+      "sha256": "71f060cd1a618ae22208f3d6fef195a7a1235f9bed1454323efe05c53926ab79",
+      "gitBlob": "d7f56b88273bb016bdef0807faaa7ce152443cb4"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/for-shadow-keeps-import-unread.vue.txt",
+      "mode": "100644",
+      "bytes": 144,
+      "sha256": "60a234c19ea403bc801ce71c73ad7a790821e61c9d3cf424cc9d35e3f7cc71a9",
+      "gitBlob": "7347981eb1dcfb4b128d7009bb9001aa8fd881ff"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/generic-capture-refusal-retained.vue.txt",
+      "mode": "100644",
+      "bytes": 128,
+      "sha256": "b0ef780902e7e2d16ff4b2f0898a17064baeb6dd695e73f37111c9e429753d97",
+      "gitBlob": "ced43776e6e42c2dd14062f83dc9dd6bde243701"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/literal-is-not-read.vue.txt",
+      "mode": "100644",
+      "bytes": 103,
+      "sha256": "d9f4ea37510a5dd7f9e8018ee9943ecbf201733cd44487462596e3861bb4377e",
+      "gitBlob": "6a9dcc9f80459da7160c0cac80e1e4d893887d77"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/member-name-is-not-read.vue.txt",
+      "mode": "100644",
+      "bytes": 105,
+      "sha256": "7e7e5859d12ea9709814983cc13d1f83320a74c1ea4d8296360f2edd10324da2",
+      "gitBlob": "7cd7cba562b0b07f9b946d7605ef3f75dc9b1ddd"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/object-key-is-not-read.vue.txt",
+      "mode": "100644",
+      "bytes": 111,
+      "sha256": "3b6e0cfff72c15255586be1a94048618b60038451591ac263f6db3b4b49a0081",
+      "gitBlob": "5e89dccf893a04563c1a726e9f1106074a4f0a23"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/original-current447-whole-vectors.json",
+      "mode": "100644",
+      "bytes": 31700,
+      "sha256": "e28a26ac01ef1e931f7bc97d1b9a8092342afcd02349d5ccf3369699e2991450",
+      "gitBlob": "485cb52d6e88c030c70eddcfeeaf5e1749f103ed"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/passed-component-in-object-value.vue.txt",
+      "mode": "100644",
+      "bytes": 116,
+      "sha256": "cce88b94ff4287af6b4e031ffe47b28e204d0e3c24b17551ddcffb4fc89082ee",
+      "gitBlob": "7479b375f3b45ddcd6b8505f4913f5cab1926742"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/passed-component-prop.vue.txt",
+      "mode": "100644",
+      "bytes": 106,
+      "sha256": "f0a66fb3493742291c4585205e61dabd860ce772f92d5feb5ef9a3a0f667673e",
+      "gitBlob": "72e00e918a22077e10c9fd8a074bf1e1472cee88"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/script-only-use-retained.vue.txt",
+      "mode": "100644",
+      "bytes": 111,
+      "sha256": "980a6838b0125a86d5911b66d9427d945d898142f97fea73d31f1cdb97fbeb80",
+      "gitBlob": "e928e1d72b3da8400f542c35a55afec3b571dafe"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/slot-shadow-keeps-import-unread.vue.txt",
+      "mode": "100644",
+      "bytes": 144,
+      "sha256": "f601e263389aa40de0a12e6ce7d3488a83533742637043f1b187b8a46df27332",
+      "gitBlob": "c8bf66c580aabde31c7343f9f12efcd0804dc877"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/unused-options-alias.vue.txt",
+      "mode": "100644",
+      "bytes": 131,
+      "sha256": "91e313e178e9f2b7b36036b26b04a9b765e77962d248a9b2a62970f9dfd0c88f",
+      "gitBlob": "0c0b5827f94e2c93dae61dd595c744e20c8a6411"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/unused-setup-import.vue.txt",
+      "mode": "100644",
+      "bytes": 83,
+      "sha256": "db1d47946578ac3ffd66100f8b19d78ff6f5dfd7c970337b8a3f53d56fa91987",
+      "gitBlob": "158aa85385428e75c4448e7bbbb2118913b718b1"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/used-options-alias.vue.txt",
+      "mode": "100644",
+      "bytes": 140,
+      "sha256": "09fa85d5f0f1ad45c058b42f932318d65989b5db16a0e3fac487d4e94ba78c12",
+      "gitBlob": "b4fda68ef912e79f8ea7d3437622213b681e3d3f"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/whole-frappe-builder.vue.txt",
+      "mode": "100644",
+      "bytes": 697,
+      "sha256": "fc22b1ec713245a05dc2a9eedd143dc4aabb3642b49a76ef3680135b8ad49dcb",
+      "gitBlob": "6e97a973e9cdf4abf6551f019b822e87d90b8354"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/whole-tiny-rdm.vue.txt",
+      "mode": "100644",
+      "bytes": 1799,
+      "sha256": "2094730659772506af6f86a5eef4698c3e169d41459d69528ea78002b15495f5",
+      "gitBlob": "c42f84c81af5bfc9604ee2fe63aaf66135fa2f70"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/whole-vue-data-ui.vue.txt",
+      "mode": "100644",
+      "bytes": 16702,
+      "sha256": "24aedf74f1e0635115dbf6733bda4f4625b76ff49a55ad346100d21a7d5125c3",
+      "gitBlob": "2670b6c9631fc2ecce6a7c4fc2014c3498cf1f38"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/array-default-target-write-only-keeps-warning.vue.txt",
+      "mode": "100644",
+      "bytes": 138,
+      "sha256": "cd191b98554298b2e5b7631340d8f1f057b776cdc9c6b6616b434e518bd20c6d",
+      "gitBlob": "112d1adc4b8078e9008e213372d4634993cc1995"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/array-rest-target-write-only-keeps-warning.vue.txt",
+      "mode": "100644",
+      "bytes": 130,
+      "sha256": "8ca92c647ea3f4211f7ef33b45fbcabe6cf58ffc8e7645dc5e9bd7a1e6b3aa65",
+      "gitBlob": "4ec4f930eb859dce07f550d0ff8b0c1fb2ec684c"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/array-target-write-only-keeps-warning.vue.txt",
+      "mode": "100644",
+      "bytes": 127,
+      "sha256": "62b82f66dcb6791e199e85b1c80f56e31801dfb2e2ec775e4ab98548138202b0",
+      "gitBlob": "cfd82d1dd4f15a7dfd1a2f4fa5706b1f3e457e5d"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/as-target-write-only-keeps-warning.vue.txt",
+      "mode": "100644",
+      "bytes": 137,
+      "sha256": "a05aa13a3073c5e8aaf7d5a05ce9f2417f7bfc7ce3b6633fd6aacbceabd91871",
+      "gitBlob": "cba2537a2bb1d09ac472be9dacb2c36da0172c83"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/assignment-with-rhs-read-remains-unproved.vue.txt",
+      "mode": "100644",
+      "bytes": 125,
+      "sha256": "f127371d85e4d5b248668084feded164d959eda122131047473f088e23fce419",
+      "gitBlob": "876e1919cdea7da1b99f0566cfcac1774317901a"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/cases.json",
+      "mode": "100644",
+      "bytes": 13558,
+      "sha256": "0f270294b21f223dcd50b8dc8515677554d3e3e0c34b6623ce4d30461b6e7681",
+      "gitBlob": "d6f5ddf037af940301a59fb67196b752398d350c"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/javascript-typeof-is-a-read.vue.txt",
+      "mode": "100644",
+      "bytes": 108,
+      "sha256": "1d5094a6a8e46462bfbfabb3641f4b15aa20aa0322b5554daf28c65b8723d61e",
+      "gitBlob": "cff7c7aa4eeebfd986fc326029aa502fc95fad19"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/javascript-typeof-statement-is-a-read.vue.txt",
+      "mode": "100644",
+      "bytes": 141,
+      "sha256": "67da1f28e761b20af1907be9d06a6b3da9a5dabead54bc93adea3529aa068460",
+      "gitBlob": "09b7836df2528db18325d99575b12478d4d2e482"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/mixed-arrow-runtime-child-type-other-remains-unproved.vue.txt",
+      "mode": "100644",
+      "bytes": 188,
+      "sha256": "f96c4aecad545512e79df3e46fb4eaf1370e7063b760d5fa7246428520d514de",
+      "gitBlob": "218f8ed4055d1bc1e567ed19093d05b235267c52"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/mixed-arrow-type-child-runtime-other-remains-unproved.vue.txt",
+      "mode": "100644",
+      "bytes": 188,
+      "sha256": "644282c4a918be928dd2f77eb7d8830d5e3fb2ee5db6e3cec9be8649da891802",
+      "gitBlob": "56fd3d7b83771b013e39630187f9c2ead90f22d6"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/mixed-statement-runtime-child-type-other-remains-unproved.vue.txt",
+      "mode": "100644",
+      "bytes": 178,
+      "sha256": "4a4ac22050e13dbeebf248d4ac01f843def865684d7b0bda7a3f263fe8093225",
+      "gitBlob": "66108258ed2f933a2881b1d4dbc9a630de9fd0bf"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/mixed-statement-type-child-runtime-other-remains-unproved.vue.txt",
+      "mode": "100644",
+      "bytes": 178,
+      "sha256": "e3831e2fcd6c9344eca63244f7b598d0f24f853036d06969ebe6d7b59a55d5f5",
+      "gitBlob": "78bbfa024e097a6d5876c6e332f82c1643d3dbf0"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/nonnull-target-write-only-keeps-warning.vue.txt",
+      "mode": "100644",
+      "bytes": 125,
+      "sha256": "94660cc065f13e93bcab69f08f20274d2c5924739eeba560a8d2cb44234a55e0",
+      "gitBlob": "29afb046a03b5467a5e840ed3a890a6f9cd0ee13"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/object-alias-target-write-only-keeps-warning.vue.txt",
+      "mode": "100644",
+      "bytes": 136,
+      "sha256": "ea5d345530f7a87e940a18803fb99a8300b44908a97f18fb7246425736964c4b",
+      "gitBlob": "663edf74d76e8593395da01dce079ab26bdc7062"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/object-shorthand-target-write-only-keeps-warning.vue.txt",
+      "mode": "100644",
+      "bytes": 130,
+      "sha256": "04a3ace67a76aea7adc307241190b061f20146993b0e3aeced8eebd6d8083cf9",
+      "gitBlob": "f44b1c962d8b46409dd6d85e8528fd9489d74ae7"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/ordinary-type-cast-keeps-warning.vue.txt",
+      "mode": "100644",
+      "bytes": 109,
+      "sha256": "70846201dc0a40de9b94b1633f67716d656a8afe35a6f645af70a66d52639be7",
+      "gitBlob": "c4c2f12473c0e98b01c09492070359682db75bc6"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/retained-type-query-keeps-warning.vue.txt",
+      "mode": "100644",
+      "bytes": 116,
+      "sha256": "6a960138b03b1188d4d7969404325b790a09f5f21af83d76742f101aa39b01db",
+      "gitBlob": "ee9d1110f5b587bb8a3207cbadfb7af256b60638"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/satisfies-target-write-only-keeps-warning.vue.txt",
+      "mode": "100644",
+      "bytes": 144,
+      "sha256": "bc3ef54b0308d3f74187418639d7349b3a821870a148342f8000cec544740e6f",
+      "gitBlob": "20cd03d47ebc07d75bc52e05a9aa41e88d0458fd"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/statement-type-query-keeps-warning.vue.txt",
+      "mode": "100644",
+      "bytes": 143,
+      "sha256": "63a4116f924354f63159be9e67b9f06ee986cebd482d36c9680a7a36be932e6f",
+      "gitBlob": "743eb4d912a7c56cfe0eaa1b0d55669f2a857339"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/type-assertion-target-write-only-keeps-warning.vue.txt",
+      "mode": "100644",
+      "bytes": 135,
+      "sha256": "13400056e3a49044cb789787c39251d453af82bfbf324a5fff9e27f40d2e8327",
+      "gitBlob": "92e73c82d10076a536de51e31bc698eff1faf9f9"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/write-only-template-keeps-warning.vue.txt",
+      "mode": "100644",
+      "bytes": 124,
+      "sha256": "636b44179d17ea645360239008aa2cba6862f1b86453f392aabb6628c2997f13",
+      "gitBlob": "c35237cb45efc9675d3fb9d6a425075cb3b2f71a"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/manifest.json",
+      "mode": "100644",
+      "bytes": 7256,
+      "sha256": "5735479328912059358e1102db8aa5fe8cbb60fefb81acee5780e99b1cca699f",
+      "gitBlob": "b853f1d0696d83f070cdd5abbe64a84da4849fdb"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/class-decorator.vue.txt",
+      "mode": "100644",
+      "bytes": 4859,
+      "sha256": "0e8ca44978bf438cf9ff9df7bb2adf315af226efc32b511d12a10c75dc22f6e1",
+      "gitBlob": "a34c67ed8a84ed8554f3c537f58bd9421d9953d4"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/input.vue.txt",
+      "mode": "100644",
+      "bytes": 4000,
+      "sha256": "c3c5314f04219dd9769e96a27b0f7172b7553758546763e2a5603a3520abcf4b",
+      "gitBlob": "a4927dcfd7572c1fc6204f6afbbcfe874993946d"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/01-after.fixture",
+      "mode": "100644",
+      "bytes": 1366,
+      "sha256": "3c5def49a855e146eaea7db29798f616e31fc6a44e7bf4d9a6b0afcf70805bd3",
+      "gitBlob": "5016a21b8d925696b314a0f5d82c1194c9dd0950"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/02-after.fixture",
+      "mode": "100644",
+      "bytes": 12879,
+      "sha256": "6537cc95fb04eb4f8f51afd7dfea9e7a695b81a7f428e01ddb38e208478c34b5",
+      "gitBlob": "20a0e112b3e6434eb05b6c9502a54974aa550301"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/02-before.fixture",
+      "mode": "100644",
+      "bytes": 12547,
+      "sha256": "6dd7a1f3fb7ef88dd13278e1e9f73191cd922ab18e2524af22e7413fb6b15bc1",
+      "gitBlob": "b7dcb6da3168c457e44ac9d0af9da9aa3eae83cd"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/03-after.fixture",
+      "mode": "100644",
+      "bytes": 11795,
+      "sha256": "06002fab66c451069ada1b21b1a15bf7966dd82d8766562270ef4d620788230c",
+      "gitBlob": "c3396f48f8657921a8fd8d6806b9e6b789d0fe7b"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/03-before.fixture",
+      "mode": "100644",
+      "bytes": 11903,
+      "sha256": "cf1b3ad144c946f6b0e2f57e520b6568ac9304240a42ed244c267048666e7f46",
+      "gitBlob": "34920db25d0b023fa0071fbbf866bdc22c086f93"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/04-after.fixture",
+      "mode": "100644",
+      "bytes": 2600,
+      "sha256": "5df609daa1ca1c8cb58226907fcd8b091fdf9606b95c10613387f25f33b2a927",
+      "gitBlob": "d065ba04d67c9ab4c77351b5751cabc5d0725cbb"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/05-after.fixture",
+      "mode": "100644",
+      "bytes": 5011,
+      "sha256": "111ebf7e0d4a58a38aeb20833786139812cae3a6b13a219ff881002f431e638e",
+      "gitBlob": "30d8e77f846d0f093a6bb29070e8123fe04f1cb5"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/06-after.fixture",
+      "mode": "100644",
+      "bytes": 4235,
+      "sha256": "94c333fd81cffb93eb82e0d589d4d96c2fdddb1d17710b16f275c8069e2bf6ae",
+      "gitBlob": "f1f3e83f95510cddc3cda33481dbee533925d173"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/07-after.fixture",
+      "mode": "100644",
+      "bytes": 1530,
+      "sha256": "c7e9c0a75885841c5d9aae4ded76608fab45636d8b60bc90481e43f14c728449",
+      "gitBlob": "6dea161ed46ce543029f8660f6ad762ea4a339b2"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/08-after.fixture",
+      "mode": "100644",
+      "bytes": 13299,
+      "sha256": "322f83c1bc7e0a2772e3eaa1b28d9de3693aad0995715f0fe55b50aa53e40fc3",
+      "gitBlob": "e552fcbaee32518e284d8d3dd060fd96855c189b"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/09-after.fixture",
+      "mode": "100644",
+      "bytes": 10403,
+      "sha256": "b474379c4a38b27286ea330828ec2889dc4834eecb90d34d2ffaa47d81951d64",
+      "gitBlob": "9871a9fbb0656c2d9fc6c75644530670f13743a9"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/09-before.fixture",
+      "mode": "100644",
+      "bytes": 10392,
+      "sha256": "e62e993105501ba6191803da0d9cfc67e7e9bd62f43b435401a5584269ab60db",
+      "gitBlob": "b773db00e94e2747a7a1a3d48c63a4e5957cac6f"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/10-after.fixture",
+      "mode": "100644",
+      "bytes": 4859,
+      "sha256": "0e8ca44978bf438cf9ff9df7bb2adf315af226efc32b511d12a10c75dc22f6e1",
+      "gitBlob": "a34c67ed8a84ed8554f3c537f58bd9421d9953d4"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/11-after.fixture",
+      "mode": "100644",
+      "bytes": 4000,
+      "sha256": "c3c5314f04219dd9769e96a27b0f7172b7553758546763e2a5603a3520abcf4b",
+      "gitBlob": "a4927dcfd7572c1fc6204f6afbbcfe874993946d"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/01-original-law.fixture",
+      "mode": "100644",
+      "bytes": 6301,
+      "sha256": "c484cd05219c4c8d1e34664544cf9886743c3c2d401c29bcec4660c6537a7243",
+      "gitBlob": "edcdb956668fa8f9dc4e6577f96df175b27074fd"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/02-original-law.fixture",
+      "mode": "100644",
+      "bytes": 6794,
+      "sha256": "5084578fa77c215ee7555708d9cc6284826a36dced1a9f31c5e6b417a1447704",
+      "gitBlob": "d74f30fd0efb7c9412b37605f6c1d28f3b3e5757"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/03-original-law.fixture",
+      "mode": "100644",
+      "bytes": 12629,
+      "sha256": "73527589546b593e96b58dba9f747d8e897bb5d53d476342dc9715cc25b70228",
+      "gitBlob": "03daad285234f476642a5933e179407e7e7bf478"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/04-original-law.fixture",
+      "mode": "100644",
+      "bytes": 13645,
+      "sha256": "63b83fe1266802edad926ab8f4f171e402862ea74a42ae54e3a49834c8fc2e0b",
+      "gitBlob": "09f6c72be7118214102d51cb0d021020a5415357"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/ancestry-b48/01-b48-whole-before.fixture",
+      "mode": "100644",
+      "bytes": 4317,
+      "sha256": "d54ce79f0743fdd45b8d007cfd7dde61c0a7a5457bd879001d22b1ac528e3ffd",
+      "gitBlob": "e7eb8f418d9a382dc2b7d91d64bd4242b8821ab4"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/ancestry-b48/02-b48-whole-before.fixture",
+      "mode": "100644",
+      "bytes": 8966,
+      "sha256": "975e1801b6c2f839b35c255802e266b2ff9fb434672b0bdca93879c7a78ad3fd",
+      "gitBlob": "5db720ca8d50c80ebd0672f4384c5f5ffbc9a4f1"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/ancestry-b48/literal-raw-objects.json.gz",
+      "mode": "100644",
+      "bytes": 428814,
+      "sha256": "45c44efa0dd825d8e6cf8d0d9e35f8c1b45b263abbd9463528f5ab0f46b99436",
+      "gitBlob": "41b488ff316d371df7ba9a1088af0afb7d6448ee"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/ancestry-b48/successor.json",
+      "mode": "100644",
+      "bytes": 4376,
+      "sha256": "6e085dbefe5bdd29bad998abaf5f6763beaae71542bd06b9f83b8dd8a081c1bf",
+      "gitBlob": "55a4d604b211572f5ab749f740c644c0b61a9a08"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/ci-repair-363/00-363-whole-before.fixture",
+      "mode": "100644",
+      "bytes": 5892,
+      "sha256": "fa45cf8fa852f0c222af9378a981cb77d51d33f2bf58bad346230e4a00f8f532",
+      "gitBlob": "6132ea7c31b474c386715d94eb5fca2a82e58908"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/ci-repair-363/01-363-whole-before.fixture",
+      "mode": "100644",
+      "bytes": 7391,
+      "sha256": "facaefef2ff091fe2252110391f4587632dc114055c39ab6186fa46b0a3f400d",
+      "gitBlob": "01a2dd65a470b22e5f9dcea75ef5736580037b9c"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/ci-repair-363/02-363-whole-before.fixture",
+      "mode": "100644",
+      "bytes": 9904,
+      "sha256": "c9b1eebfd15810bf5dfad8c90d2580a16da9a79ffa5083b2239d1d2336628add",
+      "gitBlob": "a95fbe91e57964264ac44cd309dd6a5986ea3f0f"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/ci-repair-363/03-363-whole-before.fixture",
+      "mode": "100644",
+      "bytes": 2398,
+      "sha256": "f9afa9088bf11b52332d0c7562f69fb698cc19495a9fcbfbd7c596e5af09a6b1",
+      "gitBlob": "e1f69fe6b5fe053febe22c2ef0523165aa5434ff"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/ci-repair-363/04-363-whole-before.fixture",
+      "mode": "100644",
+      "bytes": 7602,
+      "sha256": "13287b0b5cba2cba68f682ef8d556999fe2cdf13dd45452413c99be0d8816af8",
+      "gitBlob": "f2eff982bac41712362ec048e5a1d195160922a4"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/ci-repair-363/literal-2489-complete-source-frame.json.gz",
+      "mode": "100644",
+      "bytes": 4242789,
+      "sha256": "c498e0b14257b95acfe7f4ea4e2471d3e25c6e51d70568604af248f59f279d87",
+      "gitBlob": "f22042d597faf550df6205fcf4ccededd1c1509b"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/literal-2489-source-frame.json.gz",
+      "mode": "100644",
+      "bytes": 4209624,
+      "sha256": "ee3110c4fec3f0c83ab8e30c6d6de2fc2045a403e4092e76f41ded79cd74a230",
+      "gitBlob": "c7e5f70a21b9d55ebcea7ccf74f9e5d0190a3eb2"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/successor.json",
+      "mode": "100644",
+      "bytes": 8887,
+      "sha256": "90d02914213ad8346bdd4a71488dd322591d0ab7dcb9588117f5ccba5caff1b9",
+      "gitBlob": "b068358e18b8c327af7d9c922e88ab8902e60e49"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/module-layout-correction/ancestor-source-snapshot.json.gz",
+      "mode": "100644",
+      "bytes": 4010228,
+      "sha256": "1ed3f8401eb849b230d617d3836fac5e0fbb681802d8e097432aab8b79fb47f7",
+      "gitBlob": "a7772b4ab4aa2a03aa18365b37d0630e9f82b7b2"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/module-layout-correction/ledger-after.tsv.fixture",
+      "mode": "100644",
+      "bytes": 159848,
+      "sha256": "2a8d7219f67b338975888d620d0a250f2c13d23d4c3a0aa0a2ca66ff250d5b9a",
+      "gitBlob": "d84e65a65989c92ed1bc819f1f14233287bcc190"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/module-layout-correction/ledger-before.tsv.fixture",
+      "mode": "100644",
+      "bytes": 159840,
+      "sha256": "af2baf60023510bd37b4d3f5eaa655a5e2991bf5e85707c8b6e1f25350221305",
+      "gitBlob": "87cf2c1734aa73ccbc84cc8f9f8a5592e9ff869c"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/module-layout-correction/original-namespace-helper.mjs.fixture",
+      "mode": "100644",
+      "bytes": 5363,
+      "sha256": "53a1af6753ffdab235406c70752cb871c57cf6a9c9971204b42083500a6af7a2",
+      "gitBlob": "a9d6bd8e1158e7959378ac09495051240ee58027"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/module-layout-correction/original-namespace-law.mjs.fixture",
+      "mode": "100644",
+      "bytes": 10072,
+      "sha256": "1b75196ff99ecd3042b600eb7db3df78e1d886586cb9d27144c1e266ff317491",
+      "gitBlob": "6b50e73b8069e340faca0813f17c73e61faf85a7"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/module-layout-correction/original-source-helper.mjs.fixture",
+      "mode": "100644",
+      "bytes": 9935,
+      "sha256": "2f29510015f60edc963a11f4f9bc7a831fe76f9e06dfd73cad75bbf850a02383",
+      "gitBlob": "e551c2f4a4a97104ac9e5af5a3c285e7abad35ac"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/module-layout-correction/original-source-law.mjs.fixture",
+      "mode": "100644",
+      "bytes": 8405,
+      "sha256": "2a62d67dd801fe7e18299ed1593d0dc7efb2132507e2b39e297e62b6db7c0e90",
+      "gitBlob": "2cf1a567fed31276d9f7e61cee637015bbb6b26b"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/module-layout-correction/sfc-after.rs.fixture",
+      "mode": "100644",
+      "bytes": 7993,
+      "sha256": "4ba51a6cabd3fdb1ce973edfa7cf7bf4dac6d0bf12b6e9294ee75b9c3dd1ba46",
+      "gitBlob": "c36f934e635b6aced245ae92ce0bafa1ddb613bf"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/module-layout-correction/sfc-before.rs.fixture",
+      "mode": "100644",
+      "bytes": 8023,
+      "sha256": "80bc625aefac361bb6390fedba9641d6bbff127d78d5190fe6e695e4f41c0dff",
+      "gitBlob": "ed113004836d7430fe7be9904e11f1d61256708d"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/module-layout-correction/successor.json",
+      "mode": "100644",
+      "bytes": 43326,
+      "sha256": "e53d557df855bf8a365e56cdf3cd64772ea33b8032690df34eaed0c6ed444c5e",
+      "gitBlob": "ad6ffe1169aaca5d3cadf41789d49fc75c6a2222"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/original-props-deep-destructure-reference.test.mjs.fixture",
+      "mode": "100644",
+      "bytes": 15018,
+      "sha256": "d6db39c5ffc0757c8e9b274534f2ec7c5ce0a01519693e1121a48247b083efa8",
+      "gitBlob": "1b8f4013de4446b7789153254360986f97174fed"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/original-props-deep-import-source-custody.test.mjs.fixture",
+      "mode": "100644",
+      "bytes": 2937,
+      "sha256": "4c23bdcb6fbbcc6080f77c47f0bcb16a846c529e6d3f0af9877aed867d0c5250",
+      "gitBlob": "43fc0e8b52c63b2e55b5704ad82b2cd314dab92a"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/original-props-deep-source-custody.mjs.fixture",
+      "mode": "100644",
+      "bytes": 12271,
+      "sha256": "f6bf1e93600bdd8d4d6867b81b59fd67f8cdf5c9e96544d1a953ed081d2909ad",
+      "gitBlob": "10ba8d9be5e048d2c6ab1702965e294566d2802b"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/original-props-deep-trait-scope-source-custody.test.mjs.fixture",
+      "mode": "100644",
+      "bytes": 3556,
+      "sha256": "1094a2ceb84b0d6f98f1d1b5d6d8ec9a88f7ce17090c413236e53cd47b54949b",
+      "gitBlob": "2164a934aad0e04ae4d176b8521a6a9a2dc633b4"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/original-runtime-props-api-source-custody.mjs.fixture",
+      "mode": "100644",
+      "bytes": 6045,
+      "sha256": "8c9e884f8099a1125ab0518d5f569baf043f7416509190dfa61b8db212a38d33",
+      "gitBlob": "a8fce88502aa29db93afdfb233c892a15516e99d"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/original-setup-export-preset-source-custody.mjs.fixture",
+      "mode": "100644",
+      "bytes": 5387,
+      "sha256": "8995c93374509bbb37be4fd0df0506df1b8d6bac4737496d5f66410d19527b7a",
+      "gitBlob": "af400a192e7d2384aefdd823483caf257419b93d"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/sfc-after.rs.fixture",
+      "mode": "100644",
+      "bytes": 8023,
+      "sha256": "80bc625aefac361bb6390fedba9641d6bbff127d78d5190fe6e695e4f41c0dff",
+      "gitBlob": "ed113004836d7430fe7be9904e11f1d61256708d"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/successor.json",
+      "mode": "100644",
+      "bytes": 22319,
+      "sha256": "052f284b2d11f94e6d81dc68096ae74e1334c8ab4323ccaa01951e94e20a7fd1",
+      "gitBlob": "0d077f4296d88ac6389774bfb1c03e453d5c99af"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/test-namespace-correction/consumer-migration-after.tsv.fixture",
+      "mode": "100644",
+      "bytes": 159840,
+      "sha256": "af2baf60023510bd37b4d3f5eaa655a5e2991bf5e85707c8b6e1f25350221305",
+      "gitBlob": "87cf2c1734aa73ccbc84cc8f9f8a5592e9ff869c"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/test-namespace-correction/consumer-migration-before.tsv.fixture",
+      "mode": "100644",
+      "bytes": 158414,
+      "sha256": "8da833fb79d2712de3e802e90a56b15a2383c74d6069b8cc3ab2c68b31d04bd8",
+      "gitBlob": "7f2caf0702127f04cf0e4fbe2cf86e10332a551c"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/test-namespace-correction/generated-ledger.json",
+      "mode": "100644",
+      "bytes": 3990,
+      "sha256": "2eb8718288557d569bd5d7354f36e07cbd0f9fd6665eb7924f4419cd30d92f36",
+      "gitBlob": "d2d383161e2fadd09545e9cadede8e9068671eec"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/test-namespace-correction/original-no-mutating-props-source-custody.mjs.fixture",
+      "mode": "100644",
+      "bytes": 9757,
+      "sha256": "2c9609f6bac7f05f2251c31fd0f3eeecb6e60a60f99f340a024ab2910f7bec3e",
+      "gitBlob": "c68f973cc217cfcecffddc6b709f404b913de4a3"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/test-namespace-correction/original-no-mutating-props-source-custody.test.mjs.fixture",
+      "mode": "100644",
+      "bytes": 8405,
+      "sha256": "2a62d67dd801fe7e18299ed1593d0dc7efb2132507e2b39e297e62b6db7c0e90",
+      "gitBlob": "2cf1a567fed31276d9f7e61cee637015bbb6b26b"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/test-namespace-correction/successor.json",
+      "mode": "100644",
+      "bytes": 2442,
+      "sha256": "6b5aa9402ad8927e9eb68d4dcfaca99597bfa0065718bb23d7e06dbd3ebc412f",
+      "gitBlob": "d7740bd40224bb70b3b27f516cff6042e39b543f"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/test-namespace-correction/tests-after.rs.fixture",
+      "mode": "100644",
+      "bytes": 13291,
+      "sha256": "c9e4a7ee85ab8b09ed4fbfad27ce8f546f456f51289559f8d8e56a136565890e",
+      "gitBlob": "58bc5aa0deebd053494e3307ef8fd191d7d5ffbd"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/warm-type-backed-requests/case.json",
+      "mode": "100644",
+      "bytes": 1249,
+      "sha256": "ba2a49365dd6e3ec9fb5077fbcd6f68101166a2d18030138bcb0a94857713470",
+      "gitBlob": "15461f5f48eaca74dd313f0002725e1791b3ab31"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/warm-type-backed-requests/gen.mjs",
+      "mode": "100644",
+      "bytes": 2142,
+      "sha256": "4d0e14d66ce6e7b0b5d2e32a51c39bbe985283aa94934616b4da0ff587d34649",
+      "gitBlob": "697b0d2417994e917452d8bebb279c883f187068"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/warm-type-backed-requests/original-report.md",
+      "mode": "100644",
+      "bytes": 6652,
+      "sha256": "247d435038eb8c53f317dc6a5fdcdd216a19fa9bc58d155e355b5ed2c3eb4a58",
+      "gitBlob": "72c5949de536dc35453099dbed6cb1d86a578682"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/warm-type-backed-requests/package.json",
+      "mode": "100644",
+      "bytes": 65,
+      "sha256": "4a2c593a78dd898566bf14bc68914ae452738d0ef2de4a64fd8c2be8f097f942",
+      "gitBlob": "c284fece4473bb6d6dae1ab5bd6abe901b67c19b"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/warm-type-backed-requests/tsconfig.json",
+      "mode": "100644",
+      "bytes": 179,
+      "sha256": "ad4c9c378d4d01ee9230da0acc6aa86d0a5cab68de8e552124c5e557d4506181",
+      "gitBlob": "97d253e37c853568cd3a730ff476ddd66825aaea"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/warm-type-backed-requests/vize.config.json",
+      "mode": "100644",
+      "bytes": 52,
+      "sha256": "c6f468f396b9c5afeb4a348dffc20fab9660182dd4b65364968c77c448cee85d",
+      "gitBlob": "a5cee1e774acc1a17b4becec93718ea351a41c1b"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-correctness/cases.json",
+      "mode": "100644",
+      "bytes": 18863,
+      "sha256": "7fa33faea83c868ad5bb01cacd624240486ecea35177a637f09e56ec5f73e9fc",
+      "gitBlob": "f6176d4c9902e6e91274ee35e8f6bb14c5334c95"
+    },
+    {
+      "path": "tests/_fixtures/n8n-cli-adoption.json",
+      "mode": "100644",
+      "bytes": 8275,
+      "sha256": "8b0c91b481d28f8477f4af222d98b5b4a73ef5c92baaa86bae34fe4cb4b0b5d1",
+      "gitBlob": "8dd2117f535bf57e35209549db48ed0e02a5c7c5"
+    },
+    {
+      "path": "tests/differential/build-receipt.ts",
+      "mode": "100644",
+      "bytes": 4555,
+      "sha256": "06043b859abd70e09923055f89fd6d0d6c7edd8edcc18a828f896f7faab055dd",
+      "gitBlob": "5c3edc1cb89409436d29796f1bd266185118fa22"
+    },
+    {
+      "path": "tests/differential/component-cli-runtime-reads.ts",
+      "mode": "100644",
+      "bytes": 1868,
+      "sha256": "4e9b4d83dfa20e307d0d1a75cdb6c98b18f6374b826ab8c120e5eebe13fc74d0",
+      "gitBlob": "8a36e1138b9c24c9060ea42d3a43d3787507022a"
+    },
+    {
+      "path": "tests/differential/component-import-value-reads.ts",
+      "mode": "100644",
+      "bytes": 4796,
+      "sha256": "3635d48469ec1d3e353fa930f299421b09a3749de6276fb518800e811e6e3722",
+      "gitBlob": "40c6ced6ca4b9a0a05c551d71427f2972e4e60f5"
+    },
+    {
+      "path": "tests/differential/component-template-runtime-reads.ts",
+      "mode": "100644",
+      "bytes": 3572,
+      "sha256": "a23b73237ee55ec1a25e8a8884d6954a42067184309a1b0569c0bb0b7dae28f5",
+      "gitBlob": "68e5b8fd9ae8063c3c4dedb9aa6dea606a83770a"
+    },
+    {
+      "path": "tests/differential/sha256.ts",
+      "mode": "100644",
+      "bytes": 197,
+      "sha256": "2edd1fc61e667219e59283a7ee9c65c4040b3f803f063df76ecdedac9df7197d",
+      "gitBlob": "424723c6ebaaae6621a343f4790fa19e1a3a58ee"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-component-value-host.ts",
+      "mode": "100644",
+      "bytes": 8627,
+      "sha256": "7343a8824a10c7fa0b1ae1745ba3b5ee934cb2be60458eb9ff003e7144bafe62",
+      "gitBlob": "ddd351f8f003f998fc9a52b8f17d3cf3d7954034"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-component-value-manifest.json",
+      "mode": "100644",
+      "bytes": 14381,
+      "sha256": "e4d108456190fa9050da3c33c48c4823d7d3e06a4096e477c106c85d900ff4c1",
+      "gitBlob": "56570f83c2245e4abb16d65b2e54cf899b29a9a0"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-component-value-originals.json",
+      "mode": "100644",
+      "bytes": 2011,
+      "sha256": "2ea061f1ba1acd1ba3b5c55ac9df98f4da5e90ba93bf0812791f89737e6007f4",
+      "gitBlob": "219c56036882263a9aafe3083c5b71ab971f91cd"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-default-migration-host.ts",
+      "mode": "100644",
+      "bytes": 3081,
+      "sha256": "6b6bffc7461f754b82ad996abf62cd6f958998212e95d4af600fa4b9bfa483d5",
+      "gitBlob": "c32f3cebeab5bebabaa076e011af188774f2b031"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-default-migration-manifest.json",
+      "mode": "100644",
+      "bytes": 3738,
+      "sha256": "73e19d2b74c4488f8feb1214dd6dc15d0d4ff15f744994bc52d9288ee61e6e0d",
+      "gitBlob": "d5e7b8ef26209efe90cad29667607c2c2a2aaeba"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-component-current-00.json",
+      "mode": "100644",
+      "bytes": 8972,
+      "sha256": "1068030ac25edc34878c816325db0794e08e86a4c0fdbe55d3e8c3620b93044a",
+      "gitBlob": "1b8ff48a94b538e5bffd3d7b515f820e123d0e49"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-component-current-01.json",
+      "mode": "100644",
+      "bytes": 10893,
+      "sha256": "5179f3730c925f0873685d9e456aa84aee411e50888d01320c539af60df441c5",
+      "gitBlob": "f4f5e01692407f124f56e62222c956af74d708ce"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-component-current-02.json",
+      "mode": "100644",
+      "bytes": 11099,
+      "sha256": "0ab22cf1221d322fe301b538d7575ef9c73a5424539014109a91bb8a2b23fe66",
+      "gitBlob": "b28855304ae33aa62c69f9620136d47f75f3a429"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-component-current-03.json",
+      "mode": "100644",
+      "bytes": 11569,
+      "sha256": "9c7be5b67abc89a87e73cd4d53493518f5549860e79107d27cdd27deb90a8298",
+      "gitBlob": "81d1e4c16fb12e80de556464d87f3a790cb60a8b"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-component-current-04.json",
+      "mode": "100644",
+      "bytes": 11465,
+      "sha256": "6a1fd7aa0b56dab8f246b8e4438654212324deaa4d0d15f926dc079af95eea92",
+      "gitBlob": "f1dab4a658b0bb6a1739773c8c65b96ccb831183"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-component-current-05.json",
+      "mode": "100644",
+      "bytes": 11424,
+      "sha256": "4f7aabcac65e1156eedfd205dab7223fcd71cb236388af8a61174e9ddaff59d6",
+      "gitBlob": "e676b0a23d17fcdcd6c247429c5cb6cfd873e89a"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-component-current-06.json",
+      "mode": "100644",
+      "bytes": 11557,
+      "sha256": "b2ca2f9f673a146dea604aae4462f097e8efed2514e9c8d33d8c24e98a60b8bf",
+      "gitBlob": "650baa0510a169408fa00fd87278925a301fd8fb"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-component-current-07.json",
+      "mode": "100644",
+      "bytes": 11006,
+      "sha256": "96289cb65f468c44d17a7ce5fc6db7b8bf17cda3392bb2814e7441dccffe33a9",
+      "gitBlob": "8a5cdc20a97de2454fbbe3148f4e23c00068b870"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-component-current-08.json",
+      "mode": "100644",
+      "bytes": 8745,
+      "sha256": "3153709298c98454114a7a804bbb97561e0a8f4198b574ad29a6a361039c6329",
+      "gitBlob": "c40ec82baebe039640fdf8149171cff34a9f45a4"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-component-current-09.json",
+      "mode": "100644",
+      "bytes": 1764,
+      "sha256": "b9a46389a54250a1366d4baad02cb44d7f5a698f2f395aa0fec03f04466cfa0f",
+      "gitBlob": "04c825f44fa85721df9926867b0c4e3d66b51ad5"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-component-frame.json",
+      "mode": "100644",
+      "bytes": 49092,
+      "sha256": "c4735cb8de7eac89940101251d2d41e1df1fdb48b992bf141bd9ca9ee3927fcd",
+      "gitBlob": "a8a36a4b02ffe88d796bf56342909a6b1168ee3d"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-component-frame.ts",
+      "mode": "100644",
+      "bytes": 14401,
+      "sha256": "e2caa1078c9431157affcef0145a2d6eab01768bc26d0974b40677d652d438b9",
+      "gitBlob": "129f61359f91359d4cb7c3d2abe68f083bd5298d"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-component-retained-00.json",
+      "mode": "100644",
+      "bytes": 3070,
+      "sha256": "04c7b35007da772c510948d413d89d39f2f6f6af26880e956d20601e4b18ddb9",
+      "gitBlob": "4f7533ed28dd8a4554d068a21b5bacdfd2c5ae3e"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-component-retained-01.json",
+      "mode": "100644",
+      "bytes": 3210,
+      "sha256": "a191ef99e94d4f2fe2837bf70c51b7334df09f7f3d64bd0b039277d6c27bda2c",
+      "gitBlob": "661441ddb79484d414d111baffc52c8a660ee093"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-component-retained-02.json",
+      "mode": "100644",
+      "bytes": 3701,
+      "sha256": "21841485aa23d640946d52cafb51fa1960b4ff721cb31423046f80949bc4fb19",
+      "gitBlob": "fa15113ae7a48dbf82979632cf668688ee7aa65f"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-component-retained-03.json",
+      "mode": "100644",
+      "bytes": 3637,
+      "sha256": "369e5ad6c559af3bd2d6b30e8e849071d5aec694d9dd717778122f70bdba353f",
+      "gitBlob": "b5e48a7dd59cd27c003ef7fbb25f8e77a9d9b15f"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-component-retained-04.json",
+      "mode": "100644",
+      "bytes": 3587,
+      "sha256": "ca276095baa2b41d58fdedb14c081e45aa4cbb56de6da3a9b071aa9bc76b6cb2",
+      "gitBlob": "1a92e211a146224ccb4cefa9dca557626f38c718"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-component-retained-05.json",
+      "mode": "100644",
+      "bytes": 3758,
+      "sha256": "59f7f556bbb8992f1b6b16d228a47213b0e48ce9b56d152dfd0929de6518ee55",
+      "gitBlob": "152a4edda408f1dea8218a448eeb3b353e233fd6"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-component-retained-06.json",
+      "mode": "100644",
+      "bytes": 3251,
+      "sha256": "40c3acdc3cf55f4b24de6280456b7535fd09b2e3e58b1bd61e2143b3f56d0d67",
+      "gitBlob": "738fc066acf9f2c1d97827b8d83150b00370015f"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-component-retained-07.json",
+      "mode": "100644",
+      "bytes": 3245,
+      "sha256": "1297820dffc9002204f26061fe2a1266795ea4a7f1655cdfa31ce46d9b960379",
+      "gitBlob": "1df7013ac122114e9965d7d6623b327ee41e11b6"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-component-retained-08.json",
+      "mode": "100644",
+      "bytes": 3108,
+      "sha256": "ac0307165b42e3d0df0d1a2692fb7e981bcda03e85e8eae308db8ea0977c3d47",
+      "gitBlob": "a6e3839a74b3b58438cd73f9c3df4a1c155f4d33"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-component-retained-09.json",
+      "mode": "100644",
+      "bytes": 1284,
+      "sha256": "ce8a2ebba1e24ec7e9c7b3309b4e5095509ea20d81405a0f2b62271b21df4e37",
+      "gitBlob": "b28216a7543f1e6f54c6b59f2cebd8c85385cc59"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-family-1.json",
+      "mode": "100644",
+      "bytes": 8555,
+      "sha256": "9387f68fbe7dfa6939e0cbea9a479158e19e072a275a568de62c3475d6f5e193",
+      "gitBlob": "ef227ecba42da65ac23857e6668d277e718562bf"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-family-2.json",
+      "mode": "100644",
+      "bytes": 8918,
+      "sha256": "c999edc4c12145306972c056a2d4ae7da06f960658a0935f3a918da1015aa326",
+      "gitBlob": "f9f6d0899f4a02b2e60f910d7c07aada35aa8ccd"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-incoming.json",
+      "mode": "100644",
+      "bytes": 1735,
+      "sha256": "dd570005abfeb4627bd4a80ec8c8b708ea57add07a068722100b237ef7b92b80",
+      "gitBlob": "aafa4199c239c9ffd0ffa3905849265699564628"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-incoming.ts",
+      "mode": "100644",
+      "bytes": 2691,
+      "sha256": "931d2770c0f1fafe5465fec409e720918bf8e71b0df5e759d61feec81baa0fba",
+      "gitBlob": "2e926d5600b14a5d3650066cb097c222eb6f0cc7"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-literal-source.ts",
+      "mode": "100644",
+      "bytes": 2880,
+      "sha256": "6bc841f11502b6f29fb32506b97ced3916e0f56932cf0d3a065a15fc2f84e500",
+      "gitBlob": "49f1394d9745a0ff541cdf95d151a2d42ab9cd9f"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-nodeep-family-1.json",
+      "mode": "100644",
+      "bytes": 6983,
+      "sha256": "02eba2d44a67fa4977e615b7f381cffe7fdd869e1b770ed9fc9cf1c461d8dba3",
+      "gitBlob": "444b135ff5752ea0032c1e6ccd1565fd98afaad6"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-nodeep-family-2.json",
+      "mode": "100644",
+      "bytes": 7993,
+      "sha256": "323254f32bcf498c85b8afa365db0a4cdfea994682f5d1004affb24d52d92d17",
+      "gitBlob": "4cae47244e34f45dd66ce2da71140712a94ad27b"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-nodeep-family-3.json",
+      "mode": "100644",
+      "bytes": 7509,
+      "sha256": "c7eb01f4537c4ca639cd28619a2cbae430fb8c9d1b4df2a0eb1fa5adf635979d",
+      "gitBlob": "cf8431bc8dd726f04becd76d0f6fca2e301d4c40"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-nodeep.json",
+      "mode": "100644",
+      "bytes": 2843,
+      "sha256": "bcecdd3cbc3fa8dbaafb7c7f4dc48f491d1a0a82e861ef034e69bdaa83c52adb",
+      "gitBlob": "856eb7245c052cb45e1c41aa544d6873f00e373f"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-nodeep.ts",
+      "mode": "100644",
+      "bytes": 6852,
+      "sha256": "ad25378cc7272fb2fde533d6a6796a9462dec3d3e157217abef13a5a69cf6a96",
+      "gitBlob": "d9e71bdcf154c8b4602ba38067a183c97731c4fd"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-setup.json",
+      "mode": "100644",
+      "bytes": 2510,
+      "sha256": "2a098a6c73610cf6b3ba31d8f37e22da0e57fc6dd748260b3ad7adbdcef93933",
+      "gitBlob": "7b3452f8e4e224d46c822ac1a4186050d1e95765"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-setup.ts",
+      "mode": "100644",
+      "bytes": 5704,
+      "sha256": "16fa61566684e0aa675186be50aa6405c3c88d223c7ad19a1d3747bf4cfad5e6",
+      "gitBlob": "2596bee2e95f28a1c6f046bc53279f821965c9b1"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-path-host-manifest.json",
+      "mode": "100644",
+      "bytes": 13587,
+      "sha256": "36256d2672412efe1681fab3137fab4f641622920360ea690a98a463a7325805",
+      "gitBlob": "365eaa9ecfd9cb14fe30f6aa2235190796ae5ead"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-path-host.ts",
+      "mode": "100644",
+      "bytes": 3700,
+      "sha256": "99f84b671f904a819b5e6e1e319fd97db2ae537b7ba1c773013b1e0e87cd7940",
+      "gitBlob": "06750c7b925004bc039e61e8f5530d674405fd90"
+    },
+    {
+      "path": "tests/tooling/ascii-symbol-original-callers.test.ts",
+      "mode": "100644",
+      "bytes": 3381,
+      "sha256": "9a7c159495f48858b28fb68cb3ee8838676d4505ed98bf2366b92e96dd6e8345",
+      "gitBlob": "d9a3706a5d4a8a39930c9ec97d9d892ed0d1a053"
+    },
+    {
+      "path": "tests/tooling/bare-reserved-default-route-reference.test.mjs",
+      "mode": "100644",
+      "bytes": 526,
+      "sha256": "b5f1337cb46f14c5adb07c421a2e714c108f8f6a845e3850ac5518404e1b4382",
+      "gitBlob": "acdb2947ffcd84d53a300db794042ec625eda0f9"
+    },
+    {
+      "path": "tests/tooling/component-cli-runtime-reads-corpus.test.ts",
+      "mode": "100644",
+      "bytes": 1952,
+      "sha256": "b2a6922e97c35f9f2e1d2e4d3475021625292c1f9a1ee589d113168abac17ec9",
+      "gitBlob": "c074c170d6f73bc6988a28610cb3dfc4631bb3d5"
+    },
+    {
+      "path": "tests/tooling/component-import-value-reads-corpus.test.ts",
+      "mode": "100644",
+      "bytes": 3489,
+      "sha256": "5fddfa34bd77eee339b23224e2df8240d6d114f47f29715ebb80055e366bb4ab",
+      "gitBlob": "d23ff99d34e12c2a2d1461bcbaf2ba27391fe3f9"
+    },
+    {
+      "path": "tests/tooling/component-template-runtime-reads-corpus.test.ts",
+      "mode": "100644",
+      "bytes": 2241,
+      "sha256": "1d0fc8ed569fb258da062012ebfa77803bd541838a9272dfba5231b763f8b38c",
+      "gitBlob": "786f17b55dce445cbdc7d75dd63926b94dd87c5a"
+    },
+    {
+      "path": "tests/tooling/component-value-retained-guards.test.ts",
+      "mode": "100644",
+      "bytes": 519,
+      "sha256": "a6f8d9c8d61c9ac72d68440b61fd671dcabd29bc47feea3172f0c687de85d955",
+      "gitBlob": "4515ad4d264e0c4c9a41611577199d089705b43b"
+    },
+    {
+      "path": "tests/tooling/lint-default-correctness-reference.mjs",
+      "mode": "100644",
+      "bytes": 3048,
+      "sha256": "d0fe46840f15d3aee0cad8b0394b4c67dd1f738a9ddaba39f55073fefd9df6b7",
+      "gitBlob": "6395d65599a8c40343cb12d64a1bf735dd77acb7"
+    },
+    {
+      "path": "tests/tooling/lint-props-deep-destructure.test.mjs",
+      "mode": "100644",
+      "bytes": 5405,
+      "sha256": "54b3a583045fd8bc295aea623c3b5da2a99922e2ba339c911fe815472a1e0840",
+      "gitBlob": "ceb2e6be1349ce4fa28221e30a0063b3940f6385"
+    },
+    {
+      "path": "tests/tooling/no-mutating-props-current-callers-ancestry.test.mjs",
+      "mode": "100644",
+      "bytes": 531,
+      "sha256": "d1878addde4dff67d3d2e133b72584fca1efc8a8de6d8d625efda455c938a372",
+      "gitBlob": "33090119a0162b447f98c9d7823e682bf317c57c"
+    },
+    {
+      "path": "tests/tooling/no-mutating-props-current-callers-source.test.mjs",
+      "mode": "100644",
+      "bytes": 529,
+      "sha256": "90079f873771f08f85a81198c02d9e56944f5ecb39fc89a73fec1e9e20a6a19a",
+      "gitBlob": "70878220ff431ad2105d42f3511eba20dccfba5c"
+    },
+    {
+      "path": "tests/tooling/no-mutating-props-module-layout-source-custody.test.mjs",
+      "mode": "100644",
+      "bytes": 535,
+      "sha256": "22f0892d4ec43b9cfe382aec24ad49a6c0cc7aa54b696f313ef1496e5844aa33",
+      "gitBlob": "32b18c4827fc6143fe184c9ad49d429902f1dd2c"
+    },
+    {
+      "path": "tests/tooling/no-mutating-props-source-custody.test.mjs",
+      "mode": "100644",
+      "bytes": 521,
+      "sha256": "3b70a5699c08710c9d9c3bfee09b5828dd262bcc145a897b46647cdcdb6344f3",
+      "gitBlob": "5ac4012e901b69a2240355e574bac6c3d92d1c7f"
+    },
+    {
+      "path": "tests/tooling/no-mutating-props-test-correction-source-custody.test.mjs",
+      "mode": "100644",
+      "bytes": 537,
+      "sha256": "dba158575392e9d1f50256dd08a778de3dd0dab68ba840031db882643a6c1c69",
+      "gitBlob": "1783d0faa4ec0500dbadce3094d6e864acc7786a"
+    },
+    {
+      "path": "tests/tooling/props-deep-destructure-reference.test.mjs",
+      "mode": "100644",
+      "bytes": 521,
+      "sha256": "51962d7e42470bd00210b5e2db74a20b993eb91eca7c115570ae1d39b2b84976",
+      "gitBlob": "eae22f0d55b1315f124d5aaacaf78d0cae9677d0"
+    },
+    {
+      "path": "tests/tooling/props-deep-import-source-custody.test.mjs",
+      "mode": "100644",
+      "bytes": 521,
+      "sha256": "7fa216b9bda06d605ccd2c670aa2983e9f70cb8f41c0e6a34470597d53ce710d",
+      "gitBlob": "36182a58a17ba6f37f3ea2f356b03416cac1965b"
+    },
+    {
+      "path": "tests/tooling/props-deep-trait-scope-source-custody.test.mjs",
+      "mode": "100644",
+      "bytes": 526,
+      "sha256": "025c162bf0ebeed3945558259a0a60fc7952e74a252a6168503824b35c1e6d47",
+      "gitBlob": "c4ea25a637168a5e70b4c03c6bffabadeb1c688c"
+    },
+    {
+      "path": "tests/tooling/reserved-prefix-api-order.test.mjs",
+      "mode": "100644",
+      "bytes": 501,
+      "sha256": "ea2602ebedd15fd6740d650acac7e00a193d498119fbbc96dd54c0f7adfeb68e",
+      "gitBlob": "e87d4ac650a43d43af3a097fb966bc60aace3a6e"
+    },
+    {
+      "path": "tests/tooling/reserved-suppression-default-routes.test.mjs",
+      "mode": "100644",
+      "bytes": 524,
+      "sha256": "c97cc08f07332dd52c8d5b627bcd19e0881c829ac8c2a2aabe7b4da83c8aa096",
+      "gitBlob": "a17994b543ec2deb216972e575c7f0abb4934f1e"
+    },
+    {
+      "path": "tests/tooling/runtime-props-api-source-custody.test.mjs",
+      "mode": "100644",
+      "bytes": 521,
+      "sha256": "ed484819fc577cf4ad939163d5e1d4b99d49d92b7f71b657acc04287bc74788e",
+      "gitBlob": "0731faf2ac0ff6bdec530243b7cbf8a5ee7eb948"
+    },
+    {
+      "path": "tests/tooling/setup-export-default-reference.test.mjs",
+      "mode": "100644",
+      "bytes": 519,
+      "sha256": "45efd572f1881801711930909821bcdfe347fd77a1e45adc2bf8cc7b52f56e89",
+      "gitBlob": "a6344b7f3575fae53ab15570db0fc701ff8b722b"
+    },
+    {
+      "path": "tests/tooling/support/ascii-symbol-caller-frames.json",
+      "mode": "100644",
+      "bytes": 69364,
+      "sha256": "ae9cbab52a1ba62f3e31b8e4f92f80e3c973de3510d219ee940a6b89cfc716d6",
+      "gitBlob": "3e2cd37656232ea2bf1e8847ec4799cb789b8221"
+    },
+    {
+      "path": "tests/tooling/support/ascii-symbol-original-callers.json",
+      "mode": "100644",
+      "bytes": 112709,
+      "sha256": "0dc0852abe918f17f378a708e70d61b42f0630fe94865db96f8c7201d43ffbd3",
+      "gitBlob": "91f3b1bc4e56f5fea621c3d3594bb0468ed9cd4c"
+    },
+    {
+      "path": "tests/tooling/support/ascii-symbol-original-callers.ts",
+      "mode": "100644",
+      "bytes": 5625,
+      "sha256": "26247a3b96d3ec476aa591a83d19c0667c5545323f1ac11ff8aadda354369de2",
+      "gitBlob": "525dc1a4e14329459b06d29cb167bd988ef7201a"
+    },
+    {
+      "path": "tests/tooling/support/component-value-host-custody.ts",
+      "mode": "100644",
+      "bytes": 11091,
+      "sha256": "064d74924f88c7dcfc09cb20e9812abb7996e88b3ba949da348e09967de01048",
+      "gitBlob": "8444d01ffbfe5d37528104475cb8fd56547b5186"
+    },
+    {
+      "path": "tests/tooling/support/component-value-retained-guards.ts",
+      "mode": "100644",
+      "bytes": 14455,
+      "sha256": "30fb49b0260eee2f5292d8edc7a5445d049a0c583e39eee019873b5ed1b6a847",
+      "gitBlob": "1aa7551f5dbfacd7d1515fb72d40d4da3964e1ea"
+    },
+    {
+      "path": "tests/tooling/support/no-mutating-component-join-cold.mjs",
+      "mode": "100644",
+      "bytes": 7394,
+      "sha256": "f693873914994de954c0e1da3bf50cbefde6fc949851407ca46df24196d097e0",
+      "gitBlob": "6ad95ca5ad36e546e02437730328bc2a8e0ec3c8"
+    },
+    {
+      "path": "tests/tooling/support/no-mutating-component-join-frame.mjs",
+      "mode": "100644",
+      "bytes": 6898,
+      "sha256": "9f17945754b7981fac068d4e44f4449d24b5544526791e4015c795be67665251",
+      "gitBlob": "44e171fa287e3fc3b257af1221887c581ce02c69"
+    },
+    {
+      "path": "tests/tooling/support/no-mutating-component-join-native.mjs",
+      "mode": "100644",
+      "bytes": 1868,
+      "sha256": "5a2178e885694afe43388dfd1f99b00280869397610eaed8bf9b69f2ea278d60",
+      "gitBlob": "2d6696a134040d93a11f80befc05ee98cf18d0f8"
+    },
+    {
+      "path": "tests/tooling/support/no-mutating-component-join-physical.mjs",
+      "mode": "100644",
+      "bytes": 3968,
+      "sha256": "57d8369c2c0dbb6e8eb3ebc8b4422de364a9cda9b78781b99424d4e405c84d63",
+      "gitBlob": "47ca260fb8a3fcf6d443f4a82f0923e0dae85530"
+    },
+    {
+      "path": "tests/tooling/support/no-mutating-component-join-runner.mjs",
+      "mode": "100644",
+      "bytes": 4445,
+      "sha256": "e20e6abc10b382bc2948c6cea23b5c37c7509251ea555fbb422353e6df9dc310",
+      "gitBlob": "a8bdba40664caefaa24146b887d6aee65c41105f"
+    },
+    {
+      "path": "tests/tooling/support/no-mutating-props-current-caller-ancestry.mjs",
+      "mode": "100644",
+      "bytes": 8753,
+      "sha256": "977887378f814f9e7621c9908a04f029ebf4570c1f503c2bcdf9a5c2ca4c4ffb",
+      "gitBlob": "7c7760af9c32a31681332a3c969e655de4d7a5e7"
+    },
+    {
+      "path": "tests/tooling/support/no-mutating-props-current-caller-frame.mjs",
+      "mode": "100644",
+      "bytes": 10006,
+      "sha256": "8963f748c143c6c051e84ba5fe45b75fa07d09acaa72605c83af721f60087a80",
+      "gitBlob": "e3d8eb43165c206828f1d04c462ed933be37b7d5"
+    },
+    {
+      "path": "tests/tooling/support/no-mutating-props-current-caller-git.mjs",
+      "mode": "100644",
+      "bytes": 4458,
+      "sha256": "6c899c556602975558cc0c0e7274e34a0ac7f0e13822637805bc47c90108032c",
+      "gitBlob": "5cfc3d3c973ef53247b45248f432b718e744a5e5"
+    },
+    {
+      "path": "tests/tooling/support/no-mutating-props-current-caller-source-custody.mjs",
+      "mode": "100644",
+      "bytes": 10031,
+      "sha256": "b27f733bb618bed3a9de302056024ed18e8082d639e0c2857d45ed122b0f4079",
+      "gitBlob": "dc1264b6e413b9882f0dec21211611b62f391831"
+    },
+    {
+      "path": "tests/tooling/support/no-mutating-props-module-layout-source-custody.mjs",
+      "mode": "100644",
+      "bytes": 11259,
+      "sha256": "6b3f047011243d9eccac6f4040159ca1a65be93c0f0c0cbc6bdd31969295dde9",
+      "gitBlob": "9eb2d33544818e511c066822c81aa2c8e50e6f52"
+    },
+    {
+      "path": "tests/tooling/support/no-mutating-props-source-custody.mjs",
+      "mode": "100644",
+      "bytes": 10204,
+      "sha256": "19fd4d91089deb15ee216f8e365e97b9c2c6b54345661bd6c3baa4bc79e400b4",
+      "gitBlob": "4d81a2b6250c33feefe29f03439f9a6825419f99"
+    },
+    {
+      "path": "tests/tooling/support/no-mutating-props-test-correction-source-custody.mjs",
+      "mode": "100644",
+      "bytes": 5363,
+      "sha256": "53a1af6753ffdab235406c70752cb871c57cf6a9c9971204b42083500a6af7a2",
+      "gitBlob": "a9d6bd8e1158e7959378ac09495051240ee58027"
+    },
+    {
+      "path": "tests/tooling/support/props-deep-source-custody.mjs",
+      "mode": "100644",
+      "bytes": 12527,
+      "sha256": "0473d9509d4b34e52bced41c5e8b28296c225e879ed40a2b1d3d67f164b7fbf7",
+      "gitBlob": "71f9fbb344404e29fccc81e3af2f771116d43a41"
+    },
+    {
+      "path": "tests/tooling/support/runtime-props-api-source-custody.mjs",
+      "mode": "100644",
+      "bytes": 6246,
+      "sha256": "42f16bbbb5bef25f4ba20e171a32742c5b161dc4739b6bd33d605f925de0fea6",
+      "gitBlob": "78d221236f13513d8afda21a124de39a49812460"
+    },
+    {
+      "path": "tests/tooling/support/setup-export-preset-source-custody.mjs",
+      "mode": "100644",
+      "bytes": 5533,
+      "sha256": "72a84609389244088b640ab52e02e0aa4d047cea0160a60ae175c79486d7b362",
+      "gitBlob": "d3e92473a69f7cb59fc87aa664fe176e5a6b04c6"
+    },
+    {
+      "path": "tests/tooling/warm-type-backed-ascii-symbol-host.test.ts",
+      "mode": "100644",
+      "bytes": 522,
+      "sha256": "9f2329d3e1e76156910afc4b7dbf3e561aafd9a0b11ca5e3573f9f4441936639",
+      "gitBlob": "6573027cfff95a4d3218ec224d47be9b8463ccba"
+    },
+    {
+      "path": "tests/tooling/warm-type-backed-component-value-composition.test.ts",
+      "mode": "100644",
+      "bytes": 532,
+      "sha256": "57c180dbc3c95703068c20150181e3e5a76ebaa0b3b806fc6726cc7355c6871d",
+      "gitBlob": "dbda1694be7e1760de79975bee7c0491376126a4"
+    },
+    {
+      "path": "tests/tooling/warm-type-backed-component-value-host.test.ts",
+      "mode": "100644",
+      "bytes": 525,
+      "sha256": "619954b7c669a45ca297b2d03df45c2f33a62f6e4d1afd97eaa108fb3f43d863",
+      "gitBlob": "37a9355ff88a92312b5ec3462ff8fa6c5803f9bf"
+    },
+    {
+      "path": "tests/tooling/warm-type-backed-default-migration-host.test.ts",
+      "mode": "100644",
+      "bytes": 527,
+      "sha256": "7be159f48299af368978883ee4c926f03f5f8ec018d275fcf383cb26bc593f8a",
+      "gitBlob": "7cee6e580345ad73b08dd79934161e35b302ce4b"
+    },
+    {
+      "path": "tests/tooling/warm-type-backed-git-body-authority.test.ts",
+      "mode": "100644",
+      "bytes": 5837,
+      "sha256": "8f1690c69868d074cd38c48b5994c0e0edf81ecf206ce8722ab946beb40e50c6",
+      "gitBlob": "0ca140b1aac3ca5aa1eee4d7c5cf6fafcdec528b"
+    },
+    {
+      "path": "tests/tooling/warm-type-backed-git-reader-incoming.test.ts",
+      "mode": "100644",
+      "bytes": 3133,
+      "sha256": "0c570ef6418d1c9651b2451b58d073b68b2af39662df0e2966016d54a783a4f5",
+      "gitBlob": "ed04eeef2f93bc577a0a0e2227db561f4620361b"
+    },
+    {
+      "path": "tests/tooling/warm-type-backed-git-reader-nodeep.test.ts",
+      "mode": "100644",
+      "bytes": 522,
+      "sha256": "99a7197a30fe128fcc359669cfd5069c0bab66cfbcd641fe8f591cbc506eb3a2",
+      "gitBlob": "0973a4a27f296371846268d9557ffe09e848f034"
+    },
+    {
+      "path": "tests/tooling/warm-type-backed-git-reader-setup.test.ts",
+      "mode": "100644",
+      "bytes": 7834,
+      "sha256": "659866cd702f3a710bc068765aa7135b309519e0a1776aa6ce60a60c30a182e7",
+      "gitBlob": "389b2763fb4aca9731515ac0f2baa128792578e7"
+    },
+    {
+      "path": "tests/tooling/warm-type-backed-path-host.test.ts",
+      "mode": "100644",
+      "bytes": 2515,
+      "sha256": "3dfad726a861009ea8b906752797f6be8654adbba5955dcb649cb0e48d455d48",
+      "gitBlob": "7582b6f37376281f97175c5b612e9a74438f2717"
+    },
+    {
+      "path": "tools/commands/davinci/consumer-migration-surfaces.rs",
+      "mode": "100644",
+      "bytes": 624,
+      "sha256": "ca773b248aa77fc0495f189d3dddb4faa2b84b1384f8906317063a97a5f36313",
+      "gitBlob": "75539629820350e8a12f6496c6992b1fe121ccaa"
+    },
+    {
+      "path": "tools/support/artifacts.rs",
+      "mode": "100644",
+      "bytes": 3677,
+      "sha256": "cc089694fa247d978d587f0a505d5893c6c56b25aa4a466736aa5512b7124194",
+      "gitBlob": "4b84c4bfc4fdcb8bfc41ed8c6457acd1a3c65d7b"
+    },
+    {
+      "path": "tools/support/compat/davinci/consumer-migration-surfaces.mjs",
+      "mode": "100644",
+      "bytes": 2508,
+      "sha256": "76d2297771695af55d5fbd724116b2ead4fd67f2a1d4f2e7478f1e4e44cd9031",
+      "gitBlob": "0810910235c07b804985f9312bf3446e21dabb84"
+    },
+    {
+      "path": "tools/support/compat/davinci/lib/artifact-set.mjs",
+      "mode": "100644",
+      "bytes": 5121,
+      "sha256": "250a21844948aa772b41499c849cfef5b1123a924576d4058b36c5d93eabbb59",
+      "gitBlob": "c2a38bbaba57fef96d35001168207b27d2c6b856"
+    },
+    {
+      "path": "tools/support/compat/davinci/lib/consumer-migration-render.mjs",
+      "mode": "100644",
+      "bytes": 11104,
+      "sha256": "7aebff1294349fdfa8b06b738f301428e6d28c7908db41dbb14bce85de55ef88",
+      "gitBlob": "7f08e5b55a411ddddea95a9c1e79db611f2d8ab8"
+    },
+    {
+      "path": "tools/support/compat/davinci/lib/consumer-migration-scan.mjs",
+      "mode": "100644",
+      "bytes": 9974,
+      "sha256": "6a67a5dce583ca92bbc2b440457bd897ebe4f15adcf211df66765a26089ec590",
+      "gitBlob": "500adf6e07957a75ac7ba489cc8eeebb51bba07f"
+    },
+    {
+      "path": "tools/support/compat/davinci/lib/consumer-migration-summary.mjs",
+      "mode": "100644",
+      "bytes": 4138,
+      "sha256": "b8cad331da5ae9c7cf4c591d5c688bc4f17388f17cba3d481f58ec42ac3e320c",
+      "gitBlob": "56f7751674200038b91e9a5b2df5a7ab216ea180"
+    },
+    {
+      "path": "tools/support/compat/davinci/lib/markdown.mjs",
+      "mode": "100644",
+      "bytes": 1718,
+      "sha256": "5e102fc28f97d30213c5ccd48052035ce276cb8bb8b6189fb1c918a1488c6f12",
+      "gitBlob": "c1f748517854ddf2eb9cd9de4c35a775d568dd80"
+    },
+    {
+      "path": "tools/support/compat/davinci/lib/ordering.mjs",
+      "mode": "100644",
+      "bytes": 320,
+      "sha256": "d6efc2401271777bb800d7a632128971255e9e957749771745c7c4d835921b42",
+      "gitBlob": "aa8a8cb3401ba24159e2cf04dd3a028ef9c319d3"
+    },
+    {
+      "path": "tools/support/compat/davinci/lib/paths.mjs",
+      "mode": "100644",
+      "bytes": 1152,
+      "sha256": "391983b97b002f7bdd849510d1d60cb60fee30940702166183063a255eea7369",
+      "gitBlob": "e432c7c8fe9f01f164e2132b1bd059b2bf5577f6"
+    },
+    {
+      "path": "tools/support/compat/davinci/lib/rust-source.mjs",
+      "mode": "100644",
+      "bytes": 6101,
+      "sha256": "5624f91ff9920feab0f839436499a47efb90cc0141bf66c44a089f2aee72803e",
+      "gitBlob": "8f0c0a2e760563e4020660ef2d70f3d769be5fff"
+    }
+  ],
+  "literalFrames": [
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/component-main-join/literal-49-source-frame.json.gz",
+      "mode": "100644",
+      "bytes": 872936,
+      "sha256": "36756783456c5a73388b4f3de7c8a5a4a917d5313473fb98fee8bace1758b963",
+      "gitBlob": "0ad520f15295fb64941ccbfafb496e526484d26c",
+      "source": "49d95b8e93a9f5bcb73e0c1c307815d4b3a9d570",
+      "files": 5080,
+      "rawFileBytes": 56677561,
+      "genuineAbsentPaths": 94
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/component-main-join/literal-f207-source-frame.json.gz",
+      "mode": "100644",
+      "bytes": 166947,
+      "sha256": "08287eadb4b720ae55e6d268ac48d2644436f4e128b3601c3f02c177788c3dc4",
+      "gitBlob": "c6abebb9962621b4e0695dc002253e0be21c2dd9",
+      "source": "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207",
+      "files": 683,
+      "rawFileBytes": 16000263,
+      "genuineAbsentPaths": 80
+    }
+  ],
+  "laws": [
+    "tests/tooling/reserved-suppression-default-routes.test.mjs",
+    "tests/tooling/setup-export-default-reference.test.mjs",
+    "tests/tooling/warm-type-backed-default-migration-host.test.ts",
+    "tests/tooling/warm-type-backed-git-reader-nodeep.test.ts",
+    "tests/tooling/no-mutating-props-source-custody.test.mjs",
+    "tests/tooling/no-mutating-props-test-correction-source-custody.test.mjs",
+    "tests/tooling/no-mutating-props-module-layout-source-custody.test.mjs",
+    "tests/tooling/no-mutating-props-current-callers-source.test.mjs",
+    "tests/tooling/no-mutating-props-current-callers-ancestry.test.mjs",
+    "tests/tooling/bare-reserved-default-route-reference.test.mjs",
+    "tests/tooling/props-deep-import-source-custody.test.mjs",
+    "tests/tooling/props-deep-trait-scope-source-custody.test.mjs",
+    "tests/tooling/props-deep-destructure-reference.test.mjs",
+    "tests/tooling/runtime-props-api-source-custody.test.mjs",
+    "tests/tooling/reserved-prefix-api-order.test.mjs",
+    "tests/tooling/component-value-retained-guards.test.ts",
+    "tests/tooling/warm-type-backed-component-value-composition.test.ts",
+    "tests/tooling/warm-type-backed-component-value-host.test.ts",
+    "tests/tooling/warm-type-backed-ascii-symbol-host.test.ts"
+  ],
+  "sourceRegistry": [
+    {
+      "path": "tests/tooling/reserved-suppression-default-routes.test.mjs",
+      "kind": "historical-source-law",
+      "declaredSources": [
+        "49d95b8e93a9f5bcb73e0c1c307815d4b3a9d570",
+        "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207"
+      ]
+    },
+    {
+      "path": "tests/tooling/setup-export-default-reference.test.mjs",
+      "kind": "historical-source-law",
+      "declaredSources": [
+        "49d95b8e93a9f5bcb73e0c1c307815d4b3a9d570",
+        "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207"
+      ]
+    },
+    {
+      "path": "tests/tooling/warm-type-backed-default-migration-host.test.ts",
+      "kind": "historical-source-law",
+      "declaredSources": [
+        "49d95b8e93a9f5bcb73e0c1c307815d4b3a9d570",
+        "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207"
+      ]
+    },
+    {
+      "path": "tests/tooling/warm-type-backed-git-reader-nodeep.test.ts",
+      "kind": "historical-source-law",
+      "declaredSources": [
+        "49d95b8e93a9f5bcb73e0c1c307815d4b3a9d570",
+        "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207"
+      ]
+    },
+    {
+      "path": "tests/tooling/no-mutating-props-source-custody.test.mjs",
+      "kind": "historical-source-law",
+      "declaredSources": [
+        "49d95b8e93a9f5bcb73e0c1c307815d4b3a9d570"
+      ]
+    },
+    {
+      "path": "tests/tooling/no-mutating-props-test-correction-source-custody.test.mjs",
+      "kind": "historical-source-law",
+      "declaredSources": [
+        "49d95b8e93a9f5bcb73e0c1c307815d4b3a9d570"
+      ]
+    },
+    {
+      "path": "tests/tooling/no-mutating-props-module-layout-source-custody.test.mjs",
+      "kind": "historical-source-law",
+      "declaredSources": [
+        "49d95b8e93a9f5bcb73e0c1c307815d4b3a9d570"
+      ]
+    },
+    {
+      "path": "tests/tooling/no-mutating-props-current-callers-source.test.mjs",
+      "kind": "historical-source-law",
+      "declaredSources": [
+        "49d95b8e93a9f5bcb73e0c1c307815d4b3a9d570"
+      ]
+    },
+    {
+      "path": "tests/tooling/no-mutating-props-current-callers-ancestry.test.mjs",
+      "kind": "historical-source-law",
+      "declaredSources": [
+        "49d95b8e93a9f5bcb73e0c1c307815d4b3a9d570"
+      ]
+    },
+    {
+      "path": "tests/tooling/bare-reserved-default-route-reference.test.mjs",
+      "kind": "historical-source-law",
+      "declaredSources": [
+        "49d95b8e93a9f5bcb73e0c1c307815d4b3a9d570",
+        "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207"
+      ]
+    },
+    {
+      "path": "tests/tooling/props-deep-import-source-custody.test.mjs",
+      "kind": "historical-source-law",
+      "declaredSources": [
+        "49d95b8e93a9f5bcb73e0c1c307815d4b3a9d570",
+        "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207"
+      ]
+    },
+    {
+      "path": "tests/tooling/props-deep-trait-scope-source-custody.test.mjs",
+      "kind": "historical-source-law",
+      "declaredSources": [
+        "49d95b8e93a9f5bcb73e0c1c307815d4b3a9d570",
+        "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207"
+      ]
+    },
+    {
+      "path": "tests/tooling/props-deep-destructure-reference.test.mjs",
+      "kind": "historical-source-law",
+      "declaredSources": [
+        "49d95b8e93a9f5bcb73e0c1c307815d4b3a9d570",
+        "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207"
+      ]
+    },
+    {
+      "path": "tests/tooling/runtime-props-api-source-custody.test.mjs",
+      "kind": "historical-source-law",
+      "declaredSources": [
+        "49d95b8e93a9f5bcb73e0c1c307815d4b3a9d570",
+        "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207"
+      ]
+    },
+    {
+      "path": "tests/tooling/reserved-prefix-api-order.test.mjs",
+      "kind": "historical-source-law",
+      "declaredSources": [
+        "49d95b8e93a9f5bcb73e0c1c307815d4b3a9d570",
+        "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207"
+      ]
+    },
+    {
+      "path": "tests/tooling/component-value-retained-guards.test.ts",
+      "kind": "historical-source-law",
+      "declaredSources": [
+        "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207"
+      ]
+    },
+    {
+      "path": "tests/tooling/warm-type-backed-component-value-composition.test.ts",
+      "kind": "historical-source-law",
+      "declaredSources": [
+        "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207"
+      ]
+    },
+    {
+      "path": "tests/tooling/warm-type-backed-component-value-host.test.ts",
+      "kind": "historical-source-law",
+      "declaredSources": [
+        "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207"
+      ]
+    },
+    {
+      "path": "tests/tooling/warm-type-backed-ascii-symbol-host.test.ts",
+      "kind": "historical-source-law",
+      "declaredSources": [
+        "49d95b8e93a9f5bcb73e0c1c307815d4b3a9d570",
+        "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207"
+      ]
+    },
+    {
+      "path": "tests/tooling/lint-props-deep-destructure.test.mjs",
+      "kind": "live-native-consumer",
+      "declaredSources": [],
+      "wholeNativePackets": 36
+    }
+  ],
+  "completePureHistoricalCases": 126,
+  "liveNativePackets": 36,
+  "unchangedShallowLaw": "tests/tooling/no-mutating-props-current-callers-shallow.test.mjs",
+  "completeOriginalNoMutatingCases": 20,
+  "completeIncomingCallerCases": 20,
+  "immutableOriginalSourcePins": [
+    {
+      "source": "49d95b8e93a9f5bcb73e0c1c307815d4b3a9d570",
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/module-layout-correction/successor.json",
+      "bytes": 43326,
+      "sha256": "e53d557df855bf8a365e56cdf3cd64772ea33b8032690df34eaed0c6ed444c5e",
+      "gitBlob": "ad6ffe1169aaca5d3cadf41789d49fc75c6a2222"
+    },
+    {
+      "source": "49d95b8e93a9f5bcb73e0c1c307815d4b3a9d570",
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/successor.json",
+      "bytes": 8887,
+      "sha256": "90d02914213ad8346bdd4a71488dd322591d0ab7dcb9588117f5ccba5caff1b9",
+      "gitBlob": "b068358e18b8c327af7d9c922e88ab8902e60e49"
+    },
+    {
+      "source": "49d95b8e93a9f5bcb73e0c1c307815d4b3a9d570",
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/ci-repair-363/literal-2489-complete-source-frame.json.gz",
+      "bytes": 4242789,
+      "sha256": "c498e0b14257b95acfe7f4ea4e2471d3e25c6e51d70568604af248f59f279d87",
+      "gitBlob": "f22042d597faf550df6205fcf4ccededd1c1509b"
+    },
+    {
+      "source": "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207",
+      "path": "tests/tooling/support/component-value-retained-guards.ts",
+      "bytes": 14455,
+      "sha256": "30fb49b0260eee2f5292d8edc7a5445d049a0c583e39eee019873b5ed1b6a847",
+      "gitBlob": "1aa7551f5dbfacd7d1515fb72d40d4da3964e1ea"
+    },
+    {
+      "source": "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207",
+      "path": "tests/tooling/support/component-value-host-custody.ts",
+      "bytes": 11091,
+      "sha256": "064d74924f88c7dcfc09cb20e9812abb7996e88b3ba949da348e09967de01048",
+      "gitBlob": "8444d01ffbfe5d37528104475cb8fd56547b5186"
+    },
+    {
+      "source": "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207",
+      "path": "tests/performance/support/warm-type-backed-component-value-host.ts",
+      "bytes": 8627,
+      "sha256": "7343a8824a10c7fa0b1ae1745ba3b5ee934cb2be60458eb9ff003e7144bafe62",
+      "gitBlob": "ddd351f8f003f998fc9a52b8f17d3cf3d7954034"
+    },
+    {
+      "source": "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207",
+      "path": "tests/performance/support/warm-type-backed-component-value-manifest.json",
+      "bytes": 14381,
+      "sha256": "e4d108456190fa9050da3c33c48c4823d7d3e06a4096e477c106c85d900ff4c1",
+      "gitBlob": "56570f83c2245e4abb16d65b2e54cf899b29a9a0"
+    },
+    {
+      "source": "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207",
+      "path": "tests/performance/support/warm-type-backed-component-value-originals.json",
+      "bytes": 2011,
+      "sha256": "2ea061f1ba1acd1ba3b5c55ac9df98f4da5e90ba93bf0812791f89737e6007f4",
+      "gitBlob": "219c56036882263a9aafe3083c5b71ab971f91cd"
+    },
+    {
+      "source": "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207",
+      "path": "tests/performance/support/warm-type-backed-git-reader-component-frame.ts",
+      "bytes": 14401,
+      "sha256": "e2caa1078c9431157affcef0145a2d6eab01768bc26d0974b40677d652d438b9",
+      "gitBlob": "129f61359f91359d4cb7c3d2abe68f083bd5298d"
+    },
+    {
+      "source": "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207",
+      "path": "tests/performance/support/warm-type-backed-git-reader-component-frame.json",
+      "bytes": 49092,
+      "sha256": "c4735cb8de7eac89940101251d2d41e1df1fdb48b992bf141bd9ca9ee3927fcd",
+      "gitBlob": "a8a36a4b02ffe88d796bf56342909a6b1168ee3d"
+    }
+  ],
+  "credit": {
+    "sourceOnly": true,
+    "compiled": false,
+    "native": false,
+    "performance": false,
+    "oldMigrationMeasurement": null,
+    "oldSetupMeasurement": null,
+    "currentOld111Receipt": null
+  },
+  "externalMaintenanceLaw": {
+    "path": "tests/tooling/no-mutating-component-join-maintenance.test.mjs",
+    "mode": "100644",
+    "bytes": 8132,
+    "sha256": "ae84305d5e43d879435f4bc592398c780829179cf4a7af0fe6f6688afc986d34",
+    "gitBlob": "4ca18f1297683a594ba1531a3f6b653cf6e5f23d"
+  }
+}

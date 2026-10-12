@@ -1,3 +1,4 @@
+import { reviewedNoMutatingSourceReadView } from "./no-mutating-props-source-custody.mjs";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -18,6 +19,7 @@ const matches = (bytes, identity) =>
 
 /** The complete preset family, with explicit authentication of its later depth successor. */
 export function authenticateSetupExportPresetSourceFamily(root, incoming, read = reader(root)) {
+  read = reviewedNoMutatingSourceReadView(root, read);
   const bytes = read(`${directory}/successor.json`);
   assert.equal(sha256(bytes), manifestHash, "finite preset family changed");
   const manifest = JSON.parse(bytes);
