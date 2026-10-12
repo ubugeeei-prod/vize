@@ -19,6 +19,8 @@ type Stored = {
   version: number;
   originalSource: string;
   reviewedProductSource: string;
+  originalReviewedProductSource: string;
+  correctiveSourceIndexSHA256: string;
   reviewedSourceIndexSHA256: string;
   integrationSourceProofSHA256: string;
   qualification: string;
@@ -31,7 +33,7 @@ type Stored = {
 const prefix = "tests/performance/support/warm-type-backed-empty-vue-star-";
 const manifestFile = prefix + "manifest.json";
 export const emptyVueStarManifestSHA256 =
-  "d002846258ece29492140f55168ccd72a1d761649da1c9ac77672446fb7ba6aa";
+  "2345e9244b38da86edbccf13e798ae79f8daf5c3d15f32de64cbbb431f87d94b";
 const hash = (kind: "sha256" | "sha1", body: Buffer | string) =>
   createHash(kind).update(body).digest("hex");
 const blob = (body: Buffer) =>
@@ -45,8 +47,13 @@ export function loadEmptyVueStarManifest(read: (file: string) => Buffer) {
   const stored = JSON.parse(body.toString("utf8")) as Stored;
   assert.equal(stored.version, 1);
   assert.equal(stored.originalSource, "a93e78147b0990c813e965a7868b32dda341eb77");
-  assert.equal(stored.reviewedProductSource, "5968ebfff1fde8d0503d83a414640e18d52e95b2");
-  assert.deepEqual(stored.counts, { files: 41, supplementalBodies: 80, preservedBodies: 152 });
+  assert.equal(stored.reviewedProductSource, "b148ffee7526b45789ec44c16b3e3370e08a5650");
+  assert.equal(stored.originalReviewedProductSource, "5968ebfff1fde8d0503d83a414640e18d52e95b2");
+  assert.equal(
+    stored.correctiveSourceIndexSHA256,
+    "4f7d67ecb2bda9ead266c7af35885f4091f8cbfb904094b6e2c688986fb3db63",
+  );
+  assert.deepEqual(stored.counts, { files: 42, supplementalBodies: 80, preservedBodies: 152 });
   assert.equal(stored.historicalCases, 32);
   assert.equal(stored.historicalPackBodies, 15);
   assert.equal(stored.historicalDistinctBodies, 111);
@@ -97,7 +104,7 @@ export function loadEmptyVueStarManifest(read: (file: string) => Buffer) {
         .flat()
         .map(([file]) => file),
     ).size,
-    121 + 152,
+    122 + 152,
   );
   const metadata: Pair[] = [
     [manifestFile, null, emptyVueStarManifestSHA256],
@@ -147,9 +154,11 @@ export function qualifyEmptyVueStarHost(
     manifestSHA256: emptyVueStarManifestSHA256,
     originalSource: manifest.stored.originalSource,
     reviewedProductSource: manifest.stored.reviewedProductSource,
+    originalReviewedProductSource: manifest.stored.originalReviewedProductSource,
+    correctiveSourceIndexSHA256: manifest.stored.correctiveSourceIndexSHA256,
     reviewedSourceIndexSHA256: manifest.stored.reviewedSourceIndexSHA256,
     integrationSourceProofSHA256: manifest.stored.integrationSourceProofSHA256,
-    completeBodyPairs: 41,
+    completeBodyPairs: 42,
     supplementalBodyPairs: 80,
     preservedBodyPairs: 152,
     sourceMetadataBodyPairs: emptyVueStarMetadataPairs.length,

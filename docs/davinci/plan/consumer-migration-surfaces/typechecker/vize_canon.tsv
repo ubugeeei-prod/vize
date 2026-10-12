@@ -83,7 +83,8 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/import_rewriter_emp
 typechecker	Typechecker	source	crates/vize_canon/src/batch/import_rewriter_empty_vue_stars.rs	3	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/import_rewriter_empty_vue_stars.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/import_rewriter_policy.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	1
-typechecker	Typechecker	source	crates/vize_canon/src/batch/import_rewriter_project_mirror.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	6
+typechecker	Typechecker	source	crates/vize_canon/src/batch/import_rewriter_project_mirror.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/import_rewriter_project_mirror.rs	257	carton	Carton host/compatibility	old	vize_carton	legacy	5
 typechecker	Typechecker	source	crates/vize_canon/src/batch/import_rewriter_source_map.rs	3	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/import_rewriter_star_capture.rs	7	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/import_rewriter_tests.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	4
@@ -1179,7 +1180,7 @@ typechecker	Typechecker	test/dev	crates/vize_canon/tests/empty_template_interpol
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/empty_vue_star_exports/projection.rs	4	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/empty_vue_star_exports/projection.rs	4	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/empty_vue_star_exports/projection.rs	4	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
-typechecker	Typechecker	test/dev	crates/vize_canon/tests/empty_vue_star_exports/support.rs	73	carton	Carton host/compatibility	old	vize_carton	legacy	2
+typechecker	Typechecker	test/dev	crates/vize_canon/tests/empty_vue_star_exports/support.rs	78	carton	Carton host/compatibility	old	vize_carton	legacy	2
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/escaped_regex_template_expression.rs	3	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/escaped_regex_template_expression.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/escaped_regex_template_expression.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1

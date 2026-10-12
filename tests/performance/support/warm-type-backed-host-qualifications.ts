@@ -45,10 +45,10 @@ export function qualifyHostMoves(
     digest("before", "tests/performance/support/warm-type-backed-empty-vue-star-host.ts") ===
       null &&
     digest("after", "tests/performance/support/warm-type-backed-empty-vue-star-host.ts") ===
-      "1c312d603aae77e40711da4e2e05e608fa6be5bbb69a64a4dffe89d144adb343" &&
+      "2bcd5a75ef1884da74c940cf195cc5c67ec84a3b821bf18d81b15c040e4ba241" &&
     digest("before", "tests/tooling/warm-type-backed-empty-vue-star-host.test.ts") === null &&
     digest("after", "tests/tooling/warm-type-backed-empty-vue-star-host.test.ts") ===
-      "b3d68d9ab6a162809ece868b2b2446441e7c93e800a9e831288fb416a47db04f"
+      "eb13fc5ff4fcd97343a9fad6df2e1bf815cac77895b6fbf69080ae900693dfc5"
       ? qualifyEmptyVueStarHost(production, alreadyQualified, digest)
       : null;
   return {

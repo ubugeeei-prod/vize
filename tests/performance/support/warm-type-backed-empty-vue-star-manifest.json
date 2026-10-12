@@ -1,11 +1,11 @@
 {
   "version": 1,
   "originalSource": "a93e78147b0990c813e965a7868b32dda341eb77",
-  "reviewedProductSource": "5968ebfff1fde8d0503d83a414640e18d52e95b2",
+  "reviewedProductSource": "b148ffee7526b45789ec44c16b3e3370e08a5650",
   "reviewedSourceIndexSHA256": "63f47deb31555868bb83db4c26b250bc633c5cb20b1d1e8be0cdb2b4fc93e1b7",
   "qualification": "finite complete source admission only; original32 and original400 must still execute",
   "counts": {
-    "files": 41,
+    "files": 42,
     "supplementalBodies": 80,
     "preservedBodies": 152
   },
@@ -17,11 +17,11 @@
       "file": "tests/performance/support/warm-type-backed-empty-vue-star-part-00.json",
       "section": "files",
       "start": 0,
-      "entries": 41,
+      "entries": 42,
       "mode": "100644",
-      "bytes": 7647,
-      "sha256": "e8c1c1c3bad7d66562a4e8af2d052ea4fa43996e5614dd61c2685593ee585ce5",
-      "blob": "8650a25460f25a6aaa4ba14aa1bff5fafaeacc77"
+      "bytes": 7835,
+      "sha256": "e10fd6de29707c94eb27a5075b07d5cff27c1174be720ae6a31c5988b2896018",
+      "blob": "779581433cabfbf00d22e7bc6562f556db169327"
     },
     {
       "file": "tests/performance/support/warm-type-backed-empty-vue-star-part-01.json",
@@ -84,5 +84,7 @@
       "blob": "8977f5e1dca68f11deb7eec874c95d9063daf3a1"
     }
   ],
-  "integrationSourceProofSHA256": "dfa6fbbf2eee04a1ab6556035d4429912799814214456833d3e3ab535f34c6b6"
+  "integrationSourceProofSHA256": "dfa6fbbf2eee04a1ab6556035d4429912799814214456833d3e3ab535f34c6b6",
+  "correctiveSourceIndexSHA256": "4f7d67ecb2bda9ead266c7af35885f4091f8cbfb904094b6e2c688986fb3db63",
+  "originalReviewedProductSource": "5968ebfff1fde8d0503d83a414640e18d52e95b2"
 }

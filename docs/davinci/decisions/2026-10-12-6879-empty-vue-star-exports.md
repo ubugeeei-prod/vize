@@ -122,9 +122,20 @@ and six conservative projection boundaries), full stdout/stderr, actual source,
 provider and generated-byte custody before assertions. This is pending hosted
 execution, separate from the six generated-source counterfactuals.
 
-Original400 source admission authenticates all 41 Rust, 80 passive supplemental
+Original400 source admission authenticates all 42 producer/test-target, 80 passive supplemental
 and 152 preserved bodies plus eight metadata bodies. Historical tooling reads
 are allowed only after complete raw predecessor and physical current custody;
 unknown, missing, partial, executable, symlink or hybrid source refuses. Exact
 hook inverses retain the original validators and their complete refusal sets.
 Source tests and enrollment grant no native, App, throughput or release credit.
+
+The initial `f7d6c2c5ae` source passed its original400 run, but the new native
+three-law target did not execute: its test-only digest formatting failed to
+compile. The correction emits the same full 64 hexadecimal digest from real
+bytes and checks the known `abc` digest inside the existing custody law. Four
+private adapters retain their original signatures and bodies under `cfg(test)`;
+a separate library law preserves the complete bare-star source and map.
+The new Cargo target requires `native` explicitly. The original opaque-attribute
+selection guard stays unchanged. Complete builder diagnostics are replayed only
+on failure, with their original status. Fresh corrective-source Actions remain
+required; the initial source's success supplies no successor runtime credit.

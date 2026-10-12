@@ -18,14 +18,14 @@ const digest = (side: Side, file: string) => pairs.get(file)?.[side] ?? null;
 const read = (file: string) => fs.readFileSync(new URL("../../" + file, import.meta.url));
 const zero = "0".repeat(64);
 
-test("the finite whole41, supplemental80 and preserved152 source tables carry no runtime credit", () => {
+test("the finite whole42, supplemental80 and preserved152 source tables carry no runtime credit", () => {
   const result = qualifyEmptyVueStarHost(production, new Set(), digest);
   assert.ok(result);
   assert.equal(result.authority, "exact-reviewed-empty-vue-star-complete-source");
   assert.equal(result.manifestSHA256, emptyVueStarManifestSHA256);
   assert.equal(result.originalSource, "a93e78147b0990c813e965a7868b32dda341eb77");
-  assert.equal(result.reviewedProductSource, "5968ebfff1fde8d0503d83a414640e18d52e95b2");
-  assert.equal(result.completeBodyPairs, 41);
+  assert.equal(result.reviewedProductSource, "b148ffee7526b45789ec44c16b3e3370e08a5650");
+  assert.equal(result.completeBodyPairs, 42);
   assert.equal(result.supplementalBodyPairs, 80);
   assert.equal(result.preservedBodyPairs, 152);
   assert.equal(result.sourceMetadataBodyPairs, 8);
@@ -33,8 +33,8 @@ test("the finite whole41, supplemental80 and preserved152 source tables carry no
   assert.equal(result.runtimeCredit, false);
   assert.equal(result.performanceCredit, false);
   assert.deepEqual(result.files, production);
-  assert.equal(allPairs.length, 281);
-  assert.equal(new Set(allPairs.map(([file]) => file)).size, 281);
+  assert.equal(allPairs.length, 282);
+  assert.equal(new Set(allPairs.map(([file]) => file)).size, 282);
 });
 
 test("every complete before/after cell refuses drift, absence, partial or foreign body digest", () => {
