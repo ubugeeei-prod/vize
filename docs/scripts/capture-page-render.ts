@@ -184,8 +184,13 @@ export async function capturePageRender(
     const tiles: PageCapture["tiles"] = [];
     for (const top of positions) {
       timing?.start("tile-position", { tileIndex: tiles.length, top });
+      timing?.startOperation("scroll-to");
       await page.evaluate((top) => scrollTo(0, top), top);
-      assert.equal(await page.evaluate(() => scrollY), top, `${name}: exact capture position`);
+      timing?.finishOperation();
+      timing?.startOperation("scroll-read");
+      const position = await page.evaluate(() => scrollY);
+      timing?.finishOperation();
+      assert.equal(position, top, `${name}: exact capture position`);
       timing?.finish();
       const height = single ? dimensions.height : dimensions.viewportHeight;
       const file = single

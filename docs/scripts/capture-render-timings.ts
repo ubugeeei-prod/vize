@@ -17,9 +17,16 @@ type CaptureFields = {
   viewportHeight?: number;
   originalViewportHeight?: number;
 };
+type CaptureOperation = {
+  name: "scroll-to" | "scroll-read";
+  startMs: number;
+  durationMs: number | null;
+  status: "running" | "passed" | "failed";
+};
 type CaptureEvent = CaptureIdentity &
   CaptureFields & {
     phase: string;
+    operations?: CaptureOperation[];
     startMs: number;
     durationMs: number | null;
     status: "running" | "passed" | "failed";
@@ -28,6 +35,7 @@ type CaptureEvent = CaptureIdentity &
 /** Observe existing operations without wrapping promises or changing page clocks. */
 export class CaptureTimer {
   private active: CaptureEvent | undefined;
+  private activeOperation: CaptureOperation | undefined;
   private readonly events: CaptureEvent[];
   private readonly identity: CaptureIdentity;
 
@@ -49,8 +57,28 @@ export class CaptureTimer {
     this.events.push(this.active);
   }
 
+  startOperation(name: CaptureOperation["name"]): void {
+    if (!this.active) return;
+    this.finishOperation("failed");
+    this.activeOperation = {
+      name,
+      startMs: performance.now(),
+      durationMs: null,
+      status: "running",
+    };
+    (this.active.operations ??= []).push(this.activeOperation);
+  }
+
+  finishOperation(status: "passed" | "failed" = "passed"): void {
+    if (!this.activeOperation) return;
+    this.activeOperation.durationMs = performance.now() - this.activeOperation.startMs;
+    this.activeOperation.status = status;
+    this.activeOperation = undefined;
+  }
+
   finish(status: "passed" | "failed" = "passed"): void {
     if (!this.active) return;
+    this.finishOperation("failed");
     this.active.durationMs = performance.now() - this.active.startMs;
     this.active.status = status;
     this.active = undefined;
