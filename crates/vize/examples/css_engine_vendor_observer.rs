@@ -169,7 +169,10 @@ fn main() {
     ] {
         for input in atelier[input_group].as_array().unwrap() {
             let source = input["source"].as_str().unwrap();
-            assert_eq!(digest(source), input["sourceSha256"]);
+            assert_eq!(
+                digest(source).as_str(),
+                input["sourceSha256"].as_str().unwrap()
+            );
             let parsed = parse_css_ast(source, &options);
             let printed = parsed.ast.clone().map(|ast| print_css_ast(ast, &options));
             append(

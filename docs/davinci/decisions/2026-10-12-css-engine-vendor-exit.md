@@ -276,6 +276,12 @@ from N-API/public-service binding fields; no native-binding qualification is
 claimed. Independently review changed
 cells and verify unchanged healthy coordinates before proposing any successor.
 
+The first observation campaign38187313931 on e6207b2 fails compilation in both
+profiles (E0277): its CompactString digest comparison incorrectly used a JSON
+Value rather than that exact string field. No consumer observation executed.
+Retain the whole red packet; the narrow successor extracts the field's string
+without changing any input, hash, expected authority or engine behavior.
+
 The original source-map tests remain available. Four authored integration
 contracts independently pin whole sources/names/content/mappings, literal VLQ,
 JSON and data URL bytes, offset/composition vectors, and checked valid archive
