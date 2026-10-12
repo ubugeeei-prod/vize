@@ -266,7 +266,7 @@ An additional source-only observer executes all 99 Rust consumer observations (a
 formatter, six style and 15 linter cases, each three times), all 66 inputs from the
 eight original Atelier laws, and all 90 original CLI processes in both debug and
 release profiles. A separate six-input vector preserves all five release-recovery
-routes (including the112-byte fuzz input) and the subsequent healthy source.
+routes (including the 112-byte fuzz input) and the subsequent healthy source.
 It retains complete results, source/compiler/graph/executable
 identity and raw streams before analysis. Observer execution is diagnostic
 evidence: it neither compares a new golden nor grants product, healthy-corpus,
@@ -281,6 +281,21 @@ profiles (E0277): its CompactString digest comparison incorrectly used a JSON
 Value rather than that exact string field. No consumer observation executed.
 Retain the whole red packet; the narrow successor extracts the field's string
 without changing any input, hash, expected authority or engine behavior.
+
+The unchanged original `bundler::tests::test_bundle` genuinely fails in b2205cf
+dev: authored `print`, then `screen` imports emit reversed media order. Parallel
+load workers merge duplicate-path conditions under a mutex in arrival order.
+Keep the whole red output and unchanged oracle. TODO: independently review
+source-ordered condition folding in the existing graph/order phase while retaining
+parallel loading, inherited conditions, source maps and every original import
+case. Sorting names, normalizing output or retrying away the failure is insufficient.
+
+Actual b2205cf [campaign 38187677652](https://github.com/ubugeeei-prod/vize/actions/runs/38187677652) is terminal failure solely for that dev
+bundler test. Both observation jobs complete 99 Rust, 66+6 Atelier and 90 CLI rows
+with independently authenticated ZIPs and complete profile parity. Rust has 33
+known repaired rows/66 unchanged; CLI has 26 repaired rows/64 unchanged, with
+no unexpected healthy drift. Old 66 laws have constraints, not invented whole-AST
+before references. This remains diagnostic evidence; no expected authority changes.
 
 The original source-map tests remain available. Four authored integration
 contracts independently pin whole sources/names/content/mappings, literal VLQ,
