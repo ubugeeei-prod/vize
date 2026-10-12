@@ -1,5 +1,4 @@
 //! Additive configured-native laws; the historical 32 fixtures are unchanged.
-#![cfg(feature = "native")]
 #![expect(
     clippy::unwrap_used,
     reason = "complete fixture laws fail by panicking"
@@ -34,6 +33,10 @@ mod support;
 
 #[test]
 fn authentic_six_counterfactual_packets_and_provider_bytes_remain_complete() {
+    assert_eq!(
+        support::hash(b"abc"),
+        "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+    );
     contracts::authentic_custody();
 }
 

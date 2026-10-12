@@ -3,6 +3,7 @@
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
+    fmt::Write,
     fs,
     path::{Component, Path, PathBuf},
     process::Command,
@@ -31,7 +32,11 @@ pub(super) fn value(path: &str) -> Value {
 }
 
 pub(super) fn hash(bytes: &[u8]) -> String {
-    format!("{:x}", Sha256::digest(bytes))
+    let mut result = String::with_capacity(64);
+    for byte in Sha256::digest(bytes).iter() {
+        write!(&mut result, "{byte:02x}").unwrap();
+    }
+    result
 }
 
 pub(super) fn blob(record: &Value) -> Value {

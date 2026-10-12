@@ -141,6 +141,7 @@ impl ImportRewriter {
     }
 
     /// Retain authentic original bare-star edges during this same initial parse.
+    #[cfg(test)]
     pub(super) fn rewrite_with_captured_stars<F>(
         &self,
         source: &str,

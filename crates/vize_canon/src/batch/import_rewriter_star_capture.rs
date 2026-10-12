@@ -7,6 +7,7 @@ use std::path::Path;
 use vize_carton::String;
 
 impl ImportRewriter {
+    #[cfg(test)]
     pub(in crate::batch) fn rewrite_generated_for_virtual_project_with_alias_policy(
         &self,
         source: &str,
@@ -103,5 +104,62 @@ impl super::ImportRewriter {
             &stars,
             |authored, _projected, mode| empty_target(authored, mode),
         )
+    }
+}
+
+#[cfg(test)]
+mod compatibility_tests {
+    use super::{ImportRewriter, SourceType, VirtualProjectRewriteOptions};
+    use crate::batch::{ImportSourceMap, OffsetAdjustment};
+
+    #[test]
+    fn retained_private_compatibility_routes_preserve_the_complete_star_and_map() {
+        let root = tempfile::tempdir().unwrap();
+        let mirror = tempfile::tempdir().unwrap();
+        std::fs::write(root.path().join("Panel.vue"), "<template />").unwrap();
+        let source = "export * from './Panel.vue';\n";
+        assert_eq!(&source.as_bytes()[15..26], b"./Panel.vue");
+        let roots = (root.path(), mirror.path());
+        let rewriter = ImportRewriter::new();
+        let options = VirtualProjectRewriteOptions {
+            preserve_relative_declarations: false,
+            mirrorable_project_files: None,
+            alias_rewrite_policy: None,
+            module_resolver: None,
+        };
+        let results = [
+            rewriter.rewrite_generated_for_virtual_project_with_alias_policy(
+                source,
+                SourceType::ts(),
+                roots,
+                Some(root.path()),
+                options,
+            ),
+            rewriter.rewrite_for_virtual_project_with_alias_policy(
+                source,
+                SourceType::ts(),
+                roots,
+                Some(root.path()),
+                None,
+                None,
+            ),
+            rewriter.rewrite_for_package_shadow_with_alias_policy(
+                source,
+                SourceType::ts(),
+                roots,
+                Some(root.path()),
+                None,
+            ),
+        ];
+        for result in results {
+            assert_eq!(result.code.as_str(), "export * from './Panel.vue.ts';\n");
+            assert_eq!(
+                result.source_map,
+                ImportSourceMap::new(vec![OffsetAdjustment {
+                    original_offset: 15,
+                    adjustment: 3,
+                }]),
+            );
+        }
     }
 }

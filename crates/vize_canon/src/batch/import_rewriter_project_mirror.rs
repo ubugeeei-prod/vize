@@ -124,6 +124,7 @@ impl ImportRewriter {
         )
     }
 
+    #[cfg(test)]
     pub(crate) fn rewrite_for_package_shadow_with_alias_policy(
         &self,
         source: &str,
@@ -146,6 +147,7 @@ impl ImportRewriter {
         )
     }
 
+    #[cfg(test)]
     pub(in crate::batch) fn rewrite_for_virtual_project_with_alias_policy(
         &self,
         source: &str,

@@ -15,5 +15,5 @@ cargo test "${options[@]}" --no-run --message-format=json \
   > "$VIZE_NATIVE_SYNTAX_CAPTURE_DIR/builder.ndjson" \
   2> "$VIZE_NATIVE_SYNTAX_CAPTURE_DIR/builder.stderr" || status=$?
 cat "$VIZE_NATIVE_SYNTAX_CAPTURE_DIR/builder.stderr" >&2
-if [[ "$status" != 0 ]]; then exit "$status"; fi
+if [[ "$status" != 0 ]]; then cat "$VIZE_NATIVE_SYNTAX_CAPTURE_DIR/builder.ndjson" >&2; exit "$status"; fi
 node tools/support/compat/github/native-empty-vue-star-exports.mjs
