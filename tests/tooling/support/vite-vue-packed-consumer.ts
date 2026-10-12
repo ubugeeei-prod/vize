@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, symlinkSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -164,6 +164,10 @@ for (const shape of ["object", "promise", "function", "async"]) {
   capture("runtime", runtime);
   assert.equal(runtime.error, undefined);
   assert.equal(runtime.status, 0, runtime.stdout + runtime.stderr);
+  write(
+    "vize-vue-compat-control.mjs",
+    readFileSync(new URL("./vite-vue-compat-control.mjs", import.meta.url), "utf8"),
+  );
   write("vue-build-consumer.mjs", packedBuildConsumer);
   const builds = spawnSync(process.execPath, ["vue-build-consumer.mjs"], {
     cwd: directory,
@@ -222,14 +226,16 @@ for (const kind of ["legacy", "canonical", "wrapped", "condense"]) {
     'import { writeFileSync } from "node:fs";',
     'import { defineConfig as defineVpConfig } from "vite-plus";',
     'import { defineConfig, withVue } from "@vizejs/vite-plugin/vite-plus";',
+    'import { assertVizeVueCompatShim } from "./vize-vue-compat-control.mjs";',
+    'const forbiddenHost = { name: "vite:vue", transform() { throw new Error("The genuine Vize compiler must replace this host compiler"); } };',
     'const existing = { build: { outDir: "dist-vue-packed", sourcemap: true, minify: false, emptyOutDir: true }, plugins: [',
-    '{ name: "vite:vue", transform() { throw new Error("The genuine Vize compiler must replace this host compiler"); } },',
+    'forbiddenHost,',
     '{ name: "packed-build-observer", configResolved(config) {',
     'const names = config.plugins.map(({name}) => name);',
     'writeFileSync("plugins-observed.json", JSON.stringify(names));',
     'assert.equal(names.filter(name => name === "vite-plugin-vize").length, 1);',
     'assert.equal(names.filter(name => name === "packed-build-observer").length, 1);',
-    'assert.ok(!names.includes("vite:vue"));',
+    'assertVizeVueCompatShim(config.plugins, forbiddenHost);',
     'for (const name of ' + JSON.stringify(injected) + ') { const count = names.filter(value => value === name).length; assert.ok(count <= 1);' + (kind === "wrapped" ? ' assert.equal(count, 1);' : '') + ' }',
     '} }] };',
     'const integration = { check: false, lint: false, fmt: false, conflicts: false };',

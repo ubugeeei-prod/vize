@@ -1,0 +1,8 @@
+┌  Building Nuxt for production...
+│
+●  Nuxt 4.5.2 (with Nitro 2.13.4, Vite 8.3.1 and Vue 3.5.43)
+│
+●  Nitro preset: static
+[info] Building client...
+│
+■  Nuxt build error: TypeError: vue: unknown option script
