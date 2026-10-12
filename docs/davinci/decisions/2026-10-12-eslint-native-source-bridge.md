@@ -32,3 +32,12 @@ This is a standard ESLint consumer contract. Other runtime CLI hosts need their
 own released command, plugin-loading and installed-consumer evidence. Their
 source API or current documentation alone cannot establish support. No formatter
 plugin ABI or formatter support is added by this decision.
+
+The explicit `qualification:js-plugin-host` label selects one bounded #8769
+PR qualification in the same package test job. Trusted repository/PR input,
+current native preparation, fixed artifact bytes and actual executable revision
+are required before real CLI loading, unsaved stdin diagnosis, clean control and
+whole fixed bytes. Any selected failure is a failed gate. Unselected runs claim
+no target qualification. Rolling prerelease labels or metadata supply no stable
+support or installed-public acceptance; the asset ID and digest preserve the
+specific observed binary without making it a permanent default dependency.

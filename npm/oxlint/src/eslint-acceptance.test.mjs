@@ -2,6 +2,10 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import plugin from "../dist/eslint.mjs";
 import oxlintPlugin from "../dist/index.mjs";
+import {
+  qualifyReferenceHost,
+  referenceQualificationSelected,
+} from "./reference-host-acceptance.mjs";
 
 // The workspace's declared Nuxt oracle owns these real installed consumers.
 const workspace = createRequire(new URL("../../../package.json", import.meta.url));
@@ -201,12 +205,24 @@ for (const rule of Object.values(oxlintPlugin.rules)) {
   assert.equal(typeof rule.createOnce, "function");
   assert.equal(rule.create, undefined);
 }
+const referenceSelected = referenceQualificationSelected();
+if (referenceSelected) {
+  qualifyReferenceHost({
+    oracle,
+    nativePath: require.resolve("@vizejs/native"),
+    source,
+    clean,
+    before,
+    after,
+  });
+}
 console.log(
   JSON.stringify({
     consumer: "eslint",
     version: Linter.version,
     parser: parser.meta,
     sourceAuthority: "unsaved full source",
+    referenceHost: referenceSelected ? "qualified pinned prerelease" : "unqualified; not selected",
     controls: [
       "positive",
       "negative",
