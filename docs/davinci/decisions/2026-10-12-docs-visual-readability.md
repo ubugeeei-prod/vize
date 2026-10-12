@@ -46,3 +46,8 @@ serial/parallel custody browser laws pass. These local observations do not prove
 official publication: exact-head Actions, the full protected queue, actual merge,
 the merged-source official Docs campaign and stable-public visual checks remain
 required. Intermediate refusals and GPU packets are retained separately.
+
+The initial source Actions run 38197049486 refused the nullable computed-opacity
+spread with TS18048. An explicit numeric-presence assertion now rejects missing
+opacity before applying the unchanged 0.2 floor. The original failed log remains
+separate from qualification of the corrected source head.

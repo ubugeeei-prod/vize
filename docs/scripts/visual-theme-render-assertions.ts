@@ -69,6 +69,7 @@ export async function verifyVisualTheme(page: Page) {
       true,
       "Native shader alpha matches composition",
     );
+    assert(typeof observed.canvas.opacity === "number", "Shader has computed opacity");
     assert(observed.canvas.opacity >= 0.2, "Shader remains visible through the page surfaces");
     if (!observed.entry) {
       assert.equal(observed.layout?.background, "rgba(0, 0, 0, 0)");
