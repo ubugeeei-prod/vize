@@ -1,5 +1,6 @@
 """Exercise the actual debugger script with a deterministic GDB event adapter."""
 import importlib.util
+import hashlib
 import io
 import json
 import os
@@ -8,6 +9,7 @@ import signal
 import sys
 sys.dont_write_bytecode = True
 import types
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -79,14 +81,20 @@ class FakeGDB:
         elif command.startswith("attach "):
             self.inferior.pid = int(command.split()[1])
             if self.mode == "partial-attach-failure": raise RuntimeError("private startup arguments")
+            if self.mode == "attach-continue-normal":
+                start = len(self.text)
+                self.events.cont.emit(types.SimpleNamespace())
+                output = ''.join(self.text[start:])
+                del self.text[start:]
+                return output
         elif command == "continue":
             self.continues += 1
             if self.mode == "foreign-continued": self.inferior.pid += 1
             if self.mode == "postfault-exit" and self.continues == 2: self.inferior.pid = 0
             self.events.cont.emit(types.SimpleNamespace())
             if self.mode == "cancel": raise KeyboardInterrupt()
-            if self.mode == "normal" or self.continues == 2:
-                self.events.exited.emit(types.SimpleNamespace(exit_code=0 if self.mode == "normal" else None, inferior=self.inferior))
+            if self.mode in ["normal", "attach-continue-normal"] or self.continues == 2:
+                self.events.exited.emit(types.SimpleNamespace(exit_code=0 if self.mode in ["normal", "attach-continue-normal"] else None, inferior=self.inferior))
                 self.inferior.pid = 0
             else:
                 self.events.stop.emit(SignalEvent("SIGINT" if self.mode in ["interrupt", "original-interrupt", "missing-siginfo"] else "SIGTERM" if self.mode == "other-signal" else "SIGSEGV"))
@@ -115,7 +123,9 @@ class GDBLaws(unittest.TestCase):
         actor = {"pid": 123, "startTicks": "456", "uid": 789, "executable": "/owned/node", "state": "T"}
         config = {"worker": {"actor": actor}, "leader": {"pid": 100}, "profile": {}, "root": "/owned"}
         signals, closed = [], []
-        with patch.object(module, "state", return_value=actor if birth else dict(actor, startTicks="recycled")), patch.object(module, "select", return_value={"actor": actor} if match else None), patch.object(module.os, "pidfd_open", return_value=77, create=True), patch.object(module.os, "close", side_effect=closed.append), patch.object(module.signal, "pidfd_send_signal", side_effect=lambda fd, sig: signals.append((fd, sig)), create=True), patch.object(module.sys, "stdin", io.StringIO(ack)), patch.object(module.Path, "exists", return_value=cleanup_marker):
+        provider = {'executable': {'sha256': 'owned-debugger'}, 'version': {'value': '15.1'}}
+        providers = [provider, {**provider, 'executable': {'sha256': 'changed'}} if mode == 'debugger-provider-drift' else provider]
+        with patch.object(module, "debugger_identity", side_effect=providers, create=True), patch.object(module, 'private_text', return_value={'bytes': 0, 'truncated': False, 'uploaded': False}, create=True), patch.object(module, "state", return_value=actor if birth else dict(actor, startTicks="recycled")), patch.object(module, "select", return_value={"actor": actor} if match else None), patch.object(module.os, "pidfd_open", return_value=77, create=True), patch.object(module.os, "close", side_effect=closed.append), patch.object(module.signal, "pidfd_send_signal", side_effect=lambda fd, sig: signals.append((fd, sig)), create=True), patch.object(module.sys, "stdin", io.StringIO(ack)), patch.object(module.Path, "exists", return_value=cleanup_marker):
             try:
                 module.run(config)
             except KeyboardInterrupt:
@@ -152,7 +162,7 @@ class GDBLaws(unittest.TestCase):
             adapter, packets, signals, closed = self.run_fixture("fault", match=match, birth=birth)
             self.assertFalse(any(command.startswith("attach ") for command in adapter.commands))
             self.assertFalse(any(sig == signal.SIGCONT for fd, sig in signals))
-            self.assertEqual(packets[-1]["status"], "unavailable")
+            self.assertEqual([packet['gap'] for packet in packets if packet['status'] == 'unavailable'], ['ValueError'])
 
     def test_partial_attach_failure_and_cancellation_attempt_detach(self):
         for mode in ["partial-attach-failure", "cancel"]:
@@ -219,6 +229,31 @@ class GDBLaws(unittest.TestCase):
         self.assertEqual(sum(packet.get("phase") == "inferior-running" for packet in packets), 1)
         self.assertFalse(any(packet.get("gap", "").startswith("ContinuedActor") for packet in packets))
         self.assertEqual([packet["status"] for packet in packets if packet["status"] != "debugger-phase"], ["attached", "SIGSEGV", "exited"])
+
+    def test_attach_time_cont_cannot_consume_owned_first_resume_readiness(self):
+        adapter, packets, signals, closed = self.run_fixture("attach-continue-normal")
+        self.assertEqual(sum(packet.get("phase") == "inferior-running" for packet in packets), 1)
+        self.assertFalse(any(packet.get("gap", "").startswith("ContinuedActor") for packet in packets))
+        observations = next(packet for packet in packets if packet.get("phase") == "callback-observations")
+        self.assertEqual({key: observations[key] for key in ['duringAttach', 'afterAttach', 'ownedReady']}, {'duringAttach': 1, 'afterAttach': 1, 'ownedReady': True})
+        self.assertEqual([packet['status'] for packet in packets if packet['status'] != 'debugger-phase'], ['attached', 'exited'])
+
+    def test_debugger_body_drift_is_explicit_without_consuming_original_fault(self):
+        adapter, packets, signals, closed = self.run_fixture('debugger-provider-drift')
+        self.assertTrue(any(packet.get('gap') == 'DebuggerProviderValueError' for packet in packets))
+        self.assertEqual(adapter.commands.count('continue'), 2)
+        self.assertEqual(sum(packet['status'] == 'SIGSEGV' for packet in packets), 1)
+
+    def test_captured_attach_text_remains_private_and_bounded(self):
+        with patch.dict(sys.modules, {'gdb': FakeGDB('normal')}):
+            spec = importlib.util.spec_from_file_location('owned_worker_private_text_law', helpers / 'owned_worker_gdb.py')
+            module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+        with tempfile.TemporaryDirectory() as directory, patch.object(module, '__file__', str(Path(directory) / 'owned_worker_gdb.py')):
+            body = 'private argv/env ' + 'x' * 140000
+            receipt = module.private_text('attach-private.txt', body); path = Path(directory) / 'attach-private.txt'
+            self.assertEqual(path.read_bytes(), body.encode()[:131072]); self.assertEqual(path.stat().st_mode & 0o777, 0o600)
+            self.assertTrue(receipt['truncated']); self.assertFalse(receipt['uploaded'])
+            self.assertEqual(receipt['sha256'], hashlib.sha256(body.encode()).hexdigest()); self.assertNotIn('private argv/env', json.dumps(receipt))
 
 
 if __name__ == "__main__":

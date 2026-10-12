@@ -330,6 +330,16 @@ class PrivacyAndRunnerLaws(unittest.TestCase):
                 self.assertEqual(receipt["setupGap"], "PermissionError")
                 self.assertNotIn("argv", receipt)
 
+    def test_private_transcript_is_bounded_and_mode600_without_public_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'stdout-private.txt'; receipt = {}; packets = queue.Queue(16)
+            body = b'private argv/env\n' + b'x' * 140000
+            capture.marker_reader(io.BytesIO(body), packets, receipt, path)
+            self.assertEqual(path.read_bytes(), body[:131072]); self.assertEqual(path.stat().st_mode & 0o777, 0o600)
+            self.assertTrue(receipt['privateTranscript']['truncated']); self.assertFalse(receipt['privateTranscript']['uploaded'])
+            self.assertEqual(receipt['privateTranscript']['sha256'], hashlib.sha256(body[:131072]).hexdigest())
+            self.assertNotIn('private argv/env', json.dumps(receipt)); self.assertEqual(packets.qsize(), 0)
+
 
 if __name__ == "__main__":
     unittest.main()

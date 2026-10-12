@@ -1,8 +1,10 @@
 """GDB-only script: one qualified inferior, bounded diagnostics, no arguments."""
+import hashlib
 import json
 import os
 from pathlib import Path
 import signal
+import re
 import sys
 sys.dont_write_bytecode = True
 import time
@@ -10,7 +12,7 @@ import time
 import gdb
 
 sys.path.insert(0, str(Path(__file__).parent))
-from owned_worker_identity import HASH_METRICS, same_birth, select, state
+from owned_worker_identity import HASH_METRICS, elf_identity, file_identity, same_birth, select, state
 
 LIMIT = 131072
 BEGIN = "VIZE_OWNED_WORKER_BEGIN"
@@ -39,6 +41,24 @@ def verified(config):
         if match is None or not same_birth(match["actor"], actor):
             raise ValueError("Private isolated worker profile changed")
     return match
+
+
+def debugger_identity():
+    path = Path('/proc/self/exe').resolve(strict=True)
+    version = gdb.VERSION
+    if not isinstance(version, str): raise ValueError('Debugger version unavailable')
+    projected = {'bytes': len(version.encode()), 'sha256': hashlib.sha256(version.encode()).hexdigest()}
+    if re.fullmatch(r'[0-9]+(?:\.[0-9]+){1,5}(?:[-+][0-9A-Za-z.~:+-]{1,48})?', version): projected['value'] = version
+    return {'executable': file_identity(path), 'elf': elf_identity(path), 'version': projected}
+
+
+def private_text(name, text):
+    body = text.encode()
+    selected = body[:LIMIT]
+    with os.fdopen(os.open(Path(__file__).with_name(name), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), 'wb') as stream:
+        stream.write(selected)
+    return {'bytes': len(body), 'sha256': hashlib.sha256(body).hexdigest(), 'retainedBytes': len(selected),
+            'retainedSha256': hashlib.sha256(selected).hexdigest(), 'truncated': len(body) > LIMIT, 'uploaded': False}
 
 
 def fault_text():
@@ -104,6 +124,9 @@ def run(config):
     inferior_number = None
     pending_signal = None
     continued_observed = False
+    resume_requested = False
+    callback_counts = {'duringAttach': 0, 'beforeCommand': 0, 'afterAttach': 0, 'ownedReady': False}
+    debugger_before = None
     exited = []
     def owned_inferior():
         inferior = gdb.selected_inferior()
@@ -122,6 +145,13 @@ def run(config):
         if len(exited) == 1: publish({"status": "exited", "exitCode": exited[-1]})
     def continued(event):
         nonlocal continued_observed
+        key = 'duringAttach' if inferior_number is None else 'afterAttach' if resume_requested else 'beforeCommand'
+        if callback_counts[key] >= 64:
+            callback_counts['exceeded'] = True
+            return
+        callback_counts[key] += 1
+        if inferior_number is None or not resume_requested:
+            return  # Linux attach can emit cont for newly discovered LWPs.
         if continued_observed: return  # Readiness is the first actual resume, not post-fault death.
         continued_observed = True
         try:
@@ -129,11 +159,14 @@ def run(config):
         except Exception as error:
             publish({"status": "unavailable", "gap": "ContinuedActor" + type(error).__name__})
             return
+        callback_counts['ownedReady'] = True
         publish({"status": "debugger-phase", "phase": "inferior-running",
                  "pid": config["worker"]["actor"]["pid"]})
     hooks = []
     owned_fd = None
     try:
+        debugger_before = debugger_identity()
+        publish({'status': 'debugger-phase', 'phase': 'debugger-provider-before', **debugger_before})
         configure()
         for registry, handler in [(gdb.events.stop, stopped), (gdb.events.exited, exit_event), (gdb.events.cont, continued)]:
             registry.connect(handler); hooks.append((registry, handler))
@@ -144,8 +177,11 @@ def run(config):
         verified(config)
         attached = True  # Even a partially failed attach must attempt detach.
         attach_started = time.monotonic_ns()
-        gdb.execute("attach " + str(config["worker"]["actor"]["pid"]), to_string=True)
+        text = gdb.execute("attach " + str(config["worker"]["actor"]["pid"]), to_string=True)
         attach_finished = time.monotonic_ns()
+        projection = private_text('attach-command-output-private.txt', text)
+        publish({'status': 'debugger-phase', 'phase': 'attach-output-authority', **projection})
+        if projection['truncated']: raise ValueError('Attach command output exceeds bound')
         verified(config)
         if gdb.selected_inferior().pid != config["worker"]["actor"]["pid"]:
             raise ValueError("GDB selected a different inferior")
@@ -156,6 +192,7 @@ def run(config):
                  "numericAttachAtomic": False})
         signal.pidfd_send_signal(config["pidfd"], signal.SIGCONT)
         pending_signal = None
+        resume_requested = True
         gdb.execute("continue", to_string=False)  # Event markers bypass command-output capture.
         if exited:
             attached = False
@@ -211,6 +248,15 @@ def run(config):
         if owned_fd is not None:
             os.close(owned_fd)
         for registry, handler in reversed(hooks): registry.disconnect(handler)
+        publish({'status': 'debugger-phase', 'phase': 'callback-observations', **callback_counts})
+        if callback_counts.get('exceeded'): publish({'status': 'unavailable', 'gap': 'CallbackCountExceedsBound'})
+        if debugger_before is not None:
+            try:
+                debugger_after = debugger_identity()
+                publish({'status': 'debugger-phase', 'phase': 'debugger-provider-after', **debugger_after})
+                if debugger_after != debugger_before: raise ValueError('Debugger provider changed')
+            except Exception as error:
+                publish({'status': 'unavailable', 'gap': 'DebuggerProvider' + type(error).__name__})
 
 
 if __name__ == "__main__":

@@ -89,6 +89,12 @@ def validate_case(receipt, mode, status):
         raise ValueError("Live control actor or fault attribution differs")
     if mode != "cancel" and statuses.count("exited") != 1:
         raise ValueError("Actual owned inferior exit event missing or duplicated")
+    providers = {phase: [packet for packet in packets if packet.get('phase') == phase] for phase in ['debugger-provider-before', 'debugger-provider-after']}
+    if any(len(values) != 1 for values in providers.values()): raise ValueError('Actual debugger provider identity missing')
+    selected = lambda value: {key: value[key] for key in ['executable', 'elf', 'version']}
+    if selected(providers['debugger-provider-before'][0]) != selected(providers['debugger-provider-after'][0]): raise ValueError('Actual debugger provider changed')
+    callbacks = [packet for packet in packets if packet.get('phase') == 'callback-observations']
+    if len(callbacks) != 1 or callbacks[0].get('ownedReady') is not True or callbacks[0].get('exceeded') or callbacks[0].get('afterAttach', 0) < 1: raise ValueError('Actual owned commanded continuation missing')
     allowed = {"UnexpectedWorkerStop", "InterruptOriginObserved", "DiagnosticCleanupInterrupt"} if mode in ["cancel", "original-interrupt"] else set()
     for packet in packets:
         if packet["status"] == "unavailable" and (packet.get("gap") not in allowed or

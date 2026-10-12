@@ -135,19 +135,26 @@ class Worker:
             self.fd = None
 
 
-def read_markers(stream, packets, receipt):
+def read_markers(stream, packets, receipt, private=None):
     digest, count, active, body = hashlib.sha256(), 0, False, bytearray()
+    private_digest, private_count = hashlib.sha256(), 0
+    framing = {"begin": 0, "end": 0, "nonBoundaryBegin": 0}
     while True:
         line = stream.readline(131073)
         if not line:
             break
         digest.update(line)
         count += len(line)
+        if private is not None:
+            selected = line[:max(0, 131072 - private_count)]
+            private.write(selected); private_digest.update(selected); private_count += len(selected)
         if line == BEGIN:
+            framing["begin"] = min(64, framing["begin"] + 1)
             if active:
                 receipt["markerGap"] = "NestedMarker"
             active, body = True, bytearray()
         elif line == END and active:
+            framing["end"] = min(64, framing["end"] + 1)
             try:
                 packet = json.loads(body)
                 if not isinstance(packet, dict) or packet.get("status") not in ["attached", "SIGSEGV", "exited", "detached", "unavailable", "debugger-cleanup", "debugger-phase"]:
@@ -164,15 +171,24 @@ def read_markers(stream, packets, receipt):
             else:
                 receipt["markerGap"] = "DiagnosticTextExceedsBound"
                 active = False
+        elif BEGIN.strip() in line:
+            framing["nonBoundaryBegin"] = min(64, framing["nonBoundaryBegin"] + 1)
+            receipt["markerGap"] = "MarkerNotAtBoundary"
     if active:
         receipt["markerGap"] = "FinalPartialMarker"
     receipt["gdbStreamAuthority"] = {"bytes": count, "sha256": digest.hexdigest(),
-                                     "selection": "bounded diagnostic markers only"}
+                                     "selection": "bounded diagnostic markers only", "framing": framing}
+    if private is not None:
+        receipt["privateTranscript"] = {"retainedBytes": private_count, "sha256": private_digest.hexdigest(),
+                                        "limit": 131072, "truncated": count > private_count, "uploaded": False}
 
 
-def marker_reader(stream, packets, receipt):
+def marker_reader(stream, packets, receipt, private=None):
     try:
-        read_markers(stream, packets, receipt)
+        if private is None: read_markers(stream, packets, receipt)
+        else:
+            with os.fdopen(os.open(private, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), "wb") as selected:
+                read_markers(stream, packets, receipt, selected)
     except Exception as error:
         receipt["readerGap"] = type(error).__name__
 
@@ -190,7 +206,7 @@ def start_gdb(output, worker, leader, profile, root, receipt):
     child = subprocess.Popen(["sudo", "-n", "python3", str(private / "owned_worker_supervisor.py")],
                              stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     packets = queue.Queue(maxsize=16)
-    reader = threading.Thread(target=marker_reader, args=(child.stdout, packets, receipt), daemon=True)
+    reader = threading.Thread(target=marker_reader, args=(child.stdout, packets, receipt, private / "stdout-private.txt"), daemon=True)
     reader.start()
     return child, packets, reader
 

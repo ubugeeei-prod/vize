@@ -28,13 +28,18 @@ class RunnerLaws(unittest.TestCase):
         cleanup = {"status": "debugger-cleanup", "debuggerReaped": True, "debuggerReturnCode": 0, "workerResumed": True}
         attached = {"status": "attached", "pid": 123}
         exited = {"status": "exited", "exitCode": 0}
+        provider = {'executable': {'sha256': 'owned-gdb'}, 'elf': {'machine': 62}, 'version': {'value': '15.1'}}
+        authority = [{'status': 'debugger-phase', 'phase': phase, **provider} for phase in ['debugger-provider-before', 'debugger-provider-after']] + [{'status': 'debugger-phase', 'phase': 'callback-observations', 'ownedReady': True, 'afterAttach': 1}]
         partial = {"gdbPackets": [attached, {"status": "unavailable", "gap": "UnexpectedWorkerStop", "signal": "SIGCONT"}, cleanup]}
         with self.assertRaises(ValueError): live.validate_case(partial, "normal", 0)
         with self.assertRaises(ValueError): live.validate_case({"gdbPackets": [attached, exited, {**cleanup, "forcedDebuggerExit": True}]}, "normal", 0)
-        live.validate_case({"gdbPackets": [attached, exited, cleanup]}, "normal", 0)
+        with self.assertRaises(ValueError): live.validate_case({'gdbPackets': [attached, exited, cleanup]}, 'normal', 0)
+        live.validate_case({"gdbPackets": authority + [attached, exited, cleanup]}, "normal", 0)
+        changed = [{**packet, 'executable': {'sha256': 'changed-gdb'}} if packet.get('phase') == 'debugger-provider-after' else packet for packet in authority]
+        with self.assertRaises(ValueError): live.validate_case({'gdbPackets': changed + [attached, exited, cleanup]}, 'normal', 0)
         for packets, tracer in [([attached, cleanup], 0), ([attached, {"status": "detached"}, {**cleanup, "forcedDebuggerExit": True}], 0)]:
             with self.assertRaises(ValueError): live.validate_case({"gdbPackets": packets, "cancellationTracerPid": tracer}, "cancel", 0)
-        cancel = {"gdbPackets": [attached, {"status": "unavailable", "gap": "InterruptOriginObserved", "diagnosticInterruptOriginMatch": True}, {"status": "debugger-phase", "phase": "diagnostic-signal-discarded"}, {"status": "detached"}, cleanup], "cancellationTracerPid": 0}
+        cancel = {"gdbPackets": authority + [attached, {"status": "unavailable", "gap": "InterruptOriginObserved", "diagnosticInterruptOriginMatch": True}, {"status": "debugger-phase", "phase": "diagnostic-signal-discarded"}, {"status": "detached"}, cleanup], "cancellationTracerPid": 0}
         live.validate_case(cancel, "cancel", 0)
         cancel["cancellationTracerPid"] = 9
         with self.assertRaises(ValueError): live.validate_case(cancel, "cancel", 0)

@@ -134,6 +134,49 @@ bounded cleanup signal attempt/wait result without waiving escalation. The
 earlier unmarked startup cause remains unknown. Artifact `11718886828` has SHA256
 `2fa480bb9f7247b08ce9655f0ff73c56222e3fc202cdb19ae182bf0b456582e7`.
 
+## Third failed control and attach event admission
+
+Fresh-main driver `152f0e72b65eaa7fa8d56562d902285190a4b0db`, tree
+`b89c1b4a6a701551bdedd32a348c830aa0de5adf`, ran
+[38185715066](https://github.com/ubugeeei-prod/vize/actions/runs/38185715066),
+attempt 1, job `114607475966`, on historical SDK `c9a37e28dec3ed683e1c993c567d289206ef34d1`.
+The normal control authenticated its private actor and actual signal policy, but
+timed out without a retained continuation or exit marker. Its cleanup genuinely
+retained GDB-origin SIGINT, signal discard, detach, first-attempt GDB reaping with
+status 0, verified birth/TracerPid 0, pidfd resume and original toy status 0.
+These cleanup outcomes do not qualify the failed normal control. The other three
+cases and original SDK runner did not start; all 29,059 whole physical source
+bodies remained equal. Artifact `11718804952` has SHA256
+`ea1848cb49e130b16855e0f9975b35330435d45413df4407fe4b3306ed7e8a05`.
+Unknown GDB stdout was hash-only and its raw bytes were not retained; the actual
+debugger version and attach-time callback state were absent. Preserve the third
+readiness failure's cause as unknown.
+
+The official GNU `gdb-15.1-release` source at commit
+`7b20890ad616baf811c8fe0e5d2bbb54b7c8ac42` demonstrates a separate concrete
+admission defect: Linux attach marks newly found LWPs running, notifying the
+Python continuation registry. The old helper connected that registry before
+attach, consumed first readiness before assigning its held inferior, and captured
+attach command output. An authored event law reproduces lost readiness against
+the complete old helper and passes after the fix; it does not identify the old
+runner's installed GDB or substitute for an actual Linux control.
+
+| Official GNU source                                                                                                       | Complete body SHA256                                               |
+| ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| [Linux attach](https://gnu.googlesource.com/binutils-gdb/+/refs/tags/gdb-15.1-release/gdb/linux-nat.c)                    | `7bb343ace09e294c8bd0506a7366d2fd0b9a1e4c492e8de2c483b2d33e2a52ab` |
+| [Thread resume notification](https://gnu.googlesource.com/binutils-gdb/+/refs/tags/gdb-15.1-release/gdb/thread.c)         | `8ffce32ee8f725631e77f426bf2a3ff40905514b28aa0869c65b3e0665d7e1f7` |
+| [Python resume dispatch](https://gnu.googlesource.com/binutils-gdb/+/refs/tags/gdb-15.1-release/gdb/python/py-inferior.c) | `94a4d22d2ecc485fc5fa6b41ac25c246175c0104584cde463f6f4dd273c89753` |
+
+Ignore attach and pre-command events for readiness, retaining bounded counts.
+Only the actual continuation event of the authenticated held inferior after its
+explicit resume request may publish first readiness. Existing fault/provider
+and original-signal checks remain independent. Retain actual debugger ELF/body,
+closed version projection and before/after equality, callback counts and strict
+marker framing. Keep at most 128 KiB of each raw stdout/attach transcript in its
+private directory with mode 0600, excluded from every upload; publish only byte
+counts, hashes and truncation flags. Missing provider or owned continuation proof
+refuses control qualification. Further Linux capture still requires review.
+
 ## Qualification and remaining work
 
 This diagnostic changes worker scheduling and adds a profile probe. It supplies
