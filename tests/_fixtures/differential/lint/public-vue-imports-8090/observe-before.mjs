@@ -32,6 +32,10 @@ assert.equal(fixContract.corpusSha256, sha256(corpusBytes));
 validateProviderEnvelope(corpus, supplement);
 assert.equal(sha256(fs.readFileSync(fileURLToPath(import.meta.url))), primary.observer.sha256);
 assert.equal(
+  sha256(fs.readFileSync(path.join(root, primary.observer.envelopeContract.path))),
+  primary.observer.envelopeContract.sha256,
+);
+assert.equal(
   sha256(fs.readFileSync(path.join(root, primary.observer.wholeJson.path))),
   primary.observer.wholeJson.sha256,
 );

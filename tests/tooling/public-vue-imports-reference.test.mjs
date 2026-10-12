@@ -257,6 +257,7 @@ await test("complete initial failure and corrected reference packets remain dist
   assert.equal(released.baseline.verifiedBinaryAfterSha256, primary.publicBefore.binarySha256);
   assert.deepEqual(official.verifiedPackagesBefore, official.verifiedPackagesAfter);
   const execution = json("reference-execution-primary.json.fixture");
+  assert.equal(execution.observer.sha256, sha256(read("reference-execution-observer.mjs.fixture")));
   for (const receipt of [released, official, fixed]) {
     assert.equal(
       receipt.custody.primarySourcesSha256,

@@ -4739,7 +4739,7 @@
   },
   "observer": {
     "path": "observe-before.mjs",
-    "sha256": "bbf1fa311c7793023a3642f3d4ec3e2ecdc169ba6b2cbad29fe7e0eb3afc9fd4",
+    "sha256": "913606fb4835bce980885ad5892e4d6a9870374142b715133a89f63e69f74961",
     "wholeJson": {
       "path": "tests/tooling/lint-default-correctness-reference.mjs",
       "sha256": "d0fe46840f15d3aee0cad8b0394b4c67dd1f738a9ddaba39f55073fefd9df6b7"
@@ -4804,6 +4804,11 @@
       "path": "reference-execution-envelope-contract.mjs.fixture",
       "sha256": "c4f82cfeca726c470736292e553ef00f5466a1073f80e784da04856326b9ceca",
       "bytes": 1437
+    },
+    {
+      "path": "reference-execution-observer.mjs.fixture",
+      "sha256": "bbf1fa311c7793023a3642f3d4ec3e2ecdc169ba6b2cbad29fe7e0eb3afc9fd4",
+      "bytes": 12843
     }
   ],
   "explainSnapshot": {
