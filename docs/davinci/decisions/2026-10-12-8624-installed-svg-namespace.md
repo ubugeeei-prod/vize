@@ -6,6 +6,10 @@ its pinned Vue 3.6.0-rc.9 oracle do not qualify the reported rc.10 runtime or a
 public package. A failed or unpublished release, including v0.446.0, cannot be
 used for installed acceptance.
 
+The observer custody decision is paired with CI issue
+[#6830](https://github.com/ubugeeei-prod/vize/issues/6830); the original report
+and producer stay tracked by #8624/#8658.
+
 ## Two separate contracts
 
 The existing reported campaign keeps all six unchanged reporter controls plus
@@ -67,6 +71,14 @@ objects, malformed identities and unrelated C remain refusals. Offline laws
 use a fresh real Git graph without historical fetches, and separately require
 the exact production fix constant and namespace-only preparation wiring.
 These custody laws and inert trace models grant no installed runtime credit.
+
+The prepared observer genuinely incorporates actual main
+`7af76e4db08c94258f09c12b558bd42da7c09f46`, preserving all seven complete
+incoming release-input reviews, the original runtime and all 350 foundation
+rows. Four namespace, five reported, ten native-input and eight scope source
+laws pass, together with strict observer types and scoped lint/format. The
+independent fixture/ancestry review is clear. Hosted/protected qualification,
+actual merge and installed public execution remain required.
 
 Dispatch only after this observer and #8658 actually merge and a successful
 official public cut contains the whole producer/fixture contract. Record the
