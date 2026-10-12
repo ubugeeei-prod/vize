@@ -107,7 +107,38 @@ fn tsx_vue_star_uses_only_its_actual_owned_ts_forwarding_companion() {
     let removed_shim = project.virtual_files.remove(&mirror).unwrap();
     project.finalize_module_imports();
     assert_barrel(&project, "index.ts", BASELINE, BASE_MAP);
-    project.virtual_files.insert(mirror, removed_shim);
+    project.virtual_files.insert(mirror.clone(), removed_shim);
+    project.finalize_module_imports();
+    assert_barrel(&project, "index.ts", ERASED, EMPTY_MAP);
+    assert_eq!(owner_packet(&project, "Panel.vue"), complete_target);
+    let original_shim = project.virtual_files[&mirror].content.clone();
+    project.virtual_files.get_mut(&mirror).unwrap().content =
+        "export * from './Foreign.vue.tsx';\n".into();
+    project.finalize_module_imports();
+    assert_barrel(&project, "index.ts", BASELINE, BASE_MAP);
+    project.virtual_files.get_mut(&mirror).unwrap().content = original_shim;
+    let duplicate = project.virtual_root().join("Duplicate.vue.tsx");
+    register(&mut project, "Duplicate.vue", source);
+    let mut extra = project.virtual_files.remove(&duplicate).unwrap();
+    project.remove_registered_source(&project.project_root().join("Duplicate.vue"));
+    fs::remove_file(project.project_root().join("Duplicate.vue")).unwrap();
+    extra.original_path = original.clone();
+    project.virtual_files.insert(duplicate.clone(), extra);
+    project
+        .source_artifacts
+        .get_mut(&original)
+        .unwrap()
+        .virtual_paths
+        .push(duplicate.clone());
+    project.finalize_module_imports();
+    assert_barrel(&project, "index.ts", BASELINE, BASE_MAP);
+    project.virtual_files.remove(&duplicate);
+    project
+        .source_artifacts
+        .get_mut(&original)
+        .unwrap()
+        .virtual_paths
+        .retain(|path| path != &duplicate);
     project.finalize_module_imports();
     assert_barrel(&project, "index.ts", ERASED, EMPTY_MAP);
     assert_eq!(owner_packet(&project, "Panel.vue"), complete_target);

@@ -213,9 +213,10 @@ fn partition_listing<'a>(packet: &Value, listing: &'a Value) -> (&'a str, Value)
     let paths = stdout
         .strip_prefix(SYNTAX)
         .expect("the exact whole syntax response must occur once at the beginning");
-    assert!(
-        !paths.is_empty() && paths.ends_with('\n'),
-        "a complete nonempty filepath listing must remain"
+    assert_eq!(
+        paths,
+        paths.lines().collect::<Vec<_>>().join("\n") + "\n",
+        "the complete filepath listing must retain every line and its final newline"
     );
     for line in paths.lines() {
         let path = std::path::Path::new(line);

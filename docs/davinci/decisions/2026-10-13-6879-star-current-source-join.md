@@ -27,3 +27,17 @@ to784. The stronger ordered86 malformed membership and corrected reserved-Props
 consumer require fresh successor Actions. No previous success qualifies this
 source, no App golden or original32-case oracle changes, and no runtime request,
 production rule, pipeline stage, instruction budget or native fixture is added.
+
+Actual `dd365996` Actions passed the required native three laws/all16 cases and
+the complete original400 run. Check retained two separate failures: one TSX
+unit expected the erased star but observed its original star, and assertion
+lint rejected a newline-only check. The TSX primary was correctly mapped; the
+existing generated forwarding shim deliberately uses its own virtual path as
+its original path. Preserve that existing output. Select exactly one recorded
+owned mapped SFC, refusing ambiguity, and authenticate the actual companion's
+whole content, paths and empty map through the unchanged original builder.
+Missing or changed companions and ambiguous mapped owners retain the star.
+The complete existing maps/owner packets and ordinary-source controls remain
+mandatory. Replace the newline-only check with complete line reconstruction;
+the independent ordered86 membership oracle remains literal. Fresh exact-head
+Actions must execute this correction; previous native/400 success stays dd365.

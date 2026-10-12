@@ -271,7 +271,7 @@ pub(super) fn mirrored_virtual_path(
     super::external_mirror::external_mirror_path(virtual_root, &canonical)
 }
 
-fn build_tsx_vue_import_shim(
+pub(super) fn build_tsx_vue_import_shim(
     project_root: &Path,
     virtual_root: &Path,
     path: &Path,

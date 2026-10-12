@@ -40,30 +40,53 @@ impl super::VirtualProject {
             return false;
         };
         let original = vize_carton::path::canonicalize_non_verbatim(&source_dir.join(specifier));
-        let Some(target) = self.find_by_original(&original) else {
+        let Some(owner) = self.source_artifacts.get(&original) else {
             return false;
         };
-        if target.source_map.sfc_map.is_none()
-            || target
-                .original_path
-                .extension()
-                .is_none_or(|ext| ext != "vue")
-        {
+        let mut mapped = owner
+            .virtual_paths
+            .iter()
+            .filter_map(|path| self.virtual_files.get(path))
+            .filter(|file| file.original_path == original && file.source_map.sfc_map.is_some());
+        let Some(target) = mapped.next() else {
+            return false;
+        };
+        if mapped.next().is_some() || !owner.empty_module_exports {
             return false;
         }
-        let Some(owner) = self.source_artifacts.get(&target.original_path) else {
-            return false;
-        };
         let Some(mirror_dir) = importer.virtual_path.parent() else {
             return false;
         };
         let mirror = super::tsconfig_paths::normalize_path_lexically(&mirror_dir.join(projected));
-        owner.empty_module_exports
-            && owner.virtual_paths.contains(&mirror)
-            && self
-                .virtual_files
-                .get(&mirror)
-                .is_some_and(|file| file.original_path == target.original_path)
+        if !owner.virtual_paths.contains(&mirror) {
+            return false;
+        }
+        let Some(file) = self.virtual_files.get(&mirror) else {
+            return false;
+        };
+        if file.virtual_path == target.virtual_path && file.original_path == original {
+            return true;
+        }
+        if target
+            .virtual_path
+            .extension()
+            .is_none_or(|ext| ext != "tsx")
+        {
+            return false;
+        }
+        let Ok(expected) = super::build::build_tsx_vue_import_shim(
+            &self.project_root,
+            &self.virtual_root,
+            &original,
+            &target.virtual_path,
+        ) else {
+            return false;
+        };
+        file.virtual_path == expected.virtual_path
+            && file.original_path == expected.original_path
+            && file.content == expected.content
+            && file.source_map.sfc_map.is_none()
+            && file.source_map.import_map == expected.source_map.import_map
     }
 }
 
