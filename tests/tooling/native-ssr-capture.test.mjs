@@ -2,6 +2,35 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
 import { nativeSsrCaptureRequired } from "../../tools/support/compat/github/native-ssr-capture.mjs";
+import { directChildHistoricalSuccessor } from "./support/native-ssr-direct-child-successor.ts";
+
+void test("the original whole SSR archives permit only the named nested-refusal successor", () => {
+  const original = JSON.parse(
+    fs.readFileSync(
+      new URL(
+        "../../crates/vize_atelier_sfc/tests/fixtures/native-setup-ssr-output.json",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  );
+  for (const packet of [original.capture, original.runtime]) {
+    const before = structuredClone(packet);
+    const successor = directChildHistoricalSuccessor(packet);
+    assert.equal(successor.refusals.length, 19);
+    assert.deepEqual({ ...successor, refusals: packet.refusals }, before);
+    assert.deepEqual(packet, before);
+    const unknown = structuredClone(packet);
+    unknown.refusals[15].diagnostics.push({ unknown: true });
+    assert.throws(() => directChildHistoricalSuccessor(unknown));
+    const reordered = structuredClone(packet);
+    [reordered.refusals[14], reordered.refusals[15]] = [
+      reordered.refusals[15],
+      reordered.refusals[14],
+    ];
+    assert.throws(() => directChildHistoricalSuccessor(reordered));
+  }
+});
 
 void test("authentic SSR source dependencies require an affected PR capture", () => {
   for (const path of [
@@ -13,8 +42,12 @@ void test("authentic SSR source dependencies require an affected PR capture", ()
     "crates/vize_atelier_sfc/tests/native_scriptless_setup_ssr.rs",
     "crates/vize_atelier_sfc/tests/native_setup_ssr/rows.rs",
     "crates/vize_atelier_sfc/tests/native_setup_ssr/refusals.rs",
+    "crates/vize_atelier_sfc/tests/native_setup_ssr/direct_child.rs",
+    "crates/vize_atelier_sfc/tests/native_setup_ssr/nested_custody.rs",
     "crates/vize_atelier_sfc/tests/fixtures/native_sfc_setup_ssr_sources.json",
     "crates/vize_atelier_sfc/tests/fixtures/native-setup-ssr-output.json",
+    "crates/vize_atelier_sfc/tests/fixtures/native-setup-ssr-direct-child-sources.json",
+    "crates/vize_atelier_sfc/tests/fixtures/native-setup-ssr-direct-child-output.json",
     "crates/vize_atelier_sfc/tests/fixtures/native-setup-ssr-vue-3.5.35.json",
     "crates/vize_atelier_sfc/tests/fixtures/native-sfc-ssr-vue-3.5.35.json",
     "crates/vize_atelier_sfc/tests/fixtures/native-scriptless-ssr-output.json",
@@ -49,12 +82,14 @@ void test("authentic SSR source dependencies require an affected PR capture", ()
     "davinci/vize_l4/src/expr/vue.rs",
     "tests/tooling/native-sfc-scriptless-ssr-reference.test.ts",
     "tests/tooling/native-sfc-setup-ssr-reference.test.ts",
+    "tests/tooling/native-sfc-setup-ssr-direct-child-reference.test.ts",
     "tests/tooling/l4-native-ssr-reference.test.ts",
     "tests/tooling/native-ssr-static-class-reference.test.ts",
     "tests/tooling/l4-selected-ssr-reference.test.ts",
     "tests/tooling/support/native-sfc-ssr-reference.ts",
     "tests/tooling/support/native-sfc-setup-ssr-reference.ts",
     "tests/tooling/support/native-sfc-setup-ssr-loader.ts",
+    "tests/tooling/support/native-ssr-direct-child-successor.ts",
     ".github/actions/test-native-ssr/action.yml",
     ".github/workflows/pr-source-checks.yml",
     ".github/workflows/check.yml",
@@ -130,6 +165,9 @@ void test("the existing first-shard action remains mandatory for merge groups an
   assert(action.includes("vp node --test tests/tooling/native-sfc-setup-ssr-reference.test.ts"));
   assert(action.includes("native-setup-ssr-modules.json.positive.json"));
   assert(action.includes("native-setup-ssr-runtime.json"));
+  assert(action.includes("native-sfc-setup-ssr-direct-child-reference.test.ts"));
+  assert(action.includes("native-setup-ssr-modules.json.direct-child.json"));
+  assert(action.includes("native-setup-ssr-runtime.json.direct-child.json"));
   assert(
     action.includes("native-sfc-ssr-modules.json") &&
       action.includes("native-sfc-ssr-runtime.json"),

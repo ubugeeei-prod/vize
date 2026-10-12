@@ -14,6 +14,11 @@ import {
   stockSetupSfc,
 } from "./support/native-sfc-setup-ssr-reference.ts";
 
+import {
+  directChildHistoricalSuccessor,
+  withoutOriginalNested,
+} from "./support/native-ssr-direct-child-successor.ts";
+
 const fixturesRoot = new URL("../../crates/vize_atelier_sfc/tests/fixtures/", import.meta.url);
 const corpus = JSON.parse(
   fs.readFileSync(new URL("native_sfc_setup_ssr_sources.json", fixturesRoot), "utf8"),
@@ -144,7 +149,7 @@ function completePacket(capture: any) {
   assert.equal(corpus.refusals.length, 20);
   assert.deepEqual(
     capture.refusals.map(({ name, source }: any) => ({ name, source })),
-    corpus.refusals,
+    withoutOriginalNested(corpus.refusals),
   );
   for (const row of capture.refusals) {
     assert.equal(row.completeModule, false);
@@ -169,7 +174,7 @@ void test(
     const golden = JSON.parse(fs.readFileSync(nativeFile, "utf8"));
     assert.equal(golden.schema, "vize.native-sfc.setup-ssr-output");
     assert.equal(golden.version, 1);
-    assert.deepEqual(capture, golden.capture);
+    assert.deepEqual(capture, directChildHistoricalSuccessor(golden.capture));
     assert.throws(() => completePacket({ ...capture, complete: false }), /partial packets/);
     const reference = await primary(),
       runtime = [];
@@ -324,7 +329,7 @@ void test(
       viteContextParity: false,
       runtime,
     };
-    assert.deepEqual(output, golden.runtime);
+    assert.deepEqual(output, directChildHistoricalSuccessor(golden.runtime));
     if (process.env.VIZE_NATIVE_SETUP_SSR_RUNTIME_CAPTURE)
       fs.writeFileSync(
         process.env.VIZE_NATIVE_SETUP_SSR_RUNTIME_CAPTURE,
