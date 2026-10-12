@@ -37,3 +37,15 @@ export const accessibilityIntroductions: Readonly<Record<string, readonly string
     "The [complete accessibility guide](./accessibility.md) links the other checks.",
   ],
 };
+
+export const japaneseAccessibilityIntroductions: Readonly<Record<string, readonly string[]>> = {
+  core: [
+    "このルール群では、画像の代替テキスト、リンクの内容、ARIA 属性、キーボード操作、フォームのラベルなど、",
+    "Vue テンプレートの基本的なアクセシビリティ情報を確認します。",
+    "画像やリンク、入力欄をコンポーネントに追加するときは、ここから確認してください。",
+    "",
+    "たとえば、入力欄を追加する前に[フォーム部品のラベル](./reference/a11y-form-control-has-label.md)を開き、",
+    "悪い例と良い例を比較します。掲載された Vite+ の設定でルールを有効にし、`vp run lint` を実行してください。",
+    "[アクセシビリティの全ルール](./accessibility.md)では、関連するルールも確認できます。",
+  ],
+};

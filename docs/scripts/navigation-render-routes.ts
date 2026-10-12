@@ -35,5 +35,8 @@ export const defaultNavigationRenderRoutes = [
   ...["zh-CN", "pt-BR", "fr"].flatMap((locale) =>
     ["all", "vue", ...categoryFiles, "cross-file"].map((file) => `/${locale}/rules/${file}`),
   ),
-  ...Object.keys(catalogueSubgroups).map((file) => `/rules/${file}`),
+  ...Object.entries(catalogueSubgroups).flatMap(([file, subgroup]) => [
+    `/rules/${file}`,
+    ...(subgroup.jaTitle ? [`/ja/rules/${file}`] : []),
+  ]),
 ];
