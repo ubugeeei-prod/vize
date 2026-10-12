@@ -283,9 +283,9 @@
     },
     {
       "route": "/rules/vue-components",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Authored Japanese explains when to review components and props and links complete prop-update examples and the Vue guide. All ten original references, filename and global-registration boundaries, forty code blocks, defaults and bookmarks remain intact; native and deployed reader acceptance remain pending."
     },
     {
       "route": "/rules/vue-directive-validity",

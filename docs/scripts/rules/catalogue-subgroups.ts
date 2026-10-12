@@ -1,7 +1,7 @@
 /** Existing English subgroup routes and their actual source-rule membership. */
 export const catalogueSubgroups: Record<
   string,
-  { title: string; jaTitle?: string; rules: readonly string[] }
+  { title: string; jaTitle?: string; jaIntroduction?: readonly string[]; rules: readonly string[] }
 > = {
   "accessibility-core": {
     title: "Accessibility core",
@@ -60,6 +60,15 @@ export const catalogueSubgroups: Record<
   },
   "vue-components": {
     title: "Vue Rules: Components and Props",
+    jaTitle: "コンポーネントと props のルール",
+    jaIntroduction: [
+      "このルール群では、コンポーネントの名前・登録・使い方と、props の変更や未使用の宣言を確認します。",
+      "コンポーネントを追加したり、親子間で渡すデータや動的コンポーネントの切り替えを変更したりするときに確認してください。",
+      "",
+      "たとえば、[props を直接変更しない例](./reference/vue-no-mutating-props.md)では、親から受け取った値を書き換える代わりに、更新をイベントで親へ通知する形を比較できます。",
+      "掲載された設定でルールを有効にし、`vp run lint` を実行してください。",
+      "[Vue の全ルール](./vue.md)では、テンプレートや SFC の関連ルールも確認できます。",
+    ],
     rules: [
       "vue/no-mutating-props",
       "vue/no-unused-components",
