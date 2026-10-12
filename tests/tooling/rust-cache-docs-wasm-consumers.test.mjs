@@ -54,7 +54,7 @@ function consumer(directory, uses, key) {
   );
 }
 
-test("actual complete consumers retain the sole WASM producer and separate NAPI recipes", () => {
+void test("actual complete consumers retain the sole WASM producer and separate NAPI recipes", () => {
   const result = verifyDocsWasmConsumers(root);
   assert.deepEqual(result.wasm, [{ file: docs, job: "build-playground" }]);
   assert(result.cacheCalls >= 86);
@@ -63,7 +63,7 @@ test("actual complete consumers retain the sole WASM producer and separate NAPI 
   assert(result.napi.length >= 2);
 });
 
-test("ordinary literal roles and reviewed non-Docs dynamic prefixes remain eligible", (t) => {
+void test("ordinary literal roles and reviewed non-Docs dynamic prefixes remain eligible", (t) => {
   for (const [uses, key] of [
     [cache, "new-ordinary-role"],
     [cache, "docs-wasm-extra"],
@@ -79,7 +79,7 @@ test("ordinary literal roles and reviewed non-Docs dynamic prefixes remain eligi
   }
 });
 
-test("new direct, delegated and case-alias Docs WASM consumers require review", (t) => {
+void test("new direct, delegated and case-alias Docs WASM consumers require review", (t) => {
   for (const uses of [cache, headCache, app]) {
     for (const key of ["docs-wasm", "Docs-Wasm"]) {
       const directory = fixture(t);
@@ -89,7 +89,7 @@ test("new direct, delegated and case-alias Docs WASM consumers require review", 
   }
 });
 
-test("unknown dynamic roles cannot inherit a fixed-prefix or delegated approval", (t) => {
+void test("unknown dynamic roles cannot inherit a fixed-prefix or delegated approval", (t) => {
   for (const [uses, key] of [
     [cache, "${{ matrix.role }}"],
     [headCache, "${{ matrix.role }}"],
@@ -104,7 +104,7 @@ test("unknown dynamic roles cannot inherit a fixed-prefix or delegated approval"
   }
 });
 
-test("unreviewed nearby aliases and dynamic action references require review", (t) => {
+void test("unreviewed nearby aliases and dynamic action references require review", (t) => {
   for (const uses of [
     "./other/.github/actions/setup-rust-sticky-cache",
     "ubugeeei-prod/vize/.github/actions/setup-rust-sticky-cache@main",
@@ -116,7 +116,7 @@ test("unreviewed nearby aliases and dynamic action references require review", (
   }
 });
 
-test("local action wrappers cannot hide a Docs WASM consumer outside scanned metadata", (t) => {
+void test("local action wrappers cannot hide a Docs WASM consumer outside scanned metadata", (t) => {
   for (const uses of [
     "./tools/new-cache-wrapper",
     "./.github/actions/../../tools/new-cache-wrapper",
@@ -150,7 +150,7 @@ test("local action wrappers cannot hide a Docs WASM consumer outside scanned met
   assert.equal(verifyDocsWasmConsumers(directory).wasm.length, 1);
 });
 
-test("an extra WASM edge in the original workflow or wrapper is refused", (t) => {
+void test("an extra WASM edge in the original workflow or wrapper is refused", (t) => {
   for (const file of [docs, ".github/actions/app-e2e-row/action.yml"]) {
     const directory = fixture(t);
     edit(directory, file, (value) => {
@@ -161,7 +161,7 @@ test("an extra WASM edge in the original workflow or wrapper is refused", (t) =>
   }
 });
 
-test("original WASM, npm native and secondary source commands remain whole", (t) => {
+void test("original WASM, npm native and secondary source commands remain whole", (t) => {
   for (const name of ["Build WASM", "Build npm packages", "Build musea-examples"]) {
     const directory = fixture(t);
     edit(directory, docs, (value) => {
@@ -171,7 +171,7 @@ test("original WASM, npm native and secondary source commands remain whole", (t)
   }
 });
 
-test("WASM conditions, target overrides and native command flags cannot bypass review", (t) => {
+void test("WASM conditions, target overrides and native command flags cannot bypass review", (t) => {
   for (const change of [
     (value) => {
       value.jobs["build-playground"].env = { CARGO_TARGET_DIR: "elsewhere" };
@@ -194,7 +194,7 @@ test("WASM conditions, target overrides and native command flags cannot bypass r
   assert.throws(() => verifyDocsWasmConsumers(directory), assert.AssertionError);
 });
 
-test("actual matrix planner and workflow producers cannot introduce new dynamic keys", (t) => {
+void test("actual matrix planner and workflow producers cannot introduce new dynamic keys", (t) => {
   for (const plan of ["app-readiness-plan", "app-e2e-plan"]) {
     const directory = fixture(t);
     edit(directory, ".github/workflows/e2e.yml", (value) => {
@@ -211,7 +211,7 @@ test("actual matrix planner and workflow producers cannot introduce new dynamic 
   assert.throws(() => verifyDocsWasmConsumers(directory), /command producer changed/);
 });
 
-test("package versions may advance while changed native or secondary scripts are refused", (t) => {
+void test("package versions may advance while changed native or secondary scripts are refused", (t) => {
   for (const file of ["npm/native/package.json", "examples/vite-musea/package.json"]) {
     const directory = fixture(t);
     edit(directory, file, (value) => {
@@ -225,7 +225,7 @@ test("package versions may advance while changed native or secondary scripts are
   }
 });
 
-test("the distinct NAPI caller is not silently reclassified as WASM", (t) => {
+void test("the distinct NAPI caller is not silently reclassified as WASM", (t) => {
   const directory = fixture(t);
   edit(directory, docs, (value) => {
     value.jobs["build-docs"].steps.find((step) => step.uses === cache).with.key = "docs-wasm";
@@ -233,7 +233,7 @@ test("the distinct NAPI caller is not silently reclassified as WASM", (t) => {
   assert.throws(() => verifyDocsWasmConsumers(directory), /Docs WASM/);
 });
 
-test("inherited producer environment and defaults cannot redirect the original recipes", (t) => {
+void test("inherited producer environment and defaults cannot redirect the original recipes", (t) => {
   for (const file of [docs, ".github/workflows/e2e.yml"]) {
     for (const change of [
       (value) => {
@@ -256,7 +256,7 @@ test("inherited producer environment and defaults cannot redirect the original r
   }
 });
 
-test("reviewed command source and its ancestors must remain physical", (t) => {
+void test("reviewed command source and its ancestors must remain physical", (t) => {
   for (const file of ["npm/native/scripts/build-ci.mjs", "tools/commands"]) {
     const directory = fixture(t);
     const path = join(directory, file);
@@ -266,7 +266,7 @@ test("reviewed command source and its ancestors must remain physical", (t) => {
   }
 });
 
-test("the original app slot keys and separate NAPI inputs remain reviewed", (t) => {
+void test("the original app slot keys and separate NAPI inputs remain reviewed", (t) => {
   const directory = fixture(t);
   edit(directory, ".github/workflows/e2e.yml", (value) => {
     value.jobs["app-readiness-producer"].steps.find((step) => step.uses === app).with["cache-key"] =
@@ -281,7 +281,7 @@ test("the original app slot keys and separate NAPI inputs remain reviewed", (t) 
   assert.throws(() => verifyDocsWasmConsumers(napiDirectory), assert.AssertionError);
 });
 
-test("the original dedicated WASM and native command producers cannot change silently", (t) => {
+void test("the original dedicated WASM and native command producers cannot change silently", (t) => {
   for (const file of [
     "tools/moon/cmd/github/build_vitrine_wasm/main.mbt",
     "npm/native/scripts/build-ci.mjs",
@@ -295,7 +295,7 @@ test("the original dedicated WASM and native command producers cannot change sil
   }
 });
 
-test("the metadata root itself must remain a physical repository directory", (t) => {
+void test("the metadata root itself must remain a physical repository directory", (t) => {
   const directory = fixture(t);
   const path = join(directory, ".github");
   renameSync(path, path + ".original");
@@ -306,7 +306,7 @@ test("the metadata root itself must remain a physical repository directory", (t)
   );
 });
 
-test("the existing head installer alias cannot authorize a new context or hidden cache edge", (t) => {
+void test("the existing head installer alias cannot authorize a new context or hidden cache edge", (t) => {
   const directory = fixture(t);
   consumer(directory, "./head/.github/actions/setup-rust-script", "new-ordinary-role");
   assert.throws(() => verifyDocsWasmConsumers(directory), /unreviewed local cache consumer action/);

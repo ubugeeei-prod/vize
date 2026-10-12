@@ -102,6 +102,10 @@ neither successful sticky persistence nor failure-post commit outcomes.
 
 ## Delivery and measurement
 
+The initial hosted lint run refused eighteen unawaited test registrations.
+Explicit `void` registrations retain every callback body and all eighteen
+controls; the complete original failure log remains recorded separately.
+
 Focused source controls precede ordinary exact-head Actions, the original
 full protected merge-group suites and actual merge. The actual Linux
 mount law must execute on Actions; a macOS skip supplies no Linux proof.
