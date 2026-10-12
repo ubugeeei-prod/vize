@@ -6,6 +6,7 @@ title: Project Setup
 
 `vize init` selects, installs, and configures Vize in an existing project in one pass. It is
 interactive by default and fully scriptable with flags.
+Run it from the directory containing your project's `package.json`.
 
 ```bash
 vpx vize init
@@ -19,7 +20,7 @@ It configures five things, each of which you can take or leave:
 | vite plugin      | `@vizejs/vite-plugin` in `vite.config.*`                           |
 | nuxt module      | `@vizejs/nuxt` in `nuxt.config.*`                                  |
 | fmt              | project settings and formatter defaults, plus `vize:fmt` scripts |
-| typecheck        | the TypeScript project and the `vize:check` script |
+| typecheck        | the existing TypeScript project, or a new scaffold when missing, and the `vize:check` script |
 | editor extension | a `.vscode/extensions.json` recommendation                         |
 
 The vite plugin and the nuxt module are the same choice: `init` detects which one your project needs.
@@ -47,9 +48,9 @@ directory or a missing lockfile before any file is touched:
 | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Framework       | `nuxt.config.{ts,mts,js,mjs}` or a `nuxt` dependency means Nuxt; otherwise a `vite.config.*` means Vite; otherwise neither                                       |
 | Both present    | Nuxt wins — a Nuxt project owns its own Vite instance, so the module is the supported integration point. Override with `--vite`.                                 |
-| Neither present | The bundler feature is offered as unavailable and the other four still apply. `init` does not invent a build setup for you.                                      |
+| Neither present | The bundler feature is offered as unavailable; the other four remain choices. `init` does not invent a build setup for you.                                    |
 | Package manager | The lockfile first (`pnpm-lock.yaml`, `bun.lockb`/`bun.lock`, `yarn.lock`, `package-lock.json`), then the `packageManager` field. A Vite+ project uses `vp add`. |
-| Language        | `tsconfig.json` and a `typescript` dependency. Typecheck needs a `tsconfig.json`.                                                                                |
+| Language        | `tsconfig.json` or a `typescript` dependency identifies TypeScript. Selecting typecheck creates `tsconfig.json` when absent.                                |
 | Lint command    | `vp lint` when Vite+ is in use, otherwise the `oxlint` binary. **This decides which file the Oxlint configuration goes in.**                                     |
 | Already done    | An existing Vize config, an existing Oxlint config, an existing `lint` block, plugins already wired, and installed dependencies                                  |
 
@@ -72,12 +73,13 @@ picture.
 | Your project                                    | What `init` writes                                                       |
 | ----------------------------------------------- | ------------------------------------------------------------------------ |
 | uses Vite+                                      | the `lint` block in `vite.config.*`, built with `createVizeLintConfig()` |
-| does not use Vite+                              | `oxlint.config.ts`                                                       |
-| uses Vite+ **and** runs `oxlint` directly       | both, generated from the same preset so they cannot drift apart          |
-| uses Vite+ but its Vite config cannot be edited | nothing — see [When Init Refuses To Edit](#when-init-refuses-to-edit)    |
+| does not use Vite+                              | `oxlint.config.ts` when no readable config exists; otherwise preserves the existing config |
+| uses Vite+ **and** runs `oxlint` directly       | both entry points; newly generated settings use the same preset, while an existing readable Oxlint config is preserved |
+| uses Vite+ but its Vite config cannot be edited | no lint config edit — see [When Init Refuses To Edit](#when-init-refuses-to-edit) |
 
 The `lint` block is emitted through `createVizeLintConfig()`, which returns a complete block so the
-`jsPlugins` entry that loads the bridge cannot go missing:
+`jsPlugins` entry that loads the bridge cannot go missing. The example focuses on the lint block;
+retain the imports your existing plugins need:
 
 ```ts
 // vite.config.ts
@@ -128,6 +130,10 @@ export default defineConfig({
 vpx vize init --yes --lint --vite --fmt --typecheck --editor
 ```
 
+The example explicitly selects the Vite plugin with `--vite`; choose the Nuxt module option
+instead for a Nuxt project. Feature flags override the detected selection. Unmentioned features
+keep their detected defaults; use the negative flags below to exclude features you do not want.
+
 | Option                           | Effect                                              |
 | -------------------------------- | --------------------------------------------------- |
 | `-y`, `--yes`                    | Accept the selection without prompting              |
@@ -136,13 +142,16 @@ vpx vize init --yes --lint --vite --fmt --typecheck --editor
 | `--nuxt`                         | Force the Nuxt module                               |
 | `--bundler` / `--no-bundler`     | The vite plugin or nuxt module, auto-detected       |
 | `--fmt` / `--no-fmt`             | `vize fmt`                                          |
-| `--typecheck` / `--no-typecheck` | `vize check`, which needs a `tsconfig.json`         |
+| `--typecheck` / `--no-typecheck` | `vize check`; creates `tsconfig.json` when absent  |
 | `--editor` / `--no-editor`       | The `.vscode/extensions.json` recommendation        |
 | `--dry-run`                      | Print the full plan and write nothing               |
 | `--no-install`                   | Write configuration without installing dependencies |
 | `--package-manager <PM>`         | One of `pnpm`, `npm`, `yarn`, `bun`, `vp`           |
 
-`--dry-run` prints exactly what a real run would do:
+After feature selection, `--dry-run` prints the plan and stops before file writes or dependency
+installation. It still prompts unless automatic confirmation is enabled. For a non-TTY preview,
+run `vpx vize init --yes --dry-run`. The example below uses an existing TypeScript configuration
+in a Vite+ project:
 
 ```
 [vize init] plan:
@@ -160,8 +169,9 @@ vpx vize init --yes --lint --vite --fmt --typecheck --editor
 
 ## Running It Twice
 
-`init` is idempotent. A second run adds no duplicate plugin entry, script, or dependency, and leaves
-every file byte-identical:
+`init` is idempotent after a successful run. Once configuration and dependencies are in place,
+running again with the same selection and installation options adds no duplicate plugin entry,
+script, or dependency and leaves every file byte-identical:
 
 ```
 [vize init] plan:
@@ -178,11 +188,18 @@ one more feature does not mean re-selecting everything.
 
 ## When Init Refuses To Edit
 
-`init` never guesses at a build config. If it cannot make an edit safely it writes nothing, reports
-the feature as **not configured**, prints the exact snippet to paste, and exits non-zero.
+`init` never guesses at a build config. If it cannot safely make a config edit, it leaves that config
+edit to you, reports the feature as **not configured**, and prints a snippet to paste. Other planned
+changes, including scripts and dependency installation, may still be applied. A blocked feature
+makes the command exit non-zero; review the printed plan and actual file changes before retrying.
 
-This matters most for lint. If your Vite config already has a `lint` block, `init` will not merge
-into it, because merging risks dropping settings:
+File writes and dependency installation are separate operations. If a later step fails, earlier
+changes may remain. Resolve the reported error, review the changed files, and run the command again.
+
+This matters most when adopting Vize lint support in a Vite+ project. If the config already has a
+`lint` block and Vize integration has not been detected, `init` will not merge into it
+automatically, because merging risks dropping settings. Existing Vize integration remains
+unchanged. The following example shows the initial-adoption refusal:
 
 ```
 [vize init] lint: NOT configured — vp lint reads the `lint` block in the Vite config, but
@@ -208,9 +225,10 @@ Note what it does **not** do: fall back to writing `oxlint.config.ts`. That woul
 reading your untouched `lint` block and reporting nothing, which is worse than being unconfigured.
 A project that fails loudly is fixable; one that is quietly silent is not.
 
-The same rule applies to the other edits. `init` will decline when there are several Vite configs,
-when the config is not a single plain `defineConfig({ ... })` call, when `plugins` is not an array
-literal, or when `.vscode/extensions.json` is not a plain JSON object.
+Other config edits have limits too. `init` cannot choose a lint target among several Vite configs
+or safely extend a config that is not a single plain `defineConfig({ ... })` call. A `plugins` value
+that is not an array literal or an invalid `.vscode/extensions.json` can also prevent the relevant
+config edit. Check each feature's result rather than assuming the entire run changed nothing.
 
 ## Editor Support
 
@@ -239,9 +257,8 @@ See [VS Code and Other Editors](../integrations/vscode.md) for per-editor instru
 ## Relationship To `vize setup`
 
 `vize setup` is the older, all-or-nothing command for a Vite or Vite+
-project. It still works and is unchanged. `init` covers the same ground plus feature selection, Nuxt,
-package-manager detection, a dry run, and a non-interactive mode, over the same planning layer. Prefer
-`vize init` for new projects.
+project and remains available. `init` adds feature selection, Nuxt, package-manager detection,
+a dry run, and a non-interactive mode. Use `vize init` when choosing what to adopt in an existing project.
 
 ## Next Steps
 

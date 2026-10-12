@@ -233,3 +233,78 @@ void test("Japanese script options survive regeneration with the complete curren
   );
   assert.equal(japanese.split('<span id="script-rule-options"></span>').length, 2);
 });
+
+void test("Japanese init survives regeneration with the original setup and recovery contracts", async () => {
+  const root = resolve(import.meta.dirname, "../..");
+  const path = "guide/init.md";
+  const english = readFileSync(resolve(root, "docs/content", path), "utf8");
+  const japanese = readFileSync(resolve(root, "docs/content/ja", path), "utf8");
+  const retained = await collectReviewedTranslations([path], resolve(root, "docs/content/ja"));
+  assert.equal(retained.get(path), japanese, "retain the complete authored Japanese article");
+  const fences = (source: string) =>
+    [...source.matchAll(/^```[^\n]*\n[\s\S]*?^```[^\n]*$/gm)].map((match) => match[0]);
+  const digest = (value: unknown) =>
+    createHash("sha256").update(JSON.stringify(value)).digest("hex");
+  assert.deepEqual(
+    fences(japanese),
+    fences(english),
+    "all nine whole original recipes and outputs",
+  );
+  assert.equal(fences(japanese).length, 9);
+  assert.equal(
+    digest(fences(japanese)),
+    "b8cac95696ac0a6f2ef2291370af86a70d3b1cc3211a976b8c823cc2ef18e182",
+  );
+  const inline = (source: string) =>
+    [
+      ...source
+        .replace(/^```[^\n]*\n[\s\S]*?^```[^\n]*$/gm, "")
+        .matchAll(/(?<!`)`([^`\n]+)`(?!`)/g),
+    ].map((match) => match[1]);
+  const tokens = inline(japanese);
+  assert.deepEqual(tokens, inline(english), "all authored CLI options and inline contracts agree");
+  assert.equal(tokens.length, 120);
+  for (const [index, addition] of [
+    [95, "vpx vize init --yes --dry-run"],
+    [67, "--vite"],
+    [2, "package.json"],
+  ] as const) {
+    assert.equal(tokens[index], addition, "only the declared contextual additions");
+    tokens.splice(index, 1);
+  }
+  assert.equal(
+    digest(tokens),
+    "9b9d215f3cf78c2adc62534c2caf8b15118717308d3471a889e5b79ad5eb5314",
+    "all 117 original inline occurrences remain in order",
+  );
+  const links = (source: string) =>
+    [...source.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)].map((match) => match[1]);
+  assert.deepEqual(links(japanese), links(english), "all original recovery and next-step URLs");
+  assert.deepEqual(links(japanese), [
+    "./configuration.md",
+    "./oxlint.md",
+    "#when-init-refuses-to-edit",
+    "../integrations/vscode.md",
+    "./static-analysis.md",
+    "./oxlint.md",
+    "./configuration.md",
+    "./cli.md",
+  ]);
+  for (const bookmark of [
+    "project-setup-with-vize-init",
+    "what-it-detects",
+    "which-lint-file-it-writes",
+    "non-interactive-use",
+    "running-it-twice",
+    "when-init-refuses-to-edit",
+    "editor-support",
+    "relationship-to-vize-setup",
+    "next-steps",
+  ]) {
+    assert.equal(
+      japanese.split(`<span id="${bookmark}"></span>`).length,
+      2,
+      `${bookmark}: preserve the English bookmark`,
+    );
+  }
+});

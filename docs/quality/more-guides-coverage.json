@@ -137,9 +137,9 @@
     },
     {
       "route": "/guide/init",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Existing-project setup is handled in #8370 and #8371."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Complete authored Japanese preserves all nine original code/output blocks, inline code and link destinations. English and Japanese explain feature selection before dry-run, missing tsconfig creation and feature-scoped edit refusal with possible partial changes. This reader change does not qualify released config-free behavior or close #8371; regeneration, exact-source desktop/mobile and deployed reading acceptance remain required."
     },
     {
       "route": "/guide/lib-pull",
