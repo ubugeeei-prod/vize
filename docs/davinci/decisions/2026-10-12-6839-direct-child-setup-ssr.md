@@ -98,6 +98,19 @@ packets; protected suites and measured instruction gates must then pass before
 actual merge credit. This source observation does not establish public package
 acceptance or complete upstream map/context parity.
 
+The first frozen-source Check
+[38191704103](https://github.com/ubugeeei-prod/vize/actions/runs/38191704103)
+retained all 15 whole payloads byte-exact, but its final live runtime comparison
+exposed a JSON representation boundary. Six exact JS external maps own
+undefined `file` and `sourceRoot`; the two exact TS dependency original maps own
+undefined `file` and use the actual compiler dependency's public `SourceMap`
+prototype. Only the expected side reifies these 14 properties and two prototypes
+from the pinned provider. The complete live runtime then requires equal own
+keys, descriptors, prototypes and values. Actual unknown undefined/hidden keys,
+changed descriptors, missing keys, wrong values/prototypes, altered mappings and
+HTML must fail. Every frozen JSON field and raw historical packet is unchanged;
+no blanket serialization or output normalization replaces the comparison.
+
 Remaining TODOs stay explicit: deeper/mixed children, components, For runtime,
 Vapor SSR, complete dialect/JSX/TSX routing, and default compiler replacement.
 This bounded slice does not close the level or product roadmaps.

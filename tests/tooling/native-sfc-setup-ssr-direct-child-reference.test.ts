@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
-import { checkMap, checkVersions, hash } from "./support/native-sfc-ssr-reference.ts";
+import {
+  checkMap,
+  checkVersions,
+  compilerSourceMapPrototype,
+  hash,
+} from "./support/native-sfc-ssr-reference.ts";
 import {
   checkOfficialSetupMap,
   checkSetupCustody,
@@ -10,7 +15,10 @@ import {
   primarySetupBindings,
   stockSetupSfc,
 } from "./support/native-sfc-setup-ssr-reference.ts";
-import { originalNestedSource } from "./support/native-ssr-direct-child-successor.ts";
+import {
+  assertDirectChildRuntime,
+  originalNestedSource,
+} from "./support/native-ssr-direct-child-successor.ts";
 
 const root = new URL("../../crates/vize_atelier_sfc/tests/fixtures/", import.meta.url);
 const corpus = JSON.parse(
@@ -140,6 +148,40 @@ void test(
       );
     // Retain the whole real outcome before a deliberately pending freeze fails closed.
     assert.deepEqual(capture, golden.capture);
-    assert.deepEqual(runtime, golden.runtime);
+    const compare = () =>
+      assertDirectChildRuntime(runtime, golden.runtime, compilerSourceMapPrototype);
+    compare();
+
+    const map = runtime.rows[0].external.map;
+    map.unknown = undefined;
+    assert.throws(compare);
+    delete map.unknown;
+    Object.defineProperty(map, "hiddenUnknown", { value: undefined, configurable: true });
+    assert.throws(compare);
+    delete map.hiddenUnknown;
+    Object.defineProperty(map, "file", { writable: false });
+    assert.throws(compare);
+    Object.defineProperty(map, "file", { writable: true });
+    delete map.sourceRoot;
+    assert.throws(compare);
+    map.sourceRoot = undefined;
+    map.file = "unexpected.vue";
+    assert.throws(compare);
+    map.file = undefined;
+    const mappings = map.mappings;
+    map.mappings += ";AAAA";
+    assert.throws(compare);
+    map.mappings = mappings;
+    const originalMap = runtime.rows[2].external.dependencies[0].originalMap;
+    assert.equal(Object.getPrototypeOf(originalMap), compilerSourceMapPrototype);
+    Object.setPrototypeOf(originalMap, Object.prototype);
+    assert.throws(compare);
+    Object.setPrototypeOf(originalMap, compilerSourceMapPrototype);
+    const outcome = runtime.rows[0].native[0].initial;
+    const html = outcome.html;
+    outcome.html += "unexpected";
+    assert.throws(compare);
+    outcome.html = html;
+    compare();
   },
 );

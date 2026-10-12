@@ -24,3 +24,61 @@ export function withoutOriginalNested(rows: any[]) {
 export function directChildHistoricalSuccessor(packet: any) {
   return { ...packet, refusals: withoutOriginalNested(packet.refusals) };
 }
+
+// JSON cannot retain these exact pinned provider carriers. Reify the expected
+// side only; the complete live runtime remains under strict equality.
+export function directChildRuntimeExpectation(frozen: any, sourceMapPrototype: object) {
+  assert.deepEqual(
+    frozen.rows.map((row: any) => row.name),
+    [
+      "original-nested",
+      "nested-let-js",
+      "nested-ts-let",
+      "nested-unicode-var",
+      "nested-const-attrs",
+      "nested-ts-literal",
+      "nested-literal-escaping",
+      "nested-retained-comments",
+    ],
+  );
+  const expected = structuredClone(frozen);
+  for (const index of [0, 1, 3, 4, 6, 7]) {
+    const map = expected.rows[index].external.map;
+    assert.equal(Object.getPrototypeOf(map), Object.prototype);
+    assert.equal(Object.hasOwn(map, "file"), false);
+    assert.equal(Object.hasOwn(map, "sourceRoot"), false);
+    map.file = undefined;
+    map.sourceRoot = undefined;
+  }
+  for (const index of [2, 5]) {
+    const dependencies = expected.rows[index].external.dependencies;
+    assert.equal(dependencies.length, 1);
+    const map = dependencies[0].originalMap;
+    assert.equal(Object.getPrototypeOf(map), Object.prototype);
+    assert.equal(Object.hasOwn(map, "file"), false);
+    map.file = undefined;
+    Object.setPrototypeOf(map, sourceMapPrototype);
+  }
+  return expected;
+}
+
+export function assertDirectChildRuntime(actual: any, frozen: any, sourceMapPrototype: object) {
+  const expected = directChildRuntimeExpectation(frozen, sourceMapPrototype);
+  const shape = (a: any, b: any) => {
+    assert.equal(typeof a, typeof b);
+    if (b === null || typeof b !== "object") return;
+    assert.equal(Object.getPrototypeOf(a), Object.getPrototypeOf(b));
+    assert.deepEqual(new Set(Reflect.ownKeys(a)), new Set(Reflect.ownKeys(b)));
+    for (const key of Reflect.ownKeys(b)) {
+      const actualDescriptor = Object.getOwnPropertyDescriptor(a, key)!;
+      const expectedDescriptor = Object.getOwnPropertyDescriptor(b, key)!;
+      assert.deepEqual(
+        { ...actualDescriptor, value: undefined },
+        { ...expectedDescriptor, value: undefined },
+      );
+      shape(actualDescriptor.value, expectedDescriptor.value);
+    }
+  };
+  shape(actual, expected);
+  assert.deepEqual(actual, expected);
+}
