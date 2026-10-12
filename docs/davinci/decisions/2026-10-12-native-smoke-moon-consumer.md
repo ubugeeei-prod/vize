@@ -79,6 +79,18 @@ failures after it, with no skipped laws.
 Keep the original failure; requalify the actual successor rather than rerun or
 borrow the first source's passing Moon laws.
 
+Source `9057aadee2ef1677c27e3b8c4321b67fd0724c2c` passed its source Check,
+including all seven actual laws, but its
+[native phase](https://github.com/ubugeeei-prod/vize/actions/runs/38191166695/job/114624034609)
+failed with status 127: the current workflow called the lexical dollar helper
+absent from that older source checkout. The helper had genuinely merged with
+the corresponding product fix in #8716. Preserve the complete original failure
+and replay the owned slice onto actual current main
+`47b204f26839afb27af4a2f789eafc86295f0f81`, including that whole producer
+ancestry. Keep all owned workflow/test bytes and every incoming canonical row;
+do not splice a foreign helper, skip its checks or retry the old head. Both
+fresh source Check and actual native-phase qualification remain required.
+
 - Obtain fresh exact-head Actions and protected-queue qualification, then
   verify actual merge of this prerequisite.
 - Run one complete eighteen-check Native Smoke qualification on the genuine
