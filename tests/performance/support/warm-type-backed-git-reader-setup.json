@@ -1,0 +1,71 @@
+{
+  "schema": "vize.raw-git-reader.setup-successor",
+  "version": 1,
+  "originalSource": "eafe5bed4f602e0787ff9f2f48ec4155d115ab7f",
+  "previousSource": "6354e9b92ef842816f8f8be0d104b067f4175e96",
+  "previousGuardSHA256": "ad25378cc7272fb2fde533d6a6796a9462dec3d3e157217abef13a5a69cf6a96",
+  "preservedPreviousPairs": 102,
+  "acceptanceCredit": "none",
+  "deltas": [
+    [
+      "tests/tooling/warm-type-backed-git-reader-incoming.test.ts",
+      null,
+      "8b938a0fe48b7cc41df21cc84acb208fd5bff23edd72ead2f3375b627ea1a811",
+      "0c570ef6418d1c9651b2451b58d073b68b2af39662df0e2966016d54a783a4f5"
+    ],
+    [
+      "tests/tooling/warm-type-backed-git-reader-nodeep.test.ts",
+      null,
+      "4d3d4b1ca019669e50570b5ed15bb9147083c0b8181f63392d7d47984e505124",
+      "73527589546b593e96b58dba9f747d8e897bb5d53d476342dc9715cc25b70228"
+    ],
+    [
+      "docs/davinci/decisions/2026-10-12-3952-raw-git-body-authority.md",
+      null,
+      "b028d8a4954dca954099f1e27dfc135a2d4a93d0ad02cf06aa8071de99bb4457",
+      "615e60d862c9471662a99db2a6c255646a1c1b7d3c48e92745070e4295f8ed40"
+    ],
+    [
+      "tests/tooling/warm-type-backed-ascii-symbol-host.test.ts",
+      "56597eaad2dbb570f377ca00a94bbb0360140ee2ad7c946301f1ac68caff397f",
+      "56597eaad2dbb570f377ca00a94bbb0360140ee2ad7c946301f1ac68caff397f",
+      "06fdc1724b5fc98c388029203311635e5935fea64f5594bcb4431100ee052b76"
+    ],
+    [
+      "tests/tooling/support/ascii-symbol-original-callers.ts",
+      null,
+      null,
+      "26247a3b96d3ec476aa591a83d19c0667c5545323f1ac11ff8aadda354369de2"
+    ],
+    [
+      "tests/tooling/support/ascii-symbol-original-callers.json",
+      null,
+      null,
+      "0dc0852abe918f17f378a708e70d61b42f0630fe94865db96f8c7201d43ffbd3"
+    ],
+    [
+      "tests/tooling/support/ascii-symbol-caller-frames.json",
+      null,
+      null,
+      "ae9cbab52a1ba62f3e31b8e4f92f80e3c973de3510d219ee940a6b89cfc716d6"
+    ],
+    [
+      "tests/tooling/ascii-symbol-original-callers.test.ts",
+      null,
+      null,
+      "9a7c159495f48858b28fb68cb3ee8838676d4505ed98bf2366b92e96dd6e8345"
+    ],
+    [
+      "tests/tooling/warm-type-backed-git-reader-setup.test.ts",
+      null,
+      null,
+      "659866cd702f3a710bc068765aa7135b309519e0a1776aa6ce60a60c30a182e7"
+    ],
+    [
+      "tests/performance/support/warm-type-backed-git-reader-nodeep.ts",
+      null,
+      "ad25378cc7272fb2fde533d6a6796a9462dec3d3e157217abef13a5a69cf6a96",
+      "ad25378cc7272fb2fde533d6a6796a9462dec3d3e157217abef13a5a69cf6a96"
+    ]
+  ]
+}
