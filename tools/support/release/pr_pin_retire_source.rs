@@ -197,6 +197,7 @@ pub(super) fn validate(receipt: &Value, root: &Path) -> Result<Source, String> {
         base_version: text(identity, "/baseVersion")?.into(),
         integration: positive(identity, "/integrationPr")?,
         closed: source_pr["state"] == "closed",
+        stable: super::stable::from_body(text(source_pr, "/body")?, cut, repository, root)?,
     };
     if source.integration == source.candidate.number || source_pr["draft"] != true {
         return Err("Original source must be separate unmerged draft receipt".into());

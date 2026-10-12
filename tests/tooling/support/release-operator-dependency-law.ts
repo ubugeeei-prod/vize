@@ -47,14 +47,14 @@ export function dependencyShell(
       .trim()
       .split("\n")
       .map((line) => JSON.parse(line));
-  for (const operation of ["start", "resume", "retire"]) {
+  for (const operation of ["start", "patch", "resume", "retire"]) {
     const result = setup(operation);
     assert.equal(result.status, 0, result.stderr);
     assert.deepEqual(calls(), operation === "retire" ? [install] : [install, ["moon", "update"]]);
     fs.rmSync(dependencyCapture);
     assert.equal(fs.existsSync(capture), false);
   }
-  for (const operation of ["start", "resume", "retire"]) {
+  for (const operation of ["start", "patch", "resume", "retire"]) {
     assert.equal(setup(operation, "17").status, 17);
     assert.deepEqual(calls(), [install]);
     assert.equal(fs.existsSync(capture), false);

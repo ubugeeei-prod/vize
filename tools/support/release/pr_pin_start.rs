@@ -46,18 +46,48 @@ fn supports_pin(head: &str, root: &Path) -> Result<(), String> {
 }
 
 pub fn start(bump: &str, root: &Path) -> Result<(), String> {
+    start_selected(bump, None, root)
+}
+
+pub fn start_stable(policy: &str, cut: &str, root: &Path) -> Result<(), String> {
+    start_selected("patch", Some((policy, cut)), root)
+}
+
+fn start_selected(bump: &str, requested: Option<(&str, &str)>, root: &Path) -> Result<(), String> {
     let budget = pr_budget::configured()?;
     if !["patch", "minor", "major", "alpha", "beta", "rc", "release"].contains(&bump) {
         return Err("Unknown release bump".into());
     }
     let repository = authorize(root)?;
-    let cut = github::fetch_main(root)?;
+    let main = github::fetch_main(root)?;
     let expected = match env::var("VIZE_RELEASE_EXPECTED_CUT_SHA") {
         Ok(value) => Some(value),
         Err(env::VarError::NotPresent) => None,
         Err(_) => return Err("VIZE_RELEASE_EXPECTED_CUT_SHA is not valid Unicode.".into()),
     };
-    expected_cut(expected.as_deref(), &cut)?;
+    expected_cut(expected.as_deref(), &main)?;
+    let (cut, stable) = match requested {
+        None => (main.clone(), None),
+        Some((policy, cut)) => {
+            if policy != main {
+                return Err(
+                    "Stable preparation policy is stale; redispatch from current main".into(),
+                );
+            }
+            pr_contract::sha(cut)?;
+            github::git(&["fetch", "--no-tags", "origin", cut], root)?;
+            let (context, plan) = super::stable::load(policy, cut, &repository, root)?;
+            supports_pin(cut, root)?;
+            super::stable::supports_cut(&context, cut, root)?;
+            let latest = github::api(&repository, "releases/latest", root)?;
+            if pr_contract::field(&latest, "/tag_name")?
+                != pr_contract::field(&plan, "/published/tag")?
+            {
+                return Err("A newer public version owns the stable line".into());
+            }
+            (cut.to_owned(), Some(context))
+        }
+    };
     let work = pr_start::pinned_worktree(&cut, root)?;
     let result = (|| {
         let base_version = github::version(&work)?;
@@ -73,6 +103,20 @@ pub fn start(bump: &str, root: &Path) -> Result<(), String> {
         let head = github::git(&["rev-parse", "HEAD"], &work)?;
         let tag = format!("v{}", github::version(&work)?);
         supports_pin(&head, &work)?;
+        if let Some(context) = &stable {
+            if super::stable::target(context, &work)? != tag {
+                return Err("Stable preparation produced a different PATCH version".into());
+            }
+            github::git(
+                &[
+                    "--no-replace-objects",
+                    "cat-file",
+                    "-e",
+                    &format!("{head}:tools/support/release/pr_pin_stable.rs"),
+                ],
+                &work,
+            )?;
+        }
         let branch = format!("release/{tag}");
         super::dispatch::version_owner(&repository, &tag, &work)?;
         pr_budget::check(budget.as_ref())?;
@@ -95,7 +139,8 @@ pub fn start(bump: &str, root: &Path) -> Result<(), String> {
             &["push", "origin", &format!("HEAD:refs/heads/{branch}")],
             &work,
         )?;
-        let body = source_body(&tag, bump, &base_version, &cut, &head, None);
+        let body = source_body(&tag, bump, &base_version, &cut, &head, None)
+            + &super::stable::markers(stable.as_ref());
         let number = open_pr(
             &repository,
             &branch,
@@ -119,6 +164,7 @@ pub fn start(bump: &str, root: &Path) -> Result<(), String> {
             base_version,
             integration: 0,
             closed: false,
+            stable: stable.clone(),
         };
         source.integration = integration_pr(&source, bump, budget.as_ref(), &work)?;
         pr_budget::check(budget.as_ref())?;
@@ -195,10 +241,11 @@ pub fn resume(number: u64, root: &Path) -> Result<(), String> {
                     tag: tag.clone(),
                     merged: false,
                 },
-                cut,
+                cut: cut.clone(),
                 base_version,
                 integration: 0,
                 closed: false,
+                stable: super::stable::from_body(body, &cut, &repository, &work)?,
             };
             source.integration = integration_pr(&source, &bump, budget.as_ref(), &work)?;
             pr_budget::check(budget.as_ref())?;
@@ -288,7 +335,7 @@ fn set_body(source: &Source, bump: &str, root: &Path) -> Result<(), String> {
         &source.cut,
         &source.candidate.head,
         Some(source.integration),
-    );
+    ) + &super::stable::markers(source.stable.as_ref());
     let path = root.join(".git-release-pinned-body.md");
     fs::write(&path, body).map_err(|e| e.to_string())?;
     let result = github::output(
