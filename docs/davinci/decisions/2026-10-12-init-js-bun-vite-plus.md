@@ -138,3 +138,11 @@ every authored init body. Require fresh source Actions on each exact layer and
 one composed child qualification of all eighteen workers before delivery. The
 child campaign cannot claim an exact-head parent run, prior-head qualification
 or published consumer acceptance. No original failure is retried or erased.
+
+The first true child `2afc6c96` fails the existing native-image whole-host law
+in [tooling shard two](https://github.com/ubugeeei-prod/vize/actions/runs/38190210461/job/114621650769).
+Its original complete log stays intact. Parent successor `9057aade` authenticates
+the approved Moon selector before reversing only that predicate for the original
+whole-job comparison; the fixture, workflow and production bodies stay fixed.
+Replay this unchanged init coverage onto that actual parent and rerun source
+Actions. The single composed eighteen-worker campaign has not yet started.
