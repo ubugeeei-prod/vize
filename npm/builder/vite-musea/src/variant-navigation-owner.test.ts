@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { compileFunction } from "node:vm";
 import ts from "typescript";
 
 const corpus = new URL(
@@ -70,15 +71,16 @@ function harness(script: string) {
   const javascript = ts.transpileModule(block, {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None },
   }).outputText;
-  const execute = new Function(
-    "scope",
+  const execute = compileFunction(
     `
     const { ${Object.keys(scope).join(", ")} } = scope;
     let variantObserver = null;
     let variantObserverGeneration = 0;
     ${javascript}
     return { setupVariantObserver, syncSelectionFromHash, handleVariantSelect, disconnectVariantObserver };
-  `,
+    `,
+    ["scope"],
+    { filename: manifest.producer },
   );
   const api = execute(scope) as {
     setupVariantObserver(): Promise<void>;
@@ -164,6 +166,18 @@ void test("only the newest pending setup owns an observer; unmount rejects pendi
   h.tick();
   await pending;
   assert.equal(h.observers.length, 0);
+});
+
+void test("initial render observes refs created during the existing nextTick", async () => {
+  for (const script of [before, current]) {
+    const h = harness(script);
+    h.scope.variantSectionElements.clear();
+    const pending = h.setupVariantObserver();
+    h.scope.variantSectionElements.set("first", h.sections.get("first")!);
+    h.tick();
+    await pending;
+    assert.equal(h.observers.length, script === before ? 0 : 1);
+  }
 });
 
 for (const edge of ["tab", "route", "unmount", "hash", "click"] as const) {

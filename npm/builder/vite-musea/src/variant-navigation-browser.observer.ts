@@ -1,4 +1,5 @@
 import type { Page } from "playwright";
+import { fileURLToPath } from "node:url";
 
 interface ObserverRecord {
   id: number;
@@ -11,70 +12,13 @@ interface Probe {
   records: ObserverRecord[];
   events: unknown[];
 }
-type ProbedWindow = Window & { __museaNavigationProbe: Probe };
+type ProbedWindow = { __museaNavigationProbe: Probe };
 
 export async function instrumentObserver(page: Page) {
-  await page.addInitScript(() => {
-    if (window !== window.top) return;
-    const Native = window.IntersectionObserver;
-    const probe: Probe = { records: [], events: [] };
-    Reflect.set(window, "__museaNavigationProbe", probe);
-    const summarize = (entries: IntersectionObserverEntry[]) =>
-      entries.map((entry) => ({
-        name: (entry.target as HTMLElement).dataset.variantName,
-        time: entry.time,
-        isIntersecting: entry.isIntersecting,
-        ratio: entry.intersectionRatio,
-        bounds: entry.boundingClientRect.toJSON(),
-        root: entry.rootBounds?.toJSON(),
-        intersection: entry.intersectionRect.toJSON(),
-      }));
-    window.IntersectionObserver = class extends Native {
-      record: ObserverRecord;
-      constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
-        const record = {
-          id: probe.records.length,
-          callback,
-          disconnected: false,
-          deliveries: [] as IntersectionObserverEntry[][],
-        } as ObserverRecord;
-        super((entries, observer) => {
-          record.deliveries.push(entries);
-          // Observe real native delivery; never change, filter, delay, or suppress entries.
-          callback(entries, observer);
-          probe.events.push({
-            kind: "native-delivery",
-            id: record.id,
-            time: performance.now(),
-            disconnected: record.disconnected,
-            entries: summarize(entries),
-          });
-        }, options);
-        record.observer = this;
-        this.record = record;
-        probe.records.push(record);
-        probe.events.push({ kind: "construct", id: record.id, options, time: performance.now() });
-      }
-      override disconnect() {
-        this.record.disconnected = true;
-        probe.events.push({ kind: "disconnect", id: this.record.id, time: performance.now() });
-        super.disconnect();
-      }
-    };
-    document.addEventListener(
-      "click",
-      (event) => {
-        const item = (event.target as Element)?.closest(".variant-toc-item");
-        if (item)
-          probe.events.push({
-            kind: "click",
-            time: performance.now(),
-            name: item.querySelector(".variant-toc-name")?.textContent,
-            aria: item.getAttribute("aria-current"),
-          });
-      },
-      true,
-    );
+  await page.addInitScript({
+    path: fileURLToPath(
+      new URL("./variant-navigation-browser.instrumentation.js", import.meta.url),
+    ),
   });
 }
 
@@ -173,6 +117,18 @@ export async function geometry(page: Page, name: string) {
       selected: [...document.querySelectorAll('.variant-toc-item[aria-current="true"]')].map(
         (item) => item.querySelector(".variant-toc-name")?.textContent,
       ),
+      variantVector: [...document.querySelectorAll(".variant-toc-item")].map((item) => {
+        const ariaControls = item.getAttribute("aria-controls");
+        const target = ariaControls ? document.getElementById(ariaControls) : null;
+        return {
+          name: item.querySelector(".variant-toc-name")?.textContent,
+          aria: item.getAttribute("aria-current"),
+          ariaControls,
+          id: target?.id,
+          sectionName: target?.dataset.variantName,
+          rect: target?.getBoundingClientRect().toJSON(),
+        };
+      }),
       time: performance.now(),
     };
   }, name);

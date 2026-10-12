@@ -29,6 +29,19 @@ async function assertTarget(page: Page, name: string, observations: unknown[], p
   observations.push({ phase, ...state });
   assert.equal(state.aria, "true", JSON.stringify(state));
   assert.deepEqual(state.selected, [name]);
+  assert.ok(
+    Object.values(variants).some(
+      (group) =>
+        JSON.stringify(group.map(([name]) => name)) ===
+        JSON.stringify(state.variantVector.map((row) => row.name)),
+    ),
+  );
+  for (const row of state.variantVector) {
+    assert.equal(row.sectionName, row.name);
+    assert.equal(row.id, row.ariaControls);
+    assert.ok(row.rect);
+    assert.equal(row.aria, row.name === name ? "true" : null);
+  }
   assert.ok(state.rect.top < state.viewport.height && state.rect.bottom > 0, JSON.stringify(state));
   const scroller = state.ancestors.find((row) => ["auto", "scroll"].includes(row.overflow));
   assert.ok(scroller, "actual scrolling ancestor must be captured");
@@ -59,7 +72,7 @@ async function rapid(
 
 async function push(page: Page, location: { hash?: string; name?: string }) {
   await page.evaluate(async (location) => {
-    const root = document.querySelector("#app") as HTMLElement & {
+    const root = document.querySelector("#app") as unknown as {
       __vue_app__: {
         config: { globalProperties: { $router: { push(value: unknown): Promise<unknown> } } };
       };
@@ -142,8 +155,9 @@ void test(
       // A taller real viewport gives the unchanged native IO band room to observe manual scrolling.
       // The rapid controls above retain the original default Chromium viewport.
       await page.setViewportSize({ width: 1280, height: 1100 });
+      const firstCount = await observerCount(page);
       await page.locator(".variant-toc-item").first().click();
-      await waitForNewNativeDelivery(page, (await observerCount(page)) - 1);
+      await waitForNewNativeDelivery(page, firstCount);
       const manualCount = await observerCount(page);
       await page
         .locator(".variant-section")
@@ -163,8 +177,9 @@ void test(
         "manual scroll must use the existing observer",
       );
       await assertTarget(page, "hasOwnProperty", observations, "manual-scroll");
+      const retainedFirstCount = await observerCount(page);
       await page.locator(".variant-toc-item").first().click();
-      await waitForNewNativeDelivery(page, (await observerCount(page)) - 1);
+      await waitForNewNativeDelivery(page, retainedFirstCount);
       await assertTarget(page, "__proto__", observations, "retained:before");
       const retainedCount = await observerCount(page);
       await page.locator(".variant-toc-item").last().click();
@@ -178,6 +193,18 @@ void test(
       await settle(page);
       const tabEvidence = await observerEvidence(page);
       assert.ok(tabEvidence.records.slice(0, tabCount).every((record) => record.disconnected));
+      observations.push(await replayFormerNativeDelivery(page, "__proto__"));
+      await settle(page);
+      assert.equal(await page.locator(".variant-section").count(), 0);
+      assert.equal(
+        await page.getByRole("button", { name: "Props", exact: true }).getAttribute("aria-pressed"),
+        "true",
+      );
+      observations.push({
+        phase: "tab:former-callback",
+        html: await page.content(),
+        evidence: await observerEvidence(page),
+      });
       await page.getByRole("button", { name: "Variants", exact: true }).click();
       await waitForNewNativeDelivery(page, tabCount);
       await assertTarget(page, "__proto__", observations, "tab:hash-restored");
@@ -202,8 +229,9 @@ void test(
         const mutantUrl = await serve(mutant.site);
         await page.goto(mutantUrl);
         await previews(page, "Keys");
+        const initialCount = await observerCount(page);
         await page.locator(".variant-toc-item").first().click();
-        await waitForNewNativeDelivery(page, (await observerCount(page)) - 1);
+        await waitForNewNativeDelivery(page, initialCount);
         await assertTarget(page, "__proto__", observations, `${kind}:initial`);
         if (kind === "callback") {
           const count = await observerCount(page);
@@ -213,8 +241,13 @@ void test(
           observations.push(await replayFormerNativeDelivery(page, "__proto__"));
           await settle(page);
           const reversed = await geometry(page, "hasOwnProperty");
-          observations.push({ phase: "callback:counterexample", ...reversed });
-          assert.notEqual(reversed.aria, "true");
+          observations.push({
+            phase: "callback:counterexample",
+            ...reversed,
+            evidence: await observerEvidence(page),
+          });
+          assert.equal(reversed.aria, null);
+          assert.deepEqual(reversed.selected, ["__proto__"]);
           assert.ok(reversed.rect.top < reversed.viewport.height && reversed.rect.bottom > 0);
         } else {
           // Start at a real distant last target; record actual newly attached IO delivery during return.
@@ -231,6 +264,10 @@ void test(
             phase: "smooth:counterexample",
             ...moving,
             evidence: await observerEvidence(page),
+            failedClauses: {
+              physicalTarget: moving.rect.bottom <= 0,
+              selectedTarget: moving.aria !== "true",
+            },
           });
           assert.ok(moving.rect.bottom <= 0 || moving.aria !== "true", JSON.stringify(moving));
         }

@@ -148,13 +148,18 @@ async function setupVariantObserver() {
   disconnectVariantObserver();
   const generation = variantObserverGeneration;
 
-  if (activeTab.value !== "variants" || variantSectionElements.size === 0) {
+  if (activeTab.value !== "variants") {
     return;
   }
 
   await nextTick();
 
-  if (generation !== variantObserverGeneration) return;
+  if (
+    generation !== variantObserverGeneration ||
+    activeTab.value !== "variants" ||
+    variantSectionElements.size === 0
+  )
+    return;
 
   if (typeof window === "undefined" || !("IntersectionObserver" in window)) {
     return;

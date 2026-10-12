@@ -37,6 +37,11 @@ Vue `nextTick`. A generation refuses both formerly owned callbacks and supersede
 async observer setup. Ordinary manual scrolling keeps the existing intersection
 comparator, margins and thresholds.
 
+Initial ref readiness is checked after that existing `nextTick`, alongside the
+generation and current-tab checks. A separate complete-production-block control
+retains the original empty-before-render refusal and proves that refs installed
+during the existing tick become observed.
+
 Hash continuation additionally captures and validates its hash, art path, active
 tab and generation after `nextTick`. Executing the whole original production
 navigation block with controlled continuation resolution demonstrates that the
@@ -63,8 +68,27 @@ own physical/aria counterexample; missing errors or marker-only success is
 insufficient. Raw observer entries, actual scrolling ancestors, HTML, PNG,
 source/build inventories and loaded native provider digest are retained.
 
-Eight source ownership controls currently pass locally with no skips. Actual
+Nine source ownership controls currently pass locally with no skips. Actual
 source-native physical controls, complete Actions and protected integration are
 pending. Source CLI retry #8721 remains outside the queue until this independent
 repair actually merges and its fresh composition qualifies. Existing public443
 and retired unpublished446 grant no current repair or installed-release credit.
+
+## First source refusal
+
+Source15d40 run38193195886 retained all original native browser laws passing, but
+the new observer probe failed before qualification: tsx inserted host-only
+`__name` references into a serialized browser initialization closure. Artifact
+11721962032 SHA256
+`b016d85848416274c316e29831b5d5421faceba23629f1692c206ec04f9798af`
+passed all1,929 ZIP CRCs. Its whole own packet SHA256
+`c20435a496bcc1cd1fafe5002115a9f9d54eae14c03f9ac2471387f34910c9d4`
+records zero observers and `ReferenceError: __name is not defined`; those zero
+records do not prove a production ref-readiness cause. Actual synthetic checkout
+`0b16b8c582c83f370483faa6b4fbb221f8a96a2c` and loaded source GNU provider
+SHA256 `72c25b4301a28731010f59c00cde00b6f2d704546c2e487483704b0b497fc8a6`
+remain retained. The corrected probe loads raw authored JavaScript by path.
+Its separate actual Chromium transport law passes locally on macOS with no
+Vize native producer qualification. The original three owned zero-warning lint
+refusals are repaired by structural browser types and `node:vm` execution of
+the authenticated source block; no warning rule or original oracle is waived.
