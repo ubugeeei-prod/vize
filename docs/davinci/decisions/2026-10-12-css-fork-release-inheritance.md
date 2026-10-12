@@ -64,8 +64,29 @@ wrong path/authority and self-consistent current-reference substitutions refuse.
 The original two source laws remain, with one additional law exercising the real
 source-after authenticator and every nine-input identity.
 
-Future release metadata also changes the root manifest and lockfile. Their
-original authorities remain strict: the sole release operator must authenticate
-the exact chosen target's metadata successor. No general version normalization
-or dynamic source exception is added. Fresh source/after/protected and published
-consumer qualification remain required.
+Future release metadata also changes the root manifest and lockfile. The
+read-only `pr.rs verify-producer-metadata <frozen-directory>` CLI reuses the
+existing official `metadata::rewrite` for both complete post-inheritance frozen
+files. Current files must equal its entire forward output and reverse to the
+entire frozen bytes. Versions must be canonically spelled stable `0.N.0`, equal
+to the frozen baseline or a future minor; root and lock must advance together.
+The official `verify_delta` remains unchanged. This is source authentication,
+not release identity, registry publication or consumer acceptance.
+
+The source-after guard retains all nine original references and every raw current
+hash. Only after this whole-file official proof may root and lock use the frozen
+post-inheritance bodies; the exact inheritance inverses still recover the
+original before authority. All other seven producer sources remain literal.
+The original archived authenticator still refuses the current root body. Whole
+baseline fixtures and CLI/helper sources are separately pinned and archived.
+The meaningful Actions law checks entire `0.443.0` bodies, official-transform
+samples `0.448.0` and `0.65535.0`, and partial/mixed/stale/nonversion/invalid-version
+refusals without changing either input. These samples are not selected or
+published releases. Existing rust-script setup is reused; no capture campaign,
+version stripping, arbitrary digest admission or extra release mutation exists.
+
+Fresh source/after/protected qualification remains required. Actual prior
+source guard failures and the separate MoonBit HTTP 403 remain retained; local
+source review and checksum/format checks supply no Rust compilation, engine,
+native, release or public acceptance. The sole release operator still verifies
+the chosen official metadata cut and installed consumers before closing issues.

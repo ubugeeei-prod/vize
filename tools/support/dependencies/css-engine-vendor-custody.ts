@@ -159,11 +159,11 @@ for (const [filename, checksum] of [
   ],
   [
     "tools/support/dependencies/css-engine-bundler-after.ts",
-    "abdd5b1b8b87711f3f5271d5290abf83c86143fbfe93f671ddc15bfcb6036744",
+    "bb972630ebed008f20725334998951628ed141a43a49d83cd1ca05349388a4ea",
   ],
   [
     "tools/support/dependencies/css-engine-producer-manifests.ts",
-    "8f1ad1a8c3c3c625cbc127effd5cb4aa3c1463f4d609f969265a3ec6aac51d25",
+    "31a86011e3d8cda9b3817b5cceb210f2b8d2099a8af033202755e09c73db7f1b",
   ],
   [
     "tests/_fixtures/differential/css-engine-vendor-exit/release-inheritance/root-original.toml",
@@ -176,6 +176,30 @@ for (const [filename, checksum] of [
   [
     "tests/_fixtures/differential/css-engine-vendor-exit/release-inheritance/bundler-after-original.ts.txt",
     "a126866ead8f2dd961926a217da4d18891bb3a7f92af7fc29b5179f2a70641d6",
+  ],
+  [
+    "tools/commands/release/pr.rs",
+    "db53a5ec6abf597c01dfb77b27477cfb10d69bdeba7018ab5920278d0a590d2d",
+  ],
+  [
+    "tools/support/release/pr_pin.rs",
+    "273b5f7263feb8ddf5bf132ccf329a388f467bf5e1ab586d866ba2ce8eca904d",
+  ],
+  [
+    "tools/support/release/pr_pin_metadata.rs",
+    "fa54401497bea1bfa7fc443f720c4466df54a244f11d181478c69e715114b308",
+  ],
+  [
+    "tools/support/release/pr_pin_producer_metadata.rs",
+    "9db54550ccc39b4ce4609e28dffe679bd93df4117aa3f60e3cbd4204da792f15",
+  ],
+  [
+    "tests/_fixtures/differential/css-engine-vendor-exit/release-inheritance/metadata/Cargo.toml",
+    "38babfd635c5af9df1d401b0b59923940310a405868cbb0772d9bfefbd7e6e68",
+  ],
+  [
+    "tests/_fixtures/differential/css-engine-vendor-exit/release-inheritance/metadata/Cargo.lock",
+    "194c3098330cbeb91e441a2f035fe3cfb37650195c6ff04baf88f09a08378684",
   ],
   [
     "tests/_fixtures/differential/css-engine-vendor-exit/moonbit-publish-original.test.ts.txt",

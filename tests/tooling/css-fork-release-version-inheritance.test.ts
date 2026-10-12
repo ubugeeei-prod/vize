@@ -8,7 +8,10 @@ import { test } from "node:test";
 
 import { parse as parseToml, stringify as stringifyToml } from "@iarna/toml";
 
-import { authenticateProducerSource } from "../../tools/support/dependencies/css-engine-producer-manifests.ts";
+import {
+  authenticateProducerMetadata,
+  authenticateProducerSource,
+} from "../../tools/support/dependencies/css-engine-producer-manifests.ts";
 import { repoRoot, runMoonScript } from "./_helpers/moonbit.ts";
 
 const rootSource = fs.readFileSync(path.join(repoRoot, "Cargo.toml"), "utf8");
@@ -41,6 +44,7 @@ test("the optional JSON source-map provider inherits the release-owned exact ali
 });
 
 test("only whole reviewed manifests extend all nine original producer authorities", () => {
+  const metadata = authenticateProducerMetadata(repoRoot);
   const checksum = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
   const fixture = path.join(repoRoot, "tests/_fixtures/differential/css-engine-vendor-exit");
   const sealBytes = fs.readFileSync(path.join(fixture, "bundler-before-whole.json"));
@@ -97,7 +101,7 @@ test("only whole reviewed manifests extend all nine original producer authoritie
       originalSha256: sealed.sha256,
       reviewedContinuation: false,
     });
-    assert.deepEqual(authenticateProducerSource(sourcePath, current, sealed.sha256), {
+    assert.deepEqual(authenticateProducerSource(sourcePath, current, sealed.sha256, metadata), {
       path: sourcePath,
       actualSha256: checksum(current),
       originalSha256: sealed.sha256,
@@ -155,7 +159,11 @@ test("only whole reviewed manifests extend all nine original producer authoritie
     receipt.producerSourceAuthorities.filter(
       (row: { reviewedContinuation: boolean }) => row.reviewedContinuation,
     ).length,
-    2,
+    2 +
+      Number(
+        receipt.producerMetadata.files.find((row: { path: string }) => row.path === "Cargo.lock")
+          .changed,
+      ),
   );
   for (const [index, row] of receipt.producerSourceAuthorities.entries()) {
     assert.equal(row.originalSha256, expectedSources[index].sha256);
