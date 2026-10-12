@@ -2,14 +2,16 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { digest } from "../../tools/support/release/vapor_acceptance/fixtures.ts";
 import {
   assertNamespaceTrace,
+  assertRawAncestor,
   campaignDefinition,
   materializeNamespaceFixtures,
+  namespaceFix,
   type PhysicalRow,
   type PhysicalTrace,
 } from "../../tools/support/release/vapor_acceptance/namespace.ts";
@@ -41,36 +43,12 @@ const model = {
 };
 function fixture() {
   const prefix = "tests/_fixtures/differential/compiler/vapor-svg-namespace-8624";
-  const files = new Map([
-    [`${prefix}/App.vue.txt`, Buffer.from("<template>whole inert custody model</template>\n")],
-    [`${prefix}/Child.vue.txt`, Buffer.from("<template>whole child custody model</template>\n")],
-    [`${prefix}/controls.json`, Buffer.from(JSON.stringify([model]) + "\n")],
-  ]);
-  const entries = [...files].map(([file, bytes]) => ({
-    path: path.basename(file),
-    sha256: digest(bytes),
-  }));
-  files.set(
-    `${prefix}.manifest.json`,
-    Buffer.from(
-      JSON.stringify({
-        schema: "vize.differential.runtime-pack",
-        version: 1,
-        product: "compiler",
-        issue: "https://github.com/ubugeeei-prod/vize/issues/8624",
-        cases: [
-          {
-            id: "compiler/vapor-svg-namespace-8624",
-            inputs: { root: "vapor-svg-namespace-8624", files: entries },
-            reference: {
-              path: "vapor-svg-namespace-8624/controls.json",
-              sha256: entries[2].sha256,
-            },
-          },
-        ],
-      }) + "\n",
-    ),
-  );
+  const files = new Map<string, Buffer>();
+  for (const suffix of [".manifest.json", "/App.vue.txt", "/Child.vue.txt", "/controls.json"])
+    files.set(
+      `${prefix}${suffix}`,
+      fs.readFileSync(new URL(`../../${prefix}${suffix}`, import.meta.url)),
+    );
   return files;
 }
 const read = (files: Map<string, Buffer>) => (file: string) => {
@@ -128,6 +106,7 @@ test("separate namespace campaign retains all raw H blobs and cannot substitute 
     "classes",
     "colors",
     "namespace",
+    "source-and-reference",
   ]) {
     const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-namespace-refusal-law-"));
     try {
@@ -147,17 +126,72 @@ test("separate namespace campaign retains all raw H blobs and cannot substitute 
         if (mutation === "classes") value[0].expectedClassPhases[1][0] = "node";
         if (mutation === "colors") value[0].expectedColorPhases[1][0] = colors[0];
         if (mutation === "namespace") value[0].expectedNamespacePhases[1][10] = svg;
+        if (mutation === "source-and-reference") {
+          value[0].expectedTrees[0] = ["forged self-consistent reference"];
+          files.set(
+            `${prefix}/App.vue.txt`,
+            Buffer.from("<template>forged whole source</template>\n"),
+          );
+        }
         const bytes = Buffer.from(JSON.stringify(value)),
           manifest = JSON.parse(files.get(`${prefix}.manifest.json`)!.toString());
         files.set(`${prefix}/controls.json`, bytes);
         manifest.cases[0].inputs.files[2].sha256 = digest(bytes);
         manifest.cases[0].reference.sha256 = digest(bytes);
+        if (mutation === "source-and-reference")
+          for (const entry of manifest.cases[0].inputs.files)
+            entry.sha256 = digest(files.get(`${prefix}/${entry.path}`)!);
         files.set(`${prefix}.manifest.json`, Buffer.from(JSON.stringify(manifest)));
       }
       assert.throws(() => materializeNamespaceFixtures(directory, read(files)), mutation);
     } finally {
       fs.rmSync(directory, { recursive: true });
     }
+  }
+});
+
+test("namespace requires the actual fix in C and raw ancestry refuses unrelated or missing objects", () => {
+  assert.equal(namespaceFix, "d9ced7f2fa7cf185609579e13791dea0fab1e9c1");
+  const prepare = fs.readFileSync(
+    new URL("../../tools/support/release/vapor_acceptance/prepare.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    prepare,
+    /if \(campaign.name === "svg-namespace"\) assertRawAncestor\(root, namespaceFix, source.cut\);/u,
+  );
+  assert.ok(
+    prepare.indexOf("assertRawAncestor(root, namespaceFix, source.cut)") <
+      prepare.indexOf("await verifyPublication"),
+  );
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-namespace-raw-ancestry-law-"));
+  const env = {
+    ...process.env,
+    GIT_AUTHOR_NAME: "Custody law",
+    GIT_AUTHOR_EMAIL: "law@example.invalid",
+    GIT_COMMITTER_NAME: "Custody law",
+    GIT_COMMITTER_EMAIL: "law@example.invalid",
+  };
+  const git = (args: string[], input = "") =>
+    execFileSync("git", args, { cwd: root, env, input, encoding: "utf8" }).trim();
+  try {
+    git(["init", "--quiet"]);
+    const tree = git(["mktree"]);
+    const required = git(["commit-tree", tree, "-m", "required production model"]);
+    const cut = git(["commit-tree", tree, "-p", required, "-m", "included cut model"]);
+    const unrelated = git(["commit-tree", tree, "-m", "unrelated cut model"]);
+    assertRawAncestor(root, required, cut);
+    assertRawAncestor(root, required, required);
+    assert.throws(() => assertRawAncestor(root, required, unrelated), /absent from immutable/u);
+    assert.throws(() => assertRawAncestor(root, namespaceFix, cut));
+    assert.throws(() => assertRawAncestor(root, required, "f".repeat(40)));
+    assert.throws(() => assertRawAncestor(root, required, "short"));
+    fs.writeFileSync(path.join(root, ".git", "info", "grafts"), `${unrelated} ${required}\n`);
+    assert.throws(() => assertRawAncestor(root, required, unrelated), /absent from immutable/u);
+    git(["replace", required, unrelated]);
+    assertRawAncestor(root, required, cut);
+  } finally {
+    fs.rmSync(root, { recursive: true });
   }
 });
 

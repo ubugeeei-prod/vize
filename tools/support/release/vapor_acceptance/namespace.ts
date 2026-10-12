@@ -1,9 +1,56 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { digest, type Row } from "./fixtures.ts";
 
 export const namespaceDirectory = "vapor-svg-namespace-8624";
+export const namespaceFix = "d9ced7f2fa7cf185609579e13791dea0fab1e9c1";
+const namespaceHashes: Record<string, string> = {
+  "App.vue.txt": "3302b4bdfbe306a97822e360314ea018aca6cb3e95de85426d30d9ec3baf3abe",
+  "Child.vue.txt": "7ee80a14ddd4dbd687fb30c137cabee5d6be8416765c4734ff6b7f2d86cce5a1",
+  "controls.json": "de63dc5c776f6286350015b64524e17ef9d91af77446e3e6f46af21884e36b01",
+};
+
+/** Authenticate real parent edges; shallow boundaries, grafts and replacements grant no ancestry. */
+export function assertRawAncestor(root: string, required: string, cut: string) {
+  for (const identity of [required, cut]) assert.match(identity, /^[0-9a-f]{40}$/u);
+  const parents = (identity: string) => {
+    const bytes = execFileSync("git", ["--no-replace-objects", "cat-file", "commit", identity], {
+      cwd: root,
+      env: { ...process.env, GIT_NO_REPLACE_OBJECTS: "1" },
+      timeout: 30_000,
+      maxBuffer: 4 * 1024 * 1024,
+    });
+    assert.equal(
+      createHash("sha1").update(`commit ${bytes.length}\0`).update(bytes).digest("hex"),
+      identity,
+      "complete raw commit object identity",
+    );
+    const headers = bytes.toString("utf8").split("\n\n", 1)[0].split("\n");
+    assert.equal(headers.filter((line) => /^tree [0-9a-f]{40}$/u.test(line)).length, 1);
+    return headers
+      .filter((line) => line.startsWith("parent "))
+      .map((line) => {
+        assert.match(line, /^parent [0-9a-f]{40}$/u);
+        return line.slice(7);
+      });
+  };
+  parents(required);
+  const pending = [cut],
+    seen = new Set<string>();
+  for (let index = 0; index < pending.length; index++) {
+    const identity = pending[index];
+    if (seen.has(identity)) continue;
+    assert.ok(seen.size < 10_000, "bounded complete raw ancestor search");
+    seen.add(identity);
+    const actualParents = parents(identity);
+    if (identity === required) return;
+    pending.push(...actualParents);
+  }
+  assert.fail("namespace production fix is absent from immutable source cut C");
+}
 export const boundIds = [
   "svg-a",
   "svg-filter",
@@ -89,6 +136,7 @@ export function materializeNamespaceFixtures(root: string, read: (file: string) 
   for (const entry of declared.inputs.files) {
     const bytes = retain(`/${entry.path}`);
     assert.equal(digest(bytes), entry.sha256, `whole immutable ${entry.path}`);
+    assert.equal(digest(bytes), namespaceHashes[entry.path], `reviewed original ${entry.path}`);
     contents[entry.path] = bytes.toString("utf8");
   }
   assert.equal(declared.reference.path, `${namespaceDirectory}/controls.json`);

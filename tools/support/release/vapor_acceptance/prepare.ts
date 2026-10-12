@@ -8,7 +8,12 @@ import { rejectOverrides } from "../public_acceptance/installed.ts";
 import { derivePublicationPlan, readRawBlob } from "../public_acceptance/plan.ts";
 import { verifyPublication } from "../public_acceptance/registry.ts";
 import { digest, materializeFixtures, reportedVue } from "./fixtures.ts";
-import { campaignDefinition, materializeNamespaceFixtures } from "./namespace.ts";
+import {
+  assertRawAncestor,
+  campaignDefinition,
+  materializeNamespaceFixtures,
+  namespaceFix,
+} from "./namespace.ts";
 
 rejectOverrides();
 assert.equal(process.env.GITHUB_REPOSITORY, "ubugeeei-prod/vize");
@@ -18,6 +23,7 @@ assert.ok(process.argv.length <= 3, "one explicit reviewed campaign selector at 
 const campaign = campaignDefinition(process.argv[2] ?? "reported");
 const source = publicInputs(process.env);
 const plan = derivePublicationPlan(root, source.head);
+if (campaign.name === "svg-namespace") assertRawAncestor(root, namespaceFix, source.cut);
 const publication = await verifyPublication(plan, source);
 const output = path.resolve(process.env.PUBLIC_OUTPUT!);
 fs.mkdirSync(output, { recursive: true });

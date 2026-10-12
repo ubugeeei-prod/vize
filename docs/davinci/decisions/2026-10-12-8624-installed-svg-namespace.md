@@ -21,8 +21,10 @@ campaign or grant SSR, full Vapor parity, SVG title tokenizer corpus or n8n
 umbrella credit.
 
 The whole App, Child, controls and manifest are read directly from authenticated
-published source H. The manifest authenticates every original source/reference
-byte before installation. Missing authorities, changed hashes, fewer controls,
+published source H. Independent observer constants pin the complete original
+App, Child and controls bytes in addition to the manifest's own digests. A
+self-consistent rewritten source and reference therefore cannot qualify.
+Missing authorities, changed hashes, fewer controls,
 unknown selectors or a changed seven-binding denominator refuse preparation.
 Source manifest metadata remains a source record; installed observations never
 rewrite its `nativeHandled` or reported-runtime execution fields.
@@ -55,6 +57,17 @@ provider. It retains package lock/SRI/archive and loaded binary custody, whole
 transformed modules, complete traces, partial failures and final provider/source
 rehashes. Vue, compiler and runtime-vapor must actually be 3.6.0-rc.10.
 
+Only this namespace campaign requires the actual #8658 fix
+`d9ced7f2fa7cf185609579e13791dea0fab1e9c1` in immutable C before any registry
+read or consumer installation. The H plan already authenticates its sole C
+parent. Read complete commit objects with `--no-replace-objects`, rederive
+each object's identity and follow its raw parent edges; replacement refs,
+grafts and shallow traversal boundaries cannot invent inclusion. Missing
+objects, malformed identities and unrelated C remain refusals. Offline laws
+use a fresh real Git graph without historical fetches, and separately require
+the exact production fix constant and namespace-only preparation wiring.
+These custody laws and inert trace models grant no installed runtime credit.
+
 Dispatch only after this observer and #8658 actually merge and a successful
 official public cut contains the whole producer/fixture contract. Record the
 actual workflow run, tuple, artifact digest and terminal receipt before granting
@@ -65,6 +78,8 @@ the report.
 
 The unchanged App SHA256 is
 `3302b4bdfbe306a97822e360314ea018aca6cb3e95de85426d30d9ec3baf3abe`;
+Child SHA256 is
+`7ee80a14ddd4dbd687fb30c137cabee5d6be8416765c4734ff6b7f2d86cce5a1`;
 controls SHA256 is
 `de63dc5c776f6286350015b64524e17ef9d91af77446e3e6f46af21884e36b01`.
 An isolated official rc.10 stock VDOM Chromium replay passed all four phases,
