@@ -107,6 +107,40 @@ test("practical instructions precede long implementation reference tables", () =
   assert.match(content("ja", "/architecture/crates"), /^title: クレート$/m);
 });
 
+test("Musea capture regeneration retains its recipe and localized VRT destination", async () => {
+  const retained = await collectReviewedTranslations(
+    ["guide/musea-capture.md", "guide/musea.md"],
+    path.join(docsRoot, "content/ja"),
+  );
+  const fences = (source: string) =>
+    [...source.matchAll(/^```[^\n]*\n[\s\S]*?^```[^\n]*$/gm)].map(([whole]) => whole);
+  const english = content("en", "/guide/musea-capture");
+  const japanese = content("ja", "/guide/musea-capture");
+  assert.equal(fences(english).length, 1);
+  assert.equal(
+    createHash("sha256").update(fences(english).join("\n")).digest("hex"),
+    "64c7f3512e1da84954d46fb9da95e2de6f98c4a1ebeac30cf25d17cb3f7a2452",
+    "complete original capture recipe",
+  );
+  assert.deepEqual(fences(japanese), fences(english));
+  assert.equal(retained.get("guide/musea-capture.md"), japanese);
+  assert.equal(retained.get("guide/musea.md"), content("ja", "/guide/musea"));
+  for (const locale of ["en", "ja"]) {
+    assert.match(
+      content(locale, "/guide/musea-capture"),
+      /\]\(\.\/musea\.md#visual-regression-testing\)/,
+      `${locale}: practical link stays in the localized guide`,
+    );
+    assert.match(
+      content(locale, "/guide/musea"),
+      locale === "en"
+        ? /^## Visual Regression Testing$/m
+        : /<span id="visual-regression-testing"><\/span>\n\n## 視覚的な回帰テスト/,
+      `${locale}: destination keeps its genuine heading and stable bookmark`,
+    );
+  }
+});
+
 test("formatter guide regeneration keeps all original recipes, tokens and localized next steps", async () => {
   const originals = [
     [

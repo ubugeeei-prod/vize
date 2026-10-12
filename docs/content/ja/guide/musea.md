@@ -318,6 +318,8 @@ export default function setup(app: App) {
 }
 ```
 
+<span id="visual-regression-testing"></span>
+
 ## 視覚的な回帰テスト
 
 パッケージは `musea-vrt` バイナリを公開します。
