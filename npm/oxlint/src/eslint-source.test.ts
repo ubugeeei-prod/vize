@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { mapSourceOffsets, mapTextEdits } from "./eslint-source.ts";
+import { assertSourceText, mapSourceOffsets, mapTextEdits } from "./eslint-source.ts";
+
+await test("native source authority refuses lone surrogates and preserves complete pairs", () => {
+  for (const source of ["", "ascii", "😀", "😀\r\n<img>"]) assertSourceText(source);
+  for (const source of ["\ud800", "\udfff", "😀\ud800", "\udfff😀"]) {
+    assert.throws(() => assertSourceText(source), /unpaired UTF-16 surrogate/);
+  }
+});
 
 await test("UTF-8 edits after astral characters and CRLF address the original UTF-16 text", () => {
   const source = '😀\r\n<div  id="x">';

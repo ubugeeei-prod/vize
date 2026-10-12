@@ -7,7 +7,7 @@ import oxlintPlugin from "./plugin.js";
 import { getRuleOptions } from "./rule-options.js";
 import { createRuleSelection } from "./rule-selection.js";
 import { getActivePreset, getVizeSettings, isTypeAwareRuleName } from "./settings.js";
-import { mapSourceOffsets, mapTextEdits } from "./eslint-source.js";
+import { assertSourceText, mapSourceOffsets, mapTextEdits } from "./eslint-source.js";
 import type { PatinaDiagnostic, PatinaRuleOptions, PatinaSettings } from "./model.js";
 
 interface Collected {
@@ -46,6 +46,7 @@ function collect(context: Context, program: object, name: string): void {
 }
 
 function run(collected: Collected): void {
+  assertSourceText(collected.source);
   const selection = createRuleSelection(collected.options);
   const settings = collected.settings;
   const result = loadBinding().lintPatinaSfc(collected.source, {

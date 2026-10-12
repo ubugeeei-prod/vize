@@ -72,7 +72,8 @@ Vize rules once per file. Native text edits support ESLint's `--fix`; suggestion
 are not invented from help text. Install ESLint and
 `vue-eslint-parser` in the project, and keep the plugin and native binding versions
 together. The default package entry remains the Oxlint bridge.
-Invalid native ranges and inconsistent locations are errors. Files containing
+Unpaired UTF-16 surrogates are refused before native conversion. Invalid native
+ranges and inconsistent locations are errors. Files containing
 lone CR or Unicode line separators currently require a matching native location
 convention; the entry refuses mismatched positions rather than moving reports.
 

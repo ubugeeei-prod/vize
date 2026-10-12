@@ -1,5 +1,12 @@
 import type { PatinaFix } from "./model.js";
 
+/** Native UTF-8 text cannot preserve an unpaired UTF-16 surrogate. */
+export function assertSourceText(source: string): void {
+  if (/[\uD800-\uDFFF]/u.test(source)) {
+    throw new Error("Vize cannot lint source containing an unpaired UTF-16 surrogate");
+  }
+}
+
 /** Convert only requested UTF-8 boundaries, with one scan of the UTF-16 text. */
 export function mapSourceOffsets(source: string, offsets: readonly number[]): Map<number, number> {
   const result = new Map<number, number>();

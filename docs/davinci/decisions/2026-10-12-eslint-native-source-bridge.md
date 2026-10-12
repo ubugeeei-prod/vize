@@ -14,6 +14,7 @@ retains its prior JSON exactly. True adds each existing native fix's message and
 edits (`start`/`end` as UTF-8 byte offsets, `newText` as replacement text). The
 adapter checks UTF-8 boundaries, source bounds, edit ordering and overlap before
 converting to ESLint UTF-16 ranges. Native locations must match the same source.
+Unpaired UTF-16 surrogates are refused before native conversion can normalize them.
 No suggestions are fabricated from help text. Lone CR and Unicode line separators
 with a differing native location convention are visible refusals; general
 newline-convention alignment remains unfinished.

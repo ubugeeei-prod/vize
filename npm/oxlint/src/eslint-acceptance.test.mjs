@@ -185,6 +185,17 @@ for (const separator of ["\r", "\u2028", "\u2029"]) {
   );
 }
 
+// Invalid UTF-16 cannot borrow normalized native text for an unsaved fix.
+for (const surrogate of ["\ud800", "\udfff"]) {
+  assert.throws(
+    () =>
+      linter.verify(`<template>${surrogate}<img></template>`, config(alt), {
+        filename: "Surrogates.vue",
+      }),
+    /unpaired UTF-16 surrogate/,
+  );
+}
+
 // A separate export must not convert or change the existing Oxlint rules.
 for (const rule of Object.values(oxlintPlugin.rules)) {
   assert.equal(typeof rule.createOnce, "function");
@@ -207,6 +218,7 @@ console.log(
       "fix-bytes",
       "native-default-JSON",
       "no-invented-suggestions",
+      "unpaired-surrogate-refusal",
       "default-export",
     ],
   }),
