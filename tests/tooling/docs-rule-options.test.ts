@@ -48,8 +48,8 @@ test("Japanese rule option docs mirror every typed lint rule option", () => {
 
   assertRuleOptionsReference(optionsDoc, {
     title: /# ルール オプション/,
-    unknownFields: /未知の option field は拒否/,
-    scopedReplacement: /option object 全体を置き換え/,
+    unknownFields: /定義されていないフィールドを指定するとエラーになります/,
+    scopedReplacement: /後から一致する設定がある場合は、\s*そのルールのオプション全体を置き換え/,
     badLabel: "悪い",
     goodLabel: "良い",
   });

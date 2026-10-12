@@ -28,6 +28,11 @@ passes while frozen whole-fence and ordered inline-token hashes remain exact.
 The existing regeneration tests and all original rule examples stay normative.
 The original More law first rejects the missing English introductory next step;
 the two authored localized links repair that actual failure without a gate waiver.
+Hosted source 304 rejects two existing witnesses of the old mixed-language prose.
+Bind only those two witnesses to the reviewed unknown-field rejection and later
+matching full-object replacement sentences; every rule/table/Bad/Good/code check
+and original full-recipe/API contract remains unchanged. Preserve the complete
+failed hosted packet and require new exact-head source/native qualification.
 
 ## Delivery boundary
 
