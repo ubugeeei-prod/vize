@@ -195,7 +195,10 @@ await test("Japanese integrity retains all seven original packets and enrolls it
       assert.ok(source.includes(`](#${id}-${kind})`));
     }
   }
-  assert.match(index, /<span id="accessibility-integrity"><\/span>\n\n# アクセシビリティ情報の整合性/);
+  assert.match(
+    index,
+    /<span id="accessibility-integrity"><\/span>\n\n# アクセシビリティ情報の整合性/,
+  );
   assert.equal(source.split('<span id="accessibility-integrity"></span>').length, 2);
   for (const target of ["./reference/a11y-role-has-required-aria-props.md", "./accessibility.md"]) {
     assert.ok(index.includes(`](${target})`));
