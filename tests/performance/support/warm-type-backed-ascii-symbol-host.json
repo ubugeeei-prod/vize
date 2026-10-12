@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "originalSource": "5c54b1195fa8c0bf151e0a2862bf4238a3597b4e",
+  "reviewedPatchSHA256": "846ca1301220997d57a8a55546783ad8e2441fe32525108dc0c8d501d1f518b7",
+  "reviewedSourceProofSHA256": "a061ed7061035e36dc6a45e744a1c4876a1469a8c9bdd358b26bb6ceceded9c0",
+  "qualification": "finite complete ASCII symbol source bodies; no runtime or performance credit",
+  "files": [
+    [
+      "crates/vize_maestro/src/ide/workspace_symbols/script.rs",
+      "4eb3b0d580fcda16679862262fda27574b5404a16b07b2336b60d184312c9626",
+      "62343b55a091c97b53fd1da9dab2612f5a38222d2007f03e9679ccfe37d1392d"
+    ],
+    [
+      "crates/vize_maestro/src/ide/workspace_symbols/script/query_tests.rs",
+      null,
+      "b795689d3191b5fcb8d2ee8e44df6c0e0030408b8285775b636db3c8cd3d018d"
+    ]
+  ],
+  "preservedBodies": [
+    [
+      "vendor/oxc_parser/src/js/expression.rs",
+      "e1e16a0ad4d17edac18006ce30b1a2b4da10b7f4c216e2474ff128ed66f410ed"
+    ],
+    [
+      "vendor/oxc_parser/src/js/function.rs",
+      "00bc16a3cd65d177998e93755a175ecea2041d68604147bcbea9babfaef86196"
+    ],
+    [
+      "vendor/oxc_parser/src/js/class.rs",
+      "6f441e180e64056cc489158e5832047760864604dc503386fddfca3b3ba0a10d"
+    ],
+    [
+      "vendor/oxc_parser/src/ts/statement.rs",
+      "589f537c7e9fcde9e297b1660466a112c630dc25efabd5d50378ce2179108c5b"
+    ],
+    [
+      "vendor/oxc_parser/src/error_handler.rs",
+      "ae31c3f783aa263360c9988b9bfc012b41f546bfab2048e1c53be06e0dca860b"
+    ],
+    [
+      "vendor/oxc_parser/src/lib.rs",
+      "470c9bdda6eacfd785448d9b79a13e3963d59e17ff36229497fc5fe18a5991ec"
+    ],
+    [
+      "vendor/oxc_parser/src/lexer/identifier.rs",
+      "cac73d17ea714475f28497ed488ccab1f0e036d078f9b6d98f6c74889d32f947"
+    ],
+    [
+      "crates/vize_maestro/src/ide/workspace_symbols/sources.rs",
+      "0332dc55fd885f15a02db87f1632232ac070d65f3667c64cee2bfac9dee2bdb8"
+    ],
+    [
+      "crates/vize_maestro/src/ide/workspace_symbols/disk.rs",
+      "da32234644ee52d8ce22b883b3466a6622d5b7c075cea59ecc3f9f1b77e4c179"
+    ],
+    [
+      "tests/performance/support/file-lifecycle-churn.ts",
+      "4f1cd1bd26419b118f2ccbdf232afa6a5f23eb1f3894b806c38901342145d0e4"
+    ],
+    [
+      "tests/performance/lsp-churn-stress.test.ts",
+      "7d64733877f7f97cb53cc1c9553b5bc589574e5159da80f10eb25f460ee730de"
+    ],
+    [
+      "tests/performance/support/churn-oracle.ts",
+      "d7ed478f0bf14584b23e8b873b070ef8c19959e12d818cd63f4059c529db7340"
+    ],
+    [
+      "tests/performance/support/churn-metrics.ts",
+      "e330801c8288af339b8dce339b93218bb2a98ba42af1d7456a8820745b0cecd3"
+    ],
+    [
+      "tests/_fixtures/vue-ecosystem-fixtures.json",
+      "e1fe55bcfebec4c2b1aed73be23fa3a4d362667b919fc0c35b94fbe0283d9a68"
+    ],
+    [
+      "vendor/oxc_parser/src/js/binding.rs",
+      "4f999f78c9c927d6fabe057ce49691341979d1f45e8fa4e4ef04f22c0f6db8ed"
+    ],
+    [
+      "vendor/oxc_parser/src/js/statement.rs",
+      "3b51b5591ac5da509a3bf2de6b9555d2e75581866544e6df71dee143187e826c"
+    ]
+  ]
+}

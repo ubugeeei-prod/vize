@@ -2,6 +2,7 @@ import { qualifyLexicalDollarHost } from "./warm-type-backed-lexical-dollar-host
 import { qualifyPathHostMove } from "./warm-type-backed-path-host.ts";
 import { qualifyTimingHostMove } from "./warm-type-backed-timing-host.ts";
 import { qualifyDefaultMigrationHost } from "./warm-type-backed-default-migration-host.ts";
+import { qualifyAsciiSymbolHost } from "./warm-type-backed-ascii-symbol-host.ts";
 
 /** Compose finite qualifications without changing existing path/timing authorities. */
 export function qualifyHostMoves(
@@ -13,6 +14,9 @@ export function qualifyHostMoves(
   const lexicalDollarHost = enabled
     ? qualifyLexicalDollarHost(production, alreadyQualified, digest)
     : null;
+  const asciiSymbolHost = enabled
+    ? qualifyAsciiSymbolHost(production, alreadyQualified, digest)
+    : null;
   return {
     pathHostMove: enabled ? qualifyPathHostMove(production, alreadyQualified, digest) : null,
     timingHostMove: enabled ? qualifyTimingHostMove(production, alreadyQualified, digest) : null,
@@ -20,5 +24,6 @@ export function qualifyHostMoves(
       ? qualifyDefaultMigrationHost(production, alreadyQualified, digest)
       : null,
     ...(lexicalDollarHost ? { lexicalDollarHost } : {}),
+    ...(asciiSymbolHost ? { asciiSymbolHost } : {}),
   };
 }
