@@ -124,3 +124,12 @@ All 105 reviewed nonadministrative bodies are exact; only the companion review/c
 record and incoming canonical clauses differ. Incoming 350 rows and the original
 NoExport suffix remain preserved, with only the owned paragraph 198 appended.
 Fresh Actions qualify this actual descendant independently of all earlier greens.
+
+Initial source `55b014e`, Check `38205153114`, stopped at the source inventory
+plan before runtime consumers: the owned Patina shard was stale after the
+production/test move. Full original log, 1,301-row inventory and regenerated
+1,304-row inventory remain losslessly archived. The unchanged official generator
+changes exactly three old rows to six actual source/test rows in that one shard;
+all product/helper/oracle bytes stay literal. Its local check passes. Fresh
+successor source and native execution remain required, with no skipped gate
+or qualification transfer from the failed initial source.

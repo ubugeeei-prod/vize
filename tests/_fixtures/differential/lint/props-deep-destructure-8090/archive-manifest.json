@@ -352,6 +352,32 @@
       "path": "source-custody/owned-generated-docs-proof.json",
       "bytes": 3706,
       "sha256": "52db8e38491ed009d73c34e33a01fbe522ff043e10ed2a410f91e299086a4b19"
+    },
+    {
+      "path": "source-custody/initial-source-plan/original-consumer-inventory.tsv.gz",
+      "bytes": 10383,
+      "sha256": "668a38d47381c34371d33931126e12d64daf3829f65d817b6ca420ff5c3a7032",
+      "rawBytes": 158031,
+      "rawSha256": "44c893ee88834e52c99fc46f1d07d2a08d3d00492bbbc9d376013a8bd3d6b3ba"
+    },
+    {
+      "path": "source-custody/initial-source-plan/regenerated-consumer-inventory.tsv.gz",
+      "bytes": 10402,
+      "sha256": "dd90ccd988e9991c7e0650b521448843a07e3e9a63187d2697a5e53d2ac4ac1a",
+      "rawBytes": 158414,
+      "rawSha256": "78a08de7c20059be8d9a58b0acd58423fc67ce3273e9a80ab836ec0ad36915b2"
+    },
+    {
+      "path": "source-custody/initial-source-plan/55b-plan-failure.log.gz",
+      "bytes": 15754,
+      "sha256": "fc769106a48b9b57aa37032af24228e8cdc4c373608d11775000862f0e3155a6",
+      "rawBytes": 112596,
+      "rawSha256": "ab4c9066794016c10dc9ae333e001121a5cfb463a187ec4aa4c0c91e31a677c4"
+    },
+    {
+      "path": "source-custody/initial-source-plan/repair.json",
+      "bytes": 2169,
+      "sha256": "76459b1bae06852bfd4b5e8f2e8fcfdd883bde7df87e9b87cd61ec0c5d00f09c"
     }
   ]
 }
