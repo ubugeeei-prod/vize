@@ -65,3 +65,14 @@ reasons. The unchanged primary generator was projected from the exact original
 corpus to reproduce the old document byte-for-byte, then from the authenticated
 80 Theme and 54 Transition additions. This source projection preserves the
 original grouping and final assertion; protected execution is still required.
+
+The 7274fd88 source check failed before tooling tests during shared CLI
+restore: its unchanged 30-second rustc -vV identity probe timed out.
+The outer ZIP digest matched; internal archive and binary custody were not reached.
+The child stderr was not retained, so its exact timeout cause remains unknown.
+Setup had installed stable, while this project's declaration selects
+1.99.0; the same-run producer subsequently downloaded that named toolchain.
+The existing producer and consumer setup steps now provision the exact declared
+version, components and targets before receipt authentication. Deadlines, strict
+identity checks, original recipes and every gate remain unchanged. The failed
+packet is retained; fresh source and protected qualification are required.
