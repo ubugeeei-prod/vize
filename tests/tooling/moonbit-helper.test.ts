@@ -32,6 +32,10 @@ function copySetupMoonbitInstaller(tempDir: string): string {
     path.join(repoRoot, ".github", "actions", "setup-moonbit", "install-moonbit.mjs"),
     installerPath,
   );
+  fs.copyFileSync(
+    path.join(repoRoot, ".github", "actions", "setup-moonbit", "pinned-artifacts.mjs"),
+    path.join(actionDir, "pinned-artifacts.mjs"),
+  );
   return installerPath;
 }
 
