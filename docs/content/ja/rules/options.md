@@ -232,6 +232,7 @@ const env = readServerEnv();
 
 テンプレートのコンポーネント名を、PascalCase または kebab-case に揃えるときに使います。
 HTML/SVG の標準要素と、Vue の組み込みコンポーネントは対象外です。
+以下の例は、PrimaryButton がプロジェクトで登録済みである場合の表記を比較しています。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";

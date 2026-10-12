@@ -21,6 +21,8 @@ registered components only, no additional global names and PascalCase casing.
 Keep the original option forms, rule-enablement exceptions, list replacement,
 empty-list resets, Vue 3.5 destructuring and direct-versus-nested mutation limits.
 This editorial slice introduces no option, preset, CLI or runtime behavior.
+The retained component-casing snippets explicitly assume PrimaryButton is already
+registered; actual check_element skips unregistered names under the default policy.
 
 Mark the complete authored Japanese input as reviewed so generation retains it.
 The genuine previous generated input fails the new regeneration law; the review
