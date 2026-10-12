@@ -62,6 +62,7 @@ export function authenticateDeepPropsSourceFamily(root, read = reader(root)) {
     runtime.sources.map(({ path }) => path),
   );
   assert.equal(manifest.sources.filter(({ changed }) => changed).length, 3);
+  let needsImportCorrection = false;
   for (const [index, source] of manifest.sources.entries()) {
     const previous = preset.sources[index];
     const original = runtime.sources[index].after;
@@ -90,7 +91,10 @@ export function authenticateDeepPropsSourceFamily(root, read = reader(root)) {
     const after = read(source.after.archive);
     assert(matches(after, source.after), `new whole archive changed: ${source.path}`);
     assert.equal(blob(after), source.after.gitBlob);
-    assert(matches(read(source.path), source.after), `unknown current family: ${source.path}`);
+    if (!matches(read(source.path), source.after)) {
+      assert.equal(source.path, deepPropsFamilyPaths[2], `unknown current family: ${source.path}`);
+      needsImportCorrection = true;
+    }
     assert.equal(source.after.path, source.path);
     if (deepPropsFamilyPaths.includes(source.path)) {
       assert.equal(source.changed, true);
@@ -128,5 +132,51 @@ export function authenticateDeepPropsSourceFamily(root, read = reader(root)) {
     assert.equal(blob(source), arm.gitBlob);
   }
   assert(matches(read(manifest.producer.after.path), manifest.producer.after));
+  return needsImportCorrection
+    ? { ...manifest, currentSuccessor: authenticateDeepPropsImportCorrection(root, manifest, read) }
+    : manifest;
+}
+
+/** A whole twelve-body correction; the rejected import family stays immutable. */
+export function authenticateDeepPropsImportCorrection(root, incoming, read = reader(root)) {
+  const correctionDirectory = `${directory}/import-correction`;
+  const bytes = read(`${correctionDirectory}/successor.json`);
+  assert.equal(sha256(bytes), "39cf7ab7633378ab462c6af46443fa0e235b070d067db739eaa040760e3e996f");
+  const manifest = JSON.parse(bytes);
+  assert.equal(manifest.schema, "vize.lint.props-deep-destructure-import-source-successor");
+  assert.equal(manifest.version, 1);
+  assert.equal(manifest.candidate, "46c1f88e32a6c0f19c3de5ea6ee18aec91801223");
+  assert.equal(manifest.originalFamily.path, `${directory}/successor.json`);
+  assert(matches(read(manifest.originalFamily.path), manifest.originalFamily));
+  assert.deepEqual(JSON.parse(read(manifest.originalFamily.path)), incoming);
+  assert.deepEqual(manifest.changedPaths, [deepPropsFamilyPaths[2]]);
+  assert.equal(manifest.sources.length, 12);
+  assert.equal(manifest.sources.filter(({ changed }) => changed).length, 1);
+  for (const [index, source] of manifest.sources.entries()) {
+    assert.equal(source.path, incoming.sources[index].path);
+    assert.deepEqual(source.before, incoming.sources[index].after);
+    const before = read(source.before.archive);
+    const after = read(source.after.archive);
+    assert(matches(before, source.before));
+    assert(matches(after, source.after));
+    assert.equal(blob(before), source.before.gitBlob);
+    assert.equal(blob(after), source.after.gitBlob);
+    assert(matches(read(source.path), source.after), `unknown import successor: ${source.path}`);
+    assert.equal(source.after.path, source.path);
+    if (source.path === deepPropsFamilyPaths[2]) {
+      assert.equal(source.changed, true);
+      assert.equal(source.transforms.length, 2);
+      let expected = before.toString();
+      for (const transform of source.transforms) {
+        assert.equal(expected.split(transform.before).length, 2);
+        expected = expected.replace(transform.before, transform.after);
+      }
+      assert.deepEqual(after, Buffer.from(expected));
+    } else {
+      assert.equal(source.changed, false);
+      assert.deepEqual(source.before, source.after);
+      assert.deepEqual(source.transforms, []);
+    }
+  }
   return manifest;
 }

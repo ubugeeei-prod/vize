@@ -1,7 +1,9 @@
 use super::super::Linter;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::preset::LintPreset;
-use crate::rules::script::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
+use crate::rules::script::{
+    NoDeepDestructureInProps, ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext,
+};
 use oxc_ast::ast::Program;
 use serde_json::{Value, json};
 
@@ -105,4 +107,70 @@ fn custom_namesake_retains_generic_engine_dispatch_for_all_three_envelopes() {
             "{filename}"
         );
     }
+}
+
+struct ForeignCapability(NoDeepDestructureInProps);
+
+static FOREIGN_META: ScriptRuleMeta = ScriptRuleMeta {
+    name: "script/no-required-prop-with-default",
+    description: "foreign typed capability dispatch control",
+    default_severity: Severity::Warning,
+};
+
+impl ScriptRule for ForeignCapability {
+    fn meta(&self) -> &'static ScriptRuleMeta {
+        &FOREIGN_META
+    }
+
+    fn uses_ast(&self) -> bool {
+        true
+    }
+
+    fn as_setup_props_destructure(&self) -> Option<&NoDeepDestructureInProps> {
+        Some(&self.0)
+    }
+
+    fn check_program_with_sfc<'a>(
+        &self,
+        _program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        sfc: SfcScriptContext<'_>,
+        result: &mut ScriptLintResult,
+    ) {
+        assert!(sfc.is_sfc && sfc.is_script_setup && sfc.sole_script_block);
+        assert_eq!(source, "\nconst { user: { name } } = defineProps();\n");
+        result.add_diagnostic(LintDiagnostic::warn(
+            FOREIGN_META.name,
+            "foreign capability retains generic script dispatch",
+            offset as u32 + 7,
+            offset as u32 + 25,
+        ));
+    }
+}
+
+#[test]
+fn foreign_capability_identity_keeps_the_complete_generic_engine_packet() {
+    let rule = ForeignCapability(NoDeepDestructureInProps::default());
+    assert!(rule.as_setup_props_destructure().is_some());
+    let mut linter = Linter::with_preset(LintPreset::Incremental)
+        .with_additional_rules(vec![FOREIGN_META.name.into()])
+        .with_rule_severity_overrides(vec![(FOREIGN_META.name.into(), Severity::Warning)]);
+    linter
+        .script_rule_overrides
+        .insert(FOREIGN_META.name, Box::new(rule));
+    assert_eq!(
+        whole(&linter.lint_sfc(
+            "<script setup lang=\"ts\">\nconst { user: { name } } = defineProps();\n</script>\n",
+            "ForeignCapability.vue"
+        )),
+        json!({
+            "filename": "ForeignCapability.vue", "error_count": 0, "warning_count": 1,
+            "diagnostics": [{
+                "rule_name": FOREIGN_META.name, "severity": "warning",
+                "message": "foreign capability retains generic script dispatch",
+                "start": 31, "end": 49, "help": null, "fix": null, "labels": []
+            }]
+        })
+    );
 }

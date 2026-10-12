@@ -48,6 +48,12 @@ await test("owned prop destructuring preserves thirty six whole source CLI packe
     runs: [],
   };
   const persist = () => fs.writeFileSync(artifact, JSON.stringify(evidence, null, 2) + "\n");
+  persist();
+  assert.equal(
+    evidence.sourceFamily.currentSuccessor?.candidate,
+    "46c1f88e32a6c0f19c3de5ea6ee18aec91801223",
+    "this source observer requires the independently authenticated import correction",
+  );
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-props-deep-destructure-"));
   try {
     const build = expectedBuildIdentity(root);

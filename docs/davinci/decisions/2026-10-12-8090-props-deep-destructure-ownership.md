@@ -139,3 +139,30 @@ Markdown formatting. Its full log and original whole decision body remain
 archived; named formatting corrects only that documentation. No product, helper,
 config or expected packet changes. This old failed/cancelled Check remains
 historical evidence; every successor source/native gate runs independently.
+
+Rust builders at `e79cfa1` then found genuine E0432: `registry.rs` did not
+re-export the imported NoDeep name constant. Full unused-bindings, n8n and
+Nuxt3 logs remain archived. The production correction `46c1f88` removes that
+import and compares the actual typed capability's existing metadata name to
+the registered entry. Custom default `None` and foreign identity both retain
+generic dispatch; a separately authored whole foreign-capability engine packet
+checks the latter. No registry, new API, preset, rule producer or semantic
+expected packet changes.
+
+The separate complete twelve-body import successor `39cf7ab7` preserves
+original `de01ccf2`, changes only the whole `script_rules.rs` body through two
+literal transformations, and keeps its other eleven bodies exact. Original
+Deep helper/caller bodies remain whole archives. The current helper result
+retains the original family explicitly plus authenticated `currentSuccessor`;
+no original pin is rewritten. The source CLI consumer requires that repaired
+successor before execution. New custody laws refuse unknown current/archive
+bytes and the failed parent as this repair; complete historical source custody
+stays explicitly historical, never execution/measurement qualification. Fresh
+source/native, protected and installed gates still remain required.
+
+Independent correction peer authenticated all 17 delta bodies, original whole
+helper/caller copies and builder failure archives, twelve-body import succession
+and unchanged semantic vectors/laws. Its source-only receipt SHA256 is
+`edb2b55134185033c3a768b24d6836dd3b56839f25512901a3b6f4f2a4aa405b`;
+9 independent new/retained source laws passed with no skips. Actual successor
+Rust/API/CLI, source/native, protected merge and installed release stay pending.
