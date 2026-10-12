@@ -229,15 +229,15 @@
     },
     {
       "route": "/rules/accessibility-integrity",
-      "locales": ["en"],
+      "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, practical rule example, and next lint action revised; deployed review remains pending."
+      "note": "English and authored Japanese introductions explain when to review the seven integrity rules and link to complete existing ARIA examples and the accessibility guide. Original reference packets, code, defaults and bookmarks are retained; native and deployed reader acceptance remain pending."
     },
     {
       "route": "/rules/accessibility-interactions",
-      "locales": ["en"],
+      "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, practical rule example, and next lint action revised; deployed review remains pending."
+      "note": "English and authored Japanese introductions explain when to review the eight interaction rules and link to complete existing focus/ARIA examples and the accessibility guide. Original reference packets, code, defaults and bookmarks are retained; native and deployed reader acceptance remain pending."
     },
     {
       "route": "/rules/accessibility-structure",

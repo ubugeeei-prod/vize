@@ -19,6 +19,7 @@ export const catalogueSubgroups: Record<
   },
   "accessibility-integrity": {
     title: "Accessibility integrity",
+    jaTitle: "アクセシビリティ情報の整合性",
     rules: [
       "a11y/no-role-presentation-on-focusable",
       "a11y/no-static-element-interactions",
@@ -31,6 +32,7 @@ export const catalogueSubgroups: Record<
   },
   "accessibility-interactions": {
     title: "Accessibility interactions",
+    jaTitle: "操作とフォーカスのアクセシビリティ",
     rules: [
       "a11y/mouse-events-have-key-events",
       "a11y/no-access-key",
