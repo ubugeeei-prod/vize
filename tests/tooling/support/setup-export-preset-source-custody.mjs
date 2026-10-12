@@ -2,6 +2,10 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { sha256 } from "../lint-default-correctness-reference.mjs";
+import {
+  authenticateDeepPropsSourceFamily,
+  deepPropsFamilyPaths,
+} from "./props-deep-source-custody.mjs";
 
 export const setupExportRegistry = "crates/vize_patina/src/linter/script_rules/registry/rules.rs";
 export const setupExportMembership =
@@ -12,7 +16,7 @@ const reader = (root) => (name) => fs.readFileSync(path.join(root, name));
 const matches = (bytes, identity) =>
   bytes.length === identity.bytes && sha256(bytes) === identity.sha256;
 
-/** The complete incoming twelve-body family, with exactly one preset field changed. */
+/** The complete preset family, with explicit authentication of its later depth successor. */
 export function authenticateSetupExportPresetSourceFamily(root, incoming, read = reader(root)) {
   const bytes = read(`${directory}/successor.json`);
   assert.equal(sha256(bytes), manifestHash, "finite preset family changed");
@@ -51,7 +55,13 @@ export function authenticateSetupExportPresetSourceFamily(root, incoming, read =
     const after = read(source.after.archive);
     assert(matches(before, source.before), `incoming archive changed: ${source.path}`);
     assert(matches(after, source.after), `successor archive changed: ${source.path}`);
-    assert(matches(read(source.path), source.after), `unqualified current family: ${source.path}`);
+    if (!matches(read(source.path), source.after)) {
+      assert(
+        deepPropsFamilyPaths.includes(source.path),
+        `unqualified current family: ${source.path}`,
+      );
+      authenticateDeepPropsSourceFamily(root, read);
+    }
     assert.equal(source.path, source.after.path);
     if (source.path === setupExportRegistry) {
       assert.equal(source.changed, true);

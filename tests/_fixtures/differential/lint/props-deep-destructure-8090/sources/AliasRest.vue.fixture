@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const { name: localName, ...rest } = defineProps<{ name: string; count: number }>();
+</script>
+<template><div /></template>

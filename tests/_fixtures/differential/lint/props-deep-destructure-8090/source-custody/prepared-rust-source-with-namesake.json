@@ -1,0 +1,76 @@
+{
+  "schema": "vize.lint.no-deep-prepared-rust-source",
+  "version": 1,
+  "base": "edc003416dafd322aa6cd100dde488fb112a2abb",
+  "head": "33a66544ab5543b4eecbfb5f5dfd8bf1bce6297c",
+  "tree": "86afb2c459886584a79cb829e82441d982017267",
+  "worktree": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-lint-deep-props-ownership-20261012",
+  "validation": {
+    "rustfmt": "PASS existing1.99.0 absolute binary, no build/install",
+    "gitDiffCheck": "PASS",
+    "rustUnit": "UNEXECUTED",
+    "candidateApiCli": "UNEXECUTED",
+    "sourceActions": "UNEXECUTED",
+    "nativeActions": "UNEXECUTED"
+  },
+  "sources": [
+    {
+      "path": "crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs",
+      "bytes": 9635,
+      "sha256": "e3125601808dd6d4d0c7221c8330c9b0e02471a38b4c1819c77d7ca1389fc450",
+      "lines": 310,
+      "gitBlob": "ec953122c810abe270b8d4e80804525ad2833bbf"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_deep_destructure_in_props/tests.rs",
+      "bytes": 6069,
+      "sha256": "d78eb39000bf4922b15832f10cd5ed73ea2924535f410422777ae52da641543d",
+      "lines": 192,
+      "gitBlob": "55ce689c4c983a4d0383f08d7c70ef8de19c8674"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script.rs",
+      "bytes": 7697,
+      "sha256": "2fcda85b4dba45248c782f475c648b4344b0cb2b008b55d241cd282efa9cf7dd",
+      "lines": 235,
+      "gitBlob": "7b54949f6b48abe4c69b27865bf6b0165694a936"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/script_rules.rs",
+      "bytes": 9768,
+      "sha256": "8ffd84a3c10bd6047da99d0bd8ecc9823d94900014830fff503377098d25a962",
+      "lines": 299,
+      "gitBlob": "96af9ee168b9c0d5de9b2d091efac3e7f2223b7e"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/props_emits.rs",
+      "bytes": 1368,
+      "sha256": "8974083b1d8e5c864f31d3f872d54d6061a84f4a8f7a181c2daa0d3f27ede6ff",
+      "lines": 34,
+      "gitBlob": "4a756a4d427286eb83d65e540713051736002831"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/script_rules/deep_props_dispatch_tests.rs",
+      "bytes": 3569,
+      "sha256": "70680aacc1a98b42e597464d64d9947fa76f0203e1a4c7f4b3b769f4fcbb8dfa",
+      "lines": 108,
+      "gitBlob": "f13ac279f04058ac32e009c6cb144d6f0c0bc6b5"
+    }
+  ],
+  "previousSourceReceipt": {
+    "path": "/tmp/vize-next-preset-readonly-audit-20261012/prepared-rust-source-bare-callee.json",
+    "sha256": "555d5f5bad043616a8adadfa9728c0d70fe645d3c526f04cb9cc515eb521862b"
+  },
+  "calleeRefusalControls": {
+    "path": "/tmp/vize-next-preset-readonly-audit-20261012/ts-wrapped-callee-authored-controls.json",
+    "sha256": "4e6c693e881e8d547846b0a99d653d7c0eca784425b748b08c2288630fa71b4d"
+  },
+  "compilerOnlyProbe": {
+    "path": "/tmp/vize-next-preset-readonly-audit-20261012/ts-wrapped-callee-compiler-reference.json",
+    "sha256": "b13e3bb3eab24f9d2b7f5a74c8a40e94f6ac8126b8d03920324236484fecc544"
+  },
+  "namesakeAuthoredControls": {
+    "path": "/tmp/vize-next-preset-readonly-audit-20261012/namesake-engine-authored-controls.json",
+    "sha256": "9b4eb4c6a61c538c09c9de62a5f237cb3989344fb5c38d8f8353a8fb148f46d9"
+  }
+}

@@ -1,0 +1,145 @@
+{
+  "schema": "vize.lint.props-deep-destructure-before-authorship-correction",
+  "version": 1,
+  "id": "setup-optional-call",
+  "scope": "Only before API/CLI optional-call warning removed. No source, config, after expectation, status or other diagnostic changes.",
+  "basis": "The original producer matches only Expression::CallExpression and never unwraps the optional call ChainExpression. Optional compiler macro call remains outside the proposed direct-call ownership contract.",
+  "source": {
+    "path": "crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs",
+    "base": "edc003416dafd322aa6cd100dde488fb112a2abb",
+    "gitBlob": "27b222f88a40cdf5602f63939df27928244d0232",
+    "archive": {
+      "path": "source-custody/original-no-deep.rs.fixture",
+      "bytes": 10631,
+      "sha256": "c4a0134e786feca78007040fcfd49b9c8686aca3e63af3b24d81df172ad11ab0"
+    }
+  },
+  "original": {
+    "path": "original-neighbors.json",
+    "bytes": 76190,
+    "sha256": "ffc6df355e15eb06d128dc593652c508eeced0b78bc9bb423ac7a1199affa22f"
+  },
+  "failure": {
+    "path": "initial-public-before31-failure.json.gz",
+    "bytes": 8570,
+    "sha256": "3195909c975fb11f75bd13ef6a4f166ddd6985de08f8dd088ba183b1e2ad9ffe",
+    "rawBytes": 101112,
+    "rawSha256": "c10cb00a5d09a9e201b5bc883985a43e742eec7b06c936eaf7faace0cdaf4870"
+  },
+  "before": {
+    "id": "setup-optional-call",
+    "filename": "OptionalCall.vue",
+    "source": "<script setup lang=\"ts\">\nconst { user: { name } } = defineProps?.();\n</script>\n<template><div /></template>\n",
+    "sourceSha256": "e9023c38783044f2e9e91e351b8c52383e8feb3bd158842b71b6288e6cb49c5b",
+    "config": {
+      "preset": "incremental",
+      "rules": {
+        "script/no-deep-destructure-in-props": "warn"
+      }
+    },
+    "beforeApi": {
+      "filename": "OptionalCall.vue",
+      "error_count": 0,
+      "warning_count": 1,
+      "diagnostics": [
+        {
+          "rule_name": "script/no-deep-destructure-in-props",
+          "severity": "warning",
+          "message": "Avoid deeply nested destructuring in defineProps",
+          "start": 31,
+          "end": 49,
+          "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+          "fix": null,
+          "labels": []
+        }
+      ]
+    },
+    "beforeCli": [
+      {
+        "file": "OptionalCall.vue",
+        "messages": [
+          {
+            "ruleId": "script/no-deep-destructure-in-props",
+            "ruleDocsPath": "docs/content/rules/type-and-script.md",
+            "severity": 1,
+            "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+            "line": 2,
+            "column": 7,
+            "endLine": 2,
+            "endColumn": 25,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 1
+      }
+    ],
+    "beforeStatus": 0,
+    "afterApi": {
+      "filename": "OptionalCall.vue",
+      "error_count": 0,
+      "warning_count": 0,
+      "diagnostics": []
+    },
+    "afterCli": [
+      {
+        "file": "OptionalCall.vue",
+        "messages": [],
+        "errorCount": 0,
+        "warningCount": 0
+      }
+    ],
+    "afterStatus": 0,
+    "compilerOptions": {},
+    "sourceInferredCompilerAccepted": true,
+    "origin": "Independently source-authored neighbor before any native/compiler observation.",
+    "limit": "Optional calls are ordinary expressions, not a compiler macro producer."
+  },
+  "after": {
+    "id": "setup-optional-call",
+    "filename": "OptionalCall.vue",
+    "source": "<script setup lang=\"ts\">\nconst { user: { name } } = defineProps?.();\n</script>\n<template><div /></template>\n",
+    "sourceSha256": "e9023c38783044f2e9e91e351b8c52383e8feb3bd158842b71b6288e6cb49c5b",
+    "config": {
+      "preset": "incremental",
+      "rules": {
+        "script/no-deep-destructure-in-props": "warn"
+      }
+    },
+    "beforeApi": {
+      "filename": "OptionalCall.vue",
+      "error_count": 0,
+      "warning_count": 0,
+      "diagnostics": []
+    },
+    "beforeCli": [
+      {
+        "file": "OptionalCall.vue",
+        "messages": [],
+        "errorCount": 0,
+        "warningCount": 0
+      }
+    ],
+    "beforeStatus": 0,
+    "afterApi": {
+      "filename": "OptionalCall.vue",
+      "error_count": 0,
+      "warning_count": 0,
+      "diagnostics": []
+    },
+    "afterCli": [
+      {
+        "file": "OptionalCall.vue",
+        "messages": [],
+        "errorCount": 0,
+        "warningCount": 0
+      }
+    ],
+    "afterStatus": 0,
+    "compilerOptions": {},
+    "sourceInferredCompilerAccepted": true,
+    "origin": "Independently source-authored neighbor before any native/compiler observation.",
+    "limit": "Optional calls are ordinary expressions, not a compiler macro producer."
+  },
+  "limit": "Source-derived finite authorship correction; not new native after qualification."
+}

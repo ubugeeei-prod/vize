@@ -734,7 +734,7 @@ vp run lint
 
 **Bad**
 
-The binding pattern descends through `user` to destructure `name`, exceeding the default shallow props-destructuring depth.
+This sole inline `<script setup>` has a top-level compiler macro binding that destructures `name` through `user`, exceeding the default depth of one. Arrays nested inside object bindings also increase depth. This opt-in warning enforces a depth policy: it does not read the compiler's `propsDestructure` setting, and `withDefaults` can compile despite the warning.
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
@@ -758,7 +758,7 @@ const userName = computed(() => props.user.name);
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L37) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L39) · [All rules](all.md)
 
 ### `script/no-deprecated-data-object-declaration`
 

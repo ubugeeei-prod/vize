@@ -1,0 +1,21 @@
+{
+  "schema": "vize.lint.no-deep-mechanical-unit-extraction",
+  "version": 1,
+  "base": "edc003416dafd322aa6cd100dde488fb112a2abb",
+  "path": "crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs",
+  "original": {
+    "path": "/tmp/vize-next-preset-readonly-audit-20261012/original-rust/no_deep_destructure_in_props.rs.fixture",
+    "sha256": "c4a0134e786feca78007040fcfd49b9c8686aca3e63af3b24d81df172ad11ab0",
+    "bytes": 10631
+  },
+  "afterMain": {
+    "sha256": "907e545ac1ee070159808c101da9dbd3a438b7c48231e6d1723d7cda13540b90",
+    "bytes": 7988
+  },
+  "newUnit": {
+    "path": "crates/vize_patina/src/rules/script/no_deep_destructure_in_props/tests.rs",
+    "sha256": "4bafdf76439bff509fc639b4b37d3ead00c078f22aa0d1b4421b890008f904b0",
+    "bytes": 2640
+  },
+  "law": "Original producer prefix byte exact; entire original unit inner body byte exact; only private module declaration replaces block wrapper. No formatting or semantic mutation in this commit."
+}

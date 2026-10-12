@@ -1,0 +1,98 @@
+{
+  "schema": "vize.lint.no-deep-ts-wrapped-callee-authored-controls",
+  "version": 1,
+  "cases": [
+    {
+      "id": "ts-wrapped-define-props-callee",
+      "filename": "TypeWrappedCallee.vue",
+      "source": "<script setup lang=\"ts\">\nconst { user: { name } } = (defineProps as any)();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "e0748abcc21cd8dfdf97d15716562a2610f9531c4ae6b278d129f0303088d1c7",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "TypeWrappedCallee.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "beforeCli": [
+        {
+          "file": "TypeWrappedCallee.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "TypeWrappedCallee.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "TypeWrappedCallee.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": true,
+      "sourceBasis": "Pinned compiler3.5.43 processDefineProps/processWithDefaults calls isCallOf(node,name), which requires bare Identifier callee. unwrapTSNode applies to initializer, not callee. Whole native vectors authored before compiler/native observation.",
+      "observed": false
+    },
+    {
+      "id": "ts-wrapped-with-defaults-callee",
+      "filename": "TypeWrappedDefaultsCallee.vue",
+      "source": "<script setup lang=\"ts\">\nconst { user: { name } } = (withDefaults as any)(defineProps<{ user: { name: string } }>(), {});\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "8970fd0882c3251f73dab84cc3653852bc6de443813f1e90582f7b8bfbc905a8",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "TypeWrappedDefaultsCallee.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "beforeCli": [
+        {
+          "file": "TypeWrappedDefaultsCallee.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "TypeWrappedDefaultsCallee.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "TypeWrappedDefaultsCallee.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": true,
+      "sourceBasis": "Pinned compiler3.5.43 processDefineProps/processWithDefaults calls isCallOf(node,name), which requires bare Identifier callee. unwrapTSNode applies to initializer, not callee. Whole native vectors authored before compiler/native observation.",
+      "observed": false
+    }
+  ]
+}

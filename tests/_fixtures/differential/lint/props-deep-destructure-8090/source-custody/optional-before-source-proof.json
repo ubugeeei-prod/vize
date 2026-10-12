@@ -1,0 +1,28 @@
+{
+  "schema": "vize.lint.no-deep-optional-before-source-proof",
+  "version": 1,
+  "beforeOnly": true,
+  "originalPublicH": "15e116fa258c7aaba5c6fdd2456442535605abe8",
+  "parser": {
+    "path": "vendor/oxc_parser/src/js/expression.rs",
+    "archive": "/tmp/vize-next-preset-readonly-audit-20261012/original-public-parser-expression.rs.fixture",
+    "bytes": 74058,
+    "sha256": "e1e16a0ad4d17edac18006ce30b1a2b4da10b7f4c216e2474ff128ed66f410ed",
+    "gitBlob": "b3d5d8d06c19ed9aa7e118962e658e569b25ce88",
+    "lines": [
+      751,
+      792
+    ]
+  },
+  "ast": {
+    "revision": "fc702c1fa9f0412d06ec6908b58cd395b826cf7f",
+    "archive": "/tmp/vize-next-preset-readonly-audit-20261012/pinned-oxc-ast-js.rs.fixture",
+    "bytes": 79169,
+    "sha256": "5932be5ea0333d01f618b7018f1767b5f4b5c553a68bb40cb617754bd60554ab",
+    "lines": [
+      235,
+      254
+    ]
+  },
+  "reason": "Optional defineProps?.() init is Expression::ChainExpression. Authenticated old producer matches only Expression::CallExpression and refuses other variants before callee identity, so old warning count is zero. get_inner_expression unwraps TS/parenthesized expressions only and preserves ChainExpression; proposed after remains zero."
+}

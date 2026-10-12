@@ -1,0 +1,27 @@
+{
+  "version": "10.9.2",
+  "git": "9aa463a4aa4ad3c37d7facacda2e40ad7880ea92",
+  "packageJsonSha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761",
+  "packageFileTreeSha256": "57749c05bdfebd6fca26c239eda9e8a49b110b1eb888d1bbf1d04f18a1a0e9c0",
+  "packageFileCount": 340,
+  "sources": [
+    {
+      "path": "/tmp/vize-next-preset-readonly-audit-20261012/no-unused-emit-declarations.dist.js",
+      "source": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/eslint-plugin-vue@10.9.2_@stylistic+eslint-plugin@5.10.0_eslint@10.4.1_jiti@2.7.0_suppo_490b589eff1bdf6fd918ebcadce99cb1/node_modules/eslint-plugin-vue/dist/rules/no-unused-emit-declarations.js",
+      "bytes": 8512,
+      "sha256": "a48d43559818dd7c446b650aaeece2be160e191c8f1bc480ef50ade20555de3c"
+    },
+    {
+      "path": "/tmp/vize-next-preset-readonly-audit-20261012/no-deprecated-props-default-this.dist.js",
+      "source": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/eslint-plugin-vue@10.9.2_@stylistic+eslint-plugin@5.10.0_eslint@10.4.1_jiti@2.7.0_suppo_490b589eff1bdf6fd918ebcadce99cb1/node_modules/eslint-plugin-vue/dist/rules/no-deprecated-props-default-this.js",
+      "bytes": 3264,
+      "sha256": "540f005e2ba5f6a0fff983158571de033fa2ed0541484590cc67e5bd8e3154dd"
+    },
+    {
+      "path": "/tmp/vize-next-preset-readonly-audit-20261012/no-setup-props-reactivity-loss.dist.js",
+      "source": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/eslint-plugin-vue@10.9.2_@stylistic+eslint-plugin@5.10.0_eslint@10.4.1_jiti@2.7.0_suppo_490b589eff1bdf6fd918ebcadce99cb1/node_modules/eslint-plugin-vue/dist/rules/no-setup-props-reactivity-loss.js",
+      "bytes": 8964,
+      "sha256": "f38e02569f6e6916d29c125b458de3fa074b6925a6d3cf8aa39f851c852552be"
+    }
+  ]
+}

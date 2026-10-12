@@ -760,7 +760,7 @@ const userName = computed(() => props.user.name);
 
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
-[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L37) · [全部规则](all.md)
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L39) · [全部规则](all.md)
 
 ### `script/no-deprecated-data-object-declaration`
 

@@ -1,0 +1,84 @@
+{
+  "schema": "vize.lint.props-deep-destructure-owned-docs-only",
+  "version": 1,
+  "changes": "Only owned NoDeep implementation L37 to L39 and the two independently authored bounded English/Japanese Bad explanations. All other page bytes exact.",
+  "files": [
+    {
+      "path": "docs/content/generated/rules/en/all.md",
+      "beforeSha256": "90058bd83868b4bfa6f09ad40e5893d28425c43d5b37ea1fa1d0bd7625e74e12",
+      "afterSha256": "60618bbc8e5f6a96478e718de16966280c25f9e0e380217785411b80b17ce264",
+      "bytesBefore": 256997,
+      "bytesAfter": 256997
+    },
+    {
+      "path": "docs/content/generated/rules/en/type-and-script.md",
+      "beforeSha256": "5efe29ebc1a8b20b335f0c846edf68674f7fc56f6fec4c91dfd96973fb11f3d9",
+      "afterSha256": "e6401ad22da4305a1e650ae491a7aef2c463d171f220af4fe1f1bb6e0374f118",
+      "bytesBefore": 147024,
+      "bytesAfter": 147265
+    },
+    {
+      "path": "docs/content/generated/rules/fr/type-and-script.md",
+      "beforeSha256": "fdee074c98d6fe8d11713cea99e8e657a79f7637c6787a410ffc0aedd1d6074c",
+      "afterSha256": "92c4e60a2a9dc6e3edd4bcbe1933eb88ef166f2bbb482df9fa799f170f594d24",
+      "bytesBefore": 164409,
+      "bytesAfter": 164409
+    },
+    {
+      "path": "docs/content/generated/rules/ja/all.md",
+      "beforeSha256": "75714c4cbb98aec02ba2899571b198f366723d70ef463f670ead272c8d64bfab",
+      "afterSha256": "bbd0a01caa99896512cd139f2cf049fd6e3eb0f591a21b0f0bf6118ae5eecd96",
+      "bytesBefore": 277688,
+      "bytesAfter": 277688
+    },
+    {
+      "path": "docs/content/generated/rules/ja/type-and-script.md",
+      "beforeSha256": "2a60b6266cf1e3534ffc1a2049b8ffc5103042c08075f8ebe2a41e9f82e21e4f",
+      "afterSha256": "256f51f4081f221ad7173e41a2a776c1140a012b05eca7f002ab1d16f7e60b31",
+      "bytesBefore": 167112,
+      "bytesAfter": 167434
+    },
+    {
+      "path": "docs/content/generated/rules/pt-BR/type-and-script.md",
+      "beforeSha256": "68680b58d250232ae258aec988166c0f356d541db310ae0ce1374152a1f50671",
+      "afterSha256": "e2528c690d39b5fbe26f5ab8cebd216922e7249b2fc2896c8a289b90c1a3e180",
+      "bytesBefore": 160448,
+      "bytesAfter": 160448
+    },
+    {
+      "path": "docs/content/generated/rules/zh-CN/type-and-script.md",
+      "beforeSha256": "4849e46cfc3b012aa3787768312582dfeceaeb97d6a390d01bfe605a3bbbb805",
+      "afterSha256": "a2a36b2191019382689b451d06cec7eb57809dd186ab571146be00eb9bcfef4c",
+      "bytesBefore": 145745,
+      "bytesAfter": 145745
+    },
+    {
+      "path": "docs/content/ja/rules/all.md",
+      "beforeSha256": "45c3b466dccfa7da08bab5246e7937dadf24ddc88156ce154a3e5b07bcc22300",
+      "afterSha256": "f83430590888e5375b1803405ec94259a5ed1e7703ff3f8284aed9af66de6b51",
+      "bytesBefore": 162081,
+      "bytesAfter": 162081
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-deep-destructure-in-props.md",
+      "beforeSha256": "a33c97c1f761d0d53c008b723fb249b7b926f7b05fb8f6fd00c392c8018a3776",
+      "afterSha256": "3581df82b5a124d14a3836bd3a36861e7ca0699adabad5a758160525e2d38e1d",
+      "bytesBefore": 1863,
+      "bytesAfter": 2185
+    },
+    {
+      "path": "docs/content/rules/all.md",
+      "beforeSha256": "6662be6d217a6cec552b4f3ad491cc14ee82d3038668a00057dd07b59e8a3e2c",
+      "afterSha256": "84672fccfc8d22eb06fcc58f249d0042050d4d049895090783eb9712ef3ce091",
+      "bytesBefore": 148083,
+      "bytesAfter": 148083
+    },
+    {
+      "path": "docs/content/rules/reference/script-no-deep-destructure-in-props.md",
+      "beforeSha256": "b5a60f086117334adadefad2cc5e2a0f1b9a155a8efa45c0d2c4e5d2387d0436",
+      "afterSha256": "9a6ea3e6aaafe13b22f3a1d33df9bc08b6e08f5d495417d180a651911c269375",
+      "bytesBefore": 1633,
+      "bytesAfter": 1874
+    }
+  ]
+}

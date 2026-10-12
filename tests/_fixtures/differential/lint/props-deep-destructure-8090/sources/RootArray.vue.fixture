@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const [first] = defineProps<{ first: string }>();
+</script>
+<template><div /></template>

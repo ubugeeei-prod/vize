@@ -734,7 +734,7 @@ vp run lint
 
 **悪い**
 
-props の `user` からさらに `name` を分割代入で取り出し、既定で許される浅い分割代入の深さを超えています。
+唯一の inline `<script setup>` のトップレベルで、コンパイラーマクロの props の `user` からさらに `name` を取り出し、既定の深さ 1 を超えています。オブジェクトの内側の配列も深さに数えます。個別に有効化するこの警告は、深さの方針を検査します。コンパイラーの `propsDestructure` 設定は参照せず、`withDefaults` でコンパイルできる場合も警告します。
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
@@ -758,7 +758,7 @@ const userName = computed(() => props.user.name);
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L37) · [全ルール](all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L39) · [全ルール](all.md)
 
 ### `script/no-deprecated-data-object-declaration`
 

@@ -1,0 +1,2275 @@
+{
+  "schema": "vize.lint.props-deep-destructure-correctness-neighbors",
+  "version": 1,
+  "authority": "Independent whole33 packets with original31 immutable. Sole optional-before and Unicode scalar-column-after corrections have whole source proofs. Two TS-callee zero-controls were authored before compiler probing. Candidate native after remains unexecuted.",
+  "originalControlsSha256": "ec0a00983c97eacab181f8b707e0150e9535e8d66b970c05920c0a0bc77ad40e",
+  "originalWholeObservationSha256": "af8bb17ac06f50db11f552a90b09c3361e5ce3c254a4b4e11bcd0c55dda9dbb6",
+  "cases": [
+    {
+      "id": "vue35-shallow-reactive",
+      "filename": "ShallowReactive.vue",
+      "source": "<script setup lang=\"ts\">\nconst { name, count = 0 } = defineProps<{ name: string; count?: number }>();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "1a63e19ea38a2562338f3cd5eae4061f690f57c575f01ff12b907978833b3ed3",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "ShallowReactive.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "beforeCli": [
+        {
+          "file": "ShallowReactive.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "ShallowReactive.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "ShallowReactive.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": true,
+      "origin": "Frozen original eight; original whole inputs/outputs remain separate and byte exact.",
+      "limit": null,
+      "sourceFile": "sources/ShallowReactive.vue.fixture"
+    },
+    {
+      "id": "vue35-nested-object",
+      "filename": "NestedObject.vue",
+      "source": "<script setup lang=\"ts\">\nconst { user: { name } } = defineProps<{ user: { name: string } }>();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "f04470feb81abdaa4dd5df4d8eec47e4fb69ffef5351553d789d160c9b300978",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "NestedObject.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 31,
+            "end": 49,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "beforeCli": [
+        {
+          "file": "NestedObject.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 2,
+              "column": 7,
+              "endLine": 2,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "NestedObject.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 31,
+            "end": 49,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "afterCli": [
+        {
+          "file": "NestedObject.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 2,
+              "column": 7,
+              "endLine": 2,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": false,
+      "origin": "Frozen original eight; original whole inputs/outputs remain separate and byte exact.",
+      "limit": null,
+      "sourceFile": "sources/NestedObject.vue.fixture"
+    },
+    {
+      "id": "vue35-nested-array",
+      "filename": "NestedArray.vue",
+      "source": "<script setup lang=\"ts\">\nconst { items: [first] } = defineProps<{ items: string[] }>();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "b7d8ee36e08f28d5a66ce12c85025fcc6fefe4eb27d16456fe6917e546cfc534",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "NestedArray.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "beforeCli": [
+        {
+          "file": "NestedArray.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "NestedArray.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 31,
+            "end": 49,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "afterCli": [
+        {
+          "file": "NestedArray.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 2,
+              "column": 7,
+              "endLine": 2,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": false,
+      "origin": "Frozen original eight; original whole inputs/outputs remain separate and byte exact.",
+      "limit": null,
+      "sourceFile": "sources/NestedArray.vue.fixture"
+    },
+    {
+      "id": "standalone-local-function",
+      "filename": "Standalone.ts",
+      "source": "function defineProps() { return { user: { name: \"Ada\" } }; }\nconst { user: { name } } = defineProps();\n",
+      "sourceSha256": "f5f20379fdf681e0fa0d7f9646ce9a7892ac77aeb9fddc18a4dcb71acb65b7a8",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "Standalone.ts",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 67,
+            "end": 85,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "beforeCli": [
+        {
+          "file": "Standalone.ts",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 2,
+              "column": 7,
+              "endLine": 2,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "Standalone.ts",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "Standalone.ts",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": null,
+      "origin": "Frozen original eight; original whole inputs/outputs remain separate and byte exact.",
+      "limit": null,
+      "sourceFile": "sources/Standalone.ts.fixture"
+    },
+    {
+      "id": "normal-script-local-function",
+      "filename": "NormalScript.vue",
+      "source": "<script lang=\"ts\">\nfunction defineProps() { return { user: { name: \"Ada\" } }; }\nconst { user: { name } } = defineProps();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "2c062e099a73d44e0edbf710c26dbedfe411830effb4d61d6a06ee60bc0fd897",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "NormalScript.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 86,
+            "end": 104,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "beforeCli": [
+        {
+          "file": "NormalScript.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 3,
+              "column": 7,
+              "endLine": 3,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "NormalScript.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "NormalScript.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": true,
+      "origin": "Frozen original eight; original whole inputs/outputs remain separate and byte exact.",
+      "limit": null,
+      "sourceFile": "sources/NormalScript.vue.fixture"
+    },
+    {
+      "id": "compiler-destructure-disabled",
+      "filename": "DisabledDestructure.vue",
+      "source": "<script setup lang=\"ts\">\nconst { user: { name } } = defineProps<{ user: { name: string } }>();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "f04470feb81abdaa4dd5df4d8eec47e4fb69ffef5351553d789d160c9b300978",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "DisabledDestructure.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 31,
+            "end": 49,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "beforeCli": [
+        {
+          "file": "DisabledDestructure.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 2,
+              "column": 7,
+              "endLine": 2,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "DisabledDestructure.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 31,
+            "end": 49,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "afterCli": [
+        {
+          "file": "DisabledDestructure.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 2,
+              "column": 7,
+              "endLine": 2,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {
+        "propsDestructure": false
+      },
+      "sourceInferredCompilerAccepted": true,
+      "origin": "Frozen original eight; original whole inputs/outputs remain separate and byte exact.",
+      "limit": "Compiler-only false mode is not a native CLI input; preserved opt-in depth warning, unavailable-mode requirement remains.",
+      "sourceFile": "sources/DisabledDestructure.vue.fixture"
+    },
+    {
+      "id": "shallow-alias-rest",
+      "filename": "AliasRest.vue",
+      "source": "<script setup lang=\"ts\">\nconst { name: localName, ...rest } = defineProps<{ name: string; count: number }>();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "f7936f6199738642d11e71d22e99467b26945fd8f1202751f4b60e4828bd2612",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "AliasRest.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "beforeCli": [
+        {
+          "file": "AliasRest.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "AliasRest.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "AliasRest.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": true,
+      "origin": "Frozen original eight; original whole inputs/outputs remain separate and byte exact.",
+      "limit": null,
+      "sourceFile": "sources/AliasRest.vue.fixture"
+    },
+    {
+      "id": "ordinary-member-api",
+      "filename": "MemberApi.vue",
+      "source": "<script setup lang=\"ts\">\nconst api = { defineProps() { return { user: { name: \"Ada\" } }; } };\nconst { user: { name } } = api.defineProps();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "9ec12878f20ca7bb7519766e47695e101996d970ce7087fda82c4971edb95e8c",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "MemberApi.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "beforeCli": [
+        {
+          "file": "MemberApi.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "MemberApi.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "MemberApi.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": true,
+      "origin": "Frozen original eight; original whole inputs/outputs remain separate and byte exact.",
+      "limit": null,
+      "sourceFile": "sources/MemberApi.vue.fixture"
+    },
+    {
+      "id": "nested-array-object",
+      "filename": "ArrayObject.vue",
+      "source": "<script setup lang=\"ts\">\nconst { items: [{ name }] } = defineProps<{ items: { name: string }[] }>();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "4602f4870e2fba53804d7c3faaae1ba39f918484a01191fffd935abeab3ac2d7",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "ArrayObject.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 31,
+            "end": 52,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "beforeCli": [
+        {
+          "file": "ArrayObject.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 2,
+              "column": 7,
+              "endLine": 2,
+              "endColumn": 28,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "ArrayObject.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 31,
+            "end": 52,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "afterCli": [
+        {
+          "file": "ArrayObject.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 2,
+              "column": 7,
+              "endLine": 2,
+              "endColumn": 28,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": false,
+      "origin": "Independently source-authored neighbor before any native/compiler observation.",
+      "limit": "Both algorithms already reject a nested object; retain the whole diagnostic.",
+      "sourceFile": "sources/ArrayObject.vue.fixture"
+    },
+    {
+      "id": "nested-array-default",
+      "filename": "ArrayDefault.vue",
+      "source": "<script setup lang=\"ts\">\nconst { items: [first = \"Ada\"] } = defineProps<{ items: string[] }>();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "a54bb6558596f38d584e07d6e8319b17634b270cf302b4a4a98f8c6a927313b6",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "ArrayDefault.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "beforeCli": [
+        {
+          "file": "ArrayDefault.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "ArrayDefault.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 31,
+            "end": 57,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "afterCli": [
+        {
+          "file": "ArrayDefault.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 2,
+              "column": 7,
+              "endLine": 2,
+              "endColumn": 33,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": false,
+      "origin": "Independently source-authored neighbor before any native/compiler observation.",
+      "limit": "Array depth includes assignment-left patterns.",
+      "sourceFile": "sources/ArrayDefault.vue.fixture"
+    },
+    {
+      "id": "setup-local-function",
+      "filename": "LocalSetup.vue",
+      "source": "<script setup lang=\"ts\">\nfunction defineProps() { return { user: { name: \"Ada\" } }; }\nconst { user: { name } } = defineProps();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "7dc113ccd3ec3a5ebea627bf50ee550518cf69756b6e98ed7205703958811e32",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "LocalSetup.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 92,
+            "end": 110,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "beforeCli": [
+        {
+          "file": "LocalSetup.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 3,
+              "column": 7,
+              "endLine": 3,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "LocalSetup.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "LocalSetup.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": false,
+      "origin": "Independently source-authored neighbor before any native/compiler observation.",
+      "limit": "Existing conservative binding guard refuses local runtime names. Pinned compiler recognizes bare macro spelling and still rejects nested pattern; do not claim parity.",
+      "sourceFile": "sources/LocalSetup.vue.fixture"
+    },
+    {
+      "id": "setup-foreign-import",
+      "filename": "ForeignImport.vue",
+      "source": "<script setup lang=\"ts\">\nimport { defineProps } from \"./ordinary-api\";\nconst { user: { name } } = defineProps();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "0966585db63c441c4f9bf221f837a3ede890ee146b8f412c3394e35a9105e5b5",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "ForeignImport.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 77,
+            "end": 95,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "beforeCli": [
+        {
+          "file": "ForeignImport.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 3,
+              "column": 7,
+              "endLine": 3,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "ForeignImport.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "ForeignImport.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": false,
+      "origin": "Independently source-authored neighbor before any native/compiler observation.",
+      "limit": "Foreign binding refusal is conservative; compiler bare-name recognition differs.",
+      "sourceFile": "sources/ForeignImport.vue.fixture"
+    },
+    {
+      "id": "setup-vue-import",
+      "filename": "VueImport.vue",
+      "source": "<script setup lang=\"ts\">\nimport { defineProps } from \"vue\";\nconst { user: { name } } = defineProps<{ user: { name: string } }>();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "9a85d21bf6416c9fac8d6d48496a85ac7e428843eba612e754946ead9db6e3a0",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "VueImport.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 66,
+            "end": 84,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "beforeCli": [
+        {
+          "file": "VueImport.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 3,
+              "column": 7,
+              "endLine": 3,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "VueImport.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 66,
+            "end": 84,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "afterCli": [
+        {
+          "file": "VueImport.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 3,
+              "column": 7,
+              "endLine": 3,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": false,
+      "origin": "Independently source-authored neighbor before any native/compiler observation.",
+      "limit": "Existing macro import exception admits genuine Vue imported identity.",
+      "sourceFile": "sources/VueImport.vue.fixture"
+    },
+    {
+      "id": "setup-type-import",
+      "filename": "TypeImport.vue",
+      "source": "<script setup lang=\"ts\">\nimport type { defineProps } from \"./types\";\nconst { user: { name } } = defineProps<{ user: { name: string } }>();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "1332580a36c7edc15abf4643519d8b762849a19fabc4ce2690b88155dbb2c99d",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "TypeImport.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 75,
+            "end": 93,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "beforeCli": [
+        {
+          "file": "TypeImport.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 3,
+              "column": 7,
+              "endLine": 3,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "TypeImport.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 75,
+            "end": 93,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "afterCli": [
+        {
+          "file": "TypeImport.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 3,
+              "column": 7,
+              "endLine": 3,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": false,
+      "origin": "Independently source-authored neighbor before any native/compiler observation.",
+      "limit": "Type-only import does not bind the runtime macro.",
+      "sourceFile": "sources/TypeImport.vue.fixture"
+    },
+    {
+      "id": "setup-hoisted-var",
+      "filename": "HoistedVar.vue",
+      "source": "<script setup lang=\"ts\">\nif (false) { var defineProps = () => ({ user: { name: \"Ada\" } }); }\nconst { user: { name } } = defineProps();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "75daafb35ad7934454016e9e62a9ed408f49b5bd055c218f16cc9ec9820cc343",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "HoistedVar.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 99,
+            "end": 117,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "beforeCli": [
+        {
+          "file": "HoistedVar.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 3,
+              "column": 7,
+              "endLine": 3,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "HoistedVar.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "HoistedVar.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": false,
+      "origin": "Independently source-authored neighbor before any native/compiler observation.",
+      "limit": "Reuse existing top-level hoisted-var binding scan; compiler bare-name recognition differs.",
+      "sourceFile": "sources/HoistedVar.vue.fixture"
+    },
+    {
+      "id": "setup-nested-function-parameter",
+      "filename": "InnerFunction.vue",
+      "source": "<script setup lang=\"ts\">\nfunction ordinary(defineProps: () => { user: { name: string } }) {\n  const { user: { name } } = defineProps();\n  return name;\n}\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "e6e3e84583e85040fa3ae0beb3ddb0d3f79ca66add1f521a5d6a97a30ee196e2",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "InnerFunction.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 100,
+            "end": 118,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "beforeCli": [
+        {
+          "file": "InnerFunction.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 3,
+              "column": 9,
+              "endLine": 3,
+              "endColumn": 27,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "InnerFunction.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "InnerFunction.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": true,
+      "origin": "Independently source-authored neighbor before any native/compiler observation.",
+      "limit": "Only direct Program variable declarations are compiler-macro producers.",
+      "sourceFile": "sources/InnerFunction.vue.fixture"
+    },
+    {
+      "id": "setup-with-defaults",
+      "filename": "WithDefaults.vue",
+      "source": "<script setup lang=\"ts\">\nconst { user: { name } } = withDefaults(defineProps<{ user: { name: string } }>(), {});\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "f2cac48f8e2a65bc8d75aef83f1f3c74c85c60ae530f8e47298ec7cf20f6739b",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "WithDefaults.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 31,
+            "end": 49,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "beforeCli": [
+        {
+          "file": "WithDefaults.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 2,
+              "column": 7,
+              "endLine": 2,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "WithDefaults.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 31,
+            "end": 49,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "afterCli": [
+        {
+          "file": "WithDefaults.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 2,
+              "column": 7,
+              "endLine": 2,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": true,
+      "origin": "Independently source-authored neighbor before any native/compiler observation.",
+      "limit": "Keep old opt-in depth policy; compiler disables reactive destructuring for withDefaults and accepts this source. This rule is not a compiler-error proxy.",
+      "sourceFile": "sources/WithDefaults.vue.fixture"
+    },
+    {
+      "id": "setup-parenthesized-as",
+      "filename": "ParenthesizedAs.vue",
+      "source": "<script setup lang=\"ts\">\nconst { user: { name } } = (defineProps<{ user: { name: string } }>() as any);\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "e773ffe621d01f81d09fb6edb3e048901653a0630ccfd3be35544699a3328159",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "ParenthesizedAs.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "beforeCli": [
+        {
+          "file": "ParenthesizedAs.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "ParenthesizedAs.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 31,
+            "end": 49,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "afterCli": [
+        {
+          "file": "ParenthesizedAs.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 2,
+              "column": 7,
+              "endLine": 2,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": false,
+      "origin": "Independently source-authored neighbor before any native/compiler observation.",
+      "limit": "Match compiler TS-expression unwrapping using existing AST get_inner_expression.",
+      "sourceFile": "sources/ParenthesizedAs.vue.fixture"
+    },
+    {
+      "id": "setup-optional-call",
+      "filename": "OptionalCall.vue",
+      "source": "<script setup lang=\"ts\">\nconst { user: { name } } = defineProps?.();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "e9023c38783044f2e9e91e351b8c52383e8feb3bd158842b71b6288e6cb49c5b",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "OptionalCall.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "beforeCli": [
+        {
+          "file": "OptionalCall.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "OptionalCall.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "OptionalCall.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": true,
+      "origin": "Independently source-authored neighbor before any native/compiler observation.",
+      "limit": "Optional calls are ordinary expressions, not a compiler macro producer.",
+      "sourceFile": "sources/OptionalCall.vue.fixture"
+    },
+    {
+      "id": "sibling-module",
+      "filename": "SiblingModule.vue",
+      "source": "<script lang=\"ts\">\nconst external = 1;\n</script>\n<script setup lang=\"ts\">\nconst { user: { name } } = defineProps<{ user: { name: string } }>();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "036f0132aa5e8f0b8aad6ebf8dafb62967e69d68ee08c114ab2636062230cfac",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "SiblingModule.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 80,
+            "end": 98,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "beforeCli": [
+        {
+          "file": "SiblingModule.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 5,
+              "column": 7,
+              "endLine": 5,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "SiblingModule.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "SiblingModule.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": false,
+      "origin": "Independently source-authored neighbor before any native/compiler observation.",
+      "limit": "No new sibling parse; whole-file macro ownership is unavailable even for a valid sibling.",
+      "sourceFile": "sources/SiblingModule.vue.fixture"
+    },
+    {
+      "id": "invalid-sibling",
+      "filename": "InvalidSibling.vue",
+      "source": "<script lang=\"ts\">\nconst broken = ;\n</script>\n<script setup lang=\"ts\">\nconst { user: { name } } = defineProps<{ user: { name: string } }>();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "8000095a1c00596808a7597873ccc58cae7a93840152c167b6fae0532ccd5872",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "InvalidSibling.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 77,
+            "end": 95,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "beforeCli": [
+        {
+          "file": "InvalidSibling.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 5,
+              "column": 7,
+              "endLine": 5,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "InvalidSibling.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "InvalidSibling.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": false,
+      "origin": "Independently source-authored neighbor before any native/compiler observation.",
+      "limit": "Unavailable invalid sibling never creates setup macro ownership.",
+      "sourceFile": "sources/InvalidSibling.vue.fixture"
+    },
+    {
+      "id": "external-setup-fallback",
+      "filename": "ExternalSetup.vue",
+      "source": "<script setup lang=\"ts\" src=\"./props.ts\">\nconst { user: { name } } = defineProps<{ user: { name: string } }>();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "6618fc3afabd325f5d8a76b185f64121ab31f91fee3630a20a9e60b580806081",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "ExternalSetup.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 48,
+            "end": 66,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "beforeCli": [
+        {
+          "file": "ExternalSetup.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 2,
+              "column": 7,
+              "endLine": 2,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "ExternalSetup.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "ExternalSetup.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": false,
+      "origin": "Independently source-authored neighbor before any native/compiler observation.",
+      "limit": "Real dispatcher sole-inline boolean refuses authored fallback content in src setup; compiler parser also rejects src setup.",
+      "sourceFile": "sources/ExternalSetup.vue.fixture"
+    },
+    {
+      "id": "external-normal-sibling",
+      "filename": "ExternalSibling.vue",
+      "source": "<script lang=\"ts\" src=\"./module.ts\"></script>\n<script setup lang=\"ts\">\nconst { user: { name } } = defineProps<{ user: { name: string } }>();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "3e2cfd6e5f38668f97187926e745373fd86a9059e5934d4b10a4c9ea7d83f41d",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "ExternalSibling.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 77,
+            "end": 95,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "beforeCli": [
+        {
+          "file": "ExternalSibling.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 3,
+              "column": 7,
+              "endLine": 3,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "ExternalSibling.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "ExternalSibling.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": false,
+      "origin": "Independently source-authored neighbor before any native/compiler observation.",
+      "limit": "Unavailable external module never causes a new parse or ownership inference.",
+      "sourceFile": "sources/ExternalSibling.vue.fixture"
+    },
+    {
+      "id": "standalone-unbound-spelling",
+      "filename": "UnboundStandalone.ts",
+      "source": "const { user: { name } } = defineProps<{ user: { name: string } }>();\n",
+      "sourceSha256": "8584d3b59da768d3a141f5ccdbe8fdb930affc6ad437d9146875a2c2f7a6ce74",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "UnboundStandalone.ts",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 6,
+            "end": 24,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "beforeCli": [
+        {
+          "file": "UnboundStandalone.ts",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 1,
+              "column": 7,
+              "endLine": 1,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "UnboundStandalone.ts",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "UnboundStandalone.ts",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": null,
+      "origin": "Independently source-authored neighbor before any native/compiler observation.",
+      "limit": "Standalone entry cannot establish SFC macro ownership.",
+      "sourceFile": "sources/UnboundStandalone.ts.fixture"
+    },
+    {
+      "id": "normal-script-unbound-spelling",
+      "filename": "UnboundNormal.vue",
+      "source": "<script lang=\"ts\">\nconst { user: { name } } = defineProps<{ user: { name: string } }>();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "c2eee6fe2f5bb6c963b4ce4ec602db7fba9f1c21529fb0514b42e7f90a297915",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "UnboundNormal.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 25,
+            "end": 43,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "beforeCli": [
+        {
+          "file": "UnboundNormal.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 2,
+              "column": 7,
+              "endLine": 2,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "UnboundNormal.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "UnboundNormal.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": true,
+      "origin": "Independently source-authored neighbor before any native/compiler observation.",
+      "limit": "Normal script syntax is not script-setup macro syntax.",
+      "sourceFile": "sources/UnboundNormal.vue.fixture"
+    },
+    {
+      "id": "unicode-crlf-array",
+      "filename": "UnicodeArray.vue",
+      "source": "<script setup lang=\"ts\">\r\nconst label = \"\u65e5\u672c\ud83e\udd8a\"; const { items: [first] } = defineProps<{ items: string[] }>();\r\n</script>\r\n<template><div /></template>\r\n",
+      "sourceSha256": "8a36d378d1b07a6dbf30f03efd9e11247be3b994e059d1f401dab0e46e1b3c40",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "UnicodeArray.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "beforeCli": [
+        {
+          "file": "UnicodeArray.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "UnicodeArray.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 60,
+            "end": 78,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "afterCli": [
+        {
+          "file": "UnicodeArray.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 2,
+              "column": 28,
+              "endLine": 2,
+              "endColumn": 46,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": false,
+      "origin": "Independently source-authored neighbor before any native/compiler observation.",
+      "limit": "Native byte spans and CLI UTF16 columns independently authored.",
+      "sourceFile": "sources/UnicodeArray.vue.fixture"
+    },
+    {
+      "id": "shallow-object-default",
+      "filename": "ObjectDefault.vue",
+      "source": "<script setup lang=\"ts\">\nconst { user = { name: \"Ada\" } } = defineProps<{ user?: { name: string } }>();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "0fb54566b20653f49e7a39b950b0ea7ec8cbda7c6c60ea3d32d2887808d8e42c",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "ObjectDefault.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "beforeCli": [
+        {
+          "file": "ObjectDefault.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "ObjectDefault.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "ObjectDefault.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": true,
+      "origin": "Independently source-authored neighbor before any native/compiler observation.",
+      "limit": "Initializer object is not nested BindingPattern depth.",
+      "sourceFile": "sources/ObjectDefault.vue.fixture"
+    },
+    {
+      "id": "root-array-pattern",
+      "filename": "RootArray.vue",
+      "source": "<script setup lang=\"ts\">\nconst [first] = defineProps<{ first: string }>();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "108b74e4a23eb331cb4a8d5aaff79535638629e15ffd6878a45c9135efcf6c3f",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "RootArray.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "beforeCli": [
+        {
+          "file": "RootArray.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "RootArray.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "RootArray.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": true,
+      "origin": "Independently source-authored neighbor before any native/compiler observation.",
+      "limit": "Preserve object-root boundary; no broader destructuring-rule or compiler policy change.",
+      "sourceFile": "sources/RootArray.vue.fixture"
+    },
+    {
+      "id": "normal-vue-import",
+      "filename": "NormalVueImport.vue",
+      "source": "<script lang=\"ts\">\nimport { defineProps } from \"vue\";\nconst { user: { name } } = defineProps<{ user: { name: string } }>();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "eefc4400799655ecd4fdf4ea56e2c449d1c0a36d0544e2a8549de562d165aacc",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "NormalVueImport.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 60,
+            "end": 78,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "beforeCli": [
+        {
+          "file": "NormalVueImport.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 3,
+              "column": 7,
+              "endLine": 3,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "NormalVueImport.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "NormalVueImport.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": true,
+      "origin": "Independently source-authored neighbor before any native/compiler observation.",
+      "limit": "Vue import alone does not turn normal script into a setup macro.",
+      "sourceFile": "sources/NormalVueImport.vue.fixture"
+    },
+    {
+      "id": "setup-block-local",
+      "filename": "BlockLocal.vue",
+      "source": "<script setup lang=\"ts\">\nif (true) {\n  const defineProps = () => ({ user: { name: \"Ada\" } });\n  const { user: { name } } = defineProps();\n}\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "9e01c862f828f34dd5919a178e6dde80a6b26d7ea84e3d244d868a29187cd2e0",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "BlockLocal.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 102,
+            "end": 120,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "beforeCli": [
+        {
+          "file": "BlockLocal.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 4,
+              "column": 9,
+              "endLine": 4,
+              "endColumn": 27,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "BlockLocal.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "BlockLocal.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": true,
+      "origin": "Independently source-authored neighbor before any native/compiler observation.",
+      "limit": "Program-root restriction prevents ordinary block-scoped calls.",
+      "sourceFile": "sources/BlockLocal.vue.fixture"
+    },
+    {
+      "id": "setup-with-defaults-shadow",
+      "filename": "WithDefaultsShadow.vue",
+      "source": "<script setup lang=\"ts\">\nconst withDefaults = (props: any) => props;\nconst { user: { name } } = withDefaults(defineProps<{ user: { name: string } }>(), {});\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "4d3c537dbb4dc6f3768cccaeec02142474a3f2a08e2c340142f6baf423b47c15",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "WithDefaultsShadow.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 75,
+            "end": 93,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "beforeCli": [
+        {
+          "file": "WithDefaultsShadow.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 3,
+              "column": 7,
+              "endLine": 3,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "WithDefaultsShadow.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "WithDefaultsShadow.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": true,
+      "origin": "Independently source-authored neighbor before any native/compiler observation.",
+      "limit": "Both defineProps and wrapper identity must be proven; compiler name-only wrapper recognition differs.",
+      "sourceFile": "sources/WithDefaultsShadow.vue.fixture"
+    },
+    {
+      "id": "ts-wrapped-define-props-callee",
+      "filename": "TypeWrappedCallee.vue",
+      "source": "<script setup lang=\"ts\">\nconst { user: { name } } = (defineProps as any)();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "e0748abcc21cd8dfdf97d15716562a2610f9531c4ae6b278d129f0303088d1c7",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "TypeWrappedCallee.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "beforeCli": [
+        {
+          "file": "TypeWrappedCallee.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "TypeWrappedCallee.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "TypeWrappedCallee.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": true,
+      "sourceBasis": "Pinned compiler3.5.43 processDefineProps/processWithDefaults calls isCallOf(node,name), which requires bare Identifier callee. unwrapTSNode applies to initializer, not callee. Whole native vectors authored before compiler/native observation.",
+      "observed": false,
+      "sourceFile": "sources/TypeWrappedCallee.vue.fixture"
+    },
+    {
+      "id": "ts-wrapped-with-defaults-callee",
+      "filename": "TypeWrappedDefaultsCallee.vue",
+      "source": "<script setup lang=\"ts\">\nconst { user: { name } } = (withDefaults as any)(defineProps<{ user: { name: string } }>(), {});\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "8970fd0882c3251f73dab84cc3653852bc6de443813f1e90582f7b8bfbc905a8",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "TypeWrappedDefaultsCallee.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "beforeCli": [
+        {
+          "file": "TypeWrappedDefaultsCallee.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "TypeWrappedDefaultsCallee.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "TypeWrappedDefaultsCallee.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": true,
+      "sourceBasis": "Pinned compiler3.5.43 processDefineProps/processWithDefaults calls isCallOf(node,name), which requires bare Identifier callee. unwrapTSNode applies to initializer, not callee. Whole native vectors authored before compiler/native observation.",
+      "observed": false,
+      "sourceFile": "sources/TypeWrappedDefaultsCallee.vue.fixture"
+    }
+  ]
+}

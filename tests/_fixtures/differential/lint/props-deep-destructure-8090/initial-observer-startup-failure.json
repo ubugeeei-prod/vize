@@ -1,0 +1,11 @@
+{
+  "schema": "vize.lint.no-deep-observer-startup-failure",
+  "version": 1,
+  "helperSha256": "da352ebaa0ed40ffbe4a17edbc92047f882eb87058a5a382c8168bc67c5231bc",
+  "status": 1,
+  "stdout": "",
+  "stderr": "node:internal/modules/cjs/loader:1456\n  const err = new Error(message);\n              ^\n\nError: Cannot find module 'typescript/package.json'\nRequire stack:\n- /Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/tools/benchmarks/scripts/package.json\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1456:15)\n    at require.resolve (node:internal/modules/helpers:163:19)\n    at file:///private/tmp/vize-next-preset-readonly-audit-20261012/observe-no-deep.mjs:75:40\n    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)\n    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {\n  code: 'MODULE_NOT_FOUND',\n  requireStack: [\n    '/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/tools/benchmarks/scripts/package.json'\n  ]\n}\n\nNode.js v24.14.0\n",
+  "casesExecuted": 0,
+  "reason": "Benchmark package root does not directly resolve transitive TypeScript. All package whole files were checked; native/compiler/provider roles had not executed.",
+  "correction": "Resolve TypeScript from authenticated TS parser package root; preserve other direct resolution assertions and all authored vectors."
+}

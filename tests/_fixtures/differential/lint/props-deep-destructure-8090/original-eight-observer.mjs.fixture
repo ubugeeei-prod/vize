@@ -1,0 +1,157 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+
+const folder = path.dirname(fileURLToPath(import.meta.url));
+const controlsPath = path.join(folder, 'authored-controls.json');
+const proposalPath = path.join(folder, 'proposal.json');
+const primaryPath = '/tmp/vize-no-export-preset-provider18-20261012/authored-provider18.json';
+const compilerPrimaryPath = '/tmp/vize-no-export-preset-compiler-reference-20261012.json';
+const binary = '/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-lint-prefilter-public-n57i19hn/vize';
+const expectedBinarySha = '9ad7cf956351265a152a9bbfa08b8c50c85dadacef66529474bbb6170267e254';
+const sha = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
+const fileSeal = filename => {
+  const bytes = fs.readFileSync(filename);
+  return { path: filename, bytes: bytes.length, sha256: sha(bytes) };
+};
+const controls = JSON.parse(fs.readFileSync(controlsPath));
+const proposal = JSON.parse(fs.readFileSync(proposalPath));
+const primary = JSON.parse(fs.readFileSync(primaryPath));
+const compilerPrimary = JSON.parse(fs.readFileSync(compilerPrimaryPath));
+assert.equal(fileSeal(controlsPath).sha256, 'ec0a00983c97eacab181f8b707e0150e9535e8d66b970c05920c0a0bc77ad40e');
+assert.equal(fileSeal(proposalPath).sha256, '2ebe3dcfc8e00bd87980653cb93a4d0aee55a9076a04dcefab4e5c2ac8553eaf');
+assert.equal(fileSeal(binary).sha256, expectedBinarySha);
+assert.equal(fileSeal(compilerPrimary.provider.path).sha256, compilerPrimary.provider.sha256);
+
+// Preserve every compiler result property, including Errors' nonenumerable fields,
+// and represent non-JSON values explicitly instead of silently discarding them.
+function complete(value, seen = new Map(), at = '$') {
+  if (value === undefined) return { $type: 'undefined' };
+  if (typeof value === 'bigint') return { $type: 'bigint', value: String(value) };
+  if (typeof value === 'function') return { $type: 'function', source: String(value) };
+  if (value === null || typeof value !== 'object') return value;
+  if (seen.has(value)) return { $ref: seen.get(value) };
+  seen.set(value, at);
+  if (Array.isArray(value)) return value.map((v, i) => complete(v, seen, `${at}[${i}]`));
+  const result = {};
+  if (Object.getPrototypeOf(value)?.constructor?.name !== 'Object')
+    result.$type = Object.getPrototypeOf(value)?.constructor?.name ?? 'null-prototype';
+  for (const key of Object.getOwnPropertyNames(value))
+    result[key] = complete(value[key], seen, `${at}.${key}`);
+  return result;
+}
+
+function rawRun(argv, cwd) {
+  const run = spawnSync(binary, argv, { cwd, encoding: null, maxBuffer: 32 * 1024 * 1024 });
+  const stdout = run.stdout ?? Buffer.alloc(0), stderr = run.stderr ?? Buffer.alloc(0);
+  return {
+    argv, cwd, status: run.status, signal: run.signal,
+    error: run.error ? complete(run.error) : null,
+    stdoutBase64: stdout.toString('base64'), stdoutSha256: sha(stdout),
+    stderrBase64: stderr.toString('base64'), stderrSha256: sha(stderr),
+  };
+}
+
+const packageSeals = primary.provider.packages.map(p => {
+  assert.equal(fileSeal(path.join(p.packageRoot, 'package.json')).sha256, p.packageJsonSha256);
+  for (const f of p.files) {
+    const seal = fileSeal(path.join(p.packageRoot, f.path));
+    assert.equal(seal.sha256, f.sha256, `${p.name}/${f.path}`);
+    assert.equal(seal.bytes, f.bytes, `${p.name}/${f.path}`);
+  }
+  return { ...p, authenticated: true };
+});
+const require = createRequire(path.join(primary.provider.root, 'package.json'));
+const { ESLint } = require('eslint');
+const vueParser = require('vue-eslint-parser');
+const tsParser = require('@typescript-eslint/parser');
+const loadedPlugin = require('eslint-plugin-vue');
+const vuePlugin = loadedPlugin.rules ? loadedPlugin : loadedPlugin.default;
+for (const p of packageSeals) {
+  const resolver = p.name === 'typescript'
+    ? createRequire(path.join(packageSeals.find(p => p.name === '@typescript-eslint/parser').packageRoot, 'package.json'))
+    : require;
+  assert.equal(fs.realpathSync(resolver.resolve(`${p.name}/package.json`)), fs.realpathSync(path.join(p.packageRoot, 'package.json')));
+}
+const providerConfig = {
+  files: ['**/*.vue', '**/*.ts'], languageOptions: {
+    parser: vueParser, ecmaVersion: 'latest', sourceType: 'module',
+    parserOptions: { parser: tsParser, ecmaVersion: 'latest', sourceType: 'module' },
+  }, plugins: { vue: vuePlugin }, rules: { 'vue/no-setup-props-reactivity-loss': 'warn' },
+};
+const eslint = new ESLint({ cwd: folder, overrideConfigFile: true, ignore: false, overrideConfig: [providerConfig] });
+const compiler = require(compilerPrimary.provider.path);
+assert.equal(compiler.version, '3.5.43');
+const evidence = {
+  schema: 'vize.lint.no-deep-destructure-readonly-reproduction', version: 1,
+  authority: 'Installed v0.443 native CLI and pinned official JS roles only; no candidate native API/source/default/Matrix/public-after qualification. Frozen source-authored expectations remain immutable.',
+  inputs: [fileSeal(controlsPath), fileSeal(proposalPath), fileSeal(primaryPath), fileSeal(compilerPrimaryPath)],
+  observer: fileSeal(fileURLToPath(import.meta.url)), sourceProposalHead: proposal.head,
+  native: { binary: fileSeal(binary), version: rawRun(['--version'], folder),
+    knownPublicTuple: { C: '123c0f363d90bfa20cbf669f52ddb85343332568', H: '15e116fa258c7aaba5c6fdd2456442535605abe8', R: '38081199501', sourcePr: 8541 },
+    producerSourceSha256: 'c4a0134e786feca78007040fcfd49b9c8686aca3e63af3b24d81df172ad11ab0',
+    compilerModeInput: 'No compiler propsDestructure mode is passed to this CLI; the compiler role below independently receives it.' },
+  compiler: { primary: compilerPrimary.provider, version: compiler.version },
+  relatedProvider: { primary: fileSeal(primaryPath), packages: packageSeals,
+    config: { files: ['**/*.vue', '**/*.ts'], parser: 'vue-eslint-parser@10.4.1', scriptParser: '@typescript-eslint/parser@8.65.0', ecmaVersion: 'latest', sourceType: 'module', rules: { 'vue/no-setup-props-reactivity-loss': 'warn' }, overrideConfigFile: true, ignore: false },
+    limitation: 'Related reactivity-loss provider; no exact pinned no-deep-destructure-in-props rule.' },
+  cases: [], complete: false,
+};
+const output = path.join(folder, 'observed-eight.json');
+const persist = () => fs.writeFileSync(output, JSON.stringify(evidence, null, 2) + '\n');
+fs.mkdirSync(path.join(folder, 'controls'), { recursive: true });
+persist();
+for (const c of controls.cases) {
+  assert.equal(sha(c.source), c.sourceSha256);
+  const cwd = path.join(folder, 'controls');
+  const sourcePath = path.join(cwd, c.filename);
+  fs.writeFileSync(sourcePath, c.source);
+  const configPath = path.join(cwd, 'vize.config.json');
+  const configBytes = Buffer.from(JSON.stringify({ linter: c.scopedRuleConfig }, null, 2) + '\n');
+  fs.writeFileSync(configPath, configBytes);
+  const row = { id: c.id, filename: c.filename, source: c.source, sourceSha256: c.sourceSha256,
+    config: configBytes.toString('utf8'), configSha256: sha(configBytes),
+    frozenExpectedNative: c.sourceAuthoredCurrentCli, frozenExpectedStatus: c.sourceAuthoredCurrentStatus,
+    native: rawRun(['lint', '--config', 'vize.config.json', '--format', 'json', '--locale', 'en', '--help-level', 'none', c.filename], cwd) };
+  evidence.cases.push(row);
+  row.finalSource = fs.readFileSync(sourcePath).toString('utf8');
+  row.finalSourceSha256 = sha(row.finalSource);
+  try { row.native.wholeJson = JSON.parse(Buffer.from(row.native.stdoutBase64, 'base64').toString('utf8')); }
+  catch (error) { row.native.parseError = complete(error); }
+  persist();
+  try { assert.deepEqual(row.native.wholeJson, c.sourceAuthoredCurrentCli); assert.equal(row.native.status, c.sourceAuthoredCurrentStatus); assert.equal(row.finalSource, c.source); row.native.expectedMatch = true; }
+  catch (error) { row.native.expectedMatch = false; row.native.expectedFailure = complete(error); }
+  const compilerLogs = [], originalLog = console.log, originalWarn = console.warn, originalError = console.error;
+  if (c.filename.endsWith('.vue')) {
+    for (const method of ['log', 'warn', 'error']) console[method] = (...args) => compilerLogs.push({ method, args: complete(args) });
+    row.compiler = { options: { id: `no-deep-${c.id}`, ...c.compilerOptions }, expectedAccepted: c.sourceInferredCompilerAccepted, logs: compilerLogs };
+    try {
+      const parsed = compiler.parse(c.source, { filename: c.filename });
+      row.compiler.parse = complete(parsed);
+      if (parsed.errors.length) row.compiler.accepted = false;
+      else { row.compiler.result = complete(compiler.compileScript(parsed.descriptor, row.compiler.options)); row.compiler.accepted = true; }
+    } catch (error) { row.compiler.accepted = false; row.compiler.error = complete(error); }
+    finally { console.log = originalLog; console.warn = originalWarn; console.error = originalError; }
+    row.compiler.expectedAcceptanceMatch = row.compiler.accepted === c.sourceInferredCompilerAccepted;
+  } else row.compiler = { applicable: false, reason: 'Standalone TypeScript is not an SFC compileScript input.', expectedAccepted: null };
+  persist();
+  row.relatedProvider = { frozenExpected: c.sourceAuthoredRelatedProvider };
+  try { row.relatedProvider.wholeResult = await eslint.lintText(c.source, { filePath: sourcePath }); }
+  catch (error) { row.relatedProvider.error = complete(error); }
+  persist();
+  try { assert.deepEqual(row.relatedProvider.wholeResult, c.sourceAuthoredRelatedProvider); row.relatedProvider.expectedMatch = true; }
+  catch (error) { row.relatedProvider.expectedMatch = false; row.relatedProvider.expectedFailure = complete(error); }
+  persist();
+}
+evidence.after = { binary: fileSeal(binary), controls: fileSeal(controlsPath), proposal: fileSeal(proposalPath), compiler: fileSeal(compilerPrimary.provider.path) };
+assert.equal(evidence.after.binary.sha256, expectedBinarySha);
+assert.equal(evidence.after.controls.sha256, evidence.inputs[0].sha256);
+assert.equal(evidence.after.proposal.sha256, evidence.inputs[1].sha256);
+assert.equal(evidence.after.compiler.sha256, compilerPrimary.provider.sha256);
+evidence.complete = true;
+persist();
+console.log(JSON.stringify({ output, ...fileSeal(output), cases: evidence.cases.map(c => ({ id: c.id, nativeExpectedMatch: c.native.expectedMatch, nativeWarnings: c.native.wholeJson?.reduce((n, f) => n + f.warningCount, 0), compilerAccepted: c.compiler.accepted ?? null, compilerAcceptanceMatch: c.compiler.expectedAcceptanceMatch ?? null, relatedProviderExpectedMatch: c.relatedProvider.expectedMatch, relatedProviderWarnings: c.relatedProvider.wholeResult?.reduce((n, f) => n + f.warningCount, 0) })) }, null, 2));

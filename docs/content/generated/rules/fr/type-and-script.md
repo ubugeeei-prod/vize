@@ -759,7 +759,7 @@ const userName = computed(() => props.user.name);
 
 Le bon exemple évite le diagnostic de cette règle avec la configuration ci-dessus ; d’autres règles peuvent encore signaler des diagnostics.
 
-[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L37) · [Toutes les règles](all.md)
+[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L39) · [Toutes les règles](all.md)
 
 ### `script/no-deprecated-data-object-declaration`
 

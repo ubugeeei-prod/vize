@@ -6,6 +6,10 @@ import {
   authenticateSetupExportPresetSourceFamily,
   setupExportRegistry,
 } from "./setup-export-preset-source-custody.mjs";
+import {
+  authenticateDeepPropsSourceFamily,
+  deepPropsFamilyPaths,
+} from "./props-deep-source-custody.mjs";
 
 const directory = "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody";
 const manifestHash = "ea908f5de1c09c19ad59bf9f64bbbabccab676940f584fe754bb8e10f79828cb";
@@ -38,7 +42,7 @@ function iterator(bytes) {
   return Buffer.from(text.slice(start, end).trimEnd() + "\n");
 }
 
-/** Original runtime family or its complete registry-only preset successor; old pins stay literal. */
+/** Original runtime or explicitly complete preset/depth successors; old pins stay literal. */
 export function authenticateRuntimeApiSourceFamily(root, read = reader(root)) {
   const bytes = read(`${directory}/successor.json`);
   assert.equal(sha256(bytes), manifestHash, "finite runtime source manifest changed");
@@ -71,8 +75,15 @@ export function authenticateRuntimeApiSourceFamily(root, read = reader(root)) {
     const after = read(`${directory}/${source.after.archive}`);
     assert(matches(after, source.after), `authored after body changed: ${source.path}`);
     if (!matches(read(source.path), source.after)) {
-      assert.equal(source.path, setupExportRegistry, `unqualified current body: ${source.path}`);
-      authenticateSetupExportPresetSourceFamily(root, manifest, read);
+      if (source.path === setupExportRegistry)
+        authenticateSetupExportPresetSourceFamily(root, manifest, read);
+      else {
+        assert(
+          deepPropsFamilyPaths.includes(source.path),
+          `unqualified current body: ${source.path}`,
+        );
+        authenticateDeepPropsSourceFamily(root, read);
+      }
     }
     assert.equal(source.path, source.after.path);
     if (source.before.absent) {
@@ -101,7 +112,7 @@ export function authenticateRuntimeApiSourceFamily(root, read = reader(root)) {
   return manifest;
 }
 
-/** Preserve every original pin; admit only the two runtime carriers or exact preset registry. */
+/** Authenticate original carrier pins through explicitly complete source successors. */
 export function assertReservedApiOrderSource(root, source, read = reader(root)) {
   if (matches(read(source.path), source)) return "original";
   if (source.path === setupExportRegistry) {

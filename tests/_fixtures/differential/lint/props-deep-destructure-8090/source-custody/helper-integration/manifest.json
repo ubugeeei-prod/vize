@@ -1,0 +1,38 @@
+{
+  "schema": "vize.lint.props-deep-destructure-helper-integration",
+  "version": 1,
+  "base": "edc003416dafd322aa6cd100dde488fb112a2abb",
+  "boundary": "Only complete source-family successor routing; original runtime/preset archives and laws remain immutable. No measurement qualification or digest normalization.",
+  "helpers": [
+    {
+      "path": "tests/tooling/support/runtime-props-api-source-custody.mjs",
+      "before": {
+        "archive": "01-before.mjs.fixture",
+        "bytes": 5787,
+        "sha256": "e9a91456ac78d8ec9449a1c8a539a735df3a4a7e67091ad282518c77f9564455",
+        "gitBlob": "50368c6b88ce63186c4c5e246c4b4c0b46725a4b"
+      },
+      "after": {
+        "archive": "01-after.mjs.fixture",
+        "bytes": 6045,
+        "sha256": "8c9e884f8099a1125ab0518d5f569baf043f7416509190dfa61b8db212a38d33",
+        "gitBlob": "a8fce88502aa29db93afdfb233c892a15516e99d"
+      }
+    },
+    {
+      "path": "tests/tooling/support/setup-export-preset-source-custody.mjs",
+      "before": {
+        "archive": "02-before.mjs.fixture",
+        "bytes": 5128,
+        "sha256": "0930abbf603bb8faa5643ad1adca3b74608122f8db63df9bdfbf5155f1e2fd38",
+        "gitBlob": "5a093216152521cc580b95c27e22fc419f947bf3"
+      },
+      "after": {
+        "archive": "02-after.mjs.fixture",
+        "bytes": 5387,
+        "sha256": "8995c93374509bbb37be4fd0df0506df1b8d6bac4737496d5f66410d19527b7a",
+        "gitBlob": "af400a192e7d2384aefdd823483caf257419b93d"
+      }
+    }
+  ]
+}

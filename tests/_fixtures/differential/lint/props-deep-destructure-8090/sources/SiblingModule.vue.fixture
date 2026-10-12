@@ -1,0 +1,7 @@
+<script lang="ts">
+const external = 1;
+</script>
+<script setup lang="ts">
+const { user: { name } } = defineProps<{ user: { name: string } }>();
+</script>
+<template><div /></template>

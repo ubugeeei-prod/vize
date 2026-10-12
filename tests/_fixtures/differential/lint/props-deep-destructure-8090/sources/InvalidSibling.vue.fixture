@@ -1,0 +1,7 @@
+<script lang="ts">
+const broken = ;
+</script>
+<script setup lang="ts">
+const { user: { name } } = defineProps<{ user: { name: string } }>();
+</script>
+<template><div /></template>
