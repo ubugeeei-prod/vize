@@ -146,3 +146,12 @@ the approved Moon selector before reversing only that predicate for the original
 whole-job comparison; the fixture, workflow and production bodies stay fixed.
 Replay this unchanged init coverage onto that actual parent and rerun source
 Actions. The single composed eighteen-worker campaign has not yet started.
+
+Exact child `8993e110` passes Check and Nuxt, but its native phase
+[38191524503](https://github.com/ubugeeei-prod/vize/actions/runs/38191524503)
+fails with exit 127 because the pull-request workflow invokes an absent
+`native-lexical-dollar.sh` source helper. Its full log and original native
+artifact remain retained. Parent `379f47e2` genuinely rebases onto actual main
+`47b204f2`, inheriting the accepted helper through ancestry. Replay the complete
+child onto that parent; require both fresh source gates before the still unused
+composed eighteen-worker campaign. No helper is copied from a foreign checkout.
