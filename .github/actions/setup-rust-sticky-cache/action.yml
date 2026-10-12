@@ -115,7 +115,8 @@ runs:
         restore-keys: ${{ steps.cache-policy.outputs.target-restore }}
         lookup-only: ${{ steps.cache-mounts.outputs.target == 'true' }}
     - name: Cache the secondary Rust target or seed its trusted clone
-      if: ${{ steps.cache-policy.outputs.secondary-save == 'true' && steps.cache-policy.outputs.secondary == 'true' }}
+      # The mounted docs example already has its original sticky provider post.
+      if: ${{ steps.cache-policy.outputs.secondary-save == 'true' && steps.cache-policy.outputs.secondary == 'true' && (inputs.key != 'docs-wasm' || inputs.secondary-key != 'docs-example' || steps.cache-mounts.outputs.secondary != 'true') }}
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         path: ${{ inputs.secondary-target-path }}
@@ -144,10 +145,10 @@ runs:
         restore-keys: ${{ steps.cache-policy.outputs.target-restore }}
         lookup-only: ${{ steps.cache-mounts.outputs.target == 'true' }}
     - name: Restore a secondary target without registering a save
-      if: ${{ steps.cache-policy.outputs.secondary-save == 'false' && steps.cache-policy.outputs.secondary == 'true' }}
+      if: ${{ (steps.cache-policy.outputs.secondary-save == 'false' || (inputs.key == 'docs-wasm' && inputs.secondary-key == 'docs-example' && steps.cache-mounts.outputs.secondary == 'true')) && steps.cache-policy.outputs.secondary == 'true' }}
       uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         path: ${{ inputs.secondary-target-path }}
-        key: ${{ steps.cache-policy.outputs.secondary-key }}
+        key: ${{ inputs.key == 'docs-wasm' && inputs.secondary-key == 'docs-example' && steps.cache-mounts.outputs.secondary == 'true' && steps.cache-policy.outputs.secondary-seed-key || steps.cache-policy.outputs.secondary-key }}
         restore-keys: ${{ steps.cache-policy.outputs.secondary-restore }}
         lookup-only: ${{ steps.cache-mounts.outputs.secondary == 'true' }}
