@@ -167,6 +167,29 @@ fn l3_extraction_remarks_match_the_committed_baseline() {
         changes.len()
     );
 
+    let new_files: Vec<_> = current
+        .files
+        .iter()
+        .filter(|path| !committed.files.contains(*path))
+        .cloned()
+        .collect();
+    if !new_files.is_empty() {
+        let observed = RemarkCorpus {
+            files: new_files,
+            entries: current
+                .entries
+                .iter()
+                .filter(|entry| !committed.files.contains(&entry.path))
+                .cloned()
+                .collect(),
+            explained: Vec::new(),
+        };
+        eprintln!(
+            "ts-32 s3 complete observed new-file corpus begin\n{}ts-32 s3 complete observed new-file corpus end",
+            observed.print_to_string(DumpMode::Full)
+        );
+    }
+
     if std::env::var_os(UPDATE_ENV).is_some() {
         let unexplained = unexplained_regressions(&changes, &committed);
         assert!(
