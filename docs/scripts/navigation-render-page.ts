@@ -102,6 +102,15 @@ export async function verifyNavigationRenderJob(
   await phase("assets", async () => {
     await page.locator("h1").first().waitFor();
     await page.evaluate(() => document.fonts.ready);
+    if (route === "/rules/options-musea" || route === "/ja/rules/options-musea") {
+      for (const bookmark of ["musea-rule-options", "musea-prefer-design-tokens"]) {
+        assert.equal(
+          await page.locator(`[id="${bookmark}"]`).count(),
+          1,
+          `${route}: unique Musea options bookmark ${bookmark}`,
+        );
+      }
+    }
     await page.waitForFunction(() =>
       [...document.images].every(
         (image) =>
