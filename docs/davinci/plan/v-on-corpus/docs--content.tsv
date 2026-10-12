@@ -34,6 +34,8 @@ docs/content/generated/rules/fr/vue.md	@keyup.esc
 docs/content/generated/rules/fr/vue.md	@click.ctrl
 docs/content/generated/rules/fr/vue.md	@click.exact
 docs/content/generated/rules/fr/vue.md	@click.ctrl
+docs/content/generated/rules/ja/accessibility-integrity.md	@keydown.enter
+docs/content/generated/rules/ja/accessibility-integrity.md	@keydown.enter
 docs/content/generated/rules/ja/accessibility.md	@keydown.enter
 docs/content/generated/rules/ja/accessibility.md	@keydown.enter
 docs/content/generated/rules/ja/cross-file.md	@save.stop

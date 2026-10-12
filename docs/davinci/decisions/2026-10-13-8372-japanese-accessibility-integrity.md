@@ -22,7 +22,11 @@ The added route retains both desktop and mobile qualification.
 
 Change only this subgroup's locale availability in the More ledger.
 Source laws retain all seven packets, their 28 complete code blocks,
-metadata, reader links and anchors. Exact-head Actions, native compiled
+metadata, reader links and anchors. Regenerate the natural v-on inventory
+with its existing producer: the new catalogue adds two existing
+`@keydown.enter` examples. Removing those two rows restores the complete
+original shard; all other shards, scanner and two-entry limits stay unchanged.
+Exact-head Actions, native compiled
 anchors, actual protected merge and official deployed reader acceptance
 remain required; source preservation does not prove those results.
 
