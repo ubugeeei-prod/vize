@@ -165,3 +165,32 @@ changes affect only CI diagnostics, their tests and docs; native recipes, Cargo
 inputs, package locks, loader and authored init bodies stay byte-equal. Preserve
 the complete incoming decision record and all five cohorts. The original run
 is not an exact-head successor run and gives no published-consumer acceptance.
+
+## Completed campaign and current main composition
+
+The original `977e28b2` campaign finishes successfully: all six native hosts and
+all twelve fresh-install workers pass, with all ten ordered completion markers
+on every fresh worker. Its full eighteen logs remain retained. The separately
+configured selected producer is skipped in this default run and contributes no
+qualification. This success belongs to the original source; it is not a new
+exact-head campaign or published-release acceptance.
+
+Actual main `5a9b8df9` includes the accepted Patina and native SSR changes. Their
+compiled product bodies differ from the original campaign. The genuine replay
+`d738f20b` retains the complete incoming source, all eight authored init bodies
+and both independently accepted cohort additions. None of its six historical
+whole maps matches the combined inventory and SSR capture, so the unchanged
+original guard correctly reports seven passing and three failing laws before
+any additional review. Preserve that refusal as evidence of the missing
+composition, rather than changing its predicates.
+
+Independent review authenticates all 214 historical member bodies, every
+current physical and committed member, and all three complete import roots.
+A seventh whole 36-member map records only this actual composition: the init
+inventory is `3e43f81b` and the accepted SSR capture is `f04791dd`. All six raw
+historical objects, schema, exclusions, native-consumer checks and future-change
+refusals stay exact. The new manager contract remains incomplete and broad.
+Require fresh exact-source Actions and protected queue suites for the replay;
+retain the original eighteen-worker result without assigning it to changed
+current-main product bodies. Further platform campaigns require an explicit
+remaining coverage decision and are not automatic retries.
