@@ -46,9 +46,9 @@ const capsule = JSON.parse(
     "utf8",
   ),
 );
-void test("all88 JS and all323 current NoMutating sources precede the genuine historical NoUnused source check", () => {
+void test("all93 JS and all323 current NoMutating sources precede the genuine historical NoUnused source check", () => {
   const view = authenticateJavaScriptSfcSource(read);
-  assert.equal(view.receipt.bodyPairs, 88);
+  assert.equal(view.receipt.bodyPairs, 93);
   assert.equal(view.receipt.runtimeCredit, false);
   assert.equal(
     sha(bodies.get(hook)!),
@@ -142,7 +142,7 @@ const treeRecords = git(["ls-tree", "-z", selectedHead, "--", ...javascriptSfcSo
   .toString()
   .split("\0");
 assert.equal(treeRecords.pop(), "");
-assert.equal(treeRecords.length, 88);
+assert.equal(treeRecords.length, 93);
 const treeEntries = new Map(
   treeRecords.map((record) => {
     const match = /^100644 blob ([a-f0-9]{40})\t(.+)$/u.exec(record);
@@ -156,9 +156,9 @@ const objects = javascriptSfcSourcePaths.map((file: string) => {
   return object;
 });
 const batch = git(["cat-file", "--batch"], objects.join("\n") + "\n");
-void test("the whole actual88 Git batch and copied raw/physical source bodies retain complete custody", () => {
+void test("the whole actual93 Git batch and copied raw/physical source bodies retain complete custody", () => {
   const decoded = decodeJavaScriptSfcRawBatch(objects, batch);
-  assert.equal(decoded.size, 88);
+  assert.equal(decoded.size, 93);
   for (const file of javascriptSfcSourcePaths) {
     assert.deepEqual(decoded.get(file).body, bodies.get(file));
     const borrowed = actual(file);
@@ -202,7 +202,7 @@ void test("genuine whole Git batch rejects missing, partial, extra, foreign-oid,
     bodies.get(javascriptSfcSourcePaths[0]),
   );
 });
-void test("a real changed HEAD or replacement ref refuses after the same complete88 physical source read", () => {
+void test("a real changed HEAD or replacement ref refuses after the same complete93 physical source read", () => {
   const fixture = fs.mkdtempSync(path.join(os.tmpdir(), "vize-js-source-owner-"));
   try {
     git(["init", "--quiet", fixture]);
@@ -219,14 +219,14 @@ void test("a real changed HEAD or replacement ref refuses after the same complet
       fs.writeFileSync(target, bodies.get(file)!, { mode: 0o644 });
     }
     const owner = javascriptSfcSourceReader(fixture, true);
-    assert.equal(authenticateJavaScriptSfcSource(owner).receipt.bodyPairs, 88);
+    assert.equal(authenticateJavaScriptSfcSource(owner).receipt.bodyPairs, 93);
     const changedPath = path.join(fixture, javascriptSfcSourcePaths[0]);
     const changedBody = Buffer.from(bodies.get(javascriptSfcSourcePaths[0])!);
     changedBody[0] ^= 1;
     fs.writeFileSync(changedPath, changedBody);
     assert.throws(() => authenticateJavaScriptSfcSource(owner));
     fs.writeFileSync(changedPath, bodies.get(javascriptSfcSourcePaths[0])!);
-    assert.equal(authenticateJavaScriptSfcSource(owner).receipt.bodyPairs, 88);
+    assert.equal(authenticateJavaScriptSfcSource(owner).receipt.bodyPairs, 93);
     const otherHead = git(["rev-parse", "HEAD^"], undefined, fixture).toString().trim();
     assert.notEqual(otherHead, selectedHead);
     git(["update-ref", "HEAD", otherHead], undefined, fixture);

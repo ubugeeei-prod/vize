@@ -106,8 +106,19 @@ pub(super) fn build_vue_registered_file(
     let descriptor = prepare_script_blocks(descriptor);
 
     let use_tsx_virtual = descriptor_uses_jsx_script(&descriptor);
+    // Options API codegen gives a normal script a typed component surface,
+    // including the normal block in a mixed normal/setup SFC. Match the
+    // generator's Vue 2 mode; a setup-only JS block retains allowJs membership.
+    let typed_options_projection = descriptor.script.is_some()
+        && (context.options_api
+            || context.legacy_vue2
+            || matches!(
+                context.dialect,
+                vize_carton::config::VueVersion::V2 | vize_carton::config::VueVersion::V2_7
+            ));
     let denied_javascript = context.editor_document_options.is_none()
         && !context.allow_javascript
+        && !typed_options_projection
         && descriptor_is_javascript(&descriptor);
     let source_type = if use_tsx_virtual {
         SourceType::tsx()

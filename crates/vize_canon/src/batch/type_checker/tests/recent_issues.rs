@@ -345,3 +345,5 @@ watchEffect(() => {
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+mod options_projection;

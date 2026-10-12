@@ -25,12 +25,13 @@ const pairs = new Map(
 );
 const digest = (side, file) => pairs.get(file)?.[side] ?? null;
 
-await test("all88 actual producer and caller bodies authenticate before the one historical source-only view", () => {
+await test("all93 actual producer and caller bodies authenticate before the one historical source-only view", () => {
   const context = authenticateJavaScriptSfcSource(javascriptSfcSourceReader(root));
   assert.deepEqual(context.receipt, {
     authority: "complete-javascript-sfc-source-context",
-    bodyPairs: 88,
-    changedProductionBodies: 27,
+    bodyPairs: 93,
+    baseBodyPairs: 88,
+    changedProductionBodies: 31,
     sourceOnly: true,
     runtimeCredit: false,
     original400Credit: false,
@@ -60,7 +61,7 @@ await test("each whole current producer corpus and source helper body is require
 await test("actual before-after source qualifier retains every pair and rejects partial mixed or foreign scope", () => {
   const result = qualifyJavaScriptSfcHost([...javascriptSfcProductionPaths], new Set(), digest);
   assert.ok(result);
-  assert.equal(result.completeBodyPairs, 88);
+  assert.equal(result.completeBodyPairs, 93);
   assert.equal(result.original400Credit, false);
   for (const [file, before, after] of javascriptSfcBodyPairs)
     for (const side of ["before", "after"])

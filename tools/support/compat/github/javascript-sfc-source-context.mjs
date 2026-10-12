@@ -3,6 +3,12 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import {
+  javascriptSfcOptionsRows,
+  javascriptSfcOptionsContextPaths,
+  javascriptSfcOptionsProductionPaths,
+  retainedJavaScriptSfcOptionsAfter,
+} from "./javascript-sfc-options-source.mjs";
 
 const sha = (body) => createHash("sha256").update(body).digest("hex");
 const regular = (file) => {
@@ -94,8 +100,10 @@ assert.deepEqual(
   Buffer.from(correctedBody.toString().replace(assertion.clause.after, assertion.clause.before)),
   retainedBody,
 );
-const currentRows = rows.map((row) =>
-  row.path === assertion.path ? { ...row, after: assertion.currentAfter } : row,
+const currentRows = javascriptSfcOptionsRows(
+  rows.map((row) =>
+    row.path === assertion.path ? { ...row, after: assertion.currentAfter } : row,
+  ),
 );
 
 for (const row of currentRows) {
@@ -114,10 +122,14 @@ for (const row of currentRows) {
   }
   assert.ok(row.after);
 }
-export const javascriptSfcSourcePaths = Object.freeze(rows.map((row) => row.path));
-export const javascriptSfcProductionPaths = Object.freeze([...data.production]);
+export const javascriptSfcSourcePaths = Object.freeze(currentRows.map((row) => row.path));
+export const javascriptSfcProductionPaths = Object.freeze([
+  ...data.production,
+  ...javascriptSfcOptionsProductionPaths,
+]);
 export const javascriptSfcContextPaths = Object.freeze([
   "tools/support/compat/github/javascript-sfc-source-context.mjs",
+  ...javascriptSfcOptionsContextPaths,
   data.callerContext,
   "tools/support/compat/github/" + assertionName,
   ...[dataName, ...data.parts.map(([name]) => name)].map(
@@ -232,8 +244,9 @@ export function authenticateJavaScriptSfcSource(read) {
   return {
     receipt: {
       authority: "complete-javascript-sfc-source-context",
-      bodyPairs: rows.length,
-      changedProductionBodies: data.production.length,
+      bodyPairs: currentRows.length,
+      baseBodyPairs: rows.length,
+      changedProductionBodies: javascriptSfcProductionPaths.length,
       sourceOnly: true,
       runtimeCredit: false,
       original400Credit: false,
@@ -244,6 +257,13 @@ export function authenticateJavaScriptSfcSource(read) {
       assert.ok(data.callerPaths.includes(file) && actual.has(file));
       const row = rows.find((row) => row.path === file);
       return Buffer.from(row.before.body, "base64");
+    },
+    retainedCapturedAfter(file) {
+      assert.ok(
+        rows.some((row) => row.path === file),
+        "one original88 source owner",
+      );
+      return retainedJavaScriptSfcOptionsAfter(file, actual);
     },
     historicalAfter(file) {
       assert.ok(actual.has(file), file);

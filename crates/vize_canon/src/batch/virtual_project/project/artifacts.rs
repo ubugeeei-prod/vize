@@ -201,3 +201,6 @@ fn is_musea_art_vue_path(path: &Path) -> bool {
 
 #[cfg(test)]
 mod javascript_collision_tests;
+
+#[cfg(test)]
+mod options_projection_tests;
