@@ -1,0 +1,204 @@
+[
+  {
+    "id": "computed-literal-map",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst shown = computed(() => [1, 2].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 0
+  },
+  {
+    "id": "watch-effect-literal-map",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nwatchEffect(() => { const shown = [1, 2].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }); });\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 0
+  },
+  {
+    "id": "vue-import-alias",
+    "source": "<script setup lang=\"ts\">\nimport { computed as derive, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst shown = derive(() => [1, 2].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 0
+  },
+  {
+    "id": "nested-literal-map",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst shown = computed(() => [3].map(() => [1, 2].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; })));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 0
+  },
+  {
+    "id": "fresh-owner-local",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst shown = computed(() => { const h = held.value; return [1].map(() => ({ ...h.shape })); });\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 0
+  },
+  {
+    "id": "historical-single-map-callback",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst shown = [1, 2].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; });\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 0,
+    "preservedHistoricalSingleFunction": true
+  },
+  {
+    "id": "ordinary-outer-callback",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nfoo(() => [1, 2].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "ordinary-function",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nfunction ordinary() { return [1, 2].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }); }\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "foreign-computed",
+    "source": "<script setup lang=\"ts\">\nimport { watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nimport { computed } from \"foreign\";\nconst shown = computed(() => [1, 2].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "lexical-computed-shadow",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nfunction ordinary(computed: (fn: () => unknown) => unknown) { return computed(() => [1, 2].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; })); }\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "later-hoisted-computed-shadow",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nfunction ordinary() { const shown = computed(() => [1, 2].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; })); function computed(fn: () => unknown) { return fn(); } return shown; }\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "async-reactive-owner",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst shown = computed(async () => [1, 2].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2,
+    "expectedCliErrors": [
+      {
+        "ruleId": "script/no-async-in-computed",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-async-in-computed] Computed properties cannot be async. They must return a value synchronously.",
+        "line": 11,
+        "column": 15,
+        "endLine": 11,
+        "endColumn": 29,
+        "help": "Use ref with watch() and cleanup for async operations; abort or ignore stale work before assigning the result."
+      }
+    ]
+  },
+  {
+    "id": "after-owner-await",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst shown = computed(async () => { await tick(); return [1, 2].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }); });\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2,
+    "expectedCliErrors": [
+      {
+        "ruleId": "script/no-async-in-computed",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-async-in-computed] Computed properties cannot be async. They must return a value synchronously.",
+        "line": 11,
+        "column": 15,
+        "endLine": 11,
+        "endColumn": 29,
+        "help": "Use ref with watch() and cleanup for async operations; abort or ignore stale work before assigning the result."
+      }
+    ]
+  },
+  {
+    "id": "async-map-callback",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst shown = computed(() => [1, 2].map(async (id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "after-map-await",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst shown = computed(() => [1, 2].map(async (id) => { await tick(); const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "regular-map-function",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst shown = computed(() => [1, 2].map(function (id) { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "deferred-before-map",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst shown = computed(() => setTimeout(() => [1, 2].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }), 0));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "deferred-inside-map",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst shown = computed(() => [1, 2].map((id) => setTimeout(() => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }, 0)));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "promise-continuation",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst shown = computed(() => Promise.resolve().then(() => [1, 2].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; })));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "custom-map",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst shown = computed(() => custom.map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "aliased-array-receiver",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst values = [1, 2]; const shown = computed(() => values.map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "spread-array-receiver",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst shown = computed(() => [...values].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "effectful-array-element",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst shown = computed(() => [mutate()].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "optional-map-call",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst shown = computed(() => [1, 2].map?.((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "array-map-assignment",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nArray.prototype.map = (fn) => { queued.push(fn); return []; }; const shown = computed(() => [1, 2].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "later-array-map-assignment",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst shown = computed(() => [1, 2].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; })); Array.prototype.map = (fn) => { queued.push(fn); return []; };\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "array-map-accessor",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nObject.defineProperty(Array.prototype, \"map\", { get() { return (fn) => { queued.push(fn); return []; }; } }); const shown = computed(() => [1, 2].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "deferred-array-map-override",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nsetTimeout(() => { Array.prototype.map = (fn) => { queued.push(fn); return []; }; }, 0); const shown = computed(() => [1, 2].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "escaped-array-map-override",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nArr\\u0061y.prototype.m\\u0061p = (fn) => { queued.push(fn); return []; }; const shown = computed(() => [1, 2].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "prototype-alias-override",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst prototype = [].__proto__; prototype.map = (fn) => { queued.push(fn); return []; }; const shown = computed(() => [1, 2].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "dynamic-prototype-override",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst prototype = [][key]; prototype[property] = replacement; const shown = computed(() => [1, 2].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "captured-outside-snapshot",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst h = held.value; const shown = computed(() => [1, 2].map(() => ({ ...h.shape })));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "captured-outside-alias",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst outside = held.value; const shown = computed(() => [1].map(() => { const h = outside; return { ...h.shape }; }));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "outside-after-callback",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst shown = computed(() => [1, 2].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; })); const h = held.value; const outside = { ...h.shape };\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  },
+  {
+    "id": "hole-array-receiver",
+    "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst shown = computed(() => [, 2].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }));\n</script>\n<template><p>control</p></template>\n",
+    "expectedSnapshotAndSpreadWarnings": 2
+  }
+]

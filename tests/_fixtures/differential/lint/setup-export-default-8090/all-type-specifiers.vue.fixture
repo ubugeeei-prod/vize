@@ -1,0 +1,4 @@
+<script setup lang="ts">
+type Props = { title: string }; export { type Props };
+</script>
+<template><div /></template>

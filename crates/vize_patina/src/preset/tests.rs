@@ -260,11 +260,11 @@ fn happy_path_keeps_opinionated_rules_opt_in() {
     );
     assert!(!super::builtin_script_rule_names(LintPreset::Nuxt).contains(&"script/no-next-tick"));
     assert!(
-        !super::builtin_script_rule_names(LintPreset::Opinionated)
+        super::builtin_script_rule_names(LintPreset::Opinionated)
             .contains(&"script/no-export-in-script-setup")
     );
     assert!(
-        !super::builtin_script_rule_names(LintPreset::Nuxt)
+        super::builtin_script_rule_names(LintPreset::Nuxt)
             .contains(&"script/no-export-in-script-setup")
     );
     assert!(

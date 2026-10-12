@@ -297,6 +297,7 @@ law(
       "GITHUB_RUN_ID",
       "GITHUB_RUN_ATTEMPT",
       "VIZE_SOURCE_CLI_RECEIPT_SHA256",
+      "VIZE_SOURCE_CLI_USE_RECEIPT_SHA256",
     ];
     const before = fields.map((field) => process.env[field]);
     try {
@@ -304,6 +305,7 @@ law(
       process.env.GITHUB_RUN_ID = value.identity.runId;
       process.env.GITHUB_RUN_ATTEMPT = value.identity.runAttempt;
       process.env.VIZE_SOURCE_CLI_RECEIPT_SHA256 = value.hashes.receiptSha256;
+      delete process.env.VIZE_SOURCE_CLI_USE_RECEIPT_SHA256;
       const executable = path.join(value.consumer, CLI_MEMBERS[2]);
       assert.deepEqual(sharedOracleAuthority(value.consumer, executable)?.identity, value.identity);
       const bytes = fs.readFileSync(executable);

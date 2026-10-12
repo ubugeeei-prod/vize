@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
+import ts from "typescript";
 
 import { repoRoot } from "./_helpers/moonbit.ts";
 
@@ -48,8 +49,8 @@ test("Japanese rule option docs mirror every typed lint rule option", () => {
 
   assertRuleOptionsReference(optionsDoc, {
     title: /# ルール オプション/,
-    unknownFields: /未知の option field は拒否/,
-    scopedReplacement: /option object 全体を置き換え/,
+    unknownFields: /定義されていないフィールドを指定するとエラーになります/,
+    scopedReplacement: /後から一致する設定がある場合は、\s*そのルールのオプション全体を置き換え/,
     badLabel: "悪い",
     goodLabel: "良い",
   });
@@ -203,3 +204,56 @@ function tableRules(source: string): string[] {
     (match) => match[1]!,
   );
 }
+
+void test("documented props rule options typecheck against the generated public configuration API", () => {
+  const recipes: string[] = [];
+  for (const doc of [
+    "rules/options-script.md",
+    "ja/rules/options.md",
+    "ja/rules/options-script.md",
+  ]) {
+    const section = sectionFor(
+      fs.readFileSync(path.join(repoRoot, "docs/content", doc), "utf8"),
+      "## `script/define-props-destructuring`",
+    );
+    const options = [...section.matchAll(/^\s*ruleOptions: (\{[^\n]+\})[, ]*$/gm)].map(
+      (match) => match[1]!,
+    );
+    assert.equal(options.length, 2, `${doc}: complete setup and migration options`);
+    recipes.push(...options);
+  }
+  const filename = path.join(repoRoot, ".cache/docs-props-options-contract.ts");
+  const generated = path.join(repoRoot, "npm/cli/src/types/generated.ts");
+  const compilerOptions: ts.CompilerOptions = {
+    noEmit: true,
+    strict: true,
+    skipLibCheck: true,
+    types: [],
+    target: ts.ScriptTarget.ESNext,
+    module: ts.ModuleKind.NodeNext,
+    moduleResolution: ts.ModuleResolutionKind.NodeNext,
+    allowImportingTsExtensions: true,
+  };
+  const diagnose = (options: string[]) => {
+    const source =
+      `import type { LintRuleOptions } from ${JSON.stringify(generated)};\n` +
+      options.map((value, index) => `const recipe${index}: LintRuleOptions = ${value};`).join("\n");
+    const host = ts.createCompilerHost(compilerOptions);
+    const original = host.getSourceFile.bind(host);
+    host.getSourceFile = (file, languageVersion, onError, fresh) =>
+      file === filename
+        ? ts.createSourceFile(file, source, languageVersion, true)
+        : original(file, languageVersion, onError, fresh);
+    return ts.getPreEmitDiagnostics(ts.createProgram([filename], compilerOptions, host));
+  };
+  assert.deepEqual(
+    diagnose(recipes).map((item) => ts.flattenDiagnosticMessageText(item.messageText, "\n")),
+    [],
+    "every whole documented option object must satisfy the actual generated API",
+  );
+  const oldField = diagnose(['{ "script/define-props-destructuring": { mode: "always" } }']);
+  assert(
+    oldField.some((item) => item.code === 2353),
+    "the inherited unknown mode field is refused",
+  );
+});

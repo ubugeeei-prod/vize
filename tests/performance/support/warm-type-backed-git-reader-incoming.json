@@ -1,0 +1,45 @@
+{
+  "schema": "vize.raw-git-reader.incoming-harness",
+  "version": 1,
+  "originalSource": "dd188515f8ec3c51662b4f4d69adcd39c86a0907",
+  "historicalReaderBefore": "5459e40a23ca7e647ace8ebd20e1fe00c9294437",
+  "historicalReaderAfter": "293ec2db652d33f82fc77cca7c1966d1d602dde7",
+  "namedFamilyBodies": 70,
+  "files": [
+    [
+      "tests/performance/support/warm-type-backed-path-host.ts",
+      "b73e46382f99176d54dfa9b5945f6126eefedd6ecfb9cbd4c733151c3e2c6c30",
+      "99f84b671f904a819b5e6e1e319fd97db2ae537b7ba1c773013b1e0e87cd7940"
+    ],
+    [
+      "tests/tooling/warm-type-backed-git-body-authority.test.ts",
+      null,
+      "8f1690c69868d074cd38c48b5994c0e0edf81ecf206ce8722ab946beb40e50c6"
+    ],
+    [
+      "docs/davinci/decisions/2026-10-12-3952-raw-git-body-authority.md",
+      null,
+      "96e2922f3db078f04ed682ee6fb9f367e2aa7f021e3eaf7e80c25d918aa92037"
+    ],
+    [
+      "tests/performance/support/warm-type-backed-path-host-manifest.json",
+      "36256d2672412efe1681fab3137fab4f641622920360ea690a98a463a7325805",
+      "36256d2672412efe1681fab3137fab4f641622920360ea690a98a463a7325805"
+    ],
+    [
+      "tests/tooling/warm-type-backed-path-host.test.ts",
+      "3dfad726a861009ea8b906752797f6be8654adbba5955dcb649cb0e48d455d48",
+      "3dfad726a861009ea8b906752797f6be8654adbba5955dcb649cb0e48d455d48"
+    ],
+    [
+      "tests/tooling/warm-type-backed-default-migration-host.test.ts",
+      "5084578fa77c215ee7555708d9cc6284826a36dced1a9f31c5e6b417a1447704",
+      "5084578fa77c215ee7555708d9cc6284826a36dced1a9f31c5e6b417a1447704"
+    ],
+    [
+      "tests/tooling/warm-type-backed-git-reader-incoming.test.ts",
+      null,
+      "d7b7789b3a993b2434aeede15203fa15a177c4190833e65839a09963928007bd"
+    ]
+  ]
+}

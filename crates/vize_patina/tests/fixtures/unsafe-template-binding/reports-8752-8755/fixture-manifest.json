@@ -1,0 +1,302 @@
+{
+  "schema": "vize.unsafe-template-binding-reports-scaffolding",
+  "version": 1,
+  "status": "Independent source-authored expectations before candidate execution; 24 self-contained scoped cases and one unchanged RouterView original in a normal required-runtime lane. Genuine fixture dependencies and all execution remain pending. No full Opinionated, Corsa, API, CLI, Actions or public acceptance is recorded here.",
+  "oracles": [
+    {
+      "path": "scoped-semantic-oracles.json",
+      "sha256": "35c59a4c8fec4eeb71ebeef352d407c5779e761729c40f3b3318b4ebfd50a0b8",
+      "cases": 22
+    },
+    {
+      "path": "owner-type-supplement.json",
+      "sha256": "0c4b749afb5f2c7b99375afb9dca56aa6af6fcafbbcb09763ab636d9ab0a6efd",
+      "cases": 3
+    }
+  ],
+  "originalReporterCustodySha256": "b691c9eee0a73aac33116abea7bbf698a72df0bea86af5337852ca46ad0b7c3c",
+  "routerOriginal": {
+    "id": "RouterViewSlot",
+    "version": "5.3.1",
+    "status": "Explicitly unqualified until the genuine reported dependency is installed in this isolated fixture workspace and the normal full-packet test executes; no stub or version substitution.",
+    "lane": "Normal original_router_requires_reported_dependency and original-config tests, mandatory when VIZE_TEST_REQUIRE_TSGO is set; genuine private workspace Vue 3.5.42 and entire vue-router 5.3.1 package/declarations/license bytes compared to official reference custody before execution."
+  },
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 3622,
+      "sha256": "c42c053b4b626189d352bc108ed70099e6019b597933b866dfb926ff1660c5b3"
+    },
+    {
+      "path": "cases/DirectiveObjectArg.vue",
+      "bytes": 292,
+      "sha256": "ecc6b75b3994fd2db8423c6eb45f2f6a68a1c625135d63453d44004cc4046120"
+    },
+    {
+      "path": "cases/MultilineAttr.vue",
+      "bytes": 181,
+      "sha256": "b6eba3b949dc4c2c4b493fbc097442219a394408f6af9435947a493a2765827d"
+    },
+    {
+      "path": "cases/MultilineTernary.vue",
+      "bytes": 555,
+      "sha256": "e278f3b7c2bd632ae2df778c2d598aa852987800a034a060cc1b2d93fa8b6683"
+    },
+    {
+      "path": "cases/RouterViewSlot.vue",
+      "bytes": 188,
+      "sha256": "12dcecb086ed22095ac57b83d544a523fedc3f055c36c9b6629bed258a75cd93"
+    },
+    {
+      "path": "cases/SafeCrLfAttributeUnicode.vue",
+      "bytes": 134,
+      "sha256": "e84f19228624f81ba07d48ac57f24ff75ad71735ce02885b1c9237639de9029d"
+    },
+    {
+      "path": "cases/SafeInertMarkers.vue",
+      "bytes": 157,
+      "sha256": "4fe1761dcfd9c14e5a392ec06f502a991f60157a2c2b07f77655eae382290261"
+    },
+    {
+      "path": "cases/SafeLoopLocal.vue",
+      "bytes": 142,
+      "sha256": "629256f3e597e92eddef3d4dfd0e3c714c91b85fd47103f93ef5a70130cf8d47"
+    },
+    {
+      "path": "cases/SafeObjectBinding.vue",
+      "bytes": 177,
+      "sha256": "bf9c389205bc03c9c7665fe24da072ca92c4fcf1b2c44c9cd8474f4e65362953"
+    },
+    {
+      "path": "cases/SafeObjectPredicateMultiline.vue",
+      "bytes": 160,
+      "sha256": "e6ce1ff8c60a84768caafe54088bfdba6c7d8716ac3fccc46ccbe04c501e2e0d"
+    },
+    {
+      "path": "cases/SafeSequenceExpression.vue",
+      "bytes": 107,
+      "sha256": "40ea64551fb6e50ae2127ecd8262fdebd7310acf3be1499753df83c7ee2d6b8c"
+    },
+    {
+      "path": "cases/SafeSiblingBindings.vue",
+      "bytes": 127,
+      "sha256": "589240d30d3b4a1471c5afaf7a144be4313162d99f33d17e852a54b0a9bc5fa7"
+    },
+    {
+      "path": "cases/SafeSlotDeclarationAndValue.vue",
+      "bytes": 215,
+      "sha256": "7fcb5bfa5c5e56bc66b7b56b0cf0c00829eeaa44ce9e0b3caa7b3602b8e55b58"
+    },
+    {
+      "path": "cases/UnsafeAdjacentProbeAfterSafe.vue",
+      "bytes": 150,
+      "sha256": "8e38b1dc3b27858af6b0fbd3e799802aaf88f18a90ada37d3763bb8978c49a54"
+    },
+    {
+      "path": "cases/UnsafeAnyBinding.vue",
+      "bytes": 103,
+      "sha256": "31f57db62ddf61d8b4fb9be1774a14860fc7930c6e136c85d0c6dc6917465d41"
+    },
+    {
+      "path": "cases/UnsafeAnyConsequentTypedObjectAlternate.vue",
+      "bytes": 222,
+      "sha256": "f88a7c33a6d514fa1022fb5027d346fca5cc4657d832b99e78fbff74b6171590"
+    },
+    {
+      "path": "cases/UnsafeAnyLoopField.vue",
+      "bytes": 142,
+      "sha256": "2b851265bf643aea6585069db4f6a58af79b434dfe3c3305703cbff4734852fd"
+    },
+    {
+      "path": "cases/UnsafeAnyObjectCallCallee.vue",
+      "bytes": 143,
+      "sha256": "3e8f5d1eeba0fe18b6aeea0add2bbc14a7ec86452e21cecb20a2745a708f88be"
+    },
+    {
+      "path": "cases/UnsafeAnyObjectCallReturn.vue",
+      "bytes": 143,
+      "sha256": "b18eadc5cabee73c41fa70b026f2c731b5a5b7e489abfc28b1f176f83c3d2b3c"
+    },
+    {
+      "path": "cases/UnsafeAnyObjectReturnAlternate.vue",
+      "bytes": 217,
+      "sha256": "bc3157f4fba8c136668ba7319e220f1c907e6f3b9b6ca51ee02b288e27781851"
+    },
+    {
+      "path": "cases/UnsafeAnySlotDescendant.vue",
+      "bytes": 203,
+      "sha256": "dac773309fbde4ca103888f37455bd7b7a1a944ab57099844072457db68983b0"
+    },
+    {
+      "path": "cases/UnsafeUnknownBindingMultiline.vue",
+      "bytes": 110,
+      "sha256": "036c6a0482b34671dafc2d2e0ead224b2c2bc8271b60a695faf5a4c98a33025c"
+    },
+    {
+      "path": "cases/UnsafeUnknownConsequentTypedObjectAlternate.vue",
+      "bytes": 226,
+      "sha256": "55c9f774ed0a55ad3c099c70d85da7bced1a9e7f5a92222c1d87c040a7d37783"
+    },
+    {
+      "path": "cases/UnsafeUnknownMultilineTernary.vue",
+      "bytes": 158,
+      "sha256": "d2cd8187b2ad5f67c4de556cbff5234197adbad9ffab6c2eac8c653c327dd4f2"
+    },
+    {
+      "path": "cases/UnsafeUnknownSlotAliasDescendant.vue",
+      "bytes": 218,
+      "sha256": "7ce76466f3f059e1445d5178a71b204488d6f8cb4cdbfe0f6ebeafbeaf6cc31d"
+    },
+    {
+      "path": "cases/UnsafeValueWithInertMarkers.vue",
+      "bytes": 141,
+      "sha256": "410ee1b914b8d5e134f11aa5b12985b9bcef7f7d79b5e3963ada5b4bb97b2ab7"
+    },
+    {
+      "path": "initial-original-config-oracles.json",
+      "bytes": 88967,
+      "sha256": "7731725c7283547557e100a2c35fce16463b746ce9ec1db93c369693d7159d29"
+    },
+    {
+      "path": "original-config-oracles.json",
+      "bytes": 99590,
+      "sha256": "bacc9a6c64903cdc45ff29d0522dad4c2c85c1b4f9b47dab6e939290dcde895d"
+    },
+    {
+      "path": "original-reports/8752.json",
+      "bytes": 5797,
+      "sha256": "7439c8d4c17236c6dfa92a9166d3cbceb58e650135236ee54dce807627b95a14"
+    },
+    {
+      "path": "original-reports/8752.md",
+      "bytes": 1352,
+      "sha256": "5515255f5e9b0c31752208e7108afeb1bdc3015cbb2d27d9e21e5271b833a013"
+    },
+    {
+      "path": "original-reports/8753.json",
+      "bytes": 5648,
+      "sha256": "382e776cd04f16078dd959316bd4f8850c048756a64161ad58daf28a307be4e1"
+    },
+    {
+      "path": "original-reports/8753.md",
+      "bytes": 1201,
+      "sha256": "7edfa55e0fc021df29b5fed61af2c14c44fddc4ec8fbb5361619b0e8d025aa1a"
+    },
+    {
+      "path": "original-reports/8754.json",
+      "bytes": 6112,
+      "sha256": "3993a57e6d1d66f87e962201b9885a9181c43e63b9579a496efc524985a01ff9"
+    },
+    {
+      "path": "original-reports/8754.md",
+      "bytes": 1629,
+      "sha256": "55f0bf94168f9a92f8ee225950f66fe4bcfbd828a7548b74099781f6a4eadb47"
+    },
+    {
+      "path": "original-reports/8755.json",
+      "bytes": 5632,
+      "sha256": "84a7bf2c18394c55089e555f63efb98c64f7d88306cdfde775cee28cd0ac1786"
+    },
+    {
+      "path": "original-reports/8755.md",
+      "bytes": 1170,
+      "sha256": "5372cc4075b12201e0a0b5167ee9ff4e7365c5319da949ea9a631c83cb0deae4"
+    },
+    {
+      "path": "original-reports/DirectiveObjectArg.vue",
+      "bytes": 292,
+      "sha256": "ecc6b75b3994fd2db8423c6eb45f2f6a68a1c625135d63453d44004cc4046120"
+    },
+    {
+      "path": "original-reports/MultilineAttr.vue",
+      "bytes": 181,
+      "sha256": "b6eba3b949dc4c2c4b493fbc097442219a394408f6af9435947a493a2765827d"
+    },
+    {
+      "path": "original-reports/MultilineTernary.vue",
+      "bytes": 555,
+      "sha256": "e278f3b7c2bd632ae2df778c2d598aa852987800a034a060cc1b2d93fa8b6683"
+    },
+    {
+      "path": "original-reports/RouterViewSlot.vue",
+      "bytes": 188,
+      "sha256": "12dcecb086ed22095ac57b83d544a523fedc3f055c36c9b6629bed258a75cd93"
+    },
+    {
+      "path": "original-reports/reporter-commit.json",
+      "bytes": 6291,
+      "sha256": "30379a77aaaa29088eabb156ac00ebe2a98d502cc2f394914ef16984f63842b7"
+    },
+    {
+      "path": "original-reports/reporter-identity.json",
+      "bytes": 506,
+      "sha256": "15cda35092e69056b02774e7d7df84e0b1a45a91bd4b424a68aa5cbd240a160e"
+    },
+    {
+      "path": "original-reports/source-custody.json",
+      "bytes": 1801,
+      "sha256": "b691c9eee0a73aac33116abea7bbf698a72df0bea86af5337852ca46ad0b7c3c"
+    },
+    {
+      "path": "original-reports/tsconfig.json",
+      "bytes": 221,
+      "sha256": "735410e1bd02c5346abd7cf4c569f4ff5e73d579b25650d3d6a70436f8689c94"
+    },
+    {
+      "path": "original-reports/vize.config.json",
+      "bytes": 73,
+      "sha256": "a74e83cd33e432a4f3d8f7f801cd3fcd61efecebd4724b15964ba9d1855dddf1"
+    },
+    {
+      "path": "owner-type-supplement.json",
+      "bytes": 10004,
+      "sha256": "0c4b749afb5f2c7b99375afb9dca56aa6af6fcafbbcb09763ab636d9ab0a6efd"
+    },
+    {
+      "path": "package.json",
+      "bytes": 183,
+      "sha256": "c0d7d9829e9736e5f86c7bdb34ccd26573b4dc043f45c9088347f25f1233663f"
+    },
+    {
+      "path": "preparation/before-original-config-public-expression-tests.rs.fixture",
+      "bytes": 8854,
+      "sha256": "74f9548298f317da8c0878baa1bc3761db6a4f1a9f992ba89b726c4e07418bf3"
+    },
+    {
+      "path": "preparation/before-output-collection-public-expression-tests.rs.fixture",
+      "bytes": 8029,
+      "sha256": "3bbcf32dcfd64e6b346272dc38751f9452e0d236baddc6ba8ac5240591ee1e1a"
+    },
+    {
+      "path": "preparation/before-router-custody-public-expression-tests.rs.fixture",
+      "bytes": 11160,
+      "sha256": "57949e247c3a0dc3c7372adf020448204e60d13194ba0b0928d67dd79b7ac53e"
+    },
+    {
+      "path": "preparation/initial-public-expression-tests.rs.fixture",
+      "bytes": 8203,
+      "sha256": "3f57add279c6d0bb746d2836ce6fefccba756e2066513ba95b492bd7b7010d22"
+    },
+    {
+      "path": "scoped-semantic-oracles.json",
+      "bytes": 37773,
+      "sha256": "35c59a4c8fec4eeb71ebeef352d407c5779e761729c40f3b3318b4ebfd50a0b8"
+    }
+  ],
+  "initialPreparation": {
+    "path": "preparation/initial-public-expression-tests.rs.fixture",
+    "sha256": "3f57add279c6d0bb746d2836ce6fefccba756e2066513ba95b492bd7b7010d22",
+    "status": "Original ignored real-project lane preparation, never executed. Preserved before changing the lane to ordinary required execution."
+  },
+  "outputCollectionPreparation": {
+    "path": "preparation/before-output-collection-public-expression-tests.rs.fixture",
+    "sha256": "3bbcf32dcfd64e6b346272dc38751f9452e0d236baddc6ba8ac5240591ee1e1a",
+    "status": "Complete unexecuted prior test source retained before collecting every whole observed packet ahead of one final expected-vector assertion. No oracle or source SFC field changed."
+  },
+  "originalConfigPreparation": {
+    "path": "original-config-oracles.json",
+    "sha256": "bacc9a6c64903cdc45ff29d0522dad4c2c85c1b4f9b47dab6e939290dcde895d",
+    "cases": 4,
+    "status": "Normal required-Corsa full Opinionated test before any candidate execution; all actual packets printed before final full equality. Scoped 25 oracle bodies remain unchanged."
+  }
+}

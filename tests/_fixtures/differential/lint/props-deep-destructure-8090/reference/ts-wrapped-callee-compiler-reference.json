@@ -1,0 +1,1484 @@
+{
+  "schema": "vize.lint.no-deep-ts-wrapped-callee-compiler-reference",
+  "version": 1,
+  "role": "Pinned compiler only; no candidate/source native or runtime execution.",
+  "inputs": {
+    "path": "/tmp/vize-next-preset-readonly-audit-20261012/ts-wrapped-callee-authored-controls.json",
+    "bytes": 3288,
+    "sha256": "4e6c693e881e8d547846b0a99d653d7c0eca784425b748b08c2288630fa71b4d"
+  },
+  "primary": {
+    "path": "/tmp/vize-no-export-preset-compiler-reference-20261012.json",
+    "sha256": "2a1748dad2d77cf4542e70c35b43c2a422e4e991f369f8e5a46ea83b11d8c898",
+    "provider": {
+      "version": "3.5.43",
+      "path": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-sfc@3.5.43/node_modules/@vue/compiler-sfc/dist/compiler-sfc.cjs.js",
+      "sha256": "884835f119c169afc7c3913a3f80bea700491ea96a3606e815441a0e9e8b702b",
+      "officialSource": "https://raw.githubusercontent.com/vuejs/core/v3.5.43/packages/compiler-sfc/src/compileScript.ts"
+    }
+  },
+  "observerSha256": "022d6240147177293bf228ae7f17da887dcbcad6c71dbe6399840bb0634e1061",
+  "cases": [
+    {
+      "id": "ts-wrapped-define-props-callee",
+      "filename": "TypeWrappedCallee.vue",
+      "source": "<script setup lang=\"ts\">\nconst { user: { name } } = (defineProps as any)();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "e0748abcc21cd8dfdf97d15716562a2610f9531c4ae6b278d129f0303088d1c7",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "TypeWrappedCallee.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "beforeCli": [
+        {
+          "file": "TypeWrappedCallee.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "TypeWrappedCallee.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "TypeWrappedCallee.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": true,
+      "sourceBasis": "Pinned compiler3.5.43 processDefineProps/processWithDefaults calls isCallOf(node,name), which requires bare Identifier callee. unwrapTSNode applies to initializer, not callee. Whole native vectors authored before compiler/native observation.",
+      "observed": false,
+      "options": {
+        "id": "ts-wrapped-define-props-callee"
+      },
+      "logs": [],
+      "parse": {
+        "descriptor": {
+          "filename": "TypeWrappedCallee.vue",
+          "source": "<script setup lang=\"ts\">\nconst { user: { name } } = (defineProps as any)();\n</script>\n<template><div /></template>\n",
+          "template": {
+            "type": "template",
+            "content": "<div />",
+            "loc": {
+              "start": {
+                "column": 11,
+                "line": 4,
+                "offset": 96
+              },
+              "end": {
+                "column": 18,
+                "line": 4,
+                "offset": 103
+              },
+              "source": "<div />"
+            },
+            "attrs": {},
+            "ast": {
+              "type": 0,
+              "source": "<script setup lang=\"ts\">\nconst { user: { name } } = (defineProps as any)();\n</script>\n<template><div /></template>\n",
+              "children": [
+                {
+                  "type": 1,
+                  "tag": "div",
+                  "ns": 0,
+                  "tagType": 0,
+                  "props": [],
+                  "children": [],
+                  "loc": {
+                    "start": {
+                      "column": 11,
+                      "line": 4,
+                      "offset": 96
+                    },
+                    "end": {
+                      "column": 18,
+                      "line": 4,
+                      "offset": 103
+                    },
+                    "source": "<div />"
+                  },
+                  "codegenNode": {
+                    "$type": "undefined"
+                  },
+                  "isSelfClosing": true
+                }
+              ],
+              "helpers": {
+                "$type": "Set"
+              },
+              "components": [],
+              "directives": [],
+              "hoists": [],
+              "imports": [],
+              "cached": [],
+              "temps": 0,
+              "codegenNode": {
+                "$type": "undefined"
+              },
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 1,
+                  "offset": 0
+                },
+                "end": {
+                  "line": 1,
+                  "column": 1,
+                  "offset": 0
+                },
+                "source": ""
+              }
+            },
+            "map": {
+              "version": 3,
+              "sources": [
+                "TypeWrappedCallee.vue"
+              ],
+              "names": [],
+              "mappings": "AAGA,CAAC,CAAC,CAAC,EAAE,CAAC",
+              "file": "TypeWrappedCallee.vue",
+              "sourceRoot": "",
+              "sourcesContent": [
+                "<script setup lang=\"ts\">\nconst { user: { name } } = (defineProps as any)();\n</script>\n<template><div /></template>\n"
+              ]
+            }
+          },
+          "script": null,
+          "scriptSetup": {
+            "type": "script",
+            "content": "\nconst { user: { name } } = (defineProps as any)();\n",
+            "loc": {
+              "start": {
+                "column": 25,
+                "line": 1,
+                "offset": 24
+              },
+              "end": {
+                "column": 1,
+                "line": 3,
+                "offset": 76
+              },
+              "source": "\nconst { user: { name } } = (defineProps as any)();\n"
+            },
+            "attrs": {
+              "setup": true,
+              "lang": "ts"
+            },
+            "setup": true,
+            "lang": "ts"
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": {
+            "$type": "function",
+            "source": "(prevImports) => hmrShouldReload(prevImports, descriptor)"
+          }
+        },
+        "errors": []
+      },
+      "result": {
+        "type": "script",
+        "content": "import { defineComponent as _defineComponent } from 'vue'\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'TypeWrappedCallee',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst { user: { name } } = (defineProps as any)();\n\nconst __returned__ = { name }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+        "loc": {
+          "start": {
+            "column": 25,
+            "line": 1,
+            "offset": 24
+          },
+          "end": {
+            "column": 1,
+            "line": 3,
+            "offset": 76
+          },
+          "source": "\nconst { user: { name } } = (defineProps as any)();\n"
+        },
+        "attrs": {
+          "setup": true,
+          "lang": "ts"
+        },
+        "setup": true,
+        "lang": "ts",
+        "bindings": {
+          "name": "setup-maybe-ref"
+        },
+        "imports": {
+          "$type": "null-prototype"
+        },
+        "map": {
+          "$type": "SourceMap",
+          "version": 3,
+          "file": {
+            "$type": "undefined"
+          },
+          "sources": [
+            "TypeWrappedCallee.vue"
+          ],
+          "sourcesContent": [
+            "<script setup lang=\"ts\">\nconst { user: { name } } = (defineProps as any)();\n</script>\n<template><div /></template>\n"
+          ],
+          "names": [],
+          "mappings": ";;;;;;;AACA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;"
+        },
+        "scriptAst": {
+          "$type": "undefined"
+        },
+        "scriptSetupAst": [
+          {
+            "$type": "Node",
+            "type": "VariableDeclaration",
+            "start": 1,
+            "end": 51,
+            "loc": {
+              "$type": "SourceLocation",
+              "start": {
+                "$type": "Position",
+                "line": 2,
+                "column": 0,
+                "index": 1
+              },
+              "end": {
+                "$type": "Position",
+                "line": 2,
+                "column": 50,
+                "index": 51
+              },
+              "filename": {
+                "$type": "undefined"
+              },
+              "identifierName": {
+                "$type": "undefined"
+              }
+            },
+            "declarations": [
+              {
+                "$type": "Node",
+                "type": "VariableDeclarator",
+                "start": 7,
+                "end": 50,
+                "loc": {
+                  "$type": "SourceLocation",
+                  "start": {
+                    "$type": "Position",
+                    "line": 2,
+                    "column": 6,
+                    "index": 7
+                  },
+                  "end": {
+                    "$type": "Position",
+                    "line": 2,
+                    "column": 49,
+                    "index": 50
+                  },
+                  "filename": {
+                    "$type": "undefined"
+                  },
+                  "identifierName": {
+                    "$type": "undefined"
+                  }
+                },
+                "id": {
+                  "$type": "Node",
+                  "type": "ObjectPattern",
+                  "start": 7,
+                  "end": 25,
+                  "loc": {
+                    "$type": "SourceLocation",
+                    "start": {
+                      "$ref": "$.scriptSetupAst[0].declarations[0].loc.start"
+                    },
+                    "end": {
+                      "$type": "Position",
+                      "line": 2,
+                      "column": 24,
+                      "index": 25
+                    },
+                    "filename": {
+                      "$type": "undefined"
+                    },
+                    "identifierName": {
+                      "$type": "undefined"
+                    }
+                  },
+                  "properties": [
+                    {
+                      "$type": "Node",
+                      "type": "ObjectProperty",
+                      "start": 9,
+                      "end": 23,
+                      "loc": {
+                        "$type": "SourceLocation",
+                        "start": {
+                          "$type": "Position",
+                          "line": 2,
+                          "column": 8,
+                          "index": 9
+                        },
+                        "end": {
+                          "$type": "Position",
+                          "line": 2,
+                          "column": 22,
+                          "index": 23
+                        },
+                        "filename": {
+                          "$type": "undefined"
+                        },
+                        "identifierName": {
+                          "$type": "undefined"
+                        }
+                      },
+                      "key": {
+                        "$type": "Node",
+                        "type": "Identifier",
+                        "start": 9,
+                        "end": 13,
+                        "loc": {
+                          "$type": "SourceLocation",
+                          "start": {
+                            "$ref": "$.scriptSetupAst[0].declarations[0].id.properties[0].loc.start"
+                          },
+                          "end": {
+                            "$type": "Position",
+                            "line": 2,
+                            "column": 12,
+                            "index": 13
+                          },
+                          "filename": {
+                            "$type": "undefined"
+                          },
+                          "identifierName": "user"
+                        },
+                        "name": "user"
+                      },
+                      "computed": false,
+                      "method": false,
+                      "shorthand": false,
+                      "value": {
+                        "$type": "Node",
+                        "type": "ObjectPattern",
+                        "start": 15,
+                        "end": 23,
+                        "loc": {
+                          "$type": "SourceLocation",
+                          "start": {
+                            "$type": "Position",
+                            "line": 2,
+                            "column": 14,
+                            "index": 15
+                          },
+                          "end": {
+                            "$ref": "$.scriptSetupAst[0].declarations[0].id.properties[0].loc.end"
+                          },
+                          "filename": {
+                            "$type": "undefined"
+                          },
+                          "identifierName": {
+                            "$type": "undefined"
+                          }
+                        },
+                        "properties": [
+                          {
+                            "$type": "Node",
+                            "type": "ObjectProperty",
+                            "start": 17,
+                            "end": 21,
+                            "loc": {
+                              "$type": "SourceLocation",
+                              "start": {
+                                "$type": "Position",
+                                "line": 2,
+                                "column": 16,
+                                "index": 17
+                              },
+                              "end": {
+                                "$type": "Position",
+                                "line": 2,
+                                "column": 20,
+                                "index": 21
+                              },
+                              "filename": {
+                                "$type": "undefined"
+                              },
+                              "identifierName": {
+                                "$type": "undefined"
+                              }
+                            },
+                            "key": {
+                              "$type": "Node",
+                              "type": "Identifier",
+                              "start": 17,
+                              "end": 21,
+                              "loc": {
+                                "$type": "SourceLocation",
+                                "start": {
+                                  "$ref": "$.scriptSetupAst[0].declarations[0].id.properties[0].value.properties[0].loc.start"
+                                },
+                                "end": {
+                                  "$ref": "$.scriptSetupAst[0].declarations[0].id.properties[0].value.properties[0].loc.end"
+                                },
+                                "filename": {
+                                  "$type": "undefined"
+                                },
+                                "identifierName": "name"
+                              },
+                              "name": "name"
+                            },
+                            "computed": false,
+                            "method": false,
+                            "shorthand": true,
+                            "value": {
+                              "$type": "Node",
+                              "type": "Identifier",
+                              "start": 17,
+                              "end": 21,
+                              "loc": {
+                                "$ref": "$.scriptSetupAst[0].declarations[0].id.properties[0].value.properties[0].key.loc"
+                              },
+                              "range": {
+                                "$type": "undefined"
+                              },
+                              "name": "name"
+                            },
+                            "extra": {
+                              "shorthand": true
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "init": {
+                  "$type": "Node",
+                  "type": "CallExpression",
+                  "start": 28,
+                  "end": 50,
+                  "loc": {
+                    "$type": "SourceLocation",
+                    "start": {
+                      "$type": "Position",
+                      "line": 2,
+                      "column": 27,
+                      "index": 28
+                    },
+                    "end": {
+                      "$ref": "$.scriptSetupAst[0].declarations[0].loc.end"
+                    },
+                    "filename": {
+                      "$type": "undefined"
+                    },
+                    "identifierName": {
+                      "$type": "undefined"
+                    }
+                  },
+                  "callee": {
+                    "$type": "Node",
+                    "type": "TSAsExpression",
+                    "start": 29,
+                    "end": 47,
+                    "loc": {
+                      "$type": "SourceLocation",
+                      "start": {
+                        "$type": "Position",
+                        "line": 2,
+                        "column": 28,
+                        "index": 29
+                      },
+                      "end": {
+                        "$type": "Position",
+                        "line": 2,
+                        "column": 46,
+                        "index": 47
+                      },
+                      "filename": {
+                        "$type": "undefined"
+                      },
+                      "identifierName": {
+                        "$type": "undefined"
+                      }
+                    },
+                    "expression": {
+                      "$type": "Node",
+                      "type": "Identifier",
+                      "start": 29,
+                      "end": 40,
+                      "loc": {
+                        "$type": "SourceLocation",
+                        "start": {
+                          "$ref": "$.scriptSetupAst[0].declarations[0].init.callee.loc.start"
+                        },
+                        "end": {
+                          "$type": "Position",
+                          "line": 2,
+                          "column": 39,
+                          "index": 40
+                        },
+                        "filename": {
+                          "$type": "undefined"
+                        },
+                        "identifierName": "defineProps"
+                      },
+                      "name": "defineProps"
+                    },
+                    "typeAnnotation": {
+                      "$type": "Node",
+                      "type": "TSAnyKeyword",
+                      "start": 44,
+                      "end": 47,
+                      "loc": {
+                        "$type": "SourceLocation",
+                        "start": {
+                          "$type": "Position",
+                          "line": 2,
+                          "column": 43,
+                          "index": 44
+                        },
+                        "end": {
+                          "$ref": "$.scriptSetupAst[0].declarations[0].init.callee.loc.end"
+                        },
+                        "filename": {
+                          "$type": "undefined"
+                        },
+                        "identifierName": {
+                          "$type": "undefined"
+                        }
+                      }
+                    },
+                    "extra": {
+                      "parenthesized": true,
+                      "parenStart": 28
+                    }
+                  },
+                  "arguments": []
+                }
+              }
+            ],
+            "kind": "const"
+          }
+        ],
+        "deps": {
+          "$type": "undefined"
+        }
+      },
+      "accepted": true,
+      "expectedAcceptanceMatch": true
+    },
+    {
+      "id": "ts-wrapped-with-defaults-callee",
+      "filename": "TypeWrappedDefaultsCallee.vue",
+      "source": "<script setup lang=\"ts\">\nconst { user: { name } } = (withDefaults as any)(defineProps<{ user: { name: string } }>(), {});\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "8970fd0882c3251f73dab84cc3653852bc6de443813f1e90582f7b8bfbc905a8",
+      "config": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "beforeApi": {
+        "filename": "TypeWrappedDefaultsCallee.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "beforeCli": [
+        {
+          "file": "TypeWrappedDefaultsCallee.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterApi": {
+        "filename": "TypeWrappedDefaultsCallee.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "TypeWrappedDefaultsCallee.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "compilerOptions": {},
+      "sourceInferredCompilerAccepted": true,
+      "sourceBasis": "Pinned compiler3.5.43 processDefineProps/processWithDefaults calls isCallOf(node,name), which requires bare Identifier callee. unwrapTSNode applies to initializer, not callee. Whole native vectors authored before compiler/native observation.",
+      "observed": false,
+      "options": {
+        "id": "ts-wrapped-with-defaults-callee"
+      },
+      "logs": [],
+      "parse": {
+        "descriptor": {
+          "filename": "TypeWrappedDefaultsCallee.vue",
+          "source": "<script setup lang=\"ts\">\nconst { user: { name } } = (withDefaults as any)(defineProps<{ user: { name: string } }>(), {});\n</script>\n<template><div /></template>\n",
+          "template": {
+            "type": "template",
+            "content": "<div />",
+            "loc": {
+              "start": {
+                "column": 11,
+                "line": 4,
+                "offset": 142
+              },
+              "end": {
+                "column": 18,
+                "line": 4,
+                "offset": 149
+              },
+              "source": "<div />"
+            },
+            "attrs": {},
+            "ast": {
+              "type": 0,
+              "source": "<script setup lang=\"ts\">\nconst { user: { name } } = (withDefaults as any)(defineProps<{ user: { name: string } }>(), {});\n</script>\n<template><div /></template>\n",
+              "children": [
+                {
+                  "type": 1,
+                  "tag": "div",
+                  "ns": 0,
+                  "tagType": 0,
+                  "props": [],
+                  "children": [],
+                  "loc": {
+                    "start": {
+                      "column": 11,
+                      "line": 4,
+                      "offset": 142
+                    },
+                    "end": {
+                      "column": 18,
+                      "line": 4,
+                      "offset": 149
+                    },
+                    "source": "<div />"
+                  },
+                  "codegenNode": {
+                    "$type": "undefined"
+                  },
+                  "isSelfClosing": true
+                }
+              ],
+              "helpers": {
+                "$type": "Set"
+              },
+              "components": [],
+              "directives": [],
+              "hoists": [],
+              "imports": [],
+              "cached": [],
+              "temps": 0,
+              "codegenNode": {
+                "$type": "undefined"
+              },
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 1,
+                  "offset": 0
+                },
+                "end": {
+                  "line": 1,
+                  "column": 1,
+                  "offset": 0
+                },
+                "source": ""
+              }
+            },
+            "map": {
+              "version": 3,
+              "sources": [
+                "TypeWrappedDefaultsCallee.vue"
+              ],
+              "names": [],
+              "mappings": "AAGA,CAAC,CAAC,CAAC,EAAE,CAAC",
+              "file": "TypeWrappedDefaultsCallee.vue",
+              "sourceRoot": "",
+              "sourcesContent": [
+                "<script setup lang=\"ts\">\nconst { user: { name } } = (withDefaults as any)(defineProps<{ user: { name: string } }>(), {});\n</script>\n<template><div /></template>\n"
+              ]
+            }
+          },
+          "script": null,
+          "scriptSetup": {
+            "type": "script",
+            "content": "\nconst { user: { name } } = (withDefaults as any)(defineProps<{ user: { name: string } }>(), {});\n",
+            "loc": {
+              "start": {
+                "column": 25,
+                "line": 1,
+                "offset": 24
+              },
+              "end": {
+                "column": 1,
+                "line": 3,
+                "offset": 122
+              },
+              "source": "\nconst { user: { name } } = (withDefaults as any)(defineProps<{ user: { name: string } }>(), {});\n"
+            },
+            "attrs": {
+              "setup": true,
+              "lang": "ts"
+            },
+            "setup": true,
+            "lang": "ts"
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": {
+            "$type": "function",
+            "source": "(prevImports) => hmrShouldReload(prevImports, descriptor)"
+          }
+        },
+        "errors": []
+      },
+      "result": {
+        "type": "script",
+        "content": "import { defineComponent as _defineComponent } from 'vue'\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'TypeWrappedDefaultsCallee',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst { user: { name } } = (withDefaults as any)(defineProps<{ user: { name: string } }>(), {});\n\nconst __returned__ = { name }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+        "loc": {
+          "start": {
+            "column": 25,
+            "line": 1,
+            "offset": 24
+          },
+          "end": {
+            "column": 1,
+            "line": 3,
+            "offset": 122
+          },
+          "source": "\nconst { user: { name } } = (withDefaults as any)(defineProps<{ user: { name: string } }>(), {});\n"
+        },
+        "attrs": {
+          "setup": true,
+          "lang": "ts"
+        },
+        "setup": true,
+        "lang": "ts",
+        "bindings": {
+          "name": "setup-maybe-ref"
+        },
+        "imports": {
+          "$type": "null-prototype"
+        },
+        "map": {
+          "$type": "SourceMap",
+          "version": 3,
+          "file": {
+            "$type": "undefined"
+          },
+          "sources": [
+            "TypeWrappedDefaultsCallee.vue"
+          ],
+          "sourcesContent": [
+            "<script setup lang=\"ts\">\nconst { user: { name } } = (withDefaults as any)(defineProps<{ user: { name: string } }>(), {});\n</script>\n<template><div /></template>\n"
+          ],
+          "names": [],
+          "mappings": ";;;;;;;AACA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;"
+        },
+        "scriptAst": {
+          "$type": "undefined"
+        },
+        "scriptSetupAst": [
+          {
+            "$type": "Node",
+            "type": "VariableDeclaration",
+            "start": 1,
+            "end": 97,
+            "loc": {
+              "$type": "SourceLocation",
+              "start": {
+                "$type": "Position",
+                "line": 2,
+                "column": 0,
+                "index": 1
+              },
+              "end": {
+                "$type": "Position",
+                "line": 2,
+                "column": 96,
+                "index": 97
+              },
+              "filename": {
+                "$type": "undefined"
+              },
+              "identifierName": {
+                "$type": "undefined"
+              }
+            },
+            "declarations": [
+              {
+                "$type": "Node",
+                "type": "VariableDeclarator",
+                "start": 7,
+                "end": 96,
+                "loc": {
+                  "$type": "SourceLocation",
+                  "start": {
+                    "$type": "Position",
+                    "line": 2,
+                    "column": 6,
+                    "index": 7
+                  },
+                  "end": {
+                    "$type": "Position",
+                    "line": 2,
+                    "column": 95,
+                    "index": 96
+                  },
+                  "filename": {
+                    "$type": "undefined"
+                  },
+                  "identifierName": {
+                    "$type": "undefined"
+                  }
+                },
+                "id": {
+                  "$type": "Node",
+                  "type": "ObjectPattern",
+                  "start": 7,
+                  "end": 25,
+                  "loc": {
+                    "$type": "SourceLocation",
+                    "start": {
+                      "$ref": "$.scriptSetupAst[0].declarations[0].loc.start"
+                    },
+                    "end": {
+                      "$type": "Position",
+                      "line": 2,
+                      "column": 24,
+                      "index": 25
+                    },
+                    "filename": {
+                      "$type": "undefined"
+                    },
+                    "identifierName": {
+                      "$type": "undefined"
+                    }
+                  },
+                  "properties": [
+                    {
+                      "$type": "Node",
+                      "type": "ObjectProperty",
+                      "start": 9,
+                      "end": 23,
+                      "loc": {
+                        "$type": "SourceLocation",
+                        "start": {
+                          "$type": "Position",
+                          "line": 2,
+                          "column": 8,
+                          "index": 9
+                        },
+                        "end": {
+                          "$type": "Position",
+                          "line": 2,
+                          "column": 22,
+                          "index": 23
+                        },
+                        "filename": {
+                          "$type": "undefined"
+                        },
+                        "identifierName": {
+                          "$type": "undefined"
+                        }
+                      },
+                      "key": {
+                        "$type": "Node",
+                        "type": "Identifier",
+                        "start": 9,
+                        "end": 13,
+                        "loc": {
+                          "$type": "SourceLocation",
+                          "start": {
+                            "$ref": "$.scriptSetupAst[0].declarations[0].id.properties[0].loc.start"
+                          },
+                          "end": {
+                            "$type": "Position",
+                            "line": 2,
+                            "column": 12,
+                            "index": 13
+                          },
+                          "filename": {
+                            "$type": "undefined"
+                          },
+                          "identifierName": "user"
+                        },
+                        "name": "user"
+                      },
+                      "computed": false,
+                      "method": false,
+                      "shorthand": false,
+                      "value": {
+                        "$type": "Node",
+                        "type": "ObjectPattern",
+                        "start": 15,
+                        "end": 23,
+                        "loc": {
+                          "$type": "SourceLocation",
+                          "start": {
+                            "$type": "Position",
+                            "line": 2,
+                            "column": 14,
+                            "index": 15
+                          },
+                          "end": {
+                            "$ref": "$.scriptSetupAst[0].declarations[0].id.properties[0].loc.end"
+                          },
+                          "filename": {
+                            "$type": "undefined"
+                          },
+                          "identifierName": {
+                            "$type": "undefined"
+                          }
+                        },
+                        "properties": [
+                          {
+                            "$type": "Node",
+                            "type": "ObjectProperty",
+                            "start": 17,
+                            "end": 21,
+                            "loc": {
+                              "$type": "SourceLocation",
+                              "start": {
+                                "$type": "Position",
+                                "line": 2,
+                                "column": 16,
+                                "index": 17
+                              },
+                              "end": {
+                                "$type": "Position",
+                                "line": 2,
+                                "column": 20,
+                                "index": 21
+                              },
+                              "filename": {
+                                "$type": "undefined"
+                              },
+                              "identifierName": {
+                                "$type": "undefined"
+                              }
+                            },
+                            "key": {
+                              "$type": "Node",
+                              "type": "Identifier",
+                              "start": 17,
+                              "end": 21,
+                              "loc": {
+                                "$type": "SourceLocation",
+                                "start": {
+                                  "$ref": "$.scriptSetupAst[0].declarations[0].id.properties[0].value.properties[0].loc.start"
+                                },
+                                "end": {
+                                  "$ref": "$.scriptSetupAst[0].declarations[0].id.properties[0].value.properties[0].loc.end"
+                                },
+                                "filename": {
+                                  "$type": "undefined"
+                                },
+                                "identifierName": "name"
+                              },
+                              "name": "name"
+                            },
+                            "computed": false,
+                            "method": false,
+                            "shorthand": true,
+                            "value": {
+                              "$type": "Node",
+                              "type": "Identifier",
+                              "start": 17,
+                              "end": 21,
+                              "loc": {
+                                "$ref": "$.scriptSetupAst[0].declarations[0].id.properties[0].value.properties[0].key.loc"
+                              },
+                              "range": {
+                                "$type": "undefined"
+                              },
+                              "name": "name"
+                            },
+                            "extra": {
+                              "shorthand": true
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "init": {
+                  "$type": "Node",
+                  "type": "CallExpression",
+                  "start": 28,
+                  "end": 96,
+                  "loc": {
+                    "$type": "SourceLocation",
+                    "start": {
+                      "$type": "Position",
+                      "line": 2,
+                      "column": 27,
+                      "index": 28
+                    },
+                    "end": {
+                      "$ref": "$.scriptSetupAst[0].declarations[0].loc.end"
+                    },
+                    "filename": {
+                      "$type": "undefined"
+                    },
+                    "identifierName": {
+                      "$type": "undefined"
+                    }
+                  },
+                  "callee": {
+                    "$type": "Node",
+                    "type": "TSAsExpression",
+                    "start": 29,
+                    "end": 48,
+                    "loc": {
+                      "$type": "SourceLocation",
+                      "start": {
+                        "$type": "Position",
+                        "line": 2,
+                        "column": 28,
+                        "index": 29
+                      },
+                      "end": {
+                        "$type": "Position",
+                        "line": 2,
+                        "column": 47,
+                        "index": 48
+                      },
+                      "filename": {
+                        "$type": "undefined"
+                      },
+                      "identifierName": {
+                        "$type": "undefined"
+                      }
+                    },
+                    "expression": {
+                      "$type": "Node",
+                      "type": "Identifier",
+                      "start": 29,
+                      "end": 41,
+                      "loc": {
+                        "$type": "SourceLocation",
+                        "start": {
+                          "$ref": "$.scriptSetupAst[0].declarations[0].init.callee.loc.start"
+                        },
+                        "end": {
+                          "$type": "Position",
+                          "line": 2,
+                          "column": 40,
+                          "index": 41
+                        },
+                        "filename": {
+                          "$type": "undefined"
+                        },
+                        "identifierName": "withDefaults"
+                      },
+                      "name": "withDefaults"
+                    },
+                    "typeAnnotation": {
+                      "$type": "Node",
+                      "type": "TSAnyKeyword",
+                      "start": 45,
+                      "end": 48,
+                      "loc": {
+                        "$type": "SourceLocation",
+                        "start": {
+                          "$type": "Position",
+                          "line": 2,
+                          "column": 44,
+                          "index": 45
+                        },
+                        "end": {
+                          "$ref": "$.scriptSetupAst[0].declarations[0].init.callee.loc.end"
+                        },
+                        "filename": {
+                          "$type": "undefined"
+                        },
+                        "identifierName": {
+                          "$type": "undefined"
+                        }
+                      }
+                    },
+                    "extra": {
+                      "parenthesized": true,
+                      "parenStart": 28
+                    }
+                  },
+                  "arguments": [
+                    {
+                      "$type": "Node",
+                      "type": "CallExpression",
+                      "start": 50,
+                      "end": 91,
+                      "loc": {
+                        "$type": "SourceLocation",
+                        "start": {
+                          "$type": "Position",
+                          "line": 2,
+                          "column": 49,
+                          "index": 50
+                        },
+                        "end": {
+                          "$type": "Position",
+                          "line": 2,
+                          "column": 90,
+                          "index": 91
+                        },
+                        "filename": {
+                          "$type": "undefined"
+                        },
+                        "identifierName": {
+                          "$type": "undefined"
+                        }
+                      },
+                      "callee": {
+                        "$type": "Node",
+                        "type": "Identifier",
+                        "start": 50,
+                        "end": 61,
+                        "loc": {
+                          "$type": "SourceLocation",
+                          "start": {
+                            "$ref": "$.scriptSetupAst[0].declarations[0].init.arguments[0].loc.start"
+                          },
+                          "end": {
+                            "$type": "Position",
+                            "line": 2,
+                            "column": 60,
+                            "index": 61
+                          },
+                          "filename": {
+                            "$type": "undefined"
+                          },
+                          "identifierName": "defineProps"
+                        },
+                        "name": "defineProps"
+                      },
+                      "arguments": [],
+                      "typeParameters": {
+                        "$type": "Node",
+                        "type": "TSTypeParameterInstantiation",
+                        "start": 61,
+                        "end": 89,
+                        "loc": {
+                          "$type": "SourceLocation",
+                          "start": {
+                            "$type": "Position",
+                            "line": 2,
+                            "column": 60,
+                            "index": 61
+                          },
+                          "end": {
+                            "$type": "Position",
+                            "line": 2,
+                            "column": 88,
+                            "index": 89
+                          },
+                          "filename": {
+                            "$type": "undefined"
+                          },
+                          "identifierName": {
+                            "$type": "undefined"
+                          }
+                        },
+                        "params": [
+                          {
+                            "$type": "Node",
+                            "type": "TSTypeLiteral",
+                            "start": 62,
+                            "end": 88,
+                            "loc": {
+                              "$type": "SourceLocation",
+                              "start": {
+                                "$type": "Position",
+                                "line": 2,
+                                "column": 61,
+                                "index": 62
+                              },
+                              "end": {
+                                "$type": "Position",
+                                "line": 2,
+                                "column": 87,
+                                "index": 88
+                              },
+                              "filename": {
+                                "$type": "undefined"
+                              },
+                              "identifierName": {
+                                "$type": "undefined"
+                              }
+                            },
+                            "members": [
+                              {
+                                "$type": "Node",
+                                "type": "TSPropertySignature",
+                                "start": 64,
+                                "end": 86,
+                                "loc": {
+                                  "$type": "SourceLocation",
+                                  "start": {
+                                    "$type": "Position",
+                                    "line": 2,
+                                    "column": 63,
+                                    "index": 64
+                                  },
+                                  "end": {
+                                    "$type": "Position",
+                                    "line": 2,
+                                    "column": 85,
+                                    "index": 86
+                                  },
+                                  "filename": {
+                                    "$type": "undefined"
+                                  },
+                                  "identifierName": {
+                                    "$type": "undefined"
+                                  }
+                                },
+                                "key": {
+                                  "$type": "Node",
+                                  "type": "Identifier",
+                                  "start": 64,
+                                  "end": 68,
+                                  "loc": {
+                                    "$type": "SourceLocation",
+                                    "start": {
+                                      "$ref": "$.scriptSetupAst[0].declarations[0].init.arguments[0].typeParameters.params[0].members[0].loc.start"
+                                    },
+                                    "end": {
+                                      "$type": "Position",
+                                      "line": 2,
+                                      "column": 67,
+                                      "index": 68
+                                    },
+                                    "filename": {
+                                      "$type": "undefined"
+                                    },
+                                    "identifierName": "user"
+                                  },
+                                  "name": "user"
+                                },
+                                "computed": false,
+                                "typeAnnotation": {
+                                  "$type": "Node",
+                                  "type": "TSTypeAnnotation",
+                                  "start": 68,
+                                  "end": 86,
+                                  "loc": {
+                                    "$type": "SourceLocation",
+                                    "start": {
+                                      "$type": "Position",
+                                      "line": 2,
+                                      "column": 67,
+                                      "index": 68
+                                    },
+                                    "end": {
+                                      "$ref": "$.scriptSetupAst[0].declarations[0].init.arguments[0].typeParameters.params[0].members[0].loc.end"
+                                    },
+                                    "filename": {
+                                      "$type": "undefined"
+                                    },
+                                    "identifierName": {
+                                      "$type": "undefined"
+                                    }
+                                  },
+                                  "typeAnnotation": {
+                                    "$type": "Node",
+                                    "type": "TSTypeLiteral",
+                                    "start": 70,
+                                    "end": 86,
+                                    "loc": {
+                                      "$type": "SourceLocation",
+                                      "start": {
+                                        "$type": "Position",
+                                        "line": 2,
+                                        "column": 69,
+                                        "index": 70
+                                      },
+                                      "end": {
+                                        "$ref": "$.scriptSetupAst[0].declarations[0].init.arguments[0].typeParameters.params[0].members[0].loc.end"
+                                      },
+                                      "filename": {
+                                        "$type": "undefined"
+                                      },
+                                      "identifierName": {
+                                        "$type": "undefined"
+                                      }
+                                    },
+                                    "members": [
+                                      {
+                                        "$type": "Node",
+                                        "type": "TSPropertySignature",
+                                        "start": 72,
+                                        "end": 84,
+                                        "loc": {
+                                          "$type": "SourceLocation",
+                                          "start": {
+                                            "$type": "Position",
+                                            "line": 2,
+                                            "column": 71,
+                                            "index": 72
+                                          },
+                                          "end": {
+                                            "$type": "Position",
+                                            "line": 2,
+                                            "column": 83,
+                                            "index": 84
+                                          },
+                                          "filename": {
+                                            "$type": "undefined"
+                                          },
+                                          "identifierName": {
+                                            "$type": "undefined"
+                                          }
+                                        },
+                                        "key": {
+                                          "$type": "Node",
+                                          "type": "Identifier",
+                                          "start": 72,
+                                          "end": 76,
+                                          "loc": {
+                                            "$type": "SourceLocation",
+                                            "start": {
+                                              "$ref": "$.scriptSetupAst[0].declarations[0].init.arguments[0].typeParameters.params[0].members[0].typeAnnotation.typeAnnotation.members[0].loc.start"
+                                            },
+                                            "end": {
+                                              "$type": "Position",
+                                              "line": 2,
+                                              "column": 75,
+                                              "index": 76
+                                            },
+                                            "filename": {
+                                              "$type": "undefined"
+                                            },
+                                            "identifierName": "name"
+                                          },
+                                          "name": "name"
+                                        },
+                                        "computed": false,
+                                        "typeAnnotation": {
+                                          "$type": "Node",
+                                          "type": "TSTypeAnnotation",
+                                          "start": 76,
+                                          "end": 84,
+                                          "loc": {
+                                            "$type": "SourceLocation",
+                                            "start": {
+                                              "$type": "Position",
+                                              "line": 2,
+                                              "column": 75,
+                                              "index": 76
+                                            },
+                                            "end": {
+                                              "$ref": "$.scriptSetupAst[0].declarations[0].init.arguments[0].typeParameters.params[0].members[0].typeAnnotation.typeAnnotation.members[0].loc.end"
+                                            },
+                                            "filename": {
+                                              "$type": "undefined"
+                                            },
+                                            "identifierName": {
+                                              "$type": "undefined"
+                                            }
+                                          },
+                                          "typeAnnotation": {
+                                            "$type": "Node",
+                                            "type": "TSStringKeyword",
+                                            "start": 78,
+                                            "end": 84,
+                                            "loc": {
+                                              "$type": "SourceLocation",
+                                              "start": {
+                                                "$type": "Position",
+                                                "line": 2,
+                                                "column": 77,
+                                                "index": 78
+                                              },
+                                              "end": {
+                                                "$ref": "$.scriptSetupAst[0].declarations[0].init.arguments[0].typeParameters.params[0].members[0].typeAnnotation.typeAnnotation.members[0].loc.end"
+                                              },
+                                              "filename": {
+                                                "$type": "undefined"
+                                              },
+                                              "identifierName": {
+                                                "$type": "undefined"
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "$type": "Node",
+                      "type": "ObjectExpression",
+                      "start": 93,
+                      "end": 95,
+                      "loc": {
+                        "$type": "SourceLocation",
+                        "start": {
+                          "$type": "Position",
+                          "line": 2,
+                          "column": 92,
+                          "index": 93
+                        },
+                        "end": {
+                          "$type": "Position",
+                          "line": 2,
+                          "column": 94,
+                          "index": 95
+                        },
+                        "filename": {
+                          "$type": "undefined"
+                        },
+                        "identifierName": {
+                          "$type": "undefined"
+                        }
+                      },
+                      "properties": []
+                    }
+                  ]
+                }
+              }
+            ],
+            "kind": "const"
+          }
+        ],
+        "deps": {
+          "$type": "undefined"
+        }
+      },
+      "accepted": true,
+      "expectedAcceptanceMatch": true
+    }
+  ],
+  "complete": true
+}

@@ -1,0 +1,277 @@
+{
+  "schema": "vize.lint.component-import-value-reads",
+  "version": 1,
+  "scope": "rule-only source/native corpus proposal; original whole default vectors retained separately; authored after expectations unexecuted",
+  "rules": [
+    "vue/no-unused-components"
+  ],
+  "cases": [
+    {
+      "id": "passed-component-prop",
+      "source": "passed-component-prop.vue.txt",
+      "bytes": 106,
+      "sha256": "f0a66fb3493742291c4585205e61dabd860ce772f92d5feb5ef9a3a0f667673e",
+      "expected": []
+    },
+    {
+      "id": "passed-component-in-object-value",
+      "source": "passed-component-in-object-value.vue.txt",
+      "bytes": 116,
+      "sha256": "cce88b94ff4287af6b4e031ffe47b28e204d0e3c24b17551ddcffb4fc89082ee",
+      "expected": []
+    },
+    {
+      "id": "unused-setup-import",
+      "source": "unused-setup-import.vue.txt",
+      "bytes": 83,
+      "sha256": "db1d47946578ac3ffd66100f8b19d78ff6f5dfd7c970337b8a3f53d56fa91987",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 21,
+          "end": 26,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "comment-only-component",
+      "source": "comment-only-component.vue.txt",
+      "bytes": 101,
+      "sha256": "71f060cd1a618ae22208f3d6fef195a7a1235f9bed1454323efe05c53926ab79",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 21,
+          "end": 26,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "literal-is-not-read",
+      "source": "literal-is-not-read.vue.txt",
+      "bytes": 103,
+      "sha256": "d9f4ea37510a5dd7f9e8018ee9943ecbf201733cd44487462596e3861bb4377e",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 21,
+          "end": 26,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "object-key-is-not-read",
+      "source": "object-key-is-not-read.vue.txt",
+      "bytes": 111,
+      "sha256": "3b6e0cfff72c15255586be1a94048618b60038451591ac263f6db3b4b49a0081",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 21,
+          "end": 26,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "member-name-is-not-read",
+      "source": "member-name-is-not-read.vue.txt",
+      "bytes": 105,
+      "sha256": "7e7e5859d12ea9709814983cc13d1f83320a74c1ea4d8296360f2edd10324da2",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 21,
+          "end": 26,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "for-shadow-keeps-import-unread",
+      "source": "for-shadow-keeps-import-unread.vue.txt",
+      "bytes": 144,
+      "sha256": "60a234c19ea403bc801ce71c73ad7a790821e61c9d3cf424cc9d35e3f7cc71a9",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 21,
+          "end": 26,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "slot-shadow-keeps-import-unread",
+      "source": "slot-shadow-keeps-import-unread.vue.txt",
+      "bytes": 144,
+      "sha256": "f601e263389aa40de0a12e6ce7d3488a83533742637043f1b187b8a46df27332",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 21,
+          "end": 26,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "arrow-shadow-keeps-import-unread",
+      "source": "arrow-shadow-keeps-import-unread.vue.txt",
+      "bytes": 112,
+      "sha256": "8bff7fe6da176bad8d313b013791c338b955dd742e6d2ad5176fa97b212fffce",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 21,
+          "end": 26,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "script-only-use-retained",
+      "source": "script-only-use-retained.vue.txt",
+      "bytes": 111,
+      "sha256": "980a6838b0125a86d5911b66d9427d945d898142f97fea73d31f1cdb97fbeb80",
+      "expected": []
+    },
+    {
+      "id": "generic-capture-refusal-retained",
+      "source": "generic-capture-refusal-retained.vue.txt",
+      "bytes": 128,
+      "sha256": "b0ef780902e7e2d16ff4b2f0898a17064baeb6dd695e73f37111c9e429753d97",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 43,
+          "end": 48,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "unused-options-alias",
+      "source": "unused-options-alias.vue.txt",
+      "bytes": 131,
+      "sha256": "91e313e178e9f2b7b36036b26b04a9b765e77962d248a9b2a62970f9dfd0c88f",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'PublicChild' is registered but never used in template",
+          "start": 71,
+          "end": 82,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "used-options-alias",
+      "source": "used-options-alias.vue.txt",
+      "bytes": 140,
+      "sha256": "09fa85d5f0f1ad45c058b42f932318d65989b5db16a0e3fac487d4e94ba78c12",
+      "expected": []
+    },
+    {
+      "id": "whole-tiny-rdm",
+      "source": "whole-tiny-rdm.vue.txt",
+      "bytes": 1799,
+      "sha256": "2094730659772506af6f86a5eef4698c3e169d41459d69528ea78002b15495f5",
+      "expected": [],
+      "primarySource": {
+        "project": "tiny-rdm",
+        "file": "frontend/src/components/common/EditableTableColumn.vue",
+        "bytes": 1799,
+        "sha256": "2094730659772506af6f86a5eef4698c3e169d41459d69528ea78002b15495f5",
+        "gitBlob": "c42f84c81af5bfc9604ee2fe63aaf66135fa2f70",
+        "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+        "URL": "https://github.com/tiny-craft/tiny-rdm/blob/4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc/frontend/src/components/common/EditableTableColumn.vue"
+      }
+    },
+    {
+      "id": "whole-frappe-builder",
+      "source": "whole-frappe-builder.vue.txt",
+      "bytes": 697,
+      "sha256": "fc22b1ec713245a05dc2a9eedd143dc4aabb3642b49a76ef3680135b8ad49dcb",
+      "expected": [],
+      "primarySource": {
+        "project": "frappe-builder",
+        "file": "frontend/src/components/DimensionInput.vue",
+        "bytes": 697,
+        "sha256": "fc22b1ec713245a05dc2a9eedd143dc4aabb3642b49a76ef3680135b8ad49dcb",
+        "gitBlob": "6e97a973e9cdf4abf6551f019b822e87d90b8354",
+        "revision": "ed705f9dddc9a78867fb672c342ee025368ac6a1",
+        "URL": "https://github.com/frappe/builder/blob/ed705f9dddc9a78867fb672c342ee025368ac6a1/frontend/src/components/DimensionInput.vue"
+      }
+    },
+    {
+      "id": "whole-vue-data-ui",
+      "source": "whole-vue-data-ui.vue.txt",
+      "bytes": 16702,
+      "sha256": "24aedf74f1e0635115dbf6733bda4f4625b76ff49a55ad346100d21a7d5125c3",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'VueUiPattern' is registered but never used in template",
+          "start": 335,
+          "end": 347,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "primarySource": {
+        "project": "vue-data-ui",
+        "file": "TestingArena/ArenaVueUiCirclePack.vue",
+        "bytes": 16702,
+        "sha256": "24aedf74f1e0635115dbf6733bda4f4625b76ff49a55ad346100d21a7d5125c3",
+        "gitBlob": "2670b6c9631fc2ecce6a7c4fc2014c3498cf1f38",
+        "revision": "14628946a8185252a7051b40be931e93a0b480a1",
+        "URL": "https://github.com/graphieros/vue-data-ui/blob/14628946a8185252a7051b40be931e93a0b480a1/TestingArena/ArenaVueUiCirclePack.vue"
+      }
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+<script setup lang="ts">
+export declare function helper(): void;
+</script>
+<template><div /></template>

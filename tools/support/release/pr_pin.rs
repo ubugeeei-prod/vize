@@ -10,6 +10,8 @@ use std::{
     thread::sleep,
     time::{Duration, Instant},
 };
+#[path = "pr_pin_body.rs"]
+mod body;
 #[cfg(test)]
 #[path = "pr_pin_budget_tests.rs"]
 mod budget_tests;
@@ -35,6 +37,9 @@ pub(super) mod lock;
 #[path = "pr_pin_metadata.rs"]
 mod metadata;
 pub use metadata::rewrite_guest_lock;
+#[path = "pr_pin_producer_metadata.rs"]
+mod producer_metadata;
+pub use producer_metadata::verify_producer_metadata;
 #[path = "pr_pin_retire.rs"]
 mod retire;
 #[path = "pr_pin_retire_absence.rs"]

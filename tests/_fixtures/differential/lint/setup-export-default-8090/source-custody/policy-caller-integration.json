@@ -1,0 +1,145 @@
+{
+  "schema": "vize.lint.setup-export-policy-caller-integration",
+  "version": 1,
+  "source": "46ee5aadd5139401b6ecb687d5ad77ed63a7dee9",
+  "workflowRun": 38196958922,
+  "changes": [
+    {
+      "path": "tests/tooling/reserved-suppression-default-routes.test.mjs",
+      "before": {
+        "archive": "original-reserved-suppression-default-routes.test.mjs.fixture",
+        "bytes": 5791,
+        "sha256": "93cdce501acd785654b2c550f85c1d4cd859088fe02e2286b51fadb4613a0790",
+        "gitBlob": "3850996e0908a528eb02a00e2b5d380456e36aa2"
+      },
+      "transforms": [
+        {
+          "before": "import { sha256, wholeJson } from \"./lint-default-correctness-reference.mjs\";\n",
+          "after": "import { sha256, wholeJson } from \"./lint-default-correctness-reference.mjs\";\nimport { authenticateRuntimeApiSourceFamily } from \"./support/runtime-props-api-source-custody.mjs\";\nimport {\n  authenticateSetupExportMembership,\n  setupExportMembership,\n} from \"./support/setup-export-preset-source-custody.mjs\";\n"
+        },
+        {
+          "before": "    assert.equal(sha256(fs.readFileSync(path.join(root, entry.path))), entry.sha256);\n",
+          "after": "    if (entry.path === setupExportMembership) {\n      const membership = authenticateSetupExportMembership(\n        root,\n        authenticateRuntimeApiSourceFamily(root),\n      );\n      assert.deepEqual(entry, { path: membership.path, sha256: membership.beforeSha256 });\n    } else assert.equal(sha256(fs.readFileSync(path.join(root, entry.path))), entry.sha256);\n"
+        }
+      ],
+      "after": {
+        "bytes": 6301,
+        "sha256": "c484cd05219c4c8d1e34664544cf9886743c3c2d401c29bcec4660c6537a7243"
+      }
+    },
+    {
+      "path": "tests/tooling/warm-type-backed-default-migration-host.test.ts",
+      "before": {
+        "archive": "original-warm-type-backed-default-migration-host.test.ts.fixture",
+        "bytes": 5783,
+        "sha256": "86ce5a8bcbb25c298e59d211910b6aeca3da3e280f9a2109ce0daee6ace2ca0c",
+        "gitBlob": "cef45230e113a0a9debc181957e77dbb6491f3f4"
+      },
+      "transforms": [
+        {
+          "before": "import { gitBodyDigest } from \"../performance/support/warm-type-backed-path-host.ts\";\n",
+          "after": "import { gitBodyDigest } from \"../performance/support/warm-type-backed-path-host.ts\";\nimport { authenticateRuntimeApiSourceFamily } from \"./support/runtime-props-api-source-custody.mjs\";\nimport { authenticateSetupExportMembership } from \"./support/setup-export-preset-source-custody.mjs\";\n"
+        },
+        {
+          "before": "  assert.ok(qualifyDefaultMigrationHost(production, new Set(), actual));\n",
+          "after": "  // The new snapshot is not the old measured migration host.\n  assert.equal(qualifyDefaultMigrationHost(production, new Set(), actual), null);\n  const root = path.resolve(import.meta.dirname, \"../..\");\n  const membership = authenticateSetupExportMembership(\n    root,\n    authenticateRuntimeApiSourceFamily(root),\n  );\n  let successors = 0;\n  for (const [file, before, after] of manifest.files) {\n    assert.equal(actual(\"before\", file), before);\n    if (file === membership.path) {\n      assert.equal(after, membership.beforeSha256);\n      assert.equal(actual(\"after\", file), membership.afterSha256);\n      successors++;\n    } else assert.equal(actual(\"after\", file), after);\n  }\n  assert.equal(successors, 1);\n  for (const [file, original] of manifest.preservedBodies) {\n    assert.equal(actual(\"before\", file), original);\n    assert.equal(actual(\"after\", file), original);\n  }\n"
+        }
+      ],
+      "after": {
+        "bytes": 6794,
+        "sha256": "5084578fa77c215ee7555708d9cc6284826a36dced1a9f31c5e6b417a1447704"
+      }
+    },
+    {
+      "path": "crates/vize_patina/src/preset/tests.rs",
+      "before": {
+        "archive": "original-tests.rs.fixture",
+        "bytes": 15995,
+        "sha256": "dcf15e1cc9567897a9d070f01d53e68a508d2412e1edfc167e49d9efaea16e06",
+        "gitBlob": "ae133353a7bea17b0a3ee86435acaac32dcea832"
+      },
+      "transforms": [
+        {
+          "before": "        !super::builtin_script_rule_names(LintPreset::Opinionated)\n            .contains(&\"script/no-export-in-script-setup\")\n",
+          "after": "        super::builtin_script_rule_names(LintPreset::Opinionated)\n            .contains(&\"script/no-export-in-script-setup\")\n"
+        },
+        {
+          "before": "        !super::builtin_script_rule_names(LintPreset::Nuxt)\n            .contains(&\"script/no-export-in-script-setup\")\n",
+          "after": "        super::builtin_script_rule_names(LintPreset::Nuxt)\n            .contains(&\"script/no-export-in-script-setup\")\n"
+        }
+      ],
+      "after": {
+        "bytes": 15993,
+        "sha256": "39c5ab24a2179da27d9b2337788216a2ca75047d2fb3ec0b1ecc8433da22db3c"
+      }
+    },
+    {
+      "path": "tests/_fixtures/patina-eslint-vue-rule-map.json",
+      "before": {
+        "archive": "original-patina-eslint-vue-rule-map.json.fixture",
+        "bytes": 43881,
+        "sha256": "ac68a0d0cd006e13b2e94184cbbb60b522a225310dac746486d95e08a2a995d3",
+        "gitBlob": "6a50580a9033504038bdd5844a955520a2808a4b"
+      },
+      "transforms": [
+        {
+          "before": "      \"patinaPresets\": [],\n      \"patinaRule\": \"script/no-export-in-script-setup\",\n",
+          "after": "      \"patinaPresets\": [\n        \"ecosystem\",\n        \"essential\",\n        \"general-recommended\",\n        \"nuxt\",\n        \"opinionated\"\n      ],\n      \"patinaRule\": \"script/no-export-in-script-setup\",\n"
+        }
+      ],
+      "after": {
+        "bytes": 43999,
+        "sha256": "1bcfea743f3d01df9f69a79a61f17a221a723b54b8a40ddcc08ae9c328ba2dc2"
+      }
+    }
+  ],
+  "preservedMeasuredHost": [
+    {
+      "path": "tests/performance/support/warm-type-backed-default-migration-host.ts",
+      "archive": "original-warm-type-backed-default-migration-host.ts.fixture",
+      "sha256": "6b6bffc7461f754b82ad996abf62cd6f958998212e95d4af600fa4b9bfa483d5",
+      "bytes": 3081
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-default-migration-manifest.json",
+      "archive": "original-warm-type-backed-default-migration-manifest.json.fixture",
+      "sha256": "73e19d2b74c4488f8feb1214dd6dc15d0d4ff15f744994bc52d9288ee61e6e0d",
+      "bytes": 3738
+    }
+  ],
+  "initialFailures": [
+    {
+      "job": 114642149497,
+      "archive": "initial-policy-caller-114642149497-failure.log.gz",
+      "sha256": "b41264c5f2dbd696aa40858d1ba36dafabe03637d213429e564c660e5f78058d",
+      "bytes": 123807,
+      "rawSha256": "cdbc9f9930669441c8b8f042d35ff519bfcd15208529f316e4de74ef41b75959",
+      "rawBytes": 828077
+    },
+    {
+      "job": 114642149539,
+      "archive": "initial-policy-caller-114642149539-failure.log.gz",
+      "sha256": "128afec27f7cb848be570be36fd092134aebd0fd518fb16f0aa099706f6388fb",
+      "bytes": 151540,
+      "rawSha256": "3b1d0286cd8cafb604d6c1b3185564d7d5a20b504f4aa59c455c1cabfc28316e",
+      "rawBytes": 984739
+    },
+    {
+      "job": 114642891529,
+      "archive": "initial-policy-caller-114642891529-failure.log.gz",
+      "sha256": "fa669c811c2aaaa1e4b6a81421ac49facdf54c92d41e02e9359ef379b77f3325",
+      "bytes": 171499,
+      "rawSha256": "57fb297c2350e83fdf2719e255c7850bd3b6221ec1861a9bd16bb74012e58c4c",
+      "rawBytes": 1047707
+    },
+    {
+      "job": 114642891640,
+      "archive": "initial-policy-caller-114642891640-failure.log.gz",
+      "sha256": "74427ce31ddd0e3879531468d2ce4c56f416bd6b96a9989f20bd4f9404728b4d",
+      "bytes": 167945,
+      "rawSha256": "78c11e9c2968d3b5afe366edc8d755e02f7adc04f0094cd3eff0f066c391dc89",
+      "rawBytes": 1011569
+    }
+  ],
+  "measurementAuthority": "Original measured host remains literal; current snapshot refuses its qualification. Current-source authentication is not performance credit."
+}

@@ -28,23 +28,6 @@ body {
   background-image: none !important;
 }
 
-/* Canvas */
-#vein-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0 !important;
-  opacity: 0.34;
-  pointer-events: none;
-}
-
-/* Reduce shader on content pages for readability */
-body:not(.entry-page) #vein-canvas {
-  opacity: 0.08;
-}
-
 .layout {
   position: relative;
 }
@@ -55,11 +38,14 @@ body:not(.entry-page) #vein-canvas {
 }
 
 body:not(.entry-page) .layout,
-body:not(.entry-page) .main,
+body:not(.entry-page) .main {
+  background: transparent !important;
+  background-image: none !important;
+}
+
 body:not(.entry-page) .header,
-body:not(.entry-page) .sidebar,
 body:not(.entry-page) .mobile-footer {
-  background: var(--octc-color-bg) !important;
+  background: color-mix(in srgb, var(--octc-color-bg) 92%, transparent) !important;
   background-image: none !important;
 }
 
@@ -99,11 +85,6 @@ body:not(.entry-page) .header {
   box-shadow: none !important;
 }
 
-[data-theme="dark"] body:not(.entry-page) .header,
-:root:not([data-theme="light"]) body:not(.entry-page) .header {
-  background: var(--octc-color-bg) !important;
-}
-
 .header-title {
   display: inline-flex !important;
   align-items: center !important;
@@ -137,12 +118,8 @@ body:not(.entry-page) .header {
    SIDEBAR
    ================================================ */
 .sidebar {
-  border-color: color-mix(in srgb, var(--octc-color-border) 70%, transparent) !important;
-}
-
-[data-theme="dark"] .sidebar,
-:root:not([data-theme="light"]) .sidebar {
-  border-color: color-mix(in srgb, var(--octc-color-border) 78%, transparent) !important;
+  background: transparent !important;
+  border: none !important;
 }
 
 @media (min-width: 769px) {
@@ -152,9 +129,6 @@ body:not(.entry-page) .header {
     bottom: 0 !important;
     width: var(--octc-sidebar-width) !important;
     padding: 1.2rem 1.1rem 1.6rem !important;
-    border-width: 1px !important;
-    border-style: solid !important;
-    border-width: 0 1px 0 0 !important;
     border-radius: 0 !important;
     box-shadow: none !important;
   }
@@ -209,15 +183,7 @@ body:not(.entry-page) .nav-link {
 }
 
 body:not(.entry-page) .nav-link::before {
-  content: "" !important;
-  position: absolute !important;
-  left: 0.35rem !important;
-  top: 0.5rem !important;
-  bottom: 0.5rem !important;
-  width: 2px !important;
-  background: var(--octc-color-text) !important;
-  opacity: 0 !important;
-  transition: opacity 0.14s ease !important;
+  content: none !important;
 }
 
 body:not(.entry-page) .nav-link:hover {
@@ -231,10 +197,6 @@ body:not(.entry-page) .nav-link.active {
   color: var(--octc-color-text) !important;
   font-weight: 600 !important;
   box-shadow: none !important;
-}
-
-body:not(.entry-page) .nav-link.active::before {
-  opacity: 1 !important;
 }
 
 /* ================================================
@@ -427,15 +389,15 @@ body.entry-page {
 }
 
 .content pre {
-  --vize-code-text: #211c17;
-  --vize-code-muted: #51473e;
-  --vize-code-keyword: #703b30;
-  --vize-code-string: #36513d;
-  --vize-code-number: #654515;
-  --vize-code-type: #51405f;
-  --vize-code-function: #653f23;
-  --vize-code-property: #53402d;
-  --vize-code-punctuation: #51463c;
+  --vize-code-text: #24262b;
+  --vize-code-muted: #474941;
+  --vize-code-keyword: #6b00b8;
+  --vize-code-string: #005b2e;
+  --vize-code-number: #8c3000;
+  --vize-code-type: #00576b;
+  --vize-code-function: #0048b7;
+  --vize-code-property: #95003e;
+  --vize-code-punctuation: #40434a;
   margin: 1.25rem 0;
   padding: 0.85rem 0.95rem;
   border: 1px solid color-mix(in srgb, var(--octc-color-border) 74%, transparent);
@@ -467,7 +429,7 @@ body.entry-page {
 
 .content pre code span[style] {
   background: transparent !important;
-  color: inherit !important;
+  color: var(--shiki-light, inherit) !important;
 }
 
 .content pre .v-code__token {
@@ -519,8 +481,7 @@ body.entry-page {
   color: var(--vize-code-punctuation) !important;
 }
 
-[data-theme="dark"] .content pre,
-:root:not([data-theme="light"]) .content pre {
+[data-theme="dark"] .content pre {
   --vize-code-text: #ede5d8;
   --vize-code-muted: #b2a38f;
   --vize-code-keyword: #cf9a82;
@@ -534,17 +495,19 @@ body.entry-page {
   border-color: rgba(238, 228, 212, 0.09);
 }
 
-[data-theme="dark"] .content code,
-:root:not([data-theme="light"]) .content code {
+[data-theme="dark"] .content code {
   border-bottom-color: rgba(238, 228, 212, 0.16);
   background: rgba(238, 228, 212, 0.045);
   color: #ddd0c2;
 }
 
-[data-theme="dark"] .content pre code,
-:root:not([data-theme="light"]) .content pre code {
+[data-theme="dark"] .content pre code {
   background: transparent !important;
   color: inherit !important;
+}
+
+[data-theme="dark"] .content pre code span[style] {
+  color: var(--shiki-dark, inherit) !important;
 }
 
 /* Nav active state */
@@ -558,10 +521,12 @@ body.entry-page {
   opacity: 1;
 }
 
-/* Blockquote */
-.content blockquote {
-  border-left-color: var(--octc-color-border);
-  background: transparent;
+/* Use spacing and the existing callout colors instead of decorative rails. */
+.content blockquote,
+.content blockquote.ox-callout,
+.toc,
+.toc-link {
+  border-left: none !important;
 }
 
 /* ================================================
@@ -578,8 +543,7 @@ body.entry-page {
   -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
 }
 
-[data-theme="dark"] .mobile-footer,
-:root:not([data-theme="light"]) .mobile-footer {
+[data-theme="dark"] .mobile-footer {
   background: color-mix(in srgb, var(--octc-color-bg) 90%, var(--octc-color-bg-alt)) !important;
   border-top-color: rgba(238, 228, 212, 0.1) !important;
   box-shadow: 0 -14px 32px rgba(0, 0, 0, 0.28) !important;
@@ -756,15 +720,9 @@ body.entry-page .entry-content .content > h2 + p > img {
 }
 
 /* Mobile */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .sidebar {
-    background: rgba(28, 28, 28, 0.95) !important;
-  }
-}
-
 @media (max-width: 768px) {
-  [data-theme="dark"] .sidebar {
-    background: rgba(28, 28, 28, 0.95) !important;
+  .sidebar {
+    background: var(--octc-color-bg) !important;
   }
 
   /* ---- Header: always accessible on mobile entry page ---- */

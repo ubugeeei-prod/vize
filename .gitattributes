@@ -116,3 +116,6 @@ tests/_fixtures/differential/lint/bare-reserved-8090/QuotedUnicode.vue.fixture -
 
 # Reserved group controls preserve quoted Unicode and original CRLF source bytes.
 tests/_fixtures/differential/lint/reserved-prefix-8090/*.vue.fixture -text whitespace=cr-at-eol
+
+# Public import controls retain authored Unicode and CRLF bytes.
+tests/_fixtures/differential/lint/public-vue-imports-8090/CrlfUnicode.vue.fixture -text whitespace=cr-at-eol

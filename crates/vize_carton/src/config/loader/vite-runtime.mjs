@@ -1,6 +1,13 @@
 // This dependency-free projection is also embedded by the native config loader.
 import { resolve } from "node:path";
 
+// Generated validation subset of npm/cli/schemas/vize.config.schema.json.
+// Only canonical Vue options use it; legacy flat settings retain their existing behavior.
+// The source law compares every retained schema rule with the authoritative native schema.
+const vueOptionSchema = JSON.parse(
+  '{"type":"object","properties":{"compiler":{"$ref":"#/definitions/CompilerConfig"},"typeChecker":{"$ref":"#/definitions/TypeCheckerConfig"},"linter":{"$ref":"#/definitions/LinterConfig"},"formatter":{"$ref":"#/definitions/FormatterConfig"},"languageServer":{"$ref":"#/definitions/LanguageServerConfig"},"globalTypes":{"$ref":"#/definitions/GlobalTypesConfig"},"files":{"type":"array","items":{"type":"string"}},"ignores":{"type":"array","items":{"type":"string"}},"basePath":{"type":"string"},"lib":{"$ref":"#/definitions/LibConfig"},"version":{"$ref":"#/definitions/VueVersion"},"entries":{"type":"array","items":{"type":"object","properties":{"basePath":{"type":"string"},"files":{"type":"array","items":{"type":"string"}},"ignores":{"type":"array","items":{"type":"string"}},"linter":{"$ref":"#/definitions/LinterConfig"}},"additionalProperties":false}}},"additionalProperties":false,"definitions":{"VueVersion":{"type":"string","enum":["3","2.7","2","1","0.11","0.10"]},"GlobalTypesConfig":{"type":"object","additionalProperties":{"oneOf":[{"type":"string"},{"$ref":"#/definitions/GlobalTypeDeclaration"}]}},"GlobalTypeDeclaration":{"type":"object","properties":{"type":{"type":"string"},"defaultValue":{"type":"string"}},"additionalProperties":false,"required":["type"]},"LanguageServerConfig":{"type":"object","properties":{"enabled":{"type":"boolean"},"lint":{"type":"boolean"},"diagnostics":{"type":"boolean"},"typecheck":{"type":"boolean"},"editor":{"type":"boolean"},"ecosystem":{"type":"boolean"},"legacyVue2":{"type":"boolean"},"completion":{"type":"boolean"},"signatureHelp":{"type":"boolean"},"hover":{"type":"boolean"},"definition":{"type":"boolean"},"references":{"type":"boolean"},"documentSymbols":{"type":"boolean"},"workspaceSymbols":{"type":"boolean"},"formatting":{"type":"boolean"},"codeActions":{"type":"boolean"},"rename":{"type":"boolean"},"codeLens":{"type":"boolean"},"semanticTokens":{"type":"boolean"},"documentLinks":{"type":"boolean"},"foldingRanges":{"type":"boolean"},"inlayHints":{"type":"boolean"},"fileRename":{"type":"boolean"},"corsa":{"type":"boolean"},"tsgo":{"type":"boolean"}},"additionalProperties":false},"FormatterConfig":{"type":"object","properties":{"sortImports":{"oneOf":[{"type":"boolean","enum":[false]},{"$ref":"#/definitions/SortImportsConfig"}]},"printWidth":{"type":"integer"},"tabWidth":{"type":"integer"},"useTabs":{"type":"boolean"},"semi":{"type":"boolean"},"singleQuote":{"type":"boolean"},"jsxSingleQuote":{"type":"boolean"},"trailingComma":{"type":"string","enum":["all","none","es5"]},"bracketSpacing":{"type":"boolean"},"bracketSameLine":{"type":"boolean"},"arrowParens":{"type":"string","enum":["always","avoid"]},"endOfLine":{"type":"string","enum":["lf","crlf","cr","auto"]},"quoteProps":{"type":"string","enum":["as-needed","consistent","preserve"]},"singleAttributePerLine":{"type":"boolean"},"vueIndentScriptAndStyle":{"type":"boolean"},"sortAttributes":{"type":"boolean"},"attributeSortOrder":{"type":"string","enum":["alphabetical","as-written"]},"mergeBindAndNonBindAttrs":{"type":"boolean"},"maxAttributesPerLine":{"type":"integer"},"attributeGroups":{"type":"array","items":{"type":"array","items":{"type":"string"}}},"normalizeDirectiveShorthands":{"type":"boolean"},"sortBlocks":{"type":"boolean"}},"additionalProperties":false},"SortImportsConfig":{"type":"object","properties":{"partitionByNewline":{"type":"boolean"},"partitionByComment":{"type":"boolean"},"sortSideEffects":{"type":"boolean"},"order":{"type":"string","enum":["asc","desc"]},"ignoreCase":{"type":"boolean"},"newlinesBetween":{"type":"boolean"},"internalPattern":{"type":"array","items":{"type":"string"}},"groups":{"type":"array","items":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}},{"type":"object","properties":{"newlinesBetween":{"type":"boolean"}},"additionalProperties":false,"required":["newlinesBetween"]}]}},"customGroups":{"type":"array","items":{"$ref":"#/definitions/ImportSortCustomGroup"}}},"additionalProperties":false},"ImportSortCustomGroup":{"type":"object","properties":{"groupName":{"type":"string"},"elementNamePattern":{"type":"array","items":{"type":"string"}},"selector":{"type":"string"},"modifiers":{"type":"array","items":{"type":"string"}}},"additionalProperties":false,"required":["groupName"]},"LinterConfig":{"type":"object","properties":{"enabled":{"type":"boolean"},"preset":{"type":"string","enum":["happy-path","opinionated","essential","incremental","ecosystem","nuxt"]},"typeAware":{"type":"boolean"},"crossFile":{"type":"boolean"},"crossFileTree":{"type":"boolean"},"crossFileComplexity":{"type":"boolean"},"strictReactivity":{"type":"boolean"},"maxWarnings":{"type":"integer","minimum":0},"rules":{"type":"object","additionalProperties":{"type":"string","enum":["off","warn","error"]}},"ruleOptions":{"$ref":"#/definitions/LintRuleOptions"},"categories":{"type":"object","properties":{"correctness":{"type":"string","enum":["off","warn","error"]},"suspicious":{"type":"string","enum":["off","warn","error"]},"style":{"type":"string","enum":["off","warn","error"]},"perf":{"type":"string","enum":["off","warn","error"]},"a11y":{"type":"string","enum":["off","warn","error"]},"security":{"type":"string","enum":["off","warn","error"]}},"additionalProperties":false}},"additionalProperties":false},"LintRuleOptions":{"type":"object","properties":{"script/define-props-destructuring":{"type":"object","properties":{"destructure":{"type":"string","enum":["only-when-assigned","always","never"]}},"additionalProperties":false},"html/no-empty-palpable-content":{"type":"object","properties":{"contentDirectives":{"type":"array","items":{"type":"string"}}},"additionalProperties":false},"type/strict-boolean-expressions":{"type":"object","properties":{"allowString":{"type":"boolean"},"allowNumber":{"type":"boolean"},"allowNullableObject":{"type":"boolean"},"allowNullableBoolean":{"type":"boolean"},"allowNullableString":{"type":"boolean"},"allowNullableNumber":{"type":"boolean"},"allowNullableEnum":{"type":"boolean"},"allowAny":{"type":"boolean"}},"additionalProperties":false},"script/no-restricted-globals":{"$ref":"#/definitions/NoRestrictedGlobalsOptions"},"script/no-restricted-members":{"$ref":"#/definitions/NoRestrictedMembersOptions"},"vue/component-name-in-template-casing":{"type":"object","properties":{"casing":{"type":"string","enum":["PascalCase","kebab-case"]},"registeredComponentsOnly":{"type":"boolean"},"globals":{"type":"array","items":{"type":"string"}}},"additionalProperties":false},"script/custom-event-name-casing":{"type":"object","properties":{"casing":{"type":"string","enum":["camelCase","kebab-case"]}},"additionalProperties":false},"vue/no-mutating-props":{"type":"object","properties":{"shallowOnly":{"type":"boolean"}},"additionalProperties":false},"vue/require-component-registration":{"type":"object","properties":{"globals":{"type":"array","items":{"type":"string"}}},"additionalProperties":false},"vue/sfc-element-order":{"type":"object","properties":{"order":{"type":"array","items":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}]}}},"additionalProperties":false},"vue/html-self-closing":{"type":"object","properties":{"html":{"type":"object","properties":{"void":{"type":"string","enum":["always","never","any"]},"normal":{"type":"string","enum":["always","never","any"]},"component":{"type":"string","enum":["always","never","any"]}},"additionalProperties":false},"svg":{"type":"string","enum":["always","never","any"]},"math":{"type":"string","enum":["always","never","any"]}},"additionalProperties":false},"vue/v-on-event-hyphenation":{"type":"string","enum":["always","never"]},"vue/attribute-hyphenation":{"type":"string","enum":["always","never"]},"vue/valid-v-slot":{"type":"object","properties":{"allowModifiers":{"type":"boolean"}},"additionalProperties":false},"musea/prefer-design-tokens":{"$ref":"#/definitions/MuseaPreferDesignTokensOptions"}},"additionalProperties":false},"MuseaPreferDesignTokensOptions":{"type":"object","properties":{"tokens":{"type":"array","items":{"$ref":"#/definitions/MuseaDesignToken"}}},"additionalProperties":false},"MuseaDesignToken":{"type":"object","properties":{"path":{"type":"string"},"value":{"type":"string"},"tier":{"type":"string"}},"additionalProperties":false,"required":["path","value"]},"NoRestrictedMembersOptions":{"type":"object","properties":{"members":{"type":"array","items":{"$ref":"#/definitions/RestrictedMember"}}},"additionalProperties":false},"RestrictedMember":{"type":"object","properties":{"object":{"type":"string"},"property":{"type":"string"},"message":{"type":"string"}},"additionalProperties":false,"required":["object","property"]},"NoRestrictedGlobalsOptions":{"type":"object","properties":{"globals":{"type":"array","items":{"$ref":"#/definitions/RestrictedGlobal"}}},"additionalProperties":false},"RestrictedGlobal":{"type":"object","properties":{"name":{"type":"string"},"message":{"type":"string"}},"additionalProperties":false,"required":["name"]},"TypeCheckerConfig":{"type":"object","properties":{"enabled":{"type":"boolean"},"strict":{"type":"boolean"},"checkProps":{"type":"boolean"},"checkEmits":{"type":"boolean"},"checkTemplateBindings":{"type":"boolean"},"checkReactivity":{"type":"boolean"},"checkSetupContext":{"type":"boolean"},"checkInvalidExports":{"type":"boolean"},"checkFallthroughAttrs":{"type":"boolean"},"optionsApi":{"type":"boolean"},"legacyVue2":{"type":"boolean"},"jsxTypecheck":{"type":"boolean"},"tsconfig":{"type":"string"},"corsaPath":{"type":"string"},"tsgoPath":{"type":"string"},"globalsFile":{"type":"string"},"servers":{"type":"integer"},"lspRequestTimeoutMs":{"type":"integer","minimum":1}},"additionalProperties":false},"CompilerConfig":{"type":"object","properties":{"mode":{"type":"string","enum":["module","function"]},"vapor":{"type":"boolean"},"jsxMode":{"type":"string","enum":["vdom","vapor"]},"jsxCompat":{"type":"string","enum":["native","babel"]},"customRenderer":{"type":"boolean"},"customElements":{"type":"array","items":{"type":"string"}},"ssr":{"type":"boolean"},"templateSyntax":{"type":"string","enum":["standard","strict","quirks"]},"whitespace":{"type":"string","enum":["condense","preserve","vue2-line-breaks"]},"sourceMap":{"type":"boolean"},"prefixIdentifiers":{"type":"boolean"},"hoistStatic":{"type":"boolean"},"cacheHandlers":{"type":"boolean"},"isTs":{"type":"boolean"},"scriptExt":{"type":"string","enum":["ts","js"]},"runtimeModuleName":{"type":"string"},"runtimeGlobalName":{"type":"string"},"compatibility":{"$ref":"#/definitions/CompilerCompatibilityConfig"}},"additionalProperties":false},"CompilerCompatibilityConfig":{"type":"object","properties":{"vueVersion":{"$ref":"#/definitions/VueVersion"},"hostCompiler":{"type":"boolean"},"scriptSetupInStandalone":{"type":"boolean"},"optionsApiVapor":{"type":"boolean"},"nuxtVersion":{"type":"integer","enum":[2,3,4]},"webpackVersion":{"type":"integer","enum":[4,5]}},"additionalProperties":false},"LibConfig":{"type":"object","properties":{"dir":{"type":"string"},"uiDir":{"type":"string"},"composableDir":{"type":"string"},"lockfile":{"type":"string"},"registries":{"type":"object","additionalProperties":{"oneOf":[{"type":"string"},{"type":"object","properties":{"source":{"type":"string"},"dir":{"type":"string"}},"additionalProperties":false,"required":["source"]}]},"propertyNames":{"pattern":"^@[a-z0-9][a-z0-9._-]*$"}}},"additionalProperties":false}}}',
+);
+
 // Read the source of our Vite+ factory without starting Vite, plugins or tasks.
 const sourceConfigKey = Symbol.for("@vizejs/vite-plugin/vite-plus/source");
 
@@ -31,9 +38,9 @@ async function resolveSource(value, env, parents = new Set()) {
     const { extends: bases, ...own } = config;
     let inherited = {};
     for (const base of Array.isArray(bases) ? bases : bases ? [bases] : []) {
-      inherited = merge(inherited, await resolveSource(base, env, parents));
+      inherited = mergeViteSource(inherited, await resolveSource(base, env, parents));
     }
-    return merge(inherited, own);
+    return mergeViteSource(inherited, own);
   } finally {
     parents.delete(value);
   }
@@ -66,6 +73,18 @@ export async function resolveViteConfigExport(exported, env, configDir) {
     env = { ...env, command: "serve" };
   }
   const source = await resolveSource(exported, env);
+  return projectViteConfigSource(source, env, configDir);
+}
+
+/** Project already evaluated settings; the owning adapter evaluates its Vite export once. */
+export async function projectViteConfigSource(source, env, configDir) {
+  if (!object(source)) throw new TypeError("Vite config source must be an object");
+  env ??= { mode: "development", command: "serve" };
+  // Adapters may pass a native task environment after evaluating the Vite source.
+  // Its legacy native callback shares the same idempotent Vite command mapping.
+  if (env.command !== "build" && env.command !== "serve") env = { ...env, command: "serve" };
+  const selected = vueConfigOptions(source);
+  const canonical = selected === undefined ? {} : flatVueOptions(selected);
   let shared = await (typeof source.vize === "function" ? source.vize(env) : source.vize);
   const alias = object(shared) ? shared.lint : undefined;
   if (object(shared)) {
@@ -81,7 +100,10 @@ export async function resolveViteConfigExport(exported, env, configDir) {
       version === undefined
         ? {}
         : {
-            compatibility: { vueVersion: String(version === "legacy" ? 2 : version) },
+            // Numeric 0.1 is the newly public spelling of Vue 0.10.
+            compatibility: {
+              vueVersion: String(version === 0.1 ? "0.10" : version === "legacy" ? 2 : version),
+            },
           },
     );
   }
@@ -107,14 +129,137 @@ export async function resolveViteConfigExport(exported, env, configDir) {
   // them, while tool sections override only the shared unscoped settings.
   const root = typeof source.root === "string" ? resolve(configDir ?? ".", source.root) : configDir;
   if (Array.isArray(shared)) {
+    const entries = canonical.entries;
+    const { entries: _entries, ...own } = canonical;
+    const retained = entries === undefined ? shared : shared.filter(isUnscopedEntry);
     return [
       { ...projectConfigDefaults(), ...(root ? { __vizeProjectRoot: root } : {}) },
-      ...shared.map((entry) => projectPaths(entry, root, true)),
-      projectPaths({ ...overrides, ...(root ? { __vizeProjectRoot: root } : {}) }, root, false),
+      ...retained.map((entry) => projectPaths(entry, root, true)),
+      projectPaths(
+        { ...overlayVueOptions(overrides, own), ...(root ? { __vizeProjectRoot: root } : {}) },
+        root,
+        false,
+      ),
+      ...(entries ?? []).map((entry) => projectPaths(entry, root, true)),
     ];
   }
-  const config = merge(merge(projectConfigDefaults(), shared ?? {}), overrides);
+  const config = overlayVueOptions(
+    merge(merge(projectConfigDefaults(), shared ?? {}), overrides),
+    canonical,
+  );
   return root ? { ...projectPaths(config, root, false), __vizeProjectRoot: root } : config;
+}
+
+/** Validate only canonical settings; selecting them never evaluates a legacy callback. */
+export function vueConfigOptions(source) {
+  const selected = source.vue;
+  if (selected !== undefined) validateVueOption(selected, vueOptionSchema, "vue");
+  return selected;
+}
+
+/** Share canonical composition with adapters while their other Vite fields keep Vite merging. */
+export function mergeVueConfigOptions(base, own) {
+  vueConfigOptions({ vue: base });
+  vueConfigOptions({ vue: own });
+  if (base === undefined) return own;
+  if (own === undefined) return base;
+  return overlayVueOptions(base, own);
+}
+
+function mergeViteSource(base, own) {
+  const result = merge(base, own);
+  const selected = mergeVueConfigOptions(base.vue, own.vue);
+  if (selected !== undefined) result.vue = selected;
+  return result;
+}
+
+function flatVueOptions(selected) {
+  const { version, entries, ...sections } = selected;
+  return {
+    ...sections,
+    ...(version === undefined ? {} : { vue: { version } }),
+    ...(entries === undefined ? {} : { entries: entries.map(flatVueOptions) }),
+  };
+}
+
+// Match the existing native global-entry rule after its nullish removal.
+function isUnscopedEntry(entry) {
+  return !object(entry) || ["basePath", "files", "ignores"].every((key) => entry[key] == null);
+}
+
+// Native arrays replace; authored false leaves win and undefined remains absent.
+function overlayVueOptions(base, own) {
+  const result = { ...base };
+  for (const [key, value] of Object.entries(own)) {
+    if (value === undefined) continue;
+    const previous = Object.hasOwn(result, key) ? result[key] : undefined;
+    Object.defineProperty(result, key, {
+      value: object(value) && object(previous) ? overlayVueOptions(previous, value) : value,
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
+  }
+  return result;
+}
+
+function validateVueOption(value, schema, label) {
+  const refuse = (reason) => {
+    throw new TypeError(`${label}: ${reason}`);
+  };
+  if (schema.$ref) {
+    return validateVueOption(
+      value,
+      vueOptionSchema.definitions[schema.$ref.split("/").at(-1)],
+      label,
+    );
+  }
+  if (schema.oneOf) {
+    const matches = schema.oneOf.filter((candidate) => {
+      try {
+        validateVueOption(value, candidate, label);
+        return true;
+      } catch (error) {
+        if (!(error instanceof TypeError)) throw error;
+        return false;
+      }
+    });
+    if (matches.length !== 1) refuse("must match one documented native option type");
+    return;
+  }
+  if (schema.enum && !schema.enum.includes(value)) refuse("unsupported native option value");
+  const valid = {
+    object: object(value),
+    array: Array.isArray(value),
+    string: typeof value === "string",
+    boolean: typeof value === "boolean",
+    integer: Number.isInteger(value),
+    number: typeof value === "number" && Number.isFinite(value),
+    null: value === null,
+  };
+  if (schema.type && !valid[schema.type]) refuse(`must be ${schema.type}`);
+  if (schema.minimum !== undefined && value < schema.minimum)
+    refuse(`must be >= ${schema.minimum}`);
+  if (Array.isArray(value) && schema.items) {
+    for (let index = 0; index < value.length; index++) {
+      validateVueOption(value[index], schema.items, `${label}[${index}]`);
+    }
+  }
+  if (object(value)) {
+    for (const required of schema.required ?? []) {
+      if (!Object.hasOwn(value, required) || value[required] === undefined)
+        refuse(`missing ${required}`);
+    }
+    for (const [key, item] of Object.entries(value)) {
+      const documented = Object.hasOwn(schema.properties ?? {}, key);
+      if (!documented && schema.additionalProperties === false) refuse(`unknown option ${key}`);
+      if (schema.propertyNames?.pattern && !new RegExp(schema.propertyNames.pattern).test(key)) {
+        refuse(`invalid native option name ${key}`);
+      }
+      const rule = documented ? schema.properties[key] : schema.additionalProperties;
+      if (item !== undefined && object(rule)) validateVueOption(item, rule, `${label}.${key}`);
+    }
+  }
 }
 
 // Vite-owned settings use its root. Dedicated Vize files keep their established

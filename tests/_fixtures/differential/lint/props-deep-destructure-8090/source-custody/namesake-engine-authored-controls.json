@@ -1,0 +1,88 @@
+{
+  "schema": "vize.lint.no-deep-namesake-engine-authored-controls",
+  "version": 1,
+  "authority": "Authored complete sentinel packets and contexts before any native/unit execution. Incremental plus only additional NoDeep, default None namesake capability.",
+  "cases": [
+    {
+      "filename": "SetupNamesake.vue",
+      "source": "<script setup lang=\"ts\">\nconst { user: { name } } = defineProps();\n</script>\n",
+      "sourceSha256": "1b08c0ea7d7cd8252742113911d2548789e5a2a5d8149760a19a258b6d48324a",
+      "expectedContext": {
+        "is_sfc": true,
+        "is_script_setup": true,
+        "sole_script_block": true
+      },
+      "packet": {
+        "filename": "SetupNamesake.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "configured namesake retains generic script dispatch",
+            "start": 31,
+            "end": 49,
+            "help": null,
+            "fix": null,
+            "labels": []
+          }
+        ]
+      }
+    },
+    {
+      "filename": "NormalNamesake.vue",
+      "source": "<script lang=\"ts\">\nconst { user: { name } } = defineProps();\n</script>\n",
+      "sourceSha256": "519bfbaf7ac0cc5776d7ecef39be992f0693f43e2709875cf65e0fd863838333",
+      "expectedContext": {
+        "is_sfc": true,
+        "is_script_setup": false,
+        "sole_script_block": true
+      },
+      "packet": {
+        "filename": "NormalNamesake.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "configured namesake retains generic script dispatch",
+            "start": 25,
+            "end": 43,
+            "help": null,
+            "fix": null,
+            "labels": []
+          }
+        ]
+      }
+    },
+    {
+      "filename": "ExternalNamesake.vue",
+      "source": "<script setup lang=\"ts\" src=\"./props.ts\">\nconst { user: { name } } = defineProps();\n</script>\n",
+      "sourceSha256": "57046868bdcfa49ef176f9c12dc7d6bee079f1c05c737d1f26cef3d9bbbf7663",
+      "expectedContext": {
+        "is_sfc": true,
+        "is_script_setup": true,
+        "sole_script_block": true
+      },
+      "packet": {
+        "filename": "ExternalNamesake.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "configured namesake retains generic script dispatch",
+            "start": 48,
+            "end": 66,
+            "help": null,
+            "fix": null,
+            "labels": []
+          }
+        ]
+      }
+    }
+  ]
+}

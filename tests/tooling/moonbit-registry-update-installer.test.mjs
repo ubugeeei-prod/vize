@@ -56,6 +56,12 @@ async function installer({ warm = false, tamper = false, wrongVersion = false } 
     // Only the expected Unix download digest is injected into this temporary
     // copy. The real hash verifier and every installer stage execute unchanged.
     fs.writeFileSync(location, source.replace(originalUnixDigest, digest));
+    // This original registry fixture controls its installer bytes, not archive
+    // transport. The complete transport/caller is executed in its own law.
+    fs.writeFileSync(
+      path.join(path.dirname(location), "pinned-artifacts.mjs"),
+      "export async function preparePinnedInstaller() {}\n",
+    );
     fs.writeFileSync(path.join(tree, ".moonbit-version"), `${version}\n`);
     fs.writeFileSync(githubPath, "");
     fs.writeFileSync(githubEnv, "");

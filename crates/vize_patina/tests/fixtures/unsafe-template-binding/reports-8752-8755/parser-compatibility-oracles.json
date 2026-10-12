@@ -1,0 +1,91 @@
+{
+  "schema": 1,
+  "basis": "Existing Standard template syntax reports recovery of authored non-void self-closing p elements; every complete diagnostic remains asserted. Source/tag ranges are independently enumerated from unchanged complete inputs.",
+  "cases": {
+    "TypedComputedSlotKey": {
+      "source": "<Child v-slot=\"{ [key()]: value }\"><p :title=\"value\" /></Child>",
+      "errors": [
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "loc": {
+            "span": {
+              "start": 35,
+              "end": 55
+            }
+          }
+        }
+      ]
+    },
+    "UnsafeComputedSlotKey": {
+      "source": "<Child v-slot=\"{ [unsafeKey()]: value }\"><p :title=\"value\" /></Child>",
+      "errors": [
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "loc": {
+            "span": {
+              "start": 41,
+              "end": 61
+            }
+          }
+        }
+      ]
+    },
+    "PromiseComputedSlotKey": {
+      "source": "<Child v-slot=\"{ [loadKey()]: value }\"><p :title=\"value\" /></Child>",
+      "errors": [
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "loc": {
+            "span": {
+              "start": 39,
+              "end": 59
+            }
+          }
+        }
+      ]
+    },
+    "ComputedSlotAndUnsafeValueSibling": {
+      "source": "<Child v-slot=\"{ [key()]: value }\"><p :title=\"value\" /></Child><p :title=\"unsafeValue\" />",
+      "errors": [
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "loc": {
+            "span": {
+              "start": 35,
+              "end": 55
+            }
+          }
+        },
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "loc": {
+            "span": {
+              "start": 63,
+              "end": 89
+            }
+          }
+        }
+      ]
+    },
+    "SafeInertMarkers": {
+      "source": "\n<p :title=\"\n text + cb\n\" />\n",
+      "errors": [
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "loc": {
+            "span": {
+              "start": 1,
+              "end": 28
+            }
+          }
+        }
+      ]
+    }
+  }
+}

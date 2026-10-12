@@ -1,0 +1,222 @@
+//! Complete scoped semantic oracles for public reports #8752–#8755.
+//! The original Opinionated/router project has a separate acceptance boundary.
+
+use std::path::{Path, PathBuf};
+
+use serde_json::{Value, json};
+use vize_l0::ToCompactString;
+
+use super::{lint_sfc_with_corsa, tests::corsa_available};
+use crate::{
+    LintPreset, LintResult, Linter,
+    output::{OutputFormat, format_results},
+    rules::opinionated::type_aware::NoUnsafeTemplateBinding,
+};
+
+const INITIAL: &str = include_str!(
+    "../../../tests/fixtures/unsafe-template-binding/reports-8752-8755/scoped-semantic-oracles.json"
+);
+const SUPPLEMENT: &str = include_str!(
+    "../../../tests/fixtures/unsafe-template-binding/reports-8752-8755/owner-type-supplement.json"
+);
+
+fn fixture_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/unsafe-template-binding/reports-8752-8755")
+}
+
+fn authored_cases() -> Vec<Value> {
+    [INITIAL, SUPPLEMENT]
+        .into_iter()
+        .flat_map(|raw| {
+            let packet: Value = serde_json::from_str(raw).expect("authored whole packet");
+            packet["cases"].as_array().expect("authored cases").clone()
+        })
+        .collect()
+}
+
+fn runtime_available() -> bool {
+    let required = std::env::var_os("VIZE_TEST_REQUIRE_TSGO").is_some();
+    let disabled = std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some();
+    assert!(
+        !(required && disabled),
+        "required Corsa execution cannot be disabled"
+    );
+    if disabled {
+        return false;
+    }
+    let available = corsa_available();
+    assert!(
+        !required || available,
+        "the public expression corpus requires Corsa"
+    );
+    available
+}
+
+fn scoped_linter() -> Linter {
+    Linter::with_preset(LintPreset::Incremental).with_rule(Box::new(NoUnsafeTemplateBinding::new()))
+}
+
+/// Serialize every diagnostic field and both stats without target filtering.
+fn whole_api(result: &LintResult) -> Value {
+    let diagnostics: Vec<_> = result
+        .diagnostics
+        .iter()
+        .map(|diagnostic| {
+            let labels: Vec<_> = diagnostic
+                .labels
+                .iter()
+                .map(|label| {
+                    json!({"message": label.message, "start": label.start, "end": label.end})
+                })
+                .collect();
+            json!({
+                "rule_name": diagnostic.rule_name,
+                "severity": diagnostic.severity,
+                "message": diagnostic.message,
+                "start": diagnostic.start,
+                "end": diagnostic.end,
+                "help": diagnostic.help,
+                "fix": diagnostic.fix,
+                "labels": labels,
+            })
+        })
+        .collect();
+    json!({
+        "filename": result.filename,
+        "error_count": result.error_count,
+        "warning_count": result.warning_count,
+        "diagnostics": diagnostics,
+    })
+}
+
+fn assert_whole_case(linter: &Linter, case: &Value, execution_filename: &str) {
+    let filename = case["filename"].as_str().expect("filename");
+    let source = case["source"].as_str().expect("source");
+    let result = lint_sfc_with_corsa(linter, source, execution_filename);
+    // Only the isolated fixture's real project path differs for RouterView.
+    let mut expected_api = case["afterApi"].clone();
+    expected_api["filename"] = execution_filename.into();
+    assert_eq!(whole_api(&result), expected_api, "{}", case["id"]);
+    assert_eq!(json!(i32::from(result.has_errors())), case["afterStatus"]);
+    let sources = vec![(
+        execution_filename.to_compact_string(),
+        source.to_compact_string(),
+    )];
+    let formatted = format_results(&[result], &sources, OutputFormat::Json);
+    let actual: Value = serde_json::from_str(&formatted).expect("whole formatter JSON");
+    let mut expected_cli = case["afterCli"].clone();
+    assert_eq!(expected_cli[0]["file"], filename);
+    expected_cli[0]["file"] = execution_filename.into();
+    assert_eq!(actual, expected_cli, "{}", case["id"]);
+}
+
+#[test]
+fn frozen_sources_and_complete_oracles_are_preserved() {
+    let cases = authored_cases();
+    assert_eq!(cases.len(), 25);
+    assert_eq!(
+        cases
+            .iter()
+            .filter(|case| case["id"] == "RouterViewSlot")
+            .count(),
+        1
+    );
+    for case in &cases {
+        let filename = case["filename"].as_str().expect("filename");
+        let bytes =
+            std::fs::read(fixture_root().join("cases").join(filename)).expect("full source");
+        assert_eq!(bytes, case["source"].as_str().expect("source").as_bytes());
+        assert_eq!(
+            case["config"],
+            json!({"linter": {"preset": "incremental", "typeAware": true,
+                "rules": {"type/no-unsafe-template-binding": "warn"}}})
+        );
+    }
+    for filename in [
+        "DirectiveObjectArg.vue",
+        "MultilineAttr.vue",
+        "MultilineTernary.vue",
+        "RouterViewSlot.vue",
+    ] {
+        let root = fixture_root();
+        assert_eq!(
+            std::fs::read(root.join("original-reports").join(filename)).expect("original report"),
+            std::fs::read(root.join("cases").join(filename)).expect("scoped source")
+        );
+    }
+}
+
+#[test]
+fn complete_scoped_public_expression_packets_use_real_corsa() {
+    if !runtime_available() {
+        return;
+    }
+    let linter = scoped_linter();
+    let cases = authored_cases();
+    let mut executed = 0;
+    for case in cases.iter().filter(|case| case["id"] != "RouterViewSlot") {
+        assert_whole_case(&linter, case, case["filename"].as_str().expect("filename"));
+        executed += 1;
+    }
+    assert_eq!(executed, 24);
+}
+
+#[test]
+fn inert_script_markers_remain_complete_in_the_checker_document() {
+    let case = authored_cases()
+        .into_iter()
+        .find(|case| case["id"] == "SafeInertMarkers")
+        .expect("frozen inert marker control");
+    let source = case["source"].as_str().expect("source");
+    let descriptor =
+        vize_atelier_sfc::parse_sfc(source, vize_atelier_sfc::SfcParseOptions::default())
+            .expect("full SFC");
+    let template = descriptor.template.as_ref().expect("template");
+    let script = descriptor.script_setup.as_ref().expect("setup");
+    let allocator = vize_l0::Allocator::new();
+    let (root, errors) = vize_armature::parse(&allocator, template.content.as_ref());
+    assert!(errors.is_empty(), "{errors:?}");
+    let document = super::document::project_type_aware(
+        &descriptor,
+        script.content.as_ref(),
+        Some(&root),
+        script.loc.start as u32,
+        template.loc.start as u32,
+        "SafeInertMarkers.vue",
+    );
+    assert!(document.content.contains(script.content.as_ref()));
+}
+
+#[test]
+fn original_router_requires_reported_dependency() {
+    if !runtime_available() {
+        return;
+    }
+    // Ordinary Actions installs this isolated workspace's genuine dependencies.
+    // The original source and compiler config remain below its package root.
+    let project = fixture_root();
+    let package_root = project.join("node_modules/vue-router");
+    let package: Value = serde_json::from_slice(
+        &std::fs::read(package_root.join("package.json")).expect("resolved router package"),
+    )
+    .expect("router package JSON");
+    assert_eq!(package["name"], "vue-router");
+    assert_eq!(package["version"], "5.3.1");
+    let types = package["types"]
+        .as_str()
+        .or_else(|| package["exports"]["."]["types"].as_str())
+        .or_else(|| package["exports"]["."]["types"]["default"].as_str())
+        .expect("genuine router declarations");
+    assert!(package_root.join(types).is_file(), "missing router types");
+    let case = authored_cases()
+        .into_iter()
+        .find(|case| case["id"] == "RouterViewSlot")
+        .expect("unaltered conditional router oracle");
+    let filename = project.join("original-reports/RouterViewSlot.vue");
+    assert_whole_case(
+        &scoped_linter(),
+        &case,
+        filename.to_str().expect("project path"),
+    );
+}

@@ -1,0 +1,72 @@
+import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { test } from "node:test";
+
+const root = new URL("../../", import.meta.url);
+const read = (name) => readFileSync(new URL(name, root), "utf8");
+const hash = (source) => createHash("sha256").update(source).digest("hex");
+const archive = "tests/_fixtures/differential/config/vue-namespace/source-custody/";
+
+void test("the complete original package cases survive the explicit options-first API succession", () => {
+  const config = read(archive + "original-vite-plus-config.test.ts.fixture");
+  assert.equal(hash(config), "82570d354aa7cfb9300bca05be49e7bd451694beea019b635cac1ccb7c8056a4");
+  assert.equal(
+    read("npm/builder/vite/src/vite-plus/config.test.ts"),
+    config.replace(
+      "assert.equal(withVue, defineConfig);",
+      "assert.notEqual(withVue, defineConfig);",
+    ),
+  );
+  const packed = read(archive + "original-vite-plus-fast-path.test.ts.fixture");
+  assert.equal(hash(packed), "2e50572dce23541ce29d219e6a8eefe46c440d80acae92f0ab6c1f0664082b6b");
+  const addedImport =
+    'import { checkCanonicalVueConsumer } from "./support/vite-vue-packed-consumer.ts";\n';
+  const addedCall =
+    "    checkCanonicalVueConsumer(\n" +
+    "      directory,\n" +
+    '      path.join(path.dirname(require.resolve("typescript/package.json")), "bin/tsc"),\n' +
+    '      path.dirname(require.resolve("vite/package.json")),\n' +
+    "    );\n";
+  const current = read("tests/tooling/vite-plus-fast-path.test.ts");
+  assert.equal(current.split(addedImport).length, 2);
+  assert.equal(current.split(addedCall).length, 2);
+  assert.equal(current.replace(addedImport, "").replace(addedCall, ""), packed);
+
+  const dialect = read(archive + "original-vue-version-index.test.ts.fixture");
+  assert.equal(hash(dialect), "6e97eb6a6af314856b7cd16395544c34a839eb7eac9bd651d110fafe5580aeaf");
+  const addedDialect =
+    "  assert.equal(\n" +
+    "    isLegacyVueCompatibilityMode({ vueVersion: 0.1 }),\n" +
+    "    true,\n" +
+    '    "vueVersion: 0.10 should enable legacy Vue compatibility mode",\n' +
+    "  );\n\n";
+  const liveDialect = read("npm/builder/vite/src/plugin/index.test.ts");
+  assert.equal(liveDialect.split(addedDialect).length, 2);
+  assert.equal(liveDialect.replace(addedDialect, ""), dialect);
+});
+
+void test("the complete authored bilingual recipes and relative destinations agree", () => {
+  const english = read("docs/content/guide/vue-configuration.md");
+  const japanese = read("docs/content/ja/guide/vue-configuration.md");
+  const fences = (source) =>
+    [...source.matchAll(/^```[^\n]*\n[\s\S]*?^```[^\n]*$/gm)].map(([whole]) => whole);
+  assert.equal(fences(english).length, 3);
+  assert.deepEqual(fences(japanese), fences(english));
+  const destinations = (source) => [...source.matchAll(/\]\(([^)]+)\)/g)].map(([, href]) => href);
+  assert.deepEqual(destinations(japanese), destinations(english));
+  for (const name of destinations(english)) {
+    assert.doesNotThrow(() =>
+      readFileSync(fileURLToPath(new URL(name, new URL("docs/content/guide/", root)))),
+    );
+    assert.doesNotThrow(() =>
+      readFileSync(fileURLToPath(new URL(name, new URL("docs/content/ja/guide/", root)))),
+    );
+  }
+  assert.match(japanese, /<!-- Reviewed translation; source: guide\/vue-configuration\.md -->/);
+  for (const source of [english, japanese]) {
+    assert.match(source, /`basePath`.*`files`.*`ignores`.*`linter`/s);
+    assert.match(source, /withVue\(\{\}, defineConfig\(vpConfig\)\)/);
+  }
+});

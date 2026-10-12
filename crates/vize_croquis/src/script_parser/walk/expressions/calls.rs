@@ -150,7 +150,7 @@ pub(in crate::script_parser) fn walk_call_arguments(
                             _ => {}
                         }
                     }
-                    walk_expression(result, expr, source);
+                    super::super::super::reexecution::walk_argument(result, call, expr, source);
                 }
             }
         }

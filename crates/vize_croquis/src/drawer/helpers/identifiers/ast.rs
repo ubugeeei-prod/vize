@@ -48,12 +48,33 @@ pub(super) fn retained_references(
     ast: &Expression<'_>,
     demanded: bool,
 ) -> (Vec<IdentifierRef>, bool) {
+    let (references, complete, _) = retained_references_core(ast, demanded, false);
+    (references, complete)
+}
+
+pub(super) fn retained_runtime_references(
+    ast: &Expression<'_>,
+    demanded: bool,
+) -> (Vec<IdentifierRef>, bool, bool) {
+    retained_references_core(ast, demanded, true)
+}
+
+fn retained_references_core(
+    ast: &Expression<'_>,
+    demanded: bool,
+    runtime_capture: bool,
+) -> (Vec<IdentifierRef>, bool, bool) {
     let mut identifiers = IdentifierWalk::new(demanded);
+    identifiers.runtime_capture = runtime_capture;
     profile!(
         "croquis.helpers.identifiers.walk_expr",
         walk::walk_expr(ast, &mut identifiers)
     );
-    (identifiers.values, identifiers.complete)
+    (
+        identifiers.values,
+        identifiers.complete,
+        identifiers.runtime_only,
+    )
 }
 
 #[inline]
@@ -62,6 +83,22 @@ pub(super) fn extract_identifier_refs_oxc_ast(expr: &str) -> Vec<IdentifierRef> 
 }
 
 pub(super) fn parsed_references(expr: &str, demanded: bool) -> (Vec<IdentifierRef>, bool) {
+    let (references, complete, _) = parsed_references_core(expr, demanded, false);
+    (references, complete)
+}
+
+pub(super) fn parsed_runtime_references(
+    expr: &str,
+    demanded: bool,
+) -> (Vec<IdentifierRef>, bool, bool) {
+    parsed_references_core(expr, demanded, true)
+}
+
+fn parsed_references_core(
+    expr: &str,
+    demanded: bool,
+    runtime_capture: bool,
+) -> (Vec<IdentifierRef>, bool, bool) {
     let allocator = Allocator::default();
     let source_type = SourceType::from_path("expr.ts").unwrap_or_default();
 
@@ -72,18 +109,24 @@ pub(super) fn parsed_references(expr: &str, demanded: bool) -> (Vec<IdentifierRe
     let parsed_expr = match ret {
         Ok(expr) => expr,
         Err(_) => {
-            return extract_identifier_refs_oxc_program(expr, source_type, demanded)
-                .unwrap_or_default();
+            return extract_identifier_refs_oxc_program(
+                expr,
+                source_type,
+                demanded,
+                runtime_capture,
+            )
+            .unwrap_or_default();
         }
     };
 
     if !expression_consumes_source(expr, &parsed_expr)
-        && let Some(identifiers) = extract_identifier_refs_oxc_program(expr, source_type, demanded)
+        && let Some(identifiers) =
+            extract_identifier_refs_oxc_program(expr, source_type, demanded, runtime_capture)
     {
         return identifiers;
     }
 
-    let mut references = retained_references(&parsed_expr, demanded);
+    let mut references = retained_references_core(&parsed_expr, demanded, runtime_capture);
     references.1 &= !demanded || expression_consumes_source(expr, &parsed_expr);
     references
 }
@@ -98,7 +141,8 @@ fn extract_identifier_refs_oxc_program(
     expr: &str,
     source_type: SourceType,
     demanded: bool,
-) -> Option<(Vec<IdentifierRef>, bool)> {
+    runtime_capture: bool,
+) -> Option<(Vec<IdentifierRef>, bool, bool)> {
     let allocator = Allocator::default();
     let ret = profile!(
         "croquis.helpers.identifiers.oxc_parse_program",
@@ -121,12 +165,19 @@ fn extract_identifier_refs_oxc_program(
         .build(&ret.program);
     let semantic = &built.semantic;
     let scoping = semantic.scoping();
+    let mut runtime_only = true;
     let mut identifiers: Vec<_> = scoping
         .root_unresolved_references_ids()
         .flatten()
         .filter_map(|id| {
             let reference = scoping.get_reference(id);
-            (reference.flags().is_value() || reference.flags().is_value_as_type()).then(|| {
+            let flags = reference.flags();
+            (flags.is_value() || flags.is_value_as_type()).then(|| {
+                if runtime_capture
+                    && (!flags.is_read() || flags.is_value_as_type() || flags.is_type())
+                {
+                    runtime_only = false;
+                }
                 IdentifierRef::new(
                     semantic.reference_name(reference),
                     semantic.reference_span(reference).start,
@@ -141,7 +192,7 @@ fn extract_identifier_refs_oxc_program(
             && !scoping
                 .scope_descendants_from_root()
                 .any(|scope| scoping.scope_flags(scope).contains_direct_eval()));
-    Some((identifiers, complete))
+    Some((identifiers, complete, runtime_only))
 }
 
 #[cfg(test)]

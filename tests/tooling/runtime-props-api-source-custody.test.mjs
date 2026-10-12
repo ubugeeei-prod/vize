@@ -8,7 +8,7 @@ import { sha256 } from "./lint-default-correctness-reference.mjs";
 import {
   authenticateRuntimeApiSourceFamily,
   assertReservedApiOrderSource,
-} from "./support/runtime-props-api-source-custody.mjs";
+} from "./support/component-value-retained-guards.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const read = (name) => fs.readFileSync(path.join(root, name));

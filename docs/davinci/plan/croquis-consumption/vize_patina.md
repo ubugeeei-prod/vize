@@ -11,7 +11,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | product                                    | kind  | module                         | files | sites |
 | ------------------------------------------ | ----- | ------------------------------ | ----: | ----: |
 | `COMPILER_MACRO_NAMES`                     | type  | `croquis`                      |     1 |     1 |
-| `Croquis`                                  | type  | `croquis`                      |    18 |    37 |
+| `Croquis`                                  | type  | `croquis`                      |    18 |    38 |
 | `Drawer`                                   | type  | `drawer`                       |     2 |     2 |
 | `DrawerOptions`                            | type  | `drawer`                       |     1 |     1 |
 | `ElementIdKind`                            | type  | `croquis::template`            |     1 |     2 |
@@ -19,6 +19,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `OptionMember`                             | type  | `croquis`                      |     2 |     4 |
 | `Scope`                                    | type  | `scope`                        |     2 |     2 |
 | `ScopeData`                                | type  | `scope`                        |     2 |     2 |
+| `ScopeId`                                  | type  | `scope`                        |     1 |     2 |
 | `ScopeKind`                                | type  | `scope`                        |     3 |     4 |
 | `TemplateComponentRegistrations`           | type  | `croquis::template_components` |     1 |     1 |
 | `UnusedVarContext`                         | type  | `croquis`                      |     1 |     4 |

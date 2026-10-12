@@ -2781,6 +2781,7 @@ invalid:
 
 valid:
   import { ref, h } from 'vue'
+  import { isString } from '@vue/shared'
 === script/prefer-ref-over-reactive
 script/prefer-ref-over-reactive · lint rule
 Recommend using ref() over reactive() for state management

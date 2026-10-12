@@ -1,0 +1,1609 @@
+{
+  "schema": "vize.lint.public-vue-imports",
+  "version": 1,
+  "issue": 8090,
+  "rule": "script/prefer-import-from-vue",
+  "authority": "Complete source-authored current-parent/after/API fix/source and pinned-provider vectors frozen before any candidate/reference observation. No observed output supplies expectations.",
+  "sourceParent": "ba777412182169093c1b96564089ef0d205f39d0",
+  "providerCommit": "9aa463a4aa4ad3c37d7facacda2e40ad7880ea92",
+  "providerRuleVersion": "10.9.2",
+  "publicExportAuthority": {
+    "path": "vue3-export-names.json",
+    "sha256": "816968e681b3ae791f658991df8a032d2224120be08ae736aa60d7b5ee9898c9",
+    "names": 361,
+    "coverage": "Fixed pinned public exports, not newest Vue coverage"
+  },
+  "contract": {
+    "scope": "Incremental with only this rule explicitly configured at native Warning/provider Error",
+    "nativeRangeUnit": "utf8-byte-offset",
+    "providerRangeUnit": "utf16-code-unit",
+    "nativeSpan": "Original from-clause span including source quotes",
+    "providerSpan": "Module literal span including quotes; retained separately",
+    "labels": "Native full empty label vector",
+    "help": "Producer help remains serialized, including --help-level none",
+    "unsupported": "Side-effect/re-export producer expansion and from-clause lexical ownership are outside this correction"
+  },
+  "cases": [
+    {
+      "id": "original-element-plus",
+      "filename": "OriginalVpApiEnum.vue",
+      "sourceFile": "OriginalVpApiEnum.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport { computed } from 'vue'\nimport { isString } from '@vue/shared'\nimport ApiTyping from './vp-api-typing.vue'\n\nconst props = defineProps({\n  values: {\n    type: Array,\n    required: true,\n  },\n})\n\nconst processString = (s: unknown) => (isString(s) ? `'${s}'` : s)\n\nconst details = computed(() => props.values.map(processString).join(' | '))\n</script>\n\n<template>\n  <api-typing type=\"enum\" :details=\"details\" />\n</template>\n",
+      "sourceSha256": "3e39e2d5e9c3657f7240c75e0f53acd60054a97ae3e4ff6aa6cee2185efe508a",
+      "entry": "sfc",
+      "rationale": "Immutable452-byte original; private isString cannot be rewritten to vue.",
+      "currentParentDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/shared' should be replaced with 'vue'",
+          "start": 76,
+          "end": 94,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 76,
+                "end": 94,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "diagnostics": [],
+      "fixedSource": "<script setup lang=\"ts\">\nimport { computed } from 'vue'\nimport { isString } from '@vue/shared'\nimport ApiTyping from './vp-api-typing.vue'\n\nconst props = defineProps({\n  values: {\n    type: Array,\n    required: true,\n  },\n})\n\nconst processString = (s: unknown) => (isString(s) ? `'${s}'` : s)\n\nconst details = computed(() => props.values.map(processString).join(' | '))\n</script>\n\n<template>\n  <api-typing type=\"enum\" :details=\"details\" />\n</template>\n",
+      "fixedSourceSha256": "3e39e2d5e9c3657f7240c75e0f53acd60054a97ae3e4ff6aa6cee2185efe508a",
+      "fixedDiagnostics": [],
+      "providerDiagnostics": [],
+      "providerDifferences": []
+    },
+    {
+      "id": "private-alias",
+      "filename": "PrivateAlias.vue",
+      "sourceFile": "PrivateAlias.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport { isString as ref } from '@vue/shared'\n</script>\n<template><div>ok</div></template>\n",
+      "sourceSha256": "7db39bdbbada6a3a2f610fde2b5725a395ca904465d9079381640ca239f30a85",
+      "entry": "sfc",
+      "rationale": "Private imported identity remains private when its local alias is public.",
+      "currentParentDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/shared' should be replaced with 'vue'",
+          "start": 52,
+          "end": 70,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 52,
+                "end": 70,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "diagnostics": [],
+      "fixedSource": "<script setup lang=\"ts\">\nimport { isString as ref } from '@vue/shared'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "7db39bdbbada6a3a2f610fde2b5725a395ca904465d9079381640ca239f30a85",
+      "fixedDiagnostics": [],
+      "providerDiagnostics": [],
+      "providerDifferences": []
+    },
+    {
+      "id": "private-named",
+      "filename": "PrivateNamed.vue",
+      "sourceFile": "PrivateNamed.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport { isString } from '@vue/shared'\n</script>\n<template><div>ok</div></template>\n",
+      "sourceSha256": "47ed1456e3e06edc9c5005b493c7925882fe0d18e76dd51615985fc9c0d77543",
+      "entry": "sfc",
+      "rationale": "Private named import keeps its actual source.",
+      "currentParentDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/shared' should be replaced with 'vue'",
+          "start": 45,
+          "end": 63,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 45,
+                "end": 63,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "diagnostics": [],
+      "fixedSource": "<script setup lang=\"ts\">\nimport { isString } from '@vue/shared'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "47ed1456e3e06edc9c5005b493c7925882fe0d18e76dd51615985fc9c0d77543",
+      "fixedDiagnostics": [],
+      "providerDiagnostics": [],
+      "providerDifferences": []
+    },
+    {
+      "id": "public-ref",
+      "filename": "PublicRef.vue",
+      "sourceFile": "PublicRef.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport { ref } from '@vue/reactivity'\n</script>\n<template><div>ok</div></template>\n",
+      "sourceSha256": "7cd672516f8c224a0f5097c29d3dae3fad4e88d18dd22a4529c148d735b06182",
+      "entry": "sfc",
+      "rationale": "Public ref keeps every existing positive diagnostic/fix field.",
+      "currentParentDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+          "start": 40,
+          "end": 62,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 40,
+                "end": 62,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+          "start": 40,
+          "end": 62,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 40,
+                "end": 62,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "691c832922d447259f1e905c5a2cbae63b3cb85a505ad11932ebab0a3c3284f9",
+      "fixedDiagnostics": [],
+      "providerDiagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/reactivity'.",
+          "line": 2,
+          "column": 21,
+          "nodeType": "Literal",
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 38,
+          "fix": {
+            "range": [46, 61],
+            "text": "vue"
+          }
+        }
+      ],
+      "providerDifferences": []
+    },
+    {
+      "id": "public-shared",
+      "filename": "PublicShared.vue",
+      "sourceFile": "PublicShared.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport { camelize } from '@vue/shared'\n</script>\n<template><div>ok</div></template>\n",
+      "sourceSha256": "f8e5e56f14ab0b40e159067f5f212c8a20808426f56f1383f676e2d77b828c19",
+      "entry": "sfc",
+      "rationale": "Public shared exports remain valid positives; package is not blanket-exempted.",
+      "currentParentDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/shared' should be replaced with 'vue'",
+          "start": 45,
+          "end": 63,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 45,
+                "end": 63,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/shared' should be replaced with 'vue'",
+          "start": 45,
+          "end": 63,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 45,
+                "end": 63,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport { camelize } from 'vue'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "97c46743c70116da765fafe46991e9664f2c9f8cea36676a3ace32a0004b10ce",
+      "fixedDiagnostics": [],
+      "providerDiagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/shared'.",
+          "line": 2,
+          "column": 26,
+          "nodeType": "Literal",
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 39,
+          "fix": {
+            "range": [51, 62],
+            "text": "vue"
+          }
+        }
+      ],
+      "providerDifferences": []
+    },
+    {
+      "id": "public-alias",
+      "filename": "PublicAlias.vue",
+      "sourceFile": "PublicAlias.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport { ref as chosen } from '@vue/runtime-core'\n</script>\n<template><div>ok</div></template>\n",
+      "sourceSha256": "afd630de113196f2175aa8a34e3d6ab6af14cd9917b73f13c16b0fa7051fc0ad",
+      "entry": "sfc",
+      "rationale": "Alias is checked by imported identity.",
+      "currentParentDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/runtime-core' should be replaced with 'vue'",
+          "start": 50,
+          "end": 74,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 50,
+                "end": 74,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/runtime-core' should be replaced with 'vue'",
+          "start": 50,
+          "end": 74,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 50,
+                "end": 74,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport { ref as chosen } from 'vue'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "b59d8c418eaf625b5553e5dd7f7b539b52c69ecbd99fec308bf00e73b1ee05aa",
+      "fixedDiagnostics": [],
+      "providerDiagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/runtime-core'.",
+          "line": 2,
+          "column": 31,
+          "nodeType": "Literal",
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 50,
+          "fix": {
+            "range": [56, 73],
+            "text": "vue"
+          }
+        }
+      ],
+      "providerDifferences": []
+    },
+    {
+      "id": "type-import",
+      "filename": "TypeImport.vue",
+      "sourceFile": "TypeImport.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport type { Ref } from '@vue/reactivity'\n</script>\n<template><div>ok</div></template>\n",
+      "sourceSha256": "ad1e9e8ccfe5c35722fc49849731cc70b7eab2c95e63e640bcedbd2d5bde38af",
+      "entry": "sfc",
+      "rationale": "Named public type exports use the same frozen public authority.",
+      "currentParentDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+          "start": 45,
+          "end": 67,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 45,
+                "end": 67,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+          "start": 45,
+          "end": 67,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 45,
+                "end": 67,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport type { Ref } from 'vue'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "26f25bacf0270e83d80dd6a0d78b6c0b550bc50b4392293b7f3d6d9782ca32e6",
+      "fixedDiagnostics": [],
+      "providerDiagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/reactivity'.",
+          "line": 2,
+          "column": 26,
+          "nodeType": "Literal",
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 43,
+          "fix": {
+            "range": [51, 66],
+            "text": "vue"
+          }
+        }
+      ],
+      "providerDifferences": []
+    },
+    {
+      "id": "inline-type-import",
+      "filename": "InlineType.vue",
+      "sourceFile": "InlineType.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport { type Ref, ref } from '@vue/reactivity'\n</script>\n<template><div>ok</div></template>\n",
+      "sourceSha256": "827960168d982f0883a5e1d74874461821de2a5d5755372519e626b41dfff0ac",
+      "entry": "sfc",
+      "rationale": "Type and value specifiers keep their imported identities.",
+      "currentParentDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+          "start": 50,
+          "end": 72,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 50,
+                "end": 72,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+          "start": 50,
+          "end": 72,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 50,
+                "end": 72,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport { type Ref, ref } from 'vue'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "5f0aebcd52faf0da905e96b61f735f681dd3a49780a2e3a19aa1c98b942734cb",
+      "fixedDiagnostics": [],
+      "providerDiagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/reactivity'.",
+          "line": 2,
+          "column": 31,
+          "nodeType": "Literal",
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 48,
+          "fix": {
+            "range": [56, 71],
+            "text": "vue"
+          }
+        }
+      ],
+      "providerDifferences": []
+    },
+    {
+      "id": "public-string",
+      "filename": "PublicString.vue",
+      "sourceFile": "PublicString.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport { \"ref\" as chosen } from \"@vue/reactivity\"\n</script>\n<template><div>ok</div></template>\n",
+      "sourceSha256": "6660cd0f9fb4fd3f8d5fcd830089f8005932a23388161019c1f9bdff617ce81b",
+      "entry": "sfc",
+      "rationale": "Native decoded public string identity preserves its legitimate old positive; provider imported.name lacks this literal identity.",
+      "currentParentDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+          "start": 52,
+          "end": 74,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 52,
+                "end": 74,
+                "new_text": "from \"vue\""
+              }
+            ]
+          }
+        }
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+          "start": 52,
+          "end": 74,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 52,
+                "end": 74,
+                "new_text": "from \"vue\""
+              }
+            ]
+          }
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport { \"ref\" as chosen } from \"vue\"\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "ad1e5e30b62a626cd3139fe6088af8741d3b0e0caececd2305b720c2277544db",
+      "fixedDiagnostics": [],
+      "providerDiagnostics": [],
+      "providerDifferences": [
+        "Pinned provider does not decode string-literal import names; native preserves the existing correct public-identity positive."
+      ]
+    },
+    {
+      "id": "private-string",
+      "filename": "PrivateString.vue",
+      "sourceFile": "PrivateString.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport { \"isString\" as chosen } from \"@vue/shared\"\n</script>\n<template><div>ok</div></template>\n",
+      "sourceSha256": "c9bad1a889cce4e37b5a1b3f0faa504d68c87ec0b6b3ffc89cadc474f6ee9139",
+      "entry": "sfc",
+      "rationale": "Decoded private string identity cannot receive a rewrite.",
+      "currentParentDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/shared' should be replaced with 'vue'",
+          "start": 57,
+          "end": 75,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 57,
+                "end": 75,
+                "new_text": "from \"vue\""
+              }
+            ]
+          }
+        }
+      ],
+      "diagnostics": [],
+      "fixedSource": "<script setup lang=\"ts\">\nimport { \"isString\" as chosen } from \"@vue/shared\"\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "c9bad1a889cce4e37b5a1b3f0faa504d68c87ec0b6b3ffc89cadc474f6ee9139",
+      "fixedDiagnostics": [],
+      "providerDiagnostics": [],
+      "providerDifferences": []
+    },
+    {
+      "id": "mixed-named",
+      "filename": "MixedNamed.vue",
+      "sourceFile": "MixedNamed.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport { ref, isString } from '@vue/shared'\n</script>\n<template><div>ok</div></template>\n",
+      "sourceSha256": "6ef9a187e590776cc137d87a64fb6021be00285038e288fd822d8b63c96bf938",
+      "entry": "sfc",
+      "rationale": "Any public named import keeps advisory; private companion removes unsafe fix.",
+      "currentParentDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/shared' should be replaced with 'vue'",
+          "start": 50,
+          "end": 68,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 50,
+                "end": 68,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/shared' should be replaced with 'vue'",
+          "start": 50,
+          "end": 68,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport { ref, isString } from '@vue/shared'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "6ef9a187e590776cc137d87a64fb6021be00285038e288fd822d8b63c96bf938",
+      "fixedDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/shared' should be replaced with 'vue'",
+          "start": 50,
+          "end": 68,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "providerDiagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/shared'.",
+          "line": 2,
+          "column": 31,
+          "nodeType": "Literal",
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 44
+        }
+      ],
+      "providerDifferences": []
+    },
+    {
+      "id": "mixed-alias",
+      "filename": "MixedAlias.vue",
+      "sourceFile": "MixedAlias.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport { ref as chosen, isString as other } from '@vue/shared'\n</script>\n<template><div>ok</div></template>\n",
+      "sourceSha256": "dae5f0db6f25b7f4beb891895191cffc6b4fb79ff85e9539ffc58d5a78e94220",
+      "entry": "sfc",
+      "rationale": "Mixed aliases retain advisory and refuse unsafe module replacement.",
+      "currentParentDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/shared' should be replaced with 'vue'",
+          "start": 69,
+          "end": 87,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 69,
+                "end": 87,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/shared' should be replaced with 'vue'",
+          "start": 69,
+          "end": 87,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport { ref as chosen, isString as other } from '@vue/shared'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "dae5f0db6f25b7f4beb891895191cffc6b4fb79ff85e9539ffc58d5a78e94220",
+      "fixedDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/shared' should be replaced with 'vue'",
+          "start": 69,
+          "end": 87,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "providerDiagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/shared'.",
+          "line": 2,
+          "column": 50,
+          "nodeType": "Literal",
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 63
+        }
+      ],
+      "providerDifferences": []
+    },
+    {
+      "id": "namespace",
+      "filename": "Namespace.vue",
+      "sourceFile": "Namespace.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport * as Vue from '@vue/runtime-dom'\n</script>\n<template><div>ok</div></template>\n",
+      "sourceSha256": "525bc5629381a1e0fe9e7f39d561e5adc4c4640176f4a87e28f19c28d94fde83",
+      "entry": "sfc",
+      "rationale": "Namespace advisory remains, but whole-namespace rewrite is unsafe.",
+      "currentParentDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/runtime-dom' should be replaced with 'vue'",
+          "start": 41,
+          "end": 64,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 41,
+                "end": 64,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/runtime-dom' should be replaced with 'vue'",
+          "start": 41,
+          "end": 64,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport * as Vue from '@vue/runtime-dom'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "525bc5629381a1e0fe9e7f39d561e5adc4c4640176f4a87e28f19c28d94fde83",
+      "fixedDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/runtime-dom' should be replaced with 'vue'",
+          "start": 41,
+          "end": 64,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "providerDiagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/runtime-dom'.",
+          "line": 2,
+          "column": 22,
+          "nodeType": "Literal",
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 40
+        }
+      ],
+      "providerDifferences": []
+    },
+    {
+      "id": "default-import",
+      "filename": "DefaultImport.vue",
+      "sourceFile": "DefaultImport.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport Vue from '@vue/runtime-dom'\n</script>\n<template><div>ok</div></template>\n",
+      "sourceSha256": "45715823143b25967725f710a651bcb63a95e7580acc9dc2885b4bbee147c85f",
+      "entry": "sfc",
+      "rationale": "Default advisory remains without a fictitious public default export.",
+      "currentParentDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/runtime-dom' should be replaced with 'vue'",
+          "start": 36,
+          "end": 59,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 36,
+                "end": 59,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/runtime-dom' should be replaced with 'vue'",
+          "start": 36,
+          "end": 59,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport Vue from '@vue/runtime-dom'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "45715823143b25967725f710a651bcb63a95e7580acc9dc2885b4bbee147c85f",
+      "fixedDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/runtime-dom' should be replaced with 'vue'",
+          "start": 36,
+          "end": 59,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "providerDiagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/runtime-dom'.",
+          "line": 2,
+          "column": 17,
+          "nodeType": "Literal",
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 35
+        }
+      ],
+      "providerDifferences": []
+    },
+    {
+      "id": "default-and-named",
+      "filename": "DefaultNamed.vue",
+      "sourceFile": "DefaultNamed.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport Vue, { ref } from '@vue/runtime-dom'\n</script>\n<template><div>ok</div></template>\n",
+      "sourceSha256": "fadaafa718605ca7b59dd64a35965edaa36a5642bbdeb0500a3891e9636cc8d6",
+      "entry": "sfc",
+      "rationale": "A public named companion does not make a default binding safe.",
+      "currentParentDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/runtime-dom' should be replaced with 'vue'",
+          "start": 45,
+          "end": 68,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 45,
+                "end": 68,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/runtime-dom' should be replaced with 'vue'",
+          "start": 45,
+          "end": 68,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport Vue, { ref } from '@vue/runtime-dom'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "fadaafa718605ca7b59dd64a35965edaa36a5642bbdeb0500a3891e9636cc8d6",
+      "fixedDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/runtime-dom' should be replaced with 'vue'",
+          "start": 45,
+          "end": 68,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "providerDiagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/runtime-dom'.",
+          "line": 2,
+          "column": 26,
+          "nodeType": "Literal",
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 44
+        }
+      ],
+      "providerDifferences": []
+    },
+    {
+      "id": "named-default",
+      "filename": "NamedDefault.vue",
+      "sourceFile": "NamedDefault.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport { default as Vue } from '@vue/runtime-dom'\n</script>\n<template><div>ok</div></template>\n",
+      "sourceSha256": "383f46253c4b4883ffcb37da9e4b8f25bcf530d50dfba182a0033a19eb46980f",
+      "entry": "sfc",
+      "rationale": "All-named unsupported default identity has no public counterpart.",
+      "currentParentDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/runtime-dom' should be replaced with 'vue'",
+          "start": 51,
+          "end": 74,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 51,
+                "end": 74,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "diagnostics": [],
+      "fixedSource": "<script setup lang=\"ts\">\nimport { default as Vue } from '@vue/runtime-dom'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "383f46253c4b4883ffcb37da9e4b8f25bcf530d50dfba182a0033a19eb46980f",
+      "fixedDiagnostics": [],
+      "providerDiagnostics": [],
+      "providerDifferences": []
+    },
+    {
+      "id": "empty-named",
+      "filename": "EmptyNamed.vue",
+      "sourceFile": "EmptyNamed.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport {} from '@vue/reactivity'\n</script>\n<template><div>ok</div></template>\n",
+      "sourceSha256": "dff8732b5ba0842fb7e7ce7240231d4d96776b73a6777c457ca604dc1525df59",
+      "entry": "sfc",
+      "rationale": "Existing empty from-clause advisory/fix remains unchanged.",
+      "currentParentDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+          "start": 35,
+          "end": 57,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 35,
+                "end": 57,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+          "start": 35,
+          "end": 57,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 35,
+                "end": 57,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport {} from 'vue'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "d47d4c1b12979e87ecf5d4d108d120bfd7b2c1a38320107774767e7fa2b39358",
+      "fixedDiagnostics": [],
+      "providerDiagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/reactivity'.",
+          "line": 2,
+          "column": 16,
+          "nodeType": "Literal",
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 33,
+          "fix": {
+            "range": [41, 56],
+            "text": "vue"
+          }
+        }
+      ],
+      "providerDifferences": []
+    },
+    {
+      "id": "side-effect",
+      "filename": "SideEffect.vue",
+      "sourceFile": "SideEffect.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport '@vue/shared'\n</script>\n<template><div>ok</div></template>\n",
+      "sourceSha256": "a8bc6cbd232c64144012e32503adbc76e252d35ecc5bc1843886c39df3f3e580",
+      "entry": "sfc",
+      "rationale": "Existing producer has no from-clause for side-effect imports; named unfinished provider difference.",
+      "currentParentDiagnostics": [],
+      "diagnostics": [],
+      "fixedSource": "<script setup lang=\"ts\">\nimport '@vue/shared'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "a8bc6cbd232c64144012e32503adbc76e252d35ecc5bc1843886c39df3f3e580",
+      "fixedDiagnostics": [],
+      "providerDiagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/shared'.",
+          "line": 2,
+          "column": 8,
+          "nodeType": "Literal",
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 21,
+          "fix": {
+            "range": [33, 44],
+            "text": "vue"
+          }
+        }
+      ],
+      "providerDifferences": [
+        "Native side-effect/re-export producer support remains unfinished; this correction changes only existing from-clause imports."
+      ]
+    },
+    {
+      "id": "public-reexport",
+      "filename": "PublicReexport.vue",
+      "sourceFile": "PublicReexport.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nexport { ref } from '@vue/reactivity'\n</script>\n<template><div>ok</div></template>\n",
+      "sourceSha256": "18f9d8e5544b779915617d6b4de1fa32da79236f9a0ab8ecc8308fb105f1da29",
+      "entry": "sfc",
+      "rationale": "Re-export producer remains unsupported in this narrow import correction.",
+      "currentParentDiagnostics": [],
+      "diagnostics": [],
+      "fixedSource": "<script setup lang=\"ts\">\nexport { ref } from '@vue/reactivity'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "18f9d8e5544b779915617d6b4de1fa32da79236f9a0ab8ecc8308fb105f1da29",
+      "fixedDiagnostics": [],
+      "providerDiagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/reactivity'.",
+          "line": 2,
+          "column": 21,
+          "nodeType": "Literal",
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 38,
+          "fix": {
+            "range": [46, 61],
+            "text": "vue"
+          }
+        }
+      ],
+      "providerDifferences": [
+        "Native side-effect/re-export producer support remains unfinished; this correction changes only existing from-clause imports."
+      ]
+    },
+    {
+      "id": "private-reexport",
+      "filename": "PrivateReexport.vue",
+      "sourceFile": "PrivateReexport.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nexport { isString } from '@vue/shared'\n</script>\n<template><div>ok</div></template>\n",
+      "sourceSha256": "0f310be917c3f63be015c26bde6b05045f16d2b3f707f3239ec2bf8b28d2e54c",
+      "entry": "sfc",
+      "rationale": "Both producers remain silent for a private named re-export.",
+      "currentParentDiagnostics": [],
+      "diagnostics": [],
+      "fixedSource": "<script setup lang=\"ts\">\nexport { isString } from '@vue/shared'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "0f310be917c3f63be015c26bde6b05045f16d2b3f707f3239ec2bf8b28d2e54c",
+      "fixedDiagnostics": [],
+      "providerDiagnostics": [],
+      "providerDifferences": []
+    },
+    {
+      "id": "export-all",
+      "filename": "ExportAll.vue",
+      "sourceFile": "ExportAll.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nexport * from '@vue/reactivity'\n</script>\n<template><div>ok</div></template>\n",
+      "sourceSha256": "de3486ded43237268a0e3e1f382b1f75e27b24e723aa79bba31982d767475271",
+      "entry": "sfc",
+      "rationale": "Native export-all remains unsupported; provider warns without broadening fix.",
+      "currentParentDiagnostics": [],
+      "diagnostics": [],
+      "fixedSource": "<script setup lang=\"ts\">\nexport * from '@vue/reactivity'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "de3486ded43237268a0e3e1f382b1f75e27b24e723aa79bba31982d767475271",
+      "fixedDiagnostics": [],
+      "providerDiagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/reactivity'.",
+          "line": 2,
+          "column": 15,
+          "nodeType": "Literal",
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 32
+        }
+      ],
+      "providerDifferences": [
+        "Native side-effect/re-export producer support remains unfinished; this correction changes only existing from-clause imports."
+      ]
+    },
+    {
+      "id": "non-vue-package",
+      "filename": "OtherPackage.vue",
+      "sourceFile": "OtherPackage.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport { ref } from 'other'\n</script>\n<template><div>ok</div></template>\n",
+      "sourceSha256": "4112469f6531c81b342fc2bcdff2a7be6308169d6e3a11b51b52ed56a2391aa2",
+      "entry": "sfc",
+      "rationale": "Unrelated packages are outside this rule.",
+      "currentParentDiagnostics": [],
+      "diagnostics": [],
+      "fixedSource": "<script setup lang=\"ts\">\nimport { ref } from 'other'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "4112469f6531c81b342fc2bcdff2a7be6308169d6e3a11b51b52ed56a2391aa2",
+      "fixedDiagnostics": [],
+      "providerDiagnostics": [],
+      "providerDifferences": []
+    },
+    {
+      "id": "public-entry",
+      "filename": "VueEntry.vue",
+      "sourceFile": "VueEntry.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\n</script>\n<template><div>ok</div></template>\n",
+      "sourceSha256": "691c832922d447259f1e905c5a2cbae63b3cb85a505ad11932ebab0a3c3284f9",
+      "entry": "sfc",
+      "rationale": "Public Vue entry requires no diagnostic.",
+      "currentParentDiagnostics": [],
+      "diagnostics": [],
+      "fixedSource": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "691c832922d447259f1e905c5a2cbae63b3cb85a505ad11932ebab0a3c3284f9",
+      "fixedDiagnostics": [],
+      "providerDiagnostics": [],
+      "providerDifferences": []
+    },
+    {
+      "id": "comment-double-quote",
+      "filename": "CommentQuote.vue",
+      "sourceFile": "CommentQuote.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport { ref } from /* keep */\n \"@vue/reactivity\"\n</script>\n<template><div>ok</div></template>\n",
+      "sourceSha256": "69366f9738766679ff063496ba3ef4d4ad04df41c1fe31fc29e08a8c5d6f7ca4",
+      "entry": "sfc",
+      "rationale": "Old comment/newline separator and double quote fix bytes stay exact.",
+      "currentParentDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+          "start": 40,
+          "end": 74,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 40,
+                "end": 74,
+                "new_text": "from /* keep */\n \"vue\""
+              }
+            ]
+          }
+        }
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+          "start": 40,
+          "end": 74,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 40,
+                "end": 74,
+                "new_text": "from /* keep */\n \"vue\""
+              }
+            ]
+          }
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport { ref } from /* keep */\n \"vue\"\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "ba994998fd28085214147f7b40f662128551c35b54e77228f5ed36413dc32e3b",
+      "fixedDiagnostics": [],
+      "providerDiagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/reactivity'.",
+          "line": 3,
+          "column": 2,
+          "nodeType": "Literal",
+          "messageId": "importedAtVue",
+          "endLine": 3,
+          "endColumn": 19,
+          "fix": {
+            "range": [58, 73],
+            "text": "vue"
+          }
+        }
+      ],
+      "providerDifferences": []
+    },
+    {
+      "id": "multiple-imports",
+      "filename": "Multiple.vue",
+      "sourceFile": "Multiple.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport { ref } from '@vue/reactivity'\nimport { isString } from '@vue/shared'\n</script>\n<template><div>ok</div></template>\n",
+      "sourceSha256": "83702f9d275272b428f3c1384ad6700df0efcef8ec78ae3b41267c7935981881",
+      "entry": "sfc",
+      "rationale": "Rule-major/source order retains the public positive and removes only private false positive.",
+      "currentParentDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+          "start": 40,
+          "end": 62,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 40,
+                "end": 62,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        },
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/shared' should be replaced with 'vue'",
+          "start": 83,
+          "end": 101,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 83,
+                "end": 101,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+          "start": 40,
+          "end": 62,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 40,
+                "end": 62,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nimport { isString } from '@vue/shared'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "949a480ffccd0a67912bd40f021100217dfe5828e03b49fb869a0068ef670777",
+      "fixedDiagnostics": [],
+      "providerDiagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/reactivity'.",
+          "line": 2,
+          "column": 21,
+          "nodeType": "Literal",
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 38,
+          "fix": {
+            "range": [46, 61],
+            "text": "vue"
+          }
+        }
+      ],
+      "providerDifferences": []
+    },
+    {
+      "id": "crlf-unicode",
+      "filename": "CrlfUnicode.vue",
+      "sourceFile": "CrlfUnicode.vue.fixture",
+      "source": "<script setup>\r\nconst text = \"😀\";\r\nimport { computed } from \"@vue/reactivity\"\r\n</script>\r\n<template><div>ok</div></template>\r\n",
+      "sourceSha256": "57a0d021deb13d1c1e862c6120bf253fbe4a6bc7cc7926f4698b741257f438de",
+      "entry": "sfc",
+      "rationale": "Complete CRLF source and UTF8/UTF16 coordinate contracts retain positive fix.",
+      "currentParentDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+          "start": 58,
+          "end": 80,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 58,
+                "end": 80,
+                "new_text": "from \"vue\""
+              }
+            ]
+          }
+        }
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+          "start": 58,
+          "end": 80,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 58,
+                "end": 80,
+                "new_text": "from \"vue\""
+              }
+            ]
+          }
+        }
+      ],
+      "fixedSource": "<script setup>\r\nconst text = \"😀\";\r\nimport { computed } from \"vue\"\r\n</script>\r\n<template><div>ok</div></template>\r\n",
+      "fixedSourceSha256": "26c7098f3bf865b1256023c2c44a6ac837a8daf0bbbca90fb99150b1769dda56",
+      "fixedDiagnostics": [],
+      "providerDiagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/reactivity'.",
+          "line": 3,
+          "column": 26,
+          "nodeType": "Literal",
+          "messageId": "importedAtVue",
+          "endLine": 3,
+          "endColumn": 43,
+          "fix": {
+            "range": [62, 77],
+            "text": "vue"
+          }
+        }
+      ],
+      "providerDifferences": []
+    },
+    {
+      "id": "minimal-order",
+      "filename": "MinimalOrder.vue",
+      "sourceFile": "MinimalOrder.vue.fixture",
+      "source": "<template><div>ok</div></template>\n<script setup>\nimport { ref } from '@vue/reactivity'\n</script>\n",
+      "sourceSha256": "9b4fe45c9271f6fe303144a8411103734d55454e7ec945fd977ebed822b9c2bc",
+      "entry": "sfc",
+      "rationale": "Full n8n route retains deliberate template-before-script order finding.",
+      "currentParentDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+          "start": 65,
+          "end": 87,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 65,
+                "end": 87,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+          "start": 65,
+          "end": 87,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 65,
+                "end": 87,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "fixedSource": "<template><div>ok</div></template>\n<script setup>\nimport { ref } from 'vue'\n</script>\n",
+      "fixedSourceSha256": "69a0f0bafb8c6d91fbaa3d3f6c98acadf7e8938dbd96fc440fd9e2d240ec68bb",
+      "fixedDiagnostics": [],
+      "providerDiagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/reactivity'.",
+          "line": 3,
+          "column": 21,
+          "nodeType": "Literal",
+          "messageId": "importedAtVue",
+          "endLine": 3,
+          "endColumn": 38,
+          "fix": {
+            "range": [71, 86],
+            "text": "vue"
+          }
+        }
+      ],
+      "providerDifferences": []
+    },
+    {
+      "id": "legacy-script",
+      "filename": "LegacyPrivate.ts",
+      "sourceFile": "LegacyPrivate.ts.fixture",
+      "source": "import { isString as ref } from '@vue/shared'\n",
+      "sourceSha256": "f9e93c3a11e86630b32677b4e947d8c7d812eefab6b671089c558f0046dfcb41",
+      "entry": "script",
+      "rationale": "Legacy plain-script producer gets the same private-identity correction.",
+      "currentParentDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/shared' should be replaced with 'vue'",
+          "start": 27,
+          "end": 45,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 27,
+                "end": 45,
+                "new_text": "from 'vue'"
+              }
+            ]
+          }
+        }
+      ],
+      "diagnostics": [],
+      "fixedSource": "import { isString as ref } from '@vue/shared'\n",
+      "fixedSourceSha256": "f9e93c3a11e86630b32677b4e947d8c7d812eefab6b671089c558f0046dfcb41",
+      "fixedDiagnostics": [],
+      "providerDiagnostics": [],
+      "providerDifferences": []
+    },
+    {
+      "id": "legacy-public",
+      "filename": "LegacyPublic.ts",
+      "sourceFile": "LegacyPublic.ts.fixture",
+      "source": "import { ref as chosen } from \"@vue/reactivity\"\n",
+      "sourceSha256": "abef9fe366e287f11f80c25074d50e5d316efd1ad65b1fa7bb7f5089ec7fd8ad",
+      "entry": "script",
+      "rationale": "Legacy plain-script public positive retains complete fix metadata.",
+      "currentParentDiagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+          "start": 25,
+          "end": 47,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 25,
+                "end": 47,
+                "new_text": "from \"vue\""
+              }
+            ]
+          }
+        }
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/prefer-import-from-vue",
+          "severity": "warning",
+          "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+          "start": 25,
+          "end": 47,
+          "help": "Import from 'vue' directly for better compatibility",
+          "labels": [],
+          "fix": {
+            "message": "Replace with 'vue'",
+            "edits": [
+              {
+                "start": 25,
+                "end": 47,
+                "new_text": "from \"vue\""
+              }
+            ]
+          }
+        }
+      ],
+      "fixedSource": "import { ref as chosen } from \"vue\"\n",
+      "fixedSourceSha256": "bee324b74ae72c55ac37e050338d78afe779ff836075f589e2004621567f0e6b",
+      "fixedDiagnostics": [],
+      "providerDiagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/reactivity'.",
+          "line": 1,
+          "column": 31,
+          "nodeType": "Literal",
+          "messageId": "importedAtVue",
+          "endLine": 1,
+          "endColumn": 48,
+          "fix": {
+            "range": [31, 46],
+            "text": "vue"
+          }
+        }
+      ],
+      "providerDifferences": []
+    }
+  ]
+}

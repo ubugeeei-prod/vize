@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { authoredPropReferenceLocations } from "./authored-prop-references.ts";
 
 import { completionLabels, hoverToText, offsetToPosition } from "./lsp/assertions.ts";
 import type { LspRange, WorkspaceEdit } from "./lsp/protocol.ts";
@@ -134,10 +135,12 @@ export async function exerciseAuthoredLspOracle(
     assert.deepEqual(definition, [{ range: declarationRange, uri: bindingDocument.uri }]);
     assert.deepEqual(
       sortLocations(references),
-      sortLocations([
-        { range: usageRange, uri: bindingDocument.uri },
-        { range: declarationRange, uri: bindingDocument.uri },
-      ]),
+      sortLocations(
+        authoredPropReferenceLocations(workspaceDir, oracle, [
+          { range: usageRange, uri: bindingDocument.uri },
+          { range: declarationRange, uri: bindingDocument.uri },
+        ]),
+      ),
       "references must cover exactly the authored template use and declaration",
     );
 

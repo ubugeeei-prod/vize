@@ -23,6 +23,6 @@ export async function setupNuxtViteCompiler(
   host.vite ||= {};
   host.vite.plugins = host.vite.plugins || [];
   host.vite.plugins.push(
-    vize({ ...explicit, nuxtPageMeta: true, ssrModuleIdRoot: host.srcDir }, defaults),
+    vize({ ...explicit, nuxtPageMeta: true, ssrModuleIdRoot: host.srcDir }, defaults, "nuxt"),
   );
 }

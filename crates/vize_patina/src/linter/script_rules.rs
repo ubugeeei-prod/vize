@@ -1,6 +1,6 @@
 use super::{LintResult, Linter, severity::append_with_rule_overrides};
 use crate::rules::script::{
-    EmitsModuleScript, ScriptLintResult, SfcScriptContext, script_source_type,
+    EmitsModuleScript, ScriptLintResult, ScriptRule, SfcScriptContext, script_source_type,
 };
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
@@ -15,6 +15,8 @@ mod sfc;
 pub(crate) use sfc::append_builtin_script_diagnostics;
 mod template_context;
 
+#[cfg(test)]
+mod deep_props_dispatch_tests;
 #[cfg(test)]
 mod runtime_props_dispatch_tests;
 #[cfg(test)]
@@ -200,6 +202,15 @@ fn run_builtin_script_rule(
                         module,
                         &mut lint
                     )
+                );
+            }
+        } else if let Some(props_rule) = rule.as_setup_props_destructure()
+            && entry.rule_name == props_rule.meta().name
+        {
+            if runtime_props_eligible {
+                profile!(
+                    entry.profile_name,
+                    props_rule.check_setup(&parsed.program, source, offset, &mut lint)
                 );
             }
         } else if runtime_props_eligible

@@ -1,0 +1,4 @@
+<script setup lang="ts">
+export declare namespace Shapes { interface Point { x: number } }
+</script>
+<template><div /></template>

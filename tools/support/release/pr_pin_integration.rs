@@ -128,15 +128,11 @@ pub(super) fn integration_pr(
             &["push", "origin", &format!("HEAD:refs/heads/{branch}")],
             &path,
         )?;
-        let body = format!(
-            "Integrate only generated {} version metadata into moving main. Source PR #{} remains an immutable draft receipt at H={}. The maintainer owns protected queue admission; this command never auto-merges this PR or writes main. Admit this integration only after immutable H/R qualification has succeeded: all required H checks, all five full H gates, every release build, and full preflight must be terminal green. Actual delivery is checked against its final first parent, not the initial base.\n\n<!-- vize-release-pin-source: {} -->\n<!-- vize-release-pin-cut: {} -->\n<!-- vize-release-pin-head: {} -->\n<!-- vize-release-pin-tag: {} -->\n",
-            candidate.tag,
+        let body = super::body::generated(
             candidate.number,
-            candidate.head,
-            candidate.number,
-            source.cut,
-            candidate.head,
-            candidate.tag
+            &source.cut,
+            &candidate.head,
+            &candidate.tag,
         );
         open_pr(
             &candidate.repository,

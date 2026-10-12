@@ -157,7 +157,9 @@ test("every isolated tooling runner regenerates its tier and retains the full me
     "node tools/support/compat/github/canonical-corpus-selection.mjs --check",
   );
   assert.equal(steps[build].uses, "./.github/actions/restore-source-cli");
-  assert.equal(steps[build].with?.sha256, "${{ needs.pr-source-cli.outputs.sha256 }}");
+  assert.deepEqual(steps[build].with, {
+    producer: "${{ toJSON(needs.pr-source-cli.outputs) }}",
+  });
   const restore = parse(readRepoFile(".github", "actions", "restore-source-cli", "action.yml")) as {
     runs: { steps: Step[] };
   };

@@ -108,5 +108,9 @@ insta.workspace = true
 lsp-types.workspace = true
 url.workspace = true
 
+[[example]]
+name = "css_engine_vendor_observer"
+required-features = ["glyph"]
+
 [lints]
 workspace = true

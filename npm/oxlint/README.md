@@ -47,6 +47,36 @@ vp install -D oxlint oxlint-plugin-vize
 
 ## Usage
 
+### With ESLint
+
+Use the independent `oxlint-plugin-vize/eslint` entry with the project's Vue parser:
+
+```js
+import vize from "oxlint-plugin-vize/eslint";
+import vueParser from "vue-eslint-parser";
+
+export default [
+  {
+    files: ["**/*.vue"],
+    languageOptions: { parser: vueParser },
+    plugins: { vize },
+    settings: { vize: { preset: "incremental" } },
+    rules: { "vize/vue/require-v-for-key": "error" },
+  },
+];
+```
+
+This entry lints the parser's complete source, including an editor's unsaved text.
+It reports original template, script, and style locations and batches the enabled
+Vize rules once per file. Native text edits support ESLint's `--fix`; suggestions
+are not invented from help text. Install ESLint and
+`vue-eslint-parser` in the project, and keep the plugin and native binding versions
+together. The default package entry remains the Oxlint bridge.
+Unpaired UTF-16 surrogates are refused before native conversion. Invalid native
+ranges and inconsistent locations are errors. Files containing
+lone CR or Unicode line separators currently require a matching native location
+convention; the entry refuses mismatched positions rather than moving reports.
+
 Which file you configure depends on which command you run.
 
 | Command                 | Reads                                |

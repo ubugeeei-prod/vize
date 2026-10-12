@@ -1,0 +1,35 @@
+{
+  "schema": "vize.lint.setup-export-default-bare-caller-integration",
+  "version": 1,
+  "sourceHead": "46ee5aadd5139401b6ecb687d5ad77ed63a7dee9",
+  "workflowRun": 38196958922,
+  "job": 114642149488,
+  "path": "tests/tooling/bare-reserved-default-route-reference.test.mjs",
+  "before": {
+    "archive": "original-bare-default-reference.mjs.fixture",
+    "sha256": "3fc99df349923fdcdc69bc70346b1f19f26a08f2f1dc6b8084f6259c3c5cfc08",
+    "bytes": 7198,
+    "gitBlob": "2577dcbc777e4e769c03422f50881f6bf4439202"
+  },
+  "after": {
+    "sha256": "bdf0b7cc533a3eefc3ec086b12e5c10de9bb65f79711b909a8daa914a658f772",
+    "bytes": 7464
+  },
+  "transforms": [
+    {
+      "before": "import { sha256, wholeJson } from \"./lint-default-correctness-reference.mjs\";",
+      "after": "import { sha256, wholeJson } from \"./lint-default-correctness-reference.mjs\";\nimport { assertReservedApiOrderSource } from \"./support/runtime-props-api-source-custody.mjs\";"
+    },
+    {
+      "before": "  for (const source of apiOrder.producer)\n    assert.equal(sha256(fs.readFileSync(path.join(root, source.path))), source.sha256);",
+      "after": "  for (const source of apiOrder.producer) {\n    if (source.path === \"crates/vize_patina/src/linter/script_rules/registry/rules.rs\")\n      assertReservedApiOrderSource(root, { ...source, bytes: 21_919 });\n    else assert.equal(sha256(fs.readFileSync(path.join(root, source.path))), source.sha256);\n  }"
+    }
+  ],
+  "originalRegistryBytes": 21919,
+  "scope": "Only the exact registry caller reuses complete twelve-body family authentication; every original112 packet, bare vector and other source/metadata assertion stays literal",
+  "initialFailure": {
+    "archive": "initial-bare-registry-source-refusal.log.gz",
+    "rawSha256": "86685a639d4e626ca5b9151829ed8e8dad8b9ffdcd1f747fd3b3f507487daa74",
+    "rawBytes": 720638
+  }
+}

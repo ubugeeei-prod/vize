@@ -4,6 +4,9 @@ import path from "node:path";
 import { test } from "node:test";
 
 import { repoRoot } from "./_helpers/moonbit.ts";
+import { defaultNavigationRenderRoutes } from "../../docs/scripts/navigation-render-routes.ts";
+import { createRenderJobs } from "../../docs/scripts/navigation-render-concurrency.ts";
+import { verifyRenderedRulePackets } from "../../docs/scripts/rule-render-assertions.ts";
 
 const accessibilityRules = [
   "a11y/alt-text",
@@ -102,3 +105,56 @@ for (const locale of ["en", "ja", "fr", "pt-BR", "zh-CN"]) {
     }
   });
 }
+
+await test("Japanese core retains complete references, localized next steps and native packet enrollment", async () => {
+  const route = "/ja/rules/accessibility-core";
+  const read = (file: string) => fs.readFileSync(path.join(repoRoot, "docs/content", file), "utf8");
+  const source = read("generated/rules/ja/accessibility-core.md");
+  const index = read("ja/rules/accessibility-core.md");
+  const expected = accessibilityRules.slice(0, 8).toSorted();
+  const headings = [...source.matchAll(/^### `([^`]+)`$/gm)];
+  assert.deepEqual(headings.map((match) => match[1]).toSorted(), expected);
+  const blocks = (text: string) =>
+    [...text.matchAll(/^```(\w+)[^\n]*\n([\s\S]*?)^```[^\n]*$/gm)].map((match) => [
+      match[1],
+      match[2],
+    ]);
+  assert.equal(blocks(source).length, 32);
+  for (const [position, heading] of headings.entries()) {
+    const id = heading[1].replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
+    const packet = source.slice(heading.index, headings[position + 1]?.index);
+    assert.deepEqual(blocks(packet), blocks(read(`ja/rules/reference/${id}.md`)), heading[1]);
+    for (const kind of ["bad", "good"]) {
+      assert.equal(packet.split(`<span id="${id}-${kind}"></span>`).length, 2);
+      assert.ok(source.includes(`](#${id}-${kind})`));
+    }
+  }
+  assert.match(index, /<span id="accessibility-core"><\/span>\n\n# アクセシビリティの基本/);
+  assert.equal(source.split('<span id="accessibility-core"></span>').length, 2);
+  for (const target of ["./reference/a11y-form-control-has-label.md", "./accessibility.md"]) {
+    assert.ok(index.includes(`](${target})`));
+    assert.match(read(`ja/rules/${target.slice(2)}`), /^# .+/m);
+  }
+  assert.match(index, /`vp run lint`/);
+  assert.deepEqual(
+    defaultNavigationRenderRoutes.filter((item) => item.startsWith("/ja/rules/accessibility-")),
+    [route],
+  );
+  assert.deepEqual(
+    createRenderJobs([route]).map((job) => job.device),
+    ["desktop", "mobile"],
+  );
+  const nativeBoundary = new Error("Actual native DOM execution is required");
+  let dispatched: { id: string }[] | undefined;
+  const page = {
+    evaluate: async (_read: unknown, packet: { id: string }[]) => {
+      dispatched = packet;
+      throw nativeBoundary;
+    },
+  } as unknown as Parameters<typeof verifyRenderedRulePackets>[0];
+  await assert.rejects(verifyRenderedRulePackets(page, route), (error) => error === nativeBoundary);
+  assert.deepEqual(
+    dispatched?.map(({ id }) => id).toSorted(),
+    expected.map((id) => id.replaceAll("/", "-")),
+  );
+});

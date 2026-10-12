@@ -1,10 +1,17 @@
 import type { PluginOption } from "vite-plus";
-import type { VizePlusConfigFactory, VizePlusOptions, VueConfig } from "./vite-plus/types.ts";
+import type {
+  VitePlusConfig,
+  VizePlusConfigFactory,
+  VizePlusOptions,
+  VueConfig,
+  VueOptions,
+} from "./vite-plus/types.ts";
 import { sourceConfigKey, taskConfigKey } from "./vite-plus/types.ts";
 import { configureTools } from "./vite-plus/conflicts.ts";
 import { createTasks } from "./vite-plus/tasks.ts";
 import { normalizeConfig, resolveConfig } from "./vite-plus/config.ts";
 import { configurePack } from "./vite-plus/pack.ts";
+import { isLegacyVueCompatibilityMode } from "./plugin/vue-version.ts";
 
 export type {
   VitePlusConfig,
@@ -12,6 +19,8 @@ export type {
   VizePlusOptions,
   VizeTask,
   VueConfig,
+  VueOptions,
+  VueOptionsEntry,
   VueConfigObject,
   VizeCompilerOptions,
   VizeLintOptions,
@@ -29,7 +38,9 @@ export function defineConfig(
       const { vp, metadata, compiler } = normalizeConfig(source, integration);
       const { options } = metadata;
       const plugins =
-        compiler === false ? [...(vp.plugins ?? [])] : await withoutVueCompiler(vp.plugins ?? []);
+        compiler === false || isLegacyVueCompatibilityMode(compiler)
+          ? [...(vp.plugins ?? [])]
+          : await withoutVueCompiler(vp.plugins ?? []);
       if (compiler !== false) {
         const { vize } = await import("./plugin/index.ts");
         // The optional Vite+ peer may expose a different Vite type instance.
@@ -70,5 +81,14 @@ async function withoutVueCompiler(plugins: PluginOption[]): Promise<PluginOption
   return result;
 }
 
-/** Equivalent names for projects that prefer an explicit Vue toolchain helper. */
-export { defineConfig as withVue, defineConfig as withVize };
+/** Add Vue settings to an existing Vite+ export without another Vite+ injection. */
+export function withVue(
+  vue: VueOptions,
+  vpConfig: VitePlusConfig = {},
+  integration: VizePlusOptions = {},
+): VizePlusConfigFactory {
+  return defineConfig({ extends: vpConfig, vue }, integration);
+}
+
+/** Compatibility alias for the original config-first helper. */
+export { defineConfig as withVize };

@@ -1,0 +1,41 @@
+{
+  "schema": "vize.original-misskey-lifecycle-rss",
+  "version": 1,
+  "run": 38205021668,
+  "job": 114666493185,
+  "artifact": 11726803905,
+  "source": "ef34d1a0409fc711a6c5cefcf0708b0cce78f502",
+  "fixtureRevision": "810faa8e5db4bbf9d6d408a61df148559340ee99",
+  "archiveSha256": "2a3e7c081b226563829c5e3a69ce6fe61ae7a8408a28f47c284b8258dd65279a",
+  "rawMetricsSha256": "3d0c060d670bd70565887ba434c48e67b9f260e634c0f3631b559c2c901a252f",
+  "buildReceiptSha256": "1662ab86886764ac16d27649cd5fe40613dab57654d7ef7fc6843f7e4caca91a",
+  "build": {
+    "schema": "vize.differential.build",
+    "version": 1,
+    "recipe": "cargo build --profile ci -p vize --features legacy",
+    "sourceRevision": "ef34d1a0409fc711a6c5cefcf0708b0cce78f502",
+    "binaryPath": "target/ci/vize",
+    "binarySha256": "76092afa8137fefa2cefb505a686188770daa62ea38d0bf38c806c38f7f3cc2c",
+    "cliVersion": "vize 0.447.0"
+  },
+  "originalGate": {
+    "cycles": 40,
+    "rssSamples": 63,
+    "publishes": 287,
+    "scale": 1,
+    "serverRssCapMiB": 128,
+    "treeRssCapMiB": 384,
+    "treeSizeCap": 3
+  },
+  "peak": {
+    "label": "file-lifecycle-0",
+    "serverKiB": 133040,
+    "serverMiB": 129.921875
+  },
+  "limits": {
+    "actualChurnWireUnavailable": true,
+    "retainedBinaryBytesUnavailable": true,
+    "allocationCallsiteAttribution": false,
+    "candidateAcceptanceCredit": "none"
+  }
+}

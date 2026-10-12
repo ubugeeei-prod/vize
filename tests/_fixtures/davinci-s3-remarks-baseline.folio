@@ -148,8 +148,57 @@
 "tests/_fixtures/differential/lint-regressions/router-app-reachability-7932/supplemental/two-independent-apps/project/src/alpha/RouteView.vue"
 "tests/_fixtures/differential/lint-regressions/router-app-reachability-7932/supplemental/two-independent-apps/project/src/beta/App.vue"
 "tests/_fixtures/differential/lint-regressions/router-app-reachability-7932/supplemental/two-independent-apps/project/src/beta/RouteView.vue"
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/Argument.vue"
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/Comment.vue"
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/FalseOptions.vue"
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/FalseSetup.vue"
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/ForLocal.vue"
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/Fragment.vue"
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/Nested.vue"
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/Opaque.vue"
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/Ordered.vue"
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/Other.vue"
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/Pre.vue"
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/Rich.vue"
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/Root.vue"
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/RootFor.vue"
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/RootForLocal.vue"
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/Sibling.vue"
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/SingleQuote.vue"
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/Slot.vue"
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/SlotLocal.vue"
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/SlotScope.vue"
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/TemplateRoot.vue"
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/ThemeIcon.vue"
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/Trimmed.vue"
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/True.vue"
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/Unicode.vue"
 "tests/_fixtures/differential/lint/oxlint-mixed-directory-8507/app/App.vue"
 "tests/_fixtures/differential/lint/oxlint-mixed-directory-8507/controls/App-error.vue"
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/ExplicitOff.vue"
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/Fulldefault.vue"
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/Fullessential.vue"
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/Fullrecommended.vue"
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/OriginalHome.vue"
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/OriginalNoteCreate.vue"
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/appear-native.vue"
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/bound-appear-native.vue"
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/dynamic-component.vue"
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/kebab-component.vue"
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/lowercase-component.vue"
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/multiple-toggle-children.vue"
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/native-bound-key.vue"
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/native-div.vue"
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/native-math.vue"
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/native-svg.vue"
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/native-toggle-if.vue"
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/native-toggle-show.vue"
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/pascal-component.vue"
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/router-kebab.vue"
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/router-pascal.vue"
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/slot-child.vue"
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/static-key.vue"
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/web-component.vue"
 "tests/_fixtures/differential/lsp/binding-occurrences-original/Field.vue"
 "tests/_fixtures/differential/nuxt/explicit-page-meta/App.vue"
 "tests/_fixtures/differential/typechecker/vite-plus-relative-tsconfig/src/Counter.vue"
@@ -534,6 +583,26 @@
 "tests/_fixtures/davinci-ts40-projection/dual-scripts-emits.vue" s3.extract-placements missed cache @177:207 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
 "tests/_fixtures/davinci-ts40-projection/vue2-native-event.vue" s3.extract-placements missed cache @130:169 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
 "tests/_fixtures/differential/lint-regressions/router-app-reachability-7932/original/project/src/components/user-link.vue" s3.extract-placements missed cache @242:258 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/FalseSetup.vue" s3.extract-placements applied group @117:132 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=127
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/Fragment.vue" s3.extract-placements applied group @78:93 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=127
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/Ordered.vue" s3.extract-placements applied group @86:101 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=127
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/Sibling.vue" s3.extract-placements applied group @147:162 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=127
+"tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/ThemeIcon.vue" s3.extract-placements applied hoist @163:1032 reason="committed" emitted-size=-34 reactive-edges=0 update-path=0 budget-left=127
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/ExplicitOff.vue" s3.extract-placements missed hoist @59:66 reason="regressed-emitted-size" emitted-size=8 reactive-edges=0 update-path=0 budget-left=127
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/OriginalHome.vue" s3.extract-placements applied hoist @199:347 reason="committed" emitted-size=-13 reactive-edges=0 update-path=-1 budget-left=127
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/OriginalHome.vue" s3.extract-placements missed cache @580:629 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/OriginalNoteCreate.vue" s3.extract-placements missed cache @247:276 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/OriginalNoteCreate.vue" s3.extract-placements missed cache @296:328 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/OriginalNoteCreate.vue" s3.extract-placements missed cache @1410:1437 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=125
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/OriginalNoteCreate.vue" s3.extract-placements missed cache @1647:1672 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=124
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/appear-native.vue" s3.extract-placements missed hoist @66:73 reason="regressed-emitted-size" emitted-size=8 reactive-edges=0 update-path=0 budget-left=127
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/bound-appear-native.vue" s3.extract-placements missed hoist @77:84 reason="regressed-emitted-size" emitted-size=8 reactive-edges=0 update-path=0 budget-left=127
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/multiple-toggle-children.vue" s3.extract-placements missed hoist @59:76 reason="regressed-emitted-size" emitted-size=8 reactive-edges=0 update-path=0 budget-left=127
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/multiple-toggle-children.vue" s3.extract-placements missed hoist @76:91 reason="regressed-emitted-size" emitted-size=8 reactive-edges=0 update-path=0 budget-left=126
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/native-div.vue" s3.extract-placements missed hoist @59:66 reason="regressed-emitted-size" emitted-size=8 reactive-edges=0 update-path=0 budget-left=127
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/native-math.vue" s3.extract-placements missed hoist @59:67 reason="regressed-emitted-size" emitted-size=8 reactive-edges=0 update-path=0 budget-left=127
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/native-svg.vue" s3.extract-placements missed hoist @59:66 reason="regressed-emitted-size" emitted-size=8 reactive-edges=0 update-path=0 budget-left=127
+"tests/_fixtures/differential/lint/transition-custom-child-6881/sources/native-toggle-if.vue" s3.extract-placements missed hoist @59:76 reason="regressed-emitted-size" emitted-size=8 reactive-edges=0 update-path=0 budget-left=127
 "tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#1855/main.vue" s3.extract-placements missed cache @127:171 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
 "tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#1855/main.vue" s3.extract-placements missed cache @172:213 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
 "tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2225/main.vue" s3.extract-placements missed cache @292:377 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127

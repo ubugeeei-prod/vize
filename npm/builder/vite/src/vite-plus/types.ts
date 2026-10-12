@@ -5,8 +5,11 @@ import type {
   FormatterConfig,
   LinterConfig,
   TypeCheckerConfig,
+  VueOptions,
   UserConfig as NativeConfig,
 } from "../../../../cli/src/types/index.ts";
+
+export type { VueOptions, VueOptionsEntry } from "../../../../cli/src/types/index.ts";
 
 /** Inherit configuration additions from the consumer's Vite+ version. */
 export type VitePlusConfig = Parameters<typeof defineConfig>[0];
@@ -55,6 +58,8 @@ export type VizeSharedConfig = NativeConfig & {
   lint?: VizeLintOptions | boolean;
 };
 export interface VueIntegrationConfig {
+  /** Shared native Vue policy. */
+  vue?: VueOptions;
   extends?: VueConfig | VueConfig[];
   compiler?: VizeCompilerOptions | false;
   typecheck?: TypeCheckerConfig | boolean;

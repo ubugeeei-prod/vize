@@ -3,24 +3,65 @@
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
-use vize_canon::virtual_ts::VizeMapping;
+use vize_canon::virtual_ts::{ProjectionFeatures, ProjectionMeta, ProjectionSpanKind, VizeMapping};
 use vize_l0::{String, cstr};
 
 use super::TypeAwareDocument;
+
+const INFERRED_BINDING: ProjectionMeta = ProjectionMeta {
+    features: ProjectionFeatures::HOVER,
+    kind: ProjectionSpanKind::TemplateExpression,
+};
+
+/// Only an owned inferred identifier can supply a whole-expression probe.
+/// Its row moves with all later document edits, even for multiline values.
+pub(super) fn inferred_binding_offset(
+    document: &TypeAwareDocument,
+    authored: &std::ops::Range<usize>,
+) -> Option<u32> {
+    document.mapping.rows().find_map(|row| {
+        (row.meta == INFERRED_BINDING && &row.span.src_range == authored)
+            .then(|| row.span.gen_range.end.checked_sub(1))
+            .flatten()
+            .and_then(|offset| u32::try_from(offset).ok())
+    })
+}
+
+pub(super) fn mark_inferred_binding(
+    document: &mut TypeAwareDocument,
+    at: usize,
+    statement: &str,
+    authored: std::ops::Range<usize>,
+) {
+    let Some(prefix) = statement.find("const __expr_") else {
+        return;
+    };
+    let start = prefix + "const ".len();
+    let Some(end) = statement.get(start..).and_then(|rest| rest.find(" = ")) else {
+        return;
+    };
+    let name = statement.get(start..start + end).unwrap_or_default();
+    let end = name.find(':').unwrap_or(name.len());
+    document.mapping.push_with(
+        VizeMapping::new(at + start..at + start + end, authored),
+        INFERRED_BINDING,
+    );
+}
 
 pub(super) fn bind_checked_expressions(document: &mut TypeAwareDocument, index: &mut u32) {
     let text = document.content.as_str();
     let mut edits = Vec::new();
     let mut allocator = Allocator::default();
     for row in document.mapping.rows() {
+        if row.meta == INFERRED_BINDING {
+            continue;
+        }
         let span = row.span;
-        let candidates = std::iter::once((&span.gen_range, &span.src_range))
-            .filter(|_| span.sub_spans.is_empty())
-            .chain(
-                span.sub_spans
-                    .iter()
-                    .map(|sub| (&sub.gen_range, &sub.src_range)),
-            );
+        let candidates = std::iter::once((&span.gen_range, &span.src_range)).chain(
+            span.sub_spans
+                .iter()
+                .map(|sub| (&sub.gen_range, &sub.src_range)),
+        );
         for (generated, authored) in candidates {
             let Some(before) = text.get(..generated.start) else {
                 continue;
@@ -34,6 +75,23 @@ pub(super) fn bind_checked_expressions(document: &mut TypeAwareDocument, index: 
                 continue;
             };
             let trimmed = line.trim_start();
+            // A complete first condition keeps its lexical and narrowing scope.
+            // An else-if or synthetic enclosing guard needs a different owner;
+            // inserting a declaration before either would alter control flow.
+            let condition = text
+                .get(line_start..generated.start)
+                .and_then(|prefix| prefix.trim_start().strip_prefix("if ("))
+                .is_some_and(|wrapper| {
+                    if !wrapper.bytes().all(|byte| byte == b'(') {
+                        return false;
+                    }
+                    let suffix = text.get(generated.end..).unwrap_or_default();
+                    let closing = suffix.bytes().take_while(|byte| *byte == b')').count();
+                    closing == wrapper.len() + 1
+                        && suffix
+                            .get(closing..)
+                            .is_some_and(|tail| tail.starts_with(" {\n"))
+                });
             let checked = [
                 "const __vize_prop_check_",
                 "const __vize_native_prop_check_",
@@ -50,11 +108,28 @@ pub(super) fn bind_checked_expressions(document: &mut TypeAwareDocument, index: 
                 if generated.start < line_start + assign + 3 {
                     continue;
                 }
-            } else if !line.contains("handler expression") {
+                // A token inside an initializer does not own the initializer's
+                // inferred type. Only its complete mapped value is eligible.
+                let prefix = text
+                    .get(line_start + assign + 3..generated.start)
+                    .unwrap_or_default()
+                    .trim();
+                let suffix = text.get(generated.end..line_end).unwrap_or_default().trim();
+                if !prefix.chars().all(|character| character == '(')
+                    || !suffix.trim_start_matches(')').trim_start().starts_with(';')
+                {
+                    continue;
+                }
+            } else if !condition
+                && !line.trim_end().ends_with(";  // handler expression")
+                && !line
+                    .trim_end()
+                    .ends_with(";  // handler expression (emit checks disabled)")
+            {
                 continue;
             }
             // The old reference wrapper already has its inferred probe.
-            if line_start > 0 && super::binding_offset(text, generated.start as u32).is_some() {
+            if inferred_binding_offset(document, authored).is_some() {
                 continue;
             }
             if generated.len() != authored.len() {
@@ -97,8 +172,9 @@ pub(super) fn bind_checked_expressions(document: &mut TypeAwareDocument, index: 
             .note_generated_replacement(at, 0, statement.len());
         document.mapping.push(VizeMapping::new(
             at + prefix_len..at + prefix_len + expression_len,
-            authored,
+            authored.clone(),
         ));
+        mark_inferred_binding(document, at, &statement, authored);
         updated.insert_str(at, &statement);
     }
     document.content = updated;

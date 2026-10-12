@@ -1,0 +1,278 @@
+[
+  {
+    "file": "crates/vize_maestro/src/ide/diagnostics/default_migration_tests.rs",
+    "originalBeforeSHA256": "bca60b1f7a8dc6824da8a8c1bb380a0e1601ad71847c8187cb919909eb57669e",
+    "originalAfterSHA256": "bca60b1f7a8dc6824da8a8c1bb380a0e1601ad71847c8187cb919909eb57669e",
+    "before": {
+      "mode": "100644",
+      "blob": "0d49e3de2462cafac5360e3591c33f6965afaa2f",
+      "bytes": 2435,
+      "sha256": "bca60b1f7a8dc6824da8a8c1bb380a0e1601ad71847c8187cb919909eb57669e"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "0d49e3de2462cafac5360e3591c33f6965afaa2f",
+      "bytes": 2435,
+      "sha256": "bca60b1f7a8dc6824da8a8c1bb380a0e1601ad71847c8187cb919909eb57669e"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "0d49e3de2462cafac5360e3591c33f6965afaa2f",
+      "bytes": 2435,
+      "sha256": "bca60b1f7a8dc6824da8a8c1bb380a0e1601ad71847c8187cb919909eb57669e"
+    }
+  },
+  {
+    "file": "crates/vize_patina/src/linter/compatibility.rs",
+    "originalBeforeSHA256": "6e5cef4759637a90b268fafb97c48979b89d4d4ec0679528aef4dfc4d3e81a58",
+    "originalAfterSHA256": "6e5cef4759637a90b268fafb97c48979b89d4d4ec0679528aef4dfc4d3e81a58",
+    "before": {
+      "mode": "100644",
+      "blob": "5234425df9d3c7684ba147e193c19c69987314ac",
+      "bytes": 1858,
+      "sha256": "6e5cef4759637a90b268fafb97c48979b89d4d4ec0679528aef4dfc4d3e81a58"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "5234425df9d3c7684ba147e193c19c69987314ac",
+      "bytes": 1858,
+      "sha256": "6e5cef4759637a90b268fafb97c48979b89d4d4ec0679528aef4dfc4d3e81a58"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "5234425df9d3c7684ba147e193c19c69987314ac",
+      "bytes": 1858,
+      "sha256": "6e5cef4759637a90b268fafb97c48979b89d4d4ec0679528aef4dfc4d3e81a58"
+    }
+  },
+  {
+    "file": "crates/vize_patina/src/linter/engine.rs",
+    "originalBeforeSHA256": "0ee0a7230e1cceca0868d7637eb31978dff372bf3b16c2699f06e0a97b74d9fa",
+    "originalAfterSHA256": "0ee0a7230e1cceca0868d7637eb31978dff372bf3b16c2699f06e0a97b74d9fa",
+    "before": {
+      "mode": "100644",
+      "blob": "bcab2539142ad988f851ef92dd2226395dd53981",
+      "bytes": 19940,
+      "sha256": "0ee0a7230e1cceca0868d7637eb31978dff372bf3b16c2699f06e0a97b74d9fa"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "bcab2539142ad988f851ef92dd2226395dd53981",
+      "bytes": 19940,
+      "sha256": "0ee0a7230e1cceca0868d7637eb31978dff372bf3b16c2699f06e0a97b74d9fa"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "bcab2539142ad988f851ef92dd2226395dd53981",
+      "bytes": 19940,
+      "sha256": "0ee0a7230e1cceca0868d7637eb31978dff372bf3b16c2699f06e0a97b74d9fa"
+    }
+  },
+  {
+    "file": "crates/vize_patina/src/linter/engine/rule_sets.rs",
+    "originalBeforeSHA256": "9e830dffb7acd50992a90b94703e10416d6e41b74b91772327ee010326b1e3a6",
+    "originalAfterSHA256": "9e830dffb7acd50992a90b94703e10416d6e41b74b91772327ee010326b1e3a6",
+    "before": {
+      "mode": "100644",
+      "blob": "ded044804c9011f5b22e7e479a39ef155bf59461",
+      "bytes": 4260,
+      "sha256": "9e830dffb7acd50992a90b94703e10416d6e41b74b91772327ee010326b1e3a6"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "ded044804c9011f5b22e7e479a39ef155bf59461",
+      "bytes": 4260,
+      "sha256": "9e830dffb7acd50992a90b94703e10416d6e41b74b91772327ee010326b1e3a6"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "ae984c6c149e5adbad9e7e555cf7f60008d17e0b",
+      "bytes": 5559,
+      "sha256": "214e90ffb168b2efad7a74d8f29d0775d3ddd82da35bf97a01df3efe64387374"
+    }
+  },
+  {
+    "file": "crates/vize_patina/src/linter/engine/sfc.rs",
+    "originalBeforeSHA256": "bcd3c09c4db78c4bf93514bf177848eb816bb1d665f3c9185fe332550c28eb23",
+    "originalAfterSHA256": "bcd3c09c4db78c4bf93514bf177848eb816bb1d665f3c9185fe332550c28eb23",
+    "before": {
+      "mode": "100644",
+      "blob": "e153615991646e5549b0c3997c2184251493fe4a",
+      "bytes": 11157,
+      "sha256": "bcd3c09c4db78c4bf93514bf177848eb816bb1d665f3c9185fe332550c28eb23"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "e153615991646e5549b0c3997c2184251493fe4a",
+      "bytes": 11157,
+      "sha256": "bcd3c09c4db78c4bf93514bf177848eb816bb1d665f3c9185fe332550c28eb23"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "031051caa6d8cb079ca8c172a48ddd01dc467f2b",
+      "bytes": 11706,
+      "sha256": "611476399228660a92164be7cb99825b316cdc280eb36b449255deacbfded191"
+    }
+  },
+  {
+    "file": "crates/vize_patina/src/linter/script_rules.rs",
+    "originalBeforeSHA256": "9a3f6978f30b5895c31d5eb0f333175f8ee60c1a52bccc31615d5ceb075f1e2b",
+    "originalAfterSHA256": "9a3f6978f30b5895c31d5eb0f333175f8ee60c1a52bccc31615d5ceb075f1e2b",
+    "before": {
+      "mode": "100644",
+      "blob": "9eddae3f363f1965b59aedbc487af25ff18f9e94",
+      "bytes": 9734,
+      "sha256": "9a3f6978f30b5895c31d5eb0f333175f8ee60c1a52bccc31615d5ceb075f1e2b"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "9eddae3f363f1965b59aedbc487af25ff18f9e94",
+      "bytes": 9734,
+      "sha256": "9a3f6978f30b5895c31d5eb0f333175f8ee60c1a52bccc31615d5ceb075f1e2b"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "9eddae3f363f1965b59aedbc487af25ff18f9e94",
+      "bytes": 9734,
+      "sha256": "9a3f6978f30b5895c31d5eb0f333175f8ee60c1a52bccc31615d5ceb075f1e2b"
+    }
+  },
+  {
+    "file": "crates/vize_patina/src/linter/script_rules/registry/rules.rs",
+    "originalBeforeSHA256": "e0ac436d8735f69bab0fe42465a328047dc24dc58248a22ae2315a828468f7a1",
+    "originalAfterSHA256": "e0ac436d8735f69bab0fe42465a328047dc24dc58248a22ae2315a828468f7a1",
+    "before": {
+      "mode": "100644",
+      "blob": "cbf9c7f32929b3d92554b1bc8918a5d100c303c4",
+      "bytes": 21922,
+      "sha256": "e0ac436d8735f69bab0fe42465a328047dc24dc58248a22ae2315a828468f7a1"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "cbf9c7f32929b3d92554b1bc8918a5d100c303c4",
+      "bytes": 21922,
+      "sha256": "e0ac436d8735f69bab0fe42465a328047dc24dc58248a22ae2315a828468f7a1"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "cbf9c7f32929b3d92554b1bc8918a5d100c303c4",
+      "bytes": 21922,
+      "sha256": "e0ac436d8735f69bab0fe42465a328047dc24dc58248a22ae2315a828468f7a1"
+    }
+  },
+  {
+    "file": "crates/vize_patina/src/linter/script_rules/sfc.rs",
+    "originalBeforeSHA256": "cce4c13e30a66479b42ea078dc9f799afc81bbfb8e9d5464f78b75b874c42dc1",
+    "originalAfterSHA256": "cce4c13e30a66479b42ea078dc9f799afc81bbfb8e9d5464f78b75b874c42dc1",
+    "before": {
+      "mode": "100644",
+      "blob": "e4a3c8d0a973ae13ed0c9ba97a4cf4cb72b46320",
+      "bytes": 7552,
+      "sha256": "cce4c13e30a66479b42ea078dc9f799afc81bbfb8e9d5464f78b75b874c42dc1"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "e4a3c8d0a973ae13ed0c9ba97a4cf4cb72b46320",
+      "bytes": 7552,
+      "sha256": "cce4c13e30a66479b42ea078dc9f799afc81bbfb8e9d5464f78b75b874c42dc1"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "e4a3c8d0a973ae13ed0c9ba97a4cf4cb72b46320",
+      "bytes": 7552,
+      "sha256": "cce4c13e30a66479b42ea078dc9f799afc81bbfb8e9d5464f78b75b874c42dc1"
+    }
+  },
+  {
+    "file": "crates/vize_patina/src/preset.rs",
+    "originalBeforeSHA256": "6dfcc732d18a76db0907e8152d6bb61d35ef040924200ae1855b1aa4a81e3718",
+    "originalAfterSHA256": "6dfcc732d18a76db0907e8152d6bb61d35ef040924200ae1855b1aa4a81e3718",
+    "before": {
+      "mode": "100644",
+      "blob": "ef2b19f5cdb2ed2657f4daa1bf242664ca72e9a5",
+      "bytes": 5091,
+      "sha256": "6dfcc732d18a76db0907e8152d6bb61d35ef040924200ae1855b1aa4a81e3718"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "ef2b19f5cdb2ed2657f4daa1bf242664ca72e9a5",
+      "bytes": 5091,
+      "sha256": "6dfcc732d18a76db0907e8152d6bb61d35ef040924200ae1855b1aa4a81e3718"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "ef2b19f5cdb2ed2657f4daa1bf242664ca72e9a5",
+      "bytes": 5091,
+      "sha256": "6dfcc732d18a76db0907e8152d6bb61d35ef040924200ae1855b1aa4a81e3718"
+    }
+  },
+  {
+    "file": "crates/vize_patina/src/preset/default_migration_tests.rs",
+    "originalBeforeSHA256": "79ecfdbe72c74890ec84b4f31307bc15bbabac749334732ddf918592dc3e74d3",
+    "originalAfterSHA256": "79ecfdbe72c74890ec84b4f31307bc15bbabac749334732ddf918592dc3e74d3",
+    "before": {
+      "mode": "100644",
+      "blob": "a22b52a650dc6e5c2e02b2976303bc5cbd63b24d",
+      "bytes": 6248,
+      "sha256": "79ecfdbe72c74890ec84b4f31307bc15bbabac749334732ddf918592dc3e74d3"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "a22b52a650dc6e5c2e02b2976303bc5cbd63b24d",
+      "bytes": 6248,
+      "sha256": "79ecfdbe72c74890ec84b4f31307bc15bbabac749334732ddf918592dc3e74d3"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "a22b52a650dc6e5c2e02b2976303bc5cbd63b24d",
+      "bytes": 6248,
+      "sha256": "79ecfdbe72c74890ec84b4f31307bc15bbabac749334732ddf918592dc3e74d3"
+    }
+  },
+  {
+    "file": "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
+    "originalBeforeSHA256": "04a0a49982ed941a42ef291a91f2863531902cbfed82365ae3da223e4efcf73b",
+    "originalAfterSHA256": "04a0a49982ed941a42ef291a91f2863531902cbfed82365ae3da223e4efcf73b",
+    "before": {
+      "mode": "100644",
+      "blob": "b16e18726c7a2a1ed8452efee3ac768bd1d9ae84",
+      "bytes": 26549,
+      "sha256": "04a0a49982ed941a42ef291a91f2863531902cbfed82365ae3da223e4efcf73b"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "b16e18726c7a2a1ed8452efee3ac768bd1d9ae84",
+      "bytes": 26549,
+      "sha256": "04a0a49982ed941a42ef291a91f2863531902cbfed82365ae3da223e4efcf73b"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "b16e18726c7a2a1ed8452efee3ac768bd1d9ae84",
+      "bytes": 26549,
+      "sha256": "04a0a49982ed941a42ef291a91f2863531902cbfed82365ae3da223e4efcf73b"
+    }
+  },
+  {
+    "file": "crates/vize_patina/src/rule.rs",
+    "originalBeforeSHA256": "6dd7a1f3fb7ef88dd13278e1e9f73191cd922ab18e2524af22e7413fb6b15bc1",
+    "originalAfterSHA256": "6dd7a1f3fb7ef88dd13278e1e9f73191cd922ab18e2524af22e7413fb6b15bc1",
+    "before": {
+      "mode": "100644",
+      "blob": "b7dcb6da3168c457e44ac9d0af9da9aa3eae83cd",
+      "bytes": 12547,
+      "sha256": "6dd7a1f3fb7ef88dd13278e1e9f73191cd922ab18e2524af22e7413fb6b15bc1"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "b7dcb6da3168c457e44ac9d0af9da9aa3eae83cd",
+      "bytes": 12547,
+      "sha256": "6dd7a1f3fb7ef88dd13278e1e9f73191cd922ab18e2524af22e7413fb6b15bc1"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "b7dcb6da3168c457e44ac9d0af9da9aa3eae83cd",
+      "bytes": 12547,
+      "sha256": "6dd7a1f3fb7ef88dd13278e1e9f73191cd922ab18e2524af22e7413fb6b15bc1"
+    }
+  }
+]

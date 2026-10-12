@@ -74,7 +74,13 @@ export function qualifyPathHostMove(
 /** Hash complete regular Git blobs; preserve absence and reject mode/type changes. */
 export function gitBodyDigest(root: string, revision: string, file: string): string | null {
   assert.match(revision, /^[a-f0-9]{40}$/u);
-  const entry = execFileSync("git", ["ls-tree", "-z", revision, "--", file], { cwd: root });
+  const entry = execFileSync(
+    "git",
+    ["--no-replace-objects", "ls-tree", "-z", revision, "--", file],
+    {
+      cwd: root,
+    },
+  );
   if (entry.length === 0) return null;
   const record = entry.toString("utf8");
   assert.ok(Buffer.from(record).equals(entry));
@@ -84,6 +90,8 @@ export function gitBodyDigest(root: string, revision: string, file: string): str
   const match = /^100644 blob ([a-f0-9]{40})\t(.+)$/u.exec(records[0]);
   assert.ok(match, `one regular source blob is required: ${file}`);
   assert.equal(match[2], file);
-  const body = execFileSync("git", ["cat-file", "blob", match[1]], { cwd: root });
+  const body = execFileSync("git", ["--no-replace-objects", "cat-file", "blob", match[1]], {
+    cwd: root,
+  });
   return createHash("sha256").update(body).digest("hex");
 }

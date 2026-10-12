@@ -1,0 +1,142 @@
+{
+  "schema": "vize.native-ssr.direct-child-inputs",
+  "modules": [
+    {
+      "name": "original-nested",
+      "filename": "NativeNestedOriginal.vue",
+      "source": "<script setup>const value=1</script><template><i>{{value}}</i></template>",
+      "expectedPlainHtml": "<i>1</i>"
+    },
+    {
+      "name": "nested-let-js",
+      "filename": "NativeNestedLet.vue",
+      "source": "<script setup>let value='initial & <one>'</script><template><div>{{value}}</div></template>",
+      "updates": {
+        "value": "updated <雪> & 🦀"
+      },
+      "expectedPlainHtml": "<div>initial &amp; &lt;one&gt;</div>",
+      "expectedUpdatedPlainHtml": "<div>updated &lt;雪&gt; &amp; 🦀</div>"
+    },
+    {
+      "name": "nested-ts-let",
+      "filename": "NativeNestedTs.vue",
+      "source": "<script setup lang='ts'>let value:number=1</script><template><span>{{value}}</span></template>",
+      "updates": {
+        "value": 42
+      },
+      "expectedPlainHtml": "<span>1</span>",
+      "expectedUpdatedPlainHtml": "<span>42</span>"
+    },
+    {
+      "name": "nested-unicode-var",
+      "filename": "NativeNestedUnicode.vue",
+      "source": "<script setup>var 雪='🦀 & <one>'</script><template><section>{{雪}}</section></template>",
+      "updates": {
+        "雪": "雪😀 & <two>"
+      },
+      "expectedPlainHtml": "<section>🦀 &amp; &lt;one&gt;</section>",
+      "expectedUpdatedPlainHtml": "<section>雪😀 &amp; &lt;two&gt;</section>"
+    },
+    {
+      "name": "nested-const-attrs",
+      "filename": "NativeNestedAttrs.vue",
+      "source": "<script setup>const value='雪🌸 & <one>'</script><template><div class=' a  b ' title='&amp;雪'>{{value}}</div></template>",
+      "expectedPlainHtml": "<div class=\"a b\" title=\"&amp;雪\">雪🌸 &amp; &lt;one&gt;</div>"
+    },
+    {
+      "name": "nested-ts-literal",
+      "filename": "NativeNestedLiteral.vue",
+      "source": "<script setup lang='ts'>const idle:number=0</script><template><i>{{null}}</i></template>",
+      "expectedPlainHtml": "<i></i>"
+    },
+    {
+      "name": "nested-literal-escaping",
+      "filename": "NativeNestedEscape.vue",
+      "source": "<script setup>const idle=0</script><template><span>{{ '&<雪>' }}</span></template>",
+      "expectedPlainHtml": "<span>&amp;&lt;雪&gt;</span>"
+    },
+    {
+      "name": "nested-retained-comments",
+      "filename": "NativeNestedComments.vue",
+      "source": "<script setup>const value=42</script><template><div>{{/*retained*/ value /*tail*/}}</div></template>",
+      "expectedPlainHtml": "<div>42</div>"
+    }
+  ],
+  "refusals": [
+    {
+      "name": "adjacent-text",
+      "source": "<script setup>const value=1</script><template><i>before{{value}}</i></template>",
+      "ssrReason": "Operation"
+    },
+    {
+      "name": "adjacent-interpolations",
+      "source": "<script setup>const value=1</script><template><i>{{value}}{{value}}</i></template>",
+      "ssrReason": "Operation"
+    },
+    {
+      "name": "deeper",
+      "source": "<script setup>const value=1</script><template><div><i>{{value}}</i></div></template>",
+      "ssrReason": "Operation"
+    },
+    {
+      "name": "suffix-root",
+      "source": "<script setup>const value=1</script><template><i>{{value}}</i><b/></template>",
+      "ssrReason": "Operation"
+    },
+    {
+      "name": "prefix-root",
+      "source": "<script setup>const value=1</script><template><b/><i>{{value}}</i></template>",
+      "ssrReason": "Operation"
+    },
+    {
+      "name": "two-dynamic-roots",
+      "source": "<script setup>const value=1</script><template><i>{{value}}</i><i>{{value}}</i></template>",
+      "ssrReason": "Operation"
+    },
+    {
+      "name": "suffix-comment",
+      "source": "<script setup>const value=1</script><template><i>{{value}}</i><!--suffix--></template>",
+      "ssrReason": "Operation"
+    },
+    {
+      "name": "prefix-comment",
+      "source": "<script setup>const value=1</script><template><!--prefix--><i>{{value}}</i></template>",
+      "ssrReason": "Operation"
+    },
+    {
+      "name": "suffix-void-root",
+      "source": "<script setup>const value=1</script><template><i>{{value}}</i><br></template>",
+      "ssrReason": "Operation"
+    },
+    {
+      "name": "invalid-void-child",
+      "source": "<script setup>const value=1</script><template><br>{{value}}</br></template>",
+      "ssrReason": null
+    },
+    {
+      "name": "component",
+      "source": "<script setup>const value=1</script><template><Widget>{{value}}</Widget></template>",
+      "ssrReason": null
+    },
+    {
+      "name": "compound",
+      "source": "<script setup>const value=1</script><template><i>{{value+1}}</i></template>",
+      "ssrReason": "Expression"
+    },
+    {
+      "name": "member",
+      "source": "<script setup>const value=1</script><template><i>{{value.toString()}}</i></template>",
+      "ssrReason": "Expression"
+    },
+    {
+      "name": "unresolved",
+      "source": "<script setup>const value=1</script><template><i>{{missing}}</i></template>",
+      "ssrReason": null
+    },
+    {
+      "name": "for",
+      "source": "<script setup>const value=1</script><template><i v-for='item in value'>{{item}}</i></template>",
+      "ssrReason": "Operation"
+    }
+  ]
+}

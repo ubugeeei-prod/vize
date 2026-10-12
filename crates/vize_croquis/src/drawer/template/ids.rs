@@ -204,13 +204,13 @@ impl Drawer {
             let computed = profile!(
                 "croquis.template.expression.extract_identifiers",
                 if let Some(capture) = self.occurrence_capture.as_mut() {
-                    let (names, references) =
+                    let (names, references, runtime_only) =
                         extract_identifier_refs_retained(content, retained.as_ref());
                     match references {
                         Some(references) => {
                             capture
                                 .references
-                                .insert(CompactString::new(content), references);
+                                .insert(CompactString::new(content), (references, runtime_only));
                         }
                         None => capture.valid = false,
                     }

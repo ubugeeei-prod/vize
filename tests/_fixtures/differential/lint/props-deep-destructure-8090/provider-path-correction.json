@@ -1,0 +1,317 @@
+{
+  "schema": "vize.lint.props-deep-destructure-provider-path-correction",
+  "version": 1,
+  "scope": "Exactly the complete eight serialized related-provider filePath fields. Diagnostic/source/fix/status fields remain unchanged; related provider is not an exact NoDeep oracle.",
+  "originalEightSha256": "ec0a00983c97eacab181f8b707e0150e9535e8d66b970c05920c0a0bc77ad40e",
+  "rawObservationSha256": "af8bb17ac06f50db11f552a90b09c3361e5ce3c254a4b4e11bcd0c55dda9dbb6",
+  "beforePrefix": "/tmp/vize-next-preset-readonly-audit-20261012/controls/",
+  "afterPrefix": "/private/tmp/vize-next-preset-readonly-audit-20261012/controls/",
+  "reason": "macOS /tmp is a symlink to /private/tmp. The provider received the real cwd and returned absolute physical input paths; original packets incorrectly predicted the lexical prefix. Original assertions and full raw roles are preserved.",
+  "cases": [
+    {
+      "id": "vue35-shallow-reactive",
+      "before": [
+        {
+          "filePath": "/tmp/vize-next-preset-readonly-audit-20261012/controls/ShallowReactive.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ],
+      "after": [
+        {
+          "filePath": "/private/tmp/vize-next-preset-readonly-audit-20261012/controls/ShallowReactive.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "vue35-nested-object",
+      "before": [
+        {
+          "filePath": "/tmp/vize-next-preset-readonly-audit-20261012/controls/NestedObject.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-setup-props-reactivity-loss",
+              "severity": 1,
+              "message": "Destructuring the `props` will cause the value to lose reactivity.",
+              "line": 2,
+              "column": 15,
+              "endLine": 2,
+              "endColumn": 23,
+              "messageId": "destructuring"
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 1,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": [],
+          "source": "<script setup lang=\"ts\">\nconst { user: { name } } = defineProps<{ user: { name: string } }>();\n</script>\n<template><div /></template>\n"
+        }
+      ],
+      "after": [
+        {
+          "filePath": "/private/tmp/vize-next-preset-readonly-audit-20261012/controls/NestedObject.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-setup-props-reactivity-loss",
+              "severity": 1,
+              "message": "Destructuring the `props` will cause the value to lose reactivity.",
+              "line": 2,
+              "column": 15,
+              "endLine": 2,
+              "endColumn": 23,
+              "messageId": "destructuring"
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 1,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": [],
+          "source": "<script setup lang=\"ts\">\nconst { user: { name } } = defineProps<{ user: { name: string } }>();\n</script>\n<template><div /></template>\n"
+        }
+      ]
+    },
+    {
+      "id": "vue35-nested-array",
+      "before": [
+        {
+          "filePath": "/tmp/vize-next-preset-readonly-audit-20261012/controls/NestedArray.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-setup-props-reactivity-loss",
+              "severity": 1,
+              "message": "Destructuring the `props` will cause the value to lose reactivity.",
+              "line": 2,
+              "column": 16,
+              "endLine": 2,
+              "endColumn": 23,
+              "messageId": "destructuring"
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 1,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": [],
+          "source": "<script setup lang=\"ts\">\nconst { items: [first] } = defineProps<{ items: string[] }>();\n</script>\n<template><div /></template>\n"
+        }
+      ],
+      "after": [
+        {
+          "filePath": "/private/tmp/vize-next-preset-readonly-audit-20261012/controls/NestedArray.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-setup-props-reactivity-loss",
+              "severity": 1,
+              "message": "Destructuring the `props` will cause the value to lose reactivity.",
+              "line": 2,
+              "column": 16,
+              "endLine": 2,
+              "endColumn": 23,
+              "messageId": "destructuring"
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 1,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": [],
+          "source": "<script setup lang=\"ts\">\nconst { items: [first] } = defineProps<{ items: string[] }>();\n</script>\n<template><div /></template>\n"
+        }
+      ]
+    },
+    {
+      "id": "standalone-local-function",
+      "before": [
+        {
+          "filePath": "/tmp/vize-next-preset-readonly-audit-20261012/controls/Standalone.ts",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ],
+      "after": [
+        {
+          "filePath": "/private/tmp/vize-next-preset-readonly-audit-20261012/controls/Standalone.ts",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "normal-script-local-function",
+      "before": [
+        {
+          "filePath": "/tmp/vize-next-preset-readonly-audit-20261012/controls/NormalScript.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ],
+      "after": [
+        {
+          "filePath": "/private/tmp/vize-next-preset-readonly-audit-20261012/controls/NormalScript.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "compiler-destructure-disabled",
+      "before": [
+        {
+          "filePath": "/tmp/vize-next-preset-readonly-audit-20261012/controls/DisabledDestructure.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-setup-props-reactivity-loss",
+              "severity": 1,
+              "message": "Destructuring the `props` will cause the value to lose reactivity.",
+              "line": 2,
+              "column": 15,
+              "endLine": 2,
+              "endColumn": 23,
+              "messageId": "destructuring"
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 1,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": [],
+          "source": "<script setup lang=\"ts\">\nconst { user: { name } } = defineProps<{ user: { name: string } }>();\n</script>\n<template><div /></template>\n"
+        }
+      ],
+      "after": [
+        {
+          "filePath": "/private/tmp/vize-next-preset-readonly-audit-20261012/controls/DisabledDestructure.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-setup-props-reactivity-loss",
+              "severity": 1,
+              "message": "Destructuring the `props` will cause the value to lose reactivity.",
+              "line": 2,
+              "column": 15,
+              "endLine": 2,
+              "endColumn": 23,
+              "messageId": "destructuring"
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 1,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": [],
+          "source": "<script setup lang=\"ts\">\nconst { user: { name } } = defineProps<{ user: { name: string } }>();\n</script>\n<template><div /></template>\n"
+        }
+      ]
+    },
+    {
+      "id": "shallow-alias-rest",
+      "before": [
+        {
+          "filePath": "/tmp/vize-next-preset-readonly-audit-20261012/controls/AliasRest.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ],
+      "after": [
+        {
+          "filePath": "/private/tmp/vize-next-preset-readonly-audit-20261012/controls/AliasRest.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "ordinary-member-api",
+      "before": [
+        {
+          "filePath": "/tmp/vize-next-preset-readonly-audit-20261012/controls/MemberApi.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ],
+      "after": [
+        {
+          "filePath": "/private/tmp/vize-next-preset-readonly-audit-20261012/controls/MemberApi.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    }
+  ],
+  "limit": "Finite serialized-role path correction using the original whole packets; no provider reexecution, candidate native or compiler-mode parity claim."
+}

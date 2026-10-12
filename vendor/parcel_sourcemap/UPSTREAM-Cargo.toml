@@ -1,0 +1,20 @@
+[package]
+name = "parcel_sourcemap"
+version = "2.1.1"
+authors = [ "Jasper De Moor <jasperdemoor@gmail.com>" ]
+edition = "2018"
+description = "Parcel Source Map Library"
+license = "MIT"
+keywords = [ "sourcemap", "Node", "Parcel" ]
+repository = "https://github.com/parcel-bundler/source-map"
+
+[dependencies]
+"vlq" = "0.5.1"
+rkyv = "0.7.38"
+serde = {version = "1", features = ["derive"], optional = true}
+serde_json = { version = "1", optional = true }
+base64-simd = { version = "0.7", optional = true }
+data-url = { version = "0.1.1", optional = true }
+
+[features]
+json = ["serde", "serde_json", "base64-simd", "data-url"]

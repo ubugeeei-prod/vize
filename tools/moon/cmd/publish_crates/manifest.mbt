@@ -14,9 +14,15 @@ fn write_string_to_file(path : String, content : String) -> Bool {
 }
 
 fn crate_manifest_path(crate_name : String) -> String {
-  if crate_name == "vize_oxc_parser" {
+  let vendor_directory = match crate_name {
+    "vize_oxc_parser" => "oxc_parser"
+    "vize_parcel_sourcemap" => "parcel_sourcemap"
+    "vize_lightningcss" => "lightningcss"
+    _ => ""
+  }
+  if vendor_directory != "" {
     return @tool.join_path(
-      @tool.join_path("vendor", "oxc_parser"),
+      @tool.join_path("vendor", vendor_directory),
       "Cargo.toml",
     )
   }
@@ -33,8 +39,39 @@ fn is_manifest_section_header(trimmed : String) -> Bool {
 }
 
 fn is_publish_stripped_section(trimmed : String) -> Bool {
-  trimmed == "[dev-dependencies]" ||
-  (trimmed.has_prefix("[target.") && trimmed.has_suffix(".dev-dependencies]"))
+  // Split table keys outside quotes: a target cfg string can itself contain dots
+  // or the spelling "dev-dependencies" without declaring a development table.
+  let keys : Array[String] = []
+  let mut key = ""
+  let mut quote : Char? = None
+  let mut escaped = false
+  for character in trimmed.iter() {
+    match quote {
+      Some(delimiter) =>
+        if escaped {
+          key = key + character.to_string()
+          escaped = false
+        } else if delimiter == '"' && character == '\\' {
+          escaped = true
+        } else if character == delimiter {
+          quote = None
+        } else {
+          key = key + character.to_string()
+        }
+      None =>
+        if character == '"' || character == '\'' {
+          quote = Some(character)
+        } else if character == '.' {
+          keys.push(key.trim().to_owned())
+          key = ""
+        } else if character != '[' && character != ']' {
+          key = key + character.to_string()
+        }
+    }
+  }
+  keys.push(key.trim().to_owned())
+  keys[0] == "dev-dependencies" ||
+  (keys.length() >= 3 && keys[0] == "target" && keys[2] == "dev-dependencies")
 }
 
 fn publish_manifest_without_dev_dependencies(content : String) -> String {

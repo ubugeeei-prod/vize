@@ -2732,6 +2732,7 @@ script/prefer-import-from-vue · lint ルール
 
 正しい例:
   import { ref, h } from 'vue'
+  import { isString } from '@vue/shared'
 === script/prefer-ref-over-reactive
 script/prefer-ref-over-reactive · lint ルール
 状態管理には reactive() より ref() を推奨する

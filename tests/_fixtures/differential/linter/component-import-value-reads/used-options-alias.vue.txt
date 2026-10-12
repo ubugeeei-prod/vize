@@ -1,0 +1,1 @@
+<script>import Child from './Child.vue';export default { components: { PublicChild: Child } };</script><template><public-child /></template>

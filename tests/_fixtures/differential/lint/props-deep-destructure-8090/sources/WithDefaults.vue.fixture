@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const { user: { name } } = withDefaults(defineProps<{ user: { name: string } }>(), {});
+</script>
+<template><div /></template>

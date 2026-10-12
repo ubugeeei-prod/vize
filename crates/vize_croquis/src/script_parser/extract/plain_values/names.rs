@@ -29,7 +29,7 @@ pub(super) fn spread_writes_back(result: &ScriptParseResult, label: &str) -> boo
 ///
 /// A function nested inside that callback does not. Its spread copies whenever
 /// the nested function runs, including after the callback has returned.
-pub(in crate::script_parser) fn snapshot_in_reexecuted_scope(result: &ScriptParseResult) -> bool {
+fn single_function_scope(result: &ScriptParseResult) -> bool {
     let mut id = Some(result.scopes.current_id());
     let mut depth = 0u8;
     let mut functions = 0u8;
@@ -56,6 +56,18 @@ pub(in crate::script_parser) fn snapshot_in_reexecuted_scope(result: &ScriptPars
         id = scope.parent();
     }
     functions == 1
+}
+
+pub(in crate::script_parser) fn snapshot_in_reexecuted_scope(result: &ScriptParseResult) -> bool {
+    single_function_scope(result)
+        || super::super::super::reexecution::owner_scope(result, true).is_some()
+}
+
+pub(super) fn spread_reexecuted(result: &ScriptParseResult, expr: &Expression<'_>) -> bool {
+    single_function_scope(result)
+        || root_identifier(expr).is_some_and(|root| {
+            super::super::super::reexecution::fresh_origin(result, root.as_str())
+        })
 }
 
 pub(super) fn is_intentional_discard(

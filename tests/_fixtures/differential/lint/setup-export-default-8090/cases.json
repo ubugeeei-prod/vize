@@ -1,0 +1,1050 @@
+{
+  "schema": "vize.lint.setup-export-default-corpus",
+  "version": 1,
+  "rule": "script/no-export-in-script-setup",
+  "foundation": "47b204f26839afb27af4a2f789eafc86295f0f81",
+  "authoredInputsSha256": "db5a69507f8b01c966c6549a0534b5807126629952334706ffe5371de03c3b97",
+  "scope": "Existing explicit-rule behavior is unchanged; only five preset memberships change. Eighteen whole scoped packets and separately authored full routes; no current Matrix or installed successor acceptance.",
+  "cases": [
+    {
+      "id": "runtime-const",
+      "filename": "runtime-const.vue",
+      "sourceFile": "runtime-const.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nexport const answer = 42;\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "6b85deffae304203ed24e3c74107e9fb762c4ae987b27616dad2a7b1aa07ff61",
+      "diagnostics": [
+        {
+          "rule_name": "script/no-export-in-script-setup",
+          "severity": "error",
+          "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+          "start": 25,
+          "end": 50,
+          "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+          "fix": null,
+          "labels": [
+            {
+              "message": "named export",
+              "start": 25,
+              "end": 50
+            }
+          ]
+        }
+      ],
+      "apiPacket": {
+        "filename": "runtime-const.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-export-in-script-setup",
+            "severity": "error",
+            "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+            "start": 25,
+            "end": 50,
+            "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+            "fix": null,
+            "labels": [
+              {
+                "message": "named export",
+                "start": 25,
+                "end": 50
+              }
+            ]
+          }
+        ]
+      },
+      "compilerBoundary": "Current lint ownership/type-space contract",
+      "beforeCliPacket": [
+        {
+          "file": "runtime-const.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-export-in-script-setup",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 26,
+              "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "runtime-const.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-export-in-script-setup",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 26,
+              "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "status": 1
+    },
+    {
+      "id": "runtime-default",
+      "filename": "runtime-default.vue",
+      "sourceFile": "runtime-default.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nexport default {};\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "73f4f43f7b27f0b3d948465340345de2bb7fd1e281582d2e28663c6997d09e71",
+      "diagnostics": [
+        {
+          "rule_name": "script/no-export-in-script-setup",
+          "severity": "error",
+          "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+          "start": 25,
+          "end": 43,
+          "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+          "fix": null,
+          "labels": [
+            {
+              "message": "default export",
+              "start": 25,
+              "end": 43
+            }
+          ]
+        }
+      ],
+      "apiPacket": {
+        "filename": "runtime-default.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-export-in-script-setup",
+            "severity": "error",
+            "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+            "start": 25,
+            "end": 43,
+            "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+            "fix": null,
+            "labels": [
+              {
+                "message": "default export",
+                "start": 25,
+                "end": 43
+              }
+            ]
+          }
+        ]
+      },
+      "compilerBoundary": "Current lint ownership/type-space contract",
+      "beforeCliPacket": [
+        {
+          "file": "runtime-default.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-export-in-script-setup",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 19,
+              "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "runtime-default.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-export-in-script-setup",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 19,
+              "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "status": 1
+    },
+    {
+      "id": "runtime-reexport",
+      "filename": "runtime-reexport.vue",
+      "sourceFile": "runtime-reexport.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nexport { ref } from 'vue';\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "40756151aa4ea5010b7c6ed741a28f9ae41e4ea606b9bedd493c5c767603c02a",
+      "diagnostics": [
+        {
+          "rule_name": "script/no-export-in-script-setup",
+          "severity": "error",
+          "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+          "start": 25,
+          "end": 51,
+          "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+          "fix": null,
+          "labels": [
+            {
+              "message": "named export",
+              "start": 25,
+              "end": 51
+            }
+          ]
+        }
+      ],
+      "apiPacket": {
+        "filename": "runtime-reexport.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-export-in-script-setup",
+            "severity": "error",
+            "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+            "start": 25,
+            "end": 51,
+            "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+            "fix": null,
+            "labels": [
+              {
+                "message": "named export",
+                "start": 25,
+                "end": 51
+              }
+            ]
+          }
+        ]
+      },
+      "compilerBoundary": "Current lint ownership/type-space contract",
+      "beforeCliPacket": [
+        {
+          "file": "runtime-reexport.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-export-in-script-setup",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 27,
+              "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "runtime-reexport.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-export-in-script-setup",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 27,
+              "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "status": 1
+    },
+    {
+      "id": "runtime-star",
+      "filename": "runtime-star.vue",
+      "sourceFile": "runtime-star.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nexport * from 'vue';\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "34e5ae7af4113a0590530ba4d341cfbe785b0965c6be697ebf25e8f4ebb739fc",
+      "diagnostics": [
+        {
+          "rule_name": "script/no-export-in-script-setup",
+          "severity": "error",
+          "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+          "start": 25,
+          "end": 45,
+          "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+          "fix": null,
+          "labels": [
+            {
+              "message": "re-export",
+              "start": 25,
+              "end": 45
+            }
+          ]
+        }
+      ],
+      "apiPacket": {
+        "filename": "runtime-star.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-export-in-script-setup",
+            "severity": "error",
+            "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+            "start": 25,
+            "end": 45,
+            "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+            "fix": null,
+            "labels": [
+              {
+                "message": "re-export",
+                "start": 25,
+                "end": 45
+              }
+            ]
+          }
+        ]
+      },
+      "compilerBoundary": "Current lint ownership/type-space contract",
+      "beforeCliPacket": [
+        {
+          "file": "runtime-star.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-export-in-script-setup",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 21,
+              "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "runtime-star.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-export-in-script-setup",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 21,
+              "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "status": 1
+    },
+    {
+      "id": "empty-export",
+      "filename": "empty-export.vue",
+      "sourceFile": "empty-export.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nexport {};\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "a347d805821a1045cd109eb45d3b8d3258a528c0ba6f71927ccc7530c629f745",
+      "diagnostics": [
+        {
+          "rule_name": "script/no-export-in-script-setup",
+          "severity": "error",
+          "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+          "start": 25,
+          "end": 35,
+          "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+          "fix": null,
+          "labels": [
+            {
+              "message": "named export",
+              "start": 25,
+              "end": 35
+            }
+          ]
+        }
+      ],
+      "apiPacket": {
+        "filename": "empty-export.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-export-in-script-setup",
+            "severity": "error",
+            "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+            "start": 25,
+            "end": 35,
+            "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+            "fix": null,
+            "labels": [
+              {
+                "message": "named export",
+                "start": 25,
+                "end": 35
+              }
+            ]
+          }
+        ]
+      },
+      "compilerBoundary": "Current lint ownership/type-space contract",
+      "beforeCliPacket": [
+        {
+          "file": "empty-export.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-export-in-script-setup",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 11,
+              "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "empty-export.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-export-in-script-setup",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 11,
+              "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "status": 1
+    },
+    {
+      "id": "type-alias",
+      "filename": "type-alias.vue",
+      "sourceFile": "type-alias.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nexport type Props = { title: string };\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "4294ada6f2412ed01d9b6fdcadbd90f42e4d07a4e1e119dc2ceacf0d8992a365",
+      "diagnostics": [],
+      "apiPacket": {
+        "filename": "type-alias.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "compilerBoundary": "Current lint ownership/type-space contract",
+      "beforeCliPacket": [
+        {
+          "file": "type-alias.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "type-alias.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "status": 0
+    },
+    {
+      "id": "type-interface",
+      "filename": "type-interface.vue",
+      "sourceFile": "type-interface.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nexport interface Props { title: string }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "c2e293aaf6778f4b9f6111351eed7a29807f43a2cf491aebdcee131ff09444cc",
+      "diagnostics": [],
+      "apiPacket": {
+        "filename": "type-interface.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "compilerBoundary": "Current lint ownership/type-space contract",
+      "beforeCliPacket": [
+        {
+          "file": "type-interface.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "type-interface.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "status": 0
+    },
+    {
+      "id": "type-star",
+      "filename": "type-star.vue",
+      "sourceFile": "type-star.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nexport type * from 'vue';\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "d1eba68cdb2989db98598971edaecac3507272d9bdb48c2af5a0f3649ec680db",
+      "diagnostics": [],
+      "apiPacket": {
+        "filename": "type-star.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "compilerBoundary": "Known compiler rejection allowed by existing lint/provider contracts",
+      "beforeCliPacket": [
+        {
+          "file": "type-star.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "type-star.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "status": 0
+    },
+    {
+      "id": "all-type-specifiers",
+      "filename": "all-type-specifiers.vue",
+      "sourceFile": "all-type-specifiers.vue.fixture",
+      "source": "<script setup lang=\"ts\">\ntype Props = { title: string }; export { type Props };\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "5975a0c61ea9667af6266524c7c8821d9333ab1346ff6b428d52e37874efaf6d",
+      "diagnostics": [],
+      "apiPacket": {
+        "filename": "all-type-specifiers.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "compilerBoundary": "Known compiler rejection allowed by existing lint/provider contracts",
+      "beforeCliPacket": [
+        {
+          "file": "all-type-specifiers.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "all-type-specifiers.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "status": 0
+    },
+    {
+      "id": "mixed-specifiers",
+      "filename": "mixed-specifiers.vue",
+      "sourceFile": "mixed-specifiers.vue.fixture",
+      "source": "<script setup lang=\"ts\">\ntype Props = { title: string }; const answer = 42; export { type Props, answer };\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "3ada4005d6272a1cbc61405ef9ada79dac58136ce96c732704c6b66ed2ac161b",
+      "diagnostics": [
+        {
+          "rule_name": "script/no-export-in-script-setup",
+          "severity": "error",
+          "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+          "start": 76,
+          "end": 106,
+          "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+          "fix": null,
+          "labels": [
+            {
+              "message": "named export",
+              "start": 76,
+              "end": 106
+            }
+          ]
+        }
+      ],
+      "apiPacket": {
+        "filename": "mixed-specifiers.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-export-in-script-setup",
+            "severity": "error",
+            "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+            "start": 76,
+            "end": 106,
+            "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+            "fix": null,
+            "labels": [
+              {
+                "message": "named export",
+                "start": 76,
+                "end": 106
+              }
+            ]
+          }
+        ]
+      },
+      "compilerBoundary": "Current lint ownership/type-space contract",
+      "beforeCliPacket": [
+        {
+          "file": "mixed-specifiers.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-export-in-script-setup",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+              "line": 2,
+              "column": 52,
+              "endLine": 2,
+              "endColumn": 82,
+              "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "mixed-specifiers.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-export-in-script-setup",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+              "line": 2,
+              "column": 52,
+              "endLine": 2,
+              "endColumn": 82,
+              "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "status": 1
+    },
+    {
+      "id": "ambient-variable",
+      "filename": "ambient-variable.vue",
+      "sourceFile": "ambient-variable.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nexport declare const answer: number;\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "9be9465f5c8c4cfbc6bdd07a69f10b89ee29f3e3ba2ab21adcb2f3e4838c390b",
+      "diagnostics": [],
+      "apiPacket": {
+        "filename": "ambient-variable.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "compilerBoundary": "Current lint ownership/type-space contract",
+      "beforeCliPacket": [
+        {
+          "file": "ambient-variable.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "ambient-variable.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "status": 0
+    },
+    {
+      "id": "ambient-function",
+      "filename": "ambient-function.vue",
+      "sourceFile": "ambient-function.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nexport declare function helper(): void;\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "18f70a0fe8d9f405ce338bbca9f6149dfca2838f573292cc0737b92cecffd071",
+      "diagnostics": [],
+      "apiPacket": {
+        "filename": "ambient-function.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "compilerBoundary": "Current lint ownership/type-space contract",
+      "beforeCliPacket": [
+        {
+          "file": "ambient-function.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "ambient-function.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "status": 0
+    },
+    {
+      "id": "ambient-class",
+      "filename": "ambient-class.vue",
+      "sourceFile": "ambient-class.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nexport declare class Helper {}\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "d7aeca7ac4307fc32c8a2e831ad5d7bdad3738bcb2e1b17944fffef29fe3881c",
+      "diagnostics": [],
+      "apiPacket": {
+        "filename": "ambient-class.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "compilerBoundary": "Current lint ownership/type-space contract",
+      "beforeCliPacket": [
+        {
+          "file": "ambient-class.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "ambient-class.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "status": 0
+    },
+    {
+      "id": "ambient-enum",
+      "filename": "ambient-enum.vue",
+      "sourceFile": "ambient-enum.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nexport declare enum Direction { North }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "b05142865e1fa02fb5d3af54a80fd762b95397052bb61c9741816016b28f9a09",
+      "diagnostics": [],
+      "apiPacket": {
+        "filename": "ambient-enum.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "compilerBoundary": "Current lint ownership/type-space contract",
+      "beforeCliPacket": [
+        {
+          "file": "ambient-enum.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "ambient-enum.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "status": 0
+    },
+    {
+      "id": "ambient-namespace",
+      "filename": "ambient-namespace.vue",
+      "sourceFile": "ambient-namespace.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nexport declare namespace Shapes { interface Point { x: number } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "934d97b40cb77b2a1e8eed182346813eccfca3e238bd032298a79718e61a6285",
+      "diagnostics": [],
+      "apiPacket": {
+        "filename": "ambient-namespace.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "compilerBoundary": "Current lint ownership/type-space contract",
+      "beforeCliPacket": [
+        {
+          "file": "ambient-namespace.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "ambient-namespace.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "status": 0
+    },
+    {
+      "id": "pure-type-namespace",
+      "filename": "pure-type-namespace.vue",
+      "sourceFile": "pure-type-namespace.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nexport namespace Shapes { export interface Point { x: number } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "bfe91e649bb982306164224fffd8c881dd19720a387d1ee1e4a5c4837f09a144",
+      "diagnostics": [
+        {
+          "rule_name": "script/no-export-in-script-setup",
+          "severity": "error",
+          "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+          "start": 25,
+          "end": 89,
+          "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+          "fix": null,
+          "labels": [
+            {
+              "message": "named export",
+              "start": 25,
+              "end": 89
+            }
+          ]
+        }
+      ],
+      "apiPacket": {
+        "filename": "pure-type-namespace.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-export-in-script-setup",
+            "severity": "error",
+            "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+            "start": 25,
+            "end": 89,
+            "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+            "fix": null,
+            "labels": [
+              {
+                "message": "named export",
+                "start": 25,
+                "end": 89
+              }
+            ]
+          }
+        ]
+      },
+      "compilerBoundary": "Current lint ownership/type-space contract",
+      "beforeCliPacket": [
+        {
+          "file": "pure-type-namespace.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-export-in-script-setup",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 65,
+              "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "pure-type-namespace.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-export-in-script-setup",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 65,
+              "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "status": 1
+    },
+    {
+      "id": "runtime-enum",
+      "filename": "runtime-enum.vue",
+      "sourceFile": "runtime-enum.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nexport enum Direction { North }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "5b6ad1397ae9f0c7fef64669aa56363d47bd60014c1aaa467779a689c52ccd76",
+      "diagnostics": [
+        {
+          "rule_name": "script/no-export-in-script-setup",
+          "severity": "error",
+          "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+          "start": 25,
+          "end": 56,
+          "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+          "fix": null,
+          "labels": [
+            {
+              "message": "named export",
+              "start": 25,
+              "end": 56
+            }
+          ]
+        }
+      ],
+      "apiPacket": {
+        "filename": "runtime-enum.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-export-in-script-setup",
+            "severity": "error",
+            "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+            "start": 25,
+            "end": 56,
+            "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+            "fix": null,
+            "labels": [
+              {
+                "message": "named export",
+                "start": 25,
+                "end": 56
+              }
+            ]
+          }
+        ]
+      },
+      "compilerBoundary": "Current lint ownership/type-space contract",
+      "beforeCliPacket": [
+        {
+          "file": "runtime-enum.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-export-in-script-setup",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "runtime-enum.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-export-in-script-setup",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "status": 1
+    },
+    {
+      "id": "normal-module",
+      "filename": "normal-module.vue",
+      "sourceFile": "normal-module.vue.fixture",
+      "source": "<script lang=\"ts\">\nexport const answer = 42;\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "d9eb6fc49138fcabb109794a031afb674cfad610851c8c65aa02ea4ac82b4bc9",
+      "diagnostics": [],
+      "apiPacket": {
+        "filename": "normal-module.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "compilerBoundary": "Current lint ownership/type-space contract",
+      "beforeCliPacket": [
+        {
+          "file": "normal-module.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "normal-module.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "status": 0
+    }
+  ]
+}

@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -16,6 +17,7 @@ const original = fs.readFileSync(
 type Job = {
   if?: string;
   steps: Array<{
+    if?: string;
     name?: string;
     run?: string;
     uses?: string;
@@ -39,6 +41,52 @@ const extraNames = [
   "Capture selected native image authority",
   "Preserve selected native image",
 ];
+const moonSelector =
+  "github.event_name == 'workflow_dispatch' && inputs.host_only && inputs.target == 'darwin-arm64'";
+
+function authenticateDefaultJob(name: string, configured: Job) {
+  const { if: condition, ...job } = configured;
+  assert.equal(
+    condition,
+    "github.event_name != 'workflow_dispatch' || !inputs.host_only || inputs.target != 'darwin-arm64'",
+  );
+  const steps = job.steps
+    .filter((step) => !extraNames.includes(step.name ?? ""))
+    .map((step) => {
+      if (name !== "host-native-smoke" || step.uses !== "./.github/actions/setup-moonbit")
+        return step;
+      assert.equal(step.if, moonSelector);
+      assert.equal(configured.steps.find((entry) => entry.name === extraNames[0])?.if, step.if);
+      for (const event of ["push", "schedule", "workflow_dispatch"])
+        for (const hostOnly of [undefined, false, true])
+          for (const target of [
+            undefined,
+            "all",
+            "linux-x64-gnu",
+            "linux-arm64-gnu",
+            "darwin-x64",
+            "darwin-arm64",
+            "win32-x64-msvc",
+            "win32-arm64-msvc",
+          ])
+            assert.equal(
+              Boolean(
+                runInNewContext(step.if!, {
+                  github: { event_name: event },
+                  inputs: { host_only: hostOnly, target },
+                }),
+              ),
+              event === "workflow_dispatch" && hostOnly === true && target === "darwin-arm64",
+            );
+      // Reverse only the independently qualified consumer predicate; preserve every other field, including unknown ones.
+      return { ...step, if: "matrix.target != 'darwin-x64'" };
+    });
+  assert.deepEqual(
+    { ...job, steps },
+    before.jobs[name],
+    `every original ${name} field remains exact`,
+  );
+}
 
 test("the full original six-host and twelve-fresh native smoke contract stays intact", () => {
   assert.equal(
@@ -48,18 +96,19 @@ test("the full original six-host and twelve-fresh native smoke contract stays in
   assert.deepEqual(after.on.schedule, before.on.schedule);
   assert.equal(after.on.workflow_dispatch.inputs.target.default, "all");
   assert.equal(after.on.workflow_dispatch.inputs.host_only.default, false);
-  for (const name of ["host-native-smoke", "fresh-install-smoke"]) {
-    const { if: condition, ...job } = after.jobs[name];
-    assert.equal(
-      condition,
-      "github.event_name != 'workflow_dispatch' || !inputs.host_only || inputs.target != 'darwin-arm64'",
-    );
-    const steps = job.steps.filter((step) => !extraNames.includes(step.name ?? ""));
-    assert.deepEqual(
-      { ...job, steps },
-      before.jobs[name],
-      `every original ${name} field remains exact`,
-    );
+  for (const name of ["host-native-smoke", "fresh-install-smoke"])
+    authenticateDefaultJob(name, after.jobs[name]);
+  for (const changed of ["unknown-setup-field", "removed-cli-command"]) {
+    const altered = structuredClone(after.jobs["host-native-smoke"]);
+    if (changed === "unknown-setup-field")
+      Object.assign(
+        altered.steps.find((step) => step.uses === "./.github/actions/setup-moonbit")!,
+        { unreviewedField: true },
+      );
+    else altered.steps.find((step) => step.name === "Build CLI")!.run = "removed-command";
+    assert.throws(() => authenticateDefaultJob("host-native-smoke", altered), {
+      code: "ERR_ASSERTION",
+    });
   }
 });
 

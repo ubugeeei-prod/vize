@@ -93,7 +93,9 @@ test("PR and full tooling gates retain failed observations after their tests", (
     if (shared) {
       assert.deepEqual(job.needs, ["pr-source-plan", "pr-source-cli"]);
       assert.equal(pr.jobs["pr-source-cli"].uses, "./.github/workflows/pr-source-cli.yml");
-      assert.equal(build.with?.sha256, "${{ needs.pr-source-cli.outputs.sha256 }}");
+      assert.deepEqual(build.with, {
+        producer: "${{ toJSON(needs.pr-source-cli.outputs) }}",
+      });
       const originalBuild = producer.jobs.cli.steps.find((step) =>
         /tests\/differential\/build-receipt\.ts/.test(step.run ?? ""),
       );
@@ -103,7 +105,11 @@ test("PR and full tooling gates retain failed observations after their tests", (
         /cargo build --profile ci -p vize && vp exec node tests\/differential\/build-receipt\.ts/,
       );
       assert.equal(originalBuild.if, "${{ inputs.run-cli }}");
-      assert.equal(restore.runs.steps[0].with?.["digest-mismatch"], "error");
+      const downloads = restore.runs.steps.filter((step) =>
+        step.uses?.startsWith("actions/download-artifact@"),
+      );
+      assert.equal(downloads.length, 1);
+      assert.equal(downloads[0].with?.["digest-mismatch"], "error");
       const restoreRun = restore.runs.steps.at(-1)?.run ?? "";
       assert.match(restoreRun, /source-cli-artifact\.ts restore/);
       assert.match(restoreRun, /cat target\/ci\/vize\.differential-build\.json/);

@@ -53,6 +53,8 @@ pub struct PatinaLintOptionsNapi {
     pub preset: Option<String>,
     /// Optional list of Patina rule names to enable
     pub enabled_rules: Option<Vec<String>>,
+    /// Include existing native text edits in each structured diagnostic.
+    pub include_fixes: Option<bool>,
     /// Enable native type-aware lint rules
     pub type_aware: Option<bool>,
     /// Path to the Corsa executable used by type-aware lint rules

@@ -1,9 +1,14 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
+import { parse as parseToml } from "@iarna/toml";
+import { runCiBuild } from "../../npm/native/scripts/build-ci.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -25,10 +30,7 @@ test("native smoke keeps MoonBit out of the npm fresh install path", () => {
   const freshJob = workflowJobBody(workflow, "fresh-install-smoke");
 
   assert.match(hostJob, /target:\s*darwin-x64/);
-  assert.match(
-    hostJob,
-    /uses:\s*\.\/\.github\/actions\/setup-moonbit\s*\n\s*if:\s*matrix\.target != 'darwin-x64'/,
-  );
+  assert.match(hostJob, /uses:\s*\.\/\.github\/actions\/setup-moonbit/);
   assert.match(freshJob, /target:\s*darwin-x64/);
   assert.doesNotMatch(freshJob, /setup-moonbit/);
   assert.match(freshJob, /vp run --filter '\.\/npm\/cli' build/);
@@ -47,4 +49,263 @@ test("native smoke keeps MoonBit out of the npm fresh install path", () => {
     .find((command) => command?.startsWith("vp install "));
   assert.ok(install, "fresh smoke must install its helper dependencies");
   assert.match(install, /(?:^| )--filter \.(?: |$)/u);
+});
+
+const selected =
+  "github.event_name == 'workflow_dispatch' && inputs.host_only && inputs.target == 'darwin-arm64'";
+const workflowFile = () => readRepoFile(".github", "workflows", "native-smoke.yml");
+const workflowObject = () => parse(workflowFile());
+const evaluate = (
+  expression: string,
+  event: string,
+  hostOnly: boolean | undefined,
+  target: string | undefined,
+) =>
+  Boolean(
+    runInNewContext(expression, {
+      github: { event_name: event },
+      inputs: { host_only: hostOnly, target },
+    }),
+  );
+
+function authenticateWorkflow(source: string) {
+  const changed = `      - uses: ./.github/actions/setup-moonbit\n        if: ${selected}\n`;
+  assert.equal(source.split(changed).length, 2);
+  const reversed = source.replace(
+    changed,
+    "      - uses: ./.github/actions/setup-moonbit\n        if: matrix.target != 'darwin-x64'\n",
+  );
+  // Authenticated whole d3b2f527 workflow; all inputs, commands, pins, outputs and other conditions stay exact.
+  const originalDigest = "25d6dfff5052a85bdbd673af0872ee65ed5f72d5dc3dccb5d792dc78ab138ce5";
+  assert.equal(createHash("sha256").update(reversed).digest("hex"), originalDigest);
+}
+
+void test("the complete original workflow changes only the setup predicate", () => {
+  const source = workflowFile();
+  authenticateWorkflow(source);
+  for (const removed of [
+    "cargo build --profile ci -p vize",
+    "--max 2.36",
+    "--runtime-checks",
+    "moon test --target native --deny-warn cmd/github/build_napi_package",
+  ])
+    assert.throws(() => authenticateWorkflow(source.replace(removed, "removed-command")), {
+      code: "ERR_ASSERTION",
+    });
+});
+
+void test("only the real selected producer enables Moon while default qualification remains eighteen rows", () => {
+  const { on, jobs } = workflowObject();
+  assert.deepEqual(Object.keys(on), ["workflow_dispatch", "schedule"]);
+  assert.equal(on.workflow_dispatch.inputs.host_only.default, false);
+  assert.equal(on.workflow_dispatch.inputs.target.default, "all");
+  assert.deepEqual(on.workflow_dispatch.inputs.target.options, ["all", "darwin-arm64"]);
+  const host = jobs["host-native-smoke"];
+  const fresh = jobs["fresh-install-smoke"];
+  const producer = jobs["selected-host-native-producer"];
+  assert.equal(
+    producer.steps,
+    host.steps,
+    "selected producer must retain the actual shared step anchor",
+  );
+  const setup = host.steps.find(
+    (step: { uses?: string }) => step.uses === "./.github/actions/setup-moonbit",
+  );
+  const moonTest = host.steps.find(
+    (step: { name?: string }) => step.name === "Test native image token producer",
+  );
+  assert.equal(setup.if, selected);
+  assert.equal(moonTest.if, selected);
+  assert.equal(moonTest.run, "moon test --target native --deny-warn cmd/github/build_napi_package");
+  assert.equal(moonTest["working-directory"], "tools/moon");
+  const targets = [
+    "linux-x64-gnu",
+    "linux-arm64-gnu",
+    "darwin-x64",
+    "darwin-arm64",
+    "win32-x64-msvc",
+    "win32-arm64-msvc",
+  ];
+  assert.deepEqual(
+    host.strategy.matrix.include.map((row: { target: string }) => row.target),
+    targets,
+  );
+  assert.deepEqual(
+    fresh.strategy.matrix.platform.map((row: { target: string }) => row.target),
+    targets,
+  );
+  assert.deepEqual(fresh.strategy.matrix["node-version"], ["22", "24"]);
+  assert.equal(host.strategy["fail-fast"], false);
+  assert.equal(fresh.strategy["fail-fast"], false);
+  for (const event of ["push", "schedule", "workflow_dispatch"])
+    for (const hostOnly of [undefined, false, true])
+      for (const target of [undefined, "all", ...targets]) {
+        const expectedSelected =
+          event === "workflow_dispatch" && hostOnly === true && target === "darwin-arm64";
+        assert.equal(evaluate(setup.if, event, hostOnly, target), expectedSelected);
+        assert.equal(evaluate(moonTest.if, event, hostOnly, target), expectedSelected);
+        assert.equal(evaluate(producer.if, event, hostOnly, target), expectedSelected);
+        assert.equal(evaluate(host.if, event, hostOnly, target), !expectedSelected);
+        assert.equal(evaluate(fresh.if, event, hostOnly, target), !expectedSelected);
+        if (!expectedSelected)
+          assert.equal(
+            host.strategy.matrix.include.length +
+              fresh.strategy.matrix.platform.length * fresh.strategy.matrix["node-version"].length,
+            18,
+          );
+      }
+  // Removing unused setup also removes its Windows amd64 override: caller ARM64 setup stays authoritative.
+  assert.equal(
+    host.steps.find((step: { name?: string }) => step.name === "Setup MSVC toolchain (Windows)")
+      .with.arch,
+    "${{ matrix.msvc_arch }}",
+  );
+  assert.equal(
+    host.strategy.matrix.include.find(
+      (row: { target: string }) => row.target === "win32-arm64-msvc",
+    ).msvc_arch,
+    "arm64",
+  );
+  assert.match(readRepoFile(".github", "actions", "setup-moonbit", "action.yml"), /arch: amd64/u);
+});
+
+void test("the actual default native producer executes only its unchanged NAPI and Node recipes", () => {
+  const commands: Array<{ command: string; args: string[]; shell: boolean; cwd: string }> = [];
+  const nativeDir = path.join(root, "npm/native");
+  const controlledRun = ((
+    command: string,
+    args: string[],
+    options: { shell: boolean; cwd: string },
+  ) => {
+    commands.push({ command, args: [...args], shell: options.shell, cwd: options.cwd });
+    return { status: 0 };
+  }) as typeof spawnSync;
+  assert.equal(runCiBuild(nativeDir, { capture: false, run: controlledRun }), 0);
+  assert.deepEqual(commands, [
+    {
+      command: "napi",
+      args: [
+        "build",
+        "--platform",
+        "--profile",
+        "ci",
+        "--manifest-path",
+        "../../crates/vize_vitrine/Cargo.toml",
+        "-p",
+        "vize_vitrine",
+        "--features",
+        "napi,legacy",
+        "--output-dir",
+        ".",
+      ],
+      shell: process.platform === "win32",
+      cwd: nativeDir,
+    },
+    {
+      command: process.execPath,
+      args: [path.join(nativeDir, "scripts/sync-entrypoint.mjs")],
+      shell: false,
+      cwd: nativeDir,
+    },
+  ]);
+  const closure = new Set<string>();
+  const visit = (file: string) => {
+    if (closure.has(file)) return;
+    closure.add(file);
+    const source = readRepoFile(file);
+    assert.doesNotMatch(source, /\bmoon(?:c|bit)?\b|MOON_(?:HOME|BIN)/u, file);
+    for (const match of source.matchAll(/\b(?:from\s*|import\s*\(?\s*)["']([^"']+)["']/gu))
+      if (match[1].startsWith("."))
+        visit(path.posix.normalize(path.posix.join(path.posix.dirname(file), match[1])));
+  };
+  visit("npm/native/scripts/build-ci.mjs");
+  visit("npm/native/scripts/sync-entrypoint.mjs");
+  assert.ok(closure.has("npm/native/scripts/formatter-history-ci-build.mjs"));
+  assert.ok(closure.has("npm/native/scripts/native-build-environment.mjs"));
+  for (const file of [
+    "crates/vize_vitrine/build.rs",
+    "crates/vize_fresco/build.rs",
+    "tools/commands/ci/github/verify-glibc-symbols.rs",
+    "tools/commands/release/npm/smoke-release-install.rs",
+    "tools/support/common.rs",
+    "tools/support/release/npm_publish.rs",
+    "tools/support/release/npm_smoke_init.rs",
+    ".github/actions/setup-rust-script/action.yml",
+    ".github/actions/setup-rust-sticky-cache/action.yml",
+    ".github/actions/setup-runtime-package-managers/action.yml",
+  ])
+    assert.doesNotMatch(readRepoFile(file), /\bmoon(?:c|bit)?\b|MOON_(?:HOME|BIN)/u, file);
+  const dialect = readRepoFile("davinci/vize_dialect_moonbit/Cargo.toml");
+  const features = dialect.match(/^\[features\]\n([\s\S]*?)(?=^\[)/mu)?.[1];
+  assert.ok(features, "dialect feature declarations must be inspected");
+  assert.match(features, /moonc = \["dep:sha2"\]/u);
+  assert.doesNotMatch(features, /^default\s*=/mu);
+  const selectedLaws = readRepoFile(
+    "tools/moon/cmd/github/build_napi_package/native_build_token_wbtest.mbt",
+  );
+  assert.equal([...selectedLaws.matchAll(/^test "/gmu)].length, 3);
+  for (const law of [
+    "native build token preserves every byte including zero-padded nibbles",
+    "actual platform entropy yields fresh 128-bit native build tokens",
+    "production build environment preserves inheritance and overrides old tokens",
+  ])
+    assert.ok(selectedLaws.includes(`test "${law}"`));
+  const dedicated = readRepoFile(".github", "workflows", "level-moonbit.yml");
+  assert.match(dedicated, /uses: \.\/\.github\/actions\/setup-moonbit/u);
+  assert.match(dedicated, /cargo test -p vize_dialect_moonbit --features moonc/u);
+});
+
+void test("all transitive local normal and build dependencies keep Moon out of default native builds", () => {
+  type Dependency = { path?: string; workspace?: boolean } | string;
+  type Tables = {
+    dependencies?: Record<string, Dependency>;
+    "build-dependencies"?: Record<string, Dependency>;
+  };
+  type Manifest = Tables & {
+    package?: { name: string; build?: string | boolean };
+    target?: Record<string, Tables>;
+    workspace?: { dependencies: Record<string, Dependency> };
+    patch?: Record<string, Record<string, Dependency>>;
+  };
+  const workspace = parseToml(readRepoFile("Cargo.toml")) as Manifest;
+  const inherited = workspace.workspace!.dependencies;
+  const visited = new Set<string>();
+  const pending = ["crates/vize/Cargo.toml", "crates/vize_vitrine/Cargo.toml"];
+  // Registry and Git dependencies can enter repository source through Cargo patch overrides.
+  for (const patches of Object.values(workspace.patch ?? {}))
+    for (const dependency of Object.values(patches))
+      if (typeof dependency !== "string" && dependency.path)
+        pending.push(path.posix.normalize(path.posix.join(dependency.path, "Cargo.toml")));
+  while (pending.length) {
+    const file = pending.pop()!;
+    if (visited.has(file)) continue;
+    visited.add(file);
+    const manifest = parseToml(readRepoFile(file)) as Manifest;
+    assert.notEqual(manifest.package!.name, "vize_dialect_moonbit", file);
+    const build = manifest.package!.build;
+    const buildFile = path.posix.join(
+      path.posix.dirname(file),
+      typeof build === "string" ? build : "build.rs",
+    );
+    if (build !== false && fs.existsSync(path.join(root, buildFile)))
+      assert.doesNotMatch(
+        readRepoFile(buildFile),
+        /\bmoon(?:c|bit)?\b|MOON_(?:HOME|BIN)/u,
+        buildFile,
+      );
+    // Conservatively include optional dependencies and every target; dev-only oracles are not build dependencies.
+    for (const tables of [manifest, ...Object.values(manifest.target ?? {})])
+      for (const section of ["dependencies", "build-dependencies"] as const)
+        for (const [name, declaration] of Object.entries(tables[section] ?? {})) {
+          if (typeof declaration === "string") continue;
+          const dependency = declaration.workspace ? inherited[name] : declaration;
+          if (typeof dependency === "string" || !dependency.path) continue;
+          const directory = declaration.workspace ? "." : path.posix.dirname(file);
+          pending.push(
+            path.posix.normalize(path.posix.join(directory, dependency.path, "Cargo.toml")),
+          );
+        }
+  }
+  assert.ok(visited.has("crates/vize_fresco/Cargo.toml"));
+  assert.ok(visited.has("vendor/oxc_parser_compat/Cargo.toml"));
 });

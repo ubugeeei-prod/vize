@@ -18,6 +18,8 @@ export type {
   CompiledModule,
   MacroArtifact,
   VizeConfig,
+  VueOptions,
+  VueOptionsEntry,
   ResolvedVizeConfig,
   UserConfigExport,
   LoadConfigOptions,

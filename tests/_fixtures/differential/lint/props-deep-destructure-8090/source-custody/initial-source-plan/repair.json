@@ -1,0 +1,33 @@
+{
+  "schema": "vize.lint.props-deep-destructure-generated-inventory-repair",
+  "version": 1,
+  "source": "55b014ece13d29b420e9243c3945d6d778a4aa6a",
+  "failedRun": 38205153114,
+  "failedJob": 114666888498,
+  "artifact": "docs/davinci/plan/consumer-migration-surfaces/linter/vize_patina.tsv",
+  "generator": "tools/support/compat/davinci/consumer-migration-surfaces.mjs --write",
+  "original": {
+    "bytes": 158031,
+    "sha256": "44c893ee88834e52c99fc46f1d07d2a08d3d00492bbbc9d376013a8bd3d6b3ba",
+    "rows": 1300
+  },
+  "regenerated": {
+    "bytes": 158414,
+    "sha256": "78a08de7c20059be8d9a58b0acd58423fc67ce3273e9a80ab836ec0ad36915b2",
+    "rows": 1303
+  },
+  "onlyRemovedRows": [
+    "linter\tLinter\ttest/dev\tcrates/vize_patina/src/linter/script_rules.rs\t173\traw_oxc\traw OXC\traw\toxc_parser\traw\t1",
+    "linter\tLinter\tsource\tcrates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs\t31\traw_oxc\traw OXC\traw\toxc_ast\traw\t1",
+    "linter\tLinter\tsource\tcrates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs\t31\traw_oxc\traw OXC\traw\toxc_ast_visit\traw\t1"
+  ],
+  "onlyAddedRows": [
+    "linter\tLinter\ttest/dev\tcrates/vize_patina/src/linter/script_rules.rs\t175\traw_oxc\traw OXC\traw\toxc_parser\traw\t1",
+    "linter\tLinter\ttest/dev\tcrates/vize_patina/src/linter/script_rules/deep_props_dispatch_tests.rs\t5\traw_oxc\traw OXC\traw\toxc_ast\traw\t1",
+    "linter\tLinter\tsource\tcrates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs\t33\traw_oxc\traw OXC\traw\toxc_ast\traw\t1",
+    "linter\tLinter\ttest/dev\tcrates/vize_patina/src/rules/script/no_deep_destructure_in_props/tests.rs\t5\traw_oxc\traw OXC\traw\toxc_allocator\traw\t1",
+    "linter\tLinter\ttest/dev\tcrates/vize_patina/src/rules/script/no_deep_destructure_in_props/tests.rs\t5\traw_oxc\traw OXC\traw\toxc_parser\traw\t1",
+    "linter\tLinter\tsource\tcrates/vize_patina/src/rules/script/props_emits.rs\t32\traw_oxc\traw OXC\traw\toxc_ast\traw\t1"
+  ],
+  "boundary": "Same unchanged source generator, only owned consumer shard; all production/oracles/helpers unchanged. No skipped gate or old native/source qualification transfer."
+}

@@ -1,0 +1,2402 @@
+{
+  "schema": "vize.8752-8755-independent-original-config-oracles",
+  "version": 1,
+  "status": "Frozen source-authored whole original-config after expectations before native/provider/API/CLI/Actions execution; no full public/npm/release acceptance claim.",
+  "sourceRevision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+  "sourceCustodySha256": "b691c9eee0a73aac33116abea7bbf698a72df0bea86af5337852ca46ad0b7c3c",
+  "activeMembership": {
+    "templateRegistryInOrder": [
+      {
+        "name": "vue/require-v-for-key",
+        "class": "RequireVForKey",
+        "sourcePath": "crates/vize_patina/src/rules/vue/require_v_for_key.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/valid-v-for",
+        "class": "ValidVFor",
+        "sourcePath": "crates/vize_patina/src/rules/vue/valid_v_for.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/no-use-v-if-with-v-for",
+        "class": "NoUseVIfWithVFor",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_use_v_if_with_v_for.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/no-unused-vars",
+        "class": "NoUnusedVars",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_unused_vars.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/no-duplicate-attributes",
+        "class": "NoDuplicateAttributes",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_duplicate_attributes.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/no-template-key",
+        "class": "NoTemplateKey",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_template_key.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/no-textarea-mustache",
+        "class": "NoTextareaMustache",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_textarea_mustache.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/valid-v-else",
+        "class": "ValidVElse",
+        "sourcePath": "crates/vize_patina/src/rules/vue/valid_v_else.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/valid-v-if",
+        "class": "ValidVIf",
+        "sourcePath": "crates/vize_patina/src/rules/vue/valid_v_if.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/valid-v-on",
+        "class": "ValidVOn",
+        "sourcePath": "crates/vize_patina/src/rules/vue/valid_v_on.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/valid-v-bind",
+        "class": "ValidVBind",
+        "sourcePath": "crates/vize_patina/src/rules/vue/valid_v_bind.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/valid-v-model",
+        "class": "ValidVModel",
+        "sourcePath": "crates/vize_patina/src/rules/vue/valid_v_model.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/valid-v-show",
+        "class": "ValidVShow",
+        "sourcePath": "crates/vize_patina/src/rules/vue/valid_v_show.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/no-dupe-v-else-if",
+        "class": "NoDupeVElseIf",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_dupe_v_else_if.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/no-reserved-component-names",
+        "class": "NoReservedComponentNames",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_reserved_component_names.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/component-definition-name-casing",
+        "class": "ComponentDefinitionNameCasing",
+        "sourcePath": "crates/vize_patina/src/rules/vue/component_definition_name_casing.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/html-quotes",
+        "class": "HtmlQuotes",
+        "sourcePath": "crates/vize_patina/src/rules/vue/html_quotes.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/mustache-interpolation-spacing",
+        "class": "MustacheInterpolationSpacing",
+        "sourcePath": "crates/vize_patina/src/rules/vue/mustache_interpolation_spacing.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/no-lone-template",
+        "class": "NoLoneTemplate",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_lone_template.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/no-multi-spaces",
+        "class": "NoMultiSpaces",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_multi_spaces.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/prop-name-casing",
+        "class": "PropNameCasing",
+        "sourcePath": "crates/vize_patina/src/rules/vue/prop_name_casing.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/v-on-style",
+        "class": "VOnStyle",
+        "sourcePath": "crates/vize_patina/src/rules/vue/v_on_style.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/v-slot-style",
+        "class": "VSlotStyle",
+        "sourcePath": "crates/vize_patina/src/rules/vue/v_slot_style.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/valid-v-slot",
+        "class": "ValidVSlot",
+        "sourcePath": "crates/vize_patina/src/rules/vue/valid_v_slot.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/no-child-content",
+        "class": "NoChildContent",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_child_content.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/valid-attribute-name",
+        "class": "ValidAttributeName",
+        "sourcePath": "crates/vize_patina/src/rules/vue/valid_attribute_name.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/attribute-hyphenation",
+        "class": "AttributeHyphenation",
+        "sourcePath": "crates/vize_patina/src/rules/vue/attribute_hyphenation.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/attribute-order",
+        "class": "AttributeOrder",
+        "sourcePath": "crates/vize_patina/src/rules/vue/attribute_order.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/no-v-text-v-html-on-component",
+        "class": "NoVTextVHtmlOnComponent",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_v_text_v_html_on_component.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/require-component-is",
+        "class": "RequireComponentIs",
+        "sourcePath": "crates/vize_patina/src/rules/vue/require_component_is.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/require-scoped-style",
+        "class": "RequireScopedStyle",
+        "sourcePath": "crates/vize_patina/src/rules/vue/require_scoped_style.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/sfc-element-order",
+        "class": "SfcElementOrder",
+        "sourcePath": "crates/vize_patina/src/rules/vue/sfc_element_order.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/single-style-block",
+        "class": "SingleStyleBlock",
+        "sourcePath": "crates/vize_patina/src/rules/vue/single_style_block.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/no-useless-template-attributes",
+        "class": "NoUselessTemplateAttributes",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_useless_template_attributes.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/no-deprecated-slot-attribute",
+        "class": "NoDeprecatedSlotAttribute",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/no-deprecated-v-bind-sync",
+        "class": "NoDeprecatedVBindSync",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_deprecated_v_bind_sync.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/no-deprecated-v-on-native-modifier",
+        "class": "NoDeprecatedVOnNativeModifier",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_deprecated_v_on_native_modifier.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/no-deprecated-slot-scope-attribute",
+        "class": "NoDeprecatedSlotScopeAttribute",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_deprecated_slot_scope_attribute.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/no-deprecated-scope-attribute",
+        "class": "NoDeprecatedScopeAttribute",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_deprecated_scope_attribute.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/no-deprecated-v-on-number-modifiers",
+        "class": "NoDeprecatedVOnNumberModifiers",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_deprecated_v_on_number_modifiers.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/no-deprecated-functional-template",
+        "class": "NoDeprecatedFunctionalTemplate",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_deprecated_functional_template.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/valid-v-memo",
+        "class": "ValidVMemo",
+        "sourcePath": "crates/vize_patina/src/rules/vue/valid_v_memo.rs",
+        "registrationPath": "crates/vize_patina/src/rules/vue.rs"
+      },
+      {
+        "name": "vue/valid-v-cloak",
+        "class": "ValidVCloak",
+        "sourcePath": "crates/vize_patina/src/rules/vue/valid_v_cloak.rs",
+        "registrationPath": "crates/vize_patina/src/rules/vue.rs"
+      },
+      {
+        "name": "vue/valid-v-once",
+        "class": "ValidVOnce",
+        "sourcePath": "crates/vize_patina/src/rules/vue/valid_v_once.rs",
+        "registrationPath": "crates/vize_patina/src/rules/vue.rs"
+      },
+      {
+        "name": "vue/valid-v-text",
+        "class": "ValidVText",
+        "sourcePath": "crates/vize_patina/src/rules/vue/valid_v_text.rs",
+        "registrationPath": "crates/vize_patina/src/rules/vue.rs"
+      },
+      {
+        "name": "vue/valid-v-html",
+        "class": "ValidVHtml",
+        "sourcePath": "crates/vize_patina/src/rules/vue/valid_v_html.rs",
+        "registrationPath": "crates/vize_patina/src/rules/vue.rs"
+      },
+      {
+        "name": "vue/no-v-for-template-key-on-child",
+        "class": "NoVForTemplateKeyOnChild",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_v_for_template_key_on_child.rs",
+        "registrationPath": "crates/vize_patina/src/rules/vue.rs"
+      },
+      {
+        "name": "vue/require-toggle-inside-transition",
+        "class": "RequireToggleInsideTransition",
+        "sourcePath": "crates/vize_patina/src/rules/vue/require_toggle_inside_transition.rs",
+        "registrationPath": "crates/vize_patina/src/rules/vue.rs"
+      },
+      {
+        "name": "vue/valid-template-root",
+        "class": "ValidTemplateRoot",
+        "sourcePath": "crates/vize_patina/src/rules/vue/valid_template_root.rs",
+        "registrationPath": "crates/vize_patina/src/rules/vue.rs"
+      },
+      {
+        "name": "vapor/no-vue-lifecycle-events",
+        "class": "NoVueLifecycleEvents",
+        "sourcePath": "crates/vize_patina/src/rules/vapor/no_vue_lifecycle_events.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/no-v-html",
+        "class": "NoVHtml",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_v_html.rs",
+        "registrationPath": "crates/vize_patina/src/rules/vue.rs"
+      },
+      {
+        "name": "vue/no-unsafe-url",
+        "class": "NoUnsafeUrl",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_unsafe_url.rs",
+        "registrationPath": "crates/vize_patina/src/rules/vue.rs"
+      },
+      {
+        "name": "vue/no-template-target-blank",
+        "class": "NoTemplateTargetBlank",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_template_target_blank.rs",
+        "registrationPath": "crates/vize_patina/src/rules/vue.rs"
+      },
+      {
+        "name": "vue/no-unsandboxed-iframe",
+        "class": "NoUnsandboxedIframe",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_unsandboxed_iframe.rs",
+        "registrationPath": "crates/vize_patina/src/rules/vue.rs"
+      },
+      {
+        "name": "vue/no-invalid-html-attribute",
+        "class": "NoInvalidHtmlAttribute",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_invalid_html_attribute.rs",
+        "registrationPath": "crates/vize_patina/src/rules/vue.rs"
+      },
+      {
+        "name": "a11y/anchor-has-content",
+        "class": "AnchorHasContent",
+        "sourcePath": "crates/vize_patina/src/rules/a11y/anchor_has_content.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "a11y/heading-has-content",
+        "class": "HeadingHasContent",
+        "sourcePath": "crates/vize_patina/src/rules/a11y/heading_has_content.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "a11y/iframe-has-title",
+        "class": "IframeHasTitle",
+        "sourcePath": "crates/vize_patina/src/rules/a11y/iframe_has_title.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "a11y/no-distracting-elements",
+        "class": "NoDistractingElements",
+        "sourcePath": "crates/vize_patina/src/rules/a11y/no_distracting_elements.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "a11y/no-i-for-icon",
+        "class": "NoIForIcon",
+        "sourcePath": "crates/vize_patina/src/rules/a11y/no_i_for_icon.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "a11y/tabindex-no-positive",
+        "class": "TabindexNoPositive",
+        "sourcePath": "crates/vize_patina/src/rules/a11y/tabindex_no_positive.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "a11y/click-events-have-key-events",
+        "class": "ClickEventsHaveKeyEvents",
+        "sourcePath": "crates/vize_patina/src/rules/a11y/click_events_have_key_events.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "a11y/form-control-has-label",
+        "class": "FormControlHasLabel",
+        "sourcePath": "crates/vize_patina/src/rules/a11y/form_control_has_label.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "a11y/aria-props",
+        "class": "AriaProps",
+        "sourcePath": "crates/vize_patina/src/rules/a11y/aria_props.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "a11y/aria-role",
+        "class": "AriaRole",
+        "sourcePath": "crates/vize_patina/src/rules/a11y/aria_role.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "a11y/no-aria-hidden-on-focusable",
+        "class": "NoAriaHiddenOnFocusable",
+        "sourcePath": "crates/vize_patina/src/rules/a11y/no_aria_hidden_on_focusable.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "a11y/no-access-key",
+        "class": "NoAccessKey",
+        "sourcePath": "crates/vize_patina/src/rules/a11y/no_access_key.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "a11y/no-autofocus",
+        "class": "NoAutofocus",
+        "sourcePath": "crates/vize_patina/src/rules/a11y/no_autofocus.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "a11y/no-role-presentation-on-focusable",
+        "class": "NoRolePresentationOnFocusable",
+        "sourcePath": "crates/vize_patina/src/rules/a11y/no_role_presentation_on_focusable.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "a11y/aria-unsupported-elements",
+        "class": "AriaUnsupportedElements",
+        "sourcePath": "crates/vize_patina/src/rules/a11y/aria_unsupported_elements.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "a11y/no-redundant-roles",
+        "class": "NoRedundantRoles",
+        "sourcePath": "crates/vize_patina/src/rules/a11y/no_redundant_roles/report.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "a11y/mouse-events-have-key-events",
+        "class": "MouseEventsHaveKeyEvents",
+        "sourcePath": "crates/vize_patina/src/rules/a11y/mouse_events_have_key_events.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "a11y/alt-text",
+        "class": "AltText",
+        "sourcePath": "crates/vize_patina/src/rules/a11y/alt_text.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "a11y/anchor-is-valid",
+        "class": "AnchorIsValid",
+        "sourcePath": "crates/vize_patina/src/rules/a11y/anchor_is_valid.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "a11y/label-has-for",
+        "class": "LabelHasFor",
+        "sourcePath": "crates/vize_patina/src/rules/a11y/label_has_for.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "a11y/interactive-supports-focus",
+        "class": "InteractiveSupportsFocus",
+        "sourcePath": "crates/vize_patina/src/rules/a11y/interactive_supports_focus.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "a11y/role-has-required-aria-props",
+        "class": "RoleHasRequiredAriaProps",
+        "sourcePath": "crates/vize_patina/src/rules/a11y/role_has_required_aria_props.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "a11y/media-has-caption",
+        "class": "MediaHasCaption",
+        "sourcePath": "crates/vize_patina/src/rules/a11y/media_has_caption.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "a11y/no-static-element-interactions",
+        "class": "NoStaticElementInteractions",
+        "sourcePath": "crates/vize_patina/src/rules/a11y/no_static_element_interactions.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "a11y/no-refer-to-non-existent-id",
+        "class": "NoReferToNonExistentId",
+        "sourcePath": "crates/vize_patina/src/rules/a11y/no_refer_to_non_existent_id.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/permitted-contents",
+        "class": "PermittedContents",
+        "sourcePath": "crates/vize_patina/src/rules/vue/permitted_contents.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "html/deprecated-element",
+        "class": "DeprecatedElement",
+        "sourcePath": "crates/vize_patina/src/rules/html/deprecated_element.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "html/deprecated-attr",
+        "class": "DeprecatedAttr",
+        "sourcePath": "crates/vize_patina/src/rules/html/deprecated_attr.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "html/no-consecutive-br",
+        "class": "NoConsecutiveBr",
+        "sourcePath": "crates/vize_patina/src/rules/html/no_consecutive_br.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "html/id-duplication",
+        "class": "IdDuplication",
+        "sourcePath": "crates/vize_patina/src/rules/html/id_duplication.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "html/no-duplicate-dt",
+        "class": "NoDuplicateDt",
+        "sourcePath": "crates/vize_patina/src/rules/html/no_duplicate_dt.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "html/no-empty-palpable-content",
+        "class": "NoEmptyPalpableContent",
+        "sourcePath": "crates/vize_patina/src/rules/html/no_empty_palpable_content.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "html/require-datetime",
+        "class": "RequireDatetime",
+        "sourcePath": "crates/vize_patina/src/rules/html/require_datetime.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "ssr/no-browser-globals-in-ssr",
+        "class": "NoBrowserGlobalsInSsr",
+        "sourcePath": "crates/vize_patina/src/rules/ssr/no_browser_globals_in_ssr.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "ssr/no-hydration-mismatch",
+        "class": "NoHydrationMismatch",
+        "sourcePath": "crates/vize_patina/src/rules/ssr/no_hydration_mismatch.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/no-unused-components",
+        "class": "NoUnusedComponents",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_unused_components.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/no-mutating-props",
+        "class": "NoMutatingProps",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_mutating_props.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/no-unused-properties",
+        "class": "NoUnusedProperties",
+        "sourcePath": "crates/vize_patina/src/rules/vue/no_unused_properties.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "type/require-typed-props",
+        "class": "RequireTypedProps",
+        "sourcePath": "crates/vize_patina/src/rules/type_aware/require_typed_props.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "type/require-typed-emits",
+        "class": "RequireTypedEmits",
+        "sourcePath": "crates/vize_patina/src/rules/type_aware/require_typed_emits.rs",
+        "registrationPath": "crates/vize_patina/src/rule/happy_path.rs"
+      },
+      {
+        "name": "vue/multi-word-component-names",
+        "class": "MultiWordComponentNames",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/multi_word_component_names.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/use-v-on-exact",
+        "class": "UseVOnExact",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/use_v_on_exact.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/no-template-shadow",
+        "class": "NoTemplateShadow",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/no_template_shadow.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/v-bind-style",
+        "class": "VBindStyle",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/v_bind_style.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/v-on-handler-style",
+        "class": "VOnHandlerStyle",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/html-self-closing",
+        "class": "HtmlSelfClosing",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/html_self_closing.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/html-button-has-type",
+        "class": "HtmlButtonHasType",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/html_button_has_type.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/scoped-event-names",
+        "class": "ScopedEventNames",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/scoped_event_names.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/prefer-props-shorthand",
+        "class": "PreferPropsShorthand",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/prefer_props_shorthand.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/slot-name-casing",
+        "class": "SlotNameCasing",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/slot_name_casing.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/use-unique-element-ids",
+        "class": "UseUniqueElementIds",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/use_unique_element_ids.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/component-name-in-template-casing",
+        "class": "ComponentNameInTemplateCasing",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/component_name_in_template_casing.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/no-preprocessor-lang",
+        "class": "NoPreprocessorLang",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/no_preprocessor_lang.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/no-script-non-standard-lang",
+        "class": "NoScriptNonStandardLang",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/no_script_non_standard_lang.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/no-template-lang",
+        "class": "NoTemplateLang",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/no_template_lang.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/no-src-attribute",
+        "class": "NoSrcAttribute",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/no_src_attribute.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/no-inline-style",
+        "class": "NoInlineStyle",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/no_inline_style.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/no-multiple-objects-in-class",
+        "class": "NoMultipleObjectsInClass",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/no_multiple_objects_in_class.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/warn-custom-block",
+        "class": "WarnCustomBlock",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/warn_custom_block.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/warn-custom-directive",
+        "class": "WarnCustomDirective",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/warn_custom_directive.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/no-boolean-attr-value",
+        "class": "NoBooleanAttrValue",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/no_boolean_attr_value.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/no-empty-component-block",
+        "class": "NoEmptyComponentBlock",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/no_empty_component_block.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/no-useless-mustaches",
+        "class": "NoUselessMustaches",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/no_useless_mustaches.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/no-root-v-if",
+        "class": "NoRootVIf",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/no_root_v_if.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/no-useless-v-bind",
+        "class": "NoUselessVBind",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/no_useless_v_bind.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/no-negated-v-if-condition",
+        "class": "NoNegatedVIfCondition",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/no_negated_v_if_condition.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/no-v-text",
+        "class": "NoVText",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/no_v_text.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/no-unused-refs",
+        "class": "NoUnusedRefs",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/no_unused_refs.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/prefer-true-attribute-shorthand",
+        "class": "PreferTrueAttributeShorthand",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/prefer_true_attribute_shorthand.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/v-on-event-hyphenation",
+        "class": "VOnEventHyphenation",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/this-in-template",
+        "class": "ThisInTemplate",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/this_in_template.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/no-array-index-key",
+        "class": "NoArrayIndexKey",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/no_array_index_key.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vue/require-component-registration",
+        "class": "RequireComponentRegistration",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vue.rs"
+      },
+      {
+        "name": "vapor/no-inline-template",
+        "class": "NoInlineTemplate",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vapor/no_inline_template.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vapor.rs"
+      },
+      {
+        "name": "vapor/prefer-static-class",
+        "class": "PreferStaticClass",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vapor/prefer_static_class.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vapor.rs"
+      },
+      {
+        "name": "vapor/require-vapor-attribute",
+        "class": "RequireVaporAttribute",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/vapor/require_vapor_attribute.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/vapor.rs"
+      },
+      {
+        "name": "a11y/heading-levels",
+        "class": "HeadingLevels",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/a11y/heading_levels.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/a11y.rs"
+      },
+      {
+        "name": "a11y/landmark-roles",
+        "class": "LandmarkRoles",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/a11y/landmark_roles.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/a11y.rs"
+      },
+      {
+        "name": "a11y/placeholder-label-option",
+        "class": "PlaceholderLabelOption",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/a11y/placeholder_label_option.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/a11y.rs"
+      },
+      {
+        "name": "a11y/use-list",
+        "class": "UseList",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/a11y/use_list.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/a11y.rs"
+      },
+      {
+        "name": "html/no-duplicate-class",
+        "class": "NoDuplicateClass",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/html/no_duplicate_class.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/html.rs"
+      },
+      {
+        "name": "html/no-dupe-style-properties",
+        "class": "NoDupeStyleProperties",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/html/no_dupe_style_properties.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/html.rs"
+      },
+      {
+        "name": "type/no-floating-promises",
+        "class": "NoFloatingPromises",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/type_aware/no_floating_promises.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/type_aware.rs"
+      },
+      {
+        "name": "type/no-reactivity-loss",
+        "class": "NoReactivityLoss",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/type_aware/no_reactivity_loss.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/type_aware.rs"
+      },
+      {
+        "name": "type/no-unsafe-template-binding",
+        "class": "NoUnsafeTemplateBinding",
+        "sourcePath": "crates/vize_patina/src/rules/opinionated/type_aware/no_unsafe_template_binding.rs",
+        "registrationPath": "crates/vize_patina/src/rules/opinionated/type_aware.rs"
+      }
+    ],
+    "scriptRegistryInOrder": [
+      {
+        "name": "script/no-options-api",
+        "membership": "OPINIONATED_ONLY_SCRIPT_PRESETS",
+        "instance": "NoOptionsApi",
+        "sourcePath": "crates/vize_patina/src/rules/script/no_options_api.rs"
+      },
+      {
+        "name": "script/no-get-current-instance",
+        "membership": "OPINIONATED_SCRIPT_PRESETS",
+        "instance": "NoGetCurrentInstance",
+        "sourcePath": "crates/vize_patina/src/rules/script/no_get_current_instance.rs"
+      },
+      {
+        "name": "script/no-async-in-computed",
+        "membership": "ESSENTIAL_SCRIPT_PRESETS",
+        "instance": "NoAsyncInComputed",
+        "sourcePath": "crates/vize_patina/src/rules/script/no_async_in_computed.rs"
+      },
+      {
+        "name": "script/prefer-import-from-vue",
+        "membership": "HAPPY_PATH_SCRIPT_PRESETS",
+        "instance": "PreferImportFromVue",
+        "sourcePath": "crates/vize_patina/src/rules/script/prefer_import_from_vue.rs"
+      },
+      {
+        "name": "script/no-with-defaults",
+        "membership": "OPINIONATED_SCRIPT_PRESETS",
+        "instance": "NoWithDefaults",
+        "sourcePath": "crates/vize_patina/src/rules/script/no_with_defaults.rs"
+      },
+      {
+        "name": "script/no-internal-imports",
+        "membership": "ESSENTIAL_SCRIPT_PRESETS",
+        "instance": "NoInternalImports",
+        "sourcePath": "crates/vize_patina/src/rules/script/no_internal_imports.rs"
+      },
+      {
+        "name": "script/no-import-compiler-macros",
+        "membership": "ESSENTIAL_SCRIPT_PRESETS",
+        "instance": "NoImportCompilerMacros",
+        "sourcePath": "crates/vize_patina/src/rules/script/no_import_compiler_macros.rs"
+      },
+      {
+        "name": "script/no-reserved-identifiers",
+        "membership": "ESSENTIAL_SCRIPT_PRESETS",
+        "instance": "NoReservedIdentifiers",
+        "sourcePath": "crates/vize_patina/src/rules/script/no_reserved_identifiers.rs"
+      },
+      {
+        "name": "script/no-reserved-keys",
+        "membership": "ESSENTIAL_SCRIPT_PRESETS",
+        "instance": "NoReservedKeys",
+        "sourcePath": "crates/vize_patina/src/rules/script/no_reserved_keys.rs"
+      },
+      {
+        "name": "script/no-dupe-keys",
+        "membership": "ESSENTIAL_SCRIPT_PRESETS",
+        "instance": "NoDupeKeys",
+        "sourcePath": "crates/vize_patina/src/rules/script/no_dupe_keys.rs"
+      },
+      {
+        "name": "script/no-side-effects-in-computed-properties",
+        "membership": "ESSENTIAL_SCRIPT_PRESETS",
+        "instance": "NoSideEffectsInComputed",
+        "sourcePath": "crates/vize_patina/src/rules/script/no_side_effects_in_computed.rs"
+      },
+      {
+        "name": "script/no-arrow-functions-in-watch",
+        "membership": "ESSENTIAL_SCRIPT_PRESETS",
+        "instance": "NoArrowFunctionsInWatch",
+        "sourcePath": "crates/vize_patina/src/rules/script/no_arrow_functions_in_watch.rs"
+      },
+      {
+        "name": "script/no-export-in-script-setup",
+        "membership": "ESSENTIAL_SCRIPT_PRESETS",
+        "instance": "NoExportInScriptSetup",
+        "sourcePath": "crates/vize_patina/src/rules/script/no_export_in_script_setup.rs"
+      },
+      {
+        "name": "script/no-potential-component-option-typo",
+        "membership": "ESSENTIAL_SCRIPT_PRESETS",
+        "instance": "NoPotentialComponentOptionTypo",
+        "sourcePath": "crates/vize_patina/src/rules/script/no_potential_component_option_typo.rs"
+      },
+      {
+        "name": "script/return-in-computed-property",
+        "membership": "ESSENTIAL_SCRIPT_PRESETS",
+        "instance": "ReturnInComputedProperty",
+        "sourcePath": "crates/vize_patina/src/rules/script/return_in_computed_property.rs"
+      },
+      {
+        "name": "script/require-prop-type-constructor",
+        "membership": "ESSENTIAL_SCRIPT_PRESETS",
+        "instance": "RequirePropTypeConstructor",
+        "sourcePath": "crates/vize_patina/src/rules/script/require_prop_type_constructor.rs"
+      },
+      {
+        "name": "script/no-use-computed-property-like-method",
+        "membership": "ESSENTIAL_SCRIPT_PRESETS",
+        "instance": "NoUseComputedPropertyLikeMethod",
+        "sourcePath": "crates/vize_patina/src/rules/script/no_use_computed_property_like_method.rs"
+      },
+      {
+        "name": "script/no-required-prop-with-default",
+        "membership": "ESSENTIAL_SCRIPT_PRESETS",
+        "instance": "NoRequiredPropWithDefault",
+        "sourcePath": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs"
+      },
+      {
+        "name": "script/valid-next-tick",
+        "membership": "HAPPY_PATH_SCRIPT_PRESETS",
+        "instance": "ValidNextTick",
+        "sourcePath": "crates/vize_patina/src/rules/script/valid_next_tick.rs"
+      },
+      {
+        "name": "script/valid-define-options",
+        "membership": "ESSENTIAL_SCRIPT_PRESETS",
+        "instance": "ValidDefineOptions",
+        "sourcePath": "crates/vize_patina/src/rules/script/valid_define_options.rs"
+      },
+      {
+        "name": "script/no-reserved-props",
+        "membership": "ESSENTIAL_SCRIPT_PRESETS",
+        "instance": "NoReservedProps",
+        "sourcePath": "crates/vize_patina/src/rules/script/props_emits/no_reserved_props.rs"
+      },
+      {
+        "name": "script/return-in-emits-validator",
+        "membership": "ESSENTIAL_SCRIPT_PRESETS",
+        "instance": "ReturnInEmitsValidator",
+        "sourcePath": "crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs"
+      },
+      {
+        "name": "script/valid-define-props",
+        "membership": "ESSENTIAL_SCRIPT_PRESETS",
+        "instance": "ValidDefineProps",
+        "sourcePath": "crates/vize_patina/src/rules/script/valid_define_props.rs"
+      },
+      {
+        "name": "script/valid-define-emits",
+        "membership": "ESSENTIAL_SCRIPT_PRESETS",
+        "instance": "ValidDefineEmits",
+        "sourcePath": "crates/vize_patina/src/rules/script/valid_define_emits.rs"
+      },
+      {
+        "name": "script/require-valid-default-prop",
+        "membership": "ESSENTIAL_SCRIPT_PRESETS",
+        "instance": "RequireValidDefaultProp",
+        "sourcePath": "crates/vize_patina/src/rules/script/props_emits/require_valid_default_prop.rs"
+      },
+      {
+        "name": "script/no-ref-as-operand",
+        "membership": "ESSENTIAL_SCRIPT_PRESETS",
+        "instance": "NoRefAsOperand",
+        "sourcePath": "crates/vize_patina/src/rules/script/no_ref_as_operand.rs"
+      },
+      {
+        "name": "script/no-duplicate-attr-inheritance",
+        "membership": "HAPPY_PATH_SCRIPT_PRESETS",
+        "instance": "NoDuplicateAttrInheritance",
+        "sourcePath": "crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs"
+      },
+      {
+        "name": "script/no-multiple-slot-args",
+        "membership": "HAPPY_PATH_SCRIPT_PRESETS",
+        "instance": "NoMultipleSlotArgs",
+        "sourcePath": "crates/vize_patina/src/rules/script/no_multiple_slot_args.rs"
+      },
+      {
+        "name": "script/no-unstable-nested-components",
+        "membership": "HAPPY_PATH_SCRIPT_PRESETS",
+        "instance": "NoUnstableNestedComponents",
+        "sourcePath": "crates/vize_patina/src/rules/script/no_unstable_nested_components.rs"
+      }
+    ],
+    "cssRegistryInOrder": [
+      "css/no-important",
+      "css/no-id-selectors",
+      "css/prefer-logical-properties",
+      "css/require-font-display",
+      "css/prefer-nested-selectors",
+      "css/no-display-none",
+      "css/no-v-bind-performance",
+      "css/no-hardcoded-values",
+      "css/no-utility-classes",
+      "css/prefer-slotted"
+    ],
+    "templateCount": 140,
+    "scriptCount": 29,
+    "cssCount": 10
+  },
+  "sourceBasis": [
+    {
+      "path": "crates/vize_patina/src/rule.rs",
+      "bytes": 12547,
+      "sha256": "6dd7a1f3fb7ef88dd13278e1e9f73191cd922ab18e2524af22e7413fb6b15bc1"
+    },
+    {
+      "path": "crates/vize_patina/src/rule/happy_path.rs",
+      "bytes": 7361,
+      "sha256": "b08dd788756457fe33ca63076d4372c0aa5c511564809ab675c0f3c5fd2f11a8"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue.rs",
+      "bytes": 12281,
+      "sha256": "ddadaa4c55fce64c71e6e7d1184daa4d43dbffd4e359c3ac6bed5e2bda36f256"
+    },
+    {
+      "path": "crates/vize_patina/src/preset.rs",
+      "bytes": 5091,
+      "sha256": "6dfcc732d18a76db0907e8152d6bb61d35ef040924200ae1855b1aa4a81e3718"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated.rs",
+      "bytes": 863,
+      "sha256": "03d82e00edf5c141dd9e41efbd847f87b5d8c340c311ae743db08ea7a9855dcb"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue.rs",
+      "bytes": 5340,
+      "sha256": "1d9f8381fefe887c44a5aba6d7d1a495ca4c0bfad2b16276fb36a4fe6ff92280"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vapor.rs",
+      "bytes": 488,
+      "sha256": "406c82476f4f2894f0845afc7101b3e35dcc68dc46c537784608d82e14c73510"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/a11y.rs",
+      "bytes": 532,
+      "sha256": "086f2837cf7d1387db79f750b22410519120fbdcd529e82e0643561c8475a652"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/html.rs",
+      "bytes": 367,
+      "sha256": "5e38857e02cb92a79f982bf91e1cbec19534c26d51dee8ce5dbbc56efb2532a5"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/type_aware.rs",
+      "bytes": 491,
+      "sha256": "30dc180bdc09230e79cbabb20de37757bbe0072dbb541c9f2593505d553770cf"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/script_rules/registry/names.rs",
+      "bytes": 11731,
+      "sha256": "c739b180772c8052c6ed8efc09568f1e441a88c0dc29a4bed994869c46a2794f"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/script_rules/registry/rules.rs",
+      "bytes": 21922,
+      "sha256": "e0ac436d8735f69bab0fe42465a328047dc24dc58248a22ae2315a828468f7a1"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/config.rs",
+      "bytes": 8141,
+      "sha256": "08c7bece87e46b927f550b8b0b503af83da19f1de989ad1a34b044605dedb568"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/config/constructors.rs",
+      "bytes": 5367,
+      "sha256": "279fdd225532e1676cd2709f971c07be47b1d02e10ae2aa5ae1a56e06bd34359"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/native_type_aware.rs",
+      "bytes": 8141,
+      "sha256": "2fc06eec75d4c80431301aa50047be112e3ec6c38ca1e7bcbd839101bf33cac4"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/native_type_aware/driver.rs",
+      "bytes": 12514,
+      "sha256": "c9bfae36e4be2e6d2645e4dac0cdab45934159fedd821dcccf5e0d3a367bc234"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/native_type_aware/driver/planning.rs",
+      "bytes": 2561,
+      "sha256": "23e77acb7556eb091530c16839001b88eaeea014c479b48bb2b66d6ed6d18ceb"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/native_type_aware/driver/probes.rs",
+      "bytes": 4998,
+      "sha256": "2186e7c9d202c8111f3b493734da44ea2a9dda94fb8b0fa46028b8a29ff3fedc"
+    },
+    {
+      "path": "crates/vize_patina/src/output/json.rs",
+      "bytes": 2810,
+      "sha256": "32937f0714c101c226814a2fe3c3a3ae7aadab54a289aafcbe84809b7f146fdc"
+    },
+    {
+      "path": "crates/vize_patina/src/output/shared.rs",
+      "bytes": 7473,
+      "sha256": "5c41a5fb774e5acdeff210a2620abb727bdadcbcaafd0ae9ea0f35fd4b299e43"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/alt_text.rs",
+      "bytes": 6914,
+      "sha256": "36f04197a28e4a8db3404c4a7d2e4b46db7af7c210a4254082dd04d42bf6bc7d"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/anchor_has_content.rs",
+      "bytes": 6686,
+      "sha256": "317c1d5baed93585a7061255dacb0be45345d333e4962541e9a8c24a0052350d"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/anchor_is_valid.rs",
+      "bytes": 6708,
+      "sha256": "06c159f1cf5348e7ebda43313526c5be6f3a44b4d2fb61035f770530143ac861"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/aria_props.rs",
+      "bytes": 10685,
+      "sha256": "dfdff31e086a8e430647995a598910610ef103c7dc2350f412864c09cce1d747"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/aria_role.rs",
+      "bytes": 13629,
+      "sha256": "36238d8fc28bbe76cff0da7e9818e89b978c00bcd11dd8e396265641b8443a89"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/aria_unsupported_elements.rs",
+      "bytes": 4474,
+      "sha256": "49f672f669b839687d59bb314907a548503844092c572079c1314cc5849b399d"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/click_events_have_key_events.rs",
+      "bytes": 8211,
+      "sha256": "92f495aa3693a222c6cb4c5372c31fb3249ffa026d82522340488bfb1cce7ddc"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/form_control_has_label.rs",
+      "bytes": 9822,
+      "sha256": "7c23cfcb2445dd9dbc6cdaa8780d585dffb60020596f3678f4568fd154a2ff12"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/heading_has_content.rs",
+      "bytes": 7259,
+      "sha256": "c0cd4331d165b40107300c5a2ee563d5355ff277879725cdfb101869b578bd12"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/iframe_has_title.rs",
+      "bytes": 4115,
+      "sha256": "e595144ca0b79502ebda2458b5d52e3b685e7305d74be56f26b3a1dd7cf3c6fc"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/interactive_supports_focus.rs",
+      "bytes": 8560,
+      "sha256": "a65d76e7f99ea0257a082c33cb5dc5f469a506774b39b39c6d07f963421e8183"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/label_has_for.rs",
+      "bytes": 4962,
+      "sha256": "07bce4c7ce2f846c5c0608425679fbde8e2cb659c5d30421a3215b763cc92e31"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/media_has_caption.rs",
+      "bytes": 7643,
+      "sha256": "61896cace3276a08adc979f19fc137784703843638962de65d7561ba673cc270"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/mouse_events_have_key_events.rs",
+      "bytes": 10600,
+      "sha256": "8bc488f29fda34481211ce2fbec508aab3ffce15aeedf31c93a9ae4ca51a60e2"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/no_access_key.rs",
+      "bytes": 4961,
+      "sha256": "0c9674098a746de1e99d24cb1b188c2ddb45dfd0d75ca44c1fec645f3b0fb80a"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/no_aria_hidden_on_focusable.rs",
+      "bytes": 5989,
+      "sha256": "4099a534553d8834c816c3c84e72ea7a73df84386b7c9d0c3745e43b6d4e983f"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/no_autofocus.rs",
+      "bytes": 5043,
+      "sha256": "6362bd23f1c96e16382847841c00790bc0cbb86fcb88b63e234ba6e272d4bf5e"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/no_distracting_elements.rs",
+      "bytes": 3711,
+      "sha256": "83231a231f7e12bee642568db54b5b431990d9ff36b51748ede9110a960f3345"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/no_i_for_icon.rs",
+      "bytes": 9614,
+      "sha256": "9b5775abf640bc87388d4153071a00ee3207954d12c95d5df442414c0a3e9c3c"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/no_redundant_roles/report.rs",
+      "bytes": 6811,
+      "sha256": "80f714a6ba48525f2ab4f4a0e35bf92ea2a5ab6062727887f66811b3fe4b2fb3"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/no_refer_to_non_existent_id.rs",
+      "bytes": 5929,
+      "sha256": "3458cb215aac80e78fd07bb4e62a68f2b8687839b742eef5fa7a87cb180cd5d4"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/no_role_presentation_on_focusable.rs",
+      "bytes": 4607,
+      "sha256": "a7b319b8199d523318abb1a4d1867ec1dc23050144fcaec6d91c82d0787839b0"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/no_static_element_interactions.rs",
+      "bytes": 7024,
+      "sha256": "cfc762d5800ec61b96ced921cfe97acc55dcdd665a12f5ad88b70bb7b49a57cb"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/role_has_required_aria_props.rs",
+      "bytes": 8314,
+      "sha256": "c05c0f2d3222f7b86d9189e5b8fba2c9c9c3e4592bbc441cc4cdcc9497ae47ef"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/tabindex_no_positive.rs",
+      "bytes": 4258,
+      "sha256": "71207b8ed45b579de1db3f7bc7249d5707661a3e931186bb6a167e9c3c798c1d"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/html/deprecated_attr.rs",
+      "bytes": 6478,
+      "sha256": "e2e7a0dcf126006d72e7af17f8ef911548810a61add26950d7bcd59721b60ec7"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/html/deprecated_element.rs",
+      "bytes": 5186,
+      "sha256": "b70f70e5811e3b74fda8d380417dd9b417732058f379e68fe6ee121df06f5ec3"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/html/id_duplication.rs",
+      "bytes": 10310,
+      "sha256": "4d82bb2d7f13b97a5c57fe552cb6539635821a3cb6e5782f722fdb4f20f079ed"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/html/no_consecutive_br.rs",
+      "bytes": 5448,
+      "sha256": "130c3765c93a07c152bb3475360a545a39a5644bbca83f68c80d61da80345ffa"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/html/no_duplicate_dt.rs",
+      "bytes": 4651,
+      "sha256": "be9935a4ce9e51da7a73c81eec976e28002c9ecde33ffb16f7ef2be1ae6e33d9"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/html/no_empty_palpable_content.rs",
+      "bytes": 6258,
+      "sha256": "2daa9c36b347e060dc3f270d6287d539eaa14662375c05fd78af97e325e64b87"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/html/require_datetime.rs",
+      "bytes": 5462,
+      "sha256": "16b5379fb520f71980a5a9a0e5f3fb6694c5979aeb36cee2d3048f17aea87a20"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/a11y/heading_levels.rs",
+      "bytes": 6371,
+      "sha256": "3e27b9c0524defaa32c0094711b0e4144dba8f7587458a0f841454311a70ec34"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/a11y/landmark_roles.rs",
+      "bytes": 8273,
+      "sha256": "746abc01e3af8c343198cec76a41d1712c270bf7e9f5df93efe2b386b869ed6b"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/a11y/placeholder_label_option.rs",
+      "bytes": 6444,
+      "sha256": "9f09db4bc5f969d8011230cfed2d812ed9b0d48771e33024c563097b33006a28"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/a11y/use_list.rs",
+      "bytes": 8465,
+      "sha256": "de3be0bd898f673d3b97572661858641f35c20f259b6110fcff48b11f86524ec"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/html/no_dupe_style_properties.rs",
+      "bytes": 7755,
+      "sha256": "dac9830d0f8d703b94a5e0972685944c0fa768a1a90761b372424a4849220de5"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/html/no_duplicate_class.rs",
+      "bytes": 5152,
+      "sha256": "85cb2352cf05f3921732a33df6de09c11e56319da9d22fb69e93f61d7cf29d77"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/type_aware/no_floating_promises.rs",
+      "bytes": 1351,
+      "sha256": "ec07a5efa187e7e96fbcd24e5bd64a88ff784edde0061e22db48819e760ed4b4"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/type_aware/no_reactivity_loss.rs",
+      "bytes": 1317,
+      "sha256": "bd1125bab625f043f8ed83c42995ddd1c139ba3a9a24207dd600e1ef7c54da91"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/type_aware/no_unsafe_template_binding.rs",
+      "bytes": 1372,
+      "sha256": "9379bb8b83f8b19128372b327ae0fec8a28ce9d31cea31c073142477623f7475"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vapor/no_inline_template.rs",
+      "bytes": 2812,
+      "sha256": "934123d8c52a983e6788944f0d8fd2251f96b537d7f6ec2c3a342dc645b1a195"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vapor/prefer_static_class.rs",
+      "bytes": 8356,
+      "sha256": "ae1f129fa888244bf569f4a6050585d4e4cb56f1a7a7e00bf933f18fb2e93b05"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vapor/require_vapor_attribute.rs",
+      "bytes": 1760,
+      "sha256": "be3373b746c729e22cf99bdea3c925460aa3aa2bd1209ed1bd8a59869a0c771e"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/component_name_in_template_casing.rs",
+      "bytes": 8022,
+      "sha256": "f7ab2d8f7697cd321b90ebb2458d777084c730e7a2943c99834b03841e1fc4ee"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/html_button_has_type.rs",
+      "bytes": 8373,
+      "sha256": "0e22ff201e586db6e7e153b82a75f59312796216ace04e9016bb5ed0da8d067c"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/html_self_closing.rs",
+      "bytes": 8902,
+      "sha256": "ce9f7253e3611b45a557d89532cd813d59780794fbd8b09e25f3bb2fa4cca575"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/multi_word_component_names.rs",
+      "bytes": 6585,
+      "sha256": "dd0e65c76dcf906e1dc60e54cb4559abea3bd79839e62181727468d4cf4501e4"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/no_array_index_key.rs",
+      "bytes": 8328,
+      "sha256": "8f0aebc88d70ba750dcb87cef0ed2fc3b0b9ef032ddf55a736ac1eb6b186ce6e"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/no_boolean_attr_value.rs",
+      "bytes": 8302,
+      "sha256": "2059b877aae59698d865d381dd7da7b25369e600f2d225bdd9aed71e6c84ea14"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/no_empty_component_block.rs",
+      "bytes": 7488,
+      "sha256": "64fb4543d478a3628e3f9ec6f65a9be88d526df7c6be760240ad825cf49b09c6"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/no_inline_style.rs",
+      "bytes": 3864,
+      "sha256": "a8a20ac3ba300dd6e54491890e7c3e6955edfb0a3e54bda74f8b659651521b02"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/no_multiple_objects_in_class.rs",
+      "bytes": 9115,
+      "sha256": "c5d528f6aba08bf29d04e0683f14a4b63d7579cec7d863aa45da15bb6d748a33"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/no_negated_v_if_condition.rs",
+      "bytes": 8037,
+      "sha256": "154a646b2c3e1eebe18e4f0effcf3cfa39fc04117b1987641255acf9fda3bac7"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/no_preprocessor_lang.rs",
+      "bytes": 4165,
+      "sha256": "034b696226ae68daddf4c73b6dbb180a1616c0f73bba67877b176f79580712e3"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/no_root_v_if.rs",
+      "bytes": 6236,
+      "sha256": "cec94bc2cea928f4ab6043913a4ca5a2187ae4220531574f40d199385518026f"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/no_script_non_standard_lang.rs",
+      "bytes": 3768,
+      "sha256": "0a5f8327e3dcb6b241b03a8f8d55f8353cb634fb7789bf180d7d75cc2970acff"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/no_src_attribute.rs",
+      "bytes": 5206,
+      "sha256": "8a8f03079d70a8db6c0746578a6512fda8cab71ded3bb81c76533a987272bc1d"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/no_template_lang.rs",
+      "bytes": 3603,
+      "sha256": "76dfff380ef73c6f99bbc0f28870d9f13ff24c67f295fb41e54753fe5b190c3a"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/no_template_shadow.rs",
+      "bytes": 3744,
+      "sha256": "756e142bf141a1c877d4d958d7fa1435abeef793aac526577aba0d4987f9d0bb"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/no_unused_refs.rs",
+      "bytes": 10668,
+      "sha256": "53e27b0a325b24e0514fee37a7dd60ccc23c02ab6384d33799edd821035ad1f7"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/no_useless_mustaches.rs",
+      "bytes": 6682,
+      "sha256": "0797933b23a5b881c8ef7901deded428b7150c410c13e476896a49f5fb9709e7"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/no_useless_v_bind.rs",
+      "bytes": 4338,
+      "sha256": "00a45dc724ef5cb3658d9f338b05f234d05d127d05a109ac6fd3c9cbd74c4c2f"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/no_v_text.rs",
+      "bytes": 2944,
+      "sha256": "03d5e865dc0ae6dcb67a22851282493d4d8eec49795250958b99de928d5d8baa"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/prefer_props_shorthand.rs",
+      "bytes": 9760,
+      "sha256": "9aaaca7ed4b2f43a1a636c0e5dadd619fd27d2ca95b1674c297bbac84d372029"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/prefer_true_attribute_shorthand.rs",
+      "bytes": 5685,
+      "sha256": "cdf890466ce2e83c369e3a8d4fadfc5d43b4a45c5cc386d6ec7a41d01f075244"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs",
+      "bytes": 11604,
+      "sha256": "4231770724ff30776a5ae1648e38a1a0562f60c27490540265875202f929b6da"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/scoped_event_names.rs",
+      "bytes": 5536,
+      "sha256": "d5968670c2e92ce14b430fcfd1a22ff46ce076d16120edaee4eecfb8f86973c5"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/slot_name_casing.rs",
+      "bytes": 5065,
+      "sha256": "02200fa19280e086ad4cab136a83faa162f13ad6124166119b5b3464233bfbeb"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/this_in_template.rs",
+      "bytes": 7818,
+      "sha256": "3026c2d7e931fbd4ca275ae0688167b1b344c48dfebfd8ffa36ce3293591ce1e"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/use_unique_element_ids.rs",
+      "bytes": 15841,
+      "sha256": "4363c9e0649e5814211045758176d0dceb78134a3d3d3cd4b843cfdeb710ae1d"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/use_v_on_exact.rs",
+      "bytes": 5321,
+      "sha256": "c24d372dd217ad6aef8f6e32e2da793ff8552c6ad04f53914be0526c4e3fc38d"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/v_bind_style.rs",
+      "bytes": 7200,
+      "sha256": "c9ef9eaff5425fc3a77b731feb2ac54cc643dba3d21fa9e3b876a8fe205e603b"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs",
+      "bytes": 8204,
+      "sha256": "d3dfc99b382bd92e68717acc30ead7802defd468edc59b88896d9479d5c0fcf6"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs",
+      "bytes": 9476,
+      "sha256": "8bba036190b246478e43081878582aa5fd4c09b10846f8ad94101538d8a0dcd8"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/warn_custom_block.rs",
+      "bytes": 4883,
+      "sha256": "8bdfe5b28eef8922af2ce4961890f4ab6f50e53ee58778ed1b6b489ab8e1ba86"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue/warn_custom_directive.rs",
+      "bytes": 10454,
+      "sha256": "542a6841f6d85a05ca67ea1a387acaf1322f3603092b6e105b8f091e75d88c21"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/ssr/no_browser_globals_in_ssr.rs",
+      "bytes": 8020,
+      "sha256": "391d395daa2c29e1ed510f8c4f744f7d38fe206b941a08f089748b62974544c9"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/ssr/no_hydration_mismatch.rs",
+      "bytes": 15475,
+      "sha256": "e72c6a9dee5653fb93eb1e511e5662cfcd6b135e58f33e7523d158706d7a0359"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/type_aware/require_typed_emits.rs",
+      "bytes": 4498,
+      "sha256": "140768f214b9e60e72eac881fc7bd67ce396ce7db150f31c3a559ccbd448745c"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/type_aware/require_typed_props.rs",
+      "bytes": 4409,
+      "sha256": "8aaac738e496dea2167c29f1b4960de7a7cb9cf8f75aa87478d43912a40bfc79"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vapor/no_vue_lifecycle_events.rs",
+      "bytes": 4909,
+      "sha256": "4949ae4721748272b51da806c844f74f7f4e529c5f5dbd6ffb6b022c842a42d7"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/attribute_hyphenation.rs",
+      "bytes": 7828,
+      "sha256": "076339b765cd165fa6623f1489e3254d669444c90c7d4fae451e424ac0f94fd8"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/attribute_order.rs",
+      "bytes": 10966,
+      "sha256": "4819c2f08a920a0d54e908497d3edb708d6b53b68d1e7404b038d31ac1f2e60b"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/component_definition_name_casing.rs",
+      "bytes": 8072,
+      "sha256": "313278765b9ecdfec2c778e1275b9b871897072b3b0bdefc9132bc2fc9cc9a3c"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/html_quotes.rs",
+      "bytes": 5920,
+      "sha256": "35b53242e745de687d183862f479a29abc253729cf8b55169dbb41afc3a4f5b2"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/mustache_interpolation_spacing.rs",
+      "bytes": 4755,
+      "sha256": "adfdeda56c39f19066cff4b6670f6d0ec5575a10cc5064877f24e8da9b1630ba"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_child_content.rs",
+      "bytes": 4827,
+      "sha256": "fdece893913566ca15d795684437f3f0e9c183d10a995b2ce90b308026bc064c"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_deprecated_functional_template.rs",
+      "bytes": 8773,
+      "sha256": "4807bf0ace61ad9db7f885402a15f8bacb88ced005367142376ac0203bd930db"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_deprecated_scope_attribute.rs",
+      "bytes": 3480,
+      "sha256": "604c13c9d042de53e5e33fef8940c1b750568c02d256ce9d32959b0b7ff075d6"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs",
+      "bytes": 7187,
+      "sha256": "54b32b695c7536accd8f18b8d21a7fec1ed5ae007bc11d9e0dd896ff057ed061"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_deprecated_slot_scope_attribute.rs",
+      "bytes": 2763,
+      "sha256": "16781770dba72b91bb717033ea57d4e17817d9f48a86692a4c91a377dd8d478d"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_deprecated_v_bind_sync.rs",
+      "bytes": 5318,
+      "sha256": "63973b6ff2907df72df326cc76b69a62cb14fee2cd5c7c3f299ed5575c4ba542"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_deprecated_v_on_native_modifier.rs",
+      "bytes": 5586,
+      "sha256": "4d66d0659993afc3ac939a0f2aa873eeea5223f254b482552f5dc2073bc17414"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_deprecated_v_on_number_modifiers.rs",
+      "bytes": 6073,
+      "sha256": "5eb4d4d850d86f6d7abf894a88b005bed8db5695382706f0d163005095dc87ea"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_dupe_v_else_if.rs",
+      "bytes": 6543,
+      "sha256": "5d694c438ff1c1c671c3244560aa2a6b88681ae03ef5f98260d2ed339a52bcd8"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_duplicate_attributes.rs",
+      "bytes": 13107,
+      "sha256": "8036b329b5703cc9c9247f5bbdaeb40dc277f0b3737ccc887a83c283e6c5cfba"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_invalid_html_attribute.rs",
+      "bytes": 7188,
+      "sha256": "b1afb5ec2266b3f46113f721907e1fecc681805772bfd4b58a356a188acc34d7"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_lone_template.rs",
+      "bytes": 5346,
+      "sha256": "3460170a982a33700217398e7ac11155a4a5c1773115117b14d37b66e000b612"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_multi_spaces.rs",
+      "bytes": 5430,
+      "sha256": "db14ca9e94606e36596556e879bf722119fef79584423a88701cd300e37027e7"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_mutating_props.rs",
+      "bytes": 11903,
+      "sha256": "cf1b3ad144c946f6b0e2f57e520b6568ac9304240a42ed244c267048666e7f46"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_reserved_component_names.rs",
+      "bytes": 8853,
+      "sha256": "978a55540f84cccc96976538f6e649893ea054f5f59135349d0b5919de6f87aa"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_template_key.rs",
+      "bytes": 4327,
+      "sha256": "61970980bdfda90bff69f001ca911e4faec9971c0b5b48a157e70c8217d64ad3"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_template_target_blank.rs",
+      "bytes": 11500,
+      "sha256": "56b012ba58e74d8efe4a058e9fb9ad20f3914d74466eee111c883e0b31edeb60"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_textarea_mustache.rs",
+      "bytes": 3267,
+      "sha256": "51263db7aa2266ef99797bdd5eec9931339e4b085fcdda6c0ea26a0feca071da"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_unsafe_url.rs",
+      "bytes": 8276,
+      "sha256": "3d53633230f5f1eadad2119f66596b686563febd1eab11dbdb03a863b2631ce6"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_unsandboxed_iframe.rs",
+      "bytes": 4777,
+      "sha256": "df301c77f03707fc1b47f6f96f0bddefe0d3cf336173378e4967d5de9f70beeb"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_unused_components.rs",
+      "bytes": 10557,
+      "sha256": "08f8a427dc6b9c8acc3ee6a13c28ca95dd32b821faae9d93177ae7c2ec55fbe6"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_unused_properties.rs",
+      "bytes": 9921,
+      "sha256": "5483e1baae162e9ea3cf594488fd97a6b1468a288dfa55ed3334c3c81b3e82f8"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_unused_vars.rs",
+      "bytes": 5511,
+      "sha256": "374db353c7646591d85d08e62e8c7b5b01782999bf41507efba1e39219955270"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_use_v_if_with_v_for.rs",
+      "bytes": 8582,
+      "sha256": "b7929cfdf83acb012e224322a9f4c7fe873da492a437bee92148c13b4feeb5f0"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_useless_template_attributes.rs",
+      "bytes": 6070,
+      "sha256": "33666835b1591dff0fbcd2fc48350fcd7b38aec41fd992aed365391ace1bbf68"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_v_for_template_key_on_child.rs",
+      "bytes": 8287,
+      "sha256": "404f264bc4ffc907420508a434648687a2a890c597771e2ee68bedb4b260e0f9"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_v_html.rs",
+      "bytes": 8608,
+      "sha256": "5eef8f4241d4c24cc5c414fb8f3770b885d695d951a76c9b05247a30330eeaa4"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/no_v_text_v_html_on_component.rs",
+      "bytes": 2769,
+      "sha256": "4696f62e0ac0e17be27b4b416a8016a2d7a679bf4e96a26f206980db650cecc4"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/permitted_contents.rs",
+      "bytes": 5990,
+      "sha256": "0a4f883f686794ca574ab54805248cdff0ea14f310da094898efc97d762a2520"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/prop_name_casing.rs",
+      "bytes": 3154,
+      "sha256": "796889bf7c13210a56a32e46b85a519dfab2e5f1a4d97f5f684b63010c820507"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/require_component_is.rs",
+      "bytes": 3865,
+      "sha256": "72c2b21053925c21e24dcdc2e7ca73daba383cb8c672ca7ca616ea8084af1d3c"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/require_scoped_style.rs",
+      "bytes": 5761,
+      "sha256": "c080a11482b658af322cd4ecaf6e0ddc8ef94c226877200e792e8cdb8fdb2ead"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/require_toggle_inside_transition.rs",
+      "bytes": 6211,
+      "sha256": "13f88fa0253e59a7be37ca27d8dfb273f5692030813c27be6837231a0bb5142d"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/require_v_for_key.rs",
+      "bytes": 11205,
+      "sha256": "6916e2952f805876b8f1b9472987da54a41fb81e47e167448d63537e2c6dd480"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/sfc_element_order.rs",
+      "bytes": 5557,
+      "sha256": "5c85e10d4cb8277e6fcb89d452828b2a5041fd702950f393dcdded63bdf45153"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/single_style_block.rs",
+      "bytes": 5090,
+      "sha256": "f46d0af85ca518ed85e3a1dd6d6ce91a0e4cd73c335081aae6ead43973673961"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/v_on_style.rs",
+      "bytes": 7306,
+      "sha256": "0e5efb4ea4d06462604f7d0d5289ead67bca744ff1f7921fd670cae1ca30cc93"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/v_slot_style.rs",
+      "bytes": 5004,
+      "sha256": "062e34cc6c455884d1e84158c4147a4892a04ac7d92e97c597731f09407abe76"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/valid_attribute_name.rs",
+      "bytes": 3136,
+      "sha256": "fcae8efea14fdc1900bacb4a694d5ec0ccda433cea427febc3971d8803117a9c"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/valid_template_root.rs",
+      "bytes": 7885,
+      "sha256": "5e66b8df4e32b0060d30d7b6a5bbc441f13d0cd877b94183e27bef90710487a4"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/valid_v_bind.rs",
+      "bytes": 5886,
+      "sha256": "03789c1d84c551bee3db7c4aeaa4ddae58fdd80f1710b7044c42b2931f30508d"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/valid_v_cloak.rs",
+      "bytes": 3428,
+      "sha256": "e23eee8224b058211c7f07e5df56089f5515716fa4f82fcbf780e0a73149af1a"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/valid_v_else.rs",
+      "bytes": 7572,
+      "sha256": "79d2ee92bb5827140ee4b72d6d1b004dbbc0046e42453dc8ee3cb656e2a41428"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/valid_v_for.rs",
+      "bytes": 9442,
+      "sha256": "e62f60646d3f78766c0d12852a19f8173ca81148d5bdf69661c9d99d0f5d408f"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/valid_v_html.rs",
+      "bytes": 3552,
+      "sha256": "eaf7f00d43edcffe29d3b377f677b64a8ae65a3e7bae8ae73c7259c2b1c06ba6"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/valid_v_if.rs",
+      "bytes": 4714,
+      "sha256": "f1a012eeeb9a1a0f26874146177a4ab8ed41a4ea5d61cb5710b3c67e7b4ed600"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/valid_v_memo.rs",
+      "bytes": 5846,
+      "sha256": "63214881514bd11036ba771e1117f82ae61ea83cc0315595ea5e9974fc2fbcb6"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/valid_v_model.rs",
+      "bytes": 10732,
+      "sha256": "195458beb8e972a50c0b63a324ae5526dc89cb1dfe063940b8cff0ec57fced73"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/valid_v_on.rs",
+      "bytes": 5655,
+      "sha256": "c4bbe1a16ea3cc60ccb9b882eca3ab016e07192bb6cbce6339a5e8e565b96404"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/valid_v_once.rs",
+      "bytes": 3399,
+      "sha256": "5dc7681e0c5202128fc3fa472118a51195f490ebb1f9627f9b8cb8ab9f48cc59"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/valid_v_show.rs",
+      "bytes": 4475,
+      "sha256": "1be1eca3cadf570dba6f033c83c3d91389508ada4cc5c6e883bf5fe335eea363"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/valid_v_slot.rs",
+      "bytes": 7742,
+      "sha256": "a6ec8616fb5918ff6fbb458b086ec44cdf8630189e895a399ac4c1847eafb0c8"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/valid_v_text.rs",
+      "bytes": 3415,
+      "sha256": "b0a58036b3c3bc82592ac8996f06e8b0ab04326bfc05a958ed7e3c45368683fe"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_options_api.rs",
+      "bytes": 21030,
+      "sha256": "35da899dce77131fd5d1d518b5abab97500b177a640685995de6848c03d3fb49"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_get_current_instance.rs",
+      "bytes": 10662,
+      "sha256": "81386bfec81a3bd268b5dac67574d49faed4d1c09848deb0995a6e5e0b413c2c"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_async_in_computed.rs",
+      "bytes": 5492,
+      "sha256": "5570431f8c5805757083b4182f2eb5575f436515fe7faf28271a4ab29d19f40c"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/prefer_import_from_vue.rs",
+      "bytes": 7769,
+      "sha256": "79d3814ecd8822cf81ad475ecfc850897ee907b587e2312749edb8b0e8795abb"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_with_defaults.rs",
+      "bytes": 6193,
+      "sha256": "cd874f7590e57af47f59df4df27239c5bbe2c9549a292938ce2105bff3c2346d"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_internal_imports.rs",
+      "bytes": 6766,
+      "sha256": "239acdeb164f4b90ef831835874ef3a0d995f648e30edc4812dea36f4a6de0d1"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_import_compiler_macros.rs",
+      "bytes": 5850,
+      "sha256": "d28fec56b32b0c8c1ef94eae42cb8af91e4c1371547e5a7d9ea06632d829f1cf"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_reserved_identifiers.rs",
+      "bytes": 7733,
+      "sha256": "c94ca525e0c61551df5d7a8b70311ddc1ef0dfdc24f76aa1550e1ec42cd4f36a"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_reserved_keys.rs",
+      "bytes": 8264,
+      "sha256": "bee7dd67bb6b3a6b08ad029718909691c66f17abf34287fd3c00c247434b58c4"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_dupe_keys.rs",
+      "bytes": 8333,
+      "sha256": "6b4e85c384afa8e9a5b21bb02224371a5d59e0620e991f80d5491e5e646fadac"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_side_effects_in_computed.rs",
+      "bytes": 21547,
+      "sha256": "be8b80c66209ba7945f227f37bdb1659034acec67890ca6a2bf68b0f55fe1943"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_arrow_functions_in_watch.rs",
+      "bytes": 10502,
+      "sha256": "dfdfa9a44c09411677f8a5b6374a61d3bb841972810d5acb7dd302d0a914c303"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_export_in_script_setup.rs",
+      "bytes": 6142,
+      "sha256": "28a6ee3b22f1419f0b886772e16805d0c246c97155cb9df693808844429716f9"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_potential_component_option_typo.rs",
+      "bytes": 6845,
+      "sha256": "6daf228935775bb1b9714532283251526dd3a49538f38e55d2c125b6176cdecc"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/return_in_computed_property.rs",
+      "bytes": 8794,
+      "sha256": "7ed6d4b9261249751e7dfb4a0405ef79d6c8d1bb0cf9056aaf606a4969ef1592"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/require_prop_type_constructor.rs",
+      "bytes": 12271,
+      "sha256": "3667124df4257d6e7ab4f996349395ab43c6013eeedbf7dbe7da4d516ec8da81"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_use_computed_property_like_method.rs",
+      "bytes": 7061,
+      "sha256": "d53e89b347eb00a849a19dbcb0c7735f224ab3ea77b6736e0ed7cbfc8ebea609"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs",
+      "bytes": 11471,
+      "sha256": "1e3e58cab0ab268e3c9e3ba5eb3e74d54283d47249d10189fe65c608cca504f1"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/valid_next_tick.rs",
+      "bytes": 12822,
+      "sha256": "9f5b00a654299b1a132068e1042fa34d49d67a3ef88d158a02fa1c72e9a17ea5"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/valid_define_options.rs",
+      "bytes": 9076,
+      "sha256": "c1bf884499c05355f44667f9ec229f9d398c9cfbeeb50c7a4bf579d88486d6e1"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/props_emits/no_reserved_props.rs",
+      "bytes": 3678,
+      "sha256": "90f279551cd650f9f6680bbec5dffe937db2877731295e0f81513f0a579d4f20"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs",
+      "bytes": 7464,
+      "sha256": "c6a1f61634de2c260db2dc15b77464d4ba972942ba23d792c2f04faac8888d99"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/valid_define_props.rs",
+      "bytes": 11729,
+      "sha256": "1ebae9d35c5e59b45ad5b7e329a6ed4a816d9c0d8ab5a616d4b9083c596dd24c"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/valid_define_emits.rs",
+      "bytes": 11644,
+      "sha256": "d3a2a435a3fea49a3345c05487f56da5b6fd436c6488aa125705e64f4b605b99"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/props_emits/require_valid_default_prop.rs",
+      "bytes": 11333,
+      "sha256": "cb8e390094ba0aa83cd94273f0f5c6e269c0ee6d9b5b7d981a69b91e653969b0"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_ref_as_operand.rs",
+      "bytes": 4855,
+      "sha256": "a9d8a84a59acba14e2c8578f70d6c3941f4c9cb046e20825c518e111ac5aca69"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs",
+      "bytes": 6956,
+      "sha256": "7aa2a1acff67014204ed4a277ca75eca66da56856e80f99d1719776d3a496c3b"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_multiple_slot_args.rs",
+      "bytes": 8820,
+      "sha256": "5a8af96ad50cc4abdf04e279bc4d7dfc97e05b2267afc7b4881c76a0307fbbfd"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_unstable_nested_components.rs",
+      "bytes": 7456,
+      "sha256": "b7069e678c1ace90faaa432cc289b662458ec4ec6103daf9f47c1c57dc15d575"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/css/no_important.rs",
+      "bytes": 2084,
+      "sha256": "19a74a7875a29b2d7832c2104582956ee14011a9619f2ef94135bbd5d76019c3"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/css/no_id_selectors.rs",
+      "bytes": 4316,
+      "sha256": "3418f70a645db0ba40c203fa0fc58ff4afaf0d1fadbfa1a8f734308623e2a521"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/css/prefer_logical_properties.rs",
+      "bytes": 5545,
+      "sha256": "296cda4f85b8b7822300f476d9b9ca338309feb8499bbbac764acd9f28270eeb"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/css/require_font_display.rs",
+      "bytes": 3730,
+      "sha256": "72d39b9f07dcd42a91aae56cf5da0bb950ecb523bf905e32f49b2058d3d4f946"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/css/prefer_nested_selectors.rs",
+      "bytes": 9930,
+      "sha256": "0cdb5d727e48303edc82b091b0c33d88f7f15336330e846debbcbb7c260f2641"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/css/no_display_none.rs",
+      "bytes": 9760,
+      "sha256": "918e4e891d3c3cf265ca827a6f841d1878dfbf51f8d5ab285d02848574e85321"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/css/no_v_bind_performance.rs",
+      "bytes": 3566,
+      "sha256": "9a1ae29af96f735fec6f0016bffe2179bc77f891fc57aa2382c4d8e28e6da35d"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/css/no_hardcoded_values.rs",
+      "bytes": 9034,
+      "sha256": "151bf42da5e48cd6163e9d04014c2463766096d7959e8c6a5bbbc48de5a1360a"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/css/no_utility_classes.rs",
+      "bytes": 7480,
+      "sha256": "4483849e7221c1e78d8ad412bebd067112fcb8b5e6a29da59f9ba3f241ca5612"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/css/prefer_slotted.rs",
+      "bytes": 7826,
+      "sha256": "147219fb27ee0eae47240c4b9f9b9738780038146c0b278689e627e45591dd67"
+    }
+  ],
+  "audit": [
+    {
+      "rules": [
+        "vue/valid-template-root",
+        "vue/no-root-v-if"
+      ],
+      "basis": "Vue 3 fragment roots are accepted. DirectiveObjectArg has three meaningful roots, so no single-root-v-if warning; the other originals have no root v-if."
+    },
+    {
+      "rules": [
+        "vue/multi-word-component-names",
+        "vue/component-name-in-template-casing",
+        "vue/require-component-registration",
+        "vue/no-unused-components"
+      ],
+      "basis": "All four filenames have at least two uppercase letters. RouterView is PascalCase and is a value import used by the template; component is a builtin dynamic tag with :is."
+    },
+    {
+      "rules": [
+        "vue/valid-v-slot",
+        "vue/v-slot-style",
+        "vue/no-unused-vars",
+        "vue/no-template-shadow"
+      ],
+      "basis": "RouterView has one unargumented component-default v-slot, the default permitted style. Its sole Component binding is consumed by :is, without v-for shadowing or conflicting child slots."
+    },
+    {
+      "rules": [
+        "vue/html-self-closing",
+        "html/no-empty-palpable-content",
+        "vue/mustache-interpolation-spacing",
+        "vue/no-multi-spaces",
+        "vue/html-quotes",
+        "vue/attribute-order"
+      ],
+      "basis": "Every p has nonempty text/interpolation content, normal-HTML closing policy is Any, RouterView has children and dynamic component is self-closing. All delimiters have whitespace, all attribute outer quotes are double, each opening has at most one directive, and multiline indentation is not a same-line multi-space gap."
+    },
+    {
+      "rules": [
+        "vue/prefer-props-shorthand",
+        "vue/no-useless-v-bind",
+        "vue/no-useless-mustaches",
+        "vue/no-boolean-attr-value"
+      ],
+      "basis": "The title expressions interpolate x, rather than constant strings; title and is do not match their expression identifiers. Interpolations are calls/conditionals, not bare string literals; no boolean attributes occur."
+    },
+    {
+      "rules": [
+        "vue/require-scoped-style",
+        "vue/sfc-element-order",
+        "vue/single-style-block",
+        "vue/no-empty-component-block",
+        "vue/no-script-non-standard-lang",
+        "vue/no-preprocessor-lang",
+        "vue/no-src-attribute",
+        "vue/no-template-lang",
+        "vue/warn-custom-block"
+      ],
+      "basis": "Each original has nonempty script setup lang=ts followed by a nonempty plain template, no styles/src/custom blocks, and an accepted script/template order. CSS preset members therefore have no source owner."
+    },
+    {
+      "rules": [
+        "vapor/require-vapor-attribute",
+        "vapor/no-inline-template",
+        "vapor/prefer-static-class"
+      ],
+      "basis": "The d73 require-vapor-attribute callback is an explicitly empty placeholder, not a hidden requirement to rewrite originals. No inline-template or dynamic class occurs."
+    },
+    {
+      "rules": [
+        "a11y/landmark-roles",
+        "a11y/use-list",
+        "ssr/no-browser-globals-in-ssr",
+        "ssr/no-hydration-mismatch"
+      ],
+      "basis": "No landmark/form/interactive/media/list roles, events, IDs, URL attributes, browser globals or nondeterministic expressions occur. Native content consists only of p, plus RouterView/component."
+    },
+    {
+      "rules": [
+        "script/no-options-api",
+        "script/no-get-current-instance",
+        "script/no-async-in-computed",
+        "script/prefer-import-from-vue",
+        "script/no-with-defaults",
+        "script/no-internal-imports",
+        "script/no-import-compiler-macros",
+        "script/no-reserved-identifiers",
+        "script/no-reserved-keys",
+        "script/no-dupe-keys",
+        "script/no-side-effects-in-computed-properties",
+        "script/no-arrow-functions-in-watch",
+        "script/no-export-in-script-setup",
+        "script/no-potential-component-option-typo",
+        "script/return-in-computed-property",
+        "script/require-prop-type-constructor",
+        "script/no-use-computed-property-like-method",
+        "script/no-required-prop-with-default",
+        "script/valid-next-tick",
+        "script/valid-define-options",
+        "script/no-reserved-props",
+        "script/return-in-emits-validator",
+        "script/valid-define-props",
+        "script/valid-define-emits",
+        "script/require-valid-default-prop",
+        "script/no-ref-as-operand",
+        "script/no-duplicate-attr-inheritance",
+        "script/no-multiple-slot-args",
+        "script/no-unstable-nested-components"
+      ],
+      "basis": "Setup scripts define typed functions and primitive constants, or import RouterView from vue-router. They contain no options export/defineComponent, compiler/reserved/import internals, macros/ref/computed/watch/nextTick, forwarding attrs, slot function calls, unstable nested component or props/emits default ownership."
+    },
+    {
+      "rules": [
+        "type/require-typed-props",
+        "type/require-typed-emits",
+        "type/no-floating-promises",
+        "type/no-reactivity-loss",
+        "type/no-unsafe-template-binding"
+      ],
+      "basis": "There are no props/emits declarations or reactive destructuring. isA/isPositive return boolean and t returns string; all template calls are synchronous. Template literals yield string and complete ternaries yield string. RouterView Component has its genuine resolved slot type; its pattern declares a binding rather than producing a value query. No missing-runtime/import diagnostic is suppressed."
+    }
+  ],
+  "explicitNonmembers": [
+    "type/strict-boolean-expressions",
+    "script/require-function-return-type"
+  ],
+  "cases": [
+    {
+      "id": "DirectiveObjectArg",
+      "issue": 8752,
+      "filename": "DirectiveObjectArg.vue",
+      "source": "<script setup lang=\"ts\">\nconst isA = (o: { kind: string }): boolean => o.kind === \"a\";\nconst isPositive = (n: number): boolean => n > 0;\n</script>\n\n<template>\n  <p v-if=\"isA({ kind: 'a' })\">reported</p>\n  <p v-if=\"isPositive(1)\">not reported</p>\n  <p>{{ isA({ kind: \"a\" }) }}</p>\n</template>\n",
+      "sourceSha256": "ecc6b75b3994fd2db8423c6eb45f2f6a68a1c625135d63453d44004cc4046120",
+      "reportedConfig": {
+        "source": "{\n  \"linter\": {\n    \"preset\": \"opinionated\",\n    \"typeAware\": true\n  }\n}\n",
+        "sourceSha256": "a74e83cd33e432a4f3d8f7f801cd3fcd61efecebd4724b15964ba9d1855dddf1",
+        "value": {
+          "linter": {
+            "preset": "opinionated",
+            "typeAware": true
+          }
+        }
+      },
+      "reportedTsconfig": {
+        "source": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"skipLibCheck\": true,\n    \"lib\": [\"ESNext\", \"DOM\"]\n  },\n  \"include\": [\"*.vue\", \"*.ts\"]\n}\n",
+        "sourceSha256": "735410e1bd02c5346abd7cf4c569f4ff5e73d579b25650d3d6a70436f8689c94",
+        "value": {
+          "compilerOptions": {
+            "target": "ESNext",
+            "module": "ESNext",
+            "moduleResolution": "bundler",
+            "strict": true,
+            "skipLibCheck": true,
+            "lib": [
+              "ESNext",
+              "DOM"
+            ]
+          },
+          "include": [
+            "*.vue",
+            "*.ts"
+          ]
+        }
+      },
+      "afterApi": {
+        "filename": "DirectiveObjectArg.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterFormatter": [
+        {
+          "file": "DirectiveObjectArg.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "expectedRulesAndRanges": [],
+      "acceptanceBoundary": "Complete original Opinionated + typeAware configuration, without rule overrides or target projection. Expectations are source-authored only before candidate execution. Actual runtime/dependency or other diagnostics fail the entire result.",
+      "dependencyRequirement": "Resolve the real locked Vue/checker declarations; no dependency or Corsa error may be filtered."
+    },
+    {
+      "id": "MultilineAttr",
+      "issue": 8753,
+      "filename": "MultilineAttr.vue",
+      "source": "<script setup lang=\"ts\">\nconst x = 1;\n</script>\n\n<template>\n  <p :title=\"`x: ${x}px`\">not reported</p>\n  <p\n    :title=\"\n      `x: ${x}px`\n    \"\n  >\n    reported\n  </p>\n</template>\n",
+      "sourceSha256": "b6eba3b949dc4c2c4b493fbc097442219a394408f6af9435947a493a2765827d",
+      "reportedConfig": {
+        "source": "{\n  \"linter\": {\n    \"preset\": \"opinionated\",\n    \"typeAware\": true\n  }\n}\n",
+        "sourceSha256": "a74e83cd33e432a4f3d8f7f801cd3fcd61efecebd4724b15964ba9d1855dddf1",
+        "value": {
+          "linter": {
+            "preset": "opinionated",
+            "typeAware": true
+          }
+        }
+      },
+      "reportedTsconfig": {
+        "source": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"skipLibCheck\": true,\n    \"lib\": [\"ESNext\", \"DOM\"]\n  },\n  \"include\": [\"*.vue\", \"*.ts\"]\n}\n",
+        "sourceSha256": "735410e1bd02c5346abd7cf4c569f4ff5e73d579b25650d3d6a70436f8689c94",
+        "value": {
+          "compilerOptions": {
+            "target": "ESNext",
+            "module": "ESNext",
+            "moduleResolution": "bundler",
+            "strict": true,
+            "skipLibCheck": true,
+            "lib": [
+              "ESNext",
+              "DOM"
+            ]
+          },
+          "include": [
+            "*.vue",
+            "*.ts"
+          ]
+        }
+      },
+      "afterApi": {
+        "filename": "MultilineAttr.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterFormatter": [
+        {
+          "file": "MultilineAttr.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "expectedRulesAndRanges": [],
+      "acceptanceBoundary": "Complete original Opinionated + typeAware configuration, without rule overrides or target projection. Expectations are source-authored only before candidate execution. Actual runtime/dependency or other diagnostics fail the entire result.",
+      "dependencyRequirement": "Resolve the real locked Vue/checker declarations; no dependency or Corsa error may be filtered."
+    },
+    {
+      "id": "MultilineTernary",
+      "issue": 8754,
+      "filename": "MultilineTernary.vue",
+      "source": "<script setup lang=\"ts\">\nconst t = (id: string, params?: Record<string, unknown>): string => id;\nconst flag = true;\nconst name = \"x\";\n</script>\n\n<template>\n  <!-- reported: the alternate holds an object literal, and the ternary spans lines -->\n  <p>{{\n    flag\n      ? t(\"a\")\n      : t(\"b\", { name })\n  }}</p>\n  <!-- not reported: the same expression on one line -->\n  <p>{{ flag ? t(\"a\") : t(\"b\", { name }) }}</p>\n  <!-- not reported: the object literal in the consequent -->\n  <p>{{\n    flag\n      ? t(\"b\", { name })\n      : t(\"a\")\n  }}</p>\n</template>\n",
+      "sourceSha256": "e278f3b7c2bd632ae2df778c2d598aa852987800a034a060cc1b2d93fa8b6683",
+      "reportedConfig": {
+        "source": "{\n  \"linter\": {\n    \"preset\": \"opinionated\",\n    \"typeAware\": true\n  }\n}\n",
+        "sourceSha256": "a74e83cd33e432a4f3d8f7f801cd3fcd61efecebd4724b15964ba9d1855dddf1",
+        "value": {
+          "linter": {
+            "preset": "opinionated",
+            "typeAware": true
+          }
+        }
+      },
+      "reportedTsconfig": {
+        "source": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"skipLibCheck\": true,\n    \"lib\": [\"ESNext\", \"DOM\"]\n  },\n  \"include\": [\"*.vue\", \"*.ts\"]\n}\n",
+        "sourceSha256": "735410e1bd02c5346abd7cf4c569f4ff5e73d579b25650d3d6a70436f8689c94",
+        "value": {
+          "compilerOptions": {
+            "target": "ESNext",
+            "module": "ESNext",
+            "moduleResolution": "bundler",
+            "strict": true,
+            "skipLibCheck": true,
+            "lib": [
+              "ESNext",
+              "DOM"
+            ]
+          },
+          "include": [
+            "*.vue",
+            "*.ts"
+          ]
+        }
+      },
+      "afterApi": {
+        "filename": "MultilineTernary.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterFormatter": [
+        {
+          "file": "MultilineTernary.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "expectedRulesAndRanges": [],
+      "acceptanceBoundary": "Complete original Opinionated + typeAware configuration, without rule overrides or target projection. Expectations are source-authored only before candidate execution. Actual runtime/dependency or other diagnostics fail the entire result.",
+      "dependencyRequirement": "Resolve the real locked Vue/checker declarations; no dependency or Corsa error may be filtered."
+    },
+    {
+      "id": "RouterViewSlot",
+      "issue": 8755,
+      "filename": "RouterViewSlot.vue",
+      "source": "<script setup lang=\"ts\">\nimport { RouterView } from \"vue-router\";\n</script>\n\n<template>\n  <RouterView v-slot=\"{ Component }\">\n    <component :is=\"Component\" />\n  </RouterView>\n</template>\n",
+      "sourceSha256": "12dcecb086ed22095ac57b83d544a523fedc3f055c36c9b6629bed258a75cd93",
+      "reportedConfig": {
+        "source": "{\n  \"linter\": {\n    \"preset\": \"opinionated\",\n    \"typeAware\": true\n  }\n}\n",
+        "sourceSha256": "a74e83cd33e432a4f3d8f7f801cd3fcd61efecebd4724b15964ba9d1855dddf1",
+        "value": {
+          "linter": {
+            "preset": "opinionated",
+            "typeAware": true
+          }
+        }
+      },
+      "reportedTsconfig": {
+        "source": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"skipLibCheck\": true,\n    \"lib\": [\"ESNext\", \"DOM\"]\n  },\n  \"include\": [\"*.vue\", \"*.ts\"]\n}\n",
+        "sourceSha256": "735410e1bd02c5346abd7cf4c569f4ff5e73d579b25650d3d6a70436f8689c94",
+        "value": {
+          "compilerOptions": {
+            "target": "ESNext",
+            "module": "ESNext",
+            "moduleResolution": "bundler",
+            "strict": true,
+            "skipLibCheck": true,
+            "lib": [
+              "ESNext",
+              "DOM"
+            ]
+          },
+          "include": [
+            "*.vue",
+            "*.ts"
+          ]
+        }
+      },
+      "afterApi": {
+        "filename": "RouterViewSlot.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterFormatter": [
+        {
+          "file": "RouterViewSlot.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "expectedRulesAndRanges": [],
+      "acceptanceBoundary": "Complete original Opinionated + typeAware configuration, without rule overrides or target projection. Expectations are source-authored only before candidate execution. Actual runtime/dependency or other diagnostics fail the entire result.",
+      "dependencyRequirement": "RouterView original requires genuine vue-router 5.3.1 and a resolved locked Vue dependency; no stub, alternate installed router or missing-module waiver."
+    }
+  ],
+  "limits": [
+    "Scoped 25-case packets and tests remain byte-exact and separate.",
+    "Whole formatter JSON is not a real CLI process observation.",
+    "No old report-only stderr or future successful expectation constitutes candidate execution.",
+    "First-if/mapped initializer source correctness and actual Corsa/Router resolution remain separately qualified by hosted execution."
+  ],
+  "initialPreparation": {
+    "path": "initial-original-config-oracles.json",
+    "sha256": "7731725c7283547557e100a2c35fce16463b746ce9ec1db93c369693d7159d29",
+    "reason": "Before any observation, add the complete 29 active ScriptRule and 10 CSS producer-body hashes to the existing template/membership source proof. All four source/config/expected packets unchanged."
+  }
+}

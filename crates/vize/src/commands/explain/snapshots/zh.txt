@@ -2839,6 +2839,7 @@ script/prefer-import-from-vue · lint 规则
 
 正确示例:
   import { ref, h } from 'vue'
+  import { isString } from '@vue/shared'
 === script/prefer-ref-over-reactive
 script/prefer-ref-over-reactive · lint 规则
 推荐使用 ref() 而不是 reactive() 管理状态

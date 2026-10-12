@@ -15,7 +15,8 @@
     const renderer = new THREE.WebGLRenderer({
       canvas,
       alpha: true,
-      premultipliedAlpha: false,
+      // Transparent draws store premultiplied RGB; the browser must composite it likewise.
+      premultipliedAlpha: true,
       antialias: false,
       powerPreference: "high-performance",
     });

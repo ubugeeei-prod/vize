@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import type { Page } from "playwright";
 import { verifyAuthoredLetterCase } from "./letter-case-render-assertions.ts";
+import { verifyVisualTheme } from "./visual-theme-render-assertions.ts";
 
 const annotationSource =
   'const label: string = "Readable";\n// Comment outside the focused line\nconst ready = true;';
@@ -155,15 +156,24 @@ export async function verifyThemeReadability(page: Page) {
     codeAnnotations: true,
   });
   assert.deepEqual(annotation.errors, []);
+  const palette = native.transform(
+    '```ts\nexport function label(value: string): string {\n  return value + "Label" + 42;\n}\n```\n\n```vue\n<template><span>{{ label }}</span></template>\n```',
+    { codeAnnotations: true },
+  );
+  assert.deepEqual(palette.errors, []);
   // A native focus annotation exercises dimmed comments even when authored
   // guides on this route contain only plain or add/remove code examples.
   const fixture = await page.evaluate(
-    ({ html, source }) => {
+    ({ html, source, paletteHtml }) => {
       const content = document.querySelector(".content");
       if (!content) return false;
       const container = document.createElement("div");
       container.setAttribute("data-render-annotation-control", "");
       container.innerHTML = html;
+      const paletteControl = document.createElement("div");
+      paletteControl.setAttribute("data-render-palette-control", "");
+      paletteControl.innerHTML = paletteHtml;
+      container.append(paletteControl);
       content.append(container);
       (
         globalThis as typeof globalThis & {
@@ -193,8 +203,9 @@ export async function verifyThemeReadability(page: Page) {
         throw new Error("Focused syntax tokens must retain their syntax palette");
       return true;
     },
-    { html: annotation.html, source: annotationSource },
+    { html: annotation.html, source: annotationSource, paletteHtml: palette.html },
   );
+  await verifyVisualTheme(page);
   await page.evaluate(async () => {
     await Promise.all(
       document

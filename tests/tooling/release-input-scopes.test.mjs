@@ -17,6 +17,7 @@ const selected = (path) =>
 const configFreeInitContract = "tests/tooling/release/release-smoke-init-config-free.test.ts";
 const deliveredInitContracts = [
   "tests/tooling/release/release-smoke-init-child-outcome.test.ts",
+  "tests/tooling/release/release-smoke-init-js-manager-plans.test.ts",
   "tests/tooling/release/release-smoke-init-yarn-checkjs.test.ts",
 ];
 const installedReportedContracts = ["tests/tooling/release/release-public-vapor.test.ts"];
@@ -39,11 +40,11 @@ void test("audited release contracts have complete imports and leave unresolved 
   assert.ok(installedReportedContracts.every((file) => unscoped.includes(file)));
   assert.equal(
     releaseFiles.length,
-    38 + 2 + 1 + installedHttpsContracts.length + installedReportedContracts.length,
+    38 + 3 + 1 + installedHttpsContracts.length + installedReportedContracts.length,
   );
   assert.equal(
     releaseFiles.filter((file) => file !== configFreeInitContract).length,
-    40 + installedHttpsContracts.length + installedReportedContracts.length,
+    41 + installedHttpsContracts.length + installedReportedContracts.length,
   );
   assert.equal(
     releaseFiles.filter(
@@ -80,6 +81,7 @@ void test("audited release contracts have complete imports and leave unresolved 
     "tests/tooling/release/release-public-native-invocation.test.ts",
     "tests/tooling/release/release-smoke-init-child-outcome.test.ts",
     "tests/tooling/release/release-smoke-init-fresh.test.ts",
+    "tests/tooling/release/release-smoke-init-js-manager-plans.test.ts",
     "tests/tooling/release/release-smoke-init-typecheck.test.ts",
     "tests/tooling/release/release-smoke-init-yarn-checkjs.test.ts",
   ]);

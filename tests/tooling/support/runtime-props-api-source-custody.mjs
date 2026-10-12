@@ -2,6 +2,14 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { sha256 } from "../lint-default-correctness-reference.mjs";
+import {
+  authenticateSetupExportPresetSourceFamily,
+  setupExportRegistry,
+} from "./setup-export-preset-source-custody.mjs";
+import {
+  authenticateDeepPropsSourceFamily,
+  deepPropsFamilyPaths,
+} from "./props-deep-source-custody.mjs";
 
 const directory = "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody";
 const manifestHash = "ea908f5de1c09c19ad59bf9f64bbbabccab676940f584fe754bb8e10f79828cb";
@@ -34,7 +42,7 @@ function iterator(bytes) {
   return Buffer.from(text.slice(start, end).trimEnd() + "\n");
 }
 
-/** One complete reviewed family; no patterns, ignored bytes or updated old pins. */
+/** Original runtime or explicitly complete preset/depth successors; old pins stay literal. */
 export function authenticateRuntimeApiSourceFamily(root, read = reader(root)) {
   const bytes = read(`${directory}/successor.json`);
   assert.equal(sha256(bytes), manifestHash, "finite runtime source manifest changed");
@@ -66,7 +74,17 @@ export function authenticateRuntimeApiSourceFamily(root, read = reader(root)) {
   for (const source of manifest.sources) {
     const after = read(`${directory}/${source.after.archive}`);
     assert(matches(after, source.after), `authored after body changed: ${source.path}`);
-    assert(matches(read(source.path), source.after), `unqualified current body: ${source.path}`);
+    if (!matches(read(source.path), source.after)) {
+      if (source.path === setupExportRegistry)
+        authenticateSetupExportPresetSourceFamily(root, manifest, read);
+      else {
+        assert(
+          deepPropsFamilyPaths.includes(source.path),
+          `unqualified current body: ${source.path}`,
+        );
+        authenticateDeepPropsSourceFamily(root, read);
+      }
+    }
     assert.equal(source.path, source.after.path);
     if (source.before.absent) {
       assert.equal(source.changed, true);
@@ -94,9 +112,15 @@ export function authenticateRuntimeApiSourceFamily(root, read = reader(root)) {
   return manifest;
 }
 
-/** Preserve every original source pin; admit only the two reviewed successors. */
+/** Authenticate original carrier pins through explicitly complete source successors. */
 export function assertReservedApiOrderSource(root, source, read = reader(root)) {
   if (matches(read(source.path), source)) return "original";
+  if (source.path === setupExportRegistry) {
+    const incoming = authenticateRuntimeApiSourceFamily(root, read);
+    const successor = authenticateSetupExportPresetSourceFamily(root, incoming, read);
+    assert.deepEqual(source, successor.originalCarrier);
+    return "setup-export-preset-successor";
+  }
   assert(carriers.includes(source.path), `unqualified legacy source: ${source.path}`);
   const manifest = authenticateRuntimeApiSourceFamily(root, read);
   assert.deepEqual(

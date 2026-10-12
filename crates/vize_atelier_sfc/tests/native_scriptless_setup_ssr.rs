@@ -110,7 +110,16 @@ fn whole_original_setup_program_and_ssr_reads_keep_full_modules_and_maps() {
     }
     let frozen: serde_json::Value =
         serde_json::from_str(include_str!("fixtures/native-setup-ssr-output.json")).unwrap();
-    assert_eq!(capture, frozen["capture"]);
+    let mut successor = frozen["capture"].clone();
+    let original_nested = successor["refusals"].as_array_mut().unwrap().remove(15);
+    assert_eq!(
+        original_nested,
+        serde_json::json!({
+        "completeModule":false,"diagnostics":[],"name":"nested",
+        "reason":"Ssr(SsrError { node: Some(NodeId(1)), span: Span { start: 49, end: 58 }, kind: Unsupported(Operation) })",
+        "source":"<script setup>const value=1</script><template><i>{{value}}</i></template>"})
+    );
+    assert_eq!(capture, successor);
 }
 
 fn write(path: &str, value: &serde_json::Value) {

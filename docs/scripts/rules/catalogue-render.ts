@@ -9,7 +9,10 @@ import {
   japaneseCategoryTitles,
 } from "./catalogue-routes.ts";
 import { catalogueSubgroups } from "./catalogue-subgroups.ts";
-import { accessibilityIntroductions } from "./accessibility-introductions.ts";
+import {
+  accessibilityIntroductions,
+  japaneseAccessibilityIntroductions,
+} from "./accessibility-introductions.ts";
 import {
   actualPrerequisiteLinks,
   catalogueCell,
@@ -66,6 +69,11 @@ const japaneseSupportLabels = {
   contract: "契約（現在の生成元なし）",
   project: "プロジェクト固有の lint ID",
 };
+const titleFragment = (title: string) =>
+  title
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
+    .replace(/^-+|-+$/g, "");
 
 function supportText(locale: VueLocale, status: CrossRuleMetadata["status"] | "project") {
   if (locale === "ja") return japaneseSupportLabels[status];
@@ -122,10 +130,25 @@ export function generateRemainingCatalogues(
     cache.set(key, result);
     return result;
   };
-  const page = (locale: VueLocale, file: string, title: string, selected: readonly Reference[]) => {
+  const page = (
+    locale: VueLocale,
+    file: string,
+    title: string,
+    selected: readonly Reference[],
+    originalTitle?: string,
+  ) => {
     const accessibilityGroup = file.match(
       /^accessibility-(core|integrity|interactions|structure)$/u,
     )?.[1];
+    const groupIntroduction = accessibilityGroup
+      ? locale === "en"
+        ? accessibilityIntroductions[accessibilityGroup]
+        : locale === "ja"
+          ? japaneseAccessibilityIntroductions[accessibilityGroup]
+          : undefined
+      : undefined;
+    if (locale === "ja" && accessibilityGroup && !groupIntroduction)
+      throw new Error(`Missing Japanese accessibility introduction: ${accessibilityGroup}`);
     const labels = vueCategoryLabels[locale];
     const text =
       file === "all"
@@ -154,21 +177,21 @@ export function generateRemainingCatalogues(
       entries.flatMap(({ id }) => [ruleSlug(id), `${ruleSlug(id)}-bad`, `${ruleSlug(id)}-good`]),
     );
     // The title fragment is emitted by native headings, not a second explicit span.
-    const titleId = title
-      .toLowerCase()
-      .replace(/[^\p{L}\p{N}]+/gu, "-")
-      .replace(/^-+|-+$/g, "");
+    const titleId = titleFragment(title);
     owned.add(titleId);
+    const originalTitleId = originalTitle && titleFragment(originalTitle);
+    if (originalTitleId) owned.add(originalTitleId);
     const lines = [
       "---",
       `title: ${JSON.stringify(title)}`,
       "---",
       "",
+      ...(originalTitleId && originalTitleId !== titleId
+        ? [`<span id="${originalTitleId}"></span>`, ""]
+        : []),
       `# ${title}`,
       "",
-      ...(locale === "en" && accessibilityGroup
-        ? [...accessibilityIntroductions[accessibilityGroup], ""]
-        : []),
+      ...(groupIntroduction ? [...groupIntroduction, ""] : []),
       text,
       "",
       ...(entries.some((entry) => entry.project)
@@ -231,11 +254,8 @@ export function generateRemainingCatalogues(
       page(locale, "all", titles.all, [...references.values()]);
   }
   for (const [file, subgroup] of Object.entries(catalogueSubgroups)) {
-    page(
-      "en",
-      file,
-      subgroup.title,
-      subgroup.rules.map((id) => references.get(id)!),
-    );
+    const selected = subgroup.rules.map((id) => references.get(id)!);
+    page("en", file, subgroup.title, selected);
+    if (subgroup.jaTitle) page("ja", file, subgroup.jaTitle, selected, subgroup.title);
   }
 }

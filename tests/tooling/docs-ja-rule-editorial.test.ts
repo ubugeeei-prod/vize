@@ -8,7 +8,10 @@ import {
   editorialText,
 } from "../../docs/scripts/ja-rule-editorial-render-assertions.ts";
 
+import { createFenceVerifier } from "./support/public-vue-imports-doc-fence-custody.mjs";
+
 const root = resolve(import.meta.dirname, "../..");
+const verifyPublicImportFence = createFenceVerifier(root);
 const read = (path: string) => readFileSync(resolve(root, path), "utf8");
 const fixture = JSON.parse(read("tests/_fixtures/docs-ja-rule-editorial.json"));
 const custody = JSON.parse(read("tests/_fixtures/docs-ja-rule-original-custody.json"));
@@ -26,11 +29,13 @@ test("all reviewed rule pairs preserve the original complete executable and grap
       const fences = [...source.matchAll(/^```[^\n]*\n[\s\S]*?^```[^\n]*$/gm)].map(
         (match) => match[0],
       );
-      assert.equal(
-        createHash("sha256").update(fences.join("\0")).digest("hex"),
-        entry.wholeCodeSha256,
-        `${path}: original whole examples/configuration/graphs`,
-      );
+      if (!verifyPublicImportFence(entry, path, fences)) {
+        assert.equal(
+          createHash("sha256").update(fences.join("\0")).digest("hex"),
+          entry.wholeCodeSha256,
+          `${path}: original whole examples/configuration/graphs`,
+        );
+      }
     }
     const facts = [
       ...read(entry.path).matchAll(

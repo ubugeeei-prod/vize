@@ -1,0 +1,45 @@
+name: "wild"
+description: "Use the Wild linker when building Rust code"
+author: "Wild authors"
+
+inputs:
+  wild-version:
+    description: "Wild version to use"
+    required: false
+    default: "0.9.0"
+  download-retries:
+    description: "Number of times to retry the Wild download on transient failures (passed to curl --retry). curl uses exponential backoff between retries."
+    required: false
+    default: "5"
+
+runs:
+  using: "composite"
+  steps:
+    - run: |
+        case "$RUNNER_ARCH" in
+          X64)   target_arch="x86_64" ;;
+          ARM64) target_arch="aarch64" ;;
+          *) echo "Unsupported architecture: $RUNNER_ARCH" >&2; exit 1 ;;
+        esac
+
+        mkdir "${RUNNER_TEMP}/wild-install"
+
+        url="https://github.com/wild-linker/wild/releases/download/${{ inputs.wild-version }}/wild-linker-${{ inputs.wild-version }}-${target_arch}-unknown-linux-gnu.tar.gz"
+        archive="${RUNNER_TEMP}/wild.tar.gz"
+        curl --fail-with-body --show-error --location \
+             --retry "${{ inputs.download-retries }}" --retry-all-errors \
+             --output "${archive}" \
+             "${url}"
+
+        tar -xzf "${archive}" -C "${RUNNER_TEMP}/wild-install" --strip-components=1
+        rm -f "${archive}"
+
+        mkdir -p "$HOME/.cargo"
+        for libc in gnu musl; do
+          TARGET="target.${target_arch}-unknown-linux-${libc}"
+          if ! grep "${TARGET}" "$HOME/.cargo/config.toml" 2>/dev/null; then
+                echo -e "# Added by wild GitHub Action\n[${TARGET}]\nlinker = \"clang\"\nrustflags = [\"-Clink-arg=--ld-path=${RUNNER_TEMP}/wild-install/wild\"]\n" >>"$HOME/.cargo/config.toml"
+          fi
+        done
+      shell: bash
+      if: runner.os == 'Linux'

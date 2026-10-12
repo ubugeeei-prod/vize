@@ -18,6 +18,7 @@
 //! - [`walk`] - Scope walking functions
 
 mod define_art;
+mod execution_facts;
 mod expose;
 mod extract;
 mod globals;
@@ -26,6 +27,7 @@ mod occurrences;
 mod parse;
 mod process;
 mod recovery;
+mod reexecution;
 mod result;
 mod ssr_calls;
 mod ssr_functions;
@@ -100,3 +102,6 @@ mod setup_context_scope_tests;
 
 #[cfg(test)]
 mod with_defaults_tests;
+
+#[cfg(test)]
+mod reexecuted_map_tests;

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
+import { retainedComponentMigrationFs as fs } from "./support/component-value-retained-guards.ts";
 import { test } from "node:test";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
@@ -8,6 +8,8 @@ import path from "node:path";
 import { qualifyDefaultMigrationHost } from "../performance/support/warm-type-backed-default-migration-host.ts";
 import { qualifyHostMoves } from "../performance/support/warm-type-backed-host-qualifications.ts";
 import { gitBodyDigest } from "../performance/support/warm-type-backed-path-host.ts";
+import { authenticateRuntimeApiSourceFamily } from "./support/component-value-retained-guards.ts";
+import { authenticateSetupExportMembership } from "./support/component-value-retained-guards.ts";
 
 const manifest = JSON.parse(
   fs.readFileSync(
@@ -43,7 +45,27 @@ test("the finite manifest binds every current whole source and original corpus b
       : createHash("sha256")
           .update(fs.readFileSync(new URL("../../" + file, import.meta.url)))
           .digest("hex");
-  assert.ok(qualifyDefaultMigrationHost(production, new Set(), actual));
+  // The new snapshot is not the old measured migration host.
+  assert.equal(qualifyDefaultMigrationHost(production, new Set(), actual), null);
+  const root = path.resolve(import.meta.dirname, "../..");
+  const membership = authenticateSetupExportMembership(
+    root,
+    authenticateRuntimeApiSourceFamily(root),
+  );
+  let successors = 0;
+  for (const [file, before, after] of manifest.files) {
+    assert.equal(actual("before", file), before);
+    if (file === membership.path) {
+      assert.equal(after, membership.beforeSha256);
+      assert.equal(actual("after", file), membership.afterSha256);
+      successors++;
+    } else assert.equal(actual("after", file), after);
+  }
+  assert.equal(successors, 1);
+  for (const [file, original] of manifest.preservedBodies) {
+    assert.equal(actual("before", file), original);
+    assert.equal(actual("after", file), original);
+  }
 });
 
 test("the real Git body reader preserves whole bytes and absence and refuses changed modes", () => {

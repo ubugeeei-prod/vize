@@ -1,0 +1,61 @@
+{
+  "source": "01aef925a6e9ca8ff3624843a12d34428b87377b",
+  "failure": {
+    "job": 114787033304,
+    "rawSHA256": "19811ccc66b1b014e477995cf12f9d12522bf4d0fad1ee6406fa1df31e8d69f8",
+    "zipSHA256": "9af05e6231b349a4d5c823528f90bacb0bf199bb13e274d29659851493860d0e"
+  },
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "sources": [
+    {
+      "path": "tests/tooling/support/vite-vue-packed-consumer.ts",
+      "archive": "01-before.fixture",
+      "bytes": 17015,
+      "sha256": "99c64b88788e549527bb3e06f9fcb7bad364e12b4a974593df6cc82a650e0f57"
+    },
+    {
+      "path": "npm/builder/vite/src/plugin/compat.ts",
+      "archive": "02-before.fixture",
+      "bytes": 7325,
+      "sha256": "deba26785887a406c1484ccd73b974ff57784a700f7d7e95cb77837748ec966f"
+    },
+    {
+      "path": "npm/builder/vite/src/plugin/plugin-vue-options.ts",
+      "archive": "03-before.fixture",
+      "bytes": 2599,
+      "sha256": "c9fc47f3c2308a5384f6f38a456a5743268f783564514eb9b5b6509c13674dd9"
+    },
+    {
+      "path": "npm/builder/vite/src/plugin/index.ts",
+      "archive": "04-before.fixture",
+      "bytes": 11402,
+      "sha256": "84264e4eea318879b1f0e409f949b64ab14f6fd78e61b036711edf298b78ba26"
+    }
+  ],
+  "changes": [
+    [
+      "import { mkdirSync, mkdtempSync, symlinkSync, writeFileSync } from \"node:fs\";",
+      "import { mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from \"node:fs\";"
+    ],
+    [
+      "  write(\"vue-build-consumer.mjs\", packedBuildConsumer);",
+      "  write(\n    \"vize-vue-compat-control.mjs\",\n    readFileSync(new URL(\"./vite-vue-compat-control.mjs\", import.meta.url), \"utf8\"),\n  );\n  write(\"vue-build-consumer.mjs\", packedBuildConsumer);"
+    ],
+    [
+      "    'import { defineConfig, withVue } from \"@vizejs/vite-plugin/vite-plus\";',",
+      "    'import { defineConfig, withVue } from \"@vizejs/vite-plugin/vite-plus\";',\n    'import { assertVizeVueCompatShim } from \"./vize-vue-compat-control.mjs\";',\n    'const forbiddenHost = { name: \"vite:vue\", transform() { throw new Error(\"The genuine Vize compiler must replace this host compiler\"); } };',"
+    ],
+    [
+      "    '{ name: \"vite:vue\", transform() { throw new Error(\"The genuine Vize compiler must replace this host compiler\"); } },',",
+      "    'forbiddenHost,',"
+    ],
+    [
+      "    'assert.ok(!names.includes(\"vite:vue\"));',",
+      "    'assertVizeVueCompatShim(config.plugins, forbiddenHost);',"
+    ]
+  ]
+}

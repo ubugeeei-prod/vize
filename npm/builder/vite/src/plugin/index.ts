@@ -46,6 +46,8 @@ export type { VizePluginState } from "./state.ts";
 export function vize(
   options: VizeOptions = {},
   compilerDefaults: Pick<VizeOptions, "whitespace"> = {},
+  /** @internal Only the Nuxt constructor supplies its host configuration context. */
+  hostContext?: "nuxt",
 ): Plugin[] {
   if (isLegacyVueCompatibilityMode(options)) {
     return [createLegacyVueCompatibilityPlugin(options)];
@@ -158,6 +160,7 @@ export function vize(
         configEnv,
         state.logger,
         resolvedConfig,
+        hostContext,
       );
       // Vite runs configResolved hooks in parallel. Register the pending lookup
       // before yielding so companion plugins can await this exact config.

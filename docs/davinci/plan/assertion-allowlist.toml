@@ -148,7 +148,6 @@ paths = [
   "crates/vize_atelier_sfc/src/script/define_props_destructure/tests.rs",
   "crates/vize_atelier_sfc/src/script/type_resolution.rs",
   "crates/vize_atelier_sfc/src/vite_plugin/css.rs",
-  "crates/vize_atelier_sfc/tests/css_engine_panic_boundary.rs",
   "crates/vize_atelier_sfc/tests/emitter_javascript_output.rs",
   "crates/vize_atelier_sfc/tests/imported_type_cache.rs",
   "crates/vize_atelier_sfc/tests/scoped_slot_shadowing.rs",

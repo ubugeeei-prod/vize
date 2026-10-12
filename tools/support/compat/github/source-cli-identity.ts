@@ -4,7 +4,7 @@ import fs from "node:fs";
 import { createHash } from "node:crypto";
 import path from "node:path";
 import os from "node:os";
-import { sourceRevision } from "../../../../tests/differential/build-receipt.ts";
+import { BUILD_RECIPE } from "../../../../tests/differential/build-receipt.ts";
 
 export const CLI_MEMBERS = [
   "target/ci/vize",
@@ -37,7 +37,8 @@ export function normalizeCargoConfig(config: string, linker: string): string {
 }
 
 export function runtimeIdentity(root: string) {
-  const source = sourceRevision(root);
+  const checkout = sourceCliCheckout(root);
+  const source = checkout.sourceRevision;
   assert.equal(process.env.GITHUB_SHA, source, "checked source differs from workflow source");
   assert.match(process.env.GITHUB_RUN_ID ?? "", /^[1-9][0-9]*$/);
   assert.match(process.env.GITHUB_RUN_ATTEMPT ?? "", /^[1-9][0-9]*$/);
@@ -51,7 +52,7 @@ export function runtimeIdentity(root: string) {
   const configuredLinker = path.join(process.env.RUNNER_TEMP, "wild-install", "wild");
   return {
     sourceRevision: source,
-    sourceTree: command(root, "git", ["rev-parse", "HEAD^{tree}"]),
+    sourceTree: checkout.sourceTree,
     runId: process.env.GITHUB_RUN_ID,
     runAttempt: process.env.GITHUB_RUN_ATTEMPT,
     platform: process.platform,
@@ -95,6 +96,126 @@ export function regularMember(root: string, relative: string) {
   };
 }
 
+export type SourceCliEnvelope = {
+  identity: ReturnType<typeof runtimeIdentity>;
+  recipe: string;
+  oracleRecipe: string;
+  members: ReturnType<typeof regularMember>[];
+};
+export const CONSUMER_USE_MEMBER = "target/ci/vize.source-use.json";
+export type SourceCliConsumerContext = Pick<
+  ReturnType<typeof runtimeIdentity>,
+  "sourceRevision" | "sourceTree" | "runId" | "runAttempt"
+>;
+
+export function sourceCliCheckout(root: string) {
+  const git = (...args: string[]) => command(root, "git", ["--no-replace-objects", ...args]);
+  return {
+    sourceRevision: git("rev-parse", "HEAD"),
+    sourceTree: git("rev-parse", "HEAD^{tree}"),
+  };
+}
+
+export function sourceCliProducerOutputs(serialized: string, consumerAttempt: string) {
+  const outputs = JSON.parse(serialized) as Record<string, string>;
+  assert.deepEqual(Object.keys(outputs).sort(), ["producer-attempt", "receipt-sha256", "sha256"]);
+  assert.match(outputs.sha256, /^[a-f0-9]{64}$/);
+  assert.match(outputs["receipt-sha256"], /^[a-f0-9]{64}$/);
+  for (const attempt of [outputs["producer-attempt"], consumerAttempt])
+    assert.match(attempt, /^[1-9][0-9]{0,9}$/);
+  assert.ok(
+    BigInt(outputs["producer-attempt"]) <= BigInt(consumerAttempt),
+    "source CLI producer identity changed: future producer attempt",
+  );
+  return outputs;
+}
+
+export function expectedProducerIdentity(
+  consumer: ReturnType<typeof runtimeIdentity>,
+  producerAttempt = consumer.runAttempt,
+) {
+  for (const attempt of [producerAttempt, consumer.runAttempt])
+    assert.match(
+      attempt,
+      /^[1-9][0-9]{0,9}$/,
+      "source CLI producer identity changed: canonical finite attempt is required",
+    );
+  assert.ok(
+    BigInt(producerAttempt) <= BigInt(consumer.runAttempt),
+    "source CLI producer identity changed: future producer attempt",
+  );
+  return { ...consumer, runAttempt: producerAttempt };
+}
+
+// Restore validates all physical binary bodies. Later consumers authenticate
+// this immutable use record and retain their own original member/body gates.
+export function verifySourceCliConsumerUse(
+  root: string,
+  producer: SourceCliEnvelope,
+  consumer: SourceCliConsumerContext,
+  producerReceiptSha256: string,
+  useReceiptSha256: string,
+) {
+  assert.match(producerReceiptSha256, /^[a-f0-9]{64}$/);
+  assert.match(useReceiptSha256, /^[a-f0-9]{64}$/);
+  const original = regularMember(root, "target/ci/vize.source-build.json");
+  assert.equal(original.mode, 0o644);
+  assert.equal(original.sha256, producerReceiptSha256, "shared producer receipt changed");
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(root, original.path), "utf8")), producer);
+  const member = regularMember(root, CONSUMER_USE_MEMBER);
+  assert.equal(member.mode, 0o644);
+  assert.equal(member.sha256, useReceiptSha256, "consumer use receipt changed");
+  const use = JSON.parse(fs.readFileSync(path.join(root, CONSUMER_USE_MEMBER), "utf8"));
+  assert.deepEqual(
+    Object.keys(use).sort(),
+    [
+      "archiveSha256",
+      "consumerIdentity",
+      "members",
+      "oracleRecipe",
+      "producerIdentity",
+      "producerReceiptSha256",
+      "recipe",
+      "schema",
+      "version",
+    ].sort(),
+  );
+  assert.equal(use.schema, "vize.source-cli.consumer-use");
+  assert.equal(use.version, 1);
+  assert.match(use.archiveSha256, /^[a-f0-9]{64}$/);
+  assert.equal(use.producerReceiptSha256, producerReceiptSha256);
+  assert.deepEqual(use.producerIdentity, producer.identity);
+  assert.deepEqual(use.consumerIdentity, { ...producer.identity, ...consumer });
+  assert.deepEqual(
+    producer.identity,
+    expectedProducerIdentity(use.consumerIdentity, producer.identity.runAttempt),
+  );
+  const checkout = sourceCliCheckout(root);
+  assert.equal(consumer.sourceRevision, checkout.sourceRevision);
+  assert.equal(consumer.sourceTree, checkout.sourceTree);
+  assert.equal(producer.identity.sourceRevision, consumer.sourceRevision);
+  assert.equal(producer.identity.sourceTree, consumer.sourceTree);
+  assert.equal(producer.identity.runId, consumer.runId);
+  assert.equal(use.recipe, BUILD_RECIPE);
+  assert.equal(use.recipe, producer.recipe);
+  assert.equal(use.oracleRecipe, ORACLE_RECIPE);
+  assert.equal(use.oracleRecipe, producer.oracleRecipe);
+  assert.deepEqual(
+    producer.members.map((entry) => entry.path),
+    CLI_MEMBERS,
+  );
+  assert.deepEqual(
+    producer.members.map((entry) => entry.mode),
+    [0o755, 0o644, 0o755],
+  );
+  for (const entry of producer.members) {
+    assert.ok(Number.isSafeInteger(entry.bytes) && entry.bytes > 0);
+    assert.match(entry.sha256, /^[a-f0-9]{64}$/);
+  }
+  assert.deepEqual(use.members, producer.members);
+  return use;
+}
+
 export function physicalParent(root: string, relative: string): void {
   assert.equal(fs.realpathSync(root), path.resolve(root), "destination root must be physical");
   const parts = relative.split("/");
@@ -118,16 +239,29 @@ export function sharedOracleAuthority(root: string, executable: string) {
     expected,
     "shared producer receipt changed",
   );
-  const producer = JSON.parse(fs.readFileSync(path.join(root, receiptPath), "utf8")) as {
-    identity: ReturnType<typeof runtimeIdentity>;
-    recipe: string;
-    oracleRecipe: string;
-    members: ReturnType<typeof regularMember>[];
-  };
-  assert.equal(producer.identity.sourceRevision, sourceRevision(root));
+  const producer = JSON.parse(
+    fs.readFileSync(path.join(root, receiptPath), "utf8"),
+  ) as SourceCliEnvelope;
+  const checkout = sourceCliCheckout(root);
+  assert.equal(producer.identity.sourceRevision, checkout.sourceRevision);
   assert.equal(producer.identity.sourceRevision, process.env.GITHUB_SHA);
   assert.equal(producer.identity.runId, process.env.GITHUB_RUN_ID);
-  assert.equal(producer.identity.runAttempt, process.env.GITHUB_RUN_ATTEMPT);
+  const useSha256 = process.env.VIZE_SOURCE_CLI_USE_RECEIPT_SHA256;
+  if (producer.identity.runAttempt !== process.env.GITHUB_RUN_ATTEMPT || useSha256 !== undefined) {
+    assert.ok(useSha256, "retry requires a verified consumer use receipt");
+    verifySourceCliConsumerUse(
+      root,
+      producer,
+      {
+        sourceRevision: checkout.sourceRevision,
+        sourceTree: checkout.sourceTree,
+        runId: process.env.GITHUB_RUN_ID!,
+        runAttempt: process.env.GITHUB_RUN_ATTEMPT!,
+      },
+      expected,
+      useSha256,
+    );
+  } else assert.equal(producer.identity.runAttempt, process.env.GITHUB_RUN_ATTEMPT);
   assert.equal(producer.oracleRecipe, ORACLE_RECIPE);
   const relative = path.relative(root, executable);
   assert.equal(relative, CLI_MEMBERS[2]);

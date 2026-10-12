@@ -1,7 +1,11 @@
 /** Existing English subgroup routes and their actual source-rule membership. */
-export const catalogueSubgroups: Record<string, { title: string; rules: readonly string[] }> = {
+export const catalogueSubgroups: Record<
+  string,
+  { title: string; jaTitle?: string; rules: readonly string[] }
+> = {
   "accessibility-core": {
     title: "Accessibility core",
+    jaTitle: "アクセシビリティの基本",
     rules: [
       "a11y/alt-text",
       "a11y/anchor-has-content",

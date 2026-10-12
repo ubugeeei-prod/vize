@@ -17,6 +17,7 @@ packages:
   - "docs"
   - "tests"
   - "tools/benchmarks/scripts"
+  - "crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755"
 
 minimumReleaseAgeExclude:
   - "hono@4.13.7"
