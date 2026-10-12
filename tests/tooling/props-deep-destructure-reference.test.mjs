@@ -6,9 +6,9 @@ import { fileURLToPath } from "node:url";
 import { gunzipSync } from "node:zlib";
 import { test } from "node:test";
 import { sha256, wholeJson } from "./lint-default-correctness-reference.mjs";
-import { authenticateDeepPropsSourceFamily } from "./support/props-deep-source-custody.mjs";
-import { authenticateRuntimeApiSourceFamily } from "./support/runtime-props-api-source-custody.mjs";
-import { authenticateSetupExportPresetSourceFamily } from "./support/setup-export-preset-source-custody.mjs";
+import { authenticateDeepPropsSourceFamily } from "./support/component-value-retained-guards.ts";
+import { authenticateRuntimeApiSourceFamily } from "./support/component-value-retained-guards.ts";
+import { authenticateSetupExportPresetSourceFamily } from "./support/component-value-retained-guards.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const directory = "tests/_fixtures/differential/lint/props-deep-destructure-8090";

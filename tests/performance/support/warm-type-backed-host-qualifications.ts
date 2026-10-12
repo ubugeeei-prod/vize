@@ -1,4 +1,8 @@
-import { qualifyComponentValueHost } from "./warm-type-backed-component-value-host.ts";
+import {
+  qualifyComponentValueHost,
+  componentValueRetainedGuardPairs,
+  qualifyComponentValueRetainedGuards,
+} from "./warm-type-backed-component-value-host.ts";
 import { qualifyLexicalDollarHost } from "./warm-type-backed-lexical-dollar-host.ts";
 import { qualifyPathHostMove } from "./warm-type-backed-path-host.ts";
 import { qualifyTimingHostMove } from "./warm-type-backed-timing-host.ts";
@@ -23,11 +27,15 @@ export function qualifyHostMoves(
     digest("before", "tests/performance/support/warm-type-backed-component-value-host.ts") ===
       null &&
     digest("after", "tests/performance/support/warm-type-backed-component-value-host.ts") ===
-      "a9b1483b0fa2c82027eb7082b701a3c4bc3e1a93a9c55cc816da02610d86a215" &&
+      "7343a8824a10c7fa0b1ae1745ba3b5ee934cb2be60458eb9ff003e7144bafe62" &&
     digest("before", "tests/performance/support/warm-type-backed-component-value-manifest.json") ===
       null &&
     digest("after", "tests/performance/support/warm-type-backed-component-value-manifest.json") ===
-      "b417ec82d12a2131f943db1fd2fd6ae624d7b38821350463af3300075f141902"
+      "e4d108456190fa9050da3c33c48c4823d7d3e06a4096e477c106c85d900ff4c1" &&
+    qualifyComponentValueRetainedGuards(
+      componentValueRetainedGuardPairs.map(([file]) => file),
+      digest,
+    )
       ? qualifyComponentValueHost(production, alreadyQualified, digest)
       : null;
   return {

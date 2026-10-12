@@ -117,3 +117,43 @@ source pins follow this complete test-body successor. Source-plan run
 existing pure source generator refreshes that inventory without a build. Neither
 failure supplies runtime acceptance; the new exact-source Actions must execute
 all six API laws and the whole five-report CLI control.
+
+Fresh head `5bc5759` ran five API laws and the complete five-report public CLI
+control successfully in Check 38241783212. The sixth authored control incorrectly
+asked a bare-script context to report an SFC script range; the existing mapper
+refused it. The corrected control parses its actual complete SFC, explicitly
+clears unqualified read custody, and checks the unchanged warning payload at the
+physical import range 21..26. It requires a fresh actual execution.
+
+The finite source manifest exceeded the unchanged 350-line budget after CLI
+registration. Its thirteen preserved tuples move unchanged into one closed
+metadata file; the strict loader reconstructs the same logical manifest. Both
+whole files and the metadata file's genuine before absence are required. The
+original27 capsule remains byte-exact; the original53 absence entries are kept
+and one authenticated metadata absence is appended. This adds one source-only
+metadata pair; the original15/52/13 workload and corpus counts stay unchanged.
+
+Historical Props, Runtime and Reserved source guards correctly refused the new
+SFC body. Their original helper bodies, archived tables and failed receipts must
+remain intact. A retained source comparison may project only an authenticated
+whole parent after the complete actual component source qualifies. Real CLI
+builds and the actual Git harness must keep separate current-source custody;
+historical projection supplies no current runtime or performance verdict.
+
+The retained comparison qualifies all eighty-one physical current source bodies
+before exposing two whole original production bodies and four exact caller
+inverses. Only the historical default-migration facade exposes the original rule
+set. The three original shared helpers and all old tables and assertions remain
+byte-exact. Thirty-seven source laws pass, including incomplete and one-import
+hybrid refusals. The thirty-six-report CLI observer retains its old comparison
+receipt separately and requires every actual committed build body; its new
+execution remains pending. The actual Git/NoDeep successor is a separate gate.
+
+The host boundary also requires three complete new guard bodies with their real
+5bc before absences and ten whole caller before/after frames. It verifies all
+thirteen before invoking the unchanged 15/52/13 plus one-metadata qualifier;
+unknown, partial, duplicate and mixed frames refuse admission. Historical host
+projection verifies this closure first. The actual CLI source receipt includes
+these three guard bodies with the original eighty-one bodies and ten callers,
+so all ninety-four committed bodies must match its build. This remains source
+custody, with no runtime, full-Matrix or performance verdict.

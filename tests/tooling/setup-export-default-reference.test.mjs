@@ -1,16 +1,16 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import fs from "node:fs";
+import { retainedComponentCallerFs as fs } from "./support/component-value-retained-guards.ts";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { gunzipSync } from "node:zlib";
 import { test } from "node:test";
 import { sha256, wholeJson } from "./lint-default-correctness-reference.mjs";
-import { authenticateRuntimeApiSourceFamily } from "./support/runtime-props-api-source-custody.mjs";
+import { authenticateRuntimeApiSourceFamily } from "./support/component-value-retained-guards.ts";
 import {
   authenticateSetupExportMembership,
   authenticateSetupExportPresetSourceFamily,
-} from "./support/setup-export-preset-source-custody.mjs";
+} from "./support/component-value-retained-guards.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const directory = "tests/_fixtures/differential/lint/setup-export-default-8090";

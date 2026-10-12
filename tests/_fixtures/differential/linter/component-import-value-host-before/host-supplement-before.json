@@ -204,6 +204,10 @@
       "gitEntryHex": ""
     },
     {
+      "path": "tests/performance/support/warm-type-backed-component-value-originals.json",
+      "gitEntryHex": ""
+    },
+    {
       "path": "tests/tooling/component-cli-runtime-reads-corpus.test.ts",
       "gitEntryHex": ""
     },

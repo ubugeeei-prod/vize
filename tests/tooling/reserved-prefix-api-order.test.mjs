@@ -5,7 +5,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { gunzipSync } from "node:zlib";
 import { sha256 } from "./lint-default-correctness-reference.mjs";
-import { assertReservedApiOrderSource } from "./support/runtime-props-api-source-custody.mjs";
+import { assertReservedApiOrderSource } from "./support/component-value-retained-guards.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const fixture = path.join(root, "tests/_fixtures/differential/lint/reserved-prefix-8090");

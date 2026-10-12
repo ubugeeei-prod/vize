@@ -2,7 +2,13 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { qualifyComponentValueHost } from "../../performance/support/warm-type-backed-component-value-host.ts";
+import {
+  qualifyComponentValueHost,
+  loadComponentValueManifest,
+  componentValueMetadataPairs,
+  componentValueRetainedGuardPairs,
+  qualifyComponentValueRetainedGuards,
+} from "../../performance/support/warm-type-backed-component-value-host.ts";
 
 const host = "tests/performance/support/warm-type-backed-host-qualifications.ts";
 const helper = "tests/performance/support/warm-type-backed-component-value-host.ts";
@@ -10,8 +16,8 @@ const manifest = "tests/performance/support/warm-type-backed-component-value-man
 const capsuleFile =
   "tests/_fixtures/differential/linter/component-import-value-host-before/host-composition.json";
 const clauses: string[] = [
-  'import { qualifyComponentValueHost } from "./warm-type-backed-component-value-host.ts";\n',
-  '  const componentValueHost =\n    enabled &&\n    digest("before", "tests/performance/support/warm-type-backed-component-value-host.ts") ===\n      null &&\n    digest("after", "tests/performance/support/warm-type-backed-component-value-host.ts") ===\n      "a9b1483b0fa2c82027eb7082b701a3c4bc3e1a93a9c55cc816da02610d86a215" &&\n    digest("before", "tests/performance/support/warm-type-backed-component-value-manifest.json") ===\n      null &&\n    digest("after", "tests/performance/support/warm-type-backed-component-value-manifest.json") ===\n      "b417ec82d12a2131f943db1fd2fd6ae624d7b38821350463af3300075f141902"\n      ? qualifyComponentValueHost(production, alreadyQualified, digest)\n      : null;\n',
+  'import {\n  qualifyComponentValueHost,\n  componentValueRetainedGuardPairs,\n  qualifyComponentValueRetainedGuards,\n} from "./warm-type-backed-component-value-host.ts";\n',
+  '  const componentValueHost =\n    enabled &&\n    digest("before", "tests/performance/support/warm-type-backed-component-value-host.ts") ===\n      null &&\n    digest("after", "tests/performance/support/warm-type-backed-component-value-host.ts") ===\n      "7343a8824a10c7fa0b1ae1745ba3b5ee934cb2be60458eb9ff003e7144bafe62" &&\n    digest("before", "tests/performance/support/warm-type-backed-component-value-manifest.json") ===\n      null &&\n    digest("after", "tests/performance/support/warm-type-backed-component-value-manifest.json") ===\n      "e4d108456190fa9050da3c33c48c4823d7d3e06a4096e477c106c85d900ff4c1" &&\n    qualifyComponentValueRetainedGuards(\n      componentValueRetainedGuardPairs.map(([file]) => file),\n      digest,\n    )\n      ? qualifyComponentValueHost(production, alreadyQualified, digest)\n      : null;\n',
   "    ...(componentValueHost ? { componentValueHost } : {}),\n",
 ];
 const sha = (body: Buffer | string) => createHash("sha256").update(body).digest("hex");
@@ -51,14 +57,10 @@ export function selectedComponentValueBodies(read: (file: string) => Buffer | nu
   ) as { source: string; entries: Array<{ path: string; gitEntryHex: string }> };
   assert.equal(
     sha(JSON.stringify(absent)),
-    "7983538c9f2ff5816e63d4e415684be8c6a91c7b8b5fa3a2f2011097d4c1e3a2",
+    "a322ea17f37e4ce1a4e7691052a7317182f74d8aa36c8cc5c6bc1db23cf10fdf",
   );
   assert.equal(absent.source, original.source);
-  const metadata = JSON.parse(requireBody(manifest).toString("utf8")) as {
-    files: Array<[string, string | null, string]>;
-    supplementalBodies: Array<[string, string | null, string]>;
-    preservedBodies: Array<[string, string]>;
-  };
+  const metadata = loadComponentValueManifest(requireBody);
   const actual = new Map<string, { before: string | null; after: string }>();
   for (const entry of original.entries) {
     let before: string | null = null;
@@ -91,7 +93,12 @@ export function selectedComponentValueBodies(read: (file: string) => Buffer | nu
   }
   assert.deepEqual(
     [...actual.keys()].sort(),
-    [...metadata.files, ...metadata.supplementalBodies, ...metadata.preservedBodies]
+    [
+      ...metadata.files,
+      ...metadata.supplementalBodies,
+      ...metadata.preservedBodies,
+      ...componentValueMetadataPairs,
+    ]
       .map(([file]) => file)
       .sort(),
   );
@@ -101,7 +108,7 @@ export function selectedComponentValueBodies(read: (file: string) => Buffer | nu
     qualifyComponentValueHost(production, new Set(), digest),
     "complete actual selected before/current source must qualify first",
   );
-  return { production, digest };
+  return { production, digest, metadataFiles: componentValueMetadataPairs.map(([file]) => file) };
 }
 
 /** Retain the original ASCII law after proving this one complete source-only successor. */
@@ -150,19 +157,24 @@ export function retainedHostBeforeComponentValues(
   );
   const current = read(host);
   assert.ok(current);
-  assert.equal(sha(current), "c9738345b0b4efe301b0c88a13cb2fcfb4bc31fc71cac581aab6ea44edfadc78");
+  assert.equal(sha(current), "b19f6783e50429d2779efeb7d2d21c64dcd98a67810fc4f6a1ccc698febae337");
   const actualHelper = read(helper);
   const actualManifest = read(manifest);
   assert.ok(actualHelper && actualManifest);
   assert.equal(
     sha(actualHelper),
-    "a9b1483b0fa2c82027eb7082b701a3c4bc3e1a93a9c55cc816da02610d86a215",
+    "7343a8824a10c7fa0b1ae1745ba3b5ee934cb2be60458eb9ff003e7144bafe62",
   );
   assert.equal(
     sha(actualManifest),
-    "b417ec82d12a2131f943db1fd2fd6ae624d7b38821350463af3300075f141902",
+    "e4d108456190fa9050da3c33c48c4823d7d3e06a4096e477c106c85d900ff4c1",
   );
   selectedComponentValueBodies(read);
+  selectedComponentValueRetainedGuards((file) => {
+    const body = read(file);
+    assert.ok(body, file);
+    return body;
+  });
   let inverse = current.toString("utf8");
   assert.ok(Buffer.from(inverse).equals(current));
   for (const clause of clauses) {
@@ -183,4 +195,80 @@ export function retainedPhysicalHostBeforeComponentValues(root: string): Buffer 
     );
     return fs.readFileSync(target);
   }, readCapsule(root));
+}
+
+/** Authenticate complete raw predecessor frames and current guard bodies without history runtime credit. */
+export function selectedComponentValueRetainedGuards(read: (file: string) => Buffer) {
+  type Entry = {
+    path: string;
+    gitEntryHex: string;
+    byteLength: number | null;
+    sha256: string | null;
+    rawBase64: string | null;
+    transforms?: Array<{ before: string; after: string }>;
+  };
+  const file =
+    "tests/_fixtures/differential/linter/component-import-value-host-before/retained-guard-callers.json";
+  const bytes = read(file);
+  assert.equal(sha(bytes), componentValueRetainedGuardPairs.find(([name]) => name === file)![2]);
+  const capsule = JSON.parse(bytes.toString("utf8")) as {
+    version: number;
+    source: string;
+    entries: Entry[];
+    originalCallers: Entry[];
+    absences: Entry[];
+  };
+  assert.equal(capsule.version, 1);
+  assert.equal(capsule.source, "5bc5759ef97f574fec526ea7ef8664e8592bd54c");
+  assert.equal(capsule.entries.length, 4);
+  assert.equal(capsule.originalCallers.length, 6);
+  assert.equal(capsule.absences.length, 3);
+  const rows = [...capsule.entries, ...capsule.originalCallers, ...capsule.absences];
+  assert.equal(new Set(rows.map((entry) => entry.path)).size, 13);
+  assert.deepEqual(
+    rows.map((entry) => entry.path).toSorted(),
+    componentValueRetainedGuardPairs.map(([name]) => name).toSorted(),
+  );
+  const actual = new Map<string, { before: string | null; after: string }>();
+  for (const entry of rows) {
+    let before: string | null = null;
+    const current = read(entry.path);
+    if (entry.rawBase64 === null) {
+      assert.equal(entry.gitEntryHex, "");
+      assert.equal(entry.byteLength, null);
+      assert.equal(entry.sha256, null);
+      assert.equal(entry.transforms, undefined);
+    } else {
+      const raw = Buffer.from(entry.rawBase64, "base64");
+      assert.equal(raw.toString("base64"), entry.rawBase64);
+      assert.equal(raw.length, entry.byteLength);
+      before = sha(raw);
+      assert.equal(before, entry.sha256);
+      const blob = createHash("sha1")
+        .update(Buffer.from("blob " + raw.length + "\0"))
+        .update(raw)
+        .digest("hex");
+      assert.deepEqual(
+        Buffer.from(entry.gitEntryHex, "hex"),
+        Buffer.from("100644 blob " + blob + "\t" + entry.path + "\0"),
+      );
+      let expected = raw.toString("utf8");
+      assert.deepEqual(Buffer.from(expected), raw);
+      assert.ok(entry.transforms?.length);
+      for (const transform of entry.transforms) {
+        assert.equal(expected.split(transform.before).length, 2);
+        expected = expected.replace(transform.before, transform.after);
+      }
+      assert.deepEqual(
+        Buffer.from(expected),
+        current,
+        "complete actual caller frame: " + entry.path,
+      );
+    }
+    actual.set(entry.path, { before, after: sha(current) });
+  }
+  const files = rows.map((entry) => entry.path);
+  const digest = (side: "before" | "after", name: string) => actual.get(name)?.[side] ?? null;
+  assert.ok(qualifyComponentValueRetainedGuards(files, digest));
+  return { files, digest };
 }

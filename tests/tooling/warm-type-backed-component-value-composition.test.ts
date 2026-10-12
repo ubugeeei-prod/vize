@@ -6,7 +6,12 @@ import {
   retainedHostBeforeComponentValues,
   retainedPhysicalHostBeforeComponentValues,
   selectedComponentValueBodies,
+  selectedComponentValueRetainedGuards,
 } from "./support/component-value-host-custody.ts";
+import {
+  loadComponentValueManifest,
+  componentValueMetadataPairs,
+} from "../performance/support/warm-type-backed-component-value-host.ts";
 const root = path.resolve(import.meta.dirname, "../..");
 const capsule = JSON.parse(
   fs.readFileSync(
@@ -48,8 +53,8 @@ void test("unknown, missing, partial and historical mixed helper or whole source
     ),
   );
   for (const clause of [
-    'import { qualifyComponentValueHost } from "./warm-type-backed-component-value-host.ts";\n',
-    '  const componentValueHost =\n    enabled &&\n    digest("before", "tests/performance/support/warm-type-backed-component-value-host.ts") ===\n      null &&\n    digest("after", "tests/performance/support/warm-type-backed-component-value-host.ts") ===\n      "a9b1483b0fa2c82027eb7082b701a3c4bc3e1a93a9c55cc816da02610d86a215" &&\n    digest("before", "tests/performance/support/warm-type-backed-component-value-manifest.json") ===\n      null &&\n    digest("after", "tests/performance/support/warm-type-backed-component-value-manifest.json") ===\n      "b417ec82d12a2131f943db1fd2fd6ae624d7b38821350463af3300075f141902"\n      ? qualifyComponentValueHost(production, alreadyQualified, digest)\n      : null;\n',
+    'import {\n  qualifyComponentValueHost,\n  componentValueRetainedGuardPairs,\n  qualifyComponentValueRetainedGuards,\n} from "./warm-type-backed-component-value-host.ts";\n',
+    '  const componentValueHost =\n    enabled &&\n    digest("before", "tests/performance/support/warm-type-backed-component-value-host.ts") ===\n      null &&\n    digest("after", "tests/performance/support/warm-type-backed-component-value-host.ts") ===\n      "7343a8824a10c7fa0b1ae1745ba3b5ee934cb2be60458eb9ff003e7144bafe62" &&\n    digest("before", "tests/performance/support/warm-type-backed-component-value-manifest.json") ===\n      null &&\n    digest("after", "tests/performance/support/warm-type-backed-component-value-manifest.json") ===\n      "e4d108456190fa9050da3c33c48c4823d7d3e06a4096e477c106c85d900ff4c1" &&\n    qualifyComponentValueRetainedGuards(\n      componentValueRetainedGuardPairs.map(([file]) => file),\n      digest,\n    )\n      ? qualifyComponentValueHost(production, alreadyQualified, digest)\n      : null;\n',
     "    ...(componentValueHost ? { componentValueHost } : {}),\n",
   ]) {
     assert.equal(read(files[0])!.toString("utf8").split(clause).length, 2);
@@ -96,8 +101,10 @@ void test("the actual host composer requires complete source pins and preserves 
         { before: null, after: createHash("sha256").update(read(file)!).digest("hex") },
       ]),
   );
+  const guards = selectedComponentValueRetainedGuards((file) => read(file)!);
   const digest = (side: "before" | "after", file: string) =>
-    pins.get(file)?.[side] ?? selectedDigest(side, file);
+    pins.get(file)?.[side] ??
+    (guards.files.includes(file) ? guards.digest(side, file) : selectedDigest(side, file));
   const oldNull = { pathHostMove: null, timingHostMove: null, defaultMigrationHost: null };
   const result = qualifyHostMoves(production, new Set(), true, digest);
   assert.deepEqual(Object.keys(result), [...Object.keys(oldNull), "componentValueHost"]);
@@ -126,17 +133,14 @@ void test("the actual host composer requires complete source pins and preserves 
 });
 
 void test("every actual selected Rust/corpus/preserved body is required before historical projection", () => {
-  const manifest = JSON.parse(read(files[2])!.toString("utf8")) as {
-    files: Array<[string, unknown, unknown]>;
-    supplementalBodies: Array<[string, unknown, unknown]>;
-    preservedBodies: Array<[string, unknown]>;
-  };
+  const manifest = loadComponentValueManifest((file) => read(file)!);
   const selected = [
     ...manifest.files,
     ...manifest.supplementalBodies,
     ...manifest.preservedBodies,
+    ...componentValueMetadataPairs,
   ].map(([file]) => file);
-  assert.equal(selected.length, 80);
+  assert.equal(selected.length, 81);
   for (const target of selected)
     for (const changed of [null, Buffer.concat([read(target)!, Buffer.from(" ")])]) {
       assert.throws(

@@ -3,22 +3,22 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
-import { qualifyComponentValueHost } from "../performance/support/warm-type-backed-component-value-host.ts";
+import {
+  qualifyComponentValueHost,
+  loadComponentValueManifest,
+  componentValueMetadataPairs,
+  componentValueRetainedGuardPairs,
+  qualifyComponentValueRetainedGuards,
+} from "../performance/support/warm-type-backed-component-value-host.ts";
+
+import { qualifyHostMoves } from "../performance/support/warm-type-backed-host-qualifications.ts";
+import {
+  selectedComponentValueRetainedGuards,
+  retainedHostBeforeComponentValues,
+} from "./support/component-value-host-custody.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
-const manifest = JSON.parse(
-  fs.readFileSync(
-    new URL(
-      "../performance/support/warm-type-backed-component-value-manifest.json",
-      import.meta.url,
-    ),
-    "utf8",
-  ),
-) as {
-  files: Array<[string, string | null, string]>;
-  supplementalBodies: Array<[string, null, string]>;
-  preservedBodies: Array<[string, string]>;
-};
+const manifest = loadComponentValueManifest((file) => fs.readFileSync(path.join(root, file)));
 const capsule = JSON.parse(
   fs.readFileSync(
     path.join(
@@ -63,7 +63,7 @@ const absent = JSON.parse(
 ) as { source: string; entries: Array<{ path: string; gitEntryHex: string }> };
 assert.equal(
   sha(JSON.stringify(absent)),
-  "7983538c9f2ff5816e63d4e415684be8c6a91c7b8b5fa3a2f2011097d4c1e3a2",
+  "a322ea17f37e4ce1a4e7691052a7317182f74d8aa36c8cc5c6bc1db23cf10fdf",
 );
 assert.equal(absent.source, capsule.source);
 assert.deepEqual(
@@ -74,11 +74,16 @@ assert.deepEqual(
       .map(([file]) => file)
       .filter((file) => file === "crates/vize/tests/lint_component_value_reads_cli.rs"),
     ...manifest.supplementalBodies.map(([file]) => file),
+    ...componentValueMetadataPairs.map(([file]) => file),
   ].sort(),
 );
 
 const actual = new Map<string, { before: string | null; after: string | null }>();
-for (const [file, before, after] of [...manifest.files, ...manifest.supplementalBodies]) {
+for (const [file, before, after] of [
+  ...manifest.files,
+  ...manifest.supplementalBodies,
+  ...componentValueMetadataPairs,
+]) {
   const target = path.join(root, file);
   assert.ok(fs.lstatSync(target).isFile(), file);
   assert.equal(sha(fs.readFileSync(target)), after, "complete physical proposed body: " + file);
@@ -189,5 +194,110 @@ void test("a historical missing-after or reversed source mixture never qualifies
       digest(side === "before" ? "after" : "before", file),
     ),
     null,
+  );
+});
+
+void test("split source metadata preserves all thirteen tuples and refuses missing or changed metadata", () => {
+  const read = (file: string) => fs.readFileSync(path.join(root, file));
+  const [file, before, after] = componentValueMetadataPairs[0];
+  assert.equal(before, null);
+  assert.equal(sha(read(file)), after);
+  assert.deepEqual(loadComponentValueManifest(read).preservedBodies, manifest.preservedBodies);
+  for (const body of [
+    Buffer.alloc(0),
+    Buffer.from("[]"),
+    Buffer.concat([read(file), Buffer.from(" ")]),
+  ]) {
+    assert.throws(() => loadComponentValueManifest((name) => (name === file ? body : read(name))));
+    assert.equal(
+      qualifyComponentValueHost(production, new Set(), (side, name) =>
+        name === file && side === "after" ? sha(body) : digest(side, name),
+      ),
+      null,
+    );
+  }
+  assert.equal(
+    qualifyComponentValueHost(production, new Set(), (side, name) =>
+      name === file && side === "before" ? after : digest(side, name),
+    ),
+    null,
+  );
+});
+
+const readGuardBody = (file: string) => fs.readFileSync(path.join(root, file));
+const guards = selectedComponentValueRetainedGuards(readGuardBody);
+const guardedDigest = (side: "before" | "after", file: string) =>
+  actual.has(file)
+    ? digest(side, file)
+    : guards.files.includes(file)
+      ? guards.digest(side, file)
+      : side === "before"
+        ? null
+        : sha(readGuardBody(file));
+const oldHost = JSON.parse(
+  readGuardBody(
+    "tests/_fixtures/differential/linter/component-import-value-host-before/host-composition.json",
+  ).toString("utf8"),
+);
+
+void test("all thirteen actual current guard bodies close before the unchanged source workload qualifier", () => {
+  const receipt = qualifyComponentValueRetainedGuards(guards.files, guards.digest);
+  assert.ok(receipt);
+  assert.equal(receipt.completeGuardBodyPairs, 13);
+  assert.equal(receipt.runtimeCredit, false);
+  assert.equal(receipt.performanceCredit, false);
+  const result = qualifyHostMoves(production, new Set(), true, guardedDigest).componentValueHost;
+  assert.ok(result);
+  assert.equal(result.completeBodyPairs, 15);
+  assert.equal(result.supplementalBodyPairs, 52);
+  assert.equal(result.preservedBodyPairs, 13);
+  assert.equal(result.sourceMetadataBodyPairs, 1);
+  assert.deepEqual(
+    retainedHostBeforeComponentValues(readGuardBody, oldHost),
+    Buffer.from(oldHost.rawBase64, "base64"),
+  );
+});
+
+void test("every missing foreign or mixed before-after guard body refuses before source admission", () => {
+  for (const [file] of componentValueRetainedGuardPairs) {
+    for (const side of ["before", "after"] as const) {
+      const wrong = (candidate: "before" | "after", name: string) =>
+        candidate === side && name === file ? "0".repeat(64) : guardedDigest(candidate, name);
+      assert.equal(qualifyComponentValueRetainedGuards(guards.files, wrong), null);
+      assert.equal(
+        qualifyHostMoves(production, new Set(), true, wrong).componentValueHost,
+        undefined,
+      );
+    }
+    assert.throws(() =>
+      retainedHostBeforeComponentValues(
+        (name) => (name === file ? Buffer.alloc(0) : readGuardBody(name)),
+        oldHost,
+      ),
+    );
+  }
+});
+
+void test("unknown duplicate and partial guard frames never borrow complete source custody", () => {
+  assert.equal(
+    qualifyComponentValueRetainedGuards([...guards.files, "unknown.ts"], guards.digest),
+    null,
+  );
+  assert.equal(
+    qualifyComponentValueRetainedGuards([...guards.files, guards.files[0]], guards.digest),
+    null,
+  );
+  for (const file of guards.files)
+    assert.equal(
+      qualifyComponentValueRetainedGuards(
+        guards.files.filter((name) => name !== file),
+        guards.digest,
+      ),
+      null,
+    );
+  assert.equal(
+    qualifyHostMoves([...production, "crates/vize/src/unknown.rs"], new Set(), true, guardedDigest)
+      .componentValueHost,
+    undefined,
   );
 });

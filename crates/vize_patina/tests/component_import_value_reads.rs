@@ -148,9 +148,14 @@ fn a_raw_rule_context_cannot_borrow_a_captured_sfc_read() {
     assert!(errors.is_empty());
     let mut drawer = vize_croquis::Drawer::for_lint().with_binding_occurrences();
     drawer.draw_script_setup(source).draw_template(&root);
-    let (analysis, packet) = drawer.finish_with_binding_occurrences();
+    let (mut analysis, packet) = drawer.finish_with_binding_occurrences();
     assert!(packet.is_some());
-    let mut context = vize_patina::LintContext::new(&allocator, source, "Raw.vue");
+    analysis.retain_authored_binding_reads(None);
+    let sfc = vize_l0::cstr!("<script setup>{source}</script><template>{template}</template>");
+    let descriptor = vize_atelier_sfc::parse_sfc(sfc.as_str(), Default::default()).unwrap();
+    assert_eq!(sfc.as_str().get(21..26), Some("Child"));
+    let mut context = vize_patina::LintContext::new(&allocator, template, "Raw.vue");
+    context.set_sfc_template_descriptor(&descriptor);
     context.current_rule = RULE;
     context.set_analysis(&analysis);
     vize_patina::rules::vue::NoUnusedComponents::default().run_on_template(&mut context, &root);
@@ -177,8 +182,8 @@ fn a_raw_rule_context_cannot_borrow_a_captured_sfc_read() {
         vec![json!({
             "rule": RULE,
             "message": "Component 'Child' is registered but never used in template",
-            "start": 7,
-            "end": 12,
+            "start": 21,
+            "end": 26,
             "severity": "warning",
             "help": "Remove the unused import or use the component in your template",
             "labels": [],
