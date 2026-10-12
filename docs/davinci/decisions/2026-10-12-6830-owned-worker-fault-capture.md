@@ -233,12 +233,12 @@ attempt 1, job 114616352497, completed successfully in 41 seconds at driver
 239,021,229 body bytes, independently match before/after; the SDK runner never
 started. Preserve all four prior failed packets and their unknown causes.
 
-| Authored control | Actual terminal evidence |
-| --- | --- |
-| Normal | Owned continuation, actual exit event, original runner status 0. |
-| Cancellation | Authentic debugger SIGINT origin, discard/detach, tracer 0, owned pidfd resume, clean reaping, original status 0. |
-| SIGSEGV | One faulting thread/PC, stable providers, verified onward pass, actual exit event, original status 1. |
-| Original SIGINT | Origin distinct from debugger, no discard, verified onward pass, actual exit event, original status 1. |
+| Authored control | Actual terminal evidence                                                                                          |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Normal           | Owned continuation, actual exit event, original runner status 0.                                                  |
+| Cancellation     | Authentic debugger SIGINT origin, discard/detach, tracer 0, owned pidfd resume, clean reaping, original status 0. |
+| SIGSEGV          | One faulting thread/PC, stable providers, verified onward pass, actual exit event, original status 1.             |
+| Original SIGINT  | Origin distinct from debugger, no discard, verified onward pass, actual exit event, original status 1.            |
 
 Actual GDB 15.1 ELF/body matches before/after in every case. The frozen helper
 bodies match the driver exactly. Attach callback counts are 11/10/10/10; each
