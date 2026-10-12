@@ -71,3 +71,27 @@ cannot claim that. The original #8765 remains off queue until a genuine source
 repair is integrated and its current source/native/protected checks qualify.
 Actual total time, CPU/RSS and any accepted speedup remain TODOs rather than
 inferred results. Pair this decision with the existing CI issue #6830.
+
+## Original hosted result and fixture enrollment
+
+Source Check `38249549626` at `ac3e60be` passed the complete original transport
+vectors. Both mixed-directory runs completed 98 observations, 45 CLI cells and
+8 native cells in at most 97.335 seconds. Both hosts completed all 41 HTML
+cases in at most 77.214 seconds under the unchanged 180-second deadline, then
+completed the real n8n replay. The staged image differs from the failed
+candidate, and the failed command did not reach n8n; these observations do not
+establish a paired total speedup or the original timeout cause. Only selected
+whole artifact members were authenticated, not the entire 234,939,986-byte ZIP.
+
+The separate native run `38249549334` failed the original projection check:
+71 comparisons versus the committed 64. It found no mapping divergence.
+The actual merged #8757 introduced 49 physical Vue inputs. Keep the original
+64-comparison assertion for all other inputs, authenticate the complete body,
+mode and exact census of these 49 carriers, and run the same mapping checks on
+every carrier. Print every carrier's complete actual diagnostic observation
+before the unchanged assertions. A separate seven-comparison assertion is a
+predicted partition of the observed total, not a measured per-file baseline;
+if either partition is wrong, the test remains red. No 64-to-71 repin or input
+exclusion is admitted. Real filesystem controls refuse missing, unknown,
+duplicate, changed-body, symlink and changed-mode carriers. Their compilation
+and the actual partition require fresh native Actions before merge.
