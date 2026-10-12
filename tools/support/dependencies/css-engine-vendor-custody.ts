@@ -159,6 +159,22 @@ for (const [filename, checksum] of [
   ],
   [
     "tools/support/dependencies/css-engine-bundler-after.ts",
+    "abdd5b1b8b87711f3f5271d5290abf83c86143fbfe93f671ddc15bfcb6036744",
+  ],
+  [
+    "tools/support/dependencies/css-engine-producer-manifests.ts",
+    "8f1ad1a8c3c3c625cbc127effd5cb4aa3c1463f4d609f969265a3ec6aac51d25",
+  ],
+  [
+    "tests/_fixtures/differential/css-engine-vendor-exit/release-inheritance/root-original.toml",
+    "c8fe5d4b91f49524fb4f8cd06c7453affd936b2373c29b622e94a01dc7a0793f",
+  ],
+  [
+    "tests/_fixtures/differential/css-engine-vendor-exit/release-inheritance/lightningcss-original.toml",
+    "21486cbc79ea73caf098501beef644a8d1a64f55706a9dc24b9e2fc4df4044aa",
+  ],
+  [
+    "tests/_fixtures/differential/css-engine-vendor-exit/release-inheritance/bundler-after-original.ts.txt",
     "a126866ead8f2dd961926a217da4d18891bb3a7f92af7fc29b5179f2a70641d6",
   ],
   [

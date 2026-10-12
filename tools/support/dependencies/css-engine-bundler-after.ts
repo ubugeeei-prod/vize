@@ -6,6 +6,8 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { isDeepStrictEqual } from "node:util";
 
+import { authenticateProducerSource } from "./css-engine-producer-manifests.ts";
+
 const fixture = "tests/_fixtures/differential/css-engine-vendor-exit/bundler-before-inputs.json";
 const checksum = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 const git = (...args: string[]) => {
@@ -40,11 +42,12 @@ const unchangedBeforeSources = beforeSeal.twoProfiles[0].allTenSourceCopies.filt
   (row: { path: string }) => row.path !== "vendor/lightningcss/src/bundler.rs",
 );
 assert.equal(unchangedBeforeSources.length, 9);
-for (const row of unchangedBeforeSources) {
-  assert.equal(checksum(fs.readFileSync(row.path)), row.sha256, row.path);
-}
+const producerSourceAuthorities = unchangedBeforeSources.map(
+  (row: { path: string; sha256: string }) =>
+    authenticateProducerSource(row.path, fs.readFileSync(row.path), row.sha256),
+);
 const sourceChangeScope =
-  "Authenticated library/provider, lock, manifests and full probe/input bytes; no first-party checkout equivalence claim";
+  "Authenticated library/provider, lock and full probe/input bytes; two current release-inheritance manifests require whole reviewed hashes and exact full original inverses; no first-party checkout equivalence claim";
 const custody = spawnSync(
   process.execPath,
   ["tools/support/dependencies/css-engine-vendor-custody.ts"],
@@ -62,6 +65,7 @@ if (process.argv[2] === "--authenticate") {
       sourceRevision: git("rev-parse", "HEAD").trim(),
       manifestSha256: checksum(bytes),
       sourceChangeScope,
+      producerSourceAuthorities,
       publicationQualification: false,
     }),
   );
@@ -78,6 +82,7 @@ if (process.argv[2] === "--authenticate") {
       {
         sourceRevision,
         sourceChangeScope,
+        producerSourceAuthorities,
         scope: "source-after",
         beforeRun: beforeSeal.R,
         beforeSealSha256: checksum(before),
@@ -223,6 +228,7 @@ if (process.argv[2] === "--authenticate") {
       {
         sourceRevision,
         scope: "source-after",
+        producerSourceAuthorities,
         beforeRun: beforeSeal.R,
         beforeSealSha256: checksum(before),
         profile,
