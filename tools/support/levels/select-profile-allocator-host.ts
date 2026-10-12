@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { cssNamingGateReplayText } from "./css-naming-gate-continuation.ts";
 
 export const contracts = [
   {
@@ -62,6 +63,7 @@ type Reader = (file: string) => string | undefined;
  * Current continuations are checks only; replay never overwrites those sources.
  */
 export function allocatorReplayText(file: string, text: string | undefined): string | undefined {
+  if (file === sfcImportGate) return cssNamingGateReplayText(file, text);
   if (
     file === "crates/vize_carton/src/lib.rs" &&
     text !== undefined &&

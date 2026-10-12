@@ -133,3 +133,25 @@ An independent whole-source review cleared the checksum helper, all twenty
 original digest values and the complete naming-law preservation. The local
 six storage and four naming laws passed without engine execution; fresh Actions
 must still compile and execute this exact successor.
+
+Normal [38209482310](https://github.com/ubugeeei-prod/vize/actions/runs/38209482310)
+on `56fe448` / physical `bcb3b29` compiled the affected Rust tests, but retained
+distinct profiler host and allocator refusals: both historical replay gates
+pin the old whole SFC naming law. The finite continuation recognizes only the
+complete reviewed `429f0747` current law and reverses its exact naming additions;
+the complete result must equal the original `2d743d27` body. Unknown or partial
+source remains unprojected and fails the existing gate. The current executable
+law is never overwritten. Original hashes, seven historical allocator replay
+outputs, wire bytes, dependency and allocator-hook refusals remain unchanged.
+
+All same-carrier consumers were inspected before this successor. Its five whole
+helper/consumer/law bodies are pinned together. The existing host and allocator
+laws keep every original case and add current-body substitution/omission/count
+refusals; all twenty-six relevant source-only laws pass locally with zero skips.
+This is exact historical source closure, not a runtime policy or product change;
+fresh ordinary/focused/protected qualification remains required.
+
+An independent review read all seven whole source changes and their inverses,
+including the untouched current law and seven original replay outputs, and
+cleared this bounded continuation. That review grants no engine execution or
+future source qualification.

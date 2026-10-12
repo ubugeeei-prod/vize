@@ -77,6 +77,26 @@ for (const [filename, checksum] of [
     "429f0747c4f3c0d9867c929b1f5b01165cd380b21714411c56b11093f40b566c",
   ],
   [
+    "tools/support/levels/css-naming-gate-continuation.ts",
+    "1200a275d23ae66669657b17f18398d3b8e3bd12140d3e08f21466ed2bbf3bb2",
+  ],
+  [
+    "tools/support/levels/profile-export-host-preflight.ts",
+    "ff98c82c33930a742cc3d8a7f899e2ea59fc3950458fbb305d6d9f509f34c05b",
+  ],
+  [
+    "tools/support/levels/select-profile-allocator-host.ts",
+    "74cbfc1bc0ecec0f60f8fa9ee2cb462f4b2f3278b456d6509b5b4c2e7648445e",
+  ],
+  [
+    "tests/tooling/profile-export-host-boundary.test.ts",
+    "bd3ee4aac15b2c0afdd064a34bc63407918b199cd66d27fd110a9f56b770c43a",
+  ],
+  [
+    "tests/tooling/profiler-allocator-ownership.test.ts",
+    "61eeacdb07f4127dd13aed66dc94be8a7abd33add25e7fd8715e91f4d0bd84fc",
+  ],
+  [
     "tests/tooling/support/css-engine-successors.ts",
     "8edb01f09122680bb59c7e35231b389477553dcad903791aa13a1b38d882ce41",
   ],
