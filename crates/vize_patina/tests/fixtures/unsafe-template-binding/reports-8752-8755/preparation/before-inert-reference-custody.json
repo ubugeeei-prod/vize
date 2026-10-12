@@ -1,0 +1,104 @@
+{
+  "schema": "vize.8755-real-router-declaration-custody",
+  "version": 1,
+  "registry": "https://registry.npmjs.org/vue-router/-/vue-router-5.3.1.tgz",
+  "archiveBytes": 329990,
+  "archiveSha256": "bdc7d409f132c8d08789dc9ee39834f8129f48d2f8c554c4f55511cf7d0ae43b",
+  "sha512Integrity": "sha512-GDBZzgmILxA/kFnkFbJjQZdZ2QQbngnIMMuoUcjhZIfH1RGMaPjPwX5ASnV38qamuA9uhO0RDjSBHTDNG2uXyQ==",
+  "sha1": "9152b9011803e9012f0c134763c6482516bbb13c",
+  "memberCount": 70,
+  "unpackedBytes": 1247149,
+  "declarationsAndLicense": {
+    "package/package.json": {
+      "file": "package.json",
+      "bytes": 6073,
+      "sha256": "85949bb5d67c91ba7aeb81d2670515f747df98aa6f44e6bd21786b9e444a273b"
+    },
+    "package/dist/unplugin/esbuild.d.mts": {
+      "file": "dist--unplugin--esbuild.d.mts",
+      "bytes": 312,
+      "sha256": "482df2adf4f25383b7d52c547fc594125b00e961c7e25398bb319112b8c7352e"
+    },
+    "package/dist/unplugin/index.d.mts": {
+      "file": "dist--unplugin--index.d.mts",
+      "bytes": 2921,
+      "sha256": "36ca59114160e98dbefcf51b62d0bd25df6f7977fe4c54a7b1d393c3ce8a9e4d"
+    },
+    "package/dist/options-CwYZKRl4.d.mts": {
+      "file": "dist--options-CwYZKRl4.d.mts",
+      "bytes": 100985,
+      "sha256": "506e6292491a00aa5f317862101582dd34d764d69cc584edaa7cd249c3b8dc58"
+    },
+    "package/dist/unplugin/options.d.mts": {
+      "file": "dist--unplugin--options.d.mts",
+      "bytes": 743,
+      "sha256": "12f0077f0552d9b17e48d563a74c8b45dd6389006e9049fd2c3dea22aed9c85d"
+    },
+    "package/dist/unplugin/rolldown.d.mts": {
+      "file": "dist--unplugin--rolldown.d.mts",
+      "bytes": 346,
+      "sha256": "f1422628af009938bacdd14751a278212075fd4171ae5590c1f65b7dc7a0228a"
+    },
+    "package/dist/unplugin/rollup.d.mts": {
+      "file": "dist--unplugin--rollup.d.mts",
+      "bytes": 340,
+      "sha256": "fddf5b2d90dafee5f80fc4c7b2b80e37476d64b7741dd7cb406227f838b2f839"
+    },
+    "package/dist/unplugin/types.d.mts": {
+      "file": "dist--unplugin--types.d.mts",
+      "bytes": 401,
+      "sha256": "87088d1cccab784aaf9d52f130fb9975b0cc8011741336e1d0051d7eeb9ce1ae"
+    },
+    "package/dist/unplugin/vite.d.mts": {
+      "file": "dist--unplugin--vite.d.mts",
+      "bytes": 334,
+      "sha256": "0e05205d743ad5cca4c2c736abb34e62cdc92d36b9707550310d701a9bb0ec4b"
+    },
+    "package/vue-router-auto-resolver.d.mts": {
+      "file": "vue-router-auto-resolver.d.mts",
+      "bytes": 762,
+      "sha256": "314913c15f4393d4644b93554d189f43f44e11795f32182d50b71be5ae2d28c1"
+    },
+    "package/vue-router-auto-routes.d.mts": {
+      "file": "vue-router-auto-routes.d.mts",
+      "bytes": 1716,
+      "sha256": "2b242ab6b6518cfc6f62c79163576b198fc22d5b94abcae94ae24781d581874a"
+    },
+    "package/dist/unplugin/webpack.d.mts": {
+      "file": "dist--unplugin--webpack.d.mts",
+      "bytes": 301,
+      "sha256": "e15aaf9a3f8e1d27dfde04e82419aa6fa15fb26d57e35e3e213033986e2b164d"
+    },
+    "package/dist/index-D7ja2BKs.d.ts": {
+      "file": "dist--index-D7ja2BKs.d.ts",
+      "bytes": 123681,
+      "sha256": "57d0f6e2b09973db2139fe8d38c5d5f364c23661ef68613607c94ad617a1b10d"
+    },
+    "package/dist/experimental/index.d.ts": {
+      "file": "dist--experimental--index.d.ts",
+      "bytes": 4512,
+      "sha256": "94906f20a8cf339e728c08b8ccd5c47cc2a3b032eb0c82a7f303603b15416c38"
+    },
+    "package/dist/experimental/pinia-colada.d.ts": {
+      "file": "dist--experimental--pinia-colada.d.ts",
+      "bytes": 7348,
+      "sha256": "2bbd91941e9e85724976d0bd7c2f40310de07148388d634a90be919c88778565"
+    },
+    "package/vue-router-auto.d.ts": {
+      "file": "vue-router-auto.d.ts",
+      "bytes": 150,
+      "sha256": "bc49e345dfc2479a77d84c712a8a7f1714ae9d8ce7015e11e2be66dbcf9d40c5"
+    },
+    "package/dist/vue-router.d.ts": {
+      "file": "dist--vue-router.d.ts",
+      "bytes": 6247,
+      "sha256": "978ed3d535984e172e776126ec9f781925523f35555c405f62d45e82b3887af3"
+    },
+    "package/LICENSE": {
+      "file": "LICENSE",
+      "bytes": 1100,
+      "sha256": "91a2845c4db44e7497b514b98634a674c737986ad0db81599307cf733bf850b2"
+    }
+  },
+  "qualification": "Verified complete official registry package bytes and declarations only; no provider install/import/type checking or runtime acceptance."
+}

@@ -102,3 +102,19 @@ original config and genuine dependencies; preserve full process JSON/status/
 stdout/stderr and the authenticated public source/runtime tuple. Keep the third-
 party issues open until that released observation succeeds. No Fixes autoclose,
 check weakening, provider budget/exclusion change, or upstream write is authorized.
+
+## Initial test-first source gate observation
+
+Draft [8765](https://github.com/ubugeeei-prod/vize/pull/8765), exact `9a699b69`,
+ordinary Check `38229343824` refused the initial carrier before runtime regressions.
+The owned consumer-surface shard lacked its test-hook line shift and four new
+test-only records. Regenerate that sole shard with the exact existing Node
+scanner/renderer; no inventory scope/gate/source body is changed. The initial
+JS check had zero errors and twenty warnings only in copied official declaration
+references. Move those sixteen passive declaration bodies to `.fixture` names in
+a move-only commit, retaining all bytes and installed genuine declaration checks.
+No lint rule, budget, checker, exclusion, or provider expectation is weakened.
+Frozen actual dependency installation passed at that exact hosted head. Nuxt 3
+independently stopped at the existing pinned MoonBit Linux HTTP403 transport;
+its central source owner remains separate. Preserve all three raw logs and the
+first failure. This attempt does not prove any product regression before/after.
