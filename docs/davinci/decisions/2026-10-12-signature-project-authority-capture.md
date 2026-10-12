@@ -28,6 +28,7 @@ artifact 11720466915, run 38187359884, ZIP SHA-256
 `3a345f7b956970ebc0474f60d5ef9256463eedcaa46dd90cdd052b22c65c380f`.
 It authenticates the entire ZIP and original schema-3 archive receipt,
 checks out that literal source at its original baked workspace path,
+`/home/runner/_work/vize/vize`,
 and retains complete source, extracted metadata, original test binary and
 the installed Linux x64 TypeScript 7.0.2 provider bodies and hashes.
 Rust 1.99.0, nextest 0.9.146, full profile, required native runtime and the
@@ -36,6 +37,8 @@ the existing test, adds no RPC, installs no wrapper and performs no rebuild.
 The reviewed driver head is copied before the literal 4cc checkout. The
 optional same-repository PR label allows one explicitly approved observation
 before this new workflow reaches main; publication alone does not run it.
+Only the exact newly added `signature-project-authority-capture` label triggers
+the optional job; an unrelated label on an already labeled PR does not.
 
 Archive extraction occurs before observation. Reusing its extracted
 Cargo/binary metadata avoids tracing the five-gigabyte archive transfer.
@@ -53,6 +56,28 @@ The same runner, inherited environment, linked-directory existence and
 dependencies are checked again afterward. A mismatch never triggers a
 fallback build or changed executable. The original metadata stays untouched.
 
+The shell's empty LD environment does not prove Cargo's child environment is
+empty. The actual Cargo command, Rustup command, selected toolchain Cargo,
+nextest commands and their complete bodies are bound before and after.
+For a command whose whole bytes equal the actual Rustup shim, the reviewed
+Linux Rustup policy prepends that selected toolchain's `lib` directory; a
+direct selected Cargo command retains the empty shell LD environment.
+Unknown command or Rustup policies refuse capture. Pinned nextest appends
+this inherited suffix after its archived library paths, without deduplicating
+the suffix. The GNU loader probe uses exactly that ordered value. Every
+loader line must be a complete dependency or the explicitly recognized vDSO;
+each reported path, canonical path and whole body hash is retained, and each
+alias is resolved again afterward to reject retargeting.
+
+The official [Rustup 1.28.2](https://github.com/rust-lang/rustup/blob/1.28.2/src/toolchain.rs#L182),
+[1.29.0](https://github.com/rust-lang/rustup/blob/1.29.0/src/toolchain.rs#L184) and
+[1.29.1](https://github.com/rust-lang/rustup/blob/1.29.1/src/toolchain.rs#L186)
+have the same complete `set_ldpath` function (SHA-256
+`1744c884c068b3f8d91c5357b37995b857fd6f56d592cbea09cdbbb26d1de9e2`).
+Official [Cargo 0.100.0 external subcommand dispatch](https://github.com/rust-lang/cargo/blob/0.100.0/src/bin/cargo/main.rs#L305)
+preserves that LD value; its package minor maps to Cargo 1.99.0 in
+[the version implementation](https://github.com/rust-lang/cargo/blob/0.100.0/src/version.rs#L75).
+
 Linux `strace` retains every followed process/thread's complete execution,
 filesystem and read/write records. Native identity is joined to the
 retained provider path, creation edges, terminal process records and actual
@@ -62,6 +87,21 @@ ambiguous concurrent pipe ordering, framing failures and changed bodies
 refuse capture completeness. The bounded parser supports observed LSP and
 async API JSON-RPC; an unexpected MsgPack or socket transport is retained
 as unsupported evidence, without completeness credit.
+All retained processes belong to one observed creation closure. The selected
+test execution must descend from the pinned nextest execution, and every
+native execution must descend from that original test. Missing, reused or
+foreign parent edges refuse credit. Cross-thread pipe operations that share
+a timestamp or meet at an equal boundary also refuse unauthenticated order.
+
+The installed platform package's complete manifest must be version 7.0.2
+with Git head `2bd066d87f5bafd315be9f40889d0a60b9e58e0b`. Its official
+[API entry](https://github.com/microsoft/typescript-go/blob/2bd066d87f5bafd315be9f40889d0a60b9e58e0b/cmd/tsgo/api.go#L20)
+selects the async flag, the [server](https://github.com/microsoft/typescript-go/blob/2bd066d87f5bafd315be9f40889d0a60b9e58e0b/internal/api/server.go#L98)
+constructs the JSON-RPC protocol, and the
+[protocol implementation](https://github.com/microsoft/typescript-go/blob/2bd066d87f5bafd315be9f40889d0a60b9e58e0b/internal/api/protocol_jsonrpc.go#L9)
+uses the same [Content-Length reader/writer](https://github.com/microsoft/typescript-go/blob/2bd066d87f5bafd315be9f40889d0a60b9e58e0b/internal/jsonrpc/baseproto.go)
+framing as LSP. API initialization frames stay separate from the actual
+editor LSP `textDocument/signatureHelp` requests; no API method is renamed.
 
 The receipt separates capture integrity, the original instrumented test
 exit, actual responses and pipe consumption. Unread complete write suffixes
@@ -71,6 +111,11 @@ available. Instrumentation changes scheduling and timing, so neither a
 successful capture nor an instrumented test pass qualifies production,
 performance, the original full Rust suite, the whole 22-shard Matrix or a
 release.
+Pinned nextest's human reporter writes to stderr. Both stdout and stderr
+must exist and their complete bytes are hashed, but empty stdout is valid.
+Fifteen focused parser, ownership, loader and refusal laws pass locally
+without invoking the native provider or archived test. The actual optional
+capture has not run at this source review; it receives its own later receipt.
 
 The same-root materialized-project transition remains a hypothesis. Before
 a production change, prove the actual transition, physical imported source

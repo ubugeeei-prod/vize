@@ -102,7 +102,7 @@ export function collectPipes(records) {
       for (let i = 1; i < events.length; i++) {
         // Cross-thread overlapping operations have no authenticated byte order.
         assert.ok(
-          events[i - 1].pid === events[i].pid || events[i - 1].end <= events[i].time,
+          events[i - 1].pid === events[i].pid || events[i - 1].end < events[i].time,
           "ambiguous concurrent same-pipe byte order",
         );
       }
@@ -122,10 +122,51 @@ export function nativeSessions(records, provider) {
   assert.ok(native.length > 0, "no actual pinned native executable observed");
   for (const record of native) {
     const argv = record.exec.slice(1);
+    const lsp = argv.includes("--lsp");
+    const api = argv.includes("--api") && argv.includes("--async");
     assert.ok(
-      argv.includes("--lsp") || (argv.includes("--api") && argv.includes("--async")),
+      lsp !== api && !argv.some((arg) => arg === "--pipe" || arg.startsWith("--pipe=")),
       "unsupported observed native protocol: raw bytes retained, no completeness credit",
     );
   }
   return native;
+}
+
+export function processClosure(records, nextestPaths, binary, sessions) {
+  const pids = new Set(records.map((record) => record.pid));
+  const parents = new Map();
+  for (const record of records) {
+    const child = /^(?:clone|clone3|fork|vfork)\(.*\)\s+=\s+(\d+)$/.exec(record.call);
+    if (!child) continue;
+    const pid = Number(child[1]);
+    assert.ok(pids.has(pid), "created child has no retained lifecycle trace");
+    assert.ok(pid !== record.pid && !parents.has(pid), "reused/conflicting process parent");
+    parents.set(pid, { parent: record.pid, time: record.time });
+  }
+  const roots = [...pids].filter((pid) => !parents.has(pid));
+  assert.equal(roots.length, 1, "one observed process root required; orphan trace refused");
+  const descends = (event, ancestor) => {
+    let pid = event.pid;
+    let time = event.time;
+    const visited = new Set();
+    while (pid !== ancestor.pid) {
+      assert.ok(!visited.has(pid), "cyclic process creation closure");
+      visited.add(pid);
+      const edge = parents.get(pid);
+      if (!edge || edge.time > time) return false;
+      pid = edge.parent;
+      time = edge.time;
+    }
+    return ancestor.time <= time;
+  };
+  for (const pid of pids)
+    assert.ok(descends({ pid, time: Infinity }, { pid: roots[0], time: -Infinity }));
+  const nextest = records.filter((record) => nextestPaths.includes(record.exec?.[0]));
+  const tests = records.filter((record) => record.exec?.[0] === binary);
+  assert.equal(nextest.length, 1, "one pinned nextest execution required");
+  assert.equal(tests.length, 1, "one original archive test binary execution required");
+  assert.ok(descends(tests[0], nextest[0]), "test does not descend from pinned nextest");
+  for (const session of sessions)
+    assert.ok(descends(session, tests[0]), "native session does not descend from original test");
+  return { root: roots[0], nextest: nextest[0].pid, test: tests[0].pid, parents: [...parents] };
 }

@@ -8,11 +8,13 @@ import {
   framedMessages,
   nativeSessions,
   parseTrace,
+  processClosure,
   quotedBytes,
 } from "../../tools/support/compat/github/signature-strace.mjs";
 import {
   artifact,
   originalTest,
+  providerRevision,
   requireArtifact,
   selectedBinary,
   sha256,
@@ -118,6 +120,19 @@ void test("missing lifecycle, abbreviated payload and ambiguous pipe order expli
   );
   const b = parseTrace(11, trace(`write(3<pipe:[42]>, "${hex("b")}", 1) = 1`));
   assert.throws(() => collectPipes([...a, ...b]), /ambiguous concurrent/);
+  for (const time of [1.0, 1.5]) {
+    b[0].time = time;
+    b[0].end = time;
+    assert.throws(() => collectPipes([...a, ...b]), /ambiguous concurrent/);
+  }
+  b[0].time = 1.500001;
+  b[0].end = 1.500001;
+  assert.equal(
+    collectPipes([...a, ...b])
+      .get("42")
+      .writeBytes.toString(),
+    "ab",
+  );
 });
 
 void test("whole JSON-RPC packets retain errors and null separately and reject truncation", () => {
@@ -139,6 +154,12 @@ void test("whole JSON-RPC packets retain errors and null separately and reject t
 void test("native mode comes from actual observed argv, unsupported msgpack stays refusal", () => {
   const event = { exec: ["/native/tsc", "/native/tsc", "--api", "--async", "--cwd", "/project"] };
   assert.deepEqual(nativeSessions([event], "/native/tsc"), [event]);
+  for (const extra of ["--pipe", "--pipe=/tmp/socket", "--lsp"]) {
+    assert.throws(
+      () => nativeSessions([{ exec: [...event.exec, extra] }], "/native/tsc"),
+      /unsupported/,
+    );
+  }
   assert.throws(() => nativeSessions([event], "/foreign/tsc"), /no actual pinned/);
   event.exec = ["/native/tsc", "/native/tsc", "--api", "--cwd", "/project"];
   assert.throws(
@@ -156,22 +177,36 @@ void test("complete passive observation keeps original FAIL and rejects missing 
     const binary = "/archive/test-binary";
     const provider = "/native/tsc";
     const nextest = "/archive/cargo-nextest";
-    const originalMetadata = "/home/runner/work/vize/vize/target/nextest/binaries-metadata.json";
+    const originalMetadata = "/home/runner/_work/vize/vize/target/nextest/binaries-metadata.json";
     const dependencyPaths = ["/lib/loader.so", "/lib/libc.so"];
+    const providerPackage = "/native/package.json";
+    const commands = ["/runtime/cargo", "/runtime/rustup", "/runtime/toolchain/cargo"];
     const tree = "1".repeat(40);
-    const bodies = [binary, provider, nextest, originalMetadata, ...dependencyPaths].map(
-      (path, index) => {
-        const bytes = Buffer.from(`complete synthetic body ${index}`);
-        const retained = `bodies/${index}.bin`;
-        put(retained, bytes);
-        return { path, retained, bytes: bytes.length, sha256: sha256(bytes) };
-      },
-    );
+    const bodies = [
+      binary,
+      provider,
+      nextest,
+      originalMetadata,
+      ...commands,
+      providerPackage,
+      ...dependencyPaths,
+    ].map((path, index) => {
+      const bytes = Buffer.from(
+        path === providerPackage
+          ? JSON.stringify({ version: "7.0.2", gitHead: providerRevision })
+          : `complete synthetic body ${index}`,
+      );
+      const retained = `bodies/${index}.bin`;
+      put(retained, bytes);
+      return { path, retained, bytes: bytes.length, sha256: sha256(bytes) };
+    });
     putJson("source.json", {
       source,
       tree,
       binary,
       provider,
+      providerPackage,
+      providerRevision,
       originalTest,
       bodies,
       environment: {
@@ -197,12 +232,18 @@ void test("complete passive observation keeps original FAIL and rejects missing 
       put(name, "whole synthetic driver evidence");
     put("test.stderr", "original assertion failed");
     putJson("library-runtime.json", {
-      cwd: "/home/runner/work/vize/vize",
+      cwd: "/home/runner/_work/vize/vize",
       variables: {},
       nextest,
       nextestCommand: nextest,
       nextestSha256: bodies[2].sha256,
       version: "cargo-nextest 0.9.146",
+      ...Object.fromEntries(
+        ["cargo", "rustup", "toolchainCargo"].flatMap((key, index) => [
+          [key, commands[index]],
+          [`${key}Sha256`, bodies[index + 4].sha256],
+        ]),
+      ),
     });
     for (const name of [
       "selected-tests.json",
@@ -218,7 +259,9 @@ void test("complete passive observation keeps original FAIL and rejects missing 
       derivedListSha256: hashJson("derived-selected-tests.json"),
       derivedSha256: hashJson("derived-binaries-metadata.json"),
       originalSha256: bodies[3].sha256,
-      dependencies: bodies.slice(4).map((body) => ({ path: body.path, sha256: body.sha256 })),
+      dependencies: bodies
+        .slice(8)
+        .map((body) => ({ loaderReportedPath: body.path, path: body.path, sha256: body.sha256 })),
     };
     putJson("library-mapping.json", mapping);
     putJson("archive-receipt.json", {
@@ -226,7 +269,7 @@ void test("complete passive observation keeps original FAIL and rejects missing 
       source,
       sha: source,
       tree,
-      workspaceRoot: "/home/runner/work/vize/vize",
+      workspaceRoot: "/home/runner/_work/vize/vize",
       requireTsgo: "1",
       disableTsgo: null,
       nextestVersion: "0.9.146",
@@ -256,6 +299,34 @@ void test("complete passive observation keeps original FAIL and rejects missing 
     assert.equal(result.instrumentedTestPassed, false);
     assert.equal(result.originalAcceptanceCredit, false);
     assert.equal(result.performanceCredit, false);
+    const events = [
+      { pid: 9, time: 0.8, call: "exec", exec: [nextest] },
+      { pid: 9, time: 0.9, call: "clone(flags=SIGCHLD) = 10" },
+      { pid: 10, time: 1, call: "exec", exec: [binary] },
+      { pid: 10, time: 1.1, call: "clone(flags=SIGCHLD) = 20" },
+      { pid: 20, time: 1.11, call: "exec", exec: [provider] },
+    ];
+    const closure = (rows) => processClosure(rows, [nextest], binary, [rows.at(-1)]);
+    assert.equal(closure(events).test, 10);
+    assert.throws(() => closure(events.filter((_, i) => i !== 3)), /orphan/);
+    assert.throws(
+      () => closure([...events.slice(0, 3), { ...events[3], pid: 9 }, events[4]]),
+      /native session/,
+    );
+    assert.throws(
+      () => closure([{ ...events[0], time: 2 }, ...events.slice(1)]),
+      /test does not descend/,
+    );
+    assert.throws(
+      () => closure([...events.slice(0, 4), events[3], events[4]]),
+      /reused\/conflicting/,
+    );
+    assert.equal(closure(events).root, 9);
+    put("test.stdout", "");
+    assert.equal(validateCapture(directory).captureComplete, true);
+    rmSync(join(directory, "test.stdout"));
+    assert.throws(() => validateCapture(directory), /ENOENT/);
+    put("test.stdout", "");
     putJson("library-mapping.json", { ...mapping, libraryEnvironmentEqual: false });
     assert.throws(() => validateCapture(directory));
     putJson("library-mapping.json", mapping);

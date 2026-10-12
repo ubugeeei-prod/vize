@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 export const source = "4cc1ef9cbeb3ee33df3ba6086b174b611f8d5681";
 export const originalTest =
   "ide::signature_help::tests::signature_help_tracks_imported_callable_edits";
+export const providerRevision = "2bd066d87f5bafd315be9f40889d0a60b9e58e0b";
 export const artifact = {
   id: 11720466915,
   run: 38187359884,
@@ -70,7 +71,7 @@ export function selectedBinary(list) {
 function prepare(directory) {
   assert.equal(process.platform, "linux");
   assert.equal(process.arch, "x64");
-  assert.equal(resolve(process.cwd()), "/home/runner/work/vize/vize");
+  assert.equal(resolve(process.cwd()), "/home/runner/_work/vize/vize");
   assert.equal(git("rev-parse", "HEAD"), source);
   assert.equal(git("status", "--porcelain", "--untracked-files=no"), "");
   assert.equal(process.env.VIZE_TEST_REQUIRE_TSGO, "1");
@@ -86,7 +87,9 @@ function prepare(directory) {
   assert.ok(binary.startsWith(`${process.cwd()}/target/ci/deps/`));
   const nativePackage = realpathSync("node_modules/@typescript/typescript-linux-x64");
   const provider = realpathSync(join(nativePackage, "lib/tsc"));
-  assert.equal(json(join(nativePackage, "package.json")).version, "7.0.2");
+  const nativeManifest = json(join(nativePackage, "package.json"));
+  assert.equal(nativeManifest.version, "7.0.2");
+  assert.equal(nativeManifest.gitHead, providerRevision);
   // These earlier candidates would change the original fixture's resolver.
   for (const candidate of [
     "../corsa-bind/.cache/tsgo",
@@ -109,7 +112,9 @@ function prepare(directory) {
       "readelf.stdout",
       "elf-loader.stdout",
     ].map((name) => join(directory, name)),
-    json(join(directory, "library-runtime.json")).nextest,
+    ...["nextest", "cargo", "rustup", "toolchainCargo"].map(
+      (key) => json(join(directory, "library-runtime.json"))[key],
+    ),
     ...json(join(directory, "library-mapping.json")).dependencies.map((entry) => entry.path),
   ];
   const bodies = files.map((path, index) => {
@@ -128,6 +133,8 @@ function prepare(directory) {
     artifact,
     binary,
     provider,
+    providerPackage: join(nativePackage, "package.json"),
+    providerRevision,
     originalTest,
     bodies,
     timing: "instrumented; no performance or acceptance credit",

@@ -1,11 +1,25 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  mkdtempSync,
+  readFileSync,
+  realpathSync,
+  rmSync,
+  symlinkSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import {
   archivedLibdirs,
   libraryPaths,
+  loaderDependencyPaths,
+  requireDependencyCustody,
 } from "../../tools/support/compat/github/signature-archive-libdirs.mjs";
+import { sha256 } from "../../tools/support/compat/github/signature-archive-capture.mjs";
 
-const workspace = "/home/runner/work/vize/vize";
+const workspace = "/home/runner/_work/vize/vize";
 const fixture = (targets = 1) => {
   const original = {
     frozen: { complete: ["all", "other", "metadata"] },
@@ -123,4 +137,51 @@ void test("library search retains exact sorted existence, artifact/deps and host
     libraryPaths(meta, () => true),
     value,
   );
+  assert.deepEqual(
+    libraryPaths(meta, (path) => path !== "/build/absent", ["/toolchain/lib", "/host/libdir"])
+      .ordered,
+    [...value.ordered, "/toolchain/lib", "/host/libdir"],
+  );
+});
+
+void test("complete GNU loader report preserves aliases and refuses any unsupported line", () => {
+  const output =
+    "linux-vdso.so.1 (0x0001)\nlibc.so.6 => /lib/libc.so.6 (0x0002)\n/lib/ld-linux-x86-64.so.2 (0x0003)\n";
+  assert.deepEqual(loaderDependencyPaths(output, "/lib/ld-linux-x86-64.so.2"), [
+    "/lib/ld-linux-x86-64.so.2",
+    "/lib/libc.so.6",
+  ]);
+  assert.throws(() => loaderDependencyPaths("", "/lib/loader"), /unresolved\/unsupported/);
+  for (const line of ["libstd.so => not found", "linux-vdso.so.2 (0x0001)", "unsupported line"])
+    assert.throws(
+      () => loaderDependencyPaths(output + `${line}\n`, "/lib/loader"),
+      /unresolved\/unsupported/,
+    );
+});
+
+void test("dependency custody refuses alias retarget while original complete bytes stay unchanged", () => {
+  const directory = mkdtempSync(join(tmpdir(), "vize-loader-alias-law-"));
+  try {
+    const original = join(directory, "original.so");
+    const changed = join(directory, "changed.so");
+    const alias = join(directory, "selected.so");
+    writeFileSync(original, "whole original dependency");
+    writeFileSync(changed, "whole different dependency");
+    symlinkSync(original, alias, "file");
+    const custody = [
+      { loaderReportedPath: alias, path: realpathSync(alias), sha256: sha256(readFileSync(alias)) },
+    ];
+    requireDependencyCustody(custody);
+    unlinkSync(alias);
+    symlinkSync(changed, alias, "file");
+    assert.equal(sha256(readFileSync(original)), custody[0].sha256);
+    assert.throws(() => requireDependencyCustody(custody), /alias retargeted/);
+    unlinkSync(alias);
+    symlinkSync(original, alias, "file");
+    requireDependencyCustody(custody);
+    writeFileSync(original, "changed complete original bytes");
+    assert.throws(() => requireDependencyCustody(custody));
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 });

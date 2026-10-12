@@ -5,11 +5,18 @@ import { fileURLToPath } from "node:url";
 import {
   artifact,
   originalTest,
+  providerRevision,
   requireArtifact,
   sha256,
   source,
 } from "./signature-archive-capture.mjs";
-import { collectPipes, framedMessages, nativeSessions, parseTrace } from "./signature-strace.mjs";
+import {
+  collectPipes,
+  framedMessages,
+  nativeSessions,
+  parseTrace,
+  processClosure,
+} from "./signature-strace.mjs";
 
 const json = (path) => JSON.parse(readFileSync(path, "utf8"));
 const save = (path, value) => writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`);
@@ -30,18 +37,20 @@ export function validateCapture(directory) {
     "signature-strace.mjs",
     "signature-capture-integrity.mjs",
     "strace-version.txt",
-    "test.stdout",
   ]) {
     assert.ok(
       readFileSync(join(directory, name)).length > 0,
       `required retained file missing/empty: ${name}`,
     );
   }
+  // Pinned nextest's human reporter writes to stderr; empty stdout is valid.
+  // Require and retain both complete files without inventing test output.
+  for (const name of ["test.stdout", "test.stderr"]) readFileSync(join(directory, name));
   const receipt = json(join(directory, "archive-receipt.json"));
   assert.equal(receipt.schemaVersion, 3);
   assert.equal(receipt.sha, source);
   assert.equal(receipt.tree, manifest.tree);
-  assert.equal(receipt.workspaceRoot, "/home/runner/work/vize/vize");
+  assert.equal(receipt.workspaceRoot, "/home/runner/_work/vize/vize");
   assert.equal(receipt.requireTsgo, "1");
   assert.equal(receipt.disableTsgo, null);
   assert.equal(receipt.nextestVersion, "0.9.146");
@@ -71,8 +80,14 @@ export function validateCapture(directory) {
     assert.equal(bytes.length, body.bytes);
     assert.equal(sha256(bytes), body.sha256);
   }
+  assert.equal(manifest.providerRevision, providerRevision);
+  const packageBody = manifest.bodies.find((body) => body.path === manifest.providerPackage);
+  assert.ok(packageBody, "complete native provider package authority missing");
+  const providerPackage = json(join(directory, packageBody.retained));
+  assert.equal(providerPackage.version, "7.0.2");
+  assert.equal(providerPackage.gitHead, providerRevision);
   const runtime = json(join(directory, "library-runtime.json"));
-  assert.equal(runtime.cwd, "/home/runner/work/vize/vize");
+  assert.equal(runtime.cwd, "/home/runner/_work/vize/vize");
   assert.deepEqual(runtime.variables, {});
   assert.match(runtime.version, /cargo-nextest 0\.9\.146(?:\s|$)/);
   assert.ok(
@@ -80,6 +95,14 @@ export function validateCapture(directory) {
       (body) => body.path === runtime.nextest && body.sha256 === runtime.nextestSha256,
     ),
   );
+  for (const key of ["cargo", "rustup", "toolchainCargo"]) {
+    assert.ok(
+      manifest.bodies.some(
+        (body) => body.path === runtime[key] && body.sha256 === runtime[`${key}Sha256`],
+      ),
+      `complete ${key} command body missing`,
+    );
+  }
   const mapping = json(join(directory, "library-mapping.json"));
   assert.equal(mapping.libraryEnvironmentEqual, true);
   assert.equal(mapping.inverseWholeObjectExact, true);
@@ -99,7 +122,7 @@ export function validateCapture(directory) {
   assert.ok(
     manifest.bodies.some(
       (body) =>
-        body.path === "/home/runner/work/vize/vize/target/nextest/binaries-metadata.json" &&
+        body.path === "/home/runner/_work/vize/vize/target/nextest/binaries-metadata.json" &&
         body.sha256 === mapping.originalSha256,
     ),
   );
@@ -115,30 +138,19 @@ export function validateCapture(directory) {
   const records = names.flatMap((name) =>
     parseTrace(Number(name.split(".")[1]), readFileSync(join(directory, name), "utf8")),
   );
-  const pids = new Set(records.map((record) => record.pid));
-  for (const record of records) {
-    const child = /^(?:clone|clone3|fork|vfork)\(.*\)\s+=\s+(\d+)$/.exec(record.call);
-    if (child)
-      assert.ok(pids.has(Number(child[1])), "created child has no retained lifecycle trace");
-  }
   assert.ok(
     !/strace:\s*(?:attach|ptrace|Process.*detached|.*No space left)/i.test(
       readFileSync(join(directory, "test.stderr"), "utf8"),
     ),
     "syscall observer reported lost capture",
   );
+  const ownership = processClosure(
+    records,
+    [runtime.nextestCommand, runtime.nextest],
+    manifest.binary,
+    records.filter((record) => record.exec?.[0] === manifest.provider),
+  );
   const sessions = nativeSessions(records, manifest.provider);
-  assert.ok(
-    records.some(
-      (record) =>
-        record.exec?.[0] === runtime.nextestCommand || record.exec?.[0] === runtime.nextest,
-    ),
-    "pinned nextest executable was not observed",
-  );
-  assert.ok(
-    records.some((record) => record.exec?.[0] === manifest.binary),
-    "original archive test binary was not executed",
-  );
   const pipes = collectPipes(records);
   assert.ok(resolve(directory) !== resolve(process.cwd()), "isolated capture directory required");
   const observed = sessions.map((session, index) => {
@@ -268,6 +280,7 @@ export function validateCapture(directory) {
       .filter((name) => name !== "bodies" && name !== "integrity.json")
       .map((name) => ({ name, sha256: sha256(readFileSync(join(directory, name))) })),
     sessions: observed.length,
+    ownership,
     timing,
   };
 }
