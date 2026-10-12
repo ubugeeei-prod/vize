@@ -140,3 +140,10 @@ or new oracle is introduced. Existing documented examples remain intact. Reuse
 the existing required native Actions command; no workflow, new builder or product
 pipeline stage is added. Ordinary optional unit results remain separate from this
 required native public API role and from installed release acceptance.
+
+The first production source `61f47f8c` hit the repository's ordinary-module-layout
+gate because the test helper used an explicit path attribute. Preserve that full
+failure log; move only the helper's whole bytes to `tests/public_expression_reports/mod.rs`
+in a move-only commit and use an ordinary `mod` declaration. The reviewed four
+production bodies and all original expectations remain byte-exact. No module
+layout gate or discovery rule changes.

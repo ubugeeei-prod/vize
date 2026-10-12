@@ -4,7 +4,6 @@ use std::path::{Path, PathBuf};
 use vize_l0::{String, cstr};
 use vize_patina::{LintPreset, Linter};
 
-#[path = "documented_rule_examples/public_expression_reports.rs"]
 mod public_expression_reports;
 
 #[test]
