@@ -66,6 +66,19 @@ token environment also differ from the original failed source.
 
 ## Remaining qualification
 
+Initial source `a69685f3d9f7c56bb8dda11b2d55e21affcd0493` genuinely failed
+[tooling shard two](https://github.com/ubugeeei-prod/vize/actions/runs/38189757116/job/114620319467):
+the existing native-image guard compared the new setup condition with the
+original matrix condition. Its full original fixture/hash stays unchanged.
+The narrow test successor asserts the actual approved Moon selector and all
+72 contexts before reversing only that predicate for the original whole-job
+comparison. Every other field remains present; the same validator rejects an
+unknown setup field and a removed CLI command. The seven-law suite has six
+passes and one failure before this correction, then seven passes and zero
+failures after it, with no skipped laws.
+Keep the original failure; requalify the actual successor rather than rerun or
+borrow the first source's passing Moon laws.
+
 - Obtain fresh exact-head Actions and protected-queue qualification, then
   verify actual merge of this prerequisite.
 - Run one complete eighteen-check Native Smoke qualification on the genuine
