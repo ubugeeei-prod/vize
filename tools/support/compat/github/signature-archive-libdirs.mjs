@@ -125,9 +125,10 @@ function runtimeBoundary() {
     encoding: "utf8",
   }).trim();
   assert.match(toolchain, /^1\.99\.0-x86_64-unknown-linux-gnu(?:\s|$)/);
-  const toolchainCargo = realpathSync(
-    execFileSync("rustup", ["which", "cargo"], { encoding: "utf8" }).trim(),
-  );
+  const toolchainCargoCommand = execFileSync("rustup", ["which", "cargo"], {
+    encoding: "utf8",
+  }).trim();
+  const toolchainCargo = realpathSync(toolchainCargoCommand);
   const hash = (path) => sha256(readFileSync(path));
   const cargoSha256 = hash(cargo);
   const rustupSha256 = hash(rustup);
@@ -135,7 +136,7 @@ function runtimeBoundary() {
   assert.ok(shim || cargo === toolchainCargo, "unsupported Cargo command boundary");
   const cargoVersion = execFileSync("cargo", ["--version"], { encoding: "utf8" }).trim();
   assert.match(cargoVersion, /^cargo 1\.99\.0(?:\s|$)/);
-  const inherited = shim ? [join(dirname(dirname(toolchainCargo)), "lib")] : [];
+  const inherited = shim ? [join(dirname(dirname(toolchainCargoCommand)), "lib")] : [];
   const nextestCommand = execFileSync("which", ["cargo-nextest"], { encoding: "utf8" }).trim();
   const nextest = realpathSync(nextestCommand);
   const version = execFileSync("cargo", ["nextest", "--version"], { encoding: "utf8" }).trim();
@@ -152,6 +153,7 @@ function runtimeBoundary() {
     rustupVersion,
     rustupPolicy,
     toolchain,
+    toolchainCargoCommand,
     toolchainCargo,
     toolchainCargoSha256: hash(toolchainCargo),
     cargoBoundary: shim ? "reviewed-rustup-shim" : "direct-selected-cargo",
