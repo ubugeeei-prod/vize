@@ -111,3 +111,30 @@ An independently reviewed fifth whole 36-member cohort records this actual
 composition while preserving all four historical cohorts and every refusal.
 Historical composed-host success remains historical evidence; current product
 changes require fresh exact-head qualification of all eighteen workers.
+
+## Current CI prerequisite and retained failures
+
+Exact `5f8d486ff7707936cb196603ecfb1c8d343a3c22` passes its source checks.
+Native Smoke [38187396126](https://github.com/ubugeeei-prod/vize/actions/runs/38187396126)
+finishes with fifteen successful workers and three setup failures. All twelve
+fresh-install workers complete the original eight cells and both additions.
+The Linux arm64 native worker stops on the pinned MoonBit archive's HTTP 403;
+macOS x64 stops on Vite+ DNS resolution timeouts; Windows arm64 stops in the
+MoonBit PowerShell installer with an internal CLR error. Preserve the complete
+eighteen job logs. These outcomes do not qualify all eighteen workers or a
+published release, and they do not establish a shared infrastructure cause.
+
+The independent [Moon consumer prerequisite](./2026-10-12-native-smoke-moon-consumer.md)
+in #8725 enables MoonBit setup only for its actual selected macOS arm64 producer,
+which retains all three Moon laws. Default native and fresh-install qualification
+keeps all eighteen workers, recipes, original ten-cell vectors and runtime checks.
+Removing unused Moon setup also removes its Windows amd64 override; the caller's
+Windows arm64 architecture remains. This is an intended environment change.
+
+Replay #8679 directly onto the exact #8725 head from genuine current main and
+register both as one ordered native GitHub Stack. Preserve all incoming runtime,
+native-image and workflow authorities, all five historical whole cohorts and
+every authored init body. Require fresh source Actions on each exact layer and
+one composed child qualification of all eighteen workers before delivery. The
+child campaign cannot claim an exact-head parent run, prior-head qualification
+or published consumer acceptance. No original failure is retried or erased.
