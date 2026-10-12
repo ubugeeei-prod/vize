@@ -18,6 +18,7 @@ mod global_component_callbacks;
 mod import_meta;
 mod imported_component_ref_expose;
 mod imported_runtime_props;
+mod javascript_sfc_membership;
 mod large_declaration_identity;
 mod lexical_dollar_slots;
 mod literal_dynamic_slot_names;
