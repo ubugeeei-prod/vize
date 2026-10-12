@@ -155,3 +155,13 @@ artifact remain retained. Parent `379f47e2` genuinely rebases onto actual main
 `47b204f2`, inheriting the accepted helper through ancestry. Replay the complete
 child onto that parent; require both fresh source gates before the still unused
 composed eighteen-worker campaign. No helper is copied from a foreign checkout.
+
+Exact `977e28b2` passes Check, native phases and Nuxt. Its sole full
+[eighteen-worker campaign](https://github.com/ubugeeei-prod/vize/actions/runs/38195250985)
+is pinned to that original source and remains in progress. The protected queue
+actually merges #8725 as `f05db308` on 2026-10-12. Replay the remaining init
+layer onto that genuine main and rerun its exact-source Actions. The intervening
+changes affect only CI diagnostics, their tests and docs; native recipes, Cargo
+inputs, package locks, loader and authored init bodies stay byte-equal. Preserve
+the complete incoming decision record and all five cohorts. The original run
+is not an exact-head successor run and gives no published-consumer acceptance.
