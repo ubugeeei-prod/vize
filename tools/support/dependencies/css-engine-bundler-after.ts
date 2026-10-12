@@ -33,26 +33,18 @@ assert.deepEqual(
   beforeSeal.twoProfiles.map((row: { retainedSlots: number }) => row.retainedSlots),
   [63, 63],
 );
-const productionDelta = git(
-  "diff",
-  "--name-only",
-  beforeSeal.C,
-  "--",
-  "Cargo.toml",
-  "Cargo.lock",
-  "crates",
-  "davinci",
-  "vendor/lightningcss/src",
-  "vendor/parcel_sourcemap",
+// Shallow PR checkouts contain the actual composed H, not historical e35.
+// Compare authenticated complete byte authorities rather than requiring old Git
+// objects or claiming unrelated first-party main changes are the same producer.
+const unchangedBeforeSources = beforeSeal.twoProfiles[0].allTenSourceCopies.filter(
+  (row: { path: string }) => row.path !== "vendor/lightningcss/src/bundler.rs",
 );
-const allowed = new Set([
-  "vendor/lightningcss/src/bundler.rs",
-  "vendor/lightningcss/src/bundler/context.rs",
-  "vendor/lightningcss/src/bundler/order_contract.rs",
-]);
-for (const filename of productionDelta.trim().split("\n").filter(Boolean)) {
-  assert(allowed.has(filename), `source-after producer delta ${filename}`);
+assert.equal(unchangedBeforeSources.length, 9);
+for (const row of unchangedBeforeSources) {
+  assert.equal(checksum(fs.readFileSync(row.path)), row.sha256, row.path);
 }
+const sourceChangeScope =
+  "Authenticated library/provider, lock, manifests and full probe/input bytes; no first-party checkout equivalence claim";
 const custody = spawnSync(
   process.execPath,
   ["tools/support/dependencies/css-engine-vendor-custody.ts"],
@@ -69,7 +61,7 @@ if (process.argv[2] === "--authenticate") {
     JSON.stringify({
       sourceRevision: git("rev-parse", "HEAD").trim(),
       manifestSha256: checksum(bytes),
-      productionDelta,
+      sourceChangeScope,
       publicationQualification: false,
     }),
   );
@@ -85,6 +77,7 @@ if (process.argv[2] === "--authenticate") {
     JSON.stringify(
       {
         sourceRevision,
+        sourceChangeScope,
         scope: "source-after",
         beforeRun: beforeSeal.R,
         beforeSealSha256: checksum(before),

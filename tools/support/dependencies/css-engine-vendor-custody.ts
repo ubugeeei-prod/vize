@@ -111,6 +111,17 @@ for (const [filename, length, digest] of [
   assert.equal(sha256(bytes), digest, filename);
 }
 // Authenticated finite authored-order successor; all original before bytes remain.
+assert.equal(
+  sha256(
+    fs.readFileSync(
+      path.join(
+        root,
+        "tests/_fixtures/differential/css-engine-vendor-exit/bundler-after-shallow-refusal.json",
+      ),
+    ),
+  ),
+  "875d16fe096b741ab2c0fded7cdb2b99e6fda09814cec5490da602a5c0354f7c",
+);
 for (const [filename, checksum] of [
   [
     "vendor/lightningcss/src/bundler/context.rs",
@@ -138,7 +149,7 @@ for (const [filename, checksum] of [
   ],
   [
     "tools/support/dependencies/css-engine-bundler-after.ts",
-    "380aff248e6f4626b68b459c5409eed41a1730195181f78988771a6497336e89",
+    "a126866ead8f2dd961926a217da4d18891bb3a7f92af7fc29b5179f2a70641d6",
   ],
   [
     "tests/_fixtures/differential/css-engine-vendor-exit/moonbit-publish-original.test.ts.txt",

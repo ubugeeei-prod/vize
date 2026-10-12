@@ -87,6 +87,20 @@ An abort, timeout, malformed child or lost original whole reference fails the ru
 The historical before-only dispatcher remains distinct and refuses a changed
 producer. No local Cargo build or new before diagnostic supplies qualification.
 
+The first ordinary source run38195851935 on C`3cc57af1600c2c1c022fface681c89b5277dcd50`,
+actual composed H`6bd90665cda6952520cb7e0479965d7477b62652`, compiles both profiles:
+all124 library tests (including the three new contracts),27 original CLI cases,
+the extra conflict case and map/archive/refusal suites pass. Both engine jobs
+nevertheless fail because the new after helper requests unavailable historical
+e35 in a depth1 checkout. No standalone after slot executes or receives credit.
+The [complete failed helper, logs and authenticated artifact identities](../../../tests/_fixtures/differential/css-engine-vendor-exit/bundler-after-shallow-refusal.json)
+remain frozen. The successor compares nine complete unchanged source/probe/input/
+manifest/lock authorities directly from the official before seal, retains the
+full130+20 source guard and actual H, and does not claim unrelated incoming-main
+first-party changes are identical. No history fetch or original check waiver is
+needed. A fresh empty-Git custody replay succeeds without e35; it grants no
+engine or after acceptance. Ordinary source-after qualification remains required.
+
 The stale tooling2 publication-prefix fixture keeps its original five crate IDs
 and Carton obligation, adding only the two newly introduced fork IDs; the entire
 original test is frozen alongside the unchanged restoration assertions.
