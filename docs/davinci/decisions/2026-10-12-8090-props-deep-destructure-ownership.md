@@ -118,3 +118,9 @@ whole oracle/consumer roles. Its immutable receipt SHA256 is
 `e4c82e65b0bbcd77965ed868276f231a8993c8db456e54a2755a7cb5cb4f67cf`;
 this is source review only. Candidate Rust/API/CLI and protected/public gates
 still require their own execution evidence.
+
+Genuine fresh-main replay uses `dd188515f8ec3c51662b4f4d69adcd39c86a0907` (source CLI retry custody included).
+All 105 reviewed nonadministrative bodies are exact; only the companion review/comment
+record and incoming canonical clauses differ. Incoming 350 rows and the original
+NoExport suffix remain preserved, with only the owned paragraph 198 appended.
+Fresh Actions qualify this actual descendant independently of all earlier greens.
