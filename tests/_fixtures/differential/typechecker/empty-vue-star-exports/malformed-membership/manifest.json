@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "case": "malformed-refusal",
+  "memberCount": 86,
+  "rootRoles": [
+    "native",
+    "project",
+    "providers"
+  ],
+  "parts": [
+    {
+      "file": "malformed-membership/part-00.json",
+      "mode": "100644",
+      "bytes": 5446,
+      "sha256": "5f315ecffe1d21a9a54d2ba3c545ebaf7cc25d1fb19395f77fe4e0b51e088264",
+      "gitBlob": "22eb745688ea02336b71df3e5f85779660ba9ae3",
+      "start": 0,
+      "entries": 43
+    },
+    {
+      "file": "malformed-membership/part-01.json",
+      "mode": "100644",
+      "bytes": 7105,
+      "sha256": "d21d321a89b3c7e620b067ff04353ca17fc3d9e6a878caf51c0b152032c136f5",
+      "gitBlob": "d089f40308e341b87badc581f353040a11af7373",
+      "start": 43,
+      "entries": 43
+    }
+  ],
+  "provenance": {
+    "source": "784d9ede9d80fe5539d79a9fe8ab0002e483bd8f",
+    "run": 38305157636,
+    "job": 114997299009,
+    "artifact": 11772906117,
+    "artifactSHA256": "b822b657f6cebf1db6a03e52c73931df0149840b95ad537b092bce8177dcf4dd",
+    "orderedMembershipPacket": {
+      "member": "native-source-recipe-empty-vue-star/empty-vue-star-exports/malformed-refusal.json",
+      "wholePacketSHA256": "d695fb4ca25e81249c798eebc48707c3adac87418968b67244208b15582a413b",
+      "wholeListingStdoutSHA256": "cece3d6081c8d3a45b572c4f9140a471b309f9db2ee0a85f04b2880559b78bf9",
+      "directMalformedGeneratedBodyCount": 4
+    },
+    "independentBodyPacket": {
+      "member": "native-source-recipe-empty-vue-star/empty-vue-star-exports/authored-reserved-props-refusal.json",
+      "wholePacketSHA256": "8b62dbcf5e2c7c8150c3efd4f17ee35862e714fb04edf83161410975ea180a7d",
+      "sameNativeAndProviderBodyCount": 80,
+      "sharedConstantHelperBodyCount": 2
+    },
+    "helperSourceProof": {
+      "writer": "crates/vize_canon/src/batch/virtual_project/materialize_stubs.rs",
+      "helpers": "constant SHARED_PREAMBLE_DTS without Vue JSX reference under both captured exact configs; actual separate fullbody packet retained",
+      "modules": "constant 63-byte write_vue_module_stubs text; actual separate fullbody packet retained"
+    },
+    "scope": "new test-only full ordered membership/body reference; no claim the failed malformed receipt read all86 bodies, no semantic or runtime acceptance credit"
+  }
+}

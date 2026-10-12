@@ -176,3 +176,21 @@ The current closure is 43 producer/test-target, 82 supplemental and 152 preserve
 bodies plus nine metadata bodies. Any original-after substitution, incomplete
 correction, mixed source or missing body refuses admission before a historical
 tooling view or workload. This enrollment supplies source custody only.
+
+Independent review found that reading the remaining paths and observing Vue and
+Vite roles still allowed a duplicate-only listing to hide omitted program files.
+The revised malformed law therefore compares the complete ordered 86-member
+path, size and SHA256 vector. Normalization uses only the validated native
+library root, selected mirror root and the common canonical package root bound
+by both authenticated Vue and Vite manifests. Dropped, added, duplicate,
+reordered, foreign and changed-body vectors refuse, including 85 Vue entries
+plus one Vite entry. These parser controls remain within the existing first
+law; they grant no native execution credit and add no fourth target test.
+
+The new passive reference records its distinct evidence sources: membership
+order and four materialized bodies from the failed malformed packet, eighty
+native/provider declaration bodies from a separate actual packet using the same
+native and providers, and two static shared-helper bodies from that separate
+packet. The helper writer and captured options establish their constant form.
+The failed malformed packet did not read all 86 bodies. The next genuine run
+must perform every read and match the entire reference before acceptance.

@@ -24,6 +24,8 @@
 mod contracts;
 #[path = "empty_vue_star_exports/execution.rs"]
 mod execution;
+#[path = "empty_vue_star_exports/membership.rs"]
+mod membership;
 #[path = "empty_vue_star_exports/projection.rs"]
 mod projection;
 #[path = "empty_vue_star_exports/qualification.rs"]
@@ -37,6 +39,7 @@ fn authentic_six_counterfactual_packets_and_provider_bytes_remain_complete() {
         support::hash(b"abc"),
         "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
     );
+    membership::controls();
     contracts::authentic_custody();
 }
 

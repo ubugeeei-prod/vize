@@ -1,7 +1,7 @@
 //! Persist complete pending receipts before each genuine operation or assertion.
 
 use super::{
-    qualification,
+    membership, qualification,
     support::{self, Runtime},
 };
 use serde_json::{Value, json};
@@ -142,6 +142,10 @@ pub(super) fn check(case: &Value, runtime: &Runtime) -> Observation {
     qualification::configuration(case, &packet, &mirror);
     packet["actualNativeLoadedProviderRoles"] =
         qualification::loaded_roles(&providers, &packet["wholeNativeLoadedFiles"]);
+    if case["id"] == "malformed-refusal" {
+        packet["completeOrderedMalformedMembership"] =
+            membership::validate(&packet, &packet["wholeNativeLoadedFiles"]);
+    }
     packet["phase"] = json!("SUPPORT_CUSTODY_VALIDATED_PENDING_SOURCE_AND_VECTOR_ASSERTIONS");
     support::capture(id, &packet);
     Observation {
