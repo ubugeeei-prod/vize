@@ -10,6 +10,12 @@ import {
   const plugin = createLegacyVueCompatibilityPlugin({ vueVersion: 2 });
 
   assert.equal(
+    isLegacyVueCompatibilityMode({ vueVersion: 0.1 }),
+    true,
+    "vueVersion: 0.10 should enable legacy Vue compatibility mode",
+  );
+
+  assert.equal(
     isLegacyVueCompatibilityMode({ vueVersion: 0.11 }),
     true,
     "vueVersion: 0.11 should enable legacy Vue compatibility mode",

@@ -328,6 +328,12 @@
       "locales": ["en", "ja"],
       "entry": "audited",
       "note": "Support tables retained; Japanese body review is handled in #8372."
+    },
+    {
+      "route": "/guide/vue-configuration",
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Reviewed canonical Vue API and options-first drop-in recipes retain exact bilingual code, native scoped limits and next-minor availability."
     }
   ]
 }

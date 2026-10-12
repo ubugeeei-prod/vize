@@ -10,6 +10,7 @@ export interface ConfigEnv {
   mode: string;
   command: "serve" | "build" | "check" | "lint" | "fmt";
   isSsrBuild?: boolean;
+  isPreview?: boolean;
 }
 
 export type VueConfig = {
@@ -17,6 +18,28 @@ export type VueConfig = {
    * Vue dialect selected by the documented `vue.version` config key.
    */
   version?: VueVersion;
+};
+
+/** Native Vue settings shared by Vite, Vite+, the CLI projection and the editor. */
+type VueOptionKeys =
+  | "compiler"
+  | "typeChecker"
+  | "linter"
+  | "formatter"
+  | "languageServer"
+  | "globalTypes"
+  | "files"
+  | "ignores"
+  | "basePath"
+  | "lib";
+
+/** Scoped policy currently supported by the native configuration model. */
+export type VueOptionsEntry = Pick<VizeConfigEntry, "basePath" | "files" | "ignores" | "linter">;
+
+/** Section option values reuse the native types rather than a second schema. */
+export type VueOptions = Pick<VizeConfig, VueOptionKeys> & {
+  version?: VueVersion;
+  entries?: VueOptionsEntry[];
 };
 
 export type UserConfigEntry = VizeConfigEntry & {

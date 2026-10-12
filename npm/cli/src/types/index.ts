@@ -35,6 +35,8 @@ export type {
   MaybePromise,
   ConfigEnv,
   VueConfig,
+  VueOptions,
+  VueOptionsEntry,
   UserConfig,
   UserConfigEntry,
   UserConfigInput,

@@ -1,4 +1,4 @@
-import type { UserConfigExport } from "../../../cli/src/types/index.ts";
+import type { UserConfigExport, VueOptions } from "../../../cli/src/types/index.ts";
 import type { ExperimentalPluginOptions } from "./experimental-options.ts";
 import type { VizeCompatibilityOptions, VizeVueVersion } from "./compatibility-types.ts";
 import type { VizeInspectorOptions } from "./inspector-types.ts";
@@ -13,6 +13,8 @@ import type { VizeVueFeatures } from "./vue-features.ts";
 declare module "vite" {
   interface UserConfig {
     /** Native compiler, lint, format, checker, editor and Musea settings shared with the CLI. */
+    vue?: VueOptions;
+    /** Legacy native namespace; canonical Vue members take precedence. */
     vize?: UserConfigExport;
   }
 }
@@ -25,6 +27,8 @@ export type {
 
 export type {
   VizeConfig,
+  VueOptions,
+  VueOptionsEntry,
   ResolvedVizeConfig,
   LoadConfigOptions,
   ConfigEnv,

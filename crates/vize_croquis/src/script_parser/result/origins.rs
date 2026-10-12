@@ -17,7 +17,7 @@ impl ScriptParseResult {
         self.reactive_value_origins.insert(name, origin);
     }
 
-    pub(super) fn reactive_origin_scope(&self, name: &str) -> Option<ScopeId> {
+    pub(crate) fn reactive_origin_scope(&self, name: &str) -> Option<ScopeId> {
         let mut current = Some(self.scopes.current_id());
         while let Some(id) = current {
             let scope = self.scopes.get_scope(id)?;

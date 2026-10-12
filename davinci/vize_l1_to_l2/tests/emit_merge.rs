@@ -47,6 +47,7 @@ fn assert_shipped_parity(source: &str) {
 mod emit_merge {
     use super::*;
 
+    mod for_items;
     mod object_binds;
     mod object_on_and_multiline;
 }

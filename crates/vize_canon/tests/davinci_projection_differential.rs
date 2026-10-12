@@ -21,6 +21,9 @@ use vize_canon::virtual_ts::generate_virtual_ts;
 use vize_croquis::{Analyzer, AnalyzerOptions};
 use vize_l0::Allocator;
 
+#[path = "support/projection_carriers.rs"]
+mod projection_carriers;
+
 /// Measured template-expression anchors on the committed TS-40 matrix.
 const TEMPLATE_ANCHOR_COMPARISONS: usize = 22;
 
@@ -98,25 +101,32 @@ fn check_diagnostics_land_inside_the_projection() {
         files.len()
     );
     let mut compared = 0usize;
+    let mut added = 0usize;
+    let mut carriers = projection_carriers::Carriers::new(&root, &files);
     let mut divergences = Vec::new();
     for path in &files {
         let Ok(source) = std::fs::read_to_string(path) else {
             continue;
         };
+        let carrier = carriers.source(path, &source);
         let Ok(descriptor) = parse_sfc(&source, SfcParseOptions::default()) else {
+            carriers.record(path, serde_json::json!({"phase": "SFC parse refused"}));
             continue;
         };
         let Some(template) = descriptor.template.as_ref() else {
+            carriers.record(path, serde_json::json!({"phase": "no template"}));
             continue;
         };
         let body: &str = template.content.as_ref();
         if body.is_empty() {
+            carriers.record(path, serde_json::json!({"phase": "empty template"}));
             continue;
         }
         let base = template.loc.start;
         let options = vize_canon::SfcTypeCheckOptions::new(path.display().to_string());
         let checked = vize_canon::type_check_sfc(&source, &options);
         let (old, new) = expression_ranges(body);
+        let mut additions = Vec::new();
         for diagnostic in &checked.diagnostics {
             let start = diagnostic.start as usize;
             let end = diagnostic.end as usize;
@@ -128,7 +138,12 @@ fn check_diagnostics_land_inside_the_projection() {
                 continue;
             }
             if contains(&new, &span) {
-                compared += 1;
+                if carrier {
+                    added += 1;
+                    additions.push(diagnostic);
+                } else {
+                    compared += 1;
+                }
             } else if divergences.len() < 12 {
                 divergences.push(format!(
                     "{} {:?} {:?}",
@@ -138,16 +153,29 @@ fn check_diagnostics_land_inside_the_projection() {
                 ));
             }
         }
+        carriers.record(
+            path,
+            serde_json::json!({
+                "phase": "checked",
+                "wholeDiagnostics": checked.diagnostics,
+                "comparisons": additions,
+            }),
+        );
     }
+    carriers.finish();
     assert!(
         divergences.is_empty(),
         "check diagnostics missed by the projection:\n{}",
         divergences.join("\n")
     );
-    eprintln!("check diagnostic comparisons={compared}");
+    eprintln!("check diagnostic comparisons={compared} additive={added}");
     assert_eq!(
         compared, CHECK_DIAGNOSTIC_COMPARISONS,
         "vize check diagnostic comparisons changed; a zero run fails"
+    );
+    assert_eq!(
+        added, 7,
+        "registered carrier comparisons changed; additions do not replace the original 64"
     );
 }
 
