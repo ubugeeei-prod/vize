@@ -1,0 +1,47 @@
+{
+  "schema": "vize.8752-source-before",
+  "version": 1,
+  "files": [
+    {
+      "path": "crates/vize_patina/src/linter/native_type_aware.rs",
+      "revision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+      "blob": "36a7983c59e0170f41c696a05126334049a95d8a",
+      "bytes": 8141,
+      "sha256": "2fc06eec75d4c80431301aa50047be112e3ec6c38ca1e7bcbd839101bf33cac4",
+      "archive": "source-before/native_type_aware.rs.fixture"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/native_type_aware/expression_bindings.rs",
+      "revision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+      "blob": "e985f153317f4356bca350d247de9f081968af4c",
+      "bytes": 10935,
+      "sha256": "281ec17b102471f6454938bb578bf3d11be7d6884ca5e5cc44a7515a69177b15",
+      "archive": "source-before/expression_bindings.rs.fixture"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/native_type_aware/expression_bindings/mapped.rs",
+      "revision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+      "blob": "5328ee4fa7f516e692035215cd61fb1857ffe197",
+      "bytes": 4074,
+      "sha256": "da80c412581ed81198dd4e708d776e7a57b5d724c0aa9561110e86ccd5a67689",
+      "archive": "source-before/mapped.rs.fixture"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/native_type_aware/template_queries.rs",
+      "revision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+      "blob": "9ed688eac8b723a53e56ee2a6f9ff724e0b40533",
+      "bytes": 10575,
+      "sha256": "ca67f4293364d7436bf9af7e66efe6c3f6412ebfd6db580fc56acf44155e4034",
+      "archive": "source-before/template_queries.rs.fixture"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/native_type_aware/template_queries/collector.rs",
+      "revision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+      "blob": "f92be0ea016cd85d78c35c40769642a897712df2",
+      "bytes": 20232,
+      "sha256": "3061ea16b6631bd5ea715eb2e2d702c156b4783eb59a2ba407faac2f5b6a511a",
+      "archive": "source-before/collector.rs.fixture"
+    }
+  ],
+  "qualification": "Immutable incoming Git source authority; not executed pre-fix packets or public installed acceptance."
+}

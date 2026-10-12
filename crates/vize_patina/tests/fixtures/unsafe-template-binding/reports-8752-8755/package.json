@@ -1,0 +1,9 @@
+{
+  "name": "@vizejs/test-template-expression-probes",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "vue": "catalog:vue-production",
+    "vue-router": "5.3.1"
+  }
+}
