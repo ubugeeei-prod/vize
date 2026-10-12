@@ -158,6 +158,16 @@ attested actual Command executable. A missing target, foreign executable or
 distinct same-byte copy still refuses custody; the original whole binary,
 package, config, source and diagnostic checks remain required.
 
+The complete [4032 native run](https://github.com/ubugeeei-prod/vize/actions/runs/38186287047)
+passed all six producer laws and nine native observations with zero ignored
+tests. Artifact `11719264412` retains the accepted receipt, all 39 copied source
+bodies and complete packets; its ZIP SHA-256 is
+`c16d3103c1cadf9e1ea3621f653472cbc7571879e0a8a90d22025282cbb57b85`.
+The same head's [original400 run](https://github.com/ubugeeei-prod/vize/actions/runs/38186287043)
+also passed all 79 whole comparison pairs. These are exact-source results;
+the necessary fresh-main replay must qualify and execute independently before
+queue admission. They grant no performance, full App, merge or release credit.
+
 TODO: the whole App/Stack remains blocked independently. The authenticated 7be
 full App vector leaves ReKa's three `TS7006` and one `TS2305` errors; Nuxt UI has
 534 `TS2308` collisions involving synthetic `Props`/`Emits`/`Slots` exported
