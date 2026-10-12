@@ -123,3 +123,27 @@ Supply an explicit lexical string comparator with the same code-unit ordering;
 only the active helper digest advances. Original execution/initial helper
 authorities, export data and every semantic diagnostic vector remain exact.
 This preparation correction requires fresh full source and native Actions.
+
+## Second source Actions checkpoint
+
+At PR head `4ecee412`, Check 38191191286 passes source planning, typed JS checks,
+all four Rust shards and the whole CLI 63/63 scenarios, including six actual
+fixes. Authenticate the real builder separately: `f253d4cbd78ff971e021204eec9c12824fdf8793`,
+binary SHA-256 `94d64b92fced47fa7847100c93480c91639fef643f854d6b77c74e77ad64f4b0`.
+The [complete checkpoint](../../../tests/_fixtures/differential/lint/public-vue-imports-8090/source4ece-checkpoint.json)
+retains full raw63 output, original failing tooling log and exact builder custody.
+
+Full Check remains RED: the original Japanese/English 317-page custody rejects
+the one new valid private import example. Preserve that whole original authority
+SHA-256 `165c6b367ca2928177f379ebbb6c8d71a7e454d585f45f826f5a5168dcc8dad3`.
+The finite successor retains both prior whole pages/Git blobs and all four old
+fences; independently derive the after fences by adding only `isString` in the
+Valid example. Reject configuration/Bad/graph/metadata drift and keep all other
+316 entries on their original complete fence gate. Original support-fact checks
+still run for every entry. No original hash or baseline is overwritten.
+
+Mandatory native run 38191191158 also fails: its driver invokes an absent
+`native-lexical-dollar.sh` and exits 127. Retain the complete raw failure; the
+existing CI owner must repair or incorporate the actual main helper. This slice
+changes no native driver, budget or check. The 63-case source proof grants no
+full-source, next-head, protected queue or installed public acceptance.

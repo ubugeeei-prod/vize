@@ -1,0 +1,61 @@
+{
+  "schema": "vize.docs.public-vue-imports-fence-successor",
+  "version": 1,
+  "authority": "Finite source-authored target-only executable-example successor; whole original317-row custody and complete prior en/ja source/fences are preserved. After vectors derive only one private valid import line from the reviewed producer contract, not a observed hash recapture. Configuration/Bad/graphs and metadata receive no waiver.",
+  "originalCustody": {
+    "path": "tests/_fixtures/docs-ja-rule-original-custody.json",
+    "sha256": "165c6b367ca2928177f379ebbb6c8d71a7e454d585f45f826f5a5168dcc8dad3",
+    "entries": 317
+  },
+  "originalEntry": {
+    "path": "docs/content/ja/rules/reference/script-prefer-import-from-vue.md",
+    "englishPath": "docs/content/rules/reference/script-prefer-import-from-vue.md",
+    "id": "script/prefer-import-from-vue",
+    "originalJapaneseSha256": "9e5fb9dd1e4144b608fc44b71e2e995a5aa1680552488039e2647ea9d7c992e2",
+    "originalEnglishSha256": "02f667617b4e8247c47fe57e679af0a5ed8702eac48e1e9362f7982692533ada",
+    "wholeCodeSha256": "b3a7932a0fa21f7786b9660ada45f3d6db6544b85696c7fdaf0515db338b8ce8",
+    "supportFacts": []
+  },
+  "oldSources": [
+    {
+      "path": "docs/content/ja/rules/reference/script-prefer-import-from-vue.md",
+      "revision": "4ae56daecf4cc31d2d2558b92451b07d448bc259",
+      "gitBlob": "4a3764848b8c1c3b590de5119966ee1d42bc1785",
+      "sha256": "9380b281e11b9bf852387f0c1281806b989647555a9eedbbad9c52d44933d2d1",
+      "source": "---\ntitle: \"script/prefer-import-from-vue\"\n---\n\n# `script/prefer-import-from-vue`\n\n内部パッケージではなく vue から import します。\n\n[悪い例](#悪い) · [良い例](#良い)\n\n既定の重大度: `warning`  \nプリセット: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  \n自動修正: 対応している診断で利用できます  \n適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  \nオプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。\n\n## 設定（Vite+）\n\n```ts\nimport { defineConfig } from \"@vizejs/vite-plugin/vite-plus\";\n\nexport default defineConfig({\n  lint: {\n    vize: {\n      \"preset\": \"incremental\",\n      \"rules\": {\n        \"script/prefer-import-from-vue\": \"warn\"\n      }\n    },\n  },\n});\n```\n\n```sh\nvp run lint\n```\n\n## 悪い\n\n`ref` と `h` を公開パッケージ `vue` ではなく、内部の `@vue/runtime-core` と `@vue/runtime-dom` からインポートしています。\n\n```vue\n<script setup lang=\"ts\">\nimport { ref } from '@vue/runtime-core'\nimport { h } from '@vue/runtime-dom'\n</script>\n```\n\n## 良い\n\n両ヘルパーを `vue` からまとめてインポートし、内部パッケージではなく公開エントリーポイントを使います。\n\n```vue\n<script setup lang=\"ts\">\nimport { ref, h } from 'vue'\n</script>\n```\n\n良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。\n\n[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L32) · [全ルール](../all.md)\n"
+    },
+    {
+      "path": "docs/content/rules/reference/script-prefer-import-from-vue.md",
+      "revision": "4ae56daecf4cc31d2d2558b92451b07d448bc259",
+      "gitBlob": "bc61f51745b1c0145a56c63469492dda5b051cb3",
+      "sha256": "02f667617b4e8247c47fe57e679af0a5ed8702eac48e1e9362f7982692533ada",
+      "source": "---\ntitle: \"script/prefer-import-from-vue\"\n---\n\n# `script/prefer-import-from-vue`\n\nPrefer importing from 'vue' instead of internal packages\n\n[Bad](#bad) · [Good](#good)\n\nDefault severity: `warning`  \nPresets: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  \nAutomatic fix: Available for supported findings  \nApplies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  \nOptions: No rule-specific options. Severity and preset selection are configurable.\n\n## Configuration (Vite+)\n\n```ts\nimport { defineConfig } from \"@vizejs/vite-plugin/vite-plus\";\n\nexport default defineConfig({\n  lint: {\n    vize: {\n      \"preset\": \"incremental\",\n      \"rules\": {\n        \"script/prefer-import-from-vue\": \"warn\"\n      }\n    },\n  },\n});\n```\n\n```sh\nvp run lint\n```\n\n## Bad\n\n`ref` and `h` are imported from the internal `@vue/runtime-core` and `@vue/runtime-dom` packages rather than the public `vue` package.\n\n```vue\n<script setup lang=\"ts\">\nimport { ref } from '@vue/runtime-core'\nimport { h } from '@vue/runtime-dom'\n</script>\n```\n\n## Good\n\nBoth helpers are imported together from `vue`, using the public package entry point instead of either internal package.\n\n```vue\n<script setup lang=\"ts\">\nimport { ref, h } from 'vue'\n</script>\n```\n\nGood avoids this rule's finding under the configuration above; other rules may still report diagnostics.\n\n[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L32) · [All rules](../all.md)\n"
+    }
+  ],
+  "beforeCodeFences": [
+    "```ts\nimport { defineConfig } from \"@vizejs/vite-plugin/vite-plus\";\n\nexport default defineConfig({\n  lint: {\n    vize: {\n      \"preset\": \"incremental\",\n      \"rules\": {\n        \"script/prefer-import-from-vue\": \"warn\"\n      }\n    },\n  },\n});\n```",
+    "```sh\nvp run lint\n```",
+    "```vue\n<script setup lang=\"ts\">\nimport { ref } from '@vue/runtime-core'\nimport { h } from '@vue/runtime-dom'\n</script>\n```",
+    "```vue\n<script setup lang=\"ts\">\nimport { ref, h } from 'vue'\n</script>\n```"
+  ],
+  "afterCodeFences": [
+    "```ts\nimport { defineConfig } from \"@vizejs/vite-plugin/vite-plus\";\n\nexport default defineConfig({\n  lint: {\n    vize: {\n      \"preset\": \"incremental\",\n      \"rules\": {\n        \"script/prefer-import-from-vue\": \"warn\"\n      }\n    },\n  },\n});\n```",
+    "```sh\nvp run lint\n```",
+    "```vue\n<script setup lang=\"ts\">\nimport { ref } from '@vue/runtime-core'\nimport { h } from '@vue/runtime-dom'\n</script>\n```",
+    "```vue\n<script setup lang=\"ts\">\nimport { ref, h } from 'vue'\nimport { isString } from '@vue/shared'\n</script>\n```"
+  ],
+  "change": {
+    "anchor": "import { ref, h } from 'vue'",
+    "added": "import { isString } from '@vue/shared'",
+    "changedFenceIndex": 3,
+    "changedFences": 1
+  },
+  "sourceLaw": {
+    "producerPath": "crates/vize_patina/src/rules/script/prefer_import_from_vue.rs",
+    "producerSha256": "79d3814ecd8822cf81ad475ecfc850897ee907b587e2312749edb8b0e8795abb",
+    "corpusPath": "tests/_fixtures/differential/lint/public-vue-imports-8090/cases.json",
+    "corpusSha256": "d52480f474c2a6dba9681aa620a0c5e6dd2597accd91ad286000230a1b9d2389",
+    "tablePath": "crates/vize_patina/src/rules/script/prefer_import_from_vue/public_exports.rs",
+    "tableSha256": "8d02fc6a9e3f6fc90cf9dac3948cbd7569403ba366e84757157f1c9bc546c78c"
+  }
+}
