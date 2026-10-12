@@ -138,7 +138,12 @@ await test("Japanese core retains complete references, localized next steps and 
   assert.match(index, /`vp run lint`/);
   assert.deepEqual(
     defaultNavigationRenderRoutes.filter((item) => item.startsWith("/ja/rules/accessibility-")),
-    [route, "/ja/rules/accessibility-integrity", "/ja/rules/accessibility-interactions"],
+    [
+      route,
+      "/ja/rules/accessibility-integrity",
+      "/ja/rules/accessibility-interactions",
+      "/ja/rules/accessibility-structure",
+    ],
   );
   assert.deepEqual(
     createRenderJobs([route]).map((job) => job.device),

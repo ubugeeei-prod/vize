@@ -46,6 +46,7 @@ export const catalogueSubgroups: Record<
   },
   "accessibility-structure": {
     title: "Accessibility structure",
+    jaTitle: "ページ構造のアクセシビリティ",
     rules: [
       "a11y/heading-has-content",
       "a11y/heading-levels",
