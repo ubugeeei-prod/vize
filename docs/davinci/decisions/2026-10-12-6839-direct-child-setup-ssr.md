@@ -111,6 +111,16 @@ changed descriptors, missing keys, wrong values/prototypes, altered mappings and
 HTML must fail. Every frozen JSON field and raw historical packet is unchanged;
 no blanket serialization or output normalization replaces the comparison.
 
+Fresh actual main `47b204f` supplies the already merged lexical native helper;
+the original missing-helper and cohort-review failures remain retained. The
+three existing release-test roots have complete 36-file local import closures.
+Compared with the last installed-Vapor review, only the pure SSR capture-path
+matcher changes, to recognize this slice's finite native witness inputs. A fifth
+named atomic review at source `78b2d85` records all 36 complete bodies. The four
+historical cohorts, excluded roots, commands, oracles and positive native inputs
+remain unchanged. The original native-consumer and refusal laws must still pass;
+no latest-body allowance or missing-source skip replaces their checks.
+
 Remaining TODOs stay explicit: deeper/mixed children, components, For runtime,
 Vapor SSR, complete dialect/JSX/TSX routing, and default compiler replacement.
 This bounded slice does not close the level or product roadmaps.

@@ -26,7 +26,6 @@ import {
   localImportInputs,
   planToolingTests,
 } from "../../tools/support/compat/github/plan-tooling-tests.mjs";
-
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const workflowPath = ".github/workflows/typechecker-native-phases.yml";
 const workflow = parse(readFileSync(join(root, workflowPath), "utf8"));
@@ -193,11 +192,12 @@ void test("the actual full local imports and physical source bytes match one ato
       "reviewed-retirement-transport",
       "reviewed-docs-planner-composition",
       "reviewed-installed-vapor-rc10",
+      "reviewed-native-ssr-direct-child-custody",
     ].includes(verifyReviewedReleaseInputs()),
   );
-  assert.equal(pins.reviews.length, 4);
+  assert.equal(pins.reviews.length, 5);
   const rootCounts = pins.reviews.map((review) => review.presentRoots.length);
-  assert.deepEqual(rootCounts, [2, 3, 3, 3]);
+  assert.deepEqual(rootCounts, [2, 3, 3, 3, 3]);
 });
 
 void test("a native command with unchanged imports fails for both roots and transitive helpers", (t) => {
