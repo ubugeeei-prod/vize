@@ -202,6 +202,26 @@ credit, and no further capture is authorized.
 Artifact 11720551608 is a complete 4,316,621-byte ZIP with SHA256
 `4c04f8e5590529797b0b0b6503b96b88382ef60373bf4ca5b8e6f6b3b40c2e21`.
 
+### Single-fault onward delivery preparation
+
+The immutable [Node 24.14.0 signal implementation](https://github.com/nodejs/node/blob/f657bb8ed86365ff3fdbe32e27563e778b41486a/src/node.cc)
+(body SHA256 `01d3ea16fd426f98a13c2bba6df787ee363b677291c21588274d78b50f28927e`)
+can re-raise SIGSEGV from its trap handler and SIGINT from `SignalExit`. This
+supports a counterfactual against the helper's immediate-exit assumption; it
+still does not identify the fourth packet's unobserved second stop.
+
+After the one captured owned fault and physical-provider acknowledgement,
+reverify the owned inferior, set only that original signal to `nostop noprint
+pass`, and require the actual bounded policy row `No/No/Yes` before continuation.
+Use the same verified onward policy when forwarding a genuine original signal
+in cleanup. Initial SIGSEGV `Yes/Yes/Yes` admission stays unchanged. A proven
+diagnostic SIGINT still follows discard/detach/resume. This is a single-fault
+capture budget, allowing runtime re-raise without repeated capture or invented
+exit evidence; an actual exit event remains required. Authored re-raise laws
+fail against the complete published helper and pass after this change. Preserve
+measured toy status before qualification refuses it; missing/changed onward
+policy stays red. Further Linux execution remains held for concrete review.
+
 ## Qualification and remaining work
 
 This diagnostic changes worker scheduling and adds a profile probe. It supplies

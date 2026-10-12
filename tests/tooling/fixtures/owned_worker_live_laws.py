@@ -111,6 +111,16 @@ def validate_case(receipt, mode, status):
         raise ValueError("Actual cancellation detach, origin, discard or resume proof missing")
     if mode == "original-interrupt" and not any(packet.get("diagnosticInterruptOriginMatch") is False for packet in packets):
         raise ValueError("Genuine worker SIGINT was not distinguished during cancellation")
+    if mode in ['fault', 'original-interrupt']:
+        onward = [packet for packet in packets if packet.get('phase') == 'original-signal-onward-policy']
+        expected = 'SIGSEGV' if mode == 'fault' else 'SIGINT'
+        if len(onward) != 1 or onward[0].get('signal') != expected or onward[0].get('stop') is not False or onward[0].get('pass') is not True:
+            raise ValueError('Actual original signal onward delivery policy missing')
+
+
+def qualify_status(receipt, mode, status):
+    receipt['originalReturnCode'] = status  # Retain measured status before any refusal.
+    validate_case(receipt, mode, status)
 
 
 def run_case(root, stage, directory, mode):
@@ -187,8 +197,7 @@ watcher.close();const mode=readFileSync(directory+'/release','utf8');if(mode==='
             close_gdb(debugger, reader, receipt)
             drain_packets(packets, debugger, worker, leader, profile, root, stage, receipt)
         status = child.wait(timeout=5)
-        validate_case(receipt, mode, status)
-        receipt["originalReturnCode"] = status
+        qualify_status(receipt, mode, status)
         receipt["debuggerActuallyReaped"] = True
     except Exception as error:
         receipt["liveControlGap"] = type(error).__name__

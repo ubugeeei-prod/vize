@@ -101,6 +101,24 @@ def cleanup_interrupt(pending_signal):
         return False
 
 
+def verify_policy(name, flags):
+    text = gdb.execute("info signals " + name, to_string=True)
+    rows = [line.split() for line in text.splitlines() if line.split()[:1] == [name]]
+    if len(text.encode()) > 8192 or len(rows) != 1 or rows[0][1:4] != flags:
+        raise ValueError("Actual debugger signal stop/pass policy differs")
+
+
+def onward_policy(name):
+    if not re.fullmatch(r'SIG[A-Z0-9]{1,12}', name) or not hasattr(signal, name):
+        raise ValueError('Original signal identity unavailable')
+    # A runtime handler can re-raise the same signal. Capture one fault, then
+    # preserve signal delivery without assuming its first delivery exits.
+    gdb.execute("handle " + name + " nostop noprint pass", to_string=True)
+    verify_policy(name, ["No", "No", "Yes"])
+    publish({'status': 'debugger-phase', 'phase': 'original-signal-onward-policy',
+             'signal': name, 'stop': False, 'pass': True})
+
+
 def configure():
     for setting in ["set pagination off", "set confirm off", "set auto-load off",
                     "set debuginfod enabled off", "set print frame-arguments none",
@@ -110,10 +128,7 @@ def configure():
                     "handle SIGSTOP nostop noprint nopass"]:
         gdb.execute(setting, to_string=True)
     for name, flags in [("SIGSEGV", ["Yes", "Yes", "Yes"]), ("SIGCONT", ["No", "No", "Yes"])]:
-        text = gdb.execute("info signals " + name, to_string=True)
-        rows = [line.split() for line in text.splitlines() if line.split()[:1] == [name]]
-        if len(text.encode()) > 8192 or len(rows) != 1 or rows[0][1:4] != flags:
-            raise ValueError("Actual debugger signal stop/pass policy differs")
+        verify_policy(name, flags)
     publish({"status": "debugger-phase", "phase": "signal-policy-verified",
              "sigsegvStop": True, "sigsegvPass": True, "sigcontStop": False, "sigcontPass": True})
 
@@ -208,12 +223,14 @@ def run(config):
         if acknowledgement != "captured\n":
             publish({"status": "unavailable", "gap": "MissingProviderAcknowledgement"})
         owned_inferior()
+        onward_policy("SIGSEGV")
         pending_signal = None
         gdb.execute("continue", to_string=False)  # handle SIGSEGV pass preserves it.
         if exited:
             attached = False
         else:
-            publish({"status": "unavailable", "gap": "PostFaultStop"})
+            observed = pending_signal if pending_signal and hasattr(signal, pending_signal) else 'UnexpectedStop'
+            publish({"status": "unavailable", "gap": "PostFaultStop", "signal": observed})
     except Exception as error:
         publish({"status": "unavailable", "gap": type(error).__name__})
     finally:
@@ -233,6 +250,8 @@ def run(config):
                 try:
                     # A diagnostic exception must not consume the original fault.
                     original_signal = pending_signal
+                    owned_inferior()
+                    onward_policy(original_signal)
                     pending_signal = None
                     gdb.execute("signal " + original_signal, to_string=False)
                 except Exception as error:

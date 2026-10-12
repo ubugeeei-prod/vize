@@ -38,7 +38,7 @@ class FakeGDB:
     SignalEvent = SignalEvent
     def __init__(self, mode):
         self.mode, self.commands, self.text, self.continues = mode, [], [], 0
-        self.policy = {name: {"stop": True, "print": True, "pass": True} for name in ["SIGSEGV", "SIGCONT", "SIGSTOP"]}
+        self.policy = {name: {"stop": True, "print": True, "pass": True} for name in ["SIGSEGV", "SIGCONT", "SIGSTOP", "SIGINT", "SIGTERM"]}
         self.events = types.SimpleNamespace(stop=Event(), exited=Event(), cont=Event())
         def thread(number):
             actor = types.SimpleNamespace(num=number, ptid=(123, number, 0))
@@ -59,7 +59,7 @@ class FakeGDB:
         if expression == "$pc": return 0x123
         if self.mode == "missing-siginfo": raise ValueError("private siginfo expression")
         return {"$_siginfo.si_signo": signal.SIGINT, "$_siginfo.si_code": -6,
-                "$_siginfo._sifields._kill.si_pid": os.getpid() + (1 if self.mode == "original-interrupt" else 0),
+                "$_siginfo._sifields._kill.si_pid": os.getpid() + (1 if self.mode in ["original-interrupt", "reraised-interrupt"] else 0),
                 "$_siginfo._sifields._kill.si_uid": os.getuid()}[expression]
     def execute(self, command, to_string=False):
         self.commands.append(command)
@@ -77,6 +77,7 @@ class FakeGDB:
             flags = ["Yes" if self.policy[name][key] else "No" for key in ["stop", "print", "pass"]]
             if self.mode == "policy-refusal" and name == "SIGSEGV": flags[0] = "No"
             if self.mode == "cont-policy-refusal" and name == "SIGCONT": flags[0] = "Yes"
+            if self.mode == "postfault-policy-refusal" and self.continues and name == "SIGSEGV": flags[0] = "Yes"
             return "Signal Stop Print Pass to program Description\n" + name + " " + " ".join(flags) + " Signal description\n"
         elif command.startswith("attach "):
             self.inferior.pid = int(command.split()[1])
@@ -93,13 +94,18 @@ class FakeGDB:
             if self.mode == "postfault-exit" and self.continues == 2: self.inferior.pid = 0
             self.events.cont.emit(types.SimpleNamespace())
             if self.mode == "cancel": raise KeyboardInterrupt()
-            if self.mode in ["normal", "attach-continue-normal"] or self.continues == 2:
+            if self.mode == "reraised-fault" and self.continues == 2 and self.policy['SIGSEGV']['stop']:
+                self.events.stop.emit(SignalEvent('SIGSEGV'))
+            elif self.mode in ["normal", "attach-continue-normal"] or self.continues == 2:
                 self.events.exited.emit(types.SimpleNamespace(exit_code=0 if self.mode in ["normal", "attach-continue-normal"] else None, inferior=self.inferior))
                 self.inferior.pid = 0
             else:
-                self.events.stop.emit(SignalEvent("SIGINT" if self.mode in ["interrupt", "original-interrupt", "missing-siginfo"] else "SIGTERM" if self.mode == "other-signal" else "SIGSEGV"))
+                self.events.stop.emit(SignalEvent("SIGINT" if self.mode in ["interrupt", "original-interrupt", "reraised-interrupt", "missing-siginfo"] else "SIGTERM" if self.mode == "other-signal" else "SIGSEGV"))
         elif command.startswith("signal "):
             self.events.cont.emit(types.SimpleNamespace())
+            if self.mode == 'reraised-interrupt' and self.policy['SIGINT']['stop']:
+                self.events.stop.emit(SignalEvent('SIGINT'))
+                return 'private repeated signal stop\n'
             self.events.exited.emit(types.SimpleNamespace(exit_code=None, inferior=self.inferior))
             self.inferior.pid = 0
         elif command == "bt 32":
@@ -237,6 +243,30 @@ class GDBLaws(unittest.TestCase):
         observations = next(packet for packet in packets if packet.get("phase") == "callback-observations")
         self.assertEqual({key: observations[key] for key in ['duringAttach', 'afterAttach', 'ownedReady']}, {'duringAttach': 1, 'afterAttach': 1, 'ownedReady': True})
         self.assertEqual([packet['status'] for packet in packets if packet['status'] != 'debugger-phase'], ['attached', 'exited'])
+
+    def test_reraised_original_fault_passes_after_one_capture_to_actual_exit(self):
+        adapter, packets, signals, closed = self.run_fixture('reraised-fault')
+        self.assertEqual([packet['status'] for packet in packets if packet['status'] != 'debugger-phase'], ['attached', 'SIGSEGV', 'exited'])
+        self.assertEqual(adapter.commands.count('continue'), 2)
+        self.assertEqual(adapter.policy['SIGSEGV'], {'stop': False, 'print': False, 'pass': True})
+        phase = next(packet for packet in packets if packet.get('phase') == 'original-signal-onward-policy')
+        self.assertEqual(phase['signal'], 'SIGSEGV')
+
+    def test_genuine_reraised_interrupt_is_forwarded_without_diagnostic_discard(self):
+        adapter, packets, signals, closed = self.run_fixture('reraised-interrupt', cleanup_marker=True)
+        self.assertNotIn('queue-signal 0', adapter.commands)
+        self.assertIn('signal SIGINT', adapter.commands)
+        self.assertEqual(sum(packet['status'] == 'exited' for packet in packets), 1)
+        self.assertFalse(any(packet['status'] == 'detached' for packet in packets))
+        self.assertEqual(adapter.policy['SIGINT'], {'stop': False, 'print': False, 'pass': True})
+
+    def test_postfault_onward_policy_refusal_has_no_exit_or_forwarding_credit(self):
+        adapter, packets, signals, closed = self.run_fixture('postfault-policy-refusal')
+        self.assertEqual(adapter.commands.count('continue'), 1)
+        self.assertNotIn('signal SIGSEGV', adapter.commands)
+        self.assertFalse(any(packet['status'] == 'exited' for packet in packets))
+        self.assertFalse(any(packet.get('phase') == 'original-signal-onward-policy' for packet in packets))
+        self.assertTrue(any(packet.get('gap') == 'ValueError' for packet in packets))
 
     def test_debugger_body_drift_is_explicit_without_consuming_original_fault(self):
         adapter, packets, signals, closed = self.run_fixture('debugger-provider-drift')

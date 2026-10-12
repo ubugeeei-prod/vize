@@ -23,6 +23,13 @@ class RunnerLaws(unittest.TestCase):
         with patch.object(sys, "argv", ["fixture", str(helpers)]): spec.loader.exec_module(live)
         return live
 
+    def test_failed_fault_qualification_retains_the_measured_original_status(self):
+        live = self.load_live()
+        for status in [0, 1, -11]:
+            receipt = {'gdbPackets': [{'status': 'SIGSEGV'}, {'status': 'unavailable', 'gap': 'PostFaultStop'}]}
+            with self.assertRaises(ValueError): live.qualify_status(receipt, 'fault', status)
+            self.assertEqual(receipt['originalReturnCode'], status)
+
     def test_real_partial_normal_packet_and_forced_cancel_cannot_receive_control_credit(self):
         live = self.load_live()
         cleanup = {"status": "debugger-cleanup", "debuggerReaped": True, "debuggerReturnCode": 0, "workerResumed": True}
@@ -43,6 +50,14 @@ class RunnerLaws(unittest.TestCase):
         live.validate_case(cancel, "cancel", 0)
         cancel["cancellationTracerPid"] = 9
         with self.assertRaises(ValueError): live.validate_case(cancel, "cancel", 0)
+        for mode, sig in [('fault', 'SIGSEGV'), ('original-interrupt', 'SIGINT')]:
+            stopped = {'status': 'SIGSEGV'} if mode == 'fault' else {'status': 'unavailable', 'gap': 'InterruptOriginObserved', 'diagnosticInterruptOriginMatch': False}
+            base = authority + [attached, stopped, exited, cleanup]
+            with self.assertRaises(ValueError): live.validate_case({'gdbPackets': base}, mode, 1)
+            onward = {'status': 'debugger-phase', 'phase': 'original-signal-onward-policy', 'signal': sig, 'stop': False, 'pass': True}
+            live.validate_case({'gdbPackets': base + [onward]}, mode, 1)
+            for changed in [{'signal': 'SIGTERM'}, {'stop': True}, {'pass': False}]:
+                with self.assertRaises(ValueError): live.validate_case({'gdbPackets': base + [{**onward, **changed}]}, mode, 1)
 
     def test_failed_live_control_drains_late_reap_packet_before_proven_resume_and_release(self):
         live = self.load_live()
