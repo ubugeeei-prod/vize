@@ -4746,8 +4746,8 @@
     },
     "envelopeContract": {
       "path": "tests/tooling/support/public-vue-imports-reference-contract.mjs",
-      "sha256": "1a92fdee02b2c2dada0d84121e77aad8c3e22bb6c205421a8504dde8e63dcdc8",
-      "bytes": 1448
+      "sha256": "7cbc90452089b2304ccffa21c5c44d5e465d616f492d3cc107a2f06cfcae2828",
+      "bytes": 1499
     }
   },
   "providerEnvelope": {

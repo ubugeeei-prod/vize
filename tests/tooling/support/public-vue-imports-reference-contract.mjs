@@ -37,5 +37,8 @@ export function validateProviderEnvelope(corpus, supplement) {
 export function validatePublicExportTable(names, pinned) {
   assert.equal(names.length, 361);
   assert.equal(new Set(names).size, 361);
-  assert.deepEqual(names, [...pinned].sort());
+  assert.deepEqual(
+    names,
+    [...pinned].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
+  );
 }

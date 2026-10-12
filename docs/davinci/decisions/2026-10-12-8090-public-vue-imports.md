@@ -114,3 +114,12 @@ raw SHA-256 `ef62533c7286622f10c719ba06ff49fcaefab69149aace9628e08800cf032263`.
 No diagnostic fixture, budget, source guard, product source or generator changes
 follow from this metadata repair. Fresh exact-head source/native qualification
 remains required; the initial skipped product execution receives no credit.
+
+The same initial Check also passed all 9,556 format files but failed the zero
+warning budget on one typed `require-array-sort-compare` finding in the new
+table-law helper. Retain its complete
+[raw failure and whole original helper](../../../tests/_fixtures/differential/lint/public-vue-imports-8090/initial-check-js-failure.json).
+Supply an explicit lexical string comparator with the same code-unit ordering;
+only the active helper digest advances. Original execution/initial helper
+authorities, export data and every semantic diagnostic vector remain exact.
+This preparation correction requires fresh full source and native Actions.
