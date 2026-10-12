@@ -191,6 +191,8 @@ void test("Linux X64 uses the pinned producer tuple and installs the exact benig
       "--tlsv1.2",
       "--output",
       helperArgs[1],
+      "--write-out",
+      "%{http_code}",
       "https://github.com/fornwall/rust-script/releases/download/0.34.0/rust-script-x86_64-unknown-linux-gnu.tar.gz",
     ]);
     assert.equal(fs.readFileSync(path.join(run.cargoHome, "bin/rust-script"), "utf8"), run.body);
