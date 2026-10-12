@@ -177,6 +177,31 @@ private directory with mode 0600, excluded from every upload; publish only byte
 counts, hashes and truncation flags. Missing provider or owned continuation proof
 refuses control qualification. Further Linux capture still requires review.
 
+## Fourth controlled lifecycle packet
+
+[Run 38187662762](https://github.com/ubugeeei-prod/vize/actions/runs/38187662762),
+attempt 1, job 114613407883, used driver
+`e912e65f519b20f6583d73e0ecdf16b7792f90ab` and fresh SDK source
+`b4f7bab24f8ecbf4aa07bfd0fc60e8c7bcaf74a3` (tree
+`7f98c07fb7155f67d1ebe8ab8742377fa68c3fba`). It failed; the original SDK runner
+never started. All 29,128 physical source records, 239,021,229 body bytes, match
+before and after. Retain all four historical failure packets.
+
+Actual GDB 15.1 ELF/body SHA256
+`3832cc070ae1716e322105d3b39fb398695e5f031c9d39224cf227a8c2b889f6`
+matched before/after. Normal and cancellation controls passed: attach callbacks
+were counted separately, genuine owned continuation was admitted, normal exit
+was observed, and cancellation proved origin/discard/detach/tracer-zero/resume
+and clean debugger reaping. The SIGSEGV control captured its faulting thread/PC
+and stable physical providers, then reported `PostFaultStop` and `PassSignalerror`
+without an actual exit marker. Its post-stop kind/signal and GDB error text were
+not retained; the cause remains unknown. Original SIGINT did not run. These
+partial controls supply no SDK qualification, repair, performance or release
+credit, and no further capture is authorized.
+
+Artifact 11720551608 is a complete 4,316,621-byte ZIP with SHA256
+`4c04f8e5590529797b0b0b6503b96b88382ef60373bf4ca5b8e6f6b3b40c2e21`.
+
 ## Qualification and remaining work
 
 This diagnostic changes worker scheduling and adds a profile probe. It supplies
