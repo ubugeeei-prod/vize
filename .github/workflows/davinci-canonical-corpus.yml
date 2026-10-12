@@ -33,7 +33,13 @@ jobs:
         with: { toolchain: stable }
       - uses: ./.github/actions/setup-rust-script
       - name: Setup Wild linker
+        if: ${{ matrix.observer != 'ssr-pug' }}
         uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - name: Setup Wild linker recovery (SSR-Pug)
+        if: ${{ matrix.observer == 'ssr-pug' }}
+        uses: ./.github/actions/setup-wild-http-recovery
         with:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache

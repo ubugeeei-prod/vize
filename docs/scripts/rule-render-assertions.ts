@@ -33,7 +33,8 @@ export async function verifyRenderedRulePackets(page: Page, route: string) {
     category &&
     (categoryFiles.includes(category[2] as (typeof categoryFiles)[number]) ||
       category[2] === "cross-file" ||
-      (!category[1] && category[2] in catalogueSubgroups))
+      (category[2] in catalogueSubgroups &&
+        (!category[1] || (category[1] === "ja/" && catalogueSubgroups[category[2]].jaTitle))))
   )
     return { ...(await verifyRenderedCategoryPackets(page, route)), japaneseEditorial };
   if (!/^\/(?:ja\/|zh-CN\/|pt-BR\/|fr\/)?rules\/all$/.test(route)) return null;

@@ -223,9 +223,9 @@
     },
     {
       "route": "/rules/accessibility-core",
-      "locales": ["en"],
+      "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, practical rule example, and next lint action revised; deployed review remains pending."
+      "note": "English and authored Japanese introductions explain when to use the eight core rules and link to complete existing label examples and the accessibility guide. Original reference packets, code and bookmarks are retained; native and deployed reader acceptance remain pending."
     },
     {
       "route": "/rules/accessibility-integrity",
