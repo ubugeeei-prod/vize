@@ -28,23 +28,6 @@ body {
   background-image: none !important;
 }
 
-/* Canvas */
-#vein-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0 !important;
-  opacity: 0.48;
-  pointer-events: none;
-}
-
-/* One visible background sits behind the page and its seamless navigation. */
-body:not(.entry-page) #vein-canvas {
-  opacity: 0.24;
-}
-
 .layout {
   position: relative;
 }
@@ -408,12 +391,12 @@ body.entry-page {
 .content pre {
   --vize-code-text: #24262b;
   --vize-code-muted: #474941;
-  --vize-code-keyword: #602887;
-  --vize-code-string: #185536;
-  --vize-code-number: #783211;
-  --vize-code-type: #004e63;
-  --vize-code-function: #174587;
-  --vize-code-property: #782143;
+  --vize-code-keyword: #6b00b8;
+  --vize-code-string: #005b2e;
+  --vize-code-number: #8c3000;
+  --vize-code-type: #00576b;
+  --vize-code-function: #0048b7;
+  --vize-code-property: #95003e;
   --vize-code-punctuation: #40434a;
   margin: 1.25rem 0;
   padding: 0.85rem 0.95rem;

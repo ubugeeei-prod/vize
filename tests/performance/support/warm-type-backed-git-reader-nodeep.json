@@ -1,0 +1,79 @@
+{
+  "schema": "vize.raw-git-reader.nodeep-harness",
+  "version": 1,
+  "source": "eafe5bed4f602e0787ff9f2f48ec4155d115ab7f",
+  "historicalSource": "3dda8f9d71fbd7e701f0805187daff6191865190",
+  "reviewedNoDeepSource": "d856f1f166be68dff9def4cce92d0f11728460f5",
+  "namedFamilyBodies": 87,
+  "historicalImports": [
+    [
+      "tests/performance/support/warm-type-backed-git-reader-harness.ts",
+      "18266bb2b0359766f0548d551a37a604581f65fdb0d827c2115a5458230a36f3"
+    ],
+    [
+      "tests/performance/support/warm-type-backed-git-reader-incoming.ts",
+      "931d2770c0f1fafe5465fec409e720918bf8e71b0df5e759d61feec81baa0fba"
+    ],
+    [
+      "tools/support/compat/levels/path-host-callers.ts",
+      "013e3bb593b64dcaf7a8099fa85e96d082f92f33a21ca27d7c8d0a31b5b48ff6"
+    ]
+  ],
+  "files": [
+    [
+      "tests/performance/support/warm-type-backed-path-host.ts",
+      "b73e46382f99176d54dfa9b5945f6126eefedd6ecfb9cbd4c733151c3e2c6c30",
+      "99f84b671f904a819b5e6e1e319fd97db2ae537b7ba1c773013b1e0e87cd7940"
+    ],
+    [
+      "tests/tooling/warm-type-backed-git-body-authority.test.ts",
+      null,
+      "8f1690c69868d074cd38c48b5994c0e0edf81ecf206ce8722ab946beb40e50c6"
+    ],
+    [
+      "docs/davinci/decisions/2026-10-12-3952-raw-git-body-authority.md",
+      null,
+      "b028d8a4954dca954099f1e27dfc135a2d4a93d0ad02cf06aa8071de99bb4457"
+    ],
+    [
+      "tests/performance/support/warm-type-backed-path-host-manifest.json",
+      "36256d2672412efe1681fab3137fab4f641622920360ea690a98a463a7325805",
+      "36256d2672412efe1681fab3137fab4f641622920360ea690a98a463a7325805"
+    ],
+    [
+      "tests/tooling/warm-type-backed-path-host.test.ts",
+      "3dfad726a861009ea8b906752797f6be8654adbba5955dcb649cb0e48d455d48",
+      "3dfad726a861009ea8b906752797f6be8654adbba5955dcb649cb0e48d455d48"
+    ],
+    [
+      "tests/tooling/warm-type-backed-git-reader-incoming.test.ts",
+      null,
+      "8b938a0fe48b7cc41df21cc84acb208fd5bff23edd72ead2f3375b627ea1a811"
+    ],
+    [
+      "tests/performance/support/warm-type-backed-git-reader-incoming.json",
+      null,
+      "dd570005abfeb4627bd4a80ec8c8b708ea57add07a068722100b237ef7b92b80"
+    ],
+    [
+      "tests/performance/support/warm-type-backed-git-reader-family-1.json",
+      null,
+      "9387f68fbe7dfa6939e0cbea9a479158e19e072a275a568de62c3475d6f5e193"
+    ],
+    [
+      "tests/performance/support/warm-type-backed-git-reader-family-2.json",
+      null,
+      "c999edc4c12145306972c056a2d4ae7da06f960658a0935f3a918da1015aa326"
+    ],
+    [
+      "tests/performance/support/warm-type-backed-git-reader-incoming.ts",
+      null,
+      "931d2770c0f1fafe5465fec409e720918bf8e71b0df5e759d61feec81baa0fba"
+    ],
+    [
+      "tests/tooling/warm-type-backed-git-reader-nodeep.test.ts",
+      null,
+      "4d3d4b1ca019669e50570b5ed15bb9147083c0b8181f63392d7d47984e505124"
+    ]
+  ]
+}

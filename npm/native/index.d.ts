@@ -1034,6 +1034,8 @@ export declare function parseTemplate(
 
 /** Single-file Patina lint options for NAPI */
 export interface PatinaLintOptionsNapi {
+  /** Include native fix messages and UTF-8 byte text edits in diagnostics. */
+  includeFixes?: boolean;
   /** Filename used for diagnostics */
   filename?: string;
   /** Locale code: "en", "ja", or "zh" */

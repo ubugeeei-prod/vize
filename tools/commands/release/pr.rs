@@ -52,6 +52,7 @@ fn run() -> Result<(), String> {
         .as_slice()
     {
         ["rewrite-guest-lock", path, old, new] => pr_pin::rewrite_guest_lock(path, old, new, &root),
+        ["verify-producer-metadata", frozen] => pr_pin::verify_producer_metadata(frozen, &root),
         ["start", bump] => pr_start::start(bump, &root),
         ["start", bump, "--pin"] => pr_start::start_pinned(bump, &root),
         ["retire", number, head, tag, run, operator] => pr_pin::retire(
@@ -95,7 +96,7 @@ fn run() -> Result<(), String> {
             }
         }
         _ => Err(
-            "Usage: pr.rs start <bump> [--pin] | resume <PR> [--pin] | retire <source PR> <H> <tag> <R> <original operator run> | validate|wait-promotion|validate-pinned|wait-promotion-pinned <PR> <SHA> <tag> | verify-pinned <PR> <SHA> <tag> <run> | verify-integration-candidate <integration PR> <candidate SHA> <base SHA> <integration head SHA> | check-integration-candidate <integration PR>"
+            "Usage: pr.rs start <bump> [--pin] | resume <PR> [--pin] | retire <source PR> <H> <tag> <R> <original operator run> | validate|wait-promotion|validate-pinned|wait-promotion-pinned <PR> <SHA> <tag> | verify-pinned <PR> <SHA> <tag> <run> | verify-integration-candidate <integration PR> <candidate SHA> <base SHA> <integration head SHA> | check-integration-candidate <integration PR> | verify-producer-metadata <frozen-directory>"
                 .into(),
         ),
     }

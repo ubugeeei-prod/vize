@@ -69,6 +69,7 @@ pub fn lint_patina_sfc(source: String, options: Option<PatinaLintOptionsNapi>) -
     let preset = patina_preset_from_option(opts.preset.as_deref());
     let component_casing = opts.component_name_in_template_casing.as_deref();
     let event_casing = opts.custom_event_name_casing.as_deref();
+    let include_fixes = opts.include_fixes.unwrap_or(false);
     let no_mutating_props = opts.no_mutating_props;
     let sfc_element_order = opts.sfc_element_order;
     let html_self_closing = opts.html_self_closing;
@@ -116,7 +117,7 @@ pub fn lint_patina_sfc(source: String, options: Option<PatinaLintOptionsNapi>) -
                 .as_ref()
                 .map_or(Value::Null, |help| json!(help.as_ref() as &str));
 
-            json!({
+            let mut value = json!({
                 "rule": diagnostic.rule_name,
                 "severity": match diagnostic.severity {
                 Severity::Error => "error",
@@ -132,7 +133,20 @@ pub fn lint_patina_sfc(source: String, options: Option<PatinaLintOptionsNapi>) -
                     diagnostic.end,
                 ),
                 "help": help,
-            })
+            });
+            if include_fixes {
+                value["fix"] = diagnostic.fix.as_ref().map_or(Value::Null, |fix| {
+                    json!({
+                        "message": fix.message,
+                        "edits": fix.edits.iter().map(|edit| json!({
+                            "start": edit.start,
+                            "end": edit.end,
+                            "newText": edit.new_text,
+                        })).collect::<Vec<_>>(),
+                    })
+                });
+            }
+            value
         })
         .collect();
 

@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { checkCanonicalVueConsumer } from "./support/vite-vue-packed-consumer.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const plugin = path.join(root, "npm/builder/vite");
@@ -149,6 +150,11 @@ export default defineConfig({
     );
     assert.ok(!fs.readdirSync(directory).some((name) => name.startsWith(".vize-vp-")));
     checkConsumerTypes(directory, write);
+    checkCanonicalVueConsumer(
+      directory,
+      path.join(path.dirname(require.resolve("typescript/package.json")), "bin/tsc"),
+      path.dirname(require.resolve("vite/package.json")),
+    );
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
   }

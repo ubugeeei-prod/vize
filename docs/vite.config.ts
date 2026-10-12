@@ -14,6 +14,7 @@ if (puppeteerExecutablePath) {
 const themeDir = resolve(import.meta.dirname, "theme");
 const themeCss = [
   "style.css",
+  "shader.css",
   "navigation.css",
   "entry-layout.css",
   "features.css",

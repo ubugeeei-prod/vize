@@ -9,7 +9,7 @@ import { resolveConfigExport } from "../config.ts";
 import { createTasks } from "./tasks.ts";
 
 assert.equal(withVize, defineConfig);
-assert.equal(withVue, defineConfig);
+assert.notEqual(withVue, defineConfig);
 
 const env = { command: "build", mode: "production" } as const;
 

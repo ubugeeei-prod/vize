@@ -88,10 +88,10 @@ void main() {
   float intensity = pattern * vig;
 
   if (u_dark > 0.5) {
-    float di = intensity * 2.5;
+    float di = intensity * 4.0;
     // Alpha carries the pattern strength; scaling RGB too made faint veins
     // fade twice when composited over the dark page.
-    vec3 col = vec3(0.95, 0.92, 0.85);
+    vec3 col = vec3(0.62, 0.53, 0.40);
     gl_FragColor = vec4(col, min(di, 1.0));
   } else {
     vec3 col = vec3(0.18, 0.15, 0.10) * intensity;

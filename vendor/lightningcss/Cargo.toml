@@ -171,9 +171,7 @@ version = "=1.0.0-alpha.43"
 version = "0.28.3"
 
 [dependencies.parcel_sourcemap]
-package = "vize_parcel_sourcemap"
-version = "=0.443.0"
-path = "../parcel_sourcemap"
+workspace = true
 features = ["json"]
 optional = true
 

@@ -26,6 +26,8 @@ export type {
   LoadConfigOptions,
   ConfigEnv,
   VueConfig,
+  VueOptions,
+  VueOptionsEntry,
   UserConfig,
   UserConfigEntry,
   UserConfigExport,

@@ -1,0 +1,36 @@
+{
+  "schema": "vize.lint.computed-local-reactivity-8756",
+  "version": 1,
+  "issue": 8756,
+  "url": "https://github.com/ubugeeei-prod/vize/issues/8756",
+  "reporter": {
+    "id": 102337893,
+    "login": "naitokosuke"
+  },
+  "files": {
+    "ComputedLocal.vue.txt": {
+      "bytes": 450,
+      "sha256": "d40db5d1319a290e21a05bdd579d47c050290d81201fc37e2bb9f2a0e1a53fd2"
+    },
+    "original-issue.md": {
+      "bytes": 1625,
+      "sha256": "1d3deb6708c302ffb36c4a8cfa5815cff1bbb7e90e3f0cb15c5a414d980687c6"
+    },
+    "tsconfig.json.txt": {
+      "bytes": 221,
+      "sha256": "735410e1bd02c5346abd7cf4c569f4ff5e73d579b25650d3d6a70436f8689c94"
+    },
+    "vize.config.json.txt": {
+      "bytes": 73,
+      "sha256": "a74e83cd33e432a4f3d8f7f801cd3fcd61efecebd4724b15964ba9d1855dddf1"
+    },
+    "controls.json": {
+      "bytes": 29000,
+      "sha256": "aca6620ca0e4c752cb5da190f6b41a62890ce88417fc0750daa50a52c7e4e5c3"
+    }
+  },
+  "historicalVersion": "0.443.0",
+  "historicalWarnings": 2,
+  "expectedOriginalWarnings": 0,
+  "controlCount": 35
+}
