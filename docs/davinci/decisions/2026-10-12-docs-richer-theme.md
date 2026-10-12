@@ -19,6 +19,12 @@ and reduced-motion idle behavior are unchanged. Light shader rendering is
 unchanged. Natural letter casing, transparent desktop navigation, opaque mobile
 drawers, and the removal of left decoration rails remain in place.
 
+The first exact-head Actions run failed the existing source-length ratchet:
+`style.css` grew to 1070 lines from 1058. The complete failed log is retained.
+Move the entire canvas block unchanged into `shader.css` and include it in the
+existing theme concatenation. The large stylesheet is now 1041 lines. The
+ratchet and all original checks remain unchanged; rerun them on the new head.
+
 The finite native preview uses installed Ox Content SSG asset packaging and
 whole downloaded public guide/home HTML. At 1440 and 390 pixels, eight light/dark
 views plus two native mobile drawers pass the existing contrast, layout, casing,
