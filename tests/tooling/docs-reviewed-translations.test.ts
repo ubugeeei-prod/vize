@@ -138,3 +138,39 @@ void test("Japanese Content Mapper review survives regeneration with every whole
     "all current setup and historical destinations agree",
   );
 });
+
+void test("Japanese rule options retain the complete authored review and original runnable contracts", async () => {
+  const root = resolve(import.meta.dirname, "../..");
+  const path = "rules/options.md";
+  const japanese = readFileSync(resolve(root, "docs/content/ja", path), "utf8");
+  const retained = await collectReviewedTranslations([path], resolve(root, "docs/content/ja"));
+  assert.equal(retained.get(path), japanese, "regeneration keeps the entire authored input");
+  assert.equal(
+    isReviewedTranslation(
+      japanese.replace("<!-- Reviewed translation;", "<!-- Generated translation;"),
+    ),
+    false,
+    "the previous generated input has no authored regeneration authority",
+  );
+  const fencePattern = /^```[^\n]*\n[\s\S]*?^```[^\n]*$/gm;
+  const fences = [...japanese.matchAll(fencePattern)].map((match) => match[0]);
+  const inlineTokens = [
+    ...japanese.replace(fencePattern, "").matchAll(/(?<!`)`([^`\n]+)`(?!`)/g),
+  ].map((match) => match[1]);
+  const digest = (value: string[]) =>
+    createHash("sha256").update(JSON.stringify(value)).digest("hex");
+  assert.equal(fences.length, 43);
+  assert.equal(digest(fences), "7af601c217a94df10b23bd1e10860b4329c2356b90deb9910cb113300490bf43");
+  assert.equal(inlineTokens.length, 132);
+  assert.equal(
+    digest(inlineTokens),
+    "90b695added36c831b6af36e61fc2b31a0f7cd58f914ba16974bb3d8a8de30b1",
+  );
+  assert.deepEqual(
+    [...japanese.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)].map((match) => match[1]),
+    ["./options-type.md", "../guide/lint-execution.md"],
+    "retain the original type-aware destination and the authored rule-selection next step",
+  );
+  assert.ok(readFileSync(resolve(root, "docs/content/ja/guide/lint-execution.md"), "utf8"));
+  assert.equal(japanese.split('<span id="scoped-entries"></span>').length, 2);
+});

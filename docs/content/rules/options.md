@@ -11,6 +11,9 @@ option fields are rejected, and later matching config entries replace the full o
 same rule. Set severity separately under `linter.rules`; options only describe how an enabled rule
 should behave unless noted below.
 
+Use the [native lint execution guide](../guide/lint-execution.md) to select rules and their severity
+before adjusting the options below.
+
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 

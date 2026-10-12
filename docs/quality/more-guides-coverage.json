@@ -254,8 +254,8 @@
     {
       "route": "/rules/options",
       "locales": ["en", "ja"],
-      "entry": "audited",
-      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+      "entry": "revised",
+      "note": "Complete authored Japanese prose explains rule selection, defaults, full-object replacement and file-specific settings; all 43 original recipes and API tokens remain. Native reading and deployed acceptance remain pending."
     },
     {
       "route": "/rules/options-musea",
