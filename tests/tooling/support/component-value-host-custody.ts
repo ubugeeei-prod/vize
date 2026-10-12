@@ -3,10 +3,6 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import {
-  authenticateJavaScriptSfcSource,
-  javascriptSfcSourceReader,
-} from "../../../tools/support/compat/github/javascript-sfc-source-context.mjs";
-import {
   qualifyComponentValueHost,
   loadComponentValueManifest,
   componentValueMetadataPairs,
@@ -119,7 +115,6 @@ export function selectedComponentValueBodies(read: (file: string) => Buffer | nu
 export function retainedHostBeforeComponentValues(
   read: (file: string) => Buffer | null,
   capsule: unknown,
-  sourceRoot = path.resolve(import.meta.dirname, "../../.."),
 ): Buffer {
   assert.equal(
     sha(JSON.stringify(capsule)),
@@ -160,20 +155,8 @@ export function retainedHostBeforeComponentValues(
       .digest("hex"),
     original.gitBlob,
   );
-  let current = read(host);
+  const current = read(host);
   assert.ok(current);
-  const actualRead = javascriptSfcSourceReader(sourceRoot, true);
-  assert.deepEqual(current, actualRead(host), "supplied Hook equals actual raw/physical source");
-  if (sha(current) !== "b19f6783e50429d2779efeb7d2d21c64dcd98a67810fc4f6a1ccc698febae337") {
-    const javascript = authenticateJavaScriptSfcSource((file: string) => {
-      const actual = actualRead(file);
-      assert.deepEqual(read(file), actual, "supplied whole JS source: " + file);
-      return actual;
-    });
-    actualRead.confirmSource();
-    current = javascript.retainedHostQualificationBefore();
-  }
-  actualRead.confirmSource();
   assert.equal(sha(current), "b19f6783e50429d2779efeb7d2d21c64dcd98a67810fc4f6a1ccc698febae337");
   const actualHelper = read(helper);
   const actualManifest = read(manifest);
@@ -199,24 +182,19 @@ export function retainedHostBeforeComponentValues(
     inverse = inverse.replace(clause, "");
   }
   assert.deepEqual(Buffer.from(inverse), before);
-  actualRead.confirmSource();
   return before;
 }
 
 export function retainedPhysicalHostBeforeComponentValues(root: string): Buffer {
-  return retainedHostBeforeComponentValues(
-    (file) => {
-      const target = path.join(root, file);
-      const stat = fs.lstatSync(target);
-      assert.ok(
-        stat.isFile() && (stat.mode & 0o111) === 0,
-        "regular nonexecuted whole source: " + file,
-      );
-      return fs.readFileSync(target);
-    },
-    readCapsule(root),
-    root,
-  );
+  return retainedHostBeforeComponentValues((file) => {
+    const target = path.join(root, file);
+    const stat = fs.lstatSync(target);
+    assert.ok(
+      stat.isFile() && (stat.mode & 0o111) === 0,
+      "regular nonexecuted whole source: " + file,
+    );
+    return fs.readFileSync(target);
+  }, readCapsule(root));
 }
 
 /** Authenticate complete raw predecessor frames and current guard bodies without history runtime credit. */

@@ -11,10 +11,12 @@ import {
   javascriptSfcSourceReader,
   javascriptSfcSourcePaths,
 } from "../../tools/support/compat/github/javascript-sfc-source-context.mjs";
+import { retainedPhysicalHostBeforeComponentValues } from "./support/component-value-host-custody.ts";
 import {
-  retainedPhysicalHostBeforeComponentValues,
-  retainedHostBeforeComponentValues,
-} from "./support/component-value-host-custody.ts";
+  authenticateNoMutatingComponentJoinPhysical,
+  authenticateNoMutatingComponentJoinCommitted,
+} from "./support/no-mutating-component-join.mjs";
+import { authenticateJoinLiteralFrame } from "./support/no-mutating-component-join-frame.mjs";
 import {
   qualifyAsciiOriginalCallers,
   retainedAsciiCallerFrame,
@@ -24,6 +26,13 @@ const root = path.resolve(import.meta.dirname, "../..");
 const sha = (body: Buffer) => createHash("sha256").update(body).digest("hex");
 const blob = (body: Buffer) =>
   createHash("sha1").update(`blob ${body.length}\0`).update(body).digest("hex");
+const git = (args: string[], input?: Buffer | string, cwd = root) =>
+  execFileSync("git", ["--no-replace-objects", ...args], {
+    cwd,
+    input,
+    env: { ...process.env, GIT_NO_LAZY_FETCH: "1", GIT_ALLOW_PROTOCOL: "" },
+    maxBuffer: 16 * 1024 * 1024,
+  });
 const actual = javascriptSfcSourceReader(root, true);
 const bodies = new Map(javascriptSfcSourcePaths.map((file: string) => [file, actual(file)]));
 const read = (file: string) => bodies.get(file);
@@ -37,7 +46,7 @@ const capsule = JSON.parse(
     "utf8",
   ),
 );
-void test("all88 actual raw/physical JS sources precede the one whole retained Hook view and old NoUnused assertions", () => {
+void test("all88 JS and all323 current NoMutating sources precede the genuine historical NoUnused source check", () => {
   const view = authenticateJavaScriptSfcSource(read);
   assert.equal(view.receipt.bodyPairs, 88);
   assert.equal(view.receipt.runtimeCredit, false);
@@ -45,14 +54,37 @@ void test("all88 actual raw/physical JS sources precede the one whole retained H
     sha(bodies.get(hook)!),
     "874e2aaaf8459d854d782c898e0d17c5bbec4928b85d86fda903a7a61ad7ca59",
   );
+  const current = authenticateNoMutatingComponentJoinPhysical(root);
+  assert.equal(current.completeCurrentClosedBodies, 323);
+  const currentHead = authenticateNoMutatingComponentJoinCommitted(root);
+  assert.equal(currentHead, git(["rev-parse", "HEAD"]).toString().trim());
+  actual.confirmSource();
+  const declared = current.manifest.literalFrames.filter(
+    (row) => row.source === "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207",
+  );
+  assert.equal(declared.length, 1);
+  const historical = authenticateJoinLiteralFrame(root, declared[0]);
+  assert.equal(historical.frame.files.length, 683);
+  actual.confirmSource();
+  assert.deepEqual(
+    view.retainedHostQualificationBefore(),
+    fs.readFileSync(path.join(historical.root, hook)),
+  );
   assert.equal(
     sha(view.retainedHostQualificationBefore()),
     "b19f6783e50429d2779efeb7d2d21c64dcd98a67810fc4f6a1ccc698febae337",
   );
   assert.deepEqual(
-    retainedPhysicalHostBeforeComponentValues(root),
+    retainedPhysicalHostBeforeComponentValues(historical.root),
     Buffer.from(capsule.rawBase64, "base64"),
   );
+  assert.equal(current.sourceOnly, true);
+  assert.equal(current.compiled, false);
+  assert.equal(current.native, false);
+  assert.equal(current.performance, false);
+  assert.equal(current.currentOld111Receipt, null);
+  assert.equal(current.oldMigrationMeasurement, null);
+  assert.equal(current.oldSetupMeasurement, null);
   const borrowed = view.retainedHostQualificationBefore();
   borrowed[0] ^= 1;
   assert.equal(
@@ -71,13 +103,8 @@ void test("each entire current JS body and every missing or hybrid caller refuse
       );
   const view = authenticateJavaScriptSfcSource(read);
   assert.throws(() =>
-    retainedHostBeforeComponentValues(
-      (file) =>
-        file === hook
-          ? view.retainedHostQualificationBefore()
-          : fs.readFileSync(path.join(root, file)),
-      capsule,
-      root,
+    authenticateJavaScriptSfcSource((file: string) =>
+      file === hook ? view.retainedHostQualificationBefore() : read(file),
     ),
   );
 });
@@ -110,13 +137,6 @@ void test("the complete current10 ASCII frame has genuine current bytes and refu
   assert.throws(() => originalAsciiCaller("foreign", entries[0].file, entries));
   assert.throws(() => originalAsciiCaller(result.originalSource, "unknown", entries));
 });
-const git = (args: string[], input?: Buffer | string, cwd = root) =>
-  execFileSync("git", ["--no-replace-objects", ...args], {
-    cwd,
-    input,
-    env: { ...process.env, GIT_NO_LAZY_FETCH: "1", GIT_ALLOW_PROTOCOL: "" },
-    maxBuffer: 16 * 1024 * 1024,
-  });
 const selectedHead = git(["rev-parse", "HEAD"]).toString().trim();
 const treeRecords = git(["ls-tree", "-z", selectedHead, "--", ...javascriptSfcSourcePaths])
   .toString()
