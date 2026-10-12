@@ -7,6 +7,8 @@ on:
       - "crates/vize_patina/Cargo.toml"
       - "crates/vize_atelier_sfc/Cargo.toml"
       - "crates/vize_glyph/Cargo.toml"
+      - "crates/vize/Cargo.toml"
+      - "crates/vize/examples/css_engine_vendor_observer.rs"
       - "vendor/lightningcss/**"
       - "vendor/parcel_sourcemap/**"
       - "tools/support/dependencies/*css-engine*"
@@ -71,6 +73,54 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  observations:
+    name: Whole CSS source observations (${{ matrix.profile }})
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix: { profile: [dev, release] }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
+        with: { toolchain: "1.99.0" }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: "package.json", run-install: false }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          cache-key-prefix: css-vendor-
+          key: observations-${{ matrix.profile }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Authenticate all before authorities and preserve actual producer identity
+        run: |
+          mkdir -p "$RUNNER_TEMP/css-engine-observations"
+          cargo metadata --locked --format-version 1 > "$RUNNER_TEMP/css-engine-observations/metadata.json"
+          node tools/support/dependencies/css-engine-vendor-custody.ts "$RUNNER_TEMP/css-engine-observations/metadata.json" > "$RUNNER_TEMP/css-engine-observations/custody.json"
+          git rev-parse HEAD > "$RUNNER_TEMP/css-engine-observations/source.txt"
+          rustc -Vv > "$RUNNER_TEMP/css-engine-observations/rustc.txt"
+          sha256sum Cargo.lock Cargo.toml crates/vize/examples/css_engine_vendor_observer.rs tools/support/dependencies/css-engine-cli-observer.ts tests/_fixtures/differential/css-engine-vendor-exit/atelier-inputs.json > "$RUNNER_TEMP/css-engine-observations/sources.sha256"
+      - name: Observe all99 Rust consumers and66 original Atelier inputs without replacing expectations
+        run: |
+          export CSS_ENGINE_OBSERVATIONS="$RUNNER_TEMP/css-engine-observations/rust-consumers.json"
+          export CSS_ENGINE_SOURCE_REVISION="$(git rev-parse HEAD)"
+          cargo build --locked -p vize --example css_engine_vendor_observer --profile ${{ matrix.profile }} 2>&1 | tee "$RUNNER_TEMP/css-engine-observations/rust-build.log"
+          sha256sum target/${{ matrix.profile == 'dev' && 'debug' || 'release' }}/examples/css_engine_vendor_observer > "$RUNNER_TEMP/css-engine-observations/rust-executable.sha256"
+          target/${{ matrix.profile == 'dev' && 'debug' || 'release' }}/examples/css_engine_vendor_observer 2>&1 | tee "$RUNNER_TEMP/css-engine-observations/rust-consumers.log"
+      - name: Observe all90 original whole CLI processes with the actual source-built binary
+        run: |
+          cargo build --locked -p vize --bin vize --profile ${{ matrix.profile }} 2>&1 | tee "$RUNNER_TEMP/css-engine-observations/cli-build.log"
+          node tools/support/dependencies/css-engine-cli-observer.ts target/${{ matrix.profile == 'dev' && 'debug' || 'release' }}/vize "$RUNNER_TEMP/css-engine-observations/cli.json" ${{ matrix.profile }}
+      - name: Preserve every raw diagnostic source observation
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: css-engine-observations-${{ matrix.profile }}-${{ github.sha }}
+          path: ${{ runner.temp }}/css-engine-observations/
+          if-no-files-found: error
+          retention-days: 14
+
   public-types:
     name: CSS Rust downstream identity and SemVer
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -80,6 +130,9 @@ jobs:
         with: { fetch-depth: 0 }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
         with: { toolchain: "1.99.0" }
+      - uses: ./.github/actions/setup-moonbit
+      - name: Preserve complete publication sanitizer table contracts
+        run: moon -C tools/moon test --target native cmd/publish_crates
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache

@@ -111,6 +111,35 @@ for (const [filename, length, digest] of [
   assert.equal(sha256(bytes), digest, filename);
 }
 const metadataFile = process.argv[2];
+const atelierInputs = fs.readFileSync(
+  path.join(root, "tests/_fixtures/differential/css-engine-vendor-exit/atelier-inputs.json"),
+);
+assert.equal(
+  sha256(atelierInputs),
+  "27a7d73a093c02ec80e81cfc1c8d8918e1bacbe4b2b2350e8c641352bff61786",
+  "complete66 original Atelier input authority",
+);
+assert.equal(JSON.parse(atelierInputs.toString()).observations.length, 66);
+assert.equal(JSON.parse(atelierInputs.toString()).additionalInputs.length, 6);
+for (const [filename, checksum] of [
+  [
+    "examples/css_engine_recovery.rs",
+    "2342d90a3ea3b0902fe9728b98c0409b664fba6ee744b9a0930f52e28b5b20f5",
+  ],
+  [
+    "tests/css_fuzz_recovery.rs",
+    "964c8a85756fc13faf9c29120fee3a6a5d9caeabdf80cd626ce7cdbd228fc9a2",
+  ],
+  [
+    "tests/fixtures/css-engine/6190.css",
+    "562de29c854bfc90a513528f8a653a90c21144ee31d7b1d7d8da73d5748a3431",
+  ],
+]) {
+  assert.equal(
+    sha256(fs.readFileSync(path.join(root, "crates/vize_atelier_sfc", filename))),
+    checksum,
+  );
+}
 if (metadataFile) {
   const metadata = JSON.parse(fs.readFileSync(metadataFile, "utf8"));
   const archives = metadata.packages.filter((pkg: { name: string }) => pkg.name === "rkyv");

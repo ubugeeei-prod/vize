@@ -36,12 +36,12 @@ Official cssparser-color main
 `9f3ceddf398f5ce4ab76fdad1b42ccb6c578a926` declares 0.6 with cssparser
 0.38, while the candidate preserves Vize's existing 0.5/0.37 provider identities.
 The hue assertion remains present upstream and in this candidate. No complete
-released hue repair was established. Registry API access returned HTTP403;
+released hue repair was established. Registry API access returned HTTP 403;
 there is no claim about an unobserved newer crates.io release.
 
 Official Parcel Source Map main
 `b290dae1bea9bf249a0691e06014e09f974f70dd` and published 2.1.1 retain rkyv
-0.7. Unmerged [PR130](https://github.com/parcel-bundler/source-map/pull/130)
+0.7. Unmerged [PR #130](https://github.com/parcel-bundler/source-map/pull/130)
 at `b9d164f0db872fe139be6fdc00f99fdd767ccd97` has no qualifying CI checks.
 Only its first [core migration commit](https://github.com/atezet/source-map/commit/dbbd854f83c32fd8cb138489920e043c73da49c0)
 is imported. Its later borrowed-argument, edition, N-API, Wasm and unrelated
@@ -85,7 +85,8 @@ and the new tests do not execute the unsafe old decoder.
 
 Current Rustfmt exposes three original alpha.72 formatting differences in
 `bundler.rs`, `lib.rs` and `selector.rs`. A separate compatibility commit applies
-only attribute/call wrapping and one blank-line deletion. Its exact successor
+only attribute/call wrapping, one optional trailing comma in an existing test
+call and one blank-line deletion. Its exact successor
 hashes are authenticated alongside the complete original import hashes. No
 parser, selector, bundler or original test expression changes in that commit;
 the existing `cargo fmt --all -- --check` command remains unchanged.
@@ -99,24 +100,24 @@ first-party list remains empty and every first-party Clippy/format command and
 contract remains unchanged. Current Clippy still has to execute on Actions.
 
 Actual initial Clippy fails on 36 pre-existing Parcel source diagnostics under
-Rust1.99/Vize's configuration: root disallowed std String/format interfaces and
+Rust 1.99/Vize's configuration: root disallowed std String/format interfaces and
 eight legacy spelling categories. Rewriting those public types or algorithms would
 expand the bounded migration. A proposed, separately reviewed compatibility
 follow-up retains the original deny-all and names only those actual diagnostics;
 it is not an excuse to suppress first-party checks or change mapping algorithms.
 
-The exact diagnostic census is disallowed_types22, needless_return4,
-unnecessary_cast2, unnecessary_map_or2 and one each of the other six named
+The exact diagnostic census is disallowed_types: 22, needless_return: 4,
+unnecessary_cast: 2, unnecessary_map_or: 2 and one each of the other six named
 categories. `suspicious_to_owned` concerns the existing temporary Cow spelling;
 its content is copied through `add_vlq_map`/`set_source_content` into owned strings.
 The full original from_json algorithm remains unchanged; this is not a blanket
 claim that suspicious diagnostics lack value elsewhere.
 
-The initial strict audit also exposes original optional CLI's atty0.2.14
-(RUSTSEC-2024-0375/2021-0145) and proc-macro-error1.0.4
-(RUSTSEC-2024-0370), brought by Clap3/clap_derive3. No rkyv0.7 route remains in the
+The initial strict audit also exposes original optional CLI's atty 0.2.14
+(RUSTSEC-2024-0375/2021-0145) and proc-macro-error 1.0.4
+(RUSTSEC-2024-0370), brought by Clap 3/clap_derive 3. No rkyv 0.7 route remains in the
 candidate lock, but that fact does not make the audit green. A proposed one-line
-optional Clap4.5 manifest compatibility change must preserve the entire CLI source,
+optional Clap 4.5 manifest compatibility change must preserve the entire CLI source,
 feature and original tests and pass their actual debug/release qualification.
 No new advisory waiver is proposed. Initial JS/actionlint and dependency-direction
 jobs additionally failed external download timeouts; their raw red evidence is
@@ -124,31 +125,39 @@ retained and new-source qualification remains required.
 
 Root approved preparation of the separate finite named lint/optional CLI
 compatibility change. The manifest retains `^4.5`; actual locked provider is
-Clap4.6.6, the same existing workspace provider. Resolving the change adds zero
-packages and removes twelve obsolete Clap3/atty/proc-macro-error route packages.
-All original CLI source and its 27 tests remain byte-exact; both profiles now
-enable all features. Source review identifies a likely Clap4 conflict-message
+Clap 4.6.6, the same existing workspace provider. Resolving the change adds zero
+packages and removes twelve obsolete Clap 3/atty/proc-macro-error route packages.
+The manifest-only candidate preserved the whole CLI source and all 27 tests; both profiles
+enable all features. Source review identifies a likely Clap 4 conflict-message
 wording difference at `browserslist_targets_exclusive`; no original assertion is
 silently rewritten or normalized. Actual failures must retain their complete
 before packet and receive a narrowly reviewed compatibility solution.
 
-Exact514 all-features run38184220273 compiles but CLI genuinely fails dev24/27
-and release10/27. Clap4 rejects the internal `output_file` group/argument ID
+Exact 514da all-features run 38184220273 compiles but CLI genuinely fails dev 24/27
+and release 10/27. Clap 4 rejects the internal `output_file` group/argument ID
 collision; the same `css_modules` collision yields release AnyValue type panics.
 The narrow successor changes only four internal group/require references,
 preserving all public flags, typed fields and output algorithms. Complete original
 CLI source is frozen and hash-authenticated in packaged `cli-original.rs.txt`;
-the group-only repair preserved all27 test bodies. Both full red logs are retained.
+the group-only repair preserved all 27 test bodies. Both full red logs are retained.
 
-The distinct target/browserslist negative in actual514release also fails only the
-original capitalized `The argument` constraint against Clap4's lowercase output.
+The distinct target/browserslist negative in actual 514da release also fails only the
+original capitalized `The argument` constraint against Clap 4's lowercase output.
 Its finite successor changes that single literal byte and preserves the entire
-old27-test file in packaged `cli-original-tests.rs.txt`, authenticated against
-the original import. Official Clap4 formatter and the complete retained514
+old 27-test file in packaged `cli-original-tests.rs.txt`, authenticated against
+the original import. Official Clap 4 formatter and the complete retained 514da
 stderr corroborate the change; all other original expectations and the27-case
 denominator remain intact. A separate authored contract requires full current
-exit2, empty stdout and literal complete stderr bytes. No generic normalization
+exit 2, empty stdout and literal complete stderr bytes. No generic normalization
 or candidate-wide expected-output recapture substitutes for any original case.
+
+Exact 9b112a focused Actions 38185552121 is terminal success on actual 9650ec6:
+both profiles execute 121 library tests, all 27 CLI cases and the additional whole
+conflict law, plus CSSOM/custom/browser and direct/map/archive contracts. All
+three artifact ZIPs have authenticated API digests and retained complete bodies.
+The nine downstream planes still contain three genuine nominal failures; the
+analyzer's success cannot override them. Full old CSS laws remain unresolved,
+and this focused result grants no product, healthy-corpus or publication credit.
 
 The same source's normal JS format gate rejects eleven immutable upstream
 metadata/manifests/config/test CSS files plus three owned TOMLs. Owned TOMLs are
@@ -212,7 +221,7 @@ The first three-plane new/raw program actually executed on original main and the
 fork, and the original-engine candidate produced the expected two E0308 errors.
 Its first SemVer run failed earlier: the installed tool rejected Rust1.99's
 rustdoc format v61. That is a tooling failure, not an API verdict. The successor
-uses the existing release SemVer toolchain Rust1.95, records its compiler/tool
+uses the existing release SemVer toolchain Rust 1.95, records its compiler/tool
 separately from the Rust1.99 downstream execution, and preserves any actual
 comparison nonzero exit. Initial artifact11718281627 and all three full
 consumer/lock/output packets remain retained; complete nine-plane proof is new.
@@ -226,10 +235,10 @@ authored Parcel laws and four actual child refusals, plus two complete Lightning
 map laws. Sole rkyv0.8.18 has std/bytecheck enabled. CLI/all-features qualification
 was not part of this run and remains separate.
 
-All nine whole downstream packets qualify: six baseline/fork executions exit0;
+All nine whole downstream packets qualify: six baseline/fork executions exit 0;
 candidate/original-engine reports new/raw two E0308, typed visitors one E0308 and
-two E0631, and external trait one E0053, each exit101. Actual unwaived Rust1.95
-and cargo-semver-checks0.47.0 report exit0 with222 passes/30 skips. That analyzer
+two E0631, and external trait one E0053, each exit101. Actual unwaived Rust 1.95
+and cargo-semver-checks 0.47.0 report exit 0 with 222 passes/30 skips. That analyzer
 result cannot override the three genuine nominal incompatibilities, and its
 skipped analyses grant no coverage. Published/API compatibility and complete
 normal/protected consumer delivery remain unproven; the PR stays Draft.
@@ -237,7 +246,7 @@ normal/protected consumer delivery remain unproven; the PR stays Draft.
 ## Preserved authorities and qualification
 
 All 19 original CSS containment corpus files remain byte-exact, including the
-99 native consumer observations and 90-process CLI authority. The complete
+99 Rust consumer observations and 90-process CLI authority. The complete
 original `css_engine_panic_boundary.rs` body is also pinned in
 `tests/_fixtures/differential/css-engine-vendor-exit/originals.json` for this
 initial candidate. The 39-byte lch/sign, 66-byte number-fold and 1045-byte hue
@@ -252,6 +261,20 @@ entire before authority and add an independently reviewed finite successor based
 on complete source-bound debug/release emissions, without generic normalization,
 dropping inputs or weakening healthy observations. This Draft remains off queue
 while that work is incomplete.
+
+An additional source-only observer executes all 99 Rust consumer observations (all 12
+formatter, six style and 15 linter cases, each three times), all 66 inputs from the
+eight original Atelier laws, and all 90 original CLI processes in both debug and
+release profiles. A separate six-input vector preserves all five release-recovery
+routes (including the112-byte fuzz input) and the subsequent healthy source.
+It retains complete results, source/compiler/graph/executable
+identity and raw streams before analysis. Observer execution is diagnostic
+evidence: it neither compares a new golden nor grants product, healthy-corpus,
+API, registry or release qualification. Every original expected packet and active
+boundary law stays frozen during this capture. Rust result fields are distinct
+from N-API/public-service binding fields; no native-binding qualification is
+claimed. Independently review changed
+cells and verify unchanged healthy coordinates before proposing any successor.
 
 The original source-map tests remain available. Four authored integration
 contracts independently pin whole sources/names/content/mappings, literal VLQ,
@@ -273,6 +296,15 @@ in both assertion-enabled and release qualification.
   `vize_lightningcss`, before every consumer. Both new crate ownership and Trusted
   Publishing bootstrap remain unverified; configuration grants no registry or
   handoff credit and must be completed before an authorized publication.
+- Exact 9b112a normal tooling reports a missing physical vendor manifest path in
+  the publication adapter. Its bounded successor recognizes only the two named
+  new vendor directories beside Oxc; existing full fake-publication tests still
+  require every manifest and lockfile to be sanitized and restored byte-exactly.
+  Peer review caught seven dotted development tables missed by both old guards.
+  Quote-aware table classification and an independent fake-refusal predicate
+  strip/refuse grouped and dotted root/target development tables while preserving
+  complete normal/build sections, including a quoted target containing dots and
+  the literal `dev-dependencies` spelling. Explicit whole-table laws run on Actions.
 - Produce an actual isolated registry dependency graph with neither root patches
   nor workspace paths and no rkyv 0.7 route. Current local Cargo metadata and lock
   resolution are source graph evidence only and grant no published credit.
