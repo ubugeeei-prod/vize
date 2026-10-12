@@ -18,10 +18,10 @@ export interface PatinaDiagnostic {
   location: PatinaLocation;
   help: string | null;
   /** Present only when the native caller requests includeFixes. */
-  fix?: PatinaFix | null;
+  fix?: NativeLintFix | null;
 }
 
-export interface PatinaFix {
+export interface NativeLintFix {
   message: string;
   edits: { start: number; end: number; newText: string }[];
 }

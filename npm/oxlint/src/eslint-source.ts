@@ -1,4 +1,4 @@
-import type { PatinaFix } from "./model.js";
+import type { NativeLintFix } from "./model.js";
 
 /** Native UTF-8 text cannot preserve an unpaired UTF-16 surrogate. */
 export function assertSourceText(source: string): void {
@@ -29,7 +29,7 @@ export function mapSourceOffsets(source: string, offsets: readonly number[]): Ma
 
 /** Refuse invalid or overlapping native edits before handing them to a fixer. */
 export function mapTextEdits(
-  edits: PatinaFix["edits"],
+  edits: NativeLintFix["edits"],
   offsets: ReadonlyMap<number, number>,
 ): { range: [number, number]; text: string }[] {
   let previousEnd = -1;
