@@ -289,6 +289,7 @@ Keep the whole red output and unchanged oracle. TODO: independently review
 source-ordered condition folding in the existing graph/order phase while retaining
 parallel loading, inherited conditions, source maps and every original import
 case. Sorting names, normalizing output or retrying away the failure is insufficient.
+The [bounded qualification plan](./2026-10-12-css-import-order-plan.md) records the exact preservation gaps and next before-capture slice.
 
 Actual b2205cf [campaign 38187677652](https://github.com/ubugeeei-prod/vize/actions/runs/38187677652) is terminal failure solely for that dev
 bundler test. Both observation jobs complete 99 Rust, 66+6 Atelier and 90 CLI rows
