@@ -43,3 +43,25 @@ A red candidate is promptly dequeued; its exact observations are retained and
 only authenticated additions are repaired before fresh qualification.
 
 Source review and input custody are not native execution or release evidence.
+
+The first protected candidate `3183e16` ran the genuine [feature corpus](https://github.com/ubugeeei-prod/vize/actions/runs/38224948265/job/114731832255).
+S2 observed 551 files and 1,228 remarks, with 54 additions on 14 Transition
+paths. Its complete original log supplies those exact rows. Removing only
+the added entry rows restores every byte of the preceding 1,174-row baseline;
+the 551-file census and all earlier records are retained.
+
+That candidate also failed MoonBit setup before compilation in
+[Nuxt 3](https://github.com/ubugeeei-prod/vize/actions/runs/38224948215/job/114730051710)
+and [Musea inline Art](https://github.com/ubugeeei-prod/vize/actions/runs/38224948167/job/114730051998):
+the pinned Linux archive GET returned HTTP 403. These failures do not attribute
+a product or compiler defect. The candidate was automatically dequeued and
+the PR returned to Draft. Fresh source and protected qualification require
+the finite S2 additions and a separately qualified installer repair; no
+unchanged retry, cache waiver, or MoonBit downgrade is authorized by this record.
+
+The generated [backlog](../plan/remarks-backlog.md) follows the same complete
+S2 corpus: 551 files, 1,228 remarks (233 applied, 995 missed), and 27 missed
+reasons. The unchanged primary generator was projected from the exact original
+corpus to reproduce the old document byte-for-byte, then from the authenticated
+80 Theme and 54 Transition additions. This source projection preserves the
+original grouping and final assertion; protected execution is still required.
