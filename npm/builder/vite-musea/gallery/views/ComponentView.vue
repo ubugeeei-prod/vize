@@ -46,6 +46,7 @@ const actionsPanel = useResizable({
 const selectedVariantName = ref<string>("");
 const variantSectionElements = new Map<string, Element>();
 let variantObserver: IntersectionObserver | null = null;
+let variantObserverGeneration = 0;
 
 const artPath = computed(() => route.params.path as string);
 const art = computed(() => getArt(artPath.value));
@@ -130,6 +131,7 @@ watch(actionsExpanded, async (expanded) => {
 });
 
 function disconnectVariantObserver() {
+  variantObserverGeneration += 1;
   variantObserver?.disconnect();
   variantObserver = null;
 }
@@ -144,6 +146,7 @@ function setVariantSectionRef(variantName: string, el: unknown) {
 
 async function setupVariantObserver() {
   disconnectVariantObserver();
+  const generation = variantObserverGeneration;
 
   if (activeTab.value !== "variants" || variantSectionElements.size === 0) {
     return;
@@ -151,12 +154,16 @@ async function setupVariantObserver() {
 
   await nextTick();
 
+  if (generation !== variantObserverGeneration) return;
+
   if (typeof window === "undefined" || !("IntersectionObserver" in window)) {
     return;
   }
 
   variantObserver = new IntersectionObserver(
     (entries) => {
+      if (generation !== variantObserverGeneration) return;
+
       const visibleEntries = entries
         .filter((entry) => entry.isIntersecting)
         .sort((a, b) => {
@@ -192,9 +199,21 @@ async function syncSelectionFromHash() {
     return;
   }
 
+  const hash = route.hash;
+  const path = artPath.value;
+  const generation = variantObserverGeneration;
   await nextTick();
 
-  const targetId = decodeURIComponent(route.hash.slice(1));
+  if (
+    activeTab.value !== "variants" ||
+    route.hash !== hash ||
+    artPath.value !== path ||
+    generation !== variantObserverGeneration
+  ) {
+    return;
+  }
+
+  const targetId = decodeURIComponent(hash.slice(1));
   const targetEntry = Object.entries(variantSectionIds.value).find(([, id]) => id === targetId);
   const targetEl = document.getElementById(targetId);
 
@@ -202,11 +221,13 @@ async function syncSelectionFromHash() {
     return;
   }
 
+  disconnectVariantObserver();
   if (targetEntry) {
     selectedVariantName.value = targetEntry[0];
   }
 
-  targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  targetEl.scrollIntoView({ behavior: "instant", block: "start" });
+  void setupVariantObserver();
 }
 
 onMounted(() => {
@@ -222,11 +243,13 @@ watch(artPath, () => {
 });
 
 const handleVariantSelect = (variantName: string) => {
+  disconnectVariantObserver();
   selectedVariantName.value = variantName;
 
   const targetId = variantSectionIds.value[variantName];
   const targetEl = targetId ? document.getElementById(targetId) : null;
-  targetEl?.scrollIntoView({ behavior: "smooth", block: "start" });
+  targetEl?.scrollIntoView({ behavior: "instant", block: "start" });
+  void setupVariantObserver();
 };
 
 function selectTab(tab: typeof activeTab.value) {

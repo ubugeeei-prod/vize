@@ -1,0 +1,258 @@
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
+import { useRoute } from "vue-router";
+import { mdiViewGrid, mdiFolder, mdiChevronUp, mdiChevronDown } from "@mdi/js";
+import { useArts } from "../composables/useArts";
+import { useActions } from "../composables/useActions";
+import { useEventCapture } from "../composables/useEventCapture";
+import MdiIcon from "../components/MdiIcon.vue";
+import VariantCard from "../components/VariantCard.vue";
+import VariantTabs from "../components/VariantTabs.vue";
+import StatusBadge from "../components/StatusBadge.vue";
+import PropsPanel from "../components/PropsPanel.vue";
+import DocumentationPanel from "../components/DocumentationPanel.vue";
+import A11yBadge from "../components/A11yBadge.vue";
+import A11yPanel from "../components/A11yPanel.vue";
+import VrtPanel from "../components/VrtPanel.vue";
+import AddonToolbar from "../components/AddonToolbar.vue";
+import ActionsPanel from "../components/ActionsPanel.vue";
+import FullscreenPreview from "../components/FullscreenPreview.vue";
+import { getVariantSectionId } from "../utils/variantSections";
+import { useResizable } from "../composables/useResizable";
+
+const route = useRoute();
+const { getArt, load } = useArts();
+const {
+  events,
+  init: initActions,
+  clear: clearActions,
+  setCurrentVariant: setActionsVariant,
+} = useActions();
+const { setCurrentVariant } = useEventCapture();
+
+const activeTab = ref<"variants" | "props" | "docs" | "a11y" | "vrt">("variants");
+const actionCount = computed(() => events.value.length);
+const actionsExpanded = ref(false);
+const actionsContentRef = ref<HTMLElement | null>(null);
+const actionsPanel = useResizable({
+  direction: "vertical",
+  minSize: 88,
+  maxSize: () => Math.max(160, window.innerHeight - 96),
+  storageKey: "musea-actions-height",
+  defaultSize: 240,
+  invert: true,
+  documentClass: "musea-actions-resizing",
+});
+const selectedVariantName = ref<string>("");
+const variantSectionElements = new Map<string, Element>();
+let variantObserver: IntersectionObserver | null = null;
+
+const artPath = computed(() => route.params.path as string);
+const art = computed(() => getArt(artPath.value));
+
+// Get the currently selected variant
+const selectedVariant = computed(() => {
+  if (!art.value) return null;
+  return (
+    art.value.variants.find((v) => v.name === selectedVariantName.value) || art.value.variants[0]
+  );
+});
+
+watch(
+  art,
+  (newArt) => {
+    if (newArt) {
+      const defaultVariant = newArt.variants.find((v) => v.isDefault) || newArt.variants[0];
+      selectedVariantName.value = defaultVariant?.name || "";
+      setCurrentVariant(selectedVariantName.value);
+      setActionsVariant(selectedVariantName.value);
+    }
+  },
+  { immediate: true },
+);
+
+watch(selectedVariantName, (name) => {
+  setCurrentVariant(name);
+  setActionsVariant(name);
+});
+
+const variantSectionIds = computed<Record<string, string>>(() => {
+  const ids: Record<string, string> = Object.create(null);
+  const usedIds = new Map<string, number>();
+
+  for (const [index, variant] of (art.value?.variants ?? []).entries()) {
+    const baseId = getVariantSectionId(variant.name, index);
+    const duplicateCount = usedIds.get(baseId) ?? 0;
+    usedIds.set(baseId, duplicateCount + 1);
+    ids[variant.name] = duplicateCount === 0 ? baseId : `${baseId}-${duplicateCount + 1}`;
+  }
+
+  return ids;
+});
+
+const actionCaptureEvents = computed(() => art.value?.metadata.actionEvents ?? []);
+
+const actionsTrackMousemove = computed(() =>
+  actionCaptureEvents.value.some((eventName) => eventName === "mousemove"),
+);
+
+const actionTrackingLabel = computed(() => {
+  if (actionsTrackMousemove.value) return "Tracks mousemove";
+  if (actionCaptureEvents.value.length > 0) return "Custom capture";
+  return "Standard capture";
+});
+
+const actionsFooterSummary = computed(() => {
+  if (actionCount.value > 0) {
+    return `${actionCount.value} captured · ${actionTrackingLabel.value}`;
+  }
+  return actionTrackingLabel.value;
+});
+
+function syncActionsPanelHeight() {
+  if (actionsContentRef.value) {
+    actionsContentRef.value.style.height = `${actionsPanel.size.value}px`;
+  }
+}
+
+watch(
+  () => actionsPanel.size.value,
+  () => {
+    syncActionsPanelHeight();
+  },
+  { flush: "sync" },
+);
+
+watch(actionsExpanded, async (expanded) => {
+  if (!expanded) return;
+  await nextTick();
+  syncActionsPanelHeight();
+});
+
+function disconnectVariantObserver() {
+  variantObserver?.disconnect();
+  variantObserver = null;
+}
+
+function setVariantSectionRef(variantName: string, el: unknown) {
+  if (typeof Element !== "undefined" && el instanceof Element) {
+    variantSectionElements.set(variantName, el);
+  } else {
+    variantSectionElements.delete(variantName);
+  }
+}
+
+async function setupVariantObserver() {
+  disconnectVariantObserver();
+
+  if (activeTab.value !== "variants" || variantSectionElements.size === 0) {
+    return;
+  }
+
+  await nextTick();
+
+  if (typeof window === "undefined" || !("IntersectionObserver" in window)) {
+    return;
+  }
+
+  variantObserver = new IntersectionObserver(
+    (entries) => {
+      const visibleEntries = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => {
+          if (Math.abs(a.intersectionRatio - b.intersectionRatio) > 0.05) {
+            return b.intersectionRatio - a.intersectionRatio;
+          }
+          return Math.abs(a.boundingClientRect.top) - Math.abs(b.boundingClientRect.top);
+        });
+
+      const activeEntry = visibleEntries[0];
+      const variantName =
+        activeEntry?.target instanceof HTMLElement
+          ? activeEntry.target.dataset.variantName
+          : undefined;
+
+      if (variantName && variantName !== selectedVariantName.value) {
+        selectedVariantName.value = variantName;
+      }
+    },
+    {
+      rootMargin: "-18% 0px -52% 0px",
+      threshold: [0.2, 0.4, 0.7],
+    },
+  );
+
+  for (const element of variantSectionElements.values()) {
+    variantObserver.observe(element);
+  }
+}
+
+async function syncSelectionFromHash() {
+  if (activeTab.value !== "variants" || !route.hash) {
+    return;
+  }
+
+  await nextTick();
+
+  const targetId = decodeURIComponent(route.hash.slice(1));
+  const targetEntry = Object.entries(variantSectionIds.value).find(([, id]) => id === targetId);
+  const targetEl = document.getElementById(targetId);
+
+  if (!targetEl) {
+    return;
+  }
+
+  if (targetEntry) {
+    selectedVariantName.value = targetEntry[0];
+  }
+
+  targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+onMounted(() => {
+  load();
+  initActions();
+});
+
+watch(artPath, () => {
+  activeTab.value = "variants";
+  clearActions();
+  disconnectVariantObserver();
+  variantSectionElements.clear();
+});
+
+const handleVariantSelect = (variantName: string) => {
+  selectedVariantName.value = variantName;
+
+  const targetId = variantSectionIds.value[variantName];
+  const targetEl = targetId ? document.getElementById(targetId) : null;
+  targetEl?.scrollIntoView({ behavior: "smooth", block: "start" });
+};
+
+function selectTab(tab: typeof activeTab.value) {
+  activeTab.value = tab;
+}
+
+function toggleActions() {
+  actionsExpanded.value = !actionsExpanded.value;
+}
+
+watch(
+  () => [art.value?.path, activeTab.value] as const,
+  () => {
+    void setupVariantObserver();
+    void syncSelectionFromHash();
+  },
+  { immediate: true },
+);
+
+watch(
+  () => route.hash,
+  () => {
+    void syncSelectionFromHash();
+  },
+);
+
+onUnmounted(() => {
+  disconnectVariantObserver();
+  variantSectionElements.clear();
+});
