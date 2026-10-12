@@ -440,6 +440,62 @@
       "path": "source-custody/import-correction/deep-source-custody-after.mjs.fixture",
       "bytes": 8854,
       "sha256": "741ed81d1854d9e5a41c95b16f703617e797dd36a03a781f525291ed78703216"
+    },
+    {
+      "path": "source-custody/trait-scope-correction/deep-source-custody-after.mjs.fixture",
+      "bytes": 12271,
+      "sha256": "f6bf1e93600bdd8d4d6867b81b59fd67f8cdf5c9e96544d1a953ed081d2909ad"
+    },
+    {
+      "path": "source-custody/trait-scope-correction/failed-114672703432.log.gz",
+      "bytes": 22191,
+      "sha256": "4fde3c87c82d7dd292c212a4d7bde9395790b3272e02649de068bd9ffd13f69b",
+      "rawBytes": 107602,
+      "rawSha256": "56766170fa641cea5c6d258bacc315ef3266aa211971b20cb6e992f3d052c621"
+    },
+    {
+      "path": "source-custody/trait-scope-correction/failed-114672873075.log.gz",
+      "bytes": 28054,
+      "sha256": "fb834148edc8d34216382f16f043fef2e37f28d6ca04ea8652c04627365ee324",
+      "rawBytes": 501274,
+      "rawSha256": "f2cecea257420a413c2cbe9071ea5657f08bfaa9dfa98a9a36454cd528a880ed"
+    },
+    {
+      "path": "source-custody/trait-scope-correction/failed-114672873159.log.gz",
+      "bytes": 19366,
+      "sha256": "c4f92528b755f5475c10f9bc5ee2010bd9aeb7519377c9e1876e8bd66c508c1f",
+      "rawBytes": 91022,
+      "rawSha256": "da8e3942dd3e4576581326e8a2a6fa7d7ee3903d38705e92c5f991684ac4ea87"
+    },
+    {
+      "path": "source-custody/trait-scope-correction/failure-receipt.json",
+      "bytes": 1096,
+      "sha256": "6ebf0a77052a0083195268f5861abb759366aaa4f0d523f0108da909aec06137"
+    },
+    {
+      "path": "source-custody/trait-scope-correction/original-cli-caller.mjs.fixture",
+      "bytes": 5135,
+      "sha256": "b2e0ef930af23052a44ef2f61103c16801580d1445d988bbb0a294e1eaac0cb5"
+    },
+    {
+      "path": "source-custody/trait-scope-correction/original-deep-source-custody.mjs.fixture",
+      "bytes": 8854,
+      "sha256": "741ed81d1854d9e5a41c95b16f703617e797dd36a03a781f525291ed78703216"
+    },
+    {
+      "path": "source-custody/trait-scope-correction/original-import-source-custody.test.mjs.fixture",
+      "bytes": 2937,
+      "sha256": "4c23bdcb6fbbcc6080f77c47f0bcb16a846c529e6d3f0af9877aed867d0c5250"
+    },
+    {
+      "path": "source-custody/trait-scope-correction/script-rules-after.rs.fixture",
+      "bytes": 9734,
+      "sha256": "9a3f6978f30b5895c31d5eb0f333175f8ee60c1a52bccc31615d5ceb075f1e2b"
+    },
+    {
+      "path": "source-custody/trait-scope-correction/successor.json",
+      "bytes": 12331,
+      "sha256": "9591f993ff7ff20537ffbc532ce84af6ef201ec26e248b99d7788725a7dece59"
     }
   ]
 }

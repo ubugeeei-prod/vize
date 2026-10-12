@@ -1,0 +1,31 @@
+{
+  "source": "feeca40bf344048d544f4154c4bd1a685c4a0e79",
+  "fullCheck": 38207038572,
+  "cause": "E0599: ScriptRule trait not in scope for props_rule.meta()",
+  "logs": [
+    {
+      "job": "114672873075",
+      "archive": "failed-114672873075.log.gz",
+      "bytes": 28054,
+      "sha256": "fb834148edc8d34216382f16f043fef2e37f28d6ca04ea8652c04627365ee324",
+      "rawBytes": 501274,
+      "rawSha256": "f2cecea257420a413c2cbe9071ea5657f08bfaa9dfa98a9a36454cd528a880ed"
+    },
+    {
+      "job": "114672873159",
+      "archive": "failed-114672873159.log.gz",
+      "bytes": 19366,
+      "sha256": "c4f92528b755f5475c10f9bc5ee2010bd9aeb7519377c9e1876e8bd66c508c1f",
+      "rawBytes": 91022,
+      "rawSha256": "da8e3942dd3e4576581326e8a2a6fa7d7ee3903d38705e92c5f991684ac4ea87"
+    },
+    {
+      "job": "114672703432",
+      "archive": "failed-114672703432.log.gz",
+      "bytes": 22191,
+      "sha256": "4fde3c87c82d7dd292c212a4d7bde9395790b3272e02649de068bd9ffd13f69b",
+      "rawBytes": 107602,
+      "rawSha256": "56766170fa641cea5c6d258bacc315ef3266aa211971b20cb6e992f3d052c621"
+    }
+  ]
+}

@@ -152,6 +152,7 @@ export function authenticateDeepPropsImportCorrection(root, incoming, read = rea
   assert.deepEqual(manifest.changedPaths, [deepPropsFamilyPaths[2]]);
   assert.equal(manifest.sources.length, 12);
   assert.equal(manifest.sources.filter(({ changed }) => changed).length, 1);
+  let needsTraitScopeCorrection = false;
   for (const [index, source] of manifest.sources.entries()) {
     assert.equal(source.path, incoming.sources[index].path);
     assert.deepEqual(source.before, incoming.sources[index].after);
@@ -161,7 +162,14 @@ export function authenticateDeepPropsImportCorrection(root, incoming, read = rea
     assert(matches(after, source.after));
     assert.equal(blob(before), source.before.gitBlob);
     assert.equal(blob(after), source.after.gitBlob);
-    assert(matches(read(source.path), source.after), `unknown import successor: ${source.path}`);
+    if (!matches(read(source.path), source.after)) {
+      assert.equal(
+        source.path,
+        deepPropsFamilyPaths[2],
+        `unknown import successor: ${source.path}`,
+      );
+      needsTraitScopeCorrection = true;
+    }
     assert.equal(source.after.path, source.path);
     if (source.path === deepPropsFamilyPaths[2]) {
       assert.equal(source.changed, true);
@@ -178,5 +186,69 @@ export function authenticateDeepPropsImportCorrection(root, incoming, read = rea
       assert.deepEqual(source.transforms, []);
     }
   }
+  return needsTraitScopeCorrection
+    ? {
+        ...manifest,
+        currentSuccessor: authenticateDeepPropsTraitScopeCorrection(root, manifest, read),
+      }
+    : manifest;
+}
+
+/** The missing trait import has its own whole family, never a rewritten old pin. */
+export function authenticateDeepPropsTraitScopeCorrection(root, incoming, read = reader(root)) {
+  const correctionDirectory = `${directory}/trait-scope-correction`;
+  const bytes = read(`${correctionDirectory}/successor.json`);
+  assert.equal(sha256(bytes), "9591f993ff7ff20537ffbc532ce84af6ef201ec26e248b99d7788725a7dece59");
+  const manifest = JSON.parse(bytes);
+  assert.equal(manifest.schema, "vize.lint.props-deep-destructure-trait-scope-source-successor");
+  assert.equal(manifest.version, 1);
+  assert.equal(manifest.candidate, "ecb8c9b25ee083725858229a2894052bb6de1fbf");
+  assert.equal(manifest.incomingFamily.path, `${directory}/import-correction/successor.json`);
+  const prior = read(manifest.incomingFamily.path);
+  assert(matches(prior, manifest.incomingFamily));
+  assert.equal(sha256(prior), "39cf7ab7633378ab462c6af46443fa0e235b070d067db739eaa040760e3e996f");
+  assert.deepEqual(JSON.parse(prior), incoming);
+  assert.deepEqual(manifest.changedPaths, [deepPropsFamilyPaths[2]]);
+  assert.equal(manifest.sources.length, 12);
+  assert.equal(manifest.sources.filter(({ changed }) => changed).length, 1);
+  for (const [index, source] of manifest.sources.entries()) {
+    assert.equal(source.path, incoming.sources[index].path);
+    assert.deepEqual(source.before, incoming.sources[index].after);
+    for (const arm of [source.before, source.after]) {
+      const body = read(arm.archive);
+      assert(matches(body, arm), `unknown trait-scope archive: ${source.path}`);
+      assert.equal(blob(body), arm.gitBlob);
+    }
+    assert(matches(read(source.path), source.after), `unknown trait-scope current: ${source.path}`);
+    if (source.path === deepPropsFamilyPaths[2]) {
+      assert.equal(source.changed, true);
+      assert.equal(source.transforms.length, 1);
+      const [transform] = source.transforms;
+      assert.equal(
+        transform.before,
+        "    EmitsModuleScript, ScriptLintResult, SfcScriptContext, script_source_type,\n",
+      );
+      assert.equal(
+        transform.after,
+        "    EmitsModuleScript, ScriptLintResult, ScriptRule, SfcScriptContext, script_source_type,\n",
+      );
+      const original = read(source.before.archive).toString();
+      assert.equal(original.split(transform.before).length, 2);
+      assert.deepEqual(
+        read(source.after.archive),
+        Buffer.from(original.replace(transform.before, transform.after)),
+      );
+    } else {
+      assert.equal(source.changed, false);
+      assert.deepEqual(source.after, source.before);
+      assert.deepEqual(source.transforms, []);
+    }
+  }
+  // Reauthenticate every original whole archive only after the actual current twelve are proven.
+  const script = manifest.sources.find(({ changed }) => changed);
+  const historicalReader = (name) =>
+    name === script.path ? read(script.before.archive) : read(name);
+  const historical = authenticateDeepPropsSourceFamily(root, historicalReader);
+  assert.deepEqual(historical.currentSuccessor, incoming);
   return manifest;
 }

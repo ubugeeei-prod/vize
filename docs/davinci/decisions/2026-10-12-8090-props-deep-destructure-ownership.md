@@ -166,3 +166,23 @@ and unchanged semantic vectors/laws. Its source-only receipt SHA256 is
 `edb2b55134185033c3a768b24d6836dd3b56839f25512901a3b6f4f2a4aa405b`;
 9 independent new/retained source laws passed with no skips. Actual successor
 Rust/API/CLI, source/native, protected merge and installed release stay pending.
+
+The fresh `feeca40` builders then exposed E0599: the typed metadata method
+requires the existing `ScriptRule` trait in scope. All three complete builder
+logs remain compressed losslessly with their source/job identities. The narrow
+production correction `ecb8c9b` adds that trait to the existing import only.
+Its distinct whole twelve-body successor `9591f993` preserves the complete
+`39cf7ab7` and `de01ccf2` families, changes only this import in `script_rules.rs`,
+and keeps the other eleven current bodies and every semantic vector exact.
+The old two import custody laws remain byte-exact. Authentication retains both
+historical families and explicitly nests the current trait successor; the CLI
+requires that latest family before executing. New mutation laws refuse every
+unknown current/archive body and both rejected parents as current source.
+Source-only laws pass with no skips; Rust/API/CLI, exact-head source/native,
+protected merge and installed release still require fresh execution evidence.
+
+Independent trait-scope peer authenticated all sixteen delta bodies and the
+complete three failure logs, preserved old families/laws/whole packets, and ran
+eleven focused source laws with no failures or skips. Its receipt SHA256 is
+`771021667d623c7bf3e1a95b89271a47796ef9b23443753b5b9ca896db397ee3`.
+This is source review, with compilation and runtime gates still pending.
