@@ -11,8 +11,6 @@ Musea のスタイル検査に、プロジェクトで使うデザイントー�
 オプションの一覧、未知のフィールドの扱い、スコープごとの設定の置き換え方は、
 [ルールのオプション](./options.md)を参照してください。
 
-<span id="musea-prefer-design-tokens"></span>
-
 ## `musea/prefer-design-tokens`
 
 CSS に直接書いた値を、プロジェクトのデザイントークンにそろえたいときに使います。

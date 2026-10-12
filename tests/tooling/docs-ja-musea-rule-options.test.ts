@@ -27,7 +27,7 @@ void test("Japanese Musea options keep the complete authored input and original 
     "aebae9c73d00e8acec07f378bd600636c43a19ccac1482168ab47fe4161634da",
     "three original recipes, original API tokens and the finite explicit off addition",
   );
-  for (const bookmark of ["musea-rule-options", "musea-prefer-design-tokens"]) {
-    assert.equal(japanese.split(`<span id="${bookmark}"></span>`).length, 2);
-  }
+  assert.equal(japanese.split('<span id="musea-rule-options"></span>').length, 2);
+  assert.match(japanese, /^## `musea\/prefer-design-tokens`$/m);
+  assert.doesNotMatch(japanese, /<span id="musea-prefer-design-tokens"><\/span>/);
 });
