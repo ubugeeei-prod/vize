@@ -87,6 +87,8 @@ ambiguous concurrent pipe ordering, framing failures and changed bodies
 refuse capture completeness. The bounded parser supports observed LSP and
 async API JSON-RPC; an unexpected MsgPack or socket transport is retained
 as unsupported evidence, without completeness credit.
+The selector includes explicit `fchdir`, which is a descriptor operation
+outside strace's `file` group, alongside ordinary `chdir` in that group.
 All retained processes belong to one observed creation closure. The selected
 test execution must descend from the pinned nextest execution, and every
 native execution must descend from that original test. Missing, reused or

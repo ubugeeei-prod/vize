@@ -75,7 +75,7 @@ jobs:
         run: |
           phase_started=$SECONDS
           set +e
-          strace -ff -ttt -xx -yy -s16777216 -e trace=process,file,read,write,readv,writev,pipe,pipe2,close,dup,dup2,dup3 -o "$RUNNER_TEMP/signature-capture/strace" cargo nextest run --cargo-metadata target/nextest/cargo-metadata.json --binaries-metadata "$RUNNER_TEMP/signature-capture/derived-binaries-metadata.json" --workspace-remap "$GITHUB_WORKSPACE" --target-dir-remap "$GITHUB_WORKSPACE/target" --profile full --filter-expr 'package(=vize_maestro) & binary(=vize_maestro) & test(=ide::signature_help::tests::signature_help_tracks_imported_callable_edits)' > "$RUNNER_TEMP/signature-capture/test.stdout" 2> "$RUNNER_TEMP/signature-capture/test.stderr"
+          strace -ff -ttt -xx -yy -s16777216 -e trace=process,file,fchdir,read,write,readv,writev,pipe,pipe2,close,dup,dup2,dup3 -o "$RUNNER_TEMP/signature-capture/strace" cargo nextest run --cargo-metadata target/nextest/cargo-metadata.json --binaries-metadata "$RUNNER_TEMP/signature-capture/derived-binaries-metadata.json" --workspace-remap "$GITHUB_WORKSPACE" --target-dir-remap "$GITHUB_WORKSPACE/target" --profile full --filter-expr 'package(=vize_maestro) & binary(=vize_maestro) & test(=ide::signature_help::tests::signature_help_tracks_imported_callable_edits)' > "$RUNNER_TEMP/signature-capture/test.stdout" 2> "$RUNNER_TEMP/signature-capture/test.stderr"
           original_exit=$?
           set -e
           printf '{"exitCode":%d,"elapsedSeconds":%d,"timing":"instrumented; no acceptance/performance credit"}\n' "$original_exit" "$((SECONDS - phase_started))" > "$RUNNER_TEMP/signature-capture/instrumented-outcome.json"
