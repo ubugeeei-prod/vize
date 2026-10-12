@@ -368,7 +368,13 @@ body.entry-page {
   font-weight: 600;
   font-size: 1.375rem;
   letter-spacing: -0.02em;
-  border-bottom-color: var(--octc-color-border);
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.content hr {
+  border: none;
+  border-top: 1px solid rgba(128, 128, 128, 0.12);
 }
 
 .content h3 {
