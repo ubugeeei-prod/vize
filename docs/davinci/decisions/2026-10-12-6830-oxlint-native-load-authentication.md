@@ -106,3 +106,21 @@ repository's SHA output array does not implement `LowerHex`. Format each byte
 as two lowercase hexadecimal digits, following the existing Canon observation
 helper, with the complete digest and all admission checks unchanged. No actual
 64/7 partition was acquired in that failed run or inferred as a passing result.
+
+The next source run rejected the registry's directory-prefix assertion under
+its existing exact-oracle policy. Require the immediate parent to equal one of
+the two registered source directories. Full source hashes, exact 49-path census,
+all mapping checks and strict 64/seven partitions remain unchanged; no assertion
+allowlist is added. Preserve that original tooling failure separately.
+
+Native run `38259064583`, job `114844597419`, at corrected source `18c52b2f`
+completed successfully. The exact projection target passed all five tests with
+zero ignored cases, including the three real Linux filesystem refusal controls.
+Its complete log is 3,676,377 bytes, SHA256
+`35792507c80dec02f1e6b2107dab553fe31526126645fa476b80f726f11be6b7`.
+All 49 complete per-file JSON observations match their registered source SHA;
+their compared diagnostic vectors total seven, with the original 64 separately
+passing. This establishes that source's partition rather than a guessed total.
+The stronger parent-directory guard and each new source composition still need
+fresh exact-head qualification; the earlier source assertion failure is not
+changed into success by this separate native result.

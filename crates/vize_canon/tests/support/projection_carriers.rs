@@ -49,7 +49,12 @@ impl Carriers {
                     .components()
                     .all(|part| matches!(part, std::path::Component::Normal(_)))
             );
-            assert!(PREFIXES.iter().any(|prefix| relative.starts_with(prefix)));
+            assert!(
+                PREFIXES
+                    .iter()
+                    .any(|prefix| relative.parent() == Some(Path::new(prefix))),
+                "carrier parent must equal a registered source directory"
+            );
             assert_eq!(
                 relative.extension().and_then(|value| value.to_str()),
                 Some("vue")
