@@ -138,8 +138,71 @@ await test("Japanese core retains complete references, localized next steps and 
   assert.match(index, /`vp run lint`/);
   assert.deepEqual(
     defaultNavigationRenderRoutes.filter((item) => item.startsWith("/ja/rules/accessibility-")),
-    [route],
+    [route, "/ja/rules/accessibility-integrity"],
   );
+  assert.deepEqual(
+    createRenderJobs([route]).map((job) => job.device),
+    ["desktop", "mobile"],
+  );
+  const nativeBoundary = new Error("Actual native DOM execution is required");
+  let dispatched: { id: string }[] | undefined;
+  const page = {
+    evaluate: async (_read: unknown, packet: { id: string }[]) => {
+      dispatched = packet;
+      throw nativeBoundary;
+    },
+  } as unknown as Parameters<typeof verifyRenderedRulePackets>[0];
+  await assert.rejects(verifyRenderedRulePackets(page, route), (error) => error === nativeBoundary);
+  assert.deepEqual(
+    dispatched?.map(({ id }) => id).toSorted(),
+    expected.map((id) => id.replaceAll("/", "-")),
+  );
+});
+
+await test("Japanese integrity retains all seven original packets and enrolls its actual native route", async () => {
+  const route = "/ja/rules/accessibility-integrity";
+  const read = (file: string) => fs.readFileSync(path.join(repoRoot, "docs/content", file), "utf8");
+  const source = read("generated/rules/ja/accessibility-integrity.md");
+  const index = read("ja/rules/accessibility-integrity.md");
+  const expected = [
+    "a11y/no-role-presentation-on-focusable",
+    "a11y/no-static-element-interactions",
+    "a11y/placeholder-label-option",
+    "a11y/role-has-required-aria-props",
+    "a11y/tabindex-no-positive",
+    "a11y/use-list",
+    "vue/use-unique-element-ids",
+  ].toSorted();
+  const headings = [...source.matchAll(/^### `([^`]+)`$/gm)];
+  assert.deepEqual(headings.map((match) => match[1]).toSorted(), expected);
+  const blocks = (text: string) =>
+    [...text.matchAll(/^```(\w+)[^\n]*\n([\s\S]*?)^```[^\n]*$/gm)].map((match) => [
+      match[1],
+      match[2],
+    ]);
+  assert.equal(blocks(source).length, 28);
+  for (const [position, heading] of headings.entries()) {
+    const id = heading[1].replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
+    const packet = source.slice(heading.index, headings[position + 1]?.index);
+    const reference = read(`ja/rules/reference/${id}.md`);
+    assert.deepEqual(blocks(packet), blocks(reference), heading[1]);
+    for (const line of reference.split("\n")) {
+      if (/^(既定の重大度|プリセット|自動修正|適用範囲|オプション):/.test(line))
+        assert.ok(packet.includes(line), `${heading[1]}: complete original metadata`);
+    }
+    for (const kind of ["bad", "good"]) {
+      assert.equal(packet.split(`<span id="${id}-${kind}"></span>`).length, 2);
+      assert.ok(source.includes(`](#${id}-${kind})`));
+    }
+  }
+  assert.match(index, /<span id="accessibility-integrity"><\/span>\n\n# アクセシビリティ情報の整合性/);
+  assert.equal(source.split('<span id="accessibility-integrity"></span>').length, 2);
+  for (const target of ["./reference/a11y-role-has-required-aria-props.md", "./accessibility.md"]) {
+    assert.ok(index.includes(`](${target})`));
+    assert.match(read(`ja/rules/${target.slice(2)}`), /^# .+/m);
+  }
+  assert.match(index, /`vp run lint`/);
+  assert.ok(defaultNavigationRenderRoutes.includes(route));
   assert.deepEqual(
     createRenderJobs([route]).map((job) => job.device),
     ["desktop", "mobile"],

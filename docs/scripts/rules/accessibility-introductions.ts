@@ -48,4 +48,12 @@ export const japaneseAccessibilityIntroductions: Readonly<Record<string, readonl
     "悪い例と良い例を比較します。掲載された Vite+ の設定でルールを有効にし、`vp run lint` を実行してください。",
     "[アクセシビリティの全ルール](./accessibility.md)では、関連するルールも確認できます。",
   ],
+  integrity: [
+    "このルール群では、テンプレートの role、フォーカスの順序、ラベル、要素同士の対応に矛盾がないかを確認します。",
+    "ARIA の role を追加したときや、操作に使う要素を変更したときに、関連する属性や要素の関係を見直してください。",
+    "",
+    "たとえば、[role に必要な ARIA 属性](./reference/a11y-role-has-required-aria-props.md)では、role に必要な属性が不足した場合の変更例を確認できます。",
+    "悪い例と良い例を比較し、掲載された設定でルールを有効にして、`vp run lint` を実行してください。",
+    "[アクセシビリティの全ルール](./accessibility.md)では、ほかの検査も確認できます。",
+  ],
 };

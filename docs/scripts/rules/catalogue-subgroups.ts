@@ -19,6 +19,7 @@ export const catalogueSubgroups: Record<
   },
   "accessibility-integrity": {
     title: "Accessibility integrity",
+    jaTitle: "アクセシビリティ情報の整合性",
     rules: [
       "a11y/no-role-presentation-on-focusable",
       "a11y/no-static-element-interactions",
