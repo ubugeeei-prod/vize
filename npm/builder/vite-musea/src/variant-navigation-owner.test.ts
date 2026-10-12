@@ -15,11 +15,18 @@ const current = await readFile(
   new URL("../gallery/views/ComponentView.vue", import.meta.url),
   "utf8",
 );
+const helper = await readFile(
+  new URL("../gallery/utils/variantNavigation.ts", import.meta.url),
+  "utf8",
+);
 
 // Execute the complete production navigation block, including its actual cleanup watchers.
 // Controlled nextTick resolution makes superseded continuations deterministic without timers.
 function harness(script: string) {
-  const start = script.indexOf("function disconnectVariantObserver() {");
+  const extracted = script === current;
+  const start = script.indexOf(
+    extracted ? "onMounted(() => {" : "function disconnectVariantObserver() {",
+  );
   assert.ok(start >= 0);
   const block = script.slice(start).split("</script>")[0];
   const callbacks: Array<() => void> = [];
@@ -71,11 +78,29 @@ function harness(script: string) {
   const javascript = ts.transpileModule(block, {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None },
   }).outputText;
+  const helperJavascript = ts.transpileModule(helper, {
+    compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext },
+  }).outputText;
+  assert.equal(helperJavascript.split("export function createVariantNavigation").length, 2);
+  const transport = helperJavascript.replace(
+    "export function createVariantNavigation",
+    "function createVariantNavigation",
+  );
+  assert.equal(
+    transport.replace(
+      "function createVariantNavigation",
+      "export function createVariantNavigation",
+    ),
+    helperJavascript,
+  );
+  const initialization = extracted
+    ? `${transport}
+    const { setupVariantObserver, syncSelectionFromHash, handleVariantSelect, disconnectVariantObserver } = createVariantNavigation(scope);`
+    : "let variantObserver = null; let variantObserverGeneration = 0;";
   const execute = compileFunction(
     `
     const { ${Object.keys(scope).join(", ")} } = scope;
-    let variantObserver = null;
-    let variantObserverGeneration = 0;
+    ${initialization}
     ${javascript}
     return { setupVariantObserver, syncSelectionFromHash, handleVariantSelect, disconnectVariantObserver };
     `,

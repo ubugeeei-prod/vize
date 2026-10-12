@@ -36,7 +36,8 @@ export async function mutantSite(root: string, repairedSite: string, kind: "call
   assert.deepEqual(await inventory(path.join(isolated, "gallery")), originalGallery);
   const modules = await inventory(path.join(source, "src"));
   assert.deepEqual(await inventory(path.join(isolated, "src")), modules);
-  const producerPath = path.join(isolated, "gallery/views/ComponentView.vue");
+  const producerRelative = "utils/variantNavigation.ts";
+  const producerPath = path.join(isolated, "gallery", producerRelative);
   const before = await readFile(producerPath, "utf8");
   const needle =
     kind === "callback"
@@ -47,7 +48,7 @@ export async function mutantSite(root: string, repairedSite: string, kind: "call
   await writeFile(producerPath, after);
   const mutatedGallery = await inventory(path.join(isolated, "gallery"));
   assert.deepEqual(
-    { ...mutatedGallery, "views/ComponentView.vue": originalGallery["views/ComponentView.vue"] },
+    { ...mutatedGallery, [producerRelative]: originalGallery[producerRelative] },
     originalGallery,
   );
   const config = await readFile(path.join(source, "gallery-vite.config.ts"));
@@ -104,6 +105,7 @@ export async function mutantSite(root: string, repairedSite: string, kind: "call
     site,
     receipt: {
       kind,
+      producerRelative,
       originalGallery,
       mutatedGallery,
       sourceModules: modules,

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { mkdir, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import test from "node:test";
 import { chromium } from "playwright";
 import {
@@ -19,6 +20,9 @@ void test(
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(String(error)));
     await instrumentObserver(page);
+    const input = await readFile(
+      new URL("./variant-navigation-browser.instrumentation.js", import.meta.url),
+    );
     const output = new URL(
       "../../../../artifacts/musea-native-literal-variants/navigation-probe/",
       import.meta.url,
@@ -30,7 +34,13 @@ void test(
       );
       await page.evaluate(() => {
         Reflect.set(window, "__deliveredProbeEntries", 0);
-        const observer = new IntersectionObserver((entries) => {
+        const observer = new IntersectionObserver((entries, observer) => {
+          const records = Reflect.get(window, "__museaNavigationProbe").records;
+          const record = records.find(
+            (record: { observer: IntersectionObserver }) => record.observer === observer,
+          );
+          Reflect.set(window, "__probeArrayIdentity", record.deliveries.includes(entries));
+          Reflect.set(window, "__probeObserverIdentity", record.observer === observer);
           Reflect.set(
             window,
             "__deliveredProbeEntries",
@@ -45,6 +55,8 @@ void test(
       assert.equal(evidence.records.length, 1);
       assert.equal(evidence.records[0].targets[0][0].name, "transport");
       assert.equal(evidence.records[0].targets[0][0].isIntersecting, true);
+      assert.equal(await page.evaluate(() => Reflect.get(window, "__probeArrayIdentity")), true);
+      assert.equal(await page.evaluate(() => Reflect.get(window, "__probeObserverIdentity")), true);
       assert.equal(
         await page.evaluate(() => Reflect.get(window, "__deliveredProbeEntries")),
         evidence.records[0].targets.reduce((count, entries) => count + entries.length, 0),
@@ -59,12 +71,18 @@ void test(
             platform: process.platform,
             arch: process.arch,
             browserVersion: browser.version(),
+            rawInstrumentationSha256: createHash("sha256").update(input).digest("hex"),
             evidence: await observerEvidence(page),
             html: await page.content(),
           },
           null,
           2,
         ),
+      );
+      await writeFile(new URL("instrumentation.js", output), input);
+      assert.deepEqual(
+        await readFile(new URL("./variant-navigation-browser.instrumentation.js", import.meta.url)),
+        input,
       );
       await browser.close();
     }

@@ -14,6 +14,7 @@ import {
   variants,
 } from "./literal-variant-browser.fixture.ts";
 import { digest, inventory, mutantSite } from "./variant-navigation-browser.mutant.ts";
+import { push } from "./variant-navigation-browser.routes.ts";
 import {
   geometry,
   instrumentObserver,
@@ -70,17 +71,6 @@ async function rapid(
   await assertTarget(page, last, observations, `${phase}:first-last`);
 }
 
-async function push(page: Page, location: { hash?: string; name?: string }) {
-  await page.evaluate(async (location) => {
-    const root = document.querySelector("#app") as unknown as {
-      __vue_app__: {
-        config: { globalProperties: { $router: { push(value: unknown): Promise<unknown> } } };
-      };
-    };
-    await root.__vue_app__.config.globalProperties.$router.push(location);
-  }, location);
-}
-
 void test(
   "actual native gallery keeps physical variant navigation and observer ownership",
   {
@@ -129,6 +119,16 @@ void test(
         }).trim(),
         native: await realpath(loaded[0]),
         nativeSha256: digest(await readFile(loaded[0])),
+        instrumentationSha256: digest(
+          await readFile(
+            new URL("./variant-navigation-browser.instrumentation.js", import.meta.url),
+          ),
+        ),
+        navigationProducerSha256: digest(
+          await readFile(
+            path.join(repository, "npm/builder/vite-musea/gallery/utils/variantNavigation.ts"),
+          ),
+        ),
         sources: f.sources,
         galleryInputs: await inventory(path.join(repository, "npm/builder/vite-musea/gallery")),
         wholeBuiltSite: await inventory(outDir),
@@ -208,13 +208,25 @@ void test(
       await page.getByRole("button", { name: "Variants", exact: true }).click();
       await waitForNewNativeDelivery(page, tabCount);
       await assertTarget(page, "__proto__", observations, "tab:hash-restored");
+      await push(page, { hash: "#variant-constructor" }, { tab: "Props" });
+      await settle(page);
+      assert.equal(await page.locator(".variant-section").count(), 0);
+      observations.push({
+        phase: "rapid-hash-tab",
+        html: await page.content(),
+        evidence: await observerEvidence(page),
+      });
+      const restoreCount = await observerCount(page);
+      await page.getByRole("button", { name: "Variants", exact: true }).click();
+      await waitForNewNativeDelivery(page, restoreCount);
+      await assertTarget(page, "constructor", observations, "rapid-hash-tab:restored");
       const routeCount = await observerCount(page);
       await previews(page, "Controls");
       await waitForNewNativeDelivery(page, routeCount);
       observations.push(await replayFormerNativeDelivery(page, "__proto__"));
       await settle(page);
       await assertTarget(page, "Default", observations, "route:former-callback-refused");
-      await push(page, { name: "home" });
+      await push(page, { hash: "#variant-custom-theme" }, { replace: { name: "home" } });
       await settle(page);
       assert.equal(await page.locator(".component-view").count(), 0);
       observations.push(await replayFormerNativeDelivery(page, "__proto__"));

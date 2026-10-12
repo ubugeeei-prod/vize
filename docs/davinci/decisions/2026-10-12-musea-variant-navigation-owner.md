@@ -92,3 +92,12 @@ Its separate actual Chromium transport law passes locally on macOS with no
 Vize native producer qualification. The original three owned zero-warning lint
 refusals are repaired by structural browser types and `node:vm` execution of
 the authenticated source block; no warning rule or original oracle is waived.
+
+The same source Check's tooling4 law refused ComponentView growth807 versus
+baseline784. No length allowance is added. Move-only commit66f4cf3eb5 extracts
+only the owned navigation state/functions into `gallery/utils/variantNavigation.ts`,
+with every moved function body byte-exact and the same captured refs/route/tick.
+The view's actual watchers and ref cleanup remain. Subsequent formatting and
+control adapters execute the complete real helper and view cleanup; the test-only
+module-export transport is reversed byte-exact. Fresh qualification remains
+required for this composition.

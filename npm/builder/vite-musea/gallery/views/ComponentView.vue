@@ -129,9 +129,20 @@ watch(actionsExpanded, async (expanded) => {
   syncActionsPanelHeight();
 });
 
-const { disconnectVariantObserver, setupVariantObserver, syncSelectionFromHash, handleVariantSelect } =
-  createVariantNavigation({ activeTab, route, artPath, selectedVariantName, variantSectionIds,
-    variantSectionElements, nextTick });
+const {
+  disconnectVariantObserver,
+  setupVariantObserver,
+  syncSelectionFromHash,
+  handleVariantSelect,
+} = createVariantNavigation({
+  activeTab,
+  route,
+  artPath,
+  selectedVariantName,
+  variantSectionIds,
+  variantSectionElements,
+  nextTick,
+});
 
 function setVariantSectionRef(variantName: string, el: unknown) {
   if (typeof Element !== "undefined" && el instanceof Element) {
