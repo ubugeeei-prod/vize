@@ -204,5 +204,7 @@ and the [IO task algorithm](https://w3c.github.io/IntersectionObserver/#queue-an
 
 Publication and installed acceptance remain pending. Latest public v0.443.0 and
 retired unpublished v0.446.0 confer no current repair credit, and #8731 remains open.
-Source CLI retry #8721 may freshly qualify its genuine actual-main composition
-after this merge, without borrowing the old failed candidate's outcome.
+At the recorded #8732 merge, source CLI retry [#8721](https://github.com/ubugeeei-prod/vize/pull/8721)
+became eligible to freshly qualify its genuine actual-main composition, without
+borrowing the old failed candidate's outcome. Its later delivery is recorded
+in that PR.
