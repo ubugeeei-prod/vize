@@ -25,7 +25,7 @@ The builtin caller proves a sole inline `<script setup>` using its existing
 nonambient variable declarations whose initializer is a compiler-owned bare
 `defineProps` call, optionally inside a compiler-owned bare `withDefaults`.
 Initializer parentheses and TypeScript wrappers follow the existing AST
-unwrap operation. Member, optional and TypeScript-wrapped *callee* expressions
+unwrap operation. Member, optional and TypeScript-wrapped _callee_ expressions
 remain outside macro recognition. Object-root binding spans remain whole and
 arrays nested within object bindings now contribute depth. Defaults count the
 binding on their left, not expressions on their right; aliases/rest remain
@@ -127,9 +127,15 @@ Fresh Actions qualify this actual descendant independently of all earlier greens
 
 Initial source `55b014e`, Check `38205153114`, stopped at the source inventory
 plan before runtime consumers: the owned Patina shard was stale after the
-production/test move. Full original log, 1,301-row inventory and regenerated
-1,304-row inventory remain losslessly archived. The unchanged official generator
+production/test move. Full original log, whole original inventory and regenerated
+inventory remain losslessly archived. The unchanged official generator
 changes exactly three old rows to six actual source/test rows in that one shard;
 all product/helper/oracle bytes stay literal. Its local check passes. Fresh
 successor source and native execution remain required, with no skipped gate
 or qualification transfer from the failed initial source.
+
+The initial check-js job `114666888487` also refused the new companion's
+Markdown formatting. Its full log and original whole decision body remain
+archived; named formatting corrects only that documentation. No product, helper,
+config or expected packet changes. This old failed/cancelled Check remains
+historical evidence; every successor source/native gate runs independently.
