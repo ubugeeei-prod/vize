@@ -2,9 +2,11 @@
 //!
 //! Disallow deeply nested destructuring in defineProps.
 //!
-//! Deep destructuring patterns like `const { a: { b = 1 }} = defineProps()`
-//! are hard to read, prone to runtime errors, and make it difficult to
-//! understand the prop structure at a glance.
+//! Checks top-level compiler-owned bindings in a sole inline `<script setup>`.
+//! Both object and array patterns contribute nesting depth. This remains an
+//! opt-in depth policy, not a compiler-error check: compiler-disabled reactive
+//! destructuring and `withDefaults` can compile while still receiving a warning.
+//! Ordinary scripts and unavailable/local/foreign macro ownership are ignored.
 //!
 //! ## Examples
 //!
@@ -28,11 +30,11 @@
 //! ```
 
 use crate::diagnostic::{LintDiagnostic, Severity};
-use oxc_ast::ast::{BindingPattern, CallExpression, Expression, Program, VariableDeclarator};
-use oxc_ast_visit::{Visit, walk::walk_variable_declarator};
+use oxc_ast::ast::{BindingPattern, CallExpression, Expression, Program, Statement};
 use oxc_span::Span;
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::props_emits::compiler_macro_is_shadowed;
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-deep-destructure-in-props",
@@ -66,6 +68,10 @@ impl ScriptRule for NoDeepDestructureInProps {
         true
     }
 
+    fn as_setup_props_destructure(&self) -> Option<&NoDeepDestructureInProps> {
+        Some(self)
+    }
+
     #[inline]
     fn check_program<'a>(
         &self,
@@ -74,110 +80,152 @@ impl ScriptRule for NoDeepDestructureInProps {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
+        self.check_program_with_sfc(program, source, offset, SfcScriptContext::default(), result);
+    }
+
+    fn check_program_with_sfc<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        sfc: SfcScriptContext<'_>,
+        result: &mut ScriptLintResult,
+    ) {
+        if sfc.is_sfc && sfc.is_script_setup && sfc.sole_script_block {
+            self.check_setup(program, source, offset, result);
+        }
+    }
+}
+
+impl NoDeepDestructureInProps {
+    /// The builtin caller separately proves a sole inline setup descriptor.
+    pub(crate) fn check_setup(
+        &self,
+        program: &Program<'_>,
+        source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
         if !may_contain_define_props_object_binding(source) {
             return;
         }
 
-        let mut visitor = NoDeepDestructureInPropsVisitor {
-            max_depth: self.max_depth,
-            offset,
-            result,
-        };
-        visitor.visit_program(program);
-    }
-}
-
-struct NoDeepDestructureInPropsVisitor<'result> {
-    max_depth: usize,
-    offset: usize,
-    result: &'result mut ScriptLintResult,
-}
-
-impl<'a> Visit<'a> for NoDeepDestructureInPropsVisitor<'_> {
-    fn visit_variable_declarator(&mut self, it: &VariableDeclarator<'a>) {
-        if let Some(init) = &it.init
-            && is_define_props_call(init)
-            && let Some(span) = deep_object_pattern_span(&it.id, self.max_depth)
-        {
-            let start = self.offset as u32 + span.start;
-            let end = self.offset as u32 + span.end;
-            self.result.add_diagnostic(
-                LintDiagnostic::warn(META.name, MESSAGE, start, end).with_help(HELP),
-            );
+        let mut macros = MacroOwnership::default();
+        for statement in &program.body {
+            let Statement::VariableDeclaration(declaration) = statement else {
+                continue;
+            };
+            if declaration.declare {
+                continue;
+            }
+            for declarator in &declaration.declarations {
+                if let Some(span) = deep_object_pattern_span(&declarator.id, self.max_depth)
+                    && let Some(init) = &declarator.init
+                    && is_define_props_call(init, program, &mut macros)
+                {
+                    result.add_diagnostic(
+                        LintDiagnostic::warn(
+                            META.name,
+                            MESSAGE,
+                            offset as u32 + span.start,
+                            offset as u32 + span.end,
+                        )
+                        .with_help(HELP),
+                    );
+                }
+            }
         }
-        walk_variable_declarator(self, it);
     }
 }
 
 fn deep_object_pattern_span(pattern: &BindingPattern<'_>, max_depth: usize) -> Option<Span> {
     match pattern {
         BindingPattern::ObjectPattern(object) => {
-            (object_pattern_depth(pattern, 0) > max_depth).then_some(object.span)
+            (binding_pattern_depth(pattern, 0) > max_depth).then_some(object.span)
         }
         _ => None,
     }
 }
 
-fn object_pattern_depth(pattern: &BindingPattern<'_>, current_depth: usize) -> usize {
+fn binding_pattern_depth(pattern: &BindingPattern<'_>, current_depth: usize) -> usize {
     match pattern {
         BindingPattern::ObjectPattern(object) => {
             let depth = current_depth + 1;
             let property_depth = object
                 .properties
                 .iter()
-                .map(|property| object_pattern_depth(&property.value, depth))
+                .map(|property| binding_pattern_depth(&property.value, depth))
                 .max()
                 .unwrap_or(depth);
             let rest_depth = object
                 .rest
                 .as_ref()
-                .map(|rest| object_pattern_depth(&rest.argument, depth))
+                .map(|rest| binding_pattern_depth(&rest.argument, depth))
                 .unwrap_or(depth);
             property_depth.max(rest_depth)
         }
         BindingPattern::ArrayPattern(array) => {
+            let depth = current_depth + 1;
             let element_depth = array
                 .elements
                 .iter()
                 .flatten()
-                .map(|element| object_pattern_depth(element, current_depth))
+                .map(|element| binding_pattern_depth(element, depth))
                 .max()
-                .unwrap_or(current_depth);
+                .unwrap_or(depth);
             let rest_depth = array
                 .rest
                 .as_ref()
-                .map(|rest| object_pattern_depth(&rest.argument, current_depth))
-                .unwrap_or(current_depth);
+                .map(|rest| binding_pattern_depth(&rest.argument, depth))
+                .unwrap_or(depth);
             element_depth.max(rest_depth)
         }
         BindingPattern::AssignmentPattern(assignment) => {
-            object_pattern_depth(&assignment.left, current_depth)
+            binding_pattern_depth(&assignment.left, current_depth)
         }
         BindingPattern::BindingIdentifier(_) => current_depth,
     }
 }
 
-fn is_define_props_call(expression: &Expression<'_>) -> bool {
-    let Expression::CallExpression(call) = expression else {
+#[derive(Default)]
+struct MacroOwnership {
+    define_props: Option<bool>,
+    with_defaults: Option<bool>,
+}
+
+fn is_define_props_call(
+    expression: &Expression<'_>,
+    program: &Program<'_>,
+    macros: &mut MacroOwnership,
+) -> bool {
+    let Expression::CallExpression(call) = expression.get_inner_expression() else {
         return false;
     };
+    if call.optional {
+        return false;
+    }
     if call_is_named(call, "defineProps") {
-        return true;
+        return *macros
+            .define_props
+            .get_or_insert_with(|| !compiler_macro_is_shadowed(program, "defineProps"));
     }
     if call_is_named(call, "withDefaults")
+        && *macros
+            .with_defaults
+            .get_or_insert_with(|| !compiler_macro_is_shadowed(program, "withDefaults"))
         && let Some(first) = call
             .arguments
             .first()
             .and_then(|argument| argument.as_expression())
     {
-        return is_define_props_call(first);
+        return is_define_props_call(first, program, macros);
     }
     false
 }
 
 fn call_is_named(call: &CallExpression<'_>, name: &str) -> bool {
     matches!(
-        &call.callee,
+        call.callee.get_inner_expression(),
         Expression::Identifier(identifier) if identifier.name.as_str() == name
     )
 }

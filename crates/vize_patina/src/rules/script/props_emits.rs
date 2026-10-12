@@ -27,3 +27,8 @@ pub use require_prop_types::RequirePropTypes;
 pub use require_typed_object_prop::RequireTypedObjectProp;
 pub use require_valid_default_prop::RequireValidDefaultProp;
 pub use return_in_emits_validator::{EmitsModuleScript, ReturnInEmitsValidator};
+
+/// Reuse the existing conservative same-program macro binding proof.
+pub(super) fn compiler_macro_is_shadowed(program: &oxc_ast::ast::Program<'_>, name: &str) -> bool {
+    compiler_macro_bindings::shadowed(program, name)
+}

@@ -25,8 +25,8 @@ use prefilter::{script_rule_applies_to_filename, script_rule_may_match};
 pub use registry::BuiltinScriptRuleMeta;
 use registry::{
     ALL_BUILTIN_SCRIPT_RULE_NAMES, BUILTIN_SCRIPT_RULES, BuiltinScriptRuleEntry,
-    RULE_NO_GET_CURRENT_INSTANCE, RULE_NO_REQUIRED_PROP_WITH_DEFAULT,
-    RULE_RETURN_IN_EMITS_VALIDATOR,
+    RULE_NO_DEEP_DESTRUCTURE_IN_PROPS, RULE_NO_GET_CURRENT_INSTANCE,
+    RULE_NO_REQUIRED_PROP_WITH_DEFAULT, RULE_RETURN_IN_EMITS_VALIDATOR,
 };
 
 #[cfg(test)]
@@ -200,6 +200,15 @@ fn run_builtin_script_rule(
                         module,
                         &mut lint
                     )
+                );
+            }
+        } else if entry.rule_name == RULE_NO_DEEP_DESTRUCTURE_IN_PROPS
+            && let Some(props_rule) = rule.as_setup_props_destructure()
+        {
+            if runtime_props_eligible {
+                profile!(
+                    entry.profile_name,
+                    props_rule.check_setup(&parsed.program, source, offset, &mut lint)
                 );
             }
         } else if runtime_props_eligible
