@@ -1,0 +1,47 @@
+{
+  "schema": "vize.lint.setup-export-default-membership-law",
+  "version": 1,
+  "path": "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
+  "base": "47b204f26839afb27af4a2f789eafc86295f0f81",
+  "beforeGitBlob": "3c927b145e33fdaf9275f3c63a23ec78b35d0fc2",
+  "beforeSha256": "810d884d2b275b43799dc097bb8dfee7f63e892a4a7956846a0a7c5c87367da0",
+  "afterSha256": "04a0a49982ed941a42ef291a91f2863531902cbfed82365ae3da223e4efcf73b",
+  "changes": [
+    {
+      "preset": "ecosystem",
+      "index": 112,
+      "beforeCount": 128,
+      "afterCount": 129,
+      "next": "script/no-potential-component-option-typo"
+    },
+    {
+      "preset": "essential",
+      "index": 50,
+      "beforeCount": 62,
+      "afterCount": 63,
+      "next": "script/no-potential-component-option-typo"
+    },
+    {
+      "preset": "happy_path",
+      "index": 104,
+      "beforeCount": 120,
+      "afterCount": 121,
+      "next": "script/no-potential-component-option-typo"
+    },
+    {
+      "preset": "nuxt",
+      "index": 153,
+      "beforeCount": 179,
+      "afterCount": 180,
+      "next": "script/no-potential-component-option-typo"
+    },
+    {
+      "preset": "opinionated",
+      "index": 152,
+      "beforeCount": 178,
+      "afterCount": 179,
+      "next": "script/no-potential-component-option-typo"
+    }
+  ],
+  "retained": "All other rule identities and relative order, incrementalempty and explicit-optin membership unchanged"
+}

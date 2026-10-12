@@ -1,0 +1,23 @@
+{
+  "schema": "vize.lint.setup-export-default-finite-authorship-correction",
+  "version": 1,
+  "authority": "Source-derived exact correction to initial8 help omissions and2 inherited Options API route omissions, frozen before public replay. No native data/positions/rules/source/config/CLI changes.",
+  "initialAuthored": {
+    "path": "initial-authored-packets.json.gz",
+    "sha256": "7167bdee2098396a8c6ccde54c41a928425ffdcc02133f75307aeabdfcfb13ed"
+  },
+  "initialFailure": {
+    "path": "initial-public-before-failure.json.gz",
+    "sha256": "c14fed96c9759b6572db13975f066c97ac79b013b3873ba7a30d95eb32f4d7ae",
+    "rawSha256": "3809955e8f06c1c85089c6f11cc5c386099916a29d61aafe064664028fa98c34"
+  },
+  "sourceLaw": {
+    "path": "source-law-bodies.json",
+    "sha256": "acc3869d8abc2dd3515de003a134e01800f708f59c7d00155370d4e79d77e601"
+  },
+  "after": {
+    "corpusSha256": "d4d9d15024a4df328fd7b32fca416fbf6d92a99952824e6b4405b74a6854ffcb",
+    "controlsSha256": "ef170231466cc8053a3dd7ee0a7b0742261ac4c74cc39032941085c8a031bfab"
+  },
+  "law": "Existing stored script help is rendered even with --help-level none; preserve full source-authored help in every positive. Existing NoOptionsApi precedes NoExport in API registry order and JSON sorts by source span: only original opinionated/all UTF8 two-export route retains that complete existing finding/status. All other fields and source laws remain exact."
+}

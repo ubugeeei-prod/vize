@@ -1335,7 +1335,7 @@ export default {}                      // default inheritance, unstated
 [错误示例](#script-no-export-in-script-setup-bad) · [正确示例](#script-no-export-in-script-setup-good)
 
 默认严重程度: `error`  
-预设: _none_  
+预设: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
 选项: 没有规则专属选项。可以配置严重程度和预设。

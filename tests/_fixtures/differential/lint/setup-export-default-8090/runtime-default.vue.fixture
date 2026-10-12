@@ -1,0 +1,4 @@
+<script setup lang="ts">
+export default {};
+</script>
+<template><div /></template>

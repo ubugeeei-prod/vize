@@ -1333,7 +1333,7 @@ Disallow export statements inside &lt;script setup&gt;
 [Bad](#script-no-export-in-script-setup-bad) · [Good](#script-no-export-in-script-setup-good)
 
 Default severity: `error`  
-Presets: _none_  
+Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
 Options: No rule-specific options. Severity and preset selection are configurable.
