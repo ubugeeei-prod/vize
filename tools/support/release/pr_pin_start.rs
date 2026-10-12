@@ -210,13 +210,15 @@ pub fn resume(number: u64, root: &Path) -> Result<(), String> {
             .lines()
             .any(|line| line.starts_with("<!-- vize-release-pin:"))
             && marker(body, "vize-release-integration").is_ok();
-        if complete {
-            source(&repository, number, &head, &tag, true, &work)?;
-        } else {
-            authenticate_partial(&pr, &repository, &head, &tag, &work)?;
-        }
-        pr_budget::check(budget.as_ref())?;
-        let operator = super::lock::acquire(&tag, &head, &work)?;
+        let (stable, operator) = resume_operator(&tag, &head, &work, &|| {
+            let stable = if complete {
+                source(&repository, number, &head, &tag, true, &work)?.stable
+            } else {
+                authenticate_partial(&pr, &repository, &head, &tag, &work)?
+            };
+            pr_budget::check(budget.as_ref())?;
+            Ok(stable)
+        })?;
         if !complete {
             if github::tag_target(&tag, &work)?.is_some() {
                 return Err(
@@ -248,7 +250,7 @@ pub fn resume(number: u64, root: &Path) -> Result<(), String> {
                 base_version,
                 integration: 0,
                 closed: false,
-                stable: super::stable::from_body(body, &cut, &repository, &work)?,
+                stable,
             };
             source.integration = integration_pr(&source, &bump, budget.as_ref(), &work)?;
             pr_budget::check(budget.as_ref())?;
@@ -269,13 +271,23 @@ pub fn resume(number: u64, root: &Path) -> Result<(), String> {
     pr_start::finish(result, &work, root)
 }
 
+pub(super) fn resume_operator(
+    tag: &str,
+    head: &str,
+    root: &Path,
+    authenticate: &dyn Fn() -> Result<Option<super::stable::Stable>, String>,
+) -> Result<(Option<super::stable::Stable>, super::lock::Operator), String> {
+    let stable = authenticate()?;
+    Ok((stable, super::lock::acquire(tag, head, root)?))
+}
+
 pub(super) fn authenticate_partial(
     pr: &Value,
     repository: &str,
     head: &str,
     tag: &str,
     root: &Path,
-) -> Result<(), String> {
+) -> Result<Option<super::stable::Stable>, String> {
     pr_contract::candidate_fields(
         pr,
         &github::author(repository, pr_contract::field(pr, "/user/login")?, root)?,
@@ -311,6 +323,8 @@ pub(super) fn authenticate_partial(
         return Err("The interrupted pin fields changed; preserve the source receipt.".into());
     }
     let base = marker(body, "vize-release-base-version")?;
-    metadata::verify_delta(&cut, head, &base, tag.trim_start_matches('v'), root)
+    metadata::verify_delta(&cut, head, &base, tag.trim_start_matches('v'), root)?;
+    super::stable::resume_authority(body, tag, &cut, root, &|| {
+        super::stable::from_body(body, &cut, repository, root)
+    })
 }
-

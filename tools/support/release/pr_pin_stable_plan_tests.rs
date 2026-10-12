@@ -32,6 +32,11 @@ fn fixture() -> (Repo, Value, Stable, BTreeMap<String, Value>) {
     let cut = repo.commit(&[
         ("src/code.rs", "fixed\n"),
         ("tests/original.txt", "whole original oracle\n"),
+        ("tests/wired.rs", "complete independent source adapter\n"),
+        (
+            "tools/support/release/transport.rs",
+            "complete reviewed transport\n",
+        ),
     ]);
     let raw = String::from_utf8(
         metadata::bytes(
@@ -58,11 +63,15 @@ fn fixture() -> (Repo, Value, Stable, BTreeMap<String, Value>) {
     )
     .unwrap();
     let object = github::git(&["rev-parse", "refs/tags/v0.443.0"], &repo.work).unwrap();
-    let v = json!({"schema":"stable-patch-v1","repository":"owner/repo","published":{"tag":"v0.443.0","tagObject":object,"head":public,"tree":commit(&public,&repo.work).unwrap().0,"run":7,"sourcePr":42},"target":"v0.443.1","cut":cut,"tree":commit(&cut,&repo.work).unwrap().0,"commits":[cut],"fixes":[{"pr":99,"merge":merged,"parent":public,"reporter":"Reporter <123+reporter@users.noreply.github.com>"}],"rawDiff":raw,"files":[{"path":"src/code.rs","role":"fix","origin":merged},{"path":"tests/original.txt","role":"corpus","origin":merged}]});
+    let v = json!({"schema":"stable-patch-v1","repository":"owner/repo","published":{"tag":"v0.443.0","tagObject":object,"head":public,"tree":commit(&public,&repo.work).unwrap().0,"run":7,"sourcePr":42},"target":"v0.443.1","cut":cut,"tree":commit(&cut,&repo.work).unwrap().0,"commits":[cut],"fixes":[{"pr":99,"merge":merged,"parent":public,"reporter":"Reporter <123+reporter@users.noreply.github.com>"}],"rawDiff":raw,"files":[{"path":"src/code.rs","role":"fix","origin":merged},{"path":"tests/original.txt","role":"corpus","origin":merged},{"path":"tests/wired.rs","role":"corpus-adapter","origin":""},{"path":"tools/support/release/transport.rs","role":"qualification","origin":""}]});
     github::git(&["checkout", "main"], &repo.work).unwrap();
     let policy = repo.commit(&[
         (PLAN_PATH, &format!("{v}\n")),
         ("main-only.css", "future nominal migration\n"),
+        (
+            "tools/support/release/transport.rs",
+            "complete reviewed transport\n",
+        ),
     ]);
     github::git(&["push", "origin", "main"], &repo.work).unwrap();
     let context = Stable {
@@ -236,4 +245,66 @@ fn actual_replacement_ref_cannot_invent_stable_inclusion_or_change_whole_source_
         commit(field(&v, "/cut").unwrap(), &repo.work).unwrap().0,
         field(&v, "/tree").unwrap()
     );
+}
+
+#[test]
+fn partial_stable_resume_authenticates_before_any_real_operator_ref_or_integration_mutation() {
+    let (repo, v, c, api) = fixture();
+    let cut = field(&v, "/cut").unwrap();
+    let head = cut;
+    let body = format!(
+        "<!-- vize-release-bump: patch -->\n{}",
+        super::super::markers(Some(&c))
+    );
+    let authenticate = |body: &str, tag: &str| {
+        super::super::resume_authority(body, tag, cut, &repo.work, &|| {
+            super::super::body_with(body, &|policy| {
+                assert_eq!(policy, c.policy);
+                verify_fixture(&repo, &v, &c, &api)?;
+                Ok(c.clone())
+            })
+        })
+    };
+    let before = github::git(&["show-ref"], &repo.remote).unwrap();
+    for (bad, tag) in [
+        (body.replace("bump: patch", "bump: minor"), "v0.443.1"),
+        (body.clone(), "v0.443.2"),
+        (
+            format!("{body}<!-- vize-release-stable-unknown: yes -->\n"),
+            "v0.443.1",
+        ),
+        (
+            format!("{body}{}", super::super::markers(Some(&c))),
+            "v0.443.1",
+        ),
+        (body.replace(&c.sha256, &"a".repeat(64)), "v0.443.1"),
+        ("<!-- vize-release-bump: patch -->\n".into(), "v0.443.1"),
+    ] {
+        let result = super::super::super::start::resume_operator(tag, head, &repo.work, &|| {
+            authenticate(&bad, tag)
+        });
+        assert!(result.is_err(), "{tag}: {bad}");
+        assert_eq!(github::git(&["show-ref"], &repo.remote).unwrap(), before);
+        assert!(
+            !repo
+                .work
+                .join(format!(".git/vize-release-operator-{tag}.lock"))
+                .exists()
+        );
+    }
+    let (context, operator) =
+        super::super::super::start::resume_operator("v0.443.1", head, &repo.work, &|| {
+            authenticate(&body, "v0.443.1")
+        })
+        .unwrap();
+    assert_eq!(context.unwrap().blob, c.blob);
+    assert!(
+        github::git(
+            &["show-ref", "refs/heads/release-operator/v0.443.1"],
+            &repo.remote
+        )
+        .is_ok()
+    );
+    drop(operator);
+    assert_eq!(github::git(&["show-ref"], &repo.remote).unwrap(), before);
 }

@@ -7,6 +7,8 @@ use std::{
     path::Path,
     process::{Command, Stdio},
 };
+#[path = "pr_pin_stable_files.rs"]
+mod files;
 #[path = "pr_pin_stable_plan.rs"]
 mod plan;
 
@@ -64,14 +66,7 @@ pub(super) fn load(
     super::retire_guard::no_replacements(root)?;
     pr_contract::sha(policy)?;
     pr_contract::sha(cut)?;
-    let blob = github::git(
-        &[
-            "--no-replace-objects",
-            "rev-parse",
-            &format!("{policy}:{PLAN_PATH}"),
-        ],
-        root,
-    )?;
+    let blob = manifest_blob(policy, root)?;
     pr_contract::sha(&blob)?;
     let bytes = metadata::bytes(&["--no-replace-objects", "cat-file", "blob", &blob], root)?;
     let context = Stable {
@@ -85,6 +80,35 @@ pub(super) fn load(
     Ok((context, value))
 }
 
+fn manifest_blob(policy: &str, root: &Path) -> Result<String, String> {
+    let raw = metadata::bytes(
+        &[
+            "--no-replace-objects",
+            "ls-tree",
+            "-z",
+            policy,
+            "--",
+            PLAN_PATH,
+        ],
+        root,
+    )?;
+    let record = raw
+        .strip_suffix(&[0])
+        .ok_or("Missing regular stable manifest record")?;
+    let text = std::str::from_utf8(record).map_err(|e| e.to_string())?;
+    let (header, path) = text
+        .split_once('\t')
+        .ok_or("Invalid stable manifest record")?;
+    let fields: Vec<_> = header.split(' ').collect();
+    if fields.len() != 3 || fields[0] != "100644" || fields[1] != "blob" || path != PLAN_PATH {
+        return Err(
+            "Stable manifest must be exactly one regular 100644 blob at its literal path".into(),
+        );
+    }
+    pr_contract::sha(fields[2])?;
+    Ok(fields[2].into())
+}
+
 pub(super) fn supports_cut(context: &Stable, cut: &str, root: &Path) -> Result<(), String> {
     // The frozen source must contain this protocol's actual compiled callers;
     // an old tag's workflow bytecode cannot inherit a new operator flag.
@@ -93,7 +117,9 @@ pub(super) fn supports_cut(context: &Stable, cut: &str, root: &Path) -> Result<(
         "tools/support/release/pr_pin.rs",
         "tools/support/release/pr_pin_stable.rs",
         "tools/support/release/pr_pin_stable_plan.rs",
+        "tools/support/release/pr_pin_stable_files.rs",
         "tools/support/release/pr_pin_start.rs",
+        "tools/support/release/pr_pin_source_body.rs",
         "tools/support/release/pr_pin_candidate.rs",
         "tools/support/release/pr_pin_delivery.rs",
         "tools/support/release/pr_pin_integration.rs",
@@ -126,6 +152,18 @@ pub(super) fn from_body(
     repository: &str,
     root: &Path,
 ) -> Result<Option<Stable>, String> {
+    body_with(body, &|policy| {
+        github::git(&["fetch", "--no-tags", "origin", policy], root)?;
+        let (context, _) = load(policy, cut, repository, root)?;
+        supports_cut(&context, cut, root)?;
+        Ok(context)
+    })
+}
+
+fn body_with(
+    body: &str,
+    load: &dyn Fn(&str) -> Result<Stable, String>,
+) -> Result<Option<Stable>, String> {
     if !body
         .lines()
         .any(|line| line.starts_with("<!-- vize-release-stable-"))
@@ -135,9 +173,7 @@ pub(super) fn from_body(
     let policy = marker(body, "vize-release-stable-policy")?;
     let blob = marker(body, "vize-release-stable-plan")?;
     let sha256 = marker(body, "vize-release-stable-sha256")?;
-    github::git(&["fetch", "--no-tags", "origin", &policy], root)?;
-    let (context, _) = load(&policy, cut, repository, root)?;
-    supports_cut(&context, cut, root)?;
+    let context = load(&policy)?;
     if context.blob != blob || context.sha256 != sha256 {
         return Err("The immutable stable manifest changed".into());
     }
@@ -151,6 +187,25 @@ pub(super) fn from_body(
         return Err("Unknown, reordered or duplicate stable authority markers".into());
     }
     Ok(Some(context))
+}
+
+pub(super) fn resume_authority(
+    body: &str,
+    tag: &str,
+    cut: &str,
+    root: &Path,
+    authenticate: &dyn Fn() -> Result<Option<Stable>, String>,
+) -> Result<Option<Stable>, String> {
+    let context = authenticate()?;
+    if let Some(context) = &context {
+        if marker(body, "vize-release-bump")? != "patch" || target(context, root)? != tag {
+            return Err("Stable source receipt is not the reviewed exact PATCH target".into());
+        }
+    } else {
+        // Removing every stable marker must not turn a detached C into a main cut.
+        first_parent(cut, &github::fetch_main(root)?, root)?;
+    }
+    Ok(context)
 }
 
 pub(super) fn markers(context: Option<&Stable>) -> String {
@@ -217,6 +272,32 @@ mod manifest_tests {
         );
         for bad in [br#"{"a":1,"a":2}"#.as_slice(), br#"{"a":{"b":1,"b":2}}"#] {
             assert!(digest(bad).is_err());
+        }
+    }
+
+    #[test]
+    fn literal_manifest_tree_record_refuses_executable_and_symlink_modes() {
+        let repo = super::super::tests::Repo::new();
+        let regular = repo.commit(&[(PLAN_PATH, "{\"schema\":\"whole\"}\n")]);
+        let blob = manifest_blob(&regular, &repo.work).unwrap();
+        for mode in ["100755", "120000"] {
+            github::git(
+                &[
+                    "update-index",
+                    "--cacheinfo",
+                    &format!("{mode},{blob},{PLAN_PATH}"),
+                ],
+                &repo.work,
+            )
+            .unwrap();
+            github::git(
+                &["-c", "core.hooksPath=/dev/null", "commit", "-m", mode],
+                &repo.work,
+            )
+            .unwrap();
+            let changed = github::git(&["rev-parse", "HEAD"], &repo.work).unwrap();
+            let error = manifest_blob(&changed, &repo.work).unwrap_err();
+            assert!(error.contains("100644"), "{mode}: {error}");
         }
     }
 }
