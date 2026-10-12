@@ -1,0 +1,278 @@
+[
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/06-after.rs.fixture",
+    "originalBeforeSHA256": "2fcda85b4dba45248c782f475c648b4344b0cb2b008b55d241cd282efa9cf7dd",
+    "originalAfterSHA256": "2fcda85b4dba45248c782f475c648b4344b0cb2b008b55d241cd282efa9cf7dd",
+    "before": {
+      "mode": "100644",
+      "blob": "7b54949f6b48abe4c69b27865bf6b0165694a936",
+      "bytes": 7697,
+      "sha256": "2fcda85b4dba45248c782f475c648b4344b0cb2b008b55d241cd282efa9cf7dd"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "7b54949f6b48abe4c69b27865bf6b0165694a936",
+      "bytes": 7697,
+      "sha256": "2fcda85b4dba45248c782f475c648b4344b0cb2b008b55d241cd282efa9cf7dd"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "7b54949f6b48abe4c69b27865bf6b0165694a936",
+      "bytes": 7697,
+      "sha256": "2fcda85b4dba45248c782f475c648b4344b0cb2b008b55d241cd282efa9cf7dd"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/07-after.rs.fixture",
+    "originalBeforeSHA256": "8ffd84a3c10bd6047da99d0bd8ecc9823d94900014830fff503377098d25a962",
+    "originalAfterSHA256": "8ffd84a3c10bd6047da99d0bd8ecc9823d94900014830fff503377098d25a962",
+    "before": {
+      "mode": "100644",
+      "blob": "96af9ee168b9c0d5de9b2d091efac3e7f2223b7e",
+      "bytes": 9768,
+      "sha256": "8ffd84a3c10bd6047da99d0bd8ecc9823d94900014830fff503377098d25a962"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "96af9ee168b9c0d5de9b2d091efac3e7f2223b7e",
+      "bytes": 9768,
+      "sha256": "8ffd84a3c10bd6047da99d0bd8ecc9823d94900014830fff503377098d25a962"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "96af9ee168b9c0d5de9b2d091efac3e7f2223b7e",
+      "bytes": 9768,
+      "sha256": "8ffd84a3c10bd6047da99d0bd8ecc9823d94900014830fff503377098d25a962"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/helper-integration/01-after.mjs.fixture",
+    "originalBeforeSHA256": "8c9e884f8099a1125ab0518d5f569baf043f7416509190dfa61b8db212a38d33",
+    "originalAfterSHA256": "8c9e884f8099a1125ab0518d5f569baf043f7416509190dfa61b8db212a38d33",
+    "before": {
+      "mode": "100644",
+      "blob": "a8fce88502aa29db93afdfb233c892a15516e99d",
+      "bytes": 6045,
+      "sha256": "8c9e884f8099a1125ab0518d5f569baf043f7416509190dfa61b8db212a38d33"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "a8fce88502aa29db93afdfb233c892a15516e99d",
+      "bytes": 6045,
+      "sha256": "8c9e884f8099a1125ab0518d5f569baf043f7416509190dfa61b8db212a38d33"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "a8fce88502aa29db93afdfb233c892a15516e99d",
+      "bytes": 6045,
+      "sha256": "8c9e884f8099a1125ab0518d5f569baf043f7416509190dfa61b8db212a38d33"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/helper-integration/01-before.mjs.fixture",
+    "originalBeforeSHA256": "e9a91456ac78d8ec9449a1c8a539a735df3a4a7e67091ad282518c77f9564455",
+    "originalAfterSHA256": "e9a91456ac78d8ec9449a1c8a539a735df3a4a7e67091ad282518c77f9564455",
+    "before": {
+      "mode": "100644",
+      "blob": "50368c6b88ce63186c4c5e246c4b4c0b46725a4b",
+      "bytes": 5787,
+      "sha256": "e9a91456ac78d8ec9449a1c8a539a735df3a4a7e67091ad282518c77f9564455"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "50368c6b88ce63186c4c5e246c4b4c0b46725a4b",
+      "bytes": 5787,
+      "sha256": "e9a91456ac78d8ec9449a1c8a539a735df3a4a7e67091ad282518c77f9564455"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "50368c6b88ce63186c4c5e246c4b4c0b46725a4b",
+      "bytes": 5787,
+      "sha256": "e9a91456ac78d8ec9449a1c8a539a735df3a4a7e67091ad282518c77f9564455"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/helper-integration/02-after.mjs.fixture",
+    "originalBeforeSHA256": "8995c93374509bbb37be4fd0df0506df1b8d6bac4737496d5f66410d19527b7a",
+    "originalAfterSHA256": "8995c93374509bbb37be4fd0df0506df1b8d6bac4737496d5f66410d19527b7a",
+    "before": {
+      "mode": "100644",
+      "blob": "af400a192e7d2384aefdd823483caf257419b93d",
+      "bytes": 5387,
+      "sha256": "8995c93374509bbb37be4fd0df0506df1b8d6bac4737496d5f66410d19527b7a"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "af400a192e7d2384aefdd823483caf257419b93d",
+      "bytes": 5387,
+      "sha256": "8995c93374509bbb37be4fd0df0506df1b8d6bac4737496d5f66410d19527b7a"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "af400a192e7d2384aefdd823483caf257419b93d",
+      "bytes": 5387,
+      "sha256": "8995c93374509bbb37be4fd0df0506df1b8d6bac4737496d5f66410d19527b7a"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/helper-integration/02-before.mjs.fixture",
+    "originalBeforeSHA256": "0930abbf603bb8faa5643ad1adca3b74608122f8db63df9bdfbf5155f1e2fd38",
+    "originalAfterSHA256": "0930abbf603bb8faa5643ad1adca3b74608122f8db63df9bdfbf5155f1e2fd38",
+    "before": {
+      "mode": "100644",
+      "blob": "5a093216152521cc580b95c27e22fc419f947bf3",
+      "bytes": 5128,
+      "sha256": "0930abbf603bb8faa5643ad1adca3b74608122f8db63df9bdfbf5155f1e2fd38"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "5a093216152521cc580b95c27e22fc419f947bf3",
+      "bytes": 5128,
+      "sha256": "0930abbf603bb8faa5643ad1adca3b74608122f8db63df9bdfbf5155f1e2fd38"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "5a093216152521cc580b95c27e22fc419f947bf3",
+      "bytes": 5128,
+      "sha256": "0930abbf603bb8faa5643ad1adca3b74608122f8db63df9bdfbf5155f1e2fd38"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/helper-integration/manifest.json",
+    "originalBeforeSHA256": "0a3c546ac610655d29d6f4d059a6950e195fa1ed380c77c1ebd56aca9105ba9d",
+    "originalAfterSHA256": "0a3c546ac610655d29d6f4d059a6950e195fa1ed380c77c1ebd56aca9105ba9d",
+    "before": {
+      "mode": "100644",
+      "blob": "2fe45facd3184e00d64e40dd984a03aac275e4c8",
+      "bytes": 1479,
+      "sha256": "0a3c546ac610655d29d6f4d059a6950e195fa1ed380c77c1ebd56aca9105ba9d"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "2fe45facd3184e00d64e40dd984a03aac275e4c8",
+      "bytes": 1479,
+      "sha256": "0a3c546ac610655d29d6f4d059a6950e195fa1ed380c77c1ebd56aca9105ba9d"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "2fe45facd3184e00d64e40dd984a03aac275e4c8",
+      "bytes": 1479,
+      "sha256": "0a3c546ac610655d29d6f4d059a6950e195fa1ed380c77c1ebd56aca9105ba9d"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/import-correction/script-rules-after.rs.fixture",
+    "originalBeforeSHA256": "aba99facec3f70369a3e5c53d12b2c045d28ffba1b585d29cfb5fa3ef6bb262d",
+    "originalAfterSHA256": "aba99facec3f70369a3e5c53d12b2c045d28ffba1b585d29cfb5fa3ef6bb262d",
+    "before": {
+      "mode": "100644",
+      "blob": "edf0f64adee0f76d0d67d4032d01a30888053954",
+      "bytes": 9722,
+      "sha256": "aba99facec3f70369a3e5c53d12b2c045d28ffba1b585d29cfb5fa3ef6bb262d"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "edf0f64adee0f76d0d67d4032d01a30888053954",
+      "bytes": 9722,
+      "sha256": "aba99facec3f70369a3e5c53d12b2c045d28ffba1b585d29cfb5fa3ef6bb262d"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "edf0f64adee0f76d0d67d4032d01a30888053954",
+      "bytes": 9722,
+      "sha256": "aba99facec3f70369a3e5c53d12b2c045d28ffba1b585d29cfb5fa3ef6bb262d"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/import-correction/successor.json",
+    "originalBeforeSHA256": "39cf7ab7633378ab462c6af46443fa0e235b070d067db739eaa040760e3e996f",
+    "originalAfterSHA256": "39cf7ab7633378ab462c6af46443fa0e235b070d067db739eaa040760e3e996f",
+    "before": {
+      "mode": "100644",
+      "blob": "dde538cd7ead6f9919cbfefc916063ad6b897fab",
+      "bytes": 12705,
+      "sha256": "39cf7ab7633378ab462c6af46443fa0e235b070d067db739eaa040760e3e996f"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "dde538cd7ead6f9919cbfefc916063ad6b897fab",
+      "bytes": 12705,
+      "sha256": "39cf7ab7633378ab462c6af46443fa0e235b070d067db739eaa040760e3e996f"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "dde538cd7ead6f9919cbfefc916063ad6b897fab",
+      "bytes": 12705,
+      "sha256": "39cf7ab7633378ab462c6af46443fa0e235b070d067db739eaa040760e3e996f"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/original-no-deep.rs.fixture",
+    "originalBeforeSHA256": "c4a0134e786feca78007040fcfd49b9c8686aca3e63af3b24d81df172ad11ab0",
+    "originalAfterSHA256": "c4a0134e786feca78007040fcfd49b9c8686aca3e63af3b24d81df172ad11ab0",
+    "before": {
+      "mode": "100644",
+      "blob": "27b222f88a40cdf5602f63939df27928244d0232",
+      "bytes": 10631,
+      "sha256": "c4a0134e786feca78007040fcfd49b9c8686aca3e63af3b24d81df172ad11ab0"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "27b222f88a40cdf5602f63939df27928244d0232",
+      "bytes": 10631,
+      "sha256": "c4a0134e786feca78007040fcfd49b9c8686aca3e63af3b24d81df172ad11ab0"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "27b222f88a40cdf5602f63939df27928244d0232",
+      "bytes": 10631,
+      "sha256": "c4a0134e786feca78007040fcfd49b9c8686aca3e63af3b24d81df172ad11ab0"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/producer-after.rs.fixture",
+    "originalBeforeSHA256": "e3125601808dd6d4d0c7221c8330c9b0e02471a38b4c1819c77d7ca1389fc450",
+    "originalAfterSHA256": "e3125601808dd6d4d0c7221c8330c9b0e02471a38b4c1819c77d7ca1389fc450",
+    "before": {
+      "mode": "100644",
+      "blob": "ec953122c810abe270b8d4e80804525ad2833bbf",
+      "bytes": 9635,
+      "sha256": "e3125601808dd6d4d0c7221c8330c9b0e02471a38b4c1819c77d7ca1389fc450"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "ec953122c810abe270b8d4e80804525ad2833bbf",
+      "bytes": 9635,
+      "sha256": "e3125601808dd6d4d0c7221c8330c9b0e02471a38b4c1819c77d7ca1389fc450"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "ec953122c810abe270b8d4e80804525ad2833bbf",
+      "bytes": 9635,
+      "sha256": "e3125601808dd6d4d0c7221c8330c9b0e02471a38b4c1819c77d7ca1389fc450"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/successor.json",
+    "originalBeforeSHA256": "de01ccf20b54abc69935b2ffa844705b1704bac8f83c07ee832c339ff9aaa161",
+    "originalAfterSHA256": "de01ccf20b54abc69935b2ffa844705b1704bac8f83c07ee832c339ff9aaa161",
+    "before": {
+      "mode": "100644",
+      "blob": "549226e039bd92e96f0e65e6083da89f7972c25d",
+      "bytes": 15445,
+      "sha256": "de01ccf20b54abc69935b2ffa844705b1704bac8f83c07ee832c339ff9aaa161"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "549226e039bd92e96f0e65e6083da89f7972c25d",
+      "bytes": 15445,
+      "sha256": "de01ccf20b54abc69935b2ffa844705b1704bac8f83c07ee832c339ff9aaa161"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "549226e039bd92e96f0e65e6083da89f7972c25d",
+      "bytes": 15445,
+      "sha256": "de01ccf20b54abc69935b2ffa844705b1704bac8f83c07ee832c339ff9aaa161"
+    }
+  }
+]

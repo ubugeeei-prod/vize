@@ -157,3 +157,19 @@ projection verifies this closure first. The actual CLI source receipt includes
 these three guard bodies with the original eighty-one bodies and ten callers,
 so all ninety-four committed bodies must match its build. This remains source
 custody, with no runtime, full-Matrix or performance verdict.
+
+The NoDeep source comparison has a separate complete current frame: 110 original
+setup pairs plus the complete component manifest. It authenticates every actual
+raw Git and physical body before running the unchanged five-law module on its
+113 authenticated retained files. The original 102 NoDeep pairs, 87 named-family
+bodies and four tail laws remain unchanged. Eight real Git/physical refusals and
+84 metadata refusals pass, including whole-tree squash equivalence. This is a
+source-only comparison; fresh API, CLI, native and original400 execution remains
+required and receives no historical result transfer.
+
+Missing historical Git objects may be provisioned only in the physical canonical
+Linux Actions checkout. Existing objects remain read-only; local, linked and
+private missing objects refuse before mutation, including a real shallow
+repository without an origin. The original literal-source helper, sixty-second
+retained subprocess limit and sixty-four-parent bound remain unchanged. Hosted
+fetch execution and fresh product acceptance are pending the exact-source run.
