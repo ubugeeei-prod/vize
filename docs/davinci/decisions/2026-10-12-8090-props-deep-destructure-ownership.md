@@ -186,3 +186,10 @@ complete three failure logs, preserved old families/laws/whole packets, and ran
 eleven focused source laws with no failures or skips. Its receipt SHA256 is
 `771021667d623c7bf3e1a95b89271a47796ef9b23443753b5b9ca896db397ee3`.
 This is source review, with compilation and runtime gates still pending.
+
+The next genuine replay includes actual main `5c54b119` and its native library
+filter source/workflow together. All 135 owned bodies are literal against the
+retained trait-repair branch; the incoming canonical keeps 350 rows and only
+the already-owned paragraph 198 append. Replay receipt SHA256 is
+`73b83e209fd6d01b2b220ddfaa295c82823a9c33ed0cbb6d69439a48241afab7`.
+This preserves source identity, with no old execution qualification transferred.
