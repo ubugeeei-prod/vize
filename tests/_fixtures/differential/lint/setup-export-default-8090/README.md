@@ -5,7 +5,7 @@ and [the bounded product record](../../../../../docs/davinci/decisions/2026-10-1
 
 `cases.json` retains 18 complete scoped packets. `default-route-controls.json`
 adds four complete source carriers across thirteen full routes (52 packets),
-including default/presets, normal/type controls, UTF-8/CRLF, existing warning
+including default/presets, normal/type controls, UTF-8/CRLF, existing diagnostic
 order, explicit off, CLI/config precedence and the frozen n8n projection.
 
 `reference/` is inert official provider/compiler source, package/license, registry

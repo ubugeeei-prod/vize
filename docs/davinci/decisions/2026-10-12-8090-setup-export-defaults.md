@@ -48,10 +48,10 @@ default/recommended/Essential/Ecosystem/Opinionated/Nuxt/all/Incremental,
 explicit off, both CLI-preset precedence directions, off plus CLI Essential,
 and the unchanged n8n projection. API diagnostics preserve registry order;
 CLI packets preserve span sorting. Opinionated/all retain the pre-existing
-`script/no-options-api` warning and its original range/order.
+`script/no-options-api` Error diagnostic and its original range/order.
 
 The initial authored CLI packets omitted stored help and the two pre-existing
-Opinionated/all warning packets. The complete initial 70-run public observation
+Opinionated/all Error diagnostic packets. The complete initial 70-run public observation
 and both initial authored bodies remain in lossless archives. The bounded
 `authorship-correction.json` permits only those source-demonstrated omissions,
 with five complete original producer/renderer/ordering bodies and independent
