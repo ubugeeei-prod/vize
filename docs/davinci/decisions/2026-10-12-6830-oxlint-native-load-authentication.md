@@ -95,3 +95,14 @@ if either partition is wrong, the test remains red. No 64-to-71 repin or input
 exclusion is admitted. Real filesystem controls refuse missing, unknown,
 duplicate, changed-body, symlink and changed-mode carriers. Their compilation
 and the actual partition require fresh native Actions before merge.
+
+The first carrier source plan refused three shifted import coordinates in the
+existing generated consumer ledger. Place the support module after the original
+imports so those exact coordinates remain unchanged; no generated ledger or
+consumer classification is rewritten. The original planner refusal is retained.
+
+The same native run refused compilation before carrier observations: this
+repository's SHA output array does not implement `LowerHex`. Format each byte
+as two lowercase hexadecimal digits, following the existing Canon observation
+helper, with the complete digest and all admission checks unchanged. No actual
+64/7 partition was acquired in that failed run or inferred as a passing result.

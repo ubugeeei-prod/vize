@@ -11,9 +11,6 @@
 #![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
-#[path = "support/projection_carriers.rs"]
-mod projection_carriers;
-
 use std::ops::Range;
 use std::path::{Path, PathBuf};
 
@@ -23,6 +20,9 @@ use vize_canon::projection::project_template_expressions;
 use vize_canon::virtual_ts::generate_virtual_ts;
 use vize_croquis::{Analyzer, AnalyzerOptions};
 use vize_l0::Allocator;
+
+#[path = "support/projection_carriers.rs"]
+mod projection_carriers;
 
 /// Measured template-expression anchors on the committed TS-40 matrix.
 const TEMPLATE_ANCHOR_COMPARISONS: usize = 22;

@@ -97,7 +97,10 @@ impl Carriers {
         }
         assert_eq!(source.len(), entry.bytes);
         assert_eq!(
-            format!("{:x}", Sha256::digest(source.as_bytes())),
+            Sha256::digest(source.as_bytes())
+                .iter()
+                .map(|byte| format!("{byte:02x}"))
+                .collect::<String>(),
             entry.sha256
         );
         assert!(
