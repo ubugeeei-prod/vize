@@ -2975,17 +2975,18 @@ import { h } from '@vue/runtime-dom'
 
 **Correto**
 
-Ambas as funções auxiliares são importadas juntas de `vue`, usando o ponto de entrada público do pacote em vez de qualquer um dos pacotes internos.
+As funções públicas são importadas de `vue`. A função privada `isString` mantém `@vue/shared`, pois `vue` não a exporta. Imports de namespace, padrão e mistos públicos/privados mantêm um aviso sem correção automática.
 
-```vue annotate="add:2"
+```vue annotate="add:2,3"
 <script setup lang="ts">
 import { ref, h } from 'vue'
+import { isString } from '@vue/shared'
 </script>
 ```
 
 O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
-[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L32) · [Todas as regras](all.md)
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L36) · [Todas as regras](all.md)
 
 ### `script/prefer-ref-over-reactive`
 

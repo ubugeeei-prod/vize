@@ -27,7 +27,7 @@ export const chineseRules3: Record<string, readonly [string, string, string]> = 
   "script/prefer-import-from-vue": [
     "优先从 'vue' 导入，而不是内部包",
     "`ref` 和 `h` 从内部 `@vue/runtime-core` 和 `@vue/runtime-dom` 包导入，而不是公共 `vue` 包。",
-    "两个辅助函数一起从 `vue` 导入，使用公共包入口，不使用任何内部包。",
+    "公共辅助函数从 `vue` 导入。`vue` 未公开的 `isString` 保留 `@vue/shared`。命名空间、默认及公共与私有混合导入保留警告，但不提供自动修复。",
   ],
   "script/prefer-ref-over-reactive": [
     "建议使用 ref() 而不是 reactive() 管理状态",

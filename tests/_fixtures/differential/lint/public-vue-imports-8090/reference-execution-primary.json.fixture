@@ -1,0 +1,4767 @@
+{
+  "schema": "vize.lint.public-vue-imports-primary-sources",
+  "version": 1,
+  "authority": "All complete authored vectors are fixed before observer execution. Pinned primary sources, full historical Matrix packet, original carrier and complete installed provider package trees retain separate custody. No newest Vue or whole Matrix qualification claim.",
+  "corpus": {
+    "path": "cases.json",
+    "sha256": "d52480f474c2a6dba9681aa620a0c5e6dd2597accd91ad286000230a1b9d2389",
+    "bytes": 59619
+  },
+  "routes": {
+    "path": "default-route-controls.json",
+    "sha256": "412dc8a553f58e3feda1d9ffc572cc89e5f08929d134c8943ee11a8689db888f",
+    "bytes": 9029
+  },
+  "original": {
+    "path": "OriginalVpApiEnum.vue.fixture",
+    "sha256": "3e39e2d5e9c3657f7240c75e0f53acd60054a97ae3e4ff6aa6cee2185efe508a",
+    "bytes": 452
+  },
+  "matrix": {
+    "path": "original-element-plus-fd4-matrix.json.gz",
+    "sha256": "de0b65e02f3fc97dd6088780c5014169fb77951ae7747a0cab07556d4777f9a5",
+    "bytes": 361908,
+    "rawSha256": "e80b6ba6ce467f01da5bf9ca3d978f5a796936b51cb553379c677700a603efb9",
+    "rawBytes": 9123302,
+    "source": "fd4c30a1c6195c4a9e569c17e99d9942b84b7833",
+    "project": "element-plus",
+    "revision": "20298a21ae54a5417955373b80130ae7c548a6bb",
+    "artifactId": 11709971103,
+    "archiveSha256": "7bb9ae76824189884d7a9c59aa66672c9e3b8cdf9dfcd33bf95b41697da766e7",
+    "budgetVerdict": "breached",
+    "maxFalsePositiveCount": 0,
+    "maxFalseNegativeCount": 0
+  },
+  "provider": {
+    "root": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/tools/benchmarks/scripts",
+    "packages": [
+      {
+        "name": "eslint",
+        "version": "10.4.1",
+        "packageRoot": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/eslint@10.4.1_jiti@2.7.0_supports-color@10.2.2/node_modules/eslint",
+        "packageJsonSha256": "6516811071291ae483f95f74911b3112a0b7f0b3d6e94a85c93c3a371cd7ac8a",
+        "fileCount": 419,
+        "fileTreeSha256": "af38cb607e9e34f5085f715f4dec88405d9dd5bc3e5b9944f9a37f77e14b85eb",
+        "files": [
+          {
+            "path": "LICENSE",
+            "sha256": "3b6be04f862a077a4b97929dbf247299360824d9365f8603c263769303ace18c",
+            "bytes": 1094
+          },
+          {
+            "path": "README.md",
+            "sha256": "abf3cdf9540e0f7809fb68ca4bcfe93bbfce519454f9fa08028478d40e57fdcc",
+            "bytes": 20801
+          },
+          {
+            "path": "bin/eslint.js",
+            "sha256": "bb07a179294caee1175397035fef38347782cb8fbf00356ca8c6fd2c87a989fa",
+            "bytes": 6028
+          },
+          {
+            "path": "conf/ecma-version.js",
+            "sha256": "04652399e294312c1386dc79fc9785f01907d79cef0dd53ba62d6c8983cc2969",
+            "bytes": 304
+          },
+          {
+            "path": "conf/globals.js",
+            "sha256": "e4dd5758ab9ead9621c8ee08d0d08f9ce40f0c7a4e39f4f4e2931f5b15b551d8",
+            "bytes": 2630
+          },
+          {
+            "path": "conf/replacements.json",
+            "sha256": "84ee7d595cbec6d69d26bf925158770e88496abe2a842e54a5626046034e9370",
+            "bytes": 987
+          },
+          {
+            "path": "conf/rule-type-list.json",
+            "sha256": "db54b0e3fa1b238076017be60c71288c015fcb0d77b570c261130c02a76024dc",
+            "bytes": 2537
+          },
+          {
+            "path": "lib/api.js",
+            "sha256": "d970a38ce77982fe2c68c6eef1f5f852925f63f9276c14d43033bc18c1f842a2",
+            "bytes": 1065
+          },
+          {
+            "path": "lib/cli-engine/formatters/formatters-meta.json",
+            "sha256": "ffc02fdc67d0eaceb4d215fc9e58035a3f4da6d0c0a36a1c043004c6ef6a8b54",
+            "bytes": 1039
+          },
+          {
+            "path": "lib/cli-engine/formatters/html.js",
+            "sha256": "f58940f6b6eba78955f362ea1f91e4a41055bc1a9d8c5c3c3b559257fd51ac1a",
+            "bytes": 12525
+          },
+          {
+            "path": "lib/cli-engine/formatters/json-with-metadata.js",
+            "sha256": "1983eb09522f35ddbbd0520a723416e39601960d140cb930ee33c66bbcefeba6",
+            "bytes": 392
+          },
+          {
+            "path": "lib/cli-engine/formatters/json.js",
+            "sha256": "e1ef73bc85e2a658312637428245096acd32ed7715e6d0fecea4d8e950408ab8",
+            "bytes": 347
+          },
+          {
+            "path": "lib/cli-engine/formatters/stylish.js",
+            "sha256": "391441db8d7d159689c21b16f53f4a415634ebe1293cdee92daff76a3d6ecbeb",
+            "bytes": 3911
+          },
+          {
+            "path": "lib/cli-engine/hash.js",
+            "sha256": "776c23da95f9f0c7981de1d321263ff8825884deb82165ded352c1b647494659",
+            "bytes": 1057
+          },
+          {
+            "path": "lib/cli-engine/lint-result-cache.js",
+            "sha256": "c62f056e6345138a9df7e0165163f5b2f1f6d928f2f4b7f68dfd38e51b66698a",
+            "bytes": 7233
+          },
+          {
+            "path": "lib/cli.js",
+            "sha256": "27fd4a67ba1d373bcd4d72b7f422d84979b97b148d329417c0c05fbb81d43b14",
+            "bytes": 14243
+          },
+          {
+            "path": "lib/config-api.js",
+            "sha256": "b2aeda3685350b8456013f933be964dd940cfdcd1090b8c44af63f12a906f41e",
+            "bytes": 269
+          },
+          {
+            "path": "lib/config/config-loader.js",
+            "sha256": "e7af12b81621113b4ccdf13a87bb30a194a9f022f911b334f04aeb397c7678be",
+            "bytes": 23031
+          },
+          {
+            "path": "lib/config/config.js",
+            "sha256": "90807f44ffd3663d4882565c991e02e9c85c7ede3d4de77ff1f3168e9e521009",
+            "bytes": 22880
+          },
+          {
+            "path": "lib/config/default-config.js",
+            "sha256": "b257a73f4890e08ce3298d851971afb0ff4a06a5669ba4bd897ebde3e401b36e",
+            "bytes": 1697
+          },
+          {
+            "path": "lib/config/flat-config-array.js",
+            "sha256": "6e35cf7ac0e915f9201e51bcb23f145660c53ab5c210f30a65053735d34938a2",
+            "bytes": 6745
+          },
+          {
+            "path": "lib/config/flat-config-schema.js",
+            "sha256": "0281f44f3c3f2c5f138db9918dec9f2c58669f812e598488b1cf69c7ad651e9d",
+            "bytes": 16018
+          },
+          {
+            "path": "lib/eslint/eslint-helpers.js",
+            "sha256": "ba70c76105da4536ca807c70e6758180a4c8991a0f03a0694392a60a89a8bde0",
+            "bytes": 44814
+          },
+          {
+            "path": "lib/eslint/eslint.js",
+            "sha256": "d9597d3dd52a39674e2ece3608891d8f313ea501379a1da982fd794d2d7d0991",
+            "bytes": 41482
+          },
+          {
+            "path": "lib/eslint/index.js",
+            "sha256": "66ebeb897736fa5253171a36e9cfe319bf37ff7cde445912600b24378f86c3dc",
+            "bytes": 87
+          },
+          {
+            "path": "lib/eslint/worker.js",
+            "sha256": "d210074b7202569396bbcb75e84c08a98088744d2fd5b6032edde3502bdb0845",
+            "bytes": 5380
+          },
+          {
+            "path": "lib/languages/js/index.js",
+            "sha256": "83a4265c8f63d1270aa1761499d530f1625909b6506524c0b2ffa981cfa8e29a",
+            "bytes": 10607
+          },
+          {
+            "path": "lib/languages/js/source-code/index.js",
+            "sha256": "39129a5a0148916e52200e4fa1cdf37b7f5631fc66127363076647c61603c785",
+            "bytes": 96
+          },
+          {
+            "path": "lib/languages/js/source-code/source-code.js",
+            "sha256": "668e448ac033050cd1b87ca43a36e7636a70d7b48803a60961d17dcb1b104d1b",
+            "bytes": 33718
+          },
+          {
+            "path": "lib/languages/js/source-code/token-store/backward-token-comment-cursor.js",
+            "sha256": "4704df09035edf48b8831dd44a2589abe655526df23cdae1ed9bcc2cf05087b0",
+            "bytes": 1877
+          },
+          {
+            "path": "lib/languages/js/source-code/token-store/backward-token-cursor.js",
+            "sha256": "8ffc33d994da09afafb95b135ef512a88e6974b7db92cbcb27f94171e4b24a1b",
+            "bytes": 1606
+          },
+          {
+            "path": "lib/languages/js/source-code/token-store/cursor.js",
+            "sha256": "ecdadfa9b2d86d65be620cbe5547ed3ca40f5da0ee930f305d4c643878a479b5",
+            "bytes": 2198
+          },
+          {
+            "path": "lib/languages/js/source-code/token-store/cursors.js",
+            "sha256": "fdb74e166372132ee3aa15bd6e3bcd8a82911135a31c3458a529c061535bc76c",
+            "bytes": 3714
+          },
+          {
+            "path": "lib/languages/js/source-code/token-store/decorative-cursor.js",
+            "sha256": "236e6015d7e2e682563c6e99bdaeb1d598eb9c9a45358ce9c98b7a2f42b3d6ca",
+            "bytes": 953
+          },
+          {
+            "path": "lib/languages/js/source-code/token-store/filter-cursor.js",
+            "sha256": "769f640f85ca34cff94433e7fefb002fd0e0af33d2c4854b175c6b22c8389c33",
+            "bytes": 1110
+          },
+          {
+            "path": "lib/languages/js/source-code/token-store/forward-token-comment-cursor.js",
+            "sha256": "534c8784b88469b44b68f7feb7c858e7802e835f293e0e9220f7669d08591c91",
+            "bytes": 1911
+          },
+          {
+            "path": "lib/languages/js/source-code/token-store/forward-token-cursor.js",
+            "sha256": "0ec1161cb33f5b8542a3ef4b785cab595cb3eb941f9fd2dda599c2a62dd293b9",
+            "bytes": 1684
+          },
+          {
+            "path": "lib/languages/js/source-code/token-store/index.js",
+            "sha256": "15f633f8abfb6162ec97d1da6362b5ce247c7eaa56cf5730261458be055006d7",
+            "bytes": 21568
+          },
+          {
+            "path": "lib/languages/js/source-code/token-store/limit-cursor.js",
+            "sha256": "6153f090f90c34045752dddae078984b62d4bc795bc3ffbbeccb4cd56e0b4d14",
+            "bytes": 1027
+          },
+          {
+            "path": "lib/languages/js/source-code/token-store/padded-token-cursor.js",
+            "sha256": "6219e0a0bd3b052b1d7a69ed905571ac815dd37449ecafd4bfd61184d2f9dc1e",
+            "bytes": 1577
+          },
+          {
+            "path": "lib/languages/js/source-code/token-store/skip-cursor.js",
+            "sha256": "4b750656a1d1ee42043e214396112ca60498ddb4694897b6f5fb92a1b6481dfe",
+            "bytes": 1062
+          },
+          {
+            "path": "lib/languages/js/source-code/token-store/utils.js",
+            "sha256": "df5ae05e1e8361ae7ff357b04204bc5ad7fce48bc1920d3f7b1ad4a0f8988b56",
+            "bytes": 3872
+          },
+          {
+            "path": "lib/languages/js/validate-language-options.js",
+            "sha256": "b6cf5107e2ba9cd61f88d2188e90427012d8ef6ad9b461bf1895f80cff1d4952",
+            "bytes": 4687
+          },
+          {
+            "path": "lib/linter/apply-disable-directives.js",
+            "sha256": "a144ea4ce3620c65b097296fd71e7dace388732405809ec4e4ff330ef65f8c7e",
+            "bytes": 19085
+          },
+          {
+            "path": "lib/linter/code-path-analysis/code-path-analyzer.js",
+            "sha256": "223e9049e574939cd752684350e9c3c45c5ef015cde39e158ecd835025b4a6cc",
+            "bytes": 21108
+          },
+          {
+            "path": "lib/linter/code-path-analysis/code-path-segment.js",
+            "sha256": "0d306c16bcff69440065a2f92c01b55080bfc60fa2c53da79902ecdc62c1b407",
+            "bytes": 7742
+          },
+          {
+            "path": "lib/linter/code-path-analysis/code-path-state.js",
+            "sha256": "a2c6eccb69079bd2217d9f905b2461d4954acc295e8114a4afae7ef4a6aa96ad",
+            "bytes": 71730
+          },
+          {
+            "path": "lib/linter/code-path-analysis/code-path.js",
+            "sha256": "bd1386685b1538a6001d0e22e34f903c7a5346c59f5b729c5488971304ac3c00",
+            "bytes": 9738
+          },
+          {
+            "path": "lib/linter/code-path-analysis/debug-helpers.js",
+            "sha256": "bd8601fc0f5e4d3546a0fe9d2e808110a72a11ba6cf8c70ddfa2dd99581e2987",
+            "bytes": 6124
+          },
+          {
+            "path": "lib/linter/code-path-analysis/fork-context.js",
+            "sha256": "2c6e9a25063810eb4e024f4e6991818bc076c8baef6dabcacc0284021b22a58e",
+            "bytes": 12317
+          },
+          {
+            "path": "lib/linter/code-path-analysis/id-generator.js",
+            "sha256": "dc3eaca0266d8f828d9815289fd5987362dd0d96edbc5589fe6b8095371bb76a",
+            "bytes": 840
+          },
+          {
+            "path": "lib/linter/esquery.js",
+            "sha256": "9df3cfc5bd0e18e30bbb3697204ee29bd39d9f3d6586aa3fa51eaff79995dabe",
+            "bytes": 9350
+          },
+          {
+            "path": "lib/linter/file-context.js",
+            "sha256": "48e30cbc92aca50d4bbe54539f1da6c39cdeb0062d9fc67d67ed14d3efd677ba",
+            "bytes": 2186
+          },
+          {
+            "path": "lib/linter/file-report.js",
+            "sha256": "189c6fb23036c3d87c7c20bcf2a525c4f34a53078ebf6308b760404285a2f686",
+            "bytes": 18563
+          },
+          {
+            "path": "lib/linter/index.js",
+            "sha256": "ada3e0c54cdec48875435d74386c8a3e7b5438153ca41bc99a3a83dcd652c7aa",
+            "bytes": 179
+          },
+          {
+            "path": "lib/linter/interpolate.js",
+            "sha256": "3df4f52eadbd14ac55a29dabaf57a45bf3d7ce05c902ee4540cca12fb1c95eb7",
+            "bytes": 1344
+          },
+          {
+            "path": "lib/linter/linter.js",
+            "sha256": "3274e543588b0e73f2c38ec1f3f39674b37d4b6031138b9b236e04db489d84bf",
+            "bytes": 49203
+          },
+          {
+            "path": "lib/linter/rule-fixer.js",
+            "sha256": "9bfb2de1308672f44d73e51e7c31e807f06707dc61a405e0b10f216c62e4cdef",
+            "bytes": 5906
+          },
+          {
+            "path": "lib/linter/source-code-fixer.js",
+            "sha256": "fa739d255f50bf547ff942d492145dff8088b983e085a68b621acb6f2782bc11",
+            "bytes": 4209
+          },
+          {
+            "path": "lib/linter/source-code-traverser.js",
+            "sha256": "3c92c60dab41a9800fee8e6c984900d55fa3db029cc7b181b2cfab78fdf95cb4",
+            "bytes": 9803
+          },
+          {
+            "path": "lib/linter/source-code-visitor.js",
+            "sha256": "e52eca5144a035aef6e85d7f42dcbde6e0d22582db0d72dd2b96746b40ee1d83",
+            "bytes": 2147
+          },
+          {
+            "path": "lib/linter/timing.js",
+            "sha256": "c7f8c95f29043a6dd2555c819206b6be4a070759188ff7a67ab063a63614d813",
+            "bytes": 4723
+          },
+          {
+            "path": "lib/linter/vfile.js",
+            "sha256": "f95ea1d8c35b4a8c21c852336ab5b1c4823f0d26776ad2dd4652c6645383474c",
+            "bytes": 2816
+          },
+          {
+            "path": "lib/options.js",
+            "sha256": "4cbd9051da98d6022b9f40c6d58d668e8adbfa83e66decd26156874615a62364",
+            "bytes": 11942
+          },
+          {
+            "path": "lib/rule-tester/index.js",
+            "sha256": "f36d367b98668691528c4e365ffb919257434b581b5c06c06c92ed0bb3239c60",
+            "bytes": 96
+          },
+          {
+            "path": "lib/rule-tester/rule-tester.js",
+            "sha256": "4ab45c5860da7d649e7180cfdc07c8453c19ac0232fdfacdc214901d46878d9d",
+            "bytes": 60681
+          },
+          {
+            "path": "lib/rules/accessor-pairs.js",
+            "sha256": "439750646e07ee9c79639515fbb58d9c5bc81cf7bc2a0e494b028189c376ccfa",
+            "bytes": 11210
+          },
+          {
+            "path": "lib/rules/array-bracket-newline.js",
+            "sha256": "06242f151bba2e6518f5d8afbc952fcd30f0904a2eea532f4de203712b67cd9e",
+            "bytes": 8123
+          },
+          {
+            "path": "lib/rules/array-bracket-spacing.js",
+            "sha256": "1f0dad480ca0b7c76ed3e2938917909709fd27f18405b927703aa7a45a895e8d",
+            "bytes": 8047
+          },
+          {
+            "path": "lib/rules/array-callback-return.js",
+            "sha256": "367bd6209c93f5dd97e6db1604203ce752bdd6ed91856ae0136bd620ff6f9dc1",
+            "bytes": 13228
+          },
+          {
+            "path": "lib/rules/array-element-newline.js",
+            "sha256": "0cad8fa3b15f0a1e91e69687c7fb0f3c5cc6ca29bd8b2e49c1798f449a63bf8e",
+            "bytes": 9070
+          },
+          {
+            "path": "lib/rules/arrow-body-style.js",
+            "sha256": "45990930172e85dcf79b3202058a14be09b5a0a2612d0bf8b709e7e1ada1fc89",
+            "bytes": 10365
+          },
+          {
+            "path": "lib/rules/arrow-parens.js",
+            "sha256": "934061b074bbac6801e6c2901924b16c983b4001e1b9b57c6f7c99bdb9be5bfd",
+            "bytes": 7119
+          },
+          {
+            "path": "lib/rules/arrow-spacing.js",
+            "sha256": "05409990ba0a69078a4352326cb3044e0a68269b3f01a953745876f65f6f177d",
+            "bytes": 4618
+          },
+          {
+            "path": "lib/rules/block-scoped-var.js",
+            "sha256": "562e2cd422e2b6782b82c09648cb30cc7f0634d17030375866119cb42c982494",
+            "bytes": 3772
+          },
+          {
+            "path": "lib/rules/block-spacing.js",
+            "sha256": "3e7c66d749afd98ba4e35e7aa7190893bf544152692e61a67148efea1c8bace8",
+            "bytes": 5153
+          },
+          {
+            "path": "lib/rules/brace-style.js",
+            "sha256": "5ad59e14162ecca1a678fd3183566a21c6afc2fec0cf75342d53a351aa7f00b4",
+            "bytes": 7592
+          },
+          {
+            "path": "lib/rules/callback-return.js",
+            "sha256": "826b440a8fdd716af8b72d81531087763e2505839dde2c5f98155238821fd64b",
+            "bytes": 5879
+          },
+          {
+            "path": "lib/rules/camelcase.js",
+            "sha256": "2def1a12f55dcc6ca8262e1ec8bef516d56082d6b85a4c4de0e08c9502004d0b",
+            "bytes": 10363
+          },
+          {
+            "path": "lib/rules/capitalized-comments.js",
+            "sha256": "c81fbedeb439151e628748b219e0adf081929cca9b71fb36accd01a05f87ea22",
+            "bytes": 9300
+          },
+          {
+            "path": "lib/rules/class-methods-use-this.js",
+            "sha256": "f1b08bee24cd9df5a050741afb6920006669135416c3adda9c30074aa93e281a",
+            "bytes": 6368
+          },
+          {
+            "path": "lib/rules/comma-dangle.js",
+            "sha256": "28bc0df8a5a534fabf7d12caef77bc2e13018ed41dd21f54f29a4adb5984c0b9",
+            "bytes": 11652
+          },
+          {
+            "path": "lib/rules/comma-spacing.js",
+            "sha256": "88ab2f1715021597e3e99e3323090afcc91303d579c80e18fcbc174ed6b7fb7e",
+            "bytes": 5854
+          },
+          {
+            "path": "lib/rules/comma-style.js",
+            "sha256": "f23c0e62069381e65c5b5db4fb69c4f84ef0bece33cd5b6f9fee0d98bcab8d24",
+            "bytes": 10241
+          },
+          {
+            "path": "lib/rules/complexity.js",
+            "sha256": "9535ee0b1a565360f36a846c7f6699c87fd0e86fa878893b9354a5dc9d58ba4b",
+            "bytes": 5194
+          },
+          {
+            "path": "lib/rules/computed-property-spacing.js",
+            "sha256": "750147c003b7c01216810c54b83ff0d209f46c6d96add1bbab6912e5be8964f0",
+            "bytes": 6679
+          },
+          {
+            "path": "lib/rules/consistent-return.js",
+            "sha256": "2a942cfc3788a13dcef97487fc76ffbf2208b6dfeef1593b1e8b9a1d556d4d55",
+            "bytes": 5739
+          },
+          {
+            "path": "lib/rules/consistent-this.js",
+            "sha256": "278538379e7efcd1059dd2be5ac81a9a06327eb94d08af053808667138201ad8",
+            "bytes": 4429
+          },
+          {
+            "path": "lib/rules/constructor-super.js",
+            "sha256": "5539885981d167e5e8dc86cf87f7f9d4461bb72f034e590a37f8fde94bc4102b",
+            "bytes": 12051
+          },
+          {
+            "path": "lib/rules/curly.js",
+            "sha256": "6c6ad927d7601789c77f7028337aa9f2c871d58e0e3120d0ed8eae58ca809972",
+            "bytes": 11758
+          },
+          {
+            "path": "lib/rules/default-case-last.js",
+            "sha256": "f72bd7f92215f1d38f32a322bbae0dcbdb66a3922c3ae3e0b4cf98769e7084e4",
+            "bytes": 1103
+          },
+          {
+            "path": "lib/rules/default-case.js",
+            "sha256": "efa7a0b006c4e88ccd238dde2e1ad3b8f641c1b4cf8852acaade3426fd411635",
+            "bytes": 2311
+          },
+          {
+            "path": "lib/rules/default-param-last.js",
+            "sha256": "8d08334fa69a793d34a2ff4c659737eb81d818660b8778eccad9051beea3f892",
+            "bytes": 1665
+          },
+          {
+            "path": "lib/rules/dot-location.js",
+            "sha256": "9b9659e5a5a2a1638eae7263d28bb7d9f78227b5fc200f30b23857eb19f065ea",
+            "bytes": 3404
+          },
+          {
+            "path": "lib/rules/dot-notation.js",
+            "sha256": "e970cf3030402ec4138437892e76c994ec1c60fcbe49af869b8d65c1592d29f0",
+            "bytes": 5213
+          },
+          {
+            "path": "lib/rules/eol-last.js",
+            "sha256": "e294fef887a864446b76965101bc7ff7ce62892637746d869275ee238bbfb7db",
+            "bytes": 3566
+          },
+          {
+            "path": "lib/rules/eqeqeq.js",
+            "sha256": "a0f8cda5482b85d4d7d5152d00621eddedd97a42adf17541345067af5f34b5a5",
+            "bytes": 4893
+          },
+          {
+            "path": "lib/rules/for-direction.js",
+            "sha256": "1bebbde236a953448adab355c2c9240f13a26cf633dd64856d9b6a70fe952bc8",
+            "bytes": 5656
+          },
+          {
+            "path": "lib/rules/func-call-spacing.js",
+            "sha256": "1b900f89033b9a26162a5f2c8e090e62ee5e6db3b3bf3947a32c06ed9e8191f2",
+            "bytes": 8290
+          },
+          {
+            "path": "lib/rules/func-name-matching.js",
+            "sha256": "9019f77a6169227763b1fad7c6a5bc4a5c7c41ca000e8f7ecb6856c27a1c71d2",
+            "bytes": 8866
+          },
+          {
+            "path": "lib/rules/func-names.js",
+            "sha256": "474b9467306811279cd4102ba36066f953eea97e792a996b2b729f83c01d8d85",
+            "bytes": 5573
+          },
+          {
+            "path": "lib/rules/func-style.js",
+            "sha256": "4ba731294909b0d117155d648405e53fa3f4c34057870ac051b3f39f45cbefe5",
+            "bytes": 5312
+          },
+          {
+            "path": "lib/rules/function-call-argument-newline.js",
+            "sha256": "c4f61297b33651809c461eea6c8c1ebbc4a063faec6c1a15fbd45eb290e16974",
+            "bytes": 4222
+          },
+          {
+            "path": "lib/rules/function-paren-newline.js",
+            "sha256": "bfe8669aa26fb580e745c6c1aa85a52544ca6fcbd77afb1c1e86720fc5117734",
+            "bytes": 10198
+          },
+          {
+            "path": "lib/rules/generator-star-spacing.js",
+            "sha256": "7e14f910f6b787aeafee3552b50cb8bbcb6cc6576afd6aab4f2ef8aa3e778d07",
+            "bytes": 6319
+          },
+          {
+            "path": "lib/rules/getter-return.js",
+            "sha256": "c809d8e0cec7b2ca129a0ebf4f1a40567fdf98aa0623acbe52f85d6de2d45afa",
+            "bytes": 5756
+          },
+          {
+            "path": "lib/rules/global-require.js",
+            "sha256": "e119beb641d1a306fd3682b860afcda2ac9ab97b2e78488cfc526023449578f6",
+            "bytes": 2853
+          },
+          {
+            "path": "lib/rules/grouped-accessor-pairs.js",
+            "sha256": "3b9e9c09fcd6758e98bcd6a5b5c379b23a40fbab5d749d89ea21886044feab93",
+            "bytes": 7185
+          },
+          {
+            "path": "lib/rules/guard-for-in.js",
+            "sha256": "04c8a8ea5c81627a35c7531e07f518a7bfdd46e1d95efb263867922b4c3ba494",
+            "bytes": 1924
+          },
+          {
+            "path": "lib/rules/handle-callback-err.js",
+            "sha256": "2499982068a8f946b3ce647fa67a92a81088a15ff10a5c2f474520aa56d73f60",
+            "bytes": 3247
+          },
+          {
+            "path": "lib/rules/id-blacklist.js",
+            "sha256": "122d104b47e13f87562f2a30ff5ba3301085f4196f04f235f185a5cfde0a0a38",
+            "bytes": 6700
+          },
+          {
+            "path": "lib/rules/id-denylist.js",
+            "sha256": "b7890d2368050d3eb1835f55dd70016750648b36680092e4c6973a65b28656cb",
+            "bytes": 6357
+          },
+          {
+            "path": "lib/rules/id-length.js",
+            "sha256": "c428a6af30308bcb7994afb89416842d5bd2e04bcbdc638913fbef174d9fd577",
+            "bytes": 5613
+          },
+          {
+            "path": "lib/rules/id-match.js",
+            "sha256": "471abef603db9a601b52822932312ad5e7a9d4e2f81c8f7130143aa9d614ce60",
+            "bytes": 9208
+          },
+          {
+            "path": "lib/rules/implicit-arrow-linebreak.js",
+            "sha256": "41cc4977b10f839e3636d58afed6613bb8316177ae7803e0dfed45287720ed78",
+            "bytes": 3147
+          },
+          {
+            "path": "lib/rules/indent-legacy.js",
+            "sha256": "50c4e73147230163d46cd70f09c27ffd41cb93a1a85c38618c20058e25055632",
+            "bytes": 35743
+          },
+          {
+            "path": "lib/rules/indent.js",
+            "sha256": "dde49af4fa169bd506d9613bbffa08341ef7ed10a097d534615d2d7194a90d8d",
+            "bytes": 66474
+          },
+          {
+            "path": "lib/rules/index.js",
+            "sha256": "ef9721dfcc03d7aaf331614e1c9b9273ae6414b63daa30572b6e28ef5895d14f",
+            "bytes": 17913
+          },
+          {
+            "path": "lib/rules/init-declarations.js",
+            "sha256": "023cdfcef43a4e08173adcd8b737678adccedf9dce36dbdc46267e819db382e8",
+            "bytes": 3902
+          },
+          {
+            "path": "lib/rules/jsx-quotes.js",
+            "sha256": "77bd0e827af3f3d185f1e9b0e6609f3b7f4e606200c6f5feda164df0e3ce7f06",
+            "bytes": 3147
+          },
+          {
+            "path": "lib/rules/key-spacing.js",
+            "sha256": "2fd850c29b91379da878d0acf19d75b5c4786496448b41b33831f0976d16242c",
+            "bytes": 21268
+          },
+          {
+            "path": "lib/rules/keyword-spacing.js",
+            "sha256": "e3a5f4009a447c04a3842b3cf1d6cb2c7f443879f219e4443fb58bbc726a7b53",
+            "bytes": 20393
+          },
+          {
+            "path": "lib/rules/line-comment-position.js",
+            "sha256": "35380cb02a4c190b5128f122bbe8abf42c95d5522324e107eacfd27a2b4915f3",
+            "bytes": 3736
+          },
+          {
+            "path": "lib/rules/linebreak-style.js",
+            "sha256": "2ed4f39e3acf223bdab9bc1f650235bb80840428443d37a9919ef1d201834ac4",
+            "bytes": 3569
+          },
+          {
+            "path": "lib/rules/lines-around-comment.js",
+            "sha256": "2022903fa5b1cc9cb56c1e7dced6b54697b539283c4ae7e87faf7eb2497e19b2",
+            "bytes": 15497
+          },
+          {
+            "path": "lib/rules/lines-around-directive.js",
+            "sha256": "08db981b610a5b913b41df9206da8dadca77576b70c9f0fb70fb457388096d94",
+            "bytes": 7023
+          },
+          {
+            "path": "lib/rules/lines-between-class-members.js",
+            "sha256": "4053140c2ab611b87311499e66f0373da31c4c9df9c01c0609d095f850b7ebd0",
+            "bytes": 10129
+          },
+          {
+            "path": "lib/rules/logical-assignment-operators.js",
+            "sha256": "01af3f8bacef54e4fed9f0cd08ff7c525a3eba5a3d4865e09374f8a63b9c3d45",
+            "bytes": 19046
+          },
+          {
+            "path": "lib/rules/max-classes-per-file.js",
+            "sha256": "f0ab852d421a20359fecded9c89f451cd7f164e04f7b8199c4ce38eb95250be4",
+            "bytes": 1873
+          },
+          {
+            "path": "lib/rules/max-depth.js",
+            "sha256": "d0adebfaad5db7112a1adf000f190f5ff5e42d9d7ea03603dfdc61b9b25fa314",
+            "bytes": 3658
+          },
+          {
+            "path": "lib/rules/max-len.js",
+            "sha256": "6cc61deb6c4055e7d9cbb5cf7f2e881671ff85f6b59546d3ce2a2ba88091c039",
+            "bytes": 13652
+          },
+          {
+            "path": "lib/rules/max-lines-per-function.js",
+            "sha256": "ef44fdc6667047d811a8ad54ed6e6deaab6d053a18d877e9dfb47fae9a74f8a5",
+            "bytes": 6076
+          },
+          {
+            "path": "lib/rules/max-lines.js",
+            "sha256": "88db1c754f5ff68ad591ece59079ee171134d7b36151bc055bb971642990ae9e",
+            "bytes": 4430
+          },
+          {
+            "path": "lib/rules/max-nested-callbacks.js",
+            "sha256": "e2015157ad17a952d85cccfec31568df58bb9b70d3e62d92bdec6222f6465ce1",
+            "bytes": 2717
+          },
+          {
+            "path": "lib/rules/max-params.js",
+            "sha256": "321f432a29e73f89914a52236bbca1d58faf02838e5d332e6e77ac476b9cb549",
+            "bytes": 3615
+          },
+          {
+            "path": "lib/rules/max-statements-per-line.js",
+            "sha256": "72c5bae252bd9e16de0ad3558aec2d25c5d1a18901584d9558420237b492fc6a",
+            "bytes": 6738
+          },
+          {
+            "path": "lib/rules/max-statements.js",
+            "sha256": "a32193e035de3d4e7a00dbcfd422c9278bb506929a30b620ded62d5cbacd5e56",
+            "bytes": 4601
+          },
+          {
+            "path": "lib/rules/multiline-comment-style.js",
+            "sha256": "feaf5dc6fac69540183e9db5f39940b4c4172fa3f9ca898eaf1b9cffdb20f9f8",
+            "bytes": 18395
+          },
+          {
+            "path": "lib/rules/multiline-ternary.js",
+            "sha256": "303905fb175c41c2fb269575700d6538dbbb34f2977091ac7b000c0bf19946bd",
+            "bytes": 6541
+          },
+          {
+            "path": "lib/rules/new-cap.js",
+            "sha256": "b6fd763e19406f4f6b77f4d42aca543c56a5d7972b68dd31eeb29e5c79dc834e",
+            "bytes": 7204
+          },
+          {
+            "path": "lib/rules/new-parens.js",
+            "sha256": "3f8d74ae52f0d9b395c00fa959d2b9d5b89aa1e14d31cdd876d5da85503275c2",
+            "bytes": 3167
+          },
+          {
+            "path": "lib/rules/newline-after-var.js",
+            "sha256": "02cd7868794005210bea080e689fa4b5e174cb28a9084ad5e235e8a352dbec0f",
+            "bytes": 8852
+          },
+          {
+            "path": "lib/rules/newline-before-return.js",
+            "sha256": "c5e4869e4d131b28b9a5c43da2469ce2ae3cdce8140c9c1e1a6d8d411cb51f61",
+            "bytes": 7126
+          },
+          {
+            "path": "lib/rules/newline-per-chained-call.js",
+            "sha256": "a4722a8f2e18ed07fe704361fedded2725f8fb55fc36d88c30c54eb906d7fd38",
+            "bytes": 3883
+          },
+          {
+            "path": "lib/rules/no-alert.js",
+            "sha256": "964929474afb0309d66dd7a78dc95a7bd2a8617b7e25ed14f0345a2840360ee8",
+            "bytes": 3843
+          },
+          {
+            "path": "lib/rules/no-array-constructor.js",
+            "sha256": "2037bee4e4eb55e14c06e8aac6d73995ab66bf27329ca5a35c71c52e605e78de",
+            "bytes": 4970
+          },
+          {
+            "path": "lib/rules/no-async-promise-executor.js",
+            "sha256": "1add0e2c000c41ad421ca4acfdb5dac7d41bf97547101606d552d4a9cf76baf3",
+            "bytes": 1115
+          },
+          {
+            "path": "lib/rules/no-await-in-loop.js",
+            "sha256": "92e2551f0856ad2b60fb32a34c96a6a8192ca3fef01e52566b6a99a9843573c3",
+            "bytes": 2494
+          },
+          {
+            "path": "lib/rules/no-bitwise.js",
+            "sha256": "b361801180da0c97e73c88d2e9c630fe8a84eb78585ca97b5e062b64a5787b99",
+            "bytes": 2948
+          },
+          {
+            "path": "lib/rules/no-buffer-constructor.js",
+            "sha256": "fb5fce913b893baf34849450cfcc016cb91bc7b26865e9ec33fe8550eb8b0de3",
+            "bytes": 1868
+          },
+          {
+            "path": "lib/rules/no-caller.js",
+            "sha256": "432f6c7ca06adc41b73d127ad8744193ea0648daf94197feb7d5873080d8ba55",
+            "bytes": 1086
+          },
+          {
+            "path": "lib/rules/no-case-declarations.js",
+            "sha256": "2d829d5927b1fbc71097230023d29e00e6dd79a1ef923c02b963401c548a69a6",
+            "bytes": 1867
+          },
+          {
+            "path": "lib/rules/no-catch-shadow.js",
+            "sha256": "30b2589fa614cea44dadd6f1bf8db3dd37eed6c42f31685e5714982f913e838f",
+            "bytes": 2515
+          },
+          {
+            "path": "lib/rules/no-class-assign.js",
+            "sha256": "db75f6fa268238c2c64d55b7ebca22bd997db3bcbccdebc5abcb0007cbfaec9e",
+            "bytes": 1566
+          },
+          {
+            "path": "lib/rules/no-compare-neg-zero.js",
+            "sha256": "d7073abab6cd160f8d4d43f5a363699085a4806a1cb2735fd70c60e339f86d09",
+            "bytes": 1662
+          },
+          {
+            "path": "lib/rules/no-cond-assign.js",
+            "sha256": "9b4b5edf9b3dfb81479a605075c1aa4c4bb27d71d6ffee3f730ead3fc4356ac6",
+            "bytes": 4837
+          },
+          {
+            "path": "lib/rules/no-confusing-arrow.js",
+            "sha256": "3381aa698b137c9f7815066d19fc46d9cc039f5cb08d20edfc64b040f3811221",
+            "bytes": 3232
+          },
+          {
+            "path": "lib/rules/no-console.js",
+            "sha256": "62b10c03f5969176f79328f9b75b810b65936eb688aabd806fe2e96e3810ae53",
+            "bytes": 6428
+          },
+          {
+            "path": "lib/rules/no-const-assign.js",
+            "sha256": "1f160f113f4bb0c48e94cf96c70b6613f8971c42019da2adf8cf4acdf0f53ed7",
+            "bytes": 1848
+          },
+          {
+            "path": "lib/rules/no-constant-binary-expression.js",
+            "sha256": "89198524db37a1eccef1bb79eea3ae39739b4efb23b861ade3b1ad5945ad26da",
+            "bytes": 18150
+          },
+          {
+            "path": "lib/rules/no-constant-condition.js",
+            "sha256": "80a4e43e959a395931ed7f76dfaaccc134168336d9bc3e958a7da3801f2eac62",
+            "bytes": 4469
+          },
+          {
+            "path": "lib/rules/no-constructor-return.js",
+            "sha256": "01b80f13afaefe5049a590d0f334bfa82edd905f7bd1f310f2a797e60a637b23",
+            "bytes": 1191
+          },
+          {
+            "path": "lib/rules/no-continue.js",
+            "sha256": "64697fae8b4185a7ae38f3a99b80b1374cf2062f52de0754c9457de919123a02",
+            "bytes": 784
+          },
+          {
+            "path": "lib/rules/no-control-regex.js",
+            "sha256": "e56bf2d3239a7352a4a9a2521db6d72e4baf102877ee1b2f41397dc6bf849f83",
+            "bytes": 3830
+          },
+          {
+            "path": "lib/rules/no-debugger.js",
+            "sha256": "bb73859598171fe8436877a767c41dbe96b3a8810ef921e7029fe24b9cf262fc",
+            "bytes": 793
+          },
+          {
+            "path": "lib/rules/no-delete-var.js",
+            "sha256": "2651e6bfd3a53ccff2b9b57971b9772fabbeb304a6c8d2327d98363c968aa133",
+            "bytes": 852
+          },
+          {
+            "path": "lib/rules/no-div-regex.js",
+            "sha256": "02dcc3464752896a8266613a4d8e281adf901d5bda9dedbc997fc85c98fae8b0",
+            "bytes": 1245
+          },
+          {
+            "path": "lib/rules/no-dupe-args.js",
+            "sha256": "63a3fc5da16046278e5ca19a5d3a1bed561c03a3dd287d9eec7e81a0dc554336",
+            "bytes": 2612
+          },
+          {
+            "path": "lib/rules/no-dupe-class-members.js",
+            "sha256": "835aaa945348303e11c3497f382c34d67804971aeca0b09e9ce15d6f6800c9ae",
+            "bytes": 2880
+          },
+          {
+            "path": "lib/rules/no-dupe-else-if.js",
+            "sha256": "ac81cbf8ee0a2bf0d8aa64fdd840dcaf74106b04a4d2f41332b00a6ddeab2256",
+            "bytes": 4197
+          },
+          {
+            "path": "lib/rules/no-dupe-keys.js",
+            "sha256": "412ca8069eaef098ca4a1aa7f45d8a878a788f0d7185770bd412cd819d382b1b",
+            "bytes": 3963
+          },
+          {
+            "path": "lib/rules/no-duplicate-case.js",
+            "sha256": "28f48a2885cb862846949773ebf4ac074afd23dccfb9cec562ea902bc7e3f730",
+            "bytes": 1765
+          },
+          {
+            "path": "lib/rules/no-duplicate-imports.js",
+            "sha256": "3eb87c7877e9d7e41643e0ada705463d4c1a0d542127e0b9a596ea14f7f04622",
+            "bytes": 9999
+          },
+          {
+            "path": "lib/rules/no-else-return.js",
+            "sha256": "d1799736a709b4e4391ce718ea68d13cdf2e5cb7431ba1d04a320255b7a8c85b",
+            "bytes": 13605
+          },
+          {
+            "path": "lib/rules/no-empty-character-class.js",
+            "sha256": "51011b27b4c254bced104e1527dd8f288463cd96fa6ea55c5cbc092e923b66d5",
+            "bytes": 1938
+          },
+          {
+            "path": "lib/rules/no-empty-function.js",
+            "sha256": "991cf7bb9e55c9192779f978c580f6ee00ea32218d5d47467ed6da2ea609e43f",
+            "bytes": 5729
+          },
+          {
+            "path": "lib/rules/no-empty-pattern.js",
+            "sha256": "f86cd0f6734e8aa3118665da5814da21db6919dcd817a0e22571d1315219cd67",
+            "bytes": 1841
+          },
+          {
+            "path": "lib/rules/no-empty-static-block.js",
+            "sha256": "4afebe310f27f4cc5d03ae41a312f6b9239c0e63e223df5937733b0527eb9256",
+            "bytes": 1589
+          },
+          {
+            "path": "lib/rules/no-empty.js",
+            "sha256": "8bba183d0a30d84e865c969ab448e8f1f0198465b73433ddda5c4bcdbcf85044",
+            "bytes": 3202
+          },
+          {
+            "path": "lib/rules/no-eq-null.js",
+            "sha256": "287f357a2af217c3ded2003943acc6d52bbc59807b6d24a048d68d19ec7362ab",
+            "bytes": 1117
+          },
+          {
+            "path": "lib/rules/no-eval.js",
+            "sha256": "bddc96ea30f2c02931a1ad78cda39c64c48fba16ee5704bda19fa21345132ecc",
+            "bytes": 7744
+          },
+          {
+            "path": "lib/rules/no-ex-assign.js",
+            "sha256": "589fcebc77e7b2ebb40e593f8119e9b1e475085d7cd26fab4d92b65401e59c44",
+            "bytes": 1301
+          },
+          {
+            "path": "lib/rules/no-extend-native.js",
+            "sha256": "26717e9240f343712538e3d26b299d35d5e8525484d7db6ec9a23831333c78e9",
+            "bytes": 5416
+          },
+          {
+            "path": "lib/rules/no-extra-bind.js",
+            "sha256": "ddc076551329aec6870aa938e9265fda591046e28e0c89229856535259a7acc7",
+            "bytes": 6007
+          },
+          {
+            "path": "lib/rules/no-extra-boolean-cast.js",
+            "sha256": "ba66cd4f5e7a5d18a680af80a0fddf8a2b6a45dc4c25101c75d28ea4003bc13b",
+            "bytes": 10590
+          },
+          {
+            "path": "lib/rules/no-extra-label.js",
+            "sha256": "59ec416aa0782f4eb64969ca66563ea121c1c2df2cf47a935f4ef7b2f8e5830e",
+            "bytes": 4265
+          },
+          {
+            "path": "lib/rules/no-extra-parens.js",
+            "sha256": "bbb6d4342dac76d86c83a7d87cad345f77adea03746ba6dd69ece2165c52cbe3",
+            "bytes": 43590
+          },
+          {
+            "path": "lib/rules/no-extra-semi.js",
+            "sha256": "047b18c0307f0e6f47a22a28900497eacdb3cf2df4f08b7824fa99cbdc96e141",
+            "bytes": 4628
+          },
+          {
+            "path": "lib/rules/no-fallthrough.js",
+            "sha256": "dbea859dc0d21fbfbeda63b54be166c34ccb028a1af57e84a89e9ef0b7f24fa0",
+            "bytes": 6966
+          },
+          {
+            "path": "lib/rules/no-floating-decimal.js",
+            "sha256": "f4e961d247a206756aaa93b65d2ed754b5023074ea958b070c61f67dbc9865d3",
+            "bytes": 2568
+          },
+          {
+            "path": "lib/rules/no-func-assign.js",
+            "sha256": "39413b4191c68ce6f0295addc7679ddeba0aff351451b3fa3d7b5ddb0ea9af80",
+            "bytes": 1861
+          },
+          {
+            "path": "lib/rules/no-global-assign.js",
+            "sha256": "00daec62a1314e4a190f9a702d080ba5ca2ee8c45b2a526be31ad8a69c277011",
+            "bytes": 2426
+          },
+          {
+            "path": "lib/rules/no-implicit-coercion.js",
+            "sha256": "903547bfff65e10f830817a9bf7f87e0e22d2201f52bc663dbfc4ca4bbae7936",
+            "bytes": 12600
+          },
+          {
+            "path": "lib/rules/no-implicit-globals.js",
+            "sha256": "10f7df92ac90adfbe3e0c0ae805318952b011228b42a5ca1b1d9f013b9ae2dc9",
+            "bytes": 4626
+          },
+          {
+            "path": "lib/rules/no-implied-eval.js",
+            "sha256": "98d073f062ee29babdc90b19272b567bab129e182dcef0afbc4ea858d3c8c1bd",
+            "bytes": 4350
+          },
+          {
+            "path": "lib/rules/no-import-assign.js",
+            "sha256": "b30d49ba0196d4f47f7f02b1427feca6e9baa74d223bb542d60f24492091d12e",
+            "bytes": 6179
+          },
+          {
+            "path": "lib/rules/no-inline-comments.js",
+            "sha256": "380ea1b7a506f168010ad1baef63d213097c300ad8fd6ff26684fd4a5695caec",
+            "bytes": 2691
+          },
+          {
+            "path": "lib/rules/no-inner-declarations.js",
+            "sha256": "692680d2c61f288bb6befb50d797cfd69a021d60d3806097c5f592ed9623a20c",
+            "bytes": 3221
+          },
+          {
+            "path": "lib/rules/no-invalid-regexp.js",
+            "sha256": "bc2314593c9a26a60525ec4a3bde89f076cadc463a0fe02e91e4ce048440beac",
+            "bytes": 5987
+          },
+          {
+            "path": "lib/rules/no-invalid-this.js",
+            "sha256": "f40c5211a7fa31ff664df1aee0c16e808f35163a5e5f466e2ce1a4974a8991be",
+            "bytes": 4463
+          },
+          {
+            "path": "lib/rules/no-irregular-whitespace.js",
+            "sha256": "3d75999531370211f9b6818f202c0d0c58faada3d99c52e47ab08f57848a653e",
+            "bytes": 7853
+          },
+          {
+            "path": "lib/rules/no-iterator.js",
+            "sha256": "93b4d69a1481bb4460bfd288d1abec714909e47862f400e317909b06af67571a",
+            "bytes": 1110
+          },
+          {
+            "path": "lib/rules/no-label-var.js",
+            "sha256": "a7b66ae68f1ee54b0332d1342ad9ed7295469944fc781ff8b1afd0b1ebc97a69",
+            "bytes": 2063
+          },
+          {
+            "path": "lib/rules/no-labels.js",
+            "sha256": "6c1495842054e784faf61e78384600b1c796d720244487808bca3fc2e475f780",
+            "bytes": 3365
+          },
+          {
+            "path": "lib/rules/no-lone-blocks.js",
+            "sha256": "9b365aab52aa221c93ec5dc3162672ff3f27618faf0eaa200b8ad50b8b1905e6",
+            "bytes": 3320
+          },
+          {
+            "path": "lib/rules/no-lonely-if.js",
+            "sha256": "714197fba8a14e329bf2876c19e68ad96d940f63ba8f5724d33227ceb9ae6461",
+            "bytes": 3303
+          },
+          {
+            "path": "lib/rules/no-loop-func.js",
+            "sha256": "a9a6bf4168fd5354e3373a8e5c43881736748063905c2d77f0bdc24df4115f2d",
+            "bytes": 7218
+          },
+          {
+            "path": "lib/rules/no-loss-of-precision.js",
+            "sha256": "9f5ff70c2881bff7915227a6fb8eaee0bfb8289bb4a76691b295e0f92325190a",
+            "bytes": 7368
+          },
+          {
+            "path": "lib/rules/no-magic-numbers.js",
+            "sha256": "5a2801a3f4660cfbc2308d28bf8e7b87febd83293838a302837ae587daa62f97",
+            "bytes": 10419
+          },
+          {
+            "path": "lib/rules/no-misleading-character-class.js",
+            "sha256": "11bb93cb15d541c646d63c20bdb2d3bcdfec72e4c2aa831516a401c5256905cd",
+            "bytes": 16369
+          },
+          {
+            "path": "lib/rules/no-mixed-operators.js",
+            "sha256": "b412698d27292358a0ed5cef2fd193f8a85e8f22d87ee1e71e91f3a4236c10d1",
+            "bytes": 7147
+          },
+          {
+            "path": "lib/rules/no-mixed-requires.js",
+            "sha256": "a272997bad9ed089f35ec39de7a2dac1b76cd9d8399a39e1d776ba96b6f764d3",
+            "bytes": 6383
+          },
+          {
+            "path": "lib/rules/no-mixed-spaces-and-tabs.js",
+            "sha256": "b96e1c352fa22b74a523192a082d3eb95afd666b5faa286e407d9d16e2bbc382",
+            "bytes": 3465
+          },
+          {
+            "path": "lib/rules/no-multi-assign.js",
+            "sha256": "0e7ab3d6f5c7c6fb8abda97b294fbe89117cb10839b0a10d1f2d6697599bf70f",
+            "bytes": 1327
+          },
+          {
+            "path": "lib/rules/no-multi-spaces.js",
+            "sha256": "353eb154626d0b61d9eed6b5346bc01db616292db29c0a1f0b64d2d791f6bc6e",
+            "bytes": 4588
+          },
+          {
+            "path": "lib/rules/no-multi-str.js",
+            "sha256": "fa03672f6fd7f84726e373ad56c3e0a7055fdab8ab936b2d4924d5998355e941",
+            "bytes": 1610
+          },
+          {
+            "path": "lib/rules/no-multiple-empty-lines.js",
+            "sha256": "3dce0387f35c7c334322ff2b7fda0a8e0cd3f83a2df1e3536683a90eebcca3f6",
+            "bytes": 5581
+          },
+          {
+            "path": "lib/rules/no-native-reassign.js",
+            "sha256": "0c55a743ed6aa5e34b058cab68ba8f0e2c3f134066f9011213e5d5c047d2bf1a",
+            "bytes": 2765
+          },
+          {
+            "path": "lib/rules/no-negated-condition.js",
+            "sha256": "6a3333b3c1c3a561e539125475982fd2467893e921ce123297b07cef369f9c8b",
+            "bytes": 2431
+          },
+          {
+            "path": "lib/rules/no-negated-in-lhs.js",
+            "sha256": "1ff50d0eb871c62e35bd68ddf1369d352cef0fd8592e1d79dca62c3324635319",
+            "bytes": 1338
+          },
+          {
+            "path": "lib/rules/no-nested-ternary.js",
+            "sha256": "0c9a65ed7c104e3444ee9c4dc5ddbd5a38360fc0e1485ff44e8adf92c5560ced",
+            "bytes": 960
+          },
+          {
+            "path": "lib/rules/no-new-func.js",
+            "sha256": "87fcd377d69f76808e472e7be25b976dc77b8b64a447a26801bcf7a4e7925654",
+            "bytes": 2393
+          },
+          {
+            "path": "lib/rules/no-new-native-nonconstructor.js",
+            "sha256": "9942ccea71dd64367cb4217cd83492e271dc6acbdfa3c162c3b65d1266777553",
+            "bytes": 1754
+          },
+          {
+            "path": "lib/rules/no-new-object.js",
+            "sha256": "50764b66248b94b0feb1fcce23340868c7913ce16302e3fe7637759c0041796d",
+            "bytes": 1866
+          },
+          {
+            "path": "lib/rules/no-new-require.js",
+            "sha256": "a6570aa241cfd710de684b3ecf24c96e3b5285cd0e9ed8ed304c4c957ac07279",
+            "bytes": 1588
+          },
+          {
+            "path": "lib/rules/no-new-symbol.js",
+            "sha256": "c6b90ed324360e74c703ee34391ced2b463608de5a39a78f7c23a7c548c38cdf",
+            "bytes": 1739
+          },
+          {
+            "path": "lib/rules/no-new-wrappers.js",
+            "sha256": "8ec49a7c6aa35284c448a1af764c5775f1fd1d1ab618136cd579391936823710",
+            "bytes": 1460
+          },
+          {
+            "path": "lib/rules/no-new.js",
+            "sha256": "e4a7db49da6cf4b32c8f7551f09e6917d02bc1f4b870160df2dc3a0ee56509a0",
+            "bytes": 905
+          },
+          {
+            "path": "lib/rules/no-nonoctal-decimal-escape.js",
+            "sha256": "72ff9f26be474cfe22d7a5e14057003faf2af642859238e228c863930006e1b6",
+            "bytes": 4566
+          },
+          {
+            "path": "lib/rules/no-obj-calls.js",
+            "sha256": "f5718292556a5dfdd6af30fc845059f8a7bb9a9f1c83d01ac47c3ea47da796b8",
+            "bytes": 2487
+          },
+          {
+            "path": "lib/rules/no-object-constructor.js",
+            "sha256": "87ded7b6a4f26611585691845db98c2d25a132abdf148340b2d35b4f89ef8b00",
+            "bytes": 2923
+          },
+          {
+            "path": "lib/rules/no-octal-escape.js",
+            "sha256": "630832592ab4f709acc17b5898ef41ac243efece3c24182bf6f6911746c0618c",
+            "bytes": 1175
+          },
+          {
+            "path": "lib/rules/no-octal.js",
+            "sha256": "42688b7c179deed3b6cfc32bf8758e5f043bd9cd1ffb39113388cf06eeacaaa4",
+            "bytes": 832
+          },
+          {
+            "path": "lib/rules/no-param-reassign.js",
+            "sha256": "656a39dc153a27e58f24b8a64b74bea730fbf0bf8197fa9b9eb7a834ddbd6795",
+            "bytes": 6363
+          },
+          {
+            "path": "lib/rules/no-path-concat.js",
+            "sha256": "ce54d18755b08c59bbc03ea2a3f9f63f9fc09c5409a9228218fa2fbe72d880c0",
+            "bytes": 2012
+          },
+          {
+            "path": "lib/rules/no-plusplus.js",
+            "sha256": "9f0ef24499d53923dbc1df3323a4601f139a6b090b7c7ad7926da447d37b989a",
+            "bytes": 2672
+          },
+          {
+            "path": "lib/rules/no-process-env.js",
+            "sha256": "bb7911759388ab28f0a606937690aca2039ee397fb0c0117074bb0e591a2355d",
+            "bytes": 1646
+          },
+          {
+            "path": "lib/rules/no-process-exit.js",
+            "sha256": "69686c757eef9e65bb20fbf345f714fe2d93a0305742a4dcac85444d8b3fd3d8",
+            "bytes": 1735
+          },
+          {
+            "path": "lib/rules/no-promise-executor-return.js",
+            "sha256": "42de16dfe948210cc3b46095fb7b75b7ffd32d788a498e58b6771d615680cc5a",
+            "bytes": 6675
+          },
+          {
+            "path": "lib/rules/no-proto.js",
+            "sha256": "6b748de13051bbfb539df4b7d9ee7bee276056e90431e743b997667cbb29696c",
+            "bytes": 1093
+          },
+          {
+            "path": "lib/rules/no-prototype-builtins.js",
+            "sha256": "9e980172bb9b9d8c1a053a59c29001570fb25c51008e9032979e6ee7a70fd255",
+            "bytes": 4721
+          },
+          {
+            "path": "lib/rules/no-redeclare.js",
+            "sha256": "13695f84fcf1978a1d8563903c89bc81b0e07c485e90c62ba9e3be7dd0d6a99e",
+            "bytes": 4425
+          },
+          {
+            "path": "lib/rules/no-regex-spaces.js",
+            "sha256": "25659d946f117312c60106a1449d598805e77ee6ed019cff5dfa9876f76665c3",
+            "bytes": 5276
+          },
+          {
+            "path": "lib/rules/no-restricted-exports.js",
+            "sha256": "d795b34ecffd35e206909ee789ab4bdbde3e0f056302aa45791622e8f1085846",
+            "bytes": 5548
+          },
+          {
+            "path": "lib/rules/no-restricted-globals.js",
+            "sha256": "5f3c64c1cd11f8cc502bb478207045fd0aad13f60ecdcb6aed8cb0399274685f",
+            "bytes": 6204
+          },
+          {
+            "path": "lib/rules/no-restricted-imports.js",
+            "sha256": "69f543330f74d2386ddf729ac1103cef4ea9bd777f42d23de286ccc6f349dbfd",
+            "bytes": 25239
+          },
+          {
+            "path": "lib/rules/no-restricted-modules.js",
+            "sha256": "74ef733b000095d1f1e44dddce9891018d9c72d9d1f541313eea6eaf23350028",
+            "bytes": 6128
+          },
+          {
+            "path": "lib/rules/no-restricted-properties.js",
+            "sha256": "ae057b0fee428db1b5ef56161400568953af01d9794c57fd44ed5615c35e57f4",
+            "bytes": 5971
+          },
+          {
+            "path": "lib/rules/no-restricted-syntax.js",
+            "sha256": "c85343aa1bf6a8dc8db045e93ef4b4b072ae6f1d03fe8f4e93d5960607be4e21",
+            "bytes": 1721
+          },
+          {
+            "path": "lib/rules/no-return-assign.js",
+            "sha256": "5bf2c99b34b9547c79a8fef52c007d2529e7ad5be49f4975389fe0033eac179e",
+            "bytes": 2259
+          },
+          {
+            "path": "lib/rules/no-return-await.js",
+            "sha256": "18f2c1d0140bed24cf1bee9755f48e340867ef237bbb3d909d7f4315de2cc030",
+            "bytes": 4457
+          },
+          {
+            "path": "lib/rules/no-script-url.js",
+            "sha256": "52cd5c7e5aa3877c65414255c8b8c89ed636255558bc1e177c23a2c403ac2a0d",
+            "bytes": 1512
+          },
+          {
+            "path": "lib/rules/no-self-assign.js",
+            "sha256": "3431884a2e4f041efca83d9f9b93091b4ddcd3eb3466da84819cb8db80cd2ac3",
+            "bytes": 4666
+          },
+          {
+            "path": "lib/rules/no-self-compare.js",
+            "sha256": "af355aa2592d4cf717fece11ac34be5604d42a4d5b85c5bdcb1bd51f140fd75b",
+            "bytes": 1705
+          },
+          {
+            "path": "lib/rules/no-sequences.js",
+            "sha256": "0253893af724e6c48ca0791ab0150e4ea4b1485f090f70ed699671f75e704a17",
+            "bytes": 4011
+          },
+          {
+            "path": "lib/rules/no-setter-return.js",
+            "sha256": "469bede945b9975da1c419cb1a3ebd570525d6b95bf5778cea143f0c66a3ecf0",
+            "bytes": 5725
+          },
+          {
+            "path": "lib/rules/no-shadow-restricted-names.js",
+            "sha256": "161b64859585ef8939625b1ec297ca46814816020b9e46592f20d51046b13f7e",
+            "bytes": 2671
+          },
+          {
+            "path": "lib/rules/no-shadow.js",
+            "sha256": "a5963bd2c4e321b4982cfbe431a034fd4cebd5e49c71b6ff25aea85f5c064fb2",
+            "bytes": 19547
+          },
+          {
+            "path": "lib/rules/no-spaced-func.js",
+            "sha256": "11c86d4423293458ce990eb584d4f6eef6b04b01cc9d204d1b486b02a241b7a0",
+            "bytes": 2597
+          },
+          {
+            "path": "lib/rules/no-sparse-arrays.js",
+            "sha256": "08c13b8f2626c6130794084ea10b7fb511cbe5c73583beed7c9f3e3be4eda44b",
+            "bytes": 1483
+          },
+          {
+            "path": "lib/rules/no-sync.js",
+            "sha256": "99844c718aa205493c6940c1b46bac5fef297517a015ad7f037e6e736e2acd15",
+            "bytes": 1887
+          },
+          {
+            "path": "lib/rules/no-tabs.js",
+            "sha256": "c0c8e6c8ea9db16fd6af2358f1160d1ec88b91188f9c0e0f6e9f89890f231d7d",
+            "bytes": 2449
+          },
+          {
+            "path": "lib/rules/no-template-curly-in-string.js",
+            "sha256": "9f7f421bee433b2863b37211b20b073f729af249094af0fea404a924b629495a",
+            "bytes": 989
+          },
+          {
+            "path": "lib/rules/no-ternary.js",
+            "sha256": "e89729d12e76d5f288d02c510fda5ea0f7c9e5c1a4646aabb64662ae555686b9",
+            "bytes": 785
+          },
+          {
+            "path": "lib/rules/no-this-before-super.js",
+            "sha256": "d129b1d1cb9417c03494d4cf59f9ee45fd920224dc2e4bd89a6b5306dbe1d84d",
+            "bytes": 9022
+          },
+          {
+            "path": "lib/rules/no-throw-literal.js",
+            "sha256": "b556e36b6fd594b0de7c4cb12804428c542d48b1b6584b95b4036c0acf8ea04b",
+            "bytes": 1088
+          },
+          {
+            "path": "lib/rules/no-trailing-spaces.js",
+            "sha256": "2a21ae9a0e4dab504ff1cc04a70c0b37f98cd0e2185a16690e8b8c51aaa566d0",
+            "bytes": 6110
+          },
+          {
+            "path": "lib/rules/no-unassigned-vars.js",
+            "sha256": "e03eb47e27307171257960759d9c882f7d2a88770990d01ddf00bbbb2e2b92dd",
+            "bytes": 1938
+          },
+          {
+            "path": "lib/rules/no-undef-init.js",
+            "sha256": "971c490370c831ee57ab09c05de018e443e71fe7908812e0901c41f4cf03c0aa",
+            "bytes": 2409
+          },
+          {
+            "path": "lib/rules/no-undef.js",
+            "sha256": "fae5c7b864efe2f4a23c99e07823a491299ccfc6b6ef9c9173ac47da85298858",
+            "bytes": 1899
+          },
+          {
+            "path": "lib/rules/no-undefined.js",
+            "sha256": "163cab5d44438c2653dbc86f05d716e94aaa7b619014c7d48dd59dbc5b50eaf4",
+            "bytes": 2074
+          },
+          {
+            "path": "lib/rules/no-underscore-dangle.js",
+            "sha256": "a4154d407c6a92d307e30d093f7427ede8888957d7dbf91dd3c5b67564ff6be6",
+            "bytes": 9535
+          },
+          {
+            "path": "lib/rules/no-unexpected-multiline.js",
+            "sha256": "49f32b2d2382f3f7ea64bbadef71a0773c0b33d9556402314d6c40423b3d510b",
+            "bytes": 3477
+          },
+          {
+            "path": "lib/rules/no-unmodified-loop-condition.js",
+            "sha256": "e67106536884a830716a620f863191158b31d34b475133708a1af40ce696fab8",
+            "bytes": 10467
+          },
+          {
+            "path": "lib/rules/no-unneeded-ternary.js",
+            "sha256": "cbf22b11d1e168b6bf2a7a7b54eb6fbe1c17f75aaba5b8d0908474c961a9cd02",
+            "bytes": 5935
+          },
+          {
+            "path": "lib/rules/no-unreachable-loop.js",
+            "sha256": "68d21972e308542ebaaea5259d0f16b9ed09f375d9ab85f433d5033a91a8b5cf",
+            "bytes": 5076
+          },
+          {
+            "path": "lib/rules/no-unreachable.js",
+            "sha256": "a290c752af1a7d68f9bd4178a815a39de93670410bb6cc5aa7efa63de3d0fe69",
+            "bytes": 7498
+          },
+          {
+            "path": "lib/rules/no-unsafe-finally.js",
+            "sha256": "8ff07d01ac9da68b9254332be2a55d11354250dea72506da0d29517ef6345588",
+            "bytes": 3339
+          },
+          {
+            "path": "lib/rules/no-unsafe-negation.js",
+            "sha256": "0c03570f34148eea96e0d6d79ba756c56b59c4f15f4cfc1780272f98522235d9",
+            "bytes": 3972
+          },
+          {
+            "path": "lib/rules/no-unsafe-optional-chaining.js",
+            "sha256": "5b069df4812099a64413b95c23fc62a156c7ba55567ba033e56e3050ed3a7846",
+            "bytes": 5389
+          },
+          {
+            "path": "lib/rules/no-unused-expressions.js",
+            "sha256": "144a77d45fc1a1419376a2ac12b83447b7cde93f9cc35a1de74723b3b68f036e",
+            "bytes": 5495
+          },
+          {
+            "path": "lib/rules/no-unused-labels.js",
+            "sha256": "4089084d21c2cfe54c905ed2d51f77f130d0307deaacd850dd5d73e54c34760c",
+            "bytes": 3878
+          },
+          {
+            "path": "lib/rules/no-unused-private-class-members.js",
+            "sha256": "a3325a7168a6a8221b5f9985b23eabd0f7d78c48458a0cc6fb611745c9305f0f",
+            "bytes": 12644
+          },
+          {
+            "path": "lib/rules/no-unused-vars.js",
+            "sha256": "d39c18944dfbf9dd2e448b3e14d21435235e854d28ebad3a5d968d4326730317",
+            "bytes": 48393
+          },
+          {
+            "path": "lib/rules/no-use-before-define.js",
+            "sha256": "4d8b3e96b8da1773c6666219f3d717217911e6f2e542941a144a75f816a61cd9",
+            "bytes": 12076
+          },
+          {
+            "path": "lib/rules/no-useless-assignment.js",
+            "sha256": "c1e1168e2c6e932cc9e4c6260101a9f8d08b82fcb89bf463ad2a0576e498d08c",
+            "bytes": 19487
+          },
+          {
+            "path": "lib/rules/no-useless-backreference.js",
+            "sha256": "b51811549af15262ff60c357ee68ddfbeb7b5c05bc2ea60faca1474ab7eae79f",
+            "bytes": 7662
+          },
+          {
+            "path": "lib/rules/no-useless-call.js",
+            "sha256": "f474dc02a615df8aa060cd0259bbad5937bf91d4f4a15a537f4df5654bf14c71",
+            "bytes": 2779
+          },
+          {
+            "path": "lib/rules/no-useless-catch.js",
+            "sha256": "d044fcee756366ff186d7e7f113616dd122523a244b254dca687255ea3e35685",
+            "bytes": 1310
+          },
+          {
+            "path": "lib/rules/no-useless-computed-key.js",
+            "sha256": "d967bd83fce691331625dcdcbe46fe75da8901fc1114127d7818591e56b5a2cd",
+            "bytes": 5936
+          },
+          {
+            "path": "lib/rules/no-useless-concat.js",
+            "sha256": "128f7c7eed7e5f4f42e40c86189eef1d64a232f28a6388fc867cd1324859a64f",
+            "bytes": 2964
+          },
+          {
+            "path": "lib/rules/no-useless-constructor.js",
+            "sha256": "f8b6ac3e6562eaf7e7febe44a4e64554368a3c7b1ab21fe637e8ca5f736fc761",
+            "bytes": 7190
+          },
+          {
+            "path": "lib/rules/no-useless-escape.js",
+            "sha256": "b32ab4c14e9e8778884c778b7a4b5d36f502d66e084c108c0d53ce7dc80b4cb9",
+            "bytes": 11065
+          },
+          {
+            "path": "lib/rules/no-useless-rename.js",
+            "sha256": "64caccdca8f806efbbf15438bc7f17631881e38a11f706cf18d68ae4b4ba07d4",
+            "bytes": 4929
+          },
+          {
+            "path": "lib/rules/no-useless-return.js",
+            "sha256": "927d555668bdbb70e79b006564adca3d1aa7ad4fd51fba515fc406585b3240c7",
+            "bytes": 11954
+          },
+          {
+            "path": "lib/rules/no-var.js",
+            "sha256": "9445628988b6efe4f7541cf73fd4afb8887f5d9615d8855a5f946fc315dfbfb6",
+            "bytes": 12748
+          },
+          {
+            "path": "lib/rules/no-void.js",
+            "sha256": "b845c4f98668c4a0818673f79b186981cb6e3acce7b26821ad3c994b7e6fb35b",
+            "bytes": 1366
+          },
+          {
+            "path": "lib/rules/no-warning-comments.js",
+            "sha256": "68ca892a464a809256d8554514a8730ca687acdd079aaa167f5fd8e77a9adc49",
+            "bytes": 5670
+          },
+          {
+            "path": "lib/rules/no-whitespace-before-property.js",
+            "sha256": "1186f55944b34efce1762a53c2558d818228710dd12f00ea00e8dcfd4e9cb117",
+            "bytes": 3877
+          },
+          {
+            "path": "lib/rules/no-with.js",
+            "sha256": "3396311d81e249807670c7a33203c3e987b0b91927fbf7c5a2053a2e2b3a8d77",
+            "bytes": 757
+          },
+          {
+            "path": "lib/rules/nonblock-statement-body-position.js",
+            "sha256": "b0da640ccaf74a6052a774928d0eb7162337832469fc9404bf16281ed02867d7",
+            "bytes": 4418
+          },
+          {
+            "path": "lib/rules/object-curly-newline.js",
+            "sha256": "4f47bc6940a776e460b97f7f7a59688e97cc51582af574a3f0ced412ee0138a4",
+            "bytes": 10115
+          },
+          {
+            "path": "lib/rules/object-curly-spacing.js",
+            "sha256": "3b9dc2de86c1ad76b83b0bca31ab8d9175e988e1778cadda38e999928f03749b",
+            "bytes": 10353
+          },
+          {
+            "path": "lib/rules/object-property-newline.js",
+            "sha256": "b695ca0ab02f588f4e3bf8a393b40769de648eaab3339c48995167a7de7dedc0",
+            "bytes": 3758
+          },
+          {
+            "path": "lib/rules/object-shorthand.js",
+            "sha256": "fc70ca4245d9da794059480bedf66a682cdc2b801e706933368964328d1cd2a0",
+            "bytes": 18556
+          },
+          {
+            "path": "lib/rules/one-var-declaration-per-line.js",
+            "sha256": "7659f97c074c2cb0acf23c2c2542372762b99168866ba4ecd20961b9a96e63bb",
+            "bytes": 2995
+          },
+          {
+            "path": "lib/rules/one-var.js",
+            "sha256": "3c937dedbf618f137d9681fcb0c789e73e752bb8210ae69d04e4e2cface2b15c",
+            "bytes": 19198
+          },
+          {
+            "path": "lib/rules/operator-assignment.js",
+            "sha256": "051a74443824effed4083c7e012b4dad1edd0e992873f26c6b2bf52877b93c76",
+            "bytes": 7536
+          },
+          {
+            "path": "lib/rules/operator-linebreak.js",
+            "sha256": "92feda5937c134765c49d7615ace1177cd97b470f19ef01885a100411ce62320",
+            "bytes": 8901
+          },
+          {
+            "path": "lib/rules/padded-blocks.js",
+            "sha256": "cf7bbfa12a2d393fc222ef8436af8ee38f669140350abc693f8ce9b083d23862",
+            "bytes": 8910
+          },
+          {
+            "path": "lib/rules/padding-line-between-statements.js",
+            "sha256": "d78bec638807d0bd2d2f3879deb7c049069095c95c1f072991f52ebcb804327b",
+            "bytes": 16984
+          },
+          {
+            "path": "lib/rules/prefer-arrow-callback.js",
+            "sha256": "50423b76765bb63d166ef2fc124fdd1a8a82963a4a4afddec43c1c2dd0ecac22",
+            "bytes": 12053
+          },
+          {
+            "path": "lib/rules/prefer-const.js",
+            "sha256": "df91352466a3036142909b371742be0635c041f9e7390ee153f0c1420ece251b",
+            "bytes": 16061
+          },
+          {
+            "path": "lib/rules/prefer-destructuring.js",
+            "sha256": "da8e8f29cdb37154ef9cedb1effdd138de77663f933e711d9ba5c354cf9dfbcd",
+            "bytes": 8931
+          },
+          {
+            "path": "lib/rules/prefer-exponentiation-operator.js",
+            "sha256": "952c39ee5b3d40a542f68417f994344599ffbcd317ac80702b0dfdced1c34e37",
+            "bytes": 6727
+          },
+          {
+            "path": "lib/rules/prefer-named-capture-group.js",
+            "sha256": "8605bcd5c0ecb642cfb11c2b4c217524306742026f5ae55d2c9924eeac353d94",
+            "bytes": 5048
+          },
+          {
+            "path": "lib/rules/prefer-numeric-literals.js",
+            "sha256": "2adc451dc41067b05558171bd5f6adfff5d7ebf0b0014900a39244dcc6799861",
+            "bytes": 4504
+          },
+          {
+            "path": "lib/rules/prefer-object-has-own.js",
+            "sha256": "13312562c154b76d2119a4bc9d63d5e1d26db1cd5aa078f83fd77bda9770c67a",
+            "bytes": 3804
+          },
+          {
+            "path": "lib/rules/prefer-object-spread.js",
+            "sha256": "5b9e186067b929f124c498e6dd85e380576e43c058e642c5b430ae4733898361",
+            "bytes": 9489
+          },
+          {
+            "path": "lib/rules/prefer-promise-reject-errors.js",
+            "sha256": "360236043ced320af225d010e3f08f3940f632ad93764fe7b7fcd6d129fad760",
+            "bytes": 4614
+          },
+          {
+            "path": "lib/rules/prefer-reflect.js",
+            "sha256": "28ab04d08b3f33887970d075c7dde69e3fc29cdcb8403e28089c54da3d320edc",
+            "bytes": 3828
+          },
+          {
+            "path": "lib/rules/prefer-regex-literals.js",
+            "sha256": "da2ee6d13a309b8209d58db63e065bcc3da7fe0c90306e4f9d807a20089483f1",
+            "bytes": 14379
+          },
+          {
+            "path": "lib/rules/prefer-rest-params.js",
+            "sha256": "37eb4c28f220c307667bb217f49d7ae463a432ac0da82110c8526e9fc3e53273",
+            "bytes": 3326
+          },
+          {
+            "path": "lib/rules/prefer-spread.js",
+            "sha256": "8a8ac30263797a77504b1e6046fe84afcfc58ae7a9bb3365afc619e7de73e9ec",
+            "bytes": 2555
+          },
+          {
+            "path": "lib/rules/prefer-template.js",
+            "sha256": "6d52080d3952a2278fee180f28365dad0b9414912e83177f89654489978bfede",
+            "bytes": 10537
+          },
+          {
+            "path": "lib/rules/preserve-caught-error.js",
+            "sha256": "2f2250f0ea19a3192148dbb0a06e1183301e4fe4f95737f3e284e9f715db2c9a",
+            "bytes": 16268
+          },
+          {
+            "path": "lib/rules/quote-props.js",
+            "sha256": "6ba7b19ce3a36b5aebbe46f494e865ddcd060eeec1bff119c08778d0b6487d48",
+            "bytes": 10129
+          },
+          {
+            "path": "lib/rules/quotes.js",
+            "sha256": "d166b02349b3538ebe026f6c96c7cb23defc497b78c23225651d302d31c5dd7d",
+            "bytes": 10934
+          },
+          {
+            "path": "lib/rules/radix.js",
+            "sha256": "19950cc35cfbab606b31597bfbb366b0844aef21f470dfceb5353f9f4c72d82e",
+            "bytes": 5081
+          },
+          {
+            "path": "lib/rules/require-atomic-updates.js",
+            "sha256": "2fe8062919d551afe59c82ae67719d274d729319708aea2f02b8658818505173",
+            "bytes": 9293
+          },
+          {
+            "path": "lib/rules/require-await.js",
+            "sha256": "537bbad8b22432421fb1988b6928cb0c14a2e2ba712bb7bfcc207d5e28ae2a8b",
+            "bytes": 4597
+          },
+          {
+            "path": "lib/rules/require-unicode-regexp.js",
+            "sha256": "12f00e5206f2999c53feeae81bb4b7d73f9d66fe380a0f87f76a16f521af0a01",
+            "bytes": 7765
+          },
+          {
+            "path": "lib/rules/require-yield.js",
+            "sha256": "17d500b073eb537c5155fa1547aef3c5c61e471392498533fac69ef8212b1534",
+            "bytes": 2047
+          },
+          {
+            "path": "lib/rules/rest-spread-spacing.js",
+            "sha256": "ae34e0e44b03ab8c4c9519b9134dc604f7f79164b165a76b491b8aab796bebb9",
+            "bytes": 3716
+          },
+          {
+            "path": "lib/rules/semi-spacing.js",
+            "sha256": "47e10b8a9a7d0f74fca5c805871ebde32f57f8fc9232916bbf56d3b68e63a717",
+            "bytes": 7372
+          },
+          {
+            "path": "lib/rules/semi-style.js",
+            "sha256": "0225ba743ce0906f2956d45c5e4eb2e8af7b2ba42afde1f7fe75accc29963842",
+            "bytes": 5246
+          },
+          {
+            "path": "lib/rules/semi.js",
+            "sha256": "6a58b0a32d86013030878a63d2764c5eebfadb8c6746eb1f925bf0f07a5e72ef",
+            "bytes": 13324
+          },
+          {
+            "path": "lib/rules/sort-imports.js",
+            "sha256": "267354eefb3c0a5234dc60a123ebcb566cf8141d6410cff746f56154e63f1a46",
+            "bytes": 8603
+          },
+          {
+            "path": "lib/rules/sort-keys.js",
+            "sha256": "4becf7e063962c2ad6011b552afb123a5300354eee9bef3703f87831b8b306af",
+            "bytes": 5880
+          },
+          {
+            "path": "lib/rules/sort-vars.js",
+            "sha256": "fb99c26209247cf8104d1e117bfcb42ee277cdaf0ef228a1e54b0adaf7114cd9",
+            "bytes": 3320
+          },
+          {
+            "path": "lib/rules/space-before-blocks.js",
+            "sha256": "2dedb902e025a9d14db64eb3ff0e4c7180835245aa83d3b19f092a7752c32acc",
+            "bytes": 6322
+          },
+          {
+            "path": "lib/rules/space-before-function-paren.js",
+            "sha256": "86e0258f49c9dd394a81ebc7bb828b475c0328caf1d33daaf07e73353d4672e2",
+            "bytes": 5233
+          },
+          {
+            "path": "lib/rules/space-in-parens.js",
+            "sha256": "bc35c6b0a97113f260573f1b39246bfe85934cabd1393b8bb92f662291960454",
+            "bytes": 9290
+          },
+          {
+            "path": "lib/rules/space-infix-ops.js",
+            "sha256": "52633b7b063b735321ef9ddf64fcb86e78f9c7ae9850fae7e7f5dc4e4f63d3e6",
+            "bytes": 5846
+          },
+          {
+            "path": "lib/rules/space-unary-ops.js",
+            "sha256": "1a93106d512a1d7f170a878dca0505960aa18723ea4617cd205892027e28ae35",
+            "bytes": 10644
+          },
+          {
+            "path": "lib/rules/spaced-comment.js",
+            "sha256": "1606b4359a0c07045365fd16669f6d934dae8873be1a791969c67d1a00498b8f",
+            "bytes": 11246
+          },
+          {
+            "path": "lib/rules/strict.js",
+            "sha256": "7dceb162e8b2710119a6ae2bd653d2c4582e16916745eaa004a3f5d0ff6ecb88",
+            "bytes": 9361
+          },
+          {
+            "path": "lib/rules/switch-colon-spacing.js",
+            "sha256": "db5ee19a3b02c9adaaffb725ec6e84ff321a555ad6a490e5ff6158c5722fe127",
+            "bytes": 4695
+          },
+          {
+            "path": "lib/rules/symbol-description.js",
+            "sha256": "14d12fbe3764c250ccfc5a5c6abcbcc23c764592ef283181e0977b72d1602e01",
+            "bytes": 1701
+          },
+          {
+            "path": "lib/rules/template-curly-spacing.js",
+            "sha256": "2936da8616baa5350852e95164f6cb0a7c32e6b667bacc7770f0dcb0ddbc365c",
+            "bytes": 4337
+          },
+          {
+            "path": "lib/rules/template-tag-spacing.js",
+            "sha256": "c4e68209bc18318dcfad8b3225351132b54cf491f5e95e2f4680866c6965bfb1",
+            "bytes": 3053
+          },
+          {
+            "path": "lib/rules/unicode-bom.js",
+            "sha256": "d33108d35f90239c089f46fdbb712511e10aae16699bfaa454669a300a3fd626",
+            "bytes": 1716
+          },
+          {
+            "path": "lib/rules/use-isnan.js",
+            "sha256": "61bac1b5e47774a805fb8988c164a9db8239449e7df0a1094aeb20f535b772a3",
+            "bytes": 7130
+          },
+          {
+            "path": "lib/rules/utils/ast-utils.js",
+            "sha256": "3a28d87e6f37ca262068b5eab60d988ef5acc4b2bef4f1a6ef3b8a3c2b2103ee",
+            "bytes": 83671
+          },
+          {
+            "path": "lib/rules/utils/char-source.js",
+            "sha256": "9917a9aa8cc22dd899d160280ea635c7220ea81b5a64d78aea82301201211edf",
+            "bytes": 5905
+          },
+          {
+            "path": "lib/rules/utils/fix-tracker.js",
+            "sha256": "78e272d184683be7fc974b91e18a809da440f98c3fc9568aa9ca5a0e50647b4d",
+            "bytes": 4030
+          },
+          {
+            "path": "lib/rules/utils/keywords.js",
+            "sha256": "7be63d1633c1eff7b88b3c49db2adb368d20551549c5febf1f103907660f2459",
+            "bytes": 741
+          },
+          {
+            "path": "lib/rules/utils/lazy-loading-rule-map.js",
+            "sha256": "3aa4ea7e1805115dfe4476702820d4ed8477c10d865236d5ee06583dca3b0f43",
+            "bytes": 2622
+          },
+          {
+            "path": "lib/rules/utils/regular-expressions.js",
+            "sha256": "679e509513eab1c2285467b75f1d1f2783333a053c4e2850ad72325bd8c23490",
+            "bytes": 1380
+          },
+          {
+            "path": "lib/rules/utils/unicode/index.js",
+            "sha256": "088b76f88328018b2beb56324fc87d5e26ae62fd5fc8fea3d2926b4abc9fdc22",
+            "bytes": 446
+          },
+          {
+            "path": "lib/rules/utils/unicode/is-combining-character.js",
+            "sha256": "0f824e66cb1545c150a992d431d2649c4304d43844aa6d45a25c4f2bfb457df0",
+            "bytes": 461
+          },
+          {
+            "path": "lib/rules/utils/unicode/is-emoji-modifier.js",
+            "sha256": "afd442dd1b514022b256bf620309cd3dec6bd658dec4b7f00a48b06823d087c1",
+            "bytes": 364
+          },
+          {
+            "path": "lib/rules/utils/unicode/is-regional-indicator-symbol.js",
+            "sha256": "71d68b3a88e1ba8f271c97ed457cc90c6e9e89018beb701f7677c3648dce2765",
+            "bytes": 394
+          },
+          {
+            "path": "lib/rules/utils/unicode/is-surrogate-pair.js",
+            "sha256": "8f9caea9c6361bbc46f94cbb15e34f95e00c6144a7d6e4ef71398a15f3f23823",
+            "bytes": 468
+          },
+          {
+            "path": "lib/rules/valid-typeof.js",
+            "sha256": "e3893d9e054c845f1abbdac571ae4c48ced2c7fa77daca0514f2b87c3add6921",
+            "bytes": 4262
+          },
+          {
+            "path": "lib/rules/vars-on-top.js",
+            "sha256": "5da3f5775cc1371a57b6c0038ab7ed44d945c00a9ff1805f0d3db60a9c0a2a09",
+            "bytes": 4304
+          },
+          {
+            "path": "lib/rules/wrap-iife.js",
+            "sha256": "0ad5f4cc6ed31dc91ac50c90d42783b83b3b948cc1b1aee35208024ce004e70c",
+            "bytes": 6914
+          },
+          {
+            "path": "lib/rules/wrap-regex.js",
+            "sha256": "5b067cb45c07c0903484674ddecf9050bfd85b24f576c17fd8993471ee028e8e",
+            "bytes": 2167
+          },
+          {
+            "path": "lib/rules/yield-star-spacing.js",
+            "sha256": "297dd1e4114dc17910c728d039ae60c01e0d61a2a793da9178dd9ffbb86da65f",
+            "bytes": 3982
+          },
+          {
+            "path": "lib/rules/yoda.js",
+            "sha256": "9e348764d201d4e1ca3bd53a12380c74044fdf66327cfff4db24c8ae78dee5b8",
+            "bytes": 9713
+          },
+          {
+            "path": "lib/services/parser-service.js",
+            "sha256": "054a199633f5d5b0ac1f8342dc6eaa4355e8ac4858c0001cb29bcb0c73151079",
+            "bytes": 1790
+          },
+          {
+            "path": "lib/services/processor-service.js",
+            "sha256": "9cb47c18bb36bf31e3c33f8e7ed32492c9dd54b9573f853a81d1d8f4598e6ee3",
+            "bytes": 2934
+          },
+          {
+            "path": "lib/services/suppressions-service.js",
+            "sha256": "db8d95dea49dede1ea0b0ab224cb7c7783c57f3e94c7a432fb905c10fee34058",
+            "bytes": 8732
+          },
+          {
+            "path": "lib/services/warning-service.js",
+            "sha256": "f63a53101be37620f6d5531a1bef438b237b3b8936c42a747596ed8503887a18",
+            "bytes": 2782
+          },
+          {
+            "path": "lib/shared/ajv.js",
+            "sha256": "d2838eb53703f8b09d64b62f01a8c5f899a8c0912294123d69157da80e5a2f60",
+            "bytes": 931
+          },
+          {
+            "path": "lib/shared/assert.js",
+            "sha256": "6595b8b03bd2ce531beee3a39a458a2205211c23fa2d4b8559c93265884949f8",
+            "bytes": 524
+          },
+          {
+            "path": "lib/shared/ast-utils.js",
+            "sha256": "427509ac68e149a6612820b4943b68dbad689645e1972672b3a33c65f321c476",
+            "bytes": 897
+          },
+          {
+            "path": "lib/shared/deep-merge-arrays.js",
+            "sha256": "67bbb5368f8bc247e62f6b421bb2226e914b26ccb6231fae20d7bd4c1a384aa6",
+            "bytes": 1574
+          },
+          {
+            "path": "lib/shared/directives.js",
+            "sha256": "f95583fcefb946579a5233015ac78fdecb39204ded8334b0918cd50bbf76b357",
+            "bytes": 413
+          },
+          {
+            "path": "lib/shared/flags.js",
+            "sha256": "ed597ff5840e316a7b6fac2c378f92512ac2bb5a8db6c5e03c6f6be5b3f8e09c",
+            "bytes": 2328
+          },
+          {
+            "path": "lib/shared/logging.js",
+            "sha256": "a37ba9648763da0ae5218e864cc3c786c6d7f583fa3ab94fd5456d444febd37c",
+            "bytes": 635
+          },
+          {
+            "path": "lib/shared/message-counts.js",
+            "sha256": "9c0ad197480b1f40e2a5af6cbc1317ebc6e94409997a67fc3be94bc78ab00562",
+            "bytes": 941
+          },
+          {
+            "path": "lib/shared/naming.js",
+            "sha256": "0aaf9bd1e0d3c753e9b6138ae89d60946bfda234d25b6c788f3c2fe8603d64f6",
+            "bytes": 2951
+          },
+          {
+            "path": "lib/shared/option-utils.js",
+            "sha256": "fba01b907330d016236c3a690e0f35c18dddfe24f1cb5910ea501f1a70f87fd4",
+            "bytes": 1271
+          },
+          {
+            "path": "lib/shared/relative-module-resolver.js",
+            "sha256": "9aca34c298aa3dd314e20ed406908fb17ba08d8c019734e040965e17c29b7b04",
+            "bytes": 1028
+          },
+          {
+            "path": "lib/shared/runtime-info.js",
+            "sha256": "31a6dc016eae3efc64c005822aeeb8c0f9952d7d4f8ec28f6e14aef5a3bbb94f",
+            "bytes": 5142
+          },
+          {
+            "path": "lib/shared/serialization.js",
+            "sha256": "4d86ae62bdbaee5e9edf235201bc8e96b5304d547f388332f21d19fe88a01405",
+            "bytes": 2111
+          },
+          {
+            "path": "lib/shared/severity.js",
+            "sha256": "471d6b1f6970a7bc7f85a10d60bf919d412fb664dc0a6f6b4d4c52a64fe3d676",
+            "bytes": 1177
+          },
+          {
+            "path": "lib/shared/stats.js",
+            "sha256": "acabc33b4e92b7b2f5ae317fc672d1d4083f9ec244512e3a65180ad071fe29c5",
+            "bytes": 638
+          },
+          {
+            "path": "lib/shared/string-utils.js",
+            "sha256": "7a454e7fa55ad212120f879b3778b704c00d42cce86766adc799d7902d951142",
+            "bytes": 1549
+          },
+          {
+            "path": "lib/shared/text-table.js",
+            "sha256": "5db5661de6d7f26db0fcc714f855d4be49c6c2beee0ef0b39dc6f75d0036892d",
+            "bytes": 2213
+          },
+          {
+            "path": "lib/shared/translate-cli-options.js",
+            "sha256": "1c1f715e79055a81eabcdb7a19d5ebfaf09c399ca1b419bfe0ef1557b984c76b",
+            "bytes": 6016
+          },
+          {
+            "path": "lib/shared/traverser.js",
+            "sha256": "827ba68c52faaac8c24c912953d7d5081a48e41d8a59dede636c538891b83be9",
+            "bytes": 4858
+          },
+          {
+            "path": "lib/types/config-api.d.ts",
+            "sha256": "47e74b01d2f7c0e64f46aee03c994ce67b79dcac8dd2f951298f816e38773a49",
+            "bytes": 270
+          },
+          {
+            "path": "lib/types/index.d.ts",
+            "sha256": "1bb854009833974c70fd260b009a0369597208b73e44baf31de5649d1c7fe710",
+            "bytes": 40954
+          },
+          {
+            "path": "lib/types/rules.d.ts",
+            "sha256": "fe10a8f2543e9184cc79c9b324ac24fb55308441fecf9f9487d2d8097ef63a8f",
+            "bytes": 130759
+          },
+          {
+            "path": "lib/types/universal.d.ts",
+            "sha256": "05c128bef8ade8755f8bad285bbf2ef8867939f3e7e61884fda1e2f3aecfa4c7",
+            "bytes": 140
+          },
+          {
+            "path": "lib/types/use-at-your-own-risk.d.ts",
+            "sha256": "4bbf16c1d5736684484ee60fe3a40e40eafedd3a082efb859892df5836a64464",
+            "bytes": 1480
+          },
+          {
+            "path": "lib/universal.js",
+            "sha256": "6f9da7fab637e0500c055cef44ad9e2afd46b86f43cf72decde2c332ee51b58c",
+            "bytes": 181
+          },
+          {
+            "path": "lib/unsupported-api.js",
+            "sha256": "474c225bdb308925cbde4558fd016b8ad75867326728c8256eb15a2a09a2f157",
+            "bytes": 714
+          },
+          {
+            "path": "messages/all-matched-files-ignored.js",
+            "sha256": "1d800b641a65d3aeb2767600fb4ca11807fb64a022995fea4d2940f435e97545",
+            "bytes": 1022
+          },
+          {
+            "path": "messages/config-file-missing.js",
+            "sha256": "8dcb27973e5874c9695cae6c3e66837b119decc976bd8dcc4fc4e7d11e167a2c",
+            "bytes": 526
+          },
+          {
+            "path": "messages/config-plugin-missing.js",
+            "sha256": "8aed712a9ad0a5840f36e4f409aed61df16dc059fbc85f3ca518124971c1e28e",
+            "bytes": 445
+          },
+          {
+            "path": "messages/config-serialize-function.js",
+            "sha256": "27deb422e7e5526c2e1b151e6efd6afbbd134f335fd6365c1cf98d51f29a3a03",
+            "bytes": 942
+          },
+          {
+            "path": "messages/eslintrc-incompat.js",
+            "sha256": "51a1efc7eff9595a38e600b0e6fd71fa436acb9784787c9c0c87912b4fba0114",
+            "bytes": 5209
+          },
+          {
+            "path": "messages/eslintrc-plugins.js",
+            "sha256": "6ba1dd8dfbc585579c2ce9bcf60cb7f47136a51aff6650ac09c6ce7b86be8de7",
+            "bytes": 927
+          },
+          {
+            "path": "messages/extend-config-missing.js",
+            "sha256": "97a0c2a1b1e32ed946db70d79fd5372a61efba4d3a6e19877e1d148a245335a2",
+            "bytes": 418
+          },
+          {
+            "path": "messages/failed-to-read-json.js",
+            "sha256": "b4b3ce4dfa3f80342ee7f87f670d478cc4c1901a1d74d3dbc1e767dc39854555",
+            "bytes": 157
+          },
+          {
+            "path": "messages/file-not-found.js",
+            "sha256": "7a37b314e5903b0b16e94946d8032741feb88e2553ef01a3061532a1c66ab969",
+            "bytes": 268
+          },
+          {
+            "path": "messages/invalid-rule-options.js",
+            "sha256": "fc7e84e09927432ed65d78826c4dc24da52ff504daaadbc7c51858527a0626a8",
+            "bytes": 646
+          },
+          {
+            "path": "messages/invalid-rule-severity.js",
+            "sha256": "ced1f3796a9cbdc341fd6d0d7d86a5f6340e801910f4817b85450e755e4386f7",
+            "bytes": 406
+          },
+          {
+            "path": "messages/no-config-found.js",
+            "sha256": "694f32e673e7ed9759ce1ae2c921b5b23ef41df2352c236b82089d835bca40e3",
+            "bytes": 527
+          },
+          {
+            "path": "messages/plugin-conflict.js",
+            "sha256": "d0cc5d1723f322ffc2698fd56c934e9053b9543a78f0b61e40eeabc96ab0b841",
+            "bytes": 518
+          },
+          {
+            "path": "messages/plugin-invalid.js",
+            "sha256": "9c0169c5d85a57ca2dbc17d813cb5f19383060a3f0183535a9c15c0acb9f5159",
+            "bytes": 653
+          },
+          {
+            "path": "messages/plugin-missing.js",
+            "sha256": "cd19f4efabac7c64caca0d383e3e4492e3d0baf7a443a1dcad6d91c4b8632c6a",
+            "bytes": 659
+          },
+          {
+            "path": "messages/rule-unsupported-language.js",
+            "sha256": "32afa638e348d7a3e9314ba6d37311d7d1d8f83efefd0deb77a82f5bcd6663ef",
+            "bytes": 553
+          },
+          {
+            "path": "messages/shared.js",
+            "sha256": "c3ffedcd4b664bf1dfd08fa80802af4cb6ffa4bdeff60c9ed841ca7158580286",
+            "bytes": 546
+          },
+          {
+            "path": "messages/whitespace-found.js",
+            "sha256": "98d46f5db29b81079653a103c87f95e0f0102d929a6e39106d86da844af41248",
+            "bytes": 386
+          },
+          {
+            "path": "package.json",
+            "sha256": "6516811071291ae483f95f74911b3112a0b7f0b3d6e94a85c93c3a371cd7ac8a",
+            "bytes": 7274
+          }
+        ]
+      },
+      {
+        "name": "eslint-plugin-vue",
+        "version": "10.9.2",
+        "packageRoot": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/eslint-plugin-vue@10.9.2_@stylistic+eslint-plugin@5.10.0_eslint@10.4.1_jiti@2.7.0_suppo_490b589eff1bdf6fd918ebcadce99cb1/node_modules/eslint-plugin-vue",
+        "packageJsonSha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761",
+        "fileCount": 340,
+        "fileTreeSha256": "57749c05bdfebd6fca26c239eda9e8a49b110b1eb888d1bbf1d04f18a1a0e9c0",
+        "files": [
+          {
+            "path": "LICENSE",
+            "sha256": "dbbf03317f0101fed5643cd87ca80fb769e358fa4f428445bf2315deeb23a154",
+            "bytes": 1071
+          },
+          {
+            "path": "README.md",
+            "sha256": "0c566838757d30dc26813866554a84ee593cd1fe7883e027c076f8cdb0c44727",
+            "bytes": 4044
+          },
+          {
+            "path": "dist/_virtual/_rolldown/runtime.js",
+            "sha256": "ea6c922b922a3405a9c5083a14dffce61fe10ed7c5feec79eca8d8624d82858c",
+            "bytes": 1178
+          },
+          {
+            "path": "dist/configs/base.js",
+            "sha256": "7c52934b27fb050ed634cbc5054af52e4112f7de403d98a0028f146105f62339",
+            "bytes": 353
+          },
+          {
+            "path": "dist/configs/flat/base.js",
+            "sha256": "05f08666330a06067eb1f5feb5317c0fe56f82263a279ae314ba54080524591e",
+            "bytes": 797
+          },
+          {
+            "path": "dist/configs/flat/vue2-essential.js",
+            "sha256": "17e2d197d0927d16c0f239a55f2c15ea64d6cc5352df8537b0a3c73086861ba1",
+            "bytes": 2527
+          },
+          {
+            "path": "dist/configs/flat/vue2-recommended-error.js",
+            "sha256": "2f6148a92689ddd3802b4b5c49fa543755ca041042408c2026d6f0be74819a8e",
+            "bytes": 671
+          },
+          {
+            "path": "dist/configs/flat/vue2-recommended.js",
+            "sha256": "8f6f4ef94760a8ff07c53606416a4511a7268ca1f0dadb8385e94a25d662d4c3",
+            "bytes": 621
+          },
+          {
+            "path": "dist/configs/flat/vue2-strongly-recommended-error.js",
+            "sha256": "19b8bc60b7ba3dff3063fad100dcc7d75fb88f76115423b67c435a8e3ab67924",
+            "bytes": 1304
+          },
+          {
+            "path": "dist/configs/flat/vue2-strongly-recommended.js",
+            "sha256": "36644d0f3b3c9ba7170ddfd3c973aac26290e52f2cf35660436febd41109c5ab",
+            "bytes": 1257
+          },
+          {
+            "path": "dist/configs/flat/vue3-essential.js",
+            "sha256": "bcb80f156c7e36003fce3e219796dc05fc0199098dbfeebe4dfe8e0b87ede39c",
+            "bytes": 3690
+          },
+          {
+            "path": "dist/configs/flat/vue3-recommended-error.js",
+            "sha256": "0b07b96e211b6e7c2a51f7d98fbbd9a93ff5707242f629d16c036816c1a11749",
+            "bytes": 666
+          },
+          {
+            "path": "dist/configs/flat/vue3-recommended.js",
+            "sha256": "f168a273d77e68a0bcfc011ffd98313a37abc59e2b3e195ed818517518be72e5",
+            "bytes": 616
+          },
+          {
+            "path": "dist/configs/flat/vue3-strongly-recommended-error.js",
+            "sha256": "4933d2bd75478a4202fda7fa2d99b56e244409e716be44749a27d6f7aecef27c",
+            "bytes": 1425
+          },
+          {
+            "path": "dist/configs/flat/vue3-strongly-recommended.js",
+            "sha256": "567e67c81abeb952e8533992e80f0d6320d607cf178ca442fd2aff08e68e9070",
+            "bytes": 1376
+          },
+          {
+            "path": "dist/configs/index.js",
+            "sha256": "3bdb520186b0d4306000ed2fed5c743bd4222a4ea6b1d647cd8116e85812c683",
+            "bytes": 3593
+          },
+          {
+            "path": "dist/configs/no-layout-rules.js",
+            "sha256": "a727aa2ef439280d738278464b9fddd3c1ad9e6c759853358a65d4be954abcdc",
+            "bytes": 1875
+          },
+          {
+            "path": "dist/configs/vue2-essential.js",
+            "sha256": "c4d07e01bdd809196aa8234eb6657e7ccb13f472798cd889698496fcd8e36281",
+            "bytes": 2436
+          },
+          {
+            "path": "dist/configs/vue2-recommended-error.js",
+            "sha256": "9cd81642dbb4aac8f7119e70938a256fa6fada9415f3d51a1a22c68fbbc275ff",
+            "bytes": 518
+          },
+          {
+            "path": "dist/configs/vue2-recommended.js",
+            "sha256": "f431677ee0cf169c2a9735b6b7b7b1414a5b85f9312bb60485202114ec58878b",
+            "bytes": 486
+          },
+          {
+            "path": "dist/configs/vue2-strongly-recommended-error.js",
+            "sha256": "91043fcc52cdf0b6896602ef04cb800bccf39ad7989d016523160985c9069372",
+            "bytes": 1176
+          },
+          {
+            "path": "dist/configs/vue2-strongly-recommended.js",
+            "sha256": "78f9d0502927ed6f8ed7078a4c5fc31e19a6bde47a0b4980045054a977d69e04",
+            "bytes": 1135
+          },
+          {
+            "path": "dist/configs/vue3-essential.js",
+            "sha256": "b13c36d09e4e619e18e07b68c33f2a539077233700b611ca5fe59831752d65fc",
+            "bytes": 3604
+          },
+          {
+            "path": "dist/configs/vue3-recommended-error.js",
+            "sha256": "f5e86f94d9bfb84a8294244731a8cc22f863078b5950dcf42c8490b05e10e93b",
+            "bytes": 518
+          },
+          {
+            "path": "dist/configs/vue3-recommended.js",
+            "sha256": "c7bd0222d2e6dfee992ade59158748456ee52c84b27353b6c7d3d3cee03973f3",
+            "bytes": 486
+          },
+          {
+            "path": "dist/configs/vue3-strongly-recommended-error.js",
+            "sha256": "e4ce7944fa619e8bee5908e0750487c1d96b05b9f3384486d8ec955a209d9026",
+            "bytes": 1302
+          },
+          {
+            "path": "dist/configs/vue3-strongly-recommended.js",
+            "sha256": "db5ba0207aa9a8e35181cc2a4e8b70d17915f1249b8305aece2bafbcc1b0a9e6",
+            "bytes": 1259
+          },
+          {
+            "path": "dist/eslint-typegen.d.ts",
+            "sha256": "8dcc8ff5fffa26a3f8f90c508aaef7b16748cff70f3d038c5c9026ade7f71d43",
+            "bytes": 87036
+          },
+          {
+            "path": "dist/index.d.ts",
+            "sha256": "230199a1cf87dd7350767de22b65e05d472333ff0f4a8ab47a90930a941e7738",
+            "bytes": 1333
+          },
+          {
+            "path": "dist/index.js",
+            "sha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017",
+            "bytes": 268
+          },
+          {
+            "path": "dist/meta.js",
+            "sha256": "3a33ba2a1cc24d4acaa842c2068a6a4e7186db5a09d184a73517c78ad762fe60",
+            "bytes": 204
+          },
+          {
+            "path": "dist/package.js",
+            "sha256": "bb7b706fce8e9251c0b8a3ce17ec50bf7172bdbcdff7d4e5b66c5692c9248fe6",
+            "bytes": 313
+          },
+          {
+            "path": "dist/plugin.js",
+            "sha256": "97fe341086ee02565a9543b1d888fd435e6175cf5833f258f7fb7548577406c6",
+            "bytes": 60852
+          },
+          {
+            "path": "dist/processor.js",
+            "sha256": "9ef00492c74769332053a0a3259fa0d6d0cef94061e61cc4bc443f099828d435",
+            "bytes": 3588
+          },
+          {
+            "path": "dist/removed-rules.js",
+            "sha256": "b9373f75786bd7501cada9710df106bf93531d29e2719005a9602cadd133b11f",
+            "bytes": 1822
+          },
+          {
+            "path": "dist/rules/array-bracket-newline.js",
+            "sha256": "86d2bb331d257da41f4f7bbcbbd0e530e19a77effc43edaa5e42bec1bc7bdc75",
+            "bytes": 631
+          },
+          {
+            "path": "dist/rules/array-bracket-spacing.js",
+            "sha256": "f959380387e5abf7f88aff10b04d11abfb30064f548689be4d7243645d1d7f55",
+            "bytes": 635
+          },
+          {
+            "path": "dist/rules/array-element-newline.js",
+            "sha256": "96554a3fd96d0d14d21624cfbe8c1820111b72ce50a5529c5d3995ba52e819c7",
+            "bytes": 628
+          },
+          {
+            "path": "dist/rules/arrow-spacing.js",
+            "sha256": "59f89a239ae978075139aae3d09ae1cc970d3f6222758b290b0e7f0baca1b70d",
+            "bytes": 567
+          },
+          {
+            "path": "dist/rules/attribute-hyphenation.js",
+            "sha256": "ce050d17c802fb26ed9d8c7245ad3d55f28750705b86d97b59522c071aa46fbd",
+            "bytes": 3500
+          },
+          {
+            "path": "dist/rules/attributes-order.js",
+            "sha256": "47dee75937448943d1f64fb50ee3652b6999c849cfd311347cbeca26e67d06f1",
+            "bytes": 11692
+          },
+          {
+            "path": "dist/rules/block-lang.js",
+            "sha256": "eee52544b3bae81f60218ad2e8584578ab9bdff532bfc74b8b42bfe25c05f86a",
+            "bytes": 5167
+          },
+          {
+            "path": "dist/rules/block-order.js",
+            "sha256": "add0f29e523ae04c4fc49b2f973f51a485bf224799b44c0d6c9c38d79c103cb2",
+            "bytes": 4084
+          },
+          {
+            "path": "dist/rules/block-spacing.js",
+            "sha256": "06273dc717f20bdd869d1745aebf2f4912eed3e1780c46344811c4c454cca6ae",
+            "bytes": 599
+          },
+          {
+            "path": "dist/rules/block-tag-newline.js",
+            "sha256": "32035eef33deddb5a2cae0fc58c1912da5e2562c2f6a0fd2670873ee2b1dad61",
+            "bytes": 8966
+          },
+          {
+            "path": "dist/rules/brace-style.js",
+            "sha256": "d23cbc68a66313e16785a815067671f882b4df3cd80a9e4825cd0f17e7016621",
+            "bytes": 591
+          },
+          {
+            "path": "dist/rules/camelcase.js",
+            "sha256": "977e4cd657d178a2b8274f61b960825f19a49ff84afa416cbfa8fc0b8c703579",
+            "bytes": 529
+          },
+          {
+            "path": "dist/rules/comma-dangle.js",
+            "sha256": "5ba757aa7e3cdd92a8e8cf6da2ca9249a14a2c6d74ee04e70591ba51ea581072",
+            "bytes": 563
+          },
+          {
+            "path": "dist/rules/comma-spacing.js",
+            "sha256": "1296c7325706909547df138919d2df3491c5a69cea391301a44c6eef84f97ab1",
+            "bytes": 661
+          },
+          {
+            "path": "dist/rules/comma-style.js",
+            "sha256": "76c04d02c58e0f4bda10599aa1aebb2010138aa4ab361ab0efa564b1fc32cdcb",
+            "bytes": 730
+          },
+          {
+            "path": "dist/rules/comment-directive.js",
+            "sha256": "cdfabddb6cbcf378c4e74da51ac57884035d6f86e9f0f183627b3f6e3b275a2b",
+            "bytes": 10088
+          },
+          {
+            "path": "dist/rules/component-api-style.js",
+            "sha256": "086c54f4c169d95a8622a231af521bb7fa2362eee8e534053c9bc9627e6fe2b1",
+            "bytes": 7181
+          },
+          {
+            "path": "dist/rules/component-definition-name-casing.js",
+            "sha256": "aff48fbb7e2dcbafc5de7ee86685688c09d829fa37ff31b9a2cfeb4cf452496e",
+            "bytes": 2679
+          },
+          {
+            "path": "dist/rules/component-name-in-template-casing.js",
+            "sha256": "573aadd95f4235ddfae08e955d86a427f947fba29230a334ff3bbc3d3c38c2e6",
+            "bytes": 4890
+          },
+          {
+            "path": "dist/rules/component-options-name-casing.js",
+            "sha256": "49f668703bda260d35641fb66fb820e8a0dcb1945f3bed8103a421f3770dab81",
+            "bytes": 2627
+          },
+          {
+            "path": "dist/rules/custom-event-name-casing.js",
+            "sha256": "c7c5fb0384cd37e954943336d94aac49c4a81436d6d894b901d449c171924112",
+            "bytes": 6109
+          },
+          {
+            "path": "dist/rules/define-emits-declaration.js",
+            "sha256": "fd45d969e53b239d5900fd0c6aa493da6270d18dfb4caf42030182252a54da82",
+            "bytes": 2745
+          },
+          {
+            "path": "dist/rules/define-macros-order.js",
+            "sha256": "9b9aaf5b52c2e05b67597bb1c859fb10205e86ebb4e8878487a51bb0c3abfd66",
+            "bytes": 10316
+          },
+          {
+            "path": "dist/rules/define-props-declaration.js",
+            "sha256": "7672ce8c532a9de567356035d940b6af1e068fa4be2e798e1b010536758508a8",
+            "bytes": 1804
+          },
+          {
+            "path": "dist/rules/define-props-destructuring.js",
+            "sha256": "291bcd1840005a7528248ad146c21a10563d7e723821df99f00a379e0124898e",
+            "bytes": 2244
+          },
+          {
+            "path": "dist/rules/dot-location.js",
+            "sha256": "ba46eb5592b88328e4704fe5ed05c2dd9b3815b3dddc093ea6f257516ddede4e",
+            "bytes": 563
+          },
+          {
+            "path": "dist/rules/dot-notation.js",
+            "sha256": "ac3471947c17e8795b3c0fd01d9c2eb2f200ee4e071edb54c6caa11d1deb45e9",
+            "bytes": 588
+          },
+          {
+            "path": "dist/rules/enforce-style-attribute.js",
+            "sha256": "f38311786d40e6933f094c5f7723a79c46bef16eb9f98475e5828749f1d00f57",
+            "bytes": 4020
+          },
+          {
+            "path": "dist/rules/eqeqeq.js",
+            "sha256": "9f5573eede86c3349ce8892dde7a525c32e33c6e8c2d940f20e802ab4fea9caf",
+            "bytes": 546
+          },
+          {
+            "path": "dist/rules/first-attribute-linebreak.js",
+            "sha256": "c7a0b300c78d47f91b23feb37e0b110c85c9a5149b55bf605f83c7a4c3b0829e",
+            "bytes": 2893
+          },
+          {
+            "path": "dist/rules/func-call-spacing.js",
+            "sha256": "7a5222bc1552fe1acd51d376db4a283efec6ab19c444361c652c2b539893a9ec",
+            "bytes": 720
+          },
+          {
+            "path": "dist/rules/html-button-has-type.js",
+            "sha256": "8a7a859b89c7abd9a429d32bda12d4588360ad3b29364448e8936a4daf4b8373",
+            "bytes": 3277
+          },
+          {
+            "path": "dist/rules/html-closing-bracket-newline.js",
+            "sha256": "3bd40dd4b0695f66be4207bedf8af7f8126d8c03f0f4ec01e5dc9cd92e3fc3d2",
+            "bytes": 4324
+          },
+          {
+            "path": "dist/rules/html-closing-bracket-spacing.js",
+            "sha256": "e26dddddfa3a76281f6fbee15e77a9d0c7580fc7021872ed7b22f8f56fedf492",
+            "bytes": 3554
+          },
+          {
+            "path": "dist/rules/html-comment-content-newline.js",
+            "sha256": "544940c63b0e537322591a391805eaea0d408ff51fa49b9ccf277b802a3e0fe4",
+            "bytes": 4174
+          },
+          {
+            "path": "dist/rules/html-comment-content-spacing.js",
+            "sha256": "dd8a494290f3bd2369e4ed84d2a8aca20a7ab1fff367a407f72f16a4d6d5aa07",
+            "bytes": 3429
+          },
+          {
+            "path": "dist/rules/html-comment-indent.js",
+            "sha256": "3b141382f2072dfae9b4740c1eb48c69ab3aebd7710f7957dcd35638ae0894b3",
+            "bytes": 5678
+          },
+          {
+            "path": "dist/rules/html-end-tags.js",
+            "sha256": "35648348e9b0c6ac416e18f09b5d3a153f5c412402fda8582876e66835454cf9",
+            "bytes": 1621
+          },
+          {
+            "path": "dist/rules/html-indent.js",
+            "sha256": "e14641017c2b15ba70aa510ac627450c68bf42822b6b62e73aa6787b79a0d4e1",
+            "bytes": 2224
+          },
+          {
+            "path": "dist/rules/html-quotes.js",
+            "sha256": "d6b3c43af7b8164cac00ea91578ebbccb9c80cbac0bb098353afcf9c8a6b6f52",
+            "bytes": 2752
+          },
+          {
+            "path": "dist/rules/html-self-closing.js",
+            "sha256": "aa52b2f9d72ef4367bb988caa9682dd2449256c381ccb03028eb552529b0b5f3",
+            "bytes": 4604
+          },
+          {
+            "path": "dist/rules/jsx-uses-vars.js",
+            "sha256": "00f85df4e674dc79a45aba49c355f25a38a432f2791a76099811118405bd9fcc",
+            "bytes": 2230
+          },
+          {
+            "path": "dist/rules/key-spacing.js",
+            "sha256": "7e989b68d55882f2fbb0048a2358aa6d576fbaea8b2c948bba86d6373ec696dd",
+            "bytes": 595
+          },
+          {
+            "path": "dist/rules/keyword-spacing.js",
+            "sha256": "5a95c18deb1ca5ca38859f2ce5d28710edfdcecb3c39fa74c0217d85ce4d7bc3",
+            "bytes": 607
+          },
+          {
+            "path": "dist/rules/match-component-file-name.js",
+            "sha256": "e736172e3f9e45159e949f731d622307e14b968d041a2ff6951290f83dd3ca89",
+            "bytes": 3608
+          },
+          {
+            "path": "dist/rules/match-component-import-name.js",
+            "sha256": "20434c45224b1ab90d5561e926a9445845f213371dcf9cddcc4e55e9187ac688",
+            "bytes": 1743
+          },
+          {
+            "path": "dist/rules/max-attributes-per-line.js",
+            "sha256": "3468a18a1a3353df71d09941a962e9195c1c5aa490d69e6441ac1ef6fadc8931",
+            "bytes": 4054
+          },
+          {
+            "path": "dist/rules/max-len.js",
+            "sha256": "e8fe347ec201b8de0e4353013251274e3278f4787940f2116cc06b26ef9aaadc",
+            "bytes": 12706
+          },
+          {
+            "path": "dist/rules/max-lines-per-block.js",
+            "sha256": "bcb252162b5707abe831e2b11335b7c80513aabca4a5cd8410cdc5feb580f993",
+            "bytes": 2554
+          },
+          {
+            "path": "dist/rules/max-props.js",
+            "sha256": "bc53d7366e9d7eb48c26fa67be2480467908de6b5f93b6c43c627f3fb2e6d369",
+            "bytes": 2086
+          },
+          {
+            "path": "dist/rules/max-template-depth.js",
+            "sha256": "be071f7d2939e8eead52cd33c16f52e401575b75bd6e2c9e4bb8af17c52afd96",
+            "bytes": 1720
+          },
+          {
+            "path": "dist/rules/multi-word-component-names.js",
+            "sha256": "5c767f5e21dfe51d6b782ebd3a93cae157eac3fbaf83f08863f7627344020135",
+            "bytes": 3352
+          },
+          {
+            "path": "dist/rules/multiline-html-element-content-newline.js",
+            "sha256": "b85fa1f79906fce148060a43b3ec455aecc36ee40e8b0d1ca0a671a4c5173700",
+            "bytes": 4993
+          },
+          {
+            "path": "dist/rules/multiline-ternary.js",
+            "sha256": "5a109238eb8ace3364157665ac673fdb26ea20d7c03c11cb9018baefb4f590c4",
+            "bytes": 693
+          },
+          {
+            "path": "dist/rules/mustache-interpolation-spacing.js",
+            "sha256": "cfb5714cd385635d9e486e762fae00e542dae85041af3387cb8448da79785eab",
+            "bytes": 3072
+          },
+          {
+            "path": "dist/rules/new-line-between-multi-line-property.js",
+            "sha256": "7fad091324f42945d60cbbcd6f800ef926db57a56c5d57250e33972f83444e44",
+            "bytes": 3660
+          },
+          {
+            "path": "dist/rules/next-tick-style.js",
+            "sha256": "79c7b0dc64301696a4e8ac592e5e1de13d990cdc88c4e9cb98d9015b002a2264",
+            "bytes": 3631
+          },
+          {
+            "path": "dist/rules/no-arrow-functions-in-watch.js",
+            "sha256": "1c0eef5b34f6fa0804c71245632d6680579ad384569dc6fbe0468112de6f8c16",
+            "bytes": 1521
+          },
+          {
+            "path": "dist/rules/no-async-in-computed-properties.js",
+            "sha256": "31adcb6239fdc5b52028364c0b03d4199e719ba09803677a5c15f8fab39524d7",
+            "bytes": 8422
+          },
+          {
+            "path": "dist/rules/no-bare-strings-in-template.js",
+            "sha256": "e2d5cbc9b1d8c909fb0fcc931852f5739d6ba3554bb2fecc64acb1715b85ae2e",
+            "bytes": 5287
+          },
+          {
+            "path": "dist/rules/no-boolean-default.js",
+            "sha256": "dde1408a3b5b09f3bbe814b0a261153aa2f63c9300a48325956ed9c65b13721b",
+            "bytes": 3991
+          },
+          {
+            "path": "dist/rules/no-child-content.js",
+            "sha256": "9f49031bc27b949efb8ff24de5e5fa0e7412f8381e584763a39218cfde5dbcc2",
+            "bytes": 3787
+          },
+          {
+            "path": "dist/rules/no-computed-properties-in-data.js",
+            "sha256": "9df9d59ddb84f8b314fccbef2796078403559b60725c632708f59dfebad58f3e",
+            "bytes": 2681
+          },
+          {
+            "path": "dist/rules/no-console.js",
+            "sha256": "4d514cc51e74eb574128ceb230f79adb073f9e84fc0b77c8e2d33ae78afa250b",
+            "bytes": 1437
+          },
+          {
+            "path": "dist/rules/no-constant-condition.js",
+            "sha256": "4683e6fa4b24331d062ebffc02130d2bf4acaa5bc79c54062fa9b6b210b13851",
+            "bytes": 958
+          },
+          {
+            "path": "dist/rules/no-custom-modifiers-on-v-model.js",
+            "sha256": "f0a80b5056925d369a1f7d786dd4f812f85b1404da4f9687da22947b114676d0",
+            "bytes": 1592
+          },
+          {
+            "path": "dist/rules/no-deprecated-data-object-declaration.js",
+            "sha256": "b81763c04820d8c6db0a03cae505a1080ac4a542046338d9178c13cc39ebc230",
+            "bytes": 2448
+          },
+          {
+            "path": "dist/rules/no-deprecated-delete-set.js",
+            "sha256": "e5aa193f89218f7274c53449fb1a5d11c64de004ed946e0d5afbd0d6200241c1",
+            "bytes": 3113
+          },
+          {
+            "path": "dist/rules/no-deprecated-destroyed-lifecycle.js",
+            "sha256": "b432405919646cc9b45dcd4f80a8333df10eb4cb56635241a1020452ee9cf09d",
+            "bytes": 2266
+          },
+          {
+            "path": "dist/rules/no-deprecated-dollar-listeners-api.js",
+            "sha256": "71af7147d1921393d1ce2173b12c47e1a053ee3b7147d98bd8d805276f07828a",
+            "bytes": 1610
+          },
+          {
+            "path": "dist/rules/no-deprecated-dollar-scopedslots-api.js",
+            "sha256": "ca2ea0a69b107c7a0dec39fa3b120562481aadbabc5e70d3cf338e139059eed6",
+            "bytes": 1796
+          },
+          {
+            "path": "dist/rules/no-deprecated-events-api.js",
+            "sha256": "0917bbed3679ac4157935635e66d8dc87c99b87a12bf2877356cd6417204d235",
+            "bytes": 1618
+          },
+          {
+            "path": "dist/rules/no-deprecated-filter.js",
+            "sha256": "98a17805e6e26bb446c2ec3000e760d89640f38e7f352ece64a354d5275f7094",
+            "bytes": 1157
+          },
+          {
+            "path": "dist/rules/no-deprecated-functional-template.js",
+            "sha256": "85050e2d98f211bd75940bf2a184425a474739bf14fce341c6c8b568349742c0",
+            "bytes": 1291
+          },
+          {
+            "path": "dist/rules/no-deprecated-html-element-is.js",
+            "sha256": "0427e539077f5966f40e0e29d0d5d9e4e5ad49ce7803f786492135de8c0477f9",
+            "bytes": 1830
+          },
+          {
+            "path": "dist/rules/no-deprecated-inline-template.js",
+            "sha256": "aaeaed94bc6940989bd3cea656e5439fc467a7d1c01cb919c03b5219e74d3f9f",
+            "bytes": 1222
+          },
+          {
+            "path": "dist/rules/no-deprecated-model-definition.js",
+            "sha256": "cda8b376f67f77006eff39178de924471f7d20400d308801d500dc883bfcbb42",
+            "bytes": 3674
+          },
+          {
+            "path": "dist/rules/no-deprecated-props-default-this.js",
+            "sha256": "540f005e2ba5f6a0fff983158571de033fa2ed0541484590cc67e5bd8e3154dd",
+            "bytes": 3264
+          },
+          {
+            "path": "dist/rules/no-deprecated-router-link-tag-prop.js",
+            "sha256": "6b9ace420bf5886806fb80cbc26dbe7b4ae1934364cae89ef4f5e8035fca2f9f",
+            "bytes": 2013
+          },
+          {
+            "path": "dist/rules/no-deprecated-scope-attribute.js",
+            "sha256": "29831f3b9a8d29a2be562521191e4d2140d8a552369e2ed066ae0ea24471757d",
+            "bytes": 1285
+          },
+          {
+            "path": "dist/rules/no-deprecated-slot-attribute.js",
+            "sha256": "7e6e152c68a90b45c0041865eccf627c59862fcb44041cf02e73aa41d980f9ee",
+            "bytes": 1272
+          },
+          {
+            "path": "dist/rules/no-deprecated-slot-scope-attribute.js",
+            "sha256": "7519f323c6530caa97062ae86f5d6150ad9bc32801c5ab266d9724253eb7e1f8",
+            "bytes": 1355
+          },
+          {
+            "path": "dist/rules/no-deprecated-v-bind-sync.js",
+            "sha256": "2d863e15ed33094616cbbfed378b00f27102014f04a311da5587931b51bd6236",
+            "bytes": 1684
+          },
+          {
+            "path": "dist/rules/no-deprecated-v-is.js",
+            "sha256": "45bddcff30bf784ae309643958d9a9ea3fb91ac1b4e54a77eb4bdad58325aaab",
+            "bytes": 1169
+          },
+          {
+            "path": "dist/rules/no-deprecated-v-on-native-modifier.js",
+            "sha256": "23388f90d5c1ec90682f98c84903ad8b8faf77dd93a5b18c40c2bd0836cf5773",
+            "bytes": 1312
+          },
+          {
+            "path": "dist/rules/no-deprecated-v-on-number-modifiers.js",
+            "sha256": "d3934c9764cb58fc01ac9cc42648f6ceffa3e86efc368c1922b7553cd06b610d",
+            "bytes": 1540
+          },
+          {
+            "path": "dist/rules/no-deprecated-vue-config-keycodes.js",
+            "sha256": "d96051762c7bebbd4f20de230d5765478560b850f985b69dc6cdbfae4f8197d4",
+            "bytes": 1436
+          },
+          {
+            "path": "dist/rules/no-dupe-keys.js",
+            "sha256": "310141c907979444d01f3b4cd01a94b6f979162e21afb27ebd2e9cfc3e468706",
+            "bytes": 5047
+          },
+          {
+            "path": "dist/rules/no-dupe-v-else-if.js",
+            "sha256": "8167dc71ae5b8792e1ebef31fd5245804daa1814a56929ce5532f755affed2f0",
+            "bytes": 5100
+          },
+          {
+            "path": "dist/rules/no-duplicate-attr-inheritance.js",
+            "sha256": "22d09914cb7dec9b6c100cc2d50413b2d3c05761fde082e2e4ad93393e7d4f15",
+            "bytes": 3386
+          },
+          {
+            "path": "dist/rules/no-duplicate-attributes.js",
+            "sha256": "45fbdbc2f7c419053a1d1c3a5c7897b15c7289954d62f7e914ef15864ab539cc",
+            "bytes": 2811
+          },
+          {
+            "path": "dist/rules/no-duplicate-class-names.js",
+            "sha256": "56da144f82ba184581641ce5dabb1610508d42e1331baf17968ab1da01162acf",
+            "bytes": 8789
+          },
+          {
+            "path": "dist/rules/no-empty-component-block.js",
+            "sha256": "b67e08f1218fea8909f2da0d462e50bb8259affade8bba7ed64541a61b7884ec",
+            "bytes": 2666
+          },
+          {
+            "path": "dist/rules/no-empty-pattern.js",
+            "sha256": "ea81b45a477cf969b08498bdb1be993260e4ecb28dd618b142102ad47c4dd7b1",
+            "bytes": 557
+          },
+          {
+            "path": "dist/rules/no-export-in-script-setup.js",
+            "sha256": "f20004a871532156a9c50abf300f05dcad7ec2e69c22351df210f1cfa8b11d9e",
+            "bytes": 2147
+          },
+          {
+            "path": "dist/rules/no-expose-after-await.js",
+            "sha256": "1861b61e5147bd960f447c29bab06fba41256b76f2f2564288948747ee668608",
+            "bytes": 5528
+          },
+          {
+            "path": "dist/rules/no-extra-parens.js",
+            "sha256": "fe197a2692304ab50e3ea7065576b1df35cf76f53a5cf73ea25a9e6e7ef042b2",
+            "bytes": 4375
+          },
+          {
+            "path": "dist/rules/no-implicit-coercion.js",
+            "sha256": "ae3b03047097b9cfe60cf3a346149b59c7fc0079c8330625f083bfe72f027fa2",
+            "bytes": 676
+          },
+          {
+            "path": "dist/rules/no-import-compiler-macros.js",
+            "sha256": "edb29e2de6cd3ca895fb1d983858ad8af453d3161582a5fc9647f80d42369146",
+            "bytes": 2666
+          },
+          {
+            "path": "dist/rules/no-irregular-whitespace.js",
+            "sha256": "369269f9871f96a170e5d797cbb427cd0c1bd3357a5a7163c9f137b23bd3f00c",
+            "bytes": 6940
+          },
+          {
+            "path": "dist/rules/no-lifecycle-after-await.js",
+            "sha256": "3ca0e453dfbad3db005d5ab925c38a5bd9a03ee7b680ada799c7f152a41faa79",
+            "bytes": 3470
+          },
+          {
+            "path": "dist/rules/no-literals-in-template.js",
+            "sha256": "989512472f3a58a8a56403572b0f728cb7d15395de023257038ce2c37e896478",
+            "bytes": 2412
+          },
+          {
+            "path": "dist/rules/no-lone-template.js",
+            "sha256": "ca4c17d487f9d995ebd899dc6d1fd5f44b384148e019bb35a6ab8a2ea108d8ca",
+            "bytes": 2300
+          },
+          {
+            "path": "dist/rules/no-loss-of-precision.js",
+            "sha256": "b7271575876c890520992120357371fbb4bb78eaf03f7b54975d3bc45ad621b3",
+            "bytes": 648
+          },
+          {
+            "path": "dist/rules/no-multi-spaces.js",
+            "sha256": "5b2224fd3ec5d80802fc6d3da6244c2c1b5ef0d953819c6a40a3f3096234c572",
+            "bytes": 3176
+          },
+          {
+            "path": "dist/rules/no-multiple-objects-in-class.js",
+            "sha256": "94db921e031c343f03cde7c545b5ac17ae03effee87bc6de0b684c35517e285b",
+            "bytes": 1658
+          },
+          {
+            "path": "dist/rules/no-multiple-slot-args.js",
+            "sha256": "5e74c1c08f5675c65011f0a366694722f9a7a86c9dde0429a48939aa19983fd4",
+            "bytes": 2782
+          },
+          {
+            "path": "dist/rules/no-multiple-template-root.js",
+            "sha256": "41d21f1547dce3bbbd9c0d3ef4146024bc2217cdc358d2dc58a4905bfc94593d",
+            "bytes": 3263
+          },
+          {
+            "path": "dist/rules/no-mutating-props.js",
+            "sha256": "7f483d73e71e14ab8a9a057cd258d1bf7d83c053bf2d6bf46ba609f74cb50991",
+            "bytes": 10959
+          },
+          {
+            "path": "dist/rules/no-negated-condition.js",
+            "sha256": "56ded91c37518dd192c9e4f63e45413e61f0ec048b166345906933ee0bf977b7",
+            "bytes": 654
+          },
+          {
+            "path": "dist/rules/no-negated-v-if-condition.js",
+            "sha256": "43c59b5f5d0f8c91a753dcc9293a886c89425253676412f311f4baaa8aefbc0a",
+            "bytes": 5095
+          },
+          {
+            "path": "dist/rules/no-parsing-error.js",
+            "sha256": "346dc594d5a9994d64e9b709bc8d8a68e7a43813493cf096fc0297791d2a1c48",
+            "bytes": 3173
+          },
+          {
+            "path": "dist/rules/no-potential-component-option-typo.js",
+            "sha256": "ca1f5e0f44d64ea0c86821216e5cdc6bb403cbf254653eecd98e87c19af833b0",
+            "bytes": 3601
+          },
+          {
+            "path": "dist/rules/no-ref-as-operand.js",
+            "sha256": "544c454a56c87b7a19d358eac087925eab8743f33b0a8c94183380d5e143997d",
+            "bytes": 6424
+          },
+          {
+            "path": "dist/rules/no-ref-object-reactivity-loss.js",
+            "sha256": "38bc768c2adec81f0db0e8c6e5c96ebb6a59e1f434a0439d9433117362b02da0",
+            "bytes": 3349
+          },
+          {
+            "path": "dist/rules/no-required-prop-with-default.js",
+            "sha256": "3c51d5f8d0ccf8abc2e0b61006a32e755edc962267ea79a3d3b20b1342f67924",
+            "bytes": 3742
+          },
+          {
+            "path": "dist/rules/no-reserved-component-names.js",
+            "sha256": "d969c4df8564645629f8c0b7ea1e9af58cfe55698a1ab55e83d7505d034e6365",
+            "bytes": 5016
+          },
+          {
+            "path": "dist/rules/no-reserved-keys.js",
+            "sha256": "f1a390ef50439b87ee88f348d14e276b8edff14733d87f2c374754aff7157652",
+            "bytes": 2481
+          },
+          {
+            "path": "dist/rules/no-reserved-props.js",
+            "sha256": "bb96e1f5ace08f59cf165258da7c5131e723844c16aafc96bcdcd1af17f893d0",
+            "bytes": 1736
+          },
+          {
+            "path": "dist/rules/no-restricted-block.js",
+            "sha256": "072c206d4863ab76492564f0cbb0c32823a5db02090fdac4f70bab7f60901cac",
+            "bytes": 2152
+          },
+          {
+            "path": "dist/rules/no-restricted-call-after-await.js",
+            "sha256": "f487c139990a4e865a5f5649c1589f796931c203bedb33761959272aad5878d6",
+            "bytes": 5506
+          },
+          {
+            "path": "dist/rules/no-restricted-class.js",
+            "sha256": "6d51e9468f23c733c2fd704c5001b6149d37e95b609fac77bc8a8846bc0fa734",
+            "bytes": 3011
+          },
+          {
+            "path": "dist/rules/no-restricted-component-names.js",
+            "sha256": "acfaf8e2a1e393d9e4e29b7e8752f8cdcf0d185da175bcdff99c7aa8d4eeb493",
+            "bytes": 2947
+          },
+          {
+            "path": "dist/rules/no-restricted-component-options.js",
+            "sha256": "a2e9a4341c8bb8d1c3124b79f530e128ec0b6fc16c015f441d856f7fbbe6a427",
+            "bytes": 3543
+          },
+          {
+            "path": "dist/rules/no-restricted-custom-event.js",
+            "sha256": "b518a3b171f50c8435c3798666d06bde0dd089fda0e6fc5aec4579b89ada9073",
+            "bytes": 5794
+          },
+          {
+            "path": "dist/rules/no-restricted-html-elements.js",
+            "sha256": "3ae6af23cf1ac71cdca0cebbcfc4d0225328d949d3010eceddfedc05f7092e91",
+            "bytes": 2005
+          },
+          {
+            "path": "dist/rules/no-restricted-props.js",
+            "sha256": "3f05ada9037ce830e6efe11e1f5dcd76b78562bc40604cb05df6f2983fa4ee34",
+            "bytes": 3751
+          },
+          {
+            "path": "dist/rules/no-restricted-static-attribute.js",
+            "sha256": "e7b23824969e46aacee645a1194dd7887843c456a8da10ead4a80c692c5863a5",
+            "bytes": 3014
+          },
+          {
+            "path": "dist/rules/no-restricted-syntax.js",
+            "sha256": "54b818ca601718c862dbd0608dd8bdcaff12b7386ef3fbfb29bbc024db3cac4f",
+            "bytes": 598
+          },
+          {
+            "path": "dist/rules/no-restricted-v-bind.js",
+            "sha256": "815b4f507593dc44170d7bc174e1b0feab570e7920de4cb165f4a47532e26af9",
+            "bytes": 3439
+          },
+          {
+            "path": "dist/rules/no-restricted-v-on.js",
+            "sha256": "9a2d60c2a666ead0b4982a39dd5e0ee9bbe69443c650437a7840011bf35106e9",
+            "bytes": 3331
+          },
+          {
+            "path": "dist/rules/no-root-v-if.js",
+            "sha256": "08a075802b2a4deaaebc9537f4d7613b257ca9052cdb85920f94bc5f69f0ebea",
+            "bytes": 1319
+          },
+          {
+            "path": "dist/rules/no-setup-props-reactivity-loss.js",
+            "sha256": "f38e02569f6e6916d29c125b458de3fa074b6925a6d3cf8aa39f851c852552be",
+            "bytes": 8964
+          },
+          {
+            "path": "dist/rules/no-shared-component-data.js",
+            "sha256": "28099aaf1b20cb3154db91f37250d875d92fdcee856168a9cf512066b21bc38c",
+            "bytes": 2354
+          },
+          {
+            "path": "dist/rules/no-side-effects-in-computed-properties.js",
+            "sha256": "e19a0c97534fbbb754e0a90b5a5cd3f0a668b1547b741f9a20cbdc2abe5de178",
+            "bytes": 5245
+          },
+          {
+            "path": "dist/rules/no-spaces-around-equal-signs-in-attribute.js",
+            "sha256": "05a7ae262dd22d3958ea8d55387b60652c1d8a2253f24042fa4f0c3815e71af2",
+            "bytes": 1669
+          },
+          {
+            "path": "dist/rules/no-sparse-arrays.js",
+            "sha256": "6faca21dcab0f348b421707c9e41de1610480c6a6965b14786e0cf8ff63c8243",
+            "bytes": 557
+          },
+          {
+            "path": "dist/rules/no-static-inline-styles.js",
+            "sha256": "4016b3ae73769dee2a3d5ffda6e60530c0256b5119cb30c10706808d202ef16d",
+            "bytes": 3877
+          },
+          {
+            "path": "dist/rules/no-template-key.js",
+            "sha256": "8acb1c14eaaa8b0932b94634edb355fc99d846dd2d9a053bc31d16d8c477a0d6",
+            "bytes": 1388
+          },
+          {
+            "path": "dist/rules/no-template-shadow.js",
+            "sha256": "795f15d1fc66a099a14f86aa83eadbb7fe3065312053d99e06cc3f64281577bb",
+            "bytes": 3542
+          },
+          {
+            "path": "dist/rules/no-template-target-blank.js",
+            "sha256": "cf5c867b87af8dbdffa66d834d05c80fc7c460d6254f7dfb57842ea03a2aada7",
+            "bytes": 3546
+          },
+          {
+            "path": "dist/rules/no-textarea-mustache.js",
+            "sha256": "3893be5457f675227aa116b40c848d30f7f560fbe6742cdb17ee3e18cc929139",
+            "bytes": 1265
+          },
+          {
+            "path": "dist/rules/no-this-in-before-route-enter.js",
+            "sha256": "9b526f4aea16db18a72abe9f2edd8346b8c351ef73b9419968cefa809a09fefc",
+            "bytes": 2513
+          },
+          {
+            "path": "dist/rules/no-undef-components.js",
+            "sha256": "8f939955e948c4aba19f79f96d9dd4ce564a7e733ca6c0efedf48301e8ab1f5f",
+            "bytes": 7603
+          },
+          {
+            "path": "dist/rules/no-undef-directives.js",
+            "sha256": "3cf0dad0a4bff2b47e5ddc66518b479e898fa1c9ce7973389ad9c7022a4d8f0f",
+            "bytes": 4404
+          },
+          {
+            "path": "dist/rules/no-undef-properties.js",
+            "sha256": "f0a9a96c755126751d2e3b8ccc901ef5ba4b03e37332c60e00693389700c261b",
+            "bytes": 12226
+          },
+          {
+            "path": "dist/rules/no-unsupported-features.js",
+            "sha256": "b9b3d379bf94becb213ffe8c9ad3f1493c1efc040417b41e5d871a60eb772ce4",
+            "bytes": 7952
+          },
+          {
+            "path": "dist/rules/no-unused-components.js",
+            "sha256": "a6a02a923cd7a9cdc1f901a2df1e52fec65b9163f0283365efec06ae0df6b6d2",
+            "bytes": 3199
+          },
+          {
+            "path": "dist/rules/no-unused-emit-declarations.js",
+            "sha256": "a48d43559818dd7c446b650aaeece2be160e191c8f1bc480ef50ade20555de3c",
+            "bytes": 8512
+          },
+          {
+            "path": "dist/rules/no-unused-properties.js",
+            "sha256": "0a774ab84feb94a953645e03172bfc5e45c8a358bbe9297bbd3bf8c464742f29",
+            "bytes": 15471
+          },
+          {
+            "path": "dist/rules/no-unused-refs.js",
+            "sha256": "517269d9cc7099dd69b115b5791c59b24b2efa806ea80b4d7a36ed5b3087cb17",
+            "bytes": 5195
+          },
+          {
+            "path": "dist/rules/no-unused-vars.js",
+            "sha256": "bcd9aeb11c3405973469bd020ff6f82d3cba1a8764b5000ca832fc385ad4f587",
+            "bytes": 4160
+          },
+          {
+            "path": "dist/rules/no-use-computed-property-like-method.js",
+            "sha256": "aebb94726dba42822f01f7c4be803cffb175276f15519cdd77ecf887ae8f9388",
+            "bytes": 14409
+          },
+          {
+            "path": "dist/rules/no-use-v-else-with-v-for.js",
+            "sha256": "2d70b02a628e9ff1b8a73158abae44a9e5c39ee5a11b130f3566116403254a53",
+            "bytes": 1521
+          },
+          {
+            "path": "dist/rules/no-use-v-if-with-v-for.js",
+            "sha256": "4746301ed40e49aeba934a9f35e6776e2ff8a6f14bba12b5bd9f43a08a1231d9",
+            "bytes": 3177
+          },
+          {
+            "path": "dist/rules/no-useless-concat.js",
+            "sha256": "22edadc9359b811f6b071d847431ca4db6382f1fb8ab0be78787380dd76d7060",
+            "bytes": 586
+          },
+          {
+            "path": "dist/rules/no-useless-mustaches.js",
+            "sha256": "ebd4cab3fe6520ec0367f3d6aa4e99dc7c8159d9bbe7c477446b81aa33ea01a4",
+            "bytes": 3614
+          },
+          {
+            "path": "dist/rules/no-useless-template-attributes.js",
+            "sha256": "6f60d4662ce2914b1bdcb96cc86f986d0a0190effe3b52b2df72233a16bb15c4",
+            "bytes": 2360
+          },
+          {
+            "path": "dist/rules/no-useless-v-bind.js",
+            "sha256": "f3bf020a6e9ffa0baea4b3bc40b1149ddb80f7380e0a3978ad818a5375cf6113",
+            "bytes": 3823
+          },
+          {
+            "path": "dist/rules/no-v-for-template-key-on-child.js",
+            "sha256": "6947eed0319c29fabd71ae0180dd8ac6c31267c9b4d5302b1162c3c9f379fe17",
+            "bytes": 2741
+          },
+          {
+            "path": "dist/rules/no-v-for-template-key.js",
+            "sha256": "f2204cb6f9adba4906270b30be6e389d0f327c558ed8a7ed2b4435da4ecfe5cb",
+            "bytes": 1354
+          },
+          {
+            "path": "dist/rules/no-v-html.js",
+            "sha256": "4089a601c00f9f111af66a8d76b1c155b2c94c8d94ac1f31f6f247140b4f40c2",
+            "bytes": 2042
+          },
+          {
+            "path": "dist/rules/no-v-model-argument.js",
+            "sha256": "1ae0358eb41402c1044533a237ab184f91afb9508840f4e67e85e68ef09cc459",
+            "bytes": 1374
+          },
+          {
+            "path": "dist/rules/no-v-text-v-html-on-component.js",
+            "sha256": "3918000d62dedb9da94b92a1e61a843874c181ae454bd43b6c303555e3bb76e5",
+            "bytes": 2111
+          },
+          {
+            "path": "dist/rules/no-v-text.js",
+            "sha256": "a76f35f70247b2e6cad4ad95241b912a427f4a7d5d5f534b2fa129d6a5b85759",
+            "bytes": 1083
+          },
+          {
+            "path": "dist/rules/no-watch-after-await.js",
+            "sha256": "3d6c76e6fdb5849c7f95bb0bde632981315a7dc718ccfe15eaadaadab00caabd",
+            "bytes": 3505
+          },
+          {
+            "path": "dist/rules/object-curly-newline.js",
+            "sha256": "566bf425934c4a0c01be809ba5f45f4af96f7b0cf8af0850204dcea2c76f5e8f",
+            "bytes": 627
+          },
+          {
+            "path": "dist/rules/object-curly-spacing.js",
+            "sha256": "11608326c6da2a656c05e9a57cecd00c0a09d6694c1b8f85f9b8fdf807878431",
+            "bytes": 631
+          },
+          {
+            "path": "dist/rules/object-property-newline.js",
+            "sha256": "81f7ce5f9ca7978fd7ebfefcb773a9213f92dc961e21da5c7ce29f731ae9733c",
+            "bytes": 639
+          },
+          {
+            "path": "dist/rules/object-shorthand.js",
+            "sha256": "3a62e4751bf9af20314d470b70369935e61c25ae621da6baea32ac76a7b2f120",
+            "bytes": 644
+          },
+          {
+            "path": "dist/rules/one-component-per-file.js",
+            "sha256": "dcb8283727e38d00582da24be684bc3ab41cf058704435df201180c830bff1d2",
+            "bytes": 1543
+          },
+          {
+            "path": "dist/rules/operator-linebreak.js",
+            "sha256": "710d59bfcdab7e2c8ff634013702a0d87ed76bfafa20d49496ccd89464e6e1ae",
+            "bytes": 587
+          },
+          {
+            "path": "dist/rules/order-in-components.js",
+            "sha256": "880195fb496516a1f96f454220c1695afc21ef8c2c6af56a18ee0f3c23ea9481",
+            "bytes": 8550
+          },
+          {
+            "path": "dist/rules/padding-line-between-blocks.js",
+            "sha256": "9998f926923f8c99d15f3c3fd8bc0b35bb97b0a47e7ea65c8d3efad9c817e335",
+            "bytes": 5599
+          },
+          {
+            "path": "dist/rules/padding-line-between-tags.js",
+            "sha256": "f1da72465bbba624ae07deece76d6720f1ac026e30915ca3c0f3ab5e08339aa9",
+            "bytes": 6401
+          },
+          {
+            "path": "dist/rules/padding-lines-in-component-definition.js",
+            "sha256": "472869fca0238db6e122fee27c4eb31248d33c5c132ea5686b23942ccef6470f",
+            "bytes": 9691
+          },
+          {
+            "path": "dist/rules/prefer-define-options.js",
+            "sha256": "c4a3b19398f8e608b8fac64e838d582923b18f3203b781eee7e7ec7948705170",
+            "bytes": 3258
+          },
+          {
+            "path": "dist/rules/prefer-import-from-vue.js",
+            "sha256": "48514bdc299de0846a4382451a71dbcc351127cb377f55820d2619eac9ef8288",
+            "bytes": 3059
+          },
+          {
+            "path": "dist/rules/prefer-prop-type-boolean-first.js",
+            "sha256": "5a80df9f4496681b75f5e10093326782ba57d4e474f00eca7f276c28464d895b",
+            "bytes": 2880
+          },
+          {
+            "path": "dist/rules/prefer-separate-static-class.js",
+            "sha256": "f6159d41864732c24c8d2da49f263224b1c718b951a018924968f26529e97575",
+            "bytes": 5799
+          },
+          {
+            "path": "dist/rules/prefer-single-event-payload.js",
+            "sha256": "982ce90d7458a631b768469c09183e4748295ca7fca03e29aad29fcdfd6db0e3",
+            "bytes": 7214
+          },
+          {
+            "path": "dist/rules/prefer-template.js",
+            "sha256": "7ed981c249e485ab41c02839013ff85b6101efdf54b760a39698bd5b72f33623",
+            "bytes": 578
+          },
+          {
+            "path": "dist/rules/prefer-true-attribute-shorthand.js",
+            "sha256": "6f90dcada284a1678cf4e4e0d7ac9811d21ae050aa2471e62e1114779d3c273a",
+            "bytes": 3589
+          },
+          {
+            "path": "dist/rules/prefer-use-template-ref.js",
+            "sha256": "5d862cfa42c44ccc44dba434de0dfbad9504e1285b4d6f99ce7d97f4dcbdc817",
+            "bytes": 2771
+          },
+          {
+            "path": "dist/rules/prefer-v-model.js",
+            "sha256": "dd399ae9cd2a23d43ead8308e4a8cf39df6200ad951e90ace49aa7e3d3c92bbb",
+            "bytes": 4738
+          },
+          {
+            "path": "dist/rules/prop-name-casing.js",
+            "sha256": "b637beea7d7acd891b6fdfa299b7b64e8efc76b07916e8f3e3690e8155700341",
+            "bytes": 1996
+          },
+          {
+            "path": "dist/rules/quote-props.js",
+            "sha256": "96d0d0a6115a0433fdfbb797424b900a36f50d76ce8acaae752a9f341ad330db",
+            "bytes": 1578
+          },
+          {
+            "path": "dist/rules/require-component-is.js",
+            "sha256": "1b64cb8f609e0b2edbab1e2b8b7a887008721a168e054740aa0ff0a47878d1d3",
+            "bytes": 1284
+          },
+          {
+            "path": "dist/rules/require-default-export.js",
+            "sha256": "f5cffd83e482807b7b907423363315ddc95c43ea8f1365ba8cc44aada99da759",
+            "bytes": 1762
+          },
+          {
+            "path": "dist/rules/require-default-prop.js",
+            "sha256": "d0f1a4b18867bdb0535e3e477da3e0dcc46043659459c99462946a533cd8e372",
+            "bytes": 5634
+          },
+          {
+            "path": "dist/rules/require-direct-export.js",
+            "sha256": "32e8b834755b217a826b0bb46760018a99bed8f2a7568bb0b488bb8c63c5680f",
+            "bytes": 3469
+          },
+          {
+            "path": "dist/rules/require-emit-validator.js",
+            "sha256": "39c9d93dff324d5abaac6ed9c1618623db62fdc474ff985e7e563b5e8255192e",
+            "bytes": 2525
+          },
+          {
+            "path": "dist/rules/require-explicit-emits.js",
+            "sha256": "6ab527225d4977aeff7b846cbad56834404491d196bc8647186169761e0444e9",
+            "bytes": 12642
+          },
+          {
+            "path": "dist/rules/require-explicit-slots.js",
+            "sha256": "42f4d7cfc7a17d66bb0d6a7f71ba49f623c899952b95653182c3ed99fafbbb79",
+            "bytes": 4400
+          },
+          {
+            "path": "dist/rules/require-expose.js",
+            "sha256": "fe446cc0dc8e39d63a3c931ea8c7315b65bbb2d1033c1e2efefe74af42f3a8da",
+            "bytes": 8506
+          },
+          {
+            "path": "dist/rules/require-macro-variable-name.js",
+            "sha256": "7d870f061fe735abb98bdcd6b1106fb5621e9b5739d3364f34efb9a480e2b740",
+            "bytes": 2454
+          },
+          {
+            "path": "dist/rules/require-name-property.js",
+            "sha256": "a742543d465dfdfd1c62efcde8cc73de8476fda6a4791756a6a82476e9013734",
+            "bytes": 3288
+          },
+          {
+            "path": "dist/rules/require-prop-comment.js",
+            "sha256": "b54acdcc2d010e569ae0f98ab83ed91cf90c8bbdcdab4c65d72b8568b6c316a3",
+            "bytes": 2729
+          },
+          {
+            "path": "dist/rules/require-prop-type-constructor.js",
+            "sha256": "1a902cebef12b71ce2073a70d5af40a77eec0a3063d12bf47980eb5eb3e04865",
+            "bytes": 2914
+          },
+          {
+            "path": "dist/rules/require-prop-types.js",
+            "sha256": "346fac8bacd17c36fb8151d68d41f7ca985dc75b15c0bb087a8fd465718caf20",
+            "bytes": 2978
+          },
+          {
+            "path": "dist/rules/require-render-return.js",
+            "sha256": "90dfc9ce09b435d1cafb7ac8263834e02b17e27ad416a979e8153d2c8ac31c02",
+            "bytes": 1436
+          },
+          {
+            "path": "dist/rules/require-slots-as-functions.js",
+            "sha256": "94857af48a201bc454f37630d1176a373a60d8fd0f6dc9d22a758a3243d76575",
+            "bytes": 2875
+          },
+          {
+            "path": "dist/rules/require-toggle-inside-transition.js",
+            "sha256": "ffe82f3b12c9476b10a698c8e59e2a048d2643cc8215ccaa4767304e13a0edfd",
+            "bytes": 3021
+          },
+          {
+            "path": "dist/rules/require-typed-object-prop.js",
+            "sha256": "66599dfa6cd2f38366b51f0cb9059dbf09927d3799641a8c9f3bd00728677657",
+            "bytes": 4180
+          },
+          {
+            "path": "dist/rules/require-typed-ref.js",
+            "sha256": "c5e742d02bd654c058de0f2558d0eacab09ce586ccdfcfb7820d519917f6d050",
+            "bytes": 2479
+          },
+          {
+            "path": "dist/rules/require-v-for-key.js",
+            "sha256": "73f814fa3566205cee83f501026e945a2a4b23d12209de672e503de03b335170",
+            "bytes": 1725
+          },
+          {
+            "path": "dist/rules/require-valid-default-prop.js",
+            "sha256": "8f33597d91c583b786c0c485a119138153225b60d4d8213c7afc1d2a243c7420",
+            "bytes": 8354
+          },
+          {
+            "path": "dist/rules/restricted-component-names.js",
+            "sha256": "fbb80fddb9568d3cce141579bc321563389dadf448e3f8cd311be1b67a4f86ed",
+            "bytes": 2480
+          },
+          {
+            "path": "dist/rules/return-in-computed-property.js",
+            "sha256": "fb7d59b4969766156622887bf3ad602ee4508010ee0fa5a6a5a13b35383ad95d",
+            "bytes": 2862
+          },
+          {
+            "path": "dist/rules/return-in-emits-validator.js",
+            "sha256": "b739b806b12ee92e9fbfabeaee23b71f54ac8727d7dc3f2caa16720d94514c5a",
+            "bytes": 3663
+          },
+          {
+            "path": "dist/rules/script-indent.js",
+            "sha256": "a93fffdf22ccbe23c6a4a7c3c460c930cb92cd58ce22b070bb19a5239cbbc130",
+            "bytes": 1197
+          },
+          {
+            "path": "dist/rules/singleline-html-element-content-newline.js",
+            "sha256": "dbfd0675a24affc3712d8e74754d7842cd46a9569c7b09c9ca730e00b40229fa",
+            "bytes": 4632
+          },
+          {
+            "path": "dist/rules/slot-name-casing.js",
+            "sha256": "d4ab5a4127319c01bf6af6826129f3d6b20ede4e7595765518513bf945eff598",
+            "bytes": 1603
+          },
+          {
+            "path": "dist/rules/sort-keys.js",
+            "sha256": "c759f96b2b2031dd8e28764c32e1253ad4a37e0eb59c51add52fe848c8881147",
+            "bytes": 6391
+          },
+          {
+            "path": "dist/rules/space-in-parens.js",
+            "sha256": "9821c7ff7cfd7e1c1f72556d817d617dca0e884c85d4040d4e86e6a4d48daff3",
+            "bytes": 669
+          },
+          {
+            "path": "dist/rules/space-infix-ops.js",
+            "sha256": "aa19c8f9c622c169493056aea278065a12b595c33b2b344b9ea182ef0a0a902a",
+            "bytes": 637
+          },
+          {
+            "path": "dist/rules/space-unary-ops.js",
+            "sha256": "db239d93b39e73b4d185c77eb0d4fdc792f58aad9dd3a1869a09f9a872a2b054",
+            "bytes": 637
+          },
+          {
+            "path": "dist/rules/static-class-names-order.js",
+            "sha256": "0016ee9e9731c69093fd0c857fbf7f10c1a10b52c691769f7639550b36f841d0",
+            "bytes": 1623
+          },
+          {
+            "path": "dist/rules/syntaxes/define-model.js",
+            "sha256": "10928c0cd1d2c12f4554ba1f46471301ffeb81fa764d8029e5e5fb3616da18da",
+            "bytes": 804
+          },
+          {
+            "path": "dist/rules/syntaxes/define-options.js",
+            "sha256": "3ec4572984a780ab37312f721a1b2d06f2fa67d68712d92bb180cb4e9fbd84a9",
+            "bytes": 1886
+          },
+          {
+            "path": "dist/rules/syntaxes/define-slots.js",
+            "sha256": "cfed8c2105e72f591faa8a054d0c6ef943c56d947b3a1565cffc394ab7d945d7",
+            "bytes": 804
+          },
+          {
+            "path": "dist/rules/syntaxes/dynamic-directive-arguments.js",
+            "sha256": "3a586a3a12b787cdce4c94e617b39581230f41bfe80f131249819f4eba2af81b",
+            "bytes": 1014
+          },
+          {
+            "path": "dist/rules/syntaxes/is-attribute-with-vue-prefix.js",
+            "sha256": "f744825f9a8f1f91752b33051f4965abc157bf7fa4b354c9c0cbf06662ad1bf2",
+            "bytes": 845
+          },
+          {
+            "path": "dist/rules/syntaxes/scope-attribute.js",
+            "sha256": "305553a99e26ecf32edad7449aefb7de8d8e965018b0dc976ab95b11d0378cff",
+            "bytes": 983
+          },
+          {
+            "path": "dist/rules/syntaxes/script-setup.js",
+            "sha256": "1e844509474482ecb6bf2cb3c8570764587958b648f7cc0d7a81581a415d03b7",
+            "bytes": 941
+          },
+          {
+            "path": "dist/rules/syntaxes/slot-attribute.js",
+            "sha256": "28e70dd2a06b1c4458bda4a462beee08d41feddb416face6bc021d6c88e2df86",
+            "bytes": 4465
+          },
+          {
+            "path": "dist/rules/syntaxes/slot-scope-attribute.js",
+            "sha256": "59cb3174feb76c600f5ebe39f560f13f9ffa472abe692707c12d64b10b3d1333",
+            "bytes": 2999
+          },
+          {
+            "path": "dist/rules/syntaxes/style-css-vars-injection.js",
+            "sha256": "0adbb700e1d82eb06d7594bff65ff0dadd78cbd6fa04690e92b6b6ba59b82aa4",
+            "bytes": 655
+          },
+          {
+            "path": "dist/rules/syntaxes/utils/can-convert-to-v-slot.js",
+            "sha256": "6bade55f439582407f10ed30c8420469118554d555207d543d344eda8693eb41",
+            "bytes": 6540
+          },
+          {
+            "path": "dist/rules/syntaxes/v-bind-attr-modifier.js",
+            "sha256": "95d03ecf742f54b937eb83626d0fa19da818168458cb53924d3b75cd96dc1dde",
+            "bytes": 999
+          },
+          {
+            "path": "dist/rules/syntaxes/v-bind-prop-modifier-shorthand.js",
+            "sha256": "be6f96346a27165dbc670b116661b16b7a294293635a0131e896ec4a95682342",
+            "bytes": 1189
+          },
+          {
+            "path": "dist/rules/syntaxes/v-bind-same-name-shorthand.js",
+            "sha256": "51879d540273effc94f6923109c7d76fabae714b3c91d98b650d0a9dfa12afa5",
+            "bytes": 1148
+          },
+          {
+            "path": "dist/rules/syntaxes/v-is.js",
+            "sha256": "efd0b1cccc603ac1c17130af2061b1e26773b3790dc7a8def340d298a06015f3",
+            "bytes": 853
+          },
+          {
+            "path": "dist/rules/syntaxes/v-memo.js",
+            "sha256": "1307c0be9f67e0f280f184e02b6134d1d28f3e3f92a98cc91eaa5afe779a88e7",
+            "bytes": 850
+          },
+          {
+            "path": "dist/rules/syntaxes/v-model-argument.js",
+            "sha256": "3d7b0326606b64e4718173e824a1a24f8beb586c85283f67d57456306c483cff",
+            "bytes": 767
+          },
+          {
+            "path": "dist/rules/syntaxes/v-model-custom-modifiers.js",
+            "sha256": "e083be5a91e4a7d9df4c8c2b7882c8e33daf6f629af6b487f37e125e3c0a7ec1",
+            "bytes": 952
+          },
+          {
+            "path": "dist/rules/syntaxes/v-slot.js",
+            "sha256": "8a7b7323f12c0395a32b975bda8defb5cff785fb8716f475be48090595bd52a0",
+            "bytes": 2256
+          },
+          {
+            "path": "dist/rules/template-curly-spacing.js",
+            "sha256": "cda2f27d54261d5dcc9efae0389877dc288bc229a2447ecea7290e84dc227aeb",
+            "bytes": 661
+          },
+          {
+            "path": "dist/rules/this-in-template.js",
+            "sha256": "4374be6fea9122e59b55a15f8db38b39ae64cfc2b3fd46493ea862314334454e",
+            "bytes": 2923
+          },
+          {
+            "path": "dist/rules/use-v-on-exact.js",
+            "sha256": "4c802db144c891091c67a7a512413a538e776a15d971c92dfbe3a940fc6bcab0",
+            "bytes": 5602
+          },
+          {
+            "path": "dist/rules/v-bind-style.js",
+            "sha256": "a05fe2c33a42077e6c7e7ef54a99a78309f5af90721b2a5f87603359acc8a52d",
+            "bytes": 3685
+          },
+          {
+            "path": "dist/rules/v-for-delimiter-style.js",
+            "sha256": "27f62885f3689017ded7f2c46343f6d760e91f4e048120058795c2d043ee64e8",
+            "bytes": 1932
+          },
+          {
+            "path": "dist/rules/v-if-else-key.js",
+            "sha256": "e2e671e56b2674510519e8e05fc75c58e314cede216cdfb3e573814072ff5d11",
+            "bytes": 7604
+          },
+          {
+            "path": "dist/rules/v-on-event-hyphenation.js",
+            "sha256": "f91e547b8e0275dac03081fab804190e619fe87ee376302b50814f929c503849",
+            "bytes": 3104
+          },
+          {
+            "path": "dist/rules/v-on-handler-style.js",
+            "sha256": "82bdce23337d3fcb6a50920eea2303000c5b7ff676e64a4fbde7a16c1378a79c",
+            "bytes": 13974
+          },
+          {
+            "path": "dist/rules/v-on-style.js",
+            "sha256": "286179656ee0f4db8d55e3bf476803385d6c2ee7e54ee3f1332c7cac4da46500",
+            "bytes": 1652
+          },
+          {
+            "path": "dist/rules/v-slot-style.js",
+            "sha256": "77c92649c9e16a0fe6228525524a7651ce8f811e64cb2eeebf3b7bcfd50f3866",
+            "bytes": 3319
+          },
+          {
+            "path": "dist/rules/valid-attribute-name.js",
+            "sha256": "7750411773b1aaae2db2170343bff771e05e111b007796be2d72a3c25dbe64ef",
+            "bytes": 1714
+          },
+          {
+            "path": "dist/rules/valid-define-emits.js",
+            "sha256": "1849386e8a70f7ada37467e7be747064c5c9028737dd792a6971e720caaa8579",
+            "bytes": 3703
+          },
+          {
+            "path": "dist/rules/valid-define-options.js",
+            "sha256": "319664cc2419b38e73818c2c1239f1bc58e785a355b05c77f2ea86a61cfd25a6",
+            "bytes": 3551
+          },
+          {
+            "path": "dist/rules/valid-define-props.js",
+            "sha256": "2091fad345bb677e487a596af75d9a03d707bf6c2117b3f7a9d2a377d50ad18e",
+            "bytes": 3688
+          },
+          {
+            "path": "dist/rules/valid-model-definition.js",
+            "sha256": "166359e15491737b5ac16496283e66fd01f73cfee123445d794bf7cfcea582e5",
+            "bytes": 1515
+          },
+          {
+            "path": "dist/rules/valid-next-tick.js",
+            "sha256": "749f1cddf3064a27ef1ebc8240717c0ee59da5fa38f00ee4378c2fc1afb75f9b",
+            "bytes": 4850
+          },
+          {
+            "path": "dist/rules/valid-template-root.js",
+            "sha256": "fb6b96da97793b2781a16934fce4b34a3a72ae7cdf6e217c8a22909f7be0c484",
+            "bytes": 1744
+          },
+          {
+            "path": "dist/rules/valid-v-bind-sync.js",
+            "sha256": "2ee06223206bd25139065cf6603071b4652584b215a048563cdfab7d98bb4bda",
+            "bytes": 4272
+          },
+          {
+            "path": "dist/rules/valid-v-bind.js",
+            "sha256": "c5d2a942916cde6d31dac7f3c2adf32ad6e83d679603fcfa6fd21216a4b3d8fd",
+            "bytes": 1617
+          },
+          {
+            "path": "dist/rules/valid-v-cloak.js",
+            "sha256": "b1a150357994c8a8c1283beb9721d7eb1af0fcb1ff5c6d7b95e8090a3c67ccb8",
+            "bytes": 1720
+          },
+          {
+            "path": "dist/rules/valid-v-else-if.js",
+            "sha256": "cba3acfdbc1e6610f3aa3d4e8eb5836adce6f38efa1ba3c5b6e11ee72be858d6",
+            "bytes": 2427
+          },
+          {
+            "path": "dist/rules/valid-v-else.js",
+            "sha256": "3c6f9dc33fa7f3922ecdcbacfe2d881f2d09c419ce0e660799bdce969420a25b",
+            "bytes": 2405
+          },
+          {
+            "path": "dist/rules/valid-v-for.js",
+            "sha256": "7c82adcbf9ef20c364c2af41bc72b10816f953035724182c8a3cb1eb58b5ef9c",
+            "bytes": 5876
+          },
+          {
+            "path": "dist/rules/valid-v-html.js",
+            "sha256": "a833937de7c1535f91a9446d3c219b08081831e3393e4b184dee2c1bcdd6d8f5",
+            "bytes": 1744
+          },
+          {
+            "path": "dist/rules/valid-v-if.js",
+            "sha256": "74fa4064ddc6337262b9967c2378714868776654584b3744812430c314972aa5",
+            "bytes": 2195
+          },
+          {
+            "path": "dist/rules/valid-v-is.js",
+            "sha256": "a5facc44276f36055816ec05f647f4a868b3d68d7c690f766535ed5b53395801",
+            "bytes": 2289
+          },
+          {
+            "path": "dist/rules/valid-v-memo.js",
+            "sha256": "7b8330dd457a3823668bd874188f825325e90fc915e2c9a31d9cda7af34fa4ab",
+            "bytes": 3358
+          },
+          {
+            "path": "dist/rules/valid-v-model.js",
+            "sha256": "cb7d244e67cb834ac3bc3a741707f244cbac448bae7f43a6ebe42999b020cb69",
+            "bytes": 6101
+          },
+          {
+            "path": "dist/rules/valid-v-on.js",
+            "sha256": "255a23cc7fac2c7889672e88cc8bac16b9f16eb75f2b764697eaa74237c06166",
+            "bytes": 3330
+          },
+          {
+            "path": "dist/rules/valid-v-once.js",
+            "sha256": "2adbd33445811132703721d32fec122099bbc88b7293c114f1cded75632c1d10",
+            "bytes": 1711
+          },
+          {
+            "path": "dist/rules/valid-v-pre.js",
+            "sha256": "a48a5013930de5ba77f8400d8122a8f70a00fc4f98064316992a3bfb04d445d6",
+            "bytes": 1702
+          },
+          {
+            "path": "dist/rules/valid-v-show.js",
+            "sha256": "f21db4ba9208f920435e19468df4292834ec7e4937a13b85e88e89aa3de0e002",
+            "bytes": 1946
+          },
+          {
+            "path": "dist/rules/valid-v-slot.js",
+            "sha256": "f7a537893a62f0eef7f5181392cb5ffa87c1f2603df440f935e5066b6a3a9e8b",
+            "bytes": 11610
+          },
+          {
+            "path": "dist/rules/valid-v-text.js",
+            "sha256": "9f31c1e80b62d6a1b428b02decc0aa7dc94de2a41f9879dc9d265d5aa591400b",
+            "bytes": 1744
+          },
+          {
+            "path": "dist/utils/casing.js",
+            "sha256": "911df4eed3c7d75afac7c6df4a13527d104afdbbd43821993c2b4ece6108f44c",
+            "bytes": 2932
+          },
+          {
+            "path": "dist/utils/comments.js",
+            "sha256": "14406ef68cb18c38f010b1a6dd66da04911bfbaa9b3eb54401cae234907993cf",
+            "bytes": 370
+          },
+          {
+            "path": "dist/utils/deprecated-html-elements.js",
+            "sha256": "f64f13927cb0946bcb23c12d69acdd30142c8a2951472c80794849f8a1b9659d",
+            "bytes": 556
+          },
+          {
+            "path": "dist/utils/html-comments.js",
+            "sha256": "2b7e240326505b20299eae80e423e7f440cd36525004bc17633d40606249a5d8",
+            "bytes": 4596
+          },
+          {
+            "path": "dist/utils/html-elements.js",
+            "sha256": "d11d6b9dbee0029c0676d42e2a8cfeb3c9be872ef69a89d32626a1a5a6c12473",
+            "bytes": 1589
+          },
+          {
+            "path": "dist/utils/indent-common.js",
+            "sha256": "3628e3d06a414911e56add7e98c5b416b82c8d67000452a5ab1c5e673d952f63",
+            "bytes": 46951
+          },
+          {
+            "path": "dist/utils/indent-ts.js",
+            "sha256": "ee846ea5e0a80d863a447e2ec4f34a92020abdaf1fa8a61f435f9fe522f4d861",
+            "bytes": 25942
+          },
+          {
+            "path": "dist/utils/indent-utils.js",
+            "sha256": "0e6c329fca97d23a5939fe9b6596618e70ae04f7871ff072c4b1f0c4f83ef2ed",
+            "bytes": 1844
+          },
+          {
+            "path": "dist/utils/index.js",
+            "sha256": "4727c10651f789ee6308b4311f3694dd302faae9e5b821ae4b31432c3b105925",
+            "bytes": 80367
+          },
+          {
+            "path": "dist/utils/inline-non-void-elements.js",
+            "sha256": "8421c9046ec575d92791f2f3ae1c65e7ec69071cd5a10ac1c89ac1b37439e116",
+            "bytes": 577
+          },
+          {
+            "path": "dist/utils/js-reserved.js",
+            "sha256": "1540684e4ae0b52d82b7bacbe14281476f6639402163c1cefd4cb26390d5953e",
+            "bytes": 1112
+          },
+          {
+            "path": "dist/utils/key-aliases.js",
+            "sha256": "d49badaa9b7f720cbf5483d21338dfed00462dee0e4dbac286f8858f73aebcfa",
+            "bytes": 5638
+          },
+          {
+            "path": "dist/utils/keycode-to-key.js",
+            "sha256": "ece3031ce629681679a81745783c3dd1ffce2822269aee37514bb3988b3ccd4c",
+            "bytes": 879
+          },
+          {
+            "path": "dist/utils/math-elements.js",
+            "sha256": "be8c82ac2690ccb4cb56a9eec4578d3b01d3889f41690d70fbeb8f9bbbe1f976",
+            "bytes": 765
+          },
+          {
+            "path": "dist/utils/property-references.js",
+            "sha256": "b8a2764e95dfc2adf45584f1e61824084e55e1f53af8f822145717a2f2b9e958",
+            "bytes": 15003
+          },
+          {
+            "path": "dist/utils/ref-object-references.js",
+            "sha256": "073c229b2005d8c69e3eb033f16faa6d9174ed2f089c07a6767faffe153c68e1",
+            "bytes": 11550
+          },
+          {
+            "path": "dist/utils/regexp.js",
+            "sha256": "4ec4a0605ab8f3ce65949d015b5f33ab616a2aeaf47c1fec45d9cc21cc723ea5",
+            "bytes": 1875
+          },
+          {
+            "path": "dist/utils/scope.js",
+            "sha256": "c9a9176fae1f4689683a8d626ab35f28788d762d515c100676ffb80e6be28ff2",
+            "bytes": 1050
+          },
+          {
+            "path": "dist/utils/selector.js",
+            "sha256": "fa54111a8390373707a0942d7c2456259a4e3f9afe63581aa9fa0604987f1ef9",
+            "bytes": 12012
+          },
+          {
+            "path": "dist/utils/style-variables/index.js",
+            "sha256": "a0a91566fc3ca5298cebc8ddaf884e74e55bce7788c029ec7ba79e64d485bb9d",
+            "bytes": 1327
+          },
+          {
+            "path": "dist/utils/svg-attributes-weird-case.js",
+            "sha256": "48bda1db5477ddb42511818575d39db25ded696509b2f2929b9225c4851edb6a",
+            "bytes": 2707
+          },
+          {
+            "path": "dist/utils/svg-elements.js",
+            "sha256": "c2e489bb621f7ca0c1a233dd541728dad2cfa83ff8c5b7337e5f4f439f5dc7dc",
+            "bytes": 1269
+          },
+          {
+            "path": "dist/utils/ts-utils/index.js",
+            "sha256": "67ba51e13c72f4be0800d3184592e00766574de1e1d19d9f6f36d75be64b7570",
+            "bytes": 3966
+          },
+          {
+            "path": "dist/utils/ts-utils/ts-ast.js",
+            "sha256": "7e71fc68ea0bfc6dc05d06d6f893c6b49468fc00415bc1616b84d91e4c9da987",
+            "bytes": 15214
+          },
+          {
+            "path": "dist/utils/ts-utils/ts-types.js",
+            "sha256": "0bcb8de24027893668a6d2dcd4e94d9d151ef5da0302a2c4ed48abdf816203d5",
+            "bytes": 10940
+          },
+          {
+            "path": "dist/utils/ts-utils/typescript.js",
+            "sha256": "522390bbc0cd59880a9d08e36e5ff318951aabbeeece1eb5a9dca6bf9b7b2fea",
+            "bytes": 5358
+          },
+          {
+            "path": "dist/utils/void-elements.js",
+            "sha256": "690c57b33f0215f0bb7de0188debfff47c0a5b468c2d1391f46733f16526383e",
+            "bytes": 542
+          },
+          {
+            "path": "dist/utils/vue-builtin-elements.js",
+            "sha256": "2bd1b504f4f1c36d34d14a8ba26b6725b55961306dd0355b5457c1438b08e4b4",
+            "bytes": 435
+          },
+          {
+            "path": "dist/utils/vue-component-options.js",
+            "sha256": "c296751dc34d695c98b4b322dc4e129b34e2b3a41ca25a8f97d9142a7f8f5f2a",
+            "bytes": 1359
+          },
+          {
+            "path": "dist/utils/vue-reserved.js",
+            "sha256": "2aab87c42b5c53542e317c34bf65e8d926c34d3d5bbb11b69806a3581f713695",
+            "bytes": 678
+          },
+          {
+            "path": "dist/utils/vue2-builtin-components.js",
+            "sha256": "ba2fdd7bda6fd61ec0fda283d7ff34c97a517343aebcbc92a9ee8e369533a422",
+            "bytes": 565
+          },
+          {
+            "path": "dist/utils/vue3-builtin-components.js",
+            "sha256": "06fac33fa6e8c672d7545fcf1acfdd894892ef3981fb30b0ad9487bf44b554f3",
+            "bytes": 592
+          },
+          {
+            "path": "dist/utils/vue3-export-names.js",
+            "sha256": "98a1e3081ac4f1f4b68e6845ad290d1db40bd2d4b0ba6038f4361d6270ac9b5c",
+            "bytes": 7743
+          },
+          {
+            "path": "package.json",
+            "sha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761",
+            "bytes": 4437
+          }
+        ]
+      },
+      {
+        "name": "vue-eslint-parser",
+        "version": "10.4.1",
+        "packageRoot": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/vue-eslint-parser@10.4.1_eslint@10.4.1_jiti@2.7.0_supports-color@10.2.2__supports-color@10.2.2/node_modules/vue-eslint-parser",
+        "packageJsonSha256": "1fc15ea1c21b91e7764982691b84c599e00f9ed7953b2956a659fa16c68580b2",
+        "fileCount": 6,
+        "fileTreeSha256": "df7a552b1002fc4923f9ff0196f259681aba05c03a7a7e2ae54ec95e0727e92d",
+        "files": [
+          {
+            "path": "LICENSE",
+            "sha256": "fb58f56a8dab39ce70d61c7ff0179549bdd292cf3b4c564259feb30609cc670d",
+            "bytes": 1071
+          },
+          {
+            "path": "README.md",
+            "sha256": "c0e0817d02c07c2ae1a626b376f1aaf6ec00959ded78b0e7a397438550dec842",
+            "bytes": 10857
+          },
+          {
+            "path": "dist/index.cjs",
+            "sha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087",
+            "bytes": 319510
+          },
+          {
+            "path": "dist/index.cjs.map",
+            "sha256": "366fd07aca3ca8f1fdbf868b243e5fda109100539bd8a2a20b2f57fe9f9cf162",
+            "bytes": 672322
+          },
+          {
+            "path": "dist/index.d.cts",
+            "sha256": "6239da4cd39057d316c79d13788c2d42d2eaaefd9490db8d260e154d80926ef2",
+            "bytes": 122589
+          },
+          {
+            "path": "package.json",
+            "sha256": "1fc15ea1c21b91e7764982691b84c599e00f9ed7953b2956a659fa16c68580b2",
+            "bytes": 2524
+          }
+        ]
+      },
+      {
+        "name": "@typescript-eslint/parser",
+        "version": "8.65.0",
+        "packageRoot": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@typescript-eslint+parser@8.65.0_eslint@10.4.1_jiti@2.7.0_supports-color@10.2.2__supports-color@10.2.2_typescript@6.0.3/node_modules/@typescript-eslint/parser",
+        "packageJsonSha256": "d9d6b5b45ff43bcbe278b4809f7d193d95fbd5828d665f172ffd262050aa9e8a",
+        "fileCount": 7,
+        "fileTreeSha256": "73b216e4bb4dcc1da90738f04f67a0b618c79247f2ea7bf40c861cd6ebd08412",
+        "files": [
+          {
+            "path": "LICENSE",
+            "sha256": "2eb5c7a0bba9deb77a98c81bf6b9d3fb1c67118eebf968b6b1a787b3f8928ee0",
+            "bytes": 1097
+          },
+          {
+            "path": "README.md",
+            "sha256": "c522f91763750046e38c356a6d2dd5383fd9a96a82b0b0d077a68390203a486c",
+            "bytes": 859
+          },
+          {
+            "path": "dist/index.d.ts",
+            "sha256": "f52565c753c7fffb3c9c56dbf6938b74d9132ce3c57bb74ad7cfcf14b7b9731b",
+            "bytes": 396
+          },
+          {
+            "path": "dist/index.js",
+            "sha256": "30737c102670698fca01786fc4d8baf6d435d6f9a1adcef48700d272dced5966",
+            "bytes": 3531
+          },
+          {
+            "path": "dist/parser.d.ts",
+            "sha256": "8a7ca5c8f8bf37d07673050990b46d3ed884544ce5ed2bff8ec3e373aa2983c7",
+            "bytes": 965
+          },
+          {
+            "path": "dist/parser.js",
+            "sha256": "6df047246d5a9eeb0f09ce1ac2de21083148ae1cd178c83312b40bf31a41832e",
+            "bytes": 7083
+          },
+          {
+            "path": "package.json",
+            "sha256": "d9d6b5b45ff43bcbe278b4809f7d193d95fbd5828d665f172ffd262050aa9e8a",
+            "bytes": 2161
+          }
+        ]
+      },
+      {
+        "name": "typescript",
+        "version": "6.0.3",
+        "packageRoot": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/typescript@6.0.3/node_modules/typescript",
+        "packageJsonSha256": "9332e97c30d3e53ed54910b89207ed657fb444066484df6e5b6965bf130865e9",
+        "fileCount": 140,
+        "fileTreeSha256": "7c60d9dc9ef76b020236d6948b9c087f9c7aac57dfe2a445f76faaab1c7d0da1",
+        "files": [
+          {
+            "path": "LICENSE.txt",
+            "sha256": "a7d00bfd54525bc694b6e32f64c7ebcf5e6b7ae3657be5cc12767bce74654a47",
+            "bytes": 9197
+          },
+          {
+            "path": "README.md",
+            "sha256": "73147458477d90cd6236627cdd9b0871df12e6e8a21d2d0fda6d1ad2826bdc0e",
+            "bytes": 2842
+          },
+          {
+            "path": "SECURITY.md",
+            "sha256": "cec829e06ab53bb27e96fa6dcd8daa2b6cc4a6cc08b00ff5965fac1cbb54f7f1",
+            "bytes": 2577
+          },
+          {
+            "path": "ThirdPartyNoticeText.txt",
+            "sha256": "1af3c68039c57e539422da82a4faada506ce6d0ea6f90e0b699d02dbcdb7a90c",
+            "bytes": 37824
+          },
+          {
+            "path": "bin/tsc",
+            "sha256": "8d5fa5bd883fec0979fc2004f1fe1d99aef40570155d550eadc0b03b55513bf0",
+            "bytes": 45
+          },
+          {
+            "path": "bin/tsserver",
+            "sha256": "a088f0c3419bcb2f7b860ad42e4c9f25ead067eda70af6a10d0a7d453954aada",
+            "bytes": 50
+          },
+          {
+            "path": "lib/_tsc.js",
+            "sha256": "1c59e77a54b186ec43fa7f3e0d3c4bb15ca5eb5ba43e96b1d3a267139eddd3e3",
+            "bytes": 6239091
+          },
+          {
+            "path": "lib/_tsserver.js",
+            "sha256": "1992fc3518a4aa5443638a25794281995ec3ce84820692713296262997d5443b",
+            "bytes": 27889
+          },
+          {
+            "path": "lib/_typingsInstaller.js",
+            "sha256": "71515c1c1aa29c8616309f7dea4d3a32eed662df3a4dbcf4345e7522ece56ac1",
+            "bytes": 10364
+          },
+          {
+            "path": "lib/cs/diagnosticMessages.generated.json",
+            "sha256": "a00a333cb5ae58c1b1163bd90b6897eb9a2695de9d31dc12fc4a19c98843b6a7",
+            "bytes": 322179
+          },
+          {
+            "path": "lib/de/diagnosticMessages.generated.json",
+            "sha256": "1df64ca10607a09e7fdd217f06488ab0b107d557157cef81cc2c9496a4439099",
+            "bytes": 345510
+          },
+          {
+            "path": "lib/es/diagnosticMessages.generated.json",
+            "sha256": "85ad4bf3b496a74f37345af5a11c794379902b8d1b0ee68e90a7189222ddedbe",
+            "bytes": 341947
+          },
+          {
+            "path": "lib/fr/diagnosticMessages.generated.json",
+            "sha256": "843a7a314c2ce9b3212c373f2694b7b166a60b8c1881c6651816c547110ae44a",
+            "bytes": 347990
+          },
+          {
+            "path": "lib/it/diagnosticMessages.generated.json",
+            "sha256": "018ff991423a0c2f27f6adabca0bd705ded5ca3406e9cf80b0357d454523e4e6",
+            "bytes": 340423
+          },
+          {
+            "path": "lib/ja/diagnosticMessages.generated.json",
+            "sha256": "8ceafe4cae6fbc9af735427557030269e5419eaed535c923d622967aee2c50f9",
+            "bytes": 383553
+          },
+          {
+            "path": "lib/ko/diagnosticMessages.generated.json",
+            "sha256": "1287462fc976b79a02e82fe4af906004d7d58f7df37b8de54235b77dc5552674",
+            "bytes": 347991
+          },
+          {
+            "path": "lib/lib.d.ts",
+            "sha256": "0e6477e5049e579cc5de741a70ac91235252edc0468b2e569f22de9db3357786",
+            "bytes": 953
+          },
+          {
+            "path": "lib/lib.decorators.d.ts",
+            "sha256": "1ce14b81c5cc821994aa8ec1d42b220dd41b27fcc06373bce3958af7421b77d4",
+            "bytes": 13153
+          },
+          {
+            "path": "lib/lib.decorators.legacy.d.ts",
+            "sha256": "b3a048b3e9302ef9a34ef4ebb9aecfb28b66abb3bce577206a79fee559c230da",
+            "bytes": 1287
+          },
+          {
+            "path": "lib/lib.dom.asynciterable.d.ts",
+            "sha256": "7f57fc4404ff020bc45b9c620aff2b40f700b95fe31164024c453a5e3c163c54",
+            "bytes": 933
+          },
+          {
+            "path": "lib/lib.dom.d.ts",
+            "sha256": "d6b1eba8496bdd0eed6fc8a685768fe01b2da4a0388b5fe7df558290bffcf32f",
+            "bytes": 2349483
+          },
+          {
+            "path": "lib/lib.dom.iterable.d.ts",
+            "sha256": "7f57fc4404ff020bc45b9c620aff2b40f700b95fe31164024c453a5e3c163c54",
+            "bytes": 933
+          },
+          {
+            "path": "lib/lib.es2015.collection.d.ts",
+            "sha256": "105ba8ff7ba746404fe1a2e189d1d3d2e0eb29a08c18dded791af02f29fb4711",
+            "bytes": 5305
+          },
+          {
+            "path": "lib/lib.es2015.core.d.ts",
+            "sha256": "eadcffda2aa84802c73938e589b9e58248d74c59cb7fcbca6474e3435ac15504",
+            "bytes": 22824
+          },
+          {
+            "path": "lib/lib.es2015.d.ts",
+            "sha256": "3f88bedbeb09c6f5a6645cb24c7c55f1aa22d19ae96c8e6959cbd8b85a707bc6",
+            "bytes": 1202
+          },
+          {
+            "path": "lib/lib.es2015.generator.d.ts",
+            "sha256": "00343ca5b2e3d48fa5df1db6e32ea2a59afab09590274a6cccb1dbae82e60c7c",
+            "bytes": 2518
+          },
+          {
+            "path": "lib/lib.es2015.iterable.d.ts",
+            "sha256": "ebd9f816d4002697cb2864bea1f0b70a103124e18a8cd9645eeccc09bdf80ab4",
+            "bytes": 18185
+          },
+          {
+            "path": "lib/lib.es2015.promise.d.ts",
+            "sha256": "2c1afac30a01772cd2a9a298a7ce7706b5892e447bb46bdbeef720f7b5da77ad",
+            "bytes": 3161
+          },
+          {
+            "path": "lib/lib.es2015.proxy.d.ts",
+            "sha256": "7b0225f483e4fa685625ebe43dd584bb7973bbd84e66a6ba7bbe175ee1048b4f",
+            "bytes": 5212
+          },
+          {
+            "path": "lib/lib.es2015.reflect.d.ts",
+            "sha256": "c0a4b8ac6ce74679c1da2b3795296f5896e31c38e888469a8e0f99dc3305de60",
+            "bytes": 6454
+          },
+          {
+            "path": "lib/lib.es2015.symbol.d.ts",
+            "sha256": "3084a7b5f569088e0146533a00830e206565de65cae2239509168b11434cd84f",
+            "bytes": 1610
+          },
+          {
+            "path": "lib/lib.es2015.symbol.wellknown.d.ts",
+            "sha256": "c5079c53f0f141a0698faa903e76cb41cd664e3efb01cc17a5c46ec2eb0bef42",
+            "bytes": 10971
+          },
+          {
+            "path": "lib/lib.es2016.array.include.d.ts",
+            "sha256": "32cafbc484dea6b0ab62cf8473182bbcb23020d70845b406f80b7526f38ae862",
+            "bytes": 5165
+          },
+          {
+            "path": "lib/lib.es2016.d.ts",
+            "sha256": "7fe93b39b810eadd916be8db880dd7f0f7012a5cc6ffb62de8f62a2117fa6f1f",
+            "bytes": 926
+          },
+          {
+            "path": "lib/lib.es2016.full.d.ts",
+            "sha256": "19adadff5144f8f89fef0a10b299d7a96206f4913d4c17d4864171320e9edbd6",
+            "bytes": 993
+          },
+          {
+            "path": "lib/lib.es2016.intl.d.ts",
+            "sha256": "fca4cdcb6d6c5ef18a869003d02c9f0fd95df8cfaf6eb431cd3376bc034cad36",
+            "bytes": 1445
+          },
+          {
+            "path": "lib/lib.es2017.arraybuffer.d.ts",
+            "sha256": "b93ec88115de9a9dc1b602291b85baf825c85666bf25985cc5f698073892b467",
+            "bytes": 876
+          },
+          {
+            "path": "lib/lib.es2017.d.ts",
+            "sha256": "bb0074cc08b84a2374af33d8bf044b80851ccc9e719a5e202eacf40db2c31600",
+            "bytes": 1123
+          },
+          {
+            "path": "lib/lib.es2017.date.d.ts",
+            "sha256": "f5c06dcc3fe849fcb297c247865a161f995cc29de7aa823afdd75aaaddc1419b",
+            "bytes": 1877
+          },
+          {
+            "path": "lib/lib.es2017.full.d.ts",
+            "sha256": "83635f912d414d0c5a855fba3e18418e9db7e73c2e0e170009c48275cc8c1a36",
+            "bytes": 993
+          },
+          {
+            "path": "lib/lib.es2017.intl.d.ts",
+            "sha256": "c7b3542146734342e440a84b213384bfa188835537ddbda50d30766f0593aff9",
+            "bytes": 1410
+          },
+          {
+            "path": "lib/lib.es2017.object.d.ts",
+            "sha256": "b77e16112127a4b169ef0b8c3a4d730edf459c5f25fe52d5e436a6919206c4d7",
+            "bytes": 2434
+          },
+          {
+            "path": "lib/lib.es2017.sharedmemory.d.ts",
+            "sha256": "fbffd9337146eff822c7c00acbb78b01ea7ea23987f6c961eba689349e744f8c",
+            "bytes": 7170
+          },
+          {
+            "path": "lib/lib.es2017.string.d.ts",
+            "sha256": "a995c0e49b721312f74fdfb89e4ba29bd9824c770bbb4021d74d2bf560e4c6bd",
+            "bytes": 2339
+          },
+          {
+            "path": "lib/lib.es2017.typedarrays.d.ts",
+            "sha256": "ce6180fa19b1cccd07ee7f7dbb9a367ac19c0ed160573e4686425060b6df7f57",
+            "bytes": 1503
+          },
+          {
+            "path": "lib/lib.es2018.asyncgenerator.d.ts",
+            "sha256": "3f02e2476bccb9dbe21280d6090f0df17d2f66b74711489415a8aa4df73c9675",
+            "bytes": 2653
+          },
+          {
+            "path": "lib/lib.es2018.asynciterable.d.ts",
+            "sha256": "45e3ab34c1c013c8ab2dc1ba4c80c780744b13b5676800ae2e3be27ae862c40c",
+            "bytes": 2218
+          },
+          {
+            "path": "lib/lib.es2018.d.ts",
+            "sha256": "1a7daebe4f45fb03d9ec53d60008fbf9ac45a697fdc89e4ce218bc94b94f94d6",
+            "bytes": 1049
+          },
+          {
+            "path": "lib/lib.es2018.full.d.ts",
+            "sha256": "63787dbe04141f5d3ebce2e08b64bc9bba589beb0a4d22e7994d3005af1e48a6",
+            "bytes": 1035
+          },
+          {
+            "path": "lib/lib.es2018.intl.d.ts",
+            "sha256": "805c86f6cca8d7702a62a844856dbaa2a3fd2abef0536e65d48732441dde5b5b",
+            "bytes": 2982
+          },
+          {
+            "path": "lib/lib.es2018.promise.d.ts",
+            "sha256": "e42e397f1a5a77994f0185fd1466520691456c772d06bf843e5084ceb879a0ad",
+            "bytes": 1314
+          },
+          {
+            "path": "lib/lib.es2018.regexp.d.ts",
+            "sha256": "f4c2b41f90c95b1c532ecc874bd3c111865793b23aebcc1c3cbbabcd5d76ffb0",
+            "bytes": 1193
+          },
+          {
+            "path": "lib/lib.es2019.array.d.ts",
+            "sha256": "ab26191cfad5b66afa11b8bf935ef1cd88fabfcb28d30b2dfa6fad877d050332",
+            "bytes": 3124
+          },
+          {
+            "path": "lib/lib.es2019.d.ts",
+            "sha256": "f94b133a3cb14a288803be545ac2683e0d0ff6661bcd37e31aaaec54fc382aed",
+            "bytes": 1032
+          },
+          {
+            "path": "lib/lib.es2019.full.d.ts",
+            "sha256": "e3de8409485b0c198a5a075bd4a1d06d8f42dc52b377709d33b131b97de56456",
+            "bytes": 1035
+          },
+          {
+            "path": "lib/lib.es2019.intl.d.ts",
+            "sha256": "689da16f46e647cef0d64b0def88910e818a5877ca5379ede156ca3afb780ac3",
+            "bytes": 919
+          },
+          {
+            "path": "lib/lib.es2019.object.d.ts",
+            "sha256": "2088bc26531e38fb05eedac2951480db5309f6be3fa4a08d2221abb0f5b4200d",
+            "bytes": 1434
+          },
+          {
+            "path": "lib/lib.es2019.string.d.ts",
+            "sha256": "cb9d366c425fea79716a8fb3af0d78e6b22ebbab3bd64d25063b42dc9f531c1e",
+            "bytes": 1489
+          },
+          {
+            "path": "lib/lib.es2019.symbol.d.ts",
+            "sha256": "500934a8089c26d57ebdb688fc9757389bb6207a3c8f0674d68efa900d2abb34",
+            "bytes": 967
+          },
+          {
+            "path": "lib/lib.es2020.bigint.d.ts",
+            "sha256": "bc21cc8b6fee4f4c2440d08035b7ea3c06b3511314c8bab6bef7a92de58a2593",
+            "bytes": 38258
+          },
+          {
+            "path": "lib/lib.es2020.d.ts",
+            "sha256": "f59d0650799f8782fd74cf73c19223730c6d1b9198671b1c5b3a38e1188b5953",
+            "bytes": 1162
+          },
+          {
+            "path": "lib/lib.es2020.date.d.ts",
+            "sha256": "7ca53d13d2957003abb47922a71866ba7cb2068f8d154877c596d63c359fed25",
+            "bytes": 2917
+          },
+          {
+            "path": "lib/lib.es2020.full.d.ts",
+            "sha256": "577cc49be1979782a5a695b46049566d123e2a75382f10bb82f2e5c87e29059a",
+            "bytes": 1035
+          },
+          {
+            "path": "lib/lib.es2020.intl.d.ts",
+            "sha256": "48915f327cd1dea4d7bd358d9dc7732f58f9e1626a29cc0c05c8c692419d9bb7",
+            "bytes": 22399
+          },
+          {
+            "path": "lib/lib.es2020.number.d.ts",
+            "sha256": "b7bf9377723203b5a6a4b920164df22d56a43f593269ba6ae1fdc97774b68855",
+            "bytes": 1548
+          },
+          {
+            "path": "lib/lib.es2020.promise.d.ts",
+            "sha256": "54725f8c4df3d900cb4dac84b64689ce29548da0b4e9b7c2de61d41c79293611",
+            "bytes": 1764
+          },
+          {
+            "path": "lib/lib.es2020.sharedmemory.d.ts",
+            "sha256": "e5594bc3076ac29e6c1ebda77939bc4c8833de72f654b6e376862c0473199323",
+            "bytes": 5089
+          },
+          {
+            "path": "lib/lib.es2020.string.d.ts",
+            "sha256": "2f3eb332c2d73e729f3364fcc0c2b375e72a121e8157d25a82d67a138c83a95c",
+            "bytes": 2451
+          },
+          {
+            "path": "lib/lib.es2020.symbol.wellknown.d.ts",
+            "sha256": "6f4427f9642ce8d500970e4e69d1397f64072ab73b97e476b4002a646ac743b1",
+            "bytes": 1566
+          },
+          {
+            "path": "lib/lib.es2021.d.ts",
+            "sha256": "8a15b4607d9a499e2dbeed9ec0d3c0d7372c850b2d5f1fb259e8f6d41d468a84",
+            "bytes": 997
+          },
+          {
+            "path": "lib/lib.es2021.full.d.ts",
+            "sha256": "e4a70ead7fea07d9abe520cc9e30c04ac035ebceaab28f9e67211610006c65de",
+            "bytes": 1035
+          },
+          {
+            "path": "lib/lib.es2021.intl.d.ts",
+            "sha256": "a917a49ac94cd26b754ab84e113369a75d1a47a710661d7cd25e961cc797065f",
+            "bytes": 8206
+          },
+          {
+            "path": "lib/lib.es2021.promise.d.ts",
+            "sha256": "db9709688f82c9e5f65a119c64d835f906efe5f559d08b11642d56eb85b79357",
+            "bytes": 2223
+          },
+          {
+            "path": "lib/lib.es2021.string.d.ts",
+            "sha256": "4b25b8c874acd1a4cf8444c3617e037d444d19080ac9f634b405583fd10ce1f7",
+            "bytes": 1553
+          },
+          {
+            "path": "lib/lib.es2021.weakref.d.ts",
+            "sha256": "37be57d7c90cf1f8112ee2636a068d8fd181289f82b744160ec56a7dc158a9f5",
+            "bytes": 3132
+          },
+          {
+            "path": "lib/lib.es2022.array.d.ts",
+            "sha256": "6d3261badeb7843d157ef3e6f5d1427d0eeb0af0cf9df84a62cfd29fd47ac86e",
+            "bytes": 4637
+          },
+          {
+            "path": "lib/lib.es2022.d.ts",
+            "sha256": "26e0fe14baee4e127f4365d1ae0b276f400562e45e19e35fd2d4c296684715e6",
+            "bytes": 1069
+          },
+          {
+            "path": "lib/lib.es2022.error.d.ts",
+            "sha256": "195daca651dde22f2167ac0d0a05e215308119a3100f5e6268e8317d05a92526",
+            "bytes": 2340
+          },
+          {
+            "path": "lib/lib.es2022.full.d.ts",
+            "sha256": "01a30f9e8582b369075c0808df71121e6855cb06fd8d3d39511d9ebb66405205",
+            "bytes": 1035
+          },
+          {
+            "path": "lib/lib.es2022.intl.d.ts",
+            "sha256": "8b11e4285cd2bb164a4dc09248bdec69e9842517db4ca47c1ba913011e44ff2f",
+            "bytes": 7653
+          },
+          {
+            "path": "lib/lib.es2022.object.d.ts",
+            "sha256": "0508571a52475e245b02bc50fa1394065a0a3d05277fbf5120c3784b85651799",
+            "bytes": 1046
+          },
+          {
+            "path": "lib/lib.es2022.regexp.d.ts",
+            "sha256": "fc611fea8d30ea72c6bbfb599c9b4d393ce22e2f5bfef2172534781e7d138104",
+            "bytes": 1304
+          },
+          {
+            "path": "lib/lib.es2022.string.d.ts",
+            "sha256": "8f9af488f510c3015af3cc8c267a9e9d96c4dd38a1fdff0e11dc5a544711415b",
+            "bytes": 1116
+          },
+          {
+            "path": "lib/lib.es2023.array.d.ts",
+            "sha256": "0bd714129fca875f7d4c477a1a392200b0bcd13fb2e80928cd334b63830ea047",
+            "bytes": 40197
+          },
+          {
+            "path": "lib/lib.es2023.collection.d.ts",
+            "sha256": "e2c9037ae6cd2c52d80ceef0b3c5ffdb488627d71529cf4f63776daf11161c9a",
+            "bytes": 861
+          },
+          {
+            "path": "lib/lib.es2023.d.ts",
+            "sha256": "1e9332c23e9a907175e0ffc6a49e236f97b48838cc8aec9ce7e4cec21e544b65",
+            "bytes": 960
+          },
+          {
+            "path": "lib/lib.es2023.full.d.ts",
+            "sha256": "821bd6049b8f96b9d24c9fbc49b542dcf7a80d76f9efb330b5ef32c373af83d4",
+            "bytes": 1035
+          },
+          {
+            "path": "lib/lib.es2023.intl.d.ts",
+            "sha256": "135d5cf4d345f59f1a9caadfafcd858d3d9cc68290db616cc85797224448cccc",
+            "bytes": 2854
+          },
+          {
+            "path": "lib/lib.es2024.arraybuffer.d.ts",
+            "sha256": "bc238c3f81c2984751932b6aab223cd5b830e0ac6cad76389e5e9d2ffc03287d",
+            "bytes": 2598
+          },
+          {
+            "path": "lib/lib.es2024.collection.d.ts",
+            "sha256": "4a07f9b76d361f572620927e5735b77d6d2101c23cdd94383eb5b706e7b36357",
+            "bytes": 1185
+          },
+          {
+            "path": "lib/lib.es2024.d.ts",
+            "sha256": "3753fbc1113dc511214802a2342280a8b284ab9094f6420e7aa171e868679f91",
+            "bytes": 1127
+          },
+          {
+            "path": "lib/lib.es2024.full.d.ts",
+            "sha256": "b9f65879de79a7647ad2e5b8089277c215911fa99d4b858d78014df6ba2852f3",
+            "bytes": 1035
+          },
+          {
+            "path": "lib/lib.es2024.object.d.ts",
+            "sha256": "7c4e8dc6ab834cc6baa0227e030606d29e3e8449a9f67cdf5605ea5493c4db29",
+            "bytes": 1220
+          },
+          {
+            "path": "lib/lib.es2024.promise.d.ts",
+            "sha256": "de7ba0fd02e06cd9a5bd4ab441ed0e122735786e67dde1e849cced1cd8b46b78",
+            "bytes": 1350
+          },
+          {
+            "path": "lib/lib.es2024.regexp.d.ts",
+            "sha256": "6148e4e88d720a06855071c3db02069434142a8332cf9c182cda551adedf3156",
+            "bytes": 1034
+          },
+          {
+            "path": "lib/lib.es2024.sharedmemory.d.ts",
+            "sha256": "d63dba625b108316a40c95a4425f8d4294e0deeccfd6c7e59d819efa19e23409",
+            "bytes": 3038
+          },
+          {
+            "path": "lib/lib.es2024.string.d.ts",
+            "sha256": "0568d6befee03dd435bed4fc25c4e46865b24bdcb8c563fdc21f580a2c301904",
+            "bytes": 1155
+          },
+          {
+            "path": "lib/lib.es2025.collection.d.ts",
+            "sha256": "30d62269b05b584741f19a5369852d5d34895aa2ac4fd948956f886d15f9cc0d",
+            "bytes": 3839
+          },
+          {
+            "path": "lib/lib.es2025.d.ts",
+            "sha256": "999ca32883495a866aa5737fe1babc764a469e4cde6ee6b136a4b9ae68853e4b",
+            "bytes": 1079
+          },
+          {
+            "path": "lib/lib.es2025.float16.d.ts",
+            "sha256": "f128dae7c44d8f35ee42e0a437000a57c9f06cc04f8b4fb42eebf44954d53dc8",
+            "bytes": 20489
+          },
+          {
+            "path": "lib/lib.es2025.full.d.ts",
+            "sha256": "e03da518b01b46a4c99a1f88cd727ee98ddf14492c43dae1ae7a63e992971bab",
+            "bytes": 1035
+          },
+          {
+            "path": "lib/lib.es2025.intl.d.ts",
+            "sha256": "ffbe6d7b295306b2ba88030f65b74c107d8d99bdcf596ea99c62a02f606108b0",
+            "bytes": 9390
+          },
+          {
+            "path": "lib/lib.es2025.iterator.d.ts",
+            "sha256": "996fb27b15277369c68a4ba46ed138b4e9e839a02fb4ec756f7997629242fd9f",
+            "bytes": 8637
+          },
+          {
+            "path": "lib/lib.es2025.promise.d.ts",
+            "sha256": "79b712591b270d4778c89706ca2cfc56ddb8c3f895840e477388f1710dc5eda9",
+            "bytes": 1619
+          },
+          {
+            "path": "lib/lib.es2025.regexp.d.ts",
+            "sha256": "20884846cef428b992b9bd032e70a4ef88e349263f63aeddf04dda837a7dba26",
+            "bytes": 1255
+          },
+          {
+            "path": "lib/lib.es5.d.ts",
+            "sha256": "bcd24271a113971ba9eb71ff8cb01bc6b0f872a85c23fdbe5d93065b375933cd",
+            "bytes": 218972
+          },
+          {
+            "path": "lib/lib.es6.d.ts",
+            "sha256": "174a0fa01bb60bcb80e09b0b7bdcdddf688891433d6030244df5b44eb9ebd210",
+            "bytes": 993
+          },
+          {
+            "path": "lib/lib.esnext.array.d.ts",
+            "sha256": "5fcab789c73a97cd43828ee3cc94a61264cf24d4c44472ce64ced0e0f148bdb2",
+            "bytes": 1752
+          },
+          {
+            "path": "lib/lib.esnext.collection.d.ts",
+            "sha256": "db59a81f070c1880ad645b2c0275022baa6a0c4f0acdc58d29d349c6efcf0903",
+            "bytes": 2598
+          },
+          {
+            "path": "lib/lib.esnext.d.ts",
+            "sha256": "17f13ecb98cbc39243f2eee1f16d45cd8ec4706b03ee314f1915f1a8b42f6984",
+            "bytes": 1244
+          },
+          {
+            "path": "lib/lib.esnext.date.d.ts",
+            "sha256": "673294292640f5722b700e7d814e17aaf7d93f83a48a2c9b38f33cbc940ad8b0",
+            "bytes": 917
+          },
+          {
+            "path": "lib/lib.esnext.decorators.d.ts",
+            "sha256": "d786b48f934cbca483b3c6d0a798cb43bbb4ada283e76fb22c28e53ae05b9e69",
+            "bytes": 1031
+          },
+          {
+            "path": "lib/lib.esnext.disposable.d.ts",
+            "sha256": "1ecb8e347cb6b2a8927c09b86263663289418df375f5e68e11a0ae683776978f",
+            "bytes": 6767
+          },
+          {
+            "path": "lib/lib.esnext.error.d.ts",
+            "sha256": "142efd4ce210576f777dc34df121777be89eda476942d6d6663b03dcb53be3ff",
+            "bytes": 990
+          },
+          {
+            "path": "lib/lib.esnext.full.d.ts",
+            "sha256": "ef4a897cd2a3f91000c10264e400b3667c7e51e1b7365f03b62e8081dc53bde6",
+            "bytes": 1035
+          },
+          {
+            "path": "lib/lib.esnext.intl.d.ts",
+            "sha256": "379bc41580c2d774f82e828c70308f24a005b490c25ba34d679d84bcf05c3d9d",
+            "bytes": 5305
+          },
+          {
+            "path": "lib/lib.esnext.sharedmemory.d.ts",
+            "sha256": "ed484fb2aa8a1a23d0277056ec3336e0a0b52f9b8d6a961f338a642faf43235d",
+            "bytes": 1028
+          },
+          {
+            "path": "lib/lib.esnext.temporal.d.ts",
+            "sha256": "4ffedae1d1c2d53fdbca1c96d3c7dda544281f7d262f99b6880634f8fd8d9820",
+            "bytes": 22011
+          },
+          {
+            "path": "lib/lib.esnext.typedarrays.d.ts",
+            "sha256": "83a730b125d477dd264df8ba479afab27a3dae7152b005c214ab94dc7ee44fd3",
+            "bytes": 3350
+          },
+          {
+            "path": "lib/lib.scripthost.d.ts",
+            "sha256": "f13f4b465c99041e912db5c44129a94588e1aafee35a50eab51044833f50b4ee",
+            "bytes": 9412
+          },
+          {
+            "path": "lib/lib.webworker.asynciterable.d.ts",
+            "sha256": "7f57fc4404ff020bc45b9c620aff2b40f700b95fe31164024c453a5e3c163c54",
+            "bytes": 933
+          },
+          {
+            "path": "lib/lib.webworker.d.ts",
+            "sha256": "d52ed68e7eb5881768a55713c9b5c7c443e6b46de15c04e348928b8efd20b110",
+            "bytes": 787076
+          },
+          {
+            "path": "lib/lib.webworker.importscripts.d.ts",
+            "sha256": "2a2de5b9459b3fc44decd9ce6100b72f1b002ef523126c1d3d8b2a4a63d74d78",
+            "bytes": 1002
+          },
+          {
+            "path": "lib/lib.webworker.iterable.d.ts",
+            "sha256": "7f57fc4404ff020bc45b9c620aff2b40f700b95fe31164024c453a5e3c163c54",
+            "bytes": 933
+          },
+          {
+            "path": "lib/pl/diagnosticMessages.generated.json",
+            "sha256": "6b01538b70a7b5198df4fd73bad0b73b2dc677612840b1e57b689889d1af675c",
+            "bytes": 343981
+          },
+          {
+            "path": "lib/pt-br/diagnosticMessages.generated.json",
+            "sha256": "bbe1683efe1d0fa34397a19d89685925f58fd2aa44078bdd35dc4d8431b23b54",
+            "bytes": 332413
+          },
+          {
+            "path": "lib/ru/diagnosticMessages.generated.json",
+            "sha256": "6d74ebb94f11a576ad58c7b798f3fd5d56af31ae96e5f8faeb34560ddb7f76a6",
+            "bytes": 444708
+          },
+          {
+            "path": "lib/tr/diagnosticMessages.generated.json",
+            "sha256": "cfad8d7530b1b75f4724bd3fa2aeadff2b7b981e5e7211b1eaa606506745c237",
+            "bytes": 332492
+          },
+          {
+            "path": "lib/tsc.js",
+            "sha256": "2cffde0b8c6760dfb0b5b0382bbb7e00ba6a8b2d981b9205b256a700a481d983",
+            "bytes": 267
+          },
+          {
+            "path": "lib/tsserver.js",
+            "sha256": "e3ccfeec65ec5c470b8ffc5611878a31182650c7e8a062c38a719f83b523edcb",
+            "bytes": 272
+          },
+          {
+            "path": "lib/tsserverlibrary.d.ts",
+            "sha256": "cee9e9bf9a8f67388ee878afd5e172189421bae6625076b774d68563d036fbfd",
+            "bytes": 866
+          },
+          {
+            "path": "lib/tsserverlibrary.js",
+            "sha256": "6a0b343fa3a3f53cf198c83a18035c104b6990b2a260272654f9a6b2f2380fdf",
+            "bytes": 1013
+          },
+          {
+            "path": "lib/typesMap.json",
+            "sha256": "4143fb8b1c5d4421dfa19a4b80ddf2da375fc0835a349c3b18519fda5955e1d9",
+            "bytes": 16788
+          },
+          {
+            "path": "lib/typescript.d.ts",
+            "sha256": "c967e03c8dbb4770f7e2f0b71b5d13593de679a41cc2b60266c4b69f1342a263",
+            "bytes": 588452
+          },
+          {
+            "path": "lib/typescript.js",
+            "sha256": "569177652966bd528c319171c7dd22860dbf72bde116cbc4f644f1d02bb12e39",
+            "bytes": 9144216
+          },
+          {
+            "path": "lib/typingsInstaller.js",
+            "sha256": "2d48a038523ea7c626fa2796a30fa5fdc07612ea5fab83544423009d7683a213",
+            "bytes": 280
+          },
+          {
+            "path": "lib/watchGuard.js",
+            "sha256": "008f2ceb504ee9b8c5d47054d43033e1ec3f2fef03f18d8aa1b2dd70cba6fc88",
+            "bytes": 2314
+          },
+          {
+            "path": "lib/zh-cn/diagnosticMessages.generated.json",
+            "sha256": "2c30286e82999f53b4dd4f563bbb720d787b79d5f34b8cb404c5ebbb1b858cb5",
+            "bytes": 297608
+          },
+          {
+            "path": "lib/zh-tw/diagnosticMessages.generated.json",
+            "sha256": "166a9c81707df25d337216b1a7d196b268f247430773b832259d3ae8b306bb65",
+            "bytes": 293400
+          },
+          {
+            "path": "package.json",
+            "sha256": "9332e97c30d3e53ed54910b89207ed657fb444066484df6e5b6965bf130865e9",
+            "bytes": 3527
+          }
+        ]
+      }
+    ],
+    "repositoryCommit": "9aa463a4aa4ad3c37d7facacda2e40ad7880ea92",
+    "lock": {
+      "path": "provider-pnpm-lock.yaml.gz",
+      "sha256": "9b22562ea99aa3a3e4a79a448e1a393b08bb6911955aea21c51f314a4758c403",
+      "bytes": 250804,
+      "rawSha256": "55d0affcf0f0da6330d3a9b20d6157992241c96ea6d4460cfd5c77c14a982aa5",
+      "rawBytes": 936744
+    },
+    "primarySources": [
+      {
+        "path": "prefer-import-from-vue.js",
+        "sha256": "536966b30e0c5472feebe75f17b915bbf02103bec3c1b578e1c01c0ab1dfaa95",
+        "bytes": 3958,
+        "url": "https://raw.githubusercontent.com/vuejs/eslint-plugin-vue/9aa463a4aa4ad3c37d7facacda2e40ad7880ea92/lib/rules/prefer-import-from-vue.js"
+      },
+      {
+        "path": "vue3-export-names.json",
+        "sha256": "816968e681b3ae791f658991df8a032d2224120be08ae736aa60d7b5ee9898c9",
+        "bytes": 7357,
+        "url": "https://raw.githubusercontent.com/vuejs/eslint-plugin-vue/9aa463a4aa4ad3c37d7facacda2e40ad7880ea92/lib/utils/vue3-export-names.json"
+      },
+      {
+        "path": "eslint-plugin-vue.LICENSE.fixture",
+        "sha256": "dbbf03317f0101fed5643cd87ca80fb769e358fa4f428445bf2315deeb23a154",
+        "bytes": 1071
+      },
+      {
+        "path": "eslint10-file-report.js.fixture",
+        "sha256": "189c6fb23036c3d87c7c20bcf2a525c4f34a53078ebf6308b760404285a2f686",
+        "bytes": 18563
+      },
+      {
+        "path": "eslint.LICENSE.fixture",
+        "sha256": "3b6be04f862a077a4b97929dbf247299360824d9365f8603c263769303ace18c",
+        "bytes": 1094
+      }
+    ],
+    "config": {
+      "files": [
+        "**/*.vue",
+        "**/*.ts"
+      ],
+      "parser": "vue-eslint-parser@10.4.1",
+      "scriptParser": "@typescript-eslint/parser@8.65.0",
+      "ecmaVersion": "latest",
+      "sourceType": "module",
+      "rules": {
+        "vue/prefer-import-from-vue": "error"
+      },
+      "overrideConfigFile": true,
+      "ignore": false
+    }
+  },
+  "nativeConfig": {
+    "linter": {
+      "preset": "incremental",
+      "rules": {
+        "script/prefer-import-from-vue": "warn"
+      }
+    }
+  },
+  "publicBefore": {
+    "tag": "v0.443.0",
+    "source": "15e116fa258c7aaba5c6fdd2456442535605abe8",
+    "binary": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-lint-prefilter-public-n57i19hn/vize",
+    "binarySha256": "9ad7cf956351265a152a9bbfa08b8c50c85dadacef66529474bbb6170267e254",
+    "archiveSha256": "6378e10d0fa0568a0c1798b48d99b18a01f3e842f8c765fb11b80b638f39a73e",
+    "releaseRun": 38081199501
+  },
+  "sourceProducer": {
+    "base": "ba777412182169093c1b96564089ef0d205f39d0",
+    "path": "crates/vize_patina/src/rules/script/prefer_import_from_vue.rs",
+    "beforeFixture": {
+      "path": "original-native-producer.rs.fixture",
+      "sha256": "fbcd56365c4cd6746078aaa39756f4d1e16f747bedf3fbd0a55dd1360b7e8e98",
+      "bytes": 6787
+    },
+    "releasedFixture": {
+      "path": "released-native-producer.rs.fixture",
+      "sha256": "fbcd56365c4cd6746078aaa39756f4d1e16f747bedf3fbd0a55dd1360b7e8e98",
+      "bytes": 6787
+    },
+    "currentSha256": "79d3814ecd8822cf81ad475ecfc850897ee907b587e2312749edb8b0e8795abb",
+    "releasedAndParentWholeProducerEqual": true
+  },
+  "compileTimeTable": {
+    "path": "crates/vize_patina/src/rules/script/prefer_import_from_vue/public_exports.rs",
+    "sha256": "8d02fc6a9e3f6fc90cf9dac3948cbd7569403ba366e84757157f1c9bc546c78c",
+    "names": 361,
+    "implementation": "Sorted static binary_search; no allocation, runtime serialization, dependency query, or new stage"
+  },
+  "observer": {
+    "path": "observe-before.mjs",
+    "sha256": "bbf1fa311c7793023a3642f3d4ec3e2ecdc169ba6b2cbad29fe7e0eb3afc9fd4",
+    "wholeJson": {
+      "path": "tests/tooling/lint-default-correctness-reference.mjs",
+      "sha256": "d0fe46840f15d3aee0cad8b0394b4c67dd1f738a9ddaba39f55073fefd9df6b7"
+    },
+    "envelopeContract": {
+      "path": "tests/tooling/support/public-vue-imports-reference-contract.mjs",
+      "sha256": "c4f82cfeca726c470736292e553ef00f5466a1073f80e784da04856326b9ceca"
+    }
+  },
+  "providerEnvelope": {
+    "path": "provider-envelope-supplement.json",
+    "sha256": "533cca574a3d95c6881ca2765b975b2d374dea30c0e7a43cb2794da37e266ae7",
+    "bytes": 15229
+  },
+  "releasedFixContract": {
+    "path": "released-fix-contract.json",
+    "sha256": "f020a890589fbc4a1dcca19a292886f1af365691770ac869b871976cb84cb610",
+    "bytes": 3317
+  },
+  "initialReference": {
+    "path": "initial-reference.json.gz",
+    "sha256": "6ff4fd43ae9ece0ae464bd51e4bb0208a100b92c213025745c847a126f475d08",
+    "bytes": 184542
+  }
+}

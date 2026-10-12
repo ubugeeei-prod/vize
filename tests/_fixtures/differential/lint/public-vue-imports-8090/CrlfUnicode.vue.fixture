@@ -1,0 +1,5 @@
+<script setup>
+const text = "😀";
+import { computed } from "@vue/reactivity"
+</script>
+<template><div>ok</div></template>

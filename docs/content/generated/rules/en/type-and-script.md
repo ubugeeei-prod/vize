@@ -2974,17 +2974,18 @@ import { h } from '@vue/runtime-dom'
 
 **Good**
 
-Both helpers are imported together from `vue`, using the public package entry point instead of either internal package.
+The public helpers are imported from `vue`. Private `isString` retains `@vue/shared`, because `vue` does not export it. Namespace, default and mixed public/private imports keep a warning without an automatic fix.
 
-```vue annotate="add:2"
+```vue annotate="add:2,3"
 <script setup lang="ts">
 import { ref, h } from 'vue'
+import { isString } from '@vue/shared'
 </script>
 ```
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L32) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L36) · [All rules](all.md)
 
 ### `script/prefer-ref-over-reactive`
 

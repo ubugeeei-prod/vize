@@ -2976,17 +2976,18 @@ import { h } from '@vue/runtime-dom'
 
 **正确示例**
 
-两个辅助函数一起从 `vue` 导入，使用公共包入口，不使用任何内部包。
+公共辅助函数从 `vue` 导入。`vue` 未公开的 `isString` 保留 `@vue/shared`。命名空间、默认及公共与私有混合导入保留警告，但不提供自动修复。
 
-```vue annotate="add:2"
+```vue annotate="add:2,3"
 <script setup lang="ts">
 import { ref, h } from 'vue'
+import { isString } from '@vue/shared'
 </script>
 ```
 
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
-[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L32) · [全部规则](all.md)
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L36) · [全部规则](all.md)
 
 ### `script/prefer-ref-over-reactive`
 
