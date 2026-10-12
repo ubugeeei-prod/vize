@@ -51,3 +51,10 @@ The initial source Actions run 38197049486 refused the nullable computed-opacity
 spread with TS18048. An explicit numeric-presence assertion now rejects missing
 opacity before applying the unchanged 0.2 floor. The original failed log remains
 separate from qualification of the corrected source head.
+
+The next source run 38197438845 retained four real import failures in tooling
+jobs 114644069304 and 114644069314: three isolated fixture copy sets omitted the
+new visual helper. Those sets now copy the actual dependency too. All original
+no-browser/no-native-transform, missing-source, gitless and partial-receipt
+assertions remain byte-exact; no visual contract is bypassed. Both complete
+original failure logs remain separate from successor qualification.
