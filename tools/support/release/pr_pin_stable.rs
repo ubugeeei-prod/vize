@@ -7,10 +7,13 @@ use std::{
     path::Path,
     process::{Command, Stdio},
 };
+#[path = "pr_pin_stable_archive.rs"]
+mod archive;
 #[path = "pr_pin_stable_files.rs"]
 mod files;
 #[path = "pr_pin_stable_plan.rs"]
 mod plan;
+pub(super) use archive::{capture, from_archive};
 
 pub(super) const PLAN_PATH: &str = "tools/support/release/stable_patch_plan.json";
 
@@ -66,17 +69,21 @@ pub(super) fn load(
     super::retire_guard::no_replacements(root)?;
     pr_contract::sha(policy)?;
     pr_contract::sha(cut)?;
+    let (context, value) = read_plan(policy, root)?;
+    plan::verify(&value, &context, cut, repository, root)?;
+    Ok((context, value))
+}
+
+fn read_plan(policy: &str, root: &Path) -> Result<(Stable, Value), String> {
+    pr_contract::sha(policy)?;
     let blob = manifest_blob(policy, root)?;
-    pr_contract::sha(&blob)?;
     let bytes = metadata::bytes(&["--no-replace-objects", "cat-file", "blob", &blob], root)?;
     let context = Stable {
         policy: policy.into(),
         blob,
         sha256: digest(&bytes)?,
     };
-    let value: Value =
-        serde_json::from_slice(&bytes).map_err(|e| format!("Invalid stable plan: {e}"))?;
-    plan::verify(&value, &context, cut, repository, root)?;
+    let value = serde_json::from_slice(&bytes).map_err(|e| format!("Invalid stable plan: {e}"))?;
     Ok((context, value))
 }
 
@@ -109,15 +116,14 @@ fn manifest_blob(policy: &str, root: &Path) -> Result<String, String> {
     Ok(fields[2].into())
 }
 
-pub(super) fn supports_cut(context: &Stable, cut: &str, root: &Path) -> Result<(), String> {
-    // The frozen source must contain this protocol's actual compiled callers;
-    // an old tag's workflow bytecode cannot inherit a new operator flag.
-    for path in [
+fn protocol_paths() -> &'static [&'static str] {
+    &[
         "tools/commands/release/pr.rs",
         "tools/support/release/pr_pin.rs",
         "tools/support/release/pr_pin_stable.rs",
         "tools/support/release/pr_pin_stable_plan.rs",
         "tools/support/release/pr_pin_stable_files.rs",
+        "tools/support/release/pr_pin_stable_archive.rs",
         "tools/support/release/pr_pin_start.rs",
         "tools/support/release/pr_pin_source_body.rs",
         "tools/support/release/pr_pin_candidate.rs",
@@ -125,7 +131,16 @@ pub(super) fn supports_cut(context: &Stable, cut: &str, root: &Path) -> Result<(
         "tools/support/release/pr_pin_integration.rs",
         "tools/support/release/pr_pin_lock.rs",
         "tools/support/release/pr_pin_tags.rs",
-    ] {
+        "tools/support/release/pr_pin_retire_guard.rs",
+        "tools/support/release/pr_pin_retire_source.rs",
+        "tools/support/release/pr_pin_retire_evidence.rs",
+    ]
+}
+
+pub(super) fn supports_cut(context: &Stable, cut: &str, root: &Path) -> Result<(), String> {
+    // The frozen source must contain this protocol's actual compiled callers;
+    // an old tag's workflow bytecode cannot inherit a new operator flag.
+    for path in protocol_paths() {
         let observed = github::git(&["--no-replace-objects", "ls-tree", cut, "--", path], root)?;
         let expected = github::git(
             &[
@@ -224,14 +239,14 @@ pub(super) fn annotation(context: Option<&Stable>) -> String {
 }
 
 pub(super) fn main_anchor(source: &Source, main: &str, root: &Path) -> Result<(), String> {
-    first_parent(
-        source
-            .stable
-            .as_ref()
-            .map_or(source.cut.as_str(), |c| c.policy.as_str()),
-        main,
-        root,
-    )
+    first_parent(operator_cut(source), main, root)
+}
+
+pub(super) fn operator_cut(source: &Source) -> &str {
+    source
+        .stable
+        .as_ref()
+        .map_or(source.cut.as_str(), |c| c.policy.as_str())
 }
 
 pub(super) fn shipping_catalog(source: &Source, root: &Path) -> Result<Value, String> {

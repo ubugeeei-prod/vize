@@ -3,7 +3,7 @@ use super::*;
 use serde_json::json;
 use std::collections::BTreeMap;
 
-fn fixture() -> (Repo, Value, Stable, BTreeMap<String, Value>) {
+pub(super) fn fixture() -> (Repo, Value, Stable, BTreeMap<String, Value>) {
     let repo = Repo::new();
     let public = repo.commit(&[
         ("Cargo.toml", "[workspace.package]\nversion = \"0.443.0\"\n"),
@@ -29,7 +29,7 @@ fn fixture() -> (Repo, Value, Stable, BTreeMap<String, Value>) {
     assert_ne!(original, merged);
     github::git(&["push", "origin", "main"], &repo.work).unwrap();
     github::git(&["checkout", "--detach", &public], &repo.work).unwrap();
-    let cut = repo.commit(&[
+    let mut cut_inputs = vec![
         ("src/code.rs", "fixed\n"),
         ("tests/original.txt", "whole original oracle\n"),
         ("tests/wired.rs", "complete independent source adapter\n"),
@@ -37,7 +37,13 @@ fn fixture() -> (Repo, Value, Stable, BTreeMap<String, Value>) {
             "tools/support/release/transport.rs",
             "complete reviewed transport\n",
         ),
-    ]);
+    ];
+    cut_inputs.extend(
+        super::super::protocol_paths()
+            .iter()
+            .map(|p| (*p, "whole inert reviewed protocol fixture\n")),
+    );
+    let cut = repo.commit(&cut_inputs);
     let raw = String::from_utf8(
         metadata::bytes(
             &[
@@ -63,16 +69,29 @@ fn fixture() -> (Repo, Value, Stable, BTreeMap<String, Value>) {
     )
     .unwrap();
     let object = github::git(&["rev-parse", "refs/tags/v0.443.0"], &repo.work).unwrap();
-    let v = json!({"schema":"stable-patch-v1","repository":"owner/repo","published":{"tag":"v0.443.0","tagObject":object,"head":public,"tree":commit(&public,&repo.work).unwrap().0,"run":7,"sourcePr":42},"target":"v0.443.1","cut":cut,"tree":commit(&cut,&repo.work).unwrap().0,"commits":[cut],"fixes":[{"pr":99,"merge":merged,"parent":public,"reporter":"Reporter <123+reporter@users.noreply.github.com>"}],"rawDiff":raw,"files":[{"path":"src/code.rs","role":"fix","origin":merged},{"path":"tests/original.txt","role":"corpus","origin":merged},{"path":"tests/wired.rs","role":"corpus-adapter","origin":""},{"path":"tools/support/release/transport.rs","role":"qualification","origin":""}]});
+    let mut v = json!({"schema":"stable-patch-v1","repository":"owner/repo","published":{"tag":"v0.443.0","tagObject":object,"head":public,"tree":commit(&public,&repo.work).unwrap().0,"run":7,"sourcePr":42},"target":"v0.443.1","cut":cut,"tree":commit(&cut,&repo.work).unwrap().0,"commits":[cut],"fixes":[{"pr":99,"merge":merged,"parent":public,"reporter":"Reporter <123+reporter@users.noreply.github.com>"}],"rawDiff":raw,"files":[{"path":"src/code.rs","role":"fix","origin":merged},{"path":"tests/original.txt","role":"corpus","origin":merged},{"path":"tests/wired.rs","role":"corpus-adapter","origin":""},{"path":"tools/support/release/transport.rs","role":"qualification","origin":""}]});
+    for path in super::super::protocol_paths() {
+        v["files"]
+            .as_array_mut()
+            .unwrap()
+            .push(json!({"path":path,"role":"qualification","origin":""}));
+    }
     github::git(&["checkout", "main"], &repo.work).unwrap();
-    let policy = repo.commit(&[
-        (PLAN_PATH, &format!("{v}\n")),
+    let plan_text = format!("{v}\n");
+    let mut policy_inputs = vec![
+        (PLAN_PATH, plan_text.as_str()),
         ("main-only.css", "future nominal migration\n"),
         (
             "tools/support/release/transport.rs",
             "complete reviewed transport\n",
         ),
-    ]);
+    ];
+    policy_inputs.extend(
+        super::super::protocol_paths()
+            .iter()
+            .map(|p| (*p, "whole inert reviewed protocol fixture\n")),
+    );
+    let policy = repo.commit(&policy_inputs);
     github::git(&["push", "origin", "main"], &repo.work).unwrap();
     let context = Stable {
         policy: policy.clone(),

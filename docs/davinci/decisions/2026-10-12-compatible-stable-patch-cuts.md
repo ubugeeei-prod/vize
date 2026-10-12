@@ -40,7 +40,9 @@ outside C, avoiding a self-referential expected commit/tree. It names the exact
 public annotated tag/H/tree/R, canonical next patch, ordered original merged fix
 SHA/parent/reporter records, ordered real backport parents, exact C/tree, complete
 raw diff and each whole changed file/mode. Original fix/corpus bodies must match
-actual merged originals. Qualification transport bodies must match reviewed A;
+actual changed merged originals and their complete applicable public preimages.
+Each declared merge must contribute a shipping fix. Qualification transport bodies
+must match reviewed A;
 unknown, omitted, duplicate, forged or unscoped changes refuse before install.
 No CSS nominal migration, new crate registration or unmerged SDK graph belongs
 to this initial product backport.
@@ -62,19 +64,35 @@ remain required. No historical green is reused as a new source measurement.
 
 ## Current status and remaining work
 
-The source prototype passes all 75 inherited release facade laws plus six new
-stable laws using real private Git objects and inert API responses. These include
-a genuine detached stable chain, full-body/path/parent mutations, changed public
-R/tag/fix authority and a real replacement-ref refusal. This is source evidence,
-not product, hosted or release qualification.
+The source candidate passes all 75 inherited release facade laws plus twelve new
+stable laws (87 total) using real private Git objects and inert API responses.
+The controls exercise a detached stable chain, complete file/mode/preimage
+authority, genuine inherited-drift refusals, empty-origin qualification/adapters,
+regular-manifest mode, changed public R/tag/fix authority and replacement refs.
+Interrupted stable receipts authenticate the full plan, exact patch target and
+bump before creating a real lease; wrong or removed authority leaves every
+private remote/admin ref unchanged. These are source controls; product, hosted,
+release and installed qualification remain pending.
+
+Failed stable retirement binds the original main operator to policy A while
+retaining shipping C/H, pin, metadata integration and all prior failure, log,
+publication-absence, lease and version guards. Live capture stores every complete
+original stable authority response with the immutable manifest identity. Archive
+validation reads that retained evidence and raw Git only; a control removes the
+remote before validation and rejects missing, forged or extra responses. Normal
+minor archives do not acquire this field or a new network dependency.
 
 TODO: finish the complete gate-source preservation review before freezing C;
 include only genuinely necessary qualification/transport dependencies, preserving
-all existing gate modes and budgets. Commit the full backport C and acyclic
+all existing gate modes and budgets. Published443 used observational surface
+policy, so its historical success cannot substitute for current schema2 and all
+six ENFORCE modes. The finite current producer inventory has 54 exact paths;
+public443 already supplies the explicit tsconfig/allowJs program API. That source
+compatibility does not establish runtime accuracy, performance or the current
+Airi43 oracle. Preserve those questions for fresh exact-H qualification. Commit the full backport C and acyclic
 manifest, run ordinary exact-head Actions, obtain independent source review and
-carry the conventional implementation PR through protected actual merge. Extend
-retirement's retained stable source reconstruction if a failed patch needs that
-operation; do not reinterpret old minor reservations or reuse a failed version.
-Then root alone starts one official patch. After genuine public H/R/tag/npm
+carry the conventional implementation PR through protected actual merge. Do not
+reinterpret old minor reservations or reuse a failed version. Then root alone
+starts one official patch. After genuine public H/R/tag/npm
 custody, replay the original typed-handler physical consumer law using published
 bytes; keep every other external issue's acceptance scope separate and pending.

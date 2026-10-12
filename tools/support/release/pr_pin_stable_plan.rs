@@ -78,16 +78,43 @@ pub(super) fn verify(
     repository: &str,
     root: &Path,
 ) -> Result<(), String> {
-    verify_with(v, context, cut, repository, root, &|resource| {
-        github::api(repository, resource, root)
-    })
+    verify_against(
+        v,
+        context,
+        cut,
+        repository,
+        &github::fetch_main(root)?,
+        root,
+        &|resource| github::api(repository, resource, root),
+    )
 }
 
+#[cfg(test)]
 fn verify_with(
     v: &Value,
     context: &Stable,
     cut: &str,
     repository: &str,
+    root: &Path,
+    api: &dyn Fn(&str) -> Result<Value, String>,
+) -> Result<(), String> {
+    verify_against(
+        v,
+        context,
+        cut,
+        repository,
+        &github::fetch_main(root)?,
+        root,
+        api,
+    )
+}
+
+pub(super) fn verify_against(
+    v: &Value,
+    context: &Stable,
+    cut: &str,
+    repository: &str,
+    main: &str,
     root: &Path,
     api: &dyn Fn(&str) -> Result<Value, String>,
 ) -> Result<(), String> {
@@ -118,8 +145,7 @@ fn verify_with(
     let tag = field(p, "/tag")?;
     let public = field(p, "/head")?;
     patch_target(tag, field(v, "/target")?)?;
-    let main = github::fetch_main(root)?;
-    first_parent(&context.policy, &main, root)?;
+    first_parent(&context.policy, main, root)?;
     let tag_ref = api(&format!("git/ref/tags/{tag}"))?;
     if field(&tag_ref, "/object/type")? != "tag"
         || field(&tag_ref, "/object/sha")? != field(p, "/tagObject")?
@@ -222,7 +248,7 @@ fn verify_with(
         if !merged.insert(m) || commit(m, root)?.1 != vec![field(f, "/parent")?.to_owned()] {
             return Err("Original fix SHA/parent closure changed".into());
         }
-        first_parent(m, &main, root)?;
+        first_parent(m, main, root)?;
         let pr = api(&format!("pulls/{n}"))?;
         if pr["merged"] != true
             || field(&pr, "/state")? != "closed"
@@ -260,6 +286,9 @@ fn verify_with(
     Ok(())
 }
 
+#[cfg(test)]
+#[path = "pr_pin_stable_archive_tests.rs"]
+mod archive_tests;
 #[cfg(test)]
 #[path = "pr_pin_stable_plan_tests.rs"]
 mod tests;
