@@ -178,15 +178,22 @@ fn complete_event_source_counterfactual_recovers_original_position() {
     assert_eq!(counterfactual["source"].as_str(), Some(original));
     let cursor = current.find(construct).unwrap() + "\n  void MySwitch;\n  const { ".len();
     assert_eq!(current[..cursor].encode_utf16().count(), 22_046);
+    let current_maps = current
+        .lines()
+        .filter(|line| line.contains("@vize-map"))
+        .collect::<Vec<_>>();
+    let original_maps = original
+        .lines()
+        .filter(|line| line.contains("@vize-map"))
+        .collect::<Vec<_>>();
+    assert_eq!(current_maps, original_maps);
     assert_eq!(
-        current
-            .lines()
-            .filter(|line| line.contains("@vize-map"))
-            .collect::<Vec<_>>(),
-        original
-            .lines()
-            .filter(|line| line.contains("@vize-map"))
-            .collect::<Vec<_>>()
+        current_maps,
+        vec![
+            "  // @vize-map: 14458:14560 -> 0:153",
+            "  // @vize-map: expr -> 226:228",
+            "  // @vize-map: component -> 201:214",
+        ]
     );
 }
 

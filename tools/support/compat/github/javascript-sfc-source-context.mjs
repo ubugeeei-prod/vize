@@ -67,7 +67,38 @@ const rows = [
   }),
 ];
 assert.equal(new Set(rows.map((row) => row.path)).size, 88);
-for (const row of rows) {
+const assertionName = "javascript-sfc-assertion-source-cell.json";
+const assertionBytes = regular(new URL(assertionName, import.meta.url));
+assert.equal(
+  sha(assertionBytes),
+  "a83983a7ae98ba2ee8c393be9f2dbe1ee402061d98de586a54a5f485965d98ac",
+);
+const assertion = JSON.parse(assertionBytes);
+assert.equal(assertion.version, 1);
+assert.equal(assertion.sourceOnly, true);
+assert.equal(assertion.runtimeCredit, false);
+assert.equal(assertion.original400Credit, false);
+assert.equal(assertion.performanceCredit, false);
+assert.equal(assertion.path, "crates/vize/tests/support/event_completion_witness.rs");
+const retainedAssertion = rows.find((row) => row.path === assertion.path);
+assert.deepEqual(assertion.retainedCapturedAfter, retainedAssertion.after);
+const retainedBody = Buffer.from(retainedAssertion.after.body, "base64");
+const correctedBody = Buffer.from(assertion.currentAfter.body, "base64");
+assert.equal(retainedBody.toString().split(assertion.clause.before).length - 1, 1);
+assert.deepEqual(
+  Buffer.from(retainedBody.toString().replace(assertion.clause.before, assertion.clause.after)),
+  correctedBody,
+);
+assert.equal(correctedBody.toString().split(assertion.clause.after).length - 1, 1);
+assert.deepEqual(
+  Buffer.from(correctedBody.toString().replace(assertion.clause.after, assertion.clause.before)),
+  retainedBody,
+);
+const currentRows = rows.map((row) =>
+  row.path === assertion.path ? { ...row, after: assertion.currentAfter } : row,
+);
+
+for (const row of currentRows) {
   assert.match(row.path, /^(?:crates|tests|tools|docs|\.github)\//u);
   assert.ok(!row.path.split("/").some((part) => ["", ".", ".."].includes(part)));
   for (const cell of [row.before, row.after]) {
@@ -88,25 +119,88 @@ export const javascriptSfcProductionPaths = Object.freeze([...data.production]);
 export const javascriptSfcContextPaths = Object.freeze([
   "tools/support/compat/github/javascript-sfc-source-context.mjs",
   data.callerContext,
+  "tools/support/compat/github/" + assertionName,
   ...[dataName, ...data.parts.map(([name]) => name)].map(
     (name) => `tools/support/compat/github/${name}`,
   ),
 ]);
 export const javascriptSfcBodyPairs = Object.freeze(
-  rows.map((row) => Object.freeze([row.path, row.before?.sha256 ?? null, row.after.sha256])),
+  currentRows.map((row) => Object.freeze([row.path, row.before?.sha256 ?? null, row.after.sha256])),
 );
+
+/** Decode the whole real Git batch for this finite scope; this alone grants no source authority. */
+export function decodeJavaScriptSfcRawBatch(objects, batch) {
+  assert.ok(Buffer.isBuffer(batch));
+  assert.equal(objects.length, javascriptSfcSourcePaths.length);
+  for (const object of objects) assert.match(object, /^[a-f0-9]{40}$/u);
+  const decoded = new Map();
+  let cursor = 0;
+  for (let i = 0; i < objects.length; i++) {
+    const newline = batch.indexOf(10, cursor);
+    assert.ok(newline >= cursor);
+    const header = batch.subarray(cursor, newline);
+    assert.deepEqual(Buffer.from(header.toString()), header);
+    const match = /^([a-f0-9]{40}) blob (0|[1-9][0-9]*)$/u.exec(header.toString());
+    assert.ok(match && match[1] === objects[i]);
+    const size = Number(match[2]);
+    assert.ok(Number.isSafeInteger(size) && size >= 0);
+    const start = newline + 1,
+      end = start + size;
+    assert.ok(Number.isSafeInteger(end) && end < batch.length && batch[end] === 10);
+    const body = Buffer.from(batch.subarray(start, end));
+    const blob = createHash("sha1").update(`blob ${body.length}\0`).update(body).digest("hex");
+    assert.equal(blob, objects[i]);
+    decoded.set(javascriptSfcSourcePaths[i], { blob, body });
+    cursor = end + 1;
+  }
+  assert.equal(cursor, batch.length, "whole framed raw source response");
+  return decoded;
+}
 
 /** Real regular source bytes; optional raw Git comparison never fetches or follows replacements. */
 export function javascriptSfcSourceReader(root, rawGit = false) {
   root = fs.realpathSync(root);
-  const git = (args) =>
+  const git = (args, input) =>
     execFileSync("git", ["--no-replace-objects", ...args], {
       cwd: root,
-      env: { ...process.env, GIT_NO_LAZY_FETCH: "1" },
+      input,
+      env: { ...process.env, GIT_NO_LAZY_FETCH: "1", GIT_ALLOW_PROTOCOL: "" },
       maxBuffer: 16 * 1024 * 1024,
     });
-  if (rawGit) assert.equal(git(["for-each-ref", "--format=%(refname)", "refs/replace"]).length, 0);
-  return (file) => {
+  let selectedHead;
+  const raw = new Map();
+  if (rawGit) {
+    assert.equal(git(["for-each-ref", "--format=%(refname)", "refs/replace"]).length, 0);
+    selectedHead = git(["rev-parse", "HEAD"]).toString().trim();
+    assert.match(selectedHead, /^[a-f0-9]{40}$/u);
+    const tree = git(["ls-tree", "-z", selectedHead, "--", ...javascriptSfcSourcePaths]);
+    assert.deepEqual(Buffer.from(tree.toString()), tree);
+    const entries = new Map();
+    assert.equal(tree.at(-1), 0, "whole raw source tree response");
+    const records = tree.toString().split("\0");
+    assert.equal(records.pop(), "");
+    assert.equal(records.length, javascriptSfcSourcePaths.length);
+    for (const record of records) {
+      const match = /^100644 blob ([a-f0-9]{40})\t(.+)$/u.exec(record);
+      assert.ok(match, "one regular current raw source record");
+      assert.ok(javascriptSfcSourcePaths.includes(match[2]) && !entries.has(match[2]));
+      entries.set(match[2], match[1]);
+    }
+    assert.equal(entries.size, javascriptSfcSourcePaths.length);
+    const objects = javascriptSfcSourcePaths.map((file) => entries.get(file));
+    const batch = git(["cat-file", "--batch"], objects.join("\n") + "\n");
+    for (const [file, value] of decodeJavaScriptSfcRawBatch(objects, batch)) raw.set(file, value);
+  }
+  const confirmSource = () => {
+    if (!rawGit) return;
+    assert.equal(
+      git(["rev-parse", "HEAD"]).toString().trim(),
+      selectedHead,
+      "same complete source owner",
+    );
+    assert.equal(git(["for-each-ref", "--format=%(refname)", "refs/replace"]).length, 0);
+  };
+  const read = (file) => {
     assert.ok(javascriptSfcSourcePaths.includes(file), file);
     let current = root;
     for (const part of file.split("/")) {
@@ -115,24 +209,26 @@ export function javascriptSfcSourceReader(root, rawGit = false) {
     }
     const body = regular(current);
     if (rawGit) {
-      const entry = git(["ls-tree", "-z", "HEAD", "--", file]);
+      const value = raw.get(file);
       const blob = createHash("sha1").update(`blob ${body.length}\0`).update(body).digest("hex");
-      assert.deepEqual(entry, Buffer.from(`100644 blob ${blob}\t${file}\0`));
-      assert.deepEqual(git(["cat-file", "blob", blob]), body);
+      assert.equal(blob, value.blob, file);
+      assert.deepEqual(body, value.body, file);
     }
     return body;
   };
+  return Object.assign(read, { confirmSource });
 }
 
 /** Authenticate ALL current JS producer/corpus bodies before offering one source-only historical view. */
 export function authenticateJavaScriptSfcSource(read) {
   const actual = new Map();
-  for (const row of rows) {
+  for (const row of currentRows) {
     const body = read(row.path);
     assert.ok(Buffer.isBuffer(body), row.path);
     assert.deepEqual(body, Buffer.from(row.after.body, "base64"), row.path);
     actual.set(row.path, Buffer.from(body));
   }
+  read.confirmSource?.();
   return {
     receipt: {
       authority: "complete-javascript-sfc-source-context",
@@ -142,6 +238,12 @@ export function authenticateJavaScriptSfcSource(read) {
       runtimeCredit: false,
       original400Credit: false,
       performanceCredit: false,
+    },
+    retainedHostQualificationBefore() {
+      const file = "tests/performance/support/warm-type-backed-host-qualifications.ts";
+      assert.ok(data.callerPaths.includes(file) && actual.has(file));
+      const row = rows.find((row) => row.path === file);
+      return Buffer.from(row.before.body, "base64");
     },
     historicalAfter(file) {
       assert.ok(actual.has(file), file);
