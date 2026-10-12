@@ -159,11 +159,34 @@ void test("Japanese rule options retain the complete authored review and origina
   ].map((match) => match[1]);
   const digest = (value: string[]) =>
     createHash("sha256").update(JSON.stringify(value)).digest("hex");
+  const propsCorrections = new Map<number, string>([
+    [36, "ac7cbb7acba123a3444f59de631d61af27236fc70cf257ba9ff79064e463b87c"],
+    [39, "b7088e7786b595f49df377ff71e83e7248b6ffb22d0b72225e7f64f04c1c57bc"],
+  ]);
+  const originalFences = fences.map((recipe, index) => {
+    const corrected = propsCorrections.get(index);
+    if (!corrected) return recipe;
+    assert.equal(
+      createHash("sha256").update(recipe).digest("hex"),
+      corrected,
+      "only the exact reviewed destructure correction succeeds the original recipe",
+    );
+    return recipe.replace(
+      '"script/define-props-destructuring": { destructure:',
+      '"script/define-props-destructuring": { mode:',
+    );
+  });
   assert.equal(fences.length, 43);
-  assert.equal(digest(fences), "7af601c217a94df10b23bd1e10860b4329c2356b90deb9910cb113300490bf43");
+  assert.equal(
+    digest(originalFences),
+    "7af601c217a94df10b23bd1e10860b4329c2356b90deb9910cb113300490bf43",
+  );
+  assert.equal(inlineTokens[26], '{ destructure?: "only-when-assigned" \\| "always" \\| "never" }');
+  const originalTokens = [...inlineTokens];
+  originalTokens[26] = '{ mode?: "only-when-assigned" \\| "always" \\| "never" }';
   assert.equal(inlineTokens.length, 132);
   assert.equal(
-    digest(inlineTokens),
+    digest(originalTokens),
     "90b695added36c831b6af36e61fc2b31a0f7cd58f914ba16974bb3d8a8de30b1",
   );
   assert.deepEqual(
@@ -173,4 +196,40 @@ void test("Japanese rule options retain the complete authored review and origina
   );
   assert.ok(readFileSync(resolve(root, "docs/content/ja/guide/lint-execution.md"), "utf8"));
   assert.equal(japanese.split('<span id="scoped-entries"></span>').length, 2);
+});
+
+void test("Japanese script options survive regeneration with the complete current recipes and APIs", async () => {
+  const root = resolve(import.meta.dirname, "../..");
+  const path = "rules/options-script.md";
+  const english = readFileSync(resolve(root, "docs/content", path), "utf8");
+  const japanese = readFileSync(resolve(root, "docs/content/ja", path), "utf8");
+  const retained = await collectReviewedTranslations([path], resolve(root, "docs/content/ja"));
+  assert.equal(retained.get(path), japanese, "regeneration retains the entire authored article");
+  assert.equal(
+    isReviewedTranslation(
+      japanese.replace("<!-- Reviewed translation;", "<!-- Generated translation;"),
+    ),
+    false,
+    "the previous generated body has no authored authority",
+  );
+  const pattern = /^```[^\n]*\n[\s\S]*?^```[^\n]*$/gm;
+  const recipes = (source: string) => [...source.matchAll(pattern)].map((item) => item[0]);
+  assert.equal(recipes(japanese).length, 13);
+  assert.deepEqual(recipes(japanese), recipes(english), "all thirteen current whole recipes agree");
+  const tokens = (source: string) =>
+    [...source.replace(pattern, "").matchAll(/(?<!`)`([^`\n]+)`(?!`)/g)].map((item) => item[1]);
+  assert.equal(tokens(japanese).length, 16);
+  assert.deepEqual(
+    tokens(japanese),
+    tokens(english),
+    "every ordered inline API and default remains",
+  );
+  const links = (source: string) =>
+    [...source.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)].map((item) => item[1]);
+  assert.deepEqual(
+    links(japanese),
+    links(english),
+    "original option reference destination remains",
+  );
+  assert.equal(japanese.split('<span id="script-rule-options"></span>').length, 2);
 });

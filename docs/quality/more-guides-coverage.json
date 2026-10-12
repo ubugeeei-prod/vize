@@ -265,9 +265,9 @@
     },
     {
       "route": "/rules/options-script",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Complete authored Japanese article retains all thirteen current examples, API names, default meanings, Vue 3.5 boundary and bookmarks. The inherited props option key is corrected to the actual typed destructure API in both languages; original recipes and the finite correction remain recorded. Fresh native desktop/mobile and deployed reader acceptance remain required."
     },
     {
       "route": "/rules/options-type",

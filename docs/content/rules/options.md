@@ -68,7 +68,7 @@ export default defineConfig({
 | `script/no-restricted-members` | `{ members?: Array<{ object: string; property: string; message?: string }> }` | Off unless `members` is configured and the rule is enabled. A missing `message` uses the generic diagnostic help. |
 | `vue/component-name-in-template-casing` | `{ casing?: "PascalCase" \| "kebab-case", registeredComponentsOnly?: boolean, globals?: string[] }` | Defaults to `PascalCase`, registered components only, and no literal globals. |
 | `script/custom-event-name-casing` | `{ casing?: "camelCase" \| "kebab-case" }` | Defaults to `camelCase`. |
-| `script/define-props-destructuring` | `{ mode?: "only-when-assigned" \| "always" \| "never" }` | Defaults to `only-when-assigned`. `always` also checks bare calls; `never` requires props-object access. Vue 3.5 destructuring preserves reactivity. |
+| `script/define-props-destructuring` | `{ destructure?: "only-when-assigned" \| "always" \| "never" }` | Defaults to `only-when-assigned`. `always` also checks bare calls; `never` requires props-object access. Vue 3.5 destructuring preserves reactivity. |
 | `vue/no-mutating-props` | `{ shallowOnly?: boolean }` | Defaults to `false`; `true` allows nested mutation while still disallowing direct prop reassignment. |
 | `vue/require-component-registration` | `{ globals?: string[] }` | Explicit application/preview component names; accepts PascalCase and kebab-case spellings. Options do not enable the rule. |
 | `vue/sfc-element-order` | `{ order?: Array<string \| string[]> }` | Defaults to `[["script", "template"], "style"]`. A nested array means any of those block selectors may appear at that rank. |
