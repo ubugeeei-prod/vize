@@ -16,6 +16,8 @@ pub(crate) use sfc::append_builtin_script_diagnostics;
 mod template_context;
 
 #[cfg(test)]
+mod deep_props_dispatch_tests;
+#[cfg(test)]
 mod runtime_props_dispatch_tests;
 #[cfg(test)]
 mod setup_emits_dispatch_tests;
