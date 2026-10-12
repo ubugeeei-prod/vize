@@ -31,9 +31,7 @@ runs:
           rust_script_temp="$(mktemp -d "$RUNNER_TEMP/rust-script.XXXXXX")"
           trap 'rm -rf "$rust_script_temp"' EXIT
           archive="$rust_script_temp/rust-script.tar.gz"
-          curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 \
-            --output "$archive" \
-            "https://github.com/fornwall/rust-script/releases/download/0.34.0/rust-script-x86_64-unknown-linux-gnu.tar.gz"
+          . "$GITHUB_ACTION_PATH/download-prebuilt.sh" "$archive"
           bash "$GITHUB_ACTION_PATH/extract-prebuilt.sh" "$archive" "$rust_script_temp/runner" \
             0700ecfe6c768c007f3e5a7919f4fedbf0a6727d275a196791f134a1742d4d13
           mkdir -p "$cargo_bin"

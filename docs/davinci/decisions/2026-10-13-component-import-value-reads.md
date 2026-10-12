@@ -173,3 +173,10 @@ private missing objects refuse before mutation, including a real shallow
 repository without an origin. The original literal-source helper, sixty-second
 retained subprocess limit and sixty-four-parent bound remain unchanged. Hosted
 fetch execution and fresh product acceptance are pending the exact-source run.
+
+Exact-head dcea source planning identified one generated Patina inventory count
+change from the corrected descriptor control. The unchanged pure scanner and
+renderer reproduce the whole shard; only its allocator mention count moves
+from five to six. The original400 run passed at dcea; its inherited native
+projection census failure remains separate and is repaired by the genuine
+main inclusion, with new exact-head acceptance still required.

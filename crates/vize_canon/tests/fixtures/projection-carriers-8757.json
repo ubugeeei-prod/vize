@@ -1,0 +1,300 @@
+{
+  "version": 1,
+  "source": "d95c151c18d85c8fdd95541291bc614e44790101",
+  "entries": [
+    {
+      "path": "differential/lint/attrs-expression-ranges-8090/sources/Argument.vue",
+      "bytes": 96,
+      "sha256": "7b83ca0ea7b8ef0be160f04da9fc0ca919ee83cac45eaa90625ed0dcb7206496",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/attrs-expression-ranges-8090/sources/Comment.vue",
+      "bytes": 108,
+      "sha256": "deeb1c54713e00fc14b0d6f392f925cb17cb63719cbec9c3d767d83384236322",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/attrs-expression-ranges-8090/sources/FalseOptions.vue",
+      "bytes": 132,
+      "sha256": "9c8d5df72182222771bdfcbd1052d6ce66b4032c2acebef60afe58ce9423bf3c",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/attrs-expression-ranges-8090/sources/FalseSetup.vue",
+      "bytes": 154,
+      "sha256": "f768d06bc4c846d82d72c0a9f72105fd5a40bbe86b005b275e607cdf5ab68bd4",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/attrs-expression-ranges-8090/sources/ForLocal.vue",
+      "bytes": 151,
+      "sha256": "0f8bf2302d1cf6e6132fe7b10b30f45a25509bb54c6fefb719d083b9ad0ed7be",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/attrs-expression-ranges-8090/sources/Fragment.vue",
+      "bytes": 109,
+      "sha256": "3b6d88a8145163ce7e42c09d1869016be3de6ae8698608d796e15c2f016bedc9",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/attrs-expression-ranges-8090/sources/Nested.vue",
+      "bytes": 99,
+      "sha256": "4522c3f1e9bf19c18216237f8817ffac3eeedb9784ecd55d813a88778ce7c9d7",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/attrs-expression-ranges-8090/sources/Opaque.vue",
+      "bytes": 157,
+      "sha256": "c0da8d015199293492686fbbeb88416d10e17b963fda2c864d4eee7624dcfe84",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/attrs-expression-ranges-8090/sources/Ordered.vue",
+      "bytes": 123,
+      "sha256": "38da0a957e94a2b0361721ce96f38c042336a1aa88db18d6a0796baa58d63e6f",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/attrs-expression-ranges-8090/sources/Other.vue",
+      "bytes": 127,
+      "sha256": "7f8fdc760eee58c8e0a3836661e115ea7956881cf3f265cd4ae970c2acdedf1a",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/attrs-expression-ranges-8090/sources/Pre.vue",
+      "bytes": 105,
+      "sha256": "46b20839500c4985f0e38ca5c051a3acb4dda1dbf367601e453ff3a66ed55b3f",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/attrs-expression-ranges-8090/sources/Rich.vue",
+      "bytes": 92,
+      "sha256": "e1b174e8a01014dbe55b675eabf372224cbfe0de841d02e6757abf013f174cf4",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/attrs-expression-ranges-8090/sources/Root.vue",
+      "bytes": 85,
+      "sha256": "48f92575f9de40f8af733b2b63347883a489b2ae98b33c7a2bd83f3cee713e85",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/attrs-expression-ranges-8090/sources/RootFor.vue",
+      "bytes": 126,
+      "sha256": "222cd4d4270a32aa8f54dbdee4594397e452685b4787a47c64a997f28c0f5be8",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/attrs-expression-ranges-8090/sources/RootForLocal.vue",
+      "bytes": 128,
+      "sha256": "e8b704a131af57aff3adb045e8d5696c11fcd674bf5e074350c798a3d6f1ece6",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/attrs-expression-ranges-8090/sources/Sibling.vue",
+      "bytes": 184,
+      "sha256": "2c1522867d6d4e241033e28fabe24b41c3a2c79b950039659b703cdfd1c32a8f",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/attrs-expression-ranges-8090/sources/SingleQuote.vue",
+      "bytes": 99,
+      "sha256": "636129a8954be5aa6a5ac2609aecd5a3da6c88900a2113a6879690a965b9e56b",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/attrs-expression-ranges-8090/sources/Slot.vue",
+      "bytes": 146,
+      "sha256": "a3f4c5651b6689d4aa87ead759951ae44dcfea2c843b92d1a589a33282cef5d3",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/attrs-expression-ranges-8090/sources/SlotLocal.vue",
+      "bytes": 143,
+      "sha256": "25d4fbea0a2df7fb775e2d3802e8f0109269b3ca56f4e66597419686bd6f8361",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/attrs-expression-ranges-8090/sources/SlotScope.vue",
+      "bytes": 137,
+      "sha256": "b4d7040eb87f5008f995832a65ddc049b24f06dd8acc14400ca6f755f297d88c",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/attrs-expression-ranges-8090/sources/TemplateRoot.vue",
+      "bytes": 132,
+      "sha256": "af806d8c6720661ff61b54d17951b011558eea2893e4bde39b8c8f97c71fa015",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/attrs-expression-ranges-8090/sources/ThemeIcon.vue",
+      "bytes": 1350,
+      "sha256": "eb0f821769f5aa61f9819562c9420c411cf755240f2f33564b7483611f38423b",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/attrs-expression-ranges-8090/sources/Trimmed.vue",
+      "bytes": 89,
+      "sha256": "77505b18da45c07875d9bcfd2e75963ff55e7eedcacbf48f17637c13355b8646",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/attrs-expression-ranges-8090/sources/True.vue",
+      "bytes": 123,
+      "sha256": "e2ab8c032fcc53bb910c8c75bcab4aab9c28955a53bf7da80020639d8326cc1b",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/attrs-expression-ranges-8090/sources/Unicode.vue",
+      "bytes": 124,
+      "sha256": "54133d7042929070c4de9615a5c8a19b2ecd0bf3094520ec564c478d1b1572e8",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/transition-custom-child-6881/sources/ExplicitOff.vue",
+      "bytes": 115,
+      "sha256": "8a9e76fd2055d721acb47b52266fe908a7bfccaaa7d5bb32a97d540375e86d25",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/transition-custom-child-6881/sources/Fulldefault.vue",
+      "bytes": 123,
+      "sha256": "4436eb0dbd3e62722c8340da20badeda636811ea1f2ac54a31e564909db71a13",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/transition-custom-child-6881/sources/Fullessential.vue",
+      "bytes": 123,
+      "sha256": "4436eb0dbd3e62722c8340da20badeda636811ea1f2ac54a31e564909db71a13",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/transition-custom-child-6881/sources/Fullrecommended.vue",
+      "bytes": 123,
+      "sha256": "4436eb0dbd3e62722c8340da20badeda636811ea1f2ac54a31e564909db71a13",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/transition-custom-child-6881/sources/OriginalHome.vue",
+      "bytes": 4792,
+      "sha256": "d8240ec0195bcad09eedc9d9d3623aea283db3ca3aaebcb2fa8b87e573a5e3d0",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/transition-custom-child-6881/sources/OriginalNoteCreate.vue",
+      "bytes": 6708,
+      "sha256": "41547f7090f8d1b4d7893c0027eb8f8f7c0d3c8472f7e6bada7863d5126b9615",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/transition-custom-child-6881/sources/appear-native.vue",
+      "bytes": 122,
+      "sha256": "b202c3d8479fd96f33e73b897758b00bacdbf04f603b1a3230e6cd31bce96262",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/transition-custom-child-6881/sources/bound-appear-native.vue",
+      "bytes": 133,
+      "sha256": "96aa49fe3929f8d8f6394b4d9ad8971696df7e2c14b36899575b982c10f78396",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/transition-custom-child-6881/sources/dynamic-component.vue",
+      "bytes": 132,
+      "sha256": "922600c496bd6bfcbc7cf05da4624db62ae81ce0f476af736bd08a400f5f21de",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/transition-custom-child-6881/sources/kebab-component.vue",
+      "bytes": 120,
+      "sha256": "140e78bf29c155c5cdc37a8216283099cfc5a208bf00881716237decb53256ee",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/transition-custom-child-6881/sources/lowercase-component.vue",
+      "bytes": 118,
+      "sha256": "8c17e1cbbfe9c6af25f3eda4ada6ccd527350114a18a4df22f1a2eeeeade26b0",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/transition-custom-child-6881/sources/multiple-toggle-children.vue",
+      "bytes": 140,
+      "sha256": "002f74a2cd3a9c56a04be4dc6b0ab5cb4940a40a8af61756e4bd483d0696c3ea",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/transition-custom-child-6881/sources/native-bound-key.vue",
+      "bytes": 127,
+      "sha256": "4d5cb8a4038bce153409e8ff6f447a2cb4b147ada0e7aebb31d06e15afa66a3c",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/transition-custom-child-6881/sources/native-div.vue",
+      "bytes": 115,
+      "sha256": "8a9e76fd2055d721acb47b52266fe908a7bfccaaa7d5bb32a97d540375e86d25",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/transition-custom-child-6881/sources/native-math.vue",
+      "bytes": 116,
+      "sha256": "e1b091f4099b4ac00d61f8ff12c4e6cd800cc6f856f3c735118ca336b18c4fa5",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/transition-custom-child-6881/sources/native-svg.vue",
+      "bytes": 115,
+      "sha256": "04e44b0a51dec5fe5a1d0e3c86ad812f2c2bfe8b636ee03634d03f305adab7af",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/transition-custom-child-6881/sources/native-toggle-if.vue",
+      "bytes": 125,
+      "sha256": "8c6309419956d67196ebc756299fb841fea14cd9385022fcc3bd81ff4815fb94",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/transition-custom-child-6881/sources/native-toggle-show.vue",
+      "bytes": 127,
+      "sha256": "1a5b6e62ecd1b722672d05ea1b57c85901f011b02684362c0e9fb7f919d1d583",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/transition-custom-child-6881/sources/pascal-component.vue",
+      "bytes": 119,
+      "sha256": "c9e76e5e01868d7a5851f3bbc6a1cfe1a3bc14121683982d9c247a0425ed9f3a",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/transition-custom-child-6881/sources/router-kebab.vue",
+      "bytes": 123,
+      "sha256": "4436eb0dbd3e62722c8340da20badeda636811ea1f2ac54a31e564909db71a13",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/transition-custom-child-6881/sources/router-pascal.vue",
+      "bytes": 122,
+      "sha256": "bc6b9aceb47a0afcf0a08231bcc0edb599ee607c986bf2ecf335bac24b8aad8a",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/transition-custom-child-6881/sources/slot-child.vue",
+      "bytes": 116,
+      "sha256": "5d91a2e27947084fa87b4180589004e43a82703f73f5385e07de1f3f9f8767c9",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/transition-custom-child-6881/sources/static-key.vue",
+      "bytes": 127,
+      "sha256": "61b0e588b4daff8b1d24f0eaf90ecfb5d9d3e2afc1c4208dc33123e9477beb2e",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/transition-custom-child-6881/sources/web-component.vue",
+      "bytes": 120,
+      "sha256": "bffdb5e6ae4958e29f27bde96867f14e916584e51d054e8737aba7d5540715fe",
+      "mode": "100644"
+    }
+  ]
+}
