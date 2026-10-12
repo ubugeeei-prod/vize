@@ -22,7 +22,7 @@ function fixture(run) {
     rmSync(root, { recursive: true, force: true });
   }
 }
-test("receipt admission refuses missing native feature, wrong target and wrong profile", () => {
+void test("receipt admission refuses missing native feature, wrong target and wrong profile", () => {
   fixture((root, artifact) => {
     assert.throws(() => validateArtifact(root, { ...artifact, features: [] }));
     assert.throws(() =>
@@ -39,7 +39,7 @@ test("receipt admission refuses missing native feature, wrong target and wrong p
     );
   });
 });
-test("an executable from a foreign source file cannot lend source identity", () => {
+void test("an executable from a foreign source file cannot lend source identity", () => {
   fixture((root, artifact) => {
     const other = join(root, "crates/vize_canon/tests/foreign.rs");
     writeFileSync(other, "// distinct source\n");
@@ -48,7 +48,7 @@ test("an executable from a foreign source file cannot lend source identity", () 
     );
   });
 });
-test("failed, killed, empty or filtered test output cannot supply actual three-law credit", () => {
+void test("failed, killed, empty or filtered test output cannot supply actual three-law credit", () => {
   fixture((root, artifact) => {
     const result = { error: undefined, signal: null, status: 0, stdout: Buffer.alloc(0) };
     assert.throws(() => validateRun(root, root, artifact, { ...result, status: 1 }));

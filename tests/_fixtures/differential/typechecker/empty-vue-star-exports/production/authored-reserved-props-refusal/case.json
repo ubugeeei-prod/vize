@@ -22,9 +22,9 @@
     },
     {
       "file": "consumer.ts",
-      "bytes": 710,
-      "sha256": "3c1d89ccdc5e2ae3c47190db2935bfcb4605291a307690fe6b65fd37d21940a5",
-      "relativeBlob": "blobs/3c1d89ccdc5e2ae3c47190db2935bfcb4605291a307690fe6b65fd37d21940a5.json"
+      "bytes": 717,
+      "sha256": "c4bb61cac8d9689e7e09e5db9fc4c7ab926b6d1e7c31396d30d507842c398314",
+      "relativeBlob": "blobs/c4bb61cac8d9689e7e09e5db9fc4c7ab926b6d1e7c31396d30d507842c398314.json"
     },
     {
       "file": "barrel.ts",
@@ -36,9 +36,9 @@
   "diagnostics": [],
   "projectedEquals": {
     "consumer.ts": {
-      "bytes": 713,
-      "sha256": "2bd1f12539bce04a370e854e4c98da6dec1e811d5a3fc0e3d0e41fbb5f048c74",
-      "relativeBlob": "blobs/2bd1f12539bce04a370e854e4c98da6dec1e811d5a3fc0e3d0e41fbb5f048c74.json"
+      "bytes": 720,
+      "sha256": "e01b60f7b50f8f4823ba291993361a7fb4625b065e92cf0a34b6daffdf30353f",
+      "relativeBlob": "blobs/e01b60f7b50f8f4823ba291993361a7fb4625b065e92cf0a34b6daffdf30353f.json"
     },
     "barrel.ts": {
       "bytes": 143,

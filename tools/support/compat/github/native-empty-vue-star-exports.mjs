@@ -47,7 +47,11 @@ export function validateRun(root, capture, artifact, result) {
   const stdout = result.stdout.toString("utf8");
   assert.deepEqual(Buffer.from(stdout), result.stdout, "test output must be complete UTF8");
   const passed = [...stdout.matchAll(/^test ([^\r\n]+) \.\.\. ok$/gmu)].map((row) => row[1]);
-  assert.deepEqual(passed.toSorted(), testNames.toSorted(), "all three actual laws required");
+  assert.deepEqual(
+    passed.toSorted((a, b) => a.localeCompare(b)),
+    testNames.toSorted((a, b) => a.localeCompare(b)),
+    "all three actual laws required",
+  );
   assert.match(
     stdout,
     /test result: ok\. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out/u,

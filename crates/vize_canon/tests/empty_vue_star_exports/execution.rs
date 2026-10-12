@@ -108,13 +108,10 @@ pub(super) fn check(case: &Value, runtime: &Runtime) -> Observation {
     let listing = support::cli(runtime, &config, &["--listFilesOnly"]);
     packet["wholeNativeLoadedFileListing"] = listing.clone();
     support::capture(id, &packet);
-    assert_eq!(
-        listing["exitCode"], 0,
-        "native loaded-file custody is required"
-    );
-    let loaded = listing["wholeStdoutUtf8"]
-        .as_str()
-        .unwrap()
+    let (listed_paths, partition) = partition_listing(&packet, &listing);
+    packet["wholeNativeLoadedFileListingPartition"] = partition;
+    support::capture(id, &packet);
+    let loaded = listed_paths
         .lines()
         .map(|path| {
             let path = PathBuf::from(path);
@@ -152,4 +149,89 @@ pub(super) fn check(case: &Value, runtime: &Runtime) -> Observation {
         generated: Value::Object(generated),
         rows,
     }
+}
+
+/// This one observed malformed case retains its native syntax failure verbatim.
+/// It never recognizes arbitrary diagnostics or grants semantic-green credit.
+fn partition_listing<'a>(packet: &Value, listing: &'a Value) -> (&'a str, Value) {
+    let stdout = listing["wholeStdoutUtf8"].as_str().unwrap();
+    if packet["case"]["id"] != "malformed-refusal" {
+        assert_eq!(
+            listing["exitCode"], 0,
+            "native loaded-file custody is required"
+        );
+        return (stdout, json!({"kind":"ordinary-path-only-listing"}));
+    }
+    const SYNTAX: &str = "A.vue.ts(30,18): error TS1109: Expression expected.\n";
+    let native = &packet["wholeSameConfigNativeCli"];
+    assert_eq!(
+        packet["case"]["nativeContract"],
+        "projection-refusal-observation"
+    );
+    assert_eq!(listing["arguments"], json!(["--listFilesOnly"]));
+    assert_eq!(
+        native["arguments"],
+        json!(["--checkers", "1", "--pretty", "false"])
+    );
+    for identity in ["nativePath", "nativeSHA256", "project", "cwd"] {
+        assert_eq!(
+            listing[identity].as_str().unwrap(),
+            native[identity].as_str().unwrap(),
+            "the listing must belong to this exact native/config identity"
+        );
+    }
+    assert_eq!(
+        native["nativePath"],
+        packet["officialNativeCustody"]["executable"]
+    );
+    assert_eq!(
+        native["nativeSHA256"],
+        packet["officialNativeCustody"]["wholeExecutableSHA256"]
+    );
+    assert_eq!(
+        packet["officialNativeCustody"]["phase"],
+        "OFFICIAL_NATIVE_RUNTIME_VALIDATED"
+    );
+    assert_eq!(native["project"], packet["generatedConfig"]["path"]);
+    assert_eq!(listing["exitCode"], 1);
+    assert_eq!(native["exitCode"], 1);
+    for response in [native, listing] {
+        assert_eq!(response["wholeStderrBytes"], json!([]));
+        assert_eq!(response["stderrSha256"], support::hash(&[]));
+        let text = response["wholeStdoutUtf8"].as_str().unwrap();
+        assert_eq!(response["wholeStdoutBytes"], json!(text.as_bytes()));
+        assert_eq!(response["stdoutSha256"], support::hash(text.as_bytes()));
+    }
+    assert_eq!(
+        native["wholeStdoutUtf8"], SYNTAX,
+        "only the exact whole observed syntax response is eligible"
+    );
+    let paths = stdout
+        .strip_prefix(SYNTAX)
+        .expect("the exact whole syntax response must occur once at the beginning");
+    assert!(
+        !paths.is_empty() && paths.ends_with('\n'),
+        "a complete nonempty filepath listing must remain"
+    );
+    for line in paths.lines() {
+        let path = std::path::Path::new(line);
+        assert!(
+            path.is_absolute(),
+            "no second or foreign diagnostic may become a filepath"
+        );
+        assert!(
+            matches!(
+                path.extension().and_then(|value| value.to_str()),
+                Some("ts" | "mts")
+            ),
+            "only the actual malformed case's native source-file path shape is eligible"
+        );
+    }
+    (
+        paths,
+        json!({"kind":"single-malformed-case-syntax-prefix", "wholeSyntaxUtf8":SYNTAX,
+        "wholeSyntaxBytes":SYNTAX.as_bytes(),"syntaxSHA256":support::hash(SYNTAX.as_bytes()),
+        "wholeSameConfigNativeSyntaxResponse":native,
+        "authority":"exact same native/config CLI syntax failure retained; no semantic-green credit"}),
+    )
 }

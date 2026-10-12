@@ -139,3 +139,31 @@ The new Cargo target requires `native` explicitly. The original opaque-attribute
 selection guard stays unchanged. Complete builder diagnostics are replayed only
 on failure, with their original status. Fresh corrective-source Actions remain
 required; the initial source's success supplies no successor runtime credit.
+
+The next `784d9ede9d` source completed its original400 comparison and all four
+tooling shards. Its native target genuinely executed three laws: one passed and
+two failed. Seven exact cases passed before the reserved-name consumer failed;
+nine complete case packets were captured, and seven cases did not execute.
+Artifact `11772906117` retains their complete original bytes, SHA256
+`b822b657f6cebf1db6a03e52c73931df0149840b95ad537b092bce8177dcf4dd`.
+
+The reserved-name case used an interface-typed value directly as the generated
+component constructor input. The current patterned `data-*` input constraint
+produced a genuine TS2345 at `consumer.ts:6:41`, unrelated to star ownership.
+That complete mapped and raw vector remains retained. The corrected consumer
+spreads that value into an object while retaining every direct public type,
+authored `Props` export and concrete-type check; its expected vector stays empty.
+The original source blobs remain unchanged and available.
+
+For the malformed case, the official native `--listFilesOnly` returns status one
+and the complete same-config TS1109 syntax response before its 86 filepaths.
+Only this exact frozen case may partition that complete leading response after
+validating native/config identity, raw bytes, hashes, empty stderr and status.
+Every remaining file is still read and hashed. The whole failure response stays
+in its packet and grants no semantic acceptance credit. Other status failures
+remain refusals. The existing malformed-setup unit fixture also needs the new
+private observation field initialized to false; its original output is retained.
+
+These are test input, fixture construction and evidence corrections. They change
+no export-admission policy, historical32 oracle, application golden or budget.
+Fresh source, native and original400 qualification is required again.
