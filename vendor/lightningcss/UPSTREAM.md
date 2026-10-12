@@ -23,6 +23,12 @@ vp node tools/support/dependencies/vendor-css-engines.ts \
 
 The following changes are deliberately separate from that import:
 
+- A bounded [import-order candidate](../../docs/davinci/decisions/2026-10-12-css-import-order-repair.md)
+  retains parallel physical loading and replays conditions/owned errors in the
+  existing ordering phase. Same-owner emission edges are pruned after context
+  validation; original `SourceIndex` printer semantics remain. All original
+  bundled tests and complete failed before packets are frozen. Source-after,
+  performance and broader forward-composition qualification remain explicit.
 - Package `vize_lightningcss`, with library name `lightningcss`, synchronized
   workspace version and an exact registry fallback. Its optional source-map
   dependency uses the corresponding `vize_parcel_sourcemap` alias. Original

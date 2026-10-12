@@ -12,7 +12,7 @@ const modified: Record<string, string | null> = {
     "967f295af4d48ac2ce4a663dc7215e2ab9f99c2e25a55087c581335994075332",
   "lightningcss/src/values/color.rs":
     "97fd2d02f455bd38c4caad26d639acf00403de7bd05eb641a74b082753cb2d2a",
-  "lightningcss/src/bundler.rs": "532b321252c008f1c581a1613fda4cc6e57369bf2bf712b95618f3ca60a0b5ed",
+  "lightningcss/src/bundler.rs": "469af8d6152becd4371590202d932e29ba2900ecc48190d645af6d2d3cde48ef",
   "lightningcss/src/lib.rs": "8d6453cc1ae51e4e8c0e99f82f0114a4603c2952e7ca1d0928b49e4e3e027ffa",
   "lightningcss/src/selector.rs":
     "ffd28f41d263e9590c7b63633ed474a607449cdc967f25945be79c16ff5e1ecf",
@@ -110,6 +110,66 @@ for (const [filename, length, digest] of [
   assert.equal(bytes.length, length, filename);
   assert.equal(sha256(bytes), digest, filename);
 }
+// Authenticated finite authored-order successor; all original before bytes remain.
+for (const [filename, checksum] of [
+  [
+    "vendor/lightningcss/src/bundler/context.rs",
+    "bc708fb0d3ef548511a342b54bef71717a7e8dde96605f4af67e3a3acc69be5f",
+  ],
+  [
+    "vendor/lightningcss/src/bundler/order_contract.rs",
+    "4bd9b603c7187daf46c1ab4b5dc1ab2f58fafa1f4ada0d233bb838528f6e2ca9",
+  ],
+  [
+    "vendor/lightningcss/tests/vize_fixtures/bundler-before-inputs.json",
+    "407348d9901a5a566cc10f4e199d61c4670c018c53daed09d8633ea00ea0de1c",
+  ],
+  [
+    "vendor/lightningcss/tests/vize_fixtures/bundler-before.rs.txt",
+    "532b321252c008f1c581a1613fda4cc6e57369bf2bf712b95618f3ca60a0b5ed",
+  ],
+  [
+    "tests/_fixtures/differential/css-engine-vendor-exit/bundler-before-inputs.json",
+    "407348d9901a5a566cc10f4e199d61c4670c018c53daed09d8633ea00ea0de1c",
+  ],
+  [
+    "tests/_fixtures/differential/css-engine-vendor-exit/bundler-before-whole.json",
+    "d139e32de20854c5068a38bb3803884a12db81484fe032ba4c45c575774c1da1",
+  ],
+  [
+    "tools/support/dependencies/css-engine-bundler-after.ts",
+    "380aff248e6f4626b68b459c5409eed41a1730195181f78988771a6497336e89",
+  ],
+  [
+    "tests/_fixtures/differential/css-engine-vendor-exit/moonbit-publish-original.test.ts.txt",
+    "7d131acc8a444afc9cabddb6c5995bd8e532d1a65d389721ffa37d9af951496a",
+  ],
+]) {
+  assert.equal(sha256(fs.readFileSync(path.join(root, filename))), checksum, filename);
+}
+const bundledSource = fs.readFileSync(path.join(root, "vendor/lightningcss/src/bundler.rs"));
+const bundledTests = fs.readFileSync(
+  path.join(root, "vendor/lightningcss/tests/vize_fixtures/bundler-original-tests.rs.txt"),
+);
+assert.equal(
+  sha256(bundledTests),
+  "e1d3d9d8ba8a988177e8bd82707ab8d51e5b68f6667c4c7b1e236d89c943b098",
+);
+assert.deepEqual(
+  bundledSource.subarray(bundledSource.indexOf("#[cfg(test)]\nmod tests {")),
+  bundledTests,
+);
+assert.deepEqual(
+  fs.readFileSync(
+    path.join(root, "vendor/lightningcss/tests/vize_fixtures/bundler-before-inputs.json"),
+  ),
+  fs.readFileSync(
+    path.join(
+      root,
+      "tests/_fixtures/differential/css-engine-vendor-exit/bundler-before-inputs.json",
+    ),
+  ),
+);
 const metadataFile = process.argv[2];
 const atelierInputs = fs.readFileSync(
   path.join(root, "tests/_fixtures/differential/css-engine-vendor-exit/atelier-inputs.json"),
