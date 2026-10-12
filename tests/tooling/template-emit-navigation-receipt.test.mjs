@@ -13,7 +13,7 @@ const source = readFileSync(
 );
 assert.equal(
   createHash("sha256").update(source).digest("hex"),
-  "d4781040d0382f1838523a1dc50c3b78d48001c68feb40e62e67ac000a84f31b",
+  "fa593b2f07e71486f4bccbd5a44f4f62927f621d82c2453be2541d224858fa73",
 );
 const imports =
   [
@@ -44,11 +44,11 @@ const old = "const $emit = __ctx.$emit;";
 const text = `prefix\n${model}\n${navigationDeclaration}suffix`;
 
 void test("the old initializer-only receipt leaves the exact new helper; the successor restores both", () => {
-  assert.equal(Buffer.byteLength(navigationDeclaration), 1076);
+  assert.equal(Buffer.byteLength(navigationDeclaration), 1138);
   const expected = `prefix\n${old}\nsuffix`;
   const previous = rewindInitializer(text, model);
   assert.equal(previous.delta, 97);
-  assert.equal(Buffer.byteLength(previous.text) - Buffer.byteLength(expected), 1076);
+  assert.equal(Buffer.byteLength(previous.text) - Buffer.byteLength(expected), 1138);
   assert.throws(() => assert.equal(previous.text, expected));
   assert.equal(rewind(text, model).text, expected);
   assert.equal(rewind(text, model).delta, 97);

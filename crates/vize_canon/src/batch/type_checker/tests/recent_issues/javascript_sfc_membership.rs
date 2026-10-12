@@ -239,3 +239,71 @@ export default component;
         let _ = std::fs::remove_dir_all(project);
     }
 }
+
+#[test]
+fn non_strict_owned_slot_markers_preserve_known_quoted_and_camel_keys() {
+    let Some(native) = resolve_test_tsgo_binary() else {
+        return;
+    };
+    let original = include_str!(
+        "../../../../../../../tests/_fixtures/differential/canon/javascript-sfc-membership/NonStrictSlots.vue.txt"
+    );
+    let child = include_str!(
+        "../../../../../../../tests/_fixtures/differential/canon/javascript-sfc-membership/NonStrictChild.vue.txt"
+    );
+    let wrong = original.replace("<!-- @vue-expect-error -->", "");
+    let repaired = wrong
+        .replace("last-columnsasd", "last-columns")
+        .replace("lastColumnsasd", "lastColumns");
+    for (name, source, expected) in [
+        ("original", original, Vec::new()),
+        (
+            "wrong",
+            wrong.as_str(),
+            vec![
+                (
+                    String::from("src/main.vue"),
+                    Some(2339),
+                    String::from(
+                        "16:14:error Property 'last-columnsasd' does not exist on type 'Partial<ISlots>'.",
+                    ),
+                ),
+                (
+                    String::from("src/main.vue"),
+                    Some(2339),
+                    String::from(
+                        "19:14:error Property 'lastColumnsasd' does not exist on type 'Partial<ISlots>'.",
+                    ),
+                ),
+            ],
+        ),
+        ("repaired", repaired.as_str(), Vec::new()),
+    ] {
+        let project = super::real_vue::create_project_case(
+            cstr!("non-strict-known-slots-{name}").as_str(),
+            &[("src/main.vue", source), ("src/component.vue", child)],
+        );
+        let mut config: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../../../../tests/_fixtures/vue-language-tools/upstream/test-workspace/tsconfig.base.json"
+        )).unwrap();
+        config["compilerOptions"]["strict"] = serde_json::json!(false);
+        config["compilerOptions"]["checkJs"] = serde_json::json!(true);
+        config["include"] = serde_json::json!(["src/**/*"]);
+        std::fs::write(
+            project.join("tsconfig.json"),
+            serde_json::to_vec(&config).unwrap(),
+        )
+        .unwrap();
+        let actual = snapshot_project_diagnostics(&project);
+        eprintln!(
+            "non-strict known slot provider native={} case={name} whole_diagnostics={actual:#?}",
+            native.display()
+        );
+        assert_eq!(
+            actual,
+            Some(expected),
+            "whole original/wrong/repaired slot vector for {name}"
+        );
+        let _ = std::fs::remove_dir_all(project);
+    }
+}
