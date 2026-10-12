@@ -17,7 +17,7 @@ import {
   manifestChange,
 } from "./typechecker-native-canon-lib-law.mjs";
 
-test("the authored current target closure contains both active original library cases and no outside matches", () => {
+await test("the authored current target closure contains both active original library cases and no outside matches", () => {
   const packet = qualifyCanonLibScope(actual);
   assert.deepEqual(qualifyCanonLibScope(source()).cases, packet.cases);
   assert.deepEqual(packet.originalCases, [
@@ -30,13 +30,13 @@ test("the authored current target closure contains both active original library 
 });
 
 for (const filter of canonLibFilters) {
-  test(`an integration function matching ${filter} refuses library-only selection`, () => {
+  await test(`an integration function matching ${filter} refuses library-only selection`, () => {
     assert.throws(
       () => qualifyCanonLibScope(source(append(integration, `#[test] fn ${filter}() {}`))),
       /outside-library selected/u,
     );
   });
-  test(`a module prefix or suffixed function matching ${filter} refuses selection`, () => {
+  await test(`a module prefix or suffixed function matching ${filter} refuses selection`, () => {
     for (const text of [
       `mod ${filter} { #[test] fn unrelated() {} }`,
       `#[test] fn before_${filter}_after() {}`,
@@ -47,7 +47,7 @@ for (const filter of canonLibFilters) {
       );
     }
   });
-  test(`new Cargo file and directory targets matching ${filter} are discovered`, () => {
+  await test(`new Cargo file and directory targets matching ${filter} are discovered`, () => {
     for (const file of [
       "crates/vize_canon/tests/new_case.rs",
       "crates/vize_canon/tests/new_case/main.rs",
@@ -58,11 +58,11 @@ for (const filter of canonLibFilters) {
       );
     }
   });
-  test(`future matching library cases remain selected by the unchanged ${filter} substring`, () => {
+  await test(`future matching library cases remain selected by the unchanged ${filter} substring`, () => {
     qualifyCanonLibScope(source(append(library, `#[test] fn extra_${filter}_case() {}`)));
     qualifyCanonLibScope(source(append(library, `#[test] fn extra漢${filter}_case() {}`)));
   });
-  test(`raw identifiers and Unicode boundaries cannot truncate ${filter}`, () => {
+  await test(`raw identifiers and Unicode boundaries cannot truncate ${filter}`, () => {
     for (const text of [
       `#[test] fn r#${filter}() {}`,
       `#[test] fn before漢${filter}() {}`,
@@ -73,7 +73,7 @@ for (const filter of canonLibFilters) {
   });
 }
 
-test("literal external and inline module paths cannot hide matching registrations", () => {
+await test("literal external and inline module paths cannot hide matching registrations", () => {
   const file = "crates/vize_canon/tests/selected_child.rs";
   const children = `#[test] fn ${canonLibFilters[0]}() {}`;
   assert.throws(
@@ -98,7 +98,7 @@ test("literal external and inline module paths cannot hide matching registration
   );
 });
 
-test("platform branch union refuses a matching case even in an inactive windows branch", () => {
+await test("platform branch union refuses a matching case even in an inactive windows branch", () => {
   assert.throws(
     () =>
       qualifyCanonLibScope(
@@ -108,7 +108,7 @@ test("platform branch union refuses a matching case even in an inactive windows 
   );
 });
 
-test("comments, raw literals and ordinary body edits do not freeze product source", () => {
+await test("comments, raw literals and ordinary body edits do not freeze product source", () => {
   qualifyCanonLibScope(
     source(
       append(
@@ -145,12 +145,12 @@ for (const [label, text] of [
   ["opaque wildcard", "use foreign::*;"],
   ["custom harness attribute", "#![test_runner(custom_runner)]"],
 ]) {
-  test(`${label} cannot establish a finite registration proof`, () => {
+  await test(`${label} cannot establish a finite registration proof`, () => {
     assert.throws(() => qualifyCanonLibScope(source(append(integration, text))));
   });
 }
 
-test("escaping, ambiguous and cyclic modules refuse the proof", () => {
+await test("escaping, ambiguous and cyclic modules refuse the proof", () => {
   for (const changes of [
     append(integration, '#[path = "../../vize/src/main.rs"] mod escaped;'),
     {
@@ -163,7 +163,7 @@ test("escaping, ambiguous and cyclic modules refuse the proof", () => {
     assert.throws(() => qualifyCanonLibScope(source(changes)));
 });
 
-test("default non-mod files retain their owned directory for inline literal paths", () => {
+await test("default non-mod files retain their owned directory for inline literal paths", () => {
   const changes = {
     ...append(integration, "mod carrier;"),
     "crates/vize_canon/tests/carrier.rs": 'mod inline { #[path = "selected.rs"] mod nested; }',
@@ -173,7 +173,7 @@ test("default non-mod files retain their owned directory for inline literal path
   assert.throws(() => qualifyCanonLibScope(source(changes)), /outside-library selected/u);
 });
 
-test("path-included files use mod-rs sibling semantics rather than a decoy stem directory", () => {
+await test("path-included files use mod-rs sibling semantics rather than a decoy stem directory", () => {
   const changes = {
     ...append(integration, '#[path = "peer/child.rs"] mod carrier;'),
     "crates/vize_canon/tests/peer/child.rs": "mod selected;",
@@ -183,7 +183,7 @@ test("path-included files use mod-rs sibling semantics rather than a decoy stem 
   assert.throws(() => qualifyCanonLibScope(source(changes)), /outside-library selected/u);
 });
 
-test("explicit targets, custom harnesses, build generators and library redirects remain closed", () => {
+await test("explicit targets, custom harnesses, build generators and library redirects remain closed", () => {
   const matching = "crates/vize_canon/tests/explicit/case.rs";
   assert.throws(
     () =>
@@ -236,7 +236,7 @@ test("explicit targets, custom harnesses, build generators and library redirects
   );
 });
 
-test("removed, ignored and conditionally disabled original library cases refuse admission", () => {
+await test("removed, ignored and conditionally disabled original library cases refuse admission", () => {
   for (const replacement of [
     "#[ignore] #[test]",
     "#[cfg(windows)] #[test]",
@@ -263,7 +263,7 @@ for (const file of [
   library,
   "crates/vize_canon/src/corsa_bridge/vue_document_package_config_tests.rs",
 ]) {
-  test(`original builtin test authority is retained through ${file}`, () => {
+  await test(`original builtin test authority is retained through ${file}`, () => {
     for (const text of [
       "use foreign::test;",
       "use foreign::generated as test;",
@@ -278,7 +278,7 @@ for (const file of [
   });
 }
 
-test("the two command contracts reject broadened filters, profile changes and lost receipt visibility", () => {
+await test("the two command contracts reject broadened filters, profile changes and lost receipt visibility", () => {
   for (const filter of canonLibFilters) {
     for (const changed of [
       workflow.replace(`--lib ${filter}`, `--lib prefix_${filter}`),

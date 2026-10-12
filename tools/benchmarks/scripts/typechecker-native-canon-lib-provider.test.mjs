@@ -14,7 +14,7 @@ import {
 } from "./typechecker-native-canon-lib-law.mjs";
 import { cargoConfigurations } from "./typechecker-native-canon-lib-config.mjs";
 
-test("locked derive providers and their transitive patch identities remain authoritative", () => {
+await test("locked derive providers and their transitive patch identities remain authoritative", () => {
   for (const name of ["serde", "serde_derive", "quote", "syn", "unicode-ident"]) {
     const changes = manifestChange("Cargo.toml", (m) => {
       m.patch["crates-io"] = { alias: { package: name, path: "vendor/alternate" } };
@@ -87,7 +87,7 @@ test("locked derive providers and their transitive patch identities remain autho
   );
 });
 
-test("physical symlink files and ancestor directories cannot supply authored registrations", () => {
+await test("physical symlink files and ancestor directories cannot supply authored registrations", () => {
   const temp = mkdtempSync(path.join(os.tmpdir(), "vize-canon-lib-source-"));
   try {
     mkdirSync(path.join(temp, "real"));
@@ -102,7 +102,7 @@ test("physical symlink files and ancestor directories cannot supply authored reg
 });
 
 for (const name of ["std", "core"]) {
-  test(`${name} cannot be replaced by a dependency alias providing derives`, () => {
+  await test(`${name} cannot be replaced by a dependency alias providing derives`, () => {
     const changes = {
       ...manifestChange(canonManifest, (m) => {
         m.dependencies[name] = { package: "alternate", path: "../alternate" };
@@ -127,12 +127,12 @@ for (const [label, text] of [
   ["runner", '[target.x86_64-unknown-linux-gnu]\nrunner = "alternate"'],
   ["environment", '[env]\nRUSTC_WRAPPER = "alternate"'],
 ]) {
-  test(`Cargo ${label} authority cannot change after the static census`, () => {
+  await test(`Cargo ${label} authority cannot change after the static census`, () => {
     assert.throws(() => qualifyCanonLibScope(source({ ".cargo/config": text })));
   });
 }
 
-test("actual Cargo ancestor and home configuration metadata also rejects compiler overrides", () => {
+await test("actual Cargo ancestor and home configuration metadata also rejects compiler overrides", () => {
   const temp = mkdtempSync(path.join(os.tmpdir(), "vize-canon-lib-config-"));
   try {
     mkdirSync(path.join(temp, "project"));
@@ -149,7 +149,7 @@ test("actual Cargo ancestor and home configuration metadata also rejects compile
   }
 });
 
-test("the authenticated unchanged Wild linker configuration remains admitted", () => {
+await test("the authenticated unchanged Wild linker configuration remains admitted", () => {
   const runnerTemp = "/home/runner/_work/_temp";
   const cargoContext = {
     configurations: [

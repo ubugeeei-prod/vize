@@ -155,3 +155,10 @@ until those terminal receipts exist.
 Local preflight passed all53 source/provider laws under Node24.14.0 in9.17s,
 with zero skipped cases and zero lint warnings. This is static preparation;
 it supplies no native runtime, protected merge or measured speedup credit.
+
+The first [source Check38205223466](https://github.com/ubugeeei-prod/vize/actions/runs/38205223466)
+at `19044ac5a88ac0ecd3a5bf5cba43ed0959a5ff23` refused23 floating Node test
+registration promises in job114667109870. Await all existing registrations;
+retain every53 law body, complete source/provider proof, zero-warning gate and
+original native command. Focused type-aware lint and fresh exact-head source,
+native and protected qualification are required after this correction.
