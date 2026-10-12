@@ -198,7 +198,7 @@ jobs:
       - name: Restore and install source-built vize CLI
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
         uses: ./.github/actions/restore-source-cli
-        with: { sha256: "${{ needs.pr-source-cli.outputs.sha256 }}" }
+        with: { producer: "${{ toJSON(needs.pr-source-cli.outputs) }}" }
       - name: Verify current-source native scoped CSS and real Vue DOM
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-ssr-capture == 'true')) }}
         uses: ./.github/actions/test-native-scoped-css

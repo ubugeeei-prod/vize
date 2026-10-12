@@ -20,6 +20,7 @@ const themeCss = [
   "code-annotations.css",
   "command-tabs.css",
   "i18n/locale-selector.css",
+  "letter-case.css",
 ]
   .map((file) => readFileSync(resolve(themeDir, file), "utf-8"))
   .join("\n");

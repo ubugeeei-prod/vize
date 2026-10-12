@@ -1,0 +1,491 @@
+{
+  "schema": "vize.lint.public-vue-imports-provider-envelope-supplement",
+  "version": 1,
+  "authority": "Source-derived ESLint 10.4.1 createProblem message-envelope contract; remove only the originally authored nodeType property. Native vectors, provider rule/message/severity/location/fix, initial corpus and failed complete packets remain immutable. This is a named version-specific serializer correction, not a reference recapture or parity waiver.",
+  "initialCorpusSha256": "d52480f474c2a6dba9681aa620a0c5e6dd2597accd91ad286000230a1b9d2389",
+  "initialRoutesSha256": "412dc8a553f58e3feda1d9ffc572cc89e5f08929d134c8943ee11a8689db888f",
+  "initialReference": {
+    "path": "initial-reference.json.gz",
+    "sha256": "6ff4fd43ae9ece0ae464bd51e4bb0208a100b92c213025745c847a126f475d08",
+    "bytes": 184542,
+    "rawSha256": "37665a69b798d5a2ee9ede0c626adc1d5c57ec26788efa49c6dbc20103e55169",
+    "rawBytes": 833175
+  },
+  "serializer": {
+    "package": "eslint",
+    "version": "10.4.1",
+    "packageJsonSha256": "6516811071291ae483f95f74911b3112a0b7f0b3d6e94a85c93c3a371cd7ac8a",
+    "packageTreeSha256": "af38cb607e9e34f5085f715f4dec88405d9dd5bc3e5b9944f9a37f77e14b85eb",
+    "installedPath": "lib/linter/file-report.js",
+    "fixture": "eslint10-file-report.js.fixture",
+    "sha256": "189c6fb23036c3d87c7c20bcf2a525c4f34a53078ebf6308b760404285a2f686",
+    "bytes": 18563,
+    "createProblem": {
+      "startLine": 350,
+      "endLine": 387,
+      "source": "function createProblem(options) {\n\tconst { language } = options;\n\n\t// calculate offsets based on the language in use\n\tconst columnOffset = language.columnStart === 1 ? 0 : 1;\n\tconst lineOffset = language.lineStart === 1 ? 0 : 1;\n\n\tconst problem = {\n\t\truleId: options.ruleId,\n\t\tseverity: options.severity,\n\t\tmessage: options.message,\n\t\tline: options.loc.start.line + lineOffset,\n\t\tcolumn: options.loc.start.column + columnOffset,\n\t};\n\n\t/*\n\t * If this isn’t in the conditional, some of the tests fail\n\t * because `messageId` is present in the problem object\n\t */\n\tif (options.messageId) {\n\t\tproblem.messageId = options.messageId;\n\t}\n\n\tif (options.loc.end) {\n\t\tproblem.endLine = options.loc.end.line + lineOffset;\n\t\tproblem.endColumn = options.loc.end.column + columnOffset;\n\t}\n\n\tif (options.fix) {\n\t\tproblem.fix = options.fix;\n\t}\n\n\tif (options.suggestions && options.suggestions.length > 0) {\n\t\tproblem.suggestions = options.suggestions;\n\t}\n\n\treturn problem;\n}\n",
+      "sha256": "c45bb9c4b8e42633a6d13b284f73c27b222941438882b84acc37075ac5ecd943"
+    },
+    "addRuleMessage": {
+      "startLine": 530,
+      "endLine": 564
+    },
+    "explanation": "addRuleMessage passes descriptor node solely to sourceCode.getLoc; createProblem emits ruleId, severity, message, start/end positions, optional messageId, fix and suggestions. It does not emit nodeType."
+  },
+  "changes": {
+    "cases": 19,
+    "fieldsRemoved": 19,
+    "removedField": "nodeType",
+    "removedValue": "Literal",
+    "semanticFieldsChanged": 0,
+    "nativeVectorsChanged": 0,
+    "checksDisabled": 0
+  },
+  "cases": [
+    {
+      "id": "original-element-plus",
+      "sourceSha256": "3e39e2d5e9c3657f7240c75e0f53acd60054a97ae3e4ff6aa6cee2185efe508a",
+      "diagnostics": []
+    },
+    {
+      "id": "private-alias",
+      "sourceSha256": "7db39bdbbada6a3a2f610fde2b5725a395ca904465d9079381640ca239f30a85",
+      "diagnostics": []
+    },
+    {
+      "id": "private-named",
+      "sourceSha256": "47ed1456e3e06edc9c5005b493c7925882fe0d18e76dd51615985fc9c0d77543",
+      "diagnostics": []
+    },
+    {
+      "id": "public-ref",
+      "sourceSha256": "7cd672516f8c224a0f5097c29d3dae3fad4e88d18dd22a4529c148d735b06182",
+      "diagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/reactivity'.",
+          "line": 2,
+          "column": 21,
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 38,
+          "fix": {
+            "range": [
+              46,
+              61
+            ],
+            "text": "vue"
+          }
+        }
+      ]
+    },
+    {
+      "id": "public-shared",
+      "sourceSha256": "f8e5e56f14ab0b40e159067f5f212c8a20808426f56f1383f676e2d77b828c19",
+      "diagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/shared'.",
+          "line": 2,
+          "column": 26,
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 39,
+          "fix": {
+            "range": [
+              51,
+              62
+            ],
+            "text": "vue"
+          }
+        }
+      ]
+    },
+    {
+      "id": "public-alias",
+      "sourceSha256": "afd630de113196f2175aa8a34e3d6ab6af14cd9917b73f13c16b0fa7051fc0ad",
+      "diagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/runtime-core'.",
+          "line": 2,
+          "column": 31,
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 50,
+          "fix": {
+            "range": [
+              56,
+              73
+            ],
+            "text": "vue"
+          }
+        }
+      ]
+    },
+    {
+      "id": "type-import",
+      "sourceSha256": "ad1e9e8ccfe5c35722fc49849731cc70b7eab2c95e63e640bcedbd2d5bde38af",
+      "diagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/reactivity'.",
+          "line": 2,
+          "column": 26,
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 43,
+          "fix": {
+            "range": [
+              51,
+              66
+            ],
+            "text": "vue"
+          }
+        }
+      ]
+    },
+    {
+      "id": "inline-type-import",
+      "sourceSha256": "827960168d982f0883a5e1d74874461821de2a5d5755372519e626b41dfff0ac",
+      "diagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/reactivity'.",
+          "line": 2,
+          "column": 31,
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 48,
+          "fix": {
+            "range": [
+              56,
+              71
+            ],
+            "text": "vue"
+          }
+        }
+      ]
+    },
+    {
+      "id": "public-string",
+      "sourceSha256": "6660cd0f9fb4fd3f8d5fcd830089f8005932a23388161019c1f9bdff617ce81b",
+      "diagnostics": []
+    },
+    {
+      "id": "private-string",
+      "sourceSha256": "c9bad1a889cce4e37b5a1b3f0faa504d68c87ec0b6b3ffc89cadc474f6ee9139",
+      "diagnostics": []
+    },
+    {
+      "id": "mixed-named",
+      "sourceSha256": "6ef9a187e590776cc137d87a64fb6021be00285038e288fd822d8b63c96bf938",
+      "diagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/shared'.",
+          "line": 2,
+          "column": 31,
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 44
+        }
+      ]
+    },
+    {
+      "id": "mixed-alias",
+      "sourceSha256": "dae5f0db6f25b7f4beb891895191cffc6b4fb79ff85e9539ffc58d5a78e94220",
+      "diagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/shared'.",
+          "line": 2,
+          "column": 50,
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 63
+        }
+      ]
+    },
+    {
+      "id": "namespace",
+      "sourceSha256": "525bc5629381a1e0fe9e7f39d561e5adc4c4640176f4a87e28f19c28d94fde83",
+      "diagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/runtime-dom'.",
+          "line": 2,
+          "column": 22,
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 40
+        }
+      ]
+    },
+    {
+      "id": "default-import",
+      "sourceSha256": "45715823143b25967725f710a651bcb63a95e7580acc9dc2885b4bbee147c85f",
+      "diagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/runtime-dom'.",
+          "line": 2,
+          "column": 17,
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 35
+        }
+      ]
+    },
+    {
+      "id": "default-and-named",
+      "sourceSha256": "fadaafa718605ca7b59dd64a35965edaa36a5642bbdeb0500a3891e9636cc8d6",
+      "diagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/runtime-dom'.",
+          "line": 2,
+          "column": 26,
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 44
+        }
+      ]
+    },
+    {
+      "id": "named-default",
+      "sourceSha256": "383f46253c4b4883ffcb37da9e4b8f25bcf530d50dfba182a0033a19eb46980f",
+      "diagnostics": []
+    },
+    {
+      "id": "empty-named",
+      "sourceSha256": "dff8732b5ba0842fb7e7ce7240231d4d96776b73a6777c457ca604dc1525df59",
+      "diagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/reactivity'.",
+          "line": 2,
+          "column": 16,
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 33,
+          "fix": {
+            "range": [
+              41,
+              56
+            ],
+            "text": "vue"
+          }
+        }
+      ]
+    },
+    {
+      "id": "side-effect",
+      "sourceSha256": "a8bc6cbd232c64144012e32503adbc76e252d35ecc5bc1843886c39df3f3e580",
+      "diagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/shared'.",
+          "line": 2,
+          "column": 8,
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 21,
+          "fix": {
+            "range": [
+              33,
+              44
+            ],
+            "text": "vue"
+          }
+        }
+      ]
+    },
+    {
+      "id": "public-reexport",
+      "sourceSha256": "18f9d8e5544b779915617d6b4de1fa32da79236f9a0ab8ecc8308fb105f1da29",
+      "diagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/reactivity'.",
+          "line": 2,
+          "column": 21,
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 38,
+          "fix": {
+            "range": [
+              46,
+              61
+            ],
+            "text": "vue"
+          }
+        }
+      ]
+    },
+    {
+      "id": "private-reexport",
+      "sourceSha256": "0f310be917c3f63be015c26bde6b05045f16d2b3f707f3239ec2bf8b28d2e54c",
+      "diagnostics": []
+    },
+    {
+      "id": "export-all",
+      "sourceSha256": "de3486ded43237268a0e3e1f382b1f75e27b24e723aa79bba31982d767475271",
+      "diagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/reactivity'.",
+          "line": 2,
+          "column": 15,
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 32
+        }
+      ]
+    },
+    {
+      "id": "non-vue-package",
+      "sourceSha256": "4112469f6531c81b342fc2bcdff2a7be6308169d6e3a11b51b52ed56a2391aa2",
+      "diagnostics": []
+    },
+    {
+      "id": "public-entry",
+      "sourceSha256": "691c832922d447259f1e905c5a2cbae63b3cb85a505ad11932ebab0a3c3284f9",
+      "diagnostics": []
+    },
+    {
+      "id": "comment-double-quote",
+      "sourceSha256": "69366f9738766679ff063496ba3ef4d4ad04df41c1fe31fc29e08a8c5d6f7ca4",
+      "diagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/reactivity'.",
+          "line": 3,
+          "column": 2,
+          "messageId": "importedAtVue",
+          "endLine": 3,
+          "endColumn": 19,
+          "fix": {
+            "range": [
+              58,
+              73
+            ],
+            "text": "vue"
+          }
+        }
+      ]
+    },
+    {
+      "id": "multiple-imports",
+      "sourceSha256": "83702f9d275272b428f3c1384ad6700df0efcef8ec78ae3b41267c7935981881",
+      "diagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/reactivity'.",
+          "line": 2,
+          "column": 21,
+          "messageId": "importedAtVue",
+          "endLine": 2,
+          "endColumn": 38,
+          "fix": {
+            "range": [
+              46,
+              61
+            ],
+            "text": "vue"
+          }
+        }
+      ]
+    },
+    {
+      "id": "crlf-unicode",
+      "sourceSha256": "57a0d021deb13d1c1e862c6120bf253fbe4a6bc7cc7926f4698b741257f438de",
+      "diagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/reactivity'.",
+          "line": 3,
+          "column": 26,
+          "messageId": "importedAtVue",
+          "endLine": 3,
+          "endColumn": 43,
+          "fix": {
+            "range": [
+              62,
+              77
+            ],
+            "text": "vue"
+          }
+        }
+      ]
+    },
+    {
+      "id": "minimal-order",
+      "sourceSha256": "9b4fe45c9271f6fe303144a8411103734d55454e7ec945fd977ebed822b9c2bc",
+      "diagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/reactivity'.",
+          "line": 3,
+          "column": 21,
+          "messageId": "importedAtVue",
+          "endLine": 3,
+          "endColumn": 38,
+          "fix": {
+            "range": [
+              71,
+              86
+            ],
+            "text": "vue"
+          }
+        }
+      ]
+    },
+    {
+      "id": "legacy-script",
+      "sourceSha256": "f9e93c3a11e86630b32677b4e947d8c7d812eefab6b671089c558f0046dfcb41",
+      "diagnostics": []
+    },
+    {
+      "id": "legacy-public",
+      "sourceSha256": "abef9fe366e287f11f80c25074d50e5d316efd1ad65b1fa7bb7f5089ec7fd8ad",
+      "diagnostics": [
+        {
+          "ruleId": "vue/prefer-import-from-vue",
+          "severity": 2,
+          "message": "Import from 'vue' instead of '@vue/reactivity'.",
+          "line": 1,
+          "column": 31,
+          "messageId": "importedAtVue",
+          "endLine": 1,
+          "endColumn": 48,
+          "fix": {
+            "range": [
+              31,
+              46
+            ],
+            "text": "vue"
+          }
+        }
+      ]
+    }
+  ]
+}

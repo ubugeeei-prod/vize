@@ -20,6 +20,8 @@ use crate::batch::virtual_project::{
 
 mod diagnostic_paths;
 #[cfg(test)]
+mod lexical_dollar_receipt;
+#[cfg(test)]
 mod native_test_receipt;
 mod snapshot;
 
@@ -263,6 +265,8 @@ fn check_session_client(
 ) -> CorsaResult<TypeCheckResult> {
     #[cfg(test)]
     native_test_receipt::begin(client);
+    #[cfg(test)]
+    lexical_dollar_receipt::begin(client);
     let raw_diagnostics = profile!(
         "canon.corsa.diagnostics",
         client
@@ -271,6 +275,8 @@ fn check_session_client(
     )?;
     #[cfg(test)]
     native_test_receipt::capture(client, project, uris, &raw_diagnostics);
+    #[cfg(test)]
+    lexical_dollar_receipt::capture(client, project, uris, &raw_diagnostics);
     let diagnostics = profile!(
         "canon.corsa.map_diagnostics",
         map_batch_diagnostics(raw_diagnostics, project)

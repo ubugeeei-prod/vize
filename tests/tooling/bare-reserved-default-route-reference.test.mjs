@@ -5,6 +5,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { gunzipSync } from "node:zlib";
 import { sha256, wholeJson } from "./lint-default-correctness-reference.mjs";
+import { assertReservedApiOrderSource } from "./support/runtime-props-api-source-custody.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const fixture = path.join(root, "tests/_fixtures/differential/lint/bare-reserved-8090");
@@ -35,8 +36,11 @@ await test("whole default-route companions retain independent before proof and f
   );
   assert.equal(apiOrder.schema, "vize.lint.api-route-order-successors");
   assert.equal(apiOrder.cases.length, 16);
-  for (const source of apiOrder.producer)
-    assert.equal(sha256(fs.readFileSync(path.join(root, source.path))), source.sha256);
+  for (const source of apiOrder.producer) {
+    if (source.path === "crates/vize_patina/src/linter/script_rules/registry/rules.rs")
+      assertReservedApiOrderSource(root, { ...source, bytes: 21_919 });
+    else assert.equal(sha256(fs.readFileSync(path.join(root, source.path))), source.sha256);
+  }
   const apiFailure = gunzipSync(Buffer.from(apiOrder.initialFailure.log.packet, "base64"));
   assert.equal(sha256(apiFailure), apiOrder.initialFailure.log.sha256);
   assert.equal(apiFailure.length, apiOrder.initialFailure.log.rawBytes);

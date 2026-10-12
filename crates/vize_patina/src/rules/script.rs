@@ -193,6 +193,16 @@ pub trait ScriptRule: Send + Sync {
         None
     }
 
+    /// Actual runtime props capability; configured namesakes keep default dispatch.
+    fn as_setup_props_defaults(&self) -> Option<&NoRequiredPropWithDefault> {
+        None
+    }
+
+    /// Actual destructure capability; configured namesakes retain default dispatch.
+    fn as_setup_props_destructure(&self) -> Option<&NoDeepDestructureInProps> {
+        None
+    }
+
     /// AST rules return true for shared check_program/check_program_with_sfc
     /// dispatch; byte-only rules return false.
     #[inline]

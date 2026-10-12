@@ -278,7 +278,13 @@ fn named_navigation_preserves_authored_expression_diagnostic_authority() {
                     })
                     .expect("navigation keeps the existing tag source anchor");
                 let tag = 100 + template.find("component").expect("authored tag");
-                assert_eq!(navigation_row.src_range, tag..tag + expression.len());
+                assert_eq!(navigation_row.src_range, tag..tag + "component".len());
+                assert_eq!(
+                    template.get(
+                        navigation_row.src_range.start - 100..navigation_row.src_range.end - 100
+                    ),
+                    Some("component"),
+                );
             } else {
                 assert!(!output.code.contains(guard));
             }

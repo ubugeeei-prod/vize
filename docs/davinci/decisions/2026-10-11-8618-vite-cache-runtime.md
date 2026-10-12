@@ -107,3 +107,12 @@ failures in the earlier warm source-swap diagnostic. Preserve those warm logs as
 setup diagnostics. Independent full comparison SHA-256:
 `30307a3337b6562a20a743e7fd9f836cb0f719589b016421064a2f1f5e053690`.
 The cold reruns are the source emission authority.
+
+## Same-version native cache follow-up
+
+The [loaded-body identity decision](./2026-10-12-loaded-native-cache-identity.md)
+preserves the original fourteen-module/154-entry source controls and adds an
+independent warm rollover and loaded-memory negative control. Capture the
+successful native body's identity once rather than scanning the wrapper
+directory or hashing a later replacement file. Source qualification, protected
+delivery and installed official-release acceptance remain separate.

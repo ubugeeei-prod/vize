@@ -173,3 +173,39 @@ retain genuine native execution for the manifest/guard change, and complete
 protected full checks and actual merge. Refresh whole reviewed pins explicitly
 when composing incoming release or tooling helper changes. Publication and any
 end-to-end performance gain remain unverified.
+
+## Installed reported Vapor composition
+
+PR #8645 source `8020492684d9688bd188d50244ae198cc975bfec` adds an installed
+Vue rc.10 release contract. The three excluded roots still have a complete
+36-file local-import closure. Only `release-input-scopes.test.mjs` changes:
+it registers the literal `release-public-vapor.test.ts` contract in the
+previously broad release inventory and adjusts the corresponding exact counts.
+Its imports, all eight release-selection laws and all historical inventory
+assertions remain; it introduces no native command or new import.
+
+The former whole-root SHA-256 is
+`c4ac93b82a1d29ed851879e8426fb4d7039a77172aa19046610795a9144436f5`;
+the reviewed current body is
+`189e031b5c5768880acb47a2740d421cca46c674332dce297a967d2415e9fd06`.
+Every other reviewed member retains its whole bytes and hash. Source `802049`
+and the failed protected composition
+`f68b29a58027a8f1677327f6e5683ed40b7e0a88` authenticate the same complete
+cohort, as does the actual main-rebased successor
+`c902b204df178d366a4a862200d56d321b0bd880`.
+
+Keep all three historical review objects unchanged and admit this fourth
+complete cohort only. The inherited guard reproduces exactly three source
+refusals on the protected composition before this explicit review. Every
+unknown body/import, native-command, linked/partial source, workflow/input,
+delegated-tools, root-script and changed-metadata refusal remains required.
+The actual all-tools/actions/Rust/npm/root-manifest/workflow consumer scans
+pass on both the protected composition and the main-rebased successor.
+The native workflow, Rust/CLI/editor sources, lockfiles and existing native
+drivers retain their exact bytes; the separate Check registration adds only
+the named public-Vapor TypeScript project. No native build input is replaced.
+
+TODO: qualify the repaired exact PR source, then its fresh protected full
+candidate and all consumers through actual merge. Installed rc.10 acceptance
+still needs an included public release; neither publication nor a CI wall-time
+gain is established by this source-cohort review.

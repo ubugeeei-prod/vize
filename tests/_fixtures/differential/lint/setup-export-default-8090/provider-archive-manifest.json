@@ -1,0 +1,65 @@
+{
+  "schema": "vize.lint.setup-export-default-provider-archives",
+  "version": 1,
+  "files": [
+    {
+      "path": "reference/authored-provider18.json.gz",
+      "rawBytes": 206578,
+      "rawSha256": "0c1c4bb67848474d8a7fdf0dcc78a74d68668cbd67d6a8e873e381295e66eaaf",
+      "bytes": 53580,
+      "sha256": "7f6af44434dc829d3657fdcba96c509cbbc177ccbbb6938f73d63b2dbad02fee"
+    },
+    {
+      "path": "reference/ts-estree-package.json.gz",
+      "rawBytes": 2482,
+      "rawSha256": "2f982e420e8b483cc612fd050a021ec7a8d8b6ca03e917cdcf39f1c679be2c5f",
+      "bytes": 881,
+      "sha256": "d614ea941c703f26da2502bb4234f4d029b8dff9d0624171c4efc07573df27fe"
+    },
+    {
+      "path": "reference/official-provider18.json.gz",
+      "rawBytes": 220742,
+      "rawSha256": "6d16b377150dcab3abc38d1cb7adea350f47be4289b3eaeb1c315ec5d8b3c8c8",
+      "bytes": 54055,
+      "sha256": "2a799abd012f6dc26676feaeaa9be5022405bda5fcc9e60bbeed761c383eab77"
+    },
+    {
+      "path": "reference/eslint.LICENSE",
+      "bytes": 1094,
+      "sha256": "3b6be04f862a077a4b97929dbf247299360824d9365f8603c263769303ace18c"
+    },
+    {
+      "path": "reference/vue-utils.dist.js.gz",
+      "rawBytes": 80367,
+      "rawSha256": "4727c10651f789ee6308b4311f3694dd302faae9e5b821ae4b31432c3b105925",
+      "bytes": 16577,
+      "sha256": "921a92acbd0ef4ce005f3a45c214f0282b286894102a6fe757070e03429bf07d"
+    },
+    {
+      "path": "reference/no-export-in-script-setup.dist.js.gz",
+      "rawBytes": 2147,
+      "rawSha256": "f20004a871532156a9c50abf300f05dcad7ec2e69c22351df210f1cfa8b11d9e",
+      "bytes": 907,
+      "sha256": "b3046300e1ee88164bb33a06e72870ce284cd79600da53dedcae3226bf5129f7"
+    },
+    {
+      "path": "reference/ts-estree-convert.js.gz",
+      "rawBytes": 116583,
+      "rawSha256": "9c654e11a10ccfded6fc27debaa4e2b2f7c7c41a4cd0addf82d05dde2fb57467",
+      "bytes": 16229,
+      "sha256": "8b4aecc9a8e5faae14fa01a30a915094f56637bd53d29ab6cbf00fb251242dbd"
+    },
+    {
+      "path": "reference/eslint10-file-report.js.gz",
+      "rawBytes": 18563,
+      "rawSha256": "189c6fb23036c3d87c7c20bcf2a525c4f34a53078ebf6308b760404285a2f686",
+      "bytes": 4985,
+      "sha256": "2d09ed02ca5b13aaa9370f2cd8756c95f724fef364739b02ea9093cb55547c6b"
+    },
+    {
+      "path": "reference/eslint-plugin-vue.LICENSE",
+      "bytes": 1071,
+      "sha256": "dbbf03317f0101fed5643cd87ca80fb769e358fa4f428445bf2315deeb23a154"
+    }
+  ]
+}

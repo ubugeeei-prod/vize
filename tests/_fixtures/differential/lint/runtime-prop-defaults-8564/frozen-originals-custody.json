@@ -1,0 +1,1082 @@
+{
+  "actualMain": "a6633fb68b110d07abd5ee5a6049bc15f20f9c7f",
+  "claim": "Source preparation only; all original physical fixture bytes retained, no source or installed execution credit.",
+  "authorities": [
+    {
+      "path": "tests/_fixtures/differential/lint/return-prefilter-8090/cases.json",
+      "bytes": 23506,
+      "sha256": "52d3515ca7673895b0817c92ffc72f1136de43ae908dbe140906cd1c9c71d16b"
+    },
+    {
+      "path": "tests/tooling/lint-return-prefilter.test.mjs",
+      "bytes": 5231,
+      "sha256": "839232890e34af66ee2930b7cb4ae303f479e68ab8796f623c0af12810823873"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/typed-prop-default-prefilter-8564/cases.json",
+      "bytes": 7230,
+      "sha256": "b9e78a4082b0e2250afc8b652d0dabdcdb50bc506ec63ae2d15df236607c632d"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-correctness/cases.json",
+      "bytes": 18863,
+      "sha256": "7fa33faea83c868ad5bb01cacd624240486ecea35177a637f09e56ec5f73e9fc"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-migrations/cases.json",
+      "bytes": 20999,
+      "sha256": "30f05bb221d3e33149b40046df704906bfb8bdbe0107a0d043af1f32965eb0bd"
+    },
+    {
+      "path": "tests/_fixtures/n8n-cli-adoption.json",
+      "bytes": 8275,
+      "sha256": "8b0c91b481d28f8477f4af222d98b5b4a73ef5c92baaa86bae34fe4cb4b0b5d1"
+    },
+    {
+      "path": "tests/tooling/lint-default-correctness-reference.mjs",
+      "bytes": 3048,
+      "sha256": "d0fe46840f15d3aee0cad8b0394b4c67dd1f738a9ddaba39f55073fefd9df6b7"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/cases.json",
+      "bytes": 48050,
+      "sha256": "19ebd97616cc26bb3d92d8c7b5daf78f710d2c0792c41df77cb426e87e50afc5"
+    },
+    {
+      "path": "tests/tooling/lint-setup-emits-returns.test.mjs",
+      "bytes": 4970,
+      "sha256": "a76a21704187ba4701dc8c2285e38925c5dbd797f9179ba69f4405e2a0c74484"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/typed-prop-default-prefilter-8564/DrawerContent.vue.fixture",
+      "bytes": 1334,
+      "sha256": "8c564399e6f16081ae92e1403526172d6cfd02e2cac811a08113acde99faeae4"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/typed-prop-default-prefilter-8564/WithDefaults.vue.fixture",
+      "bytes": 125,
+      "sha256": "f0c625753e970aae7dd623e07256cc2cdf3bc690ff4166b8e060ceb1d020042d"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/typed-prop-default-prefilter-8564/Destructure.vue.fixture",
+      "bytes": 101,
+      "sha256": "b180f4a7b65e1eb4771efd572de617bb8fd6e98e619d395ed590c77018a1a17b"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/typed-prop-default-prefilter-8564/Unicode.vue.fixture",
+      "bytes": 117,
+      "sha256": "5160fd28e2cb355800e45ec8d2d04dd092216645eb7720b5429d3ddc2a88b787"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/typed-prop-default-prefilter-8564/Optional.vue.fixture",
+      "bytes": 111,
+      "sha256": "d058d769aa8a5079bc637a17f840d04b9fbe20dabba4c6279b4356cf7cf73376"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/typed-prop-default-prefilter-8564/NoDefault.vue.fixture",
+      "bytes": 86,
+      "sha256": "17e89aba6cef81d95e16b29453107bf8613dfb0884c2450f13e861df8ad61244"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/typed-prop-default-prefilter-8564/Imported.vue.fixture",
+      "bytes": 116,
+      "sha256": "f89d67ed3ea5556a9dfefece9fe81984ddfd9d91e14020ea256a3ff440e594eb"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/typed-prop-default-prefilter-8564/Shadowed.vue.fixture",
+      "bytes": 136,
+      "sha256": "bc67a2151bca0b8df527acc42fe89b44e98f984ae8f331368dc08fe3170a1f9b"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/return-prefilter-8090/OptionsMethods.vue.fixture",
+      "bytes": 139,
+      "sha256": "a032f066da7d0bff23114091dce2079cc338d5e78a50bcdece8ba156f0aafc1b"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/return-prefilter-8090/ArrowComment.vue.fixture",
+      "bytes": 177,
+      "sha256": "595067e722012f1bf3e2d7150ea5c421d191d8b7cd02381d8cad2045bd9cdb01"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/return-prefilter-8090/ArrowNewline.vue.fixture",
+      "bytes": 157,
+      "sha256": "9494e20d62a8cf409f8a93cf1560c4bf32e6087220e682dca979fad2f5232ed8"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/return-prefilter-8090/ArrowTab.vue.fixture",
+      "bytes": 149,
+      "sha256": "dc2ee596bf8e625074bc107ff063d68e3e8096960d6bdbf9eaa13e683ea3c086"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/return-prefilter-8090/WritableComposition.vue.fixture",
+      "bytes": 118,
+      "sha256": "aaedb56c0a7ce93a3b9643f4cb8ebb453c3d963568e44011884e276d15aea387"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/return-prefilter-8090/WritableOptions.vue.fixture",
+      "bytes": 165,
+      "sha256": "847552201d2d132ccc6eb486837c6c25ddc9de3f002533225a831e8428de9267"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/return-prefilter-8090/NestedReturns.vue.fixture",
+      "bytes": 201,
+      "sha256": "54876a82d9b6f5e1c6393df1f89623ea661ae8ea1dc31d160b1e57f802c628e9"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/return-prefilter-8090/BareReturns.vue.fixture",
+      "bytes": 126,
+      "sha256": "5682524d245dd41cb9bb766baf98f8d19a40b4e3a11c5049d137d8f3f4534764"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/return-prefilter-8090/ReturnedMethods.vue.fixture",
+      "bytes": 136,
+      "sha256": "af6524e58498881d2e0e4f2f3e895f17f4e6de9fb44d1d47119a0adb2eea7c74"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/return-prefilter-8090/ConciseArrows.vue.fixture",
+      "bytes": 122,
+      "sha256": "1f41108ef456d92abe2f707b114c4c02718dcbb1523f950a3dc363861b5ccf46"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/return-prefilter-8090/ReturnedTriviaArrows.vue.fixture",
+      "bytes": 176,
+      "sha256": "6f0a9f4de150ef98fc2030315e413166f1a067beaf12c804a3d8569d15a91957"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/return-prefilter-8090/NullEmits.vue.fixture",
+      "bytes": 86,
+      "sha256": "f486eb2d6427a7bfcde73d445151bda5c35da4b8d8581eede066d14f7ef4c76d"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/return-prefilter-8090/ArrayEmits.vue.fixture",
+      "bytes": 76,
+      "sha256": "22d9112dd1256f3b6c19aca5f0883a3c73ea91aadc8bf874b5f865c3708e198c"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/return-prefilter-8090/UnrelatedBodies.vue.fixture",
+      "bytes": 153,
+      "sha256": "f414984500e02370884c6543ad0ed134d5f350340851a5be209107f00a8d5f8a"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/return-prefilter-8090/KeywordDecoys.vue.fixture",
+      "bytes": 183,
+      "sha256": "e4fb4d966d7e139e8fa488152d00b057d97bc6bcfec8209ec251e154498c0029"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/return-prefilter-8090/KnownSyntax.vue.fixture",
+      "bytes": 180,
+      "sha256": "afb0f1c088ee40b27b4bb35c30a9fb6c59573c72dd916d6a4a4c7a6699cb97f5"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-correctness/sync.vue.fixture",
+      "bytes": 52,
+      "sha256": "da13cabdf9e12dadabdf9bf68a9b976c732358d892709a62891d3b6eb8a728a0"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-correctness/native.vue.fixture",
+      "bytes": 62,
+      "sha256": "16ad98be7abe8d085ebfbd546875d7cf9485fcca48928efa7e47b0f350dc4c06"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-correctness/slot-scope.vue.fixture",
+      "bytes": 85,
+      "sha256": "0bc834712e025197d55297b0f95af415ff4f99cd50d76aad7f167bf69b0a6533"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-correctness/scope.vue.fixture",
+      "bytes": 80,
+      "sha256": "b3c08fa8aa20c4c038406a9825bcd8f4a2c63604ec89b209a94c77165a3e2047"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-correctness/full-modifiers.vue.fixture",
+      "bytes": 103,
+      "sha256": "8872e1bef2089f91a34972d1dbf0d0723a6c37dd29cd5fd0f291b0e9dedd95aa"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-correctness/utf8-crlf.vue.fixture",
+      "bytes": 77,
+      "sha256": "95fa38827a73bfd320c243c6174e31b8f235ac2a497cb108fbac2bd4d7dd6da0"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-correctness/valid-model.vue.fixture",
+      "bytes": 54,
+      "sha256": "ab004229b166d5e266a3fc099d6fbaaf2f1977153006fb5263d60a38984142bc"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-correctness/valid-event.vue.fixture",
+      "bytes": 60,
+      "sha256": "a4da439aeb0b4d3de26226f399dd485b54d885860603ca24c33e4fcee2aa9f8e"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-correctness/valid-slots.vue.fixture",
+      "bytes": 102,
+      "sha256": "33140e97631af93d3370b1dadef4a9fe62b6ab1a7a55a182dcc3dec99131a863"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-correctness/html-scope.vue.fixture",
+      "bytes": 87,
+      "sha256": "09adaaaedbc6a0e71f57b07db3729db6bcf98d811401dda7821bb271f07527c6"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-correctness/comments.vue.fixture",
+      "bytes": 115,
+      "sha256": "76f0eeee1264c2d5eee46be805abd7b560cca2d87c3ad688d99d9df9c91f1664"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-correctness/macro-import.vue.fixture",
+      "bytes": 142,
+      "sha256": "545591c0bfaba240602dace406cb167c76bd761e7177f995bbaa814469791012"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-correctness/macro-valid.vue.fixture",
+      "bytes": 108,
+      "sha256": "5d687a66242bb77733927c447b86af87ac3b66b278b116fef1ff22d417584f5b"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-correctness/macro-comment.vue.fixture",
+      "bytes": 145,
+      "sha256": "d3e92d4cf8a6a4a5edbfc95ccb7ea20cbf6ccb83f036cb4518d91fb77d047d0d"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-correctness/petite-removed.html.fixture",
+      "bytes": 275,
+      "sha256": "0d9a87d423293866cbffcbfde2fbbee4eadad29fe532d4c308ce789478785572"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-migrations/numeric-shorthand.vue.fixture",
+      "bytes": 78,
+      "sha256": "68994ddf1bb8b451d9b7483b8ba26a9109fc0aa42d8d94a32bd01362bb16afa1"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-migrations/numeric-longhand.vue.fixture",
+      "bytes": 82,
+      "sha256": "2b3392af497bfc10813a96174b6480ec14e46beda16d763b5b490318af4d909c"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-migrations/numeric-combined.vue.fixture",
+      "bytes": 86,
+      "sha256": "cdd5213065debc382250b411fec0051f194432d0623d9070969c1755f6416696"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-migrations/functional.vue.fixture",
+      "bytes": 49,
+      "sha256": "a65f7ebe8a8a1514cf1e2f8ce6723d4948de5c418682975bfacf82af577df3d7"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-migrations/combined.vue.fixture",
+      "bytes": 94,
+      "sha256": "a69c31153288be5dfec562b56578290c90bd53abdbb80be7e0e42f08180188c6"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-migrations/named-key.vue.fixture",
+      "bytes": 81,
+      "sha256": "250ce639563693da5c0366c247d1f99787f440ac49478071f891cdc183959589"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-migrations/alphanumeric-key.vue.fixture",
+      "bytes": 78,
+      "sha256": "5f9a4e29ed784659947fa8f6d68364e43eafaa3e70c545d444d466d5b44f720f"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-migrations/ordinary-template.vue.fixture",
+      "bytes": 38,
+      "sha256": "114131dcf2b1067468ea05a6f5aa817b88cf1864f874b1479a8103c5977d7a47"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-migrations/native-functional-attribute.vue.fixture",
+      "bytes": 49,
+      "sha256": "52f776633412f77160408e510eb590d07e41922bb66a81be6dafb1524b775044"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-migrations/comment-control.vue.fixture",
+      "bytes": 79,
+      "sha256": "1c5aac148913b11aec89aa81633569cc676ebd8840853cd1c4eea55e4ddf3e81"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-migrations/unicode-crlf.vue.fixture",
+      "bytes": 110,
+      "sha256": "2fd1c7ee02063d83759e85d0a5743f614a50a8c1f6fb32b257c437176f6644a6"
+    },
+    {
+      "path": "tests/_fixtures/lint-default-migrations/v-pre-control.vue.fixture",
+      "bytes": 84,
+      "sha256": "a10de9e93be295b1d90f443cef60ebdcf741616bb295773016d36eea10ad488d"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/BareMethod.vue.fixture",
+      "bytes": 98,
+      "sha256": "8c08ec9b0486df64e6d3685d9b92a0ad7836dbf920fa1407655add141bc8506a"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/ExpressionStatement.vue.fixture",
+      "bytes": 85,
+      "sha256": "7355cda35a668f20891d330223f96118823c188b2dddb8b0c526898a516f5249"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/ArrowTrivia.vue.fixture",
+      "bytes": 118,
+      "sha256": "3237c535a33ada38332c4e18ba661bb26a238847ccb29093b7fd81939536396f"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/NestedBareReturn.vue.fixture",
+      "bytes": 131,
+      "sha256": "8d18d31f1d19459228ea7af74c4cbc1c3184529d889e8e5ab4f6f15205a6fa54"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/ValueReturn.vue.fixture",
+      "bytes": 102,
+      "sha256": "55ce3b5701bf189bf3d91284ac81814193e5d29c2a7e00d258779b06371653df"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/ConciseArrow.vue.fixture",
+      "bytes": 94,
+      "sha256": "3809bc8e1d4468a0b543cb578b13f4350d5049f86c42376c292c9b9b0f92dfc5"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/NullValidator.vue.fixture",
+      "bytes": 78,
+      "sha256": "476c0f040be5644ff246707563a44701acd72e7ea92ada030cc59d8d746d6e9d"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/ArrayEmits.vue.fixture",
+      "bytes": 72,
+      "sha256": "99e267650015242e75fb9c85a098a9ab6f975ed1d9a608318c68a6fa2f3b3445"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/TypeOnlyCall.vue.fixture",
+      "bytes": 93,
+      "sha256": "e7f5a8354125c0fc55aedf6a88222fcb453468534201b136871cff460c84f0c9"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/VueImport.vue.fixture",
+      "bytes": 132,
+      "sha256": "923d4e64cc6d8493b150a2eec9a27a621c8a3f7bbb7b5ba9d77d1d72b0c0345b"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/ForeignImport.vue.fixture",
+      "bytes": 138,
+      "sha256": "d9323e0c779b85f46f149e69d1f3ac7de815ed739a549255d1a7907893096910"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/VueNonmacroAlias.vue.fixture",
+      "bytes": 144,
+      "sha256": "9f306b6af829e552aa631d1bfbec240d86363ca2df54d25277fdabdd7e55d638"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/DefaultImport.vue.fixture",
+      "bytes": 134,
+      "sha256": "9a4a57c02c8a474958ce7fa343d0c0808b48b7164745446987b6cab700bf1613"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/NamespaceImport.vue.fixture",
+      "bytes": 139,
+      "sha256": "a2f50822dea3886e49639a1582af366688ff880730aa3631544d03fbc7ea598d"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/ForwardFunction.vue.fixture",
+      "bytes": 143,
+      "sha256": "679f5e44d0db6b909c59c4c2d100148e82fa561bec6907ca3d118f727064fc9f"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/DestructuredLocal.vue.fixture",
+      "bytes": 126,
+      "sha256": "8420169e1c6edd22aa5c5494fb477e8ac9c588518f15783cd84187e572c4dff0"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/HoistedVar.vue.fixture",
+      "bytes": 135,
+      "sha256": "896fe6208324144e21f9bddc248db79718a2918e3b94ab047fb84396c0810ac0"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/NestedVar.vue.fixture",
+      "bytes": 145,
+      "sha256": "e48bce115582c91d60a1144cabc151b89b099e306ccd0e776b156519d1f549cb"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/BlockLet.vue.fixture",
+      "bytes": 135,
+      "sha256": "91ac61158903ea8b898814564af2728318c868ccb7fe71b99bb45ef53be8f8a7"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/NamespaceValue.vue.fixture",
+      "bytes": 147,
+      "sha256": "e46c6f445745fabad2c5a742aa5b8d41d8e01ca2533851b60a46135d0b5226e6"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/ImportEqualsValue.vue.fixture",
+      "bytes": 140,
+      "sha256": "ddf18424cb261c03b218026ee4aa0be9d4eceef9963b75449b16a8275a3b56b1"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/TypeImport.vue.fixture",
+      "bytes": 143,
+      "sha256": "b11f68e5fa4cf89f3a07da3a01d82e9293338613e593a077b92914ce33b79171"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/TypeAlias.vue.fixture",
+      "bytes": 135,
+      "sha256": "e62f7a61ec6688419bb5df91b695f96d6582bfc6f6a5b8c8b9e508d1501ceafc"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/NestedCall.vue.fixture",
+      "bytes": 112,
+      "sha256": "d3c900fa0c036ee06a736f43ee6182c7c176632c055b900f6e6bf60a0b7ec091"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/MemberCall.vue.fixture",
+      "bytes": 102,
+      "sha256": "940f06f815d64ea371f302962d60d99f991623420208776012ad86dfd95baf55"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/OptionalCall.vue.fixture",
+      "bytes": 100,
+      "sha256": "ede21d0b8944706f079e4cb5349db645c79c1c25d424d35d35b3b35047edf69e"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/WrapperCall.vue.fixture",
+      "bytes": 104,
+      "sha256": "09b9d53fc05752337cc897b18a20a8c7a63890b46193cc33a5b2e31781dfae33"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/ParenthesizedTsCall.vue.fixture",
+      "bytes": 111,
+      "sha256": "c79fe488001bbc19b7a3e135fe647f93ee7f4860be4c5c32f45d6cd8d9ce03cb"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/EscapedMacro.vue.fixture",
+      "bytes": 103,
+      "sha256": "1329bdcab3a74e734a011ad88dfa45093bac42be1ef65dd058d170c289649ec0"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/SetupConstantChain.vue.fixture",
+      "bytes": 148,
+      "sha256": "7b342a524ec35278a083f1f14fbe5a365b2290077856002ff9154d1b685c5fd6"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/MutableValidator.vue.fixture",
+      "bytes": 127,
+      "sha256": "02d53c0798f7798846277e67624497bcc88e711c7fd8b82341bfd164afef3f88"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/ImportedValidator.vue.fixture",
+      "bytes": 107,
+      "sha256": "0bcf5db18b4789839135f530117febb329010c4df93356b5b9325d7a56bf7bc2"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/ModuleConstant.vue.fixture",
+      "bytes": 157,
+      "sha256": "88e10333e9955c7114088798473cd30f45e203e6c666845375e9ba928e93cdca"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/ModuleChainUnicode.vue.fixture",
+      "bytes": 197,
+      "sha256": "d4826b088907df5f802f184990ab5b982321f370e0daf81b922f889cc86464ee"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/ModuleShadowImport.vue.fixture",
+      "bytes": 167,
+      "sha256": "8b8be41fe547f30f76a36fe233032857a57e17d1653abb55893f6d0b620ab622"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/ModuleShadowVar.vue.fixture",
+      "bytes": 164,
+      "sha256": "19332acfac5fcf722e3fd3232eec31aba9a655a195653e6747044f6a85eb1c44"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/ModuleShadowForward.vue.fixture",
+      "bytes": 172,
+      "sha256": "763d48adf88b7fd6d6d5db2a845c4a600a696577d326964ee236b999a7faefce"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/ModuleMalformed.vue.fixture",
+      "bytes": 137,
+      "sha256": "c57804097a8abdd6c8864916d7220e0431ec26fbf9632279fe3e30be728b2ea0"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/SetupShadowModuleObject.vue.fixture",
+      "bytes": 183,
+      "sha256": "24c4be61d8d0e72b9968fa61546404e7d00b6ae3421d5a7daa677b7cd299ca09"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/ModuleLateOrder.vue.fixture",
+      "bytes": 157,
+      "sha256": "cbf7e8d5cf14792af49782ed1e6f767b17c5cd3512206a0b89270dba9676133e"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/OrdinaryScript.vue.fixture",
+      "bytes": 92,
+      "sha256": "a06ea67ce250894c03f0f7a2ed81f648845c983f3230e138ed8f5689c65adcd3"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/EscapedOptions.vue.fixture",
+      "bytes": 97,
+      "sha256": "256cd7959ca95934d4d794be3182947a8f7397ee918c1c3742343a79aeba4011"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/ExternalNormalEmpty.vue.fixture",
+      "bytes": 135,
+      "sha256": "3276bdb5c9083258e829f6303772d5f1e2f4c2bcd3593fa47dff30c91348afea"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/ExternalNormalBody.vue.fixture",
+      "bytes": 164,
+      "sha256": "16a8ecb97bb19f3d393faa2011eecf1bc3f1aea728878792f82a2fcb3e6211dc"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/ExternalSetupBody.vue.fixture",
+      "bytes": 107,
+      "sha256": "6cc4548c8e6d809dee59a5068e9c301ce724f9b2cb45519270038bcea9c1e40a"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/ExternalSetupOptionsControl.vue.fixture",
+      "bytes": 200,
+      "sha256": "d66a8c738ef02396309a18621f3aec8ceca3447b916765ab4fc3ac6b556b0c72"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/ModuleChainScope.vue.fixture",
+      "bytes": 206,
+      "sha256": "c9954257e2505e6914b2b98c186a10f07733382fd3a3ff2b90eae3a528457b13"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/VueMacroAliasCall.vue.fixture",
+      "bytes": 131,
+      "sha256": "68a1aa7534f80493a5575764baebd10995384d6cf2a60f93062cfdc6c9cadb47"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/MixedTypeRuntimeControl.vue.fixture",
+      "bytes": 126,
+      "sha256": "c1c10be82f6f924b6d211fdee02350f4758fef0122bd7743e8641e6c7873c77f"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/ConstantCycle.vue.fixture",
+      "bytes": 114,
+      "sha256": "786019376df9a714c8e39a07f05eed002065a91e555912c569e10c5a096a95c5"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-emits-6097/TypeOnlyNamespaceConservative.vue.fixture",
+      "bytes": 163,
+      "sha256": "5384856041c2283a6dba65646c9a9fd72924ef91ccbcd197037263d4381c0699"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/bare-reserved-8090/cases.json",
+      "bytes": 133926,
+      "sha256": "498ecc06838197424a3f59113a48c8bb45f9acd70cd7542f837607d5cd2a9131"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/bare-parent-route-successors.json",
+      "bytes": 25631,
+      "sha256": "54610b0976da6e8571d4e170cb4593bfdca4b2d8650025fa882b795f50b3aed8"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/bare-reserved-8090/BareData.vue.fixture",
+      "bytes": 218,
+      "sha256": "5e94563d15bcbf152f5e973a5bf23b22e5fb2ff5ec4db4ea1eb7f35b7d47df21"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/bare-reserved-8090/BarePropsObject.vue.fixture",
+      "bytes": 277,
+      "sha256": "5213c38212f3093c3140e7b5c47927d1252aa7ba95c8c5c610c53bbd5b650188"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/bare-reserved-8090/BarePropsArray.vue.fixture",
+      "bytes": 191,
+      "sha256": "f9c1b06ee30ed31cd44a3817e10e12570ba2b461add449b5334348a8af926292"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/bare-reserved-8090/BareComputed.vue.fixture",
+      "bytes": 378,
+      "sha256": "65823e8579fb0dae7ad0b1d9d5d8a9e7f4f47080d32418cab98c0c0b41d26745"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/bare-reserved-8090/BareMethods.vue.fixture",
+      "bytes": 377,
+      "sha256": "ac6d25a29ca5641b98b1277851ac3733e5a42c4b5cd39342704716f008e5db90"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/bare-reserved-8090/BareSetup.vue.fixture",
+      "bytes": 219,
+      "sha256": "7922f88e6b96ee2c1735546e4597d33f68b996884d3f60ef131c2f76610e1517"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/bare-reserved-8090/BareInjectObject.vue.fixture",
+      "bytes": 301,
+      "sha256": "4d7d97d115fdaeb292254f9f226d36d94a32d7a8d478d2a9ecf5171e684bcbf5"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/bare-reserved-8090/BareInjectArray.vue.fixture",
+      "bytes": 192,
+      "sha256": "59ef5583a9e70a21076012ec8c0c99bccea9f472e637e98f856675adfd3b6136"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/bare-reserved-8090/MixedData.vue.fixture",
+      "bytes": 165,
+      "sha256": "868fa8bb41df3cbc5a44e69766ee967998ea88a9979c07bf46212134245515af"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/bare-reserved-8090/PrefixProps.vue.fixture",
+      "bytes": 108,
+      "sha256": "e7bd9bbcf3b86397b585b956cae2d605454c15dfe57d645680472fb7a6119ab9"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/bare-reserved-8090/PrefixComputedMethods.vue.fixture",
+      "bytes": 146,
+      "sha256": "aa5fbd18e7d4f73dba492c7f17080999cb2d51931e3f292e752541a526cab6a2"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/bare-reserved-8090/PrefixSetupInject.vue.fixture",
+      "bytes": 147,
+      "sha256": "578f351b6658c9fc045dcad601a17767a44dfb7858ca095d8433c67529a2694e"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/bare-reserved-8090/NearNames.vue.fixture",
+      "bytes": 157,
+      "sha256": "81d4bdd4fd16fb3aa268ae6f4929b3870c6f32b741f8c6ca3938b1fdeaa3c3a9"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/bare-reserved-8090/OutsideGroups.vue.fixture",
+      "bytes": 142,
+      "sha256": "096101aea0639c2e11a2f940c9608addcd12ea9409603d26a96d92c4e3767199"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/bare-reserved-8090/SetupLocals.vue.fixture",
+      "bytes": 153,
+      "sha256": "19b35fb7cd3da449291cc73c0d27d62537636f9d787b29c724a92e7fb6cee284"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/bare-reserved-8090/QuotedUnicode.vue.fixture",
+      "bytes": 161,
+      "sha256": "8aa46fc777281cb5c98286977fcc7cfce9b12f5062dc155f39995340450c4c27"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/bare-reserved-8090/original-wave-ui-accordion.json",
+      "bytes": 2279,
+      "sha256": "8e5e4ab869cacd0a746cb1907e6cb1f9ae170bb5dd65c6f59fe8c37d1420010a"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/bare-reserved-8090/original-wave-ui-accordion.vue.fixture",
+      "bytes": 11190,
+      "sha256": "3312b54575de99e7026851bcbac68c7edef605374718ecd8a727f656e7d903d6"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/cases.json",
+      "bytes": 477353,
+      "sha256": "016061653fcd7781d87c2d542ee4d982a013e7059e1858ca9405cd589cae5d77"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/default-route-companions.json",
+      "bytes": 295979,
+      "sha256": "07267827ba3f3fc6cf789e6939a2b58f61758198be2527fa59ece5cae2470800"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/ExactProps24.vue.fixture",
+      "bytes": 458,
+      "sha256": "d148c9fbba74fdf5608c5f04ce5fefb6407c86a810a8d6bfaefc705923e6c07b"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/ExactData24.vue.fixture",
+      "bytes": 349,
+      "sha256": "2fab7b919b31d2b625bcb7ff0dbe11757f940c02c7d3f0ea24b0e6d8a3f456fc"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/ExactComputed24.vue.fixture",
+      "bytes": 629,
+      "sha256": "c0e361e54f891529e6747d6c31e78d41f242123007521b0be288373a2e0d3320"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/ExactMethods24.vue.fixture",
+      "bytes": 628,
+      "sha256": "2c2dd8f64d3295dba48a9945c7c412573a912fbc0eb7c4b1d710a89f942308a2"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/ExactSetup24.vue.fixture",
+      "bytes": 350,
+      "sha256": "146cc7581ae3e5f9da852b17e56a1a7a9a32d6c0824efbafcef8d7e6a0dff565"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/ExactPropsArray24.vue.fixture",
+      "bytes": 312,
+      "sha256": "058be8d537d6f487a41c220a47e84ffe93e75e93a2ca54a5523a5ab011bb8df9"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/LookalikesProps.vue.fixture",
+      "bytes": 186,
+      "sha256": "8561a6aa309b088a6b1fa1c1377360fa6cfbc806eb6405fa50ab2b4d8cde6c1c"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/LookalikesData.vue.fixture",
+      "bytes": 157,
+      "sha256": "a51c8a776b8f992fbdf2a396437161444f612e4edc8d765476378b61a8cdfb60"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/LookalikesComputed.vue.fixture",
+      "bytes": 245,
+      "sha256": "403cdb6f633aaccee26c2916b10ba62ab85e466b9f87e6e6e0de3a7a3868a2d8"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/LookalikesMethods.vue.fixture",
+      "bytes": 244,
+      "sha256": "5ced2cc917b6ef6528014d56153fed70060b9114da7af66c8ae572fd080e49c7"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/LookalikesSetup.vue.fixture",
+      "bytes": 158,
+      "sha256": "0a5783d9096878abb47976f658d9bd17f273df107855431141d2716d2b30a08a"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/InjectExcluded.vue.fixture",
+      "bytes": 520,
+      "sha256": "8d115168571bcbdcac2128546893e9cde0364febd9ff7ebdebfd4468235ee19f"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/InjectArrayExcluded.vue.fixture",
+      "bytes": 113,
+      "sha256": "c41dc92da3e23eb22c7e7c5617dde4a666d6f8507440d25508b8817396604b08"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/MixedDataPolicy.vue.fixture",
+      "bytes": 132,
+      "sha256": "bd44b393615ed16878f1812372cdde8b8a8a9a6ae6f86a7f6073911ba63e505e"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/UnicodeCrlfMethods.vue.fixture",
+      "bytes": 187,
+      "sha256": "5406faea06022b2501b96f847d5dd2b61a6ad88187d90e53d910c5bc8d38c274"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/QuotedEscapedProps.vue.fixture",
+      "bytes": 144,
+      "sha256": "77b26e12cda5dec9edea712a592d73141def398f4f8b4ab9bc5249aef6297dd6"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/OutsideReservedGroups.vue.fixture",
+      "bytes": 132,
+      "sha256": "634ea06d9f34711f4b3cec9c50b8e785cddf0e81727fc98a3084705f2b6275bf"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/ReservedLookingLocals.vue.fixture",
+      "bytes": 87,
+      "sha256": "3b472fc554196cb26dbfc80974901609f9f5023e1b8fd4afad619a93ba82b826"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/UnsupportedAsyncData.vue.fixture",
+      "bytes": 96,
+      "sha256": "9835b500de3d9493fef3b2ed5e9222ca3c2b194ef35fd823a13588eff29fdc7d"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/UnsupportedDefineProps.vue.fixture",
+      "bytes": 101,
+      "sha256": "a1d6bae2bf43c2584b63dd121acdfbf433a5e5979ee0dec15e642012be531808"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/originals.json",
+      "bytes": 348684,
+      "sha256": "65d7e2cbbdc5552f1d28338163d88506716fc8ebd6a2a88a0c5eab5670283144"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/original-prefix-successors.json",
+      "bytes": 4376,
+      "sha256": "208183efe221526fd194226b719bf8321819a93b6c3d8132061cd8aca70b2097"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/original-element-examples-components-theme-configurator-editor-color-picker-src-main.vue.fixture",
+      "bytes": 4870,
+      "sha256": "372f095ae77b2e425cc1835ef252b1ec9f96836e69d8d37ac03d2efec8175e08"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/original-element-packages-button-src-button.vue.fixture",
+      "bytes": 1659,
+      "sha256": "2d1955586f9a61bcfe1feb2c5f6736a496c3466fbd7c2327491dfce9995a19b7"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/original-element-packages-checkbox-src-checkbox-button.vue.fixture",
+      "bytes": 5255,
+      "sha256": "44b73d020e410c8628b1dfd20d66356923fdbc2206ff5a200a84a1f2ba14a90a"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/original-element-packages-checkbox-src-checkbox-group.vue.fixture",
+      "bytes": 895,
+      "sha256": "2d7534e22623e52238e0b992b7c187f66da80f6f65ecd5809371c2c2c4ac4acf"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/original-element-packages-checkbox-src-checkbox.vue.fixture",
+      "bytes": 6171,
+      "sha256": "69e631d30dd287b36883900b77b0ff2cea2952c70506a8da4397681e208b502a"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/original-element-packages-color-picker-src-main.vue.fixture",
+      "bytes": 4794,
+      "sha256": "f85b661a41d8e7d4ccc9d4605cec595ae89ab2e0eaeb2acf4b3fc9386331694a"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/original-element-packages-date-picker-src-picker.vue.fixture",
+      "bytes": 25813,
+      "sha256": "8218a95ed6ded8efcbc052978e3aef792843684b4de10495af49a97e49dbdf7a"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/original-element-packages-form-src-form-item.vue.fixture",
+      "bytes": 9298,
+      "sha256": "f0d54700fc15f05a391403a5d1ac739c785b1913dcc232f65ade6b6108b3654d"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/original-element-packages-input-number-src-input-number.vue.fixture",
+      "bytes": 8631,
+      "sha256": "c9586e0a57b2960c19cfde6c4872fea8fb3eb59998f96494b0e18748501522fb"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/original-element-packages-input-src-input.vue.fixture",
+      "bytes": 12935,
+      "sha256": "a8bd891ea1cb3319087b86610d10c630452353c0518048fef15a223e99019676"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/original-element-packages-radio-src-radio-button.vue.fixture",
+      "bytes": 2758,
+      "sha256": "5817498ceeea3606a95299901cf29d2a1713b8340fb1ebe9d81221b47249af40"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/original-element-packages-radio-src-radio-group.vue.fixture",
+      "bytes": 2914,
+      "sha256": "32f849881b72089443a19948913b61dd431eb816b908285a073d65290f2adb24"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/original-element-packages-radio-src-radio.vue.fixture",
+      "bytes": 3269,
+      "sha256": "b040e9366a7a4f9fb2a69715e2a73e0a6f195bb91a6d0cfd379916daf91d3bc4"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/original-element-packages-select-src-select.vue.fixture",
+      "bytes": 28155,
+      "sha256": "ef4ea92e16c16d241c94504bca96a410e13e4900d405b811c6fb139345015f94"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/original-vue-uploader-src-components-file.vue.fixture",
+      "bytes": 13682,
+      "sha256": "88ffa33bb18b5c2efd1dc2d640d39e69784a92669386fc2e8a061339c7b39683"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/original-vue-element-admin-src-views-components-demo-count-to.vue.fixture",
+      "bytes": 5088,
+      "sha256": "019fa97282c2bbc654c7bdc16651f4510d8f56eebb75c0b7ff36da9f15844438"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/original-habitica-website-client-src-components-chat-chatmessages.vue.fixture",
+      "bytes": 8534,
+      "sha256": "ea7073e2dd2964187b97850a923788e990c37c9daf489fcd0ca290d0ebecf0d0"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/original-habitica-website-client-src-components-chat-emojiautocomplete.vue.fixture",
+      "bytes": 8480,
+      "sha256": "08d5559ebff4e3d2f8a0d9612ce829e36d6a4fc9f6b592a70a5c561c09d51754"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/original-habitica-website-client-src-components-ui-custommenudropdown.vue.fixture",
+      "bytes": 2300,
+      "sha256": "dfff3e351a99deccb3e817361bc31e57fb8317220a037c85b4830c34b01c61a6"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/original-bootstrap-vue-docs-pages-play.vue.fixture",
+      "bytes": 28652,
+      "sha256": "9297e6f5dd8e25dda9df68de21967150cd60727a97ea992a7b0ce835de29e469"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/original-vue-select-src-components-select.vue.fixture",
+      "bytes": 35649,
+      "sha256": "12f3b27bb0d85e07ab538f2813e7f3ddaaf8708ed4167b95c50a366f4cfd9b68"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/cases.json",
+      "bytes": 30801,
+      "sha256": "00c17f8aa15a815efea86378d54881af531a3c894fa64f588f32c2d8a4cd0f0a"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/default-route-successors.json",
+      "bytes": 58051,
+      "sha256": "9dd4a3df61e72455c8d39c76ecca09ac3d3f4a6b648e912600595202f5dee7e6"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/Control1.vue.fixture",
+      "bytes": 82,
+      "sha256": "0c5946a41c6e50aef49e560680475e187e1f2449763d46ec1340a9e1a0d9b1d1"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/Control2.vue.fixture",
+      "bytes": 131,
+      "sha256": "cfcca874602703fb60d0a50ba8847680cae78e10e63d9779d7c746c5e4d84646"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/Control3.vue.fixture",
+      "bytes": 134,
+      "sha256": "d2e7f7b8faa17922cbb8b1cb29a239a75b94a39c7b8eaece0cf879e9357414d5"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/Control4.vue.fixture",
+      "bytes": 139,
+      "sha256": "57c8e90a52bf2707b2e1f78679e4dd9baedcc556df6cbf7dace138188c50d1a7"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/Control5.vue.fixture",
+      "bytes": 136,
+      "sha256": "93db310ab70f369970b5eddb8f86b4c3e800fb98e0258b65403215919a96c59f"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/Control6.vue.fixture",
+      "bytes": 132,
+      "sha256": "ed65de392a046e68ed7593fa69ea19537cb51a764782ac5735a30b1b7a563906"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/Control7.vue.fixture",
+      "bytes": 135,
+      "sha256": "faf34810f64950fd045bc1d94e3d09d6430fc8c0fabf3a8d13f71474b4bb4dd0"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/Control8.vue.fixture",
+      "bytes": 131,
+      "sha256": "e534dbfa4c498574f2e20f0e9cc381b298306b6f0ea6a01232be07a1fe555b4b"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/Control9.vue.fixture",
+      "bytes": 138,
+      "sha256": "72c6c3a1c8ee95884eda5d7ce97611a4842dc7a6e3e43862a0fe6ffe8117db04"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/Control10.vue.fixture",
+      "bytes": 138,
+      "sha256": "fcf4911b4535ab25ee8d4b28878c5f4d94db5a5d6951c69a42a6c8df7c7688bd"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/Control11.vue.fixture",
+      "bytes": 134,
+      "sha256": "e58578cf653c3dee423863bc1c3b69236c0d47407909e22881f63ef0550b4547"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/Control12.vue.fixture",
+      "bytes": 126,
+      "sha256": "0f694c53ab80d01f0b42085f1069487ac8906381ffe7639cca525c9a90e8756e"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/Control13.vue.fixture",
+      "bytes": 148,
+      "sha256": "6bbcbb781f5374e02ac33535c8e4cec001da7dc852f162fde8014a0adadcfec0"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/Control14.vue.fixture",
+      "bytes": 175,
+      "sha256": "196cfeb10a3a3b8627dde4fc99da37ac42fe7c7aacf7a339f4e9f9a6197e1f3a"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/Control15.vue.fixture",
+      "bytes": 177,
+      "sha256": "107ad0dfb8134b751f387fab436a38495ca3811826bacdc82d384f4b9a7adbf1"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/Control16.vue.fixture",
+      "bytes": 110,
+      "sha256": "a2bcc604cd0f031dca9e6884766cf8b671340e334519ab9f9bde66c9249ae06a"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/Control17.vue.fixture",
+      "bytes": 131,
+      "sha256": "1ab193d46a03b9d10060a4691f0a350e65e4f3336856bd13e2ae823c13c008d6"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/Control18.vue.fixture",
+      "bytes": 151,
+      "sha256": "b7dec103fc004c294345df1b7baff646bb2b2ec6b0617dd2a88cc5b078ce71ea"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/Control19.vue.fixture",
+      "bytes": 151,
+      "sha256": "89a44578dd638d82283c5f452820712142f59aebf8fcdec072c04ed8ac62ae2a"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/Control20.vue.fixture",
+      "bytes": 126,
+      "sha256": "c257ebb4c1c1c0dcf466228e1885dbf7b1383358f8adb0f65393f2b97a608d80"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/Control21.vue.fixture",
+      "bytes": 158,
+      "sha256": "90998f6f04004212f1fdfbe32c489aadf56145f08434765a79b4e8577e7d64b8"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/Control22.vue.fixture",
+      "bytes": 121,
+      "sha256": "7eece5d05200746083fcb6243d8b0925a4bc53bfdececef6d1f516e0b9c76618"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/Control23.vue.fixture",
+      "bytes": 178,
+      "sha256": "af8960903d697fb76e420bcb8e52787fe5ed59eed4ae953cda3e049f4fd12e27"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/Control24.vue.fixture",
+      "bytes": 178,
+      "sha256": "6ff76b1095685b496ec1452155289f0bad83d72a1b722f66fbf0f67951f6c009"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-suppression-8090/original-vue-select-successor.json",
+      "bytes": 3095,
+      "sha256": "773d654025a57d7314d754e415c5627e977d2c9453cf6c67ddbceaf5c3cfdf05"
+    },
+    {
+      "path": "tests/tooling/lint-bare-reserved.test.mjs",
+      "bytes": 9102,
+      "sha256": "9f7cbbbaea9dbc82a16aba26bd9988fdb0a042daa68c27d097102b3b001f82e7"
+    },
+    {
+      "path": "tests/tooling/lint-reserved-prefix.test.mjs",
+      "bytes": 8557,
+      "sha256": "7995813af0a48be0ed4b3d2c2c10414a83c1309f8224257c60d1779ade57d237"
+    },
+    {
+      "path": "tests/tooling/lint-reserved-suppression.test.mjs",
+      "bytes": 6750,
+      "sha256": "d679ed3fa0c0a021f6ed5c531ca471721022669f9c7cdb01c6c80df10700ea9f"
+    }
+  ],
+  "packets": [
+    {
+      "denominator": 392,
+      "normalizedVectorSha256": "4a9dab43ac15c5b2ba3b9c0303f17bdb5544e7802f489cf8ead85fece8ac38b6",
+      "runtimeDefinePropsLiteralCandidates": []
+    },
+    {
+      "denominator": 357,
+      "normalizedVectorSha256": "1fbf939f976203d09fba2d2edc29d0a63f89a15bc6cad2e73296425249594327",
+      "runtimeDefinePropsLiteralCandidates": []
+    },
+    {
+      "denominator": 443,
+      "normalizedVectorSha256": "a8ecd6d5638eb36b0b0853e6078df2a33c0665316e622df1950bf4ca3191dfdd",
+      "runtimeDefinePropsLiteralCandidates": [
+        {
+          "id": "unsupported-define-props",
+          "suite": "reserved-prefix"
+        },
+        {
+          "id": "unsupported-define-props",
+          "suite": "reserved-prefix"
+        },
+        {
+          "id": "unsupported-define-props",
+          "suite": "reserved-prefix"
+        },
+        {
+          "id": "unsupported-define-props",
+          "suite": "reserved-prefix"
+        },
+        {
+          "id": "unsupported-define-props",
+          "suite": "reserved-prefix"
+        },
+        {
+          "id": "unsupported-define-props",
+          "suite": "reserved-prefix"
+        },
+        {
+          "id": "unsupported-define-props",
+          "suite": "reserved-prefix"
+        }
+      ]
+    }
+  ]
+}

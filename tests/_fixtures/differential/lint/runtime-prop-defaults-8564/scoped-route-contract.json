@@ -1,0 +1,2003 @@
+{
+  "schema": "vize.lint.runtime-prop-defaults-scoped-route-contract",
+  "version": 1,
+  "authority": "The sole configured primary route is Incremental plus the frozen explicit target:error config. Both builder paths explicitly admit this rule independent of preset membership. Complete native API/CLI packets are source-authored before current execution; initial seven target-only preparation arrays are retained as unexecuted preparation and are not this route contract.",
+  "targetCorpus": {
+    "path": "cases.json",
+    "sha256": "95453a7cecb70ab2deb0cd2a3585d218aa6caef7a9832078e98865dbc9930ad9"
+  },
+  "initialSourceLaw": {
+    "path": "source-law.json",
+    "sha256": "1412b36aa2ea22c31941c15058a61aa7b6e519965edebba161da15a7cc19fe62"
+  },
+  "apiBuilder": {
+    "identity": "Linter::with_preset(LintPreset::Incremental).with_additional_rules(vec![rule.into()]).with_help_level(HelpLevel::Full).lint_sfc(source, filename)",
+    "preset": "incremental",
+    "additionalRules": [
+      "script/no-required-prop-with-default"
+    ],
+    "enabledRules": null,
+    "helpLevel": "full",
+    "usesActualSfcDispatcher": true
+  },
+  "cliConfig": "{\"linter\":{\"rules\":{\"script/no-required-prop-with-default\":\"error\"}}}\n",
+  "sourceWitnesses": [
+    {
+      "originalPath": "crates/vize_patina/src/linter/rule_selection.rs",
+      "path": "original-api-rule-admission.rs.fixture",
+      "sha256": "78353bf543071e690be0d9640b4272eeb60b222e7c97660cc349a14f8efe1460",
+      "bytes": 4654
+    },
+    {
+      "originalPath": "crates/vize/src/commands/lint/entry_rules.rs",
+      "path": "original-cli-rule-admission.rs.fixture",
+      "sha256": "b115a87fb86193bf6574c2903d3a5c8c8764293aaad7d63bef6fd7d413010322",
+      "bytes": 11577
+    }
+  ],
+  "qualificationScope": "All18 complete packets under one explicit single-rule configuration only. Actual full-default membership is qualified separately by seven minimal sources.",
+  "summary": {
+    "cases": 18,
+    "beforeFindings": 0,
+    "afterFindings": 19,
+    "positiveCases": 10,
+    "negativeCases": 8
+  },
+  "cases": [
+    {
+      "id": "original-1",
+      "filename": "ExampleResponse.vue",
+      "sourceSha256": "990b2146af9aaea45c7ac692d68bd1a4e78b25b5b30dc4a4e681d9a88ace47f6",
+      "config": "{\"linter\":{\"rules\":{\"script/no-required-prop-with-default\":\"error\"}}}\n",
+      "argv": [
+        "lint",
+        "ExampleResponse.vue",
+        "--format",
+        "json",
+        "--preset",
+        "incremental",
+        "--config",
+        "vize.config.json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none"
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'response' is required but also declares a default",
+          "start": 4656,
+          "end": 4765,
+          "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 4746,
+              "end": 4760
+            },
+            {
+              "message": "default declared here",
+              "start": 4727,
+              "end": 4740
+            }
+          ],
+          "fix": null
+        },
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'responseName' is required but also declares a default",
+          "start": 4769,
+          "end": 4843,
+          "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 4824,
+              "end": 4838
+            },
+            {
+              "message": "default declared here",
+              "start": 4807,
+              "end": 4818
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeApiPacket": {
+        "filename": "ExampleResponse.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterApiPacket": {
+        "filename": "ExampleResponse.vue",
+        "error_count": 2,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-required-prop-with-default",
+            "severity": "error",
+            "message": "Prop 'response' is required but also declares a default",
+            "start": 4656,
+            "end": 4765,
+            "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+            "labels": [
+              {
+                "message": "marked required here",
+                "start": 4746,
+                "end": 4760
+              },
+              {
+                "message": "default declared here",
+                "start": 4727,
+                "end": 4740
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-required-prop-with-default",
+            "severity": "error",
+            "message": "Prop 'responseName' is required but also declares a default",
+            "start": 4769,
+            "end": 4843,
+            "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+            "labels": [
+              {
+                "message": "marked required here",
+                "start": 4824,
+                "end": 4838
+              },
+              {
+                "message": "default declared here",
+                "start": 4807,
+                "end": 4818
+              }
+            ],
+            "fix": null
+          }
+        ]
+      },
+      "beforeCliPacket": [
+        {
+          "file": "ExampleResponse.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "ExampleResponse.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-required-prop-with-default",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-required-prop-with-default] Prop 'response' is required but also declares a default",
+              "line": 149,
+              "column": 3,
+              "endLine": 153,
+              "endColumn": 4,
+              "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+            },
+            {
+              "ruleId": "script/no-required-prop-with-default",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-required-prop-with-default] Prop 'responseName' is required but also declares a default",
+              "line": 154,
+              "column": 3,
+              "endLine": 158,
+              "endColumn": 4,
+              "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+            }
+          ],
+          "errorCount": 2,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterStatus": 1
+    },
+    {
+      "id": "original-2",
+      "filename": "ImportExport.vue",
+      "sourceSha256": "b7be8e8545f21ce97b23fc338f6be922694d4d644f52c65cb3144a2546594d84",
+      "config": "{\"linter\":{\"rules\":{\"script/no-required-prop-with-default\":\"error\"}}}\n",
+      "argv": [
+        "lint",
+        "ImportExport.vue",
+        "--format",
+        "json",
+        "--preset",
+        "incremental",
+        "--config",
+        "vize.config.json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none"
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'collectionsType' is required but also declares a default",
+          "start": 3473,
+          "end": 3652,
+          "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 3633,
+              "end": 3647
+            },
+            {
+              "message": "default declared here",
+              "start": 3542,
+              "end": 3627
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeApiPacket": {
+        "filename": "ImportExport.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterApiPacket": {
+        "filename": "ImportExport.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-required-prop-with-default",
+            "severity": "error",
+            "message": "Prop 'collectionsType' is required but also declares a default",
+            "start": 3473,
+            "end": 3652,
+            "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+            "labels": [
+              {
+                "message": "marked required here",
+                "start": 3633,
+                "end": 3647
+              },
+              {
+                "message": "default declared here",
+                "start": 3542,
+                "end": 3627
+              }
+            ],
+            "fix": null
+          }
+        ]
+      },
+      "beforeCliPacket": [
+        {
+          "file": "ImportExport.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "ImportExport.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-required-prop-with-default",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-required-prop-with-default] Prop 'collectionsType' is required but also declares a default",
+              "line": 99,
+              "column": 3,
+              "endLine": 106,
+              "endColumn": 4,
+              "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterStatus": 1
+    },
+    {
+      "id": "original-3",
+      "filename": "MyCollections.vue",
+      "sourceSha256": "74f829733ee880d69df08c95ad8863c98761f75f89d18d3e5a266a4329b6d779",
+      "config": "{\"linter\":{\"rules\":{\"script/no-required-prop-with-default\":\"error\"}}}\n",
+      "argv": [
+        "lint",
+        "MyCollections.vue",
+        "--format",
+        "json",
+        "--preset",
+        "incremental",
+        "--config",
+        "vize.config.json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none"
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'filteredCollections' is required but also declares a default",
+          "start": 17921,
+          "end": 18037,
+          "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 18018,
+              "end": 18032
+            },
+            {
+              "message": "default declared here",
+              "start": 17995,
+              "end": 18012
+            }
+          ],
+          "fix": null
+        },
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'collectionsType' is required but also declares a default",
+          "start": 18041,
+          "end": 18203,
+          "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 18184,
+              "end": 18198
+            },
+            {
+              "message": "default declared here",
+              "start": 18110,
+              "end": 18178
+            }
+          ],
+          "fix": null
+        },
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'filterText' is required but also declares a default",
+          "start": 18207,
+          "end": 18299,
+          "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 18280,
+              "end": 18294
+            },
+            {
+              "message": "default declared here",
+              "start": 18263,
+              "end": 18274
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeApiPacket": {
+        "filename": "MyCollections.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterApiPacket": {
+        "filename": "MyCollections.vue",
+        "error_count": 3,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-required-prop-with-default",
+            "severity": "error",
+            "message": "Prop 'filteredCollections' is required but also declares a default",
+            "start": 17921,
+            "end": 18037,
+            "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+            "labels": [
+              {
+                "message": "marked required here",
+                "start": 18018,
+                "end": 18032
+              },
+              {
+                "message": "default declared here",
+                "start": 17995,
+                "end": 18012
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-required-prop-with-default",
+            "severity": "error",
+            "message": "Prop 'collectionsType' is required but also declares a default",
+            "start": 18041,
+            "end": 18203,
+            "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+            "labels": [
+              {
+                "message": "marked required here",
+                "start": 18184,
+                "end": 18198
+              },
+              {
+                "message": "default declared here",
+                "start": 18110,
+                "end": 18178
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-required-prop-with-default",
+            "severity": "error",
+            "message": "Prop 'filterText' is required but also declares a default",
+            "start": 18207,
+            "end": 18299,
+            "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+            "labels": [
+              {
+                "message": "marked required here",
+                "start": 18280,
+                "end": 18294
+              },
+              {
+                "message": "default declared here",
+                "start": 18263,
+                "end": 18274
+              }
+            ],
+            "fix": null
+          }
+        ]
+      },
+      "beforeCliPacket": [
+        {
+          "file": "MyCollections.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "MyCollections.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-required-prop-with-default",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-required-prop-with-default] Prop 'filteredCollections' is required but also declares a default",
+              "line": 516,
+              "column": 3,
+              "endLine": 520,
+              "endColumn": 4,
+              "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+            },
+            {
+              "ruleId": "script/no-required-prop-with-default",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-required-prop-with-default] Prop 'collectionsType' is required but also declares a default",
+              "line": 521,
+              "column": 3,
+              "endLine": 525,
+              "endColumn": 4,
+              "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+            },
+            {
+              "ruleId": "script/no-required-prop-with-default",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-required-prop-with-default] Prop 'filterText' is required but also declares a default",
+              "line": 526,
+              "column": 3,
+              "endLine": 530,
+              "endColumn": 4,
+              "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+            }
+          ],
+          "errorCount": 3,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterStatus": 1
+    },
+    {
+      "id": "original-4",
+      "filename": "Request.vue",
+      "sourceSha256": "850d0cfd67c91e0cad3b7936916d59adbdb356c4e6bae408c6840f8740403970",
+      "config": "{\"linter\":{\"rules\":{\"script/no-required-prop-with-default\":\"error\"}}}\n",
+      "argv": [
+        "lint",
+        "Request.vue",
+        "--format",
+        "json",
+        "--preset",
+        "incremental",
+        "--config",
+        "vize.config.json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none"
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'request' is required but also declares a default",
+          "start": 9078,
+          "end": 9184,
+          "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 9165,
+              "end": 9179
+            },
+            {
+              "message": "default declared here",
+              "start": 9140,
+              "end": 9159
+            }
+          ],
+          "fix": null
+        },
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'parentID' is required but also declares a default",
+          "start": 9264,
+          "end": 9363,
+          "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 9344,
+              "end": 9358
+            },
+            {
+              "message": "default declared here",
+              "start": 9325,
+              "end": 9338
+            }
+          ],
+          "fix": null
+        },
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'collectionsType' is required but also declares a default",
+          "start": 9367,
+          "end": 9486,
+          "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 9467,
+              "end": 9481
+            },
+            {
+              "message": "default declared here",
+              "start": 9436,
+              "end": 9461
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeApiPacket": {
+        "filename": "Request.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterApiPacket": {
+        "filename": "Request.vue",
+        "error_count": 3,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-required-prop-with-default",
+            "severity": "error",
+            "message": "Prop 'request' is required but also declares a default",
+            "start": 9078,
+            "end": 9184,
+            "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+            "labels": [
+              {
+                "message": "marked required here",
+                "start": 9165,
+                "end": 9179
+              },
+              {
+                "message": "default declared here",
+                "start": 9140,
+                "end": 9159
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-required-prop-with-default",
+            "severity": "error",
+            "message": "Prop 'parentID' is required but also declares a default",
+            "start": 9264,
+            "end": 9363,
+            "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+            "labels": [
+              {
+                "message": "marked required here",
+                "start": 9344,
+                "end": 9358
+              },
+              {
+                "message": "default declared here",
+                "start": 9325,
+                "end": 9338
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-required-prop-with-default",
+            "severity": "error",
+            "message": "Prop 'collectionsType' is required but also declares a default",
+            "start": 9367,
+            "end": 9486,
+            "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+            "labels": [
+              {
+                "message": "marked required here",
+                "start": 9467,
+                "end": 9481
+              },
+              {
+                "message": "default declared here",
+                "start": 9436,
+                "end": 9461
+              }
+            ],
+            "fix": null
+          }
+        ]
+      },
+      "beforeCliPacket": [
+        {
+          "file": "Request.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "Request.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-required-prop-with-default",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-required-prop-with-default] Prop 'request' is required but also declares a default",
+              "line": 267,
+              "column": 3,
+              "endLine": 271,
+              "endColumn": 4,
+              "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+            },
+            {
+              "ruleId": "script/no-required-prop-with-default",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-required-prop-with-default] Prop 'parentID' is required but also declares a default",
+              "line": 277,
+              "column": 3,
+              "endLine": 281,
+              "endColumn": 4,
+              "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+            },
+            {
+              "ruleId": "script/no-required-prop-with-default",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-required-prop-with-default] Prop 'collectionsType' is required but also declares a default",
+              "line": 282,
+              "column": 3,
+              "endLine": 286,
+              "endColumn": 4,
+              "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+            }
+          ],
+          "errorCount": 3,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterStatus": 1
+    },
+    {
+      "id": "original-5",
+      "filename": "TeamCollections.vue",
+      "sourceSha256": "ed8e6b2f49137e61414a3b10ab049ce4992faf57b5215aedf569f8b20425ddff",
+      "config": "{\"linter\":{\"rules\":{\"script/no-required-prop-with-default\":\"error\"}}}\n",
+      "argv": [
+        "lint",
+        "TeamCollections.vue",
+        "--format",
+        "json",
+        "--preset",
+        "incremental",
+        "--config",
+        "vize.config.json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none"
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'collectionsType' is required but also declares a default",
+          "start": 20265,
+          "end": 20427,
+          "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 20408,
+              "end": 20422
+            },
+            {
+              "message": "default declared here",
+              "start": 20334,
+              "end": 20402
+            }
+          ],
+          "fix": null
+        },
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'filterText' is required but also declares a default",
+          "start": 20431,
+          "end": 20523,
+          "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 20504,
+              "end": 20518
+            },
+            {
+              "message": "default declared here",
+              "start": 20487,
+              "end": 20498
+            }
+          ],
+          "fix": null
+        },
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'teamCollectionList' is required but also declares a default",
+          "start": 20527,
+          "end": 20642,
+          "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 20623,
+              "end": 20637
+            },
+            {
+              "message": "default declared here",
+              "start": 20600,
+              "end": 20617
+            }
+          ],
+          "fix": null
+        },
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'teamLoadingCollections' is required but also declares a default",
+          "start": 20646,
+          "end": 20757,
+          "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 20738,
+              "end": 20752
+            },
+            {
+              "message": "default declared here",
+              "start": 20715,
+              "end": 20732
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeApiPacket": {
+        "filename": "TeamCollections.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterApiPacket": {
+        "filename": "TeamCollections.vue",
+        "error_count": 4,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-required-prop-with-default",
+            "severity": "error",
+            "message": "Prop 'collectionsType' is required but also declares a default",
+            "start": 20265,
+            "end": 20427,
+            "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+            "labels": [
+              {
+                "message": "marked required here",
+                "start": 20408,
+                "end": 20422
+              },
+              {
+                "message": "default declared here",
+                "start": 20334,
+                "end": 20402
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-required-prop-with-default",
+            "severity": "error",
+            "message": "Prop 'filterText' is required but also declares a default",
+            "start": 20431,
+            "end": 20523,
+            "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+            "labels": [
+              {
+                "message": "marked required here",
+                "start": 20504,
+                "end": 20518
+              },
+              {
+                "message": "default declared here",
+                "start": 20487,
+                "end": 20498
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-required-prop-with-default",
+            "severity": "error",
+            "message": "Prop 'teamCollectionList' is required but also declares a default",
+            "start": 20527,
+            "end": 20642,
+            "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+            "labels": [
+              {
+                "message": "marked required here",
+                "start": 20623,
+                "end": 20637
+              },
+              {
+                "message": "default declared here",
+                "start": 20600,
+                "end": 20617
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-required-prop-with-default",
+            "severity": "error",
+            "message": "Prop 'teamLoadingCollections' is required but also declares a default",
+            "start": 20646,
+            "end": 20757,
+            "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+            "labels": [
+              {
+                "message": "marked required here",
+                "start": 20738,
+                "end": 20752
+              },
+              {
+                "message": "default declared here",
+                "start": 20715,
+                "end": 20732
+              }
+            ],
+            "fix": null
+          }
+        ]
+      },
+      "beforeCliPacket": [
+        {
+          "file": "TeamCollections.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "TeamCollections.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-required-prop-with-default",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-required-prop-with-default] Prop 'collectionsType' is required but also declares a default",
+              "line": 551,
+              "column": 3,
+              "endLine": 555,
+              "endColumn": 4,
+              "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+            },
+            {
+              "ruleId": "script/no-required-prop-with-default",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-required-prop-with-default] Prop 'filterText' is required but also declares a default",
+              "line": 556,
+              "column": 3,
+              "endLine": 560,
+              "endColumn": 4,
+              "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+            },
+            {
+              "ruleId": "script/no-required-prop-with-default",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-required-prop-with-default] Prop 'teamCollectionList' is required but also declares a default",
+              "line": 561,
+              "column": 3,
+              "endLine": 565,
+              "endColumn": 4,
+              "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+            },
+            {
+              "ruleId": "script/no-required-prop-with-default",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-required-prop-with-default] Prop 'teamLoadingCollections' is required but also declares a default",
+              "line": 566,
+              "column": 3,
+              "endLine": 570,
+              "endColumn": 4,
+              "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+            }
+          ],
+          "errorCount": 4,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterStatus": 1
+    },
+    {
+      "id": "original-6",
+      "filename": "Base.vue",
+      "sourceSha256": "d4a3ab45175a5d75438238a0c435a88c871c68b721c65bc51760855f3f0b166b",
+      "config": "{\"linter\":{\"rules\":{\"script/no-required-prop-with-default\":\"error\"}}}\n",
+      "argv": [
+        "lint",
+        "Base.vue",
+        "--format",
+        "json",
+        "--preset",
+        "incremental",
+        "--config",
+        "vize.config.json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none"
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'importerModules' is required but also declares a default",
+          "start": 1117,
+          "end": 1302,
+          "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 1283,
+              "end": 1297
+            },
+            {
+              "message": "default declared here",
+              "start": 1260,
+              "end": 1277
+            }
+          ],
+          "fix": null
+        },
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'exporterModules' is required but also declares a default",
+          "start": 1306,
+          "end": 1422,
+          "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 1403,
+              "end": 1417
+            },
+            {
+              "message": "default declared here",
+              "start": 1380,
+              "end": 1397
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeApiPacket": {
+        "filename": "Base.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterApiPacket": {
+        "filename": "Base.vue",
+        "error_count": 2,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-required-prop-with-default",
+            "severity": "error",
+            "message": "Prop 'importerModules' is required but also declares a default",
+            "start": 1117,
+            "end": 1302,
+            "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+            "labels": [
+              {
+                "message": "marked required here",
+                "start": 1283,
+                "end": 1297
+              },
+              {
+                "message": "default declared here",
+                "start": 1260,
+                "end": 1277
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-required-prop-with-default",
+            "severity": "error",
+            "message": "Prop 'exporterModules' is required but also declares a default",
+            "start": 1306,
+            "end": 1422,
+            "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+            "labels": [
+              {
+                "message": "marked required here",
+                "start": 1403,
+                "end": 1417
+              },
+              {
+                "message": "default declared here",
+                "start": 1380,
+                "end": 1397
+              }
+            ],
+            "fix": null
+          }
+        ]
+      },
+      "beforeCliPacket": [
+        {
+          "file": "Base.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "Base.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-required-prop-with-default",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-required-prop-with-default] Prop 'importerModules' is required but also declares a default",
+              "line": 38,
+              "column": 3,
+              "endLine": 43,
+              "endColumn": 4,
+              "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+            },
+            {
+              "ruleId": "script/no-required-prop-with-default",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-required-prop-with-default] Prop 'exporterModules' is required but also declares a default",
+              "line": 44,
+              "column": 3,
+              "endLine": 48,
+              "endColumn": 4,
+              "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+            }
+          ],
+          "errorCount": 2,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterStatus": 1
+    },
+    {
+      "id": "original-7",
+      "filename": "Modal.vue",
+      "sourceSha256": "126569ac47b3c13a3cd5f6fe0336fc88cfe44933526d616e9d66186d6c5574f9",
+      "config": "{\"linter\":{\"rules\":{\"script/no-required-prop-with-default\":\"error\"}}}\n",
+      "argv": [
+        "lint",
+        "Modal.vue",
+        "--format",
+        "json",
+        "--preset",
+        "incremental",
+        "--config",
+        "vize.config.json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none"
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'show' is required but also declares a default",
+          "start": 1963,
+          "end": 2033,
+          "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 2014,
+              "end": 2028
+            },
+            {
+              "message": "default declared here",
+              "start": 1994,
+              "end": 2008
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeApiPacket": {
+        "filename": "Modal.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterApiPacket": {
+        "filename": "Modal.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-required-prop-with-default",
+            "severity": "error",
+            "message": "Prop 'show' is required but also declares a default",
+            "start": 1963,
+            "end": 2033,
+            "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+            "labels": [
+              {
+                "message": "marked required here",
+                "start": 2014,
+                "end": 2028
+              },
+              {
+                "message": "default declared here",
+                "start": 1994,
+                "end": 2008
+              }
+            ],
+            "fix": null
+          }
+        ]
+      },
+      "beforeCliPacket": [
+        {
+          "file": "Modal.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "Modal.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-required-prop-with-default",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-required-prop-with-default] Prop 'show' is required but also declares a default",
+              "line": 81,
+              "column": 3,
+              "endLine": 85,
+              "endColumn": 4,
+              "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterStatus": 1
+    },
+    {
+      "id": "runtime-required",
+      "filename": "runtime-required.vue",
+      "sourceSha256": "25132067b76cab7309b2694748201e4f2639edd2e5fab155974a8a2e883745c6",
+      "config": "{\"linter\":{\"rules\":{\"script/no-required-prop-with-default\":\"error\"}}}\n",
+      "argv": [
+        "lint",
+        "runtime-required.vue",
+        "--format",
+        "json",
+        "--preset",
+        "incremental",
+        "--config",
+        "vize.config.json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none"
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'value' is required but also declares a default",
+          "start": 43,
+          "end": 80,
+          "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 52,
+              "end": 66
+            },
+            {
+              "message": "default declared here",
+              "start": 68,
+              "end": 78
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeApiPacket": {
+        "filename": "runtime-required.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterApiPacket": {
+        "filename": "runtime-required.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-required-prop-with-default",
+            "severity": "error",
+            "message": "Prop 'value' is required but also declares a default",
+            "start": 43,
+            "end": 80,
+            "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+            "labels": [
+              {
+                "message": "marked required here",
+                "start": 52,
+                "end": 66
+              },
+              {
+                "message": "default declared here",
+                "start": 68,
+                "end": 78
+              }
+            ],
+            "fix": null
+          }
+        ]
+      },
+      "beforeCliPacket": [
+        {
+          "file": "runtime-required.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "runtime-required.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-required-prop-with-default",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-required-prop-with-default] Prop 'value' is required but also declares a default",
+              "line": 2,
+              "column": 29,
+              "endLine": 2,
+              "endColumn": 66,
+              "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterStatus": 1
+    },
+    {
+      "id": "runtime-direct-statement",
+      "filename": "runtime-direct-statement.vue",
+      "sourceSha256": "baadf41c181fd46c5726ab6f5ad2169282bbf4b6965e04018dd4d22ca6ef1dda",
+      "config": "{\"linter\":{\"rules\":{\"script/no-required-prop-with-default\":\"error\"}}}\n",
+      "argv": [
+        "lint",
+        "runtime-direct-statement.vue",
+        "--format",
+        "json",
+        "--preset",
+        "incremental",
+        "--config",
+        "vize.config.json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none"
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'value' is required but also declares a default",
+          "start": 29,
+          "end": 66,
+          "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 38,
+              "end": 52
+            },
+            {
+              "message": "default declared here",
+              "start": 54,
+              "end": 64
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeApiPacket": {
+        "filename": "runtime-direct-statement.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterApiPacket": {
+        "filename": "runtime-direct-statement.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-required-prop-with-default",
+            "severity": "error",
+            "message": "Prop 'value' is required but also declares a default",
+            "start": 29,
+            "end": 66,
+            "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+            "labels": [
+              {
+                "message": "marked required here",
+                "start": 38,
+                "end": 52
+              },
+              {
+                "message": "default declared here",
+                "start": 54,
+                "end": 64
+              }
+            ],
+            "fix": null
+          }
+        ]
+      },
+      "beforeCliPacket": [
+        {
+          "file": "runtime-direct-statement.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "runtime-direct-statement.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-required-prop-with-default",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-required-prop-with-default] Prop 'value' is required but also declares a default",
+              "line": 2,
+              "column": 15,
+              "endLine": 2,
+              "endColumn": 52,
+              "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterStatus": 1
+    },
+    {
+      "id": "runtime-crlf-unicode",
+      "filename": "runtime-crlf-unicode.vue",
+      "sourceSha256": "b227fb4c267fe1b8c451a320337e38f19f3fdcdfa0121c6db9b43887be52a566",
+      "config": "{\"linter\":{\"rules\":{\"script/no-required-prop-with-default\":\"error\"}}}\n",
+      "argv": [
+        "lint",
+        "runtime-crlf-unicode.vue",
+        "--format",
+        "json",
+        "--preset",
+        "incremental",
+        "--config",
+        "vize.config.json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none"
+      ],
+      "diagnostics": [
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'café' is required but also declares a default",
+          "start": 67,
+          "end": 104,
+          "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 76,
+              "end": 90
+            },
+            {
+              "message": "default declared here",
+              "start": 92,
+              "end": 102
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeApiPacket": {
+        "filename": "runtime-crlf-unicode.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterApiPacket": {
+        "filename": "runtime-crlf-unicode.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-required-prop-with-default",
+            "severity": "error",
+            "message": "Prop 'café' is required but also declares a default",
+            "start": 67,
+            "end": 104,
+            "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+            "labels": [
+              {
+                "message": "marked required here",
+                "start": 76,
+                "end": 90
+              },
+              {
+                "message": "default declared here",
+                "start": 92,
+                "end": 102
+              }
+            ],
+            "fix": null
+          }
+        ]
+      },
+      "beforeCliPacket": [
+        {
+          "file": "runtime-crlf-unicode.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "runtime-crlf-unicode.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-required-prop-with-default",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-required-prop-with-default] Prop 'café' is required but also declares a default",
+              "line": 3,
+              "column": 29,
+              "endLine": 3,
+              "endColumn": 65,
+              "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterStatus": 1
+    },
+    {
+      "id": "runtime-optional",
+      "filename": "runtime-optional.vue",
+      "sourceSha256": "7e52cc102734cdd05837c51584063fc66c73e5ead32aff16102b9186dbf6fef8",
+      "config": "{\"linter\":{\"rules\":{\"script/no-required-prop-with-default\":\"error\"}}}\n",
+      "argv": [
+        "lint",
+        "runtime-optional.vue",
+        "--format",
+        "json",
+        "--preset",
+        "incremental",
+        "--config",
+        "vize.config.json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none"
+      ],
+      "diagnostics": [],
+      "beforeApiPacket": {
+        "filename": "runtime-optional.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterApiPacket": {
+        "filename": "runtime-optional.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "beforeCliPacket": [
+        {
+          "file": "runtime-optional.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "runtime-optional.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterStatus": 0
+    },
+    {
+      "id": "runtime-no-default",
+      "filename": "runtime-no-default.vue",
+      "sourceSha256": "5a0ec742199d9c9b14677c9007e2ef878d01ea191450c408dfaf8cbbd8b30fd1",
+      "config": "{\"linter\":{\"rules\":{\"script/no-required-prop-with-default\":\"error\"}}}\n",
+      "argv": [
+        "lint",
+        "runtime-no-default.vue",
+        "--format",
+        "json",
+        "--preset",
+        "incremental",
+        "--config",
+        "vize.config.json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none"
+      ],
+      "diagnostics": [],
+      "beforeApiPacket": {
+        "filename": "runtime-no-default.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterApiPacket": {
+        "filename": "runtime-no-default.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "beforeCliPacket": [
+        {
+          "file": "runtime-no-default.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "runtime-no-default.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterStatus": 0
+    },
+    {
+      "id": "runtime-no-required",
+      "filename": "runtime-no-required.vue",
+      "sourceSha256": "25d4f5e01ecbf04440760cfe0758a3e16ec622b18374371cd5edfcd6092578fe",
+      "config": "{\"linter\":{\"rules\":{\"script/no-required-prop-with-default\":\"error\"}}}\n",
+      "argv": [
+        "lint",
+        "runtime-no-required.vue",
+        "--format",
+        "json",
+        "--preset",
+        "incremental",
+        "--config",
+        "vize.config.json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none"
+      ],
+      "diagnostics": [],
+      "beforeApiPacket": {
+        "filename": "runtime-no-required.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterApiPacket": {
+        "filename": "runtime-no-required.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "beforeCliPacket": [
+        {
+          "file": "runtime-no-required.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "runtime-no-required.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterStatus": 0
+    },
+    {
+      "id": "ordinary-normal-script",
+      "filename": "ordinary-normal-script.vue",
+      "sourceSha256": "4779b5682314e9aed4daa9e0f6109d4d430c277e691346764eedbeae7e702d44",
+      "config": "{\"linter\":{\"rules\":{\"script/no-required-prop-with-default\":\"error\"}}}\n",
+      "argv": [
+        "lint",
+        "ordinary-normal-script.vue",
+        "--format",
+        "json",
+        "--preset",
+        "incremental",
+        "--config",
+        "vize.config.json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none"
+      ],
+      "diagnostics": [],
+      "beforeApiPacket": {
+        "filename": "ordinary-normal-script.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterApiPacket": {
+        "filename": "ordinary-normal-script.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "beforeCliPacket": [
+        {
+          "file": "ordinary-normal-script.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "ordinary-normal-script.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterStatus": 0
+    },
+    {
+      "id": "runtime-shadowed-function",
+      "filename": "runtime-shadowed-function.vue",
+      "sourceSha256": "2a184762338268e841e586d6e5bfd4711aec0ee6a02d6341f421f847daceb9b5",
+      "config": "{\"linter\":{\"rules\":{\"script/no-required-prop-with-default\":\"error\"}}}\n",
+      "argv": [
+        "lint",
+        "runtime-shadowed-function.vue",
+        "--format",
+        "json",
+        "--preset",
+        "incremental",
+        "--config",
+        "vize.config.json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none"
+      ],
+      "diagnostics": [],
+      "beforeApiPacket": {
+        "filename": "runtime-shadowed-function.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterApiPacket": {
+        "filename": "runtime-shadowed-function.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "beforeCliPacket": [
+        {
+          "file": "runtime-shadowed-function.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "runtime-shadowed-function.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterStatus": 0
+    },
+    {
+      "id": "runtime-foreign-import",
+      "filename": "runtime-foreign-import.vue",
+      "sourceSha256": "5c77f6866204b5db4e6b39634aa25035086f9fc3cb0591b787287dd2d82c0d8b",
+      "config": "{\"linter\":{\"rules\":{\"script/no-required-prop-with-default\":\"error\"}}}\n",
+      "argv": [
+        "lint",
+        "runtime-foreign-import.vue",
+        "--format",
+        "json",
+        "--preset",
+        "incremental",
+        "--config",
+        "vize.config.json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none"
+      ],
+      "diagnostics": [],
+      "beforeApiPacket": {
+        "filename": "runtime-foreign-import.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterApiPacket": {
+        "filename": "runtime-foreign-import.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "beforeCliPacket": [
+        {
+          "file": "runtime-foreign-import.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "runtime-foreign-import.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterStatus": 0
+    },
+    {
+      "id": "runtime-sibling-shadow",
+      "filename": "runtime-sibling-shadow.vue",
+      "sourceSha256": "83807a3d0cb12031d3f53e235fb90ba316c978b389a248bd34d40afe339189e1",
+      "config": "{\"linter\":{\"rules\":{\"script/no-required-prop-with-default\":\"error\"}}}\n",
+      "argv": [
+        "lint",
+        "runtime-sibling-shadow.vue",
+        "--format",
+        "json",
+        "--preset",
+        "incremental",
+        "--config",
+        "vize.config.json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none"
+      ],
+      "diagnostics": [],
+      "beforeApiPacket": {
+        "filename": "runtime-sibling-shadow.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterApiPacket": {
+        "filename": "runtime-sibling-shadow.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "beforeCliPacket": [
+        {
+          "file": "runtime-sibling-shadow.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "runtime-sibling-shadow.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterStatus": 0
+    },
+    {
+      "id": "runtime-external-setup",
+      "filename": "runtime-external-setup.vue",
+      "sourceSha256": "dc8de0f5759df2c355e7fbfcb24068c9f5f0e625c1c4dd3c22a7298fb6cd3432",
+      "config": "{\"linter\":{\"rules\":{\"script/no-required-prop-with-default\":\"error\"}}}\n",
+      "argv": [
+        "lint",
+        "runtime-external-setup.vue",
+        "--format",
+        "json",
+        "--preset",
+        "incremental",
+        "--config",
+        "vize.config.json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none"
+      ],
+      "diagnostics": [],
+      "beforeApiPacket": {
+        "filename": "runtime-external-setup.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterApiPacket": {
+        "filename": "runtime-external-setup.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "beforeCliPacket": [
+        {
+          "file": "runtime-external-setup.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterCliPacket": [
+        {
+          "file": "runtime-external-setup.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "beforeStatus": 0,
+      "afterStatus": 0
+    }
+  ]
+}

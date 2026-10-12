@@ -1,0 +1,317 @@
+{
+  "sources": [
+    {
+      "path": "tests/tooling/fixtures/musea/literal-variant-keys/Controls.art.vue",
+      "sha256": "d4bb54f6be66646f344026afa72addfef86f237ef703c9b1f024fd815de1fb57",
+      "bytes": "<art title=\"Controls\" status=\"ready\">\n  <variant name=\"Default\" default>\n    <button style=\"width:100px;height:60px;background:#0000ff\">Ordinary</button>\n  </variant>\n  <variant name=\"Custom theme\">\n    <button style=\"width:100px;height:60px;background:#008000\">Custom</button>\n  </variant>\n</art>\n"
+    },
+    {
+      "path": "tests/tooling/fixtures/musea/literal-variant-keys/Keys.art.vue",
+      "sha256": "3f121d5b7e959bf18c368eb060656db8cbe61cb4b45ccd003c1d9e583206001e",
+      "bytes": "<art title=\"Keys\" status=\"ready\">\n  <variant name=\"__proto__\" default>\n    <button style=\"width:100px;height:60px;background:#ff0000\">Proto</button>\n  </variant>\n  <variant name=\"constructor\">\n    <button style=\"width:100px;height:60px;background:#800080\">Constructor</button>\n  </variant>\n  <variant name=\"hasOwnProperty\">\n    <button style=\"width:100px;height:60px;background:#ffa500\">Own property</button>\n  </variant>\n</art>\n"
+    }
+  ],
+  "observations": [
+    {
+      "title": "Controls",
+      "name": "Default",
+      "url": "http://127.0.0.1:38401/__musea__/preview/30403e327941a2542e56.html",
+      "physicalSha256": "d7fb8bffaf61ab217cf230d6ae1446369adfd34f1620fa7868572f8403d8d978",
+      "html": "<!DOCTYPE html><html lang=\"en\"><head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Controls - Default</title>\n  <script>window.__MUSEA_BASE_PATH__=\"/__musea__\";</script>\n  <style>html,body{width:100%;height:100%;margin:0}body{font-family:system-ui,sans-serif;background:#fff;padding:1rem;overflow:auto;box-sizing:border-box}.musea-variant{min-height:calc(100vh - 2rem)}.musea-error{color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:1rem;font-size:.875rem}.musea-loading{color:#6b7280;font-size:.875rem}.musea-bg-checkerboard{background-image:linear-gradient(45deg,#ccc 25%,transparent 25%),linear-gradient(-45deg,#ccc 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#ccc 75%),linear-gradient(-45deg,transparent 75%,#ccc 75%)!important;background-size:20px 20px!important;background-position:0 0,0 10px,10px -10px,-10px 0!important}</style>\n<link rel=\"modulepreload\" as=\"script\" crossorigin=\"\" href=\"/assets/Controls.art-BbmCUH78.js\"><link rel=\"modulepreload\" as=\"script\" crossorigin=\"\" href=\"/assets/Controls.art-Dz956Ccp.js\"><link rel=\"modulepreload\" as=\"script\" crossorigin=\"\" href=\"/assets/vue.esm-bundler-CY7pORMb.js\"></head>\n<body>\n  <div id=\"app\" class=\"musea-variant\" data-art=\"/tmp/musea-native-literal-static-qUg1ri/src/Controls.art.vue\" data-variant=\"Default\" data-v-app=\"\"><div data-variant=\"Default\"><button style=\"width: 100px; height: 60px; background: rgb(0, 0, 255);\">Ordinary</button></div></div>\n  <script type=\"module\">\n    import \"../../assets/musea-static-runtime-Bs8PMiSa.js\";\n    Promise.resolve().then(() => {\n      const loadMuseaPreview = window.__MUSEA_LOAD_PREVIEW__;\n      if (typeof loadMuseaPreview !== \"function\") {\n        throw new Error(\"Musea preview runtime failed to load\");\n      }\n      return loadMuseaPreview(\"30403e327941a2542e56\");\n    }).catch((error) => {\n      const el = document.getElementById(\"app\");\n      if (el) el.textContent = error instanceof Error ? error.message : String(error);\n    });\n  </script>\n\n</body></html>"
+    },
+    {
+      "title": "Controls",
+      "name": "Custom theme",
+      "url": "http://127.0.0.1:38401/__musea__/preview/34e45c118ca15a075e30.html",
+      "physicalSha256": "cf7faeaf1d9e4ae3d80a38a755e4b6ebf9a086ca46e68911fb8601761fbf8a3e",
+      "html": "<!DOCTYPE html><html lang=\"en\"><head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Controls - Custom theme</title>\n  <script>window.__MUSEA_BASE_PATH__=\"/__musea__\";</script>\n  <style>html,body{width:100%;height:100%;margin:0}body{font-family:system-ui,sans-serif;background:#fff;padding:1rem;overflow:auto;box-sizing:border-box}.musea-variant{min-height:calc(100vh - 2rem)}.musea-error{color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:1rem;font-size:.875rem}.musea-loading{color:#6b7280;font-size:.875rem}.musea-bg-checkerboard{background-image:linear-gradient(45deg,#ccc 25%,transparent 25%),linear-gradient(-45deg,#ccc 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#ccc 75%),linear-gradient(-45deg,transparent 75%,#ccc 75%)!important;background-size:20px 20px!important;background-position:0 0,0 10px,10px -10px,-10px 0!important}</style>\n<link rel=\"modulepreload\" as=\"script\" crossorigin=\"\" href=\"/assets/Controls.art-CY-QLBu-.js\"><link rel=\"modulepreload\" as=\"script\" crossorigin=\"\" href=\"/assets/Controls.art-Dz956Ccp.js\"><link rel=\"modulepreload\" as=\"script\" crossorigin=\"\" href=\"/assets/vue.esm-bundler-CY7pORMb.js\"></head>\n<body>\n  <div id=\"app\" class=\"musea-variant\" data-art=\"/tmp/musea-native-literal-static-qUg1ri/src/Controls.art.vue\" data-variant=\"Custom theme\" data-v-app=\"\"><div data-variant=\"Custom theme\"><button style=\"width: 100px; height: 60px; background: rgb(0, 128, 0);\">Custom</button></div></div>\n  <script type=\"module\">\n    import \"../../assets/musea-static-runtime-Bs8PMiSa.js\";\n    Promise.resolve().then(() => {\n      const loadMuseaPreview = window.__MUSEA_LOAD_PREVIEW__;\n      if (typeof loadMuseaPreview !== \"function\") {\n        throw new Error(\"Musea preview runtime failed to load\");\n      }\n      return loadMuseaPreview(\"34e45c118ca15a075e30\");\n    }).catch((error) => {\n      const el = document.getElementById(\"app\");\n      if (el) el.textContent = error instanceof Error ? error.message : String(error);\n    });\n  </script>\n\n</body></html>"
+    },
+    {
+      "title": "Keys",
+      "name": "__proto__",
+      "url": "http://127.0.0.1:38401/__musea__/preview/c55ffcce2e7a0f0c7256.html",
+      "physicalSha256": "ed693c4b7aaebfef83a08d80c360809254f77d60f9d3729de10d8f01f38eec51",
+      "html": "<!DOCTYPE html><html lang=\"en\"><head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Keys - __proto__</title>\n  <script>window.__MUSEA_BASE_PATH__=\"/__musea__\";</script>\n  <style>html,body{width:100%;height:100%;margin:0}body{font-family:system-ui,sans-serif;background:#fff;padding:1rem;overflow:auto;box-sizing:border-box}.musea-variant{min-height:calc(100vh - 2rem)}.musea-error{color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:1rem;font-size:.875rem}.musea-loading{color:#6b7280;font-size:.875rem}.musea-bg-checkerboard{background-image:linear-gradient(45deg,#ccc 25%,transparent 25%),linear-gradient(-45deg,#ccc 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#ccc 75%),linear-gradient(-45deg,transparent 75%,#ccc 75%)!important;background-size:20px 20px!important;background-position:0 0,0 10px,10px -10px,-10px 0!important}</style>\n<link rel=\"modulepreload\" as=\"script\" crossorigin=\"\" href=\"/assets/Keys.art-C0GLtS7d.js\"><link rel=\"modulepreload\" as=\"script\" crossorigin=\"\" href=\"/assets/Keys.art-B2NAAN9W.js\"><link rel=\"modulepreload\" as=\"script\" crossorigin=\"\" href=\"/assets/vue.esm-bundler-CY7pORMb.js\"></head>\n<body>\n  <div id=\"app\" class=\"musea-variant\" data-art=\"/tmp/musea-native-literal-static-qUg1ri/src/Keys.art.vue\" data-variant=\"__proto__\" data-v-app=\"\"><div data-variant=\"__proto__\"><button style=\"width: 100px; height: 60px; background: rgb(255, 0, 0);\">Proto</button></div></div>\n  <script type=\"module\">\n    import \"../../assets/musea-static-runtime-Bs8PMiSa.js\";\n    Promise.resolve().then(() => {\n      const loadMuseaPreview = window.__MUSEA_LOAD_PREVIEW__;\n      if (typeof loadMuseaPreview !== \"function\") {\n        throw new Error(\"Musea preview runtime failed to load\");\n      }\n      return loadMuseaPreview(\"c55ffcce2e7a0f0c7256\");\n    }).catch((error) => {\n      const el = document.getElementById(\"app\");\n      if (el) el.textContent = error instanceof Error ? error.message : String(error);\n    });\n  </script>\n\n</body></html>"
+    },
+    {
+      "title": "Keys",
+      "name": "constructor",
+      "url": "http://127.0.0.1:38401/__musea__/preview/584c103eeaef4cb8f0e1.html",
+      "physicalSha256": "cd1b302dabf53d270df85085c504dc304e1ba1e05c1fa4522939dc59872d3bb6",
+      "html": "<!DOCTYPE html><html lang=\"en\"><head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Keys - constructor</title>\n  <script>window.__MUSEA_BASE_PATH__=\"/__musea__\";</script>\n  <style>html,body{width:100%;height:100%;margin:0}body{font-family:system-ui,sans-serif;background:#fff;padding:1rem;overflow:auto;box-sizing:border-box}.musea-variant{min-height:calc(100vh - 2rem)}.musea-error{color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:1rem;font-size:.875rem}.musea-loading{color:#6b7280;font-size:.875rem}.musea-bg-checkerboard{background-image:linear-gradient(45deg,#ccc 25%,transparent 25%),linear-gradient(-45deg,#ccc 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#ccc 75%),linear-gradient(-45deg,transparent 75%,#ccc 75%)!important;background-size:20px 20px!important;background-position:0 0,0 10px,10px -10px,-10px 0!important}</style>\n<link rel=\"modulepreload\" as=\"script\" crossorigin=\"\" href=\"/assets/Keys.art-CJHj5DiW.js\"><link rel=\"modulepreload\" as=\"script\" crossorigin=\"\" href=\"/assets/Keys.art-B2NAAN9W.js\"><link rel=\"modulepreload\" as=\"script\" crossorigin=\"\" href=\"/assets/vue.esm-bundler-CY7pORMb.js\"></head>\n<body>\n  <div id=\"app\" class=\"musea-variant\" data-art=\"/tmp/musea-native-literal-static-qUg1ri/src/Keys.art.vue\" data-variant=\"constructor\" data-v-app=\"\"><div data-variant=\"constructor\"><button style=\"width: 100px; height: 60px; background: rgb(128, 0, 128);\">Constructor</button></div></div>\n  <script type=\"module\">\n    import \"../../assets/musea-static-runtime-Bs8PMiSa.js\";\n    Promise.resolve().then(() => {\n      const loadMuseaPreview = window.__MUSEA_LOAD_PREVIEW__;\n      if (typeof loadMuseaPreview !== \"function\") {\n        throw new Error(\"Musea preview runtime failed to load\");\n      }\n      return loadMuseaPreview(\"584c103eeaef4cb8f0e1\");\n    }).catch((error) => {\n      const el = document.getElementById(\"app\");\n      if (el) el.textContent = error instanceof Error ? error.message : String(error);\n    });\n  </script>\n\n</body></html>"
+    },
+    {
+      "title": "Keys",
+      "name": "hasOwnProperty",
+      "url": "http://127.0.0.1:38401/__musea__/preview/4aae8a48da155eb19d66.html",
+      "physicalSha256": "d03ab7ec65a485a302a47b360ddd3a6d289166a581ad899d2aefb3c6b98ae4c9",
+      "html": "<!DOCTYPE html><html lang=\"en\"><head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Keys - hasOwnProperty</title>\n  <script>window.__MUSEA_BASE_PATH__=\"/__musea__\";</script>\n  <style>html,body{width:100%;height:100%;margin:0}body{font-family:system-ui,sans-serif;background:#fff;padding:1rem;overflow:auto;box-sizing:border-box}.musea-variant{min-height:calc(100vh - 2rem)}.musea-error{color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:1rem;font-size:.875rem}.musea-loading{color:#6b7280;font-size:.875rem}.musea-bg-checkerboard{background-image:linear-gradient(45deg,#ccc 25%,transparent 25%),linear-gradient(-45deg,#ccc 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#ccc 75%),linear-gradient(-45deg,transparent 75%,#ccc 75%)!important;background-size:20px 20px!important;background-position:0 0,0 10px,10px -10px,-10px 0!important}</style>\n<link rel=\"modulepreload\" as=\"script\" crossorigin=\"\" href=\"/assets/Keys.art-BeGo9R1O.js\"><link rel=\"modulepreload\" as=\"script\" crossorigin=\"\" href=\"/assets/Keys.art-B2NAAN9W.js\"><link rel=\"modulepreload\" as=\"script\" crossorigin=\"\" href=\"/assets/vue.esm-bundler-CY7pORMb.js\"></head>\n<body>\n  <div id=\"app\" class=\"musea-variant\" data-art=\"/tmp/musea-native-literal-static-qUg1ri/src/Keys.art.vue\" data-variant=\"hasOwnProperty\" data-v-app=\"\"><div data-variant=\"hasOwnProperty\"><button style=\"width: 100px; height: 60px; background: rgb(255, 165, 0);\">Own property</button></div></div>\n  <script type=\"module\">\n    import \"../../assets/musea-static-runtime-Bs8PMiSa.js\";\n    Promise.resolve().then(() => {\n      const loadMuseaPreview = window.__MUSEA_LOAD_PREVIEW__;\n      if (typeof loadMuseaPreview !== \"function\") {\n        throw new Error(\"Musea preview runtime failed to load\");\n      }\n      return loadMuseaPreview(\"4aae8a48da155eb19d66\");\n    }).catch((error) => {\n      const el = document.getElementById(\"app\");\n      if (el) el.textContent = error instanceof Error ? error.message : String(error);\n    });\n  </script>\n\n</body></html>"
+    },
+    {
+      "phase": "controls-gallery",
+      "previews": [
+        {
+          "sectionName": "Default",
+          "sectionId": "variant-default",
+          "ariaControls": "variant-default",
+          "url": "http://127.0.0.1:38401/__musea__/preview/30403e327941a2542e56.html",
+          "variant": "Default",
+          "buttons": [
+            "Ordinary"
+          ],
+          "unresolved": 0
+        },
+        {
+          "sectionName": "Custom theme",
+          "sectionId": "variant-custom-theme",
+          "ariaControls": "variant-custom-theme",
+          "url": "http://127.0.0.1:38401/__musea__/preview/34e45c118ca15a075e30.html",
+          "variant": "Custom theme",
+          "buttons": [
+            "Custom"
+          ],
+          "unresolved": 0
+        }
+      ]
+    },
+    {
+      "phase": "keys-gallery",
+      "previews": [
+        {
+          "sectionName": "__proto__",
+          "sectionId": "variant-proto",
+          "ariaControls": "variant-proto",
+          "url": "http://127.0.0.1:38401/__musea__/preview/c55ffcce2e7a0f0c7256.html",
+          "variant": "__proto__",
+          "buttons": [
+            "Proto"
+          ],
+          "unresolved": 0
+        },
+        {
+          "sectionName": "constructor",
+          "sectionId": "variant-constructor",
+          "ariaControls": "variant-constructor",
+          "url": "http://127.0.0.1:38401/__musea__/preview/584c103eeaef4cb8f0e1.html",
+          "variant": "constructor",
+          "buttons": [
+            "Constructor"
+          ],
+          "unresolved": 0
+        },
+        {
+          "sectionName": "hasOwnProperty",
+          "sectionId": "variant-hasownproperty",
+          "ariaControls": "variant-hasownproperty",
+          "url": "http://127.0.0.1:38401/__musea__/preview/4aae8a48da155eb19d66.html",
+          "variant": "hasOwnProperty",
+          "buttons": [
+            "Own property"
+          ],
+          "unresolved": 0
+        }
+      ]
+    },
+    {
+      "manifest": [
+        {
+          "title": "Controls",
+          "keys": [
+            "Default",
+            "Custom theme"
+          ],
+          "own": [
+            {
+              "name": "Default",
+              "own": true,
+              "valueType": "string"
+            },
+            {
+              "name": "Custom theme",
+              "own": true,
+              "valueType": "string"
+            }
+          ]
+        },
+        {
+          "title": "Keys",
+          "keys": [
+            "__proto__",
+            "constructor",
+            "hasOwnProperty"
+          ],
+          "own": [
+            {
+              "name": "__proto__",
+              "own": true,
+              "valueType": "string"
+            },
+            {
+              "name": "constructor",
+              "own": true,
+              "valueType": "string"
+            },
+            {
+              "name": "hasOwnProperty",
+              "own": true,
+              "valueType": "string"
+            }
+          ]
+        }
+      ],
+      "controlGlobals": [
+        {
+          "artPath": "/tmp/musea-native-literal-static-qUg1ri/src/Controls.art.vue",
+          "keys": [
+            "Default",
+            "Custom theme"
+          ],
+          "prototypeUnchanged": true,
+          "hasOwnToString": false,
+          "protoOwn": false,
+          "protoType": "object"
+        },
+        {
+          "artPath": "/tmp/musea-native-literal-static-qUg1ri/src/Keys.art.vue",
+          "keys": [
+            "__proto__",
+            "constructor",
+            "hasOwnProperty"
+          ],
+          "prototypeUnchanged": true,
+          "hasOwnToString": false,
+          "protoOwn": true,
+          "protoType": "string"
+        }
+      ]
+    },
+    {
+      "phase": "literal-nav-before-clicks",
+      "wallTimestamp": "2026-10-12T00:55:03.492Z",
+      "monotonicMs": 1029.300000000003,
+      "requestedFirst": {
+        "name": "__proto__",
+        "ariaCurrent": "true",
+        "ariaControls": "variant-proto",
+        "sectionTop": 311,
+        "sectionBottom": 874.796875,
+        "sectionParentScrollTop": 0
+      },
+      "requestedLast": {
+        "name": "hasOwnProperty",
+        "ariaCurrent": null,
+        "ariaControls": "variant-hasownproperty",
+        "sectionTop": 1486.59375,
+        "sectionBottom": 2050.390625,
+        "sectionParentScrollTop": 0
+      },
+      "tocItemCount": 3,
+      "tocItems": [
+        {
+          "name": "__proto__",
+          "ariaCurrent": "true",
+          "ariaControls": "variant-proto",
+          "sectionTop": 311,
+          "sectionBottom": 874.796875,
+          "sectionParentScrollTop": 0
+        },
+        {
+          "name": "constructor",
+          "ariaCurrent": null,
+          "ariaControls": "variant-constructor",
+          "sectionTop": 898.796875,
+          "sectionBottom": 1462.59375,
+          "sectionParentScrollTop": 0
+        },
+        {
+          "name": "hasOwnProperty",
+          "ariaCurrent": null,
+          "ariaControls": "variant-hasownproperty",
+          "sectionTop": 1486.59375,
+          "sectionBottom": 2050.390625,
+          "sectionParentScrollTop": 0
+        }
+      ],
+      "activeItems": [
+        {
+          "name": "__proto__",
+          "ariaCurrent": "true",
+          "ariaControls": "variant-proto",
+          "sectionTop": 311,
+          "sectionBottom": 874.796875,
+          "sectionParentScrollTop": 0
+        }
+      ],
+      "itemOverflow": false,
+      "scrollX": 0,
+      "scrollY": 0,
+      "documentScrollTop": 0,
+      "producerIntersectionObserverEvents": "unavailable: producer does not expose an event log"
+    },
+    {
+      "phase": "literal-nav-after-synchronization",
+      "wallTimestamp": "2026-10-12T00:55:03.891Z",
+      "monotonicMs": 1428,
+      "requestedFirst": {
+        "name": "__proto__",
+        "ariaCurrent": null,
+        "ariaControls": "variant-proto",
+        "sectionTop": -945,
+        "sectionBottom": -381.203125,
+        "sectionParentScrollTop": 0
+      },
+      "requestedLast": {
+        "name": "hasOwnProperty",
+        "ariaCurrent": "true",
+        "ariaControls": "variant-hasownproperty",
+        "sectionTop": 230.59375,
+        "sectionBottom": 794.390625,
+        "sectionParentScrollTop": 0
+      },
+      "tocItemCount": 3,
+      "tocItems": [
+        {
+          "name": "__proto__",
+          "ariaCurrent": null,
+          "ariaControls": "variant-proto",
+          "sectionTop": -945,
+          "sectionBottom": -381.203125,
+          "sectionParentScrollTop": 0
+        },
+        {
+          "name": "constructor",
+          "ariaCurrent": null,
+          "ariaControls": "variant-constructor",
+          "sectionTop": -357.203125,
+          "sectionBottom": 206.59375,
+          "sectionParentScrollTop": 0
+        },
+        {
+          "name": "hasOwnProperty",
+          "ariaCurrent": "true",
+          "ariaControls": "variant-hasownproperty",
+          "sectionTop": 230.59375,
+          "sectionBottom": 794.390625,
+          "sectionParentScrollTop": 0
+        }
+      ],
+      "activeItems": [
+        {
+          "name": "hasOwnProperty",
+          "ariaCurrent": "true",
+          "ariaControls": "variant-hasownproperty",
+          "sectionTop": 230.59375,
+          "sectionBottom": 794.390625,
+          "sectionParentScrollTop": 0
+        }
+      ],
+      "itemOverflow": false,
+      "scrollX": 0,
+      "scrollY": 0,
+      "documentScrollTop": 0,
+      "producerIntersectionObserverEvents": "unavailable: producer does not expose an event log"
+    }
+  ],
+  "errors": [],
+  "consoleErrors": []
+}

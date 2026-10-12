@@ -1,0 +1,4 @@
+<script setup lang="ts">
+import { ref as chosen, isString as other } from '@vue/shared'
+</script>
+<template><div>ok</div></template>

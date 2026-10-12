@@ -1,0 +1,82 @@
+{
+  "case": "escape-strict",
+  "receipt": "003-native-cli.json",
+  "receiptSha256": "9f13c3967787012781518977fd4cbfab07f1ac69747388a627737bff0f192ec7",
+  "argv": [
+    "--checkers",
+    "1",
+    "--pretty",
+    "false",
+    "--project",
+    "/Users/ubugeeei/Library/Caches/vize/canon/projects/07ebf59f626082347a6e1c0dafd05ca22b07414c54e44f2b6885105b15675bc9/tsconfig.json"
+  ],
+  "configSha256": "d177d1ef882b089d59f954f3558d9858129281b660b6d34e89114e52b108b228",
+  "rawStdout": "src/App.vue.ts(69,50): error TS2339: Property '$before' does not exist on type '__VizeStrictTemplateContext'.\nsrc/App.vue.ts(71,49): error TS2339: Property '$after' does not exist on type '__VizeStrictTemplateContext'.\nsrc/App.vue.ts(73,48): error TS2339: Property '$form' does not exist on type '__VizeStrictTemplateContext'.\nsrc/App.vue.ts(75,50): error TS2339: Property '$absent' does not exist on type '__VizeStrictTemplateContext'.\nsrc/App.vue.ts(77,40): error TS2339: Property '$before' does not exist on type '__VizeStrictTemplateContext'.\nsrc/App.vue.ts(79,40): error TS2339: Property '$after' does not exist on type '__VizeStrictTemplateContext'.\nsrc/App.vue.ts(81,40): error TS2339: Property '$form' does not exist on type '__VizeStrictTemplateContext'.\n",
+  "rawStderr": "",
+  "nativeExit": 1,
+  "diagnostics": [
+    {
+      "blockType": "template",
+      "code": 2339,
+      "column": 18,
+      "file": "src/App.vue",
+      "line": 5,
+      "message": "Property '$before' does not exist on type '__VizeStrictTemplateContext'.",
+      "severity": 1
+    },
+    {
+      "blockType": "template",
+      "code": 2339,
+      "column": 34,
+      "file": "src/App.vue",
+      "line": 6,
+      "message": "Property '$after' does not exist on type '__VizeStrictTemplateContext'.",
+      "severity": 1
+    },
+    {
+      "blockType": "template",
+      "code": 2339,
+      "column": 9,
+      "file": "src/App.vue",
+      "line": 8,
+      "message": "Property '$form' does not exist on type '__VizeStrictTemplateContext'.",
+      "severity": 1
+    },
+    {
+      "blockType": "template",
+      "code": 2339,
+      "column": 9,
+      "file": "src/App.vue",
+      "line": 9,
+      "message": "Property '$absent' does not exist on type '__VizeStrictTemplateContext'.",
+      "severity": 1
+    },
+    {
+      "blockType": "template",
+      "code": 2339,
+      "column": 53,
+      "file": "src/App.vue",
+      "line": 5,
+      "message": "Property '$before' does not exist on type '__VizeStrictTemplateContext'.",
+      "severity": 1
+    },
+    {
+      "blockType": "template",
+      "code": 2339,
+      "column": 51,
+      "file": "src/App.vue",
+      "line": 6,
+      "message": "Property '$after' does not exist on type '__VizeStrictTemplateContext'.",
+      "severity": 1
+    },
+    {
+      "blockType": "template",
+      "code": 2339,
+      "column": 28,
+      "file": "src/App.vue",
+      "line": 7,
+      "message": "Property '$form' does not exist on type '__VizeStrictTemplateContext'.",
+      "severity": 1
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+import fs from 'node:fs';
+import crypto from 'node:crypto';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+const folder = '/tmp/vize-next-preset-readonly-audit-20261012';
+const sha = b => crypto.createHash('sha256').update(b).digest('hex');
+const inputPath = path.join(folder, 'ts-wrapped-callee-authored-controls.json');
+const inputBytes = fs.readFileSync(inputPath);
+const input = JSON.parse(inputBytes);
+const primaryPath = '/tmp/vize-no-export-preset-compiler-reference-20261012.json';
+const primaryBytes = fs.readFileSync(primaryPath);
+const primary = JSON.parse(primaryBytes);
+const sourceBytes = fs.readFileSync(primary.provider.path);
+assert.equal(sha(sourceBytes), primary.provider.sha256);
+const require = createRequire(import.meta.url);
+const compiler = require(primary.provider.path);
+assert.equal(compiler.version, '3.5.43');
+function complete(value, seen = new Map(), at = '$') {
+  if (value === undefined) return { $type: 'undefined' };
+  if (typeof value === 'bigint') return { $type: 'bigint', value: String(value) };
+  if (typeof value === 'function') return { $type: 'function', source: String(value) };
+  if (value === null || typeof value !== 'object') return value;
+  if (seen.has(value)) return { $ref: seen.get(value) };
+  seen.set(value, at);
+  if (Array.isArray(value)) return value.map((v, i) => complete(v, seen, `${at}[${i}]`));
+  const result = {};
+  if (Object.getPrototypeOf(value)?.constructor?.name !== 'Object')
+    result.$type = Object.getPrototypeOf(value)?.constructor?.name ?? 'null-prototype';
+  for (const key of Object.getOwnPropertyNames(value)) result[key] = complete(value[key], seen, `${at}.${key}`);
+  return result;
+}
+const packet = { schema: 'vize.lint.no-deep-ts-wrapped-callee-compiler-reference', version: 1,
+  role: 'Pinned compiler only; no candidate/source native or runtime execution.',
+  inputs: { path: inputPath, bytes: inputBytes.length, sha256: sha(inputBytes) },
+  primary: { path: primaryPath, sha256: sha(primaryBytes), provider: primary.provider },
+  observerSha256: sha(fs.readFileSync(fileURLToPath(import.meta.url))), cases: [], complete: false };
+const output = path.join(folder, 'ts-wrapped-callee-compiler-reference.json');
+const persist = () => fs.writeFileSync(output, JSON.stringify(packet, null, 2) + '\n');
+persist();
+for (const c of input.cases) {
+  assert.equal(sha(c.source), c.sourceSha256);
+  const row = { ...c, options: { id: c.id }, logs: [] };
+  packet.cases.push(row);
+  const original = { log: console.log, warn: console.warn, error: console.error };
+  for (const method of ['log', 'warn', 'error']) console[method] = (...args) => row.logs.push({ method, args: complete(args) });
+  try {
+    const parsed = compiler.parse(c.source, { filename: c.filename });
+    row.parse = complete(parsed);
+    if (parsed.errors.length) row.accepted = false;
+    else { row.result = complete(compiler.compileScript(parsed.descriptor, row.options)); row.accepted = true; }
+  } catch (error) { row.error = complete(error); row.accepted = false; }
+  finally { Object.assign(console, original); }
+  row.expectedAcceptanceMatch = row.accepted === c.sourceInferredCompilerAccepted;
+  persist();
+}
+assert.equal(sha(fs.readFileSync(inputPath)), sha(inputBytes));
+assert.equal(sha(fs.readFileSync(primary.provider.path)), sha(sourceBytes));
+packet.complete = true;
+persist();
+console.log(JSON.stringify({ output, sha256: sha(fs.readFileSync(output)), cases: packet.cases.map(c => ({ id: c.id, accepted: c.accepted, expectedAcceptanceMatch: c.expectedAcceptanceMatch })) }));

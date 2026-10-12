@@ -26,7 +26,6 @@ import {
   localImportInputs,
   planToolingTests,
 } from "../../tools/support/compat/github/plan-tooling-tests.mjs";
-
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const workflowPath = ".github/workflows/typechecker-native-phases.yml";
 const workflow = parse(readFileSync(join(root, workflowPath), "utf8"));
@@ -188,17 +187,20 @@ void test("unknown siblings and every original product or native driver family r
 
 void test("the actual full local imports and physical source bytes match one atomic review", () => {
   assert.ok(
-    ["current-main", "reviewed-retirement-transport", "reviewed-docs-planner-composition"].includes(
-      verifyReviewedReleaseInputs(),
-    ),
+    [
+      "current-main",
+      "reviewed-retirement-transport",
+      "reviewed-docs-planner-composition",
+      "reviewed-installed-vapor-rc10",
+      "reviewed-init-js-manager-composition",
+      "reviewed-native-ssr-direct-child-custody",
+      "reviewed-init-native-ssr-composition",
+    ].includes(verifyReviewedReleaseInputs()),
   );
-  assert.equal(pins.reviews.length, 3);
-  assert.deepEqual(
-    pins.reviews.map((review) => review.presentRoots.length),
-    [2, 3, 3],
-  );
+  assert.equal(pins.reviews.length, 7);
+  const rootCounts = pins.reviews.map((review) => review.presentRoots.length);
+  assert.deepEqual(rootCounts, [2, 3, 3, 3, 3, 3, 3]);
 });
-
 void test("a native command with unchanged imports fails for both roots and transitive helpers", (t) => {
   for (const member of [excluded[0], "tools/support/release/retirement_evidence.ts"]) {
     const directory = sourceFixture(t);
@@ -216,7 +218,6 @@ void test("a native command with unchanged imports fails for both roots and tran
     );
   }
 });
-
 void test("unknown, unresolved, nonliteral and native source imports cannot inherit a review", (t) => {
   for (const declaration of [
     'import "./new-native-authority.ts";',

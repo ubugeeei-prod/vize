@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "source": "a6633fb68b110d07abd5ee5a6049bc15f20f9c7f",
+  "sourceTree": "073025536cdab5fd02bd36fa44e61ef1636b1e8d",
+  "scope": "authenticated complete original before bodies and exact original Git entries/absence; local supplemental source custody only",
+  "entries": [
+    {
+      "path": "crates/vize_canon/src/batch/executor/cli.rs",
+      "sha256": "09bc63f28d49efd75ed50cc4d7eec6bd9d592cbe76abd14d6d6283f8d819dc0a",
+      "body": "00-cli.rs.txt",
+      "byteLength": 6989,
+      "gitEntryHex": "31303036343420626c6f622039396439636635623739316462346639383661666235626134353134346561313133626662656161096372617465732f76697a655f63616e6f6e2f7372632f62617463682f6578656375746f722f636c692e727300"
+    },
+    {
+      "path": "crates/vize_canon/src/batch/executor/cli/lexical_dollar_receipt.rs",
+      "sha256": null,
+      "body": null,
+      "byteLength": null,
+      "gitEntryHex": ""
+    },
+    {
+      "path": "crates/vize_canon/src/batch/executor/session.rs",
+      "sha256": "b87c5ed166c31f75493a698cb2ef3eba1f40cb6f48ba09e1f75340ae03c6a9fc",
+      "body": "02-session.rs.txt",
+      "byteLength": 12397,
+      "gitEntryHex": "31303036343420626c6f622066386434656362393838393234326531346261333733633432633738393535663761626565616335096372617465732f76697a655f63616e6f6e2f7372632f62617463682f6578656375746f722f73657373696f6e2e727300"
+    },
+    {
+      "path": "crates/vize_canon/src/batch/executor/session/lexical_dollar_receipt.rs",
+      "sha256": null,
+      "body": null,
+      "byteLength": null,
+      "gitEntryHex": ""
+    },
+    {
+      "path": "crates/vize_canon/src/batch/type_checker/tests/recent_issues.rs",
+      "sha256": "6a1f30f6917251cd07ce70cc2f82115f36071b968c75839d631b8f58f1732958",
+      "body": "04-recent_issues.rs.txt",
+      "byteLength": 8915,
+      "gitEntryHex": "31303036343420626c6f622031396165373264643634616530633466643961343436643463393765366632633463666236313639096372617465732f76697a655f63616e6f6e2f7372632f62617463682f747970655f636865636b65722f74657374732f726563656e745f6973737565732e727300"
+    },
+    {
+      "path": "crates/vize_canon/src/batch/type_checker/tests/recent_issues/lexical_dollar_slots.rs",
+      "sha256": null,
+      "body": null,
+      "byteLength": null,
+      "gitEntryHex": ""
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/globals/instance.rs",
+      "sha256": "7dccba0abfd1d0699ac3153a667da6618d900d5d4af6d12c70980a27d748488f",
+      "body": "06-instance.rs.txt",
+      "byteLength": 12534,
+      "gitEntryHex": "31303036343420626c6f622065303239383336346666363737356632303763333930653761323831366236316365313266353666096372617465732f76697a655f63616e6f6e2f7372632f7669727475616c5f74732f73636f70652f676c6f62616c732f696e7374616e63652e727300"
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/globals/instance/tests.rs",
+      "sha256": "9297db7912cd70409c8081008c025ddaa7fe03cc8943f0f9fa639882f9a64c99",
+      "body": "07-tests.rs.txt",
+      "byteLength": 3770,
+      "gitEntryHex": "31303036343420626c6f622062313635653434383764313165643064343833336265313033663133363530366633353333343830096372617465732f76697a655f63616e6f6e2f7372632f7669727475616c5f74732f73636f70652f676c6f62616c732f696e7374616e63652f74657374732e727300"
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/globals/instance/tests/lexical_scope.rs",
+      "sha256": null,
+      "body": null,
+      "byteLength": null,
+      "gitEntryHex": ""
+    }
+  ]
+}

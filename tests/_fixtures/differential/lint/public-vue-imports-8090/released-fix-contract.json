@@ -1,0 +1,51 @@
+{
+  "schema": "vize.lint.public-vue-imports-released-fix-contract",
+  "version": 1,
+  "authority": "Complete six current-parent final-source and relinted whole-diagnostic expectations authored before old binary --fix observation. Derived from frozen byte-identical old producer unconditional from-clause Fix: each becomes the public vue package and therefore leaves no scoped-rule finding. This preserves proof of old unsafe rewrites without changing original corpus.",
+  "corpusSha256": "d52480f474c2a6dba9681aa620a0c5e6dd2597accd91ad286000230a1b9d2389",
+  "producerSha256": "fbcd56365c4cd6746078aaa39756f4d1e16f747bedf3fbd0a55dd1360b7e8e98",
+  "cases": [
+    {
+      "id": "original-element-plus",
+      "sourceSha256": "3e39e2d5e9c3657f7240c75e0f53acd60054a97ae3e4ff6aa6cee2185efe508a",
+      "diagnostics": [],
+      "fixedSource": "<script setup lang=\"ts\">\nimport { computed } from 'vue'\nimport { isString } from 'vue'\nimport ApiTyping from './vp-api-typing.vue'\n\nconst props = defineProps({\n  values: {\n    type: Array,\n    required: true,\n  },\n})\n\nconst processString = (s: unknown) => (isString(s) ? `'${s}'` : s)\n\nconst details = computed(() => props.values.map(processString).join(' | '))\n</script>\n\n<template>\n  <api-typing type=\"enum\" :details=\"details\" />\n</template>\n",
+      "fixedSourceSha256": "44adf90a1c14080a2a20b2a9d991f4e5232fa97553cf3fefe283bb9281eba84a"
+    },
+    {
+      "id": "private-alias",
+      "sourceSha256": "7db39bdbbada6a3a2f610fde2b5725a395ca904465d9079381640ca239f30a85",
+      "diagnostics": [],
+      "fixedSource": "<script setup lang=\"ts\">\nimport { isString as ref } from 'vue'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "ae9d658471b097c46640c61dc6cf65dba3d021e30d8877e7fd2205d97aa4b875"
+    },
+    {
+      "id": "public-ref",
+      "sourceSha256": "7cd672516f8c224a0f5097c29d3dae3fad4e88d18dd22a4529c148d735b06182",
+      "diagnostics": [],
+      "fixedSource": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "691c832922d447259f1e905c5a2cbae63b3cb85a505ad11932ebab0a3c3284f9"
+    },
+    {
+      "id": "mixed-named",
+      "sourceSha256": "6ef9a187e590776cc137d87a64fb6021be00285038e288fd822d8b63c96bf938",
+      "diagnostics": [],
+      "fixedSource": "<script setup lang=\"ts\">\nimport { ref, isString } from 'vue'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "9e4889f198de92c173366df00213a490e32d38a83bdedb148b537ea1316064cd"
+    },
+    {
+      "id": "namespace",
+      "sourceSha256": "525bc5629381a1e0fe9e7f39d561e5adc4c4640176f4a87e28f19c28d94fde83",
+      "diagnostics": [],
+      "fixedSource": "<script setup lang=\"ts\">\nimport * as Vue from 'vue'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "dde8603bdf52350a4ca7d32bc954151238bdb62e027e9d936d17ee2b63ab0909"
+    },
+    {
+      "id": "default-import",
+      "sourceSha256": "45715823143b25967725f710a651bcb63a95e7580acc9dc2885b4bbee147c85f",
+      "diagnostics": [],
+      "fixedSource": "<script setup lang=\"ts\">\nimport Vue from 'vue'\n</script>\n<template><div>ok</div></template>\n",
+      "fixedSourceSha256": "da825d11780704d1f506d197e5064e674a9b0710015d67590c38e322d4406ff9"
+    }
+  ]
+}

@@ -1,0 +1,3310 @@
+{
+  "schema": "vize.native-ssr.direct-child-output",
+  "qualification": "Genuine automatic Check 38190002082 source d00ff674 / physical 81eeac946, artifact 11720818473; complete whole-packet freeze awaiting peer approval and fresh qualification.",
+  "capture": {
+    "complete": true,
+    "modules": [
+      {
+        "code": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"@vue/server-renderer\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nconst value=1\n;\n    const __returned__ = {\n      get value() { return value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<i${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate($setup.value)}</i>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+        "filename": "NativeNestedOriginal.vue",
+        "links": [
+          {
+            "authored": {
+              "end": 27,
+              "start": 14
+            },
+            "generated": {
+              "end": 198,
+              "start": 185
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 25,
+              "start": 20
+            },
+            "generated": {
+              "end": 243,
+              "start": 238
+            },
+            "name": "value",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 25,
+              "start": 20
+            },
+            "generated": {
+              "end": 260,
+              "start": 255
+            },
+            "name": "value",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 62,
+              "start": 46
+            },
+            "generated": {
+              "end": 495,
+              "start": 494
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 56,
+              "start": 51
+            },
+            "generated": {
+              "end": 552,
+              "start": 540
+            },
+            "name": "value",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 62,
+              "start": 46
+            },
+            "generated": {
+              "end": 557,
+              "start": 556
+            },
+            "name": null,
+            "segment": true
+          }
+        ],
+        "mapText": "{\"file\":\"NativeNestedOriginal.vue\",\"mappings\":\";;;;AAAc;;;UAAMA,iBAAAA;;;;;;;;UAA0B,8CAAKA,gBAAL\",\"names\":[\"value\"],\"sources\":[\"NativeNestedOriginal.vue\"],\"sourcesContent\":[\"<script setup>const value=1</script><template><i>{{value}}</i></template>\"],\"version\":3}",
+        "mapValue": {
+          "file": "NativeNestedOriginal.vue",
+          "mappings": ";;;;AAAc;;;UAAMA,iBAAAA;;;;;;;;UAA0B,8CAAKA,gBAAL",
+          "names": ["value"],
+          "sources": ["NativeNestedOriginal.vue"],
+          "sourcesContent": [
+            "<script setup>const value=1</script><template><i>{{value}}</i></template>"
+          ],
+          "version": 3
+        },
+        "name": "original-nested",
+        "noLinksCode": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"@vue/server-renderer\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nconst value=1\n;\n    const __returned__ = {\n      get value() { return value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<i${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate($setup.value)}</i>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+        "setup": {
+          "annotations": [],
+          "bindings": [
+            {
+              "id": 0,
+              "initializer": "PrimitiveLiteral",
+              "kind": "Const",
+              "name": "value",
+              "span": {
+                "end": 25,
+                "start": 20
+              }
+            }
+          ],
+          "handlers": [],
+          "interpolations": [
+            {
+              "decoded": "value",
+              "node": 1,
+              "preparedSpan": {
+                "end": 56,
+                "start": 51
+              },
+              "raw": "value",
+              "reads": [
+                {
+                  "binding": 0,
+                  "declarationScope": 1,
+                  "decodedSpan": {
+                    "end": 5,
+                    "start": 0
+                  },
+                  "kind": "SetupConst",
+                  "name": "value",
+                  "span": {
+                    "end": 56,
+                    "start": 51
+                  }
+                }
+              ],
+              "regionScope": 1,
+              "span": {
+                "end": 56,
+                "start": 51
+              }
+            }
+          ],
+          "rawProgram": "const value=1",
+          "scope": 1,
+          "sourceSpan": {
+            "end": 27,
+            "start": 14
+          },
+          "unit": 0
+        },
+        "source": "<script setup>const value=1</script><template><i>{{value}}</i></template>"
+      },
+      {
+        "code": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"@vue/server-renderer\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet value='initial & <one>'\n;\n    const __returned__ = {\n      get value() { return value },\n      set value(__value) { value = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate($setup.value)}</div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+        "filename": "NativeNestedLet.vue",
+        "links": [
+          {
+            "authored": {
+              "end": 41,
+              "start": 14
+            },
+            "generated": {
+              "end": 212,
+              "start": 185
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 23,
+              "start": 18
+            },
+            "generated": {
+              "end": 257,
+              "start": 252
+            },
+            "name": "value",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 23,
+              "start": 18
+            },
+            "generated": {
+              "end": 274,
+              "start": 269
+            },
+            "name": "value",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 23,
+              "start": 18
+            },
+            "generated": {
+              "end": 293,
+              "start": 288
+            },
+            "name": "value",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 23,
+              "start": 18
+            },
+            "generated": {
+              "end": 310,
+              "start": 305
+            },
+            "name": "value",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 80,
+              "start": 60
+            },
+            "generated": {
+              "end": 557,
+              "start": 554
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 72,
+              "start": 67
+            },
+            "generated": {
+              "end": 614,
+              "start": 602
+            },
+            "name": "value",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 80,
+              "start": 60
+            },
+            "generated": {
+              "end": 621,
+              "start": 618
+            },
+            "name": null,
+            "segment": true
+          }
+        ],
+        "mapText": "{\"file\":\"NativeNestedLet.vue\",\"mappings\":\";;;;AAAc;;;UAAIA,iBAAAA;UAAAA,iBAAAA;;;;;;;;UAA0C,gDAAOA,gBAAP\",\"names\":[\"value\"],\"sources\":[\"NativeNestedLet.vue\"],\"sourcesContent\":[\"<script setup>let value='initial & <one>'</script><template><div>{{value}}</div></template>\"],\"version\":3}",
+        "mapValue": {
+          "file": "NativeNestedLet.vue",
+          "mappings": ";;;;AAAc;;;UAAIA,iBAAAA;UAAAA,iBAAAA;;;;;;;;UAA0C,gDAAOA,gBAAP",
+          "names": ["value"],
+          "sources": ["NativeNestedLet.vue"],
+          "sourcesContent": [
+            "<script setup>let value='initial & <one>'</script><template><div>{{value}}</div></template>"
+          ],
+          "version": 3
+        },
+        "name": "nested-let-js",
+        "noLinksCode": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"@vue/server-renderer\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet value='initial & <one>'\n;\n    const __returned__ = {\n      get value() { return value },\n      set value(__value) { value = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate($setup.value)}</div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+        "setup": {
+          "annotations": [],
+          "bindings": [
+            {
+              "id": 0,
+              "initializer": "PrimitiveLiteral",
+              "kind": "Let",
+              "name": "value",
+              "span": {
+                "end": 23,
+                "start": 18
+              }
+            }
+          ],
+          "handlers": [],
+          "interpolations": [
+            {
+              "decoded": "value",
+              "node": 1,
+              "preparedSpan": {
+                "end": 72,
+                "start": 67
+              },
+              "raw": "value",
+              "reads": [
+                {
+                  "binding": 0,
+                  "declarationScope": 1,
+                  "decodedSpan": {
+                    "end": 5,
+                    "start": 0
+                  },
+                  "kind": "SetupLet",
+                  "name": "value",
+                  "span": {
+                    "end": 72,
+                    "start": 67
+                  }
+                }
+              ],
+              "regionScope": 1,
+              "span": {
+                "end": 72,
+                "start": 67
+              }
+            }
+          ],
+          "rawProgram": "let value='initial & <one>'",
+          "scope": 1,
+          "sourceSpan": {
+            "end": 41,
+            "start": 14
+          },
+          "unit": 0
+        },
+        "source": "<script setup>let value='initial & <one>'</script><template><div>{{value}}</div></template>"
+      },
+      {
+        "code": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"@vue/server-renderer\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet value=1\n;\n    const __returned__ = {\n      get value() { return value },\n      set value(__value) { value = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate($setup.value)}</span>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+        "filename": "NativeNestedTs.vue",
+        "links": [
+          {
+            "authored": {
+              "end": 33,
+              "start": 24
+            },
+            "generated": {
+              "end": 194,
+              "start": 185
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 42,
+              "start": 40
+            },
+            "generated": {
+              "end": 196,
+              "start": 194
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 33,
+              "start": 28
+            },
+            "generated": {
+              "end": 241,
+              "start": 236
+            },
+            "name": "value",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 33,
+              "start": 28
+            },
+            "generated": {
+              "end": 258,
+              "start": 253
+            },
+            "name": "value",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 33,
+              "start": 28
+            },
+            "generated": {
+              "end": 277,
+              "start": 272
+            },
+            "name": "value",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 33,
+              "start": 28
+            },
+            "generated": {
+              "end": 294,
+              "start": 289
+            },
+            "name": "value",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 83,
+              "start": 61
+            },
+            "generated": {
+              "end": 542,
+              "start": 538
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 74,
+              "start": 69
+            },
+            "generated": {
+              "end": 599,
+              "start": 587
+            },
+            "name": "value",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 83,
+              "start": 61
+            },
+            "generated": {
+              "end": 607,
+              "start": 603
+            },
+            "name": null,
+            "segment": true
+          }
+        ],
+        "mapText": "{\"file\":\"NativeNestedTs.vue\",\"mappings\":\";;;;AAAwB,SAAgB;;;UAAZA,iBAAAA;UAAAA,iBAAAA;;;;;;;;UAAiC,iDAAQA,gBAAR\",\"names\":[\"value\"],\"sources\":[\"NativeNestedTs.vue\"],\"sourcesContent\":[\"<script setup lang='ts'>let value:number=1</script><template><span>{{value}}</span></template>\"],\"version\":3}",
+        "mapValue": {
+          "file": "NativeNestedTs.vue",
+          "mappings": ";;;;AAAwB,SAAgB;;;UAAZA,iBAAAA;UAAAA,iBAAAA;;;;;;;;UAAiC,iDAAQA,gBAAR",
+          "names": ["value"],
+          "sources": ["NativeNestedTs.vue"],
+          "sourcesContent": [
+            "<script setup lang='ts'>let value:number=1</script><template><span>{{value}}</span></template>"
+          ],
+          "version": 3
+        },
+        "name": "nested-ts-let",
+        "noLinksCode": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"@vue/server-renderer\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet value=1\n;\n    const __returned__ = {\n      get value() { return value },\n      set value(__value) { value = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate($setup.value)}</span>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+        "setup": {
+          "annotations": [
+            {
+              "kind": "Number",
+              "span": {
+                "end": 40,
+                "start": 33
+              }
+            }
+          ],
+          "bindings": [
+            {
+              "id": 0,
+              "initializer": "PrimitiveLiteral",
+              "kind": "Let",
+              "name": "value",
+              "span": {
+                "end": 33,
+                "start": 28
+              }
+            }
+          ],
+          "handlers": [],
+          "interpolations": [
+            {
+              "decoded": "value",
+              "node": 1,
+              "preparedSpan": {
+                "end": 74,
+                "start": 69
+              },
+              "raw": "value",
+              "reads": [
+                {
+                  "binding": 0,
+                  "declarationScope": 1,
+                  "decodedSpan": {
+                    "end": 5,
+                    "start": 0
+                  },
+                  "kind": "SetupLet",
+                  "name": "value",
+                  "span": {
+                    "end": 74,
+                    "start": 69
+                  }
+                }
+              ],
+              "regionScope": 1,
+              "span": {
+                "end": 74,
+                "start": 69
+              }
+            }
+          ],
+          "rawProgram": "let value:number=1",
+          "scope": 1,
+          "sourceSpan": {
+            "end": 42,
+            "start": 24
+          },
+          "unit": 0
+        },
+        "source": "<script setup lang='ts'>let value:number=1</script><template><span>{{value}}</span></template>"
+      },
+      {
+        "code": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"@vue/server-renderer\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nvar 雪='🦀 & <one>'\n;\n    const __returned__ = {\n      get 雪() { return 雪 },\n      set 雪(__value) { 雪 = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<section${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate($setup.雪)}</section>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+        "filename": "NativeNestedUnicode.vue",
+        "links": [
+          {
+            "authored": {
+              "end": 36,
+              "start": 14
+            },
+            "generated": {
+              "end": 207,
+              "start": 185
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 21,
+              "start": 18
+            },
+            "generated": {
+              "end": 250,
+              "start": 247
+            },
+            "name": "雪",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 21,
+              "start": 18
+            },
+            "generated": {
+              "end": 265,
+              "start": 262
+            },
+            "name": "雪",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 21,
+              "start": 18
+            },
+            "generated": {
+              "end": 282,
+              "start": 279
+            },
+            "name": "雪",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 21,
+              "start": 18
+            },
+            "generated": {
+              "end": 297,
+              "start": 294
+            },
+            "name": "雪",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 81,
+              "start": 55
+            },
+            "generated": {
+              "end": 548,
+              "start": 541
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 69,
+              "start": 66
+            },
+            "generated": {
+              "end": 603,
+              "start": 593
+            },
+            "name": "雪",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 81,
+              "start": 55
+            },
+            "generated": {
+              "end": 614,
+              "start": 607
+            },
+            "name": null,
+            "segment": true
+          }
+        ],
+        "mapText": "{\"file\":\"NativeNestedUnicode.vue\",\"mappings\":\";;;;AAAc;;;UAAIA,aAAAA;UAAAA,aAAAA;;;;;;;;UAAiC,oDAAWA,YAAX\",\"names\":[\"雪\"],\"sources\":[\"NativeNestedUnicode.vue\"],\"sourcesContent\":[\"<script setup>var 雪='🦀 & <one>'</script><template><section>{{雪}}</section></template>\"],\"version\":3}",
+        "mapValue": {
+          "file": "NativeNestedUnicode.vue",
+          "mappings": ";;;;AAAc;;;UAAIA,aAAAA;UAAAA,aAAAA;;;;;;;;UAAiC,oDAAWA,YAAX",
+          "names": ["雪"],
+          "sources": ["NativeNestedUnicode.vue"],
+          "sourcesContent": [
+            "<script setup>var 雪='🦀 & <one>'</script><template><section>{{雪}}</section></template>"
+          ],
+          "version": 3
+        },
+        "name": "nested-unicode-var",
+        "noLinksCode": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"@vue/server-renderer\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nvar 雪='🦀 & <one>'\n;\n    const __returned__ = {\n      get 雪() { return 雪 },\n      set 雪(__value) { 雪 = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<section${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate($setup.雪)}</section>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+        "setup": {
+          "annotations": [],
+          "bindings": [
+            {
+              "id": 0,
+              "initializer": "PrimitiveLiteral",
+              "kind": "Var",
+              "name": "雪",
+              "span": {
+                "end": 21,
+                "start": 18
+              }
+            }
+          ],
+          "handlers": [],
+          "interpolations": [
+            {
+              "decoded": "雪",
+              "node": 1,
+              "preparedSpan": {
+                "end": 69,
+                "start": 66
+              },
+              "raw": "雪",
+              "reads": [
+                {
+                  "binding": 0,
+                  "declarationScope": 1,
+                  "decodedSpan": {
+                    "end": 3,
+                    "start": 0
+                  },
+                  "kind": "SetupLet",
+                  "name": "雪",
+                  "span": {
+                    "end": 69,
+                    "start": 66
+                  }
+                }
+              ],
+              "regionScope": 1,
+              "span": {
+                "end": 69,
+                "start": 66
+              }
+            }
+          ],
+          "rawProgram": "var 雪='🦀 & <one>'",
+          "scope": 1,
+          "sourceSpan": {
+            "end": 36,
+            "start": 14
+          },
+          "unit": 0
+        },
+        "source": "<script setup>var 雪='🦀 & <one>'</script><template><section>{{雪}}</section></template>"
+      },
+      {
+        "code": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nconst value='雪🌸 & <one>'\n;\n    const __returned__ = {\n      get value() { return value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({\n    class: \"a b\",\n    title: \"&雪\"\n  }, _attrs))}>${_ssrInterpolate($setup.value)}</div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+        "filename": "NativeNestedAttrs.vue",
+        "links": [
+          {
+            "authored": {
+              "end": 43,
+              "start": 14
+            },
+            "generated": {
+              "end": 262,
+              "start": 233
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 25,
+              "start": 20
+            },
+            "generated": {
+              "end": 307,
+              "start": 302
+            },
+            "name": "value",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 25,
+              "start": 20
+            },
+            "generated": {
+              "end": 324,
+              "start": 319
+            },
+            "name": "value",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 114,
+              "start": 62
+            },
+            "generated": {
+              "end": 561,
+              "start": 558
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 81,
+              "start": 67
+            },
+            "generated": {
+              "end": 602,
+              "start": 597
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 81,
+              "start": 67
+            },
+            "generated": {
+              "end": 609,
+              "start": 604
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 98,
+              "start": 82
+            },
+            "generated": {
+              "end": 620,
+              "start": 615
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 98,
+              "start": 82
+            },
+            "generated": {
+              "end": 628,
+              "start": 622
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 106,
+              "start": 101
+            },
+            "generated": {
+              "end": 674,
+              "start": 662
+            },
+            "name": "value",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 114,
+              "start": 62
+            },
+            "generated": {
+              "end": 681,
+              "start": 678
+            },
+            "name": null,
+            "segment": true
+          }
+        ],
+        "mapText": "{\"file\":\"NativeNestedAttrs.vue\",\"mappings\":\";;;;;AAAc;;;UAAMA,iBAAAA;;;;;;;;UAAsC;IAAK,OAAA;IAAe,OAAA;iCAAiBA,gBAArC\",\"names\":[\"value\"],\"sources\":[\"NativeNestedAttrs.vue\"],\"sourcesContent\":[\"<script setup>const value='雪🌸 & <one>'</script><template><div class=' a  b ' title='&amp;雪'>{{value}}</div></template>\"],\"version\":3}",
+        "mapValue": {
+          "file": "NativeNestedAttrs.vue",
+          "mappings": ";;;;;AAAc;;;UAAMA,iBAAAA;;;;;;;;UAAsC;IAAK,OAAA;IAAe,OAAA;iCAAiBA,gBAArC",
+          "names": ["value"],
+          "sources": ["NativeNestedAttrs.vue"],
+          "sourcesContent": [
+            "<script setup>const value='雪🌸 & <one>'</script><template><div class=' a  b ' title='&amp;雪'>{{value}}</div></template>"
+          ],
+          "version": 3
+        },
+        "name": "nested-const-attrs",
+        "noLinksCode": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nconst value='雪🌸 & <one>'\n;\n    const __returned__ = {\n      get value() { return value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({\n    class: \"a b\",\n    title: \"&雪\"\n  }, _attrs))}>${_ssrInterpolate($setup.value)}</div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+        "setup": {
+          "annotations": [],
+          "bindings": [
+            {
+              "id": 0,
+              "initializer": "PrimitiveLiteral",
+              "kind": "Const",
+              "name": "value",
+              "span": {
+                "end": 25,
+                "start": 20
+              }
+            }
+          ],
+          "handlers": [],
+          "interpolations": [
+            {
+              "decoded": "value",
+              "node": 1,
+              "preparedSpan": {
+                "end": 106,
+                "start": 101
+              },
+              "raw": "value",
+              "reads": [
+                {
+                  "binding": 0,
+                  "declarationScope": 1,
+                  "decodedSpan": {
+                    "end": 5,
+                    "start": 0
+                  },
+                  "kind": "SetupConst",
+                  "name": "value",
+                  "span": {
+                    "end": 106,
+                    "start": 101
+                  }
+                }
+              ],
+              "regionScope": 1,
+              "span": {
+                "end": 106,
+                "start": 101
+              }
+            }
+          ],
+          "rawProgram": "const value='雪🌸 & <one>'",
+          "scope": 1,
+          "sourceSpan": {
+            "end": 43,
+            "start": 14
+          },
+          "unit": 0
+        },
+        "source": "<script setup>const value='雪🌸 & <one>'</script><template><div class=' a  b ' title='&amp;雪'>{{value}}</div></template>"
+      },
+      {
+        "code": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"@vue/server-renderer\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nconst idle=0\n;\n    const __returned__ = {\n      get idle() { return idle },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<i${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(null)}</i>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+        "filename": "NativeNestedLiteral.vue",
+        "links": [
+          {
+            "authored": {
+              "end": 34,
+              "start": 24
+            },
+            "generated": {
+              "end": 195,
+              "start": 185
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 43,
+              "start": 41
+            },
+            "generated": {
+              "end": 197,
+              "start": 195
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 34,
+              "start": 30
+            },
+            "generated": {
+              "end": 241,
+              "start": 237
+            },
+            "name": "idle",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 34,
+              "start": 30
+            },
+            "generated": {
+              "end": 257,
+              "start": 253
+            },
+            "name": "idle",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 77,
+              "start": 62
+            },
+            "generated": {
+              "end": 492,
+              "start": 491
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 71,
+              "start": 67
+            },
+            "generated": {
+              "end": 541,
+              "start": 537
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 77,
+              "start": 62
+            },
+            "generated": {
+              "end": 546,
+              "start": 545
+            },
+            "name": null,
+            "segment": true
+          }
+        ],
+        "mapText": "{\"file\":\"NativeNestedLiteral.vue\",\"mappings\":\";;;;AAAwB,UAAiB;;;UAAXA,gBAAAA;;;;;;;;UAAgC,8CAAK,QAAL\",\"names\":[\"idle\"],\"sources\":[\"NativeNestedLiteral.vue\"],\"sourcesContent\":[\"<script setup lang='ts'>const idle:number=0</script><template><i>{{null}}</i></template>\"],\"version\":3}",
+        "mapValue": {
+          "file": "NativeNestedLiteral.vue",
+          "mappings": ";;;;AAAwB,UAAiB;;;UAAXA,gBAAAA;;;;;;;;UAAgC,8CAAK,QAAL",
+          "names": ["idle"],
+          "sources": ["NativeNestedLiteral.vue"],
+          "sourcesContent": [
+            "<script setup lang='ts'>const idle:number=0</script><template><i>{{null}}</i></template>"
+          ],
+          "version": 3
+        },
+        "name": "nested-ts-literal",
+        "noLinksCode": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"@vue/server-renderer\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nconst idle=0\n;\n    const __returned__ = {\n      get idle() { return idle },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<i${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(null)}</i>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+        "setup": {
+          "annotations": [
+            {
+              "kind": "Number",
+              "span": {
+                "end": 41,
+                "start": 34
+              }
+            }
+          ],
+          "bindings": [
+            {
+              "id": 0,
+              "initializer": "PrimitiveLiteral",
+              "kind": "Const",
+              "name": "idle",
+              "span": {
+                "end": 34,
+                "start": 30
+              }
+            }
+          ],
+          "handlers": [],
+          "interpolations": [
+            {
+              "decoded": "null",
+              "node": 1,
+              "preparedSpan": {
+                "end": 71,
+                "start": 67
+              },
+              "raw": "null",
+              "reads": [],
+              "regionScope": 1,
+              "span": {
+                "end": 71,
+                "start": 67
+              }
+            }
+          ],
+          "rawProgram": "const idle:number=0",
+          "scope": 1,
+          "sourceSpan": {
+            "end": 43,
+            "start": 24
+          },
+          "unit": 0
+        },
+        "source": "<script setup lang='ts'>const idle:number=0</script><template><i>{{null}}</i></template>"
+      },
+      {
+        "code": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"@vue/server-renderer\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nconst idle=0\n;\n    const __returned__ = {\n      get idle() { return idle },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate('&<雪>')}</span>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+        "filename": "NativeNestedEscape.vue",
+        "links": [
+          {
+            "authored": {
+              "end": 26,
+              "start": 14
+            },
+            "generated": {
+              "end": 197,
+              "start": 185
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 24,
+              "start": 20
+            },
+            "generated": {
+              "end": 241,
+              "start": 237
+            },
+            "name": "idle",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 24,
+              "start": 20
+            },
+            "generated": {
+              "end": 257,
+              "start": 253
+            },
+            "name": "idle",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 72,
+              "start": 45
+            },
+            "generated": {
+              "end": 495,
+              "start": 491
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 62,
+              "start": 54
+            },
+            "generated": {
+              "end": 548,
+              "start": 540
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 72,
+              "start": 45
+            },
+            "generated": {
+              "end": 556,
+              "start": 552
+            },
+            "name": null,
+            "segment": true
+          }
+        ],
+        "mapText": "{\"file\":\"NativeNestedEscape.vue\",\"mappings\":\";;;;AAAc;;;UAAMA,gBAAAA;;;;;;;;UAAyB,iDAAS,UAAT\",\"names\":[\"idle\"],\"sources\":[\"NativeNestedEscape.vue\"],\"sourcesContent\":[\"<script setup>const idle=0</script><template><span>{{ '&<雪>' }}</span></template>\"],\"version\":3}",
+        "mapValue": {
+          "file": "NativeNestedEscape.vue",
+          "mappings": ";;;;AAAc;;;UAAMA,gBAAAA;;;;;;;;UAAyB,iDAAS,UAAT",
+          "names": ["idle"],
+          "sources": ["NativeNestedEscape.vue"],
+          "sourcesContent": [
+            "<script setup>const idle=0</script><template><span>{{ '&<雪>' }}</span></template>"
+          ],
+          "version": 3
+        },
+        "name": "nested-literal-escaping",
+        "noLinksCode": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"@vue/server-renderer\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nconst idle=0\n;\n    const __returned__ = {\n      get idle() { return idle },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate('&<雪>')}</span>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+        "setup": {
+          "annotations": [],
+          "bindings": [
+            {
+              "id": 0,
+              "initializer": "PrimitiveLiteral",
+              "kind": "Const",
+              "name": "idle",
+              "span": {
+                "end": 24,
+                "start": 20
+              }
+            }
+          ],
+          "handlers": [],
+          "interpolations": [
+            {
+              "decoded": "'&<雪>'",
+              "node": 1,
+              "preparedSpan": {
+                "end": 62,
+                "start": 54
+              },
+              "raw": " '&<雪>' ",
+              "reads": [],
+              "regionScope": 1,
+              "span": {
+                "end": 63,
+                "start": 53
+              }
+            }
+          ],
+          "rawProgram": "const idle=0",
+          "scope": 1,
+          "sourceSpan": {
+            "end": 26,
+            "start": 14
+          },
+          "unit": 0
+        },
+        "source": "<script setup>const idle=0</script><template><span>{{ '&<雪>' }}</span></template>"
+      },
+      {
+        "code": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"@vue/server-renderer\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nconst value=42\n;\n    const __returned__ = {\n      get value() { return value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(/*retained*/ $setup.value /*tail*/)}</div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+        "filename": "NativeNestedComments.vue",
+        "links": [
+          {
+            "authored": {
+              "end": 28,
+              "start": 14
+            },
+            "generated": {
+              "end": 199,
+              "start": 185
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 25,
+              "start": 20
+            },
+            "generated": {
+              "end": 244,
+              "start": 239
+            },
+            "name": "value",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 25,
+              "start": 20
+            },
+            "generated": {
+              "end": 261,
+              "start": 256
+            },
+            "name": "value",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 89,
+              "start": 47
+            },
+            "generated": {
+              "end": 498,
+              "start": 495
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 67,
+              "start": 54
+            },
+            "generated": {
+              "end": 556,
+              "start": 543
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 72,
+              "start": 67
+            },
+            "generated": {
+              "end": 568,
+              "start": 556
+            },
+            "name": "value",
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 81,
+              "start": 72
+            },
+            "generated": {
+              "end": 577,
+              "start": 568
+            },
+            "name": null,
+            "segment": true
+          },
+          {
+            "authored": {
+              "end": 89,
+              "start": 47
+            },
+            "generated": {
+              "end": 584,
+              "start": 581
+            },
+            "name": null,
+            "segment": true
+          }
+        ],
+        "mapText": "{\"file\":\"NativeNestedComments.vue\",\"mappings\":\";;;;AAAc;;;UAAMA,iBAAAA;;;;;;;;UAA2B,gDAAO,aAAaA,YAAK,aAAzB\",\"names\":[\"value\"],\"sources\":[\"NativeNestedComments.vue\"],\"sourcesContent\":[\"<script setup>const value=42</script><template><div>{{/*retained*/ value /*tail*/}}</div></template>\"],\"version\":3}",
+        "mapValue": {
+          "file": "NativeNestedComments.vue",
+          "mappings": ";;;;AAAc;;;UAAMA,iBAAAA;;;;;;;;UAA2B,gDAAO,aAAaA,YAAK,aAAzB",
+          "names": ["value"],
+          "sources": ["NativeNestedComments.vue"],
+          "sourcesContent": [
+            "<script setup>const value=42</script><template><div>{{/*retained*/ value /*tail*/}}</div></template>"
+          ],
+          "version": 3
+        },
+        "name": "nested-retained-comments",
+        "noLinksCode": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"@vue/server-renderer\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nconst value=42\n;\n    const __returned__ = {\n      get value() { return value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(/*retained*/ $setup.value /*tail*/)}</div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+        "setup": {
+          "annotations": [],
+          "bindings": [
+            {
+              "id": 0,
+              "initializer": "PrimitiveLiteral",
+              "kind": "Const",
+              "name": "value",
+              "span": {
+                "end": 25,
+                "start": 20
+              }
+            }
+          ],
+          "handlers": [],
+          "interpolations": [
+            {
+              "decoded": "/*retained*/ value /*tail*/",
+              "node": 1,
+              "preparedSpan": {
+                "end": 81,
+                "start": 54
+              },
+              "raw": "/*retained*/ value /*tail*/",
+              "reads": [
+                {
+                  "binding": 0,
+                  "declarationScope": 1,
+                  "decodedSpan": {
+                    "end": 18,
+                    "start": 13
+                  },
+                  "kind": "SetupConst",
+                  "name": "value",
+                  "span": {
+                    "end": 72,
+                    "start": 67
+                  }
+                }
+              ],
+              "regionScope": 1,
+              "span": {
+                "end": 81,
+                "start": 54
+              }
+            }
+          ],
+          "rawProgram": "const value=42",
+          "scope": 1,
+          "sourceSpan": {
+            "end": 28,
+            "start": 14
+          },
+          "unit": 0
+        },
+        "source": "<script setup>const value=42</script><template><div>{{/*retained*/ value /*tail*/}}</div></template>"
+      }
+    ],
+    "refusals": [
+      {
+        "completeModule": false,
+        "name": "adjacent-text",
+        "reason": "Ssr(SsrError { node: Some(NodeId(2)), span: Span { start: 55, end: 64 }, kind: Unsupported(Operation) })",
+        "source": "<script setup>const value=1</script><template><i>before{{value}}</i></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "adjacent-interpolations",
+        "reason": "Ssr(SsrError { node: Some(NodeId(1)), span: Span { start: 49, end: 58 }, kind: Unsupported(Operation) })",
+        "source": "<script setup>const value=1</script><template><i>{{value}}{{value}}</i></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "deeper",
+        "reason": "Ssr(SsrError { node: Some(NodeId(2)), span: Span { start: 54, end: 63 }, kind: Unsupported(Operation) })",
+        "source": "<script setup>const value=1</script><template><div><i>{{value}}</i></div></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "suffix-root",
+        "reason": "Ssr(SsrError { node: Some(NodeId(1)), span: Span { start: 49, end: 58 }, kind: Unsupported(Operation) })",
+        "source": "<script setup>const value=1</script><template><i>{{value}}</i><b/></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "prefix-root",
+        "reason": "Ssr(SsrError { node: Some(NodeId(2)), span: Span { start: 53, end: 62 }, kind: Unsupported(Operation) })",
+        "source": "<script setup>const value=1</script><template><b/><i>{{value}}</i></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "two-dynamic-roots",
+        "reason": "Ssr(SsrError { node: Some(NodeId(3)), span: Span { start: 65, end: 74 }, kind: Unsupported(Operation) })",
+        "source": "<script setup>const value=1</script><template><i>{{value}}</i><i>{{value}}</i></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "suffix-comment",
+        "reason": "Ssr(SsrError { node: Some(NodeId(1)), span: Span { start: 49, end: 58 }, kind: Unsupported(Operation) })",
+        "source": "<script setup>const value=1</script><template><i>{{value}}</i><!--suffix--></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "prefix-comment",
+        "reason": "Ssr(SsrError { node: Some(NodeId(2)), span: Span { start: 62, end: 71 }, kind: Unsupported(Operation) })",
+        "source": "<script setup>const value=1</script><template><!--prefix--><i>{{value}}</i></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "suffix-void-root",
+        "reason": "Ssr(SsrError { node: Some(NodeId(1)), span: Span { start: 49, end: 58 }, kind: Unsupported(Operation) })",
+        "source": "<script setup>const value=1</script><template><i>{{value}}</i><br></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "invalid-void-child",
+        "reason": "Lowering(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 64 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 64 }, kind: UnsupportedChild }) })",
+        "source": "<script setup>const value=1</script><template><br>{{value}}</br></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "component",
+        "reason": "Lowering(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 72 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 72 }, kind: UnsupportedChild }) })",
+        "source": "<script setup>const value=1</script><template><Widget>{{value}}</Widget></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "compound",
+        "reason": "Ssr(SsrError { node: Some(NodeId(1)), span: Span { start: 49, end: 60 }, kind: Unsupported(Expression) })",
+        "source": "<script setup>const value=1</script><template><i>{{value+1}}</i></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "member",
+        "reason": "Ssr(SsrError { node: Some(NodeId(1)), span: Span { start: 49, end: 69 }, kind: Unsupported(Expression) })",
+        "source": "<script setup>const value=1</script><template><i>{{value.toString()}}</i></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "unresolved",
+        "reason": "Lowering(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 64 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 64 }, kind: Artifact(InvalidSpan { node: None, span: Span { start: 51, end: 58 } }) }) })",
+        "source": "<script setup>const value=1</script><template><i>{{missing}}</i></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "for",
+        "reason": "Ssr(SsrError { node: Some(NodeId(0)), span: Span { start: 46, end: 83 }, kind: Unsupported(Operation) })",
+        "source": "<script setup>const value=1</script><template><i v-for='item in value'>{{item}}</i></template>"
+      }
+    ],
+    "schema": "vize.native-ssr.direct-child-capture"
+  },
+  "runtime": {
+    "schema": "vize.native-ssr.direct-child-runtime",
+    "complete": true,
+    "rows": [
+      {
+        "name": "original-nested",
+        "sourceSha256": "e6a9b947e5b389c89c8433f7d689e573e3ca6cda7e522623f381e52149010cca",
+        "codeSha256": "b21314377145af4e6bd58e0a97edfb5bee47e9c06c56c84684f20aff17cc6e3e",
+        "mapSha256": "9345318bae832ffbb064566d58384b3548533b8d52d692516729095a38061fa2",
+        "mapValueSha256": "9345318bae832ffbb064566d58384b3548533b8d52d692516729095a38061fa2",
+        "linksSha256": "8d6bf0dcf4fe174c7c634245e12aabae5c9b2ca63c73deb9a76a25add1a1b4b0",
+        "setupSha256": "56e08ca03ea538baef122b3688e22770c9409aa01974102715915851c2009f54",
+        "inline": {
+          "code": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst value=1\nconst _sfc_main = {\n  __name: 'NativeNestedOriginal',\n  __ssrInlineRender: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`<i${\n    _ssrRenderAttrs(_attrs)\n  }>${\n    _ssrInterpolate(value)\n  }</i>`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeNestedOriginal.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": ["/native-ssr/NativeNestedOriginal.vue"],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;oBAAyB,KAAK",
+            "sourcesContent": [
+              "<script setup>const value=1</script><template><i>{{value}}</i></template>"
+            ]
+          },
+          "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "dependencies": []
+        },
+        "external": {
+          "code": "const value=1\nconst _sfc_main = {\n  __name: 'NativeNestedOriginal',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst __returned__ = { value }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}\nimport { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<i${\n    _ssrRenderAttrs(_attrs)\n  }>${\n    _ssrInterpolate($setup.value)\n  }</i>`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeNestedOriginal.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender],['__file',\"NativeNestedOriginal.vue\"]])",
+          "map": {
+            "version": 3,
+            "names": [],
+            "sources": ["/native-ssr/NativeNestedOriginal.vue"],
+            "sourcesContent": [
+              "<script setup>const value=1</script><template><i>{{value}}</i></template>"
+            ],
+            "mappings": "AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;;;;;;;;;oBAAyB,YAAK",
+            "ignoreList": []
+          },
+          "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "dependencies": []
+        },
+        "bindings": [
+          {
+            "name": "value",
+            "kind": "Const"
+          }
+        ],
+        "native": [
+          {
+            "initial": {
+              "html": "<i>1</i>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": 1
+              },
+              "stateValues": {
+                "value": 1
+              },
+              "direct": "<i>1</i>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<i id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>1</i>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": 1
+              },
+              "stateValues": {
+                "value": 1
+              },
+              "direct": "<i id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>1</i>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<i class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">1</i>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": 1
+              },
+              "stateValues": {
+                "value": 1
+              },
+              "direct": "<i class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">1</i>"
+            }
+          }
+        ],
+        "officialInline": [
+          {
+            "html": "<i>1</i>",
+            "modules": ["NativeNestedOriginal.vue"],
+            "warnings": [],
+            "setupInvocations": 1
+          },
+          {
+            "html": "<i id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>1</i>",
+            "modules": ["NativeNestedOriginal.vue"],
+            "warnings": [],
+            "setupInvocations": 1
+          },
+          {
+            "html": "<i class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">1</i>",
+            "modules": ["NativeNestedOriginal.vue"],
+            "warnings": [],
+            "setupInvocations": 1
+          }
+        ],
+        "officialExternal": [
+          {
+            "initial": {
+              "html": "<i>1</i>",
+              "modules": ["NativeNestedOriginal.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": 1
+              },
+              "stateValues": {
+                "value": 1
+              },
+              "direct": "<i>1</i>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<i id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>1</i>",
+              "modules": ["NativeNestedOriginal.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": 1
+              },
+              "stateValues": {
+                "value": 1
+              },
+              "direct": "<i id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>1</i>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<i class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">1</i>",
+              "modules": ["NativeNestedOriginal.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": 1
+              },
+              "stateValues": {
+                "value": 1
+              },
+              "direct": "<i class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">1</i>"
+            }
+          }
+        ]
+      },
+      {
+        "name": "nested-let-js",
+        "sourceSha256": "681cfc2a78b9db3becb5765feade236b23056b1c57343efdc4fde44cd1d21a2a",
+        "codeSha256": "02e66b28913c6b3a340c8b018c01d44ba0baa7cf17b5f9f9da2a265b4e5cb919",
+        "mapSha256": "385bad975dd7065ac9b392ff2119b40a003943caef261fdbc9fa425911972403",
+        "mapValueSha256": "385bad975dd7065ac9b392ff2119b40a003943caef261fdbc9fa425911972403",
+        "linksSha256": "e9f3e157906ff68859169ee10ea7e68245708dd50a38958613fb736d1533a2d4",
+        "setupSha256": "56323eba6722dd04116ee6dc99cf9333cd95150bd6874caaf5470d9b43e98b51",
+        "inline": {
+          "code": "import { unref as _unref } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\n\nconst _sfc_main = {\n  __name: 'NativeNestedLet',\n  __ssrInlineRender: true,\n  setup(__props) {\nlet value='initial & <one>'\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`<div${\n    _ssrRenderAttrs(_attrs)\n  }>${\n    _ssrInterpolate(_unref(value))\n  }</div>`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeNestedLet.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": ["/native-ssr/NativeNestedLet.vue"],
+            "names": [],
+            "mappings": ";;;;;;;;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;oBAA2B,aAAK",
+            "sourcesContent": [
+              "<script setup>let value='initial & <one>'</script><template><div>{{value}}</div></template>"
+            ]
+          },
+          "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "dependencies": []
+        },
+        "external": {
+          "code": "\nconst _sfc_main = {\n  __name: 'NativeNestedLet',\n  setup(__props, { expose: __expose }) {\n  __expose();\nlet value='initial & <one>'\nconst __returned__ = { get value() { return value }, set value(v) { value = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}\nimport { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${\n    _ssrRenderAttrs(_attrs)\n  }>${\n    _ssrInterpolate($setup.value)\n  }</div>`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeNestedLet.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender],['__file',\"NativeNestedLet.vue\"]])",
+          "map": {
+            "version": 3,
+            "names": [],
+            "sources": ["/native-ssr/NativeNestedLet.vue"],
+            "sourcesContent": [
+              "<script setup>let value='initial & <one>'</script><template><div>{{value}}</div></template>"
+            ],
+            "mappings": ";;;;;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;;;;oBAA2B,YAAK",
+            "ignoreList": []
+          },
+          "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "dependencies": []
+        },
+        "bindings": [
+          {
+            "name": "value",
+            "kind": "Let"
+          }
+        ],
+        "native": [
+          {
+            "initial": {
+              "html": "<div>initial &amp; &lt;one&gt;</div>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": "initial & <one>"
+              },
+              "stateValues": {
+                "value": "initial & <one>"
+              },
+              "direct": "<div>initial &amp; &lt;one&gt;</div>"
+            },
+            "updated": {
+              "html": "<div>updated &lt;雪&gt; &amp; 🦀</div>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": "initial & <one>"
+              },
+              "stateValues": {
+                "value": "updated <雪> & 🦀"
+              },
+              "direct": "<div>updated &lt;雪&gt; &amp; 🦀</div>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<div id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>initial &amp; &lt;one&gt;</div>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": "initial & <one>"
+              },
+              "stateValues": {
+                "value": "initial & <one>"
+              },
+              "direct": "<div id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>initial &amp; &lt;one&gt;</div>"
+            },
+            "updated": {
+              "html": "<div id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>updated &lt;雪&gt; &amp; 🦀</div>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": "initial & <one>"
+              },
+              "stateValues": {
+                "value": "updated <雪> & 🦀"
+              },
+              "direct": "<div id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>updated &lt;雪&gt; &amp; 🦀</div>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<div class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">initial &amp; &lt;one&gt;</div>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": "initial & <one>"
+              },
+              "stateValues": {
+                "value": "initial & <one>"
+              },
+              "direct": "<div class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">initial &amp; &lt;one&gt;</div>"
+            },
+            "updated": {
+              "html": "<div class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">updated &lt;雪&gt; &amp; 🦀</div>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": "initial & <one>"
+              },
+              "stateValues": {
+                "value": "updated <雪> & 🦀"
+              },
+              "direct": "<div class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">updated &lt;雪&gt; &amp; 🦀</div>"
+            }
+          }
+        ],
+        "officialInline": [
+          {
+            "html": "<div>initial &amp; &lt;one&gt;</div>",
+            "modules": ["NativeNestedLet.vue"],
+            "warnings": [],
+            "setupInvocations": 1
+          },
+          {
+            "html": "<div id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>initial &amp; &lt;one&gt;</div>",
+            "modules": ["NativeNestedLet.vue"],
+            "warnings": [],
+            "setupInvocations": 1
+          },
+          {
+            "html": "<div class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">initial &amp; &lt;one&gt;</div>",
+            "modules": ["NativeNestedLet.vue"],
+            "warnings": [],
+            "setupInvocations": 1
+          }
+        ],
+        "officialExternal": [
+          {
+            "initial": {
+              "html": "<div>initial &amp; &lt;one&gt;</div>",
+              "modules": ["NativeNestedLet.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": "initial & <one>"
+              },
+              "stateValues": {
+                "value": "initial & <one>"
+              },
+              "direct": "<div>initial &amp; &lt;one&gt;</div>"
+            },
+            "updated": {
+              "html": "<div>updated &lt;雪&gt; &amp; 🦀</div>",
+              "modules": ["NativeNestedLet.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": "initial & <one>"
+              },
+              "stateValues": {
+                "value": "updated <雪> & 🦀"
+              },
+              "direct": "<div>updated &lt;雪&gt; &amp; 🦀</div>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<div id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>initial &amp; &lt;one&gt;</div>",
+              "modules": ["NativeNestedLet.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": "initial & <one>"
+              },
+              "stateValues": {
+                "value": "initial & <one>"
+              },
+              "direct": "<div id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>initial &amp; &lt;one&gt;</div>"
+            },
+            "updated": {
+              "html": "<div id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>updated &lt;雪&gt; &amp; 🦀</div>",
+              "modules": ["NativeNestedLet.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": "initial & <one>"
+              },
+              "stateValues": {
+                "value": "updated <雪> & 🦀"
+              },
+              "direct": "<div id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>updated &lt;雪&gt; &amp; 🦀</div>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<div class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">initial &amp; &lt;one&gt;</div>",
+              "modules": ["NativeNestedLet.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": "initial & <one>"
+              },
+              "stateValues": {
+                "value": "initial & <one>"
+              },
+              "direct": "<div class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">initial &amp; &lt;one&gt;</div>"
+            },
+            "updated": {
+              "html": "<div class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">updated &lt;雪&gt; &amp; 🦀</div>",
+              "modules": ["NativeNestedLet.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": "initial & <one>"
+              },
+              "stateValues": {
+                "value": "updated <雪> & 🦀"
+              },
+              "direct": "<div class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">updated &lt;雪&gt; &amp; 🦀</div>"
+            }
+          }
+        ]
+      },
+      {
+        "name": "nested-ts-let",
+        "sourceSha256": "b771e84d1d6751a031ee76958da443816fd8336bbfb9b357c410d4daedb19d5c",
+        "codeSha256": "bf544d12cb817268c83938a68844a7105c8bad8369404b4511d0825c38cd7e3e",
+        "mapSha256": "7042f6adf261903f5fb7caa657f26234f1cefd8675a6c0fbc326e48fd3b74f67",
+        "mapValueSha256": "7042f6adf261903f5fb7caa657f26234f1cefd8675a6c0fbc326e48fd3b74f67",
+        "linksSha256": "d03027f440a3b4f378f306a37ec1fa686e53e21a0757dd0a18484b6d5ef73c23",
+        "setupSha256": "158c713671aad24feb4d54d506ac633b549c54c7c3db890d1e3c418e38b32467",
+        "inline": {
+          "code": "import _sfc_main from \"/native-ssr/NativeNestedTs.vue?vue&type=script&setup=true&lang.ts\";\nexport * from \"/native-ssr/NativeNestedTs.vue?vue&type=script&setup=true&lang.ts\";\nimport { useSSRContext as __vite_useSSRContext } from \"vue\";\nconst _sfc_setup = _sfc_main.setup;\n_sfc_main.setup = (props, ctx) => {\n\tconst ssrContext = __vite_useSSRContext();\n\t(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeNestedTs.vue\");\n\treturn _sfc_setup ? _sfc_setup(props, ctx) : undefined;\n};\nexport default _sfc_main;\n",
+          "map": {
+            "mappings": ""
+          },
+          "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "dependencies": [
+            {
+              "id": "/native-ssr/NativeNestedTs.vue?vue&type=script&setup=true&lang.ts",
+              "originalCode": "import { defineComponent as _defineComponent } from 'vue'\nimport { unref as _unref } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'NativeNestedTs',\n  __ssrInlineRender: true,\n  setup(__props) {\nlet value:number=1\nreturn (_ctx: any,_push: any,_parent: any,_attrs: any) => {\n  _push(`<span${\n    _ssrRenderAttrs(_attrs)\n  }>${\n    _ssrInterpolate(_unref(value))\n  }</span>`)\n}\n}\n\n})",
+              "originalMap": {
+                "version": 3,
+                "sources": ["/native-ssr/NativeNestedTs.vue"],
+                "names": [],
+                "mappings": ";;;;;;;;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;oBAA4B,aAAK",
+                "sourcesContent": [
+                  "<script setup lang='ts'>let value:number=1</script><template><span>{{value}}</span></template>"
+                ]
+              },
+              "code": "import { defineComponent as _defineComponent } from \"vue\";\nimport { unref as _unref } from \"vue\";\nimport { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\";\nexport default /*@__PURE__*/ _defineComponent({\n\t__name: \"NativeNestedTs\",\n\t__ssrInlineRender: true,\n\tsetup(__props) {\n\t\tlet value = 1;\n\t\treturn (_ctx, _push, _parent, _attrs) => {\n\t\t\t_push(`<span${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(_unref(value))}</span>`);\n\t\t};\n\t}\n});\n",
+              "map": {
+                "mappings": ";;;;;;;EAAwB,IAAI,QAAa;;4DAA4B,OAAA,KAAA,CAAK",
+                "names": [],
+                "sources": ["/native-ssr/NativeNestedTs.vue"],
+                "version": 3,
+                "sourcesContent": [
+                  "<script setup lang='ts'>let value:number=1</script><template><span>{{value}}</span></template>"
+                ]
+              }
+            }
+          ]
+        },
+        "external": {
+          "code": "import _sfc_main from \"/native-ssr/NativeNestedTs.vue?vue&type=script&setup=true&lang.ts\";\nexport * from \"/native-ssr/NativeNestedTs.vue?vue&type=script&setup=true&lang.ts\";\nimport { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\";\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n\t_push(`<span${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate($setup.value)}</span>`);\n}\nimport { useSSRContext as __vite_useSSRContext } from \"vue\";\nconst _sfc_setup = _sfc_main.setup;\n_sfc_main.setup = (props, ctx) => {\n\tconst ssrContext = __vite_useSSRContext();\n\t(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeNestedTs.vue\");\n\treturn _sfc_setup ? _sfc_setup(props, ctx) : undefined;\n};\nimport _export_sfc from \"\\0plugin-vue:export-helper\";\nexport default /*#__PURE__*/ _export_sfc(_sfc_main, [[\"ssrRender\", _sfc_ssrRender], [\"__file\", \"NativeNestedTs.vue\"]]);\n",
+          "map": {
+            "mappings": ";;;;0DAAqE,OAAA,KAAK",
+            "names": [],
+            "sources": ["/native-ssr/NativeNestedTs.vue"],
+            "version": 3,
+            "sourcesContent": [
+              "<script setup lang='ts'>let value:number=1</script><template><span>{{value}}</span></template>"
+            ]
+          },
+          "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "dependencies": [
+            {
+              "id": "/native-ssr/NativeNestedTs.vue?vue&type=script&setup=true&lang.ts",
+              "originalCode": "import { defineComponent as _defineComponent } from 'vue'\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'NativeNestedTs',\n  setup(__props, { expose: __expose }) {\n  __expose();\nlet value:number=1\nconst __returned__ = { get value() { return value }, set value(v) { value = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+              "originalMap": {
+                "version": 3,
+                "sources": ["/native-ssr/NativeNestedTs.vue"],
+                "sourcesContent": [
+                  "<script setup lang='ts'>let value:number=1</script><template><span>{{value}}</span></template>"
+                ],
+                "names": [],
+                "mappings": ";;;;;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;"
+              },
+              "code": "import { defineComponent as _defineComponent } from \"vue\";\nexport default /*@__PURE__*/ _defineComponent({\n\t__name: \"NativeNestedTs\",\n\tsetup(__props, { expose: __expose }) {\n\t\t__expose();\n\t\tlet value = 1;\n\t\tconst __returned__ = {\n\t\t\tget value() {\n\t\t\t\treturn value;\n\t\t\t},\n\t\t\tset value(v) {\n\t\t\t\tvalue = v;\n\t\t\t}\n\t\t};\n\t\tObject.defineProperty(__returned__, \"__isScriptSetup\", {\n\t\t\tenumerable: false,\n\t\t\tvalue: true\n\t\t});\n\t\treturn __returned__;\n\t}\n});\n",
+              "map": {
+                "mappings": ";;;;;EAAwB,IAAI,QAAa",
+                "names": [],
+                "sources": ["/native-ssr/NativeNestedTs.vue"],
+                "version": 3,
+                "sourcesContent": [
+                  "<script setup lang='ts'>let value:number=1</script><template><span>{{value}}</span></template>"
+                ]
+              }
+            }
+          ]
+        },
+        "bindings": [
+          {
+            "name": "value",
+            "kind": "Let"
+          }
+        ],
+        "native": [
+          {
+            "initial": {
+              "html": "<span>1</span>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": 1
+              },
+              "stateValues": {
+                "value": 1
+              },
+              "direct": "<span>1</span>"
+            },
+            "updated": {
+              "html": "<span>42</span>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": 1
+              },
+              "stateValues": {
+                "value": 42
+              },
+              "direct": "<span>42</span>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<span id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>1</span>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": 1
+              },
+              "stateValues": {
+                "value": 1
+              },
+              "direct": "<span id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>1</span>"
+            },
+            "updated": {
+              "html": "<span id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>42</span>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": 1
+              },
+              "stateValues": {
+                "value": 42
+              },
+              "direct": "<span id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>42</span>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<span class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">1</span>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": 1
+              },
+              "stateValues": {
+                "value": 1
+              },
+              "direct": "<span class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">1</span>"
+            },
+            "updated": {
+              "html": "<span class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">42</span>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": 1
+              },
+              "stateValues": {
+                "value": 42
+              },
+              "direct": "<span class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">42</span>"
+            }
+          }
+        ],
+        "officialInline": [
+          {
+            "html": "<span>1</span>",
+            "modules": ["NativeNestedTs.vue"],
+            "warnings": [],
+            "setupInvocations": 1
+          },
+          {
+            "html": "<span id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>1</span>",
+            "modules": ["NativeNestedTs.vue"],
+            "warnings": [],
+            "setupInvocations": 1
+          },
+          {
+            "html": "<span class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">1</span>",
+            "modules": ["NativeNestedTs.vue"],
+            "warnings": [],
+            "setupInvocations": 1
+          }
+        ],
+        "officialExternal": [
+          {
+            "initial": {
+              "html": "<span>1</span>",
+              "modules": ["NativeNestedTs.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": 1
+              },
+              "stateValues": {
+                "value": 1
+              },
+              "direct": "<span>1</span>"
+            },
+            "updated": {
+              "html": "<span>42</span>",
+              "modules": ["NativeNestedTs.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": 1
+              },
+              "stateValues": {
+                "value": 42
+              },
+              "direct": "<span>42</span>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<span id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>1</span>",
+              "modules": ["NativeNestedTs.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": 1
+              },
+              "stateValues": {
+                "value": 1
+              },
+              "direct": "<span id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>1</span>"
+            },
+            "updated": {
+              "html": "<span id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>42</span>",
+              "modules": ["NativeNestedTs.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": 1
+              },
+              "stateValues": {
+                "value": 42
+              },
+              "direct": "<span id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>42</span>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<span class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">1</span>",
+              "modules": ["NativeNestedTs.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": 1
+              },
+              "stateValues": {
+                "value": 1
+              },
+              "direct": "<span class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">1</span>"
+            },
+            "updated": {
+              "html": "<span class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">42</span>",
+              "modules": ["NativeNestedTs.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": 1
+              },
+              "stateValues": {
+                "value": 42
+              },
+              "direct": "<span class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">42</span>"
+            }
+          }
+        ]
+      },
+      {
+        "name": "nested-unicode-var",
+        "sourceSha256": "dacc4291f5e72c0f9c30e6a52e1eb88d4840fcc8df8a596e68ecbe2d1ebaa707",
+        "codeSha256": "e9dd2697835c3ec7c22c6750d25c2f150265825e8fff27d6f949918b910794f2",
+        "mapSha256": "b5a63552581915682d561cc802185ca2461e4fe96ae7d9c139ea03ed5d7b88a8",
+        "mapValueSha256": "b5a63552581915682d561cc802185ca2461e4fe96ae7d9c139ea03ed5d7b88a8",
+        "linksSha256": "6945502f15f42ccb4afdf61c1c4ea1a2edc04df3511e91873550837b50b29634",
+        "setupSha256": "3220baa78f03fc33d48b4b9f60f33134575c74e17256106f794da44a686f9d4f",
+        "inline": {
+          "code": "import { unref as _unref } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\n\nconst _sfc_main = {\n  __name: 'NativeNestedUnicode',\n  __ssrInlineRender: true,\n  setup(__props) {\nvar 雪='🦀 & <one>'\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`<section${\n    _ssrRenderAttrs(_attrs)\n  }>${\n    _ssrInterpolate(_unref(雪))\n  }</section>`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeNestedUnicode.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": ["/native-ssr/NativeNestedUnicode.vue"],
+            "names": [],
+            "mappings": ";;;;;;;;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;oBAA+B,SAAC",
+            "sourcesContent": [
+              "<script setup>var 雪='🦀 & <one>'</script><template><section>{{雪}}</section></template>"
+            ]
+          },
+          "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "dependencies": []
+        },
+        "external": {
+          "code": "\nconst _sfc_main = {\n  __name: 'NativeNestedUnicode',\n  setup(__props, { expose: __expose }) {\n  __expose();\nvar 雪='🦀 & <one>'\nconst __returned__ = { get 雪() { return 雪 }, set 雪(v) { 雪 = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}\nimport { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<section${\n    _ssrRenderAttrs(_attrs)\n  }>${\n    _ssrInterpolate($setup.雪)\n  }</section>`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeNestedUnicode.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender],['__file',\"NativeNestedUnicode.vue\"]])",
+          "map": {
+            "version": 3,
+            "names": [],
+            "sources": ["/native-ssr/NativeNestedUnicode.vue"],
+            "sourcesContent": [
+              "<script setup>var 雪='🦀 & <one>'</script><template><section>{{雪}}</section></template>"
+            ],
+            "mappings": ";;;;;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;;;;oBAA+B,QAAC",
+            "ignoreList": []
+          },
+          "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "dependencies": []
+        },
+        "bindings": [
+          {
+            "name": "雪",
+            "kind": "Var"
+          }
+        ],
+        "native": [
+          {
+            "initial": {
+              "html": "<section>🦀 &amp; &lt;one&gt;</section>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "雪": "🦀 & <one>"
+              },
+              "stateValues": {
+                "雪": "🦀 & <one>"
+              },
+              "direct": "<section>🦀 &amp; &lt;one&gt;</section>"
+            },
+            "updated": {
+              "html": "<section>雪😀 &amp; &lt;two&gt;</section>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "雪": "🦀 & <one>"
+              },
+              "stateValues": {
+                "雪": "雪😀 & <two>"
+              },
+              "direct": "<section>雪😀 &amp; &lt;two&gt;</section>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<section id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>🦀 &amp; &lt;one&gt;</section>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "雪": "🦀 & <one>"
+              },
+              "stateValues": {
+                "雪": "🦀 & <one>"
+              },
+              "direct": "<section id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>🦀 &amp; &lt;one&gt;</section>"
+            },
+            "updated": {
+              "html": "<section id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>雪😀 &amp; &lt;two&gt;</section>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "雪": "🦀 & <one>"
+              },
+              "stateValues": {
+                "雪": "雪😀 & <two>"
+              },
+              "direct": "<section id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>雪😀 &amp; &lt;two&gt;</section>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<section class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">🦀 &amp; &lt;one&gt;</section>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "雪": "🦀 & <one>"
+              },
+              "stateValues": {
+                "雪": "🦀 & <one>"
+              },
+              "direct": "<section class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">🦀 &amp; &lt;one&gt;</section>"
+            },
+            "updated": {
+              "html": "<section class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">雪😀 &amp; &lt;two&gt;</section>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "雪": "🦀 & <one>"
+              },
+              "stateValues": {
+                "雪": "雪😀 & <two>"
+              },
+              "direct": "<section class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">雪😀 &amp; &lt;two&gt;</section>"
+            }
+          }
+        ],
+        "officialInline": [
+          {
+            "html": "<section>🦀 &amp; &lt;one&gt;</section>",
+            "modules": ["NativeNestedUnicode.vue"],
+            "warnings": [],
+            "setupInvocations": 1
+          },
+          {
+            "html": "<section id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>🦀 &amp; &lt;one&gt;</section>",
+            "modules": ["NativeNestedUnicode.vue"],
+            "warnings": [],
+            "setupInvocations": 1
+          },
+          {
+            "html": "<section class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">🦀 &amp; &lt;one&gt;</section>",
+            "modules": ["NativeNestedUnicode.vue"],
+            "warnings": [],
+            "setupInvocations": 1
+          }
+        ],
+        "officialExternal": [
+          {
+            "initial": {
+              "html": "<section>🦀 &amp; &lt;one&gt;</section>",
+              "modules": ["NativeNestedUnicode.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "雪": "🦀 & <one>"
+              },
+              "stateValues": {
+                "雪": "🦀 & <one>"
+              },
+              "direct": "<section>🦀 &amp; &lt;one&gt;</section>"
+            },
+            "updated": {
+              "html": "<section>雪😀 &amp; &lt;two&gt;</section>",
+              "modules": ["NativeNestedUnicode.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "雪": "🦀 & <one>"
+              },
+              "stateValues": {
+                "雪": "雪😀 & <two>"
+              },
+              "direct": "<section>雪😀 &amp; &lt;two&gt;</section>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<section id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>🦀 &amp; &lt;one&gt;</section>",
+              "modules": ["NativeNestedUnicode.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "雪": "🦀 & <one>"
+              },
+              "stateValues": {
+                "雪": "🦀 & <one>"
+              },
+              "direct": "<section id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>🦀 &amp; &lt;one&gt;</section>"
+            },
+            "updated": {
+              "html": "<section id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>雪😀 &amp; &lt;two&gt;</section>",
+              "modules": ["NativeNestedUnicode.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "雪": "🦀 & <one>"
+              },
+              "stateValues": {
+                "雪": "雪😀 & <two>"
+              },
+              "direct": "<section id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>雪😀 &amp; &lt;two&gt;</section>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<section class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">🦀 &amp; &lt;one&gt;</section>",
+              "modules": ["NativeNestedUnicode.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "雪": "🦀 & <one>"
+              },
+              "stateValues": {
+                "雪": "🦀 & <one>"
+              },
+              "direct": "<section class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">🦀 &amp; &lt;one&gt;</section>"
+            },
+            "updated": {
+              "html": "<section class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">雪😀 &amp; &lt;two&gt;</section>",
+              "modules": ["NativeNestedUnicode.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "雪": "🦀 & <one>"
+              },
+              "stateValues": {
+                "雪": "雪😀 & <two>"
+              },
+              "direct": "<section class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">雪😀 &amp; &lt;two&gt;</section>"
+            }
+          }
+        ]
+      },
+      {
+        "name": "nested-const-attrs",
+        "sourceSha256": "321bb4f48fad0a86064e74ab738d2d6e19efed662078beefe60cb593a62efc97",
+        "codeSha256": "6bde22831bc6cc9adc8c1fc16fb9b6ac4f3e6658392f492f0b7f1e08569e9a67",
+        "mapSha256": "6b1c89c36c6a7e34cad4df1c1377d32117dfed1024b919e504c8c33dbd5c1365",
+        "mapValueSha256": "6b1c89c36c6a7e34cad4df1c1377d32117dfed1024b919e504c8c33dbd5c1365",
+        "linksSha256": "9abd53c4ab0b14cdcd8faaf6f95d690707d41d152f0f5a9a47ae2c1bce3dcea4",
+        "setupSha256": "fa1a4093837b4b8b4c35f6df4404206ce1fa616100501cabe42b84ad76751d95",
+        "inline": {
+          "code": "import { mergeProps as _mergeProps } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst value='雪🌸 & <one>'\nconst _sfc_main = {\n  __name: 'NativeNestedAttrs',\n  __ssrInlineRender: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`<div${\n    _ssrRenderAttrs(_mergeProps({\n      class: \"a b\",\n      title: \"&雪\"\n    }, _attrs))\n  }>${\n    _ssrInterpolate(value)\n  }</div>`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeNestedAttrs.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": ["/native-ssr/NativeNestedAttrs.vue"],
+            "names": [],
+            "mappings": ";;;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;MAAyB,KAAK,EAAC,KAAQ;MAAC,KAAK,EAAC,IAAQ;;;oBAAG,KAAK",
+            "sourcesContent": [
+              "<script setup>const value='雪🌸 & <one>'</script><template><div class=' a  b ' title='&amp;雪'>{{value}}</div></template>"
+            ]
+          },
+          "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "dependencies": []
+        },
+        "external": {
+          "code": "const value='雪🌸 & <one>'\nconst _sfc_main = {\n  __name: 'NativeNestedAttrs',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst __returned__ = { value }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}\nimport { mergeProps as _mergeProps } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${\n    _ssrRenderAttrs(_mergeProps({\n      class: \"a b\",\n      title: \"&雪\"\n    }, _attrs))\n  }>${\n    _ssrInterpolate($setup.value)\n  }</div>`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeNestedAttrs.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender],['__file',\"NativeNestedAttrs.vue\"]])",
+          "map": {
+            "version": 3,
+            "names": [],
+            "sources": ["/native-ssr/NativeNestedAttrs.vue"],
+            "sourcesContent": [
+              "<script setup>const value='雪🌸 & <one>'</script><template><div class=' a  b ' title='&amp;雪'>{{value}}</div></template>"
+            ],
+            "mappings": "AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;;;;;;;;;MAAyB,KAAK,EAAC,KAAQ;MAAC,KAAK,EAAC,IAAQ;;;oBAAG,YAAK",
+            "ignoreList": []
+          },
+          "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "dependencies": []
+        },
+        "bindings": [
+          {
+            "name": "value",
+            "kind": "Const"
+          }
+        ],
+        "native": [
+          {
+            "initial": {
+              "html": "<div class=\"a b\" title=\"&amp;雪\">雪🌸 &amp; &lt;one&gt;</div>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": "雪🌸 & <one>"
+              },
+              "stateValues": {
+                "value": "雪🌸 & <one>"
+              },
+              "direct": "<div class=\"a b\" title=\"&amp;雪\">雪🌸 &amp; &lt;one&gt;</div>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<div class=\"a b root active\" title=\"&quot;&lt;&amp;&gt;\" id=\"override\" style=\"color:red;\" disabled>雪🌸 &amp; &lt;one&gt;</div>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": "雪🌸 & <one>"
+              },
+              "stateValues": {
+                "value": "雪🌸 & <one>"
+              },
+              "direct": "<div class=\"a b root active\" title=\"&quot;&lt;&amp;&gt;\" id=\"override\" style=\"color:red;\" disabled>雪🌸 &amp; &lt;one&gt;</div>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<div class=\"a b 雪 🌸\" title=\"${untrusted}\\`\" style=\"display:block;\" data-x=\"猫&amp;\">雪🌸 &amp; &lt;one&gt;</div>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": "雪🌸 & <one>"
+              },
+              "stateValues": {
+                "value": "雪🌸 & <one>"
+              },
+              "direct": "<div class=\"a b 雪 🌸\" title=\"${untrusted}\\`\" style=\"display:block;\" data-x=\"猫&amp;\">雪🌸 &amp; &lt;one&gt;</div>"
+            }
+          }
+        ],
+        "officialInline": [
+          {
+            "html": "<div class=\"a b\" title=\"&amp;雪\">雪🌸 &amp; &lt;one&gt;</div>",
+            "modules": ["NativeNestedAttrs.vue"],
+            "warnings": [],
+            "setupInvocations": 1
+          },
+          {
+            "html": "<div class=\"a b root active\" title=\"&quot;&lt;&amp;&gt;\" id=\"override\" style=\"color:red;\" disabled>雪🌸 &amp; &lt;one&gt;</div>",
+            "modules": ["NativeNestedAttrs.vue"],
+            "warnings": [],
+            "setupInvocations": 1
+          },
+          {
+            "html": "<div class=\"a b 雪 🌸\" title=\"${untrusted}\\`\" style=\"display:block;\" data-x=\"猫&amp;\">雪🌸 &amp; &lt;one&gt;</div>",
+            "modules": ["NativeNestedAttrs.vue"],
+            "warnings": [],
+            "setupInvocations": 1
+          }
+        ],
+        "officialExternal": [
+          {
+            "initial": {
+              "html": "<div class=\"a b\" title=\"&amp;雪\">雪🌸 &amp; &lt;one&gt;</div>",
+              "modules": ["NativeNestedAttrs.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": "雪🌸 & <one>"
+              },
+              "stateValues": {
+                "value": "雪🌸 & <one>"
+              },
+              "direct": "<div class=\"a b\" title=\"&amp;雪\">雪🌸 &amp; &lt;one&gt;</div>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<div class=\"a b root active\" title=\"&quot;&lt;&amp;&gt;\" id=\"override\" style=\"color:red;\" disabled>雪🌸 &amp; &lt;one&gt;</div>",
+              "modules": ["NativeNestedAttrs.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": "雪🌸 & <one>"
+              },
+              "stateValues": {
+                "value": "雪🌸 & <one>"
+              },
+              "direct": "<div class=\"a b root active\" title=\"&quot;&lt;&amp;&gt;\" id=\"override\" style=\"color:red;\" disabled>雪🌸 &amp; &lt;one&gt;</div>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<div class=\"a b 雪 🌸\" title=\"${untrusted}\\`\" style=\"display:block;\" data-x=\"猫&amp;\">雪🌸 &amp; &lt;one&gt;</div>",
+              "modules": ["NativeNestedAttrs.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": "雪🌸 & <one>"
+              },
+              "stateValues": {
+                "value": "雪🌸 & <one>"
+              },
+              "direct": "<div class=\"a b 雪 🌸\" title=\"${untrusted}\\`\" style=\"display:block;\" data-x=\"猫&amp;\">雪🌸 &amp; &lt;one&gt;</div>"
+            }
+          }
+        ]
+      },
+      {
+        "name": "nested-ts-literal",
+        "sourceSha256": "ed05d9754e7c28209c1a8be6a904b0630fa39af74d6bd98fd92f76fe468f1049",
+        "codeSha256": "2a2c62913a235856beb966f1ad788dc85c19ba332206b9da83bdeb98ca2c645c",
+        "mapSha256": "4dd70fa45978159e79375b707e064db56f58fe02bad7676ed6394b222bf55487",
+        "mapValueSha256": "4dd70fa45978159e79375b707e064db56f58fe02bad7676ed6394b222bf55487",
+        "linksSha256": "a0ead50a647324fc0d9aed8003eb1756d6fa931612acc036b5af2813d53fc001",
+        "setupSha256": "2c7db840275ff90037f87b859aad1d8f49ad8efef16846325a645f400f522bac",
+        "inline": {
+          "code": "import _sfc_main from \"/native-ssr/NativeNestedLiteral.vue?vue&type=script&setup=true&lang.ts\";\nexport * from \"/native-ssr/NativeNestedLiteral.vue?vue&type=script&setup=true&lang.ts\";\nimport { useSSRContext as __vite_useSSRContext } from \"vue\";\nconst _sfc_setup = _sfc_main.setup;\n_sfc_main.setup = (props, ctx) => {\n\tconst ssrContext = __vite_useSSRContext();\n\t(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeNestedLiteral.vue\");\n\treturn _sfc_setup ? _sfc_setup(props, ctx) : undefined;\n};\nexport default _sfc_main;\n",
+          "map": {
+            "mappings": ""
+          },
+          "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "dependencies": [
+            {
+              "id": "/native-ssr/NativeNestedLiteral.vue?vue&type=script&setup=true&lang.ts",
+              "originalCode": "import { defineComponent as _defineComponent } from 'vue'\nimport { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst idle:number=0\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'NativeNestedLiteral',\n  __ssrInlineRender: true,\n  setup(__props) {\n\nreturn (_ctx: any,_push: any,_parent: any,_attrs: any) => {\n  _push(`<i${\n    _ssrRenderAttrs(_attrs)\n  }>${\n    _ssrInterpolate(null)\n  }</i>`)\n}\n}\n\n})",
+              "originalMap": {
+                "version": 3,
+                "sources": ["/native-ssr/NativeNestedLiteral.vue"],
+                "names": [],
+                "mappings": ";;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;oBAAyB,IAAI",
+                "sourcesContent": [
+                  "<script setup lang='ts'>const idle:number=0</script><template><i>{{null}}</i></template>"
+                ]
+              },
+              "code": "import { defineComponent as _defineComponent } from \"vue\";\nimport { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\";\nconst idle = 0;\nexport default /*@__PURE__*/ _defineComponent({\n\t__name: \"NativeNestedLiteral\",\n\t__ssrInlineRender: true,\n\tsetup(__props) {\n\t\treturn (_ctx, _push, _parent, _attrs) => {\n\t\t\t_push(`<i${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(null)}</i>`);\n\t\t};\n\t}\n});\n",
+              "map": {
+                "mappings": ";;AAAwB,MAAM,OAAY;;;;;;yDAAyB,IAAI",
+                "names": [],
+                "sources": ["/native-ssr/NativeNestedLiteral.vue"],
+                "version": 3,
+                "sourcesContent": [
+                  "<script setup lang='ts'>const idle:number=0</script><template><i>{{null}}</i></template>"
+                ]
+              }
+            }
+          ]
+        },
+        "external": {
+          "code": "import _sfc_main from \"/native-ssr/NativeNestedLiteral.vue?vue&type=script&setup=true&lang.ts\";\nexport * from \"/native-ssr/NativeNestedLiteral.vue?vue&type=script&setup=true&lang.ts\";\nimport { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\";\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n\t_push(`<i${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(null)}</i>`);\n}\nimport { useSSRContext as __vite_useSSRContext } from \"vue\";\nconst _sfc_setup = _sfc_main.setup;\n_sfc_main.setup = (props, ctx) => {\n\tconst ssrContext = __vite_useSSRContext();\n\t(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeNestedLiteral.vue\");\n\treturn _sfc_setup ? _sfc_setup(props, ctx) : undefined;\n};\nimport _export_sfc from \"\\0plugin-vue:export-helper\";\nexport default /*#__PURE__*/ _export_sfc(_sfc_main, [[\"ssrRender\", _sfc_ssrRender], [\"__file\", \"NativeNestedLiteral.vue\"]]);\n",
+          "map": {
+            "mappings": ";;;;uDAAmE,IAAI",
+            "names": [],
+            "sources": ["/native-ssr/NativeNestedLiteral.vue"],
+            "version": 3,
+            "sourcesContent": [
+              "<script setup lang='ts'>const idle:number=0</script><template><i>{{null}}</i></template>"
+            ]
+          },
+          "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "dependencies": [
+            {
+              "id": "/native-ssr/NativeNestedLiteral.vue?vue&type=script&setup=true&lang.ts",
+              "originalCode": "import { defineComponent as _defineComponent } from 'vue'\nconst idle:number=0\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'NativeNestedLiteral',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst __returned__ = { idle }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+              "originalMap": {
+                "version": 3,
+                "sources": ["/native-ssr/NativeNestedLiteral.vue"],
+                "sourcesContent": [
+                  "<script setup lang='ts'>const idle:number=0</script><template><i>{{null}}</i></template>"
+                ],
+                "names": [],
+                "mappings": ";AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;;"
+              },
+              "code": "import { defineComponent as _defineComponent } from \"vue\";\nconst idle = 0;\nexport default /*@__PURE__*/ _defineComponent({\n\t__name: \"NativeNestedLiteral\",\n\tsetup(__props, { expose: __expose }) {\n\t\t__expose();\n\t\tconst __returned__ = { idle };\n\t\tObject.defineProperty(__returned__, \"__isScriptSetup\", {\n\t\t\tenumerable: false,\n\t\t\tvalue: true\n\t\t});\n\t\treturn __returned__;\n\t}\n});\n",
+              "map": {
+                "mappings": ";AAAwB,MAAM,OAAY",
+                "names": [],
+                "sources": ["/native-ssr/NativeNestedLiteral.vue"],
+                "version": 3,
+                "sourcesContent": [
+                  "<script setup lang='ts'>const idle:number=0</script><template><i>{{null}}</i></template>"
+                ]
+              }
+            }
+          ]
+        },
+        "bindings": [
+          {
+            "name": "idle",
+            "kind": "Const"
+          }
+        ],
+        "native": [
+          {
+            "initial": {
+              "html": "<i></i>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "idle": 0
+              },
+              "stateValues": {
+                "idle": 0
+              },
+              "direct": "<i></i>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<i id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled></i>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "idle": 0
+              },
+              "stateValues": {
+                "idle": 0
+              },
+              "direct": "<i id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled></i>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<i class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\"></i>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "idle": 0
+              },
+              "stateValues": {
+                "idle": 0
+              },
+              "direct": "<i class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\"></i>"
+            }
+          }
+        ],
+        "officialInline": [
+          {
+            "html": "<i></i>",
+            "modules": ["NativeNestedLiteral.vue"],
+            "warnings": [],
+            "setupInvocations": 1
+          },
+          {
+            "html": "<i id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled></i>",
+            "modules": ["NativeNestedLiteral.vue"],
+            "warnings": [],
+            "setupInvocations": 1
+          },
+          {
+            "html": "<i class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\"></i>",
+            "modules": ["NativeNestedLiteral.vue"],
+            "warnings": [],
+            "setupInvocations": 1
+          }
+        ],
+        "officialExternal": [
+          {
+            "initial": {
+              "html": "<i></i>",
+              "modules": ["NativeNestedLiteral.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "idle": 0
+              },
+              "stateValues": {
+                "idle": 0
+              },
+              "direct": "<i></i>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<i id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled></i>",
+              "modules": ["NativeNestedLiteral.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "idle": 0
+              },
+              "stateValues": {
+                "idle": 0
+              },
+              "direct": "<i id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled></i>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<i class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\"></i>",
+              "modules": ["NativeNestedLiteral.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "idle": 0
+              },
+              "stateValues": {
+                "idle": 0
+              },
+              "direct": "<i class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\"></i>"
+            }
+          }
+        ]
+      },
+      {
+        "name": "nested-literal-escaping",
+        "sourceSha256": "7fedfa363a9bda1eec9366080c6207c6d581e326bf183e258195233d6dd34057",
+        "codeSha256": "2c65148df4ce152d609250634e43a8c88bd3a281967781762197484337fe2791",
+        "mapSha256": "c8b7acca73ce0270cb98d01a8dde47a1f114308c2b2af3e0c6ba6cc3deb85d1d",
+        "mapValueSha256": "c8b7acca73ce0270cb98d01a8dde47a1f114308c2b2af3e0c6ba6cc3deb85d1d",
+        "linksSha256": "ef6004bad419589e11e7b05bb38fb172e77f9e353a4fe7f1dc432b7560522db4",
+        "setupSha256": "35acb38a1ff16fb47c8c6bd6c538b7fff0042709e02d8fc80d989d74b3d433b2",
+        "inline": {
+          "code": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst idle=0\nconst _sfc_main = {\n  __name: 'NativeNestedEscape',\n  __ssrInlineRender: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`<span${\n    _ssrRenderAttrs(_attrs)\n  }>${\n    _ssrInterpolate('&<雪>')\n  }</span>`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeNestedEscape.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": ["/native-ssr/NativeNestedEscape.vue"],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;oBAA6B,MAAM",
+            "sourcesContent": [
+              "<script setup>const idle=0</script><template><span>{{ '&<雪>' }}</span></template>"
+            ]
+          },
+          "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "dependencies": []
+        },
+        "external": {
+          "code": "const idle=0\nconst _sfc_main = {\n  __name: 'NativeNestedEscape',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst __returned__ = { idle }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}\nimport { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<span${\n    _ssrRenderAttrs(_attrs)\n  }>${\n    _ssrInterpolate('&<雪>')\n  }</span>`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeNestedEscape.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender],['__file',\"NativeNestedEscape.vue\"]])",
+          "map": {
+            "version": 3,
+            "names": [],
+            "sources": ["/native-ssr/NativeNestedEscape.vue"],
+            "sourcesContent": [
+              "<script setup>const idle=0</script><template><span>{{ '&<雪>' }}</span></template>"
+            ],
+            "mappings": "AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;;;;;;;;;oBAA6B,MAAM",
+            "ignoreList": []
+          },
+          "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "dependencies": []
+        },
+        "bindings": [
+          {
+            "name": "idle",
+            "kind": "Const"
+          }
+        ],
+        "native": [
+          {
+            "initial": {
+              "html": "<span>&amp;&lt;雪&gt;</span>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "idle": 0
+              },
+              "stateValues": {
+                "idle": 0
+              },
+              "direct": "<span>&amp;&lt;雪&gt;</span>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<span id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>&amp;&lt;雪&gt;</span>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "idle": 0
+              },
+              "stateValues": {
+                "idle": 0
+              },
+              "direct": "<span id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>&amp;&lt;雪&gt;</span>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<span class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">&amp;&lt;雪&gt;</span>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "idle": 0
+              },
+              "stateValues": {
+                "idle": 0
+              },
+              "direct": "<span class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">&amp;&lt;雪&gt;</span>"
+            }
+          }
+        ],
+        "officialInline": [
+          {
+            "html": "<span>&amp;&lt;雪&gt;</span>",
+            "modules": ["NativeNestedEscape.vue"],
+            "warnings": [],
+            "setupInvocations": 1
+          },
+          {
+            "html": "<span id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>&amp;&lt;雪&gt;</span>",
+            "modules": ["NativeNestedEscape.vue"],
+            "warnings": [],
+            "setupInvocations": 1
+          },
+          {
+            "html": "<span class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">&amp;&lt;雪&gt;</span>",
+            "modules": ["NativeNestedEscape.vue"],
+            "warnings": [],
+            "setupInvocations": 1
+          }
+        ],
+        "officialExternal": [
+          {
+            "initial": {
+              "html": "<span>&amp;&lt;雪&gt;</span>",
+              "modules": ["NativeNestedEscape.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "idle": 0
+              },
+              "stateValues": {
+                "idle": 0
+              },
+              "direct": "<span>&amp;&lt;雪&gt;</span>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<span id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>&amp;&lt;雪&gt;</span>",
+              "modules": ["NativeNestedEscape.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "idle": 0
+              },
+              "stateValues": {
+                "idle": 0
+              },
+              "direct": "<span id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>&amp;&lt;雪&gt;</span>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<span class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">&amp;&lt;雪&gt;</span>",
+              "modules": ["NativeNestedEscape.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "idle": 0
+              },
+              "stateValues": {
+                "idle": 0
+              },
+              "direct": "<span class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">&amp;&lt;雪&gt;</span>"
+            }
+          }
+        ]
+      },
+      {
+        "name": "nested-retained-comments",
+        "sourceSha256": "4624aeafc4449e4ad707b9491cef0b8a63431d9b3c0e565b99ffa8ef6adca29d",
+        "codeSha256": "ffc33f2757955b5ba00318d56c8a4ee41076027e77395bab1c39d063e91d037a",
+        "mapSha256": "06b17818329a2bf81553545869505179c70d81f309930cbd32a6000ca19b639c",
+        "mapValueSha256": "06b17818329a2bf81553545869505179c70d81f309930cbd32a6000ca19b639c",
+        "linksSha256": "023a8cb0364adc9c18d76d00299ff73222582dfc11f19d608b37f1caac64ee79",
+        "setupSha256": "a973391d955ca0b42e907905c1cc4f62795c1437be621adab03764d3c474d814",
+        "inline": {
+          "code": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst value=42\nconst _sfc_main = {\n  __name: 'NativeNestedComments',\n  __ssrInlineRender: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`<div${\n    _ssrRenderAttrs(_attrs)\n  }>${\n    _ssrInterpolate(/*retained*/ value /*tail*/)\n  }</div>`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeNestedComments.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": ["/native-ssr/NativeNestedComments.vue"],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;iCAAwC,KAAK",
+            "sourcesContent": [
+              "<script setup>const value=42</script><template><div>{{/*retained*/ value /*tail*/}}</div></template>"
+            ]
+          },
+          "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "dependencies": []
+        },
+        "external": {
+          "code": "const value=42\nconst _sfc_main = {\n  __name: 'NativeNestedComments',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst __returned__ = { value }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}\nimport { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${\n    _ssrRenderAttrs(_attrs)\n  }>${\n    _ssrInterpolate(/*retained*/ $setup.value /*tail*/)\n  }</div>`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeNestedComments.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender],['__file',\"NativeNestedComments.vue\"]])",
+          "map": {
+            "version": 3,
+            "names": [],
+            "sources": ["/native-ssr/NativeNestedComments.vue"],
+            "sourcesContent": [
+              "<script setup>const value=42</script><template><div>{{/*retained*/ value /*tail*/}}</div></template>"
+            ],
+            "mappings": "AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;;;;;;;;;iCAAwC,YAAK",
+            "ignoreList": []
+          },
+          "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "dependencies": []
+        },
+        "bindings": [
+          {
+            "name": "value",
+            "kind": "Const"
+          }
+        ],
+        "native": [
+          {
+            "initial": {
+              "html": "<div>42</div>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": 42
+              },
+              "stateValues": {
+                "value": 42
+              },
+              "direct": "<div>42</div>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<div id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>42</div>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": 42
+              },
+              "stateValues": {
+                "value": 42
+              },
+              "direct": "<div id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>42</div>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<div class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">42</div>",
+              "modules": [],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": 42
+              },
+              "stateValues": {
+                "value": 42
+              },
+              "direct": "<div class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">42</div>"
+            }
+          }
+        ],
+        "officialInline": [
+          {
+            "html": "<div>42</div>",
+            "modules": ["NativeNestedComments.vue"],
+            "warnings": [],
+            "setupInvocations": 1
+          },
+          {
+            "html": "<div id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>42</div>",
+            "modules": ["NativeNestedComments.vue"],
+            "warnings": [],
+            "setupInvocations": 1
+          },
+          {
+            "html": "<div class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">42</div>",
+            "modules": ["NativeNestedComments.vue"],
+            "warnings": [],
+            "setupInvocations": 1
+          }
+        ],
+        "officialExternal": [
+          {
+            "initial": {
+              "html": "<div>42</div>",
+              "modules": ["NativeNestedComments.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": 42
+              },
+              "stateValues": {
+                "value": 42
+              },
+              "direct": "<div>42</div>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<div id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>42</div>",
+              "modules": ["NativeNestedComments.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": 42
+              },
+              "stateValues": {
+                "value": 42
+              },
+              "direct": "<div id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>42</div>"
+            }
+          },
+          {
+            "initial": {
+              "html": "<div class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">42</div>",
+              "modules": ["NativeNestedComments.vue"],
+              "warnings": [],
+              "setupInvocations": 1,
+              "renderInvocations": 1,
+              "argumentCount": 8,
+              "actualSixthSetupState": true,
+              "initialValues": {
+                "value": 42
+              },
+              "stateValues": {
+                "value": 42
+              },
+              "direct": "<div class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">42</div>"
+            }
+          }
+        ]
+      }
+    ],
+    "refusals": [
+      {
+        "completeModule": false,
+        "name": "adjacent-text",
+        "reason": "Ssr(SsrError { node: Some(NodeId(2)), span: Span { start: 55, end: 64 }, kind: Unsupported(Operation) })",
+        "source": "<script setup>const value=1</script><template><i>before{{value}}</i></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "adjacent-interpolations",
+        "reason": "Ssr(SsrError { node: Some(NodeId(1)), span: Span { start: 49, end: 58 }, kind: Unsupported(Operation) })",
+        "source": "<script setup>const value=1</script><template><i>{{value}}{{value}}</i></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "deeper",
+        "reason": "Ssr(SsrError { node: Some(NodeId(2)), span: Span { start: 54, end: 63 }, kind: Unsupported(Operation) })",
+        "source": "<script setup>const value=1</script><template><div><i>{{value}}</i></div></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "suffix-root",
+        "reason": "Ssr(SsrError { node: Some(NodeId(1)), span: Span { start: 49, end: 58 }, kind: Unsupported(Operation) })",
+        "source": "<script setup>const value=1</script><template><i>{{value}}</i><b/></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "prefix-root",
+        "reason": "Ssr(SsrError { node: Some(NodeId(2)), span: Span { start: 53, end: 62 }, kind: Unsupported(Operation) })",
+        "source": "<script setup>const value=1</script><template><b/><i>{{value}}</i></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "two-dynamic-roots",
+        "reason": "Ssr(SsrError { node: Some(NodeId(3)), span: Span { start: 65, end: 74 }, kind: Unsupported(Operation) })",
+        "source": "<script setup>const value=1</script><template><i>{{value}}</i><i>{{value}}</i></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "suffix-comment",
+        "reason": "Ssr(SsrError { node: Some(NodeId(1)), span: Span { start: 49, end: 58 }, kind: Unsupported(Operation) })",
+        "source": "<script setup>const value=1</script><template><i>{{value}}</i><!--suffix--></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "prefix-comment",
+        "reason": "Ssr(SsrError { node: Some(NodeId(2)), span: Span { start: 62, end: 71 }, kind: Unsupported(Operation) })",
+        "source": "<script setup>const value=1</script><template><!--prefix--><i>{{value}}</i></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "suffix-void-root",
+        "reason": "Ssr(SsrError { node: Some(NodeId(1)), span: Span { start: 49, end: 58 }, kind: Unsupported(Operation) })",
+        "source": "<script setup>const value=1</script><template><i>{{value}}</i><br></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "invalid-void-child",
+        "reason": "Lowering(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 64 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 64 }, kind: UnsupportedChild }) })",
+        "source": "<script setup>const value=1</script><template><br>{{value}}</br></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "component",
+        "reason": "Lowering(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 72 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 72 }, kind: UnsupportedChild }) })",
+        "source": "<script setup>const value=1</script><template><Widget>{{value}}</Widget></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "compound",
+        "reason": "Ssr(SsrError { node: Some(NodeId(1)), span: Span { start: 49, end: 60 }, kind: Unsupported(Expression) })",
+        "source": "<script setup>const value=1</script><template><i>{{value+1}}</i></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "member",
+        "reason": "Ssr(SsrError { node: Some(NodeId(1)), span: Span { start: 49, end: 69 }, kind: Unsupported(Expression) })",
+        "source": "<script setup>const value=1</script><template><i>{{value.toString()}}</i></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "unresolved",
+        "reason": "Lowering(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 64 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 64 }, kind: Artifact(InvalidSpan { node: None, span: Span { start: 51, end: 58 } }) }) })",
+        "source": "<script setup>const value=1</script><template><i>{{missing}}</i></template>"
+      },
+      {
+        "completeModule": false,
+        "name": "for",
+        "reason": "Ssr(SsrError { node: Some(NodeId(0)), span: Span { start: 46, end: 83 }, kind: Unsupported(Operation) })",
+        "source": "<script setup>const value=1</script><template><i v-for='item in value'>{{item}}</i></template>"
+      }
+    ],
+    "completeUpstreamMapParity": false,
+    "viteContextParity": false
+  }
+}

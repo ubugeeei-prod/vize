@@ -1,0 +1,254 @@
+{
+  "schema": "vize.lint.props-deep-destructure-import-source-successor",
+  "version": 1,
+  "originalFamily": {
+    "path": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/successor.json",
+    "bytes": 15445,
+    "sha256": "de01ccf20b54abc69935b2ffa844705b1704bac8f83c07ee832c339ff9aaa161"
+  },
+  "candidate": "46c1f88e32a6c0f19c3de5ea6ee18aec91801223",
+  "failedSource": "e79cfa1a36619fc7cd0f2648f5051df3b3334b12",
+  "changedPaths": [
+    "crates/vize_patina/src/linter/script_rules.rs"
+  ],
+  "sources": [
+    {
+      "path": "crates/vize_patina/src/rules/script/props_emits.rs",
+      "changed": false,
+      "before": {
+        "path": "crates/vize_patina/src/rules/script/props_emits.rs",
+        "bytes": 1368,
+        "sha256": "8974083b1d8e5c864f31d3f872d54d6061a84f4a8f7a181c2daa0d3f27ede6ff",
+        "gitBlob": "4a756a4d427286eb83d65e540713051736002831",
+        "archive": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/01-after.rs.fixture"
+      },
+      "after": {
+        "path": "crates/vize_patina/src/rules/script/props_emits.rs",
+        "bytes": 1368,
+        "sha256": "8974083b1d8e5c864f31d3f872d54d6061a84f4a8f7a181c2daa0d3f27ede6ff",
+        "gitBlob": "4a756a4d427286eb83d65e540713051736002831",
+        "archive": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/01-after.rs.fixture"
+      },
+      "transforms": []
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/props_emits/compiler_macro_bindings.rs",
+      "changed": false,
+      "before": {
+        "path": "crates/vize_patina/src/rules/script/props_emits/compiler_macro_bindings.rs",
+        "bytes": 5670,
+        "sha256": "2fa87c69fef9eca8cd8c39d88892a2db91bb40eadcc17fa15c1bec9a991b376f",
+        "gitBlob": "7ba76a4d5a9256270ef258947064d9e60f103077",
+        "archive": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/02-after.rs.fixture"
+      },
+      "after": {
+        "path": "crates/vize_patina/src/rules/script/props_emits/compiler_macro_bindings.rs",
+        "bytes": 5670,
+        "sha256": "2fa87c69fef9eca8cd8c39d88892a2db91bb40eadcc17fa15c1bec9a991b376f",
+        "gitBlob": "7ba76a4d5a9256270ef258947064d9e60f103077",
+        "archive": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/02-after.rs.fixture"
+      },
+      "transforms": []
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator/setup.rs",
+      "changed": false,
+      "before": {
+        "path": "crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator/setup.rs",
+        "bytes": 6384,
+        "sha256": "458971904a70de545aca5bb441e0f4241fad91d8573ae0681bd6298a1d3136f1",
+        "gitBlob": "5a0328505ea2d520ecabaa404202dd4bd0861365",
+        "archive": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/03-after.rs.fixture"
+      },
+      "after": {
+        "path": "crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator/setup.rs",
+        "bytes": 6384,
+        "sha256": "458971904a70de545aca5bb441e0f4241fad91d8573ae0681bd6298a1d3136f1",
+        "gitBlob": "5a0328505ea2d520ecabaa404202dd4bd0861365",
+        "archive": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/03-after.rs.fixture"
+      },
+      "transforms": []
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs",
+      "changed": false,
+      "before": {
+        "path": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs",
+        "bytes": 11471,
+        "sha256": "1e3e58cab0ab268e3c9e3ba5eb3e74d54283d47249d10189fe65c608cca504f1",
+        "gitBlob": "85243a519428825cd278e0a5f418bb71b30ff53d",
+        "archive": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/04-after.rs.fixture"
+      },
+      "after": {
+        "path": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs",
+        "bytes": 11471,
+        "sha256": "1e3e58cab0ab268e3c9e3ba5eb3e74d54283d47249d10189fe65c608cca504f1",
+        "gitBlob": "85243a519428825cd278e0a5f418bb71b30ff53d",
+        "archive": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/04-after.rs.fixture"
+      },
+      "transforms": []
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default/runtime.rs",
+      "changed": false,
+      "before": {
+        "path": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default/runtime.rs",
+        "bytes": 2399,
+        "sha256": "5bed02a5b8cdf759c2939fae2f68fda41c05a3d35508383e9275b28569e4c4b2",
+        "gitBlob": "76b7cfe95c7a8d4121580f11b67c3545036d5025",
+        "archive": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/05-after.rs.fixture"
+      },
+      "after": {
+        "path": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default/runtime.rs",
+        "bytes": 2399,
+        "sha256": "5bed02a5b8cdf759c2939fae2f68fda41c05a3d35508383e9275b28569e4c4b2",
+        "gitBlob": "76b7cfe95c7a8d4121580f11b67c3545036d5025",
+        "archive": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/05-after.rs.fixture"
+      },
+      "transforms": []
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script.rs",
+      "changed": false,
+      "before": {
+        "path": "crates/vize_patina/src/rules/script.rs",
+        "bytes": 7697,
+        "sha256": "2fcda85b4dba45248c782f475c648b4344b0cb2b008b55d241cd282efa9cf7dd",
+        "gitBlob": "7b54949f6b48abe4c69b27865bf6b0165694a936",
+        "archive": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/06-after.rs.fixture"
+      },
+      "after": {
+        "path": "crates/vize_patina/src/rules/script.rs",
+        "bytes": 7697,
+        "sha256": "2fcda85b4dba45248c782f475c648b4344b0cb2b008b55d241cd282efa9cf7dd",
+        "gitBlob": "7b54949f6b48abe4c69b27865bf6b0165694a936",
+        "archive": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/06-after.rs.fixture"
+      },
+      "transforms": []
+    },
+    {
+      "path": "crates/vize_patina/src/linter/script_rules.rs",
+      "changed": true,
+      "before": {
+        "path": "crates/vize_patina/src/linter/script_rules.rs",
+        "bytes": 9768,
+        "sha256": "8ffd84a3c10bd6047da99d0bd8ecc9823d94900014830fff503377098d25a962",
+        "gitBlob": "96af9ee168b9c0d5de9b2d091efac3e7f2223b7e",
+        "archive": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/07-after.rs.fixture"
+      },
+      "after": {
+        "path": "crates/vize_patina/src/linter/script_rules.rs",
+        "bytes": 9722,
+        "sha256": "aba99facec3f70369a3e5c53d12b2c045d28ffba1b585d29cfb5fa3ef6bb262d",
+        "gitBlob": "edf0f64adee0f76d0d67d4032d01a30888053954",
+        "archive": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/import-correction/script-rules-after.rs.fixture"
+      },
+      "transforms": [
+        {
+          "before": "    RULE_NO_DEEP_DESTRUCTURE_IN_PROPS, RULE_NO_GET_CURRENT_INSTANCE,\n    RULE_NO_REQUIRED_PROP_WITH_DEFAULT, RULE_RETURN_IN_EMITS_VALIDATOR,\n",
+          "after": "    RULE_NO_GET_CURRENT_INSTANCE, RULE_NO_REQUIRED_PROP_WITH_DEFAULT,\n    RULE_RETURN_IN_EMITS_VALIDATOR,\n"
+        },
+        {
+          "before": "        } else if entry.rule_name == RULE_NO_DEEP_DESTRUCTURE_IN_PROPS\n            && let Some(props_rule) = rule.as_setup_props_destructure()\n",
+          "after": "        } else if let Some(props_rule) = rule.as_setup_props_destructure()\n            && entry.rule_name == props_rule.meta().name\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_patina/src/linter/script_rules/sfc.rs",
+      "changed": false,
+      "before": {
+        "path": "crates/vize_patina/src/linter/script_rules/sfc.rs",
+        "bytes": 7552,
+        "sha256": "cce4c13e30a66479b42ea078dc9f799afc81bbfb8e9d5464f78b75b874c42dc1",
+        "gitBlob": "e4a3c8d0a973ae13ed0c9ba97a4cf4cb72b46320",
+        "archive": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/08-after.rs.fixture"
+      },
+      "after": {
+        "path": "crates/vize_patina/src/linter/script_rules/sfc.rs",
+        "bytes": 7552,
+        "sha256": "cce4c13e30a66479b42ea078dc9f799afc81bbfb8e9d5464f78b75b874c42dc1",
+        "gitBlob": "e4a3c8d0a973ae13ed0c9ba97a4cf4cb72b46320",
+        "archive": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/08-after.rs.fixture"
+      },
+      "transforms": []
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default/typed.rs",
+      "changed": false,
+      "before": {
+        "path": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default/typed.rs",
+        "bytes": 8807,
+        "sha256": "0749c7e672b42572d4c509404af7c82ba415590de5ef04988d577cdc23806c83",
+        "gitBlob": "897c711329161538d8fefe536e46815aea76a043",
+        "archive": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/09-after.rs.fixture"
+      },
+      "after": {
+        "path": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default/typed.rs",
+        "bytes": 8807,
+        "sha256": "0749c7e672b42572d4c509404af7c82ba415590de5ef04988d577cdc23806c83",
+        "gitBlob": "897c711329161538d8fefe536e46815aea76a043",
+        "archive": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/09-after.rs.fixture"
+      },
+      "transforms": []
+    },
+    {
+      "path": "crates/vize_patina/src/linter/engine/sfc.rs",
+      "changed": false,
+      "before": {
+        "path": "crates/vize_patina/src/linter/engine/sfc.rs",
+        "bytes": 11157,
+        "sha256": "bcd3c09c4db78c4bf93514bf177848eb816bb1d665f3c9185fe332550c28eb23",
+        "gitBlob": "e153615991646e5549b0c3997c2184251493fe4a",
+        "archive": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/10-after.rs.fixture"
+      },
+      "after": {
+        "path": "crates/vize_patina/src/linter/engine/sfc.rs",
+        "bytes": 11157,
+        "sha256": "bcd3c09c4db78c4bf93514bf177848eb816bb1d665f3c9185fe332550c28eb23",
+        "gitBlob": "e153615991646e5549b0c3997c2184251493fe4a",
+        "archive": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/10-after.rs.fixture"
+      },
+      "transforms": []
+    },
+    {
+      "path": "crates/vize_patina/src/linter/engine.rs",
+      "changed": false,
+      "before": {
+        "path": "crates/vize_patina/src/linter/engine.rs",
+        "bytes": 19940,
+        "sha256": "0ee0a7230e1cceca0868d7637eb31978dff372bf3b16c2699f06e0a97b74d9fa",
+        "gitBlob": "bcab2539142ad988f851ef92dd2226395dd53981",
+        "archive": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/11-after.rs.fixture"
+      },
+      "after": {
+        "path": "crates/vize_patina/src/linter/engine.rs",
+        "bytes": 19940,
+        "sha256": "0ee0a7230e1cceca0868d7637eb31978dff372bf3b16c2699f06e0a97b74d9fa",
+        "gitBlob": "bcab2539142ad988f851ef92dd2226395dd53981",
+        "archive": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/11-after.rs.fixture"
+      },
+      "transforms": []
+    },
+    {
+      "path": "crates/vize_patina/src/linter/script_rules/registry/rules.rs",
+      "changed": false,
+      "before": {
+        "path": "crates/vize_patina/src/linter/script_rules/registry/rules.rs",
+        "bytes": 21922,
+        "sha256": "e0ac436d8735f69bab0fe42465a328047dc24dc58248a22ae2315a828468f7a1",
+        "gitBlob": "cbf9c7f32929b3d92554b1bc8918a5d100c303c4",
+        "archive": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/registry-after.rs.fixture"
+      },
+      "after": {
+        "path": "crates/vize_patina/src/linter/script_rules/registry/rules.rs",
+        "bytes": 21922,
+        "sha256": "e0ac436d8735f69bab0fe42465a328047dc24dc58248a22ae2315a828468f7a1",
+        "gitBlob": "cbf9c7f32929b3d92554b1bc8918a5d100c303c4",
+        "archive": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/registry-after.rs.fixture"
+      },
+      "transforms": []
+    }
+  ],
+  "boundary": "Fix unresolved private registry import using actual typed capability metadata equality; preserve generic None and foreign identity fallback, all original source/oracle archives and whole packets. Not performance/public qualification."
+}

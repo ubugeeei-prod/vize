@@ -10,20 +10,25 @@
 //! (`props: { x: { required: true, default: ... } }`), including
 //! `defineComponent({...})` and same-file identifier-bound options/props
 //! objects, plus required fields in inline or locally declared `defineProps<T>`
-//! types with destructure defaults or `withDefaults`. Optional fields, imported
-//! types, `required: false`, and non-literal `required` values are ignored.
+//! types with destructure defaults or `withDefaults`. The SFC path also checks
+//! direct literal runtime `defineProps` calls in a sole inline setup block with
+//! proven compiler-macro ownership. Sibling/external scripts, aliases, bound
+//! objects and type-only namespaces remain conservative runtime refusals.
+//! Optional fields, imported types, `required: false`, and non-literal `required`
+//! values are ignored.
 
 use oxc_ast::ast::{
     Argument, BindingPattern, CallExpression, ExportDefaultDeclarationKind, Expression,
     ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement,
 };
-use oxc_span::GetSpan;
+use oxc_span::{GetSpan, Span};
 
 use vize_l0::{CompactString, FxHashMap};
 
 use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 
+mod runtime;
 mod typed;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -45,6 +50,10 @@ impl ScriptRule for NoRequiredPropWithDefault {
         true
     }
 
+    fn as_setup_props_defaults(&self) -> Option<&NoRequiredPropWithDefault> {
+        Some(self)
+    }
+
     fn check_program<'a>(
         &self,
         program: &'a Program<'a>,
@@ -60,13 +69,29 @@ impl ScriptRule for NoRequiredPropWithDefault {
         let Some(props) = option_object_property(options, "props", &object_bindings) else {
             return;
         };
-        check_props_object(props, offset, result);
+        check_props_object(props, false, offset, result);
+    }
+}
+
+impl NoRequiredPropWithDefault {
+    pub(crate) fn check_setup_runtime(
+        &self,
+        program: &Program<'_>,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
+        runtime::check(program, offset, result);
     }
 }
 
 /// Report every prop whose declaration object has both `required: true` and a
 /// `default` property.
-fn check_props_object(props: &ObjectExpression<'_>, offset: usize, result: &mut ScriptLintResult) {
+fn check_props_object(
+    props: &ObjectExpression<'_>,
+    whole_declaration: bool,
+    offset: usize,
+    result: &mut ScriptLintResult,
+) {
     for property in &props.properties {
         let ObjectPropertyKind::ObjectProperty(property) = property else {
             continue;
@@ -86,7 +111,11 @@ fn check_props_object(props: &ObjectExpression<'_>, offset: usize, result: &mut 
         ) {
             report(
                 name,
-                &property.key,
+                if whole_declaration {
+                    property.span()
+                } else {
+                    property.key.span()
+                },
                 required_span,
                 default_span,
                 offset,
@@ -129,13 +158,12 @@ fn prop_member_span(declaration: &ObjectExpression<'_>, key: &str) -> Option<(u3
 
 fn report(
     name: &str,
-    key: &PropertyKey<'_>,
+    primary: Span,
     required_span: (u32, u32),
     default_span: (u32, u32),
     offset: usize,
     result: &mut ScriptLintResult,
 ) {
-    let key_span = key.span();
     let base = offset as u32;
 
     let mut message = CompactString::with_capacity(name.len() + 56);
@@ -143,26 +171,22 @@ fn report(
     message.push_str(name);
     message.push_str("' is required but also declares a default");
 
-    let diagnostic = LintDiagnostic::error(
-        META.name,
-        message,
-        base + key_span.start,
-        base + key_span.end,
-    )
-    .with_label(
-        "marked required here",
-        base + required_span.0,
-        base + required_span.1,
-    )
-    .with_label(
-        "default declared here",
-        base + default_span.0,
-        base + default_span.1,
-    )
-    .with_help(
-        "A required prop is always provided, so its default is unreachable; \
+    let diagnostic =
+        LintDiagnostic::error(META.name, message, base + primary.start, base + primary.end)
+            .with_label(
+                "marked required here",
+                base + required_span.0,
+                base + required_span.1,
+            )
+            .with_label(
+                "default declared here",
+                base + default_span.0,
+                base + default_span.1,
+            )
+            .with_help(
+                "A required prop is always provided, so its default is unreachable; \
                  drop `required: true` or remove the default.",
-    );
+            );
     result.add_diagnostic(diagnostic);
 }
 

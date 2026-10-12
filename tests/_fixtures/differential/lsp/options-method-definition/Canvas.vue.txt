@@ -1,0 +1,19 @@
+<template>
+  <component :is="sectionComponent(section.component)" />
+</template>
+
+<script>
+export default {
+  data () {
+    return { section: { component: 'Colors' } }
+  },
+  methods: {
+    sectionComponent (component) {
+      return require(`./Sections/${component}.vue`).default
+    },
+    unrelatedMethod () {
+      return 1
+    }
+  }
+}
+</script>

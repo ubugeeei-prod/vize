@@ -21,6 +21,7 @@ pub(in crate::decision) struct SsrBuilder<'facts, 'owner, 'arena> {
     setup: Option<&'facts NativeSelectedSetup<'owner, 'arena>>,
     previous_root_text: Option<bool>,
     root_interpolation_seen: bool,
+    nested_interpolation: Option<(NodeId, Span, NodeId)>,
 }
 
 impl<'facts, 'owner, 'arena> SsrBuilder<'facts, 'owner, 'arena> {
@@ -40,6 +41,7 @@ impl<'facts, 'owner, 'arena> SsrBuilder<'facts, 'owner, 'arena> {
             setup: None,
             previous_root_text: None,
             root_interpolation_seen: false,
+            nested_interpolation: None,
         }
     }
 
@@ -121,22 +123,32 @@ impl<'facts, 'owner, 'arena> SsrBuilder<'facts, 'owner, 'arena> {
                 self.facts.parts.push(SsrPart::Comment { node, comment });
                 (None, false)
             }
-            Op::Interpolation(interpolation) if root && self.setup.is_some() => {
-                let expression = match (self.setup, interpolation.expression) {
-                    (Some(setup), ExprRef::Js(expression)) => {
-                        read::classify(setup, node, expression)
+            Op::Interpolation(interpolation) if self.setup.is_some() => {
+                let parent = (!root)
+                    .then(|| self.direct_interpolation_parent(interpolation.as_ref()))
+                    .flatten();
+                if !root && (parent.is_none() || self.nested_interpolation.is_some()) {
+                    self.reject(node, span, SsrUnsupported::Operation);
+                } else {
+                    let expression = match (self.setup, interpolation.expression) {
+                        (Some(setup), ExprRef::Js(expression)) => {
+                            read::classify(setup, node, expression)
+                        }
+                        _ => Err(SsrUnsupported::Expression),
+                    };
+                    match expression {
+                        Ok(expression) => {
+                            self.facts.expressions.insert(node, expression);
+                            self.facts.parts.push(SsrPart::Interpolation {
+                                node,
+                                interpolation,
+                            });
+                            if let Some(parent) = parent {
+                                self.nested_interpolation = Some((node, span, parent));
+                            }
+                        }
+                        Err(reason) => self.reject(node, span, reason),
                     }
-                    _ => Err(SsrUnsupported::Expression),
-                };
-                match expression {
-                    Ok(expression) => {
-                        self.facts.expressions.insert(node, expression);
-                        self.facts.parts.push(SsrPart::Interpolation {
-                            node,
-                            interpolation,
-                        });
-                    }
-                    Err(reason) => self.reject(node, span, reason),
                 }
                 (None, false)
             }
@@ -239,7 +251,27 @@ impl<'facts, 'owner, 'arena> SsrBuilder<'facts, 'owner, 'arena> {
             .push(SsrRejection { node, span, reason });
     }
 
+    fn direct_interpolation_parent(
+        &self,
+        interpolation: &vize_l2::op::InterpolationOp<'arena>,
+    ) -> Option<NodeId> {
+        let [(parent_node, Some(parent), false)] = self.frames.as_slice() else {
+            return None;
+        };
+        let [Op::Interpolation(child)] = parent.children.ops.as_slice() else {
+            return None;
+        };
+        core::ptr::eq(child.as_ref(), interpolation).then_some(*parent_node)
+    }
+
     pub fn finish(mut self) -> SsrFacts<'owner, 'arena> {
+        // A visited prefix cannot authorize the final whole-root composition.
+        // Retain the exact child facts but refuse output if any suffix changed it.
+        if let Some((node, span, parent)) = self.nested_interpolation
+            && (self.roots != 1 || self.non_comments != 1 || self.root_element != Some(parent))
+        {
+            self.reject(node, span, SsrUnsupported::Operation);
+        }
         self.facts.fragment = self.roots > 1;
         self.facts.inherit_attrs = (self.non_comments == 1)
             .then_some(self.root_element)

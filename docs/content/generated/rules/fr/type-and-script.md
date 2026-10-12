@@ -759,7 +759,7 @@ const userName = computed(() => props.user.name);
 
 Le bon exemple évite le diagnostic de cette règle avec la configuration ci-dessus ; d’autres règles peuvent encore signaler des diagnostics.
 
-[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L37) · [Toutes les règles](all.md)
+[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L39) · [Toutes les règles](all.md)
 
 ### `script/no-deprecated-data-object-declaration`
 
@@ -1334,7 +1334,7 @@ Interdire les instructions export dans &lt;script setup&gt;
 [Mauvais](#script-no-export-in-script-setup-bad) · [Bon](#script-no-export-in-script-setup-good)
 
 Gravité par défaut: `error`  
-Préréglages: _none_  
+Préréglages: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -2024,7 +2024,7 @@ export default { props: { title: { type: String, default: "Untitled" } } };
 
 Le bon exemple évite le diagnostic de cette règle avec la configuration ci-dessus ; d’autres règles peuvent encore signaler des diagnostics.
 
-[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs#L29) · [Toutes les règles](all.md)
+[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs#L34) · [Toutes les règles](all.md)
 
 ### `script/no-reserved-identifiers`
 
@@ -2975,17 +2975,18 @@ import { h } from '@vue/runtime-dom'
 
 **Bon**
 
-Les deux utilitaires sont importés ensemble depuis `vue`, utilisant le point d’entrée public du package plutôt que l’un ou l’autre des packages internes.
+Les utilitaires publics sont importés depuis `vue`. Le privé `isString` conserve `@vue/shared`, car `vue` ne l’exporte pas. Les imports de namespace, par défaut et mixtes publics/privés gardent un avertissement sans correction automatique.
 
-```vue annotate="add:2"
+```vue annotate="add:2,3"
 <script setup lang="ts">
 import { ref, h } from 'vue'
+import { isString } from '@vue/shared'
 </script>
 ```
 
 Le bon exemple évite le diagnostic de cette règle avec la configuration ci-dessus ; d’autres règles peuvent encore signaler des diagnostics.
 
-[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L32) · [Toutes les règles](all.md)
+[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L36) · [Toutes les règles](all.md)
 
 ### `script/prefer-ref-over-reactive`
 

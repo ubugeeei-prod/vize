@@ -1,0 +1,489 @@
+{
+  "schema": "vize.lint.next-preset-unobserved-controls",
+  "version": 1,
+  "authority": "Independently source-authored proposal only; no native/provider/compiler executions, fixture or golden recapture",
+  "cases": [
+    {
+      "id": "vue35-shallow-reactive",
+      "filename": "ShallowReactive.vue",
+      "source": "<script setup lang=\"ts\">\nconst { name, count = 0 } = defineProps<{ name: string; count?: number }>();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "1a63e19ea38a2562338f3cd5eae4061f690f57c575f01ff12b907978833b3ed3",
+      "scopedRuleConfig": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "sourceAuthoredCurrentApi": {
+        "filename": "ShallowReactive.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "sourceAuthoredCurrentCli": [
+        {
+          "file": "ShallowReactive.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "sourceAuthoredCurrentStatus": 0,
+      "sourceAuthoredRelatedProvider": [
+        {
+          "filePath": "/tmp/vize-next-preset-readonly-audit-20261012/controls/ShallowReactive.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ],
+      "relatedProviderIsNotExactRule": "vue/no-setup-props-reactivity-loss; no pinned provider named no-deep-destructure-in-props",
+      "sourceInferredCompilerAccepted": true,
+      "compilerOptions": {},
+      "observed": false
+    },
+    {
+      "id": "vue35-nested-object",
+      "filename": "NestedObject.vue",
+      "source": "<script setup lang=\"ts\">\nconst { user: { name } } = defineProps<{ user: { name: string } }>();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "f04470feb81abdaa4dd5df4d8eec47e4fb69ffef5351553d789d160c9b300978",
+      "scopedRuleConfig": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "sourceAuthoredCurrentApi": {
+        "filename": "NestedObject.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 31,
+            "end": 49,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "sourceAuthoredCurrentCli": [
+        {
+          "file": "NestedObject.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 2,
+              "column": 7,
+              "endLine": 2,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "sourceAuthoredCurrentStatus": 0,
+      "sourceAuthoredRelatedProvider": [
+        {
+          "filePath": "/tmp/vize-next-preset-readonly-audit-20261012/controls/NestedObject.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-setup-props-reactivity-loss",
+              "severity": 1,
+              "message": "Destructuring the `props` will cause the value to lose reactivity.",
+              "line": 2,
+              "column": 15,
+              "endLine": 2,
+              "endColumn": 23,
+              "messageId": "destructuring"
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 1,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": [],
+          "source": "<script setup lang=\"ts\">\nconst { user: { name } } = defineProps<{ user: { name: string } }>();\n</script>\n<template><div /></template>\n"
+        }
+      ],
+      "relatedProviderIsNotExactRule": "vue/no-setup-props-reactivity-loss; no pinned provider named no-deep-destructure-in-props",
+      "sourceInferredCompilerAccepted": false,
+      "compilerOptions": {},
+      "observed": false
+    },
+    {
+      "id": "vue35-nested-array",
+      "filename": "NestedArray.vue",
+      "source": "<script setup lang=\"ts\">\nconst { items: [first] } = defineProps<{ items: string[] }>();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "b7d8ee36e08f28d5a66ce12c85025fcc6fefe4eb27d16456fe6917e546cfc534",
+      "scopedRuleConfig": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "sourceAuthoredCurrentApi": {
+        "filename": "NestedArray.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "sourceAuthoredCurrentCli": [
+        {
+          "file": "NestedArray.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "sourceAuthoredCurrentStatus": 0,
+      "sourceAuthoredRelatedProvider": [
+        {
+          "filePath": "/tmp/vize-next-preset-readonly-audit-20261012/controls/NestedArray.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-setup-props-reactivity-loss",
+              "severity": 1,
+              "message": "Destructuring the `props` will cause the value to lose reactivity.",
+              "line": 2,
+              "column": 16,
+              "endLine": 2,
+              "endColumn": 23,
+              "messageId": "destructuring"
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 1,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": [],
+          "source": "<script setup lang=\"ts\">\nconst { items: [first] } = defineProps<{ items: string[] }>();\n</script>\n<template><div /></template>\n"
+        }
+      ],
+      "relatedProviderIsNotExactRule": "vue/no-setup-props-reactivity-loss; no pinned provider named no-deep-destructure-in-props",
+      "sourceInferredCompilerAccepted": false,
+      "compilerOptions": {},
+      "observed": false
+    },
+    {
+      "id": "standalone-local-function",
+      "filename": "Standalone.ts",
+      "source": "function defineProps() { return { user: { name: \"Ada\" } }; }\nconst { user: { name } } = defineProps();\n",
+      "sourceSha256": "f5f20379fdf681e0fa0d7f9646ce9a7892ac77aeb9fddc18a4dcb71acb65b7a8",
+      "scopedRuleConfig": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "sourceAuthoredCurrentApi": {
+        "filename": "Standalone.ts",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 67,
+            "end": 85,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "sourceAuthoredCurrentCli": [
+        {
+          "file": "Standalone.ts",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 2,
+              "column": 7,
+              "endLine": 2,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "sourceAuthoredCurrentStatus": 0,
+      "sourceAuthoredRelatedProvider": [
+        {
+          "filePath": "/tmp/vize-next-preset-readonly-audit-20261012/controls/Standalone.ts",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ],
+      "relatedProviderIsNotExactRule": "vue/no-setup-props-reactivity-loss; no pinned provider named no-deep-destructure-in-props",
+      "sourceInferredCompilerAccepted": null,
+      "compilerOptions": {},
+      "observed": false
+    },
+    {
+      "id": "normal-script-local-function",
+      "filename": "NormalScript.vue",
+      "source": "<script lang=\"ts\">\nfunction defineProps() { return { user: { name: \"Ada\" } }; }\nconst { user: { name } } = defineProps();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "2c062e099a73d44e0edbf710c26dbedfe411830effb4d61d6a06ee60bc0fd897",
+      "scopedRuleConfig": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "sourceAuthoredCurrentApi": {
+        "filename": "NormalScript.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 86,
+            "end": 104,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "sourceAuthoredCurrentCli": [
+        {
+          "file": "NormalScript.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 3,
+              "column": 7,
+              "endLine": 3,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "sourceAuthoredCurrentStatus": 0,
+      "sourceAuthoredRelatedProvider": [
+        {
+          "filePath": "/tmp/vize-next-preset-readonly-audit-20261012/controls/NormalScript.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ],
+      "relatedProviderIsNotExactRule": "vue/no-setup-props-reactivity-loss; no pinned provider named no-deep-destructure-in-props",
+      "sourceInferredCompilerAccepted": true,
+      "compilerOptions": {},
+      "observed": false
+    },
+    {
+      "id": "compiler-destructure-disabled",
+      "filename": "DisabledDestructure.vue",
+      "source": "<script setup lang=\"ts\">\nconst { user: { name } } = defineProps<{ user: { name: string } }>();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "f04470feb81abdaa4dd5df4d8eec47e4fb69ffef5351553d789d160c9b300978",
+      "scopedRuleConfig": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "sourceAuthoredCurrentApi": {
+        "filename": "DisabledDestructure.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-deep-destructure-in-props",
+            "severity": "warning",
+            "message": "Avoid deeply nested destructuring in defineProps",
+            "start": 31,
+            "end": 49,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "sourceAuthoredCurrentCli": [
+        {
+          "file": "DisabledDestructure.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deep-destructure-in-props",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+              "line": 2,
+              "column": 7,
+              "endLine": 2,
+              "endColumn": 25,
+              "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "sourceAuthoredCurrentStatus": 0,
+      "sourceAuthoredRelatedProvider": [
+        {
+          "filePath": "/tmp/vize-next-preset-readonly-audit-20261012/controls/DisabledDestructure.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-setup-props-reactivity-loss",
+              "severity": 1,
+              "message": "Destructuring the `props` will cause the value to lose reactivity.",
+              "line": 2,
+              "column": 15,
+              "endLine": 2,
+              "endColumn": 23,
+              "messageId": "destructuring"
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 1,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": [],
+          "source": "<script setup lang=\"ts\">\nconst { user: { name } } = defineProps<{ user: { name: string } }>();\n</script>\n<template><div /></template>\n"
+        }
+      ],
+      "relatedProviderIsNotExactRule": "vue/no-setup-props-reactivity-loss; no pinned provider named no-deep-destructure-in-props",
+      "sourceInferredCompilerAccepted": true,
+      "compilerOptions": {
+        "propsDestructure": false
+      },
+      "observed": false
+    },
+    {
+      "id": "shallow-alias-rest",
+      "filename": "AliasRest.vue",
+      "source": "<script setup lang=\"ts\">\nconst { name: localName, ...rest } = defineProps<{ name: string; count: number }>();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "f7936f6199738642d11e71d22e99467b26945fd8f1202751f4b60e4828bd2612",
+      "scopedRuleConfig": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "sourceAuthoredCurrentApi": {
+        "filename": "AliasRest.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "sourceAuthoredCurrentCli": [
+        {
+          "file": "AliasRest.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "sourceAuthoredCurrentStatus": 0,
+      "sourceAuthoredRelatedProvider": [
+        {
+          "filePath": "/tmp/vize-next-preset-readonly-audit-20261012/controls/AliasRest.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ],
+      "relatedProviderIsNotExactRule": "vue/no-setup-props-reactivity-loss; no pinned provider named no-deep-destructure-in-props",
+      "sourceInferredCompilerAccepted": true,
+      "compilerOptions": {},
+      "observed": false
+    },
+    {
+      "id": "ordinary-member-api",
+      "filename": "MemberApi.vue",
+      "source": "<script setup lang=\"ts\">\nconst api = { defineProps() { return { user: { name: \"Ada\" } }; } };\nconst { user: { name } } = api.defineProps();\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "9ec12878f20ca7bb7519766e47695e101996d970ce7087fda82c4971edb95e8c",
+      "scopedRuleConfig": {
+        "preset": "incremental",
+        "rules": {
+          "script/no-deep-destructure-in-props": "warn"
+        }
+      },
+      "sourceAuthoredCurrentApi": {
+        "filename": "MemberApi.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "sourceAuthoredCurrentCli": [
+        {
+          "file": "MemberApi.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "sourceAuthoredCurrentStatus": 0,
+      "sourceAuthoredRelatedProvider": [
+        {
+          "filePath": "/tmp/vize-next-preset-readonly-audit-20261012/controls/MemberApi.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ],
+      "relatedProviderIsNotExactRule": "vue/no-setup-props-reactivity-loss; no pinned provider named no-deep-destructure-in-props",
+      "sourceInferredCompilerAccepted": true,
+      "compilerOptions": {},
+      "observed": false
+    }
+  ]
+}

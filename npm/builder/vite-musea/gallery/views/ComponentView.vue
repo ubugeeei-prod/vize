@@ -19,6 +19,7 @@ import ActionsPanel from "../components/ActionsPanel.vue";
 import FullscreenPreview from "../components/FullscreenPreview.vue";
 import { getVariantSectionId } from "../utils/variantSections";
 import { useResizable } from "../composables/useResizable";
+import { createVariantNavigation } from "../utils/variantNavigation";
 
 const route = useRoute();
 const { getArt, load } = useArts();
@@ -45,7 +46,6 @@ const actionsPanel = useResizable({
 });
 const selectedVariantName = ref<string>("");
 const variantSectionElements = new Map<string, Element>();
-let variantObserver: IntersectionObserver | null = null;
 
 const artPath = computed(() => route.params.path as string);
 const art = computed(() => getArt(artPath.value));
@@ -129,10 +129,20 @@ watch(actionsExpanded, async (expanded) => {
   syncActionsPanelHeight();
 });
 
-function disconnectVariantObserver() {
-  variantObserver?.disconnect();
-  variantObserver = null;
-}
+const {
+  disconnectVariantObserver,
+  setupVariantObserver,
+  syncSelectionFromHash,
+  handleVariantSelect,
+} = createVariantNavigation({
+  activeTab,
+  route,
+  artPath,
+  selectedVariantName,
+  variantSectionIds,
+  variantSectionElements,
+  nextTick,
+});
 
 function setVariantSectionRef(variantName: string, el: unknown) {
   if (typeof Element !== "undefined" && el instanceof Element) {
@@ -140,73 +150,6 @@ function setVariantSectionRef(variantName: string, el: unknown) {
   } else {
     variantSectionElements.delete(variantName);
   }
-}
-
-async function setupVariantObserver() {
-  disconnectVariantObserver();
-
-  if (activeTab.value !== "variants" || variantSectionElements.size === 0) {
-    return;
-  }
-
-  await nextTick();
-
-  if (typeof window === "undefined" || !("IntersectionObserver" in window)) {
-    return;
-  }
-
-  variantObserver = new IntersectionObserver(
-    (entries) => {
-      const visibleEntries = entries
-        .filter((entry) => entry.isIntersecting)
-        .sort((a, b) => {
-          if (Math.abs(a.intersectionRatio - b.intersectionRatio) > 0.05) {
-            return b.intersectionRatio - a.intersectionRatio;
-          }
-          return Math.abs(a.boundingClientRect.top) - Math.abs(b.boundingClientRect.top);
-        });
-
-      const activeEntry = visibleEntries[0];
-      const variantName =
-        activeEntry?.target instanceof HTMLElement
-          ? activeEntry.target.dataset.variantName
-          : undefined;
-
-      if (variantName && variantName !== selectedVariantName.value) {
-        selectedVariantName.value = variantName;
-      }
-    },
-    {
-      rootMargin: "-18% 0px -52% 0px",
-      threshold: [0.2, 0.4, 0.7],
-    },
-  );
-
-  for (const element of variantSectionElements.values()) {
-    variantObserver.observe(element);
-  }
-}
-
-async function syncSelectionFromHash() {
-  if (activeTab.value !== "variants" || !route.hash) {
-    return;
-  }
-
-  await nextTick();
-
-  const targetId = decodeURIComponent(route.hash.slice(1));
-  const targetEntry = Object.entries(variantSectionIds.value).find(([, id]) => id === targetId);
-  const targetEl = document.getElementById(targetId);
-
-  if (!targetEl) {
-    return;
-  }
-
-  if (targetEntry) {
-    selectedVariantName.value = targetEntry[0];
-  }
-
-  targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 onMounted(() => {
@@ -221,14 +164,6 @@ watch(artPath, () => {
   variantSectionElements.clear();
 });
 
-const handleVariantSelect = (variantName: string) => {
-  selectedVariantName.value = variantName;
-
-  const targetId = variantSectionIds.value[variantName];
-  const targetEl = targetId ? document.getElementById(targetId) : null;
-  targetEl?.scrollIntoView({ behavior: "smooth", block: "start" });
-};
-
 function selectTab(tab: typeof activeTab.value) {
   activeTab.value = tab;
 }
@@ -240,10 +175,14 @@ function toggleActions() {
 watch(
   () => [art.value?.path, activeTab.value] as const,
   () => {
-    void setupVariantObserver();
-    void syncSelectionFromHash();
+    if (activeTab.value === "variants" && !route.hash) {
+      handleVariantSelect(selectedVariantName.value);
+    } else {
+      void setupVariantObserver();
+      void syncSelectionFromHash();
+    }
   },
-  { immediate: true },
+  { immediate: true, flush: "post" },
 );
 
 watch(

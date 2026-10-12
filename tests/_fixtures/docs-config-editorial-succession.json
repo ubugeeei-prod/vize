@@ -266,7 +266,7 @@
     {
       "path": "docs/content/ja/guide/musea.md",
       "originalSha256": "7f22bf041ae8737c0d6ffedcd7e8c7ae4eb5361dfe0db867b8e4fe096860f9c7",
-      "successorSha256": "edbeb2ba5d2e90774c7cdfce50d354cffab53141ca8ffef2f5d4e1bb38b6ad35",
+      "successorSha256": "454ce9824715e588e12103bdf620c433a53f1936fc2e789b7329d3977e7b0705",
       "patches": [
         {
           "offset": 2206,
@@ -282,6 +282,11 @@
           "offset": 3452,
           "before": "共有設定に指定できる項目は、`include`、`exclude`、`basePath`、`storybookCompat`、`inlineArt` です。`previewCss`、`previewSetup`、`tokensPath`、`theme`、`storybookOutDir` は、`musea()` に直接渡してください。\n",
           "after": "</details>\n"
+        },
+        {
+          "offset": 8233,
+          "before": "",
+          "after": "<span id=\"visual-regression-testing\"></span>\n\n"
         }
       ]
     }

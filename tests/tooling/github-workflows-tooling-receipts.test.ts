@@ -65,7 +65,9 @@ for (const { file, job } of callers) {
     if (file === "pr-source-checks.yml") {
       assert.equal(workflow.jobs["pr-source-cli"].uses, "./.github/workflows/pr-source-cli.yml");
       assert.deepEqual(workflow.jobs[job].needs, ["pr-source-plan", "pr-source-cli"]);
-      assert.equal(steps[build].with?.sha256, "${{ needs.pr-source-cli.outputs.sha256 }}");
+      assert.deepEqual(steps[build].with, {
+        producer: "${{ toJSON(needs.pr-source-cli.outputs) }}",
+      });
       const restore = parse(
         readRepoFile(".github", "actions", "restore-source-cli", "action.yml"),
       ) as { runs: { steps: Step[] } };

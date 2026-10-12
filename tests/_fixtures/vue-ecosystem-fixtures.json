@@ -7217,7 +7217,7 @@
           "componentFile": "apps/stage-web/src/pages/settings/characters/components/CharacterItem.vue",
           "tagName": "CharacterItem",
           "tagAnchor": "      <CharacterItem\n        ",
-          "completionItemCount": 40,
+          "completionItemCount": 43,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -7258,7 +7258,10 @@
             { "label": "key", "rank": 36 },
             { "label": "character", "rank": 37 },
             { "label": "is-active", "rank": 38 },
-            { "label": "is-selected", "rank": 39 }
+            { "label": "is-selected", "rank": 39 },
+            { "label": "@activate", "rank": 40 },
+            { "label": "@delete", "rank": 41 },
+            { "label": "@select", "rank": 42 }
           ],
           "dependencyEdit": {
             "anchor": "  isSelected: boolean\n}",

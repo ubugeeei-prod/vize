@@ -1,0 +1,37 @@
+{
+  "schema": "vize.lint.reserved-installed-contract-source-equivalence",
+  "version": 1,
+  "scope": "Original literal successors agree with complete hosted source packets; no installed release credit.",
+  "contract": {
+    "processes": 443,
+    "suites": {
+      "reserved-bare": 113,
+      "reserved-prefix": 161,
+      "reserved-alias": 169
+    },
+    "sha256": "a8ecd6d5638eb36b0b0853e6078df2a33c0665316e622df1950bf4ca3191dfdd"
+  },
+  "qualified": [
+    {
+      "suite": "reserved-bare",
+      "processes": 113,
+      "packetSha256": "567801efd905703acb2704eb4f80b8e8cf2d56bbb410de661b8b260e962dbc0e",
+      "source": "f4d420310e1c0ff2bcee62afb26ff4e9f905215a",
+      "binarySha256": "48c76f0513491f897b3ea01930293da29d915ec2ac674294e65d340c6e132264"
+    },
+    {
+      "suite": "reserved-prefix",
+      "processes": 161,
+      "packetSha256": "47a18ec6f1b2943d14669f853d6a2bbed48b14936c66080050813a24576b0fae",
+      "source": "f4d420310e1c0ff2bcee62afb26ff4e9f905215a",
+      "binarySha256": "48c76f0513491f897b3ea01930293da29d915ec2ac674294e65d340c6e132264"
+    },
+    {
+      "suite": "reserved-alias",
+      "processes": 169,
+      "packetSha256": "3f19e862fd283b9102eb1f38e93a1d96aa2a24e2fbc52363b2a1d543a648f914",
+      "source": "f4d420310e1c0ff2bcee62afb26ff4e9f905215a",
+      "binarySha256": "48c76f0513491f897b3ea01930293da29d915ec2ac674294e65d340c6e132264"
+    }
+  ]
+}

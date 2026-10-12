@@ -59,9 +59,9 @@
     },
     {
       "route": "/guide/check-performance",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Concrete worker/profile commands present; standalone purpose and safety context still need reader-flow review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "English purpose and complete authored Japanese worker/profile guidance preserve both original commands, all inline API tokens, the one-worker default and the historical diagnostic limitation; fresh native browser and deployed reader acceptance remain pending."
     },
     {
       "route": "/guide/cli",
@@ -83,9 +83,9 @@
     },
     {
       "route": "/guide/doctor",
-      "locales": ["en"],
+      "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Practical first-run, source inspection, exit policy and JSON report guidance precede the retained complete filter/scoring reference. Actual CLI arguments and reporter reviewed; native desktop/mobile and deployed acceptance remain required."
+      "note": "Complete authored Japanese guide retains every original command, filter token, category, confidence, exit policy, scoring boundary and English heading alias. Existing practical English guidance remains byte-exact. Native desktop/mobile, actual next-step links and stable deployed acceptance remain required."
     },
     {
       "route": "/guide/experimentals",
@@ -149,15 +149,15 @@
     },
     {
       "route": "/guide/lint-execution",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Configuration example present; purpose and next action still need review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "English purpose and descriptive CLI/cross-file next steps added; complete authored Japanese retains the full Vite+ example, every option and rule token, file-selection scope, explicit-off precedence and warning/default/invalid-limit boundaries. Native and stable deployed reading acceptance remain required."
     },
     {
       "route": "/guide/musea-capture",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Capture defaults and report examples present; practical first-run flow still needs review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "English context and complete authored Japanese explain first capture and report reading while preserving the original recipe, defaults and node evidence fields. A localized stable VRT bookmark and exact editorial succession preserve the full existing Musea guide. Native capture and stable deployed reading acceptance remain required."
     },
     {
       "route": "/guide/musea-globals",
@@ -254,8 +254,8 @@
     {
       "route": "/rules/options",
       "locales": ["en", "ja"],
-      "entry": "audited",
-      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+      "entry": "revised",
+      "note": "Complete authored Japanese prose explains rule selection, defaults, full-object replacement and file-specific settings; all 43 original recipes and API tokens remain. Native reading and deployed acceptance remain pending."
     },
     {
       "route": "/rules/options-musea",
@@ -265,9 +265,9 @@
     },
     {
       "route": "/rules/options-script",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Complete authored Japanese article retains all thirteen current examples, API names, default meanings, Vue 3.5 boundary and bookmarks. The inherited props option key is corrected to the actual typed destructure API in both languages; original recipes and the finite correction remain recorded. Fresh native desktop/mobile and deployed reader acceptance remain required."
     },
     {
       "route": "/rules/options-type",

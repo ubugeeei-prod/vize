@@ -1,0 +1,5 @@
+<script lang="ts">
+import { defineProps } from "vue";
+const { user: { name } } = defineProps<{ user: { name: string } }>();
+</script>
+<template><div /></template>

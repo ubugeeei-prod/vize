@@ -1,0 +1,501 @@
+{
+  "schema": "vize.lint.props-deep-destructure-preparation-archive",
+  "version": 1,
+  "files": [
+    {
+      "path": "original-eight.json",
+      "bytes": 18103,
+      "sha256": "ec0a00983c97eacab181f8b707e0150e9535e8d66b970c05920c0a0bc77ad40e"
+    },
+    {
+      "path": "original-neighbors.json",
+      "bytes": 76190,
+      "sha256": "ffc6df355e15eb06d128dc593652c508eeced0b78bc9bb423ac7a1199affa22f"
+    },
+    {
+      "path": "source-proposal.json",
+      "bytes": 4706,
+      "sha256": "601b30ead372856fb60b9fe3bf877cf3feb867eda9fad80cdf408f5401bf69b0"
+    },
+    {
+      "path": "original-preset-audit.json",
+      "bytes": 15579,
+      "sha256": "2ebe3dcfc8e00bd87980653cb93a4d0aee55a9076a04dcefab4e5c2ac8553eaf"
+    },
+    {
+      "path": "original-eight-observation.json.gz",
+      "bytes": 74088,
+      "sha256": "563f31234b609d3581a8be88e91f5f69972a633dfe38286b969e143a4771394e",
+      "rawBytes": 420164,
+      "rawSha256": "af8bb17ac06f50db11f552a90b09c3361e5ce3c254a4b4e11bcd0c55dda9dbb6"
+    },
+    {
+      "path": "initial-public-before31-failure.json.gz",
+      "bytes": 8570,
+      "sha256": "3195909c975fb11f75bd13ef6a4f166ddd6985de08f8dd088ba183b1e2ad9ffe",
+      "rawBytes": 101112,
+      "rawSha256": "c10cb00a5d09a9e201b5bc883985a43e742eec7b06c936eaf7faace0cdaf4870"
+    },
+    {
+      "path": "initial-observer-startup-failure.json",
+      "bytes": 1463,
+      "sha256": "bc5352ad06a8fcc9505a1656eaecd1a1878920b7ffe3ec25998367222e9e0183"
+    },
+    {
+      "path": "initial-observe-no-deep.mjs.fixture",
+      "bytes": 10650,
+      "sha256": "da352ebaa0ed40ffbe4a17edbc92047f882eb87058a5a382c8168bc67c5231bc"
+    },
+    {
+      "path": "original-eight-observer.mjs.fixture",
+      "bytes": 10836,
+      "sha256": "6a81992090bec583236898426d08b21fa40127e4ff6916ce15b0601ff937d652"
+    },
+    {
+      "path": "reference/provider-source-custody.json",
+      "bytes": 1830,
+      "sha256": "bbde491190beec6ab6aaae5ad386aa24c61a1e90591aa57445a6648ea8a524d0"
+    },
+    {
+      "path": "reference/compiler-sfc.LICENSE",
+      "bytes": 1091,
+      "sha256": "1bb85cc9b13b81ef41c81c51866172fc345e0503c86726a6755b796590b70175"
+    },
+    {
+      "path": "reference/eslint-plugin-vue.LICENSE",
+      "bytes": 1071,
+      "sha256": "dbbf03317f0101fed5643cd87ca80fb769e358fa4f428445bf2315deeb23a154"
+    },
+    {
+      "path": "reference/definePropsDestructure.ts",
+      "bytes": 10292,
+      "sha256": "20ca445da54a2b151e1543ca3996d2aff028fd80b2b8fce7e5a4d663377204b3"
+    },
+    {
+      "path": "reference/no-unused-emit-declarations.dist.js",
+      "bytes": 8512,
+      "sha256": "a48d43559818dd7c446b650aaeece2be160e191c8f1bc480ef50ade20555de3c"
+    },
+    {
+      "path": "reference/no-deprecated-props-default-this.dist.js",
+      "bytes": 3264,
+      "sha256": "540f005e2ba5f6a0fff983158571de033fa2ed0541484590cc67e5bd8e3154dd"
+    },
+    {
+      "path": "reference/no-setup-props-reactivity-loss.dist.js",
+      "bytes": 8964,
+      "sha256": "f38e02569f6e6916d29c125b458de3fa074b6925a6d3cf8aa39f851c852552be"
+    },
+    {
+      "path": "sources/ShallowReactive.vue.fixture",
+      "bytes": 141,
+      "sha256": "1a63e19ea38a2562338f3cd5eae4061f690f57c575f01ff12b907978833b3ed3"
+    },
+    {
+      "path": "sources/NestedObject.vue.fixture",
+      "bytes": 134,
+      "sha256": "f04470feb81abdaa4dd5df4d8eec47e4fb69ffef5351553d789d160c9b300978"
+    },
+    {
+      "path": "sources/NestedArray.vue.fixture",
+      "bytes": 127,
+      "sha256": "b7d8ee36e08f28d5a66ce12c85025fcc6fefe4eb27d16456fe6917e546cfc534"
+    },
+    {
+      "path": "sources/Standalone.ts.fixture",
+      "bytes": 103,
+      "sha256": "f5f20379fdf681e0fa0d7f9646ce9a7892ac77aeb9fddc18a4dcb71acb65b7a8"
+    },
+    {
+      "path": "sources/NormalScript.vue.fixture",
+      "bytes": 161,
+      "sha256": "2c062e099a73d44e0edbf710c26dbedfe411830effb4d61d6a06ee60bc0fd897"
+    },
+    {
+      "path": "sources/DisabledDestructure.vue.fixture",
+      "bytes": 134,
+      "sha256": "f04470feb81abdaa4dd5df4d8eec47e4fb69ffef5351553d789d160c9b300978"
+    },
+    {
+      "path": "sources/AliasRest.vue.fixture",
+      "bytes": 149,
+      "sha256": "f7936f6199738642d11e71d22e99467b26945fd8f1202751f4b60e4828bd2612"
+    },
+    {
+      "path": "sources/MemberApi.vue.fixture",
+      "bytes": 179,
+      "sha256": "9ec12878f20ca7bb7519766e47695e101996d970ce7087fda82c4971edb95e8c"
+    },
+    {
+      "path": "sources/ArrayObject.vue.fixture",
+      "bytes": 140,
+      "sha256": "4602f4870e2fba53804d7c3faaae1ba39f918484a01191fffd935abeab3ac2d7"
+    },
+    {
+      "path": "sources/ArrayDefault.vue.fixture",
+      "bytes": 135,
+      "sha256": "a54bb6558596f38d584e07d6e8319b17634b270cf302b4a4a98f8c6a927313b6"
+    },
+    {
+      "path": "sources/LocalSetup.vue.fixture",
+      "bytes": 167,
+      "sha256": "7dc113ccd3ec3a5ebea627bf50ee550518cf69756b6e98ed7205703958811e32"
+    },
+    {
+      "path": "sources/ForeignImport.vue.fixture",
+      "bytes": 152,
+      "sha256": "0966585db63c441c4f9bf221f837a3ede890ee146b8f412c3394e35a9105e5b5"
+    },
+    {
+      "path": "sources/VueImport.vue.fixture",
+      "bytes": 169,
+      "sha256": "9a85d21bf6416c9fac8d6d48496a85ac7e428843eba612e754946ead9db6e3a0"
+    },
+    {
+      "path": "sources/TypeImport.vue.fixture",
+      "bytes": 178,
+      "sha256": "1332580a36c7edc15abf4643519d8b762849a19fabc4ce2690b88155dbb2c99d"
+    },
+    {
+      "path": "sources/HoistedVar.vue.fixture",
+      "bytes": 174,
+      "sha256": "75daafb35ad7934454016e9e62a9ed408f49b5bd055c218f16cc9ec9820cc343"
+    },
+    {
+      "path": "sources/InnerFunction.vue.fixture",
+      "bytes": 192,
+      "sha256": "e6e3e84583e85040fa3ae0beb3ddb0d3f79ca66add1f521a5d6a97a30ee196e2"
+    },
+    {
+      "path": "sources/WithDefaults.vue.fixture",
+      "bytes": 152,
+      "sha256": "f2cac48f8e2a65bc8d75aef83f1f3c74c85c60ae530f8e47298ec7cf20f6739b"
+    },
+    {
+      "path": "sources/ParenthesizedAs.vue.fixture",
+      "bytes": 143,
+      "sha256": "e773ffe621d01f81d09fb6edb3e048901653a0630ccfd3be35544699a3328159"
+    },
+    {
+      "path": "sources/OptionalCall.vue.fixture",
+      "bytes": 108,
+      "sha256": "e9023c38783044f2e9e91e351b8c52383e8feb3bd158842b71b6288e6cb49c5b"
+    },
+    {
+      "path": "sources/SiblingModule.vue.fixture",
+      "bytes": 183,
+      "sha256": "036f0132aa5e8f0b8aad6ebf8dafb62967e69d68ee08c114ab2636062230cfac"
+    },
+    {
+      "path": "sources/InvalidSibling.vue.fixture",
+      "bytes": 180,
+      "sha256": "8000095a1c00596808a7597873ccc58cae7a93840152c167b6fae0532ccd5872"
+    },
+    {
+      "path": "sources/ExternalSetup.vue.fixture",
+      "bytes": 151,
+      "sha256": "6618fc3afabd325f5d8a76b185f64121ab31f91fee3630a20a9e60b580806081"
+    },
+    {
+      "path": "sources/ExternalSibling.vue.fixture",
+      "bytes": 180,
+      "sha256": "3e2cfd6e5f38668f97187926e745373fd86a9059e5934d4b10a4c9ea7d83f41d"
+    },
+    {
+      "path": "sources/UnboundStandalone.ts.fixture",
+      "bytes": 70,
+      "sha256": "8584d3b59da768d3a141f5ccdbe8fdb930affc6ad437d9146875a2c2f7a6ce74"
+    },
+    {
+      "path": "sources/UnboundNormal.vue.fixture",
+      "bytes": 128,
+      "sha256": "c2eee6fe2f5bb6c963b4ce4ec602db7fba9f1c21529fb0514b42e7f90a297915"
+    },
+    {
+      "path": "sources/UnicodeArray.vue.fixture",
+      "bytes": 159,
+      "sha256": "8a36d378d1b07a6dbf30f03efd9e11247be3b994e059d1f401dab0e46e1b3c40"
+    },
+    {
+      "path": "sources/ObjectDefault.vue.fixture",
+      "bytes": 143,
+      "sha256": "0fb54566b20653f49e7a39b950b0ea7ec8cbda7c6c60ea3d32d2887808d8e42c"
+    },
+    {
+      "path": "sources/RootArray.vue.fixture",
+      "bytes": 114,
+      "sha256": "108b74e4a23eb331cb4a8d5aaff79535638629e15ffd6878a45c9135efcf6c3f"
+    },
+    {
+      "path": "sources/NormalVueImport.vue.fixture",
+      "bytes": 163,
+      "sha256": "eefc4400799655ecd4fdf4ea56e2c449d1c0a36d0544e2a8549de562d165aacc"
+    },
+    {
+      "path": "sources/BlockLocal.vue.fixture",
+      "bytes": 179,
+      "sha256": "9e01c862f828f34dd5919a178e6dde80a6b26d7ea84e3d244d868a29187cd2e0"
+    },
+    {
+      "path": "sources/WithDefaultsShadow.vue.fixture",
+      "bytes": 196,
+      "sha256": "4d3c537dbb4dc6f3768cccaeec02142474a3f2a08e2c340142f6baf423b47c15"
+    },
+    {
+      "path": "source-custody/original-no-deep.rs.fixture",
+      "bytes": 10631,
+      "sha256": "c4a0134e786feca78007040fcfd49b9c8686aca3e63af3b24d81df172ad11ab0"
+    },
+    {
+      "path": "before-authorship-correction.json",
+      "bytes": 4986,
+      "sha256": "23e5bfcaefd88039e67ea342638b3426572b688895a823a4f515234dd7d3dfae"
+    },
+    {
+      "path": "public-before31.json.gz",
+      "bytes": 8595,
+      "sha256": "4c291c3ab98254b2dc9a7a401564767897f8ef298e3d9156873038ab9ad71f6b"
+    },
+    {
+      "path": "source-custody/optional-before-source-proof.json",
+      "bytes": 1214,
+      "sha256": "13373ea96a945e9d9621790f91d1960ebf2f710e5996c9fb49e2e88e1e2ce801"
+    },
+    {
+      "path": "source-custody/original-public-parser-expression.rs.fixture",
+      "bytes": 74058,
+      "sha256": "e1e16a0ad4d17edac18006ce30b1a2b4da10b7f4c216e2474ff128ed66f410ed"
+    },
+    {
+      "path": "source-custody/pinned-oxc-ast-js.rs.fixture",
+      "bytes": 79169,
+      "sha256": "5932be5ea0333d01f618b7018f1767b5f4b5c553a68bb40cb617754bd60554ab"
+    },
+    {
+      "path": "provider-path-correction.json",
+      "bytes": 11161,
+      "sha256": "98463973d2d6e19449dfa74982b8664d85b736267d6d0b76a9f26f2eb50a4263"
+    },
+    {
+      "path": "initial-adopted31-cases.json.gz",
+      "bytes": 5995,
+      "sha256": "586073523acc264328919537718f58075722ba67f7074e7dfcc3a96f4e7b5053"
+    },
+    {
+      "path": "source-custody/unicode-after-only-source-proof.json",
+      "bytes": 6343,
+      "sha256": "5dffe4cbf3ab54ed830ab903133950f81d5587e1095984ad6f243a4236252852"
+    },
+    {
+      "path": "source-custody/original-public-shared.rs.fixture",
+      "bytes": 7473,
+      "sha256": "5c41a5fb774e5acdeff210a2620abb727bdadcbcaafd0ae9ea0f35fd4b299e43"
+    },
+    {
+      "path": "source-custody/original-public-json.rs.fixture",
+      "bytes": 2810,
+      "sha256": "32937f0714c101c226814a2fe3c3a3ae7aadab54a289aafcbe84809b7f146fdc"
+    },
+    {
+      "path": "reference/ts-wrapped-callee-authored-controls.json",
+      "bytes": 3288,
+      "sha256": "4e6c693e881e8d547846b0a99d653d7c0eca784425b748b08c2288630fa71b4d"
+    },
+    {
+      "path": "reference/ts-wrapped-callee-compiler-reference.json",
+      "bytes": 58091,
+      "sha256": "b13e3bb3eab24f9d2b7f5a74c8a40e94f6ac8126b8d03920324236484fecc544"
+    },
+    {
+      "path": "reference/observe-ts-wrapped-callee.mjs.fixture",
+      "bytes": 3651,
+      "sha256": "022d6240147177293bf228ae7f17da887dcbcad6c71dbe6399840bb0634e1061"
+    },
+    {
+      "path": "sources/TypeWrappedCallee.vue.fixture",
+      "bytes": 115,
+      "sha256": "e0748abcc21cd8dfdf97d15716562a2610f9531c4ae6b278d129f0303088d1c7"
+    },
+    {
+      "path": "sources/TypeWrappedDefaultsCallee.vue.fixture",
+      "bytes": 161,
+      "sha256": "8970fd0882c3251f73dab84cc3653852bc6de443813f1e90582f7b8bfbc905a8"
+    },
+    {
+      "path": "cases.json",
+      "bytes": 80365,
+      "sha256": "d522ae6c3fc8a04403c43661c7d66584188a2168b1e01947093044f4239de8c8"
+    },
+    {
+      "path": "public-additional-before5.json.gz",
+      "bytes": 2269,
+      "sha256": "9657a1ff0f52774a9f84098d8eaf8163fc96eb90a1098e6d628087744dc56b46",
+      "rawBytes": 11042,
+      "rawSha256": "bd35b8d2ff32a84addf8d67b3d0849057c6c73fd86a8d98d48665ac7cee9faa1"
+    },
+    {
+      "path": "source-custody/prepared-rust-source-with-namesake.json",
+      "bytes": 3124,
+      "sha256": "dd8163ddd4d145e9b5945ef3117c6befa929ac43eecb029f76bb98f760db4bf2"
+    },
+    {
+      "path": "source-custody/namesake-engine-authored-controls.json",
+      "bytes": 2856,
+      "sha256": "9b4eb4c6a61c538c09c9de62a5f237cb3989344fb5c38d8f8353a8fb148f46d9"
+    },
+    {
+      "path": "source-custody/mechanical-unit-extraction.json",
+      "bytes": 982,
+      "sha256": "186f4fa38e8feb35a30e09a8395c65e79838cdf19a3c789c8d834a71d0a292c7"
+    },
+    {
+      "path": "source-custody/owned-generated-docs-proof.json",
+      "bytes": 3706,
+      "sha256": "52db8e38491ed009d73c34e33a01fbe522ff043e10ed2a410f91e299086a4b19"
+    },
+    {
+      "path": "source-custody/initial-source-plan/original-consumer-inventory.tsv.gz",
+      "bytes": 10383,
+      "sha256": "668a38d47381c34371d33931126e12d64daf3829f65d817b6ca420ff5c3a7032",
+      "rawBytes": 158031,
+      "rawSha256": "44c893ee88834e52c99fc46f1d07d2a08d3d00492bbbc9d376013a8bd3d6b3ba"
+    },
+    {
+      "path": "source-custody/initial-source-plan/regenerated-consumer-inventory.tsv.gz",
+      "bytes": 10402,
+      "sha256": "dd90ccd988e9991c7e0650b521448843a07e3e9a63187d2697a5e53d2ac4ac1a",
+      "rawBytes": 158414,
+      "rawSha256": "78a08de7c20059be8d9a58b0acd58423fc67ce3273e9a80ab836ec0ad36915b2"
+    },
+    {
+      "path": "source-custody/initial-source-plan/55b-plan-failure.log.gz",
+      "bytes": 15754,
+      "sha256": "fc769106a48b9b57aa37032af24228e8cdc4c373608d11775000862f0e3155a6",
+      "rawBytes": 112596,
+      "rawSha256": "ab4c9066794016c10dc9ae333e001121a5cfb463a187ec4aa4c0c91e31a677c4"
+    },
+    {
+      "path": "source-custody/initial-source-plan/repair.json",
+      "bytes": 2169,
+      "sha256": "76459b1bae06852bfd4b5e8f2e8fcfdd883bde7df87e9b87cd61ec0c5d00f09c"
+    },
+    {
+      "path": "source-custody/initial-source-plan/55b-check-js-failure.log.gz",
+      "bytes": 17216,
+      "sha256": "f71c291f2bf87361381951498fb90cdd71751bfba7ef3c2c0c34ed3071850fac",
+      "rawBytes": 81118,
+      "rawSha256": "e96d843127540c2cdf454da683d0b28e0e2013cb838c2f2f4dd04326729f79cf"
+    },
+    {
+      "path": "source-custody/initial-source-plan/55b-original-decision.md.gz",
+      "bytes": 3744,
+      "sha256": "a41b33fd2834906b5a2ea6906c6c9aa7bca0ad962269121e96b2d613747ba8c8",
+      "rawBytes": 7933,
+      "rawSha256": "21000dad89ffbd2e1856c9a58767768d0233493391d406d042579f75031296d2"
+    },
+    {
+      "path": "source-custody/initial-source-plan/2db-original-decision.md.gz",
+      "bytes": 3991,
+      "sha256": "a5d5e73288d726f748632eaedb379018a82a16433ddb8fb23ab5976f1863ef93",
+      "rawBytes": 8536,
+      "rawSha256": "d4e66f3dcb279aa147fca9bb15cab3bcaa52804e79b324a9805adc89d4aa15e5"
+    },
+    {
+      "path": "source-custody/import-correction/e79-114667894957-failure.log.gz",
+      "bytes": 21784,
+      "sha256": "a32e4d44680e1fcab75365fe8a433e1e4fd42fda5fb25f813b6948d3d5bd0d06",
+      "rawBytes": 106020,
+      "rawSha256": "1fa67070e8ecd8eed159bdf7b3850c8e15828965fcb02a6e66c73d5508c9046c"
+    },
+    {
+      "path": "source-custody/import-correction/e79-114667895073-failure.log.gz",
+      "bytes": 28221,
+      "sha256": "efdf91a497f8b1dfc1302cbc5d30e1cd54ae169f903f275803cba79d4d1a9929",
+      "rawBytes": 177567,
+      "rawSha256": "35fb7a08fb94544ee7d8d53b128e12624f85cd39131ee9c54e3caf467fef706d"
+    },
+    {
+      "path": "source-custody/import-correction/e79-114667920284-failure.log.gz",
+      "bytes": 21159,
+      "sha256": "d65aede9a255f09550924cf221d60088d34214f1c0348dd8b6b0983edd689ca5",
+      "rawBytes": 100530,
+      "rawSha256": "78dddccb01366bf9e26cc0daba2bd93ef41854466d3b16f23d8034b3a206a7cf"
+    },
+    {
+      "path": "source-custody/import-correction/original-deep-source-custody.mjs.fixture",
+      "bytes": 6264,
+      "sha256": "c5466b1a87cd56dced48a802cdc26425ddce20effcb1d6e8933186a054d65463"
+    },
+    {
+      "path": "source-custody/import-correction/original-cli-caller.mjs.fixture",
+      "bytes": 4911,
+      "sha256": "f877679e798ec23eab26b80f57e14ea7f6e8c4dad3d7fdf862346ed2f2fd89f7"
+    },
+    {
+      "path": "source-custody/import-correction/foreign-capability-authored-control.json",
+      "bytes": 993,
+      "sha256": "0e908706a646177b89cf26fc52b9c2f8adb204a1ff431fdc14741954163ff0b8"
+    },
+    {
+      "path": "source-custody/import-correction/deep-source-custody-after.mjs.fixture",
+      "bytes": 8854,
+      "sha256": "741ed81d1854d9e5a41c95b16f703617e797dd36a03a781f525291ed78703216"
+    },
+    {
+      "path": "source-custody/trait-scope-correction/deep-source-custody-after.mjs.fixture",
+      "bytes": 12271,
+      "sha256": "f6bf1e93600bdd8d4d6867b81b59fd67f8cdf5c9e96544d1a953ed081d2909ad"
+    },
+    {
+      "path": "source-custody/trait-scope-correction/failed-114672703432.log.gz",
+      "bytes": 22191,
+      "sha256": "4fde3c87c82d7dd292c212a4d7bde9395790b3272e02649de068bd9ffd13f69b",
+      "rawBytes": 107602,
+      "rawSha256": "56766170fa641cea5c6d258bacc315ef3266aa211971b20cb6e992f3d052c621"
+    },
+    {
+      "path": "source-custody/trait-scope-correction/failed-114672873075.log.gz",
+      "bytes": 28054,
+      "sha256": "fb834148edc8d34216382f16f043fef2e37f28d6ca04ea8652c04627365ee324",
+      "rawBytes": 501274,
+      "rawSha256": "f2cecea257420a413c2cbe9071ea5657f08bfaa9dfa98a9a36454cd528a880ed"
+    },
+    {
+      "path": "source-custody/trait-scope-correction/failed-114672873159.log.gz",
+      "bytes": 19366,
+      "sha256": "c4f92528b755f5475c10f9bc5ee2010bd9aeb7519377c9e1876e8bd66c508c1f",
+      "rawBytes": 91022,
+      "rawSha256": "da8e3942dd3e4576581326e8a2a6fa7d7ee3903d38705e92c5f991684ac4ea87"
+    },
+    {
+      "path": "source-custody/trait-scope-correction/failure-receipt.json",
+      "bytes": 1096,
+      "sha256": "6ebf0a77052a0083195268f5861abb759366aaa4f0d523f0108da909aec06137"
+    },
+    {
+      "path": "source-custody/trait-scope-correction/original-cli-caller.mjs.fixture",
+      "bytes": 5135,
+      "sha256": "b2e0ef930af23052a44ef2f61103c16801580d1445d988bbb0a294e1eaac0cb5"
+    },
+    {
+      "path": "source-custody/trait-scope-correction/original-deep-source-custody.mjs.fixture",
+      "bytes": 8854,
+      "sha256": "741ed81d1854d9e5a41c95b16f703617e797dd36a03a781f525291ed78703216"
+    },
+    {
+      "path": "source-custody/trait-scope-correction/original-import-source-custody.test.mjs.fixture",
+      "bytes": 2937,
+      "sha256": "4c23bdcb6fbbcc6080f77c47f0bcb16a846c529e6d3f0af9877aed867d0c5250"
+    },
+    {
+      "path": "source-custody/trait-scope-correction/script-rules-after.rs.fixture",
+      "bytes": 9734,
+      "sha256": "9a3f6978f30b5895c31d5eb0f333175f8ee60c1a52bccc31615d5ceb075f1e2b"
+    },
+    {
+      "path": "source-custody/trait-scope-correction/successor.json",
+      "bytes": 12331,
+      "sha256": "9591f993ff7ff20537ffbc532ce84af6ef201ec26e248b99d7788725a7dece59"
+    }
+  ]
+}

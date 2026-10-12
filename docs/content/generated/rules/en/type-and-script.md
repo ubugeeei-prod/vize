@@ -734,7 +734,7 @@ vp run lint
 
 **Bad**
 
-The binding pattern descends through `user` to destructure `name`, exceeding the default shallow props-destructuring depth.
+This sole inline `<script setup>` has a top-level compiler macro binding that destructures `name` through `user`, exceeding the default depth of one. Arrays nested inside object bindings also increase depth. This opt-in warning enforces a depth policy: it does not read the compiler's `propsDestructure` setting, and `withDefaults` can compile despite the warning.
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
@@ -758,7 +758,7 @@ const userName = computed(() => props.user.name);
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L37) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L39) · [All rules](all.md)
 
 ### `script/no-deprecated-data-object-declaration`
 
@@ -1333,7 +1333,7 @@ Disallow export statements inside &lt;script setup&gt;
 [Bad](#script-no-export-in-script-setup-bad) · [Good](#script-no-export-in-script-setup-good)
 
 Default severity: `error`  
-Presets: _none_  
+Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
 Options: No rule-specific options. Severity and preset selection are configurable.
@@ -2023,7 +2023,7 @@ export default { props: { title: { type: String, default: "Untitled" } } };
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs#L29) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs#L34) · [All rules](all.md)
 
 ### `script/no-reserved-identifiers`
 
@@ -2974,17 +2974,18 @@ import { h } from '@vue/runtime-dom'
 
 **Good**
 
-Both helpers are imported together from `vue`, using the public package entry point instead of either internal package.
+The public helpers are imported from `vue`. Private `isString` retains `@vue/shared`, because `vue` does not export it. Namespace, default and mixed public/private imports keep a warning without an automatic fix.
 
-```vue annotate="add:2"
+```vue annotate="add:2,3"
 <script setup lang="ts">
 import { ref, h } from 'vue'
+import { isString } from '@vue/shared'
 </script>
 ```
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L32) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L36) · [All rules](all.md)
 
 ### `script/prefer-ref-over-reactive`
 

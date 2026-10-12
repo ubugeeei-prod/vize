@@ -1,0 +1,313 @@
+{
+  "schema": "vize.lint.public-vue-imports-default-routes",
+  "version": 1,
+  "authority": "Complete minimal whole preset/config/order vectors authored from registry membership and unchanged producer contracts before observation. No runtime target-only projection.",
+  "corpusSha256": "d52480f474c2a6dba9681aa620a0c5e6dd2597accd91ad286000230a1b9d2389",
+  "n8nProjectionSha256": "8b0c91b481d28f8477f4af222d98b5b4a73ef5c92baaa86bae34fe4cb4b0b5d1",
+  "cases": [
+    {
+      "id": "public-ref",
+      "filename": "PublicRef.vue",
+      "sourceSha256": "7cd672516f8c224a0f5097c29d3dae3fad4e88d18dd22a4529c148d735b06182",
+      "routes": [
+        {
+          "id": "default",
+          "diagnostics": [
+            {
+              "rule_name": "script/prefer-import-from-vue",
+              "severity": "warning",
+              "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+              "start": 40,
+              "end": 62,
+              "help": "Import from 'vue' directly for better compatibility",
+              "labels": [],
+              "fix": {
+                "message": "Replace with 'vue'",
+                "edits": [
+                  {
+                    "start": 40,
+                    "end": 62,
+                    "new_text": "from 'vue'"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "recommended",
+          "diagnostics": [
+            {
+              "rule_name": "script/prefer-import-from-vue",
+              "severity": "warning",
+              "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+              "start": 40,
+              "end": 62,
+              "help": "Import from 'vue' directly for better compatibility",
+              "labels": [],
+              "fix": {
+                "message": "Replace with 'vue'",
+                "edits": [
+                  {
+                    "start": 40,
+                    "end": 62,
+                    "new_text": "from 'vue'"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "essential",
+          "diagnostics": []
+        },
+        {
+          "id": "ecosystem",
+          "diagnostics": [
+            {
+              "rule_name": "script/prefer-import-from-vue",
+              "severity": "warning",
+              "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+              "start": 40,
+              "end": 62,
+              "help": "Import from 'vue' directly for better compatibility",
+              "labels": [],
+              "fix": {
+                "message": "Replace with 'vue'",
+                "edits": [
+                  {
+                    "start": 40,
+                    "end": 62,
+                    "new_text": "from 'vue'"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "incremental",
+          "diagnostics": []
+        },
+        {
+          "id": "explicit-off",
+          "diagnostics": []
+        },
+        {
+          "id": "n8n-projection",
+          "diagnostics": []
+        }
+      ]
+    },
+    {
+      "id": "private-alias",
+      "filename": "PrivateAlias.vue",
+      "sourceSha256": "7db39bdbbada6a3a2f610fde2b5725a395ca904465d9079381640ca239f30a85",
+      "routes": [
+        {
+          "id": "default",
+          "diagnostics": []
+        },
+        {
+          "id": "recommended",
+          "diagnostics": []
+        },
+        {
+          "id": "essential",
+          "diagnostics": []
+        },
+        {
+          "id": "ecosystem",
+          "diagnostics": []
+        },
+        {
+          "id": "incremental",
+          "diagnostics": []
+        },
+        {
+          "id": "explicit-off",
+          "diagnostics": []
+        },
+        {
+          "id": "n8n-projection",
+          "diagnostics": []
+        }
+      ]
+    },
+    {
+      "id": "mixed-named",
+      "filename": "MixedNamed.vue",
+      "sourceSha256": "6ef9a187e590776cc137d87a64fb6021be00285038e288fd822d8b63c96bf938",
+      "routes": [
+        {
+          "id": "default",
+          "diagnostics": [
+            {
+              "rule_name": "script/prefer-import-from-vue",
+              "severity": "warning",
+              "message": "Import from '@vue/shared' should be replaced with 'vue'",
+              "start": 50,
+              "end": 68,
+              "help": "Import from 'vue' directly for better compatibility",
+              "labels": [],
+              "fix": null
+            }
+          ]
+        },
+        {
+          "id": "recommended",
+          "diagnostics": [
+            {
+              "rule_name": "script/prefer-import-from-vue",
+              "severity": "warning",
+              "message": "Import from '@vue/shared' should be replaced with 'vue'",
+              "start": 50,
+              "end": 68,
+              "help": "Import from 'vue' directly for better compatibility",
+              "labels": [],
+              "fix": null
+            }
+          ]
+        },
+        {
+          "id": "essential",
+          "diagnostics": []
+        },
+        {
+          "id": "ecosystem",
+          "diagnostics": [
+            {
+              "rule_name": "script/prefer-import-from-vue",
+              "severity": "warning",
+              "message": "Import from '@vue/shared' should be replaced with 'vue'",
+              "start": 50,
+              "end": 68,
+              "help": "Import from 'vue' directly for better compatibility",
+              "labels": [],
+              "fix": null
+            }
+          ]
+        },
+        {
+          "id": "incremental",
+          "diagnostics": []
+        },
+        {
+          "id": "explicit-off",
+          "diagnostics": []
+        },
+        {
+          "id": "n8n-projection",
+          "diagnostics": []
+        }
+      ]
+    },
+    {
+      "id": "minimal-order",
+      "filename": "MinimalOrder.vue",
+      "sourceSha256": "9b4fe45c9271f6fe303144a8411103734d55454e7ec945fd977ebed822b9c2bc",
+      "routes": [
+        {
+          "id": "default",
+          "diagnostics": [
+            {
+              "rule_name": "script/prefer-import-from-vue",
+              "severity": "warning",
+              "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+              "start": 65,
+              "end": 87,
+              "help": "Import from 'vue' directly for better compatibility",
+              "labels": [],
+              "fix": {
+                "message": "Replace with 'vue'",
+                "edits": [
+                  {
+                    "start": 65,
+                    "end": 87,
+                    "new_text": "from 'vue'"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "recommended",
+          "diagnostics": [
+            {
+              "rule_name": "script/prefer-import-from-vue",
+              "severity": "warning",
+              "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+              "start": 65,
+              "end": 87,
+              "help": "Import from 'vue' directly for better compatibility",
+              "labels": [],
+              "fix": {
+                "message": "Replace with 'vue'",
+                "edits": [
+                  {
+                    "start": 65,
+                    "end": 87,
+                    "new_text": "from 'vue'"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "essential",
+          "diagnostics": []
+        },
+        {
+          "id": "ecosystem",
+          "diagnostics": [
+            {
+              "rule_name": "script/prefer-import-from-vue",
+              "severity": "warning",
+              "message": "Import from '@vue/reactivity' should be replaced with 'vue'",
+              "start": 65,
+              "end": 87,
+              "help": "Import from 'vue' directly for better compatibility",
+              "labels": [],
+              "fix": {
+                "message": "Replace with 'vue'",
+                "edits": [
+                  {
+                    "start": 65,
+                    "end": 87,
+                    "new_text": "from 'vue'"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "incremental",
+          "diagnostics": []
+        },
+        {
+          "id": "explicit-off",
+          "diagnostics": []
+        },
+        {
+          "id": "n8n-projection",
+          "diagnostics": [
+            {
+              "rule_name": "vue/sfc-element-order",
+              "severity": "error",
+              "message": "<script setup> should come before <template>",
+              "start": 35,
+              "end": 97,
+              "help": "Recommended order: <script> -> <template> -> <style>",
+              "labels": [],
+              "fix": null
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

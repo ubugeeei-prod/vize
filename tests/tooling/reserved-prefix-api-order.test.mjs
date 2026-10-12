@@ -5,6 +5,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { gunzipSync } from "node:zlib";
 import { sha256 } from "./lint-default-correctness-reference.mjs";
+import { assertReservedApiOrderSource } from "./support/runtime-props-api-source-custody.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const fixture = path.join(root, "tests/_fixtures/differential/lint/reserved-prefix-8090");
@@ -69,9 +70,7 @@ await test("no-template API successors retain complete rule order and initial au
     ],
   );
   for (const source of current.currentSources) {
-    const bytes = fs.readFileSync(path.join(root, source.path));
-    assert.equal(sha256(bytes), source.sha256, source.path);
-    assert.equal(bytes.length, source.bytes);
+    assertReservedApiOrderSource(root, source);
   }
   const script = fs.readFileSync(path.join(root, current.retainedRuleIterator.path), "utf8");
   const iterator = Buffer.from(

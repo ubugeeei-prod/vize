@@ -2,7 +2,7 @@
 // @ts-nocheck
 
 const { loadTarget, nativeTargets } = require("./native-targets");
-
+const { requireWithBindingIdentity } = require("./native-binding-identity");
 const loadErrors = [];
 
 function isMissingModuleForSpecifier(error, specifier) {
@@ -15,7 +15,7 @@ function isMissingModuleForSpecifier(error, specifier) {
 
 function tryRequire(specifier) {
   try {
-    return require(specifier);
+    return requireWithBindingIdentity(require, specifier);
   } catch (error) {
     if (isMissingModuleForSpecifier(error, specifier)) {
       error.vizeMissingNativeSpecifier = true;

@@ -114,9 +114,9 @@ export const scriptType0Explanations: readonly ExplanationRecord[] = [
   ],
   [
     "script/no-deep-destructure-in-props",
-    "The binding pattern descends through `user` to destructure `name`, exceeding the default shallow props-destructuring depth.",
+    "This sole inline `<script setup>` has a top-level compiler macro binding that destructures `name` through `user`, exceeding the default depth of one. Arrays nested inside object bindings also increase depth. This opt-in warning enforces a depth policy: it does not read the compiler's `propsDestructure` setting, and `withDefaults` can compile despite the warning.",
     "The props object remains intact, and a computed getter reads `props.user.name`. The nested access stays explicit without a deeply nested binding pattern.",
-    "props の `user` からさらに `name` を分割代入で取り出し、既定で許される浅い分割代入の深さを超えています。",
+    "唯一の inline `<script setup>` のトップレベルで、コンパイラーマクロの props の `user` からさらに `name` を取り出し、既定の深さ 1 を超えています。オブジェクトの内側の配列も深さに数えます。個別に有効化するこの警告は、深さの方針を検査します。コンパイラーの `propsDestructure` 設定は参照せず、`withDefaults` でコンパイルできる場合も警告します。",
     "props オブジェクトを保ち、computed の getter で `props.user.name` を参照します。深い代入パターンを使わず、入れ子の参照を明示します。",
   ],
   [

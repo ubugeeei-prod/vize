@@ -85,12 +85,17 @@ pub(super) fn generate_component_slot_checks(
         );
         append!(*ts, "{expr_indent}void {check_name};\n");
         let gen_end = ts.len();
-        let tag_src_start = (ctx.source_context.offset + usage.start + 1) as usize;
-        mappings.push(VizeMapping {
-            gen_range: gen_start..gen_end,
-            src_range: tag_src_start..tag_src_start + usage.name.len(),
-            sub_spans: Vec::new(),
-        });
+        if let Some(src_range) = crate::virtual_ts::component_tag::source_range(
+            ctx.source_context.template,
+            ctx.source_context.offset,
+            usage,
+        ) {
+            mappings.push(VizeMapping {
+                gen_range: gen_start..gen_end,
+                src_range,
+                sub_spans: Vec::new(),
+            });
+        }
     }
 
     if meta.experimental_strict_slot_children {

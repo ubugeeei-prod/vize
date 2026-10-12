@@ -164,6 +164,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
                 script_parsed.as_ref(),
                 sfc_context,
                 None,
+                false,
                 result,
             );
         }
@@ -180,6 +181,11 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
                     ..sfc_context
                 },
                 emits_setup_rule.map(|_| emits_module),
+                descriptor.script.is_none()
+                    && descriptor
+                        .script_setup
+                        .as_ref()
+                        .is_some_and(|block| block.src.is_none()),
                 result,
             );
         }

@@ -1,0 +1,262 @@
+{
+  "currentMain": "a6633fb68b110d07abd5ee5a6049bc15f20f9c7f",
+  "matrixWholePacket": "/tmp/vize-446-real-project-evidence-20261011/real-project-matrix-1/hoppscotch-lint-divergence.json",
+  "matrixWholePacketSha256": "532059b4348953f1ad71de0207ed65b4ae11ee3500563761a427f8216d6a48a3",
+  "matrixUnusableReason": "eslint-plugin-vue could not parse 1 compared file(s)",
+  "claim": "seven targeted parse-valid sources only; whole project/global Matrix remains unqualified",
+  "sources": [
+    {
+      "repository": "hoppscotch/hoppscotch",
+      "revision": "1acb8a3a7581e4db32ba0d529170c4669a2e1053",
+      "file": "packages/hoppscotch-common/src/components/collections/ExampleResponse.vue",
+      "sourcePath": "/tmp/vize-8564-defaults-readonly-sources-20261012/packages/hoppscotch-common/src/components/collections/ExampleResponse.vue",
+      "apiBlob": "d14952a429136ff0381910c9fc467a556016cc7b",
+      "bytes": 7300,
+      "sha256": "990b2146af9aaea45c7ac692d68bd1a4e78b25b5b30dc4a4e681d9a88ace47f6",
+      "findings": [
+        {
+          "column": 3,
+          "endColumn": 4,
+          "endLine": 153,
+          "file": "packages/hoppscotch-common/src/components/collections/ExampleResponse.vue",
+          "line": 149,
+          "message": "Prop \"response\" should be optional.",
+          "ruleId": "script/no-required-prop-with-default",
+          "severity": "error",
+          "upstreamRuleId": "vue/no-required-prop-with-default"
+        },
+        {
+          "column": 3,
+          "endColumn": 4,
+          "endLine": 158,
+          "file": "packages/hoppscotch-common/src/components/collections/ExampleResponse.vue",
+          "line": 154,
+          "message": "Prop \"responseName\" should be optional.",
+          "ruleId": "script/no-required-prop-with-default",
+          "severity": "error",
+          "upstreamRuleId": "vue/no-required-prop-with-default"
+        }
+      ]
+    },
+    {
+      "repository": "hoppscotch/hoppscotch",
+      "revision": "1acb8a3a7581e4db32ba0d529170c4669a2e1053",
+      "file": "packages/hoppscotch-common/src/components/collections/ImportExport.vue",
+      "sourcePath": "/tmp/vize-8564-defaults-readonly-sources-20261012/packages/hoppscotch-common/src/components/collections/ImportExport.vue",
+      "apiBlob": "24e19eb4a8c84b94b789279cc0abf66a722b5a08",
+      "bytes": 28325,
+      "sha256": "b7be8e8545f21ce97b23fc338f6be922694d4d644f52c65cb3144a2546594d84",
+      "findings": [
+        {
+          "column": 3,
+          "endColumn": 4,
+          "endLine": 106,
+          "file": "packages/hoppscotch-common/src/components/collections/ImportExport.vue",
+          "line": 99,
+          "message": "Prop \"collectionsType\" should be optional.",
+          "ruleId": "script/no-required-prop-with-default",
+          "severity": "error",
+          "upstreamRuleId": "vue/no-required-prop-with-default"
+        }
+      ]
+    },
+    {
+      "repository": "hoppscotch/hoppscotch",
+      "revision": "1acb8a3a7581e4db32ba0d529170c4669a2e1053",
+      "file": "packages/hoppscotch-common/src/components/collections/MyCollections.vue",
+      "sourcePath": "/tmp/vize-8564-defaults-readonly-sources-20261012/packages/hoppscotch-common/src/components/collections/MyCollections.vue",
+      "apiBlob": "dbcd055d34331353df81cab65ba32b1d9898664f",
+      "bytes": 29348,
+      "sha256": "74f829733ee880d69df08c95ad8863c98761f75f89d18d3e5a266a4329b6d779",
+      "findings": [
+        {
+          "column": 3,
+          "endColumn": 4,
+          "endLine": 520,
+          "file": "packages/hoppscotch-common/src/components/collections/MyCollections.vue",
+          "line": 516,
+          "message": "Prop \"filteredCollections\" should be optional.",
+          "ruleId": "script/no-required-prop-with-default",
+          "severity": "error",
+          "upstreamRuleId": "vue/no-required-prop-with-default"
+        },
+        {
+          "column": 3,
+          "endColumn": 4,
+          "endLine": 525,
+          "file": "packages/hoppscotch-common/src/components/collections/MyCollections.vue",
+          "line": 521,
+          "message": "Prop \"collectionsType\" should be optional.",
+          "ruleId": "script/no-required-prop-with-default",
+          "severity": "error",
+          "upstreamRuleId": "vue/no-required-prop-with-default"
+        },
+        {
+          "column": 3,
+          "endColumn": 4,
+          "endLine": 530,
+          "file": "packages/hoppscotch-common/src/components/collections/MyCollections.vue",
+          "line": 526,
+          "message": "Prop \"filterText\" should be optional.",
+          "ruleId": "script/no-required-prop-with-default",
+          "severity": "error",
+          "upstreamRuleId": "vue/no-required-prop-with-default"
+        }
+      ]
+    },
+    {
+      "repository": "hoppscotch/hoppscotch",
+      "revision": "1acb8a3a7581e4db32ba0d529170c4669a2e1053",
+      "file": "packages/hoppscotch-common/src/components/collections/Request.vue",
+      "sourcePath": "/tmp/vize-8564-defaults-readonly-sources-20261012/packages/hoppscotch-common/src/components/collections/Request.vue",
+      "apiBlob": "1b615dc98c452083d88c84ac76021efe7b6de0a2",
+      "bytes": 14613,
+      "sha256": "850d0cfd67c91e0cad3b7936916d59adbdb356c4e6bae408c6840f8740403970",
+      "findings": [
+        {
+          "column": 3,
+          "endColumn": 4,
+          "endLine": 271,
+          "file": "packages/hoppscotch-common/src/components/collections/Request.vue",
+          "line": 267,
+          "message": "Prop \"request\" should be optional.",
+          "ruleId": "script/no-required-prop-with-default",
+          "severity": "error",
+          "upstreamRuleId": "vue/no-required-prop-with-default"
+        },
+        {
+          "column": 3,
+          "endColumn": 4,
+          "endLine": 281,
+          "file": "packages/hoppscotch-common/src/components/collections/Request.vue",
+          "line": 277,
+          "message": "Prop \"parentID\" should be optional.",
+          "ruleId": "script/no-required-prop-with-default",
+          "severity": "error",
+          "upstreamRuleId": "vue/no-required-prop-with-default"
+        },
+        {
+          "column": 3,
+          "endColumn": 4,
+          "endLine": 286,
+          "file": "packages/hoppscotch-common/src/components/collections/Request.vue",
+          "line": 282,
+          "message": "Prop \"collectionsType\" should be optional.",
+          "ruleId": "script/no-required-prop-with-default",
+          "severity": "error",
+          "upstreamRuleId": "vue/no-required-prop-with-default"
+        }
+      ]
+    },
+    {
+      "repository": "hoppscotch/hoppscotch",
+      "revision": "1acb8a3a7581e4db32ba0d529170c4669a2e1053",
+      "file": "packages/hoppscotch-common/src/components/collections/TeamCollections.vue",
+      "sourcePath": "/tmp/vize-8564-defaults-readonly-sources-20261012/packages/hoppscotch-common/src/components/collections/TeamCollections.vue",
+      "apiBlob": "3a56c3a27b049e96b3e68f47a82531acebeb24d1",
+      "bytes": 34124,
+      "sha256": "ed8e6b2f49137e61414a3b10ab049ce4992faf57b5215aedf569f8b20425ddff",
+      "findings": [
+        {
+          "column": 3,
+          "endColumn": 4,
+          "endLine": 555,
+          "file": "packages/hoppscotch-common/src/components/collections/TeamCollections.vue",
+          "line": 551,
+          "message": "Prop \"collectionsType\" should be optional.",
+          "ruleId": "script/no-required-prop-with-default",
+          "severity": "error",
+          "upstreamRuleId": "vue/no-required-prop-with-default"
+        },
+        {
+          "column": 3,
+          "endColumn": 4,
+          "endLine": 560,
+          "file": "packages/hoppscotch-common/src/components/collections/TeamCollections.vue",
+          "line": 556,
+          "message": "Prop \"filterText\" should be optional.",
+          "ruleId": "script/no-required-prop-with-default",
+          "severity": "error",
+          "upstreamRuleId": "vue/no-required-prop-with-default"
+        },
+        {
+          "column": 3,
+          "endColumn": 4,
+          "endLine": 565,
+          "file": "packages/hoppscotch-common/src/components/collections/TeamCollections.vue",
+          "line": 561,
+          "message": "Prop \"teamCollectionList\" should be optional.",
+          "ruleId": "script/no-required-prop-with-default",
+          "severity": "error",
+          "upstreamRuleId": "vue/no-required-prop-with-default"
+        },
+        {
+          "column": 3,
+          "endColumn": 4,
+          "endLine": 570,
+          "file": "packages/hoppscotch-common/src/components/collections/TeamCollections.vue",
+          "line": 566,
+          "message": "Prop \"teamLoadingCollections\" should be optional.",
+          "ruleId": "script/no-required-prop-with-default",
+          "severity": "error",
+          "upstreamRuleId": "vue/no-required-prop-with-default"
+        }
+      ]
+    },
+    {
+      "repository": "hoppscotch/hoppscotch",
+      "revision": "1acb8a3a7581e4db32ba0d529170c4669a2e1053",
+      "file": "packages/hoppscotch-common/src/components/importExport/Base.vue",
+      "sourcePath": "/tmp/vize-8564-defaults-readonly-sources-20261012/packages/hoppscotch-common/src/components/importExport/Base.vue",
+      "apiBlob": "16dd0784220652f0275e8d6176281bd28ad7772d",
+      "bytes": 6048,
+      "sha256": "d4a3ab45175a5d75438238a0c435a88c871c68b721c65bc51760855f3f0b166b",
+      "findings": [
+        {
+          "column": 3,
+          "endColumn": 4,
+          "endLine": 43,
+          "file": "packages/hoppscotch-common/src/components/importExport/Base.vue",
+          "line": 38,
+          "message": "Prop \"importerModules\" should be optional.",
+          "ruleId": "script/no-required-prop-with-default",
+          "severity": "error",
+          "upstreamRuleId": "vue/no-required-prop-with-default"
+        },
+        {
+          "column": 3,
+          "endColumn": 4,
+          "endLine": 48,
+          "file": "packages/hoppscotch-common/src/components/importExport/Base.vue",
+          "line": 44,
+          "message": "Prop \"exporterModules\" should be optional.",
+          "ruleId": "script/no-required-prop-with-default",
+          "severity": "error",
+          "upstreamRuleId": "vue/no-required-prop-with-default"
+        }
+      ]
+    },
+    {
+      "repository": "hoppscotch/hoppscotch",
+      "revision": "1acb8a3a7581e4db32ba0d529170c4669a2e1053",
+      "file": "packages/hoppscotch-common/src/components/share/Modal.vue",
+      "sourcePath": "/tmp/vize-8564-defaults-readonly-sources-20261012/packages/hoppscotch-common/src/components/share/Modal.vue",
+      "apiBlob": "38c0c1b40e6b72f5dea25a350804fce35537f564",
+      "bytes": 3923,
+      "sha256": "126569ac47b3c13a3cd5f6fe0336fc88cfe44933526d616e9d66186d6c5574f9",
+      "findings": [
+        {
+          "column": 3,
+          "endColumn": 4,
+          "endLine": 85,
+          "file": "packages/hoppscotch-common/src/components/share/Modal.vue",
+          "line": 81,
+          "message": "Prop \"show\" should be optional.",
+          "ruleId": "script/no-required-prop-with-default",
+          "severity": "error",
+          "upstreamRuleId": "vue/no-required-prop-with-default"
+        }
+      ]
+    }
+  ]
+}

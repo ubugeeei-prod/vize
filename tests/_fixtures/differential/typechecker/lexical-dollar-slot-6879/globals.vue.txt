@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const label: string = 'typed'
+</script>
+<template><p>{{ $undeclared.label }}{{ label }}</p></template>

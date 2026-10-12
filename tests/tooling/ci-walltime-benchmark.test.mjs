@@ -19,9 +19,19 @@ void test("walltime comparisons use the same source and runner without publishin
   assert.deepEqual(workflow.on.pull_request.types, ["opened", "reopened", "labeled"]);
   assert.deepEqual(
     Object.keys(workflow.jobs)
-      .filter((name) => name !== "js-native-fault-diagnostic")
+      .filter((name) => !["js-native-fault-diagnostic", "owned-worker-fault"].includes(name))
       .sort(),
-    ["docs", "js", "n8n-baseline", "n8n-preparation", "native", "rust"],
+    [
+      "artifact-payload",
+      "artifact-payload-restore",
+      "docs",
+      "js",
+      "n8n-baseline",
+      "n8n-preparation",
+      "native",
+      "rust",
+      "rust-archive-window",
+    ],
   );
   for (const key of ["docs", "js", "native", "rust"]) {
     const job = workflow.jobs[key];
@@ -62,6 +72,10 @@ void test("baseline input partitions are manual-only, build once and retain both
     "native",
     "n8n-baseline",
     "n8n-preparation",
+    "artifact-payload",
+    "rust-archive-window",
+    "owned-worker-fault",
+    "owned-worker-controls",
   ]);
   assert.equal(workflow.concurrency["cancel-in-progress"], false);
   const job = workflow.jobs["n8n-baseline"];
@@ -195,4 +209,96 @@ void test("both benchmark arms stage the same source bytes into distinct retaine
       mode,
     });
   }
+});
+
+void test("whole artifact payload trial is manual-only with a separate complete consumer", () => {
+  const workflow = parse(
+    readFileSync(
+      new URL("../../.github/workflows/ci-walltime-benchmark.yml", import.meta.url),
+      "utf8",
+    ),
+  );
+  const producer = workflow.jobs["artifact-payload"];
+  const consumer = workflow.jobs["artifact-payload-restore"];
+  for (const job of [producer, consumer]) {
+    assert.equal(
+      job.if,
+      "${{ github.event_name == 'workflow_dispatch' && inputs.component == 'artifact-payload' }}",
+    );
+    assert.equal(job.steps[0].with.ref, "${{ github.sha }}");
+    assert.equal(job["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
+    assert.equal(job["continue-on-error"], undefined);
+    for (const step of job.steps) assert.equal(step["continue-on-error"], undefined);
+  }
+  assert.deepEqual(producer.permissions, { contents: "read", actions: "read" });
+  assert.equal(consumer.needs, "artifact-payload");
+  assert.equal(producer.steps.at(-1).uses, "./.github/actions/measure-artifact-payload");
+  const action = parse(
+    readFileSync(
+      new URL("../../.github/actions/measure-artifact-payload/action.yml", import.meta.url),
+      "utf8",
+    ),
+  );
+  assert.equal(action.runs.using, "composite");
+  for (const step of action.runs.steps) {
+    assert.equal(step["continue-on-error"], undefined);
+    if (step.run) assert.equal(step.shell, "bash");
+  }
+  const upload = action.runs.steps.find((step) => step.with?.["compression-level"] === 0);
+  const restoreAction = parse(
+    readFileSync(
+      new URL("../../.github/actions/restore-artifact-payload/action.yml", import.meta.url),
+      "utf8",
+    ),
+  );
+  assert.equal(consumer.steps[1].uses, "./.github/actions/restore-artifact-payload");
+  assert.deepEqual(consumer.steps[1].with, {
+    artifact_id: "${{ inputs.artifact_id }}",
+    artifact_source_sha: "${{ inputs.artifact_source_sha }}",
+  });
+  assert.equal(restoreAction.runs.using, "composite");
+  for (const step of restoreAction.runs.steps) {
+    assert.equal(step["continue-on-error"], undefined);
+    if (step.run) assert.equal(step.shell, "bash");
+  }
+  const download = restoreAction.runs.steps.find((step) =>
+    step.uses?.startsWith("actions/download-artifact@"),
+  );
+  assert.equal(upload.with.name, download.with.name);
+  assert.equal(upload.with["if-no-files-found"], "error");
+  assert.equal(download.with.path, "${{ runner.temp }}/payload-envelope");
+  const restore = restoreAction.runs.steps.find((step) =>
+    step.run?.includes("artifact_payload.py restore"),
+  );
+  assert.match(
+    restore.run,
+    /--source-sha "\$PAYLOAD_SOURCE_SHA" --driver-sha "\$GITHUB_SHA" --artifact-id "\$PAYLOAD_ARTIFACT_ID"/,
+  );
+  assert.deepEqual(restore.env, {
+    PAYLOAD_ARTIFACT_ID: "${{ inputs.artifact_id }}",
+    PAYLOAD_SOURCE_SHA: "${{ inputs.artifact_source_sha }}",
+  });
+  const receiptAction = parse(
+    readFileSync(
+      new URL("../../.github/actions/upload-artifact-payload-receipt/action.yml", import.meta.url),
+      "utf8",
+    ),
+  );
+  assert.equal(consumer.steps.at(-1).uses, "./.github/actions/upload-artifact-payload-receipt");
+  assert.equal(consumer.steps.at(-1).if, "${{ always() }}");
+  assert.equal(receiptAction.runs.using, "composite");
+  assert.equal(receiptAction.runs.steps.length, 1);
+  const receipt = receiptAction.runs.steps[0];
+  assert.equal(receipt.if, "${{ always() }}");
+  assert.equal(
+    receipt.with.name,
+    "artifact-payload-consumer-${{ github.sha }}-${{ github.run_attempt }}",
+  );
+  assert.equal(
+    receipt.with.path,
+    "${{ runner.temp }}/payload-restore.json\n${{ runner.temp }}/payload-restore-resources.txt\n",
+  );
+  assert.equal(receipt.with["if-no-files-found"], "error");
+  assert.equal(receipt.with["retention-days"], 14);
+  assert.equal(workflow.on.workflow_dispatch.inputs.component.default, "all");
 });

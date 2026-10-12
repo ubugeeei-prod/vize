@@ -1,0 +1,4 @@
+<script setup lang="ts">
+export { ref } from 'vue';
+</script>
+<template><div /></template>

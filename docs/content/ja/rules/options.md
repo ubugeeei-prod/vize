@@ -1,16 +1,21 @@
 ---
 title: ルール オプション
 ---
-<!-- Generated translation; source: rules/options.md -->
+<!-- Reviewed translation; source: rules/options.md -->
 
 # ルール オプション
 <!-- Type-aware reference: [型ルール オプション](./options-type.md) -->
 
-Vite+ では `vite.config.ts` の `lint.vize.ruleOptions` に指定し、`vp run lint` で検査します。standalone の互換設定では同じ内容を `linter.ruleOptions` に指定します。
+ルールの判定方法をプロジェクトに合わせたいときに、このページを使ってください。
+Vite+ では `vite.config.ts` の `lint.vize.ruleOptions` に指定し、`vp run lint` で検査します。
+単独で使う互換設定では、同じ内容を `linter.ruleOptions` に指定します。
 
-`linter.ruleOptions` は、オプションを受け取るルールの project-local な型付き設定です。
-未知の option field は拒否されます。同じ rule に対して後から一致した config entry がある場合、その rule の option object 全体を置き換えます。重大度は `linter.rules` で設定し、
-`ruleOptions` は有効なルールの振る舞いだけを決めます。
+`linter.ruleOptions` には、オプションを受け取るルールの設定をプロジェクトごとに指定します。
+定義されていないフィールドを指定するとエラーになります。同じルールに対して、後から一致する設定がある場合は、
+そのルールのオプション全体を置き換えます。重大度は `linter.rules` で別に設定し、
+`ruleOptions` では有効なルールの判定方法を指定します。以下で明記する場合を除き、オプションだけではルールは有効になりません。
+
+ルールと重大度の指定方法は、[ネイティブ Lint の実行ガイド](../guide/lint-execution.md)で確認できます。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -59,30 +64,31 @@ export default defineConfig({
 });
 ```
 
-| ルール | Option shape | 既定値と挙動 |
+| ルール | オプションの形式 | 既定値と動作 |
 | --- | --- | --- |
-| `html/no-empty-palpable-content` | `{ contentDirectives?: string[] }` | 既定は空 list です。可視 content を供給する directive の bare name を完全一致で指定します。rule は別途有効にしてください。 |
-| `script/no-restricted-globals` | `{ globals?: Array<{ name: string; message?: string }> }` | option なしでは組み込み deny list の `process`、`localStorage`、`sessionStorage` を使います。空でない `globals` は組み込み list を置き換えます。 |
-| `script/no-restricted-members` | `{ members?: Array<{ object: string; property: string; message?: string }> }` | `members` が設定され、かつ rule が有効なときだけ発火します。`message` がない場合は汎用の help を使います。 |
-| `vue/component-name-in-template-casing` | `{ casing?: "PascalCase" \| "kebab-case" }` | 既定は `PascalCase` です。 |
+| `html/no-empty-palpable-content` | `{ contentDirectives?: string[] }` | 既定は空のリストです。目に見える内容を挿入するディレクティブの名前を、接頭辞を除いて完全一致で指定します。ルールは別に有効にしてください。 |
+| `script/no-restricted-globals` | `{ globals?: Array<{ name: string; message?: string }> }` | オプションを省略すると、組み込みの禁止リストにある `process`、`localStorage`、`sessionStorage` を検査します。空でない `globals` を指定すると、組み込みのリストを置き換えます。 |
+| `script/no-restricted-members` | `{ members?: Array<{ object: string; property: string; message?: string }> }` | `members` を設定し、ルールを有効にした場合だけ報告します。`message` を省略すると、共通の説明を表示します。 |
+| `vue/component-name-in-template-casing` | `{ casing?: "PascalCase" \| "kebab-case" }` | 既定は `PascalCase` です。登録済みのコンポーネントだけを対象にし、追加のグローバル名は既定で空です。 |
 | `script/custom-event-name-casing` | `{ casing?: "camelCase" \| "kebab-case" }` | 既定は `camelCase` です。 |
-| `script/define-props-destructuring` | `{ mode?: "only-when-assigned" \| "always" \| "never" }` | 既定は `only-when-assigned` です。`always` は代入しない呼び出しも検査し、`never` は props オブジェクトでの参照を要求します。Vue 3.5 の分割代入は反応性を保ちます。 |
-| `vue/no-mutating-props` | `{ shallowOnly?: boolean }` | 既定は `false` です。`true` では direct prop replacement を禁止したまま nested mutation は許可します。 |
-| `vue/require-component-registration` | `{ globals?: string[] }` | application plugin や previewSetup が登録する component 名を指定します。PascalCase と kebab-case を許可します。rule は別途有効にしてください。 |
-| `vue/sfc-element-order` | `{ order?: Array<string \| string[]> }` | 既定は `[["script", "template"], "style"]` です。ネストした配列は、その rank でどの selector でもよいことを表します。 |
-| `vue/html-self-closing` | `{ html?: { void?: Style; normal?: Style; component?: Style }; svg?: Style; math?: Style }`, where `Style` is `"always"`, `"never"`, or `"any"` | 既定は `html.void: "always"`、`html.normal: "any"`、`html.component: "always"`、`svg: "always"`、`math: "always"` です。 |
-| `vue/v-on-event-hyphenation` | `"always" \| "never"` | component 上の static event listener 名を hyphenation するかを設定します。 |
-| `vue/attribute-hyphenation` | `"always" \| "never"` | template 内の component prop attribute を hyphenation するかを設定します。 |
-| `vue/valid-v-slot` | `{ allowModifiers?: boolean }` | 既定は `false`。`true` で引数付き slot の modifier を許可します。引数なしの modifier と自身の slot props に依存する dynamic name は報告します。 |
-| `musea/prefer-design-tokens` | `{ tokens?: Array<{ path: string; value: string; tier?: string }> }` | token data が設定され、rule が有効か、空でない token list で暗黙に選択されたときだけ発火します。`tier` の既定は `primitive` です。 |
-| `type/strict-boolean-expressions` | `{ allowString?: boolean; allowNumber?: boolean; allowNullableObject?: boolean; allowNullableBoolean?: boolean; allowNullableString?: boolean; allowNullableNumber?: boolean; allowNullableEnum?: boolean; allowAny?: boolean }` | `allowString`、`allowNumber`、`allowNullableObject` の既定は `true`、その他は `false` です。rule を明示的に有効にする必要があります。 |
+| `script/define-props-destructuring` | `{ destructure?: "only-when-assigned" \| "always" \| "never" }` | 既定は `only-when-assigned` です。`always` は代入しない呼び出しも検査し、`never` は props オブジェクトでの参照を要求します。Vue 3.5 の分割代入はリアクティビティを保ちます。 |
+| `vue/no-mutating-props` | `{ shallowOnly?: boolean }` | 既定は `false` です。`true` では、プロパティ自体の再代入を禁止したまま、入れ子のプロパティの変更を許可します。 |
+| `vue/require-component-registration` | `{ globals?: string[] }` | アプリケーションのプラグインやプレビューのセットアップで登録するコンポーネント名を指定します。PascalCase と kebab-case の表記を許可します。ルールは別に有効にしてください。 |
+| `vue/sfc-element-order` | `{ order?: Array<string \| string[]> }` | 既定は `[["script", "template"], "style"]` です。入れ子の配列は、その位置に配列内のどのブロックが現れてもよいことを表します。 |
+| `vue/html-self-closing` | `{ html?: { void?: Style; normal?: Style; component?: Style }; svg?: Style; math?: Style }`。`Style` は `"always"`、`"never"`、`"any"` のいずれか | 既定は `html.void: "always"`、`html.normal: "any"`、`html.component: "always"`、`svg: "always"`、`math: "always"` です。 |
+| `vue/v-on-event-hyphenation` | `"always" \| "never"` | コンポーネントの静的なイベントリスナー名を、ハイフン区切りにするかを指定します。 |
+| `vue/attribute-hyphenation` | `"always" \| "never"` | テンプレートのコンポーネントに渡すプロパティの属性名を、ハイフン区切りにするかを指定します。 |
+| `vue/valid-v-slot` | `{ allowModifiers?: boolean }` | 既定は `false`。`true` では、名前付きスロットの修飾子を許可します。引数なしの修飾子や、そのスロット自身のプロパティに依存する動的な名前は報告します。 |
+| `musea/prefer-design-tokens` | `{ tokens?: Array<{ path: string; value: string; tier?: string }> }` | トークンのデータを指定し、ルールを有効にするか、空でないトークンのリストで暗黙に選択した場合だけ報告します。`tier` の既定は `primitive` です。 |
+| `type/strict-boolean-expressions` | `{ allowString?: boolean; allowNumber?: boolean; allowNullableObject?: boolean; allowNullableBoolean?: boolean; allowNullableString?: boolean; allowNullableNumber?: boolean; allowNullableEnum?: boolean; allowAny?: boolean }` | `allowString`、`allowNumber`、`allowNullableObject` の既定は `true`、その他は `false` です。ルールを明示的に有効にする必要があります。 |
 
 ## `html/no-empty-palpable-content`
 
-custom directive は focus、style、content の供給などを行えます。可視 content を供給すると
-project が保証できる directive だけを指定してください。`v-` を除いた template の名前に
-完全一致します。argument と modifier はその名前を変えません。空 list は既定動作に戻し、
-scoped entry は option object 全体を置き換えます。sanitization の保証や rule の有効化は行いません。
+カスタムディレクティブは、フォーカスの移動、スタイルの適用、内容の挿入などに使われます。
+プロジェクトで、目に見える内容を挿入すると確認できるディレクティブだけを指定してください。
+`v-` を除いたテンプレートの名前に完全一致します。引数や修飾子は、その名前を変えません。
+空のリストを指定すると既定の動作に戻り、ファイルごとの設定はオプション全体を置き換えます。
+この設定はサニタイズの安全性を保証せず、ルールを有効にするものでもありません。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -105,29 +111,32 @@ export default defineConfig({
 });
 ```
 
-悪い（未登録の content source）:
+悪い（内容の挿入元を指定していない場合）:
 
 ```vue
 <p v-sanitize="message" />
 ```
 
-良い（設定した provider）:
+良い（内容を挿入するディレクティブを指定した場合）:
 
 ```vue
 <p v-safe-html="message" />
 ```
 
-## Scoped Entries
+<span id="scoped-entries"></span>
 
-`entries` が file に一致した場合、その `linter.ruleOptions` が root option に overlay されます。
-同じ rule の option object は丸ごと置き換えられます。`globals`、`members`、`order`、`tokens`
-などの配列は entry 間で連結されません。
+## ファイルごとの設定
+
+`entries` がファイルに一致すると、その `linter.ruleOptions` が共通設定より優先されます。
+同じルールのオプションは全体を置き換えます。`globals`、`members`、`order`、`tokens`
+などの配列は、複数の設定から結合されません。
 
 ## `script/no-restricted-globals`
 
-runtime global を project-owned wrapper 経由にしたいときに使います。option がない場合は
-`process`、`localStorage`、`sessionStorage` を報告します。空でない `globals` はその組み込み
-list を置き換えます。空 list は組み込み list に戻るため、設定ミスで rule が黙って無効にはなりません。
+実行環境のグローバル変数へのアクセスを、プロジェクトで管理するラッパーに統一したいときに使います。
+オプションを省略すると、`process`、`localStorage`、`sessionStorage` への参照を報告します。
+空でない `globals` は組み込みの禁止リストを置き換えます。空のリストでは組み込みのリストに戻るため、
+設定ミスでルールが意図せず無効になることはありません。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -172,9 +181,9 @@ const token = authStorage.read("auth.token");
 
 ## `script/no-restricted-members`
 
-SSR-safe helper への移行など、project-local な member access ban に使います。組み込み deny list は
-なく、`members` が空でなく、かつ rule が有効なときだけ報告します。各 entry は bare identifier
-の receiver と static property name に一致します。
+SSR でも安全に使えるヘルパーへの移行など、プロジェクト内で特定のメンバーへのアクセスを禁止したいときに使います。
+組み込みの禁止リストはありません。`members` が空でなく、ルールを有効にした場合だけ報告します。
+各設定は、単一の識別子で表したオブジェクトと、静的なプロパティ名に一致します。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -221,8 +230,9 @@ const env = readServerEnv();
 
 ## `vue/component-name-in-template-casing`
 
-template 内の component tag を PascalCase または kebab-case に揃えるときに使います。native
-HTML/SVG 要素と Vue built-in は対象外です。
+テンプレートのコンポーネント名を、PascalCase または kebab-case に揃えるときに使います。
+HTML/SVG の標準要素と、Vue の組み込みコンポーネントは対象外です。
+以下の例は、PrimaryButton がプロジェクトで登録済みである場合の表記を比較しています。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -243,7 +253,7 @@ export default defineConfig({
 });
 ```
 
-上の config では悪い:
+悪い（上の設定では違反）:
 
 ```vue
 <template>
@@ -261,8 +271,8 @@ export default defineConfig({
 
 ## `script/custom-event-name-casing`
 
-script と template usage の両方で、emitted custom event を同じ casing に揃えるときに使います。
-既定は `camelCase` です。template-facing な event 名で統一したい project では `kebab-case` にします。
+スクリプトとテンプレートの両方で、発行するカスタムイベントの名前の表記を揃えるときに使います。
+既定は `camelCase` です。テンプレートで使うイベント名をハイフン区切りに統一する場合は、`kebab-case` にします。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -283,7 +293,7 @@ export default defineConfig({
 });
 ```
 
-上の config では悪い:
+悪い（上の設定では違反）:
 
 ```ts
 const emit = defineEmits(["saveItem"]);
@@ -299,8 +309,8 @@ emit("save-item");
 
 ## `vue/no-mutating-props`
 
-移行中に nested prop mutation は一時的に許可しつつ、prop binding 自体の置き換えは禁止したい場合は
-`shallowOnly` を使います。既定の `false` では direct mutation と nested mutation の両方を報告します。
+移行中に入れ子のプロパティの変更を一時的に許可し、受け取ったプロパティ自体の再代入を禁止したい場合は、
+`shallowOnly` を使います。既定の `false` では、直接の変更と入れ子のプロパティの変更を両方報告します。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -321,7 +331,7 @@ export default defineConfig({
 });
 ```
 
-上の config では悪い:
+悪い（上の設定では違反）:
 
 ```vue
 <script setup>
@@ -331,7 +341,7 @@ props.count = 2;
 </script>
 ```
 
-上の config では良い:
+良い（上の設定では許可）:
 
 ```vue
 <script setup>
@@ -343,10 +353,10 @@ props.settings.dense = true;
 
 ## `vue/sfc-element-order`
 
-project 固有の SFC block order がある場合に使います。文字列は 1 つの rank、ネストした配列は
-その rank でどの block selector でもよいことを表します。組み込み selector は `script`、
-`script:not([setup])`、`script[setup]`、`template`、`style` です。他の空でない文字列は
-custom block 名に一致します。
+プロジェクトで SFC のブロックの順序を揃えるときに使います。文字列は順序の一つの位置を表し、
+入れ子の配列は、その位置に配列内のどのブロックが現れてもよいことを表します。組み込みの指定は `script`、
+`script:not([setup])`、`script[setup]`、`template`、`style` です。それ以外の空でない文字列は、
+カスタムブロックの名前に一致します。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -373,7 +383,7 @@ export default defineConfig({
 });
 ```
 
-上の config では悪い:
+悪い（上の設定では違反）:
 
 ```vue
 <style scoped></style>
@@ -391,9 +401,9 @@ export default defineConfig({
 
 ## `vue/html-self-closing`
 
-element family ごとの self-closing style を選ぶための option です。`always` は空要素に self-closing
-を要求し、`never` は start/end tag の pair を要求し、`any` はどちらも受け入れます。省略した nested
-field は Vize の既定値を維持します。
+要素の種類ごとに、自己終了タグの使い方を指定します。`always` は、内容が空の要素に自己終了タグを要求します。
+`never` は開始タグと終了タグの組を要求し、`any` はどちらも許可します。
+入れ子のフィールドを省略すると、そのフィールドには Vize の既定値を使います。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -420,7 +430,7 @@ export default defineConfig({
 });
 ```
 
-上の config では悪い:
+悪い（上の設定では違反）:
 
 ```vue
 <template>
@@ -440,9 +450,9 @@ export default defineConfig({
 
 ## `vue/v-on-event-hyphenation`
 
-component 上の static custom event listener 名に使います。`always` は `@saveItem` のような
-camelCase listener argument を報告し、`never` は hyphenated listener argument を報告します。
-native HTML event、object syntax、dynamic argument は対象外です。
+コンポーネントの静的なカスタムイベントリスナー名に使います。`always` は `@saveItem` のような
+camelCase のリスナーの引数を報告し、`never` はハイフン区切りの引数を報告します。
+HTML の標準イベント、オブジェクト形式、動的な引数は対象外です。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -461,7 +471,7 @@ export default defineConfig({
 });
 ```
 
-上の config では悪い:
+悪い（上の設定では違反）:
 
 ```vue
 <template>
@@ -480,9 +490,9 @@ export default defineConfig({
 
 ## `vue/attribute-hyphenation`
 
-custom component 上の static prop name に使います。`always` は camelCase の authored attribute、
-`never` は hyphenated authored attribute を報告します。native attribute、`aria-*`、`data-*`、
-SVG の mixed-case attribute、dynamic argument、attribute として parse された directive shorthand は対象外です。
+カスタムコンポーネントの静的なプロパティの属性名に使います。`always` は camelCase で書いた属性を、
+`never` はハイフン区切りで書いた属性を報告します。標準の属性、`aria-*`、`data-*`、
+大文字と小文字が混在する SVG の属性、動的な引数、属性として解析されたディレクティブの省略形は対象外です。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -501,7 +511,7 @@ export default defineConfig({
 });
 ```
 
-上の config では悪い:
+悪い（上の設定では違反）:
 
 ```vue
 <template>
@@ -519,8 +529,8 @@ export default defineConfig({
 
 ## `vue/valid-v-slot`
 
-既定では `#item.memo` や `#[name].memo` の modifier を報告します。
-Vuetify の data table など、ドットを含む slot 名を使う component では
+既定では、`#item.memo` や `#[name].memo` の修飾子を報告します。
+Vuetify のデータテーブルなど、ドットを含むスロット名を使うコンポーネントでは、
 `allowModifiers: true` を指定します。
 
 ```ts
@@ -548,15 +558,15 @@ export default defineConfig({
 ```
 
 `v-slot.memo` のように引数がない場合や、`#[slot.name]="slot"` のように
-slot 名が自身の slot props に依存する場合は、この設定でも報告します。
-file ごとの `entries` に `allowModifiers: false` を指定すると、root の
+スロット名がそのスロット自身のプロパティに依存する場合は、この設定でも報告します。
+ファイルごとの `entries` に `allowModifiers: false` を指定すると、共通設定の
 `true` より優先されます。`ruleOptions` の指定だけではルールは有効になりません。
 
 ## `musea/prefer-design-tokens`
 
-Musea/style lint を project の design-token inventory に接続するための option です。token data が
-設定され、rule が有効か、空でない token list で選択されたときだけ発火します。各 token は
-hardcoded CSS value を `path` から導かれる CSS custom property に対応させます。
+Musea のスタイル検査で、プロジェクトのデザイントークンを使うための設定です。トークンのデータを指定し、
+ルールを有効にするか、空でないトークンのリストで選択した場合だけ報告します。各トークンは、
+直接書いた CSS の値を、`path` から導く CSS カスタムプロパティに対応させます。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -587,7 +597,7 @@ export default defineConfig({
 });
 ```
 
-上の config では悪い:
+悪い（上の設定では違反）:
 
 ```vue
 <style scoped>
@@ -611,7 +621,7 @@ export default defineConfig({
 
 既定の `only-when-assigned` は、戻り値を変数に代入するときに分割代入を要求します。
 代入しない `defineProps<Props>()` は許可します。`always` は代入しない呼び出しも検出し、
-`never` は分割代入を検出します。Vue 3.5 では props の分割代入が反応性を保ちます。
+`never` は分割代入を検出します。Vue 3.5 では props の分割代入がリアクティビティを保ちます。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -619,7 +629,7 @@ export default defineConfig({
   lint: {
     vize: {
       rules: { "script/define-props-destructuring": "warn" },
-      ruleOptions: { "script/define-props-destructuring": { mode: "only-when-assigned" } },
+      ruleOptions: { "script/define-props-destructuring": { destructure: "only-when-assigned" } },
     },
   },
 });
@@ -647,14 +657,14 @@ ESLint からの移行では、ルール名とオプションの指定位置を�
 ```ts annotate="remove:1;add:2,3"
  rules: { "vue/define-props-destructuring": ["warn", "always"] }
  rules: { "script/define-props-destructuring": "warn" },
- ruleOptions: { "script/define-props-destructuring": { mode: "always" } }
+ ruleOptions: { "script/define-props-destructuring": { destructure: "always" } }
 ```
 
 ## `vue/require-component-registration`
 
-application plugin や Musea `previewSetup` が登録する component 名を明示します。
-PascalCase と kebab-case を許可し、正規表現は解釈しません。option だけでは
-rule は有効になりません。scoped entry は list 全体を置き換え、空 list で reset します。
+アプリケーションのプラグインや Musea `previewSetup` が登録するコンポーネント名を指定します。
+PascalCase と kebab-case の表記を許可し、正規表現は解釈しません。オプションだけでは
+ルールは有効になりません。ファイルごとの設定はリスト全体を置き換え、空のリストで引き継いだ値を消去します。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -678,13 +688,13 @@ export default defineConfig({
 });
 ```
 
-悪い（未登録の component）:
+悪い（未登録のコンポーネント）:
 
 ```vue
 <MissingWidget />
 ```
 
-良い（設定した global）:
+良い（グローバル名を指定したコンポーネント）:
 
 ```vue
 <MyButton />

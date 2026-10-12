@@ -46,6 +46,7 @@ test("npm/native ships exactly the generated declaration and the loader", () => 
     "index.js",
     "index.d.ts",
     "native-binding.js",
+    "native-binding-identity.js",
     "native-targets.js",
   ]);
   assert.equal(manifest.types, "index.d.ts");

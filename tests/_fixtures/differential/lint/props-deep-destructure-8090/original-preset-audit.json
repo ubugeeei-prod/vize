@@ -1,0 +1,356 @@
+{
+  "schema": "vize.lint.next-preset-readonly-audit",
+  "version": 1,
+  "head": "d99206189ef9a18f6248ac1f63f37829c9b30759",
+  "tree": "8ffcc28802a0450be9ef82f774df8fd397530d69",
+  "verdict": "NO_READY_ENABLEMENT",
+  "inventory": [
+    {
+      "rule": "script/no-next-tick",
+      "category": "valid standard Vue scheduling, mode policy only",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/prefer-computed",
+      "category": "style/API/type/config policy; not universally invalid Vue3 code",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/no-reactive-destructure",
+      "category": "correctness-looking; demonstrated context or policy risk, keep opt-in",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/no-top-level-ref-in-script",
+      "category": "style/API/type/config policy; not universally invalid Vue3 code",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/prefer-ref-over-reactive",
+      "category": "style/API/type/config policy; not universally invalid Vue3 code",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/prefer-use-template-ref",
+      "category": "style/API/type/config policy; not universally invalid Vue3 code",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/prefer-use-slots",
+      "category": "style/API/type/config policy; not universally invalid Vue3 code",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/prefer-use-attrs",
+      "category": "style/API/type/config policy; not universally invalid Vue3 code",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/prefer-use-id",
+      "category": "style/API/type/config policy; not universally invalid Vue3 code",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/no-deep-destructure-in-props",
+      "category": "correctness-looking; demonstrated context or policy risk, keep opt-in",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/no-restricted-globals",
+      "category": "style/API/type/config policy; not universally invalid Vue3 code",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/no-restricted-members",
+      "category": "config policy; default empty membership never fires",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/require-symbol-provide",
+      "category": "style/API/type/config policy; not universally invalid Vue3 code",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/require-function-return-type",
+      "category": "style/API/type/config policy; not universally invalid Vue3 code",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/no-deprecated-dollar-listeners-api",
+      "category": "Vue3 migration; version/ownership correctness guard required",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/no-deprecated-dollar-scopedslots-api",
+      "category": "Vue3 migration; version/ownership correctness guard required",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/no-deprecated-data-object-declaration",
+      "category": "Vue3 migration; version/ownership correctness guard required",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/no-deprecated-destroyed-lifecycle",
+      "category": "Vue3 migration; version/ownership correctness guard required",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/no-deprecated-events-api",
+      "category": "Vue3 migration; version/ownership correctness guard required",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/component-options-name-casing",
+      "category": "style/API/type/config policy; not universally invalid Vue3 code",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/define-macros-order",
+      "category": "style/API/type/config policy; not universally invalid Vue3 code",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/define-emits-declaration",
+      "category": "style/API/type/config policy; not universally invalid Vue3 code",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/define-props-declaration",
+      "category": "style/API/type/config policy; not universally invalid Vue3 code",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/no-deprecated-props-default-this",
+      "category": "Vue3 migration; version/ownership correctness guard required",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/no-boolean-default",
+      "category": "style/API/type/config policy; not universally invalid Vue3 code",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/define-props-destructuring",
+      "category": "style/API/type/config policy; not universally invalid Vue3 code",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/require-typed-ref",
+      "category": "style/API/type/config policy; not universally invalid Vue3 code",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/prefer-define-options",
+      "category": "style/API/type/config policy; not universally invalid Vue3 code",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/require-default-prop",
+      "category": "style/API/type/config policy; not universally invalid Vue3 code",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/require-prop-types",
+      "category": "style/API/type/config policy; not universally invalid Vue3 code",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/no-unused-emit-declarations",
+      "category": "correctness-looking; demonstrated context or policy risk, keep opt-in",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/require-typed-object-prop",
+      "category": "style/API/type/config policy; not universally invalid Vue3 code",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/custom-event-name-casing",
+      "category": "style/API/type/config policy; not universally invalid Vue3 code",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/require-explicit-slots",
+      "category": "style/API/type/config policy; not universally invalid Vue3 code",
+      "recommendation": "keep OPT_IN"
+    },
+    {
+      "rule": "script/require-explicit-emits",
+      "category": "style/API/type/config policy; not universally invalid Vue3 code",
+      "recommendation": "keep OPT_IN"
+    }
+  ],
+  "sourceCustody": [
+    {
+      "path": "crates/vize_patina/src/linter/script_rules/registry/rules.rs",
+      "gitBlob": "cbf9c7f32929b3d92554b1bc8918a5d100c303c4",
+      "bytes": 21922,
+      "sha256": "e0ac436d8735f69bab0fe42465a328047dc24dc58248a22ae2315a828468f7a1"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/script_rules/registry/names.rs",
+      "gitBlob": "635231fea005eb6bb8541010fb2b57facb82bc0f",
+      "bytes": 11731,
+      "sha256": "c739b180772c8052c6ed8efc09568f1e441a88c0dc29a4bed994869c46a2794f"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs",
+      "gitBlob": "27b222f88a40cdf5602f63939df27928244d0232",
+      "bytes": 10631,
+      "sha256": "c4a0134e786feca78007040fcfd49b9c8686aca3e63af3b24d81df172ad11ab0"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_reactive_destructure.rs",
+      "gitBlob": "359e1222bb8648ff9d49a534ace304d6a9377b82",
+      "bytes": 6814,
+      "sha256": "eaddc9dd2959c77ffe28b01f374b8f925efd2242fcc9f7a49227920a85e5915d"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/define_props_destructuring.rs",
+      "gitBlob": "3351f658bf3f412ac98870ac7d4c565992c30116",
+      "bytes": 8138,
+      "sha256": "474fc3ab91c610b3c57c232d34d5ad84cd13e8053768903d2a0b399cf7b7af08"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/props_emits/no_unused_emit_declarations.rs",
+      "gitBlob": "f708d3274aeb1877eed9651a7393fdf6cf126eb0",
+      "bytes": 12626,
+      "sha256": "f6fa880456dc0c473f2995d11158c48446b3d5537e4962a40276a72c0744ed66"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_deprecated_props_default_this.rs",
+      "gitBlob": "2f2b1390a007755b78dffbf4c01756012c6c1d6a",
+      "bytes": 11866,
+      "sha256": "1c35e6cfe5bc4bae10992990129bdfc003b54c23dd8ac038be8a03fcb6485fce"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_deprecated_data_object_declaration.rs",
+      "gitBlob": "40eee478aef231ac927dbd25a613de300b37a2e4",
+      "bytes": 8763,
+      "sha256": "d08760c5684983f848336d2b3dd8145cc336e96fd12aecc0fac147ddd1a0aede"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_deprecated_destroyed_lifecycle.rs",
+      "gitBlob": "77a5996c9cb314525e4ccc1e340f078d0ee21bee",
+      "bytes": 5061,
+      "sha256": "c3997c5ea9c93de285e9e8bfd5426346377a15229011135fae744a27afc91b8d"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/compatibility.rs",
+      "gitBlob": "5234425df9d3c7684ba147e193c19c69987314ac",
+      "bytes": 1858,
+      "sha256": "6e5cef4759637a90b268fafb97c48979b89d4d4ec0679528aef4dfc4d3e81a58"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/sfc_context.rs",
+      "gitBlob": "91c389ae260fe1b2ae32d9cba433be7da6ab2c4c",
+      "bytes": 4946,
+      "sha256": "5d258bcd33f2acc37c14534c1a419e7b6de3897b21f5f8017653622d74d2c7a5"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/script_rules/sfc.rs",
+      "gitBlob": "e4a3c8d0a973ae13ed0c9ba97a4cf4cb72b46320",
+      "bytes": 7552,
+      "sha256": "cce4c13e30a66479b42ea078dc9f799afc81bbfb8e9d5464f78b75b874c42dc1"
+    }
+  ],
+  "pinnedProvider": {
+    "version": "10.9.2",
+    "git": "9aa463a4aa4ad3c37d7facacda2e40ad7880ea92",
+    "packageJsonSha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761",
+    "packageFileTreeSha256": "57749c05bdfebd6fca26c239eda9e8a49b110b1eb888d1bbf1d04f18a1a0e9c0",
+    "packageFileCount": 340,
+    "sources": [
+      {
+        "path": "/tmp/vize-next-preset-readonly-audit-20261012/no-unused-emit-declarations.dist.js",
+        "source": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/eslint-plugin-vue@10.9.2_@stylistic+eslint-plugin@5.10.0_eslint@10.4.1_jiti@2.7.0_suppo_490b589eff1bdf6fd918ebcadce99cb1/node_modules/eslint-plugin-vue/dist/rules/no-unused-emit-declarations.js",
+        "bytes": 8512,
+        "sha256": "a48d43559818dd7c446b650aaeece2be160e191c8f1bc480ef50ade20555de3c"
+      },
+      {
+        "path": "/tmp/vize-next-preset-readonly-audit-20261012/no-deprecated-props-default-this.dist.js",
+        "source": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/eslint-plugin-vue@10.9.2_@stylistic+eslint-plugin@5.10.0_eslint@10.4.1_jiti@2.7.0_suppo_490b589eff1bdf6fd918ebcadce99cb1/node_modules/eslint-plugin-vue/dist/rules/no-deprecated-props-default-this.js",
+        "bytes": 3264,
+        "sha256": "540f005e2ba5f6a0fff983158571de033fa2ed0541484590cc67e5bd8e3154dd"
+      },
+      {
+        "path": "/tmp/vize-next-preset-readonly-audit-20261012/no-setup-props-reactivity-loss.dist.js",
+        "source": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/eslint-plugin-vue@10.9.2_@stylistic+eslint-plugin@5.10.0_eslint@10.4.1_jiti@2.7.0_suppo_490b589eff1bdf6fd918ebcadce99cb1/node_modules/eslint-plugin-vue/dist/rules/no-setup-props-reactivity-loss.js",
+        "bytes": 8964,
+        "sha256": "f38e02569f6e6916d29c125b458de3fa074b6925a6d3cf8aa39f851c852552be"
+      }
+    ],
+    "packageJsonVerifiedCurrentSha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761"
+  },
+  "pinnedCompilerSource": {
+    "url": "https://raw.githubusercontent.com/vuejs/core/v3.5.43/packages/compiler-sfc/src/script/definePropsDestructure.ts",
+    "path": "/tmp/vize-next-preset-readonly-audit-20261012/definePropsDestructure.ts",
+    "bytes": 10292,
+    "sha256": "20ca445da54a2b151e1543ca3996d2aff028fd80b2b8fce7e5a4d663377204b3"
+  },
+  "officialVue35Contract": "https://vuejs.org/api/sfc-script-setup.html#reactive-props-destructure",
+  "boundedFutureInvestigation": {
+    "rule": "script/no-deep-destructure-in-props",
+    "readiness": "not ready for default promotion",
+    "sourceBlockers": [
+      "No SFC/setup or macro-binding ownership check: valid standalone/local defineProps is warned.",
+      "Nested array bindings do not increment object-pattern depth, so a compiler-rejected pattern is missed.",
+      "Compiler propsDestructure=false accepts nested pattern while current native warns; existing rule is max-depth style policy.",
+      "No exact pinned eslint counterpart; related provider uses nested-pattern ranges rather than native outer-pattern ranges."
+    ],
+    "futureBoundary": "At most investigate this one producer, preserving Vue3.5 shallow aliases/defaults/rest. Ownership plus compiler-mode/version eligibility and nested-array correctness must be independently fixed before any default proposal; preserve single shared AST, no sibling parse or new public context API."
+  },
+  "controls": {
+    "path": "/tmp/vize-next-preset-readonly-audit-20261012/authored-controls.json",
+    "sha256": "ec0a00983c97eacab181f8b707e0150e9535e8d66b970c05920c0a0bc77ad40e",
+    "count": 8,
+    "status": "not executed; all expected packets source-authored before observation"
+  },
+  "matrixLimits": {
+    "source": "fd4c30a1c6195c4a9e569c17e99d9942b84b7833",
+    "run": 38159810046,
+    "fileSha256": "927d1d8d4d9daa704c1104a85e03e2c449b2e481144c0b1935c3c49fd96f3777",
+    "projects": 145,
+    "lintFailed": 103,
+    "unusableBaselines": 28,
+    "existingFnGroups": 42,
+    "proposedCandidateFnRows": [],
+    "statement": "Historical counts are gaps only. Existing42 FN groups are already default-enabled; no default toggle resolves those counts by itself."
+  },
+  "presetAndConsumerEffects": {
+    "currentRecommendation": "No membership changes in Essential/HappyPath/Ecosystem/Nuxt/Opinionated/all; incremental stays empty.",
+    "explicitOff": "Keep current exact disable behavior; future producer must be inert when off.",
+    "cliPrecedence": "Keep current --preset over config behavior and off+CLI Essential control; no config engine changes.",
+    "diagnosticOrder": "No current change. Any future membership must preserve registry-major API and source-sorted CLI full packets, with same Warning spans/help and no fix unless separately justified.",
+    "futureRoutes": [
+      "default",
+      "recommended",
+      "essential",
+      "ecosystem",
+      "nuxt",
+      "opinionated",
+      "all",
+      "incremental",
+      "explicit-off",
+      "explicit-on-incremental",
+      "config-incremental-cli-essential",
+      "config-essential-cli-incremental",
+      "config-off-cli-essential",
+      "n8n51-projection"
+    ]
+  },
+  "work": "Read-only source/provider review and temporary proposal; no source/native builders, new product files, fixtures, budget/Matrix recapture, upstream writes or publication.",
+  "licenses": [
+    {
+      "path": "/tmp/vize-next-preset-readonly-audit-20261012/eslint-plugin-vue.LICENSE",
+      "bytes": 1071,
+      "sha256": "dbbf03317f0101fed5643cd87ca80fb769e358fa4f428445bf2315deeb23a154"
+    },
+    {
+      "path": "/tmp/vize-next-preset-readonly-audit-20261012/compiler-sfc.LICENSE",
+      "bytes": 1091,
+      "sha256": "1bb85cc9b13b81ef41c81c51866172fc345e0503c86726a6755b796590b70175"
+    }
+  ]
+}

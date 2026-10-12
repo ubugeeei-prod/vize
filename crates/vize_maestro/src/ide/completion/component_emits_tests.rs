@@ -6,6 +6,8 @@ use vize_l0::String;
 use super::CompletionService;
 use crate::{ide::IdeContext, server::ServerState};
 
+mod airi;
+
 #[test]
 fn imported_component_emits_complete_in_empty_and_at_prefixed_attributes() {
     let dir = tempfile::tempdir().unwrap();

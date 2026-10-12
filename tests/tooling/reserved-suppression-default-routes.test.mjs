@@ -5,6 +5,11 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { gunzipSync } from "node:zlib";
 import { sha256, wholeJson } from "./lint-default-correctness-reference.mjs";
+import { authenticateRuntimeApiSourceFamily } from "./support/runtime-props-api-source-custody.mjs";
+import {
+  authenticateSetupExportMembership,
+  setupExportMembership,
+} from "./support/setup-export-preset-source-custody.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const fixture = path.join(root, "tests/_fixtures/differential/lint/reserved-suppression-8090");
@@ -30,7 +35,13 @@ await test("whole suppression routes retain unchanged companion producers and ev
   assert.deepEqual(receipt.baseline, corpus.beforeBaseline);
   assert.equal(sha256(read("cases.json")), successor.initialCorpus.sha256);
   for (const entry of successor.producers) {
-    assert.equal(sha256(fs.readFileSync(path.join(root, entry.path))), entry.sha256);
+    if (entry.path === setupExportMembership) {
+      const membership = authenticateSetupExportMembership(
+        root,
+        authenticateRuntimeApiSourceFamily(root),
+      );
+      assert.deepEqual(entry, { path: membership.path, sha256: membership.beforeSha256 });
+    } else assert.equal(sha256(fs.readFileSync(path.join(root, entry.path))), entry.sha256);
   }
   for (const entry of receipt.custody) assert.equal(sha256(read(entry.path)), entry.sha256);
   const routes = [

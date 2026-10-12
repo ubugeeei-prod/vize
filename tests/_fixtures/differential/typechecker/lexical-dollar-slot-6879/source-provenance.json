@@ -1,0 +1,21 @@
+{
+  "issue": 6879,
+  "originalProduction": {
+    "revision": "a6633fb68b110d07abd5ee5a6049bc15f20f9c7f",
+    "path": "crates/vize_canon/src/virtual_ts/scope/globals/instance.rs",
+    "byteLength": 12534,
+    "sha256": "7dccba0abfd1d0699ac3153a667da6618d900d5d4af6d12c70980a27d748488f"
+  },
+  "observedProject": {
+    "name": "vuefes",
+    "gitlink": "8eff3cd7dd79a7f47bbf2b78202b9aa2070ec5a6",
+    "run": 38158172287,
+    "artifact": 11709424805,
+    "artifactSha256": "098a9bf8fdf5cb2320bace6c5085155cc485a95d0bda1291a6782b2e3e466653",
+    "errors": {
+      "TS2339-dollar-slot": 18,
+      "independent-TS2307-authored-barrel": 3
+    }
+  },
+  "contract": "whole normal batch vectors; all original App goldens and historical adapter registrations unchanged"
+}

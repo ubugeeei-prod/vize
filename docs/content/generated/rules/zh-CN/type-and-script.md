@@ -760,7 +760,7 @@ const userName = computed(() => props.user.name);
 
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
-[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L37) · [全部规则](all.md)
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L39) · [全部规则](all.md)
 
 ### `script/no-deprecated-data-object-declaration`
 
@@ -1335,7 +1335,7 @@ export default {}                      // default inheritance, unstated
 [错误示例](#script-no-export-in-script-setup-bad) · [正确示例](#script-no-export-in-script-setup-good)
 
 默认严重程度: `error`  
-预设: _none_  
+预设: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
 选项: 没有规则专属选项。可以配置严重程度和预设。
@@ -2025,7 +2025,7 @@ export default { props: { title: { type: String, default: "Untitled" } } };
 
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
-[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs#L29) · [全部规则](all.md)
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs#L34) · [全部规则](all.md)
 
 ### `script/no-reserved-identifiers`
 
@@ -2976,17 +2976,18 @@ import { h } from '@vue/runtime-dom'
 
 **正确示例**
 
-两个辅助函数一起从 `vue` 导入，使用公共包入口，不使用任何内部包。
+公共辅助函数从 `vue` 导入。`vue` 未公开的 `isString` 保留 `@vue/shared`。命名空间、默认及公共与私有混合导入保留警告，但不提供自动修复。
 
-```vue annotate="add:2"
+```vue annotate="add:2,3"
 <script setup lang="ts">
 import { ref, h } from 'vue'
+import { isString } from '@vue/shared'
 </script>
 ```
 
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
-[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L32) · [全部规则](all.md)
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L36) · [全部规则](all.md)
 
 ### `script/prefer-ref-over-reactive`
 

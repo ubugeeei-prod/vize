@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.node.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "paths": { "playwright": ["./docs/node_modules/playwright/index.d.ts"] }
+  },
+  "include": [],
+  "files": [
+    "tools/support/release/vapor_acceptance/fixtures.ts",
+    "tools/support/release/vapor_acceptance/prepare.ts",
+    "tools/support/release/vapor_acceptance/runtime.ts",
+    "tests/tooling/release/release-public-vapor.test.ts"
+  ]
+}

@@ -241,19 +241,14 @@ if (process.argv[2] === "prepare") {
       );
     }
   } else assert.ok(production.length > 0);
-  const { pathHostMove, timingHostMove, defaultMigrationHost } = qualifyHostMoves(
-    production,
-    allowed,
-    !cut,
-    (side, file) => gitBodyDigest(driverRoot, side === "before" ? baseline : head, file),
+  const hostMoves = qualifyHostMoves(production, allowed, !cut, (side, file) =>
+    gitBodyDigest(driverRoot, side === "before" ? baseline : head, file),
   );
   if (!cut) {
     for (const file of production)
       assert.ok(
         allowed.has(file) ||
-          pathHostMove?.files.includes(file) ||
-          timingHostMove?.files.includes(file) ||
-          defaultMigrationHost?.files.includes(file),
+          Object.values(hostMoves).some((qualification) => qualification?.files.includes(file)),
         `unqualified production delta: ${file}`,
       );
   }
@@ -294,9 +289,7 @@ if (process.argv[2] === "prepare") {
         base,
         baseline,
         production,
-        pathHostMove,
-        timingHostMove,
-        defaultMigrationHost,
+        ...hostMoves,
         afterRoot,
         driverSource: driver,
         authority: cut

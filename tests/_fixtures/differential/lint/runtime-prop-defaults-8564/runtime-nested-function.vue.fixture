@@ -1,0 +1,3 @@
+<script setup lang="ts">
+function build() { return defineProps({ value: { required: true, default: 1 } }) };
+</script>

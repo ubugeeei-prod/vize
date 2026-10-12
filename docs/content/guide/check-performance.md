@@ -1,5 +1,9 @@
 # Type-checking performance
 
+Use this guide when you need to inspect a slow type-checking run or choose its worker settings.
+Start with the default worker count and a timing profile; wider checker pools can change diagnostics.
+For project selection and the other command options, see [type-checking with the CLI](./cli.md#check).
+
 Choose the number of checker workers in each Corsa process:
 
 ```sh

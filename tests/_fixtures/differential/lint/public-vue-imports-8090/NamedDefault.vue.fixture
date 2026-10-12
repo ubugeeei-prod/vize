@@ -1,0 +1,4 @@
+<script setup lang="ts">
+import { default as Vue } from '@vue/runtime-dom'
+</script>
+<template><div>ok</div></template>

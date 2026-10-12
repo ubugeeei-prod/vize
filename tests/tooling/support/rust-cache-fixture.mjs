@@ -206,6 +206,7 @@ export function executeCacheAction(
     hit = false,
     nestedPost = false,
     storedCache = false,
+    secondaryWorkload = false,
     steps = action.runs.steps,
   } = {},
 ) {
@@ -321,6 +322,12 @@ export function executeCacheAction(
   }
   if (status === 0) {
     child({ kind: "workload", name: "target", path: outputs["cache-policy"]["target-path"] });
+    if (secondaryWorkload)
+      child({
+        kind: "workload",
+        name: "secondary",
+        path: outputs["cache-policy"]["secondary-path"],
+      });
     for (const request of posts.reverse()) {
       if (request.kind === "cache-post") {
         request.path = value(request.pathExpression, inputs, nestedPost ? {} : outputs);

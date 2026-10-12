@@ -1,0 +1,2451 @@
+{
+  "schema": "vize.lint.runtime-prop-defaults-default-controls",
+  "version": 1,
+  "authority": "Three positive/four negative minimal actual SFCs qualify complete whole API/CLI output in seven routes. Companion packets are explicitly empty: type-requirement rules are opt-in; valid-default skips absent type; reserved/valid macro/other default rules do not match these source shapes. Real project sources retain explicit target-only scope.",
+  "targetCorpusSha256": "95453a7cecb70ab2deb0cd2a3585d218aa6caef7a9832078e98865dbc9930ad9",
+  "cases": [
+    {
+      "id": "runtime-required",
+      "filename": "runtime-required.vue",
+      "sourceSha256": "25132067b76cab7309b2694748201e4f2639edd2e5fab155974a8a2e883745c6",
+      "companions": [],
+      "routes": [
+        {
+          "id": "default",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [
+            {
+              "rule_name": "script/no-required-prop-with-default",
+              "severity": "error",
+              "message": "Prop 'value' is required but also declares a default",
+              "start": 43,
+              "end": 80,
+              "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+              "labels": [
+                {
+                  "message": "marked required here",
+                  "start": 52,
+                  "end": 66
+                },
+                {
+                  "message": "default declared here",
+                  "start": 68,
+                  "end": 78
+                }
+              ],
+              "fix": null
+            }
+          ],
+          "apiPacket": {
+            "filename": "runtime-required.vue",
+            "error_count": 1,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-required-prop-with-default",
+                "severity": "error",
+                "message": "Prop 'value' is required but also declares a default",
+                "start": 43,
+                "end": 80,
+                "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+                "labels": [
+                  {
+                    "message": "marked required here",
+                    "start": 52,
+                    "end": 66
+                  },
+                  {
+                    "message": "default declared here",
+                    "start": 68,
+                    "end": 78
+                  }
+                ],
+                "fix": null
+              }
+            ]
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-required.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-required-prop-with-default",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-required-prop-with-default] Prop 'value' is required but also declares a default",
+                  "line": 2,
+                  "column": 29,
+                  "endLine": 2,
+                  "endColumn": 66,
+                  "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "status": 1,
+          "beforeApiPacket": {
+            "filename": "runtime-required.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-required.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "recommended",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [
+            {
+              "rule_name": "script/no-required-prop-with-default",
+              "severity": "error",
+              "message": "Prop 'value' is required but also declares a default",
+              "start": 43,
+              "end": 80,
+              "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+              "labels": [
+                {
+                  "message": "marked required here",
+                  "start": 52,
+                  "end": 66
+                },
+                {
+                  "message": "default declared here",
+                  "start": 68,
+                  "end": 78
+                }
+              ],
+              "fix": null
+            }
+          ],
+          "apiPacket": {
+            "filename": "runtime-required.vue",
+            "error_count": 1,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-required-prop-with-default",
+                "severity": "error",
+                "message": "Prop 'value' is required but also declares a default",
+                "start": 43,
+                "end": 80,
+                "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+                "labels": [
+                  {
+                    "message": "marked required here",
+                    "start": 52,
+                    "end": 66
+                  },
+                  {
+                    "message": "default declared here",
+                    "start": 68,
+                    "end": 78
+                  }
+                ],
+                "fix": null
+              }
+            ]
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-required.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-required-prop-with-default",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-required-prop-with-default] Prop 'value' is required but also declares a default",
+                  "line": 2,
+                  "column": 29,
+                  "endLine": 2,
+                  "endColumn": 66,
+                  "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "status": 1,
+          "beforeApiPacket": {
+            "filename": "runtime-required.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-required.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "essential",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [
+            {
+              "rule_name": "script/no-required-prop-with-default",
+              "severity": "error",
+              "message": "Prop 'value' is required but also declares a default",
+              "start": 43,
+              "end": 80,
+              "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+              "labels": [
+                {
+                  "message": "marked required here",
+                  "start": 52,
+                  "end": 66
+                },
+                {
+                  "message": "default declared here",
+                  "start": 68,
+                  "end": 78
+                }
+              ],
+              "fix": null
+            }
+          ],
+          "apiPacket": {
+            "filename": "runtime-required.vue",
+            "error_count": 1,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-required-prop-with-default",
+                "severity": "error",
+                "message": "Prop 'value' is required but also declares a default",
+                "start": 43,
+                "end": 80,
+                "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+                "labels": [
+                  {
+                    "message": "marked required here",
+                    "start": 52,
+                    "end": 66
+                  },
+                  {
+                    "message": "default declared here",
+                    "start": 68,
+                    "end": 78
+                  }
+                ],
+                "fix": null
+              }
+            ]
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-required.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-required-prop-with-default",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-required-prop-with-default] Prop 'value' is required but also declares a default",
+                  "line": 2,
+                  "column": 29,
+                  "endLine": 2,
+                  "endColumn": 66,
+                  "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "status": 1,
+          "beforeApiPacket": {
+            "filename": "runtime-required.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-required.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "ecosystem",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [
+            {
+              "rule_name": "script/no-required-prop-with-default",
+              "severity": "error",
+              "message": "Prop 'value' is required but also declares a default",
+              "start": 43,
+              "end": 80,
+              "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+              "labels": [
+                {
+                  "message": "marked required here",
+                  "start": 52,
+                  "end": 66
+                },
+                {
+                  "message": "default declared here",
+                  "start": 68,
+                  "end": 78
+                }
+              ],
+              "fix": null
+            }
+          ],
+          "apiPacket": {
+            "filename": "runtime-required.vue",
+            "error_count": 1,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-required-prop-with-default",
+                "severity": "error",
+                "message": "Prop 'value' is required but also declares a default",
+                "start": 43,
+                "end": 80,
+                "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+                "labels": [
+                  {
+                    "message": "marked required here",
+                    "start": 52,
+                    "end": 66
+                  },
+                  {
+                    "message": "default declared here",
+                    "start": 68,
+                    "end": 78
+                  }
+                ],
+                "fix": null
+              }
+            ]
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-required.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-required-prop-with-default",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-required-prop-with-default] Prop 'value' is required but also declares a default",
+                  "line": 2,
+                  "column": 29,
+                  "endLine": 2,
+                  "endColumn": 66,
+                  "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "status": 1,
+          "beforeApiPacket": {
+            "filename": "runtime-required.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-required.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "incremental",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-required.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-required.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-required.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-required.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "explicit-off",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-required.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-required.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-required.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-required.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "n8n-projection",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-required.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-required.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-required.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-required.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        }
+      ]
+    },
+    {
+      "id": "runtime-direct-statement",
+      "filename": "runtime-direct-statement.vue",
+      "sourceSha256": "baadf41c181fd46c5726ab6f5ad2169282bbf4b6965e04018dd4d22ca6ef1dda",
+      "companions": [],
+      "routes": [
+        {
+          "id": "default",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [
+            {
+              "rule_name": "script/no-required-prop-with-default",
+              "severity": "error",
+              "message": "Prop 'value' is required but also declares a default",
+              "start": 29,
+              "end": 66,
+              "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+              "labels": [
+                {
+                  "message": "marked required here",
+                  "start": 38,
+                  "end": 52
+                },
+                {
+                  "message": "default declared here",
+                  "start": 54,
+                  "end": 64
+                }
+              ],
+              "fix": null
+            }
+          ],
+          "apiPacket": {
+            "filename": "runtime-direct-statement.vue",
+            "error_count": 1,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-required-prop-with-default",
+                "severity": "error",
+                "message": "Prop 'value' is required but also declares a default",
+                "start": 29,
+                "end": 66,
+                "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+                "labels": [
+                  {
+                    "message": "marked required here",
+                    "start": 38,
+                    "end": 52
+                  },
+                  {
+                    "message": "default declared here",
+                    "start": 54,
+                    "end": 64
+                  }
+                ],
+                "fix": null
+              }
+            ]
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-direct-statement.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-required-prop-with-default",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-required-prop-with-default] Prop 'value' is required but also declares a default",
+                  "line": 2,
+                  "column": 15,
+                  "endLine": 2,
+                  "endColumn": 52,
+                  "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "status": 1,
+          "beforeApiPacket": {
+            "filename": "runtime-direct-statement.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-direct-statement.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "recommended",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [
+            {
+              "rule_name": "script/no-required-prop-with-default",
+              "severity": "error",
+              "message": "Prop 'value' is required but also declares a default",
+              "start": 29,
+              "end": 66,
+              "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+              "labels": [
+                {
+                  "message": "marked required here",
+                  "start": 38,
+                  "end": 52
+                },
+                {
+                  "message": "default declared here",
+                  "start": 54,
+                  "end": 64
+                }
+              ],
+              "fix": null
+            }
+          ],
+          "apiPacket": {
+            "filename": "runtime-direct-statement.vue",
+            "error_count": 1,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-required-prop-with-default",
+                "severity": "error",
+                "message": "Prop 'value' is required but also declares a default",
+                "start": 29,
+                "end": 66,
+                "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+                "labels": [
+                  {
+                    "message": "marked required here",
+                    "start": 38,
+                    "end": 52
+                  },
+                  {
+                    "message": "default declared here",
+                    "start": 54,
+                    "end": 64
+                  }
+                ],
+                "fix": null
+              }
+            ]
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-direct-statement.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-required-prop-with-default",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-required-prop-with-default] Prop 'value' is required but also declares a default",
+                  "line": 2,
+                  "column": 15,
+                  "endLine": 2,
+                  "endColumn": 52,
+                  "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "status": 1,
+          "beforeApiPacket": {
+            "filename": "runtime-direct-statement.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-direct-statement.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "essential",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [
+            {
+              "rule_name": "script/no-required-prop-with-default",
+              "severity": "error",
+              "message": "Prop 'value' is required but also declares a default",
+              "start": 29,
+              "end": 66,
+              "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+              "labels": [
+                {
+                  "message": "marked required here",
+                  "start": 38,
+                  "end": 52
+                },
+                {
+                  "message": "default declared here",
+                  "start": 54,
+                  "end": 64
+                }
+              ],
+              "fix": null
+            }
+          ],
+          "apiPacket": {
+            "filename": "runtime-direct-statement.vue",
+            "error_count": 1,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-required-prop-with-default",
+                "severity": "error",
+                "message": "Prop 'value' is required but also declares a default",
+                "start": 29,
+                "end": 66,
+                "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+                "labels": [
+                  {
+                    "message": "marked required here",
+                    "start": 38,
+                    "end": 52
+                  },
+                  {
+                    "message": "default declared here",
+                    "start": 54,
+                    "end": 64
+                  }
+                ],
+                "fix": null
+              }
+            ]
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-direct-statement.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-required-prop-with-default",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-required-prop-with-default] Prop 'value' is required but also declares a default",
+                  "line": 2,
+                  "column": 15,
+                  "endLine": 2,
+                  "endColumn": 52,
+                  "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "status": 1,
+          "beforeApiPacket": {
+            "filename": "runtime-direct-statement.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-direct-statement.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "ecosystem",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [
+            {
+              "rule_name": "script/no-required-prop-with-default",
+              "severity": "error",
+              "message": "Prop 'value' is required but also declares a default",
+              "start": 29,
+              "end": 66,
+              "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+              "labels": [
+                {
+                  "message": "marked required here",
+                  "start": 38,
+                  "end": 52
+                },
+                {
+                  "message": "default declared here",
+                  "start": 54,
+                  "end": 64
+                }
+              ],
+              "fix": null
+            }
+          ],
+          "apiPacket": {
+            "filename": "runtime-direct-statement.vue",
+            "error_count": 1,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-required-prop-with-default",
+                "severity": "error",
+                "message": "Prop 'value' is required but also declares a default",
+                "start": 29,
+                "end": 66,
+                "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+                "labels": [
+                  {
+                    "message": "marked required here",
+                    "start": 38,
+                    "end": 52
+                  },
+                  {
+                    "message": "default declared here",
+                    "start": 54,
+                    "end": 64
+                  }
+                ],
+                "fix": null
+              }
+            ]
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-direct-statement.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-required-prop-with-default",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-required-prop-with-default] Prop 'value' is required but also declares a default",
+                  "line": 2,
+                  "column": 15,
+                  "endLine": 2,
+                  "endColumn": 52,
+                  "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "status": 1,
+          "beforeApiPacket": {
+            "filename": "runtime-direct-statement.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-direct-statement.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "incremental",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-direct-statement.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-direct-statement.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-direct-statement.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-direct-statement.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "explicit-off",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-direct-statement.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-direct-statement.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-direct-statement.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-direct-statement.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "n8n-projection",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-direct-statement.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-direct-statement.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-direct-statement.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-direct-statement.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        }
+      ]
+    },
+    {
+      "id": "runtime-crlf-unicode",
+      "filename": "runtime-crlf-unicode.vue",
+      "sourceSha256": "b227fb4c267fe1b8c451a320337e38f19f3fdcdfa0121c6db9b43887be52a566",
+      "companions": [],
+      "routes": [
+        {
+          "id": "default",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [
+            {
+              "rule_name": "script/no-required-prop-with-default",
+              "severity": "error",
+              "message": "Prop 'café' is required but also declares a default",
+              "start": 67,
+              "end": 104,
+              "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+              "labels": [
+                {
+                  "message": "marked required here",
+                  "start": 76,
+                  "end": 90
+                },
+                {
+                  "message": "default declared here",
+                  "start": 92,
+                  "end": 102
+                }
+              ],
+              "fix": null
+            }
+          ],
+          "apiPacket": {
+            "filename": "runtime-crlf-unicode.vue",
+            "error_count": 1,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-required-prop-with-default",
+                "severity": "error",
+                "message": "Prop 'café' is required but also declares a default",
+                "start": 67,
+                "end": 104,
+                "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+                "labels": [
+                  {
+                    "message": "marked required here",
+                    "start": 76,
+                    "end": 90
+                  },
+                  {
+                    "message": "default declared here",
+                    "start": 92,
+                    "end": 102
+                  }
+                ],
+                "fix": null
+              }
+            ]
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-crlf-unicode.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-required-prop-with-default",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-required-prop-with-default] Prop 'café' is required but also declares a default",
+                  "line": 3,
+                  "column": 29,
+                  "endLine": 3,
+                  "endColumn": 65,
+                  "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "status": 1,
+          "beforeApiPacket": {
+            "filename": "runtime-crlf-unicode.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-crlf-unicode.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "recommended",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [
+            {
+              "rule_name": "script/no-required-prop-with-default",
+              "severity": "error",
+              "message": "Prop 'café' is required but also declares a default",
+              "start": 67,
+              "end": 104,
+              "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+              "labels": [
+                {
+                  "message": "marked required here",
+                  "start": 76,
+                  "end": 90
+                },
+                {
+                  "message": "default declared here",
+                  "start": 92,
+                  "end": 102
+                }
+              ],
+              "fix": null
+            }
+          ],
+          "apiPacket": {
+            "filename": "runtime-crlf-unicode.vue",
+            "error_count": 1,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-required-prop-with-default",
+                "severity": "error",
+                "message": "Prop 'café' is required but also declares a default",
+                "start": 67,
+                "end": 104,
+                "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+                "labels": [
+                  {
+                    "message": "marked required here",
+                    "start": 76,
+                    "end": 90
+                  },
+                  {
+                    "message": "default declared here",
+                    "start": 92,
+                    "end": 102
+                  }
+                ],
+                "fix": null
+              }
+            ]
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-crlf-unicode.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-required-prop-with-default",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-required-prop-with-default] Prop 'café' is required but also declares a default",
+                  "line": 3,
+                  "column": 29,
+                  "endLine": 3,
+                  "endColumn": 65,
+                  "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "status": 1,
+          "beforeApiPacket": {
+            "filename": "runtime-crlf-unicode.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-crlf-unicode.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "essential",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [
+            {
+              "rule_name": "script/no-required-prop-with-default",
+              "severity": "error",
+              "message": "Prop 'café' is required but also declares a default",
+              "start": 67,
+              "end": 104,
+              "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+              "labels": [
+                {
+                  "message": "marked required here",
+                  "start": 76,
+                  "end": 90
+                },
+                {
+                  "message": "default declared here",
+                  "start": 92,
+                  "end": 102
+                }
+              ],
+              "fix": null
+            }
+          ],
+          "apiPacket": {
+            "filename": "runtime-crlf-unicode.vue",
+            "error_count": 1,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-required-prop-with-default",
+                "severity": "error",
+                "message": "Prop 'café' is required but also declares a default",
+                "start": 67,
+                "end": 104,
+                "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+                "labels": [
+                  {
+                    "message": "marked required here",
+                    "start": 76,
+                    "end": 90
+                  },
+                  {
+                    "message": "default declared here",
+                    "start": 92,
+                    "end": 102
+                  }
+                ],
+                "fix": null
+              }
+            ]
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-crlf-unicode.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-required-prop-with-default",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-required-prop-with-default] Prop 'café' is required but also declares a default",
+                  "line": 3,
+                  "column": 29,
+                  "endLine": 3,
+                  "endColumn": 65,
+                  "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "status": 1,
+          "beforeApiPacket": {
+            "filename": "runtime-crlf-unicode.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-crlf-unicode.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "ecosystem",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [
+            {
+              "rule_name": "script/no-required-prop-with-default",
+              "severity": "error",
+              "message": "Prop 'café' is required but also declares a default",
+              "start": 67,
+              "end": 104,
+              "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+              "labels": [
+                {
+                  "message": "marked required here",
+                  "start": 76,
+                  "end": 90
+                },
+                {
+                  "message": "default declared here",
+                  "start": 92,
+                  "end": 102
+                }
+              ],
+              "fix": null
+            }
+          ],
+          "apiPacket": {
+            "filename": "runtime-crlf-unicode.vue",
+            "error_count": 1,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-required-prop-with-default",
+                "severity": "error",
+                "message": "Prop 'café' is required but also declares a default",
+                "start": 67,
+                "end": 104,
+                "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+                "labels": [
+                  {
+                    "message": "marked required here",
+                    "start": 76,
+                    "end": 90
+                  },
+                  {
+                    "message": "default declared here",
+                    "start": 92,
+                    "end": 102
+                  }
+                ],
+                "fix": null
+              }
+            ]
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-crlf-unicode.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-required-prop-with-default",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-required-prop-with-default] Prop 'café' is required but also declares a default",
+                  "line": 3,
+                  "column": 29,
+                  "endLine": 3,
+                  "endColumn": 65,
+                  "help": "A required prop is always provided, so its default is unreachable; drop required: true or remove the default."
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "status": 1,
+          "beforeApiPacket": {
+            "filename": "runtime-crlf-unicode.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-crlf-unicode.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "incremental",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-crlf-unicode.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-crlf-unicode.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-crlf-unicode.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-crlf-unicode.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "explicit-off",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-crlf-unicode.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-crlf-unicode.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-crlf-unicode.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-crlf-unicode.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "n8n-projection",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-crlf-unicode.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-crlf-unicode.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-crlf-unicode.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-crlf-unicode.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        }
+      ]
+    },
+    {
+      "id": "runtime-optional",
+      "filename": "runtime-optional.vue",
+      "sourceSha256": "7e52cc102734cdd05837c51584063fc66c73e5ead32aff16102b9186dbf6fef8",
+      "companions": [],
+      "routes": [
+        {
+          "id": "default",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-optional.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-optional.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-optional.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-optional.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "recommended",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-optional.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-optional.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-optional.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-optional.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "essential",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-optional.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-optional.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-optional.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-optional.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "ecosystem",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-optional.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-optional.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-optional.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-optional.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "incremental",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-optional.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-optional.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-optional.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-optional.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "explicit-off",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-optional.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-optional.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-optional.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-optional.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "n8n-projection",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-optional.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-optional.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-optional.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-optional.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        }
+      ]
+    },
+    {
+      "id": "runtime-no-default",
+      "filename": "runtime-no-default.vue",
+      "sourceSha256": "5a0ec742199d9c9b14677c9007e2ef878d01ea191450c408dfaf8cbbd8b30fd1",
+      "companions": [],
+      "routes": [
+        {
+          "id": "default",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-no-default.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-no-default.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-no-default.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-no-default.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "recommended",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-no-default.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-no-default.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-no-default.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-no-default.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "essential",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-no-default.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-no-default.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-no-default.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-no-default.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "ecosystem",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-no-default.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-no-default.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-no-default.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-no-default.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "incremental",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-no-default.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-no-default.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-no-default.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-no-default.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "explicit-off",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-no-default.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-no-default.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-no-default.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-no-default.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "n8n-projection",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-no-default.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-no-default.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-no-default.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-no-default.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        }
+      ]
+    },
+    {
+      "id": "runtime-no-required",
+      "filename": "runtime-no-required.vue",
+      "sourceSha256": "25d4f5e01ecbf04440760cfe0758a3e16ec622b18374371cd5edfcd6092578fe",
+      "companions": [],
+      "routes": [
+        {
+          "id": "default",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-no-required.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-no-required.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-no-required.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-no-required.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "recommended",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-no-required.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-no-required.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-no-required.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-no-required.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "essential",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-no-required.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-no-required.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-no-required.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-no-required.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "ecosystem",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-no-required.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-no-required.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-no-required.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-no-required.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "incremental",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-no-required.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-no-required.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-no-required.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-no-required.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "explicit-off",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-no-required.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-no-required.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-no-required.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-no-required.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "n8n-projection",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "runtime-no-required.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "runtime-no-required.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "runtime-no-required.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-no-required.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        }
+      ]
+    },
+    {
+      "id": "ordinary-normal-script",
+      "filename": "ordinary-normal-script.vue",
+      "sourceSha256": "4779b5682314e9aed4daa9e0f6109d4d430c277e691346764eedbeae7e702d44",
+      "companions": [],
+      "routes": [
+        {
+          "id": "default",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "ordinary-normal-script.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "ordinary-normal-script.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "ordinary-normal-script.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "ordinary-normal-script.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "recommended",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "ordinary-normal-script.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "ordinary-normal-script.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "ordinary-normal-script.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "ordinary-normal-script.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "essential",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "ordinary-normal-script.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "ordinary-normal-script.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "ordinary-normal-script.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "ordinary-normal-script.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "ecosystem",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "ordinary-normal-script.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "ordinary-normal-script.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "ordinary-normal-script.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "ordinary-normal-script.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "incremental",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "ordinary-normal-script.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "ordinary-normal-script.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "ordinary-normal-script.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "ordinary-normal-script.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "explicit-off",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "ordinary-normal-script.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "ordinary-normal-script.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "ordinary-normal-script.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "ordinary-normal-script.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        },
+        {
+          "id": "n8n-projection",
+          "scope": "complete full-default minimal SFC packet",
+          "diagnostics": [],
+          "apiPacket": {
+            "filename": "ordinary-normal-script.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "cliPacket": [
+            {
+              "file": "ordinary-normal-script.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "status": 0,
+          "beforeApiPacket": {
+            "filename": "ordinary-normal-script.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "ordinary-normal-script.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0
+        }
+      ]
+    }
+  ]
+}

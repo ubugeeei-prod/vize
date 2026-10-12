@@ -1,0 +1,201 @@
+{
+  "schema": "vize.lint.runtime-prop-defaults-source-law",
+  "version": 1,
+  "authority": "Complete native/source/provider expectations derived independently from frozen source and unchanged existing producers. Source-only custody checks retain raw prior streams and all existing qualification denominators. No observer rerun, registry edit, current native qualification, or whole-project parity claim.",
+  "sourceCommit": "6d7aaacc45e9d9d9cb0ed65052c61fa93b5b04c5",
+  "originalNativeProducer": {
+    "originalPath": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs",
+    "sourceCommit": "6d7aaacc45e9d9d9cb0ed65052c61fa93b5b04c5",
+    "path": "original-native-producer.rs.fixture",
+    "sha256": "5b3ae15fd4fc769f5fa418ec3b14039a8b30d8b1d7e06cd8f5ba6f872b12274c",
+    "bytes": 10626
+  },
+  "sources": [
+    {
+      "originalPath": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs",
+      "sourceCommit": "6d7aaacc45e9d9d9cb0ed65052c61fa93b5b04c5",
+      "path": "original-native-producer.rs.fixture",
+      "sha256": "5b3ae15fd4fc769f5fa418ec3b14039a8b30d8b1d7e06cd8f5ba6f872b12274c",
+      "bytes": 10626
+    },
+    {
+      "originalPath": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default/typed.rs",
+      "sourceCommit": "6d7aaacc45e9d9d9cb0ed65052c61fa93b5b04c5",
+      "path": "original-typed-producer.rs.fixture",
+      "sha256": "0749c7e672b42572d4c509404af7c82ba415590de5ef04988d577cdc23806c83",
+      "bytes": 8807
+    },
+    {
+      "originalPath": "crates/vize_patina/src/linter/script_rules/registry/rules.rs",
+      "sourceCommit": "6d7aaacc45e9d9d9cb0ed65052c61fa93b5b04c5",
+      "path": "original-registry.rs.fixture",
+      "sha256": "eaa4722cc76a7471137d797c255a8b5e5bcb09aa4d199a9b89624a1d506a6c03",
+      "bytes": 21919
+    },
+    {
+      "originalPath": "crates/vize_patina/src/rules/script/props_emits/require_valid_default_prop.rs",
+      "sourceCommit": "6d7aaacc45e9d9d9cb0ed65052c61fa93b5b04c5",
+      "path": "original-valid-default-producer.rs.fixture",
+      "sha256": "cb8e390094ba0aa83cd94273f0f5c6e269c0ee6d9b5b7d981a69b91e653969b0",
+      "bytes": 11333
+    },
+    {
+      "originalPath": "node_modules/eslint-plugin-vue/dist/rules/no-required-prop-with-default.js",
+      "path": "pinned-provider-rule.js.fixture",
+      "sha256": "3c51d5f8d0ccf8abc2e0b61006a32e755edc962267ea79a3d3b20b1342f67924",
+      "bytes": 3742
+    },
+    {
+      "originalPath": "node_modules/eslint-plugin-vue/dist/utils/index.js",
+      "path": "pinned-provider-utils.js.fixture",
+      "sha256": "4727c10651f789ee6308b4311f3694dd302faae9e5b821ae4b31432c3b105925",
+      "bytes": 80367
+    },
+    {
+      "originalPath": "node_modules/eslint/lib/linter/file-report.js",
+      "path": "pinned-provider-foreign-rule.js.fixture",
+      "sha256": "1c0d9232eec336a4c882492e17d61a94325d6ea942dfa906b10abef9e30ecf43",
+      "bytes": 18710
+    }
+  ],
+  "frozenFiles": [
+    {
+      "path": "cases.json",
+      "sha256": "95453a7cecb70ab2deb0cd2a3585d218aa6caef7a9832078e98865dbc9930ad9",
+      "bytes": 492211
+    },
+    {
+      "path": "default-route-controls.json",
+      "sha256": "3eac3263115863c9e1ff3e38b4140f10722c197d33117411aabcd145e006515e",
+      "bytes": 77154
+    },
+    {
+      "path": "original-sources.json",
+      "sha256": "ff8805d593ace233cd37a839141376579295b35985c2c82210ec9b833d612058",
+      "bytes": 11173
+    },
+    {
+      "path": "authored-proposal.json",
+      "sha256": "2b2160ce93eeb08d56d30454e2c59d307341445328c24f41e06d53792de7652b",
+      "bytes": 6301
+    },
+    {
+      "path": "read-only-original-provider-and-public-packets.json",
+      "sha256": "357840d6ec0c740e52f40e0ffd95d020477dc4abdad3acfb15c3e7820860d5a0",
+      "bytes": 330367
+    },
+    {
+      "path": "read-only-assessment.json",
+      "sha256": "f7cdab56e2fb7cd1e8d1f5e3574d1cc77fda900002bdd14d2dadd91629460b79",
+      "bytes": 10996
+    },
+    {
+      "path": "frozen-originals-custody.json",
+      "sha256": "1d295171cedeafab0bc4eaf247440eeffd0a503630ce8a3871e4ac931775951d",
+      "bytes": 45719
+    },
+    {
+      "path": "original-observer.mjs.fixture",
+      "sha256": "d00c2beae48430936f8ad17a46a9d05946ee0e50ed401f8ac74a665e1d9fd3b4",
+      "bytes": 5684
+    },
+    {
+      "path": "authored-source-law.mjs.fixture",
+      "sha256": "6b70540561a9437e50047ecd44d1b746e4073f301468d86ed3420460395f9701",
+      "bytes": 10051
+    },
+    {
+      "path": "original-native-producer.rs.fixture",
+      "sha256": "5b3ae15fd4fc769f5fa418ec3b14039a8b30d8b1d7e06cd8f5ba6f872b12274c",
+      "bytes": 10626
+    },
+    {
+      "path": "original-typed-producer.rs.fixture",
+      "sha256": "0749c7e672b42572d4c509404af7c82ba415590de5ef04988d577cdc23806c83",
+      "bytes": 8807
+    },
+    {
+      "path": "original-registry.rs.fixture",
+      "sha256": "eaa4722cc76a7471137d797c255a8b5e5bcb09aa4d199a9b89624a1d506a6c03",
+      "bytes": 21919
+    },
+    {
+      "path": "original-valid-default-producer.rs.fixture",
+      "sha256": "cb8e390094ba0aa83cd94273f0f5c6e269c0ee6d9b5b7d981a69b91e653969b0",
+      "bytes": 11333
+    },
+    {
+      "path": "pinned-provider-rule.js.fixture",
+      "sha256": "3c51d5f8d0ccf8abc2e0b61006a32e755edc962267ea79a3d3b20b1342f67924",
+      "bytes": 3742
+    },
+    {
+      "path": "pinned-provider-utils.js.fixture",
+      "sha256": "4727c10651f789ee6308b4311f3694dd302faae9e5b821ae4b31432c3b105925",
+      "bytes": 80367
+    },
+    {
+      "path": "pinned-provider-foreign-rule.js.fixture",
+      "sha256": "1c0d9232eec336a4c882492e17d61a94325d6ea942dfa906b10abef9e30ecf43",
+      "bytes": 18710
+    }
+  ],
+  "caseCounts": {
+    "original": 7,
+    "authored": 11,
+    "primary": 18,
+    "nativeAfter": 19,
+    "providerTarget": 23,
+    "foreignProviderConfiguration": 1
+  },
+  "originalDenominators": [
+    392,
+    357,
+    97,
+    443
+  ],
+  "matrix": {
+    "path": "original-hoppscotch-matrix.json.gz",
+    "sha256": "e8d7d64299d2d42a00d0db3a64409ce0c77e4d830e1cbe5a9d17a84d37228255",
+    "bytes": 284452,
+    "uncompressedSha256": "532059b4348953f1ad71de0207ed65b4ae11ee3500563761a427f8216d6a48a3",
+    "uncompressedBytes": 7360573,
+    "project": "hoppscotch",
+    "revision": "1acb8a3a7581e4db32ba0d529170c4669a2e1053",
+    "budget": {
+      "falseNegativePassed": false,
+      "falsePositivePassed": false,
+      "maxFalseNegativeCount": 0,
+      "maxFalsePositiveCount": 0,
+      "passed": false,
+      "unusableReason": "eslint-plugin-vue could not parse 1 compared file(s)",
+      "verdict": "unusable"
+    },
+    "falsePositiveCount": 43,
+    "falseNegativeCount": 60,
+    "targetFalsePositiveCount": 42,
+    "targetFalseNegativeCount": 58
+  },
+  "routing": {
+    "realSources": "Explicit single-rule qualification only; all18 target API/CLI packets complete within that declared configuration.",
+    "minimalSources": "Seven actual minimal SFCs additionally retain complete full-default/off/incremental/n8n packets.",
+    "originalDefaultQualification": "Unfinished; unrelated whole-project findings are not dropped from a whole-project oracle."
+  },
+  "ownership": {
+    "primaryRefusals": [
+      "runtime-shadowed-function",
+      "runtime-foreign-import",
+      "runtime-sibling-shadow",
+      "runtime-external-setup"
+    ],
+    "providerAuthorityForCompilerOwnership": false,
+    "supplementalProviderPackets": "Pending separate source-authored supplement qualification; original18 receipt stays unchanged"
+  },
+  "qualification": {
+    "currentBefore": "pending",
+    "currentAfter": "pending",
+    "merge": "pending",
+    "installedRelease": "pending",
+    "wholeMatrix": "unchanged unusable historical evidence"
+  }
+}

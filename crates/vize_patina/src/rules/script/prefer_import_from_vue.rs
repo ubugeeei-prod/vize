@@ -4,9 +4,10 @@
 //!
 //! ## Rationale
 //!
-//! While Vue.js is split into multiple packages internally, end users should
-//! always import from 'vue' directly. The internal packages like '@vue/runtime-core'
-//! and '@vue/runtime-dom' are implementation details and may change between versions.
+//! Vue.js is split into multiple packages internally. Names publicly re-exported
+//! by 'vue' should use that entry point. Private helpers that are not available
+//! from 'vue' must retain their actual source. Namespace, default, and mixed
+//! public/private imports keep the advisory without an unsafe automatic rewrite.
 //!
 //! ## Examples
 //!
@@ -19,15 +20,18 @@
 //! ### Valid
 //! ```ts
 //! import { ref, h } from 'vue'
+//! import { isString } from '@vue/shared'
 //! ```
 
-use oxc_ast::ast::{ImportDeclaration, Program, Statement};
+use oxc_ast::ast::{ImportDeclaration, ImportDeclarationSpecifier, Program, Statement};
 use oxc_span::GetSpan;
 use vize_l0::cstr;
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
 use vize_l0::String;
+
+mod public_exports;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/prefer-import-from-vue",
@@ -83,27 +87,54 @@ fn check_import(
         return;
     }
 
+    let mut only_named = true;
+    let mut has_specifier = false;
+    let mut has_public_name = false;
+    let mut safe_to_fix = true;
+    for binding in import.specifiers.iter().flatten() {
+        has_specifier = true;
+        match binding {
+            ImportDeclarationSpecifier::ImportSpecifier(binding) => {
+                let public = public_exports::contains(binding.imported.name().as_str());
+                has_public_name |= public;
+                safe_to_fix &= public;
+            }
+            _ => {
+                only_named = false;
+                safe_to_fix = false;
+            }
+        }
+    }
+    if has_specifier && only_named && !has_public_name {
+        return;
+    }
+
     let Some(from_start) = import_from_start(import, source) else {
         return;
     };
     let source_start = import.source.span.start as usize;
     let pattern_start = offset + from_start;
     let pattern_end = offset + import.source.span.end as usize;
-    let fix_str = replacement_from_clause(source, from_start, source_start);
-
-    result.add_diagnostic(
-        LintDiagnostic::warn(
-            META.name,
-            cstr!("Import from '{}' should be replaced with 'vue'", specifier),
-            pattern_start as u32,
-            pattern_end as u32,
-        )
-        .with_help("Import from 'vue' directly for better compatibility")
-        .with_fix(Fix::new(
+    let diagnostic = LintDiagnostic::warn(
+        META.name,
+        cstr!("Import from '{}' should be replaced with 'vue'", specifier),
+        pattern_start as u32,
+        pattern_end as u32,
+    )
+    .with_help("Import from 'vue' directly for better compatibility");
+    let diagnostic = if safe_to_fix {
+        diagnostic.with_fix(Fix::new(
             "Replace with 'vue'",
-            TextEdit::new(pattern_start as u32, pattern_end as u32, fix_str),
-        )),
-    );
+            TextEdit::new(
+                pattern_start as u32,
+                pattern_end as u32,
+                replacement_from_clause(source, from_start, source_start),
+            ),
+        ))
+    } else {
+        diagnostic
+    };
+    result.add_diagnostic(diagnostic);
 }
 
 fn import_from_start(import: &ImportDeclaration<'_>, source: &str) -> Option<usize> {

@@ -734,7 +734,7 @@ vp run lint
 
 **悪い**
 
-props の `user` からさらに `name` を分割代入で取り出し、既定で許される浅い分割代入の深さを超えています。
+唯一の inline `<script setup>` のトップレベルで、コンパイラーマクロの props の `user` からさらに `name` を取り出し、既定の深さ 1 を超えています。オブジェクトの内側の配列も深さに数えます。個別に有効化するこの警告は、深さの方針を検査します。コンパイラーの `propsDestructure` 設定は参照せず、`withDefaults` でコンパイルできる場合も警告します。
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
@@ -758,7 +758,7 @@ const userName = computed(() => props.user.name);
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L37) · [全ルール](all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L39) · [全ルール](all.md)
 
 ### `script/no-deprecated-data-object-declaration`
 
@@ -1333,7 +1333,7 @@ script setup 内の export 文を検出します。
 [悪い例](#script-no-export-in-script-setup-bad) · [良い例](#script-no-export-in-script-setup-good)
 
 既定の重大度: `error`  
-プリセット: _none_  
+プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
@@ -2023,7 +2023,7 @@ export default { props: { title: { type: String, default: "Untitled" } } };
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs#L29) · [全ルール](all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs#L34) · [全ルール](all.md)
 
 ### `script/no-reserved-identifiers`
 
@@ -2974,17 +2974,18 @@ import { h } from '@vue/runtime-dom'
 
 **良い**
 
-両ヘルパーを `vue` からまとめてインポートし、内部パッケージではなく公開エントリーポイントを使います。
+公開ヘルパーは `vue` からインポートします。`vue` が公開しない `isString` は `@vue/shared` を維持します。名前空間・デフォルト・公開と非公開の混在 import は警告のみで、自動修正しません。
 
-```vue annotate="add:2"
+```vue annotate="add:2,3"
 <script setup lang="ts">
 import { ref, h } from 'vue'
+import { isString } from '@vue/shared'
 </script>
 ```
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L32) · [全ルール](all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L36) · [全ルール](all.md)
 
 ### `script/prefer-ref-over-reactive`
 

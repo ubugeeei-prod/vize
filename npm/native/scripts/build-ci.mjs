@@ -2,6 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
+import { nativeBuildEnvironment } from "./native-build-environment.mjs";
 import { ciConsoleOutput } from "./ci-console-output.mjs";
 import { ciRequestPath, writeCiRequest } from "./formatter-history-ci-request.mjs";
 import {
@@ -26,7 +27,7 @@ export function runCiBuild(
   const before = capture ? beforeCiBuild(nativeDir) : null;
   const options = {
     cwd: nativeDir,
-    env: process.env,
+    env: nativeBuildEnvironment(),
     stdio: capture ? ["inherit", "pipe", "pipe"] : "inherit",
     shell: process.platform === "win32",
     maxBuffer: Infinity,

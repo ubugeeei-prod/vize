@@ -1,0 +1,4 @@
+<script setup>
+const emoji = "😀";
+const props = defineProps({ café: { required: true, default: 1 } });
+</script>

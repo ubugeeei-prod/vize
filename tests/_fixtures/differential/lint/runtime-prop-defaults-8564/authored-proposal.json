@@ -1,0 +1,115 @@
+{
+  "claim": "read-only source proposal, expected runtime membership authored before observation; no actual-current-native execution or implementation credit",
+  "cases": [
+    {
+      "id": "runtime-required",
+      "filename": "runtime-required.vue",
+      "sourcePath": "/tmp/vize-8564-defaults-readonly-sources-20261012/authored/runtime-required.vue",
+      "source": "<script setup>\nconst props = defineProps({ value: { required: true, default: 1 } });\n</script>\n",
+      "sourceSha256": "25132067b76cab7309b2694748201e4f2639edd2e5fab155974a8a2e883745c6",
+      "expectedNewRuntimeCount": 1,
+      "expectedPinnedProviderCount": 1,
+      "scopeNote": null
+    },
+    {
+      "id": "runtime-direct-statement",
+      "filename": "runtime-direct-statement.vue",
+      "sourcePath": "/tmp/vize-8564-defaults-readonly-sources-20261012/authored/runtime-direct-statement.vue",
+      "source": "<script setup>\ndefineProps({ value: { required: true, default: 1 } });\n</script>\n",
+      "sourceSha256": "baadf41c181fd46c5726ab6f5ad2169282bbf4b6965e04018dd4d22ca6ef1dda",
+      "expectedNewRuntimeCount": 1,
+      "expectedPinnedProviderCount": 1,
+      "scopeNote": null
+    },
+    {
+      "id": "runtime-crlf-unicode",
+      "filename": "runtime-crlf-unicode.vue",
+      "sourcePath": "/tmp/vize-8564-defaults-readonly-sources-20261012/authored/runtime-crlf-unicode.vue",
+      "source": "<script setup>\r\nconst emoji = \"😀\";\r\nconst props = defineProps({ café: { required: true, default: 1 } });\r\n</script>\r\n",
+      "sourceSha256": "b227fb4c267fe1b8c451a320337e38f19f3fdcdfa0121c6db9b43887be52a566",
+      "expectedNewRuntimeCount": 1,
+      "expectedPinnedProviderCount": 1,
+      "scopeNote": null
+    },
+    {
+      "id": "runtime-optional",
+      "filename": "runtime-optional.vue",
+      "sourcePath": "/tmp/vize-8564-defaults-readonly-sources-20261012/authored/runtime-optional.vue",
+      "source": "<script setup>\nconst props = defineProps({ value: { required: false, default: 1 } });\n</script>\n",
+      "sourceSha256": "7e52cc102734cdd05837c51584063fc66c73e5ead32aff16102b9186dbf6fef8",
+      "expectedNewRuntimeCount": 0,
+      "expectedPinnedProviderCount": 0,
+      "scopeNote": null
+    },
+    {
+      "id": "runtime-no-default",
+      "filename": "runtime-no-default.vue",
+      "sourcePath": "/tmp/vize-8564-defaults-readonly-sources-20261012/authored/runtime-no-default.vue",
+      "source": "<script setup>\nconst props = defineProps({ value: { required: true } });\n</script>\n",
+      "sourceSha256": "5a0ec742199d9c9b14677c9007e2ef878d01ea191450c408dfaf8cbbd8b30fd1",
+      "expectedNewRuntimeCount": 0,
+      "expectedPinnedProviderCount": 0,
+      "scopeNote": null
+    },
+    {
+      "id": "runtime-no-required",
+      "filename": "runtime-no-required.vue",
+      "sourcePath": "/tmp/vize-8564-defaults-readonly-sources-20261012/authored/runtime-no-required.vue",
+      "source": "<script setup>\nconst props = defineProps({ value: { default: 1 } });\n</script>\n",
+      "sourceSha256": "25d4f5e01ecbf04440760cfe0758a3e16ec622b18374371cd5edfcd6092578fe",
+      "expectedNewRuntimeCount": 0,
+      "expectedPinnedProviderCount": 0,
+      "scopeNote": null
+    },
+    {
+      "id": "ordinary-normal-script",
+      "filename": "ordinary-normal-script.vue",
+      "sourcePath": "/tmp/vize-8564-defaults-readonly-sources-20261012/authored/ordinary-normal-script.vue",
+      "source": "<script>\nconst props = defineProps({ value: { required: true, default: 1 } });\n</script>\n",
+      "sourceSha256": "4779b5682314e9aed4daa9e0f6109d4d430c277e691346764eedbeae7e702d44",
+      "expectedNewRuntimeCount": 0,
+      "expectedPinnedProviderCount": 0,
+      "scopeNote": null
+    },
+    {
+      "id": "runtime-shadowed-function",
+      "filename": "runtime-shadowed-function.vue",
+      "sourcePath": "/tmp/vize-8564-defaults-readonly-sources-20261012/authored/runtime-shadowed-function.vue",
+      "source": "<script setup>\nfunction defineProps(value) { return value }; const props = defineProps({ value: { required: true, default: 1 } });\n</script>\n",
+      "sourceSha256": "2a184762338268e841e586d6e5bfd4711aec0ee6a02d6341f421f847daceb9b5",
+      "expectedNewRuntimeCount": 0,
+      "expectedPinnedProviderCount": null,
+      "scopeNote": "provider packet is retained separately from conservative compiler-ownership refusal"
+    },
+    {
+      "id": "runtime-foreign-import",
+      "filename": "runtime-foreign-import.vue",
+      "sourcePath": "/tmp/vize-8564-defaults-readonly-sources-20261012/authored/runtime-foreign-import.vue",
+      "source": "<script setup>\nimport { defineProps } from \"other\"; const props = defineProps({ value: { required: true, default: 1 } });\n</script>\n",
+      "sourceSha256": "5c77f6866204b5db4e6b39634aa25035086f9fc3cb0591b787287dd2d82c0d8b",
+      "expectedNewRuntimeCount": 0,
+      "expectedPinnedProviderCount": null,
+      "scopeNote": "provider packet is retained separately from conservative compiler-ownership refusal"
+    },
+    {
+      "id": "runtime-sibling-shadow",
+      "filename": "runtime-sibling-shadow.vue",
+      "sourcePath": "/tmp/vize-8564-defaults-readonly-sources-20261012/authored/runtime-sibling-shadow.vue",
+      "source": "<script>\nfunction defineProps(value) { return value }\n</script>\n<script setup>\nconst props = defineProps({ value: { required: true, default: 1 } });\n</script>\n",
+      "sourceSha256": "83807a3d0cb12031d3f53e235fb90ba316c978b389a248bd34d40afe339189e1",
+      "expectedNewRuntimeCount": 0,
+      "expectedPinnedProviderCount": null,
+      "scopeNote": "provider packet is retained separately from conservative compiler-ownership refusal"
+    },
+    {
+      "id": "runtime-external-setup",
+      "filename": "runtime-external-setup.vue",
+      "sourcePath": "/tmp/vize-8564-defaults-readonly-sources-20261012/authored/runtime-external-setup.vue",
+      "source": "<script setup src=\"./foreign.js\">\nconst props = defineProps({ value: { required: true, default: 1 } });\n</script>\n",
+      "sourceSha256": "dc8de0f5759df2c355e7fbfcb24068c9f5f0e625c1c4dd3c22a7298fb6cd3432",
+      "expectedNewRuntimeCount": 0,
+      "expectedPinnedProviderCount": null,
+      "scopeNote": "provider packet is retained separately from conservative compiler-ownership refusal"
+    }
+  ]
+}

@@ -497,6 +497,9 @@ compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_scriptless_ssr/c
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_selected_static_class.rs	10	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_selected_static_class.rs	10	l2	L2	stage	vize_l2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_selected_static_class/history_successor.rs	7	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_setup_ssr/direct_child.rs	5	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_setup_ssr/direct_child.rs	5	l2	L2	stage	vize_l2	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_setup_ssr/nested_custody.rs	2	l2	L2	stage	vize_l2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_setup_ssr/refusals.rs	5	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_setup_ssr/refusals.rs	5	l1	L1	stage	vize_l1	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_setup_ssr/refusals.rs	5	l2	L2	stage	vize_l2	preferred	3

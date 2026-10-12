@@ -171,7 +171,8 @@ function planLines(verb, { features, created, updated, scripts, command }) {
  */
 export function expectedInitOutput(shape, projectRoot, manager, mode) {
   const dependencies = shape.plannedDependencies.join(" ");
-  const installCommand = `${manager.id} ${manager.installArgs.join(" ")} ${dependencies}`;
+  const installer = shape.id === "vite-plus-vue-ts" ? "vp" : manager.detectedPackageManager;
+  const installCommand = `${installer} ${manager.installArgs.join(" ")} ${dependencies}`;
   const applied = {
     detection: resolveShapeField(shape, "detection", manager),
     features: shape.features,

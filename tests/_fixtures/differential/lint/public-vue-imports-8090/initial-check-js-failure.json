@@ -1,0 +1,42 @@
+{
+  "schema": "vize.lint.public-vue-imports-initial-check-js-failure",
+  "version": 1,
+  "run": 38190285207,
+  "job": 114621370535,
+  "head": "9ae7ec8235cc8ecc5778bdd324da269929808f37",
+  "formatFilesPassed": 9556,
+  "lintFiles": 7489,
+  "warnings": 1,
+  "rule": "typescript/require-array-sort-compare",
+  "warningBudget": 0,
+  "rawLog": {
+    "path": "initial-check-js-failure.log.gz",
+    "sha256": "50e9c62f413481e52bbcde5deca95de6b65b7a47b2e1fe5bd89c905a3abaa403",
+    "rawSha256": "6b8099c5f8c7382eb7691b87c86981353ab9fecc73ba3a1f86e168d94907aae0",
+    "rawBytes": 78977
+  },
+  "helper": {
+    "path": "tests/tooling/support/public-vue-imports-reference-contract.mjs",
+    "beforeGitBlob": "2b2bcb33291d58876680be475418a67c168df656",
+    "beforeSha256": "1a92fdee02b2c2dada0d84121e77aad8c3e22bb6c205421a8504dde8e63dcdc8",
+    "beforeCompleteSource": "import assert from \"node:assert/strict\";\n\n// This contract applies only to the authenticated ESLint 10.4.1 serializer.\n// No semantic diagnostic field, case identity or source hash may change.\nexport function validateProviderEnvelope(corpus, supplement) {\n  assert.equal(supplement.schema, \"vize.lint.public-vue-imports-provider-envelope-supplement\");\n  assert.equal(supplement.serializer.package, \"eslint\");\n  assert.equal(supplement.serializer.version, \"10.4.1\");\n  assert.equal(supplement.cases.length, corpus.cases.length);\n  let removed = 0;\n  for (let i = 0; i < corpus.cases.length; i++) {\n    const initial = corpus.cases[i];\n    const expected = initial.providerDiagnostics.map((finding) => {\n      assert.equal(finding.nodeType, \"Literal\");\n      const { nodeType: _nodeType, ...rest } = finding;\n      removed++;\n      return rest;\n    });\n    assert.deepEqual(supplement.cases[i], {\n      id: initial.id,\n      sourceSha256: initial.sourceSha256,\n      diagnostics: expected,\n    });\n  }\n  assert.deepEqual(supplement.changes, {\n    cases: 19,\n    fieldsRemoved: removed,\n    removedField: \"nodeType\",\n    removedValue: \"Literal\",\n    semanticFieldsChanged: 0,\n    nativeVectorsChanged: 0,\n    checksDisabled: 0,\n  });\n  assert.equal(removed, 19);\n}\n\nexport function validatePublicExportTable(names, pinned) {\n  assert.equal(names.length, 361);\n  assert.equal(new Set(names).size, 361);\n  assert.deepEqual(names, [...pinned].sort());\n}\n",
+    "afterSha256": "7cbc90452089b2304ccffa21c5c44d5e465d616f492d3cc107a2f06cfcae2828",
+    "correction": "Explicit lexical string comparator preserves JavaScript default string code-unit ordering; only validator table ordering function changes. No diagnostic/native/preset/provider expectations, budgets or execution authority are recaptured."
+  },
+  "checksDisabled": 0,
+  "nativeVectorsChanged": 0,
+  "localTypedScope": {
+    "argv": [
+      "vp",
+      "check",
+      "--no-fmt",
+      "tests/tooling/support/public-vue-imports-reference-contract.mjs"
+    ],
+    "config": "vite.config.ts lint.typeAware=true; inherited rules, zero warnings required",
+    "stdout": "\u001b[1m\u001b[94mpass:\u001b[39m\u001b[0m Found no warnings or lint errors in 1 file \u001b[2m(322ms, 12 threads)\u001b[0m\n",
+    "stdoutSha256": "5764583c78aeea3b8de2958e9cc2e6484e2e1eb5561c555f934d8f5442b6bdfa",
+    "warnings": 0,
+    "errors": 0,
+    "sourceOrHostedQualification": false
+  }
+}

@@ -30,6 +30,7 @@ use crate::virtual_ts::props::TemplatePropsModel;
 use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
 
 use super::super::context::ScopeGenerationOptions;
+use super::template_scope::is_visible_template_binding_in_scope;
 use super::{
     has_script_setup, is_declared_template_context_name, is_template_instance_global_name,
 };
@@ -53,6 +54,9 @@ pub(in crate::virtual_ts::scope) fn generate_instance_global_refs(
     );
     let undefined_refs = crate::virtual_ts::script_facts::undefined_refs(summary);
     for undef in &undefined_refs {
+        if is_local_instance_reference(summary, undef.name.as_str(), undef.offset) {
+            continue;
+        }
         let src_start = (template_offset + undef.offset) as usize;
         let src_end = src_start + undef.name.len();
         emitter.emit(undef.name.as_str(), src_start, src_end);
@@ -72,6 +76,9 @@ pub(in crate::virtual_ts::scope) fn generate_instance_global_refs(
         // template range.
         for ident in extract_identifier_refs_oxc(expr.content.as_str()) {
             let name = ident.name.as_str();
+            if is_visible_template_binding_in_scope(summary, name, expr.scope_id) {
+                continue;
+            }
             let src_start = (template_offset + expr.start + ident.offset) as usize;
             let src_end = src_start + name.len();
             emitter.emit(name, src_start, src_end);
@@ -90,10 +97,41 @@ pub(in crate::virtual_ts::scope) fn generate_instance_global_refs(
             continue;
         }
         for reference in extract_identifier_refs_oxc(data.source.as_str()) {
+            // A loop's iterable runs in its parent, before its own aliases exist.
+            if scope.parent().is_some_and(|parent| {
+                is_visible_template_binding_in_scope(summary, reference.name.as_str(), parent)
+            }) {
+                continue;
+            }
             let start = (template_offset + offset + reference.offset) as usize;
             emitter.emit(reference.name.as_str(), start, start + reference.name.len());
         }
     }
+}
+
+/// Undefined refs have only an offset. Recover the actual expression owner;
+/// an enclosing slot span would incorrectly grant its binding to parent props.
+fn is_local_instance_reference(summary: &Croquis, name: &str, offset: u32) -> bool {
+    if !is_template_instance_global_name(name) {
+        return false;
+    }
+    let owner = summary
+        .template_expressions
+        .iter()
+        .find(|expr| expr.start <= offset && offset < expr.end)
+        .map(|expr| expr.scope_id)
+        .or_else(|| {
+            summary.scopes.iter().find_map(|scope| {
+                let ScopeData::VFor(data) = scope.data() else {
+                    return None;
+                };
+                let start = summary.scopes.v_for_source_offset(scope.id)?;
+                (start <= offset && offset < start + data.source.len() as u32)
+                    .then(|| scope.parent())
+                    .flatten()
+            })
+        });
+    owner.is_some_and(|id| is_visible_template_binding_in_scope(summary, name, id))
 }
 
 /// The type the template's `$props` resolves against.

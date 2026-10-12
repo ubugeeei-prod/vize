@@ -1,0 +1,322 @@
+{
+  "schema": "vize.lint.public-vue-imports-released-fix-before",
+  "version": 1,
+  "authority": "Six old released --fix whole packets and final bytes checked against separately pre-authored unconditional-old-producer contracts; no candidate observation.",
+  "custody": {
+    "corpusSha256": "d52480f474c2a6dba9681aa620a0c5e6dd2597accd91ad286000230a1b9d2389",
+    "primarySourcesSha256": "d82d898a4933a4bb7f72840f8b37f125ea2310a1e03a69435e7c3236716af157",
+    "helperSha256": "bbf1fa311c7793023a3642f3d4ec3e2ecdc169ba6b2cbad29fe7e0eb3afc9fd4",
+    "wholeJsonSha256": "d0fe46840f15d3aee0cad8b0394b4c67dd1f738a9ddaba39f55073fefd9df6b7"
+  },
+  "baseline": {
+    "tag": "v0.443.0",
+    "source": "15e116fa258c7aaba5c6fdd2456442535605abe8",
+    "binary": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-lint-prefilter-public-n57i19hn/vize",
+    "binarySha256": "9ad7cf956351265a152a9bbfa08b8c50c85dadacef66529474bbb6170267e254",
+    "archiveSha256": "6378e10d0fa0568a0c1798b48d99b18a01f3e842f8c765fb11b80b638f39a73e",
+    "releaseRun": 38081199501,
+    "verifiedBinaryBeforeSha256": "9ad7cf956351265a152a9bbfa08b8c50c85dadacef66529474bbb6170267e254",
+    "verifiedBinaryAfterSha256": "9ad7cf956351265a152a9bbfa08b8c50c85dadacef66529474bbb6170267e254"
+  },
+  "config": {
+    "text": "{\n  \"linter\": {\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/prefer-import-from-vue\": \"warn\"\n    }\n  }\n}\n",
+    "sha256": "f87ce171d8111eb593033f7e302292c9dc93b4a00ec569ed76db9697f4a05f05"
+  },
+  "contractSha256": "f020a890589fbc4a1dcca19a292886f1af365691770ac869b871976cb84cb610",
+  "priorAttempts": [],
+  "runs": [
+    {
+      "id": "original-element-plus",
+      "input": {
+        "source": "<script setup lang=\"ts\">\nimport { computed } from 'vue'\nimport { isString } from '@vue/shared'\nimport ApiTyping from './vp-api-typing.vue'\n\nconst props = defineProps({\n  values: {\n    type: Array,\n    required: true,\n  },\n})\n\nconst processString = (s: unknown) => (isString(s) ? `'${s}'` : s)\n\nconst details = computed(() => props.values.map(processString).join(' | '))\n</script>\n\n<template>\n  <api-typing type=\"enum\" :details=\"details\" />\n</template>\n",
+        "sha256": "3e39e2d5e9c3657f7240c75e0f53acd60054a97ae3e4ff6aa6cee2185efe508a"
+      },
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "--fix",
+        "OriginalVpApiEnum.vue"
+      ],
+      "expected": [
+        {
+          "file": "OriginalVpApiEnum.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 0,
+      "expectedFinalSource": "<script setup lang=\"ts\">\nimport { computed } from 'vue'\nimport { isString } from 'vue'\nimport ApiTyping from './vp-api-typing.vue'\n\nconst props = defineProps({\n  values: {\n    type: Array,\n    required: true,\n  },\n})\n\nconst processString = (s: unknown) => (isString(s) ? `'${s}'` : s)\n\nconst details = computed(() => props.values.map(processString).join(' | '))\n</script>\n\n<template>\n  <api-typing type=\"enum\" :details=\"details\" />\n</template>\n",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "[\n  {\n    \"file\": \"OriginalVpApiEnum.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stdoutBase64": "WwogIHsKICAgICJmaWxlIjogIk9yaWdpbmFsVnBBcGlFbnVtLnZ1ZSIsCiAgICAibWVzc2FnZXMiOiBbXSwKICAgICJlcnJvckNvdW50IjogMCwKICAgICJ3YXJuaW5nQ291bnQiOiAwCiAgfQpd",
+      "stderr": "",
+      "stderrBase64": "",
+      "finalSource": "<script setup lang=\"ts\">\nimport { computed } from 'vue'\nimport { isString } from 'vue'\nimport ApiTyping from './vp-api-typing.vue'\n\nconst props = defineProps({\n  values: {\n    type: Array,\n    required: true,\n  },\n})\n\nconst processString = (s: unknown) => (isString(s) ? `'${s}'` : s)\n\nconst details = computed(() => props.values.map(processString).join(' | '))\n</script>\n\n<template>\n  <api-typing type=\"enum\" :details=\"details\" />\n</template>\n",
+      "finalSourceSha256": "44adf90a1c14080a2a20b2a9d991f4e5232fa97553cf3fefe283bb9281eba84a",
+      "actual": [
+        {
+          "file": "OriginalVpApiEnum.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "matched": true
+    },
+    {
+      "id": "private-alias",
+      "input": {
+        "source": "<script setup lang=\"ts\">\nimport { isString as ref } from '@vue/shared'\n</script>\n<template><div>ok</div></template>\n",
+        "sha256": "7db39bdbbada6a3a2f610fde2b5725a395ca904465d9079381640ca239f30a85"
+      },
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "--fix",
+        "PrivateAlias.vue"
+      ],
+      "expected": [
+        {
+          "file": "PrivateAlias.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 0,
+      "expectedFinalSource": "<script setup lang=\"ts\">\nimport { isString as ref } from 'vue'\n</script>\n<template><div>ok</div></template>\n",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "[\n  {\n    \"file\": \"PrivateAlias.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stdoutBase64": "WwogIHsKICAgICJmaWxlIjogIlByaXZhdGVBbGlhcy52dWUiLAogICAgIm1lc3NhZ2VzIjogW10sCiAgICAiZXJyb3JDb3VudCI6IDAsCiAgICAid2FybmluZ0NvdW50IjogMAogIH0KXQ==",
+      "stderr": "",
+      "stderrBase64": "",
+      "finalSource": "<script setup lang=\"ts\">\nimport { isString as ref } from 'vue'\n</script>\n<template><div>ok</div></template>\n",
+      "finalSourceSha256": "ae9d658471b097c46640c61dc6cf65dba3d021e30d8877e7fd2205d97aa4b875",
+      "actual": [
+        {
+          "file": "PrivateAlias.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "matched": true
+    },
+    {
+      "id": "public-ref",
+      "input": {
+        "source": "<script setup lang=\"ts\">\nimport { ref } from '@vue/reactivity'\n</script>\n<template><div>ok</div></template>\n",
+        "sha256": "7cd672516f8c224a0f5097c29d3dae3fad4e88d18dd22a4529c148d735b06182"
+      },
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "--fix",
+        "PublicRef.vue"
+      ],
+      "expected": [
+        {
+          "file": "PublicRef.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 0,
+      "expectedFinalSource": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\n</script>\n<template><div>ok</div></template>\n",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "[\n  {\n    \"file\": \"PublicRef.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stdoutBase64": "WwogIHsKICAgICJmaWxlIjogIlB1YmxpY1JlZi52dWUiLAogICAgIm1lc3NhZ2VzIjogW10sCiAgICAiZXJyb3JDb3VudCI6IDAsCiAgICAid2FybmluZ0NvdW50IjogMAogIH0KXQ==",
+      "stderr": "",
+      "stderrBase64": "",
+      "finalSource": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\n</script>\n<template><div>ok</div></template>\n",
+      "finalSourceSha256": "691c832922d447259f1e905c5a2cbae63b3cb85a505ad11932ebab0a3c3284f9",
+      "actual": [
+        {
+          "file": "PublicRef.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "matched": true
+    },
+    {
+      "id": "mixed-named",
+      "input": {
+        "source": "<script setup lang=\"ts\">\nimport { ref, isString } from '@vue/shared'\n</script>\n<template><div>ok</div></template>\n",
+        "sha256": "6ef9a187e590776cc137d87a64fb6021be00285038e288fd822d8b63c96bf938"
+      },
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "--fix",
+        "MixedNamed.vue"
+      ],
+      "expected": [
+        {
+          "file": "MixedNamed.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 0,
+      "expectedFinalSource": "<script setup lang=\"ts\">\nimport { ref, isString } from 'vue'\n</script>\n<template><div>ok</div></template>\n",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "[\n  {\n    \"file\": \"MixedNamed.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stdoutBase64": "WwogIHsKICAgICJmaWxlIjogIk1peGVkTmFtZWQudnVlIiwKICAgICJtZXNzYWdlcyI6IFtdLAogICAgImVycm9yQ291bnQiOiAwLAogICAgIndhcm5pbmdDb3VudCI6IDAKICB9Cl0=",
+      "stderr": "",
+      "stderrBase64": "",
+      "finalSource": "<script setup lang=\"ts\">\nimport { ref, isString } from 'vue'\n</script>\n<template><div>ok</div></template>\n",
+      "finalSourceSha256": "9e4889f198de92c173366df00213a490e32d38a83bdedb148b537ea1316064cd",
+      "actual": [
+        {
+          "file": "MixedNamed.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "matched": true
+    },
+    {
+      "id": "namespace",
+      "input": {
+        "source": "<script setup lang=\"ts\">\nimport * as Vue from '@vue/runtime-dom'\n</script>\n<template><div>ok</div></template>\n",
+        "sha256": "525bc5629381a1e0fe9e7f39d561e5adc4c4640176f4a87e28f19c28d94fde83"
+      },
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "--fix",
+        "Namespace.vue"
+      ],
+      "expected": [
+        {
+          "file": "Namespace.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 0,
+      "expectedFinalSource": "<script setup lang=\"ts\">\nimport * as Vue from 'vue'\n</script>\n<template><div>ok</div></template>\n",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "[\n  {\n    \"file\": \"Namespace.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stdoutBase64": "WwogIHsKICAgICJmaWxlIjogIk5hbWVzcGFjZS52dWUiLAogICAgIm1lc3NhZ2VzIjogW10sCiAgICAiZXJyb3JDb3VudCI6IDAsCiAgICAid2FybmluZ0NvdW50IjogMAogIH0KXQ==",
+      "stderr": "",
+      "stderrBase64": "",
+      "finalSource": "<script setup lang=\"ts\">\nimport * as Vue from 'vue'\n</script>\n<template><div>ok</div></template>\n",
+      "finalSourceSha256": "dde8603bdf52350a4ca7d32bc954151238bdb62e027e9d936d17ee2b63ab0909",
+      "actual": [
+        {
+          "file": "Namespace.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "matched": true
+    },
+    {
+      "id": "default-import",
+      "input": {
+        "source": "<script setup lang=\"ts\">\nimport Vue from '@vue/runtime-dom'\n</script>\n<template><div>ok</div></template>\n",
+        "sha256": "45715823143b25967725f710a651bcb63a95e7580acc9dc2885b4bbee147c85f"
+      },
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "--fix",
+        "DefaultImport.vue"
+      ],
+      "expected": [
+        {
+          "file": "DefaultImport.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 0,
+      "expectedFinalSource": "<script setup lang=\"ts\">\nimport Vue from 'vue'\n</script>\n<template><div>ok</div></template>\n",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "[\n  {\n    \"file\": \"DefaultImport.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stdoutBase64": "WwogIHsKICAgICJmaWxlIjogIkRlZmF1bHRJbXBvcnQudnVlIiwKICAgICJtZXNzYWdlcyI6IFtdLAogICAgImVycm9yQ291bnQiOiAwLAogICAgIndhcm5pbmdDb3VudCI6IDAKICB9Cl0=",
+      "stderr": "",
+      "stderrBase64": "",
+      "finalSource": "<script setup lang=\"ts\">\nimport Vue from 'vue'\n</script>\n<template><div>ok</div></template>\n",
+      "finalSourceSha256": "da825d11780704d1f506d197e5064e674a9b0710015d67590c38e322d4406ff9",
+      "actual": [
+        {
+          "file": "DefaultImport.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "matched": true
+    }
+  ],
+  "summary": {
+    "cases": 6,
+    "matchedCases": 6,
+    "diagnostics": 0
+  }
+}

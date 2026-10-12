@@ -1,0 +1,99 @@
+import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { gunzipSync, gzipSync } from "node:zlib";
+import { githubReader, apiRoot, sha256 } from "../../../../../tools/support/release/typed_defaults/custody.mjs";
+import { reservedScenarios, reservedNormalized } from "../../../../../tools/support/release/typed_defaults/reserved_scenarios.mjs";
+import { verifyGithub } from "../../../../../tools/support/release/public_acceptance/github.ts";
+
+const fixture = path.dirname(fileURLToPath(import.meta.url));
+const options = { cut: "123c0f363d90bfa20cbf669f52ddb85343332568", head: "15e116fa258c7aaba5c6fdd2456442535605abe8", tag: "v0.443.0", sourcePr: "8541", run: "38081199501" };
+const binaryHash = "9ad7cf956351265a152a9bbfa08b8c50c85dadacef66529474bbb6170267e254";
+const archiveHash = "6378e10d0fa0568a0c1798b48d99b18a01f3e842f8c765fb11b80b638f39a73e";
+const binary = fs.realpathSync(process.argv[2]);
+const archive = path.join(path.dirname(binary), "vize-aarch64-apple-darwin.tar.gz");
+assert.equal(process.platform, "darwin"); assert.equal(process.arch, "arm64");
+const archiveBytes = fs.readFileSync(archive);
+assert.equal(sha256(archiveBytes), archiveHash);
+const body = JSON.parse(gunzipSync(fs.readFileSync(path.join(fixture, "inert-provider.json.gz"))));
+const manifest = JSON.parse(fs.readFileSync(path.join(fixture, "authorities.json")));
+assert.equal(sha256(fs.readFileSync(path.join(fixture, "authorities.json"))), "108fb93819bad4dc59cace1441a955a55aaa5b5b122aeb5a0602a2c987d649df");
+const source = new Map(body.bodies.map(({ path, base64 }) => [path, Buffer.from(base64, "base64")]));
+for (const entry of manifest.authorities) {
+  const bytes = source.get(entry.path);
+  assert.equal(bytes.length, entry.bytes); assert.equal(sha256(bytes), entry.sha256);
+}
+const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-reserved-public-red-"));
+const output = path.join(fixture, "original-public-red.json.gz");
+assert(!fs.existsSync(output), "frozen old-public RED baseline must not be rewritten");
+const helper = path.join(directory, "whole-json.mjs");
+fs.writeFileSync(helper, source.get("tests/tooling/lint-default-correctness-reference.mjs"));
+const { wholeJson } = await import(pathToFileURL(helper).href);
+const { vectors } = reservedScenarios(name => source.get(name));
+const normalized = reservedNormalized(vectors, wholeJson);
+assert.equal(sha256(JSON.stringify(normalized)), manifest.contract.sha256);
+const receipt = {
+  schema: "vize.lint.reserved-family-old-public-red", version: 1,
+  purpose: "Before baseline against corrected literal successors; old public version contains no reserved-family fix and is not accepted.",
+  options, contract: manifest.contract, acceptance: false, directory,
+  platform: process.platform, architecture: process.arch,
+  binary: { path: binary, sha256: binaryHash }, archive: { path: archive, sha256: archiveHash, bytes: archiveBytes.length },
+  custody: ["authorities.json", "inert-provider.json.gz", "source-equivalence.json", "observe-public-before.mjs"].map(name => ({ path: name, sha256: sha256(fs.readFileSync(path.join(fixture, name))) })),
+  github: [], runs: [],
+};
+const rawGithub = [];
+const credential = spawnSync("gh", ["auth", "token"], { encoding: "utf8" });
+assert.equal(credential.status, 0);
+const readGithub = githubReader(directory, credential.stdout.trim());
+const json = async url => { const value = await readGithub(url); rawGithub.push({ url, value }); return value; };
+function loaded() {
+  const stat = fs.lstatSync(binary);
+  assert(stat.isFile() && !stat.isSymbolicLink());
+  assert.equal(sha256(fs.readFileSync(binary)), binaryHash);
+}
+try {
+  loaded();
+  const official = await verifyGithub(options, json);
+  receipt.official = official;
+  const actualBare = "19e8fa700d3c79631166bcaed4e3cfe65dda1903";
+  receipt.bareAncestry = await json(`${apiRoot}/compare/${actualBare}...${options.head}`);
+  assert.notEqual(receipt.bareAncestry.merge_base_commit.sha, actualBare);
+  const asset = official.release.assets.find(a => a.name === path.basename(archive));
+  assert.equal(asset.digest, `sha256:${archiveHash}`); assert.equal(asset.size, archiveBytes.length);
+  const transport = spawnSync("python3", ["-c", "import tarfile,sys,hashlib,json\nwith tarfile.open(sys.argv[1],'r:gz') as t:\n m=t.getmembers();assert len(m)==1 and m[0].name=='vize' and m[0].isfile() and not m[0].issym() and not m[0].islnk();b=t.extractfile(m[0]).read();assert b==open(sys.argv[2],'rb').read();assert b[:4]==bytes.fromhex('cffaedfe');assert int.from_bytes(b[4:8],'little')==0x100000c;print(json.dumps({'name':m[0].name,'bytes':len(b),'mode':m[0].mode,'sha256':hashlib.sha256(b).hexdigest()}))", archive, binary], { encoding: "utf8" });
+  assert.equal(transport.status, 0, transport.stderr); receipt.member = JSON.parse(transport.stdout);
+  const version = spawnSync(binary, ["--version"], { encoding: "utf8" });
+  assert.equal(version.status, 0); assert.equal(version.stdout, "vize 0.443.0\n"); assert.equal(version.stderr, "");
+  receipt.versionObservation = { status: version.status, stdout: version.stdout, stderr: version.stderr };
+  for (const [index, entry] of normalized.entries()) {
+    const consumer = path.join(directory, "cases", String(index).padStart(3, "0")); fs.mkdirSync(consumer, { recursive: true });
+    fs.writeFileSync(path.join(consumer, entry.filename), entry.source);
+    if (entry.config) fs.writeFileSync(path.join(consumer, "vize.config.json"), entry.config);
+    const argv = ["lint", ...(entry.config ? ["-c", "vize.config.json"] : ["--no-config"]), ...(entry.preset ? ["--preset", entry.preset] : []), "--format", "json", "--locale", "en", "--help-level", "none", entry.filename];
+    loaded();
+    const result = spawnSync(binary, argv, { cwd: consumer, encoding: "utf8", timeout: 60000, maxBuffer: 4*1024*1024 });
+    loaded();
+    const run = { index, suite: entry.suite, id: entry.id, argv, config: entry.config, input: { text: entry.source, sha256: sha256(entry.source) }, status: result.status, error: result.error ? { name: result.error.name, message: result.error.message } : null, signal: result.signal, stdout: result.stdout ?? "", stderr: result.stderr ?? "", expected: entry.expected, expectedStatus: entry.expectedStatus };
+    assert.equal(run.error, null); assert.equal(run.signal, null); assert.equal(run.stderr, "");
+    run.actual = JSON.parse(run.stdout);
+    try { assert.deepEqual(run.actual, run.expected); assert.equal(run.status, run.expectedStatus); run.matchesCorrectedSuccessor = true; }
+    catch (error) { run.matchesCorrectedSuccessor = false; run.refusal = { name: error.name, message: error.message }; }
+    run.raw = { stdoutBase64: Buffer.from(run.stdout).toString("base64"), stdoutSha256: sha256(run.stdout), stderrBase64: Buffer.from(run.stderr).toString("base64"), stderrSha256: sha256(run.stderr) };
+    receipt.runs.push(run);
+  }
+  assert.equal(receipt.runs.length, 443);
+  receipt.refused = receipt.runs.filter(r => !r.matchesCorrectedSuccessor).length;
+  assert(receipt.refused > 0, "old public version must remain RED against the corrected successors");
+  receipt.finalOfficial = await verifyGithub(options, json);
+  assert.equal(receipt.finalOfficial.release.id, official.release.id);
+  const finalAsset = receipt.finalOfficial.release.assets.find(a => a.id === asset.id);
+  for (const key of ["id", "name", "size", "digest", "url", "browser_download_url"]) assert.equal(finalAsset[key], asset[key]);
+  loaded();
+  console.log(JSON.stringify({ oldPublicAcceptance: false, processes: 443, refused: receipt.refused, contract: manifest.contract.sha256 }));
+} finally {
+  receipt.github = rawGithub;
+  fs.writeFileSync(output, gzipSync(Buffer.from(JSON.stringify(receipt) + "\n"), { mtime: 0 }), { flag: "wx" });
+}

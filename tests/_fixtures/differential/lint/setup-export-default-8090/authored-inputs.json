@@ -1,0 +1,97 @@
+{
+  "schema": "vize.lint.read-only-no-export-candidate-inputs",
+  "version": 1,
+  "authority": "Source-authored current-rule expected classifications before reference execution; not native or installed proof",
+  "cases": [
+    {
+      "id": "runtime-const",
+      "source": "<script setup lang=\"ts\">\nexport const answer = 42;\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": true
+    },
+    {
+      "id": "runtime-default",
+      "source": "<script setup lang=\"ts\">\nexport default {};\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": true
+    },
+    {
+      "id": "runtime-reexport",
+      "source": "<script setup lang=\"ts\">\nexport { ref } from 'vue';\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": true
+    },
+    {
+      "id": "runtime-star",
+      "source": "<script setup lang=\"ts\">\nexport * from 'vue';\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": true
+    },
+    {
+      "id": "empty-export",
+      "source": "<script setup lang=\"ts\">\nexport {};\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": true
+    },
+    {
+      "id": "type-alias",
+      "source": "<script setup lang=\"ts\">\nexport type Props = { title: string };\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": false
+    },
+    {
+      "id": "type-interface",
+      "source": "<script setup lang=\"ts\">\nexport interface Props { title: string }\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": false
+    },
+    {
+      "id": "type-star",
+      "source": "<script setup lang=\"ts\">\nexport type * from 'vue';\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": false
+    },
+    {
+      "id": "all-type-specifiers",
+      "source": "<script setup lang=\"ts\">\ntype Props = { title: string }; export { type Props };\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": false
+    },
+    {
+      "id": "mixed-specifiers",
+      "source": "<script setup lang=\"ts\">\ntype Props = { title: string }; const answer = 42; export { type Props, answer };\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": true
+    },
+    {
+      "id": "ambient-variable",
+      "source": "<script setup lang=\"ts\">\nexport declare const answer: number;\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": false
+    },
+    {
+      "id": "ambient-function",
+      "source": "<script setup lang=\"ts\">\nexport declare function helper(): void;\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": false
+    },
+    {
+      "id": "ambient-class",
+      "source": "<script setup lang=\"ts\">\nexport declare class Helper {}\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": false
+    },
+    {
+      "id": "ambient-enum",
+      "source": "<script setup lang=\"ts\">\nexport declare enum Direction { North }\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": false
+    },
+    {
+      "id": "ambient-namespace",
+      "source": "<script setup lang=\"ts\">\nexport declare namespace Shapes { interface Point { x: number } }\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": false
+    },
+    {
+      "id": "pure-type-namespace",
+      "source": "<script setup lang=\"ts\">\nexport namespace Shapes { export interface Point { x: number } }\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": true
+    },
+    {
+      "id": "runtime-enum",
+      "source": "<script setup lang=\"ts\">\nexport enum Direction { North }\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": true
+    },
+    {
+      "id": "normal-module",
+      "source": "<script lang=\"ts\">\nexport const answer = 42;\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": false
+    }
+  ]
+}

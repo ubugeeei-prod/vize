@@ -2,6 +2,16 @@ name: Native Smoke
 
 on:
   workflow_dispatch:
+    inputs:
+      target:
+        description: Native producer scope; default retains the full smoke matrix
+        type: choice
+        options: [all, darwin-arm64]
+        default: all
+      host_only:
+        description: Produce one selected host artifact; not full matrix qualification
+        type: boolean
+        default: false
   schedule:
     # Full native/fresh-install smoke is release evidence, not a per-push gate.
     # Keep it on a weekly cadence plus manual runs so normal PR pushes stay
@@ -22,6 +32,7 @@ env:
 
 jobs:
   host-native-smoke:
+    if: github.event_name != 'workflow_dispatch' || !inputs.host_only || inputs.target != 'darwin-arm64'
     name: Native host smoke (${{ matrix.target }})
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
@@ -47,9 +58,9 @@ jobs:
           - runner: windows-11-arm
             target: win32-arm64-msvc
             msvc_arch: arm64
-    env:
+    env: &native-host-env
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
-    steps:
+    steps: &native-host-steps
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -65,7 +76,7 @@ jobs:
       # target only builds and smokes the Rust/N-API native package, so keep
       # darwin-x64 covered without installing MoonBit.
       - uses: ./.github/actions/setup-moonbit
-        if: matrix.target != 'darwin-x64'
+        if: github.event_name == 'workflow_dispatch' && inputs.host_only && inputs.target == 'darwin-arm64'
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
@@ -85,6 +96,10 @@ jobs:
       - uses: ./.github/actions/setup-rust-script
       - name: Install native package dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...'
+      - name: Test native image token producer
+        if: github.event_name == 'workflow_dispatch' && inputs.host_only && inputs.target == 'darwin-arm64'
+        working-directory: tools/moon
+        run: moon test --target native --deny-warn cmd/github/build_napi_package
       - name: Build CLI
         run: cargo build --profile ci -p vize
       - name: Smoke CLI
@@ -105,8 +120,27 @@ jobs:
       - name: Package-install smoke for host native package
         if: runner.os == 'Linux'
         run: rust-script tools/commands/release/npm/smoke-release-install.rs --prepare-manifests npm/native
+      - name: Capture selected native image authority
+        if: github.event_name == 'workflow_dispatch' && inputs.host_only && inputs.target == 'darwin-arm64'
+        run: node npm/native/scripts/native-build-receipt.mjs
+      - name: Preserve selected native image
+        if: github.event_name == 'workflow_dispatch' && inputs.host_only && inputs.target == 'darwin-arm64'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: native-image-${{ github.sha }}-${{ matrix.target }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          include-hidden-files: true
+          path: |
+            npm/native/*.node
+            npm/native/index.js
+            npm/native/index.d.ts
+            npm/native/native-binding.js
+            npm/native/native-binding-identity.js
+            npm/native/native-targets.js
+            npm/native/.artifacts/native/build-token-receipt.json
 
   fresh-install-smoke:
+    if: github.event_name != 'workflow_dispatch' || !inputs.host_only || inputs.target != 'darwin-arm64'
     name: Fresh install smoke (${{ matrix.platform.target }}, Node ${{ matrix.node-version }})
     runs-on: ${{ matrix.platform.runner }}
     timeout-minutes: 45
@@ -208,3 +242,17 @@ jobs:
           rust-script --force tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks \
             npm/native npm/native/npm/* \
             npm/cli npm/builder/vite
+
+  selected-host-native-producer:
+    if: github.event_name == 'workflow_dispatch' && inputs.host_only && inputs.target == 'darwin-arm64'
+    name: Selected native producer (darwin-arm64)
+    runs-on: blacksmith-12vcpu-macos-15
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        include:
+          - runner: blacksmith-12vcpu-macos-15
+            target: darwin-arm64
+            msvc_arch: amd64
+    env: *native-host-env
+    steps: *native-host-steps
