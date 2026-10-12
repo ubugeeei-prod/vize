@@ -1,6 +1,6 @@
 use super::{LintResult, Linter, severity::append_with_rule_overrides};
 use crate::rules::script::{
-    EmitsModuleScript, ScriptLintResult, SfcScriptContext, script_source_type,
+    EmitsModuleScript, ScriptLintResult, ScriptRule, SfcScriptContext, script_source_type,
 };
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
