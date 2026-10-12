@@ -277,9 +277,9 @@
     },
     {
       "route": "/rules/options-vue",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Complete authored Japanese explains each Vue rule option and preserves all twenty full examples, API tokens, the reference link and eight original bookmarks. Both languages describe never as forbidding self-closing syntax without requiring invalid paired HTML void tags; original defaults and source policies remain unchanged. Regeneration, native reading and deployed acceptance remain required."
     },
     {
       "route": "/rules/vue-components",
