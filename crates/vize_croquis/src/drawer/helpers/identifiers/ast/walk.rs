@@ -79,6 +79,9 @@ pub(super) fn walk_expr(expr: &Expression<'_>, identifiers: &mut IdentifierWalk)
             walk_expr(&cond.alternate, identifiers);
         }
         Expression::UnaryExpression(unary) => {
+            if matches!(unary.operator, oxc_syntax::operator::UnaryOperator::Delete) {
+                identifiers.refuse_runtime_read();
+            }
             walk_expr(&unary.argument, identifiers);
         }
         Expression::UpdateExpression(update) => {

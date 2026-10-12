@@ -36,6 +36,7 @@ use self::script_setup_refs::script_setup_component_import_references;
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_croquis::ScopeId;
 use vize_croquis::naming::{is_pascal_case, to_pascal_case};
 use vize_croquis::{Croquis, Scope, ScopeData, ScopeKind};
 use vize_l0::cstr;
@@ -63,6 +64,7 @@ struct ComponentCandidate {
     name: CompactString,
     local_name: CompactString,
     is_script_setup_import: bool,
+    setup_scope: Option<ScopeId>,
     span: Option<(u32, u32)>,
 }
 
@@ -113,6 +115,7 @@ impl NoUnusedComponents {
                         name,
                         name,
                         true,
+                        scope.parent(),
                         analysis.binding_spans.get(name).copied(),
                     );
                 }
@@ -125,6 +128,7 @@ impl NoUnusedComponents {
                 registration.name.as_str(),
                 registration.local_name.as_str(),
                 false,
+                None,
                 script_source
                     .and_then(|source| registration_key_span(source, registration.name.as_str())),
             );
@@ -194,6 +198,22 @@ impl Rule for NoUnusedComponents {
                 .filter(|component| {
                     let name = component.name.as_str();
                     if self.should_ignore(name) {
+                        return false;
+                    }
+
+                    if component.is_script_setup_import
+                        && ctx.sfc_descriptor().is_some()
+                        && component.setup_scope.zip(component.span).is_some_and(
+                            |(scope, (start, end))| {
+                                analysis.has_authored_template_binding_read(
+                                    scope,
+                                    component.local_name.as_str(),
+                                    start,
+                                    end,
+                                )
+                            },
+                        )
+                    {
                         return false;
                     }
 
@@ -301,6 +321,7 @@ fn push_component_candidate(
     name: &str,
     local_name: &str,
     is_script_setup_import: bool,
+    setup_scope: Option<ScopeId>,
     span: Option<(u32, u32)>,
 ) {
     if candidates
@@ -313,6 +334,7 @@ fn push_component_candidate(
         name: name.to_compact_string(),
         local_name: local_name.to_compact_string(),
         is_script_setup_import,
+        setup_scope,
         span,
     });
 }

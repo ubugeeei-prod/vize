@@ -207,11 +207,13 @@ pub fn extract_identifier_refs_oxc(expr: &str) -> Vec<IdentifierRef> {
 pub(in crate::drawer) fn extract_identifier_refs_retained(
     expr: &str,
     retained: Option<&JsExpression<'_>>,
-) -> (Vec<CompactString>, Option<Vec<IdentifierRef>>) {
+) -> (Vec<CompactString>, Option<Vec<IdentifierRef>>, bool) {
     let (stripped, mapping) = comments::strip_comments_with_offsets(expr);
-    let (references, complete) = match retained {
-        Some(js) if mapping.is_none() && js.raw == expr => ast::retained_references(js.ast, true),
-        _ => ast::parsed_references(stripped.as_ref(), true),
+    let (references, complete, runtime_only) = match retained {
+        Some(js) if mapping.is_none() && js.raw == expr => {
+            ast::retained_runtime_references(js.ast, true)
+        }
+        _ => ast::parsed_runtime_references(stripped.as_ref(), true),
     };
     // Preserve the ordinary names from precisely the same legacy analysis view.
     let names: Vec<_> = references
@@ -243,5 +245,9 @@ pub(in crate::drawer) fn extract_identifier_refs_retained(
             (expr.get(start..end) == Some(reference.name.as_str())).then_some(reference)
         })
         .collect();
-    (names, if complete { references } else { None })
+    (
+        names,
+        if complete { references } else { None },
+        complete && runtime_only,
+    )
 }

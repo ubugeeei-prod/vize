@@ -171,6 +171,7 @@ fn walk_scoped_expr(expr: &Expression<'_>, locals: &[&str], identifiers: &mut Id
 /// Keep the references that name no local of the enclosing scopes.
 fn push_escaping(found: IdentifierWalk, locals: &[&str], identifiers: &mut IdentifierWalk) {
     identifiers.complete &= found.complete;
+    identifiers.runtime_only &= found.runtime_only;
     identifiers.extend(
         found
             .values
