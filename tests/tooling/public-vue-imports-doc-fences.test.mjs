@@ -41,6 +41,9 @@ await test("finite private-import example successor retains all four fences and 
   }
   assert.equal(verify({ ...source.originalEntry, id: "script/other" }, "other", []), false);
   for (const mutate of [
+    (s) => (s.unknownField = true),
+    (s) => (s.version = 2),
+    (s) => (s.originalEntry.id = "script/other"),
     (s) => (s.beforeCodeFences[0] += "changed"),
     (s) => (s.afterCodeFences[0] += "changed"),
     (s) => (s.afterCodeFences[3] += "changed"),

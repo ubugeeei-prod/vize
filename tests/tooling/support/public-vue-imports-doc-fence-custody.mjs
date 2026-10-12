@@ -8,6 +8,21 @@ export const codeFences = (source) =>
   [...source.matchAll(/^```[^\n]*\n[\s\S]*?^```[^\n]*$/gm)].map((match) => match[0]);
 
 export function validateFenceSuccessor(successor) {
+  assert.deepEqual(
+    Object.keys(successor).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
+    [
+      "afterCodeFences",
+      "authority",
+      "beforeCodeFences",
+      "change",
+      "oldSources",
+      "originalCustody",
+      "originalEntry",
+      "schema",
+      "sourceLaw",
+      "version",
+    ],
+  );
   assert.equal(successor.schema, "vize.docs.public-vue-imports-fence-successor");
   assert.equal(successor.version, 1);
   assert.deepEqual(successor.originalCustody, {
