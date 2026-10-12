@@ -123,12 +123,12 @@ test("required Check report consumes the always-running catalog gate without all
   assert.deepEqual(gate.permissions, { contents: "read", "pull-requests": "read" });
   assert.ok(workflow.jobs["test-report"].needs.includes("release-integration-catalog"));
   assert.equal(gate.steps[1].run, "node tools/support/compat/github/release-integration-event.mjs");
-  for (const step of gate.steps.slice(2)) {
+  for (const step of gate.steps.slice(2, -1)) {
     assert.equal(step.if, "${{ steps.candidate.outputs.integration != '' }}");
   }
   assert.equal(gate.steps[2].with["fetch-depth"], 0);
   assert.equal(
-    gate.steps.at(-1).run,
+    gate.steps.at(-2).run,
     'rust-script tools/commands/release/pr.rs check-integration-candidate "$INTEGRATION_PR"',
   );
   for (const result of ["failure", "cancelled", "skipped"]) {
@@ -138,4 +138,22 @@ test("required Check report consumes the always-running catalog gate without all
     aggregateNeedsResults({ "release-integration-catalog": { result: "success" } }).exitCode,
     0,
   );
+});
+
+test("integration body snapshots survive qualification refusal without running for ordinary PRs", () => {
+  const workflow = parse(readRepoFile(".github", "workflows", "release-integration-catalog.yml"));
+  const gate = workflow.jobs["release-integration-catalog"];
+  const authentication = gate.steps.at(-2);
+  const snapshot = gate.steps.at(-1);
+  assert.equal(authentication["continue-on-error"], undefined);
+  assert.equal(snapshot.if, "${{ always() && steps.candidate.outputs.integration != '' }}");
+  assert.equal(snapshot.uses, "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a");
+  assert.deepEqual(snapshot.with, {
+    name: "release-integration-body-${{ github.run_id }}-${{ github.run_attempt }}",
+    path: "${{ runner.temp }}/vize-release-integration-catalog/",
+    "if-no-files-found": "error",
+    "retention-days": 30,
+  });
+  assert.equal(gate["timeout-minutes"], 10);
+  assert.deepEqual(gate.permissions, { contents: "read", "pull-requests": "read" });
 });
