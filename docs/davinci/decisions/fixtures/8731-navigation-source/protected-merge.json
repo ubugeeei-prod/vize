@@ -1900,5 +1900,6 @@
   "nativeIndependentAuditSha256": "73183ee4493cb0d77c0dd12637e7e6ca076d651f560520f182c22649a9adb473",
   "publicVersion": "0.443.0",
   "retiredUnpublishedVersion": "0.446.0",
-  "publication": false
+  "publication": false,
+  "sourcePreservationSnapshotContext": "Historical pre-merge source/body preservation snapshot retained unchanged. Its qualification predates the actual merge; the five protected merge_group runs and actualMerge above record terminal source integration, with public/installed acceptance still pending."
 }
