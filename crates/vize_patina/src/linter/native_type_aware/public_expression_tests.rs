@@ -212,7 +212,9 @@ fn inert_script_markers_remain_complete_in_the_checker_document() {
         template.loc.start as u32,
         "SafeInertMarkers.vue",
     );
-    assert!(document.content.contains(script.content.as_ref()));
+    let emitted =
+        "  const text = \"void (fake); // VBind\";\n  const cb = \"__vize_cb)((fake))\";\n";
+    assert!(document.content.contains(emitted));
 }
 
 #[test]

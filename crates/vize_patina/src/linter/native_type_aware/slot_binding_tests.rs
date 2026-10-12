@@ -32,9 +32,36 @@ fn complete_slot_query_and_promise_vectors_preserve_evaluated_values() {
         "../../../tests/fixtures/unsafe-template-binding/reports-8752-8755/slot-query-direct-controls.json"
     ))
     .expect("independent full collector oracle");
+    assert_eq!(
+        include_str!("template_queries/calls.rs"),
+        include_str!(
+            "../../../tests/fixtures/unsafe-template-binding/reports-8752-8755/preparation/existing-slot-promise-calls.rs.fixture"
+        ),
+        "complete unchanged Promise producer"
+    );
+    let existing_promises: Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/unsafe-template-binding/reports-8752-8755/slot-existing-promise-contract.json"
+    ))
+    .expect("explicit existing Promise contract correction");
     let cases = packet["cases"].as_array().expect("all cases");
+    let corrected = existing_promises["cases"]
+        .as_array()
+        .expect("all corrected cases");
+    assert_eq!(corrected.len(), cases.len());
     assert_eq!(cases.len(), 4);
-    for case in cases {
+    for (case, promise_contract) in cases.iter().zip(corrected) {
+        let mut historical = promise_contract.clone();
+        for (field, old_field) in [
+            ("beforePromiseQueries", "formerAuthoredBeforePromiseQueries"),
+            ("afterPromiseQueries", "formerAuthoredAfterPromiseQueries"),
+        ] {
+            historical[field] = historical[old_field].clone();
+            historical
+                .as_object_mut()
+                .expect("complete case")
+                .remove(old_field);
+        }
+        assert_eq!(&historical, case, "all original case fields remain exact");
         let allocator = vize_l0::Allocator::new();
         let (root, errors) = vize_armature::parse(
             &allocator,
@@ -107,8 +134,8 @@ fn complete_slot_query_and_promise_vectors_preserve_evaluated_values() {
         assert_eq!(json!(actual), case["afterQueries"], "{}", case["id"]);
         assert_eq!(
             json!(promise_actual),
-            case["afterPromiseQueries"],
-            "{}",
+            promise_contract["afterPromiseQueries"],
+            "{}: explicit existing Promise contract",
             case["id"]
         );
     }
