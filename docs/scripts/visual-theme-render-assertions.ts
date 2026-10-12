@@ -42,7 +42,11 @@ export async function verifyVisualTheme(page: Page) {
       palette: kinds.map((kind) => {
         const token = document.querySelector(`[data-render-palette-control] .v-code__${kind}`);
         const color = token && getComputedStyle(token).color;
-        const rgb = color?.match(/[\d.]+/g)?.map(Number) ?? [];
+        const rgb =
+          color
+            ?.match(/[\d.]+/g)
+            ?.slice(0, 3)
+            .map(Number) ?? [];
         const high = Math.max(...rgb),
           low = Math.min(...rgb),
           delta = high - low;
@@ -53,7 +57,8 @@ export async function verifyVisualTheme(page: Page) {
             : high === rgb[1]
               ? (rgb[2] - rgb[0]) / delta + 2
               : (rgb[0] - rgb[1]) / delta + 4;
-        return { kind, color, hue: (hue * 60 + 360) % 360 };
+        const saturation = delta ? delta / (255 - Math.abs(high + low - 255)) : 0;
+        return { kind, color, hue: (hue * 60 + 360) % 360, saturation };
       }),
     };
   });
@@ -87,6 +92,8 @@ export async function verifyVisualTheme(page: Page) {
     );
     if (observed.theme === "light") {
       assert.equal(new Set(observed.palette.map(({ color }) => color)).size, 6);
+      for (const token of observed.palette)
+        assert(token.saturation >= 0.8, `${token.kind} remains visibly saturated`);
       for (const [index, token] of observed.palette.entries())
         for (const other of observed.palette.slice(index + 1)) {
           const difference = Math.abs(token.hue - other.hue);

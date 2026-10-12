@@ -308,3 +308,35 @@ void test("Japanese init survives regeneration with the original setup and recov
     );
   }
 });
+
+void test("Japanese Vue options retain authored contracts on regeneration", async () => {
+  const root = resolve(import.meta.dirname, "../..");
+  const path = "rules/options-vue.md";
+  const english = readFileSync(resolve(root, "docs/content", path), "utf8");
+  const japanese = readFileSync(resolve(root, "docs/content/ja", path), "utf8");
+  const retained = await collectReviewedTranslations([path], resolve(root, "docs/content/ja"));
+  assert.equal(retained.get(path), japanese);
+  const pattern = /^```[^\n]*\n[\s\S]*?^```[^\n]*$/gm;
+  const contracts = (source: string) => [
+    [...source.matchAll(pattern)].map((match) => match[0]),
+    [...source.replace(pattern, "").matchAll(/(?<!`)`([^`\n]+)`(?!`)/g)].map((match) => match[1]),
+    [...source.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)].map((match) => match[1]),
+  ];
+  const prose = english.replace(pattern, "").replaceAll("`", "");
+  const bookmarks = [...prose.matchAll(/^#{1,2} (.+)$/gm)].map((match) =>
+    match[1].replaceAll(/[ /]/g, "-").toLowerCase(),
+  );
+  assert.deepEqual(contracts(japanese), contracts(english));
+  const original = [contracts(english), bookmarks];
+  assert.equal(
+    createHash("sha256").update(JSON.stringify(original)).digest("hex"),
+    "4967998d7e0fc247c3959fec10853ca9798263226e94c40b9a41d2eee42b1660",
+  );
+  assert.ok(readFileSync(resolve(root, "docs/content/ja/rules/options.md"), "utf8"));
+  for (const bookmark of bookmarks) {
+    assert.equal(japanese.split(`<span id="${bookmark}"></span>`).length, 2);
+    assert.match(japanese, new RegExp(`<span id="${bookmark}"></span>\\n\\n#{1,2} .+`));
+  }
+  assert.match(english, /`never` forbids self-closing tags/);
+  assert.match(japanese, /`never` は自己終了タグを禁止します/);
+});

@@ -188,7 +188,7 @@ Good:
 ## `vue/html-self-closing`
 
 Use this option to choose self-closing style per element family. `always` requires empty elements
-to self-close, `never` requires paired start/end tags, and `any` accepts both forms. Omitted nested
+to self-close, `never` forbids self-closing tags, and `any` accepts both forms. Omitted nested
 fields keep the Vize defaults.
 
 ```ts
