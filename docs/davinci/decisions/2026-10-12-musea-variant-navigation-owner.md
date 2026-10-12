@@ -68,9 +68,10 @@ own physical/aria counterexample; missing errors or marker-only success is
 insufficient. Raw observer entries, actual scrolling ancestors, HTML, PNG,
 source/build inventories and loaded native provider digest are retained.
 
-Nine source ownership controls currently pass locally with no skips. Actual
-source-native physical controls, complete Actions and protected integration are
-pending. Source CLI retry #8721 remains outside the queue until this independent
+At source0a, nine TAP ownership laws covered 18 execution arms with no skips.
+At that point, actual source-native physical controls, complete Actions and
+protected integration were pending. The terminal source result below has ten
+TAP laws and 20 execution arms; these are distinct denominators. Source CLI retry #8721 remains outside the queue until this independent
 repair actually merges and its fresh composition qualifies. Existing public443
 and retired unpublished446 grant no current repair or installed-release credit.
 
@@ -154,3 +155,52 @@ assertion. A distinct complete-source control executes the actual view watcher:
 the original producer requests no landing scroll, while the candidate requests
 one instant scroll. Source10 controls pass locally; fresh full physical/native,
 compiled perturbation and protected qualification remain required.
+
+## Source qualification and actual integration
+
+[PR #8732](https://github.com/ubugeeei-prod/vize/pull/8732) actually merged at
+2026-10-12T03:39:37Z as `5b3c0eb26a5cc56e66c2a0a0651a04da60241182`.
+The [protected receipt](./fixtures/8731-navigation-source/protected-merge.json)
+retains all five terminal-success merge-group runs and all55 jobs, including
+Check48, Musea2, n8n3 and one for each Nuxt version. Configured skips remain
+distinct from success. The 14 whole owned files/modes match sourcec193, and
+all350 incoming canonical row prefixes remain, with only311 appended. New
+post-merge push runs on the same SHA are separate; they supply no proof here.
+
+The [independent source audit](./fixtures/8731-navigation-source/native-independent-audit.json.txt)
+is retained byte-exact, SHA256
+`73183ee4493cb0d77c0dd12637e7e6ca076d651f560520f182c22649a9adb473`.
+Its original artifact11724367030 is 436,422,154 bytes, SHA256
+`4d40bb8f711b3ae22396ca4bbe1cfaf878c0e75111b4df83a877b3767a646688`,
+with all14,239 CRCs valid. A network reset and the original partial bytes were
+retained; only the authenticated exact206 range was resumed before full hash
+and CRC verification. All108 Git gallery bodies/modes and122 whole built
+members match the actual checkout. Four262,740,752-byte source-native aliases
+rehash to the actual loaded-provider receipt
+`243f87a148eacaa4ae8487a00d7b3d08142989caccde6e4d63c3cdc86663e5c1`;
+this proves byte equivalence, without an original pathname/inode claim.
+
+All15 complete positive geometry/aria vectors pass, including Default before
+and after former callback replay. Repaired82 actual IO events/22 records are
+retained separately from the two mutants. Both complete galleries have exactly
+one helper perturbation and preserve original modules/config/previews/payload.
+Removing callback rejection selects stale `__proto__` while the latest target
+has no current aria; restoring smooth navigation fails both physical target
+and selection. Actual source-native TAP is12/pass12/fail0/skip0: source10 laws,
+raw Chromium transport1 and gallery physical1. Original native and hosted laws
+also pass. Competing router requests retain their limited interpretation; the
+deterministic complete-source arms qualify committed pending continuations.
+
+The old bot review's same-nextTick native IO race was independently rejected:
+both continuations use Vue3.5.43's same flush/resolved promise; hash processing
+advances generation before the later IO task, and the generation guard also
+rejects a late old callback. This is source/spec inference, not a per-continuation
+runtime trace. Temporary redundant observer allocation remains a separate
+optimization; unresolved hashes still need observer setup.
+The primary sources are Vue's [scheduler](https://raw.githubusercontent.com/vuejs/core/v3.5.43/packages/runtime-core/src/scheduler.ts)
+and the [IO task algorithm](https://w3c.github.io/IntersectionObserver/#queue-an-intersection-observer-task).
+
+Publication and installed acceptance remain pending. Latest public443 and
+retired unpublished446 confer no current repair credit, and #8731 remains open.
+Source CLI retry #8721 may freshly qualify its genuine actual-main composition
+after this merge, without borrowing the old failed candidate's outcome.
