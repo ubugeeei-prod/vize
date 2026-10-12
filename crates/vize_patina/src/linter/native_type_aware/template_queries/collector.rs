@@ -366,7 +366,19 @@ fn collect_directive(
         source_type,
         sinks,
     );
-    if directive.name == "for" {
+    if directive.name == "slot" {
+        // A slot parameter declares bindings. Its computed keys can still
+        // call unsafe or async values, and descendants still query their uses.
+        if let Some(queries) = sinks.template_queries.as_deref_mut()
+            && let Some(index) = queries.get(first_query..).and_then(|recent| {
+                recent
+                    .iter()
+                    .position(|query| query.kind == TemplateQueryKind::Expression)
+            })
+        {
+            queries.remove(first_query + index);
+        }
+    } else if directive.name == "for" {
         retarget_v_for_source_queries(virtual_ts, sinks, first_query);
     } else if directive.name == "bind" && directive.arg.is_none() {
         retarget_slot_spread_call_queries(

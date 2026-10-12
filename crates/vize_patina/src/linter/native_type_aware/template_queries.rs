@@ -191,6 +191,11 @@ fn generated_offset_for_content(
     source_text: &str,
     content: &str,
 ) -> Option<u32> {
+    let authored = source_start as usize..source_start as usize + source_text.len();
+    if let Some(offset) = super::expression_bindings::inferred_binding_offset(virtual_ts, &authored)
+    {
+        return Some(offset);
+    }
     let trimmed = source_text.trim_end_matches(char::is_whitespace);
     let expected = content.trim_end_matches(char::is_whitespace);
     let probe_offset = probe_offset_for_text(source_start, source_text)?;

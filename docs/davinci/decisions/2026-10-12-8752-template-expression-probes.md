@@ -118,3 +118,25 @@ Frozen actual dependency installation passed at that exact hosted head. Nuxt 3
 independently stopped at the existing pinned MoonBit Linux HTTP403 transport;
 its central source owner remains separate. Preserve all three raw logs and the
 first failure. This attempt does not prove any product regression before/after.
+
+## Genuine before and required after routing
+
+The repaired old-production head `94014812` built successfully under ordinary
+Check `38230673353`. Rust shards 1 and 3 genuinely fail unchanged-author-marker
+preservation and the complete slot query/Promise vector, respectively. The full
+three build/test logs are retained in `preparation/hosted-before-940`. Those PR
+Rust shards explicitly set `VIZE_TEST_DISABLE_TSGO=1`; the 25 scoped and four
+original typed packets therefore have **no executed before credit**. Preserve
+that boundary rather than count successful optional returns as native outcomes.
+
+The production successor is the independently reviewed four private bodies and
+six mapping ownership controls. To require actual whole 25+4 outcomes, extend the
+already selected `documented_type_aware_examples_match_with_the_required_corsa_runtime`
+integration test with a test-only helper using the public `Linter::lint_sfc` path.
+It requires Corsa, genuine dependency bytes, all frozen source/config bodies,
+complete ordered API/formatter/status packets, and prints all 29 before its final
+whole-array assertion. Only physical caller filenames adapt; no target projection
+or new oracle is introduced. Existing documented examples remain intact. Reuse
+the existing required native Actions command; no workflow, new builder or product
+pipeline stage is added. Ordinary optional unit results remain separate from this
+required native public API role and from installed release acceptance.
