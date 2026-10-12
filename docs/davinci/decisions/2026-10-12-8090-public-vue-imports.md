@@ -100,3 +100,17 @@ imports preserve their existing legitimate warning/fix; the pinned provider's
 `.imported.name` contract omits that case. Provider/native range and severity
 contracts remain separate and complete; no parity waiver is inferred. Broader
 #8090/#8564 failures and the historical full Matrix remain open.
+
+## First source Actions checkpoint
+
+Initial exact PR head `9ae7ec8`, Check 38190285207, failed source planning before
+Rust/API/CLI/tooling execution. The existing consumer ledger had two stale
+earliest-import positions: both producer rows 809/810 move only 24→26. The
+established Node generator refreshes those two positions; every other TSV byte,
+row count, dependency kind and use count remains exact. Retain the original whole
+ledger Git blob `7c5e249d81861c2257ca83cf04e8b18b6a26cb25` and the
+[complete raw failed log](../../../tests/_fixtures/differential/lint/public-vue-imports-8090/initial-source-plan-failure.json),
+raw SHA-256 `ef62533c7286622f10c719ba06ff49fcaefab69149aace9628e08800cf032263`.
+No diagnostic fixture, budget, source guard, product source or generator changes
+follow from this metadata repair. Fresh exact-head source/native qualification
+remains required; the initial skipped product execution receives no credit.

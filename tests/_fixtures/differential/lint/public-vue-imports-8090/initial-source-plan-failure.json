@@ -1,0 +1,41 @@
+{
+  "schema": "vize.lint.public-vue-imports-initial-source-plan-failure",
+  "version": 1,
+  "run": 38190285207,
+  "job": 114621370518,
+  "pullRequest": 8728,
+  "head": "9ae7ec8235cc8ecc5778bdd324da269929808f37",
+  "planCheckout": "2f2161fc878cc5a3bddc432f1951de5eaf48e6a3",
+  "status": "failure",
+  "cause": "Existing generated consumer ledger earliest-import line stale; both owned producer rows24\u219226 only. Plan failure skips Rust/API/CLI/tooling; no source execution credit.",
+  "rawLog": {
+    "path": "initial-source-plan-failure.log.gz",
+    "sha256": "35288c32b80d6498ce9e8a89ae0d21e4193e4ccd994004fb2428aa7f6f8fad70",
+    "bytes": 15795,
+    "rawSha256": "ef62533c7286622f10c719ba06ff49fcaefab69149aace9628e08800cf032263",
+    "rawBytes": 112608
+  },
+  "ledger": {
+    "path": "docs/davinci/plan/consumer-migration-surfaces/linter/vize_patina.tsv",
+    "beforeGitBlob": "7c5e249d81861c2257ca83cf04e8b18b6a26cb25",
+    "beforeSha256": "b29ac63d3e96f1214e16af7c46076a9481f322ab1a54b74ac0f065b34e02421d",
+    "afterSha256": "44c893ee88834e52c99fc46f1d07d2a08d3d00492bbbc9d376013a8bd3d6b3ba",
+    "physicalRows": 1300,
+    "newlineSplitEntries": 1301,
+    "changes": [
+      {
+        "row": 809,
+        "before": "linter\tLinter\tsource\tcrates/vize_patina/src/rules/script/prefer_import_from_vue.rs\t24\tl0\tL0\tstage\tvize_l0\tpreferred\t2",
+        "after": "linter\tLinter\tsource\tcrates/vize_patina/src/rules/script/prefer_import_from_vue.rs\t26\tl0\tL0\tstage\tvize_l0\tpreferred\t2"
+      },
+      {
+        "row": 810,
+        "before": "linter\tLinter\tsource\tcrates/vize_patina/src/rules/script/prefer_import_from_vue.rs\t24\traw_oxc\traw OXC\traw\toxc_ast\traw\t1",
+        "after": "linter\tLinter\tsource\tcrates/vize_patina/src/rules/script/prefer_import_from_vue.rs\t26\traw_oxc\traw OXC\traw\toxc_ast\traw\t1"
+      }
+    ]
+  },
+  "checksChanged": 0,
+  "budgetsChanged": 0,
+  "nativeVectorsChanged": 0
+}
