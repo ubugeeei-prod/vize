@@ -18,7 +18,7 @@ const manifest = JSON.parse(
   preservedBodies: Array<[string, string]>;
 };
 const manifestSHA256 = createHash("sha256").update(JSON.stringify(manifest)).digest("hex");
-assert.equal(manifestSHA256, "3634a2f2d1a2f157f087c27cb25febce8d15c8a8e07981ad99ca2b8f943f6531");
+assert.equal(manifestSHA256, "b1c168d004be1f7410c1e8ec1a3097a7313dec4d0cf3e6921a2c354d51acb219");
 assert.equal(manifest.version, 1);
 assert.equal(manifest.originalSource, "b82f3080f1fa028ca07e03bcd42700742271613f");
 const expectedFiles = [

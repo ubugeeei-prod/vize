@@ -1,7 +1,7 @@
 {
   "version": 1,
   "originalSource": "b82f3080f1fa028ca07e03bcd42700742271613f",
-  "reviewedSourceBodySetSHA256": "9f5a8388970f3ee196d4fd51a075f482c14f502b8e963f6909202ff59e4e2568",
+  "reviewedSourceBodySetSHA256": "544242bc13e8025f50375e450e8a4eeef724bdb9fea5cab6c5f91e8ea3cd174a",
   "qualification": "complete same-descriptor template-read source only; unchanged original400 must execute",
   "files": [
     [
@@ -77,7 +77,7 @@
     [
       "crates/vize_patina/tests/component_import_value_reads.rs",
       null,
-      "45982fd5fca69f7dbf2887d8a81a5144eb78faac747bb683d211242382ba21c5"
+      "75b71f619925e78b58b3ced89b0bad7064ed3a82f511ec25631209f8c7802010"
     ]
   ],
   "supplementalBodies": [

@@ -23,11 +23,11 @@ export function qualifyHostMoves(
     digest("before", "tests/performance/support/warm-type-backed-component-value-host.ts") ===
       null &&
     digest("after", "tests/performance/support/warm-type-backed-component-value-host.ts") ===
-      "5e2f68b285f7a2de18f7d45f0a78fed29331c54cb761d3f59133d90a3d6306cf" &&
+      "a9b1483b0fa2c82027eb7082b701a3c4bc3e1a93a9c55cc816da02610d86a215" &&
     digest("before", "tests/performance/support/warm-type-backed-component-value-manifest.json") ===
       null &&
     digest("after", "tests/performance/support/warm-type-backed-component-value-manifest.json") ===
-      "50259b48cc321fb1114816ae53ff50003aaeee5fd6f36c9b19ef4a0bc5d8768e"
+      "b417ec82d12a2131f943db1fd2fd6ae624d7b38821350463af3300075f141902"
       ? qualifyComponentValueHost(production, alreadyQualified, digest)
       : null;
   return {

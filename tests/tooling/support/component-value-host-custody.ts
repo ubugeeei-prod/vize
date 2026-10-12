@@ -11,7 +11,7 @@ const capsuleFile =
   "tests/_fixtures/differential/linter/component-import-value-host-before/host-composition.json";
 const clauses: string[] = [
   'import { qualifyComponentValueHost } from "./warm-type-backed-component-value-host.ts";\n',
-  '  const componentValueHost =\n    enabled &&\n    digest("before", "tests/performance/support/warm-type-backed-component-value-host.ts") ===\n      null &&\n    digest("after", "tests/performance/support/warm-type-backed-component-value-host.ts") ===\n      "5e2f68b285f7a2de18f7d45f0a78fed29331c54cb761d3f59133d90a3d6306cf" &&\n    digest("before", "tests/performance/support/warm-type-backed-component-value-manifest.json") ===\n      null &&\n    digest("after", "tests/performance/support/warm-type-backed-component-value-manifest.json") ===\n      "50259b48cc321fb1114816ae53ff50003aaeee5fd6f36c9b19ef4a0bc5d8768e"\n      ? qualifyComponentValueHost(production, alreadyQualified, digest)\n      : null;\n',
+  '  const componentValueHost =\n    enabled &&\n    digest("before", "tests/performance/support/warm-type-backed-component-value-host.ts") ===\n      null &&\n    digest("after", "tests/performance/support/warm-type-backed-component-value-host.ts") ===\n      "a9b1483b0fa2c82027eb7082b701a3c4bc3e1a93a9c55cc816da02610d86a215" &&\n    digest("before", "tests/performance/support/warm-type-backed-component-value-manifest.json") ===\n      null &&\n    digest("after", "tests/performance/support/warm-type-backed-component-value-manifest.json") ===\n      "b417ec82d12a2131f943db1fd2fd6ae624d7b38821350463af3300075f141902"\n      ? qualifyComponentValueHost(production, alreadyQualified, digest)\n      : null;\n',
   "    ...(componentValueHost ? { componentValueHost } : {}),\n",
 ];
 const sha = (body: Buffer | string) => createHash("sha256").update(body).digest("hex");
@@ -150,17 +150,17 @@ export function retainedHostBeforeComponentValues(
   );
   const current = read(host);
   assert.ok(current);
-  assert.equal(sha(current), "f8464e2dda9ba65e9c66b85d996cadcf5e3916be9aea9d12587788a1643e17fe");
+  assert.equal(sha(current), "c9738345b0b4efe301b0c88a13cb2fcfb4bc31fc71cac581aab6ea44edfadc78");
   const actualHelper = read(helper);
   const actualManifest = read(manifest);
   assert.ok(actualHelper && actualManifest);
   assert.equal(
     sha(actualHelper),
-    "5e2f68b285f7a2de18f7d45f0a78fed29331c54cb761d3f59133d90a3d6306cf",
+    "a9b1483b0fa2c82027eb7082b701a3c4bc3e1a93a9c55cc816da02610d86a215",
   );
   assert.equal(
     sha(actualManifest),
-    "50259b48cc321fb1114816ae53ff50003aaeee5fd6f36c9b19ef4a0bc5d8768e",
+    "b417ec82d12a2131f943db1fd2fd6ae624d7b38821350463af3300075f141902",
   );
   selectedComponentValueBodies(read);
   let inverse = current.toString("utf8");

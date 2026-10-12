@@ -106,3 +106,14 @@ carriers are runtime-materialized only; no tracked Vue census is enlarged. This
 is an additive authored CLI contract, not original Matrix replay. The existing
 affected-package archive must execute all six API laws and this CLI law; no
 additional native builder or skip is introduced.
+
+Exact source `9923acf6689882ab395855763380543250b2b82e` failed before the new
+API laws could execute: Actions run 38240037079 compiled the integration test
+and rejected its references through private Patina modules. The correction uses
+the existing root exports of Linter, RuleRegistry, Rule, Severity and LintContext;
+it changes no public API, product body or expected diagnostic vector. The finite
+source pins follow this complete test-body successor. Source-plan run
+38240037612 also identified the required consumer-migration linter TSV; the
+existing pure source generator refreshes that inventory without a build. Neither
+failure supplies runtime acceptance; the new exact-source Actions must execute
+all six API laws and the whole five-report CLI control.

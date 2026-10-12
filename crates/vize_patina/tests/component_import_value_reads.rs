@@ -3,8 +3,8 @@
 use serde_json::{Value, json};
 use std::path::Path;
 use vize_croquis::binding_occurrences::OccurrenceBlock;
-use vize_patina::linter::Linter;
-use vize_patina::rule::RuleRegistry;
+use vize_patina::Linter;
+use vize_patina::RuleRegistry;
 
 const RULE: &str = "vue/no-unused-components";
 const ROOT: &str = concat!(
@@ -120,10 +120,7 @@ fn configured_unused_import_severity_and_disabling_remain_authoritative() {
         std::fs::read_to_string(Path::new(ROOT).join("unused-setup-import.vue.txt")).unwrap();
     let configured = Linter::new()
         .with_enabled_rules(Some(vec![RULE.into()]))
-        .with_rule_severity_overrides(vec![(
-            RULE.into(),
-            vize_patina::diagnostic::Severity::Error,
-        )]);
+        .with_rule_severity_overrides(vec![(RULE.into(), vize_patina::Severity::Error)]);
     assert_eq!(
         whole_diagnostics(&configured, &source),
         json!([{
@@ -143,7 +140,7 @@ fn configured_unused_import_severity_and_disabling_remain_authoritative() {
 
 #[test]
 fn a_raw_rule_context_cannot_borrow_a_captured_sfc_read() {
-    use vize_patina::rule::Rule;
+    use vize_patina::Rule;
     let allocator = vize_l0::Allocator::default();
     let source = "import Child from './Child.vue';";
     let template = "<Control :component=\"Child\" />";
@@ -153,7 +150,7 @@ fn a_raw_rule_context_cannot_borrow_a_captured_sfc_read() {
     drawer.draw_script_setup(source).draw_template(&root);
     let (analysis, packet) = drawer.finish_with_binding_occurrences();
     assert!(packet.is_some());
-    let mut context = vize_patina::context::LintContext::new(&allocator, source, "Raw.vue");
+    let mut context = vize_patina::LintContext::new(&allocator, source, "Raw.vue");
     context.current_rule = RULE;
     context.set_analysis(&analysis);
     vize_patina::rules::vue::NoUnusedComponents::default().run_on_template(&mut context, &root);
