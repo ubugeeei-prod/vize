@@ -59,7 +59,7 @@ stderr, exit status, source hashes, and actual source/compiler identities.
 | Baseline upstream          | Original             | 0 x 3                      | Original observed packets retained |
 | Candidate upstream         | Original             | 101 x 3; E0308/E0631/E0053 | Original failures retained         |
 | Candidate fork alias       | Original             | 0 x 3                      | Original observed packets retained |
-| Candidate Patina namespace | Import-only migrated | 0 x 3                      | Required; not yet executed         |
+| Candidate Patina namespace | Import-only migrated | 0 x 3                      | Observed on `177d9f1` / `5b2622f`  |
 
 The selected migration requires all twelve controls on the exact
 new source through the existing Actions producer. Expected original failures
@@ -93,3 +93,21 @@ change. Draft status remains until exact-source checks pass; protected queue,
 actual merge, fork publication/bootstrap and the later minor release still need
 terminal proof. Root remains the sole release operator. No acceptance transfers
 from an earlier source, the current third-party cut, or source-only controls.
+
+The first combined source `177d9f1` reached the real focused compiler jobs,
+while normal Check [38206418573](https://github.com/ubugeeei-prod/vize/actions/runs/38206418573)
+refused the misplaced re-export under rustfmt and two stale generated consumer
+inventory rows. The successor moves the same documented re-export into its
+formatter-selected position, pins the complete resulting library body, and
+regenerates those two rows from the unchanged inventory generator. The original
+failure remains evidence; all contracts, fixtures and checks are preserved.
+
+Focused [38206418446](https://github.com/ubugeeei-prod/vize/actions/runs/38206418446)
+completed all five active jobs successfully on physical source `5b2622f`
+for proposal `177d9f1`. The authenticated 102-member public-types archive retains
+all twelve full bodies, manifests, locks, metadata, compiler and raw process
+outputs: six original and three namespace-only bodies actually ran successfully,
+and the three original nominal failures remain. The unchanged SemVer producer
+returned zero. This is source evidence for that exact proposal; the formatting
+successor, ordinary full checks, native/registry consumers and actual protected
+merge still require their own proof.

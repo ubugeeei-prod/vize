@@ -118,7 +118,7 @@ for (const [filename, checksum] of [
   ],
   [
     "crates/vize_patina/src/lib.rs",
-    "e237c068fe07edf7f2bd6869e9ab9aa7560de7075a2aaf4e8947e10854e84318",
+    "480fc720c8e3558280ea6ec594e6bbccb6fa9a8eaba164d7bd8ae3ef77e1ce15",
   ],
   [
     "tools/support/dependencies/css-engine-downstream.sh",
