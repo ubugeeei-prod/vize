@@ -76,6 +76,8 @@ pub struct ScriptParseResult {
     pub bindings: BindingMetadata,
     /// Private demand-only facts, never serialized in Croquis.
     pub(crate) occurrence_capture: Option<Box<super::occurrences::ScriptOccurrenceCapture>>,
+    /// Private synchronous callback authority; never copied into Croquis.
+    pub(crate) reexecuted_callbacks: Option<Box<super::reexecution::ReexecutedCallbacks>>,
     /// Setup declarations with no resolved script read, when demanded.
     pub unused_bindings: Vec<CompactString>,
     pub macros: MacroTracker,

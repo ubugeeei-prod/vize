@@ -258,7 +258,7 @@ pub fn check_reactive_spread_expression(
     else {
         return;
     };
-    if snapshot_in_reexecuted_scope(result) || spread_writes_back(result, source_name.as_str()) {
+    if names::spread_reexecuted(result, expr) || spread_writes_back(result, source_name.as_str()) {
         return;
     }
     result

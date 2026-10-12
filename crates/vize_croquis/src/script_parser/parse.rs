@@ -125,11 +125,17 @@ pub(crate) fn analyze_script_setup_program_demand<const BUILTIN_TYPES: bool>(
         setup_global_scopes(&mut result.scopes, source_len)
     );
 
+    let (is_async, callbacks) = super::execution_facts::execution_facts(
+        program,
+        !skip_diagnostics && source.contains(".map") && source.contains("vue"),
+    );
+    result.reexecuted_callbacks = callbacks;
+
     // Enter script setup scope (parent: ~mod)
     result.scopes.enter_script_setup_scope(
         ScriptSetupScopeData {
             is_ts: true,
-            is_async: super::execution_facts::contains_top_level_await(program),
+            is_async,
             generic: generic.map(CompactString::new),
         },
         0,

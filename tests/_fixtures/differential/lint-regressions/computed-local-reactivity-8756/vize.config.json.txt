@@ -1,0 +1,6 @@
+{
+  "linter": {
+    "preset": "opinionated",
+    "typeAware": true
+  }
+}
