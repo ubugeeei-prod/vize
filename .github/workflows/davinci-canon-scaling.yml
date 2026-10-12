@@ -30,6 +30,10 @@ on:
   pull_request:
     paths:
       - "crates/vize_canon/src/lsp_client.rs"
+      - "crates/vize_canon/src/batch/source_policy.rs"
+      - "crates/vize_canon/src/batch/virtual_project/**"
+      - "crates/vize_canon/src/virtual_ts/**"
+      - "crates/vize_canon/src/batch/type_checker/tests/recent_issues/javascript_sfc_membership.rs"
       - "crates/vize_canon/src/lsp_client/editor_lsp/original_program/**"
       - "crates/vize_canon/src/lsp_client/bootstrap.rs"
       - "crates/vize_canon/src/lsp_client/editor_lsp.rs"
