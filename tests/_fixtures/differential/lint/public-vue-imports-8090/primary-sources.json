@@ -4805,5 +4805,10 @@
       "sha256": "c4f82cfeca726c470736292e553ef00f5466a1073f80e784da04856326b9ceca",
       "bytes": 1437
     }
-  ]
+  ],
+  "explainSnapshot": {
+    "path": "explain-snapshot-contract.json.gz",
+    "sha256": "696a93a6477d61991ab3e91b12adb7f0ae5ae44de1bceab4587f21c77144511c",
+    "bytes": 188194
+  }
 }
