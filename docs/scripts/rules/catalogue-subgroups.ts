@@ -134,6 +134,14 @@ export const catalogueSubgroups: Record<
   },
   "vue-sfc": {
     title: "Vue Rules: SFC Blocks",
+    jaTitle: "SFC ブロックの構成",
+    jaIntroduction: [
+      "`<template>`、`<script>`、`<style>` の配置やスタイルの範囲を確認し、SFC の構成をそろえるためのルールをまとめています。ブロックを追加したときや、外部ファイルの `src`、`lang`、カスタムブロックを見直すときに使います。",
+      "",
+      "ブロック順の既定値では script と template のどちらを先にしてもよく、style はその後に置きます。`lang` に関する 3 件は規約の説明で、現在の SFC lint では固有の診断を出しません。各ルールの対応範囲を確認し、プロジェクトに必要なものを選んでください。",
+      "",
+      "まずは [SFC ブロックの並び順の例](./reference/vue-sfc-element-order.md)で違いを確かめてください。[Vue ルール](./vue.md)で設定方針を確認し、採用するルールを設定して `vp run lint` を実行します。",
+    ],
     rules: [
       "vue/no-preprocessor-lang",
       "vue/no-script-non-standard-lang",

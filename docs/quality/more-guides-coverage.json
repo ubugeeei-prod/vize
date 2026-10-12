@@ -307,9 +307,9 @@
     },
     {
       "route": "/rules/vue-sfc",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Authored Japanese explains SFC block structure and the interchangeable script/template default, then links complete block-order examples and the Vue guide. All eight original references, thirty-two code blocks, defaults, presets and three no-SFC-finding qualifications remain intact; native and deployed reader acceptance remain pending."
     },
     {
       "route": "/rules/vue-template-safety",
