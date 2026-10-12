@@ -24,3 +24,9 @@ This bounded addition does not complete the catalogue. Fresh source Actions,
 compiled SSR/hydration, original/new browser laws, protected merge, official
 publication and deployed iframe acceptance remain required. Record this
 choice concisely on the existing issue when the source is published.
+
+The `91831e4` Check run for #8789 rejected only this SFC's formatting.
+Apply the locked Oxfmt to the authored SFC and include it in scoped format
+checks. Keep API values, output interpolation and strict native text/draft
+assertions unchanged. The formatter wraps the status and Cancel text;
+their compiled/native whitespace acceptance remains required.
