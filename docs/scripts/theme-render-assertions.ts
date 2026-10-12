@@ -157,7 +157,7 @@ export async function verifyThemeReadability(page: Page) {
   });
   assert.deepEqual(annotation.errors, []);
   const palette = native.transform(
-    '```ts\nexport function label(value: string): string {\n  return value + "Label" + 42;\n}\n```\n\n```vue\n<template><span>{{ label }}</span></template>\n```\n\n---',
+    '```ts\nexport function label(value: string): string {\n  return value + "Label" + 42;\n}\n```\n\n```vue\n<template><span>{{ label }}</span></template>\n```',
     { codeAnnotations: true },
   );
   assert.deepEqual(palette.errors, []);

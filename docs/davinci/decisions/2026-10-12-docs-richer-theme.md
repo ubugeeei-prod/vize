@@ -15,19 +15,11 @@ Dark veins use a deeper bronze color and stronger pattern alpha, with separate
 dark opacity for the homepage and articles. RGB remains independent of pattern
 alpha, preserving the earlier premultiplied composition fix. The six noise
 layers, animation rate, pointer and scroll uniforms, native theme switching,
-and reduced-motion idle behavior are unchanged. Light shader rendering is
-unchanged. Natural letter casing, transparent desktop navigation, opaque mobile
+and reduced-motion idle behavior are unchanged. Light GLSL calculations are
+unchanged; increase only homepage canvas opacity from 0.48 to 0.60 and article
+opacity from 0.24 to 0.32 for a slightly darker background. Dark opacity remains
+0.64 and 0.40. Natural letter casing, transparent desktop navigation, opaque mobile
 drawers, and the removal of left decoration rails remain in place.
-
-The maintainer's subsequent horizontal-rule feedback is included in this slice.
-The actual public guide has six underlined section headings and no authored
-horizontal-rule element. Remove content `h2` underlines and their line padding;
-existing heading margins separate the sections. Give genuine `hr` elements a
-thin, subtle neutral line through a content-only selector. Global border tokens,
-controls, tabs, code borders, and focus indicators remain unchanged. The existing
-native control fixture includes a Markdown horizontal rule. The browser helper
-checks heading spacing, neutral separators, and their composited contrast below
-1.3:1; these are qualification fixtures rather than authored page content.
 
 The first exact-head Actions run failed the existing source-length ratchet:
 `style.css` grew to 1070 lines from 1058. The complete failed log is retained.

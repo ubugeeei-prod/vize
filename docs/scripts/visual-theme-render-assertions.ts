@@ -39,17 +39,6 @@ export async function verifyVisualTheme(page: Page) {
       rails: [".content blockquote", ".content blockquote.ox-callout", ".toc", ".toc-link"].map(
         (selector) => ({ selector, ...style(selector) }),
       ),
-      headingBorders: [...document.querySelectorAll(".content h2")].map(
-        (element) => getComputedStyle(element).borderBottomWidth,
-      ),
-      separators: [...document.querySelectorAll(".content hr")].map((element) => {
-        const css = getComputedStyle(element);
-        return {
-          width: css.borderTopWidth,
-          color: css.borderTopColor,
-          background: getComputedStyle(document.body).backgroundColor,
-        };
-      }),
       palette: kinds.map((kind) => {
         const token = document.querySelector(`[data-render-palette-control] .v-code__${kind}`);
         const color = token && getComputedStyle(token).color;
@@ -95,39 +84,6 @@ export async function verifyVisualTheme(page: Page) {
         assert.equal(observed.sidebar.borderRight, "0px");
       }
     }
-  }
-  for (const border of observed.headingBorders)
-    assert.equal(border, "0px", "Content headings use spacing instead of underlines");
-  const luminance = (rgb: number[]) =>
-    rgb.reduce((sum, value, index) => {
-      const channel = value / 255;
-      const linear = channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
-      return sum + linear * [0.2126, 0.7152, 0.0722][index];
-    }, 0);
-  for (const separator of observed.separators) {
-    assert.equal(separator.width, "1px", "Native horizontal rules keep a thin line");
-    const color = separator.color.match(/[\d.]+/g)?.map(Number) ?? [];
-    const background =
-      separator.background
-        .match(/[\d.]+/g)
-        ?.slice(0, 3)
-        .map(Number) ?? [];
-    assert(
-      color.length >= 3 && background.length === 3,
-      "Rendered separator colors are measurable",
-    );
-    assert(
-      Math.max(...color.slice(0, 3)) - Math.min(...color.slice(0, 3)) <= 3,
-      "Rules use a neutral color",
-    );
-    const alpha = color[3] ?? 1;
-    const composed = color
-      .slice(0, 3)
-      .map((channel, index) => channel * alpha + background[index] * (1 - alpha));
-    const line = luminance(composed),
-      surface = luminance(background);
-    const contrast = (Math.max(line, surface) + 0.05) / (Math.min(line, surface) + 0.05);
-    assert(contrast > 1 && contrast < 1.3, "Decorative rules remain subtle against the page");
   }
   if (observed.palette.some(({ color }) => color)) {
     assert(
