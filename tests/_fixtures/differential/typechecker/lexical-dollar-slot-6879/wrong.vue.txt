@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import Panel from './Panel.vue'
+function takesString(value: string) { return value }
+</script>
+<template>
+  <Panel v-slot="$form">
+    {{ takesString($form.label) }}
+    <Panel>
+      <template #default="$field">
+        {{ takesString($form.label) }}{{ takesString($field.missing) }}
+        <span v-for="$item in $field.items">{{ takesString($item.label) }}</span>
+      </template>
+    </Panel>
+    <button @click="($event) => takesString($form.label)">go</button>
+  </Panel>
+</template>

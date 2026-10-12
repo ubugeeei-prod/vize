@@ -252,6 +252,16 @@ This qualifies the authored diagnostic lifecycle only. It supplies no unchanged
 SDK qualification, actual SDK fault attribution, timing or release credit.
 A separate reviewed authorization is required before original SDK capture.
 
+## Integration after the artifact/Rust prefix
+
+The independent peer verified the fifth four-case packet, and ordinary source
+Check 38190379826 passed all 30 jobs at `fc185b064ccf15a1cca9c8b6420aebb9891c06cf`.
+After the artifact/Rust Stack actually merged at
+`13d2fb3c365d2bfc01773dab132970a65f6bfc4d`, retain every incoming job, input and
+qualification clause while replaying the two explicit worker choices. The
+diagnostic helper bodies remain byte-exact; source Actions must qualify the
+composed caller again. This introduces no new controlled or SDK execution.
+
 ## Qualification and remaining work
 
 This diagnostic changes worker scheduling and adds a profile probe. It supplies
@@ -261,8 +271,8 @@ Meaningful actor/PID reuse/ESRCH/marker/privacy/partial attach/fault pass/cancel
 controls run in the ordinary tooling gate. A normal control exit or unavailable
 capture does not explain or repair the original SIGSEGV.
 
-TODO: independently review the qualified four-case packet before any separate
-authorization for original SDK capture; retain its original runner status and
+TODO: obtain separate authorization for original SDK capture; retain its
+original runner status and
 finite gaps, attribute only actual fault/provider evidence, and obtain ordinary
 fresh-source full qualification independently. No blind retry of the historical
 failed source is authorized by this component.

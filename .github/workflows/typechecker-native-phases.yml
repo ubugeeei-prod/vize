@@ -316,7 +316,7 @@ jobs:
             assert.equal(version.status, 0); assert.equal(version.stdout.trim(), 'Version 7.0.2'); assert.equal(version.stderr, '');
             return { name, sourceSha: process.env.SOURCE_SHA, cliBinary: realpathSync(raw.cliBinary), cliSha256: hash(raw.cliBinary), nativeBinary, nativeSha256: hash(nativeBinary), nativePackageSha256: hash(packagePath), nativeVersion: version.stdout.trim() };
           });
-          writeFileSync(join(root, 'receipts.json'), JSON.stringify({ sourceSha: process.env.SOURCE_SHA, matchedCompleteExpectations: true, cases: receipts, fullInputsAndOutputs: files(root).map(path => ({ path: path.slice(root.length + 1), sha256: hash(path) })) }, null, 2) + '\n');
+          writeFileSync(join(root, 'receipts.json'), JSON.stringify({ sourceSha: process.env.SOURCE_SHA, matchedCompleteExpectations: true, cases: receipts, fullInputsAndOutputs: files(root).map(path => ({ path: path.slice(root.length + 1), sha256: hash(path) })) }, null, 2) + '\n'); (await import('node:child_process')).execFileSync('bash', ['tools/support/compat/github/native-lexical-dollar.sh'], { stdio: 'inherit' });
           JS
       - name: Pack complete native evidence and prove reconstruction
         id: native-artifact-pack

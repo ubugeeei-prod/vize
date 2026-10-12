@@ -1,0 +1,37 @@
+name: Measure complete artifact payload transport
+description: Authenticate and preserve every whole original file in an opt-in envelope.
+runs:
+  using: composite
+  steps:
+    - name: Exercise whole-body corruption, missing files, identity and mutable alias controls
+      shell: bash
+      run: python3 -B -m unittest discover -s tools/support/compat/github -p artifact_payload_test.py
+    - name: Download and authenticate the entire original ZIP
+      env: { GH_TOKEN: "${{ github.token }}" }
+      shell: bash
+      run: python3 -B tools/support/compat/github/artifact_payload_download.py "$RUNNER_TEMP/payload-original"
+    - name: Pack every original file after whole-body SHA-256 comparison
+      shell: bash
+      run: |
+        /usr/bin/time -v -o "$RUNNER_TEMP/payload-pack-resources.txt" python3 -B tools/support/compat/github/artifact_payload.py pack "$RUNNER_TEMP/payload-original/original.zip" "$RUNNER_TEMP/payload-envelope" --metadata "$RUNNER_TEMP/payload-original/original-metadata.json" --source-sha "$PAYLOAD_SOURCE_SHA" --driver-sha "$GITHUB_SHA"
+    - name: Upload the experimental complete envelope without recompression
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: artifact-payload-envelope-${{ github.sha }}-${{ github.run_attempt }}
+        path: ${{ runner.temp }}/payload-envelope/
+        compression-level: 0
+        if-no-files-found: error
+        retention-days: 14
+    - name: Retain transport provenance and timings
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: artifact-payload-producer-${{ github.sha }}-${{ github.run_attempt }}
+        path: |
+          ${{ runner.temp }}/payload-original/original-metadata.json
+          ${{ runner.temp }}/payload-original/download.json
+          ${{ runner.temp }}/payload-envelope/manifest.json
+          ${{ runner.temp }}/payload-envelope/receipt.json
+          ${{ runner.temp }}/payload-pack-resources.txt
+        if-no-files-found: error
+        retention-days: 14

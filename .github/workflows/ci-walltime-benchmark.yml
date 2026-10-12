@@ -17,10 +17,20 @@ on:
             native,
             n8n-baseline,
             n8n-preparation,
+            artifact-payload,
+            rust-archive-window,
             owned-worker-fault,
             owned-worker-controls,
           ]
         default: all
+      artifact_id:
+        description: Existing same-repository artifact for the manual transport trial
+        type: string
+        default: "11709550349"
+      artifact_source_sha:
+        description: Exact source SHA of the original artifact, checked against API custody
+        type: string
+        default: a49936db24d9540e0630b42474654190d575294b
       owned_worker_source_sha: { description: Fresh full SDK source SHA, type: string }
 permissions: { contents: read }
 concurrency:
@@ -288,3 +298,33 @@ jobs:
             npm/native/.artifacts/native/formatter-history/*.log
           if-no-files-found: error
           retention-days: 14
+  artifact-payload:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.component == 'artifact-payload' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 60
+    permissions: { contents: read, actions: read }
+    env:
+      PAYLOAD_ARTIFACT_ID: ${{ inputs.artifact_id }}
+      PAYLOAD_SOURCE_SHA: ${{ inputs.artifact_source_sha }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.sha }}" }
+      - uses: ./.github/actions/measure-artifact-payload
+  artifact-payload-restore:
+    needs: artifact-payload
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.component == 'artifact-payload' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.sha }}" }
+      - uses: ./.github/actions/restore-artifact-payload
+        with:
+          artifact_id: ${{ inputs.artifact_id }}
+          artifact_source_sha: ${{ inputs.artifact_source_sha }}
+      - uses: ./.github/actions/upload-artifact-payload-receipt
+        if: ${{ always() }}
+  rust-archive-window:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.component == 'rust-archive-window' }}
+    permissions: { contents: read, actions: read }
+    uses: ./.github/workflows/rust-archive-transport-benchmark.yml
