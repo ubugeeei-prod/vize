@@ -72,3 +72,13 @@ enumerated caller's ordering and all 44 original vectors. The
 [paired correction](https://github.com/ubugeeei-prod/vize/issues/6881#issuecomment-6118982283)
 retains the failed source result and requires fresh qualification without a
 lint, corpus, budget, metadata or native-provider waiver.
+
+The `57c74a7` successor compiled and passed Clippy, then the unchanged named-slot
+control failed both normal and configured-error service checks. Active Relief
+directives retain prefix-only raw names: `#default` also stores raw `#`. The
+bare-slot predicate additionally requires no argument, preserving actual named
+slot groups without changing parser ownership. The assertion gate separately
+rejected a prefix-based inventory count; compare the exact ordered nine original
+IDs instead. The [paired correction](https://github.com/ubugeeei-prod/vize/issues/6881#issuecomment-6119190323)
+preserves all 44 source/oracle vectors, complete failed shard logs and the passing
+native refusal, requiring fresh whole service execution and every original gate.

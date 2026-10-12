@@ -49,9 +49,20 @@ fn whole_originals_and_controls_match_complete_service_vectors() {
     assert_eq!(
         cases
             .iter()
-            .filter(|case| case["id"].as_str().unwrap().starts_with("original-"))
-            .count(),
-        9
+            .take(9)
+            .map(|case| case["id"].as_str().unwrap())
+            .collect::<Vec<_>>(),
+        vec![
+            "original-heyui-src-components-tooltip-tooltip.vue",
+            "original-tdesign-packages-theme-generator-src-common-components-ColorPicker-index.vue",
+            "original-vue-js-modal-src-components-Dialog.vue",
+            "original-gridea-src-components-Main.vue",
+            "original-naive-ui-src-calendar-demos-enUS-basic.demo.vue",
+            "original-naive-ui-src-dynamic-input-demos-enUS-form.demo.vue",
+            "original-naive-ui-src-grid-demos-enUS-collapse.demo.vue",
+            "original-naive-ui-src-typography-demos-enUS-router-link.demo.vue",
+            "original-splayer-src-views-Radio-hot.vue",
+        ]
     );
     let linter = configured();
     for case in cases {

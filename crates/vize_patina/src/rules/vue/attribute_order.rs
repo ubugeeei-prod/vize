@@ -80,7 +80,10 @@ impl AttrCategory {
                     "html" | "text" => AttrCategory::Content,
                     // A bare `#` is an ordinary attribute in the pinned
                     // vue-eslint-parser, unlike `#default` and `v-slot`.
-                    "slot" if dir.raw_name == Some("#") => AttrCategory::OtherAttrs,
+                    // Relief retains the prefix, so named slots need the arg check.
+                    "slot" if dir.raw_name == Some("#") && dir.arg.is_none() => {
+                        AttrCategory::OtherAttrs
+                    }
                     "slot" => AttrCategory::UniqueAttrs,
                     "is" => AttrCategory::Definition,
                     "bind" => match arg {
@@ -104,7 +107,7 @@ fn is_object_binding(prop: &PropNode<'_>) -> bool {
 fn is_attribute_or_binding(prop: &PropNode<'_>) -> bool {
     matches!(prop, PropNode::Attribute(_))
         || matches!(prop, PropNode::Directive(dir) if matches!(dir.name, "bind" | "model")
-            || (dir.name == "slot" && dir.raw_name == Some("#")))
+            || (dir.name == "slot" && dir.raw_name == Some("#") && dir.arg.is_none()))
 }
 
 fn ignored_object_binding(props: &[PropNode<'_>], index: usize) -> bool {
