@@ -44,3 +44,28 @@ release issue closure is claimed by this API slice.
 
 This record is paired with #8371. The bilingual reader guide is explicitly for
 the next minor release, preserving the currently published configuration path.
+
+The first #8768 package gate exposed a frozen-source conflict with the approved
+alias assertion change. Its private input reader now authenticates all three
+complete current input files and the whole historical config test, admitting
+only the original family or that one declared assertion successor. The unchanged
+input-only VM receives the historical body; all three original digests and nine
+whole plans remain literal, with the original helper and package caller archived.
+Missing, partial, mutated, nonregular and hybrid sources refuse. Source-only
+controls confer no native formatter, package execution or performance credit.
+
+The first exact-head Actions run passed the packed public type check but stopped
+at a genuine double normalization of root entries. Task metadata now returns the
+raw shared projection and the existing consumer normalizes it once. The server
+merge law compares the whole result with the actual selected Vite+ merge function,
+retaining its host metadata and the original port/host assertions. Nuxt's existing
+constructor alone supplies a private context for its already resolved host Vue
+compiler object. Only its source-backed isProduction/template/script/features
+fields are excluded from native projection; raw canonical inputs, mixed fields,
+unknown fields and spoofed public flags stay strict. An accessor's first value is
+captured once, and original host objects, descriptors and hooks remain intact.
+The CLI scope control now uses OtherView.vue so its authored component name obeys
+the unchanged Essential preset. The original failing packets and whole source
+bodies remain retained. Packed four-shape execution, all four build/map controls,
+CLI/editor cases, Nuxt integration and original formatter history require fresh
+Actions on the successor; prior source/native checks do not qualify these fixes.

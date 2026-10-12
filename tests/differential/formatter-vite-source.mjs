@@ -1,9 +1,7 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
-import path from "node:path";
 import vm from "node:vm";
 import { stripTypeScriptTypes } from "node:module";
-import { hash } from "../../npm/native/scripts/formatter-history-build.mjs";
+import { originalViteSourceFamily } from "./formatter-vite-source-family.mjs";
 
 export const originalViteSources = {
   "npm/builder/vite/src/vite-plus/import-sorting.test.ts":
@@ -16,13 +14,7 @@ export const originalViteSources = {
 
 // These immutable sources own inputs, not configuration/output oracles.
 export function originalViteInputs(root) {
-  const files = Object.fromEntries(
-    Object.entries(originalViteSources).map(([file, expected]) => {
-      const raw = fs.readFileSync(path.join(root, file));
-      assert.equal(hash(raw), expected, `original Vite vector changed: ${file}`);
-      return [file, raw.toString()];
-    }),
-  );
+  const files = originalViteSourceFamily(root);
   const fixture = files["crates/vize_glyph/tests/fixtures/sort-imports/UserCard.vue"];
   const raw = stripTypeScriptTypes(files["npm/builder/vite/src/vite-plus/import-sorting.test.ts"], {
     mode: "strip",

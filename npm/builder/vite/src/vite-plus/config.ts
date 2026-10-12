@@ -1,5 +1,9 @@
 import type { ConfigEnv, UserConfig } from "vite-plus";
-import type { CompilerConfig, VueVersion } from "../../../../cli/src/types/index.ts";
+import type {
+  CompilerConfig,
+  UserConfigInput,
+  VueVersion,
+} from "../../../../cli/src/types/index.ts";
 import type { VizeCompilerOptions } from "./types.ts";
 import type { UserConfigExport } from "../types.ts";
 import type {
@@ -133,10 +137,7 @@ export function normalizeConfig(source: VueConfigObject, integration: VizePlusOp
     vue === undefined
       ? legacyConfig
       : async (env) =>
-          resolveConfigExport(
-            (await projectViteConfigSource(source, env, configDirectory)) as UserConfigExport,
-            env,
-          );
+          (await projectViteConfigSource(source, env, configDirectory)) as UserConfigInput;
   const metadata: VizeTaskConfig = {
     config,
     options,

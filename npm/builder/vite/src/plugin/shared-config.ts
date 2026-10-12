@@ -1,3 +1,4 @@
+import { nativeProjectSource } from "./host-config-source.ts";
 import {
   VIZE_CONFIG_FILE_ENV,
   loadConfig,
@@ -59,6 +60,7 @@ export async function resolveSharedConfig(
   env: ConfigEnv,
   logger: ReturnType<typeof createLogger>,
   viteConfig?: unknown,
+  hostContext?: "nuxt",
 ): Promise<ResolvedVizeConfig | null> {
   let fileConfig: ResolvedVizeConfig | null = null;
   if (options.configMode !== false) {
@@ -89,6 +91,6 @@ export async function resolveSharedConfig(
   const projectConfig =
     viteConfig === undefined || options.configMode === false
       ? null
-      : await resolveViteConfigExport(viteConfig, env);
+      : await resolveViteConfigExport(nativeProjectSource(viteConfig, hostContext), env);
   return mergeSharedConfig(mergeSharedConfig(projectConfig, fileConfig), inlineConfig);
 }

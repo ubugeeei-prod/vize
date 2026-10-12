@@ -93,11 +93,13 @@ test("canonical Vue settings preserve the genuine CLI and editor results of a de
               selected === "dedicated"
                 ? JSON.stringify(scoped)
                 : `export default {vue:${JSON.stringify(scoped)}};`;
-            const otherApp = path.join(directory, "Other.vue");
+            const otherApp = path.join(directory, "OtherView.vue");
             fs.writeFileSync(otherApp, source);
             fs.writeFileSync(configFile, scopedConfig);
             const selectedPacket = JSON.parse(run(["lint", "App.vue", "--format", "json"]).stdout);
-            const outsidePacket = JSON.parse(run(["lint", "Other.vue", "--format", "json"]).stdout);
+            const outsidePacket = JSON.parse(
+              run(["lint", "OtherView.vue", "--format", "json"]).stdout,
+            );
             scopedObservation = { scopedConfig, selectedPacket, outsidePacket };
             assert.equal(selectedPacket.length, 1);
             assert.equal(outsidePacket.length, 1);

@@ -5,6 +5,7 @@ import { defineConfig, withVue } from "../vite-plus.ts";
 import { resolveConfigExport } from "../config.ts";
 import { projectViteConfigSource } from "../../../../cli/src/config/vite-runtime.mjs";
 import { normalizeConfig, resolveConfig } from "./config.ts";
+import { resolveVitePlus } from "./runtime.ts";
 import { taskConfigKey, type ConfigWithVizeTasks, type VueConfigObject } from "./types.ts";
 
 const env: ConfigEnv = {
@@ -131,7 +132,16 @@ void test("Vite fields keep consumer merge semantics while canonical arrays repl
   };
   const result = await resolveConfig(own, env);
   assert.deepEqual(result.plugins, [a, b]);
-  assert.deepEqual(result.server, { port: 4321, host: true });
+  const { mergeConfig } = resolveVitePlus().require("vite-plus") as typeof import("vite-plus");
+  const consumer = mergeConfig(mergeConfig({}, { plugins: first.plugins, server: first.server }), {
+    plugins: own.plugins,
+    server: own.server,
+  });
+  assert.deepEqual(result.server, consumer.server);
+  assert.equal(result.server?.port, 4321);
+  assert.equal(result.server?.host, true);
+  assert.deepEqual(first.server, { port: 4321 });
+  assert.deepEqual(own.server, { host: true });
   assert.deepEqual(result.vue, {
     files: [],
     formatter: { attributeGroups: [], singleQuote: false },

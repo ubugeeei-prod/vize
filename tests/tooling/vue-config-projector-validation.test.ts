@@ -250,7 +250,10 @@ test("canonical entries admit only real native linter scopes while all other nat
 
 test("new public numeric Vue 0.10 ingress projects native enums and respects canonical version leaves", async () => {
   const schema = JSON.parse(
-    await readFile(new URL("../../npm/cli/schemas/vize.config.schema.json", import.meta.url), "utf8"),
+    await readFile(
+      new URL("../../npm/cli/schemas/vize.config.schema.json", import.meta.url),
+      "utf8",
+    ),
   );
   const pairs = [
     [3, "3"],
