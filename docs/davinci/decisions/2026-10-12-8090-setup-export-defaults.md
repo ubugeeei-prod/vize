@@ -92,12 +92,34 @@ whole original/after caller and permits only an import plus an exact registry
 selector through the existing complete-family guard. Original registry length
 21919 and hash stay literal; every other source check and all 112 whole bare
 before packets remain unchanged. This is source-custody integration, with no
-new diagnostic expectation or runtime policy change. The ten source laws pass;
-the initial RED source/native outcomes remain distinct from a fresh successor.
+new diagnostic expectation or runtime policy change. The initial ten source laws pass;
+the initial failed source job and separate successful native outcome remain
+distinct from a fresh successor.
+
+The other initial source failures are preserved as complete job logs with whole
+original callers and metadata in `policy-caller-integration.json`. Suppression
+routing admits the new snapshot only after the complete twelve-body family and
+whole five-insertion membership law authenticate; all other producer pins and
+all original whole suppression packets stay literal. Two Rust negative assertions
+for Opinionated/Nuxt become positive, and the rule map changes only this rule's
+five sorted preset names. No other severity, membership or rule-map entry changes.
+
+The warm host's original ten-body manifest, nine preserved bodies, helper and
+real400 driver retain their exact bytes. The current-source test explicitly
+requires the old host qualification to return `null` for the new snapshot;
+it then independently authenticates the complete twelve-body family, the whole
+membership successor, all ten original before bodies and all nine before/after
+corpus bodies. This is current-source custody, not measurement qualification.
+All original cohort positive, missing/unknown/mutated-body refusal and literal-cut
+laws remain. No digest substitution or new performance authority is introduced.
+Initial exact source `46ee5aa` completed Check `38196958922` with FAILURE;
+mandatory native `38196958808` independently completed SUCCESS. Neither outcome
+qualifies a successor source head. The original source CLI 70 packets remain
+eligible only as their own archived source observation pending full custody.
 
 ## Qualification and remaining work
 
-Ten source-only authority/mutation laws and typed tooling checks pass locally.
+Nineteen source-only authority/mutation laws and typed tooling checks pass locally.
 Rust/API 18+52 and source CLI 18+52 are required on the inherited Actions shared
 builder; complete process/build packets persist before assertions. No separate
 native builder, full Matrix recapture, snapshot recapture, benchmark ceiling,

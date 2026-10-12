@@ -7,7 +7,10 @@ import { gunzipSync } from "node:zlib";
 import { test } from "node:test";
 import { sha256, wholeJson } from "./lint-default-correctness-reference.mjs";
 import { authenticateRuntimeApiSourceFamily } from "./support/runtime-props-api-source-custody.mjs";
-import { authenticateSetupExportPresetSourceFamily } from "./support/setup-export-preset-source-custody.mjs";
+import {
+  authenticateSetupExportMembership,
+  authenticateSetupExportPresetSourceFamily,
+} from "./support/setup-export-preset-source-custody.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const directory = "tests/_fixtures/differential/lint/setup-export-default-8090";
@@ -241,4 +244,72 @@ await test("original bare caller admits only the complete registry preset succes
   assert.equal(log.length, law.initialFailure.rawBytes);
   assert.equal(law.workflowRun, 38196958922);
   assert.equal(law.job, 114642149488);
+});
+
+await test("whole membership authentication refuses changed law, original or current tables", () => {
+  const incoming = authenticateRuntimeApiSourceFamily(root);
+  const law = authenticateSetupExportMembership(root, incoming);
+  for (const name of [
+    `${directory}/source-custody/membership-law.json`,
+    `${directory}/source-custody/original-preset-membership.snap.fixture`,
+    law.path,
+  ]) {
+    const corrupt = (requested) =>
+      requested === name ? Buffer.concat([read(requested), Buffer.from(" ")]) : read(requested);
+    assert.throws(() => authenticateSetupExportMembership(root, incoming, corrupt), name);
+  }
+});
+
+await test("finite caller and metadata repairs preserve whole originals and measured-host refusal", () => {
+  const bytes = fixture("source-custody/policy-caller-integration.json");
+  assert.equal(sha256(bytes), "5b1065fdafafa9b4e499406a45063f31ffb1b513ec2e200daec75a8865722080");
+  const law = JSON.parse(bytes);
+  assert.equal(law.source, "46ee5aadd5139401b6ecb687d5ad77ed63a7dee9");
+  assert.equal(law.workflowRun, 38196958922);
+  assert.equal(law.changes.length, 4);
+  for (const change of law.changes) {
+    const before = fixture(`source-custody/${change.before.archive}`);
+    assert.equal(before.length, change.before.bytes);
+    assert.equal(sha256(before), change.before.sha256);
+    assert.equal(
+      createHash("sha1").update(`blob ${before.length}\0`).update(before).digest("hex"),
+      change.before.gitBlob,
+    );
+    let expected = before.toString();
+    for (const transform of change.transforms) {
+      assert.equal(expected.split(transform.before).length, 2);
+      expected = expected.replace(transform.before, transform.after);
+    }
+    const after = read(change.path);
+    assert.deepEqual(after, Buffer.from(expected));
+    assert.equal(after.length, change.after.bytes);
+    assert.equal(sha256(after), change.after.sha256);
+    if (change.path === "tests/_fixtures/patina-eslint-vue-rule-map.json") {
+      const entries = JSON.parse(before).entries;
+      entries["vue/no-export-in-script-setup"].patinaPresets = [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated",
+      ];
+      assert.deepEqual(JSON.parse(after).entries, entries);
+    }
+  }
+  assert.equal(law.preservedMeasuredHost.length, 2);
+  for (const source of law.preservedMeasuredHost) {
+    const before = fixture(`source-custody/${source.archive}`);
+    assert.equal(before.length, source.bytes);
+    assert.equal(sha256(before), source.sha256);
+    assert.deepEqual(read(source.path), before);
+  }
+  assert.equal(law.initialFailures.length, 4);
+  for (const failure of law.initialFailures) {
+    const raw = fixture(`source-custody/${failure.archive}`);
+    assert.equal(raw.length, failure.bytes);
+    assert.equal(sha256(raw), failure.sha256);
+    const log = gunzipSync(raw);
+    assert.equal(log.length, failure.rawBytes);
+    assert.equal(sha256(log), failure.rawSha256);
+  }
 });
