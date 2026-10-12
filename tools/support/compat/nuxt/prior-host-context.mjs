@@ -34,9 +34,9 @@ export function preparePriorNuxtHostContext(root, source, artifacts) {
   assert.equal(fs.realpathSync(target), path.join(fs.realpathSync(root), priorNuxtConstructor));
   const original = fs.readFileSync(target);
   const adapted = adaptPriorNuxtHostContext(original, source);
-  for (const [name, body] of [
-    ["before", original],
-    ["after", adapted],
+  for (const { name, body } of [
+    { name: "before", body: original },
+    { name: "after", body: adapted },
   ])
     fs.writeFileSync(path.join(artifacts, `prior-nuxt-host-context.${name}.ts`), body, {
       flag: "wx",
