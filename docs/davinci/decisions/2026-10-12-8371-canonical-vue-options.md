@@ -69,3 +69,10 @@ the unchanged Essential preset. The original failing packets and whole source
 bodies remain retained. Packed four-shape execution, all four build/map controls,
 CLI/editor cases, Nuxt integration and original formatter history require fresh
 Actions on the successor; prior source/native checks do not qualify these fixes.
+
+The successor's warning gate exposed two unawaited test registrations, an
+unbound getter identity read and a heterogeneous tuple inference in its source
+reader. Explicit void registrations, whole descriptor equality and a string-key
+iteration retain every assertion and physical refusal. The zero-warning gate
+stays unchanged; the original failed job and complete before/after bodies remain
+retained before fresh qualification.

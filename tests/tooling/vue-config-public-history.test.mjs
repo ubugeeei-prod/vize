@@ -9,7 +9,7 @@ const read = (name) => readFileSync(new URL(name, root), "utf8");
 const hash = (source) => createHash("sha256").update(source).digest("hex");
 const archive = "tests/_fixtures/differential/config/vue-namespace/source-custody/";
 
-test("the complete original package cases survive the explicit options-first API succession", () => {
+void test("the complete original package cases survive the explicit options-first API succession", () => {
   const config = read(archive + "original-vite-plus-config.test.ts.fixture");
   assert.equal(hash(config), "82570d354aa7cfb9300bca05be49e7bd451694beea019b635cac1ccb7c8056a4");
   assert.equal(
@@ -47,7 +47,7 @@ test("the complete original package cases survive the explicit options-first API
   assert.equal(liveDialect.replace(addedDialect, ""), dialect);
 });
 
-test("the complete authored bilingual recipes and relative destinations agree", () => {
+void test("the complete authored bilingual recipes and relative destinations agree", () => {
   const english = read("docs/content/guide/vue-configuration.md");
   const japanese = read("docs/content/ja/guide/vue-configuration.md");
   const fences = (source) =>

@@ -66,7 +66,8 @@ export function originalViteSourceFamily(root) {
       "historical config family differs from its archive",
     );
   }
-  for (const [file, raw] of [...Object.entries(actual), [archivePath, archived]]) {
+  for (const file of [...Object.keys(actual), archivePath]) {
+    const raw = file === archivePath ? archived : actual[file];
     assert(
       regularBytes(root, file, "Vite source changed during authentication").equals(raw),
       `Vite source changed during authentication: ${file}`,

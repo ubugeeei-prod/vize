@@ -33,9 +33,9 @@ void test("only the explicit Nuxt constructor context excludes the complete host
     assert.equal("vue" in view, false);
     assert.equal(callbackCalls, 0);
     assert.equal(hookReads, 0);
-    assert.equal(
-      Object.getOwnPropertyDescriptor(view, "unrelatedHostHook")?.get,
-      originalDescriptors.unrelatedHostHook?.get,
+    assert.deepEqual(
+      Object.getOwnPropertyDescriptor(view, "unrelatedHostHook"),
+      originalDescriptors.unrelatedHostHook,
     );
     assert.equal(view.vize, source.vize);
     assert.deepEqual(await projectViteConfigSource(view, env), {
