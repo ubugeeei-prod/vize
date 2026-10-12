@@ -64,3 +64,11 @@ evidence. Patina compilation and execution, exact-head Actions, the protected
 merge queue, successor publication, and a fresh unchanged full Matrix remain
 required. Unusable project refusals, zero divergence budgets, every original
 input, and the required release project set remain intact. #6881 stays open.
+
+The first exact-source [Check 38212202052](https://github.com/ubugeeei-prod/vize/actions/runs/38212202052)
+at `bb4106ba61` failed the unchanged Clippy indexing gate before test execution.
+The helper now uses checked access for that one predicate, preserving the
+enumerated caller's ordering and all 44 original vectors. The
+[paired correction](https://github.com/ubugeeei-prod/vize/issues/6881#issuecomment-6118982283)
+retains the failed source result and requires fresh qualification without a
+lint, corpus, budget, metadata or native-provider waiver.

@@ -108,7 +108,7 @@ fn is_attribute_or_binding(prop: &PropNode<'_>) -> bool {
 }
 
 fn ignored_object_binding(props: &[PropNode<'_>], index: usize) -> bool {
-    is_object_binding(&props[index])
+    props.get(index).is_some_and(is_object_binding)
         && (index
             .checked_sub(1)
             .and_then(|previous| props.get(previous))
