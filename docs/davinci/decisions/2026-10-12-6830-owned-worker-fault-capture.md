@@ -222,6 +222,36 @@ fail against the complete published helper and pass after this change. Preserve
 measured toy status before qualification refuses it; missing/changed onward
 policy stays red. Further Linux execution remains held for concrete review.
 
+## Actual four-case lifecycle qualification
+
+[Run 38188634684](https://github.com/ubugeeei-prod/vize/actions/runs/38188634684),
+attempt 1, job 114616352497, completed successfully in 41 seconds at driver
+`8e962e4f6c0fbef9da5ac9d1d1d21191050f9b10` (tree
+`2b5fb51305938ac04a93fabbbf6efe0fa3a7af2b`), against fresh source
+`b4f7bab24f8ecbf4aa07bfd0fc60e8c7bcaf74a3` (tree
+`7f98c07fb7155f67d1ebe8ab8742377fa68c3fba`). All 29,128 physical source records,
+239,021,229 body bytes, independently match before/after; the SDK runner never
+started. Preserve all four prior failed packets and their unknown causes.
+
+| Authored control | Actual terminal evidence |
+| --- | --- |
+| Normal | Owned continuation, actual exit event, original runner status 0. |
+| Cancellation | Authentic debugger SIGINT origin, discard/detach, tracer 0, owned pidfd resume, clean reaping, original status 0. |
+| SIGSEGV | One faulting thread/PC, stable providers, verified onward pass, actual exit event, original status 1. |
+| Original SIGINT | Origin distinct from debugger, no discard, verified onward pass, actual exit event, original status 1. |
+
+Actual GDB 15.1 ELF/body matches before/after in every case. The frozen helper
+bodies match the driver exactly. Attach callback counts are 11/10/10/10; each
+case admits one owned readiness event after explicit resume. All marker framing
+matches packet counts; no source/provider/reader gaps or forced debugger exit
+occurred. Raw transcripts remain private and excluded from uploads.
+
+Artifact 11720309069 is a complete 4,322,226-byte ZIP with SHA256
+`48a4de7a022d66b67d330cf045de672b3cf36f31361b8d3052129a031bcb4e61`.
+This qualifies the authored diagnostic lifecycle only. It supplies no unchanged
+SDK qualification, actual SDK fault attribution, timing or release credit.
+A separate reviewed authorization is required before original SDK capture.
+
 ## Qualification and remaining work
 
 This diagnostic changes worker scheduling and adds a profile probe. It supplies
@@ -231,9 +261,8 @@ Meaningful actor/PID reuse/ESRCH/marker/privacy/partial attach/fault pass/cancel
 controls run in the ordinary tooling gate. A normal control exit or unavailable
 capture does not explain or repair the original SIGSEGV.
 
-TODO: peer-review the controls failure successor and qualify all four authentic
-Linux lifecycle packets before the explicitly authorized full diagnostic;
-retain its original runner
-status and finite packet gaps; attribute only actual fault/provider evidence;
-then obtain ordinary fresh-source full qualification independently. No blind
-retry of the historical failed source is authorized by this component.
+TODO: independently review the qualified four-case packet before any separate
+authorization for original SDK capture; retain its original runner status and
+finite gaps, attribute only actual fault/provider evidence, and obtain ordinary
+fresh-source full qualification independently. No blind retry of the historical
+failed source is authorized by this component.
