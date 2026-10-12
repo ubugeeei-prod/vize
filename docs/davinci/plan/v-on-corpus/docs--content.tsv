@@ -39,6 +39,9 @@ docs/content/generated/rules/ja/accessibility-integrity.md	@keydown.enter
 docs/content/generated/rules/ja/accessibility.md	@keydown.enter
 docs/content/generated/rules/ja/accessibility.md	@keydown.enter
 docs/content/generated/rules/ja/cross-file.md	@save.stop
+docs/content/generated/rules/ja/vue-directives.md	@click.ctrl
+docs/content/generated/rules/ja/vue-directives.md	@click.exact
+docs/content/generated/rules/ja/vue-directives.md	@click.ctrl
 docs/content/generated/rules/ja/vue.md	@click.native
 docs/content/generated/rules/ja/vue.md	v-on:click.native
 docs/content/generated/rules/ja/vue.md	@click.native.stop
