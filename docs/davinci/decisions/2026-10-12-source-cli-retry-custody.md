@@ -74,3 +74,12 @@ transport behavior, not a Rust product/compiler build or hosted acceptance.
 Exact-head Actions, protected queue and actual merge remain required before
 reporting delivery complete. The duplicate-build audit's broader optimization
 candidates remain unimplemented and unmeasured.
+
+The first source run 38186449336 successfully produces and restores the original
+CLI, then fails three older workflow contract assertions that still expect the
+former scalar digest input. Preserve that original failure. The successor
+requires the exact complete retained producer input in all three contracts,
+retaining upload/failure/tier checks and the single digest-strict download gate.
+Those three failures reproduce locally before the change; all 41 related
+transport and workflow laws pass afterward with zero skips. Production helpers,
+actions and workflows remain byte-identical to the first source head.
