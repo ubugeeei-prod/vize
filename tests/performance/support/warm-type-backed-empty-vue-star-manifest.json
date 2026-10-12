@@ -86,5 +86,12 @@
   ],
   "integrationSourceProofSHA256": "dfa6fbbf2eee04a1ab6556035d4429912799814214456833d3e3ab535f34c6b6",
   "correctiveSourceIndexSHA256": "4f7d67ecb2bda9ead266c7af35885f4091f8cbfb904094b6e2c688986fb3db63",
-  "originalReviewedProductSource": "5968ebfff1fde8d0503d83a414640e18d52e95b2"
+  "originalReviewedProductSource": "5968ebfff1fde8d0503d83a414640e18d52e95b2",
+  "correction": {
+    "file": "tests/performance/support/warm-type-backed-empty-vue-star-corrective.json",
+    "mode": "100644",
+    "bytes": 1826,
+    "sha256": "1933f3173c0066cdaf64ba9a323fd3037d1c9eb98af02a30ed5f65cc50754514",
+    "blob": "103c46d543340882155d0ca316e98654dda8f840"
+  }
 }

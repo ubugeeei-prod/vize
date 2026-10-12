@@ -18,23 +18,29 @@ const digest = (side: Side, file: string) => pairs.get(file)?.[side] ?? null;
 const read = (file: string) => fs.readFileSync(new URL("../../" + file, import.meta.url));
 const zero = "0".repeat(64);
 
-test("the finite whole42, supplemental80 and preserved152 source tables carry no runtime credit", () => {
+test("the retained42/80/152 tables and exact current43/82/152 correction carry no runtime credit", () => {
   const result = qualifyEmptyVueStarHost(production, new Set(), digest);
   assert.ok(result);
   assert.equal(result.authority, "exact-reviewed-empty-vue-star-complete-source");
   assert.equal(result.manifestSHA256, emptyVueStarManifestSHA256);
   assert.equal(result.originalSource, "a93e78147b0990c813e965a7868b32dda341eb77");
-  assert.equal(result.reviewedProductSource, "b148ffee7526b45789ec44c16b3e3370e08a5650");
-  assert.equal(result.completeBodyPairs, 42);
-  assert.equal(result.supplementalBodyPairs, 80);
+  assert.equal(result.reviewedProductSource, "a89a93cd71531cf2cdbbb86f2dba8c2382348d77");
+  assert.equal(result.completeBodyPairs, 43);
+  assert.equal(result.supplementalBodyPairs, 82);
   assert.equal(result.preservedBodyPairs, 152);
-  assert.equal(result.sourceMetadataBodyPairs, 8);
+  assert.equal(result.sourceMetadataBodyPairs, 9);
   assert.equal(result.historicalCasesPreserved, 32);
   assert.equal(result.runtimeCredit, false);
   assert.equal(result.performanceCredit, false);
   assert.deepEqual(result.files, production);
-  assert.equal(allPairs.length, 282);
-  assert.equal(new Set(allPairs.map(([file]) => file)).size, 282);
+  const loaded = loadEmptyVueStarManifest(read);
+  assert.deepEqual(
+    Object.values(loaded.tables).map((rows) => rows.length),
+    [42, 80, 152],
+  );
+  assert.equal(result.predecessorReviewedProductSource, "b148ffee7526b45789ec44c16b3e3370e08a5650");
+  assert.equal(allPairs.length, 286);
+  assert.equal(new Set(allPairs.map(([file]) => file)).size, 286);
 });
 
 test("every complete before/after cell refuses drift, absence, partial or foreign body digest", () => {
@@ -53,6 +59,20 @@ test("every complete before/after cell refuses drift, absence, partial or foreig
         checked++;
       }
   assert.ok(checked > 1_600);
+});
+
+test("an original after body cannot supply a corrected cell or a mixed current source", () => {
+  const { correction } = loadEmptyVueStarManifest(read);
+  for (const [file, , previous] of correction.updates) {
+    const mixed = (side: Side, name: string) =>
+      side === "after" && name === file ? previous : digest(side, name);
+    assert.equal(qualifyEmptyVueStarHost(production, new Set(), mixed), null, file);
+  }
+  for (const [file] of correction.additions) {
+    const missing = (side: Side, name: string) =>
+      side === "after" && name === file ? null : digest(side, name);
+    assert.equal(qualifyEmptyVueStarHost(production, new Set(), missing), null, file);
+  }
 });
 
 test("every required production member remains mandatory and unique even when already qualified", () => {

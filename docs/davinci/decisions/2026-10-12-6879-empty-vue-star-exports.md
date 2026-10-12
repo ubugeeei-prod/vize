@@ -167,3 +167,12 @@ private observation field initialized to false; its original output is retained.
 These are test input, fixture construction and evidence corrections. They change
 no export-admission policy, historical32 oracle, application golden or budget.
 Fresh source, native and original400 qualification is required again.
+
+The correction keeps all seven original 42/80/152 source-table files byte-exact.
+One separately authenticated finite record changes only the two reviewed after
+cells and adds three complete pairs: the existing malformed fixture's whole
+before/after body and two new passive input blobs with genuine before absences.
+The current closure is 43 producer/test-target, 82 supplemental and 152 preserved
+bodies plus nine metadata bodies. Any original-after substitution, incomplete
+correction, mixed source or missing body refuses admission before a historical
+tooling view or workload. This enrollment supplies source custody only.

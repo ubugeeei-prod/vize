@@ -29,11 +29,12 @@ type Stored = {
   historicalPackBodies: number;
   historicalDistinctBodies: number;
   parts: Part[];
+  correction: Omit<Part, "section" | "start" | "entries">;
 };
 const prefix = "tests/performance/support/warm-type-backed-empty-vue-star-";
 const manifestFile = prefix + "manifest.json";
 export const emptyVueStarManifestSHA256 =
-  "2345e9244b38da86edbccf13e798ae79f8daf5c3d15f32de64cbbb431f87d94b";
+  "8526108db016115b3102a62c93514dead287bca315ac4961c8cc3426da86dd9d";
 const hash = (kind: "sha256" | "sha1", body: Buffer | string) =>
   createHash(kind).update(body).digest("hex");
 const blob = (body: Buffer) =>
@@ -106,31 +107,111 @@ export function loadEmptyVueStarManifest(read: (file: string) => Buffer) {
     ).size,
     122 + 152,
   );
+  const part = stored.correction;
+  assert.equal(part.file, prefix + "corrective.json");
+  assert.equal(part.mode, "100644");
+  const bytes = read(part.file);
+  assert.equal(bytes.length, part.bytes);
+  assert.equal(sha(bytes), part.sha256);
+  assert.equal(blob(bytes), part.blob);
+  const correction = JSON.parse(bytes.toString("utf8")) as {
+    version: number;
+    predecessorSource: string;
+    reviewedSource: string;
+    sourceIndexSHA256: string;
+    updates: [string, string | null, string, string][];
+    additions: Pair[];
+    productionAdditions: string[];
+  };
+  assert.equal(correction.version, 1);
+  assert.equal(correction.predecessorSource, "784d9ede9d80fe5539d79a9fe8ab0002e483bd8f");
+  assert.equal(correction.reviewedSource, "a89a93cd71531cf2cdbbb86f2dba8c2382348d77");
+  assert.equal(
+    correction.sourceIndexSHA256,
+    "882a5e9a24e6cc0612b3cba7a75f53da6c8287e3020085425514973abb6b81be",
+  );
+  assert.equal(correction.updates.length, 2);
+  assert.equal(correction.additions.length, 3);
+  const originals = new Map(
+    Object.values(tables)
+      .flat()
+      .map((row) => [row[0], row]),
+  );
+  const replacements = new Map<string, Pair>();
+  for (const [file, before, previous, after] of correction.updates) {
+    assert.deepEqual(originals.get(file), [file, before, previous]);
+    assert.match(after, /^[a-f0-9]{64}$/u);
+    assert.notEqual(previous, after);
+    assert(!replacements.has(file));
+    replacements.set(file, Object.freeze([file, before, after]));
+  }
+  assert.deepEqual(correction.productionAdditions, [
+    "crates/vize_canon/src/batch/virtual_project/vue_codegen/malformed_setup_tests.rs",
+  ]);
+  const additions = correction.additions.map(([file, before, after]) => {
+    assert(!originals.has(file) && !replacements.has(file));
+    assert.match(file, /^(?:crates|tests)\/(?:[A-Za-z0-9_.-]+\/)*[A-Za-z0-9_.-]+$/u);
+    if (before !== null) assert.match(before, /^[a-f0-9]{64}$/u);
+    assert.match(after, /^[a-f0-9]{64}$/u);
+    return Object.freeze([file, before, after] as const);
+  });
+  assert.equal(new Set(additions.map(([file]) => file)).size, 3);
+  const order = (a: Pair, b: Pair) => {
+    if (a[0] === b[0]) return 0;
+    return a[0] < b[0] ? -1 : 1;
+  };
+  const current = {
+    files: [
+      ...tables.files.map((row) => replacements.get(row[0]) ?? row),
+      ...additions.filter(([file]) => correction.productionAdditions.includes(file)),
+    ].toSorted(order),
+    supplementalBodies: [
+      ...tables.supplementalBodies.map((row) => replacements.get(row[0]) ?? row),
+      ...additions.filter(([file]) => !correction.productionAdditions.includes(file)),
+    ].toSorted(order),
+    preservedBodies: tables.preservedBodies,
+  };
+  assert.equal(current.files.length, 43);
+  assert.equal(current.supplementalBodies.length, 82);
+  assert.equal(current.preservedBodies.length, 152);
+  correction.updates.forEach(Object.freeze);
+  correction.additions.forEach(Object.freeze);
+  Object.freeze(correction.updates);
+  Object.freeze(correction.additions);
+  Object.freeze(correction.productionAdditions);
+  Object.values(current).forEach(Object.freeze);
   const metadata: Pair[] = [
     [manifestFile, null, emptyVueStarManifestSHA256],
+    [part.file, null, part.sha256],
     ...stored.parts.map((part): Pair => [part.file, null, part.sha256]),
   ];
-  assert.equal(new Set(metadata.map(([file]) => file)).size, 1 + 7);
+  assert.equal(new Set(metadata.map(([file]) => file)).size, 1 + 1 + 7);
   metadata.forEach(Object.freeze);
   Object.freeze(metadata);
-  return { stored: Object.freeze(stored), tables: Object.freeze(tables), metadata };
+  return {
+    stored: Object.freeze(stored),
+    tables: Object.freeze(tables),
+    current: Object.freeze(current),
+    correction: Object.freeze(correction),
+    metadata,
+  };
 }
 
 const manifest = loadEmptyVueStarManifest((file) =>
   fs.readFileSync(new URL("../../../" + file, import.meta.url)),
 );
 export const emptyVueStarFiles: readonly string[] = Object.freeze(
-  manifest.tables.files.map(([file]) => file),
+  manifest.current.files.map(([file]) => file),
 );
 export const emptyVueStarBodyPairs: readonly Pair[] = Object.freeze(
-  Object.values(manifest.tables).flat(),
+  Object.values(manifest.current).flat(),
 );
 export const emptyVueStarMetadataPairs: readonly Pair[] = manifest.metadata;
 const admitted = new Set(emptyVueStarFiles);
 const guarded = new Set(
   [
-    ...manifest.tables.supplementalBodies,
-    ...manifest.tables.preservedBodies,
+    ...manifest.current.supplementalBodies,
+    ...manifest.current.preservedBodies,
     ...manifest.metadata,
   ].map(([file]) => file),
 );
@@ -153,13 +234,16 @@ export function qualifyEmptyVueStarHost(
     authority: "exact-reviewed-empty-vue-star-complete-source",
     manifestSHA256: emptyVueStarManifestSHA256,
     originalSource: manifest.stored.originalSource,
-    reviewedProductSource: manifest.stored.reviewedProductSource,
+    reviewedProductSource: manifest.correction.reviewedSource,
+    predecessorReviewedProductSource: manifest.stored.reviewedProductSource,
+    correctivePacketSHA256: manifest.stored.correction.sha256,
     originalReviewedProductSource: manifest.stored.originalReviewedProductSource,
-    correctiveSourceIndexSHA256: manifest.stored.correctiveSourceIndexSHA256,
+    correctiveSourceIndexSHA256: manifest.correction.sourceIndexSHA256,
+    predecessorCorrectiveSourceIndexSHA256: manifest.stored.correctiveSourceIndexSHA256,
     reviewedSourceIndexSHA256: manifest.stored.reviewedSourceIndexSHA256,
     integrationSourceProofSHA256: manifest.stored.integrationSourceProofSHA256,
-    completeBodyPairs: 42,
-    supplementalBodyPairs: 80,
+    completeBodyPairs: 43,
+    supplementalBodyPairs: 82,
     preservedBodyPairs: 152,
     sourceMetadataBodyPairs: emptyVueStarMetadataPairs.length,
     historicalCasesPreserved: 32,

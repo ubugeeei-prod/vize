@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "predecessorSource": "784d9ede9d80fe5539d79a9fe8ab0002e483bd8f",
+  "reviewedSource": "a89a93cd71531cf2cdbbb86f2dba8c2382348d77",
+  "sourceIndexSHA256": "882a5e9a24e6cc0612b3cba7a75f53da6c8287e3020085425514973abb6b81be",
+  "updates": [
+    [
+      "crates/vize_canon/tests/empty_vue_star_exports/execution.rs",
+      null,
+      "7c802689e696a9ffe52aa58bf74ca9af9e707261d657705156f8569a1d2040cf",
+      "3115cdc9c7206c862cb5a082cf83d4cd25c4a47418f6baa0a4af41bdd933bfda"
+    ],
+    [
+      "tests/_fixtures/differential/typechecker/empty-vue-star-exports/production/authored-reserved-props-refusal/case.json",
+      null,
+      "34b48c0f2d28bacf16a4c162feb9bacc234e7f3d56c6f049f8524f7482dd2065",
+      "6fe90527393bd6539fa5293deb84e58dcc8a60f4d3ea1cd41d052000b2fdf4c0"
+    ]
+  ],
+  "additions": [
+    [
+      "crates/vize_canon/src/batch/virtual_project/vue_codegen/malformed_setup_tests.rs",
+      "3d2ed96ee659135316350724b2496f7c9854b40d16d75ff9c60113c249f0612e",
+      "b5bedc67a7c6de49b49efbde7926801fcfa801110e9fd7ae4e61178da3a3e2ac"
+    ],
+    [
+      "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/c4bb61cac8d9689e7e09e5db9fc4c7ab926b6d1e7c31396d30d507842c398314.json",
+      null,
+      "8421fe320b4897aaaef4df518bc1f9b9f9d5166aa73c03c18620139dc31bb984"
+    ],
+    [
+      "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/e01b60f7b50f8f4823ba291993361a7fb4625b065e92cf0a34b6daffdf30353f.json",
+      null,
+      "11e0096bea0a3262137c242df784bda9e4d565dab10ae378c856a7ddc4a9f0fa"
+    ]
+  ],
+  "productionAdditions": [
+    "crates/vize_canon/src/batch/virtual_project/vue_codegen/malformed_setup_tests.rs"
+  ],
+  "scope": "exact two after-cell corrections and three whole additional pairs; original42/80/152 tables remain byte-exact; no runtime credit"
+}
