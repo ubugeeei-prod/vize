@@ -87,6 +87,7 @@ export function baselineConfig(runtime, rules) {
       // configuration, not a finding about the code.
       linterOptions: { reportUnusedDisableDirectives: "off" },
       plugins: { vue: runtime.plugin },
+      processor: "vue/vue",
       rules,
     },
   ];

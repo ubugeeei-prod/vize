@@ -175,3 +175,18 @@ including its complete original producer/native laws. No missing-file allowance
 or individual helper copy qualifies this failure. All owned CSS bodies remain
 exact apart from incoming foundation clauses and generated source inventory.
 Fresh source/native/protected gates must qualify that composed head.
+
+The composed cdc source retained run 38214537811 tooling3 refusal from the new
+Docs WASM cache-role audit: its two dynamic CSS keys were not registered.
+Preserve the complete 743,839-byte failed log (SHA-256
+`9007a6120efecbc7ba1a91aff763ec95e0893da0095bed6457f6785fa7581740`).
+Register only the existing CSS workflow, direct cache action and three jobs,
+with exact dev/release matrices and complete original cache inputs. Generic
+dynamic prefixes and all 18 original Docs/NAPI producer/refusal laws stay exact;
+four additional laws preserve full role vectors and reject changed matrices,
+delegation, conditional keys, foreign jobs and secondary cache destinations.
+The independent private before refused 2/4 new laws; after passed all 22 without
+skips. This is source-policy evidence, not native/performance/publication credit.
+Integrate genuine main `d73c43cfadc779093ebdb1497ef143c40dffa583` before
+this finite registration; all original CSS bodies and selected type migration
+remain unchanged. Fresh exact-source and protected Actions are still required.

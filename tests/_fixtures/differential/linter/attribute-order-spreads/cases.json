@@ -1,0 +1,1949 @@
+{
+  "schema": "vize.attribute-order-spread-corpus-v1",
+  "issue": 6881,
+  "source": "5c54b1195fa8c0bf151e0a2862bf4238a3597b4e",
+  "scope": "Existing public Patina rule with unchanged metadata, preset, localization and no autofix; no native-provider claim",
+  "reference": {
+    "package": "eslint-plugin-vue",
+    "version": "10.9.2",
+    "parserVersion": "10.4.1",
+    "rule": "vue/attributes-order",
+    "options": [],
+    "severity": "warn",
+    "tagCommit": "9aa463a4aa4ad3c37d7facacda2e40ad7880ea92",
+    "tagSourceSHA256": "e5029f69f1e075b4abf80ae25ec61d60a0a36f638c9e1a315cc14b5db49d31ac",
+    "distributionSHA256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017",
+    "processor": "Original Matrix baseline omitted Vue comment processor; raw reference diagnostics are retained, while Patina honors its own original suppression directives."
+  },
+  "originalMatrix": {
+    "run": 38205026873,
+    "attempt": 1,
+    "source": "ef34d1a0409fc711a6c5cefcf0708b0cce78f502",
+    "all22Terminal": false,
+    "usableOnlyTotalFP": 10,
+    "usableOnlyTotalFN": 367,
+    "originalOwnerPacketSHA256": "02c12e12556317516500b2b99bf8a5ea991742eb202cad919a39a0a355f8b220",
+    "limitation": "Unusable projects separate in full original custody; budgets/modes/release required project set unchanged."
+  },
+  "cases": [
+    {
+      "id": "original-heyui-src-components-tooltip-tooltip.vue",
+      "filename": "src/components/tooltip/tooltip.vue",
+      "source": "<template>\n  <slot v-bind=\"$attrs\"></slot>\n  <!-- eslint-disable -->\n  <teleport to=\"body\">\n    <div class=\"h-tooltip-inner-content\" ref=\"content\">{{ content }}<slot name=\"content\"></slot></div>\n  </teleport>\n</template>\n<script>\nimport Tooltip from 'heyui/plugins/tooltip';\n\nconst prefix = 'h-tooltip';\n\nexport default {\n  name: 'HTooltip',\n  emits: ['show', 'hide'],\n  props: {\n    trigger: {\n      type: String, // click,hover\n      default: 'hover'\n    },\n    content: [String, Number],\n    placement: {\n      type: String,\n      default: 'top'\n    },\n    disabled: {\n      type: Boolean,\n      default: false\n    },\n    editable: {\n      type: Boolean,\n      default: false\n    },\n    className: {\n      type: String\n    },\n    theme: String,\n    delay: {\n      type: Number,\n      default: 0\n    },\n    maxWidth: Number\n  },\n  computed: {\n    tooltipCls() {\n      return {\n        [`${prefix}`]: true\n      };\n    },\n    showCls() {\n      return {\n        [`${prefix}-show`]: true\n      };\n    },\n    groupCls() {\n      return {\n        [`${prefix}`]: true\n      };\n    }\n  },\n  watch: {\n    disabled() {\n      if (!this.tooltip) return;\n      if (!this.disabled) {\n        this.tooltip.enabled();\n      } else {\n        this.tooltip.disabled();\n      }\n    },\n    content() {\n      if (!this.tooltip) return;\n      this.tooltip.update();\n    }\n  },\n  mounted() {\n    this.init();\n  },\n  methods: {\n    show() {\n      if (this.tooltip) {\n        this.tooltip.show();\n      }\n    },\n    hide() {\n      if (this.tooltip) {\n        this.tooltip.hide();\n      }\n    },\n    update() {\n      if (this.tooltip) {\n        this.tooltip.update();\n      }\n    },\n    init() {\n      this.$nextTick(() => {\n        let el = this.$el.nextElementSibling;\n        let content = this.$refs.content;\n        this.tooltip = new Tooltip(el, {\n          content,\n          theme: this.theme,\n          html: true,\n          trigger: this.trigger,\n          editable: this.editable,\n          className: this.className,\n          container: document.body,\n          placement: this.placement,\n          disabled: this.disabled,\n          maxWidth: this.maxWidth,\n          delay: this.delay,\n          events: {\n            show: () => {\n              this.$emit('show');\n            },\n            hide: () => {\n              this.$emit('hide');\n            }\n          }\n        });\n      });\n    }\n  }\n};\n</script>\n",
+      "origin": {
+        "id": "heyui",
+        "repository": "heyui/heyui",
+        "revision": "dcd5fe97b7908200beda88a26700b14a41a17429",
+        "sourcePath": "src/components/tooltip/tooltip.vue",
+        "local": "/tmp/vize-447-original-attribute-order-whole-inputs/heyui--src--components--tooltip--tooltip.vue",
+        "bytes": 2402,
+        "sha256": "836b096372b88eb40c70fd8543c86661d0034645ff9f648ec87c430386707fce",
+        "gitBlob": "4b289f29d560f3702de494bd2cf2937df11afe2c",
+        "immutableURL": "https://github.com/heyui/heyui/blob/dcd5fe97b7908200beda88a26700b14a41a17429/src/components/tooltip/tooltip.vue"
+      },
+      "bytes": 2402,
+      "sha256": "836b096372b88eb40c70fd8543c86661d0034645ff9f648ec87c430386707fce",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \"ref\" should go before \"class\".",
+          "line": 5,
+          "column": 42,
+          "messageId": "expectedOrder",
+          "endLine": 5,
+          "endColumn": 55,
+          "fix": {
+            "range": [
+              101,
+              146
+            ],
+            "text": "ref=\"content\" class=\"h-tooltip-inner-content\""
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 1,
+      "serviceSuppressed": true,
+      "service": {
+        "filename": "src/components/tooltip/tooltip.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "original-tdesign-packages-theme-generator-src-common-components-ColorPicker-index.vue",
+      "filename": "packages/theme-generator/src/common/components/ColorPicker/index.vue",
+      "source": "<template>\n  <t-color-picker-panel\n    v-model=\"color\"\n    :format=\"format\"\n    :color-modes=\"['monochrome']\"\n    :recent-colors=\"null\"\n    :swatch-colors=\"null\"\n    :show-primary-color-preview=\"false\"\n    :select-input-props=\"{ popupProps: { attach: handleAttach } }\"\n    @change=\"handleChange\"\n    v-bind=\"$attrs\"\n  />\n</template>\n\n<script>\nimport { ColorPickerPanel as TColorPickerPanel } from 'tdesign-vue';\nimport { handleAttach } from '../../utils';\n\nexport default {\n  inheritAttrs: false,\n  name: 'ColorPicker',\n  components: {\n    TColorPickerPanel,\n  },\n  props: {\n    value: String,\n    format: {\n      type: String,\n      default: 'HEX',\n    },\n  },\n  emit: ['change'],\n  data() {\n    return {\n      color: this.value,\n    };\n  },\n  methods: {\n    handleAttach,\n    handleChange(value) {\n      this.$emit('change', value);\n    },\n  },\n};\n</script>\n\n<style lang=\"less\" scoped>\n.t-color-picker__format {\n  display: flex;\n  margin: 12px 0 0 0;\n  /deep/ .t-select {\n    width: 72px;\n    font-size: 14px;\n  }\n  /deep/ .t-input {\n    font-size: 14px;\n  }\n  /deep/ .t-select__wrap {\n    width: auto;\n    margin-right: 8px;\n  }\n}\n.t-color-picker__body {\n  padding: 8px 4px;\n}\n</style>\n",
+      "origin": {
+        "id": "tdesign",
+        "repository": "Tencent/tdesign",
+        "revision": "11c76ad6c632e55843f921b683f16ea3c01eecda",
+        "sourcePath": "packages/theme-generator/src/common/components/ColorPicker/index.vue",
+        "local": "/tmp/vize-447-original-attribute-order-whole-inputs/tdesign--packages--theme-generator--src--common--components--ColorPicker--index.vue",
+        "bytes": 1189,
+        "sha256": "3900f5b9721178540039ee9cebd890c2452947fe499a0c6c76aaa164f9af2de8",
+        "gitBlob": "8c2b8c9a55427df266c1f75db9f5e82c6b73c3a8",
+        "immutableURL": "https://github.com/Tencent/tdesign/blob/11c76ad6c632e55843f921b683f16ea3c01eecda/packages/theme-generator/src/common/components/ColorPicker/index.vue"
+      },
+      "bytes": 1189,
+      "sha256": "3900f5b9721178540039ee9cebd890c2452947fe499a0c6c76aaa164f9af2de8",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \"v-bind\" should go before \"@change\".",
+          "line": 11,
+          "column": 5,
+          "messageId": "expectedOrder",
+          "endLine": 11,
+          "endColumn": 20,
+          "fix": {
+            "range": [
+              273,
+              315
+            ],
+            "text": "v-bind=\"$attrs\"\n    @change=\"handleChange\""
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 1,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "packages/theme-generator/src/common/components/ColorPicker/index.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 300,
+            "end": 315,
+            "help": null,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "original-vue-js-modal-src-components-Dialog.vue",
+      "filename": "src/components/Dialog.vue",
+      "source": "<template>\n  <component\n    :is=\"$modal.context.componentName\"\n    name=\"dialog\"\n    height=\"auto\"\n    :classes=\"['vue-dialog', params.class]\"\n    :width=\"width\"\n    :shift-y=\"0.3\"\n    :adaptive=\"true\"\n    :focus-trap=\"true\"\n    :clickToClose=\"clickToClose\"\n    :transition=\"transition\"\n    @before-open=\"beforeOpened\"\n    @before-close=\"beforeClosed\"\n    @opened=\"$emit('opened', $event)\"\n    @closed=\"$emit('closed', $event)\"\n  >\n    <div class=\"vue-dialog-content\">\n      <div class=\"vue-dialog-content-title\" v-if=\"params.title\" v-html=\"params.title || ''\" />\n\n      <component v-if=\"params.component\" v-bind=\"params.props\" :is=\"params.component\" />\n      <div v-else v-html=\"params.text || ''\" />\n    </div>\n    <div class=\"vue-dialog-buttons\" v-if=\"buttons\">\n      <button\n        v-for=\"(button, index) in buttons\"\n        :class=\"button.class || 'vue-dialog-button'\"\n        type=\"button\"\n        tabindex=\"0\"\n        :style=\"buttonStyle\"\n        :key=\"index\"\n        v-html=\"button.title\"\n        @click.stop=\"click(index, $event)\"\n      >{{ button.title }}</button>\n    </div>\n    <div v-else class=\"vue-dialog-buttons-none\" />\n  </component>\n</template>\n<script>\nexport default {\n  name: 'VueJsDialog',\n  props: {\n    width: {\n      type: [Number, String],\n      default: 400\n    },\n    clickToClose: {\n      type: Boolean,\n      default: true\n    },\n    transition: {\n      type: String\n    }\n  },\n  data() {\n    return {\n      params: {}\n    }\n  },\n  computed: {\n    buttons() {\n      return this.params.buttons || []\n    },\n    /**\n     * Returns FLEX style with correct width for arbitrary number of\n     * buttons.\n     */\n    buttonStyle() {\n      return {\n        flex: `1 1 ${100 / this.buttons.length}%`\n      }\n    }\n  },\n  methods: {\n    beforeOpened(event) {\n      // window.addEventListener('keyup', this.onKeyUp)\n\n      this.params = event.params || {}\n      this.$emit('before-opened', event)\n    },\n\n    beforeClosed(event) {\n      // window.removeEventListener('keyup', this.onKeyUp)\n\n      this.params = {}\n      this.$emit('before-closed', event)\n    },\n\n    click(buttonIndex, event, source = 'click') {\n      const button = this.buttons[buttonIndex]\n      const handler = button?.handler\n\n      if (typeof handler === 'function') {\n        handler(buttonIndex, event, { source })\n      }\n    }\n  }\n}\n</script>\n<style>\n.vue-dialog {\n  font-size: 14px;\n}\n\n.vue-dialog div {\n  box-sizing: border-box;\n}\n\n.vue-dialog-content {\n  flex: 1 0 auto;\n  width: 100%;\n  padding: 14px;\n}\n\n.vue-dialog-content-title {\n  font-weight: 600;\n  padding-bottom: 14px;\n}\n\n.vue-dialog-buttons {\n  display: flex;\n  flex: 0 1 auto;\n  width: 100%;\n  border-top: 1px solid #eee;\n}\n\n.vue-dialog-buttons-none {\n  width: 100%;\n  padding-bottom: 14px;\n}\n\n.vue-dialog-button {\n  font-size: inherit;\n  background: transparent;\n  padding: 0;\n  margin: 0;\n  border: 0;\n  cursor: pointer;\n  box-sizing: border-box;\n  line-height: 40px;\n  height: 40px;\n  color: inherit;\n  font: inherit;\n  outline: none;\n}\n\n.vue-dialog-button:hover {\n  background: #f9f9f9;\n}\n\n.vue-dialog-button:active {\n  background: #f3f3f3;\n}\n\n.vue-dialog-button:not(:first-of-type) {\n  border-left: 1px solid #eee;\n}\n</style>\n",
+      "origin": {
+        "id": "vue-js-modal",
+        "repository": "euvl/vue-js-modal",
+        "revision": "2dcc67984a65ec6ad351f8a2b13bb84582a0800d",
+        "sourcePath": "src/components/Dialog.vue",
+        "local": "/tmp/vize-447-original-attribute-order-whole-inputs/vue-js-modal--src--components--Dialog.vue",
+        "bytes": 3194,
+        "sha256": "194fee224c6db4b01767b9783441a0b7937a2ec6874ae6e09818a23a1925b7f4",
+        "gitBlob": "7c3e784ebf45f9cdafa57737fc158f38869529dd",
+        "immutableURL": "https://github.com/euvl/vue-js-modal/blob/2dcc67984a65ec6ad351f8a2b13bb84582a0800d/src/components/Dialog.vue"
+      },
+      "bytes": 3194,
+      "sha256": "194fee224c6db4b01767b9783441a0b7937a2ec6874ae6e09818a23a1925b7f4",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \"v-if\" should go before \"class\".",
+          "line": 19,
+          "column": 45,
+          "messageId": "expectedOrder",
+          "endLine": 19,
+          "endColumn": 64,
+          "fix": {
+            "range": [
+              480,
+              532
+            ],
+            "text": "v-if=\"params.title\" class=\"vue-dialog-content-title\""
+          }
+        },
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \":is\" should go before \"v-if\".",
+          "line": 21,
+          "column": 64,
+          "messageId": "expectedOrder",
+          "endLine": 21,
+          "endColumn": 86,
+          "fix": {
+            "range": [
+              582,
+              650
+            ],
+            "text": "v-bind=\"params.props\" :is=\"params.component\" v-if=\"params.component\""
+          }
+        },
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \"v-if\" should go before \"class\".",
+          "line": 24,
+          "column": 37,
+          "messageId": "expectedOrder",
+          "endLine": 24,
+          "endColumn": 51,
+          "fix": {
+            "range": [
+              722,
+              763
+            ],
+            "text": "v-if=\"buttons\" class=\"vue-dialog-buttons\""
+          }
+        },
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \":key\" should go before \":style\".",
+          "line": 31,
+          "column": 9,
+          "messageId": "expectedOrder",
+          "endLine": 31,
+          "endColumn": 21,
+          "fix": {
+            "range": [
+              926,
+              967
+            ],
+            "text": ":key=\"index\"\n        :style=\"buttonStyle\""
+          }
+        },
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \"@click.stop\" should go before \"v-html\".",
+          "line": 33,
+          "column": 9,
+          "messageId": "expectedOrder",
+          "endLine": 33,
+          "endColumn": 43,
+          "fix": {
+            "range": [
+              976,
+              1040
+            ],
+            "text": "@click.stop=\"click(index, $event)\"\n        v-html=\"button.title\""
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 5,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "src/components/Dialog.vue",
+        "error_count": 0,
+        "warning_count": 5,
+        "diagnostics": [
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 513,
+            "end": 532,
+            "help": null,
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 628,
+            "end": 650,
+            "help": null,
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 749,
+            "end": 763,
+            "help": null,
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 955,
+            "end": 967,
+            "help": null,
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 1006,
+            "end": 1040,
+            "help": null,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "original-gridea-src-components-Main.vue",
+      "filename": "src/components/Main.vue",
+      "source": "<template>\n  <a-layout>\n    <a-layout-sider\n      class=\"sider\"\n      :style=\"{ overflow: 'auto', height: '100vh', position: 'fixed', left: 0 }\"\n    >\n      <div class=\"top-container\">\n        <div class=\"logo\">\n          <img class=\"img\" src=\"@/assets/logo.png\">\n        </div>\n        <a-menu mode=\"inline\" :defaultSelectedKeys=\"['/articles']\" @click=\"clickMenu\">\n          <a-menu-item :key=\"menu.router\" v-for=\"menu in sideMenus\">\n            <div class=\"menu-item\">\n              <div class=\"flex items-center\">\n                <i\n                  class=\"mr-2 text-base\"\n                  :class=\"{ [menu.icon]: true }\"\n                  :style=\"{ color: currentRouter === menu.router ? '#f9d757' : 'inherit' }\"\n                ></i>\n                <span class=\"nav-text\">{{ menu.text }}</span>\n              </div>\n              <span class=\"number\">{{ menu.count }}</span>\n            </div>\n          </a-menu-item>\n        </a-menu>\n      </div>\n      <div class=\"bottom-container\">\n        <a-button class=\"preview-btn\" block @click=\"preview\">\n          <i class=\"zwicon-eye\"></i>\n          {{ $t('preview') }}\n        </a-button>\n        <a-button class=\"sync-btn\" block type=\"primary\" :loading=\"publishLoading\" @click=\"publish\">\n          <template v-if=\"!publishLoading\">\n            <i class=\"zwicon-deploy\"></i>\n            {{ $t('syncSite') }}\n          </template>\n        </a-button>\n        <div class=\"version-container\" :class=\"{ 'version-dot': hasUpdate }\">\n          <i class=\"ri-equalizer-line text-base\" @click=\"systemModalVisible = true\"></i>\n          <i class=\"ri-earth-line web-btn\" @click=\"goWeb\" v-if=\"site.setting.domain\"></i>\n          <a-tooltip :title=\"`🌟 ${$t('starSupport')}`\">\n            <i class=\"ri-github-line text-base\" @click=\"handleGithubClick\"></i>\n          </a-tooltip>\n        </div>\n      </div>\n    </a-layout-sider>\n    <a-layout class=\"right-container\">\n      <div class=\"content\">\n        <keep-alive exclude=\"Loading,Theme\">\n          <router-view></router-view>\n        </keep-alive>\n      </div>\n    </a-layout>\n\n    <a-modal :visible=\"syncErrorModalVisible\" :footer=\"null\" @cancel=\"syncErrorModalVisible = false\" :maskClosable=\"false\">\n      🙁 {{ $t('syncError1') }} <a @click=\"openInBrowser('https://gridea.dev/')\">FAQ</a> {{ $t('or') }} <a @click=\"openInBrowser('https://github.com/getgridea/gridea/issues')\">Issues</a> {{ $t('syncError2') }}\n    </a-modal>\n\n    <a-modal title=\"🔥 New Version\" :visible=\"updateModalVisible\" :footer=\"null\" @cancel=\"updateModalVisible = false\" :maskClosable=\"false\">\n      <div class=\"download-container\">\n        👉 <a href=\"https://gridea.dev\">Gridea Homepage</a> | <a href=\"https://github.com/getgridea/gridea/releases\">Github Releases</a> 👈\n      </div>\n      <h2>{{ newVersion }}</h2>\n      <div class=\"version-info\" v-html=\"updateContent\"></div>\n    </a-modal>\n\n    <!-- <a-modal :width=\"900\" :visible=\"systemModalVisible\" :footer=\"null\" @cancel=\"systemModalVisible = false\">\n      <app-system />\n    </a-modal> -->\n\n    <a-modal :width=\"900\" :visible=\"logModalVisible\" :footer=\"null\" @cancel=\"logModalVisible = false\">\n      <h2>{{ log.type }}</h2>\n      <pre>\n        {{ log.message }}\n      </pre>\n    </a-modal>\n\n    <a-drawer\n      title=\"\"\n      placement=\"bottom\"\n      height=\"100%\"\n      @close=\"systemModalVisible = false\"\n      :visible=\"systemModalVisible\"\n    >\n      <app-system />\n    </a-drawer>\n\n  </a-layout>\n</template>\n\n<script lang=\"ts\">\nimport { VNodeChildren } from 'vue'\nimport { ipcRenderer, IpcRendererEvent, shell } from 'electron'\nimport { Vue, Component } from 'vue-property-decorator'\nimport axios from 'axios'\nimport { State, Action } from 'vuex-class'\nimport AppSystem from './AppSystem/Index.vue'\nimport ISnackbar from '../interfaces/snackbar'\nimport { Site } from '../store/modules/site'\nimport * as pkg from '../../package.json'\nimport markdown from '../server/plugins/markdown'\nimport ga from '../helpers/analytics'\n\n@Component({\n  components: {\n    AppSystem,\n  },\n})\nexport default class App extends Vue {\n  @State('site') site!: Site\n\n  @Action('site/updateSite') updateSite!: (siteData: Site) => void\n\n  ipcRenderer = ipcRenderer\n\n  version = (pkg as any).version\n\n  drawer = true\n\n  publishLoading = false\n\n  hasUpdate = false\n\n  newVersion = ''\n\n  syncErrorModalVisible = false\n\n  updateModalVisible = false\n\n  systemModalVisible = false\n\n  updateContent = ''\n\n  logModalVisible = false\n\n  log: any = {}\n\n  get currentRouter() {\n    return this.$route.path\n  }\n\n  get sideMenus() {\n    return [\n      {\n        icon: 'ri-article-line',\n        text: this.$t('article'),\n        count: this.site.posts.length,\n        router: '/articles',\n      },\n      {\n        icon: 'ri-menu-2-line',\n        text: this.$t('menu'),\n        count: this.site.menus.length,\n        router: '/menu',\n      },\n      {\n        icon: 'ri-price-tag-3-line',\n        text: this.$t('tag'),\n        count: this.site.tags.length,\n        router: '/tags',\n      },\n      {\n        icon: 'ri-t-shirt-line',\n        text: this.$t('theme'),\n        router: '/theme',\n      },\n      {\n        icon: 'ri-server-line',\n        text: this.$t('remote'),\n        router: '/setting',\n      },\n    ]\n  }\n\n  created() {\n    this.$bus.$on('site-reload', () => {\n      this.reloadSite()\n    })\n    this.checkUpdate()\n\n    ipcRenderer.on(('log-error'), (event: any, result: any) => {\n      this.log = result\n      this.logModalVisible = true\n    })\n  }\n\n  mounted() {\n    // @see https://docs.headwayapp.co/widget for more configuration options.\n    const config = {\n      selector: '.version-container',\n      account: 'xbrnVx',\n      translations: {\n        title: 'Gridea News',\n        readMore: 'Read more',\n        labels: {\n          'new': 'News',\n          'improvement': 'Updates',\n          'fix': 'Fixes',\n        },\n        footer: 'Read more 👉',\n      },\n    }\n    // @ts-ignore\n    if (window.Headway) {\n      // @ts-ignore\n      Headway.init(config)\n    }\n  }\n\n  clickMenu(e: any) {\n    this.$router.push(e.key)\n  }\n\n  public reloadSite() {\n    const siteFolder = localStorage.getItem('sourceFolder') || ''\n\n    ipcRenderer.send('app-site-reload', { siteFolder })\n    ipcRenderer.once('app-site-loaded', (event: IpcRendererEvent, result: Site) => {\n      console.log(result)\n      this.updateSite(result)\n    })\n  }\n\n  public preview() {\n    ipcRenderer.send('html-render')\n\n    ga.event('Preview', 'Preview - start', { evLabel: this.site.setting.domain })\n\n    ipcRenderer.once('html-rendered', (event: IpcRendererEvent, result: any) => {\n      // this.$message.success(`🎉  ${this.$t('renderSuccess')}`)\n\n      ga.event('Preview', 'Preview - success', { evLabel: this.site.setting.domain })\n\n      ipcRenderer.send('app-preview-server-port-get')\n      ipcRenderer.once(\n        'app-preview-server-port-got',\n        (portGotEvent: IpcRendererEvent, port: number | string | null) => {\n          if (!port && typeof port !== 'number') {\n            this.$message.config({\n              top: '36px',\n            })\n            this.$message.open({\n              content: (h: Vue.CreateElement) => {\n                const errStyle = {\n                  display: 'inline-block',\n                  maxWidth: '800px',\n                }\n                return h('span', {\n                  style: errStyle,\n                }, `❌ ${this.$t('renderError')}` as any as VNodeChildren)\n              },\n              icon: '',\n            })\n          } else {\n            this.$message.success(`🎉  ${this.$t('renderSuccess')}`)\n            this.openInBrowser(`http://localhost:${port}`)\n          }\n        },\n      )\n    })\n  }\n\n  public publish() {\n    const { setting } = this.site\n    if (setting.platform === 'netlify' && !setting.netlifyAccessToken && !setting.netlifySiteId) {\n      this.$message.error(`🙁  ${this.$t('syncWarning')}`)\n      return false\n    }\n\n    if (!setting.branch && !setting.domain && !setting.token && !setting.repository) {\n      this.$message.error(`🙁  ${this.$t('syncWarning')}`)\n      return false\n    }\n\n    ipcRenderer.send('site-publish')\n    this.publishLoading = true\n\n    ga.event('Publish', 'Publish - start', { evLabel: this.site.setting.domain })\n\n    ipcRenderer.once('site-published', (event: IpcRendererEvent, result: any) => {\n      console.log(result)\n      if (result.success) {\n        this.$message.success(`🎉  ${this.$t('syncSuccess')}`)\n\n        ga.event('Publish', 'Publish - success', { evLabel: this.site.setting.domain })\n      } else {\n        this.syncErrorModalVisible = true\n\n        ga.event('Publish', 'Publish - failed', { evLabel: this.site.setting.domain })\n      }\n      this.publishLoading = false\n    })\n  }\n\n  openInBrowser(url: string) {\n    shell.openExternal(url)\n  }\n\n  goWeb() {\n    if (this.site.setting.domain) {\n      ga.event('Client', 'Client - open-web', { evLabel: this.site.setting.domain })\n\n      shell.openExternal(this.site.setting.domain)\n    }\n  }\n\n  handleGithubClick() {\n    ga.event('Client', 'Client - open-github', {})\n\n    this.openInBrowser('https://github.com/getgridea/gridea')\n  }\n\n  public async checkUpdate() {\n    const res = await axios.get('https://api.github.com/repos/getgridea/gridea/releases/latest')\n    if (res.status === 200) {\n      this.newVersion = res.data.name\n      const latestVersion = res.data.name.substring(1).split('.').map((item: string) => parseInt(item, 10))\n      const currentVersion = this.version.split('.').map((item: string) => parseInt(item, 10))\n      this.updateContent = markdown.render(res.data.body)\n\n      for (let i = 0; i < currentVersion.length; i += 1) {\n        if (currentVersion[i] > latestVersion[i]) {\n          this.hasUpdate = false\n          break\n        }\n        if (currentVersion[i] < latestVersion[i]) {\n          this.hasUpdate = true\n          break\n        }\n      }\n\n      if (this.hasUpdate) {\n        // this.$message.success(`🔥  ${this.$t('newVersionTips')}`, 8)\n        this.updateModalVisible = true\n      }\n    }\n  }\n}\n</script>\n\n<style lang=\"less\" scoped>\n@import '~@/assets/styles/var.less';\n\n.logo {\n  min-height: 64px;\n  -webkit-app-region: drag;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  padding: 32px 0 16px;\n  h3 {\n    color: @primary-color;\n    font-size: 18px;\n    transform: translateY(8px);\n    // background-image: -webkit-gradient(linear, 0 0, 0 bottom, from(rgba(250, 250, 250, 1)), to(rgba(255, 255, 255, 0.4)));\n    // -webkit-background-clip: text;\n    // -webkit-text-fill-color: transparent;\n  }\n  .img {\n    width: 64px;\n    height: 64px;\n    border-radius: 16px;\n  }\n}\n.sider {\n  background: @primary-bg;\n  // background: linear-gradient(to bottom, #434343, #000000);\n  &::-webkit-scrollbar {\n    width: 0;\n  }\n}\n\n/deep/ .ant-menu {\n  background: @primary-bg;\n  @apply text-gray-500;\n}\n\n/deep/ .ant-menu-item {\n  padding-left: 16px !important;\n  transition: all 0.3s;\n  cursor: default;\n\n  &:hover {\n    background-color: #fff;\n  }\n}\n\n/deep/ .ant-menu-vertical .ant-menu-item:after, .ant-menu-vertical-left .ant-menu-item:after, .ant-menu-vertical-right .ant-menu-item:after, .ant-menu-inline .ant-menu-item:after {\n  border-right: none;\n}\n\n/deep/ .ant-menu:not(.ant-menu-horizontal) .ant-menu-item-selected {\n  background-color: #fff;\n  // @apply shadow;\n  color: #000;\n}\n\n/deep/ .ant-menu-inline, .ant-menu-vertical, .ant-menu-vertical-left {\n  border-right: none;\n}\n\n/deep/ .ant-layout-sider-children {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-between;\n}\n\n.bottom-container {\n  padding: 24px 32px 8px;\n  button {\n    margin: 8px 0;\n  }\n}\n\n.right-container {\n  background: #fff;\n  margin-left: 8px 8px 8px 208px;\n  padding: 8px 16px 8px 8px;\n  position: absolute;\n  top: 8px;\n  bottom: 8px;\n  left: 208px;\n  right: 0px;\n}\n.version-container {\n  display: flex;\n  justify-content: space-between;\n  margin-top: 8px;\n  align-items: center;\n  position:relative;\n  font-size: 12px;\n  &.version-dot {\n    &:before {\n      content: '';\n      display: block;\n      width: 4px;\n      height: 4px;\n      background: red;\n      border-radius: 2px;\n      position: absolute;\n      top: 51%;\n      left: -12px;\n      transform: translateY(-50%);\n    }\n  }\n}\n\n.preview-btn {\n  border-radius: 20px;\n  background: #fff;\n  transition: all 0.3s;\n  &:hover {\n    background: #fafafa;\n  }\n}\n\n.sync-btn {\n  border-radius: 20px;\n  background: linear-gradient(124deg, rgba(65,70,75,1) 0%, rgba(0,0,0,1) 100%);\n  color: #bababa;\n  border: none;\n  transition: all 0.3s;\n  &:hover {\n    background: linear-gradient(124deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 100%);\n    border: none;\n  }\n}\n\n.web-btn {\n  font-size: 16px;\n  cursor: pointer;\n  &:hover {\n    color: @link-color;\n  }\n}\n\n.nav-text {\n  font-weight: normal;\n}\n\n.menu-item {\n  display: flex;\n  justify-content: space-between;\n  .number {\n    font-weight: lighter;\n  }\n}\n\n.menu-icon {\n  font-size: 17px;\n  margin-right: 8px;\n  font-weight: 400;\n}\n\n.version-info {\n  /deep/ code {\n    background-color: rgba(27,31,35,.05);\n    border-radius: 3px;\n    font-size: 85%;\n    margin: 0;\n    padding: .2em .4em;\n  }\n  /deep/ blockquote {\n    border-left: .25em solid #dfe2e5;\n    color: #6a737d;\n    padding: 0 1em;\n  }\n  /deep/ ul, ol {\n    padding: 0;\n    list-style-type: none;\n    font-size: 14px;\n    margin: 30px 20px;\n\n    ul,\n    ol {\n      margin: 20px 20px 10px;\n    }\n  }\n\n  /deep/ li {\n      line-height: 1.2;\n    }\n\n  /deep/ ul > li {\n      display: table-row;\n\n      &:before {\n        content:'\\25CF';\n        color: #fad849;\n        padding-right: 10px;\n        display: table-cell;\n      }\n\n      + li:before {\n        padding-top: 10px;\n      }\n    }\n\n  /deep/ ol {\n      counter-reset: ordered-counter;\n      > li {\n        counter-increment: ordered-counter;\n        display: table-row;\n\n        &:before {\n          content: counter(ordered-counter);\n          color: #fad849;\n          padding-right: 10px;\n          display: table-cell;\n          text-align: right;\n        }\n\n        + li:before {\n          padding-top: 10px;\n        }\n      }\n    }\n}\n\n.download-container {\n  text-align: center;\n  padding: 16px 0;\n  background: #fafafa;\n}\n</style>\n",
+      "origin": {
+        "id": "gridea",
+        "repository": "getgridea/gridea",
+        "revision": "48e4ab573bfa709816ffd688233b2f570c085e2d",
+        "sourcePath": "src/components/Main.vue",
+        "local": "/tmp/vize-447-original-attribute-order-whole-inputs/gridea--src--components--Main.vue",
+        "bytes": 14208,
+        "sha256": "3cc6a6e6723107727060373e00071c3b34347dc5c45b95e6bc44ced71b746234",
+        "gitBlob": "f54b5855782c15856fde67fc75a34181f417ced6",
+        "immutableURL": "https://github.com/getgridea/gridea/blob/48e4ab573bfa709816ffd688233b2f570c085e2d/src/components/Main.vue"
+      },
+      "bytes": 14208,
+      "sha256": "3cc6a6e6723107727060373e00071c3b34347dc5c45b95e6bc44ced71b746234",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \"v-for\" should go before \":key\".",
+          "line": 12,
+          "column": 43,
+          "messageId": "expectedOrder",
+          "endLine": 12,
+          "endColumn": 68,
+          "fix": {
+            "range": [
+              389,
+              433
+            ],
+            "text": "v-for=\"menu in sideMenus\" :key=\"menu.router\""
+          }
+        },
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \"v-if\" should go before \"@click\".",
+          "line": 40,
+          "column": 59,
+          "messageId": "expectedOrder",
+          "endLine": 40,
+          "endColumn": 85,
+          "fix": {
+            "range": [
+              1614,
+              1655
+            ],
+            "text": "v-if=\"site.setting.domain\" @click=\"goWeb\""
+          }
+        },
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \":maskClosable\" should go before \"@cancel\".",
+          "line": 55,
+          "column": 102,
+          "messageId": "expectedOrder",
+          "endLine": 55,
+          "endColumn": 123,
+          "fix": {
+            "range": [
+              2134,
+              2195
+            ],
+            "text": ":maskClosable=\"false\" @cancel=\"syncErrorModalVisible = false\""
+          }
+        },
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \":maskClosable\" should go before \"@cancel\".",
+          "line": 59,
+          "column": 119,
+          "messageId": "expectedOrder",
+          "endLine": 59,
+          "endColumn": 140,
+          "fix": {
+            "range": [
+              2504,
+              2562
+            ],
+            "text": ":maskClosable=\"false\" @cancel=\"updateModalVisible = false\""
+          }
+        },
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \":visible\" should go before \"@close\".",
+          "line": 83,
+          "column": 7,
+          "messageId": "expectedOrder",
+          "endLine": 83,
+          "endColumn": 36,
+          "fix": {
+            "range": [
+              3301,
+              3372
+            ],
+            "text": ":visible=\"systemModalVisible\"\n      @close=\"systemModalVisible = false\""
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 5,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "src/components/Main.vue",
+        "error_count": 0,
+        "warning_count": 5,
+        "diagnostics": [
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 408,
+            "end": 433,
+            "help": null,
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 1629,
+            "end": 1655,
+            "help": null,
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 2176,
+            "end": 2197,
+            "help": null,
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 2547,
+            "end": 2568,
+            "help": null,
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 3353,
+            "end": 3382,
+            "help": null,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "original-naive-ui-src-calendar-demos-enUS-basic.demo.vue",
+      "filename": "src/calendar/demos/enUS/basic.demo.vue",
+      "source": "<markdown>\n# Basic\n\nA basic calendar.\n</markdown>\n\n<script lang=\"ts\" setup>\nimport { addDays, isYesterday } from 'date-fns'\nimport { useMessage } from 'naive-ui'\nimport { ref } from 'vue'\n\nconst message = useMessage()\nconst value = ref(addDays(Date.now(), 1).valueOf())\n\nfunction handleUpdateValue(\n  _: number,\n  { year, month, date }: { year: number, month: number, date: number }\n) {\n  message.success(`${year}-${month}-${date}`)\n}\n\nfunction isDateDisabled(timestamp: number) {\n  if (isYesterday(timestamp)) {\n    return true\n  }\n  return false\n}\n</script>\n\n<template>\n  <n-calendar\n    v-model:value=\"value\"\n    #=\"{ year, month, date }\"\n    :is-date-disabled=\"isDateDisabled\"\n    @update:value=\"handleUpdateValue\"\n  >\n    {{ year }}-{{ month }}-{{ date }}\n  </n-calendar>\n</template>\n",
+      "origin": {
+        "id": "naive-ui",
+        "repository": "tusen-ai/naive-ui",
+        "revision": "b26496a26536918204722cb9b9e5dd9bfe31c893",
+        "sourcePath": "src/calendar/demos/enUS/basic.demo.vue",
+        "local": "/tmp/vize-447-original-attribute-order-whole-inputs/naive-ui--src--calendar--demos--enUS--basic.demo.vue",
+        "bytes": 789,
+        "sha256": "29ffbc3c103313922a86073521b44c1fb7daabd466a57d17aac2d56bfaa93f25",
+        "gitBlob": "760dcd003974aa05e3e18d374448a5ec59d68a32",
+        "immutableURL": "https://github.com/tusen-ai/naive-ui/blob/b26496a26536918204722cb9b9e5dd9bfe31c893/src/calendar/demos/enUS/basic.demo.vue"
+      },
+      "bytes": 789,
+      "sha256": "29ffbc3c103313922a86073521b44c1fb7daabd466a57d17aac2d56bfaa93f25",
+      "referenceMessages": [],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 0,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "src/calendar/demos/enUS/basic.demo.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "original-naive-ui-src-dynamic-input-demos-enUS-form.demo.vue",
+      "filename": "src/dynamic-input/demos/enUS/form.demo.vue",
+      "source": "<markdown>\n# Using it in a form\n\n`n-dynamic-input` itself cannot be verified. If you need to verify the input of `n-dynamic-input`, you can pass `n-form-item` in the custom content to complete the verification. Here is a complete example.\n</markdown>\n\n<script lang=\"ts\" setup>\nimport { ref } from 'vue'\n\nconst dynamicInputRule = {\n  trigger: 'input',\n  validator(rule: unknown, value: string) {\n    if (value.length >= 5)\n      return new Error('Input up to 4 characters')\n    return true\n  }\n}\n\nconst model = ref({\n  dynamicInputValue: [{ value: '', name: '' }]\n})\n\nfunction onCreate() {\n  return {\n    name: '',\n    value: ''\n  }\n}\n</script>\n\n<template>\n  <n-form :model=\"model\">\n    <n-dynamic-input\n      v-model:value=\"model.dynamicInputValue\"\n      item-style=\"margin-bottom: 0;\"\n      :on-create=\"onCreate\"\n      #=\"{ index }\"\n    >\n      <div style=\"display: flex\">\n        <!--\n          Usually, the path change will cause the form-item verification content\n          or rules to be changed, so naive-ui will clear the existing\n          verification effect. But this example is a special case, as we know\n          the changes in path will not change form-item verification result and\n          rules, so set ignore-path-change on form-item\n        -->\n        <n-form-item\n          ignore-path-change\n          :show-label=\"false\"\n          :path=\"`dynamicInputValue[${index}].name`\"\n          :rule=\"dynamicInputRule\"\n        >\n          <n-input\n            v-model:value=\"model.dynamicInputValue[index].name\"\n            placeholder=\"Name\"\n            @keydown.enter.prevent\n          />\n          <!--\n           Since pressing enter on the input element will cause the button in the form to be clicked, the default behavior is prevented\n          -->\n        </n-form-item>\n        <div style=\"height: 34px; line-height: 34px; margin: 0 8px\">\n          =\n        </div>\n        <n-form-item\n          ignore-path-change\n          :show-label=\"false\"\n          :path=\"`dynamicInputValue[${index}].value`\"\n          :rule=\"dynamicInputRule\"\n        >\n          <n-input\n            v-model:value=\"model.dynamicInputValue[index].value\"\n            placeholder=\"Value\"\n            @keydown.enter.prevent\n          />\n        </n-form-item>\n      </div>\n    </n-dynamic-input>\n  </n-form>\n  <pre>{{ JSON.stringify(model.dynamicInputValue, null, 2) }}</pre>\n</template>\n",
+      "origin": {
+        "id": "naive-ui",
+        "repository": "tusen-ai/naive-ui",
+        "revision": "b26496a26536918204722cb9b9e5dd9bfe31c893",
+        "sourcePath": "src/dynamic-input/demos/enUS/form.demo.vue",
+        "local": "/tmp/vize-447-original-attribute-order-whole-inputs/naive-ui--src--dynamic-input--demos--enUS--form.demo.vue",
+        "bytes": 2382,
+        "sha256": "88d499cb2dae1674053d839493a5ea0f7e12a2b7e3de932cf40af57b9e633eff",
+        "gitBlob": "0a31398823fc244417ad320d39d8b518afe56bc1",
+        "immutableURL": "https://github.com/tusen-ai/naive-ui/blob/b26496a26536918204722cb9b9e5dd9bfe31c893/src/dynamic-input/demos/enUS/form.demo.vue"
+      },
+      "bytes": 2382,
+      "sha256": "88d499cb2dae1674053d839493a5ea0f7e12a2b7e3de932cf40af57b9e633eff",
+      "referenceMessages": [],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 0,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "src/dynamic-input/demos/enUS/form.demo.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "original-naive-ui-src-grid-demos-enUS-collapse.demo.vue",
+      "filename": "src/grid/demos/enUS/collapse.demo.vue",
+      "source": "<markdown>\n# Collapse\n\nCollapsing works in responsive layout.\n</markdown>\n\n<script lang=\"ts\" setup>\nimport { ref } from 'vue'\n\nconst gridCollapsed = ref(false)\nconst gridCollapsedRows = ref(1)\nconst gridItemCount = ref(4)\nconst showSuffix = ref(true)\n</script>\n\n<template>\n  <n-grid :cols=\"2\">\n    <n-form-item-gi label=\"Item Count\">\n      <n-input-number v-model:value=\"gridItemCount\" :min=\"1\" />\n    </n-form-item-gi>\n    <n-form-item-gi label=\"Max Rows After Collapsed\">\n      <n-input-number v-model:value=\"gridCollapsedRows\" :min=\"1\" />\n    </n-form-item-gi>\n    <n-form-item-gi label=\"Show Suffix Node\">\n      <n-switch v-model:value=\"showSuffix\" />\n    </n-form-item-gi>\n    <n-form-item-gi label=\"Grid Collapsed\">\n      <n-switch v-model:value=\"gridCollapsed\" />\n    </n-form-item-gi>\n  </n-grid>\n  <n-grid\n    :cols=\"5\"\n    :collapsed=\"gridCollapsed\"\n    :collapsed-rows=\"gridCollapsedRows\"\n  >\n    <n-gi\n      v-for=\"i in gridItemCount\"\n      :key=\"i\"\n      :class=\"i % 2 ? 'green' : 'light-green'\"\n    >\n      {{ i }}\n    </n-gi>\n    <n-gi v-if=\"showSuffix\" suffix class=\"suffix\" #=\"{ overflow }\">\n      {{ overflow ? 'Node Overflows Exists' : 'No Node Overflows' }}\n    </n-gi>\n  </n-grid>\n</template>\n\n<style>\n.suffix {\n  height: 108px;\n  border: 1px solid rgba(0, 128, 0, 0.36);\n  box-sizing: border-box;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.light-green {\n  height: 108px;\n  background-color: rgba(0, 128, 0, 0.12);\n  box-sizing: border-box;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.green {\n  height: 108px;\n  background-color: rgba(0, 128, 0, 0.24);\n  box-sizing: border-box;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n</style>\n",
+      "origin": {
+        "id": "naive-ui",
+        "repository": "tusen-ai/naive-ui",
+        "revision": "b26496a26536918204722cb9b9e5dd9bfe31c893",
+        "sourcePath": "src/grid/demos/enUS/collapse.demo.vue",
+        "local": "/tmp/vize-447-original-attribute-order-whole-inputs/naive-ui--src--grid--demos--enUS--collapse.demo.vue",
+        "bytes": 1731,
+        "sha256": "07b7d4dd5141b72d570d6649c52bd231040778d2f0052f5be7fe6579565d43fb",
+        "gitBlob": "d3f90eb5570ed0228e42feece2e12467317d73bb",
+        "immutableURL": "https://github.com/tusen-ai/naive-ui/blob/b26496a26536918204722cb9b9e5dd9bfe31c893/src/grid/demos/enUS/collapse.demo.vue"
+      },
+      "bytes": 1731,
+      "sha256": "07b7d4dd5141b72d570d6649c52bd231040778d2f0052f5be7fe6579565d43fb",
+      "referenceMessages": [],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 0,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "src/grid/demos/enUS/collapse.demo.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "original-naive-ui-src-typography-demos-enUS-router-link.demo.vue",
+      "filename": "src/typography/demos/enUS/router-link.demo.vue",
+      "source": "<markdown>\n# Use n-a with router link\n\nYou can use `<n-a />` for links and routes.\n\nIf you think the following method is a little verbose for routes, you can always make it a new component.\n</markdown>\n\n<template>\n  <router-link to=\"/\" #=\"{ navigate, href }\" custom>\n    <n-a :href=\"href\" @click=\"navigate\">\n      Back Home\n    </n-a>\n  </router-link>\n</template>\n",
+      "origin": {
+        "id": "naive-ui",
+        "repository": "tusen-ai/naive-ui",
+        "revision": "b26496a26536918204722cb9b9e5dd9bfe31c893",
+        "sourcePath": "src/typography/demos/enUS/router-link.demo.vue",
+        "local": "/tmp/vize-447-original-attribute-order-whole-inputs/naive-ui--src--typography--demos--enUS--router-link.demo.vue",
+        "bytes": 364,
+        "sha256": "5530ecd513f96b4cc42493114569faf45f28495b06d8609a2e1b89797a495dfc",
+        "gitBlob": "f03822d9a14f84cb1df0e441f6e5fcde55147cd6",
+        "immutableURL": "https://github.com/tusen-ai/naive-ui/blob/b26496a26536918204722cb9b9e5dd9bfe31c893/src/typography/demos/enUS/router-link.demo.vue"
+      },
+      "bytes": 364,
+      "sha256": "5530ecd513f96b4cc42493114569faf45f28495b06d8609a2e1b89797a495dfc",
+      "referenceMessages": [],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 0,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "src/typography/demos/enUS/router-link.demo.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "original-splayer-src-views-Radio-hot.vue",
+      "filename": "src/views/Radio/hot.vue",
+      "source": "<template>\n  <div class=\"radio-hot\">\n    <!-- 分类 -->\n    <Transition name=\"fade\" mode=\"out-in\">\n      <div v-if=\"radioTypeData?.length > 0\" class=\"radio-type\">\n        <n-grid :collapsed=\"gridCollapsed\" x-gap=\"20\" y-gap=\"20\" cols=\"3 400:4 600:5 800:6 1000:7\">\n          <n-gi v-for=\"(item, index) in radioTypeData\" :key=\"index\">\n            <n-card\n              class=\"cat\"\n              hoverable\n              @click=\"\n                router.push({\n                  path: '/radio-type',\n                  query: {\n                    id: item.id,\n                    name: item.name,\n                  },\n                })\n              \"\n            >\n              <n-text>{{ item.name }}</n-text>\n            </n-card>\n          </n-gi>\n          <n-gi class=\"suffix\" suffix #=\"{ overflow }\">\n            <n-card class=\"cat\" hoverable @click=\"gridCollapsed = !gridCollapsed\">\n              <SvgIcon :name=\"overflow ? 'Down' : 'Up'\" />\n              <n-text>{{ overflow ? \"查看全部\" : \"收起标签\" }}</n-text>\n            </n-card>\n          </n-gi>\n        </n-grid>\n      </div>\n      <div v-else class=\"radio-type\">\n        <n-grid x-gap=\"20\" y-gap=\"20\" cols=\"3 400:4 600:5 800:6 1000:7\" collapsed>\n          <n-gi v-for=\"item in 20\" :key=\"item\">\n            <n-card class=\"cat\" hoverable>\n              <n-skeleton text round />\n            </n-card>\n          </n-gi>\n        </n-grid>\n      </div>\n    </Transition>\n    <!-- 推荐 -->\n    <div class=\"rec\">\n      <!-- 热门推荐 -->\n      <n-h3 class=\"title\" prefix=\"bar\">\n        <n-text class=\"name\">热门推荐</n-text>\n      </n-h3>\n      <CoverList\n        :data=\"radioHotData\"\n        :loading=\"true\"\n        type=\"radio\"\n        :hiddenCover=\"settingStore.hiddenCovers.radio\"\n      />\n      <!-- 分类推荐 -->\n      <template v-for=\"(item, index) in radioCatRecData\" :key=\"index\">\n        <n-h3 class=\"title\" prefix=\"bar\">\n          <n-text class=\"name\">{{ item.name }}</n-text>\n          <SvgIcon :size=\"26\" name=\"Right\" />\n        </n-h3>\n        <CoverList\n          :data=\"item.radio || []\"\n          :loading=\"true\"\n          type=\"radio\"\n          :hiddenCover=\"settingStore.hiddenCovers.radio\"\n        />\n      </template>\n    </div>\n  </div>\n</template>\n\n<script setup lang=\"ts\">\nimport type { CoverType } from \"@/types/main\";\nimport { radioCatList, radioToplist, radioTypes } from \"@/api/radio\";\nimport { getCacheData } from \"@/utils/cache\";\nimport { formatCoverList } from \"@/utils/format\";\nimport { useSettingStore } from \"@/stores\";\n\ninterface RadioType {\n  id: number;\n  name: string;\n  radio?: CoverType[];\n}\n\nconst router = useRouter();\nconst settingStore = useSettingStore();\n\n// 栅格折叠\nconst gridCollapsed = ref<boolean>(true);\n\n// 播客数据\nconst radioTypeData = ref<RadioType[]>([]);\nconst radioHotData = ref<CoverType[]>([]);\nconst radioCatRecData = ref<RadioType[]>([]);\n\n// 获取播客分类\nconst getRadioType = async () => {\n  try {\n    const result = await getCacheData(radioCatList, {\n      key: \"radioTypeData\",\n      time: 0,\n      storage: \"localStorage\",\n    });\n    radioTypeData.value = result.categories.map(({ name, id }) => ({ name, id }));\n  } catch (error) {\n    console.error(\"Error getting radio cat list:\", error);\n    window.$message.error(\"分类获取失败，请重试\");\n  }\n};\n\n// 获取推荐电台\nconst getRecRadioData = async () => {\n  try {\n    const [recRes, catRecRes] = await Promise.all([radioToplist(\"hot\"), radioTypes()]);\n    radioHotData.value = formatCoverList(recRes.toplist);\n    radioCatRecData.value = catRecRes.data?.map((v: any) => ({\n      id: v.categoryId,\n      name: v.categoryName,\n      radio: formatCoverList(v.radios),\n    }));\n  } catch (error) {\n    console.error(\"Error getting rec radio:\", error);\n    window.$message.error(\"获取推荐电台出现错误\");\n  }\n};\n\nonMounted(() => {\n  getRadioType();\n  getRecRadioData();\n});\n</script>\n\n<style lang=\"scss\" scoped>\n.radio-hot {\n  .radio-type {\n    margin: 12px 0 30px;\n    transition: opacity 0.2s;\n    .cat {\n      height: 48px;\n      border-radius: 8px;\n      cursor: pointer;\n      :deep(.n-card__content) {\n        display: flex;\n        align-items: center;\n        justify-content: center;\n        padding: 12px;\n      }\n      .n-icon {\n        margin-right: 4px;\n      }\n    }\n  }\n  .rec {\n    .title {\n      margin: 0;\n      display: flex;\n      align-items: center;\n      width: max-content;\n      cursor: pointer;\n      .n-icon {\n        opacity: 0;\n        transform: translateX(4px);\n        transition:\n          opacity 0.3s,\n          transform 0.3s;\n      }\n      &:hover {\n        .n-icon {\n          opacity: 1;\n          transform: translateX(0);\n        }\n      }\n    }\n  }\n}\n</style>\n",
+      "origin": {
+        "id": "splayer",
+        "repository": "https://github.com/SPlayer-Dev/SPlayer",
+        "revision": "40d9ec606cc1e323c964ffea7bf0ab02f137e93b",
+        "sourcePath": "src/views/Radio/hot.vue",
+        "local": "/tmp/vize-447-original-attribute-order-whole-inputs/splayer--src--views--Radio--hot.vue",
+        "bytes": 4731,
+        "sha256": "7dc0748829ab98c054a38f6ecc2670e034150931b47936481020fe0c3cde8035",
+        "gitBlob": "f28c489ec070daebf0e08925bf5158212c2f4110",
+        "immutableURL": "https://github.com/SPlayer-Dev/SPlayer/blob/40d9ec606cc1e323c964ffea7bf0ab02f137e93b/src/views/Radio/hot.vue"
+      },
+      "bytes": 4731,
+      "sha256": "7dc0748829ab98c054a38f6ecc2670e034150931b47936481020fe0c3cde8035",
+      "referenceMessages": [],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 0,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "src/views/Radio/hot.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "spread-after-event",
+      "source": "<template><Comp @change=\"change\" v-bind=\"attrs\" /></template>\n",
+      "filename": "controls/spread-after-event.vue",
+      "bytes": 62,
+      "sha256": "dc6e0bc5f68dfaf47f0f982f5254a3ee34a044ea0f395a2bf1979552a6e26cc7",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \"v-bind\" should go before \"@change\".",
+          "line": 1,
+          "column": 34,
+          "messageId": "expectedOrder",
+          "endLine": 1,
+          "endColumn": 48,
+          "fix": {
+            "range": [
+              16,
+              47
+            ],
+            "text": "v-bind=\"attrs\" @change=\"change\""
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 1,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/spread-after-event.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 33,
+            "end": 47,
+            "help": null,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "preceding-order-survives-ignored-spread",
+      "source": "<template><Comp @click=\"click\" v-bind=\"attrs\" :title=\"title\" :size=\"size\" /></template>\n",
+      "filename": "controls/preceding-order-survives-ignored-spread.vue",
+      "bytes": 88,
+      "sha256": "1c8bcc4baa7ce1359afe24903fca6fa65489b67ff2eb17087b4e8aef851e78e2",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \":title\" should go before \"@click\".",
+          "line": 1,
+          "column": 47,
+          "messageId": "expectedOrder",
+          "endLine": 1,
+          "endColumn": 61,
+          "fix": {
+            "range": [
+              16,
+              60
+            ],
+            "text": "v-bind=\"attrs\" :title=\"title\" @click=\"click\""
+          }
+        },
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \":size\" should go before \"@click\".",
+          "line": 1,
+          "column": 62,
+          "messageId": "expectedOrder",
+          "endLine": 1,
+          "endColumn": 74,
+          "fix": {
+            "range": [
+              16,
+              73
+            ],
+            "text": "v-bind=\"attrs\" :size=\"size\" @click=\"click\" :title=\"title\""
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 2,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/preceding-order-survives-ignored-spread.vue",
+        "error_count": 0,
+        "warning_count": 2,
+        "diagnostics": [
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 46,
+            "end": 60,
+            "help": null,
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 61,
+            "end": 73,
+            "help": null,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "conditional-before-ignored-spread-and-definition",
+      "source": "<template><component v-if=\"shown\" v-bind=\"attrs\" :is=\"kind\" /></template>\n",
+      "filename": "controls/conditional-before-ignored-spread-and-definition.vue",
+      "bytes": 74,
+      "sha256": "697a5f75d180c8349291f8c550ba963d6b2dd5424b487fdfe1949a7e70414842",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \":is\" should go before \"v-if\".",
+          "line": 1,
+          "column": 50,
+          "messageId": "expectedOrder",
+          "endLine": 1,
+          "endColumn": 60,
+          "fix": {
+            "range": [
+              21,
+              59
+            ],
+            "text": "v-bind=\"attrs\" :is=\"kind\" v-if=\"shown\""
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 1,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/conditional-before-ignored-spread-and-definition.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 49,
+            "end": 59,
+            "help": null,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "attribute-before-ignored-spread-and-ref",
+      "source": "<template><Comp class=\"panel\" v-bind=\"attrs\" ref=\"panel\" /></template>\n",
+      "filename": "controls/attribute-before-ignored-spread-and-ref.vue",
+      "bytes": 71,
+      "sha256": "b0cc43d86e0a85f348dbfb94059b3e55dd1ed4da08e6e75a539453c9a344b048",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \"ref\" should go before \"class\".",
+          "line": 1,
+          "column": 46,
+          "messageId": "expectedOrder",
+          "endLine": 1,
+          "endColumn": 57,
+          "fix": {
+            "range": [
+              16,
+              56
+            ],
+            "text": "v-bind=\"attrs\" ref=\"panel\" class=\"panel\""
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 1,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/attribute-before-ignored-spread-and-ref.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 45,
+            "end": 56,
+            "help": null,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "spread-before-condition",
+      "source": "<template><Comp v-bind=\"attrs\" v-if=\"shown\" /></template>\n",
+      "filename": "controls/spread-before-condition.vue",
+      "bytes": 58,
+      "sha256": "3a04aa5e1308ca2720f00de622f8e9d7943505815a76f7ca482e95258488ed04",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \"v-if\" should go before \"v-bind\".",
+          "line": 1,
+          "column": 32,
+          "messageId": "expectedOrder",
+          "endLine": 1,
+          "endColumn": 44,
+          "fix": {
+            "range": [
+              16,
+              43
+            ],
+            "text": "v-if=\"shown\" v-bind=\"attrs\""
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 1,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/spread-before-condition.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 31,
+            "end": 43,
+            "help": null,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "spread-lookahead-uses-later-definition",
+      "source": "<template><component v-bind=\"attrs\" @click=\"click\" :is=\"kind\" /></template>\n",
+      "filename": "controls/spread-lookahead-uses-later-definition.vue",
+      "bytes": 76,
+      "sha256": "d31ff94583feddd0cdfa10f23b4df329a35b76625b6e46bed2f02212ab519b12",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \":is\" should go before \"@click\".",
+          "line": 1,
+          "column": 52,
+          "messageId": "expectedOrder",
+          "endLine": 1,
+          "endColumn": 62,
+          "fix": {
+            "range": [
+              36,
+              61
+            ],
+            "text": ":is=\"kind\" @click=\"click\""
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 1,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/spread-lookahead-uses-later-definition.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 51,
+            "end": 61,
+            "help": null,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "spread-lookahead-uses-later-id",
+      "source": "<template><Comp v-bind=\"attrs\" v-ripple :id=\"id\" /></template>\n",
+      "filename": "controls/spread-lookahead-uses-later-id.vue",
+      "bytes": 63,
+      "sha256": "af8d1540595d2a05cc9e77a717fa2ac41f2956e85e4330154bf50957dcba5352",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \":id\" should go before \"v-ripple\".",
+          "line": 1,
+          "column": 41,
+          "messageId": "expectedOrder",
+          "endLine": 1,
+          "endColumn": 49,
+          "fix": {
+            "range": [
+              31,
+              48
+            ],
+            "text": ":id=\"id\" v-ripple"
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 1,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/spread-lookahead-uses-later-id.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 40,
+            "end": 48,
+            "help": null,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "spread-lookahead-uses-later-model",
+      "source": "<template><Comp v-bind=\"attrs\" v-ripple v-model=\"value\" /></template>\n",
+      "filename": "controls/spread-lookahead-uses-later-model.vue",
+      "bytes": 70,
+      "sha256": "b8cdb09c79d70f50905cb131cdccf42f6b6bf3c3012523ffdf4b0574746939ab",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \"v-model\" should go before \"v-ripple\".",
+          "line": 1,
+          "column": 41,
+          "messageId": "expectedOrder",
+          "endLine": 1,
+          "endColumn": 56,
+          "fix": {
+            "range": [
+              31,
+              55
+            ],
+            "text": "v-model=\"value\" v-ripple"
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 1,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/spread-lookahead-uses-later-model.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 40,
+            "end": 55,
+            "help": null,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "two-isolated-spreads-share-one-lookahead",
+      "source": "<template><Comp v-bind=\"first\" @click=\"click\" v-bind=\"second\" @focus=\"focus\" :id=\"id\" /></template>\n",
+      "filename": "controls/two-isolated-spreads-share-one-lookahead.vue",
+      "bytes": 100,
+      "sha256": "2bf92a875612e048675a3485ca2a44c416c9a1ed911135accbc0eb0215742785",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \"v-bind\" should go before \"@click\".",
+          "line": 1,
+          "column": 47,
+          "messageId": "expectedOrder",
+          "endLine": 1,
+          "endColumn": 62,
+          "fix": {
+            "range": [
+              31,
+              61
+            ],
+            "text": "v-bind=\"second\" @click=\"click\""
+          }
+        },
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \":id\" should go before \"@focus\".",
+          "line": 1,
+          "column": 78,
+          "messageId": "expectedOrder",
+          "endLine": 1,
+          "endColumn": 86,
+          "fix": {
+            "range": [
+              62,
+              85
+            ],
+            "text": ":id=\"id\" @focus=\"focus\""
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 2,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/two-isolated-spreads-share-one-lookahead.vue",
+        "error_count": 0,
+        "warning_count": 2,
+        "diagnostics": [
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 46,
+            "end": 61,
+            "help": null,
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 77,
+            "end": 85,
+            "help": null,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "multiple-isolated-spreads-no-later-binding",
+      "source": "<template><Comp @click=\"click\" v-bind=\"first\" @focus=\"focus\" v-bind=\"second\" /></template>\n",
+      "filename": "controls/multiple-isolated-spreads-no-later-binding.vue",
+      "bytes": 91,
+      "sha256": "9d0d4d6e69d1f97402e312586c8206609fbcf970dc44b0ac7043bbcf4719a615",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \"v-bind\" should go before \"@click\".",
+          "line": 1,
+          "column": 32,
+          "messageId": "expectedOrder",
+          "endLine": 1,
+          "endColumn": 46,
+          "fix": {
+            "range": [
+              16,
+              45
+            ],
+            "text": "v-bind=\"first\" @click=\"click\""
+          }
+        },
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \"v-bind\" should go before \"@focus\".",
+          "line": 1,
+          "column": 62,
+          "messageId": "expectedOrder",
+          "endLine": 1,
+          "endColumn": 77,
+          "fix": {
+            "range": [
+              46,
+              76
+            ],
+            "text": "v-bind=\"second\" @focus=\"focus\""
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 2,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/multiple-isolated-spreads-no-later-binding.vue",
+        "error_count": 0,
+        "warning_count": 2,
+        "diagnostics": [
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 31,
+            "end": 45,
+            "help": null,
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 61,
+            "end": 76,
+            "help": null,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "adjacent-spread-and-static",
+      "source": "<template><Comp v-bind=\"attrs\" title=\"text\" @click=\"click\" /></template>\n",
+      "filename": "controls/adjacent-spread-and-static.vue",
+      "bytes": 73,
+      "sha256": "674e040ff6bbf12306d56128e1e46e14701f27c4014c8a4b6c30c467c14ea305",
+      "referenceMessages": [],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 0,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/adjacent-spread-and-static.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "adjacent-spread-and-id",
+      "source": "<template><Comp v-bind=\"attrs\" :id=\"id\" /></template>\n",
+      "filename": "controls/adjacent-spread-and-id.vue",
+      "bytes": 54,
+      "sha256": "c2c6a68d1d09f31364e7d2dea2497757bc1b2a229d159ae445e993edf12b4d52",
+      "referenceMessages": [],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 0,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/adjacent-spread-and-id.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "adjacent-spread-and-definition",
+      "source": "<template><Comp v-bind=\"attrs\" :is=\"kind\" /></template>\n",
+      "filename": "controls/adjacent-spread-and-definition.vue",
+      "bytes": 56,
+      "sha256": "526b6fe75ba0e756a3a7d428f685f41a52beb4f39d86e5aaa51f4efa20347436",
+      "referenceMessages": [],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 0,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/adjacent-spread-and-definition.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "adjacent-spread-and-model",
+      "source": "<template><Comp v-bind=\"attrs\" v-model=\"value\" /></template>\n",
+      "filename": "controls/adjacent-spread-and-model.vue",
+      "bytes": 61,
+      "sha256": "34f0e613f6337ece3e42a3702f8c3ce0e7e29590d8cee674cf6b6360d01d6cbc",
+      "referenceMessages": [],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 0,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/adjacent-spread-and-model.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "adjacent-spread-pair-does-not-reset",
+      "source": "<template><Comp @click=\"click\" v-bind=\"first\" v-bind=\"second\" :id=\"id\" /></template>\n",
+      "filename": "controls/adjacent-spread-pair-does-not-reset.vue",
+      "bytes": 85,
+      "sha256": "667405377d3d27225da67a9cda5c536f91028888557d97df86c769eff6a95998",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \":id\" should go before \"@click\".",
+          "line": 1,
+          "column": 63,
+          "messageId": "expectedOrder",
+          "endLine": 1,
+          "endColumn": 71,
+          "fix": {
+            "range": [
+              16,
+              70
+            ],
+            "text": "v-bind=\"second\" v-bind=\"first\" :id=\"id\" @click=\"click\""
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 1,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/adjacent-spread-pair-does-not-reset.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 62,
+            "end": 70,
+            "help": null,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "static-mustache-value-preserves-order",
+      "source": "<template><Comp @click=\"click\" title=\"{{ title }}\" :id=\"id\" /></template>\n",
+      "filename": "controls/static-mustache-value-preserves-order.vue",
+      "bytes": 74,
+      "sha256": "38a05057f57d901d920a771a57cfeaac9cc8db6a9300c5e8c86b71b3c94240a8",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \"title\" should go before \"@click\".",
+          "line": 1,
+          "column": 32,
+          "messageId": "expectedOrder",
+          "endLine": 1,
+          "endColumn": 51,
+          "fix": {
+            "range": [
+              16,
+              50
+            ],
+            "text": "title=\"{{ title }}\" @click=\"click\""
+          }
+        },
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \":id\" should go before \"@click\".",
+          "line": 1,
+          "column": 52,
+          "messageId": "expectedOrder",
+          "endLine": 1,
+          "endColumn": 60,
+          "fix": {
+            "range": [
+              16,
+              59
+            ],
+            "text": ":id=\"id\" @click=\"click\" title=\"{{ title }}\""
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 2,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/static-mustache-value-preserves-order.vue",
+        "error_count": 0,
+        "warning_count": 2,
+        "diagnostics": [
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 31,
+            "end": 50,
+            "help": null,
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 51,
+            "end": 59,
+            "help": null,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "ordinary-static-dynamic-boolean-same-group",
+      "source": "<template><Comp title=\"text\" :name=\"name\" disabled /></template>\n",
+      "filename": "controls/ordinary-static-dynamic-boolean-same-group.vue",
+      "bytes": 65,
+      "sha256": "8930cbf682a3824b3ccca8e229cee792d76633bb0768f1d3c7256538cb5f91bc",
+      "referenceMessages": [],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 0,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/ordinary-static-dynamic-boolean-same-group.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "boolean-static-dynamic-same-group",
+      "source": "<template><Comp disabled title=\"text\" :name=\"name\" /></template>\n",
+      "filename": "controls/boolean-static-dynamic-same-group.vue",
+      "bytes": 65,
+      "sha256": "be51c5d25af74a1971f8417b73ac90be4feaa555dc6fad14b288b4c51c5926f2",
+      "referenceMessages": [],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 0,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/boolean-static-dynamic-same-group.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "dynamic-id-is-ordinary-binding",
+      "source": "<template><Comp title=\"text\" :[id]=\"value\" /></template>\n",
+      "filename": "controls/dynamic-id-is-ordinary-binding.vue",
+      "bytes": 57,
+      "sha256": "3d4ab196a0329eee31e3a9d10d0be26e56addf1d463235e3b1ffafe14fb90522",
+      "referenceMessages": [],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 0,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/dynamic-id-is-ordinary-binding.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "dynamic-key-is-ordinary-binding",
+      "source": "<template><Comp title=\"text\" v-bind:[key]=\"value\" /></template>\n",
+      "filename": "controls/dynamic-key-is-ordinary-binding.vue",
+      "bytes": 64,
+      "sha256": "a6fd802336bafd3a0f14fec4fff5ee4537e41cd7a81771ad268ea09e21fcd83a",
+      "referenceMessages": [],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 0,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/dynamic-key-is-ordinary-binding.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "static-id-still-global",
+      "source": "<template><Comp title=\"text\" :id.camel=\"id\" /></template>\n",
+      "filename": "controls/static-id-still-global.vue",
+      "bytes": 58,
+      "sha256": "302ced88bcecb361a66e88c137d9b0e5ff63dca4b4d4ba2942e9e4d26218a526",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \":id.camel\" should go before \"title\".",
+          "line": 1,
+          "column": 30,
+          "messageId": "expectedOrder",
+          "endLine": 1,
+          "endColumn": 44,
+          "fix": {
+            "range": [
+              16,
+              43
+            ],
+            "text": ":id.camel=\"id\" title=\"text\""
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 1,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/static-id-still-global.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 29,
+            "end": 43,
+            "help": null,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "static-key-still-unique",
+      "source": "<template><Comp title=\"text\" :key=\"key\" /></template>\n",
+      "filename": "controls/static-key-still-unique.vue",
+      "bytes": 54,
+      "sha256": "cb3cdfca7e56e64b65e99105c06c0aa98c0d2539b956ad68719782c85ef601f7",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \":key\" should go before \"title\".",
+          "line": 1,
+          "column": 30,
+          "messageId": "expectedOrder",
+          "endLine": 1,
+          "endColumn": 40,
+          "fix": {
+            "range": [
+              16,
+              39
+            ],
+            "text": ":key=\"key\" title=\"text\""
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 1,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/static-key-still-unique.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 29,
+            "end": 39,
+            "help": null,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "bare-hash-is-ordinary-attribute",
+      "source": "<template><Comp v-model=\"value\" #=\"{ value }\" :title=\"title\" /></template>\n",
+      "filename": "controls/bare-hash-is-ordinary-attribute.vue",
+      "bytes": 75,
+      "sha256": "1d01f2aa2a59e14977e1a6da41717f50a978d8b3c42c32fe81bbeca00588de9f",
+      "referenceMessages": [],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 0,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/bare-hash-is-ordinary-attribute.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "bare-hash-before-model-reports-model",
+      "source": "<template><Comp #=\"{ value }\" v-model=\"value\" /></template>\n",
+      "filename": "controls/bare-hash-before-model-reports-model.vue",
+      "bytes": 60,
+      "sha256": "21efa543eec56bda649d433803f012ecef8db9aa879a2bef51a0eab58c44f37a",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \"v-model\" should go before \"#\".",
+          "line": 1,
+          "column": 31,
+          "messageId": "expectedOrder",
+          "endLine": 1,
+          "endColumn": 46,
+          "fix": {
+            "range": [
+              16,
+              45
+            ],
+            "text": "v-model=\"value\" #=\"{ value }\""
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 1,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/bare-hash-before-model-reports-model.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 30,
+            "end": 45,
+            "help": null,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "bare-hash-spread-adjacency",
+      "source": "<template><Comp @click=\"click\" v-bind=\"attrs\" #=\"{ value }\" /></template>\n",
+      "filename": "controls/bare-hash-spread-adjacency.vue",
+      "bytes": 74,
+      "sha256": "efff0e824f8b71218324b607ad76ee5311b6830fc80922f2f604b0f1c19a6baf",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \"#\" should go before \"@click\".",
+          "line": 1,
+          "column": 47,
+          "messageId": "expectedOrder",
+          "endLine": 1,
+          "endColumn": 60,
+          "fix": {
+            "range": [
+              16,
+              59
+            ],
+            "text": "v-bind=\"attrs\" #=\"{ value }\" @click=\"click\""
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 1,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/bare-hash-spread-adjacency.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 46,
+            "end": 59,
+            "help": null,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "bare-hash-lookahead-is-ordinary",
+      "source": "<template><Comp v-bind=\"attrs\" v-ripple #=\"{ value }\" /></template>\n",
+      "filename": "controls/bare-hash-lookahead-is-ordinary.vue",
+      "bytes": 68,
+      "sha256": "2c6bbb5d92707f1ac749ebebed92217293f3f60e2f29a80f8015139fad0ac0f2",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \"v-ripple\" should go before \"v-bind\".",
+          "line": 1,
+          "column": 32,
+          "messageId": "expectedOrder",
+          "endLine": 1,
+          "endColumn": 40,
+          "fix": {
+            "range": [
+              16,
+              39
+            ],
+            "text": "v-ripple v-bind=\"attrs\""
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 1,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/bare-hash-lookahead-is-ordinary.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 31,
+            "end": 39,
+            "help": null,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "named-slot-still-unique",
+      "source": "<template><Comp v-model=\"value\" #default=\"{ value }\" /></template>\n",
+      "filename": "controls/named-slot-still-unique.vue",
+      "bytes": 67,
+      "sha256": "115a0e51496e4128b489ad27ba149c5a5d75149e6c25d20bb7f2e3850b0b08bb",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \"#default\" should go before \"v-model\".",
+          "line": 1,
+          "column": 33,
+          "messageId": "expectedOrder",
+          "endLine": 1,
+          "endColumn": 53,
+          "fix": {
+            "range": [
+              16,
+              52
+            ],
+            "text": "#default=\"{ value }\" v-model=\"value\""
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 1,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/named-slot-still-unique.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 32,
+            "end": 52,
+            "help": null,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "long-default-slot-still-unique",
+      "source": "<template><Comp v-model=\"value\" v-slot=\"{ value }\" /></template>\n",
+      "filename": "controls/long-default-slot-still-unique.vue",
+      "bytes": 65,
+      "sha256": "9022e77853fe8bb1266e40d7d010f25f64fef097fc870dcb8036112ca6712e21",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \"v-slot\" should go before \"v-model\".",
+          "line": 1,
+          "column": 33,
+          "messageId": "expectedOrder",
+          "endLine": 1,
+          "endColumn": 51,
+          "fix": {
+            "range": [
+              16,
+              50
+            ],
+            "text": "v-slot=\"{ value }\" v-model=\"value\""
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 1,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/long-default-slot-still-unique.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 32,
+            "end": 50,
+            "help": null,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "named-slots-and-model-ordered",
+      "source": "<template><Comp #default=\"{ value }\" v-model=\"value\" /></template>\n",
+      "filename": "controls/named-slots-and-model-ordered.vue",
+      "bytes": 67,
+      "sha256": "3b24b5695a42893e37640f0c0341d878391c66e0dbbf90a3baa63616e9042a4d",
+      "referenceMessages": [],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 0,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/named-slots-and-model-ordered.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "legacy-slot-and-key-share-group",
+      "source": "<template><Comp key=\"key\" slot=\"header\" slot-scope=\"scope\" /></template>\n",
+      "filename": "controls/legacy-slot-and-key-share-group.vue",
+      "bytes": 73,
+      "sha256": "498e54cd063ed0a517580b6f066a437231186a1ad07f1a5e943ff13edf6ca7b4",
+      "referenceMessages": [],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 0,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/legacy-slot-and-key-share-group.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "ordered-directive-groups",
+      "source": "<template><Comp is=\"kind\" v-for=\"item in items\" v-if=\"item\" v-once id=\"main\" ref=\"el\" #default=\"slot\" v-model=\"value\" v-ripple class=\"panel\" @click=\"click\" v-text=\"text\" /></template>\n",
+      "filename": "controls/ordered-directive-groups.vue",
+      "bytes": 184,
+      "sha256": "a3dca818d112a6270d94901e6dfc0ca444af51918bc2178d53e5329333ac71ef",
+      "referenceMessages": [],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 0,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/ordered-directive-groups.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "foreign-structural-rule-unchanged",
+      "source": "<template><Comp v-if=\"first\" v-else /><div v-for=\"item in items\" /></template>",
+      "filename": "controls/foreign-structural-rule-unchanged.vue",
+      "bytes": 78,
+      "sha256": "ff2d95a1a9979338a1e9b5ab5aa14596890174cedc31c7d0ee632e8408e313a8",
+      "referenceMessages": [],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 0,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/foreign-structural-rule-unchanged.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "unicode-and-crlf-original-spans",
+      "source": "<template><!-- 界😀 -->\r\n<Comp @click=\"click\" v-bind=\"attrs\" :title=\"title\" :id=\"id\" /></template>\n",
+      "filename": "controls/unicode-and-crlf-original-spans.vue",
+      "bytes": 102,
+      "sha256": "f4cd5358a882c366fd1dfbd29a6739aaea2994b4c05553ed0cfe5fa238d26e47",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \":title\" should go before \"@click\".",
+          "line": 2,
+          "column": 37,
+          "messageId": "expectedOrder",
+          "endLine": 2,
+          "endColumn": 51,
+          "fix": {
+            "range": [
+              30,
+              74
+            ],
+            "text": "v-bind=\"attrs\" :title=\"title\" @click=\"click\""
+          }
+        },
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \":id\" should go before \"@click\".",
+          "line": 2,
+          "column": 52,
+          "messageId": "expectedOrder",
+          "endLine": 2,
+          "endColumn": 60,
+          "fix": {
+            "range": [
+              30,
+              83
+            ],
+            "text": "v-bind=\"attrs\" :id=\"id\" @click=\"click\" :title=\"title\""
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 2,
+      "serviceSuppressed": false,
+      "service": {
+        "filename": "controls/unicode-and-crlf-original-spans.vue",
+        "error_count": 0,
+        "warning_count": 2,
+        "diagnostics": [
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 64,
+            "end": 78,
+            "help": null,
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "vue/attribute-order",
+            "severity": "warning",
+            "message": "Attribute should be placed in correct order",
+            "start": 79,
+            "end": 87,
+            "help": null,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "suppressed-directive-order",
+      "source": "<template><!-- eslint-disable vue/attribute-order -->\n<Comp @click=\"click\" v-bind=\"attrs\" :id=\"id\" /></template>\n",
+      "filename": "controls/suppressed-directive-order.vue",
+      "bytes": 113,
+      "sha256": "7f9f2df54f4430b386ffd96ae4236aa9fd81dda2eb09b6867e87aec906551446",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \":id\" should go before \"@click\".",
+          "line": 2,
+          "column": 37,
+          "messageId": "expectedOrder",
+          "endLine": 2,
+          "endColumn": 45,
+          "fix": {
+            "range": [
+              60,
+              98
+            ],
+            "text": "v-bind=\"attrs\" :id=\"id\" @click=\"click\""
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 1,
+      "serviceSuppressed": true,
+      "service": {
+        "filename": "controls/suppressed-directive-order.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "suppressed-named-slot",
+      "source": "<template><!-- eslint-disable vue/attribute-order -->\n<Comp v-model=\"value\" #default=\"slot\" /></template>\n",
+      "filename": "controls/suppressed-named-slot.vue",
+      "bytes": 106,
+      "sha256": "645968354ce7ffaf924c0177d2951f30211936d0d87b7691f4516f3cc8eedc13",
+      "referenceMessages": [
+        {
+          "ruleId": "vue/attributes-order",
+          "severity": 1,
+          "message": "Attribute \"#default\" should go before \"v-model\".",
+          "line": 2,
+          "column": 23,
+          "messageId": "expectedOrder",
+          "endLine": 2,
+          "endColumn": 38,
+          "fix": {
+            "range": [
+              60,
+              91
+            ],
+            "text": "#default=\"slot\" v-model=\"value\""
+          }
+        }
+      ],
+      "referenceErrorCount": 0,
+      "referenceWarningCount": 1,
+      "serviceSuppressed": true,
+      "service": {
+        "filename": "controls/suppressed-named-slot.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    }
+  ]
+}

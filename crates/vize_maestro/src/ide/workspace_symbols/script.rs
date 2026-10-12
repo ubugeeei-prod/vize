@@ -10,6 +10,21 @@ pub(super) fn collect(uri: &Url, source: &str, query: &str, symbols: &mut Vec<Sy
     let Ok(source_type) = SourceType::from_path(uri.path()) else {
         return;
     };
+    // ASCII identifiers without escapes are literal source slices. An absent
+    // case-insensitive query cannot match an emitted authored declaration.
+    // Bound the extra scan; other inputs keep the existing parser.
+    if !query.is_empty()
+        && query.len() <= 32
+        && query.is_ascii()
+        && source.is_ascii()
+        && !source.as_bytes().contains(&b'\\')
+        && !source
+            .as_bytes()
+            .windows(query.len())
+            .any(|candidate| candidate.eq_ignore_ascii_case(query.as_bytes()))
+    {
+        return;
+    }
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, source, source_type).parse();
     if parsed.panicked || !parsed.diagnostics.is_empty() {
@@ -144,3 +159,6 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+mod query_tests;

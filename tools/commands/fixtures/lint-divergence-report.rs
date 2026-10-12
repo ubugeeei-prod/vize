@@ -292,7 +292,7 @@ const eslint = new ESLint({
       }
     },
     linterOptions: { reportUnusedDisableDirectives: "off" },
-    plugins: { vue: plugin },
+    plugins: { vue: plugin }, processor: "vue/vue",
     rules: input.rules
   }],
   errorOnUnmatchedPattern: false

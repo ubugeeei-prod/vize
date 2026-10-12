@@ -14,6 +14,17 @@ const action = parse(
   ),
 );
 const original = structuredClone(action);
+const primarySave = original.runs.steps.find(
+  ({ name }) => name === "Cache Rust target or seed it from the trusted sticky clone",
+);
+const primaryRestore = original.runs.steps.find(
+  ({ name }) => name === "Restore a Rust target without registering a save",
+);
+primarySave.if =
+  "${{ steps.cache-policy.outputs.target-save == 'true' && (inputs.key != 'test-scripts' || steps.cache-mounts.outputs.target != 'true') }}";
+primaryRestore.if =
+  "${{ steps.cache-policy.outputs.target-save == 'false' || (inputs.key == 'test-scripts' && steps.cache-mounts.outputs.target == 'true') }}";
+primaryRestore.with.key = "${{ steps.cache-policy.outputs.target-key }}";
 const save = original.runs.steps.find(
   ({ name }) => name === "Cache the secondary Rust target or seed its trusted clone",
 );
@@ -130,7 +141,7 @@ await test("mounted trusted docs examples keep the same lookup and both current 
         assert.equal(after.key, result.outputs["cache-policy"]["secondary-seed-key"]);
         assert.deepEqual(
           result.trace.filter(({ kind }) => kind === "cache-post").map(({ name }) => name),
-          ["target", "git", "registry"],
+          ["git", "registry"],
         );
         assert.equal(result.trace.filter(({ kind }) => kind === "sticky-post").length, 4);
         assert.throws(
@@ -252,7 +263,7 @@ await test("other role pairs and an independently failed primary retain their or
       );
       assert.equal(
         result.trace.filter(({ kind, name }) => kind === "cache-post" && name === "target").length,
-        1,
+        role === "docs-wasm" && !failures.includes("target") ? 0 : 1,
       );
     });
 });

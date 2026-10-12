@@ -10,6 +10,8 @@ use std::{
     thread::sleep,
     time::{Duration, Instant},
 };
+#[path = "pr_pin_body.rs"]
+mod body;
 #[cfg(test)]
 #[path = "pr_pin_budget_tests.rs"]
 mod budget_tests;
