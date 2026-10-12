@@ -27,6 +27,9 @@ Removing only those new entries restores both complete ordered parent
 vectors. The dedicated source law preserves every original Markdown body
 and full code example, and requires actual native execution separately.
 
+The implementation link follows the current prop-mutation metadata: the
+existing producer carries its incoming line-39 anchor into this new page.
+
 Exact-head Actions, native desktop/mobile reading, protected merge and
 official public acceptance remain required. This change claims no installed
 release support, production readiness, performance or broad issue closure.
