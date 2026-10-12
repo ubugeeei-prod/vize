@@ -123,7 +123,7 @@ jobs:
             [[ ! -e "$NATIVE_PHASE_SOURCE_ROOT/node_modules" ]]
             ln -s "$GITHUB_WORKSPACE/node_modules" "$NATIVE_PHASE_SOURCE_ROOT/node_modules"
           fi
-          bash tools/support/compat/github/native-custom-directive-arguments.sh; bash tools/support/compat/github/native-syntax-semantics.sh
+          bash tools/support/compat/github/native-custom-directive-arguments.sh; bash tools/support/compat/github/native-syntax-semantics.sh; bash tools/support/compat/github/native-empty-vue-star-exports.sh
       - name: Qualify declared template emits and config-scoped Vue helpers in the source CLI and editor
         if: github.event_name == 'pull_request'
         env:

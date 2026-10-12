@@ -114,3 +114,17 @@ and provider/configuration custody after this bounded producer repair. Prove
 nonempty authored Vue export sets and alias/package routes independently before
 expanding this policy. Preserve real duplicate authored exports, including
 reserved names such as `Props`, before any later repair or baseline migration.
+
+The hosted native supplement reuses the existing Canon ci-opt sticky build: one
+Cargo no-run emission supplies one exact test executable, executed once with the
+required runtime. Three named laws retain all sixteen packets (ten exact vectors
+and six conservative projection boundaries), full stdout/stderr, actual source,
+provider and generated-byte custody before assertions. This is pending hosted
+execution, separate from the six generated-source counterfactuals.
+
+Original400 source admission authenticates all 41 Rust, 80 passive supplemental
+and 152 preserved bodies plus eight metadata bodies. Historical tooling reads
+are allowed only after complete raw predecessor and physical current custody;
+unknown, missing, partial, executable, symlink or hybrid source refuses. Exact
+hook inverses retain the original validators and their complete refusal sets.
+Source tests and enrollment grant no native, App, throughput or release credit.
