@@ -141,6 +141,8 @@ pub use telegraph::{
     Emitter, FormatEmitter, JsonEmitter, LintTransmission, LspDiagnostic, LspEmitter, Telegraph,
     TextEmitter,
 };
+/// CSS AST provider used by [`ParsedStyleSheet`] and [`rules::css::CssRule`].
+pub use lightningcss as css_ast;
 pub use vize_atelier_jsx::JsxLang;
 pub use vize_carton::i18n::Locale;
 

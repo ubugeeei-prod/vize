@@ -106,7 +106,9 @@ substituted or partial results fail; raw packets and the validation receipt stay
 in the original artifact. No old BEFORE rerun supplies acceptance. No local
 Cargo build or offline receipt supplies consumer qualification.
 
-The three actual nominal Rust API breaks remain unresolved. The separate
-namespace migration proposal is unselected and unexecuted; no compatibility,
-native-binding, protected performance, registry publication or release acceptance
-is credited here. The PR stays Draft/offqueue and neither original issue closes.
+The three actual old-namespace Rust compile breaks remain retained. The maintainer
+now selected the [documented next-minor namespace migration](./2026-10-12-css-ast-provider-migration.md).
+The three import-only controls must actually compile and run alongside all original
+nine controls. Transparent compatibility, native-binding, protected performance,
+registry publication and release acceptance remain uncredited. Draft status lasts
+until exact-source checks pass; neither original issue closes before full proof.

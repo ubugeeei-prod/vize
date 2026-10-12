@@ -203,6 +203,9 @@ jobs:
             ${{ runner.temp }}/css-engine-identity/typed-visitors.rs
             ${{ runner.temp }}/css-engine-identity/trait-implementation.rs
             ${{ runner.temp }}/css-engine-identity/semver.log
+            ${{ runner.temp }}/css-engine-identity/*/src/main.rs
+            ${{ runner.temp }}/css-engine-identity/migration-source.sha256
+            ${{ runner.temp }}/css-engine-identity/patina-provider-*.rs
           if-no-files-found: error
           retention-days: 14
 

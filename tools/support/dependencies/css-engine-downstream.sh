@@ -1,20 +1,24 @@
 #!/usr/bin/env bash
-# Execute three unchanged external bodies against baseline and candidate types.
+# Keep nine original controls and add three namespace-only migration controls.
 set -euo pipefail
 css_identity_root="$PWD"
 css_identity_evidence="${RUNNER_TEMP:?}/css-engine-identity"
 mkdir -p "$css_identity_evidence"
 sha256sum tests/external-consumers/css-engine-identity/src/main.rs tests/external-consumers/css-engine-identity/typed-visitors.rs tests/external-consumers/css-engine-identity/trait-implementation.rs > "$css_identity_evidence/source.sha256"
+sha256sum tests/external-consumers/css-engine-identity/patina-provider-new-raw.rs tests/external-consumers/css-engine-identity/patina-provider-typed-visitors.rs tests/external-consumers/css-engine-identity/patina-provider-trait-implementation.rs > "$css_identity_evidence/migration-source.sha256"
 git rev-parse HEAD > "$css_identity_evidence/source-head.txt"
 rustc -Vv > "$css_identity_evidence/rustc.txt"
 cp tests/external-consumers/css-engine-identity/src/main.rs "$css_identity_evidence/consumer.rs"
 cp tests/external-consumers/css-engine-identity/typed-visitors.rs "$css_identity_evidence/typed-visitors.rs"
 cp tests/external-consumers/css-engine-identity/trait-implementation.rs "$css_identity_evidence/trait-implementation.rs"
+for css_identity_contract in new-raw typed-visitors trait-implementation; do
+  cp "tests/external-consumers/css-engine-identity/patina-provider-$css_identity_contract.rs" "$css_identity_evidence/patina-provider-$css_identity_contract.rs"
+done
 git worktree add --detach "$css_identity_evidence/baseline" "${CSS_ENGINE_BASE_SHA:?}"
 git -C "$css_identity_evidence/baseline" rev-parse HEAD > "$css_identity_evidence/baseline-head.txt"
 export CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-$css_identity_root/target/css-engine-identity}"
 export CARGO_PROFILE_DEV_DEBUG=0
-for css_identity_plane in baseline-original candidate-original candidate-fork; do
+for css_identity_plane in baseline-original candidate-original candidate-fork candidate-patina; do
 for css_identity_contract in new-raw typed-visitors trait-implementation; do
   css_identity_directory="$css_identity_evidence/$css_identity_plane-$css_identity_contract"
   mkdir -p "$css_identity_directory/src"
@@ -22,6 +26,9 @@ for css_identity_contract in new-raw typed-visitors trait-implementation; do
     css_identity_source=tests/external-consumers/css-engine-identity/src/main.rs
   else
     css_identity_source="tests/external-consumers/css-engine-identity/$css_identity_contract.rs"
+  fi
+  if [[ "$css_identity_plane" == candidate-patina ]]; then
+    css_identity_source="tests/external-consumers/css-engine-identity/patina-provider-$css_identity_contract.rs"
   fi
   cp "$css_identity_source" "$css_identity_directory/src/main.rs"
   if [[ "$css_identity_plane" == baseline-original ]]; then
@@ -65,4 +72,4 @@ for css_identity_contract in new-raw typed-visitors trait-implementation; do
   fi
 done
 done
-printf 'three whole authored contracts x three dependency planes = nine\nbaseline original: compatible\ncandidate original: incompatible nominal type\ncandidate fork: compatible\nsource-only; no installed or registry qualification\n' > "$css_identity_evidence/report.txt"
+printf 'three whole authored contracts x four dependency planes = twelve\nbaseline original: compatible\ncandidate original: incompatible nominal type\ncandidate fork: compatible\ncandidate Patina namespace: documented migration, not transparent compatibility\nsource-only; no installed or registry qualification\n' > "$css_identity_evidence/report.txt"

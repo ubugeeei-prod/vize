@@ -116,6 +116,38 @@ for (const [filename, checksum] of [
     "tests/_fixtures/differential/css-engine-vendor-exit/finite-before/finite-helper-before.ts.txt",
     "46ae2b852bd5df92d1be3e54f68cf46061f837b0ac700c95060a6ed1f77ef470",
   ],
+  [
+    "crates/vize_patina/src/lib.rs",
+    "e237c068fe07edf7f2bd6869e9ab9aa7560de7075a2aaf4e8947e10854e84318",
+  ],
+  [
+    "tools/support/dependencies/css-engine-downstream.sh",
+    "38f9b959cbdb36a57aa4930214f14cf3593da3d3ed8861b7cbe5aa26e7f66f86",
+  ],
+  [
+    "tests/external-consumers/css-engine-identity/src/main.rs",
+    "3b06ce108f147d3d3a3ca25995b3b4c53e451419039f8699a7f68e368a96d0c5",
+  ],
+  [
+    "tests/external-consumers/css-engine-identity/typed-visitors.rs",
+    "780685aaf1696808705ea2c6c33ad9eb8b097177ad2ebb90ed8f3fe43b02937a",
+  ],
+  [
+    "tests/external-consumers/css-engine-identity/trait-implementation.rs",
+    "c2127110a03fa9f46c63b88d6e2583834a50ba134347c19ecf84b9f7ee3d1ac3",
+  ],
+  [
+    "tests/external-consumers/css-engine-identity/patina-provider-new-raw.rs",
+    "fc77f35744572ffbcccffde5dd72362d487b5bc9ab4bb935714d93a638894af2",
+  ],
+  [
+    "tests/external-consumers/css-engine-identity/patina-provider-typed-visitors.rs",
+    "4bed480ad5928fdbc1badcb7420bf8f58e5f7cc6b6354dc836d1c66b6fe2fe9f",
+  ],
+  [
+    "tests/external-consumers/css-engine-identity/patina-provider-trait-implementation.rs",
+    "94c19f8996a49df84571c3958e4b45113f66fd2f87adf62d85adc1bf44d8a859",
+  ],
 ]) {
   assert.equal(sha256(fs.readFileSync(path.join(root, filename))), checksum, filename);
 }
@@ -150,4 +182,21 @@ for (const field of ["observerWholeDev", "observerWholeRelease"]) {
 for (const field of ["cliWholeDev", "cliWholeRelease"]) {
   assert.equal(before[field].completed, true);
   assert.equal(before[field].attempts.length, 90);
+}
+
+// The three selected migration controls are whole original bodies with only
+// their AST namespace prefixes changed. No assertion/source/control is dropped.
+for (const [migrated, original, count] of [
+  ["patina-provider-new-raw.rs", "src/main.rs", 1],
+  ["patina-provider-typed-visitors.rs", "typed-visitors.rs", 2],
+  ["patina-provider-trait-implementation.rs", "trait-implementation.rs", 1],
+] as const) {
+  const directory = path.join(root, "tests/external-consumers/css-engine-identity");
+  const body = fs.readFileSync(path.join(directory, migrated));
+  const text = body.toString("utf8");
+  assert.equal(text.split("vize_patina::css_ast::").length - 1, count);
+  assert.deepEqual(
+    Buffer.from(text.replaceAll("vize_patina::css_ast::", "lightningcss::")),
+    fs.readFileSync(path.join(directory, original)),
+  );
 }
