@@ -10,11 +10,7 @@ use vize_carton::{Allocator, profile};
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_sfc::{
     SfcDescriptor,
-    croquis::{
-        SfcCroquisOptions, analyze_sfc_descriptor_with_context,
-        analyze_sfc_descriptor_with_context_legacy_vue2,
-        analyze_sfc_descriptor_with_context_options_api,
-    },
+    croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_empty_module_exports},
 };
 
 use crate::batch::SfcBlockType;
@@ -72,6 +68,7 @@ pub(super) fn generate_vue_virtual_ts(
         Err(error) => {
             return Ok(GeneratedVueFile {
                 typed_router_import: false,
+                empty_module_exports: false,
                 code: invalid_sfc_fallback_virtual_ts(),
                 mappings: Vec::new(),
                 semantic_links: Vec::new(),
@@ -150,6 +147,7 @@ pub(super) fn generate_vue_virtual_ts(
     if !has_script_projection {
         return Ok(GeneratedVueFile {
             typed_router_import: false,
+            empty_module_exports: false,
             code: invalid_sfc_fallback_virtual_ts(),
             mappings: Vec::new(),
             semantic_links: Vec::new(),
@@ -165,23 +163,15 @@ pub(super) fn generate_vue_virtual_ts(
     let vue2_compat = codegen_options.legacy_vue2
         || matches!(codegen_options.dialect, VueVersion::V2 | VueVersion::V2_7);
 
-    let analysis = profile!(
+    let (analysis, empty_module_exports) = profile!(
         "canon.croquis.analyze_sfc",
-        if vue2_compat {
-            analyze_sfc_descriptor_with_context_legacy_vue2(
-                descriptor,
-                template_ast.as_ref(),
-                croquis_options,
-            )
-        } else if codegen_options.options_api {
-            analyze_sfc_descriptor_with_context_options_api(
-                descriptor,
-                template_ast.as_ref(),
-                croquis_options,
-            )
-        } else {
-            analyze_sfc_descriptor_with_context(descriptor, template_ast.as_ref(), croquis_options)
-        }
+        analyze_sfc_descriptor_with_empty_module_exports(
+            descriptor,
+            template_ast.as_ref(),
+            croquis_options,
+            codegen_options.options_api,
+            vue2_compat,
+        )
     );
     let split_script_setup_offsets = analysis.split_script_setup_offsets(descriptor);
     let mut croquis = analysis.croquis;
@@ -327,5 +317,6 @@ pub(super) fn generate_vue_virtual_ts(
         prop_default_key_links,
         diagnostics,
         typed_router_import,
+        empty_module_exports,
     })
 }

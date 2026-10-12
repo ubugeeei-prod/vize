@@ -1,0 +1,66 @@
+{
+  "name": "positive-counterfactual",
+  "argv": [
+    "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@typescript+typescript-darwin-arm64@7.0.2/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+    "--checkers",
+    "1",
+    "--pretty",
+    "false",
+    "--project",
+    "/tmp/vize-canon-star-barrel-counterfactual-authentic-providers-20261012/positive-counterfactual/tsconfig.json"
+  ],
+  "cwd": "/tmp/vize-canon-star-barrel-counterfactual-authentic-providers-20261012/positive-counterfactual",
+  "exitCode": 0,
+  "wallNanoseconds": 782103458,
+  "wholeStdoutUtf8": "",
+  "wholeStderrBytes": [],
+  "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "inputs": {
+    "A.vue.ts": {
+      "bytes": 5759,
+      "sha256": "7bb0ab12259c36baec1340f2dd92a3cea96732714fb4a7c6d3538e3ed0eb6a8f",
+      "relativeBlob": "blobs/7bb0ab12259c36baec1340f2dd92a3cea96732714fb4a7c6d3538e3ed0eb6a8f.json"
+    },
+    "B.vue.ts": {
+      "bytes": 5759,
+      "sha256": "7bb0ab12259c36baec1340f2dd92a3cea96732714fb4a7c6d3538e3ed0eb6a8f",
+      "relativeBlob": "blobs/7bb0ab12259c36baec1340f2dd92a3cea96732714fb4a7c6d3538e3ed0eb6a8f.json"
+    },
+    "A.vue": {
+      "bytes": 233,
+      "sha256": "c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61",
+      "relativeBlob": "blobs/c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61.json"
+    },
+    "B.vue": {
+      "bytes": 233,
+      "sha256": "c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61",
+      "relativeBlob": "blobs/c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61.json"
+    },
+    "__vize_helpers.d.ts": {
+      "bytes": 28193,
+      "sha256": "c861a2681e7472803dd082e8667ba69bb20dbcd65a12fe96d7eab411099aab76",
+      "relativeBlob": "blobs/c861a2681e7472803dd082e8667ba69bb20dbcd65a12fe96d7eab411099aab76.json"
+    },
+    "__vize_vue_modules.d.ts": {
+      "bytes": 63,
+      "sha256": "e14058b0c703cd7df25c2b88f9889f993bafb343f51e7f1942192242932d651a",
+      "relativeBlob": "blobs/e14058b0c703cd7df25c2b88f9889f993bafb343f51e7f1942192242932d651a.json"
+    },
+    "tsconfig.json": {
+      "bytes": 342,
+      "sha256": "9f22cfcce3413480ff14eaf6c4876a96daca232a5213beb362e21afa7ded64f1",
+      "relativeBlob": "blobs/9f22cfcce3413480ff14eaf6c4876a96daca232a5213beb362e21afa7ded64f1.json"
+    },
+    "consumer.ts": {
+      "bytes": 337,
+      "sha256": "3d06469c0d63a437dc4e67cabede017df8087c77f70497bd7765239fa5bebc10",
+      "relativeBlob": "blobs/3d06469c0d63a437dc4e67cabede017df8087c77f70497bd7765239fa5bebc10.json"
+    },
+    "barrel.ts": {
+      "bytes": 144,
+      "sha256": "f8f1f17e858ce72de2934681a821f12e5f15fff12eda5c3c5c5c863eaf83e863",
+      "relativeBlob": "blobs/f8f1f17e858ce72de2934681a821f12e5f15fff12eda5c3c5c5c863eaf83e863.json"
+    }
+  }
+}

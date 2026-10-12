@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "roles": [
+    {
+      "id": "vite-client-types",
+      "packageAlias": "vite",
+      "relativePath": "dist/vite/client.d.ts",
+      "authenticObservedPath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_28053986ce44d27c9f2b7b250e1bd5a3/node_modules/@voidzero-dev/vite-plus-core/dist/vite/client.d.ts",
+      "declaredBy": [
+        "exports",
+        "./client",
+        "types"
+      ],
+      "body": {
+        "bytes": 5177,
+        "sha256": "c8da07c75bdc3ff36752f3f33f2beb000a78a02aced96ce70ca6e807072eb913",
+        "relativeBlob": "blobs/c8da07c75bdc3ff36752f3f33f2beb000a78a02aced96ce70ca6e807072eb913.json"
+      }
+    },
+    {
+      "id": "vite-manifest",
+      "packageAlias": "vite",
+      "relativePath": "package.json",
+      "authenticObservedPath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_28053986ce44d27c9f2b7b250e1bd5a3/node_modules/@voidzero-dev/vite-plus-core/package.json",
+      "body": {
+        "bytes": 5780,
+        "sha256": "f8384e17dcf188e8777341fe973e07556f56c6f70ba09f09ee1d092070f090aa",
+        "relativeBlob": "blobs/f8384e17dcf188e8777341fe973e07556f56c6f70ba09f09ee1d092070f090aa.json"
+      }
+    },
+    {
+      "id": "vue-import-types",
+      "packageAlias": "vue",
+      "relativePath": "dist/vue.d.mts",
+      "body": {
+        "bytes": 507,
+        "sha256": "cbc939cd9351f7e21a265536da5d5a0ad132a555b43687e64819722761f4dfd0",
+        "relativeBlob": "blobs/cbc939cd9351f7e21a265536da5d5a0ad132a555b43687e64819722761f4dfd0.json"
+      },
+      "declaredBy": [
+        "exports",
+        ".",
+        "import",
+        "types"
+      ],
+      "independentSourceRead": {
+        "observedPath": "/Users/ubugeeei/Library/Caches/vize/canon/projects/a4cc3e20b0d347f158e7eb410e090c957cc32f74794980dd5ab3738c7780112a/node_modules/vue/dist/vue.d.mts",
+        "packageManifestSHA256": "cee6c3f39c78ad85415fa0afbfd19fd3f9fdee0f04d92f1d33ce1fcc3ad757b9",
+        "bytes": 507,
+        "sha256": "cbc939cd9351f7e21a265536da5d5a0ad132a555b43687e64819722761f4dfd0",
+        "oldNativeLoadedCredit": false
+      }
+    },
+    {
+      "id": "vue-manifest",
+      "packageAlias": "vue",
+      "relativePath": "package.json",
+      "authenticObservedPath": "/Users/ubugeeei/Library/Caches/vize/canon/projects/a4cc3e20b0d347f158e7eb410e090c957cc32f74794980dd5ab3738c7780112a/node_modules/vue/package.json",
+      "body": {
+        "bytes": 2881,
+        "sha256": "cee6c3f39c78ad85415fa0afbfd19fd3f9fdee0f04d92f1d33ce1fcc3ad757b9",
+        "relativeBlob": "blobs/cee6c3f39c78ad85415fa0afbfd19fd3f9fdee0f04d92f1d33ce1fcc3ad757b9.json"
+      }
+    },
+    {
+      "id": "vue-require-types",
+      "packageAlias": "vue",
+      "relativePath": "dist/vue.d.ts",
+      "authenticObservedPath": "/Users/ubugeeei/Library/Caches/vize/canon/projects/a4cc3e20b0d347f158e7eb410e090c957cc32f74794980dd5ab3738c7780112a/node_modules/vue/dist/vue.d.ts",
+      "declaredBy": [
+        "exports",
+        ".",
+        "require",
+        "types"
+      ],
+      "body": {
+        "bytes": 507,
+        "sha256": "cbc939cd9351f7e21a265536da5d5a0ad132a555b43687e64819722761f4dfd0",
+        "relativeBlob": "blobs/cbc939cd9351f7e21a265536da5d5a0ad132a555b43687e64819722761f4dfd0.json"
+      }
+    }
+  ],
+  "scope": "exact authentic package roles plus manifest-bound current import-entry source read; actual native loaded identities are separate"
+}

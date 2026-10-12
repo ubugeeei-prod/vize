@@ -32,7 +32,11 @@ impl VirtualProject {
                 .insert(registered.file.virtual_path.clone());
         }
         let auto_import_count = self.virtual_ts_options.auto_import_stubs.len();
-        let mut artifacts = SourceArtifacts::default();
+        let mut artifacts = SourceArtifacts {
+            empty_module_exports: registered.empty_module_exports,
+            star_projection: registered.star_projection,
+            ..Default::default()
+        };
         if is_musea_art_vue_path(&registered.file.original_path)
             && !self
                 .virtual_ts_options

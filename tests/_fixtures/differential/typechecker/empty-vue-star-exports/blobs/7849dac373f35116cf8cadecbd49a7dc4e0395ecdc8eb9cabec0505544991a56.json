@@ -1,0 +1,5 @@
+{
+  "bytes": 41,
+  "sha256": "7849dac373f35116cf8cadecbd49a7dc4e0395ecdc8eb9cabec0505544991a56",
+  "wholeUtf8": "export type Indirect = { marker: true };\n"
+}

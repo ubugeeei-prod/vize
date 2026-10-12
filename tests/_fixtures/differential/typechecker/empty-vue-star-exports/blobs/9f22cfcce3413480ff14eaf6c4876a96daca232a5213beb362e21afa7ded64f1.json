@@ -1,0 +1,5 @@
+{
+  "bytes": 342,
+  "sha256": "9f22cfcce3413480ff14eaf6c4876a96daca232a5213beb362e21afa7ded64f1",
+  "wholeUtf8": "{\n  \"compilerOptions\": {\n    \"allowImportingTsExtensions\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true,\n    \"noUncheckedSideEffectImports\": false,\n    \"strict\": true,\n    \"target\": \"ES2022\"\n  },\n  \"exclude\": [],\n  \"include\": [\n    \"__vize_helpers.d.ts\",\n    \"__vize_vue_modules.d.ts\",\n    \"*.ts\"\n  ]\n}\n"
+}

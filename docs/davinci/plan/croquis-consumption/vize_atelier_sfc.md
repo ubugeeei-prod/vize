@@ -11,12 +11,12 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | product                     | kind  | module    | files | sites |
 | --------------------------- | ----- | --------- | ----: | ----: |
 | `BindingMetadata`           | type  | `croquis` |    13 |    34 |
-| `Croquis`                   | type  | `croquis` |    12 |    35 |
-| `Drawer`                    | type  | `drawer`  |     3 |    18 |
+| `Croquis`                   | type  | `croquis` |    12 |    39 |
+| `Drawer`                    | type  | `drawer`  |     3 |    21 |
 | `DrawerOptions`             | type  | `drawer`  |     1 |     5 |
 | `ScopeKind`                 | type  | `scope`   |     1 |     2 |
-| `Croquis.binding_spans`     | field | `croquis` |     2 |     2 |
-| `Croquis.bindings`          | field | `croquis` |     7 |    23 |
+| `Croquis.binding_spans`     | field | `croquis` |     3 |     3 |
+| `Croquis.bindings`          | field | `croquis` |     8 |    25 |
 | `Croquis.import_statements` | field | `croquis` |     1 |     2 |
 | `Croquis.macros`            | field | `croquis` |     7 |    18 |
 | `Croquis.scopes`            | field | `croquis` |     1 |     2 |
@@ -46,9 +46,9 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `ScriptParseResult`                         |     1 |     1 |
 | `ScriptParserOptions`                       |     1 |     1 |
 | `SfcCustomBlock`                            |     2 |     2 |
-| `SfcDescriptor`                             |    20 |    49 |
+| `SfcDescriptor`                             |    21 |    52 |
 | `SfcError`                                  |    22 |    65 |
-| `SfcParseOptions`                           |    27 |   136 |
+| `SfcParseOptions`                           |    28 |   141 |
 | `SfcScriptBlock`                            |     2 |     2 |
 | `SfcStyleBlock`                             |     5 |     8 |
 | `SfcTemplateBlock`                          |     7 |     9 |

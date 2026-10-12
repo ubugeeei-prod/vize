@@ -1,0 +1,76 @@
+{
+  "name": "authored-duplicate-before",
+  "argv": [
+    "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@typescript+typescript-darwin-arm64@7.0.2/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+    "--checkers",
+    "1",
+    "--pretty",
+    "false",
+    "--project",
+    "/tmp/vize-canon-star-barrel-counterfactual-authentic-providers-20261012/authored-duplicate-before/tsconfig.json"
+  ],
+  "cwd": "/tmp/vize-canon-star-barrel-counterfactual-authentic-providers-20261012/authored-duplicate-before",
+  "exitCode": 1,
+  "wallNanoseconds": 797875375,
+  "wholeStdoutUtf8": "../../../../tmp/vize-canon-star-barrel-counterfactual-authentic-providers-20261012/authored-duplicate-before/barrel.ts(2,1): error TS2308: Module './A.vue.ts' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.\n../../../../tmp/vize-canon-star-barrel-counterfactual-authentic-providers-20261012/authored-duplicate-before/barrel.ts(2,1): error TS2308: Module './A.vue.ts' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.\n../../../../tmp/vize-canon-star-barrel-counterfactual-authentic-providers-20261012/authored-duplicate-before/barrel.ts(2,1): error TS2308: Module './A.vue.ts' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.\n../../../../tmp/vize-canon-star-barrel-counterfactual-authentic-providers-20261012/authored-duplicate-before/barrel.ts(6,1): error TS2308: Module './left.ts' has already exported a member named 'Shared'. Consider explicitly re-exporting to resolve the ambiguity.\n",
+  "wholeStderrBytes": [],
+  "stdoutSha256": "166f4590e9977e75adb57b65b8e4a1f2c62131a911d2d59688558ea3cdc23183",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "inputs": {
+    "A.vue.ts": {
+      "bytes": 5759,
+      "sha256": "7bb0ab12259c36baec1340f2dd92a3cea96732714fb4a7c6d3538e3ed0eb6a8f",
+      "relativeBlob": "blobs/7bb0ab12259c36baec1340f2dd92a3cea96732714fb4a7c6d3538e3ed0eb6a8f.json"
+    },
+    "B.vue.ts": {
+      "bytes": 5759,
+      "sha256": "7bb0ab12259c36baec1340f2dd92a3cea96732714fb4a7c6d3538e3ed0eb6a8f",
+      "relativeBlob": "blobs/7bb0ab12259c36baec1340f2dd92a3cea96732714fb4a7c6d3538e3ed0eb6a8f.json"
+    },
+    "A.vue": {
+      "bytes": 233,
+      "sha256": "c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61",
+      "relativeBlob": "blobs/c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61.json"
+    },
+    "B.vue": {
+      "bytes": 233,
+      "sha256": "c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61",
+      "relativeBlob": "blobs/c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61.json"
+    },
+    "__vize_helpers.d.ts": {
+      "bytes": 28193,
+      "sha256": "c861a2681e7472803dd082e8667ba69bb20dbcd65a12fe96d7eab411099aab76",
+      "relativeBlob": "blobs/c861a2681e7472803dd082e8667ba69bb20dbcd65a12fe96d7eab411099aab76.json"
+    },
+    "__vize_vue_modules.d.ts": {
+      "bytes": 63,
+      "sha256": "e14058b0c703cd7df25c2b88f9889f993bafb343f51e7f1942192242932d651a",
+      "relativeBlob": "blobs/e14058b0c703cd7df25c2b88f9889f993bafb343f51e7f1942192242932d651a.json"
+    },
+    "tsconfig.json": {
+      "bytes": 342,
+      "sha256": "9f22cfcce3413480ff14eaf6c4876a96daca232a5213beb362e21afa7ded64f1",
+      "relativeBlob": "blobs/9f22cfcce3413480ff14eaf6c4876a96daca232a5213beb362e21afa7ded64f1.json"
+    },
+    "consumer.ts": {
+      "bytes": 337,
+      "sha256": "3d06469c0d63a437dc4e67cabede017df8087c77f70497bd7765239fa5bebc10",
+      "relativeBlob": "blobs/3d06469c0d63a437dc4e67cabede017df8087c77f70497bd7765239fa5bebc10.json"
+    },
+    "left.ts": {
+      "bytes": 41,
+      "sha256": "49d70afae93c30974d12147c570993c90c907dd5e3dbe7aae5472e6632182eaa",
+      "relativeBlob": "blobs/49d70afae93c30974d12147c570993c90c907dd5e3dbe7aae5472e6632182eaa.json"
+    },
+    "right.ts": {
+      "bytes": 42,
+      "sha256": "b7cb666e2b2577499982d842fc9026f980354ca2f4bc28efae9d1da99e40acf6",
+      "relativeBlob": "blobs/b7cb666e2b2577499982d842fc9026f980354ca2f4bc28efae9d1da99e40acf6.json"
+    },
+    "barrel.ts": {
+      "bytes": 197,
+      "sha256": "b5b1329139699db3d0332f0ad54a552f6fd84403207b381d3ef1340a93e2dd99",
+      "relativeBlob": "blobs/b5b1329139699db3d0332f0ad54a552f6fd84403207b381d3ef1340a93e2dd99.json"
+    }
+  }
+}

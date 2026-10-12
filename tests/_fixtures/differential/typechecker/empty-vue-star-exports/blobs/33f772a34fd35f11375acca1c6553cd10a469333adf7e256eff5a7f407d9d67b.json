@@ -1,0 +1,5 @@
+{
+  "bytes": 309,
+  "sha256": "33f772a34fd35f11375acca1c6553cd10a469333adf7e256eff5a7f407d9d67b",
+  "wholeUtf8": "<script lang=\"ts\">\nexport type Authored = { marker: 'authored' };\n</script>\n<script setup lang=\"ts\">\ndefineProps<{ title?: string }>()\ndefineSlots<{ default(props: { label: string; items: { label: string }[] }): unknown }>()\n</script>\n<template><slot label=\"typed\" :items=\"[{ label: 'child' }]\" /></template>\n"
+}

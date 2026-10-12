@@ -43,6 +43,7 @@ mod document;
 mod editor_projection;
 mod incremental_graph;
 mod module_projection;
+mod star_exports;
 pub use document::{
     VueDocumentVirtualTs, VueDocumentVirtualTsOptions, generate_vue_document_virtual_ts,
     generate_vue_document_virtual_ts_with_options,
@@ -269,10 +270,8 @@ pub struct VirtualProject {
         FxHashMap<crate::package_route::PackageRouteKey, Vec<(PathBuf, PathBuf)>>,
     incremental_package_link_scopes: FxHashSet<PathBuf>,
     incremental_link_topology_dirty: bool,
-
     /// Enable Vue 2.7 / Nuxt 2 Options API compatibility for virtual files.
     options_api: bool,
-
     /// Editor sessions register reachable in-root scripts too: they have no
     /// generated tsconfig aliasing `.vue` imports into the mirror, so a barrel
     /// like `src/Primitive/index.ts` must be mirrored for its `.vue`
@@ -283,7 +282,6 @@ pub struct VirtualProject {
     editor_document_options: Option<VueDocumentVirtualTsOptions>,
     pre_rewrite_code: FxHashMap<PathBuf, vize_carton::String>,
     legacy_vue2: bool,
-
     /// Opt-in type-checking of `.jsx`/`.tsx` Vue components (#1497). Default-off:
     /// when disabled, `.jsx`/`.tsx` are passed to TypeScript verbatim (React
     /// passthrough); when enabled, they are routed through the Vize JSX
@@ -347,4 +345,6 @@ pub struct VirtualProject {
 struct SourceArtifacts {
     virtual_paths: Vec<PathBuf>,
     passthrough_paths: Vec<PathBuf>,
+    empty_module_exports: bool,
+    star_projection: Option<star_exports::StarProjection>,
 }

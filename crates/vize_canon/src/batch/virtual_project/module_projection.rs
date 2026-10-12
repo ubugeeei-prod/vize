@@ -5,7 +5,7 @@ use std::path::Path;
 use vize_carton::{FxHashSet, String};
 
 use super::{VirtualFile, VirtualProject};
-use crate::batch::import_rewriter::VirtualProjectRewriteOptions;
+use crate::batch::import_rewriter::{VirtualProjectRewriteOptions, apply_captured_empty_vue_stars};
 use crate::{PackageResolutionContext, PackageResolutionMode};
 
 impl VirtualProject {
@@ -77,9 +77,9 @@ impl VirtualProject {
                 };
                 let source_type = super::build::source_type_for_path(&file.virtual_path)?;
                 let roots = (self.project_root.as_path(), self.virtual_root.as_path());
-                let rewritten = if file.source_map.sfc_map.is_some() {
+                let (rewritten, stars) = if file.source_map.sfc_map.is_some() {
                     self.rewriter
-                        .rewrite_generated_for_virtual_project_with_alias_policy(
+                        .rewrite_generated_for_virtual_project_with_captured_stars(
                             source,
                             source_type,
                             roots,
@@ -87,14 +87,23 @@ impl VirtualProject {
                             options,
                         )
                 } else {
-                    self.rewriter.rewrite_for_virtual_project_with_policy(
-                        source,
-                        source_type,
-                        roots,
-                        file.original_path.parent(),
-                        options,
-                    )
+                    self.rewriter
+                        .rewrite_for_virtual_project_with_captured_stars(
+                            source,
+                            source_type,
+                            roots,
+                            file.original_path.parent(),
+                            options,
+                        )
                 };
+                let rewritten = apply_captured_empty_vue_stars(
+                    &rewritten.code,
+                    &rewritten.source_map,
+                    &stars,
+                    |specifier, projected, _mode| {
+                        self.known_empty_vue_target(file, specifier, projected)
+                    },
+                );
                 Some((file.virtual_path.clone(), rewritten))
             })
             .collect::<Vec<_>>();
@@ -123,34 +132,66 @@ impl VirtualProject {
             .virtual_files_sorted()
             .into_iter()
             .filter(|file| {
-                file.original_path
-                    .file_name()
-                    .and_then(|name| name.to_str())
-                    .is_some_and(|name| {
-                        name.ends_with(".d.ts")
-                            || name.ends_with(".d.mts")
-                            || name.ends_with(".d.cts")
-                    })
+                self.source_artifacts
+                    .get(&file.original_path)
+                    .is_some_and(|owner| owner.star_projection.is_some())
+                    || file
+                        .original_path
+                        .file_name()
+                        .and_then(|name| name.to_str())
+                        .is_some_and(|name| {
+                            name.ends_with(".d.ts")
+                                || name.ends_with(".d.mts")
+                                || name.ends_with(".d.cts")
+                        })
             })
             .filter_map(|file| {
+                let declaration =
+                    crate::batch::declaration_path::is_declaration_file(&file.original_path);
+                if !declaration {
+                    let base = self
+                        .source_artifacts
+                        .get(&file.original_path)?
+                        .star_projection
+                        .as_ref()?;
+                    let rewritten = apply_captured_empty_vue_stars(
+                        &base.code,
+                        &base.source_map,
+                        &base.stars,
+                        |specifier, projected, _mode| {
+                            self.known_empty_vue_target(file, specifier, projected)
+                        },
+                    );
+                    return Some((file.virtual_path.clone(), rewritten));
+                }
                 let source = self.original_contents.get(&file.virtual_path)?;
                 if !crate::batch::import_rewriter::source_may_contain_relative_specifier(source) {
                     return None;
                 }
                 let source_type = super::build::source_type_for_path(&file.virtual_path)?;
                 let roots = (self.project_root.as_path(), self.virtual_root.as_path());
-                let rewritten = self.rewriter.rewrite_for_virtual_project_with_policy(
-                    source,
-                    source_type,
-                    roots,
-                    file.original_path.parent(),
-                    VirtualProjectRewriteOptions {
-                        preserve_relative_declarations: self
-                            .is_package_route_path(&file.original_path)
-                            || self.session_scripts,
-                        mirrorable_project_files: Some(&mirrorable),
-                        alias_rewrite_policy: Some(self.alias_rewrite_policy()),
-                        module_resolver: None,
+                let (rewritten, stars) = self
+                    .rewriter
+                    .rewrite_for_virtual_project_with_captured_stars(
+                        source,
+                        source_type,
+                        roots,
+                        file.original_path.parent(),
+                        VirtualProjectRewriteOptions {
+                            preserve_relative_declarations: self
+                                .is_package_route_path(&file.original_path)
+                                || self.session_scripts,
+                            mirrorable_project_files: Some(&mirrorable),
+                            alias_rewrite_policy: Some(self.alias_rewrite_policy()),
+                            module_resolver: None,
+                        },
+                    );
+                let rewritten = apply_captured_empty_vue_stars(
+                    &rewritten.code,
+                    &rewritten.source_map,
+                    &stars,
+                    |specifier, projected, _mode| {
+                        self.known_empty_vue_target(file, specifier, projected)
                     },
                 );
                 Some((file.virtual_path.clone(), rewritten))

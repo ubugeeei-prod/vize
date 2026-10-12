@@ -50,6 +50,7 @@ pub struct Drawer {
     /// both the parse and any clone.
     pub(crate) ident_cache: FxHashMap<CompactString, Vec<CompactString>>,
     pub(super) occurrence_capture: Option<Box<super::occurrences::OccurrenceCapture>>,
+    pub(super) module_export_capture: Option<crate::script_parser::ModuleExportCapture>,
 }
 
 impl Drawer {
@@ -81,6 +82,7 @@ impl Drawer {
             template_source: CompactString::default(),
             ident_cache: FxHashMap::default(),
             occurrence_capture: None,
+            module_export_capture: None,
         }
     }
 
@@ -106,6 +108,7 @@ impl Drawer {
             template_source: CompactString::default(),
             ident_cache: FxHashMap::default(),
             occurrence_capture: None,
+            module_export_capture: None,
         };
         match packet {
             Some(packet) => drawer.with_binding_occurrence_packet(packet),

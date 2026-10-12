@@ -1,0 +1,49 @@
+{
+  "id": "missing-refusal",
+  "nativeContract": "projection-refusal-observation",
+  "inputs": [
+    {
+      "file": "tsconfig.json",
+      "bytes": 254,
+      "sha256": "aff76fd6ad18712292612c21db66690dc61bc7c9ad3d3fa9df4ac8017420021b",
+      "relativeBlob": "blobs/aff76fd6ad18712292612c21db66690dc61bc7c9ad3d3fa9df4ac8017420021b.json"
+    },
+    {
+      "file": "A.vue",
+      "bytes": 233,
+      "sha256": "c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61",
+      "relativeBlob": "blobs/c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61.json"
+    },
+    {
+      "file": "B.vue",
+      "bytes": 233,
+      "sha256": "c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61",
+      "relativeBlob": "blobs/c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61.json"
+    },
+    {
+      "file": "consumer.ts",
+      "bytes": 334,
+      "sha256": "56e5d9ea90156fe4c89823f50435c08f26fa0bf79f5748915f555a13318dc287",
+      "relativeBlob": "blobs/56e5d9ea90156fe4c89823f50435c08f26fa0bf79f5748915f555a13318dc287.json"
+    },
+    {
+      "file": "barrel.ts",
+      "bytes": 160,
+      "sha256": "c5039c3cb0348983507c981097cfaa9399e2a5fb1ea1b7986b241dd8034ca35c",
+      "relativeBlob": "blobs/c5039c3cb0348983507c981097cfaa9399e2a5fb1ea1b7986b241dd8034ca35c.json"
+    }
+  ],
+  "semanticGolden": "unrecorded; complete native result retained as observation only",
+  "projectedEquals": {
+    "consumer.ts": {
+      "bytes": 337,
+      "sha256": "3d06469c0d63a437dc4e67cabede017df8087c77f70497bd7765239fa5bebc10",
+      "relativeBlob": "blobs/3d06469c0d63a437dc4e67cabede017df8087c77f70497bd7765239fa5bebc10.json"
+    },
+    "barrel.ts": {
+      "bytes": 208,
+      "sha256": "747a8bbbd5c91e0ed763fb3dc197706678662a7222495c99faea166b46500ddf",
+      "relativeBlob": "blobs/747a8bbbd5c91e0ed763fb3dc197706678662a7222495c99faea166b46500ddf.json"
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "id": "script-src-refusal",
+  "nativeContract": "projection-refusal-observation",
+  "inputs": [
+    {
+      "file": "tsconfig.json",
+      "bytes": 254,
+      "sha256": "aff76fd6ad18712292612c21db66690dc61bc7c9ad3d3fa9df4ac8017420021b",
+      "relativeBlob": "blobs/aff76fd6ad18712292612c21db66690dc61bc7c9ad3d3fa9df4ac8017420021b.json"
+    },
+    {
+      "file": "A.vue",
+      "bytes": 281,
+      "sha256": "d774b0a1075d3843ec0123c9a272f84e945f1eae62103633d75292e229a85a11",
+      "relativeBlob": "blobs/d774b0a1075d3843ec0123c9a272f84e945f1eae62103633d75292e229a85a11.json"
+    },
+    {
+      "file": "B.vue",
+      "bytes": 233,
+      "sha256": "c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61",
+      "relativeBlob": "blobs/c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61.json"
+    },
+    {
+      "file": "consumer.ts",
+      "bytes": 334,
+      "sha256": "56e5d9ea90156fe4c89823f50435c08f26fa0bf79f5748915f555a13318dc287",
+      "relativeBlob": "blobs/56e5d9ea90156fe4c89823f50435c08f26fa0bf79f5748915f555a13318dc287.json"
+    },
+    {
+      "file": "barrel.ts",
+      "bytes": 130,
+      "sha256": "a7c105b81822b7324998a2ec9447f2121058630315560bac31687380bd35df89",
+      "relativeBlob": "blobs/a7c105b81822b7324998a2ec9447f2121058630315560bac31687380bd35df89.json"
+    },
+    {
+      "file": "external.ts",
+      "bytes": 41,
+      "sha256": "ae91adc36d57fe37278dc69c23c99b1434ea3b4791eab49b58faf9e0deb00739",
+      "relativeBlob": "blobs/ae91adc36d57fe37278dc69c23c99b1434ea3b4791eab49b58faf9e0deb00739.json"
+    }
+  ],
+  "semanticGolden": "unrecorded; complete native result retained as observation only",
+  "projectedEquals": {
+    "consumer.ts": {
+      "bytes": 337,
+      "sha256": "3d06469c0d63a437dc4e67cabede017df8087c77f70497bd7765239fa5bebc10",
+      "relativeBlob": "blobs/3d06469c0d63a437dc4e67cabede017df8087c77f70497bd7765239fa5bebc10.json"
+    },
+    "barrel.ts": {
+      "bytes": 143,
+      "sha256": "06d6d8ffa00fe1998ecdb58a9331696133547a2fb71fa15ef93422f5b27433da",
+      "relativeBlob": "blobs/06d6d8ffa00fe1998ecdb58a9331696133547a2fb71fa15ef93422f5b27433da.json"
+    },
+    "external.ts": {
+      "bytes": 41,
+      "sha256": "ae91adc36d57fe37278dc69c23c99b1434ea3b4791eab49b58faf9e0deb00739",
+      "relativeBlob": "blobs/ae91adc36d57fe37278dc69c23c99b1434ea3b4791eab49b58faf9e0deb00739.json"
+    }
+  }
+}

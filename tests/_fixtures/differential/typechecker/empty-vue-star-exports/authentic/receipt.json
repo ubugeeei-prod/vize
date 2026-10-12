@@ -1,0 +1,52 @@
+{
+  "sourcePacketPath": "/tmp/vize-canon-star-barrel-counterfactual-authentic-providers-20261012/whole-packets.json",
+  "sourcePacketSHA256": "a5e32916175feeb304fc88744cb5fcd94ca5f39ee385dad5ed573022d893129e",
+  "sourcePacketWholeBytes": {
+    "bytes": 289853,
+    "sha256": "a5e32916175feeb304fc88744cb5fcd94ca5f39ee385dad5ed573022d893129e",
+    "relativeBlob": "blobs/a5e32916175feeb304fc88744cb5fcd94ca5f39ee385dad5ed573022d893129e.json"
+  },
+  "metadata": {
+    "retainedPacketPath": "/tmp/vize-canon-lexical-dollar-contract-native/000-native-cli.json",
+    "retainedPacketSHA256": "0a844c8c913a692ce1064ffe2246f0b9925becdc186cf65e7fa82bff6026ec76",
+    "nativePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@typescript+typescript-darwin-arm64@7.0.2/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+    "nativeSHA256": "a82f731365ad69d5c4c15f5e18fba4584bf3b7b839960172a76c3462b5114bf2",
+    "generatedPanelWholeBodyExact": true,
+    "authoredPanelWholeBodyExact": true,
+    "helpersAndStubsWholeBodyExact": true,
+    "nodeModulesRealPath": "/Users/ubugeeei/Library/Caches/vize/canon/projects/a4cc3e20b0d347f158e7eb410e090c957cc32f74794980dd5ab3738c7780112a/node_modules",
+    "previousAbsentVuePacketsSHA256": "3fa075c473db36e1520484bd19b8d1e01c9166b4155e04e6886aed9fac6dc980",
+    "previousAbsentVitePacketsSHA256": "19226a0b76949d750550fa2026dbcc0f7360665f40b7a7ea9186b5027951dbcd",
+    "limits": "Native semantic class counterfactual over retained authentic whole projection. No current Canon producer fix, regenerated SFC qualification, source-only helper export removal, whole Nuxt/ReKa acceptance, performance comparison or fix-history closure credit."
+  },
+  "providers": {
+    "/Users/ubugeeei/Library/Caches/vize/canon/projects/a4cc3e20b0d347f158e7eb410e090c957cc32f74794980dd5ab3738c7780112a/node_modules/vue/package.json": {
+      "bytes": 2881,
+      "sha256": "cee6c3f39c78ad85415fa0afbfd19fd3f9fdee0f04d92f1d33ce1fcc3ad757b9",
+      "relativeBlob": "blobs/cee6c3f39c78ad85415fa0afbfd19fd3f9fdee0f04d92f1d33ce1fcc3ad757b9.json"
+    },
+    "/Users/ubugeeei/Library/Caches/vize/canon/projects/a4cc3e20b0d347f158e7eb410e090c957cc32f74794980dd5ab3738c7780112a/node_modules/vue/dist/vue.d.ts": {
+      "bytes": 507,
+      "sha256": "cbc939cd9351f7e21a265536da5d5a0ad132a555b43687e64819722761f4dfd0",
+      "relativeBlob": "blobs/cbc939cd9351f7e21a265536da5d5a0ad132a555b43687e64819722761f4dfd0.json"
+    },
+    "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_28053986ce44d27c9f2b7b250e1bd5a3/node_modules/@voidzero-dev/vite-plus-core/package.json": {
+      "bytes": 5780,
+      "sha256": "f8384e17dcf188e8777341fe973e07556f56c6f70ba09f09ee1d092070f090aa",
+      "relativeBlob": "blobs/f8384e17dcf188e8777341fe973e07556f56c6f70ba09f09ee1d092070f090aa.json"
+    },
+    "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_28053986ce44d27c9f2b7b250e1bd5a3/node_modules/@voidzero-dev/vite-plus-core/dist/vite/client.d.ts": {
+      "bytes": 5177,
+      "sha256": "c8da07c75bdc3ff36752f3f33f2beb000a78a02aced96ce70ca6e807072eb913",
+      "relativeBlob": "blobs/c8da07c75bdc3ff36752f3f33f2beb000a78a02aced96ce70ca6e807072eb913.json"
+    }
+  },
+  "packets": [
+    "authentic/positive-before.json",
+    "authentic/positive-counterfactual.json",
+    "authentic/wrong-prop-before.json",
+    "authentic/wrong-prop-counterfactual.json",
+    "authentic/authored-duplicate-before.json",
+    "authentic/authored-duplicate-counterfactual.json"
+  ]
+}

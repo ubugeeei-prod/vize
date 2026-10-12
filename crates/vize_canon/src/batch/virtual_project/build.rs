@@ -51,6 +51,8 @@ pub(super) struct RegisteredFile {
     /// reportable only under `checkJs` (see `javascript_sfc`, #3322).
     pub(super) unchecked_javascript: bool,
     pub(super) typed_router_import: bool,
+    pub(super) empty_module_exports: bool,
+    pub(super) star_projection: Option<super::star_exports::StarProjection>,
 }
 
 pub(super) fn build_registered_file(
@@ -103,6 +105,8 @@ pub(super) fn build_vue_registered_file(
         )
         .map_err(|error| CorsaError::SfcParse(error.message.to_compact_string()))
     )?;
+    let module_sources_known =
+        vize_atelier_sfc::croquis::descriptor_module_sources_are_known(&descriptor);
     let descriptor = prepare_script_blocks(descriptor);
 
     let use_tsx_virtual = descriptor_uses_jsx_script(&descriptor);
@@ -151,6 +155,7 @@ pub(super) fn build_vue_registered_file(
         mut prop_default_key_links,
         diagnostics,
         typed_router_import,
+        empty_module_exports,
     } = generated;
     if use_tsx_virtual {
         prepend_vue_jsx_reference(
@@ -160,11 +165,11 @@ pub(super) fn build_vue_registered_file(
             &mut prop_default_key_links,
         );
     }
-    let rewritten = profile!(
+    let (rewritten, stars) = profile!(
         "canon.import.rewrite.vue",
         context
             .rewriter
-            .rewrite_generated_for_virtual_project_with_alias_policy(
+            .rewrite_generated_for_virtual_project_with_captured_stars(
                 &code,
                 source_type,
                 (context.project_root, context.virtual_root),
@@ -177,6 +182,7 @@ pub(super) fn build_vue_registered_file(
                 },
             )
     );
+    let star_projection = super::star_exports::StarProjection::from_rewrite(&rewritten, stars);
     let mut projection = crate::virtual_ts::ProjectionMapping::from_parts(mappings, semantic_links);
     projection.set_prop_default_key_links(prop_default_key_links);
     let source_map = CompositeSourceMap::new_vue(
@@ -201,6 +207,7 @@ pub(super) fn build_vue_registered_file(
     };
 
     Ok(RegisteredFile {
+        star_projection,
         file: VirtualFile {
             content: rewritten.code,
             source_map,
@@ -220,6 +227,7 @@ pub(super) fn build_vue_registered_file(
         diagnostics,
         unchecked_javascript: descriptor_is_unchecked_javascript(&descriptor),
         typed_router_import,
+        empty_module_exports: empty_module_exports && module_sources_known,
     })
 }
 

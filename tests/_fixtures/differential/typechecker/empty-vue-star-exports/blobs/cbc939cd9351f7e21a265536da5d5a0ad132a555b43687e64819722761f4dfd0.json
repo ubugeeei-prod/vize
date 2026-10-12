@@ -1,0 +1,5 @@
+{
+  "bytes": 507,
+  "sha256": "cbc939cd9351f7e21a265536da5d5a0ad132a555b43687e64819722761f4dfd0",
+  "wholeUtf8": "import { CompilerOptions } from \"@vue/compiler-dom\";\nimport { RenderFunction } from \"@vue/runtime-dom\";\nimport { withAsyncContext } from \"@vue/runtime-vapor\";\nexport * from \"@vue/runtime-dom\";\nexport * from \"@vue/runtime-vapor\";\n\n//#region \\0rolldown/runtime.js\n//#endregion\n//#region temp/packages/vue/src/index.d.ts\nexport declare function compileToFunction(template: string | HTMLElement, options?: CompilerOptions): RenderFunction;\n//#endregion\nexport { compileToFunction as compile, withAsyncContext };"
+}

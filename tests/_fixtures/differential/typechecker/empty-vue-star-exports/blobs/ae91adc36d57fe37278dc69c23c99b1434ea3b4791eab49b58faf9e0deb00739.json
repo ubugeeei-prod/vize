@@ -1,0 +1,5 @@
+{
+  "bytes": 41,
+  "sha256": "ae91adc36d57fe37278dc69c23c99b1434ea3b4791eab49b58faf9e0deb00739",
+  "wholeUtf8": "export type External = { marker: true };\n"
+}

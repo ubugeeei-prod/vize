@@ -13,6 +13,7 @@ pub(in crate::batch::virtual_project) struct GeneratedVueFile {
         Vec<crate::virtual_ts::VizeSemanticLink>,
     pub(in crate::batch::virtual_project) diagnostics: Vec<Diagnostic>,
     pub(in crate::batch::virtual_project) typed_router_import: bool,
+    pub(in crate::batch::virtual_project) empty_module_exports: bool,
 }
 
 #[derive(Clone, Copy)]
