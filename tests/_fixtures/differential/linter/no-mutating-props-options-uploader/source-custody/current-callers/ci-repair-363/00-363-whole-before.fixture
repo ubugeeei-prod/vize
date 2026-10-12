@@ -1,0 +1,136 @@
+{
+  "schema": "vize.no-mutating.current-callers.source-successor",
+  "version": 1,
+  "source": "2489128d5f8fab1b7442a1e5c09b4e1701cbf185",
+  "familyCounts": [
+    12,
+    11
+  ],
+  "moduleLayoutManifestSHA256": "e53d557df855bf8a365e56cdf3cd64772ea33b8032690df34eaed0c6ed444c5e",
+  "closedCurrentModules": [
+    {
+      "path": "tests/tooling/support/no-mutating-props-module-layout-source-custody.mjs",
+      "bytes": 11259,
+      "sha256": "6b3f047011243d9eccac6f4040159ca1a65be93c0f0c0cbc6bdd31969295dde9",
+      "gitBlob": "9eb2d33544818e511c066822c81aa2c8e50e6f52"
+    },
+    {
+      "path": "tests/tooling/support/no-mutating-props-source-custody.mjs",
+      "bytes": 10204,
+      "sha256": "19fd4d91089deb15ee216f8e365e97b9c2c6b54345661bd6c3baa4bc79e400b4",
+      "gitBlob": "4d81a2b6250c33feefe29f03439f9a6825419f99"
+    },
+    {
+      "path": "tests/tooling/support/no-mutating-props-test-correction-source-custody.mjs",
+      "bytes": 5363,
+      "sha256": "53a1af6753ffdab235406c70752cb871c57cf6a9c9971204b42083500a6af7a2",
+      "gitBlob": "a9d6bd8e1158e7959378ac09495051240ee58027"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-default-migration-host.ts",
+      "bytes": 3081,
+      "sha256": "6b6bffc7461f754b82ad996abf62cd6f958998212e95d4af600fa4b9bfa483d5",
+      "gitBlob": "c32f3cebeab5bebabaa076e011af188774f2b031"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-default-migration-manifest.json",
+      "bytes": 3738,
+      "sha256": "73e19d2b74c4488f8feb1214dd6dc15d0d4ff15f744994bc52d9288ee61e6e0d",
+      "gitBlob": "d5e7b8ef26209efe90cad29667607c2c2a2aaeba"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-setup.ts",
+      "bytes": 5704,
+      "sha256": "16fa61566684e0aa675186be50aa6405c3c88d223c7ad19a1d3747bf4cfad5e6",
+      "gitBlob": "2596bee2e95f28a1c6f046bc53279f821965c9b1"
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-git-reader-nodeep.ts",
+      "bytes": 6852,
+      "sha256": "ad25378cc7272fb2fde533d6a6796a9462dec3d3e157217abef13a5a69cf6a96",
+      "gitBlob": "d9e71bdcf154c8b4602ba38067a183c97731c4fd"
+    }
+  ],
+  "rule": {
+    "path": "crates/vize_patina/src/rule.rs",
+    "before": {
+      "path": "crates/vize_patina/src/rule.rs",
+      "bytes": 12547,
+      "sha256": "6dd7a1f3fb7ef88dd13278e1e9f73191cd922ab18e2524af22e7413fb6b15bc1",
+      "gitBlob": "b7dcb6da3168c457e44ac9d0af9da9aa3eae83cd",
+      "archive": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/02-before.fixture"
+    },
+    "after": {
+      "path": "crates/vize_patina/src/rule.rs",
+      "bytes": 12879,
+      "sha256": "6537cc95fb04eb4f8f51afd7dfea9e7a695b81a7f428e01ddb38e208478c34b5",
+      "gitBlob": "20a0e112b3e6434eb05b6c9502a54974aa550301",
+      "archive": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/02-after.fixture"
+    }
+  },
+  "laws": [
+    {
+      "path": "tests/tooling/reserved-suppression-default-routes.test.mjs",
+      "bytes": 6301,
+      "sha256": "c484cd05219c4c8d1e34664544cf9886743c3c2d401c29bcec4660c6537a7243",
+      "gitBlob": "edcdb956668fa8f9dc4e6577f96df175b27074fd",
+      "archive": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/01-original-law.fixture",
+      "cases": 1,
+      "after": {
+        "path": "tests/tooling/reserved-suppression-default-routes.test.mjs",
+        "bytes": 541,
+        "sha256": "3f3721e3aaeeef93f8dd98adbda208e1dd016f9bf8b401f04f1fb5b99a4c5bfe",
+        "gitBlob": "3a08324aec3df6995669e5c5731df4036e37eb92"
+      }
+    },
+    {
+      "path": "tests/tooling/warm-type-backed-default-migration-host.test.ts",
+      "bytes": 6794,
+      "sha256": "5084578fa77c215ee7555708d9cc6284826a36dced1a9f31c5e6b417a1447704",
+      "gitBlob": "d74f30fd0efb7c9412b37605f6c1d28f3b3e5757",
+      "archive": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/02-original-law.fixture",
+      "cases": 7,
+      "after": {
+        "path": "tests/tooling/warm-type-backed-default-migration-host.test.ts",
+        "bytes": 544,
+        "sha256": "f745834866d1507ab5324b2dcc4698541a1a78b0059840609dc16c87c530f8a0",
+        "gitBlob": "ad79fbb78b30e43c4b488f23d7b59594ae738daa"
+      }
+    },
+    {
+      "path": "tests/tooling/warm-type-backed-git-reader-nodeep.test.ts",
+      "bytes": 12629,
+      "sha256": "73527589546b593e96b58dba9f747d8e897bb5d53d476342dc9715cc25b70228",
+      "gitBlob": "03daad285234f476642a5933e179407e7e7bf478",
+      "archive": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/03-original-law.fixture",
+      "cases": 5,
+      "after": {
+        "path": "tests/tooling/warm-type-backed-git-reader-nodeep.test.ts",
+        "bytes": 539,
+        "sha256": "67751253a65713d602036d6356a5ea0bd5228a6f7f5e802810ba7bb5a50f367a",
+        "gitBlob": "76672b5e623a9478ce43c69f02aaf3920265e4fb"
+      }
+    }
+  ],
+  "historicalFrame": {
+    "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/literal-2489-source-frame.json.gz",
+    "bytes": 4209624,
+    "sha256": "ee3110c4fec3f0c83ab8e30c6d6de2fc2045a403e4092e76f41ded79cd74a230",
+    "gitBlob": "c7e5f70a21b9d55ebcea7ccf74f9e5d0190a3eb2"
+  },
+  "historicalFrameRows": 416,
+  "completeSubtreeScopes": [
+    "tests/performance/support/",
+    "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/",
+    "tests/_fixtures/differential/lint/setup-export-default-8090/",
+    "tests/_fixtures/differential/lint/props-deep-destructure-8090/",
+    "tests/_fixtures/differential/lint/reserved-suppression-8090/"
+  ],
+  "historicalNullablePaths": [],
+  "credit": {
+    "sourceOnly": true,
+    "compiled": false,
+    "native": false,
+    "performance": false
+  }
+}

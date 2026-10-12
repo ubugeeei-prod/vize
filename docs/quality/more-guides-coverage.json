@@ -241,9 +241,9 @@
     },
     {
       "route": "/rules/accessibility-structure",
-      "locales": ["en"],
+      "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, practical rule example, and next lint action revised; deployed review remains pending."
+      "note": "English and authored Japanese introductions explain when to review the eight structure rules and link to complete existing heading examples and the accessibility guide. Original reference packets, code, defaults, explicit img-alt selection and bookmarks are retained; native and deployed reader acceptance remain pending."
     },
     {
       "route": "/rules/migration",

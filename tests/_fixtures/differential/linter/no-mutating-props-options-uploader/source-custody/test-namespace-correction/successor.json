@@ -1,0 +1,54 @@
+{
+  "schema": "vize.lint.no-mutating-props-test-namespace-successor",
+  "version": 1,
+  "source": "dd760a4eb1299c88a1e58d4acc921a02e715844d",
+  "originalManifest": {
+    "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/successor.json",
+    "bytes": 22319,
+    "sha256": "052f284b2d11f94e6d81dc68096ae74e1334c8ab4323ccaa01951e94e20a7fd1",
+    "gitBlob": "0d077f4296d88ac6389774bfb1c03e453d5c99af"
+  },
+  "familyCounts": [
+    12,
+    11
+  ],
+  "changedPaths": [
+    "crates/vize_patina/src/rules/vue/no_mutating_props/options_api/tests.rs"
+  ],
+  "test": {
+    "path": "crates/vize_patina/src/rules/vue/no_mutating_props/options_api/tests.rs",
+    "before": {
+      "path": "crates/vize_patina/src/rules/vue/no_mutating_props/options_api/tests.rs",
+      "bytes": 13299,
+      "sha256": "322f83c1bc7e0a2772e3eaa1b28d9de3693aad0995715f0fe55b50aa53e40fc3",
+      "gitBlob": "e552fcbaee32518e284d8d3dd060fd96855c189b",
+      "archive": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/08-after.fixture"
+    },
+    "after": {
+      "bytes": 13291,
+      "sha256": "c9e4a7ee85ab8b09ed4fbfad27ce8f546f456f51289559f8d8e56a136565890e",
+      "gitBlob": "58bc5aa0deebd053494e3307ef8fd191d7d5ffbd",
+      "archive": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/test-namespace-correction/tests-after.rs.fixture"
+    }
+  },
+  "originalHelper": {
+    "path": "tests/tooling/support/no-mutating-props-source-custody.mjs",
+    "bytes": 9757,
+    "sha256": "2c9609f6bac7f05f2251c31fd0f3eeecb6e60a60f99f340a024ab2910f7bec3e",
+    "gitBlob": "c68f973cc217cfcecffddc6b709f404b913de4a3",
+    "archive": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/test-namespace-correction/original-no-mutating-props-source-custody.mjs.fixture"
+  },
+  "originalFourLaws": {
+    "path": "tests/tooling/no-mutating-props-source-custody.test.mjs",
+    "bytes": 8405,
+    "sha256": "2a62d67dd801fe7e18299ed1593d0dc7efb2132507e2b39e297e62b6db7c0e90",
+    "gitBlob": "2cf1a567fed31276d9f7e61cee637015bbb6b26b",
+    "archive": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/test-namespace-correction/original-no-mutating-props-source-custody.test.mjs.fixture"
+  },
+  "credit": {
+    "sourceOnly": true,
+    "compiled": false,
+    "native": false,
+    "performance": false
+  }
+}

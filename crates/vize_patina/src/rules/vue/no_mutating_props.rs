@@ -8,17 +8,14 @@
 //!
 //! ## Coverage
 //!
-//! In `<script setup>`, assignments and updates are checked against the actual
-//! bindings returned by `defineProps` (including destructured bindings and
-//! `withDefaults`). In templates, two positions mutate a prop directly:
-//! `v-model` bound to a prop, and an assignment (or `++` / `--`) inside a
-//! `v-on` inline handler. Assignments, updates, deletes, and mutating calls are
-//! checked with real oxc syntax rather than scanning source text.
+//! Oxc checks setup prop bindings (including destructuring and `withDefaults`),
+//! literal exported Options API instance bodies, and template `v-model`/handlers.
 //!
 
 mod handlers;
 mod mutation_targets;
 mod options;
+mod options_api;
 mod scope;
 mod script_mutations;
 #[cfg(test)]
@@ -50,7 +47,7 @@ static META: RuleMeta = RuleMeta {
 /// Disallow mutating props.
 #[derive(Default)]
 pub struct NoMutatingProps {
-    options: NoMutatingPropsOptions,
+    options: options_api::OptionsApiScript,
 }
 
 impl FactConsumer for NoMutatingProps {
@@ -60,7 +57,9 @@ impl FactConsumer for NoMutatingProps {
 
 impl NoMutatingProps {
     pub fn new(options: NoMutatingPropsOptions) -> Self {
-        Self { options }
+        Self {
+            options: options.into(),
+        }
     }
 
     /// Check if a `v-model` expression mutates a prop.
@@ -250,6 +249,10 @@ struct TemplateMutation {
 impl Rule for NoMutatingProps {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_sfc_script_rule(&self) -> Option<&dyn crate::rules::script::ScriptRule> {
+        Some(&self.options)
     }
 
     fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
