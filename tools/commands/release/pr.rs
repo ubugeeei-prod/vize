@@ -7,7 +7,7 @@
 //! [package]
 //! edition = "2024"
 //! ```
-//! Driver source pin: compressed-retirement-custody-v14.
+//! Driver source pin: decorated-integration-body-custody-v15.
 
 #[path = "../../support/release/pr_budget.rs"]
 mod pr_budget;
