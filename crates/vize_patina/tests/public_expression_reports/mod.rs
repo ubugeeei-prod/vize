@@ -7,7 +7,7 @@ use vize_l0::ToCompactString;
 use vize_patina::{
     LintPreset, LintResult, Linter,
     output::{OutputFormat, format_results},
-    rules::opinionated::type_aware::NoUnsafeTemplateBinding,
+    rules::type_aware::NoUnsafeTemplateBinding,
 };
 
 fn fixture_root() -> PathBuf {

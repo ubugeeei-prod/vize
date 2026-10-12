@@ -147,3 +147,5 @@ failure log; move only the helper's whole bytes to `tests/public_expression_repo
 in a move-only commit and use an ordinary `mod` declaration. The reviewed four
 production bodies and all original expectations remain byte-exact. No module
 layout gate or discovery rule changes.
+
+The next ordinary Rust build at `9eb54b68` rejected the integration helper's private rule import (`E0603`). The helper now imports the same existing public `rules::type_aware::NoUnsafeTemplateBinding` reexport. Production and all frozen whole oracles remain unchanged; compile/runtime qualification still awaits fresh Actions.
