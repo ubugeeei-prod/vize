@@ -190,6 +190,8 @@ test("namespace requires the actual fix in C and raw ancestry refuses unrelated 
     assert.throws(() => assertRawAncestor(root, required, unrelated), /absent from immutable/u);
     git(["replace", required, unrelated]);
     assertRawAncestor(root, required, cut);
+    git(["replace", unrelated, cut]);
+    assert.throws(() => assertRawAncestor(root, required, unrelated), /absent from immutable/u);
   } finally {
     fs.rmSync(root, { recursive: true });
   }
