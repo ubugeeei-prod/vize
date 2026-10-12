@@ -21,8 +21,9 @@ authored order. `MediaList::or` appends previously unseen conditions.
 
 ## Proposed private data flow
 
-This is a read-only design proposal. Safe legacy equivalence remains unproven;
-no production delta or expected-output replacement is approved by this record.
+The maintainer authorized additive before-capture source preparation against the
+already checked0.8 provider. Safe legacy equivalence remains unproven; production
+changes follow authenticated before observations and separate source review.
 
 1. Retain parallel physical file reservation, resolve, read and parse in phase1.
    Retain the actual source handles, parser options and source-map registrations.
@@ -83,3 +84,39 @@ cold/warm sample; no speed or allocation improvement is established yet.
 The next bounded slice is additive before-capture against the existing checked
 0.8 candidate provider. It must resolve these named gaps before a reviewed
 production repair, main admission, nominal API choice or publication.
+
+## Additive capture candidate
+
+The [whole input manifest](../../../tests/_fixtures/differential/css-engine-vendor-exit/bundler-before-inputs.json)
+contains21 distinct controls: six unchanged original whole vectors, reversed
+media and both absorption orders, a gated original-order alias control, and
+eleven named before-only graph/error/map/module/cycle controls. Each runs once
+in a fresh subprocess at pools1/8/32 in both debug and release:63 observations
+per profile. Known whole outputs are comparison fields; unknown outputs have
+no fabricated oracle and cannot grant acceptance.
+
+The first-context diamond has conditional duplicate-parent and conditional
+shared-child paths. Separate competing I/O/layer and parser/condition cases
+retain complete errors and physical locations. The map case gates a distinct
+file read and retains every source/content/name/location, complete map JSON,
+AST, license comment, module export/reference and source-map URL. Mixed module
+imports/composition, external-module constraints, ordinary self/two-file cycles
+and first root self-composition remain distinct observations.
+
+The source-only observer pins `b2205cf5a53ac57c4ad3c0a5d92cb649087fe402` /
+`da002e6f1068181afbf6e8472530bc628730ee75`, exact unchanged production and
+lockfile paths, checked bundler SHA532b321 and the whole original test module
+SHAe1d3d9d. The only dependency-manifest delta registers its named example.
+Existing130 imported files,20 original consumer authority files and all old
+tests remain authenticated before execution. A10-second child timeout or
+three-second missing read gate is preserved as failure, with immediate flushed
+provider events and full process stdout/stderr/exit/signal. One failed child
+does not discard later controls. The binary/source/compiler/manifest receipt is
+written before the first child. This is not an unsafe0.7 archive baseline.
+
+The existing Actions workflow adds only a dispatch `bundler-before` scope using
+the existing engine caches and two profile jobs. Ordinary PR/default dispatch
+keeps all original qualification jobs; this distinct capture does not report
+their skipped jobs as successful checks. Root/peer must review this concrete
+source before one genuine capture. No capture, production repair, source gate,
+queue, release, API compatibility or performance result is yet claimed.

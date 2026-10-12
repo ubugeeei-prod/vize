@@ -82,6 +82,11 @@ name = "serialize"
 path = "examples/serialize.rs"
 required-features = ["serde"]
 
+[[example]]
+name = "vize_bundler_before_observer"
+path = "examples/vize_bundler_before_observer.rs"
+required-features = ["bundler", "sourcemap", "serde"]
+
 [[test]]
 name = "cli_integration_tests"
 path = "tests/cli_integration_tests.rs"
