@@ -220,6 +220,7 @@ mimalloc = "=0.1.52"
 # CSS
 cssparser = "=0.37.0"
 lightningcss = { package = "vize_lightningcss", version = "=0.443.0", path = "vendor/lightningcss" }
+parcel_sourcemap = { package = "vize_parcel_sourcemap", version = "=0.443.0", path = "vendor/parcel_sourcemap" }
 parcel_selectors = "=0.28.3"
 
 # Terminal / layout
