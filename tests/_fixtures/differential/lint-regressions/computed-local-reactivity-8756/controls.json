@@ -58,12 +58,38 @@
   {
     "id": "async-reactive-owner",
     "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst shown = computed(async () => [1, 2].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }));\n</script>\n<template><p>control</p></template>\n",
-    "expectedSnapshotAndSpreadWarnings": 2
+    "expectedSnapshotAndSpreadWarnings": 2,
+    "expectedCliErrors": [
+      {
+        "ruleId": "script/no-async-in-computed",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-async-in-computed] Computed properties cannot be async. They must return a value synchronously.",
+        "line": 11,
+        "column": 15,
+        "endLine": 11,
+        "endColumn": 29,
+        "help": "Use ref with watch() and cleanup for async operations; abort or ignore stale work before assigning the result."
+      }
+    ]
   },
   {
     "id": "after-owner-await",
     "source": "<script setup lang=\"ts\">\nimport { computed, watchEffect, ref } from \"vue\";\nconst held = ref<{ id: number; shape: { rot: number } } | null>(null);\ndeclare const foo: (fn: () => unknown) => unknown;\ndeclare const tick: () => Promise<void>;\ndeclare const queued: unknown[];\ndeclare const values: number[];\ndeclare const custom: { map: (fn: (id: number) => unknown) => unknown };\ndeclare const mutate: () => number;\ndeclare const key: any, property: any, replacement: any;\nconst shown = computed(async () => { await tick(); return [1, 2].map((id) => { const h = held.value; return h?.id === id ? { id, ...h.shape } : { id, rot: 0 }; }); });\n</script>\n<template><p>control</p></template>\n",
-    "expectedSnapshotAndSpreadWarnings": 2
+    "expectedSnapshotAndSpreadWarnings": 2,
+    "expectedCliErrors": [
+      {
+        "ruleId": "script/no-async-in-computed",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-async-in-computed] Computed properties cannot be async. They must return a value synchronously.",
+        "line": 11,
+        "column": 15,
+        "endLine": 11,
+        "endColumn": 29,
+        "help": "Use ref with watch() and cleanup for async operations; abort or ignore stale work before assigning the result."
+      }
+    ]
   },
   {
     "id": "async-map-callback",

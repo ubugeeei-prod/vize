@@ -126,11 +126,18 @@ await test("source CLI reruns current ref reads and retains real snapshot/deferr
       save();
       assert.equal(result.error, undefined, scenario.id);
       assert.equal(result.signal, null, scenario.id);
-      assert.equal(result.status, 0, JSON.stringify(run));
+      const expectedErrors = scenario.expectedCliErrors ?? [];
+      assert.equal(result.status, expectedErrors.length === 0 ? 0 : 1, JSON.stringify(run));
       assert.deepEqual(result.stderr, Buffer.alloc(0), scenario.id);
       const packet = JSON.parse(result.stdout.toString("utf8"));
       assert.equal(packet.length, 1, scenario.id);
       assert.equal(packet[0].file, filename, scenario.id);
+      assert.deepEqual(
+        packet[0].messages.filter((message) => message.severity === 2),
+        expectedErrors,
+        scenario.id,
+      );
+      assert.equal(packet[0].errorCount, expectedErrors.length, scenario.id);
       const findings = packet[0].messages.filter((message) => message.ruleId === rule);
       const snapshots = findings.filter((message) =>
         /Assigning 'held\.value'|Spreading 'h\.shape'/.test(message.message),

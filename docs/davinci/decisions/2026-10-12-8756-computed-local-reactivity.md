@@ -94,3 +94,13 @@ the external issue. Reporter credit uses the verified public signed
 [5e929628 commit](https://github.com/naitokosuke/chirashitabi/commit/5e92962832595edf50c48ca7f24a8c7fed1f4e86):
 account 102337893, author ナイトウコウスケ,
 `102337893+naitokosuke@users.noreply.github.com`. It is not inferred from the login.
+
+The first real source-CLI campaign at `37080859` reached the authored async
+owner and correctly returned exit 1 with the existing
+`script/no-async-in-computed` error plus both snapshot/spread warnings.
+The consumer had incorrectly required exit 0 for every input. Its finite
+correction records that complete error packet for the two direct async owners,
+checks their exact error diagnostics/count and exit 1, and retains exit 0 with
+no errors for every other input. All 36 source bodies, the original opinionated
+config, the full snapshot/spread counts and every rule remain unchanged.
+The original failure is retained; fresh source and protected runs are required.
