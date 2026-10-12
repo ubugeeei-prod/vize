@@ -155,9 +155,9 @@
     },
     {
       "route": "/guide/musea-capture",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Capture defaults and report examples present; practical first-run flow still needs review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "English context and complete authored Japanese explain first capture and report reading while preserving the original recipe, defaults and node evidence fields. A localized stable VRT bookmark and exact editorial succession preserve the full existing Musea guide. Native capture and stable deployed reading acceptance remain required."
     },
     {
       "route": "/guide/musea-globals",
