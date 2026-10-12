@@ -222,6 +222,7 @@ void test(
       const routeCount = await observerCount(page);
       await previews(page, "Controls");
       await waitForNewNativeDelivery(page, routeCount);
+      await assertTarget(page, "Default", observations, "route:before-former-callback");
       observations.push(await replayFormerNativeDelivery(page, "__proto__"));
       await settle(page);
       await assertTarget(page, "Default", observations, "route:former-callback-refused");

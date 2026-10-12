@@ -26,6 +26,7 @@
     "keyboard",
     "tab-replacement",
     "route-replacement",
+    "no-hash-view-landing",
     "unmount",
     "pending-setup",
     "pending-hash-tab",

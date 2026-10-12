@@ -175,8 +175,12 @@ function toggleActions() {
 watch(
   () => [art.value?.path, activeTab.value] as const,
   () => {
-    void setupVariantObserver();
-    void syncSelectionFromHash();
+    if (activeTab.value === "variants" && !route.hash) {
+      handleVariantSelect(selectedVariantName.value);
+    } else {
+      void setupVariantObserver();
+      void syncSelectionFromHash();
+    }
   },
   { immediate: true, flush: "post" },
 );

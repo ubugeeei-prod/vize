@@ -126,3 +126,31 @@ callback and both compiled perturbation assertions/targets remain intact; no
 tall-viewport acceptance is claimed. Competing router requests test rapid
 replacement, while committed pending continuations are qualified by the distinct
 deterministic complete-source controls.
+
+Source26c25344 run38196741100 progressed through the original previews and new
+Keys observer, manual scroll, retained callback, tab and hash controls. Its
+original artifact11723334246 is 53,192,565 bytes, SHA256
+`cf1a4f088902b550f1ef5473f8e74195bff326d56a03d0b7c316a93286657fac`,
+with all1,931 ZIP CRCs valid. The whole984,591-byte owner packet SHA256
+`2ab1922b520cfd3a70e3faf41c480b072d520d5485dfe1c333effde9528e2e88`
+has no browser errors. On returning to Controls, Default is above the scroll
+viewport with `aria-current` absent; Custom theme is visible and selected, with
+the actual `.content` scroller at767. Actual observer21 delivers this visible
+Custom selection at2116.6 before formerly owned Keys callback18 is replayed at
+2166.3. This specific refusal is a retained landing-position failure, not a
+missing observer or stale callback result. All108 whole gallery input bodies
+and modes match actual checkout605b855c, and all122 built site members and both
+original fixture bodies are authenticated in the independent audit. The loaded
+native digest is retained from the actual producer receipt; the artifact has no
+native binary bytes for an independent binary rehash.
+
+For a Variants view/tab landing without a hash, the same existing post watcher
+now sends its intended current/default name through the existing instant
+selection controller. Hash and other tab branches keep their existing setup;
+the manual observer comparator/options, mounted hook and helper are unchanged.
+The additive physical law asserts the intended target and complete aria vector
+after fresh native delivery before replay, then retains its original post-replay
+assertion. A distinct complete-source control executes the actual view watcher:
+the original producer requests no landing scroll, while the candidate requests
+one instant scroll. Source10 controls pass locally; fresh full physical/native,
+compiled perturbation and protected qualification remain required.

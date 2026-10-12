@@ -120,6 +120,7 @@ function harness(script: string) {
     scrolls,
     tick: () => callbacks.splice(0).forEach((resolve) => resolve()),
     unmount: () => unmounts.forEach((callback) => callback()),
+    refreshNavigation: () => watches[1](),
     replaceRoute: () => {
       scope.artPath.value = "Controls";
       watches[0]();
@@ -201,6 +202,23 @@ void test("initial render observes refs created during the existing nextTick", a
     h.tick();
     await pending;
     assert.equal(h.observers.length, script === before ? 0 : 1);
+  }
+});
+
+void test("a no-hash view landing requests immediate intended selection before observing", async () => {
+  for (const script of [before, current]) {
+    const h = harness(script);
+    h.scope.route.hash = "";
+    h.refreshNavigation();
+    h.tick();
+    await Promise.resolve();
+    assert.equal(h.scrolls.length, script === before ? 0 : 1);
+    if (script === current) {
+      assert.deepEqual(h.scrolls[0], {
+        name: "first",
+        options: { behavior: "instant", block: "start" },
+      });
+    }
   }
 });
 
