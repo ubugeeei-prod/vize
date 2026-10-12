@@ -15,6 +15,14 @@ import {
   componentValueRetainedGuardPairs,
 } from "../performance/support/warm-type-backed-component-value-host.ts";
 
+import { retainedHostBeforeEmptyVueStars } from "./support/empty-vue-star-host-custody.ts";
+import { retainedPhysicalHostBeforeComponentValues } from "./support/component-value-host-custody.ts";
+import {
+  authenticateNoMutatingComponentJoinPhysical,
+  authenticateNoMutatingComponentJoinCommitted,
+} from "./support/no-mutating-component-join.mjs";
+import { authenticateJoinLiteralFrame } from "./support/no-mutating-component-join-frame.mjs";
+
 const root = path.resolve(import.meta.dirname, "../..");
 const host = "tests/performance/support/warm-type-backed-host-qualifications.ts";
 const adapter = "tests/tooling/support/empty-vue-star-host-custody.ts";
@@ -80,13 +88,10 @@ function observe(directory: string, supplied: string = "current") {
     const supplied = ${JSON.stringify(supplied)};
     const original = supplied === 'original'
       ? execFileSync('git', ['--no-replace-objects', 'show', '${source}:${host}']) : null;
-    const read = file => file !== '${host}' || supplied === 'current' || supplied === 'component'
+    const read = file => file !== '${host}' || supplied === 'current'
       ? fs.readFileSync(file) : supplied === 'original' ? original : Buffer.from(supplied);
     try {
-      const body = supplied === 'component'
-        ? (await import('./tests/tooling/support/component-value-host-custody.ts'))
-            .retainedPhysicalHostBeforeComponentValues(process.cwd())
-        : retainedHostBeforeEmptyVueStars(read);
+      const body = retainedHostBeforeEmptyVueStars(read);
       process.stdout.write(createHash('sha256').update(body).digest('hex'));
     } catch (error) { process.stderr.write(String(error)); process.exitCode = 1; }
   `;
@@ -119,14 +124,40 @@ test("all actual281 source bodies and nine metadata bodies precede the exact his
       assert.equal(result.stdout, originalSHA);
       assert.equal(result.stderr, "");
     }
-    const retained = observe(directory, "component");
-    assert.equal(retained.status, 0, retained.stderr);
-    assert.equal(
-      retained.stdout,
-      "fc37f5b9a81aa2245a92013adac0cad40aee147d51f66f0c96efc267503cc16f",
-    );
-    assert.equal(retained.stderr, "");
   });
+});
+
+void test("complete current290 Star and current323 NoMutating bodies precede the genuine historical NoUnused source check", () => {
+  const currentHead = git(root, ["rev-parse", "HEAD"]).toString().trim();
+  const retainedHook = retainedHostBeforeEmptyVueStars((file) =>
+    fs.readFileSync(path.join(root, file)),
+  );
+  assert.equal(sha(retainedHook), originalSHA);
+  const current = authenticateNoMutatingComponentJoinPhysical(root);
+  assert.equal(current.completeCurrentClosedBodies, 323);
+  assert.equal(authenticateNoMutatingComponentJoinCommitted(root), currentHead);
+  const declared = current.manifest.literalFrames.filter(
+    (row) => row.source === "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207",
+  );
+  assert.equal(declared.length, 1);
+  const historical = authenticateJoinLiteralFrame(root, declared[0]);
+  assert.equal(historical.frame.files.length, 683);
+  assert.deepEqual(retainedHook, fs.readFileSync(path.join(historical.root, host)));
+  const retained = retainedPhysicalHostBeforeComponentValues(historical.root);
+  assert.equal(sha(retained), "fc37f5b9a81aa2245a92013adac0cad40aee147d51f66f0c96efc267503cc16f");
+  assert.equal(current.sourceOnly, true);
+  assert.equal(current.compiled, false);
+  assert.equal(current.native, false);
+  assert.equal(current.performance, false);
+  assert.equal(current.currentOld111Receipt, null);
+  assert.equal(current.oldMigrationMeasurement, null);
+  assert.equal(current.oldSetupMeasurement, null);
+  assert.equal(git(root, ["rev-parse", "HEAD"]).toString().trim(), currentHead);
+  assert.equal(authenticateNoMutatingComponentJoinCommitted(root), currentHead);
+  assert.deepEqual(
+    retainedHostBeforeEmptyVueStars((file) => fs.readFileSync(path.join(root, file))),
+    retainedHook,
+  );
 });
 
 test("foreign and one-clause hybrid supplied hooks refuse before historical projection", () => {

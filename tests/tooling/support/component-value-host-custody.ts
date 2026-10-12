@@ -10,8 +10,6 @@ import {
   qualifyComponentValueRetainedGuards,
 } from "../../performance/support/warm-type-backed-component-value-host.ts";
 
-import { retainedHostBeforeEmptyVueStars } from "./empty-vue-star-host-custody.ts";
-
 const host = "tests/performance/support/warm-type-backed-host-qualifications.ts";
 const helper = "tests/performance/support/warm-type-backed-component-value-host.ts";
 const manifest = "tests/performance/support/warm-type-backed-component-value-manifest.json";
@@ -157,7 +155,7 @@ export function retainedHostBeforeComponentValues(
       .digest("hex"),
     original.gitBlob,
   );
-  const current = retainedHostBeforeEmptyVueStars(read);
+  const current = read(host);
   assert.ok(current);
   assert.equal(sha(current), "b19f6783e50429d2779efeb7d2d21c64dcd98a67810fc4f6a1ccc698febae337");
   const actualHelper = read(helper);
