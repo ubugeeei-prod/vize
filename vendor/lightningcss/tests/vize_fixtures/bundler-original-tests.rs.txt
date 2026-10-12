@@ -1,0 +1,1363 @@
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::{
+    css_modules::{self, CssModuleExports, CssModuleReference},
+    parser::ParserFlags,
+    stylesheet::{MinifyOptions, PrinterOptions},
+    targets::{Browsers, Targets},
+  };
+  use indoc::indoc;
+  use std::collections::HashMap;
+
+  #[derive(Clone)]
+  struct TestProvider {
+    map: HashMap<PathBuf, String>,
+  }
+
+  impl SourceProvider for TestProvider {
+    type Error = std::io::Error;
+
+    fn read<'a>(&'a self, file: &Path) -> Result<&'a str, Self::Error> {
+      Ok(self.map.get(file).unwrap())
+    }
+
+    fn resolve(&self, specifier: &str, originating_file: &Path) -> Result<ResolveResult, Self::Error> {
+      if specifier.starts_with("https:") {
+        Ok(ResolveResult::External(specifier.to_owned()))
+      } else {
+        Ok(originating_file.with_file_name(specifier).into())
+      }
+    }
+  }
+
+  /// Stand-in for a user-authored `SourceProvider` with application-specific logic.
+  struct CustomProvider {
+    map: HashMap<PathBuf, String>,
+  }
+
+  impl SourceProvider for CustomProvider {
+    type Error = std::io::Error;
+
+    /// Read files from in-memory map.
+    fn read<'a>(&'a self, file: &Path) -> Result<&'a str, Self::Error> {
+      Ok(self.map.get(file).unwrap())
+    }
+
+    /// Resolve by stripping a `foo:` prefix off any import. Specifiers without
+    /// this prefix fail with an error.
+    fn resolve(&self, specifier: &str, _originating_file: &Path) -> Result<ResolveResult, Self::Error> {
+      if specifier.starts_with("foo:") {
+        Ok(Path::new(&specifier["foo:".len()..]).to_path_buf().into())
+      } else {
+        let err = std::io::Error::new(
+          std::io::ErrorKind::NotFound,
+          format!(
+            "Failed to resolve `{}`, specifier does not start with `foo:`.",
+            &specifier
+          ),
+        );
+
+        Err(err)
+      }
+    }
+  }
+
+  macro_rules! fs(
+    { $($key:literal: $value:expr),* } => {
+      {
+        #[allow(unused_mut)]
+        let mut m = HashMap::new();
+        $(
+          m.insert(PathBuf::from($key), $value.to_owned());
+        )*
+        m
+      }
+    };
+  );
+
+  fn bundle<P: SourceProvider>(fs: P, entry: &str) -> String {
+    let mut bundler = Bundler::new(&fs, None, ParserOptions::default());
+    let stylesheet = bundler.bundle(Path::new(entry)).unwrap();
+    stylesheet.to_css(PrinterOptions::default()).unwrap().code
+  }
+
+  fn bundle_css_module<P: SourceProvider>(
+    fs: P,
+    entry: &str,
+    project_root: Option<&str>,
+  ) -> (String, CssModuleExports) {
+    bundle_css_module_with_pattern(fs, entry, project_root, "[hash]_[local]")
+  }
+
+  fn bundle_css_module_with_pattern<P: SourceProvider>(
+    fs: P,
+    entry: &str,
+    project_root: Option<&str>,
+    pattern: &'static str,
+  ) -> (String, CssModuleExports) {
+    let mut bundler = Bundler::new(
+      &fs,
+      None,
+      ParserOptions {
+        css_modules: Some(css_modules::Config {
+          dashed_idents: true,
+          pattern: css_modules::Pattern::parse(pattern).unwrap(),
+          ..Default::default()
+        }),
+        ..ParserOptions::default()
+      },
+    );
+    let mut stylesheet = bundler.bundle(Path::new(entry)).unwrap();
+    stylesheet.minify(MinifyOptions::default()).unwrap();
+    let res = stylesheet
+      .to_css(PrinterOptions {
+        project_root,
+        ..PrinterOptions::default()
+      })
+      .unwrap();
+    (res.code, res.exports.unwrap())
+  }
+
+  fn bundle_custom_media<P: SourceProvider>(fs: P, entry: &str) -> String {
+    let mut bundler = Bundler::new(
+      &fs,
+      None,
+      ParserOptions {
+        flags: ParserFlags::CUSTOM_MEDIA,
+        ..ParserOptions::default()
+      },
+    );
+    let mut stylesheet = bundler.bundle(Path::new(entry)).unwrap();
+    let targets = Targets {
+      browsers: Some(Browsers {
+        safari: Some(13 << 16),
+        ..Browsers::default()
+      }),
+      ..Default::default()
+    };
+    stylesheet
+      .minify(MinifyOptions {
+        targets,
+        ..MinifyOptions::default()
+      })
+      .unwrap();
+    stylesheet
+      .to_css(PrinterOptions {
+        targets,
+        ..PrinterOptions::default()
+      })
+      .unwrap()
+      .code
+  }
+
+  fn error_test<P: SourceProvider>(
+    fs: P,
+    entry: &str,
+    maybe_cb: Option<Box<dyn FnOnce(BundleErrorKind<P::Error>) -> ()>>,
+  ) {
+    let mut bundler = Bundler::new(&fs, None, ParserOptions::default());
+    let res = bundler.bundle(Path::new(entry));
+    match res {
+      Ok(_) => unreachable!(),
+      Err(e) => {
+        if let Some(cb) = maybe_cb {
+          cb(e.kind);
+        }
+      }
+    }
+  }
+
+  fn flatten_exports(exports: CssModuleExports) -> HashMap<String, String> {
+    let mut res = HashMap::new();
+    for (name, export) in &exports {
+      let mut classes = export.name.clone();
+      for composes in &export.composes {
+        classes.push(' ');
+        classes.push_str(match composes {
+          CssModuleReference::Local { name } => name,
+          CssModuleReference::Global { name } => name,
+          _ => unreachable!(),
+        })
+      }
+      res.insert(name.clone(), classes);
+    }
+    res
+  }
+
+  #[test]
+  fn test_bundle() {
+    let res = bundle(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          @import "b.css";
+          .a { color: red }
+        "#,
+          "/b.css": r#"
+          .b { color: green }
+        "#
+        },
+      },
+      "/a.css",
+    );
+    assert_eq!(
+      res,
+      indoc! { r#"
+      .b {
+        color: green;
+      }
+
+      .a {
+        color: red;
+      }
+    "#}
+    );
+
+    let res = bundle(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          @import "b.css" print;
+          .a { color: red }
+        "#,
+          "/b.css": r#"
+          .b { color: green }
+        "#
+        },
+      },
+      "/a.css",
+    );
+    assert_eq!(
+      res,
+      indoc! { r#"
+      @media print {
+        .b {
+          color: green;
+        }
+      }
+
+      .a {
+        color: red;
+      }
+    "#}
+    );
+
+    let res = bundle(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          @import "b.css" supports(color: green);
+          .a { color: red }
+        "#,
+          "/b.css": r#"
+          .b { color: green }
+        "#
+        },
+      },
+      "/a.css",
+    );
+    assert_eq!(
+      res,
+      indoc! { r#"
+      @supports (color: green) {
+        .b {
+          color: green;
+        }
+      }
+
+      .a {
+        color: red;
+      }
+    "#}
+    );
+
+    let res = bundle(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          @import "b.css" supports(color: green) print;
+          .a { color: red }
+        "#,
+          "/b.css": r#"
+          .b { color: green }
+        "#
+        },
+      },
+      "/a.css",
+    );
+    assert_eq!(
+      res,
+      indoc! { r#"
+      @supports (color: green) {
+        @media print {
+          .b {
+            color: green;
+          }
+        }
+      }
+
+      .a {
+        color: red;
+      }
+    "#}
+    );
+
+    let res = bundle(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          @import "b.css" print;
+          @import "b.css" screen;
+          .a { color: red }
+        "#,
+          "/b.css": r#"
+          .b { color: green }
+        "#
+        },
+      },
+      "/a.css",
+    );
+    assert_eq!(
+      res,
+      indoc! { r#"
+      @media print, screen {
+        .b {
+          color: green;
+        }
+      }
+
+      .a {
+        color: red;
+      }
+    "#}
+    );
+
+    let res = bundle(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          @import "b.css" supports(color: red);
+          @import "b.css" supports(foo: bar);
+          .a { color: red }
+        "#,
+          "/b.css": r#"
+          .b { color: green }
+        "#
+        },
+      },
+      "/a.css",
+    );
+    assert_eq!(
+      res,
+      indoc! { r#"
+      @supports (color: red) or (foo: bar) {
+        .b {
+          color: green;
+        }
+      }
+
+      .a {
+        color: red;
+      }
+    "#}
+    );
+
+    let res = bundle(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          @import "b.css" print;
+          .a { color: red }
+        "#,
+          "/b.css": r#"
+          @import "c.css" (color);
+          .b { color: yellow }
+        "#,
+          "/c.css": r#"
+          .c { color: green }
+        "#
+        },
+      },
+      "/a.css",
+    );
+    assert_eq!(
+      res,
+      indoc! { r#"
+      @media print and (color) {
+        .c {
+          color: green;
+        }
+      }
+
+      @media print {
+        .b {
+          color: #ff0;
+        }
+      }
+
+      .a {
+        color: red;
+      }
+    "#}
+    );
+
+    let res = bundle(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          @import "b.css";
+          .a { color: red }
+        "#,
+          "/b.css": r#"
+          @import "c.css";
+        "#,
+          "/c.css": r#"
+          @import "a.css";
+          .c { color: green }
+        "#
+        },
+      },
+      "/a.css",
+    );
+    assert_eq!(
+      res,
+      indoc! { r#"
+      .c {
+        color: green;
+      }
+
+      .a {
+        color: red;
+      }
+    "#}
+    );
+
+    let res = bundle(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          @import "b/c.css";
+          .a { color: red }
+        "#,
+          "/b/c.css": r#"
+          .b { color: green }
+        "#
+        },
+      },
+      "/a.css",
+    );
+    assert_eq!(
+      res,
+      indoc! { r#"
+      .b {
+        color: green;
+      }
+
+      .a {
+        color: red;
+      }
+    "#}
+    );
+
+    let res = bundle(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          @import "./b/c.css";
+          .a { color: red }
+        "#,
+          "/b/c.css": r#"
+          .b { color: green }
+        "#
+        },
+      },
+      "/a.css",
+    );
+    assert_eq!(
+      res,
+      indoc! { r#"
+      .b {
+        color: green;
+      }
+
+      .a {
+        color: red;
+      }
+    "#}
+    );
+
+    let res = bundle_custom_media(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          @import "media.css";
+          @import "b.css";
+          .a { color: red }
+        "#,
+          "/media.css": r#"
+          @custom-media --foo print;
+        "#,
+          "/b.css": r#"
+          @media (--foo) {
+            .a { color: green }
+          }
+        "#
+        },
+      },
+      "/a.css",
+    );
+    assert_eq!(
+      res,
+      indoc! { r#"
+      @media print {
+        .a {
+          color: green;
+        }
+      }
+
+      .a {
+        color: red;
+      }
+    "#}
+    );
+
+    let res = bundle(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          @import "b.css" layer(foo);
+          .a { color: red }
+        "#,
+          "/b.css": r#"
+          .b { color: green }
+        "#
+        },
+      },
+      "/a.css",
+    );
+    assert_eq!(
+      res,
+      indoc! { r#"
+      @layer foo {
+        .b {
+          color: green;
+        }
+      }
+
+      .a {
+        color: red;
+      }
+    "#}
+    );
+
+    let res = bundle(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          @import "b.css" layer;
+          .a { color: red }
+        "#,
+          "/b.css": r#"
+          .b { color: green }
+        "#
+        },
+      },
+      "/a.css",
+    );
+    assert_eq!(
+      res,
+      indoc! { r#"
+      @layer {
+        .b {
+          color: green;
+        }
+      }
+
+      .a {
+        color: red;
+      }
+    "#}
+    );
+
+    let res = bundle(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          @import "b.css" layer(foo);
+          .a { color: red }
+        "#,
+          "/b.css": r#"
+          @import "c.css" layer(bar);
+          .b { color: green }
+        "#,
+          "/c.css": r#"
+          .c { color: green }
+        "#
+        },
+      },
+      "/a.css",
+    );
+    assert_eq!(
+      res,
+      indoc! { r#"
+      @layer foo.bar {
+        .c {
+          color: green;
+        }
+      }
+
+      @layer foo {
+        .b {
+          color: green;
+        }
+      }
+
+      .a {
+        color: red;
+      }
+    "#}
+    );
+
+    let res = bundle(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          @import "b.css" layer(foo);
+          @import "b.css" layer(foo);
+        "#,
+          "/b.css": r#"
+          .b { color: green }
+        "#
+        },
+      },
+      "/a.css",
+    );
+    assert_eq!(
+      res,
+      indoc! { r#"
+      @layer foo {
+        .b {
+          color: green;
+        }
+      }
+    "#}
+    );
+
+    let res = bundle(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          @layer bar, foo;
+          @import "b.css" layer(foo);
+
+          @layer bar {
+            div {
+              background: red;
+            }
+          }
+        "#,
+          "/b.css": r#"
+          @layer qux, baz;
+          @import "c.css" layer(baz);
+
+          @layer qux {
+            div {
+              background: green;
+            }
+          }
+        "#,
+          "/c.css": r#"
+          div {
+            background: yellow;
+          }
+        "#
+        },
+      },
+      "/a.css",
+    );
+    assert_eq!(
+      res,
+      indoc! { r#"
+      @layer bar, foo;
+      @layer foo.qux, foo.baz;
+
+      @layer foo.baz {
+        div {
+          background: #ff0;
+        }
+      }
+
+      @layer foo {
+        @layer qux {
+          div {
+            background: green;
+          }
+        }
+      }
+
+      @layer bar {
+        div {
+          background: red;
+        }
+      }
+    "#}
+    );
+
+    // Layer order depends on @import conditions.
+    let res = bundle(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          @import "b.css" layer(bar) (min-width: 1000px);
+
+          @layer baz {
+            #box { background: purple }
+          }
+
+          @layer bar {
+            #box { background: yellow }
+          }
+        "#,
+          "/b.css": r#"
+          #box { background: green }
+        "#
+        },
+      },
+      "/a.css",
+    );
+    assert_eq!(
+      res,
+      indoc! { r#"
+      @media (width >= 1000px) {
+        @layer bar {
+          #box {
+            background: green;
+          }
+        }
+      }
+
+      @layer baz {
+        #box {
+          background: purple;
+        }
+      }
+
+      @layer bar {
+        #box {
+          background: #ff0;
+        }
+      }
+    "#}
+    );
+
+    let res = bundle(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+          @import './b.css';
+        "#,
+          "/b.css": r#"
+          .b { color: green }
+        "#
+        },
+      },
+      "/a.css",
+    );
+    assert_eq!(
+      res,
+      indoc! { r#"
+        @import "https://fonts.googleapis.com/css2?family=Roboto&display=swap";
+
+        .b {
+          color: green;
+        }
+    "#}
+    );
+
+    error_test(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          @import './b.css';
+          @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+        "#,
+          "/b.css": r#"
+          .b { color: green }
+        "#
+        },
+      },
+      "/a.css",
+      Some(Box::new(|err| {
+        assert!(matches!(err, BundleErrorKind::ExternalImportAfterBundledImport));
+      })),
+    );
+
+    error_test(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          @import "b.css" layer(foo);
+          @import "b.css" layer(bar);
+        "#,
+          "/b.css": r#"
+          .b { color: red }
+        "#
+        },
+      },
+      "/a.css",
+      Some(Box::new(|err| {
+        assert!(matches!(err, BundleErrorKind::UnsupportedLayerCombination));
+      })),
+    );
+
+    error_test(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          @import "b.css" layer;
+          @import "b.css" layer;
+        "#,
+          "/b.css": r#"
+          .b { color: red }
+        "#
+        },
+      },
+      "/a.css",
+      Some(Box::new(|err| {
+        assert!(matches!(err, BundleErrorKind::UnsupportedLayerCombination));
+      })),
+    );
+
+    error_test(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          @import "b.css" layer;
+          .a { color: red }
+        "#,
+          "/b.css": r#"
+          @import "c.css" layer;
+          .b { color: green }
+        "#,
+          "/c.css": r#"
+          .c { color: green }
+        "#
+        },
+      },
+      "/a.css",
+      Some(Box::new(|err| {
+        assert!(matches!(err, BundleErrorKind::UnsupportedLayerCombination));
+      })),
+    );
+
+    error_test(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          @import "b.css" layer;
+          .a { color: red }
+        "#,
+          "/b.css": r#"
+          @import "c.css" layer(foo);
+          .b { color: green }
+        "#,
+          "/c.css": r#"
+          .c { color: green }
+        "#
+        },
+      },
+      "/a.css",
+      Some(Box::new(|err| {
+        assert!(matches!(err, BundleErrorKind::UnsupportedLayerCombination));
+      })),
+    );
+
+    let res = bundle(
+      TestProvider {
+        map: fs! {
+          "/index.css": r#"
+          @import "a.css";
+          @import "b.css";
+        "#,
+          "/a.css": r#"
+          @import "./c.css";
+          body { background: red; }
+        "#,
+          "/b.css": r#"
+          @import "./c.css";
+          body { color: red; }
+        "#,
+          "/c.css": r#"
+          body {
+            background: white;
+            color: black;
+          }
+        "#
+        },
+      },
+      "/index.css",
+    );
+    assert_eq!(
+      res,
+      indoc! { r#"
+      body {
+        background: red;
+      }
+
+      body {
+        background: #fff;
+        color: #000;
+      }
+
+      body {
+        color: red;
+      }
+    "#}
+    );
+
+    let res = bundle(
+      TestProvider {
+        map: fs! {
+          "/index.css": r#"
+          @import "a.css";
+          @import "b.css";
+          @import "a.css";
+        "#,
+          "/a.css": r#"
+          body { background: green; }
+        "#,
+          "/b.css": r#"
+          body { background: red; }
+        "#
+        },
+      },
+      "/index.css",
+    );
+    assert_eq!(
+      res,
+      indoc! { r#"
+      body {
+        background: red;
+      }
+
+      body {
+        background: green;
+      }
+    "#}
+    );
+
+    let res = bundle(
+      CustomProvider {
+        map: fs! {
+          "/a.css": r#"
+            @import "foo:/b.css";
+            .a { color: red; }
+          "#,
+          "/b.css": ".b { color: green; }"
+        },
+      },
+      "/a.css",
+    );
+    assert_eq!(
+      res,
+      indoc! { r#"
+        .b {
+          color: green;
+        }
+
+        .a {
+          color: red;
+        }
+      "# }
+    );
+
+    error_test(
+      CustomProvider {
+        map: fs! {
+          "/a.css": r#"
+            /* Forgot to prefix with `foo:`. */
+            @import "/b.css";
+            .a { color: red; }
+          "#,
+          "/b.css": ".b { color: green; }"
+        },
+      },
+      "/a.css",
+      Some(Box::new(|err| {
+        let kind = match err {
+          BundleErrorKind::ResolverError(ref error) => error.kind(),
+          _ => unreachable!(),
+        };
+        assert!(matches!(kind, std::io::ErrorKind::NotFound));
+        assert!(err
+          .to_string()
+          .contains("Failed to resolve `/b.css`, specifier does not start with `foo:`."));
+      })),
+    );
+
+    // let res = bundle(fs! {
+    //   "/a.css": r#"
+    //     @import "b.css" supports(color: red) (color);
+    //     @import "b.css" supports(foo: bar) (orientation: horizontal);
+    //     .a { color: red }
+    //   "#,
+    //   "/b.css": r#"
+    //     .b { color: green }
+    //   "#
+    // }, "/a.css");
+
+    // let res = bundle(fs! {
+    //   "/a.css": r#"
+    //     @import "b.css" not print;
+    //     .a { color: red }
+    //   "#,
+    //   "/b.css": r#"
+    //     @import "c.css" not screen;
+    //     .b { color: green }
+    //   "#,
+    //   "/c.css": r#"
+    //     .c { color: yellow }
+    //   "#
+    // }, "/a.css");
+  }
+
+  #[test]
+  fn test_css_module() {
+    macro_rules! map {
+      { $($key:expr => $val:expr),* } => {
+        HashMap::from([
+          $(($key.to_owned(), $val.to_owned()),)*
+        ])
+      };
+    }
+
+    let (code, exports) = bundle_css_module(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          @import "b.css";
+          .a { color: red }
+        "#,
+          "/b.css": r#"
+          .a { color: green }
+        "#
+        },
+      },
+      "/a.css",
+      None,
+    );
+    assert_eq!(
+      code,
+      indoc! { r#"
+      ._9z6RGq_a {
+        color: green;
+      }
+
+      ._6lixEq_a {
+        color: red;
+      }
+    "#}
+    );
+    assert_eq!(
+      flatten_exports(exports),
+      map! {
+        "a" => "_6lixEq_a"
+      }
+    );
+
+    let (code, exports) = bundle_css_module(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          .a { composes: x from './b.css'; color: red; }
+          .b { color: yellow }
+        "#,
+          "/b.css": r#"
+          .x { composes: y; background: green }
+          .y { font: Helvetica }
+        "#
+        },
+      },
+      "/a.css",
+      None,
+    );
+    assert_eq!(
+      code,
+      indoc! { r#"
+      ._8Cs9ZG_x {
+        background: green;
+      }
+
+      ._8Cs9ZG_y {
+        font: Helvetica;
+      }
+
+      ._6lixEq_a {
+        color: red;
+      }
+
+      ._6lixEq_b {
+        color: #ff0;
+      }
+    "#}
+    );
+    assert_eq!(
+      flatten_exports(exports),
+      map! {
+        "a" => "_6lixEq_a _8Cs9ZG_x _8Cs9ZG_y",
+        "b" => "_6lixEq_b"
+      }
+    );
+
+    let (code, exports) = bundle_css_module(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          .a { composes: x from './b.css'; background: red; }
+        "#,
+          "/b.css": r#"
+          .a { background: red }
+        "#
+        },
+      },
+      "/a.css",
+      None,
+    );
+    assert_eq!(
+      code,
+      indoc! { r#"
+      ._8Cs9ZG_a {
+        background: red;
+      }
+
+      ._6lixEq_a {
+        background: red;
+      }
+    "#}
+    );
+    assert_eq!(
+      flatten_exports(exports),
+      map! {
+        "a" => "_6lixEq_a"
+      }
+    );
+
+    let (code, exports) = bundle_css_module(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          .a {
+            background: var(--bg from "./b.css", var(--fallback from "./b.css"));
+            color: rgb(255 255 255 / var(--opacity from "./b.css"));
+            width: env(--env, var(--env-fallback from "./env.css"));
+          }
+        "#,
+          "/b.css": r#"
+          .b {
+            --bg: red;
+            --fallback: yellow;
+            --opacity: 0.5;
+          }
+        "#,
+          "/env.css": r#"
+          .env {
+            --env-fallback: 20px;
+          }
+        "#
+        },
+      },
+      "/a.css",
+      None,
+    );
+    assert_eq!(
+      code,
+      indoc! { r#"
+      ._8Cs9ZG_b {
+        --_8Cs9ZG_bg: red;
+        --_8Cs9ZG_fallback: yellow;
+        --_8Cs9ZG_opacity: .5;
+      }
+
+      .GbJUva_env {
+        --GbJUva_env-fallback: 20px;
+      }
+
+      ._6lixEq_a {
+        background: var(--_8Cs9ZG_bg, var(--_8Cs9ZG_fallback));
+        color: rgb(255 255 255 / var(--_8Cs9ZG_opacity));
+        width: env(--_6lixEq_env, var(--GbJUva_env-fallback));
+      }
+    "#}
+    );
+    assert_eq!(
+      flatten_exports(exports),
+      map! {
+        "a" => "_6lixEq_a",
+        "--env" => "--_6lixEq_env"
+      }
+    );
+
+    // Hashes are stable between project roots.
+    let expected = indoc! { r#"
+    .dyGcAa_b {
+      background: #ff0;
+    }
+
+    .CK9avG_a {
+      background: #fff;
+    }
+  "#};
+
+    let (code, _) = bundle_css_module(
+      TestProvider {
+        map: fs! {
+          "/foo/bar/a.css": r#"
+        @import "b.css";
+        .a {
+          background: white;
+        }
+      "#,
+          "/foo/bar/b.css": r#"
+        .b {
+          background: yellow;
+        }
+      "#
+        },
+      },
+      "/foo/bar/a.css",
+      Some("/foo/bar"),
+    );
+    assert_eq!(code, expected);
+
+    let (code, _) = bundle_css_module(
+      TestProvider {
+        map: fs! {
+          "/x/y/z/a.css": r#"
+      @import "b.css";
+      .a {
+        background: white;
+      }
+    "#,
+          "/x/y/z/b.css": r#"
+      .b {
+        background: yellow;
+      }
+    "#
+        },
+      },
+      "/x/y/z/a.css",
+      Some("/x/y/z"),
+    );
+    assert_eq!(code, expected);
+
+    let (code, _) = bundle_css_module_with_pattern(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          @import "b.css";
+          .a { color: red }
+        "#,
+          "/b.css": r#"
+          .a { color: green }
+        "#
+        },
+      },
+      "/a.css",
+      None,
+      "[content-hash]-[local]",
+    );
+    assert_eq!(
+      code,
+      indoc! { r#"
+      .do5n2W-a {
+        color: green;
+      }
+
+      .pP97eq-a {
+        color: red;
+      }
+    "#}
+    );
+  }
+
+  #[test]
+  fn test_source_map() {
+    let source = r#".imported {
+      content: "yay, file support!";
+    }
+
+    .selector {
+      margin: 1em;
+      background-color: #f60;
+    }
+
+    .selector .nested {
+      margin: 0.5em;
+    }
+
+    /*# sourceMappingURL=data:application/json;base64,ewoJInZlcnNpb24iOiAzLAoJInNvdXJjZVJvb3QiOiAicm9vdCIsCgkiZmlsZSI6ICJzdGRvdXQiLAoJInNvdXJjZXMiOiBbCgkJInN0ZGluIiwKCQkic2Fzcy9fdmFyaWFibGVzLnNjc3MiLAoJCSJzYXNzL19kZW1vLnNjc3MiCgldLAoJInNvdXJjZXNDb250ZW50IjogWwoJCSJAaW1wb3J0IFwiX3ZhcmlhYmxlc1wiO1xuQGltcG9ydCBcIl9kZW1vXCI7XG5cbi5zZWxlY3RvciB7XG4gIG1hcmdpbjogJHNpemU7XG4gIGJhY2tncm91bmQtY29sb3I6ICRicmFuZENvbG9yO1xuXG4gIC5uZXN0ZWQge1xuICAgIG1hcmdpbjogJHNpemUgLyAyO1xuICB9XG59IiwKCQkiJGJyYW5kQ29sb3I6ICNmNjA7XG4kc2l6ZTogMWVtOyIsCgkJIi5pbXBvcnRlZCB7XG4gIGNvbnRlbnQ6IFwieWF5LCBmaWxlIHN1cHBvcnQhXCI7XG59IgoJXSwKCSJtYXBwaW5ncyI6ICJBRUFBLFNBQVMsQ0FBQztFQUNSLE9BQU8sRUFBRSxvQkFBcUI7Q0FDL0I7O0FGQ0QsU0FBUyxDQUFDO0VBQ1IsTUFBTSxFQ0hELEdBQUc7RURJUixnQkFBZ0IsRUNMTCxJQUFJO0NEVWhCOztBQVBELFNBQVMsQ0FJUCxPQUFPLENBQUM7RUFDTixNQUFNLEVDUEgsS0FBRztDRFFQIiwKCSJuYW1lcyI6IFtdCn0= */"#;
+
+    let fs = TestProvider {
+      map: fs! {
+        "/a.css": r#"
+        @import "/b.css";
+        .a { color: red; }
+      "#,
+        "/b.css": source
+      },
+    };
+
+    let mut sm = parcel_sourcemap::SourceMap::new("/");
+    let mut bundler = Bundler::new(&fs, Some(&mut sm), ParserOptions::default());
+    let mut stylesheet = bundler.bundle(Path::new("/a.css")).unwrap();
+    stylesheet.minify(MinifyOptions::default()).unwrap();
+    stylesheet
+      .to_css(PrinterOptions {
+        source_map: Some(&mut sm),
+        minify: true,
+        ..PrinterOptions::default()
+      })
+      .unwrap();
+    let map = sm.to_json(None).unwrap();
+    assert_eq!(
+      map,
+      r#"{"version":3,"sourceRoot":null,"mappings":"ACAA,uCCGA,2CAAA,8BFDQ","sources":["a.css","sass/_demo.scss","stdin"],"sourcesContent":["\n        @import \"/b.css\";\n        .a { color: red; }\n      ",".imported {\n  content: \"yay, file support!\";\n}","@import \"_variables\";\n@import \"_demo\";\n\n.selector {\n  margin: $size;\n  background-color: $brandColor;\n\n  .nested {\n    margin: $size / 2;\n  }\n}"],"names":[]}"#
+    );
+  }
+
+  #[test]
+  fn test_license_comments() {
+    let res = bundle(
+      TestProvider {
+        map: fs! {
+          "/a.css": r#"
+          /*! Copyright 2023 Someone awesome */
+          @import "b.css";
+          .a { color: red }
+        "#,
+          "/b.css": r#"
+          /*! Copyright 2023 Someone else */
+          .b { color: green }
+        "#
+        },
+      },
+      "/a.css",
+    );
+    assert_eq!(
+      res,
+      indoc! { r#"
+      /*! Copyright 2023 Someone awesome */
+      /*! Copyright 2023 Someone else */
+      .b {
+        color: green;
+      }
+
+      .a {
+        color: red;
+      }
+    "#}
+    );
+  }
+}

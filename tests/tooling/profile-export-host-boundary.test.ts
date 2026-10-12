@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { test } from "node:test";
 import { withoutHostRuntimeReferences } from "./support/davinci-host-imports.ts";
@@ -21,6 +22,12 @@ import {
   prepare,
   validateEdges,
 } from "../../tools/support/levels/profile-export-host-preflight.ts";
+import {
+  cssNamingGate,
+  cssNamingGateReplayText,
+  currentCSSNamingGateSHA,
+  historicalCSSNamingGateSHA,
+} from "../../tools/support/levels/css-naming-gate-continuation.ts";
 
 const read = (file: string) => fs.readFileSync(new URL("../../" + file, import.meta.url), "utf8");
 const forbidden = /\bvize_carton::|use vize_carton\b/u;
@@ -237,4 +244,36 @@ test("the SFC executable dependency law rejects literal drift and partial helper
       () => prepare((path) => (path === file ? changed : read(path))),
       /exact SFC dependency gate/u,
     );
+});
+
+test("finite CSS naming closure preserves complete historical bytes and rejects body drift", () => {
+  const source = read(cssNamingGate);
+  const sha = (text: string) => createHash("sha256").update(text).digest("hex");
+  assert.equal(sha(source), currentCSSNamingGateSHA);
+  const historical = cssNamingGateReplayText(cssNamingGate, source);
+  assert.equal(sha(historical), historicalCSSNamingGateSHA);
+  assert.equal(cssNamingGateReplayText(cssNamingGate, historical), historical);
+  assert.equal(cssNamingGateReplayText("foreign-gate", source), source);
+  assert.equal(prepare(read).size, 0);
+  for (const changed of [
+    source.replace(
+      'css_engine_panic_boundary.rs", "test", 2]',
+      'css_engine_panic_boundary.rs", "test", 3]',
+    ),
+    source.replace(
+      '  ["crates/vize_atelier_sfc/tests/support/css_engine_successors.rs", "test", 1],\n',
+      "",
+    ),
+    source.replace("  assertPreferredSource(preserved, preservedPath);\n", ""),
+    source.replace("manifest.dependencies.vize_l0", "manifest.dependencies.vize_carton"),
+    source + "\n// unreviewed naming gate\n",
+  ]) {
+    assert.notEqual(changed, source);
+    assert.equal(cssNamingGateReplayText(cssNamingGate, changed), changed);
+    assert.throws(
+      () => prepare((file) => (file === cssNamingGate ? changed : read(file))),
+      /exact SFC dependency gate/u,
+    );
+  }
+  assert.equal(read(cssNamingGate), source, "current executable law is never rewritten");
 });

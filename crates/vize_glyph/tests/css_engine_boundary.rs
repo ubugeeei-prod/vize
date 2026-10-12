@@ -40,6 +40,23 @@ fn corpus() -> Value {
     corpus
 }
 
+fn successor(case: &Value, surface: &str) -> Option<Value> {
+    let authority: Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/css-engine-vendor-exit/finite-successors.json"
+    ))
+    .unwrap();
+    assert_eq!(authority["rustCases"].as_array().unwrap().len(), 11);
+    let mut rows = authority["rustCases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|row| row["surface"] == surface && row["case"] == case["id"]);
+    let row = rows.next()?.clone();
+    assert!(rows.next().is_none(), "one named successor");
+    assert_eq!(row["source"], case["source"], "whole frozen original input");
+    Some(row)
+}
+
 fn retain(name: &str, observations: &[Value]) {
     let profile = std::env::var("NEXTEST_PROFILE").unwrap_or_else(|_| "full".into());
     let directory = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -56,12 +73,18 @@ fn retain(name: &str, observations: &[Value]) {
 
 fn sfc_passes(case: &Value, observations: &mut Vec<Value>, capture_name: &str) {
     let options: FormatOptions = serde_json::from_value(case["options"].clone()).unwrap();
-    let expected = case["expected"].as_str().unwrap();
+    let repaired = successor(case, "formatter");
+    let expected = repaired
+        .as_ref()
+        .map_or(&case["expected"], |row| &row["wholeCode"])
+        .as_str()
+        .unwrap();
     let mut current = String::from(case["source"].as_str().unwrap());
     for pass in 1..=3 {
-        let result = format_sfc(&current, &options).expect("SFC keeps existing raw CSS fallback");
+        let result = format_sfc(&current, &options)
+            .expect("complete SFC result including the finite repaired cases");
         observations.push(json!({"case": case["id"], "pass": pass,
-            "source": current, "options": case["options"], "expected": expected,
+            "source": current, "options": case["options"], "beforeExpected": case["expected"], "expected": expected,
             "actual": {"code": result.code, "changed": result.changed}}));
         retain(capture_name, observations);
         assert_eq!(result.code.as_str(), expected, "{} pass {pass}", case["id"]);
@@ -102,6 +125,10 @@ fn public_style_errors_are_complete_and_do_not_prevent_later_healthy_fixedpoints
     let options = FormatOptions::default();
     let mut observations = Vec::new();
     for case in corpus["styleCases"].as_array().unwrap() {
+        let repaired = successor(case, "style");
+        let expected = repaired
+            .as_ref()
+            .map_or(&case["expected"], |row| &row["wholeExpected"]["code"]);
         let mut current = String::from(case["source"].as_str().unwrap());
         for pass in 1..=3 {
             match format_style(&current, &options) {
@@ -109,11 +136,18 @@ fn public_style_errors_are_complete_and_do_not_prevent_later_healthy_fixedpoints
                     observations.push(json!({"case": case["id"], "pass": pass,
                         "source": current, "actual": {"code": actual}}));
                     retain("whole-style-results.json", &observations);
-                    assert!(case.get("error").is_none(), "original must return an error");
-                    assert_eq!(Some(actual.as_str()), case["expected"].as_str());
+                    assert!(
+                        repaired.is_some() || case.get("error").is_none(),
+                        "unchanged invalid CSS must return its whole error"
+                    );
+                    assert_eq!(Some(actual.as_str()), expected.as_str());
                     current = actual;
                 }
                 Err(error) => {
+                    assert!(
+                        repaired.is_none(),
+                        "named repaired original must return complete CSS"
+                    );
                     let display = cstr!("{error}");
                     let (variant, message) = match &error {
                         FormatError::StyleFormatError(message) => {

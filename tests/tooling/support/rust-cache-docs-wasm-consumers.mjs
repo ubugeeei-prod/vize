@@ -97,6 +97,32 @@ function ordinaryRole(key) {
   );
 }
 
+function reviewedCssRole(file, job, document, step) {
+  if (file !== ".github/workflows/css-engine-vendor-candidate.yml" || step.uses !== cacheAction)
+    return false;
+  const key = ["engine", "bundler-before"].includes(job)
+    ? "engines-${{ matrix.profile }}"
+    : job === "observations"
+      ? "observations-${{ matrix.profile }}"
+      : null;
+  if (!key) return false;
+  assert.deepEqual(
+    document.jobs[job].strategy?.matrix,
+    { profile: ["dev", "release"] },
+    "reviewed CSS cache profile matrix changed",
+  );
+  assert.deepEqual(
+    step.with,
+    {
+      "cache-key-prefix": "css-vendor-",
+      key,
+      "cache-key-suffix": "${{ runner.os }}-${{ runner.arch }}",
+    },
+    "reviewed CSS cache role inputs changed",
+  );
+  return true;
+}
+
 function verifyRecipes(root, docs, e2e) {
   assert.deepEqual(
     { env: docs.env, defaults: docs.defaults },
@@ -232,7 +258,10 @@ export function verifyDocsWasmConsumers(root) {
         );
         app.push({ file, job, key });
       } else {
-        assert(ordinaryRole(key), "unreviewed dynamic or possible Docs WASM cache role");
+        assert(
+          ordinaryRole(key) || reviewedCssRole(file, job, document, step),
+          "unreviewed dynamic or possible Docs WASM cache role",
+        );
         if (step.uses === appAction) app.push({ file, job, key });
       }
       if (isCache && key === "docs-napi") {

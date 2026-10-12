@@ -1,0 +1,65 @@
+{
+  "version": "0.10.7+bc794d341",
+  "mirrorRelease": {
+    "id": 368444700,
+    "tag_name": "v0.10.7+bc794d341",
+    "immutable": true,
+    "published_at": "2026-08-11T09:12:28Z",
+    "html_url": "https://github.com/chawyehsu/moonbit-binaries/releases/tag/v0.10.7%2Bbc794d341",
+    "target_commitish": "main"
+  },
+  "archives": [
+    {
+      "id": 509918065,
+      "name": "moonbit-v0.10.7+bc794d341-aarch64-apple-darwin.tar.gz",
+      "size": 83616535,
+      "digest": "sha256:b4781a1e38c800d1fd65693b1970b2d2429faef31d8933d266a1f6e2693a96ef",
+      "browser_download_url": "https://github.com/chawyehsu/moonbit-binaries/releases/download/v0.10.7%2Bbc794d341/moonbit-v0.10.7%2Bbc794d341-aarch64-apple-darwin.tar.gz"
+    },
+    {
+      "id": 509918059,
+      "name": "moonbit-v0.10.7+bc794d341-aarch64-unknown-linux.tar.gz",
+      "size": 106966613,
+      "digest": "sha256:e191a88a664cf4943736846db89108ac76a3a592b4427a56622180c12a18adc5",
+      "browser_download_url": "https://github.com/chawyehsu/moonbit-binaries/releases/download/v0.10.7%2Bbc794d341/moonbit-v0.10.7%2Bbc794d341-aarch64-unknown-linux.tar.gz"
+    },
+    {
+      "id": 509918060,
+      "name": "moonbit-v0.10.7+bc794d341-x86_64-pc-windows.zip",
+      "size": 84486115,
+      "digest": "sha256:c659625f5c3a9fca5d17866bff3de07b6328c59628d74df5d5b4d79b78524880",
+      "browser_download_url": "https://github.com/chawyehsu/moonbit-binaries/releases/download/v0.10.7%2Bbc794d341/moonbit-v0.10.7%2Bbc794d341-x86_64-pc-windows.zip"
+    },
+    {
+      "id": 509918061,
+      "name": "moonbit-v0.10.7+bc794d341-x86_64-unknown-linux.tar.gz",
+      "size": 94304160,
+      "digest": "sha256:36f5e7cf1545594e17cd3f1c0b757fe6e86ad0218bc96f419369cbb8502e62ba",
+      "browser_download_url": "https://github.com/chawyehsu/moonbit-binaries/releases/download/v0.10.7%2Bbc794d341/moonbit-v0.10.7%2Bbc794d341-x86_64-unknown-linux.tar.gz"
+    }
+  ],
+  "core": {
+    "bytes": 1449345,
+    "sha256": "06922d35dd94dc0baea7682295fe6084f0d854eed3b497cd6b527f77d899a7f5",
+    "license": "Apache-2.0 (complete original core/LICENSE retained)",
+    "regularFiles": 1044,
+    "identityAuthority": "tools/nix/moonbit.nix at cb8847872754019d51da42d290643c0f675040eb; unmodified fixed-output archive"
+  },
+  "windowsAuthority": {
+    "checksumAsset": 509918057,
+    "checksumSha256": "e53336b963ee01f89c8824168872e7bb8484214df253e2224df6b0148c6232ba",
+    "wholeZipCRC": "232 regular members verified; compiler not executed",
+    "archiveProvenance": "snapV3.ps1 at mirror release target commit 9ad7546: official download, actual moonc -v, SHA256, unmodified Copy-Item"
+  },
+  "originalFailure": {
+    "run": 38211901959,
+    "job": 114687730382,
+    "source": "7af76e4db08c94258f09c12b558bd42da7c09f46",
+    "bytes": 149476,
+    "sha256": "7d880746a5ebcbdb8135d90b042ad300c89437f4f2c0d971edeb0aadc30f407c",
+    "status": "HTTP403 before release driver",
+    "cause": "historical administrative cause unknown"
+  },
+  "sourceOnly": true,
+  "nativeQualification": false
+}

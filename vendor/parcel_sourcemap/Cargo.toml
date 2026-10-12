@@ -1,0 +1,41 @@
+# Standalone Vize fork manifest; original is retained as Cargo.toml.orig.
+[package]
+edition = "2018"
+name = "vize_parcel_sourcemap"
+version.workspace = true
+authors = ["Jasper De Moor <jasperdemoor@gmail.com>"]
+description = "Vize fork of the Parcel Source Map Library with validated rkyv 0.8 archives"
+keywords = ["sourcemap", "Node", "Parcel"]
+license = "MIT"
+repository = "https://github.com/ubugeeei-prod/vize"
+include = ["/src", "/tests", "/UPSTREAM-Cargo.toml", "/UPSTREAM.md", "/UPSTREAM-IMPORT.json"]
+
+[lib]
+name = "parcel_sourcemap"
+path = "src/lib.rs"
+
+[dependencies.base64-simd]
+version = "0.7"
+optional = true
+
+[dependencies.data-url]
+version = "0.1.1"
+optional = true
+
+[dependencies.rkyv]
+version = "=0.8.18"
+
+[dependencies.serde]
+version = "1"
+features = ["derive"]
+optional = true
+
+[dependencies.serde_json]
+version = "1"
+optional = true
+
+[dependencies.vlq]
+version = "0.5.1"
+
+[features]
+json = ["serde", "serde_json", "base64-simd", "data-url"]
