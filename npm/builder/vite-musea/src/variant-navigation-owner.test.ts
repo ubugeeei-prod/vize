@@ -25,7 +25,7 @@ const helper = await readFile(
 function harness(script: string) {
   const extracted = script === current;
   const start = script.indexOf(
-    extracted ? "onMounted(() => {" : "function disconnectVariantObserver() {",
+    extracted ? "const {\n  disconnectVariantObserver," : "function disconnectVariantObserver() {",
   );
   assert.ok(start >= 0);
   const block = script.slice(start).split("</script>")[0];
@@ -94,8 +94,7 @@ function harness(script: string) {
     helperJavascript,
   );
   const initialization = extracted
-    ? `${transport}
-    const { setupVariantObserver, syncSelectionFromHash, handleVariantSelect, disconnectVariantObserver } = createVariantNavigation(scope);`
+    ? transport
     : "let variantObserver = null; let variantObserverGeneration = 0;";
   const execute = compileFunction(
     `
