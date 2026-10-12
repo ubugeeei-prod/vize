@@ -84,9 +84,20 @@ single rule in registry order in exactly five presets and preserves all other
 identities/order plus empty Incremental and opt-in membership. Generated docs
 change only the preset membership of this rule; the rule examples remain exact.
 
+The first exact-source Check `38196958922` at `46ee5aa` refused a second
+historical registry caller in tooling job `114642149488`. Its entire original
+bare-default reference test and complete raw failure log are retained in
+`source-custody/`. The finite `bare-caller-integration.json` authenticates the
+whole original/after caller and permits only an import plus an exact registry
+selector through the existing complete-family guard. Original registry length
+21919 and hash stay literal; every other source check and all 112 whole bare
+before packets remain unchanged. This is source-custody integration, with no
+new diagnostic expectation or runtime policy change. The ten source laws pass;
+the initial RED source/native outcomes remain distinct from a fresh successor.
+
 ## Qualification and remaining work
 
-Source-only authority/mutation laws and typed tooling checks pass locally.
+Ten source-only authority/mutation laws and typed tooling checks pass locally.
 Rust/API 18+52 and source CLI 18+52 are required on the inherited Actions shared
 builder; complete process/build packets persist before assertions. No separate
 native builder, full Matrix recapture, snapshot recapture, benchmark ceiling,

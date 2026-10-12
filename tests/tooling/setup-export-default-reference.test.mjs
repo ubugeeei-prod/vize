@@ -214,3 +214,31 @@ await test("five default memberships add only the existing setup-export rule in 
   assert.deepEqual(decode(current), expected);
   assert.deepEqual(expected.incremental, []);
 });
+
+await test("original bare caller admits only the complete registry preset successor", () => {
+  const bytes = fixture("source-custody/bare-caller-integration.json");
+  assert.equal(sha256(bytes), "a5adc749279647772817f7ccabb307252631267d52adb46235ded98ad4886453");
+  const law = JSON.parse(bytes);
+  const before = fixture(`source-custody/${law.before.archive}`);
+  assert.equal(sha256(before), law.before.sha256);
+  assert.equal(before.length, law.before.bytes);
+  assert.equal(
+    createHash("sha1").update(`blob ${before.length}\0`).update(before).digest("hex"),
+    law.before.gitBlob,
+  );
+  let expected = before.toString();
+  for (const transform of law.transforms) {
+    assert.equal(expected.split(transform.before).length, 2);
+    expected = expected.replace(transform.before, transform.after);
+  }
+  const after = read(law.path);
+  assert.deepEqual(after, Buffer.from(expected));
+  assert.equal(sha256(after), law.after.sha256);
+  assert.equal(after.length, law.after.bytes);
+  assert.equal(law.originalRegistryBytes, 21_919);
+  const log = gunzipSync(fixture(`source-custody/${law.initialFailure.archive}`));
+  assert.equal(sha256(log), law.initialFailure.rawSha256);
+  assert.equal(log.length, law.initialFailure.rawBytes);
+  assert.equal(law.workflowRun, 38196958922);
+  assert.equal(law.job, 114642149488);
+});
