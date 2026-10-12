@@ -76,11 +76,11 @@ whole raw streams and exit status. Their original whole packet SHA256 is
 `a5e32916175feeb304fc88744cb5fcd94ca5f39ee385dad5ed573022d893129e`.
 They demonstrate the isolated star-export mechanism:
 
-| Counterfactual | Before | After |
-| --- | --- | --- |
-| Valid consumer | Three synthetic TS2308 errors | No errors |
-| Wrong prop | Three TS2308 and two TS2322 errors | The same two TS2322 errors |
-| Real authored duplicate | Four TS2308 errors | The same authored TS2308 error |
+| Counterfactual          | Before                             | After                          |
+| ----------------------- | ---------------------------------- | ------------------------------ |
+| Valid consumer          | Three synthetic TS2308 errors      | No errors                      |
+| Wrong prop              | Three TS2308 and two TS2322 errors | The same two TS2322 errors     |
+| Real authored duplicate | Four TS2308 errors                 | The same authored TS2308 error |
 
 Those packets edited generated source. They do not qualify this producer fix.
 The additive production law discovers a separate frozen supplemental pack and
