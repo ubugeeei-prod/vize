@@ -24,7 +24,7 @@ test("the retained42/80/152 tables and exact current44/85/152 correction carry n
   assert.equal(result.authority, "exact-reviewed-empty-vue-star-complete-source");
   assert.equal(result.manifestSHA256, emptyVueStarManifestSHA256);
   assert.equal(result.originalSource, "a93e78147b0990c813e965a7868b32dda341eb77");
-  assert.equal(result.reviewedProductSource, "4b252f2cf5c794d6e5d6846492a708ce8064d906");
+  assert.equal(result.reviewedProductSource, "fe8f4fcf9dbbe750a211cf5df2588356f785f590");
   assert.equal(result.completeBodyPairs, 44);
   assert.equal(result.supplementalBodyPairs, 85);
   assert.equal(result.preservedBodyPairs, 152);

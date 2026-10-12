@@ -34,7 +34,7 @@ type Stored = {
 const prefix = "tests/performance/support/warm-type-backed-empty-vue-star-";
 const manifestFile = prefix + "manifest.json";
 export const emptyVueStarManifestSHA256 =
-  "2daf4a3967061cb86dd03e21fee75e90bba87d707a9ed3529ef06c70e02683bc";
+  "bac92f00182be34b4a7000323f4dec7b7437839891515621c772ee57598c8ef7";
 const hash = (kind: "sha256" | "sha1", body: Buffer | string) =>
   createHash(kind).update(body).digest("hex");
 const blob = (body: Buffer) =>
@@ -124,13 +124,13 @@ export function loadEmptyVueStarManifest(read: (file: string) => Buffer) {
     productionAdditions: string[];
   };
   assert.equal(correction.version, 1);
-  assert.equal(correction.predecessorSource, "784d9ede9d80fe5539d79a9fe8ab0002e483bd8f");
-  assert.equal(correction.reviewedSource, "4b252f2cf5c794d6e5d6846492a708ce8064d906");
+  assert.equal(correction.predecessorSource, "dd36599600f2c1e622cd05a4d6f73dc6649a8a18");
+  assert.equal(correction.reviewedSource, "fe8f4fcf9dbbe750a211cf5df2588356f785f590");
   assert.equal(
     correction.sourceIndexSHA256,
-    "f110878926424b88d4a9f7d08530bb0507c794e085c9287799a7904565d10f54",
+    "680708e5b876e665d6c0dcb4f33f3b3e8db021c17eb4eda2550510a02dad2f23",
   );
-  assert.equal(correction.updates.length, 3);
+  assert.equal(correction.updates.length, 6);
   assert.equal(correction.additions.length, 7);
   const originals = new Map(
     Object.values(tables)

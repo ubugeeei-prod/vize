@@ -90,8 +90,8 @@
   "correction": {
     "file": "tests/performance/support/warm-type-backed-empty-vue-star-corrective.json",
     "mode": "100644",
-    "bytes": 2952,
-    "sha256": "e84c1d0e534b9e5e803036a088020e4178a1eb6e3f9d77fdfd2aa82664b76aa8",
-    "blob": "e113df4e6b17a42a72b08bfaec16b760e6c8fb41"
+    "bytes": 3768,
+    "sha256": "2aa84f36ba8dda6c6fdf104b85f0bf6e7a463b1f5402c5ff94e0f0f4dbb7ff2f",
+    "blob": "25634d6c6d827b94776b07bd6c0752448b5b3280"
   }
 }

@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "predecessorSource": "784d9ede9d80fe5539d79a9fe8ab0002e483bd8f",
-  "reviewedSource": "4b252f2cf5c794d6e5d6846492a708ce8064d906",
-  "sourceIndexSHA256": "f110878926424b88d4a9f7d08530bb0507c794e085c9287799a7904565d10f54",
+  "predecessorSource": "dd36599600f2c1e622cd05a4d6f73dc6649a8a18",
+  "reviewedSource": "fe8f4fcf9dbbe750a211cf5df2588356f785f590",
+  "sourceIndexSHA256": "680708e5b876e665d6c0dcb4f33f3b3e8db021c17eb4eda2550510a02dad2f23",
   "updates": [
     [
       "crates/vize_canon/tests/empty_vue_star_exports.rs",
@@ -14,13 +14,31 @@
       "crates/vize_canon/tests/empty_vue_star_exports/execution.rs",
       null,
       "7c802689e696a9ffe52aa58bf74ca9af9e707261d657705156f8569a1d2040cf",
-      "969d46b2d53163820a053ae92b7bcfbaabb32cf3d4a837da11192a24d8902434"
+      "dea4749d405c1d43c9d42de9dc38f949dc454981d933f73d6bd2eb442837e904"
     ],
     [
       "tests/_fixtures/differential/typechecker/empty-vue-star-exports/production/authored-reserved-props-refusal/case.json",
       null,
       "34b48c0f2d28bacf16a4c162feb9bacc234e7f3d56c6f049f8524f7482dd2065",
       "6fe90527393bd6539fa5293deb84e58dcc8a60f4d3ea1cd41d052000b2fdf4c0"
+    ],
+    [
+      "crates/vize_canon/src/batch/virtual_project/build.rs",
+      "bc4e62350dd11e82b7f411323ba6e51c06615a3865b49d7921b0dcd187d7e437",
+      "21877bf1c511f75cc448d6002afe60619cdfd28994d7d231a720011d7b83257e",
+      "41c01d8b1efea3dfe78bddcea0d1bcef4e9ff9b1880ae68ae1cd6db92a9134a7"
+    ],
+    [
+      "crates/vize_canon/src/batch/virtual_project/star_exports.rs",
+      null,
+      "7f447a70bcd64c9896c85dfe8d3116f532b63f3e663f999896484786d388eb09",
+      "7f314b5a8a6bf8f8f0648e67b71850a60c8672ce15bd8d32bdbd298830497d12"
+    ],
+    [
+      "crates/vize_canon/src/batch/virtual_project/star_exports/tests/materialized.rs",
+      null,
+      "56f70f8f15e2e47c897be85f3af4253789fa32a7b3d8b17c1734b42dfb772287",
+      "cb3aced36b5d22140b05933631d393f44e806034e693f0570dfe92bcb535bfe2"
     ]
   ],
   "additions": [
@@ -64,5 +82,5 @@
     "crates/vize_canon/src/batch/virtual_project/vue_codegen/malformed_setup_tests.rs",
     "crates/vize_canon/tests/empty_vue_star_exports/membership.rs"
   ],
-  "scope": "exact three after-cell corrections and seven whole additional pairs; original42/80/152 tables remain byte-exact; complete86membership still requires actualnative execution"
+  "scope": "exact six after-cell corrections and seven whole additional pairs; original42/80/152 tables remain byte-exact; complete86membership and TSX forwarding require actual current-source execution"
 }

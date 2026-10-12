@@ -15,21 +15,21 @@ type Read = (file: string) => Buffer | null;
 const root = path.resolve(import.meta.dirname, "../../..");
 const host = "tests/performance/support/warm-type-backed-host-qualifications.ts";
 const originalSHA = "b19f6783e50429d2779efeb7d2d21c64dcd98a67810fc4f6a1ccc698febae337";
-const currentSHA = "7240b0498793964345371a72db85bc5ccc553e38c465dfb1a28f1e20587cea66";
+const currentSHA = "bec16c021cf11fce5e41180b42eb7df3ec5a38c6c14bdba64d0aba14991e78fe";
 const beforeSource = "a93e78147b0990c813e965a7868b32dda341eb77";
 const helperPairs = [
   [
     "tests/performance/support/warm-type-backed-empty-vue-star-host.ts",
-    "590e99d54672bc9b87f4627c7c7ce1f5db4c8c900d1ae76137e79864e6bdd622",
+    "4668a48d816279308c341ff3a7c839dc39ea129a2901b0484b65f4905e00386b",
   ],
   [
     "tests/tooling/warm-type-backed-empty-vue-star-host.test.ts",
-    "a4e6229176a3cf89710b1bdb40fe4edfe579454c6b3ae631b9d56b441c1921e8",
+    "3dc6a16c6e9869302858df257d21e2e2b03acdc13606460bd7849d9d9ce28fc2",
   ],
 ] as const;
 const clauses = [
   'import { qualifyEmptyVueStarHost } from "./warm-type-backed-empty-vue-star-host.ts";\n\n',
-  '  const emptyVueStarHost =\n    enabled &&\n    digest("before", "tests/performance/support/warm-type-backed-empty-vue-star-host.ts") ===\n      null &&\n    digest("after", "tests/performance/support/warm-type-backed-empty-vue-star-host.ts") ===\n      "590e99d54672bc9b87f4627c7c7ce1f5db4c8c900d1ae76137e79864e6bdd622" &&\n    digest("before", "tests/tooling/warm-type-backed-empty-vue-star-host.test.ts") === null &&\n    digest("after", "tests/tooling/warm-type-backed-empty-vue-star-host.test.ts") ===\n      "a4e6229176a3cf89710b1bdb40fe4edfe579454c6b3ae631b9d56b441c1921e8"\n      ? qualifyEmptyVueStarHost(production, alreadyQualified, digest)\n      : null;\n',
+  '  const emptyVueStarHost =\n    enabled &&\n    digest("before", "tests/performance/support/warm-type-backed-empty-vue-star-host.ts") ===\n      null &&\n    digest("after", "tests/performance/support/warm-type-backed-empty-vue-star-host.ts") ===\n      "4668a48d816279308c341ff3a7c839dc39ea129a2901b0484b65f4905e00386b" &&\n    digest("before", "tests/tooling/warm-type-backed-empty-vue-star-host.test.ts") === null &&\n    digest("after", "tests/tooling/warm-type-backed-empty-vue-star-host.test.ts") ===\n      "3dc6a16c6e9869302858df257d21e2e2b03acdc13606460bd7849d9d9ce28fc2"\n      ? qualifyEmptyVueStarHost(production, alreadyQualified, digest)\n      : null;\n',
   "    ...(emptyVueStarHost ? { emptyVueStarHost } : {}),\n",
 ];
 const sha = (body: Buffer) => createHash("sha256").update(body).digest("hex");
