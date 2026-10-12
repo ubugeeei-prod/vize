@@ -32,6 +32,7 @@ export const catalogueSubgroups: Record<
   },
   "accessibility-interactions": {
     title: "Accessibility interactions",
+    jaTitle: "操作とフォーカスのアクセシビリティ",
     rules: [
       "a11y/mouse-events-have-key-events",
       "a11y/no-access-key",

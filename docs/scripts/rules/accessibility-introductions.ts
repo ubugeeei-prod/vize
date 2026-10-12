@@ -56,4 +56,12 @@ export const japaneseAccessibilityIntroductions: Readonly<Record<string, readonl
     "悪い例と良い例を比較し、掲載された設定でルールを有効にして、`vp run lint` を実行してください。",
     "[アクセシビリティの全ルール](./accessibility.md)では、ほかの検査も確認できます。",
   ],
+  interactions: [
+    "このルール群では、キーボード操作に関わる指定、フォーカス、マウスのイベント処理、支援技術から隠す要素、要素同士の参照を確認します。",
+    "独自の操作部品を追加したり、表示の切り替えやイベントの処理を変更したりするときに確認してください。",
+    "",
+    "たとえば、[フォーカスと aria-hidden の関係](./reference/a11y-no-aria-hidden-on-focusable.md)では、フォーカスできる要素を支援技術から隠してしまう指定の例を確認できます。",
+    "悪い例と良い例を比較し、掲載された設定を使って、`vp run lint` を実行してください。",
+    "[アクセシビリティの全ルール](./accessibility.md)では、関連するルールも確認できます。",
+  ],
 };
