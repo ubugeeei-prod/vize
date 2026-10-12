@@ -112,3 +112,24 @@ The three import-only controls must actually compile and run alongside all origi
 nine controls. Transparent compatibility, native-binding, protected performance,
 registry publication and release acceptance remain uncredited. Draft status lasts
 until exact-source checks pass; neither original issue closes before full proof.
+
+Normal Check [38207875036](https://github.com/ubugeeei-prod/vize/actions/runs/38207875036)
+on `a836b0a` / physical `78f5dc5` exposed E0277 in the new test helper:
+sha2 0.11's digest array does not implement `LowerHex`. The successor uses the
+already compiled observer's per-byte hexadecimal formatting and explicit string
+comparison, retaining the full original-source SHA assertion and every whole
+expected value. Its complete helper hash and generated test-only L0 import row
+are updated together. The original compile failure remains retained; this is
+a test API repair and supplies no new engine, native or publication credit.
+
+The same source's tooling shard4 retained a distinct naming-ledger refusal: its
+selected L0 law still expected five sites in the active CSS boundary file.
+The complete-result successor has two active sites; all five original aliases
+remain in the frozen whole original. The naming law now checks both authorities
+and the one new preferred L0 helper import, retaining every other selected path
+and Carton-refusal assertion. This changes no product behavior or check budget.
+
+An independent whole-source review cleared the checksum helper, all twenty
+original digest values and the complete naming-law preservation. The local
+six storage and four naming laws passed without engine execution; fresh Actions
+must still compile and execute this exact successor.

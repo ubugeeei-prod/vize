@@ -3,6 +3,7 @@
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use vize_atelier_sfc::{CssCompileOptions, compile_css, parse_css_ast, print_css_ast};
+use vize_l0::{String, cstr};
 
 const AUTHORITY: &str = include_str!(
     "../../../../tests/_fixtures/differential/css-engine-vendor-exit/finite-successors.json"
@@ -18,8 +19,14 @@ pub fn authority() -> Value {
 
 fn assert_source(row: &Value, source: &str) {
     assert_eq!(row["input"]["source"], source, "whole original source");
-    let digest = format!("{:x}", Sha256::digest(source.as_bytes()));
-    assert_eq!(row["input"]["sourceSha256"], digest);
+    let mut digest = String::with_capacity(64);
+    for byte in Sha256::digest(source.as_bytes()) {
+        digest.push_str(cstr!("{byte:02x}").as_str());
+    }
+    assert_eq!(
+        row["input"]["sourceSha256"].as_str().unwrap(),
+        digest.as_str()
+    );
 }
 
 pub fn assert_whole(row: &Value, source: &str) {

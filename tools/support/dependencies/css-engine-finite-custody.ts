@@ -70,7 +70,11 @@ for (const [filename, checksum] of [
   ],
   [
     "crates/vize_atelier_sfc/tests/support/css_engine_successors.rs",
-    "215c15f495f32f79b0ccba6992cb04218df2af8c3f5485853d61c6c1ddc9d85b",
+    "3d8c156353b3f031a65600e797283b41b76e327c63a7d2909c47827265d526cf",
+  ],
+  [
+    "tests/tooling/davinci/davinci-atelier-sfc-stage-alias.test.mjs",
+    "429f0747c4f3c0d9867c929b1f5b01165cd380b21714411c56b11093f40b566c",
   ],
   [
     "tests/tooling/support/css-engine-successors.ts",
