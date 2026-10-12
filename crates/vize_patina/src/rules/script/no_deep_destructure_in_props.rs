@@ -225,7 +225,7 @@ fn is_define_props_call(
 
 fn call_is_named(call: &CallExpression<'_>, name: &str) -> bool {
     matches!(
-        call.callee.get_inner_expression(),
+        &call.callee,
         Expression::Identifier(identifier) if identifier.name.as_str() == name
     )
 }

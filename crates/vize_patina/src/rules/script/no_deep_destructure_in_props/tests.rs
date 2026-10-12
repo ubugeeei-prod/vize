@@ -184,6 +184,8 @@ fn local_foreign_hoisted_and_nested_calls_are_not_macro_producers() {
         "if (false) { var defineProps = () => ({ user: { name: 'Ada' } }); } const { user: { name } } = defineProps()",
         "function ordinary(defineProps: any) { const { user: { name } } = defineProps(); }",
         "const withDefaults = (props: any) => props; const { user: { name } } = withDefaults(defineProps<User>(), {})",
+        "const { user: { name } } = (defineProps as any)()",
+        "const { user: { name } } = (withDefaults as any)(defineProps<User>(), {})",
     ] {
         assert_empty(linter.lint(source, 0));
     }
