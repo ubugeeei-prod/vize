@@ -8,6 +8,7 @@ import { test } from "node:test";
 
 import { qualifyAsciiSymbolHost } from "../performance/support/warm-type-backed-ascii-symbol-host.ts";
 import { qualifyHostMoves } from "../performance/support/warm-type-backed-host-qualifications.ts";
+import { originalAsciiCaller } from "./support/ascii-symbol-original-callers.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const manifest = JSON.parse(
@@ -159,6 +160,7 @@ test("composition keeps old null/disabled receipts literal and grants no cap or 
 });
 
 test("removing only the bounded composition hook restores its complete original Git body", () => {
+  const callerEntries = currentAsciiCallers();
   const file = "tests/performance/support/warm-type-backed-host-qualifications.ts";
   let current = physicalBody(root, file).toString("utf8");
   for (const insertion of [
@@ -184,7 +186,7 @@ test("removing only the bounded composition hook restores its complete original 
   ]) {
     const preserved = `tests/performance/support/${name}`;
     assert.deepEqual(
-      physicalBody(root, preserved),
+      originalAsciiCaller(manifest.originalSource, preserved, callerEntries),
       rawBody(root, manifest.originalSource, preserved),
     );
   }
@@ -229,3 +231,29 @@ test("the independent reader ignores commit/blob replacements and rejects execut
     fs.rmSync(fixture, { recursive: true, force: true });
   }
 });
+
+// Authenticate all current callers independently of the historical positive replay.
+function currentAsciiCallers() {
+  const head = rawGit(root, ["rev-parse", "HEAD"]).toString().trim();
+  return [
+    "warm-type-backed-path-host.ts",
+    "warm-type-backed-path-host-manifest.json",
+    "warm-type-backed-default-migration-host.ts",
+    "warm-type-backed-default-migration-manifest.json",
+    "warm-type-backed-lexical-dollar-host.ts",
+    "warm-type-backed-lexical-dollar-manifest.json",
+    "warm-type-backed-workflow.ts",
+    "warm-type-backed-source.ts",
+    "warm-type-backed-controls.ts",
+    "warm-type-backed-requests.ts",
+  ].map((name) => {
+    const file = `tests/performance/support/${name}`;
+    const body = physicalBody(root, file);
+    assert.deepEqual(body, rawBody(root, head, file));
+    const entry = rawGit(root, ["ls-tree", "-z", head, "--", file]).toString();
+    const matched = /^100644 blob ([a-f0-9]{40})\t(.+)\0$/u.exec(entry);
+    assert.ok(matched);
+    assert.equal(matched[2], file);
+    return { file, body, mode: "100644", blob: matched[1] };
+  });
+}
