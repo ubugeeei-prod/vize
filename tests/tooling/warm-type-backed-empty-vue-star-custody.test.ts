@@ -111,7 +111,7 @@ function refuses(directory: string, supplied?: string) {
   assert.match(result.stderr, /AssertionError|ENOENT|ERR_MODULE_NOT_FOUND/u);
 }
 
-test("all actual277 source bodies and nine metadata bodies precede the exact historical hook", () => {
+test("all actual281 source bodies and nine metadata bodies precede the exact historical hook", () => {
   withFixture(({ directory }) => {
     for (const supplied of ["current", "original"]) {
       const result = observe(directory, supplied);

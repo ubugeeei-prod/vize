@@ -34,7 +34,7 @@ type Stored = {
 const prefix = "tests/performance/support/warm-type-backed-empty-vue-star-";
 const manifestFile = prefix + "manifest.json";
 export const emptyVueStarManifestSHA256 =
-  "8526108db016115b3102a62c93514dead287bca315ac4961c8cc3426da86dd9d";
+  "2daf4a3967061cb86dd03e21fee75e90bba87d707a9ed3529ef06c70e02683bc";
 const hash = (kind: "sha256" | "sha1", body: Buffer | string) =>
   createHash(kind).update(body).digest("hex");
 const blob = (body: Buffer) =>
@@ -125,13 +125,13 @@ export function loadEmptyVueStarManifest(read: (file: string) => Buffer) {
   };
   assert.equal(correction.version, 1);
   assert.equal(correction.predecessorSource, "784d9ede9d80fe5539d79a9fe8ab0002e483bd8f");
-  assert.equal(correction.reviewedSource, "a89a93cd71531cf2cdbbb86f2dba8c2382348d77");
+  assert.equal(correction.reviewedSource, "4b252f2cf5c794d6e5d6846492a708ce8064d906");
   assert.equal(
     correction.sourceIndexSHA256,
-    "882a5e9a24e6cc0612b3cba7a75f53da6c8287e3020085425514973abb6b81be",
+    "f110878926424b88d4a9f7d08530bb0507c794e085c9287799a7904565d10f54",
   );
-  assert.equal(correction.updates.length, 2);
-  assert.equal(correction.additions.length, 3);
+  assert.equal(correction.updates.length, 3);
+  assert.equal(correction.additions.length, 7);
   const originals = new Map(
     Object.values(tables)
       .flat()
@@ -147,6 +147,7 @@ export function loadEmptyVueStarManifest(read: (file: string) => Buffer) {
   }
   assert.deepEqual(correction.productionAdditions, [
     "crates/vize_canon/src/batch/virtual_project/vue_codegen/malformed_setup_tests.rs",
+    "crates/vize_canon/tests/empty_vue_star_exports/membership.rs",
   ]);
   const additions = correction.additions.map(([file, before, after]) => {
     assert(!originals.has(file) && !replacements.has(file));
@@ -155,7 +156,7 @@ export function loadEmptyVueStarManifest(read: (file: string) => Buffer) {
     assert.match(after, /^[a-f0-9]{64}$/u);
     return Object.freeze([file, before, after] as const);
   });
-  assert.equal(new Set(additions.map(([file]) => file)).size, 3);
+  assert.equal(new Set(additions.map(([file]) => file)).size, 7);
   const order = (a: Pair, b: Pair) => {
     if (a[0] === b[0]) return 0;
     return a[0] < b[0] ? -1 : 1;
@@ -171,8 +172,8 @@ export function loadEmptyVueStarManifest(read: (file: string) => Buffer) {
     ].toSorted(order),
     preservedBodies: tables.preservedBodies,
   };
-  assert.equal(current.files.length, 43);
-  assert.equal(current.supplementalBodies.length, 82);
+  assert.equal(current.files.length, 44);
+  assert.equal(current.supplementalBodies.length, 85);
   assert.equal(current.preservedBodies.length, 152);
   correction.updates.forEach(Object.freeze);
   correction.additions.forEach(Object.freeze);
@@ -242,8 +243,8 @@ export function qualifyEmptyVueStarHost(
     predecessorCorrectiveSourceIndexSHA256: manifest.stored.correctiveSourceIndexSHA256,
     reviewedSourceIndexSHA256: manifest.stored.reviewedSourceIndexSHA256,
     integrationSourceProofSHA256: manifest.stored.integrationSourceProofSHA256,
-    completeBodyPairs: 43,
-    supplementalBodyPairs: 82,
+    completeBodyPairs: 44,
+    supplementalBodyPairs: 85,
     preservedBodyPairs: 152,
     sourceMetadataBodyPairs: emptyVueStarMetadataPairs.length,
     historicalCasesPreserved: 32,

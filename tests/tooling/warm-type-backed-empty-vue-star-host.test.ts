@@ -18,15 +18,15 @@ const digest = (side: Side, file: string) => pairs.get(file)?.[side] ?? null;
 const read = (file: string) => fs.readFileSync(new URL("../../" + file, import.meta.url));
 const zero = "0".repeat(64);
 
-test("the retained42/80/152 tables and exact current43/82/152 correction carry no runtime credit", () => {
+test("the retained42/80/152 tables and exact current44/85/152 correction carry no runtime credit", () => {
   const result = qualifyEmptyVueStarHost(production, new Set(), digest);
   assert.ok(result);
   assert.equal(result.authority, "exact-reviewed-empty-vue-star-complete-source");
   assert.equal(result.manifestSHA256, emptyVueStarManifestSHA256);
   assert.equal(result.originalSource, "a93e78147b0990c813e965a7868b32dda341eb77");
-  assert.equal(result.reviewedProductSource, "a89a93cd71531cf2cdbbb86f2dba8c2382348d77");
-  assert.equal(result.completeBodyPairs, 43);
-  assert.equal(result.supplementalBodyPairs, 82);
+  assert.equal(result.reviewedProductSource, "4b252f2cf5c794d6e5d6846492a708ce8064d906");
+  assert.equal(result.completeBodyPairs, 44);
+  assert.equal(result.supplementalBodyPairs, 85);
   assert.equal(result.preservedBodyPairs, 152);
   assert.equal(result.sourceMetadataBodyPairs, 9);
   assert.equal(result.historicalCasesPreserved, 32);
@@ -39,8 +39,8 @@ test("the retained42/80/152 tables and exact current43/82/152 correction carry n
     [42, 80, 152],
   );
   assert.equal(result.predecessorReviewedProductSource, "b148ffee7526b45789ec44c16b3e3370e08a5650");
-  assert.equal(allPairs.length, 286);
-  assert.equal(new Set(allPairs.map(([file]) => file)).size, 286);
+  assert.equal(allPairs.length, 290);
+  assert.equal(new Set(allPairs.map(([file]) => file)).size, 290);
 });
 
 test("every complete before/after cell refuses drift, absence, partial or foreign body digest", () => {

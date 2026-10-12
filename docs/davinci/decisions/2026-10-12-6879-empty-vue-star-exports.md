@@ -172,7 +172,7 @@ The correction keeps all seven original 42/80/152 source-table files byte-exact.
 One separately authenticated finite record changes only the two reviewed after
 cells and adds three complete pairs: the existing malformed fixture's whole
 before/after body and two new passive input blobs with genuine before absences.
-The current closure is 43 producer/test-target, 82 supplemental and 152 preserved
+The first corrective closure is 43 producer/test-target, 82 supplemental and 152 preserved
 bodies plus nine metadata bodies. Any original-after substitution, incomplete
 correction, mixed source or missing body refuses admission before a historical
 tooling view or workload. This enrollment supplies source custody only.
@@ -194,3 +194,10 @@ native and providers, and two static shared-helper bodies from that separate
 packet. The helper writer and captured options establish their constant form.
 The failed malformed packet did not read all 86 bodies. The next genuine run
 must perform every read and match the entire reference before acceptance.
+
+The complete-membership successor retains those original seven tables and
+qualifies exactly three corrected after cells and seven additional whole pairs.
+Its current closure is 44 producer/test-target, 85 supplemental and 152 preserved
+bodies plus nine metadata bodies. Source-only refusal controls and inventory
+generation must pass before publication; fresh native and original400 results
+remain required for this exact source.
