@@ -155,3 +155,23 @@ An independent review read all seven whole source changes and their inverses,
 including the untouched current law and seven original replay outputs, and
 cleared this bounded continuation. That review grants no engine execution or
 future source qualification.
+
+The exact f3db normal run 38212035152 retained one tooling1 failure: the
+assertion-lint allowlist still named the CSS boundary after its weak assertions
+had been replaced by complete finite contracts. Remove only that obsolete
+path, preserving every other exception and the unchanged assertion-lint tests.
+The full 940,519-byte failed log is retained with SHA-256
+`fde322607772c5b4a68be2c364749afdf13a71e0371c815f5263fdf93018b253`.
+The existing real-tree law requires zero stale-entry warnings; this reduces
+permission rather than reducing checks. Focused source and fresh normal/protected
+qualification remain distinct; no registry, native-binding or release credit.
+
+The same source checkout also retained native-phase run 38212035066 status127:
+the authenticated current workflow required the merged lexical-dollar helper
+absent from the older CSS branch. Preserve the complete 3,648,759-byte log
+(SHA-256 `8f282285e73522ba0c256ba51130ec424da6f66737acdb3fbb9bb4cf8739041e`)
+and compose genuine main `9764c8e2ca68b02d49f4387dd918ae09768e4e0d`,
+including its complete original producer/native laws. No missing-file allowance
+or individual helper copy qualifies this failure. All owned CSS bodies remain
+exact apart from incoming foundation clauses and generated source inventory.
+Fresh source/native/protected gates must qualify that composed head.
