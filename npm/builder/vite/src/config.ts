@@ -52,15 +52,16 @@ export async function resolveConfigExport(
 export async function resolveViteConfigExport(
   exported: unknown,
   env?: ConfigEnv,
+  configDir?: string,
 ): Promise<ResolvedVizeConfig> {
   const configModule = await loadVizeConfigModule();
   if (typeof configModule.resolveViteConfigExport === "function") {
-    return configModule.resolveViteConfigExport(exported, env);
+    return configModule.resolveViteConfigExport(exported, env, configDir);
   }
   // Older installed Vize packages still supply the native settings normalizer.
   // Bundle the pure projection so upgrading only the adapter remains supported.
   return configModule.resolveConfigExport(
-    (await projectViteConfigExport(exported, env)) as UserConfigExport,
+    (await projectViteConfigExport(exported, env, configDir)) as UserConfigExport,
     env,
   );
 }

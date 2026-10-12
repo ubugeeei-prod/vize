@@ -5,7 +5,12 @@ import { createLogger } from "../transform.ts";
 
 export function isLegacyVueVersion(version: VizeOptions["vueVersion"] | undefined): boolean {
   return (
-    version === "legacy" || version === 0.11 || version === 1 || version === 2 || version === "2.7"
+    version === "legacy" ||
+    version === 0.1 ||
+    version === 0.11 ||
+    version === 1 ||
+    version === 2 ||
+    version === "2.7"
   );
 }
 
