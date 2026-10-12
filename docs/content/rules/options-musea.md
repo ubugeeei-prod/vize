@@ -13,6 +13,8 @@ Use this option to connect Musea/style linting to the project's design-token inv
 off unless token data is configured and the rule is enabled or selected by a non-empty token list.
 Each token maps a hardcoded CSS value to a CSS custom property derived from `path`.
 
+An explicit `off` setting keeps the rule disabled, even when the token list is non-empty.
+
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
