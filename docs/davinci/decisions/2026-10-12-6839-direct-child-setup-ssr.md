@@ -74,13 +74,29 @@ foreign setup bindings must remain rejected. Actual `_ctx` and wrong-read
 mutations must fail the runtime controls. No map, source, HTML, diagnostic or
 unknown field is normalized to select a golden.
 
-The existing native SSR Actions phase runs these laws and keeps both complete
-new packets even if a pending freeze fails. Its Rust and runtime statuses must
-both succeed for acceptance. The pending fixture is deliberately unqualified:
-after one genuine source capture, independently review the full official graphs,
-authored HTML, all custody joins and refusals, then freeze the exact complete
-new packets and require fresh exact-head Actions. Protected suites and measured
-instruction gates must pass before queue admission and actual merge credit.
+The existing native SSR Actions phase captured both complete new packets in
+[Check 38190002082](https://github.com/ubugeeei-prod/vize/actions/runs/38190002082),
+job 114620991118, artifact 11720818473, from API source `d00ff674` and physical
+checkout `81eeac946`. All 15 relevant source objects match between these heads.
+The whole ZIP digest is
+`9b48fa7994b76fff27180ca81da095b75823a193d0e7ca557dd337b7c16372e8`.
+Independent complete-packet review accepted all eight modules, 15 typed
+refusals, 33 native runtime packets, 33 direct executions, authored initial and
+updated HTML, raw maps, links and setup joins. All 11 other historical payloads
+remain byte-exact; reinserting the one named refusal reconstructs both complete
+old vectors. Existing Vite-context differences remain explicitly recorded.
+
+The exact approved freeze digest is
+`aa34353f8ed5fc93eb09d20ec466c16aefb9eada57d6d93cc70022a314920ceb`.
+Repository Oxfmt changes only JSON presentation, yielding source digest
+`3a3ac0f55531e46e72f2abbe07369bbf43c2797bb359dd47bdb91022d689741e`;
+the complete parsed objects are equal, including every source and map string.
+Its provenance text retains the initial capture's pending-qualification wording.
+The original run failed only the deliberately null golden comparisons and is
+preserved as failed evidence. Fresh exact-head Actions must accept the frozen
+packets; protected suites and measured instruction gates must then pass before
+actual merge credit. This source observation does not establish public package
+acceptance or complete upstream map/context parity.
 
 Remaining TODOs stay explicit: deeper/mixed children, components, For runtime,
 Vapor SSR, complete dialect/JSX/TSX routing, and default compiler replacement.
