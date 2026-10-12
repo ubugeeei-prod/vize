@@ -80,21 +80,29 @@ fn checked_multiline_initializer_owns_only_the_complete_value() {
 #[test]
 fn condition_alias_stays_in_the_same_scope_and_keeps_the_original_guard() {
     let expression = "predicate({ value: item.value })";
-    let original = format!(
-        "for (const item of items) {{\n  if ({expression}) {{\n    consume(item.value);\n  }}\n}}\n"
-    );
-    let mut document = mapped_document(&original, &[(expression, 12)]);
-    bind_template_expressions(&mut document);
-    assert_eq!(
-        document.content.as_str(),
-        format!(
-            "for (const item of items) {{\n  const __expr_0 = ({expression});\n  if ({expression}) {{\n    consume(item.value);\n  }}\n}}\n"
-        )
-    );
-    assert_owner(&document, 12..12 + expression.len(), "__expr_0");
+    for guard in [
+        expression.to_string(),
+        format!("({expression})"),
+        format!("(({expression}))"),
+    ] {
+        let original = format!(
+            "for (const item of items) {{\n  if ({guard}) {{\n    consume(item.value);\n  }}\n}}\n"
+        );
+        let mut document = mapped_document(&original, &[(expression, 12)]);
+        bind_template_expressions(&mut document);
+        assert_eq!(
+            document.content.as_str(),
+            format!(
+                "for (const item of items) {{\n  const __expr_0 = ({expression});\n  if ({guard}) {{\n    consume(item.value);\n  }}\n}}\n"
+            )
+        );
+        assert_owner(&document, 12..12 + expression.len(), "__expr_0");
+    }
     for original in [
         format!("}} else if ({expression}) {{\n"),
         format!("if (parent && ({expression})) {{\n"),
+        format!("if (({expression}) {{\n"),
+        format!("if ({expression})) {{\n"),
     ] {
         let mut refusal = mapped_document(&original, &[(expression, 12)]);
         bind_template_expressions(&mut refusal);
@@ -227,4 +235,53 @@ fn actual_annotated_listener_initializer_owns_its_type_and_name_range() {
             .get(receiver.span.sub_spans[1].gen_range.clone()),
         Some(expression)
     );
+}
+
+#[test]
+fn original_if_projections_keep_the_complete_authored_probe_owner() {
+    for source in [
+        include_str!(
+            "../../../../tests/fixtures/unsafe-template-binding/reports-8752-8755/original-reports/DirectiveObjectArg.vue"
+        ),
+        include_str!(
+            "../../../../tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/SafeObjectPredicateMultiline.vue"
+        ),
+    ] {
+        let descriptor =
+            vize_atelier_sfc::parse_sfc(source, vize_atelier_sfc::SfcParseOptions::default())
+                .expect("unaltered full reported SFC");
+        let template = descriptor.template.as_ref().expect("template");
+        let script = descriptor.script_setup.as_ref().expect("setup");
+        let allocator = vize_l0::Allocator::new();
+        let (root, errors) = vize_armature::parse(&allocator, template.content.as_ref());
+        assert!(errors.is_empty(), "{errors:?}");
+        let document = super::super::document::project_type_aware(
+            &descriptor,
+            script.content.as_ref(),
+            Some(&root),
+            script.loc.start as u32,
+            template.loc.start as u32,
+            "OriginalCondition.vue",
+        );
+        let start = source.find("v-if=\"").expect("first original condition") + 6;
+        let end = start + source.get(start..).expect("value").find('"').expect("end");
+        let offset = inferred_binding_offset(&document, &(start..end))
+            .expect("complete actual Canon condition owns its inferred probe");
+        let (queries, _) = super::super::template_queries::collect_template_query_sets(
+            &document,
+            &root,
+            template.loc.start as u32,
+            true,
+            false,
+        );
+        let query = queries
+            .iter()
+            .find(|query| {
+                query.kind == super::super::template_queries::TemplateQueryKind::Expression
+                    && query.source_start as usize == start
+                    && query.source_end as usize == end
+            })
+            .expect("whole authored condition query");
+        assert_eq!(query.generated_offset, offset);
+    }
 }

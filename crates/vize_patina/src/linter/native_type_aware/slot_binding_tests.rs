@@ -6,6 +6,26 @@ use vize_l0::String;
 
 use super::{document::TypeAwareDocument, template_queries::collect_template_query_sets};
 
+pub(super) fn whole_parser_errors(errors: &[vize_relief::CompilerError]) -> Value {
+    let rows: Vec<_> = errors
+        .iter()
+        .map(|error| {
+            json!({"code": format!("{:?}", error.code), "message": error.message, "loc": error.loc})
+        })
+        .collect();
+    json!(rows)
+}
+
+pub(super) fn expected_parser_notices(id: &str, source: &str) -> Value {
+    let packet: Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/unsafe-template-binding/reports-8752-8755/parser-compatibility-oracles.json"
+    ))
+    .expect("independent complete parser notices");
+    let case = &packet["cases"][id];
+    assert_eq!(case["source"], source);
+    case["errors"].clone()
+}
+
 #[test]
 fn complete_slot_query_and_promise_vectors_preserve_evaluated_values() {
     let packet: Value = serde_json::from_str(include_str!(
@@ -20,7 +40,15 @@ fn complete_slot_query_and_promise_vectors_preserve_evaluated_values() {
             &allocator,
             case["templateSource"].as_str().expect("whole template"),
         );
-        assert!(errors.is_empty(), "{}: {errors:?}", case["id"]);
+        assert_eq!(
+            whole_parser_errors(&errors),
+            expected_parser_notices(
+                case["id"].as_str().expect("case id"),
+                case["templateSource"].as_str().expect("whole template"),
+            ),
+            "{}: complete existing parser notices",
+            case["id"]
+        );
         let document = TypeAwareDocument {
             content: String::from(case["virtualDocument"].as_str().expect("whole document")),
             mapping: ProjectionMapping::from_spans(

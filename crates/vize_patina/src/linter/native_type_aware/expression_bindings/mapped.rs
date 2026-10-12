@@ -80,10 +80,18 @@ pub(super) fn bind_checked_expressions(document: &mut TypeAwareDocument, index: 
             // inserting a declaration before either would alter control flow.
             let condition = text
                 .get(line_start..generated.start)
-                .is_some_and(|prefix| prefix.trim_start() == "if (")
-                && text
-                    .get(generated.end..)
-                    .is_some_and(|suffix| suffix.starts_with(") {\n"));
+                .and_then(|prefix| prefix.trim_start().strip_prefix("if ("))
+                .is_some_and(|wrapper| {
+                    if !wrapper.bytes().all(|byte| byte == b'(') {
+                        return false;
+                    }
+                    let suffix = text.get(generated.end..).unwrap_or_default();
+                    let closing = suffix.bytes().take_while(|byte| *byte == b')').count();
+                    closing == wrapper.len() + 1
+                        && suffix
+                            .get(closing..)
+                            .is_some_and(|tail| tail.starts_with(" {\n"))
+                });
             let checked = [
                 "const __vize_prop_check_",
                 "const __vize_native_prop_check_",

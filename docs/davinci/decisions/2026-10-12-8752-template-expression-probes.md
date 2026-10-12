@@ -119,12 +119,13 @@ independently stopped at the existing pinned MoonBit Linux HTTP403 transport;
 its central source owner remains separate. Preserve all three raw logs and the
 first failure. This attempt does not prove any product regression before/after.
 
-## Genuine before and required after routing
+## Observed source failures and required runtime routing
 
 The repaired old-production head `94014812` built successfully under ordinary
-Check `38230673353`. Rust shards 1 and 3 genuinely fail unchanged-author-marker
-preservation and the complete slot query/Promise vector, respectively. The full
-three build/test logs are retained in `preparation/hosted-before-940`. Those PR
+Check `38230673353`. Rust shards 1 and 3 stop at overly strict empty-parser-notice
+assertions before the unchanged-author-marker and complete slot query/Promise checks.
+These failures do not prove those product behaviors before the fix. The full
+three build/test logs remain in `preparation/hosted-before-940`. Those PR
 Rust shards explicitly set `VIZE_TEST_DISABLE_TSGO=1`; the 25 scoped and four
 original typed packets therefore have **no executed before credit**. Preserve
 that boundary rather than count successful optional returns as native outcomes.
@@ -149,3 +150,11 @@ production bodies and all original expectations remain byte-exact. No module
 layout gate or discovery rule changes.
 
 The next ordinary Rust build at `9eb54b68` rejected the integration helper's private rule import (`E0603`). The helper now imports the same existing public `rules::type_aware::NoUnsafeTemplateBinding` reexport. Production and all frozen whole oracles remain unchanged; compile/runtime qualification still awaits fresh Actions.
+
+Actual required Native run `38235278441` on `adab3a31` produced all 29 complete packets and failed exactly three: scoped/original `DirectiveObjectArg` and scoped `SafeObjectPredicateMultiline`. The other 26 entire packets match the authored oracles, including all 13 unsafe warnings; the complete raw failure and ordered 29 packets are retained in `preparation/hosted-native-adab-*`.
+
+Independent production-source traces show Croquis wraps a first condition in parentheses, and Canon emits `if ((expression))` while mapping the inner complete authored value, including multiline whitespace. The original exact `if (` boundary rejected that owner. The bounded correction allows only balanced extra parentheses around that same complete value, preserving `else if`, compound guards, width mismatch and unmatched delimiters refusal. Actual Canon projections of the two unchanged SFCs now have an explicit source test for their inferred owner and collector query offset. No authored diagnostic/config/vector was changed; fresh whole runtime, protected merge and released installed acceptance remain pending.
+
+The ordinary source run on the same `adab3a31` also revealed that the two static controls rejected the existing Standard-syntax compatibility notices for their unchanged self-closing `<p>` inputs before reaching their behavioral assertions. A separate independently authored oracle now asserts every full notice (code, message and complete location), preserving the original source/query/diagnostic vectors. These are harness repairs, without parser-policy changes or discarded diagnostics. The prior old-source static failures are explicitly not product-before qualification.
+
+The source-length gate rejected growth of the incoming 589-line collector to 601 lines. The unchanged slot-spread offset helper moved in a separate move-only commit to the existing query module; its whole body is preserved, and the collector is 575 lines. No cap, check or pipeline stage changes.
