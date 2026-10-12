@@ -5,6 +5,8 @@ pub(in super::super) struct IdentifierWalk {
     pub(in super::super) values: Vec<IdentifierRef>,
     pub(in super::super) demanded: bool,
     pub(in super::super) complete: bool,
+    pub(in super::super) runtime_capture: bool,
+    pub(in super::super) runtime_only: bool,
 }
 
 impl IdentifierWalk {
@@ -13,10 +15,19 @@ impl IdentifierWalk {
             values: Vec::with_capacity(4),
             demanded,
             complete: true,
+            runtime_capture: false,
+            runtime_only: true,
         }
     }
     pub(super) fn child(&self) -> Self {
-        Self::new(self.demanded)
+        let mut child = Self::new(self.demanded);
+        child.runtime_capture = self.runtime_capture;
+        child
+    }
+    pub(super) fn refuse_runtime_read(&mut self) {
+        if self.runtime_capture {
+            self.runtime_only = false;
+        }
     }
     pub(super) fn refuse(&mut self) {
         if self.demanded {

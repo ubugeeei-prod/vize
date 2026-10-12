@@ -5,6 +5,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { retainedPhysicalHostBeforeComponentValues } from "./support/component-value-host-custody.ts";
 
 import { qualifyAsciiSymbolHost } from "../performance/support/warm-type-backed-ascii-symbol-host.ts";
 import { qualifyHostMoves } from "../performance/support/warm-type-backed-host-qualifications.ts";
@@ -162,7 +163,7 @@ test("composition keeps old null/disabled receipts literal and grants no cap or 
 test("removing only the bounded composition hook restores its complete original Git body", () => {
   const callerEntries = currentAsciiCallers();
   const file = "tests/performance/support/warm-type-backed-host-qualifications.ts";
-  let current = physicalBody(root, file).toString("utf8");
+  let current = retainedPhysicalHostBeforeComponentValues(root).toString("utf8");
   for (const insertion of [
     'import { qualifyAsciiSymbolHost } from "./warm-type-backed-ascii-symbol-host.ts";\n',
     "  const asciiSymbolHost = enabled\n    ? qualifyAsciiSymbolHost(production, alreadyQualified, digest)\n    : null;\n",

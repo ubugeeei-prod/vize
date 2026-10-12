@@ -9,18 +9,17 @@ import {
   gitReaderNoDeepChanges,
   gitReaderNoDeepGuard,
   gitReaderNoDeepPairs,
-  gitReaderNoDeepSource,
   historicalIncomingSource,
   prepareLiteralSource,
   qualifyGitReaderNoDeepHarness,
 } from "../performance/support/warm-type-backed-git-reader-nodeep.ts";
+import { gitReaderSetupGuard } from "../performance/support/warm-type-backed-git-reader-setup.ts";
+
 import {
-  gitReaderSetupChanges,
-  gitReaderSetupGuard,
-  gitReaderSetupPairs,
-  qualifyGitReaderSetupHarness,
-  rawFirstParentProof,
-} from "../performance/support/warm-type-backed-git-reader-setup.ts";
+  qualifyComponentReaderFrame,
+  exerciseComponentReaderFrameRefusals,
+  runRetainedComponentReaderLaw,
+} from "../performance/support/warm-type-backed-git-reader-component-frame.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const sha = (body: Buffer | string) => createHash("sha256").update(body).digest("hex");
@@ -48,83 +47,24 @@ const pairs = new Map(
 );
 const digest = (side: "before" | "after", file: string) => pairs.get(file)![side];
 
-test("the actual setup successor and final NoDeep9591 whole twelve have their own source authority", async () => {
-  prepareLiteralSource(root, gitReaderNoDeepSource);
-  prepareLiteralSource(root, historicalIncomingSource);
-  const actual = (side: "before" | "after", file: string) => {
-    const body =
-      side === "before" ? rawBody(root, gitReaderNoDeepSource, file) : physicalBody(root, file);
-    return body === null ? null : sha(body);
-  };
-  const head = rawGit(root, ["rev-parse", "HEAD"]).toString().trim();
-  assert.match(head, /^[a-f0-9]{40}$/u);
-  rawFirstParentProof(root, gitReaderNoDeepSource, head);
-  const result = qualifyGitReaderSetupHarness(gitReaderSetupChanges, new Set(), actual);
-  assert.ok(result);
-  assert.equal(result.completeBodyPairs, gitReaderSetupPairs.length);
-  assert.equal(result.namedFamilyBodies, 87);
-  assert.equal(result.acceptanceCredit, "none");
-  assert.equal(rawBody(root, gitReaderNoDeepSource, gitReaderNoDeepGuard), null);
-  physicalBody(root, gitReaderNoDeepGuard);
-  assert.deepEqual(
-    rawBody(root, head, gitReaderNoDeepGuard),
-    physicalBody(root, gitReaderNoDeepGuard),
-  );
-  for (const [file, , expected] of gitReaderSetupPairs) {
-    const body = rawBody(root, head, file);
-    assert.equal(
-      body === null ? null : sha(body),
-      expected,
-      `complete committed current source: ${file}`,
-    );
-  }
-  const { gitReaderHarness } =
-    await import("../performance/support/warm-type-backed-git-reader-harness.ts");
-  assert.deepEqual(
-    [...gitReaderHarness(gitReaderSetupChanges, new Set(), root, gitReaderNoDeepSource, head)],
-    gitReaderSetupChanges,
-  );
-  const { authenticateRuntimeApiSourceFamily } =
-    await import("./support/runtime-props-api-source-custody.mjs");
-  const { authenticateSetupExportMembership } =
-    await import("./support/setup-export-preset-source-custody.mjs");
-  const { authenticateDeepPropsSourceFamily } =
-    await import("./support/props-deep-source-custody.mjs");
-  const read = (file: string) => physicalBody(root, file);
-  const runtime = authenticateRuntimeApiSourceFamily(root, read);
-  authenticateSetupExportMembership(root, runtime, read);
-  const family = authenticateDeepPropsSourceFamily(root, read);
-  const current = family.currentSuccessor.currentSuccessor;
-  assert.equal(current.candidate, "ecb8c9b25ee083725858229a2894052bb6de1fbf");
-  const directory = "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/";
-  assert.equal(
-    sha(read(directory + "trait-scope-correction/successor.json")),
-    "9591f993ff7ff20537ffbc532ce84af6ef201ec26e248b99d7788725a7dece59",
-  );
-  assert.equal(current.sources.length, 12);
-  for (const source of current.sources) {
-    for (const arm of [source.before, source.after]) {
-      const body = read(arm.archive);
-      assert.equal(body.length, arm.bytes);
-      assert.equal(sha(body), arm.sha256);
-      assert.equal(
-        createHash("sha1").update(`blob ${body.length}\0`).update(body).digest("hex"),
-        arm.gitBlob,
-      );
-    }
-    assert.deepEqual(read(source.path), read(source.after.archive));
-  }
-  assert.deepEqual(read(family.producer.after.path), read(family.producer.after.archive));
-  const helper = JSON.parse(read(directory + "helper-integration/manifest.json").toString());
-  for (const entry of helper.helpers)
-    for (const side of ["before", "after"] as const) {
-      const body = read(directory + "helper-integration/" + entry[side].archive);
-      assert.equal(sha(body), entry[side].sha256);
-      assert.deepEqual(
-        body,
-        side === "before" ? rawBody(root, historicalIncomingSource, entry.path) : read(entry.path),
-      );
-    }
+test("actual NoUnused reader sources and retained setup controls have separate complete authority", () => {
+  const current = qualifyComponentReaderFrame(root);
+  assert.equal(current.completeCurrentPairs, 111);
+  assert.equal(current.preservedOriginalPairs, 110);
+  assert.equal(current.originalNoDeepPairs, 102);
+  assert.equal(current.originalNamedFamilyBodies, 87);
+  assert.equal(current.acceptanceCredit, "none");
+  const refusals = exerciseComponentReaderFrameRefusals(root);
+  assert.equal(refusals.completeCurrentPairs, 111);
+  assert.equal(refusals.controls.length, 8);
+  assert.equal(refusals.squashedEquivalentPairs, 111);
+  assert.equal(refusals.squashedParent, "2489128d5f8fab1b7442a1e5c09b4e1701cbf185");
+  assert.match(refusals.squashedCommit, /^[a-f0-9]{40}$/u);
+  const historical = runRetainedComponentReaderLaw(root);
+  assert.equal(historical.source, "2489128d5f8fab1b7442a1e5c09b4e1701cbf185");
+  assert.equal(historical.completeRetainedBodies, 113);
+  assert.equal(historical.passed, 5);
+  assert.equal(historical.skipped, 0);
 });
 
 test("all204 complete pair sides and every required presence refuse drift", () => {

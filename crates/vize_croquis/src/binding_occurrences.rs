@@ -204,3 +204,55 @@ impl BindingOccurrences {
         }
     }
 }
+
+impl crate::Croquis {
+    /// Retain only a caller-qualified packet from the same descriptor analysis.
+    #[doc(hidden)]
+    pub fn retain_authored_binding_reads(&mut self, packet: Option<BindingOccurrences>) {
+        self.setup_context.set_ssr_occurrences(packet);
+    }
+
+    /// A positive template read of this exact authored setup declaration.
+    #[doc(hidden)]
+    pub fn has_authored_template_binding_read(
+        &self,
+        scope: ScopeId,
+        name: &str,
+        start: u32,
+        end: u32,
+    ) -> bool {
+        if self
+            .scopes
+            .get_scope(scope)
+            .is_none_or(|scope| scope.kind != crate::scope::ScopeKind::ScriptSetup)
+            || self.binding_spans.get(name).copied() != Some((start, end))
+        {
+            return false;
+        }
+        let Some(packet) = self.setup_context.authored_binding_occurrences() else {
+            return false;
+        };
+        let identity = BindingIdentity {
+            scope,
+            block: OccurrenceBlock::Script,
+            start,
+            end,
+        };
+        if packet
+            .bindings
+            .get(&identity)
+            .is_none_or(|binding| binding.name.as_str() != name)
+        {
+            return false;
+        }
+        self.setup_context
+            .authored_runtime_template_reads()
+            .is_some_and(|reads| {
+                reads.iter().any(|reference| {
+                    reference.binding == identity
+                        && reference.block == OccurrenceBlock::Template
+                        && packet.seen.contains(reference)
+                })
+            })
+    }
+}

@@ -1,14 +1,15 @@
 //! Demand-only capture during the existing identifier walk.
 
-use crate::binding_occurrences::{BindingOccurrences, OccurrenceBlock};
+use crate::binding_occurrences::{BindingOccurrence, BindingOccurrences, OccurrenceBlock};
 use crate::scope::ScopeKind;
 use vize_carton::{CompactString, FxHashMap};
 
 use super::{Drawer, IdentifierRef};
 
 pub(super) struct OccurrenceCapture {
-    pub(super) references: FxHashMap<CompactString, Vec<IdentifierRef>>,
+    pub(super) references: FxHashMap<CompactString, (Vec<IdentifierRef>, bool)>,
     packet: BindingOccurrences,
+    runtime_reads: Vec<BindingOccurrence>,
     pub(super) valid: bool,
 }
 
@@ -17,6 +18,7 @@ impl Default for OccurrenceCapture {
         Self {
             references: FxHashMap::default(),
             packet: BindingOccurrences::default(),
+            runtime_reads: Vec::new(),
             valid: true,
         }
     }
@@ -67,6 +69,7 @@ impl Drawer {
         retain: bool,
     ) -> (crate::Croquis, Option<BindingOccurrences>) {
         let demanded = self.occurrence_capture.is_some();
+        let mut runtime_reads = None;
         let packet = self.occurrence_capture.and_then(|capture| {
             let mut capture = *capture;
             if !capture.valid {
@@ -77,11 +80,15 @@ impl Drawer {
                     .packet
                     .resolve_script_globals(&self.croquis.binding_spans)?;
             }
+            runtime_reads = Some(capture.runtime_reads);
             Some(capture.packet)
         });
         let mut croquis = self.croquis;
         if retain && demanded {
             croquis.setup_context.set_ssr_occurrences(packet.clone());
+            croquis
+                .setup_context
+                .set_runtime_template_reads(runtime_reads);
         }
         (croquis, packet)
     }
@@ -121,7 +128,7 @@ impl Drawer {
         let Some(capture) = self.occurrence_capture.as_mut() else {
             return;
         };
-        let Some(references) = capture.references.get(content) else {
+        let Some((references, runtime_only)) = capture.references.get(content) else {
             return;
         };
         for reference in references {
@@ -177,6 +184,14 @@ impl Drawer {
             capture
                 .packet
                 .note_reference(binding, start, end, OccurrenceBlock::Template);
+            if *runtime_only {
+                capture.runtime_reads.push(BindingOccurrence {
+                    binding,
+                    start,
+                    end,
+                    block: OccurrenceBlock::Template,
+                });
+            }
         }
     }
 }

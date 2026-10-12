@@ -1,0 +1,910 @@
+[
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/DirectiveObjectArg.vue",
+        "warning_count": 0
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/DirectiveObjectArg.vue",
+          "messages": [],
+          "warningCount": 0
+        }
+      ],
+      "actualStatus": 0,
+      "id": "DirectiveObjectArg"
+    },
+    "role": "scoped-semantic-oracles.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/MultilineAttr.vue",
+        "warning_count": 0
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/MultilineAttr.vue",
+          "messages": [],
+          "warningCount": 0
+        }
+      ],
+      "actualStatus": 0,
+      "id": "MultilineAttr"
+    },
+    "role": "scoped-semantic-oracles.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/MultilineTernary.vue",
+        "warning_count": 0
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/MultilineTernary.vue",
+          "messages": [],
+          "warningCount": 0
+        }
+      ],
+      "actualStatus": 0,
+      "id": "MultilineTernary"
+    },
+    "role": "scoped-semantic-oracles.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/original-reports/RouterViewSlot.vue",
+        "warning_count": 0
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/original-reports/RouterViewSlot.vue",
+          "messages": [],
+          "warningCount": 0
+        }
+      ],
+      "actualStatus": 0,
+      "id": "RouterViewSlot"
+    },
+    "role": "scoped-semantic-oracles.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/SafeObjectPredicateMultiline.vue",
+        "warning_count": 0
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/SafeObjectPredicateMultiline.vue",
+          "messages": [],
+          "warningCount": 0
+        }
+      ],
+      "actualStatus": 0,
+      "id": "SafeObjectPredicateMultiline"
+    },
+    "role": "scoped-semantic-oracles.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/SafeCrLfAttributeUnicode.vue",
+        "warning_count": 0
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/SafeCrLfAttributeUnicode.vue",
+          "messages": [],
+          "warningCount": 0
+        }
+      ],
+      "actualStatus": 0,
+      "id": "SafeCrLfAttributeUnicode"
+    },
+    "role": "scoped-semantic-oracles.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/SafeSequenceExpression.vue",
+        "warning_count": 0
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/SafeSequenceExpression.vue",
+          "messages": [],
+          "warningCount": 0
+        }
+      ],
+      "actualStatus": 0,
+      "id": "SafeSequenceExpression"
+    },
+    "role": "scoped-semantic-oracles.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/SafeObjectBinding.vue",
+        "warning_count": 0
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/SafeObjectBinding.vue",
+          "messages": [],
+          "warningCount": 0
+        }
+      ],
+      "actualStatus": 0,
+      "id": "SafeObjectBinding"
+    },
+    "role": "scoped-semantic-oracles.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/SafeLoopLocal.vue",
+        "warning_count": 0
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/SafeLoopLocal.vue",
+          "messages": [],
+          "warningCount": 0
+        }
+      ],
+      "actualStatus": 0,
+      "id": "SafeLoopLocal"
+    },
+    "role": "scoped-semantic-oracles.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/SafeSlotDeclarationAndValue.vue",
+        "warning_count": 0
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/SafeSlotDeclarationAndValue.vue",
+          "messages": [],
+          "warningCount": 0
+        }
+      ],
+      "actualStatus": 0,
+      "id": "SafeSlotDeclarationAndValue"
+    },
+    "role": "scoped-semantic-oracles.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/SafeSiblingBindings.vue",
+        "warning_count": 0
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/SafeSiblingBindings.vue",
+          "messages": [],
+          "warningCount": 0
+        }
+      ],
+      "actualStatus": 0,
+      "id": "SafeSiblingBindings"
+    },
+    "role": "scoped-semantic-oracles.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/SafeInertMarkers.vue",
+        "warning_count": 0
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/SafeInertMarkers.vue",
+          "messages": [],
+          "warningCount": 0
+        }
+      ],
+      "actualStatus": 0,
+      "id": "SafeInertMarkers"
+    },
+    "role": "scoped-semantic-oracles.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [
+          {
+            "end": 86,
+            "fix": null,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "labels": [],
+            "message": "Template binding resolves to an unsafe `any` or `unknown` type",
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "start": 81
+          }
+        ],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeAnyBinding.vue",
+        "warning_count": 1
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeAnyBinding.vue",
+          "messages": [
+            {
+              "column": 12,
+              "endColumn": 17,
+              "endLine": 5,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
+              "line": 5,
+              "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleId": "type/no-unsafe-template-binding",
+              "severity": 1
+            }
+          ],
+          "warningCount": 1
+        }
+      ],
+      "actualStatus": 0,
+      "id": "UnsafeAnyBinding"
+    },
+    "role": "scoped-semantic-oracles.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [
+          {
+            "end": 93,
+            "fix": null,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "labels": [],
+            "message": "Template binding resolves to an unsafe `any` or `unknown` type",
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "start": 85
+          }
+        ],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeUnknownBindingMultiline.vue",
+        "warning_count": 1
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeUnknownBindingMultiline.vue",
+          "messages": [
+            {
+              "column": 12,
+              "endColumn": 1,
+              "endLine": 7,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
+              "line": 5,
+              "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleId": "type/no-unsafe-template-binding",
+              "severity": 1
+            }
+          ],
+          "warningCount": 1
+        }
+      ],
+      "actualStatus": 0,
+      "id": "UnsafeUnknownBindingMultiline"
+    },
+    "role": "scoped-semantic-oracles.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [
+          {
+            "end": 118,
+            "fix": null,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "labels": [],
+            "message": "Template directive expression resolves to an unsafe `any` or `unknown` type",
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "start": 102
+          }
+        ],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeAnyObjectCallReturn.vue",
+        "warning_count": 1
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeAnyObjectCallReturn.vue",
+          "messages": [
+            {
+              "column": 10,
+              "endColumn": 26,
+              "endLine": 5,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
+              "line": 5,
+              "message": "[vize:type/no-unsafe-template-binding] Template directive expression resolves to an unsafe `any` or `unknown` type",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleId": "type/no-unsafe-template-binding",
+              "severity": 1
+            }
+          ],
+          "warningCount": 1
+        }
+      ],
+      "actualStatus": 0,
+      "id": "UnsafeAnyObjectCallReturn"
+    },
+    "role": "scoped-semantic-oracles.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [
+          {
+            "end": 105,
+            "fix": null,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "labels": [],
+            "message": "Template directive expression calls a value with an unsafe `any` or `unknown` type",
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "start": 102
+          }
+        ],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeAnyObjectCallCallee.vue",
+        "warning_count": 1
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeAnyObjectCallCallee.vue",
+          "messages": [
+            {
+              "column": 10,
+              "endColumn": 13,
+              "endLine": 5,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
+              "line": 5,
+              "message": "[vize:type/no-unsafe-template-binding] Template directive expression calls a value with an unsafe `any` or `unknown` type",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleId": "type/no-unsafe-template-binding",
+              "severity": 1
+            }
+          ],
+          "warningCount": 1
+        }
+      ],
+      "actualStatus": 0,
+      "id": "UnsafeAnyObjectCallCallee"
+    },
+    "role": "scoped-semantic-oracles.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [
+          {
+            "end": 138,
+            "fix": null,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "labels": [],
+            "message": "Template interpolation resolves to an unsafe `any` or `unknown` type",
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "start": 117
+          }
+        ],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeUnknownMultilineTernary.vue",
+        "warning_count": 1
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeUnknownMultilineTernary.vue",
+          "messages": [
+            {
+              "column": 7,
+              "endColumn": 9,
+              "endLine": 7,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
+              "line": 5,
+              "message": "[vize:type/no-unsafe-template-binding] Template interpolation resolves to an unsafe `any` or `unknown` type",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleId": "type/no-unsafe-template-binding",
+              "severity": 1
+            }
+          ],
+          "warningCount": 1
+        }
+      ],
+      "actualStatus": 0,
+      "id": "UnsafeUnknownMultilineTernary"
+    },
+    "role": "scoped-semantic-oracles.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [
+          {
+            "end": 125,
+            "fix": null,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "labels": [],
+            "message": "Template binding resolves to an unsafe `any` or `unknown` type",
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "start": 112
+          }
+        ],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeAnyLoopField.vue",
+        "warning_count": 1
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeAnyLoopField.vue",
+          "messages": [
+            {
+              "column": 33,
+              "endColumn": 1,
+              "endLine": 7,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
+              "line": 5,
+              "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleId": "type/no-unsafe-template-binding",
+              "severity": 1
+            }
+          ],
+          "warningCount": 1
+        }
+      ],
+      "actualStatus": 0,
+      "id": "UnsafeAnyLoopField"
+    },
+    "role": "scoped-semantic-oracles.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [
+          {
+            "end": 178,
+            "fix": null,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "labels": [],
+            "message": "Template binding resolves to an unsafe `any` or `unknown` type",
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "start": 173
+          }
+        ],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeAnySlotDescendant.vue",
+        "warning_count": 1
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeAnySlotDescendant.vue",
+          "messages": [
+            {
+              "column": 36,
+              "endColumn": 41,
+              "endLine": 5,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
+              "line": 5,
+              "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleId": "type/no-unsafe-template-binding",
+              "severity": 1
+            }
+          ],
+          "warningCount": 1
+        }
+      ],
+      "actualStatus": 0,
+      "id": "UnsafeAnySlotDescendant"
+    },
+    "role": "scoped-semantic-oracles.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [
+          {
+            "end": 193,
+            "fix": null,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "labels": [],
+            "message": "Template binding resolves to an unsafe `any` or `unknown` type",
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "start": 186
+          }
+        ],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeUnknownSlotAliasDescendant.vue",
+        "warning_count": 1
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeUnknownSlotAliasDescendant.vue",
+          "messages": [
+            {
+              "column": 45,
+              "endColumn": 52,
+              "endLine": 5,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
+              "line": 5,
+              "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleId": "type/no-unsafe-template-binding",
+              "severity": 1
+            }
+          ],
+          "warningCount": 1
+        }
+      ],
+      "actualStatus": 0,
+      "id": "UnsafeUnknownSlotAliasDescendant"
+    },
+    "role": "scoped-semantic-oracles.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [
+          {
+            "end": 124,
+            "fix": null,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "labels": [],
+            "message": "Template binding resolves to an unsafe `any` or `unknown` type",
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "start": 119
+          }
+        ],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeValueWithInertMarkers.vue",
+        "warning_count": 1
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeValueWithInertMarkers.vue",
+          "messages": [
+            {
+              "column": 12,
+              "endColumn": 17,
+              "endLine": 6,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
+              "line": 6,
+              "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleId": "type/no-unsafe-template-binding",
+              "severity": 1
+            }
+          ],
+          "warningCount": 1
+        }
+      ],
+      "actualStatus": 0,
+      "id": "UnsafeValueWithInertMarkers"
+    },
+    "role": "scoped-semantic-oracles.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [
+          {
+            "end": 133,
+            "fix": null,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "labels": [],
+            "message": "Template binding resolves to an unsafe `any` or `unknown` type",
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "start": 125
+          }
+        ],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeAdjacentProbeAfterSafe.vue",
+        "warning_count": 1
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeAdjacentProbeAfterSafe.vue",
+          "messages": [
+            {
+              "column": 16,
+              "endColumn": 1,
+              "endLine": 9,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
+              "line": 7,
+              "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleId": "type/no-unsafe-template-binding",
+              "severity": 1
+            }
+          ],
+          "warningCount": 1
+        }
+      ],
+      "actualStatus": 0,
+      "id": "UnsafeAdjacentProbeAfterSafe"
+    },
+    "role": "scoped-semantic-oracles.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [
+          {
+            "end": 202,
+            "fix": null,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "labels": [],
+            "message": "Template interpolation resolves to an unsafe `any` or `unknown` type",
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "start": 168
+          }
+        ],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeAnyConsequentTypedObjectAlternate.vue",
+        "warning_count": 1
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeAnyConsequentTypedObjectAlternate.vue",
+          "messages": [
+            {
+              "column": 7,
+              "endColumn": 21,
+              "endLine": 9,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
+              "line": 7,
+              "message": "[vize:type/no-unsafe-template-binding] Template interpolation resolves to an unsafe `any` or `unknown` type",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleId": "type/no-unsafe-template-binding",
+              "severity": 1
+            }
+          ],
+          "warningCount": 1
+        }
+      ],
+      "actualStatus": 0,
+      "id": "UnsafeAnyConsequentTypedObjectAlternate"
+    },
+    "role": "owner-type-supplement.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [
+          {
+            "end": 206,
+            "fix": null,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "labels": [],
+            "message": "Template interpolation resolves to an unsafe `any` or `unknown` type",
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "start": 172
+          }
+        ],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeUnknownConsequentTypedObjectAlternate.vue",
+        "warning_count": 1
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeUnknownConsequentTypedObjectAlternate.vue",
+          "messages": [
+            {
+              "column": 7,
+              "endColumn": 21,
+              "endLine": 9,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
+              "line": 7,
+              "message": "[vize:type/no-unsafe-template-binding] Template interpolation resolves to an unsafe `any` or `unknown` type",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleId": "type/no-unsafe-template-binding",
+              "severity": 1
+            }
+          ],
+          "warningCount": 1
+        }
+      ],
+      "actualStatus": 0,
+      "id": "UnsafeUnknownConsequentTypedObjectAlternate"
+    },
+    "role": "owner-type-supplement.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [
+          {
+            "end": 197,
+            "fix": null,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "labels": [],
+            "message": "Template interpolation resolves to an unsafe `any` or `unknown` type",
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "start": 162
+          }
+        ],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeAnyObjectReturnAlternate.vue",
+        "warning_count": 1
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/cases/UnsafeAnyObjectReturnAlternate.vue",
+          "messages": [
+            {
+              "column": 7,
+              "endColumn": 23,
+              "endLine": 9,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
+              "line": 7,
+              "message": "[vize:type/no-unsafe-template-binding] Template interpolation resolves to an unsafe `any` or `unknown` type",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleId": "type/no-unsafe-template-binding",
+              "severity": 1
+            }
+          ],
+          "warningCount": 1
+        }
+      ],
+      "actualStatus": 0,
+      "id": "UnsafeAnyObjectReturnAlternate"
+    },
+    "role": "owner-type-supplement.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/original-reports/DirectiveObjectArg.vue",
+        "warning_count": 0
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/original-reports/DirectiveObjectArg.vue",
+          "messages": [],
+          "warningCount": 0
+        }
+      ],
+      "actualStatus": 0,
+      "id": "DirectiveObjectArg"
+    },
+    "role": "original-config-oracles.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/original-reports/MultilineAttr.vue",
+        "warning_count": 0
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/original-reports/MultilineAttr.vue",
+          "messages": [],
+          "warningCount": 0
+        }
+      ],
+      "actualStatus": 0,
+      "id": "MultilineAttr"
+    },
+    "role": "original-config-oracles.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/original-reports/MultilineTernary.vue",
+        "warning_count": 0
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/original-reports/MultilineTernary.vue",
+          "messages": [],
+          "warningCount": 0
+        }
+      ],
+      "actualStatus": 0,
+      "id": "MultilineTernary"
+    },
+    "role": "original-config-oracles.json"
+  },
+  {
+    "packet": {
+      "actualApi": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/original-reports/RouterViewSlot.vue",
+        "warning_count": 0
+      },
+      "actualCli": [
+        {
+          "errorCount": 0,
+          "file": "/home/runner/_work/vize/vize/crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/original-reports/RouterViewSlot.vue",
+          "messages": [],
+          "warningCount": 0
+        }
+      ],
+      "actualStatus": 0,
+      "id": "RouterViewSlot"
+    },
+    "role": "original-config-oracles.json"
+  }
+]

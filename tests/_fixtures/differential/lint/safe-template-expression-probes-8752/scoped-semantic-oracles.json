@@ -1,0 +1,987 @@
+{
+  "schema": "vize.8752-8755-independent-semantic-oracle-proposal",
+  "version": 1,
+  "status": "Read-only source-authored proposal before candidate execution. No native/provider/API/CLI/Actions acceptance; whole original reported configuration remains separate from the whole isolated-rule envelopes here.",
+  "sourceRevision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+  "sourceCustodySha256": "b691c9eee0a73aac33116abea7bbf698a72df0bea86af5337852ca46ad0b7c3c",
+  "sourceBasis": [
+    {
+      "path": "crates/vize_patina/src/linter/native_type_aware/expression_bindings.rs",
+      "sourceRevision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+      "bytes": 10935,
+      "sha256": "281ec17b102471f6454938bb578bf3d11be7d6884ca5e5cc44a7515a69177b15"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/native_type_aware/expression_bindings/mapped.rs",
+      "sourceRevision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+      "bytes": 4074,
+      "sha256": "da80c412581ed81198dd4e708d776e7a57b5d724c0aa9561110e86ccd5a67689"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/native_type_aware/template_queries.rs",
+      "sourceRevision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+      "bytes": 10575,
+      "sha256": "ca67f4293364d7436bf9af7e66efe6c3f6412ebfd6db580fc56acf44155e4034"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/native_type_aware/template_queries/collector.rs",
+      "sourceRevision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+      "bytes": 20232,
+      "sha256": "3061ea16b6631bd5ea715eb2e2d702c156b4783eb59a2ba407faac2f5b6a511a"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/native_type_aware/template_queries/calls.rs",
+      "sourceRevision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+      "bytes": 17726,
+      "sha256": "53109ca0f066fa90aca7a716c0324b0b2c8edeb2cfc15a135369e365d994f283"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/native_type_aware/driver/probes.rs",
+      "sourceRevision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+      "bytes": 4998,
+      "sha256": "2186e7c9d202c8111f3b493734da44ea2a9dda94fb8b0fa46028b8a29ff3fedc"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/native_type_aware/unsafe_template_tests.rs",
+      "sourceRevision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+      "bytes": 6622,
+      "sha256": "fb63510b0811baf357264fec382a9b15826fa40dd5bf1d3ebc0058ddf03a92b8"
+    },
+    {
+      "path": "crates/vize_armature/src/parser/attribute.rs",
+      "sourceRevision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+      "bytes": 13588,
+      "sha256": "4b70c8451d24837933d4e8dc08f62a881a8f068c33c9eabb6da0b72414463996"
+    },
+    {
+      "path": "crates/vize_patina/src/output/json.rs",
+      "sourceRevision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+      "bytes": 2810,
+      "sha256": "32937f0714c101c226814a2fe3c3a3ae7aadab54a289aafcbe84809b7f146fdc"
+    }
+  ],
+  "cases": [
+    {
+      "id": "DirectiveObjectArg",
+      "filename": "DirectiveObjectArg.vue",
+      "source": "<script setup lang=\"ts\">\nconst isA = (o: { kind: string }): boolean => o.kind === \"a\";\nconst isPositive = (n: number): boolean => n > 0;\n</script>\n\n<template>\n  <p v-if=\"isA({ kind: 'a' })\">reported</p>\n  <p v-if=\"isPositive(1)\">not reported</p>\n  <p>{{ isA({ kind: \"a\" }) }}</p>\n</template>\n",
+      "sourceSha256": "ecc6b75b3994fd2db8423c6eb45f2f6a68a1c625135d63453d44004cc4046120",
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "typeAware": true,
+          "rules": {
+            "type/no-unsafe-template-binding": "warn"
+          }
+        }
+      },
+      "afterApi": {
+        "filename": "DirectiveObjectArg.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "DirectiveObjectArg.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "limit": "Semantic complete scoped-rule oracle. Whole reported Opinionated preset remains a separate complete role; dependency/Corsa/runtime errors are never filtered. RouterView requires the reporter's actual resolved typed dependency, not a substituted unresolved module."
+    },
+    {
+      "id": "MultilineAttr",
+      "filename": "MultilineAttr.vue",
+      "source": "<script setup lang=\"ts\">\nconst x = 1;\n</script>\n\n<template>\n  <p :title=\"`x: ${x}px`\">not reported</p>\n  <p\n    :title=\"\n      `x: ${x}px`\n    \"\n  >\n    reported\n  </p>\n</template>\n",
+      "sourceSha256": "b6eba3b949dc4c2c4b493fbc097442219a394408f6af9435947a493a2765827d",
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "typeAware": true,
+          "rules": {
+            "type/no-unsafe-template-binding": "warn"
+          }
+        }
+      },
+      "afterApi": {
+        "filename": "MultilineAttr.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "MultilineAttr.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "limit": "Semantic complete scoped-rule oracle. Whole reported Opinionated preset remains a separate complete role; dependency/Corsa/runtime errors are never filtered. RouterView requires the reporter's actual resolved typed dependency, not a substituted unresolved module."
+    },
+    {
+      "id": "MultilineTernary",
+      "filename": "MultilineTernary.vue",
+      "source": "<script setup lang=\"ts\">\nconst t = (id: string, params?: Record<string, unknown>): string => id;\nconst flag = true;\nconst name = \"x\";\n</script>\n\n<template>\n  <!-- reported: the alternate holds an object literal, and the ternary spans lines -->\n  <p>{{\n    flag\n      ? t(\"a\")\n      : t(\"b\", { name })\n  }}</p>\n  <!-- not reported: the same expression on one line -->\n  <p>{{ flag ? t(\"a\") : t(\"b\", { name }) }}</p>\n  <!-- not reported: the object literal in the consequent -->\n  <p>{{\n    flag\n      ? t(\"b\", { name })\n      : t(\"a\")\n  }}</p>\n</template>\n",
+      "sourceSha256": "e278f3b7c2bd632ae2df778c2d598aa852987800a034a060cc1b2d93fa8b6683",
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "typeAware": true,
+          "rules": {
+            "type/no-unsafe-template-binding": "warn"
+          }
+        }
+      },
+      "afterApi": {
+        "filename": "MultilineTernary.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "MultilineTernary.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "limit": "Semantic complete scoped-rule oracle. Whole reported Opinionated preset remains a separate complete role; dependency/Corsa/runtime errors are never filtered. RouterView requires the reporter's actual resolved typed dependency, not a substituted unresolved module."
+    },
+    {
+      "id": "RouterViewSlot",
+      "filename": "RouterViewSlot.vue",
+      "source": "<script setup lang=\"ts\">\nimport { RouterView } from \"vue-router\";\n</script>\n\n<template>\n  <RouterView v-slot=\"{ Component }\">\n    <component :is=\"Component\" />\n  </RouterView>\n</template>\n",
+      "sourceSha256": "12dcecb086ed22095ac57b83d544a523fedc3f055c36c9b6629bed258a75cd93",
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "typeAware": true,
+          "rules": {
+            "type/no-unsafe-template-binding": "warn"
+          }
+        }
+      },
+      "afterApi": {
+        "filename": "RouterViewSlot.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "RouterViewSlot.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "limit": "Semantic complete scoped-rule oracle. Whole reported Opinionated preset remains a separate complete role; dependency/Corsa/runtime errors are never filtered. RouterView requires the reporter's actual resolved typed dependency, not a substituted unresolved module."
+    },
+    {
+      "id": "SafeObjectPredicateMultiline",
+      "filename": "SafeObjectPredicateMultiline.vue",
+      "source": "<script setup lang=\"ts\">\nconst isA = (o: {kind:string}): boolean => o.kind === \"a\";\n</script>\n<template>\n<p v-if=\"\n isA({\n kind: 'a'\n })\n\">safe</p>\n</template>\n",
+      "sourceSha256": "e6ce1ff8c60a84768caafe54088bfdba6c7d8716ac3fccc46ccbe04c501e2e0d",
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "typeAware": true,
+          "rules": {
+            "type/no-unsafe-template-binding": "warn"
+          }
+        }
+      },
+      "afterApi": {
+        "filename": "SafeObjectPredicateMultiline.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "SafeObjectPredicateMultiline.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "limit": null
+    },
+    {
+      "id": "SafeCrLfAttributeUnicode",
+      "filename": "SafeCrLfAttributeUnicode.vue",
+      "source": "<script setup lang=\"ts\">\r\nconst x = 1;\r\n</script>\r\n<template>\r\n<p title=\"日本🦊\" :title=\"\r\n `x: ${x}px`\r\n\">safe</p>\r\n</template>\r\n",
+      "sourceSha256": "e84f19228624f81ba07d48ac57f24ff75ad71735ce02885b1c9237639de9029d",
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "typeAware": true,
+          "rules": {
+            "type/no-unsafe-template-binding": "warn"
+          }
+        }
+      },
+      "afterApi": {
+        "filename": "SafeCrLfAttributeUnicode.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "SafeCrLfAttributeUnicode.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "limit": null
+    },
+    {
+      "id": "SafeSequenceExpression",
+      "filename": "SafeSequenceExpression.vue",
+      "source": "<script setup lang=\"ts\">\nconst text = \"x\";\n</script>\n<template>\n<p :title=\"(0, text)\">safe</p>\n</template>\n",
+      "sourceSha256": "40ea64551fb6e50ae2127ecd8262fdebd7310acf3be1499753df83c7ee2d6b8c",
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "typeAware": true,
+          "rules": {
+            "type/no-unsafe-template-binding": "warn"
+          }
+        }
+      },
+      "afterApi": {
+        "filename": "SafeSequenceExpression.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "SafeSequenceExpression.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "limit": null
+    },
+    {
+      "id": "SafeObjectBinding",
+      "filename": "SafeObjectBinding.vue",
+      "source": "<script setup lang=\"ts\">\nconst text = \"x\";\nconst Child = {} as {new(): {$props: {model: {label:string}}}};\n</script>\n<template>\n<Child :model=\"({ label: text })\" />\n</template>\n",
+      "sourceSha256": "bf9c389205bc03c9c7665fe24da072ca92c4fcf1b2c44c9cd8474f4e65362953",
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "typeAware": true,
+          "rules": {
+            "type/no-unsafe-template-binding": "warn"
+          }
+        }
+      },
+      "afterApi": {
+        "filename": "SafeObjectBinding.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "SafeObjectBinding.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "limit": null
+    },
+    {
+      "id": "SafeLoopLocal",
+      "filename": "SafeLoopLocal.vue",
+      "source": "<script setup lang=\"ts\">\nconst rows = [{label:\"x\"}];\n</script>\n<template>\n<p v-for=\"item in rows\" :title=\"\n item.label\n\">safe</p>\n</template>\n",
+      "sourceSha256": "629256f3e597e92eddef3d4dfd0e3c714c91b85fd47103f93ef5a70130cf8d47",
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "typeAware": true,
+          "rules": {
+            "type/no-unsafe-template-binding": "warn"
+          }
+        }
+      },
+      "afterApi": {
+        "filename": "SafeLoopLocal.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "SafeLoopLocal.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "limit": null
+    },
+    {
+      "id": "SafeSlotDeclarationAndValue",
+      "filename": "SafeSlotDeclarationAndValue.vue",
+      "source": "<script setup lang=\"ts\">\nconst Child = {} as {new(): {$props: {}; $slots: {default: (p: {value: string}) => unknown}}};\n</script>\n<template>\n<Child v-slot=\"{value}\"><p :title=\"\n value\n\">safe</p></Child>\n</template>\n",
+      "sourceSha256": "7fcb5bfa5c5e56bc66b7b56b0cf0c00829eeaa44ce9e0b3caa7b3602b8e55b58",
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "typeAware": true,
+          "rules": {
+            "type/no-unsafe-template-binding": "warn"
+          }
+        }
+      },
+      "afterApi": {
+        "filename": "SafeSlotDeclarationAndValue.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "SafeSlotDeclarationAndValue.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "limit": null
+    },
+    {
+      "id": "SafeSiblingBindings",
+      "filename": "SafeSiblingBindings.vue",
+      "source": "<script setup lang=\"ts\">\nconst a = \"x\"; const b = \"y\";\n</script>\n<template>\n<p :title=\"\n a\n\" /><p :title=\"\n b\n\" />\n</template>\n",
+      "sourceSha256": "589240d30d3b4a1471c5afaf7a144be4313162d99f33d17e852a54b0a9bc5fa7",
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "typeAware": true,
+          "rules": {
+            "type/no-unsafe-template-binding": "warn"
+          }
+        }
+      },
+      "afterApi": {
+        "filename": "SafeSiblingBindings.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "SafeSiblingBindings.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "limit": null
+    },
+    {
+      "id": "SafeInertMarkers",
+      "filename": "SafeInertMarkers.vue",
+      "source": "<script setup lang=\"ts\">\nconst text = \"void (fake); // VBind\";\nconst cb = \"__vize_cb)((fake))\";\n</script>\n<template>\n<p :title=\"\n text + cb\n\" />\n</template>\n",
+      "sourceSha256": "4fe1761dcfd9c14e5a392ec06f502a991f60157a2c2b07f77655eae382290261",
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "typeAware": true,
+          "rules": {
+            "type/no-unsafe-template-binding": "warn"
+          }
+        }
+      },
+      "afterApi": {
+        "filename": "SafeInertMarkers.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "afterCli": [
+        {
+          "file": "SafeInertMarkers.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "afterStatus": 0,
+      "limit": "In addition to empty whole diagnostics, assert the complete unmapped script/string bytes remain unchanged in the projected checker document; semantic-only silence cannot detect accidental textual rewriting."
+    },
+    {
+      "id": "UnsafeAnyBinding",
+      "filename": "UnsafeAnyBinding.vue",
+      "source": "<script setup lang=\"ts\">\nconst value: any = \"x\";\n</script>\n<template>\n<p :title=\"value\" />\n</template>\n",
+      "sourceSha256": "31f57db62ddf61d8b4fb9be1774a14860fc7930c6e136c85d0c6dc6917465d41",
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "typeAware": true,
+          "rules": {
+            "type/no-unsafe-template-binding": "warn"
+          }
+        }
+      },
+      "afterApi": {
+        "filename": "UnsafeAnyBinding.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "message": "Template binding resolves to an unsafe `any` or `unknown` type",
+            "start": 81,
+            "end": 86,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "afterCli": [
+        {
+          "file": "UnsafeAnyBinding.vue",
+          "messages": [
+            {
+              "ruleId": "type/no-unsafe-template-binding",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
+              "line": 5,
+              "column": 12,
+              "endLine": 5,
+              "endColumn": 17,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template."
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterStatus": 0,
+      "limit": null
+    },
+    {
+      "id": "UnsafeUnknownBindingMultiline",
+      "filename": "UnsafeUnknownBindingMultiline.vue",
+      "source": "<script setup lang=\"ts\">\nconst value: unknown = \"x\";\n</script>\n<template>\n<p :title=\"\n value\n\" />\n</template>\n",
+      "sourceSha256": "036c6a0482b34671dafc2d2e0ead224b2c2bc8271b60a695faf5a4c98a33025c",
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "typeAware": true,
+          "rules": {
+            "type/no-unsafe-template-binding": "warn"
+          }
+        }
+      },
+      "afterApi": {
+        "filename": "UnsafeUnknownBindingMultiline.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "message": "Template binding resolves to an unsafe `any` or `unknown` type",
+            "start": 85,
+            "end": 93,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "afterCli": [
+        {
+          "file": "UnsafeUnknownBindingMultiline.vue",
+          "messages": [
+            {
+              "ruleId": "type/no-unsafe-template-binding",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
+              "line": 5,
+              "column": 12,
+              "endLine": 7,
+              "endColumn": 1,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template."
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterStatus": 0,
+      "limit": null
+    },
+    {
+      "id": "UnsafeAnyObjectCallReturn",
+      "filename": "UnsafeAnyObjectCallReturn.vue",
+      "source": "<script setup lang=\"ts\">\nconst get = (p: {kind:string}): any => p.kind;\n</script>\n<template>\n<p v-if=\"get({kind: 'a'})\">unsafe</p>\n</template>\n",
+      "sourceSha256": "b18eadc5cabee73c41fa70b026f2c731b5a5b7e489abfc28b1f176f83c3d2b3c",
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "typeAware": true,
+          "rules": {
+            "type/no-unsafe-template-binding": "warn"
+          }
+        }
+      },
+      "afterApi": {
+        "filename": "UnsafeAnyObjectCallReturn.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "message": "Template directive expression resolves to an unsafe `any` or `unknown` type",
+            "start": 102,
+            "end": 118,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "afterCli": [
+        {
+          "file": "UnsafeAnyObjectCallReturn.vue",
+          "messages": [
+            {
+              "ruleId": "type/no-unsafe-template-binding",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:type/no-unsafe-template-binding] Template directive expression resolves to an unsafe `any` or `unknown` type",
+              "line": 5,
+              "column": 10,
+              "endLine": 5,
+              "endColumn": 26,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template."
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterStatus": 0,
+      "limit": null
+    },
+    {
+      "id": "UnsafeAnyObjectCallCallee",
+      "filename": "UnsafeAnyObjectCallCallee.vue",
+      "source": "<script setup lang=\"ts\">\nconst get: any = (p: {kind:string}) => p.kind;\n</script>\n<template>\n<p v-if=\"get({kind: 'a'})\">unsafe</p>\n</template>\n",
+      "sourceSha256": "3e8f5d1eeba0fe18b6aeea0add2bbc14a7ec86452e21cecb20a2745a708f88be",
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "typeAware": true,
+          "rules": {
+            "type/no-unsafe-template-binding": "warn"
+          }
+        }
+      },
+      "afterApi": {
+        "filename": "UnsafeAnyObjectCallCallee.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "message": "Template directive expression calls a value with an unsafe `any` or `unknown` type",
+            "start": 102,
+            "end": 105,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "afterCli": [
+        {
+          "file": "UnsafeAnyObjectCallCallee.vue",
+          "messages": [
+            {
+              "ruleId": "type/no-unsafe-template-binding",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:type/no-unsafe-template-binding] Template directive expression calls a value with an unsafe `any` or `unknown` type",
+              "line": 5,
+              "column": 10,
+              "endLine": 5,
+              "endColumn": 13,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template."
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterStatus": 0,
+      "limit": null
+    },
+    {
+      "id": "UnsafeUnknownMultilineTernary",
+      "filename": "UnsafeUnknownMultilineTernary.vue",
+      "source": "<script setup lang=\"ts\">\nconst flag = true; const text = \"x\"; const value: unknown = \"y\";\n</script>\n<template>\n<p>{{ flag\n ? text\n : value }}</p>\n</template>\n",
+      "sourceSha256": "d2cd8187b2ad5f67c4de556cbff5234197adbad9ffab6c2eac8c653c327dd4f2",
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "typeAware": true,
+          "rules": {
+            "type/no-unsafe-template-binding": "warn"
+          }
+        }
+      },
+      "afterApi": {
+        "filename": "UnsafeUnknownMultilineTernary.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "message": "Template interpolation resolves to an unsafe `any` or `unknown` type",
+            "start": 117,
+            "end": 138,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "afterCli": [
+        {
+          "file": "UnsafeUnknownMultilineTernary.vue",
+          "messages": [
+            {
+              "ruleId": "type/no-unsafe-template-binding",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:type/no-unsafe-template-binding] Template interpolation resolves to an unsafe `any` or `unknown` type",
+              "line": 5,
+              "column": 7,
+              "endLine": 7,
+              "endColumn": 9,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template."
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterStatus": 0,
+      "limit": null
+    },
+    {
+      "id": "UnsafeAnyLoopField",
+      "filename": "UnsafeAnyLoopField.vue",
+      "source": "<script setup lang=\"ts\">\nconst rows = [] as {label:any}[];\n</script>\n<template>\n<p v-for=\"item in rows\" :title=\"\n item.label\n\" />\n</template>\n",
+      "sourceSha256": "2b851265bf643aea6585069db4f6a58af79b434dfe3c3305703cbff4734852fd",
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "typeAware": true,
+          "rules": {
+            "type/no-unsafe-template-binding": "warn"
+          }
+        }
+      },
+      "afterApi": {
+        "filename": "UnsafeAnyLoopField.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "message": "Template binding resolves to an unsafe `any` or `unknown` type",
+            "start": 112,
+            "end": 125,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "afterCli": [
+        {
+          "file": "UnsafeAnyLoopField.vue",
+          "messages": [
+            {
+              "ruleId": "type/no-unsafe-template-binding",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
+              "line": 5,
+              "column": 33,
+              "endLine": 7,
+              "endColumn": 1,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template."
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterStatus": 0,
+      "limit": null
+    },
+    {
+      "id": "UnsafeAnySlotDescendant",
+      "filename": "UnsafeAnySlotDescendant.vue",
+      "source": "<script setup lang=\"ts\">\nconst Child = {} as {new(): {$props: {}; $slots: {default: (p: {value: any}) => unknown}}};\n</script>\n<template>\n<Child v-slot=\"{value}\"><p :title=\"value\" /></Child>\n</template>\n",
+      "sourceSha256": "dac773309fbde4ca103888f37455bd7b7a1a944ab57099844072457db68983b0",
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "typeAware": true,
+          "rules": {
+            "type/no-unsafe-template-binding": "warn"
+          }
+        }
+      },
+      "afterApi": {
+        "filename": "UnsafeAnySlotDescendant.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "message": "Template binding resolves to an unsafe `any` or `unknown` type",
+            "start": 173,
+            "end": 178,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "afterCli": [
+        {
+          "file": "UnsafeAnySlotDescendant.vue",
+          "messages": [
+            {
+              "ruleId": "type/no-unsafe-template-binding",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
+              "line": 5,
+              "column": 36,
+              "endLine": 5,
+              "endColumn": 41,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template."
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterStatus": 0,
+      "limit": "Only the descendant value is queried; a binding pattern is not a value expression. Slot constructor/types must genuinely resolve, without erasing any."
+    },
+    {
+      "id": "UnsafeUnknownSlotAliasDescendant",
+      "filename": "UnsafeUnknownSlotAliasDescendant.vue",
+      "source": "<script setup lang=\"ts\">\nconst Child = {} as {new(): {$props: {}; $slots: {default: (p: {value: unknown}) => unknown}}};\n</script>\n<template>\n<Child v-slot=\"{value: renamed}\"><p :title=\"renamed\" /></Child>\n</template>\n",
+      "sourceSha256": "7ce76466f3f059e1445d5178a71b204488d6f8cb4cdbfe0f6ebeafbeaf6cc31d",
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "typeAware": true,
+          "rules": {
+            "type/no-unsafe-template-binding": "warn"
+          }
+        }
+      },
+      "afterApi": {
+        "filename": "UnsafeUnknownSlotAliasDescendant.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "message": "Template binding resolves to an unsafe `any` or `unknown` type",
+            "start": 186,
+            "end": 193,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "afterCli": [
+        {
+          "file": "UnsafeUnknownSlotAliasDescendant.vue",
+          "messages": [
+            {
+              "ruleId": "type/no-unsafe-template-binding",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
+              "line": 5,
+              "column": 45,
+              "endLine": 5,
+              "endColumn": 52,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template."
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterStatus": 0,
+      "limit": null
+    },
+    {
+      "id": "UnsafeValueWithInertMarkers",
+      "filename": "UnsafeValueWithInertMarkers.vue",
+      "source": "<script setup lang=\"ts\">\nconst text = \"void (fake); // VBind\";\nconst value: any = \"x\";\n</script>\n<template>\n<p :title=\"value\" />\n</template>\n",
+      "sourceSha256": "410ee1b914b8d5e134f11aa5b12985b9bcef7f7d79b5e3963ada5b4bb97b2ab7",
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "typeAware": true,
+          "rules": {
+            "type/no-unsafe-template-binding": "warn"
+          }
+        }
+      },
+      "afterApi": {
+        "filename": "UnsafeValueWithInertMarkers.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "message": "Template binding resolves to an unsafe `any` or `unknown` type",
+            "start": 119,
+            "end": 124,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "afterCli": [
+        {
+          "file": "UnsafeValueWithInertMarkers.vue",
+          "messages": [
+            {
+              "ruleId": "type/no-unsafe-template-binding",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
+              "line": 6,
+              "column": 12,
+              "endLine": 6,
+              "endColumn": 17,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template."
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterStatus": 0,
+      "limit": null
+    },
+    {
+      "id": "UnsafeAdjacentProbeAfterSafe",
+      "filename": "UnsafeAdjacentProbeAfterSafe.vue",
+      "source": "<script setup lang=\"ts\">\nconst safe = \"x\"; const value: unknown = \"y\";\n</script>\n<template>\n<p :title=\"\n safe\n\" /><p :title=\"\n value\n\" />\n</template>\n",
+      "sourceSha256": "8e38b1dc3b27858af6b0fbd3e799802aaf88f18a90ada37d3763bb8978c49a54",
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "typeAware": true,
+          "rules": {
+            "type/no-unsafe-template-binding": "warn"
+          }
+        }
+      },
+      "afterApi": {
+        "filename": "UnsafeAdjacentProbeAfterSafe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "message": "Template binding resolves to an unsafe `any` or `unknown` type",
+            "start": 125,
+            "end": 133,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "afterCli": [
+        {
+          "file": "UnsafeAdjacentProbeAfterSafe.vue",
+          "messages": [
+            {
+              "ruleId": "type/no-unsafe-template-binding",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
+              "line": 7,
+              "column": 16,
+              "endLine": 9,
+              "endColumn": 1,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template."
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterStatus": 0,
+      "limit": "A backward nearest-line search must not borrow the preceding safe probe; the inferred binding must own this exact complete initializer span."
+    }
+  ],
+  "sourceRisks": [
+    "Line-only void-wrapper termination and same-line inferred-binding lookup lose multiline expression ownership.",
+    "Ordinary mapped inference currently handles typed prop/handler checks, not ordinary if-condition context. This is an inference from current source, not an executed cause.",
+    "Slot directive expressions are declarations/binding patterns; skip their value query, retain all descendant expressions and any/unknown slot values.",
+    "An inferred initializer needs complete source-span containment and the same lexical scope. Do not search backward for an arbitrary const __expr_ or place probes before local loop/slot bindings.",
+    "Use parentheses for sequence, multiline/object/conditional and ASI-sensitive initializers. Delimiters inside strings, template literals, regex literals and comments cannot terminate an authored initializer.",
+    "Trusted mapping/AST ownership must exclude inert user script marker strings and comments. Preserve unmapped projected source bytes.",
+    "Preserve callee-any reporting, owner de-duplication, typed-function any/unknown returns, unknown/any value uses, unresolved and authored-any component imports, separate floating-Promise queries and source ranges.",
+    "Corsa/runtime availability and actual dependency resolution must be hard requirements. Installed vue-router5.2.0/4.5.1 are not the reporter's pinned5.3.1; no installation or execution occurred."
+  ]
+}

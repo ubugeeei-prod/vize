@@ -1,0 +1,807 @@
+{
+  "run": 38205026873,
+  "source": "ef34d1a0409fc711a6c5cefcf0708b0cce78f502",
+  "originalCompletePacket": {
+    "path": "/tmp/vize-447-original-vue-no-unused-components-complete-owner-packet.json",
+    "sha256": "80cc38ca8fb9b62dcd9db0c129105ebb06358bd468a493903e7e57365324fc11"
+  },
+  "completeOriginalInputs": [
+    {
+      "project": "tiny-rdm",
+      "file": "frontend/src/components/common/EditableTableColumn.vue",
+      "local": "/tmp/vize-447-original-no-unused-component-whole-inputs/tiny-rdm--frontend--src--components--common--EditableTableColumn.vue",
+      "bytes": 1799,
+      "sha256": "2094730659772506af6f86a5eef4698c3e169d41459d69528ea78002b15495f5",
+      "gitBlob": "c42f84c81af5bfc9604ee2fe63aaf66135fa2f70",
+      "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+      "URL": "https://github.com/tiny-craft/tiny-rdm/blob/4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc/frontend/src/components/common/EditableTableColumn.vue"
+    },
+    {
+      "project": "frappe-builder",
+      "file": "frontend/src/components/DimensionInput.vue",
+      "local": "/tmp/vize-447-original-no-unused-component-whole-inputs/frappe-builder--frontend--src--components--DimensionInput.vue",
+      "bytes": 697,
+      "sha256": "fc22b1ec713245a05dc2a9eedd143dc4aabb3642b49a76ef3680135b8ad49dcb",
+      "gitBlob": "6e97a973e9cdf4abf6551f019b822e87d90b8354",
+      "revision": "ed705f9dddc9a78867fb672c342ee025368ac6a1",
+      "URL": "https://github.com/frappe/builder/blob/ed705f9dddc9a78867fb672c342ee025368ac6a1/frontend/src/components/DimensionInput.vue"
+    },
+    {
+      "project": "vue-data-ui",
+      "file": "TestingArena/ArenaVueUiCirclePack.vue",
+      "local": "/tmp/vize-447-original-no-unused-component-whole-inputs/vue-data-ui--TestingArena--ArenaVueUiCirclePack.vue",
+      "bytes": 16702,
+      "sha256": "24aedf74f1e0635115dbf6733bda4f4625b76ff49a55ad346100d21a7d5125c3",
+      "gitBlob": "2670b6c9631fc2ecce6a7c4fc2014c3498cf1f38",
+      "revision": "14628946a8185252a7051b40be931e93a0b480a1",
+      "URL": "https://github.com/graphieros/vue-data-ui/blob/14628946a8185252a7051b40be931e93a0b480a1/TestingArena/ArenaVueUiCirclePack.vue"
+    }
+  ],
+  "completeOriginalDefaultVectors": [
+    {
+      "project": "frappe-builder",
+      "revision": "ed705f9dddc9a78867fb672c342ee025368ac6a1",
+      "originalConfig": {
+        "id": "frappe-builder",
+        "displayName": "Frappe Builder",
+        "kind": "application",
+        "fixturePath": "tests/_fixtures/_git/frappe-builder",
+        "repository": "https://github.com/frappe/builder",
+        "revision": "ed705f9dddc9a78867fb672c342ee025368ac6a1",
+        "license": {
+          "spdx": "AGPL-3.0-only",
+          "files": [
+            "LICENSE"
+          ]
+        },
+        "vueGlobs": [
+          "**/*.vue"
+        ],
+        "coverage": [
+          "compiler",
+          "linter",
+          "typechecker",
+          "formatter",
+          "syntax-highlighter",
+          "lsp"
+        ],
+        "diff": "e2e-vrt"
+      },
+      "budget": {
+        "falseNegativePassed": false,
+        "falsePositivePassed": false,
+        "maxFalseNegativeCount": 0,
+        "maxFalsePositiveCount": 0,
+        "passed": false,
+        "unusableReason": null,
+        "verdict": "breached"
+      },
+      "originalWholeAffectedFile": {
+        "file": "frontend/src/components/DimensionInput.vue",
+        "immutableSourceURL": "https://github.com/frappe/builder/blob/ed705f9dddc9a78867fb672c342ee025368ac6a1/frontend/src/components/DimensionInput.vue",
+        "completeOriginalNativeFileEntry": [
+          {
+            "errorCount": 0,
+            "file": "frontend/src/components/DimensionInput.vue",
+            "messages": [
+              {
+                "column": 3,
+                "endColumn": 26,
+                "endLine": 4,
+                "help": "Use kebab-case for attribute names",
+                "line": 4,
+                "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+                "ruleDocsPath": "docs/content/rules/vue.md",
+                "ruleId": "vue/attribute-hyphenation",
+                "severity": 1
+              },
+              {
+                "column": 3,
+                "endColumn": 23,
+                "endLine": 6,
+                "help": "Use kebab-case for attribute names",
+                "line": 6,
+                "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+                "ruleDocsPath": "docs/content/rules/vue.md",
+                "ruleId": "vue/attribute-hyphenation",
+                "severity": 1
+              },
+              {
+                "column": 3,
+                "endColumn": 40,
+                "endLine": 21,
+                "help": "Use kebab-case for attribute names",
+                "line": 21,
+                "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+                "ruleDocsPath": "docs/content/rules/vue.md",
+                "ruleId": "vue/attribute-hyphenation",
+                "severity": 1
+              },
+              {
+                "column": 8,
+                "endColumn": 20,
+                "endLine": 24,
+                "help": "Remove the unused import or use the component in your template",
+                "line": 24,
+                "message": "[vize:vue/no-unused-components] Component 'Autocomplete' is registered but never used in template",
+                "ruleDocsPath": "docs/content/rules/vue.md",
+                "ruleId": "vue/no-unused-components",
+                "severity": 1
+              }
+            ],
+            "warningCount": 4
+          }
+        ],
+        "completeOriginalReferenceComparisonsForFile": {
+          "documentedDivergences": [],
+          "falseNegatives": [],
+          "falsePositives": [
+            {
+              "column": 8,
+              "endColumn": 20,
+              "endLine": 24,
+              "file": "frontend/src/components/DimensionInput.vue",
+              "line": 24,
+              "message": "[vize:vue/no-unused-components] Component 'Autocomplete' is registered but never used in template",
+              "ruleId": "vue/no-unused-components",
+              "severity": "warning"
+            }
+          ],
+          "intentionalDivergences": [],
+          "messageDifferences": [],
+          "patinaOnlyRuleFindings": [],
+          "patinaOutsideBaselineSurface": [],
+          "project": "frappe-builder",
+          "ruleLocationDivergences": [],
+          "schema": "vize.fixtureLintDivergence",
+          "shared": [],
+          "unimplemented": [],
+          "upstream": {
+            "package": "eslint-plugin-vue",
+            "version": "10.9.2"
+          },
+          "version": 1
+        }
+      },
+      "zip": "/tmp/vize-447-original-matrix-full22-custody/real-project-matrix-2-11727077834.zip",
+      "zipSHA256": "b95460b2abd7fb86ef270ac8ee70d4cd032474c01a59af74d96602d2c59973e4",
+      "nativeMember": "frappe-builder-linter.json",
+      "wholeNativeMemberSHA256": "3b3599c76e410aa38bce9949e066b7ab3247362fa58a305dd67ff5c55c496c7b",
+      "referenceMember": "frappe-builder-lint-divergence.json",
+      "wholeReferenceMemberSHA256": "bc54a6127e6b02c5665225c36d6a42ea93cbc0c8f19058433e660ba3dab749fd"
+    },
+    {
+      "project": "tiny-rdm",
+      "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+      "originalConfig": {
+        "id": "tiny-rdm",
+        "displayName": "Tiny RDM",
+        "kind": "application",
+        "fixturePath": "tests/_fixtures/_git/tiny-rdm",
+        "repository": "https://github.com/tiny-craft/tiny-rdm",
+        "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+        "license": {
+          "spdx": "GPL-3.0-only",
+          "files": [
+            "LICENSE"
+          ]
+        },
+        "vueGlobs": [
+          "**/*.vue"
+        ],
+        "coverage": [
+          "compiler",
+          "linter",
+          "typechecker",
+          "formatter",
+          "syntax-highlighter",
+          "lsp"
+        ],
+        "diff": "e2e-vrt"
+      },
+      "budget": {
+        "falseNegativePassed": false,
+        "falsePositivePassed": false,
+        "maxFalseNegativeCount": 0,
+        "maxFalsePositiveCount": 0,
+        "passed": false,
+        "unusableReason": null,
+        "verdict": "breached"
+      },
+      "originalWholeAffectedFile": {
+        "file": "frontend/src/components/common/EditableTableColumn.vue",
+        "immutableSourceURL": "https://github.com/tiny-craft/tiny-rdm/blob/4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc/frontend/src/components/common/EditableTableColumn.vue",
+        "completeOriginalNativeFileEntry": [
+          {
+            "errorCount": 0,
+            "file": "frontend/src/components/common/EditableTableColumn.vue",
+            "messages": [
+              {
+                "column": 8,
+                "endColumn": 14,
+                "endLine": 3,
+                "help": "Remove the unused import or use the component in your template",
+                "line": 3,
+                "message": "[vize:vue/no-unused-components] Component 'Delete' is registered but never used in template",
+                "ruleDocsPath": "docs/content/rules/vue.md",
+                "ruleId": "vue/no-unused-components",
+                "severity": 1
+              },
+              {
+                "column": 8,
+                "endColumn": 12,
+                "endLine": 4,
+                "help": "Remove the unused import or use the component in your template",
+                "line": 4,
+                "message": "[vize:vue/no-unused-components] Component 'Edit' is registered but never used in template",
+                "ruleDocsPath": "docs/content/rules/vue.md",
+                "ruleId": "vue/no-unused-components",
+                "severity": 1
+              },
+              {
+                "column": 8,
+                "endColumn": 13,
+                "endLine": 5,
+                "help": "Remove the unused import or use the component in your template",
+                "line": 5,
+                "message": "[vize:vue/no-unused-components] Component 'Close' is registered but never used in template",
+                "ruleDocsPath": "docs/content/rules/vue.md",
+                "ruleId": "vue/no-unused-components",
+                "severity": 1
+              },
+              {
+                "column": 8,
+                "endColumn": 12,
+                "endLine": 6,
+                "help": "Remove the unused import or use the component in your template",
+                "line": 6,
+                "message": "[vize:vue/no-unused-components] Component 'Save' is registered but never used in template",
+                "ruleDocsPath": "docs/content/rules/vue.md",
+                "ruleId": "vue/no-unused-components",
+                "severity": 1
+              },
+              {
+                "column": 8,
+                "endColumn": 12,
+                "endLine": 7,
+                "help": "Remove the unused import or use the component in your template",
+                "line": 7,
+                "message": "[vize:vue/no-unused-components] Component 'Copy' is registered but never used in template",
+                "ruleDocsPath": "docs/content/rules/vue.md",
+                "ruleId": "vue/no-unused-components",
+                "severity": 1
+              },
+              {
+                "column": 8,
+                "endColumn": 15,
+                "endLine": 8,
+                "help": "Remove the unused import or use the component in your template",
+                "line": 8,
+                "message": "[vize:vue/no-unused-components] Component 'Refresh' is registered but never used in template",
+                "ruleDocsPath": "docs/content/rules/vue.md",
+                "ruleId": "vue/no-unused-components",
+                "severity": 1
+              },
+              {
+                "column": 14,
+                "endColumn": 82,
+                "endLine": 18,
+                "help": "Use TypeScript type parameter: defineEmits<{ click: [value: MouseEvent] }>()",
+                "line": 18,
+                "message": "[vize:type/require-typed-emits] Emit should have a type definition",
+                "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                "ruleId": "type/require-typed-emits",
+                "severity": 1
+              },
+              {
+                "column": 1,
+                "endColumn": 20,
+                "endLine": 43,
+                "help": "Add scoped attribute: <style scoped>",
+                "line": 43,
+                "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+                "ruleDocsPath": "docs/content/rules/vue.md",
+                "ruleId": "vue/require-scoped-style",
+                "severity": 1
+              }
+            ],
+            "warningCount": 8
+          }
+        ],
+        "completeOriginalReferenceComparisonsForFile": {
+          "documentedDivergences": [],
+          "falseNegatives": [],
+          "falsePositives": [
+            {
+              "column": 8,
+              "endColumn": 14,
+              "endLine": 3,
+              "file": "frontend/src/components/common/EditableTableColumn.vue",
+              "line": 3,
+              "message": "[vize:vue/no-unused-components] Component 'Delete' is registered but never used in template",
+              "ruleId": "vue/no-unused-components",
+              "severity": "warning"
+            },
+            {
+              "column": 8,
+              "endColumn": 12,
+              "endLine": 4,
+              "file": "frontend/src/components/common/EditableTableColumn.vue",
+              "line": 4,
+              "message": "[vize:vue/no-unused-components] Component 'Edit' is registered but never used in template",
+              "ruleId": "vue/no-unused-components",
+              "severity": "warning"
+            },
+            {
+              "column": 8,
+              "endColumn": 13,
+              "endLine": 5,
+              "file": "frontend/src/components/common/EditableTableColumn.vue",
+              "line": 5,
+              "message": "[vize:vue/no-unused-components] Component 'Close' is registered but never used in template",
+              "ruleId": "vue/no-unused-components",
+              "severity": "warning"
+            },
+            {
+              "column": 8,
+              "endColumn": 12,
+              "endLine": 6,
+              "file": "frontend/src/components/common/EditableTableColumn.vue",
+              "line": 6,
+              "message": "[vize:vue/no-unused-components] Component 'Save' is registered but never used in template",
+              "ruleId": "vue/no-unused-components",
+              "severity": "warning"
+            },
+            {
+              "column": 8,
+              "endColumn": 12,
+              "endLine": 7,
+              "file": "frontend/src/components/common/EditableTableColumn.vue",
+              "line": 7,
+              "message": "[vize:vue/no-unused-components] Component 'Copy' is registered but never used in template",
+              "ruleId": "vue/no-unused-components",
+              "severity": "warning"
+            },
+            {
+              "column": 8,
+              "endColumn": 15,
+              "endLine": 8,
+              "file": "frontend/src/components/common/EditableTableColumn.vue",
+              "line": 8,
+              "message": "[vize:vue/no-unused-components] Component 'Refresh' is registered but never used in template",
+              "ruleId": "vue/no-unused-components",
+              "severity": "warning"
+            }
+          ],
+          "intentionalDivergences": [],
+          "messageDifferences": [],
+          "patinaOnlyRuleFindings": [],
+          "patinaOutsideBaselineSurface": [],
+          "project": "tiny-rdm",
+          "ruleLocationDivergences": [],
+          "schema": "vize.fixtureLintDivergence",
+          "shared": [],
+          "unimplemented": [],
+          "upstream": {
+            "package": "eslint-plugin-vue",
+            "version": "10.9.2"
+          },
+          "version": 1
+        }
+      },
+      "zip": "/tmp/vize-447-original-matrix-full22-custody/real-project-matrix-5-11726894113.zip",
+      "zipSHA256": "fa0b2d55370a405d46917235443e96ee2dc473349f8c2b655df726b51ec89860",
+      "nativeMember": "tiny-rdm-linter.json",
+      "wholeNativeMemberSHA256": "c0eeb3206fbb3d881442acd968ecaa30b46297cf42037c1556051988587f5c04",
+      "referenceMember": "tiny-rdm-lint-divergence.json",
+      "wholeReferenceMemberSHA256": "4ad52654d87e09e2c603e0958864b9a890cf67ecb5e88b26e7a55297b1450f9b"
+    },
+    {
+      "project": "vue-data-ui",
+      "revision": "14628946a8185252a7051b40be931e93a0b480a1",
+      "originalConfig": {
+        "id": "vue-data-ui",
+        "displayName": "Vue Data UI",
+        "kind": "component-library",
+        "fixturePath": "tests/_fixtures/_git/vue-data-ui",
+        "repository": "https://github.com/graphieros/vue-data-ui",
+        "revision": "14628946a8185252a7051b40be931e93a0b480a1",
+        "license": {
+          "spdx": "MIT",
+          "files": [
+            "LICENSE"
+          ]
+        },
+        "vueGlobs": [
+          "**/*.vue"
+        ],
+        "coverage": [
+          "compiler",
+          "linter",
+          "typechecker",
+          "formatter",
+          "syntax-highlighter",
+          "lsp"
+        ],
+        "lspAuthoredOracle": {
+          "templateBinding": {
+            "file": "ts-playground/src/components/HelloWorld.vue",
+            "symbol": "msg",
+            "usageAnchor": "{{ msg }}",
+            "declarationAnchor": "    msg: string;",
+            "hoverContains": [
+              "const msg: string"
+            ],
+            "renameTo": "__vizeRenamedMsg"
+          },
+          "componentBoundary": {
+            "importerFile": "manual-testing/src/views/HomeView.vue",
+            "componentFile": "manual-testing/src/components/TheWelcome.vue",
+            "tagName": "TheWelcome",
+            "tagAnchor": "<TheWelcome ",
+            "completionItemCount": 37,
+            "completionItems": [
+              {
+                "label": "v-if",
+                "rank": 0
+              },
+              {
+                "label": "v-else-if",
+                "rank": 1
+              },
+              {
+                "label": "v-else",
+                "rank": 2
+              },
+              {
+                "label": "v-for",
+                "rank": 3
+              },
+              {
+                "label": "v-on",
+                "rank": 4
+              },
+              {
+                "label": "v-bind",
+                "rank": 5
+              },
+              {
+                "label": "v-model",
+                "rank": 6
+              },
+              {
+                "label": "v-slot",
+                "rank": 7
+              },
+              {
+                "label": "v-show",
+                "rank": 8
+              },
+              {
+                "label": "v-pre",
+                "rank": 9
+              },
+              {
+                "label": "v-once",
+                "rank": 10
+              },
+              {
+                "label": "v-memo",
+                "rank": 11
+              },
+              {
+                "label": "v-cloak",
+                "rank": 12
+              },
+              {
+                "label": "v-text",
+                "rank": 13
+              },
+              {
+                "label": "v-html",
+                "rank": 14
+              },
+              {
+                "label": "@",
+                "rank": 15
+              },
+              {
+                "label": ":",
+                "rank": 16
+              },
+              {
+                "label": "#",
+                "rank": 17
+              },
+              {
+                "label": "@click",
+                "rank": 18
+              },
+              {
+                "label": "@input",
+                "rank": 19
+              },
+              {
+                "label": "@change",
+                "rank": 20
+              },
+              {
+                "label": "@submit",
+                "rank": 21
+              },
+              {
+                "label": "@keydown",
+                "rank": 22
+              },
+              {
+                "label": "@keyup",
+                "rank": 23
+              },
+              {
+                "label": "@focus",
+                "rank": 24
+              },
+              {
+                "label": "@blur",
+                "rank": 25
+              },
+              {
+                "label": "@mouseenter",
+                "rank": 26
+              },
+              {
+                "label": "@mouseleave",
+                "rank": 27
+              },
+              {
+                "label": "id",
+                "rank": 28
+              },
+              {
+                "label": "class",
+                "rank": 29
+              },
+              {
+                "label": "style",
+                "rank": 30
+              },
+              {
+                "label": "title",
+                "rank": 31
+              },
+              {
+                "label": "role",
+                "rank": 32
+              },
+              {
+                "label": "tabindex",
+                "rank": 33
+              },
+              {
+                "label": "aria-label",
+                "rank": 34
+              },
+              {
+                "label": "ref",
+                "rank": 35
+              },
+              {
+                "label": "key",
+                "rank": 36
+              }
+            ],
+            "dependencyEdit": {
+              "file": "manual-testing/src/components/TheWelcome.vue",
+              "anchor": "import BaseIcon from '../../../src/atoms/BaseIcon.vue';\n",
+              "replacement": "import BaseIcon from '../../../src/atoms/BaseIcon.vue';\ndefineProps<{ vizeOracleProbe?: boolean }>();\n",
+              "completionLabel": "vize-oracle-probe"
+            }
+          },
+          "fileLifecycle": {
+            "sourceFile": "manual-testing/src/components/TheWelcome.vue",
+            "importerFile": "manual-testing/src/views/HomeView.vue",
+            "copiedFile": "manual-testing/src/components/__VizeOracleTheWelcome.vue",
+            "renamedFile": "manual-testing/src/components/__VizeOracleRenamedTheWelcome.vue",
+            "originalImportSpecifier": "../components/TheWelcome.vue",
+            "copiedImportSpecifier": "../components/__VizeOracleTheWelcome.vue",
+            "renamedImportSpecifier": "../components/__VizeOracleRenamedTheWelcome.vue",
+            "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
+            "markerSymbol": "__vizeVueDataUiTheWelcomeMarker__"
+          }
+        },
+        "diff": "curator-compare"
+      },
+      "budget": {
+        "falseNegativePassed": false,
+        "falsePositivePassed": false,
+        "maxFalseNegativeCount": 0,
+        "maxFalsePositiveCount": 0,
+        "passed": false,
+        "unusableReason": null,
+        "verdict": "breached"
+      },
+      "originalWholeAffectedFile": {
+        "file": "TestingArena/ArenaVueUiCirclePack.vue",
+        "immutableSourceURL": "https://github.com/graphieros/vue-data-ui/blob/14628946a8185252a7051b40be931e93a0b480a1/TestingArena/ArenaVueUiCirclePack.vue",
+        "completeOriginalNativeFileEntry": [
+          {
+            "errorCount": 1,
+            "file": "TestingArena/ArenaVueUiCirclePack.vue",
+            "messages": [
+              {
+                "column": 8,
+                "endColumn": 20,
+                "endLine": 8,
+                "help": "Remove the unused import or use the component in your template",
+                "line": 8,
+                "message": "[vize:vue/no-unused-components] Component 'VueUiPattern' is registered but never used in template",
+                "ruleDocsPath": "docs/content/rules/vue.md",
+                "ruleId": "vue/no-unused-components",
+                "severity": 1
+              },
+              {
+                "column": 9,
+                "endColumn": 60,
+                "endLine": 264,
+                "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label.",
+                "line": 264,
+                "message": "[vize:a11y/form-control-has-label] <select> elements must have an associated label",
+                "ruleDocsPath": "docs/content/rules/accessibility.md",
+                "ruleId": "a11y/form-control-has-label",
+                "severity": 1
+              },
+              {
+                "column": 21,
+                "endColumn": 48,
+                "endLine": 265,
+                "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)",
+                "line": 265,
+                "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <option>",
+                "ruleDocsPath": "docs/content/rules/vue.md",
+                "ruleId": "vue/require-v-for-key",
+                "severity": 2
+              },
+              {
+                "column": 21,
+                "endColumn": 32,
+                "endLine": 285,
+                "help": "Reorder attributes to follow the recommended order",
+                "line": 285,
+                "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+                "ruleDocsPath": "docs/content/rules/vue.md",
+                "ruleId": "vue/attribute-order",
+                "severity": 1
+              },
+              {
+                "column": 21,
+                "endColumn": 43,
+                "endLine": 286,
+                "help": "Reorder attributes to follow the recommended order",
+                "line": 286,
+                "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+                "ruleDocsPath": "docs/content/rules/vue.md",
+                "ruleId": "vue/attribute-order",
+                "severity": 1
+              },
+              {
+                "column": 17,
+                "endColumn": 28,
+                "endLine": 306,
+                "help": "Reorder attributes to follow the recommended order",
+                "line": 306,
+                "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+                "ruleDocsPath": "docs/content/rules/vue.md",
+                "ruleId": "vue/attribute-order",
+                "severity": 1
+              },
+              {
+                "column": 17,
+                "endColumn": 39,
+                "endLine": 307,
+                "help": "Reorder attributes to follow the recommended order",
+                "line": 307,
+                "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+                "ruleDocsPath": "docs/content/rules/vue.md",
+                "ruleId": "vue/attribute-order",
+                "severity": 1
+              },
+              {
+                "column": 17,
+                "endColumn": 32,
+                "endLine": 351,
+                "help": "Reorder attributes to follow the recommended order",
+                "line": 351,
+                "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+                "ruleDocsPath": "docs/content/rules/vue.md",
+                "ruleId": "vue/attribute-order",
+                "severity": 1
+              },
+              {
+                "column": 66,
+                "endColumn": 77,
+                "endLine": 356,
+                "help": "Reorder attributes to follow the recommended order",
+                "line": 356,
+                "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+                "ruleDocsPath": "docs/content/rules/vue.md",
+                "ruleId": "vue/attribute-order",
+                "severity": 1
+              },
+              {
+                "column": 17,
+                "endColumn": 28,
+                "endLine": 363,
+                "help": "Reorder attributes to follow the recommended order",
+                "line": 363,
+                "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+                "ruleDocsPath": "docs/content/rules/vue.md",
+                "ruleId": "vue/attribute-order",
+                "severity": 1
+              },
+              {
+                "column": 17,
+                "endColumn": 32,
+                "endLine": 372,
+                "help": "Reorder attributes to follow the recommended order",
+                "line": 372,
+                "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+                "ruleDocsPath": "docs/content/rules/vue.md",
+                "ruleId": "vue/attribute-order",
+                "severity": 1
+              },
+              {
+                "column": 17,
+                "endColumn": 36,
+                "endLine": 380,
+                "help": "Reorder attributes to follow the recommended order",
+                "line": 380,
+                "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+                "ruleDocsPath": "docs/content/rules/vue.md",
+                "ruleId": "vue/attribute-order",
+                "severity": 1
+              }
+            ],
+            "warningCount": 11
+          }
+        ],
+        "completeOriginalReferenceComparisonsForFile": {
+          "documentedDivergences": [],
+          "falseNegatives": [],
+          "falsePositives": [
+            {
+              "column": 8,
+              "endColumn": 20,
+              "endLine": 8,
+              "file": "TestingArena/ArenaVueUiCirclePack.vue",
+              "line": 8,
+              "message": "[vize:vue/no-unused-components] Component 'VueUiPattern' is registered but never used in template",
+              "ruleId": "vue/no-unused-components",
+              "severity": "warning"
+            }
+          ],
+          "intentionalDivergences": [],
+          "messageDifferences": [],
+          "patinaOnlyRuleFindings": [],
+          "patinaOutsideBaselineSurface": [],
+          "project": "vue-data-ui",
+          "ruleLocationDivergences": [],
+          "schema": "vize.fixtureLintDivergence",
+          "shared": [],
+          "unimplemented": [],
+          "upstream": {
+            "package": "eslint-plugin-vue",
+            "version": "10.9.2"
+          },
+          "version": 1
+        }
+      },
+      "zip": "/tmp/vize-447-original-matrix-full22-custody/real-project-matrix-21-11726749482.zip",
+      "zipSHA256": "a9426b05918f86c1574bd347e1de6a1dc045aaff7cd518277d6f722bcf7dfa4c",
+      "nativeMember": "vue-data-ui-linter.json",
+      "wholeNativeMemberSHA256": "d5bebb23f4c15cb3d7606eada6f9d46ff670a59e3b62ff797bcb8283d8de9a0c",
+      "referenceMember": "vue-data-ui-lint-divergence.json",
+      "wholeReferenceMemberSHA256": "483e235ae691993e92ff9eadbc6a0eb2dcb95c27d8c4a0c5f1dbf7155b987700"
+    }
+  ],
+  "scope": "all original bytes/diagnostics retained; no filtered after golden or runtime acceptance"
+}

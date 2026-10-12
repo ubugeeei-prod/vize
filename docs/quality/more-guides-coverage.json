@@ -259,9 +259,9 @@
     },
     {
       "route": "/rules/options-musea",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Complete authored Japanese and the explicit off precedence explain design-token selection in the CLI while preserving every original recipe, API token, link and bookmark. Regeneration, native anchors and deployed reader acceptance remain required."
     },
     {
       "route": "/rules/options-script",

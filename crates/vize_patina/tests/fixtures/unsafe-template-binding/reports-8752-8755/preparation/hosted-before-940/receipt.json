@@ -1,0 +1,25 @@
+{
+  "source": "9401481202313cc96c21e2013507bd2c9b615d42",
+  "run": 38230673353,
+  "logs": {
+    "114749360330": {
+      "rawBytes": 702073,
+      "rawSha256": "33baecb6d886d234f9ca9a1f720921e4ff2691de4100168f170cebbe58d386de"
+    },
+    "114751368163": {
+      "rawBytes": 1052162,
+      "rawSha256": "39469965f31f4cb575c7194adfce77029e3a6090d72908d49c60a8dc49097598"
+    },
+    "114751368195": {
+      "rawBytes": 972685,
+      "rawSha256": "1be52bea64b700296adc906474bb098e92b2e4810f2b4907d3f701108c269b34"
+    }
+  },
+  "genuineFailingControls": [
+    "inert_script_markers_remain_complete_in_the_checker_document",
+    "complete_slot_query_and_promise_vectors_preserve_evaluated_values"
+  ],
+  "typedRuntimeBeforePacketCount": 0,
+  "runtimeDisabled": "Actual hosted Rust shard environment VIZE_TEST_DISABLE_TSGO=1; scoped25 and original4 typed outcomes not executed/qualified.",
+  "qualification": "Genuine full source/static projection regressions only. No native29 or installed before credit."
+}

@@ -1,0 +1,86 @@
+[
+  {
+    "file": "crates/vize_maestro/src/ide/diagnostics.rs",
+    "mode": "100644",
+    "blob": "9c0431cc5a6084608363833a2257e3decb36a91e",
+    "bytes": 3464,
+    "sha256": "7e61b0bf03d3ad3b17ef530f8db3fcaf9020e4f9402fbab01ecd89a758eab271"
+  },
+  {
+    "file": "crates/vize_maestro/src/ide/diagnostics/default_migration_tests.rs",
+    "mode": "100644",
+    "blob": "0d49e3de2462cafac5360e3591c33f6965afaa2f",
+    "bytes": 2435,
+    "sha256": "bca60b1f7a8dc6824da8a8c1bb380a0e1601ad71847c8187cb919909eb57669e"
+  },
+  {
+    "file": "crates/vize_patina/src/linter/compatibility.rs",
+    "mode": "100644",
+    "blob": "5234425df9d3c7684ba147e193c19c69987314ac",
+    "bytes": 1858,
+    "sha256": "6e5cef4759637a90b268fafb97c48979b89d4d4ec0679528aef4dfc4d3e81a58"
+  },
+  {
+    "file": "crates/vize_patina/src/linter/engine.rs",
+    "mode": "100644",
+    "blob": "bcab2539142ad988f851ef92dd2226395dd53981",
+    "bytes": 19940,
+    "sha256": "0ee0a7230e1cceca0868d7637eb31978dff372bf3b16c2699f06e0a97b74d9fa"
+  },
+  {
+    "file": "crates/vize_patina/src/linter/engine/rule_sets.rs",
+    "mode": "100644",
+    "blob": "ded044804c9011f5b22e7e479a39ef155bf59461",
+    "bytes": 4260,
+    "sha256": "9e830dffb7acd50992a90b94703e10416d6e41b74b91772327ee010326b1e3a6"
+  },
+  {
+    "file": "crates/vize_patina/src/linter/engine/sfc.rs",
+    "mode": "100644",
+    "blob": "e153615991646e5549b0c3997c2184251493fe4a",
+    "bytes": 11157,
+    "sha256": "bcd3c09c4db78c4bf93514bf177848eb816bb1d665f3c9185fe332550c28eb23"
+  },
+  {
+    "file": "crates/vize_patina/src/linter/script_rules.rs",
+    "mode": "100644",
+    "blob": "9eddae3f363f1965b59aedbc487af25ff18f9e94",
+    "bytes": 9734,
+    "sha256": "9a3f6978f30b5895c31d5eb0f333175f8ee60c1a52bccc31615d5ceb075f1e2b"
+  },
+  {
+    "file": "crates/vize_patina/src/linter/script_rules/registry/rules.rs",
+    "mode": "100644",
+    "blob": "cbf9c7f32929b3d92554b1bc8918a5d100c303c4",
+    "bytes": 21922,
+    "sha256": "e0ac436d8735f69bab0fe42465a328047dc24dc58248a22ae2315a828468f7a1"
+  },
+  {
+    "file": "crates/vize_patina/src/linter/script_rules/sfc.rs",
+    "mode": "100644",
+    "blob": "e4a3c8d0a973ae13ed0c9ba97a4cf4cb72b46320",
+    "bytes": 7552,
+    "sha256": "cce4c13e30a66479b42ea078dc9f799afc81bbfb8e9d5464f78b75b874c42dc1"
+  },
+  {
+    "file": "crates/vize_patina/src/preset.rs",
+    "mode": "100644",
+    "blob": "ef2b19f5cdb2ed2657f4daa1bf242664ca72e9a5",
+    "bytes": 5091,
+    "sha256": "6dfcc732d18a76db0907e8152d6bb61d35ef040924200ae1855b1aa4a81e3718"
+  },
+  {
+    "file": "crates/vize_patina/src/preset/default_migration_tests.rs",
+    "mode": "100644",
+    "blob": "a22b52a650dc6e5c2e02b2976303bc5cbd63b24d",
+    "bytes": 6248,
+    "sha256": "79ecfdbe72c74890ec84b4f31307bc15bbabac749334732ddf918592dc3e74d3"
+  },
+  {
+    "file": "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
+    "mode": "100644",
+    "blob": "b16e18726c7a2a1ed8452efee3ac768bd1d9ae84",
+    "bytes": 26549,
+    "sha256": "04a0a49982ed941a42ef291a91f2863531902cbfed82365ae3da223e4efcf73b"
+  }
+]

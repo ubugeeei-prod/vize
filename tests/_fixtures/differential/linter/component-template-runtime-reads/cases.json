@@ -1,0 +1,388 @@
+{
+  "schema": "vize.lint.component-template-runtime-reads",
+  "version": 1,
+  "scope": "additive type/write/mixed refusal controls; authored after expectations not executed; original17 corpus and Matrix vectors unchanged",
+  "rules": [
+    "vue/no-unused-components"
+  ],
+  "cases": [
+    {
+      "id": "ordinary-type-cast-keeps-warning",
+      "source": "ordinary-type-cast-keeps-warning.vue.txt",
+      "bytes": 109,
+      "sha256": "70846201dc0a40de9b94b1633f67716d656a8afe35a6f645af70a66d52639be7",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 32,
+          "end": 37,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "retained-type-query-keeps-warning",
+      "source": "retained-type-query-keeps-warning.vue.txt",
+      "bytes": 116,
+      "sha256": "6a960138b03b1188d4d7969404325b790a09f5f21af83d76742f101aa39b01db",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 32,
+          "end": 37,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "statement-type-query-keeps-warning",
+      "source": "statement-type-query-keeps-warning.vue.txt",
+      "bytes": 143,
+      "sha256": "63a4116f924354f63159be9e67b9f06ee986cebd482d36c9680a7a36be932e6f",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 32,
+          "end": 37,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "javascript-typeof-is-a-read",
+      "source": "javascript-typeof-is-a-read.vue.txt",
+      "bytes": 108,
+      "sha256": "1d5094a6a8e46462bfbfabb3641f4b15aa20aa0322b5554daf28c65b8723d61e",
+      "expected": []
+    },
+    {
+      "id": "javascript-typeof-statement-is-a-read",
+      "source": "javascript-typeof-statement-is-a-read.vue.txt",
+      "bytes": 141,
+      "sha256": "67da1f28e761b20af1907be9d06a6b3da9a5dabead54bc93adea3529aa068460",
+      "expected": []
+    },
+    {
+      "id": "write-only-template-keeps-warning",
+      "source": "write-only-template-keeps-warning.vue.txt",
+      "bytes": 124,
+      "sha256": "636b44179d17ea645360239008aa2cba6862f1b86453f392aabb6628c2997f13",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 32,
+          "end": 37,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "mixed-arrow-type-child-runtime-other-remains-unproved",
+      "source": "mixed-arrow-type-child-runtime-other-remains-unproved.vue.txt",
+      "bytes": 188,
+      "sha256": "644282c4a918be928dd2f77eb7d8830d5e3fb2ee5db6e3cec9be8649da891802",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 32,
+          "end": 37,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        },
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Other' is registered but never used in template",
+          "start": 65,
+          "end": 70,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "mixed-arrow-runtime-child-type-other-remains-unproved",
+      "source": "mixed-arrow-runtime-child-type-other-remains-unproved.vue.txt",
+      "bytes": 188,
+      "sha256": "f96c4aecad545512e79df3e46fb4eaf1370e7063b760d5fa7246428520d514de",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 32,
+          "end": 37,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        },
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Other' is registered but never used in template",
+          "start": 65,
+          "end": 70,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "mixed-statement-type-child-runtime-other-remains-unproved",
+      "source": "mixed-statement-type-child-runtime-other-remains-unproved.vue.txt",
+      "bytes": 178,
+      "sha256": "e3831e2fcd6c9344eca63244f7b598d0f24f853036d06969ebe6d7b59a55d5f5",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 32,
+          "end": 37,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        },
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Other' is registered but never used in template",
+          "start": 65,
+          "end": 70,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "mixed-statement-runtime-child-type-other-remains-unproved",
+      "source": "mixed-statement-runtime-child-type-other-remains-unproved.vue.txt",
+      "bytes": 178,
+      "sha256": "4a4ac22050e13dbeebf248d4ac01f843def865684d7b0bda7a3f263fe8093225",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 32,
+          "end": 37,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        },
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Other' is registered but never used in template",
+          "start": 65,
+          "end": 70,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "array-target-write-only-keeps-warning",
+      "source": "array-target-write-only-keeps-warning.vue.txt",
+      "bytes": 127,
+      "sha256": "62b82f66dcb6791e199e85b1c80f56e31801dfb2e2ec775e4ab98548138202b0",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 32,
+          "end": 37,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "array-rest-target-write-only-keeps-warning",
+      "source": "array-rest-target-write-only-keeps-warning.vue.txt",
+      "bytes": 130,
+      "sha256": "8ca92c647ea3f4211f7ef33b45fbcabe6cf58ffc8e7645dc5e9bd7a1e6b3aa65",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 32,
+          "end": 37,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "array-default-target-write-only-keeps-warning",
+      "source": "array-default-target-write-only-keeps-warning.vue.txt",
+      "bytes": 138,
+      "sha256": "cd191b98554298b2e5b7631340d8f1f057b776cdc9c6b6616b434e518bd20c6d",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 32,
+          "end": 37,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "object-shorthand-target-write-only-keeps-warning",
+      "source": "object-shorthand-target-write-only-keeps-warning.vue.txt",
+      "bytes": 130,
+      "sha256": "04a3ace67a76aea7adc307241190b061f20146993b0e3aeced8eebd6d8083cf9",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 32,
+          "end": 37,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "object-alias-target-write-only-keeps-warning",
+      "source": "object-alias-target-write-only-keeps-warning.vue.txt",
+      "bytes": 136,
+      "sha256": "ea5d345530f7a87e940a18803fb99a8300b44908a97f18fb7246425736964c4b",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 32,
+          "end": 37,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "nonnull-target-write-only-keeps-warning",
+      "source": "nonnull-target-write-only-keeps-warning.vue.txt",
+      "bytes": 125,
+      "sha256": "94660cc065f13e93bcab69f08f20274d2c5924739eeba560a8d2cb44234a55e0",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 32,
+          "end": 37,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "as-target-write-only-keeps-warning",
+      "source": "as-target-write-only-keeps-warning.vue.txt",
+      "bytes": 137,
+      "sha256": "a05aa13a3073c5e8aaf7d5a05ce9f2417f7bfc7ce3b6633fd6aacbceabd91871",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 32,
+          "end": 37,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "satisfies-target-write-only-keeps-warning",
+      "source": "satisfies-target-write-only-keeps-warning.vue.txt",
+      "bytes": 144,
+      "sha256": "bc3ef54b0308d3f74187418639d7349b3a821870a148342f8000cec544740e6f",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 32,
+          "end": 37,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "type-assertion-target-write-only-keeps-warning",
+      "source": "type-assertion-target-write-only-keeps-warning.vue.txt",
+      "bytes": 135,
+      "sha256": "13400056e3a49044cb789787c39251d453af82bfbf324a5fff9e27f40d2e8327",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 32,
+          "end": 37,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "assignment-with-rhs-read-remains-unproved",
+      "source": "assignment-with-rhs-read-remains-unproved.vue.txt",
+      "bytes": 125,
+      "sha256": "f127371d85e4d5b248668084feded164d959eda122131047473f088e23fce419",
+      "expected": [
+        {
+          "rule": "vue/no-unused-components",
+          "message": "Component 'Child' is registered but never used in template",
+          "start": 32,
+          "end": 37,
+          "severity": "warning",
+          "help": "Remove the unused import or use the component in your template",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    }
+  ]
+}

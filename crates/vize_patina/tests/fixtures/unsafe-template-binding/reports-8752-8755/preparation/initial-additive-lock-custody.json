@@ -1,0 +1,47 @@
+{
+  "schema": "vize.8755-additive-router-fixture-lock",
+  "version": 1,
+  "base": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+  "beforeSha256": "12e66667fc82ac9a5b72d1e9ab2aa59f7c1466ea8be689f17a67678bf31a0915",
+  "resolverProposalSha256": "fb689b540b9d102c2d40df9171066601f03acedc49c61df8f3d47b16fc232e5f",
+  "afterSha256": "cafb12cf0394e2f4c435c927cedea516ceeca7e72348a0689559740aa5356b97",
+  "addedKeys": {
+    "importers": [
+      "crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755"
+    ],
+    "packages": [
+      "@vizejs/native-darwin-arm64@0.443.0",
+      "@vizejs/native-darwin-x64@0.443.0",
+      "@vizejs/native-linux-arm64-gnu@0.443.0",
+      "@vizejs/native-linux-arm64-musl@0.443.0",
+      "@vizejs/native-linux-x64-gnu@0.443.0",
+      "@vizejs/native-linux-x64-musl@0.443.0",
+      "@vizejs/native-win32-arm64-msvc@0.443.0",
+      "@vizejs/native-win32-x64-msvc@0.443.0",
+      "vue-router@5.3.1"
+    ],
+    "snapshots": [
+      "@nuxt/eslint-config@1.16.0(@typescript-eslint/utils@8.67.0(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(@vue/compiler-sfc@3.6.0-rc.11)(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)",
+      "@nuxt/eslint@1.16.0(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(@vue/compiler-sfc@3.6.0-rc.11)(esbuild@0.28.1)(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(rolldown@1.2.3)(supports-color@10.2.2)(typescript@6.0.3)",
+      "@vizejs/native-darwin-arm64@0.443.0",
+      "@vizejs/native-darwin-x64@0.443.0",
+      "@vizejs/native-linux-arm64-gnu@0.443.0",
+      "@vizejs/native-linux-arm64-musl@0.443.0",
+      "@vizejs/native-linux-x64-gnu@0.443.0",
+      "@vizejs/native-linux-x64-musl@0.443.0",
+      "@vizejs/native-win32-arm64-msvc@0.443.0",
+      "@vizejs/native-win32-x64-msvc@0.443.0",
+      "@vue/server-renderer@3.5.38(vue@3.6.0-beta.10(typescript@6.0.3))",
+      "@vue/test-utils@2.4.10(@vue/compiler-dom@3.6.0-rc.11)(@vue/server-renderer@3.5.41)(vue@3.5.35(typescript@6.0.3))",
+      "@vue/test-utils@2.4.10(@vue/compiler-dom@3.6.0-rc.11)(@vue/server-renderer@3.5.41)(vue@3.6.0-rc.6(typescript@6.0.3))",
+      "eslint-processor-vue-blocks@2.0.0(@vue/compiler-sfc@3.6.0-rc.11)(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))",
+      "unplugin@3.3.0(@rspack/core@2.1.8(@swc/helpers@0.5.23))(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.1)(rolldown@1.2.3)(rollup@4.62.4)(webpack@5.109.2(cssnano@8.0.5(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.28))",
+      "vue-router@5.3.1(@rspack/core@2.1.8(@swc/helpers@0.5.23))(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(@vue/compiler-sfc@3.5.41)(esbuild@0.28.1)(rolldown@1.2.3)(rollup@4.62.4)(vue@3.5.42(typescript@6.0.3))(webpack@5.109.2(cssnano@8.0.5(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.28))"
+    ]
+  },
+  "allIncomingEntriesDeepEqual": true,
+  "wholeByteExactInverse": true,
+  "allAddedEntriesExactResolverProposal": true,
+  "missingSnapshotDependencyRefs": [],
+  "qualification": "Manifest-only lock resolution; no dependency payload installation, native build, provider or semantic execution. Frozen install acceptance remains ordinary Actions."
+}

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
+import { retainedComponentMigrationFs as fs } from "./support/component-value-retained-guards.ts";
 import { test } from "node:test";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
@@ -8,8 +8,8 @@ import path from "node:path";
 import { qualifyDefaultMigrationHost } from "../performance/support/warm-type-backed-default-migration-host.ts";
 import { qualifyHostMoves } from "../performance/support/warm-type-backed-host-qualifications.ts";
 import { gitBodyDigest } from "../performance/support/warm-type-backed-path-host.ts";
-import { authenticateRuntimeApiSourceFamily } from "./support/runtime-props-api-source-custody.mjs";
-import { authenticateSetupExportMembership } from "./support/setup-export-preset-source-custody.mjs";
+import { authenticateRuntimeApiSourceFamily } from "./support/component-value-retained-guards.ts";
+import { authenticateSetupExportMembership } from "./support/component-value-retained-guards.ts";
 
 const manifest = JSON.parse(
   fs.readFileSync(

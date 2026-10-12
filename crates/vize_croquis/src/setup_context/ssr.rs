@@ -1,7 +1,7 @@
 //! Diagnostic-only execution facts, owned by the existing AST walks.
 
 use super::SetupContextTracker;
-use crate::binding_occurrences::BindingOccurrences;
+use crate::binding_occurrences::{BindingOccurrence, BindingOccurrences};
 
 mod resolve;
 
@@ -16,6 +16,7 @@ pub(super) struct SsrFacts {
     vue_callbacks: Vec<(Range, Range, bool)>,
     opaque_functions: bool,
     occurrences: Option<BindingOccurrences>,
+    runtime_template_reads: Option<Vec<BindingOccurrence>>,
 }
 
 impl std::fmt::Debug for SetupContextTracker {
@@ -81,7 +82,23 @@ impl SetupContextTracker {
     }
 
     pub(crate) fn set_ssr_occurrences(&mut self, packet: Option<BindingOccurrences>) {
-        self.ssr_mut().occurrences = packet;
+        let facts = self.ssr_mut();
+        if packet.is_none() {
+            facts.runtime_template_reads = None;
+        }
+        facts.occurrences = packet;
+    }
+
+    pub(crate) fn set_runtime_template_reads(&mut self, reads: Option<Vec<BindingOccurrence>>) {
+        self.ssr_mut().runtime_template_reads = reads;
+    }
+
+    pub(crate) fn authored_runtime_template_reads(&self) -> Option<&[BindingOccurrence]> {
+        self.ssr.as_ref()?.runtime_template_reads.as_deref()
+    }
+
+    pub(crate) fn authored_binding_occurrences(&self) -> Option<&BindingOccurrences> {
+        self.ssr.as_ref()?.occurrences.as_ref()
     }
 
     pub(crate) fn take_ssr_occurrences(&mut self) -> Option<BindingOccurrences> {

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
+import { retainedComponentCallerFs as fs } from "./support/component-value-retained-guards.ts";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -7,7 +7,7 @@ import { sha256 } from "./lint-default-correctness-reference.mjs";
 import {
   authenticateDeepPropsSourceFamily,
   authenticateDeepPropsTraitScopeCorrection,
-} from "./support/props-deep-source-custody.mjs";
+} from "./support/component-value-retained-guards.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const directory = "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody";

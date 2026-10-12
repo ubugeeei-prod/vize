@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
+import { retainedComponentGuardFs as fs } from "./support/component-value-retained-guards.ts";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { gunzipSync } from "node:zlib";
 import { sha256, wholeJson } from "./lint-default-correctness-reference.mjs";
-import { assertReservedApiOrderSource } from "./support/runtime-props-api-source-custody.mjs";
+import { assertReservedApiOrderSource } from "./support/component-value-retained-guards.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const fixture = path.join(root, "tests/_fixtures/differential/lint/bare-reserved-8090");

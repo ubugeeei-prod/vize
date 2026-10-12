@@ -65,12 +65,24 @@ impl Linter {
         let analysis = if !has_fatal_parse_errors && self.has_active_semantic_template_rules() {
             Some(profile!(
                 "patina.sfc.descriptor.croquis",
-                analyze_descriptor_for_lint(
-                    descriptor,
-                    Some(&root),
-                    self.has_unused_bindings_demand(),
-                    derived,
-                )
+                if descriptor.script_setup.is_some()
+                    && self.registry.has_rule("vue/no-unused-components")
+                    && self.is_rule_enabled("vue/no-unused-components")
+                {
+                    super::rule_sets::analyze_descriptor_for_component_reads(
+                        descriptor,
+                        Some(&root),
+                        self.has_unused_bindings_demand(),
+                        derived,
+                    )
+                } else {
+                    analyze_descriptor_for_lint(
+                        descriptor,
+                        Some(&root),
+                        self.has_unused_bindings_demand(),
+                        derived,
+                    )
+                }
             ))
         } else {
             None

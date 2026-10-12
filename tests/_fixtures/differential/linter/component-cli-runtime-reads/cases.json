@@ -1,0 +1,192 @@
+{
+  "version": 1,
+  "schema": "vize.lint.component-cli-runtime-reads",
+  "scope": "new whole public sourceCLI controls; authored expectations not executed; no originalMatrix/full153 credit",
+  "inputs": [
+    {
+      "source": "template-value.vue.txt",
+      "bytes": 126,
+      "sha256": "2fb0e0348de9d73bf92540f8cab0c453163ca2738b0f473e43f39f5161b8e356"
+    },
+    {
+      "source": "unused.vue.txt",
+      "bytes": 106,
+      "sha256": "a26d4352176ba9fdcc986146b4ce9ef57609decbd03fb6b6eb9fe167af2365b3"
+    },
+    {
+      "source": "comment-only.vue.txt",
+      "bytes": 149,
+      "sha256": "bc066e8e202b39b6dd2513c7278b8c3c24eb103a4787251d333750faad84d901"
+    },
+    {
+      "source": "error.config.json",
+      "bytes": 112,
+      "sha256": "06b56500f90ee908f148e2db440aaf6f82a4c3332a1351520a74c29fceada84b"
+    },
+    {
+      "source": "off.config.json",
+      "bytes": 110,
+      "sha256": "3df013d6b2ade0ad3f9957108602d0785a00ed4f4cbafd5c5e9f73d95c088467"
+    }
+  ],
+  "cases": [
+    {
+      "id": "ecosystem-template-value",
+      "source": "template-value.vue.txt",
+      "config": null,
+      "argv": [
+        "lint",
+        "ValueReader.vue",
+        "--format",
+        "json",
+        "--preset",
+        "ecosystem",
+        "--no-config"
+      ],
+      "status": 0,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "ValueReader.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "ecosystem-unused",
+      "source": "unused.vue.txt",
+      "config": null,
+      "argv": [
+        "lint",
+        "ValueReader.vue",
+        "--format",
+        "json",
+        "--preset",
+        "ecosystem",
+        "--no-config"
+      ],
+      "status": 0,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "ValueReader.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-unused-components",
+              "ruleDocsPath": "docs/content/rules/vue.md",
+              "severity": 1,
+              "message": "[vize:vue/no-unused-components] Component 'Child' is registered but never used in template",
+              "line": 2,
+              "column": 8,
+              "endLine": 2,
+              "endColumn": 13,
+              "help": "Remove the unused import or use the component in your template"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "ecosystem-comment-only",
+      "source": "comment-only.vue.txt",
+      "config": null,
+      "argv": [
+        "lint",
+        "ValueReader.vue",
+        "--format",
+        "json",
+        "--preset",
+        "ecosystem",
+        "--no-config"
+      ],
+      "status": 0,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "ValueReader.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-unused-components",
+              "ruleDocsPath": "docs/content/rules/vue.md",
+              "severity": 1,
+              "message": "[vize:vue/no-unused-components] Component 'Child' is registered but never used in template",
+              "line": 2,
+              "column": 8,
+              "endLine": 2,
+              "endColumn": 13,
+              "help": "Remove the unused import or use the component in your template"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "configured-error",
+      "source": "unused.vue.txt",
+      "config": "error.config.json",
+      "argv": [
+        "lint",
+        "ValueReader.vue",
+        "--format",
+        "json",
+        "--preset",
+        "ecosystem",
+        "--config",
+        "vize.config.json"
+      ],
+      "status": 1,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "ValueReader.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-unused-components",
+              "ruleDocsPath": "docs/content/rules/vue.md",
+              "severity": 2,
+              "message": "[vize:vue/no-unused-components] Component 'Child' is registered but never used in template",
+              "line": 2,
+              "column": 8,
+              "endLine": 2,
+              "endColumn": 13,
+              "help": "Remove the unused import or use the component in your template"
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "configured-disabled",
+      "source": "unused.vue.txt",
+      "config": "off.config.json",
+      "argv": [
+        "lint",
+        "ValueReader.vue",
+        "--format",
+        "json",
+        "--preset",
+        "ecosystem",
+        "--config",
+        "vize.config.json"
+      ],
+      "status": 0,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "ValueReader.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    }
+  ]
+}
