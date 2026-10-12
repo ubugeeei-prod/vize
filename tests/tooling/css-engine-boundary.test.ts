@@ -7,6 +7,12 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.ts";
 import { sha256 } from "../differential/sha256.ts";
+import {
+  assertOriginalCLIPlan,
+  assertWholeFormatterCell,
+  assertWholeLinterCell,
+  finiteSuccessor,
+} from "./support/css-engine-successors.ts";
 
 interface FormatterCase {
   id: string;
@@ -130,6 +136,28 @@ void test("original CSS bytes and whole healthy/fallback CLI authorities remain 
     assert.equal(Buffer.from(row.stdoutHex, "hex").toString(), row.stdout);
     assert.deepEqual(JSON.parse(row.stdout), expected.cases[row.id]);
   }
+  const plan = [
+    ...corpus.formatterCases.flatMap((row) =>
+      Array.from({ length: 5 }, (_, i) => `formatter/${row.id}/${i + 1}`),
+    ),
+    ...corpus.linterCases.flatMap((row) =>
+      Array.from({ length: 2 }, (_, i) => `linter/${row.id}/${i + 1}`),
+    ),
+  ];
+  assertOriginalCLIPlan(plan, corpus.formatterCases, corpus.linterCases);
+  for (const [original, replacement] of [
+    ["formatter/healthy-min/5", "formatter/healthy-min/6"],
+    ["linter/css-important-healthy/2", "linter/css-important-healthy/3"],
+  ]) {
+    const swapped = plan.map((id) => (id === original ? replacement : id));
+    assert.equal(swapped.length, 90);
+    assert.equal(new Set(swapped).size, 90);
+    assert(!swapped.includes(original), "a healthy original was omitted while counts stayed90");
+    assert.throws(() => assertOriginalCLIPlan(swapped, corpus.formatterCases, corpus.linterCases));
+  }
+  assert.throws(() =>
+    assertOriginalCLIPlan(plan.slice(0, -1), corpus.formatterCases, corpus.linterCases),
+  );
   for (const row of corpus.formatterCases) {
     assert.equal(sha256(Buffer.from(row.source)), row.sourceSha256);
     assert.equal(sha256(Buffer.from(row.expected)), row.expectedSha256);
@@ -205,6 +233,8 @@ await test("source-built CSS consumers survive exact originals and preserve whol
   try {
     for (const entry of corpus.formatterCases) {
       await t.test(`formatter/${entry.id}`, () => {
+        const repaired = finiteSuccessor("formatter", entry);
+        const wholeExpected = repaired?.wholeCode ?? entry.expected;
         const file = path.join(directory, "App.vue");
         fs.writeFileSync(file, entry.source);
         const config = JSON.stringify({ formatter: entry.options }) + "\n";
@@ -225,22 +255,29 @@ await test("source-built CSS consumers survive exact originals and preserve whol
             file,
             config,
           );
-          row.expected = entry.expected;
+          row.expected = wholeExpected;
           persist();
           assert.equal(
             row.status,
-            pass === 0 && entry.source !== entry.expected ? 1 : 0,
+            pass === 0 && entry.source !== wholeExpected ? 1 : 0,
             JSON.stringify(row),
           );
           if (mode === "--check")
             assert.equal(row.afterBase64, row.beforeBase64, "check is read-only");
-          if (pass !== 0) assert.equal(row.after, entry.expected, `${entry.id} whole fixedpoint`);
+          if (pass !== 0) assert.equal(row.after, wholeExpected, `${entry.id} whole fixedpoint`);
+          assertWholeFormatterCell(row, entry, pass + 1, wholeExpected);
         }
         fs.unlinkSync(file);
       });
     }
     for (const entry of corpus.linterCases) {
       await t.test(`linter/${entry.id}`, () => {
+        const repaired = finiteSuccessor("linter", entry);
+        const reference = baseline.runs.find((row) => row.id === entry.id);
+        assert(reference, "whole unchanged original CLI stdout authority");
+        const wholeExpected = repaired
+          ? [{ file: entry.options.filename, messages: [], errorCount: 0, warningCount: 0 }]
+          : expected.cases[entry.id];
         const filename = entry.options.filename;
         const file = path.join(directory, filename);
         fs.writeFileSync(file, entry.source);
@@ -271,13 +308,14 @@ await test("source-built CSS consumers survive exact originals and preserve whol
             file,
             config,
           );
-          row.expected = expected.cases[entry.id];
+          row.expected = wholeExpected;
           persist();
           assert.equal(row.status, 0, JSON.stringify(row));
           assert.equal(row.after, entry.source, "lint preserves the whole original source");
           row.actual = JSON.parse(row.stdout);
           persist();
           assert.deepEqual(row.actual, row.expected, `${entry.id} complete CLI vector`);
+          assertWholeLinterCell(row, entry, pass, reference.stdout);
           if (previous !== undefined)
             assert.equal(row.stdout, previous, "fresh processes retain complete JSON bytes");
           previous = row.stdout;

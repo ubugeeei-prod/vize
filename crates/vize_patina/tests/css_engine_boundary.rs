@@ -49,6 +49,14 @@ fn exercise(rule: &str, expected_cases: usize, name: &str) {
         .join(profile)
         .join("css-engine-boundary-3295-patina");
     fs::create_dir_all(&directory).unwrap();
+    let authority: Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/css-engine-vendor-exit/finite-successors.json"
+    ))
+    .unwrap();
+    assert_eq!(
+        authority["historicalFixedCases"].as_array().unwrap().len(),
+        3
+    );
     let mut observations = Vec::new();
     let mut failures = Vec::new();
     let mut cases = 0;
@@ -62,13 +70,25 @@ fn exercise(rule: &str, expected_cases: usize, name: &str) {
         assert_eq!(case["options"]["helpLevel"], "full");
         let source = case["source"].as_str().unwrap();
         let filename = case["options"]["filename"].as_str().unwrap();
+        let mut successors = authority["rustCases"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|row| row["surface"] == "linter" && row["case"] == case["id"]);
+        let successor = successors.next();
+        assert!(successors.next().is_none(), "one named linter successor");
+        if let Some(row) = successor {
+            assert_eq!(row["source"], case["source"]);
+            assert_eq!(row["options"], case["options"]);
+        }
+        let expected_result = successor.map_or(&case["expected"], |row| &row["wholeExpected"]);
         for pass in 1..=3 {
             let result = linter.lint_sfc(source, filename);
             let actual = complete(&result);
             let mut observation = json!({"case": case["id"], "pass": pass,
                 "source": source, "options": case["options"],
-                "expected": case["expected"], "actual": actual});
-            if actual != case["expected"] {
+                "beforeExpected": case["expected"], "expected": expected_result, "actual": actual});
+            if actual != *expected_result {
                 failures.push(observation.clone());
             }
             fs::write(
@@ -79,7 +99,35 @@ fn exercise(rule: &str, expected_cases: usize, name: &str) {
                 .unwrap(),
             )
             .expect("retain whole initial result before inspecting an optional fix");
-            if let Some(expected) = case["fixedExpected"].as_str() {
+            if let Some(row) = successor {
+                // No fix exists on the corrected original. Retain the entire old
+                // fixed-input neighbor as a separate observation, never a generated fix.
+                let mut neighbors = authority["historicalFixedCases"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .filter(|neighbor| neighbor["historicalCase"] == row["case"]);
+                let neighbor = neighbors
+                    .next()
+                    .expect("retained historical fixed neighbor");
+                assert!(neighbors.next().is_none());
+                assert_eq!(neighbor["source"], case["fixedExpected"]);
+                assert_eq!(neighbor["options"], case["options"]);
+                assert_eq!(neighbor["wholeExpected"], case["fixedResultExpected"]);
+                assert!(
+                    result
+                        .diagnostics
+                        .iter()
+                        .all(|finding| finding.fix.is_none())
+                );
+                let fixed_source = neighbor["source"].as_str().unwrap();
+                let fixed_actual = complete(&linter.lint_sfc(fixed_source, filename));
+                observation["historicalFixedActual"] = json!({"source": fixed_source,
+                    "result": fixed_actual});
+                if fixed_actual != neighbor["wholeExpected"] {
+                    failures.push(observation.clone());
+                }
+            } else if let Some(expected) = case["fixedExpected"].as_str() {
                 if let Some(fix) = result
                     .diagnostics
                     .first()

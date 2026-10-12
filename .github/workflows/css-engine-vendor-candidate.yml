@@ -120,7 +120,7 @@ jobs:
           node tools/support/dependencies/css-engine-vendor-custody.ts "$RUNNER_TEMP/css-engine-observations/metadata.json" > "$RUNNER_TEMP/css-engine-observations/custody.json"
           git rev-parse HEAD > "$RUNNER_TEMP/css-engine-observations/source.txt"
           rustc -Vv > "$RUNNER_TEMP/css-engine-observations/rustc.txt"
-          sha256sum Cargo.lock Cargo.toml crates/vize/examples/css_engine_vendor_observer.rs tools/support/dependencies/css-engine-cli-observer.ts tests/_fixtures/differential/css-engine-vendor-exit/atelier-inputs.json > "$RUNNER_TEMP/css-engine-observations/sources.sha256"
+          sha256sum Cargo.lock Cargo.toml crates/vize/examples/css_engine_vendor_observer.rs tools/support/dependencies/css-engine-cli-observer.ts tests/_fixtures/differential/css-engine-vendor-exit/atelier-inputs.json tests/_fixtures/differential/css-engine-vendor-exit/finite-successors.json tests/tooling/support/css-engine-successors.ts tools/support/dependencies/css-engine-finite-results.ts > "$RUNNER_TEMP/css-engine-observations/sources.sha256"
       - name: Observe all99 Rust consumers and66 original Atelier inputs without replacing expectations
         run: |
           export CSS_ENGINE_OBSERVATIONS="$RUNNER_TEMP/css-engine-observations/rust-consumers.json"
@@ -132,6 +132,8 @@ jobs:
         run: |
           cargo build --locked -p vize --bin vize --profile ${{ matrix.profile }} 2>&1 | tee "$RUNNER_TEMP/css-engine-observations/cli-build.log"
           node tools/support/dependencies/css-engine-cli-observer.ts target/${{ matrix.profile == 'dev' && 'debug' || 'release' }}/vize "$RUNNER_TEMP/css-engine-observations/cli.json" ${{ matrix.profile }}
+      - name: Check finite repaired cells and every unchanged original obligation
+        run: node tools/support/dependencies/css-engine-finite-results.ts "$RUNNER_TEMP/css-engine-observations"
       - name: Preserve every raw diagnostic source observation
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

@@ -78,7 +78,8 @@ fn main() {
         "debugAssertions": cfg!(debug_assertions), "panicUnwind": cfg!(panic = "unwind"),
         "corpusSha256": digest(CORPUS), "atelierInputsSha256": digest(ATELIER_INPUTS),
         "expectationsRecaptured": false, "publicationQualification": false,
-        "rustConsumers": [], "atelier": [], "additionalAtelier": [], "completed": false
+        "rustConsumers": [], "atelier": [], "additionalAtelier": [],
+        "historicalFixedNeighbors": [], "completed": false
     });
     persist(&destination, &report);
     for case in corpus["formatterCases"].as_array().unwrap() {
@@ -162,6 +163,36 @@ fn main() {
             append(&destination, &mut report, "rustConsumers", row);
         }
     }
+    // Preserve the old fixed inputs independently: repaired markerless-list
+    // sources no longer produce a fix, so they cannot drive this coverage.
+    for id in [
+        "a11y-opacity-original",
+        "a11y-color-original",
+        "a11y-number-original",
+    ] {
+        let mut cases = corpus["linterCases"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|case| case["id"] == id);
+        let case = cases.next().expect("whole historical fixed source");
+        assert!(cases.next().is_none());
+        let linter = Linter::with_preset(LintPreset::Incremental)
+            .with_enabled_rules(Some(vec![String::from("a11y/no-redundant-roles")]))
+            .with_locale(Locale::En)
+            .with_help_level(HelpLevel::Full);
+        for pass in 1..=3 {
+            let source = case["fixedExpected"].as_str().unwrap();
+            append(
+                &destination,
+                &mut report,
+                "historicalFixedNeighbors",
+                json!({"historicalCase": id, "pass": pass, "source": source,
+                    "options": case["options"], "actual": complete(&linter.lint_sfc(
+                        source, case["options"]["filename"].as_str().unwrap()))}),
+            );
+        }
+    }
     let options = CssCompileOptions::default();
     for (input_group, output_group) in [
         ("observations", "atelier"),
@@ -190,6 +221,10 @@ fn main() {
     assert_eq!(report["rustConsumers"].as_array().unwrap().len(), 99);
     assert_eq!(report["atelier"].as_array().unwrap().len(), 66);
     assert_eq!(report["additionalAtelier"].as_array().unwrap().len(), 6);
+    assert_eq!(
+        report["historicalFixedNeighbors"].as_array().unwrap().len(),
+        9
+    );
     report["completed"] = json!(true);
     persist(&destination, &report);
     println!("Observed whole99 Rust consumer and66 Atelier inputs; expectations remain frozen");

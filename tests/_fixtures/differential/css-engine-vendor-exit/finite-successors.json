@@ -1,0 +1,2258 @@
+{
+  "schema": "vize.css-engine-finite-successors",
+  "status": "independently-authored-source-successor-not-terminal-credit",
+  "originalCorpusSHA256": "32b8bb5632bc0755d1540ff828f3e70eb5e41ec45cb0c81de4df67a787f572c1",
+  "originalCLIExpectedSHA256": "df020b3786c5213819c07cdacda718968938750910bfcc245090016af818e019",
+  "rustCases": [
+    {
+      "surface": "formatter",
+      "case": "opacity-original",
+      "source": "<style>a{opacity:abs(-50%)}</style>",
+      "sourceSHA256": "c96663f206e5b18fbc1d6ad4af8f8a3f010811ffb72b3c20d8177d2341d38fdc",
+      "wholeCode": "<style>\na {\n  opacity: abs(-50%);\n}\n</style>\n",
+      "changedPass1": true,
+      "changedPass2": false,
+      "changedPass3": false,
+      "passes": 3,
+      "basis": "Authored unchanged token values and established whole SFC/style formatting layout; no engine panic pass-through"
+    },
+    {
+      "surface": "formatter",
+      "case": "color-original",
+      "source": "<style>a{color:hsl(0 abs(-50%) 0%)}</style>",
+      "sourceSHA256": "cabf5c1368871890534e219a62ec876836334b0b70cfa5b8853346320aa585a9",
+      "wholeCode": "<style>\na {\n  color: hsl(0 abs(-50%) 0%);\n}\n</style>\n",
+      "changedPass1": true,
+      "changedPass2": false,
+      "changedPass3": false,
+      "passes": 3,
+      "basis": "Authored unchanged token values and established whole SFC/style formatting layout; no engine panic pass-through"
+    },
+    {
+      "surface": "formatter",
+      "case": "number-original",
+      "source": "<style>a{text-size-adjust:calc(5)}</style>",
+      "sourceSHA256": "9e6de5f23cf31593745463cf90b07e88af7bd255e77ed65713b8c1c92b7d194e",
+      "wholeCode": "<style>\na {\n  text-size-adjust: calc(5);\n}\n</style>\n",
+      "changedPass1": true,
+      "changedPass2": false,
+      "changedPass3": false,
+      "passes": 3,
+      "basis": "Authored unchanged token values and established whole SFC/style formatting layout; no engine panic pass-through"
+    },
+    {
+      "surface": "formatter",
+      "case": "original-combined",
+      "source": "<style>a{opacity:abs(-50%)}</style>\n<style>a{color:hsl(0 abs(-50%) 0%)}</style>\n<style>a{text-size-adjust:calc(5)}</style>\n",
+      "sourceSHA256": "49ee657c2f6708bb81acdf1276c5e3de31971207bc9b224ede1e6756fd855fad",
+      "wholeCode": "<style>\na {\n  opacity: abs(-50%);\n}\n</style>\n\n<style>\na {\n  color: hsl(0 abs(-50%) 0%);\n}\n</style>\n\n<style>\na {\n  text-size-adjust: calc(5);\n}\n</style>\n",
+      "changedPass1": true,
+      "changedPass2": false,
+      "changedPass3": false,
+      "passes": 3,
+      "basis": "Authored unchanged token values and established whole SFC/style formatting layout; no engine panic pass-through"
+    },
+    {
+      "surface": "formatter",
+      "case": "panic-style-next-healthy",
+      "source": "<style>a{opacity:abs(-50%)}</style>\n<style>a{text-size-adjust:50%}</style>",
+      "sourceSHA256": "ae9478965e1013871144a097c1dcd77b3502e26078f10808210ecfe5b0f089cb",
+      "wholeCode": "<style>\na {\n  opacity: abs(-50%);\n}\n</style>\n\n<style>\na {\n  text-size-adjust: 50%;\n}\n</style>\n",
+      "changedPass1": true,
+      "changedPass2": false,
+      "changedPass3": false,
+      "passes": 3,
+      "basis": "Authored unchanged token values and established whole SFC/style formatting layout; no engine panic pass-through"
+    },
+    {
+      "surface": "style",
+      "case": "opacity-original",
+      "source": "a{opacity:abs(-50%)}",
+      "sourceSHA256": "ae89b0f17d9f2f5977960f37a095657014b45164b1b15e023116db3c5341551a",
+      "wholeExpected": {
+        "code": "a {\n  opacity: abs(-50%);\n}\n"
+      },
+      "passes": 3,
+      "basis": "Error recovery retains original tokens and the complete formatter layout; every old invalid/healthy neighbor remains required"
+    },
+    {
+      "surface": "style",
+      "case": "color-original",
+      "source": "a{color:hsl(0 abs(-50%) 0%)}",
+      "sourceSHA256": "0f607d61c9295b93886115c38ab4f76071254e2da08b03b186f0654be1c9ce2a",
+      "wholeExpected": {
+        "code": "a {\n  color: hsl(0 abs(-50%) 0%);\n}\n"
+      },
+      "passes": 3,
+      "basis": "Error recovery retains original tokens and the complete formatter layout; every old invalid/healthy neighbor remains required"
+    },
+    {
+      "surface": "style",
+      "case": "number-original",
+      "source": "a{text-size-adjust:calc(5)}",
+      "sourceSHA256": "d790ef1ee15baffebd81b761f8ae144620e2f5d229b71d4961218c891db0e912",
+      "wholeExpected": {
+        "code": "a {\n  text-size-adjust: calc(5);\n}\n"
+      },
+      "passes": 3,
+      "basis": "Error recovery retains original tokens and the complete formatter layout; every old invalid/healthy neighbor remains required"
+    },
+    {
+      "surface": "linter",
+      "case": "a11y-opacity-original",
+      "source": "<template>\n  <ul class=\"plain\" role=\"list\"><li>a</li></ul>\n</template>\n<style scoped>\na{opacity:abs(-50%)}\n.plain{list-style:none}\n</style>\n",
+      "sourceSHA256": "28ae2df41c60c731ff828037460fa4b37aeb50f51bdb4d8ac6237da484ba3ca2",
+      "options": {
+        "filename": "Boundary.vue",
+        "preset": "incremental",
+        "locale": "en",
+        "helpLevel": "full",
+        "enabledRules": [
+          "a11y/no-redundant-roles"
+        ]
+      },
+      "wholeExpected": {
+        "filename": "Boundary.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "passes": 3,
+      "basis": "Actual authored markerless .plain list style remains visible after malformed-declaration recovery; role is required, so no redundant-role finding or fix"
+    },
+    {
+      "surface": "linter",
+      "case": "a11y-color-original",
+      "source": "<template>\n  <ul class=\"plain\" role=\"list\"><li>a</li></ul>\n</template>\n<style scoped>\na{color:hsl(0 abs(-50%) 0%)}\n.plain{list-style:none}\n</style>\n",
+      "sourceSHA256": "350b34258d300c3213e6f966d5a99fcd80f481a4848d88a754f1460681a82f75",
+      "options": {
+        "filename": "Boundary.vue",
+        "preset": "incremental",
+        "locale": "en",
+        "helpLevel": "full",
+        "enabledRules": [
+          "a11y/no-redundant-roles"
+        ]
+      },
+      "wholeExpected": {
+        "filename": "Boundary.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "passes": 3,
+      "basis": "Actual authored markerless .plain list style remains visible after malformed-declaration recovery; role is required, so no redundant-role finding or fix"
+    },
+    {
+      "surface": "linter",
+      "case": "a11y-number-original",
+      "source": "<template>\n  <ul class=\"plain\" role=\"list\"><li>a</li></ul>\n</template>\n<style scoped>\na{text-size-adjust:calc(5)}\n.plain{list-style:none}\n</style>\n",
+      "sourceSHA256": "9457344b032e3e14c3188c50b3adc1026fa12d6efac33059ea5f16f57c0a1a44",
+      "options": {
+        "filename": "Boundary.vue",
+        "preset": "incremental",
+        "locale": "en",
+        "helpLevel": "full",
+        "enabledRules": [
+          "a11y/no-redundant-roles"
+        ]
+      },
+      "wholeExpected": {
+        "filename": "Boundary.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "passes": 3,
+      "basis": "Actual authored markerless .plain list style remains visible after malformed-declaration recovery; role is required, so no redundant-role finding or fix"
+    }
+  ],
+  "historicalFixedCases": [
+    {
+      "historicalCase": "a11y-opacity-original",
+      "source": "<template>\n  <ul class=\"plain\"><li>a</li></ul>\n</template>\n<style scoped>\na{opacity:abs(-50%)}\n.plain{list-style:none}\n</style>\n",
+      "sourceSHA256": "f310e8d9927cf10bc5710dd1730d406acf956fb9ed0ffba0ca431c8415a3a8d2",
+      "wholeExpected": {
+        "filename": "Boundary.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "options": {
+        "filename": "Boundary.vue",
+        "preset": "incremental",
+        "locale": "en",
+        "helpLevel": "full",
+        "enabledRules": [
+          "a11y/no-redundant-roles"
+        ]
+      },
+      "passes": 3,
+      "basis": "Complete existing independently frozen fixed-input neighbor, retained separately because corrected source supplies no fix"
+    },
+    {
+      "historicalCase": "a11y-color-original",
+      "source": "<template>\n  <ul class=\"plain\"><li>a</li></ul>\n</template>\n<style scoped>\na{color:hsl(0 abs(-50%) 0%)}\n.plain{list-style:none}\n</style>\n",
+      "sourceSHA256": "729baacade4d8c0684bc04108600b9e4d9ceeb112881c9c361d7f9f914cb4770",
+      "wholeExpected": {
+        "filename": "Boundary.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "options": {
+        "filename": "Boundary.vue",
+        "preset": "incremental",
+        "locale": "en",
+        "helpLevel": "full",
+        "enabledRules": [
+          "a11y/no-redundant-roles"
+        ]
+      },
+      "passes": 3,
+      "basis": "Complete existing independently frozen fixed-input neighbor, retained separately because corrected source supplies no fix"
+    },
+    {
+      "historicalCase": "a11y-number-original",
+      "source": "<template>\n  <ul class=\"plain\"><li>a</li></ul>\n</template>\n<style scoped>\na{text-size-adjust:calc(5)}\n.plain{list-style:none}\n</style>\n",
+      "sourceSHA256": "93b4e8a93b87d338fdb27065932a7e8ad5ff6b9306cfeac203634b3a8cb3b360",
+      "wholeExpected": {
+        "filename": "Boundary.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "options": {
+        "filename": "Boundary.vue",
+        "preset": "incremental",
+        "locale": "en",
+        "helpLevel": "full",
+        "enabledRules": [
+          "a11y/no-redundant-roles"
+        ]
+      },
+      "passes": 3,
+      "basis": "Complete existing independently frozen fixed-input neighbor, retained separately because corrected source supplies no fix"
+    }
+  ],
+  "cliCells": [
+    {
+      "id": "formatter/opacity-original/2",
+      "wholeFileAfter": "<style>\na {\n  opacity: abs(-50%);\n}\n</style>\n",
+      "wholeFileBeforePolicy": "Original unchanged source on pass2; this exact whole authored output on passes3/4/5",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "wholeStdout": "",
+      "expectedStderrBasis": "Manually enumerated unchanged existing formatter --write/--check full message contract",
+      "args": [
+        "fmt",
+        "--no-config",
+        "--write",
+        "App.vue"
+      ],
+      "sourceOptions": "{\"formatter\":{}}\n",
+      "wholeStderr": "Found 1 file(s)\nReformatted: App.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+    },
+    {
+      "id": "formatter/opacity-original/3",
+      "wholeFileAfter": "<style>\na {\n  opacity: abs(-50%);\n}\n</style>\n",
+      "wholeFileBeforePolicy": "Original unchanged source on pass2; this exact whole authored output on passes3/4/5",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "wholeStdout": "",
+      "expectedStderrBasis": "Manually enumerated unchanged existing formatter --write/--check full message contract",
+      "args": [
+        "fmt",
+        "--no-config",
+        "--write",
+        "App.vue"
+      ],
+      "sourceOptions": "{\"formatter\":{}}\n",
+      "wholeStderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+    },
+    {
+      "id": "formatter/opacity-original/4",
+      "wholeFileAfter": "<style>\na {\n  opacity: abs(-50%);\n}\n</style>\n",
+      "wholeFileBeforePolicy": "Original unchanged source on pass2; this exact whole authored output on passes3/4/5",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "wholeStdout": "",
+      "expectedStderrBasis": "Manually enumerated unchanged existing formatter --write/--check full message contract",
+      "args": [
+        "fmt",
+        "--no-config",
+        "--write",
+        "App.vue"
+      ],
+      "sourceOptions": "{\"formatter\":{}}\n",
+      "wholeStderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+    },
+    {
+      "id": "formatter/opacity-original/5",
+      "wholeFileAfter": "<style>\na {\n  opacity: abs(-50%);\n}\n</style>\n",
+      "wholeFileBeforePolicy": "Original unchanged source on pass2; this exact whole authored output on passes3/4/5",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "wholeStdout": "",
+      "expectedStderrBasis": "Manually enumerated unchanged existing formatter --write/--check full message contract",
+      "args": [
+        "fmt",
+        "--no-config",
+        "--check",
+        "App.vue"
+      ],
+      "sourceOptions": "{\"formatter\":{}}\n",
+      "wholeStderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+    },
+    {
+      "id": "formatter/color-original/2",
+      "wholeFileAfter": "<style>\na {\n  color: hsl(0 abs(-50%) 0%);\n}\n</style>\n",
+      "wholeFileBeforePolicy": "Original unchanged source on pass2; this exact whole authored output on passes3/4/5",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "wholeStdout": "",
+      "expectedStderrBasis": "Manually enumerated unchanged existing formatter --write/--check full message contract",
+      "args": [
+        "fmt",
+        "--no-config",
+        "--write",
+        "App.vue"
+      ],
+      "sourceOptions": "{\"formatter\":{}}\n",
+      "wholeStderr": "Found 1 file(s)\nReformatted: App.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+    },
+    {
+      "id": "formatter/color-original/3",
+      "wholeFileAfter": "<style>\na {\n  color: hsl(0 abs(-50%) 0%);\n}\n</style>\n",
+      "wholeFileBeforePolicy": "Original unchanged source on pass2; this exact whole authored output on passes3/4/5",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "wholeStdout": "",
+      "expectedStderrBasis": "Manually enumerated unchanged existing formatter --write/--check full message contract",
+      "args": [
+        "fmt",
+        "--no-config",
+        "--write",
+        "App.vue"
+      ],
+      "sourceOptions": "{\"formatter\":{}}\n",
+      "wholeStderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+    },
+    {
+      "id": "formatter/color-original/4",
+      "wholeFileAfter": "<style>\na {\n  color: hsl(0 abs(-50%) 0%);\n}\n</style>\n",
+      "wholeFileBeforePolicy": "Original unchanged source on pass2; this exact whole authored output on passes3/4/5",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "wholeStdout": "",
+      "expectedStderrBasis": "Manually enumerated unchanged existing formatter --write/--check full message contract",
+      "args": [
+        "fmt",
+        "--no-config",
+        "--write",
+        "App.vue"
+      ],
+      "sourceOptions": "{\"formatter\":{}}\n",
+      "wholeStderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+    },
+    {
+      "id": "formatter/color-original/5",
+      "wholeFileAfter": "<style>\na {\n  color: hsl(0 abs(-50%) 0%);\n}\n</style>\n",
+      "wholeFileBeforePolicy": "Original unchanged source on pass2; this exact whole authored output on passes3/4/5",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "wholeStdout": "",
+      "expectedStderrBasis": "Manually enumerated unchanged existing formatter --write/--check full message contract",
+      "args": [
+        "fmt",
+        "--no-config",
+        "--check",
+        "App.vue"
+      ],
+      "sourceOptions": "{\"formatter\":{}}\n",
+      "wholeStderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+    },
+    {
+      "id": "formatter/number-original/2",
+      "wholeFileAfter": "<style>\na {\n  text-size-adjust: calc(5);\n}\n</style>\n",
+      "wholeFileBeforePolicy": "Original unchanged source on pass2; this exact whole authored output on passes3/4/5",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "wholeStdout": "",
+      "expectedStderrBasis": "Manually enumerated unchanged existing formatter --write/--check full message contract",
+      "args": [
+        "fmt",
+        "--no-config",
+        "--write",
+        "App.vue"
+      ],
+      "sourceOptions": "{\"formatter\":{}}\n",
+      "wholeStderr": "Found 1 file(s)\nReformatted: App.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+    },
+    {
+      "id": "formatter/number-original/3",
+      "wholeFileAfter": "<style>\na {\n  text-size-adjust: calc(5);\n}\n</style>\n",
+      "wholeFileBeforePolicy": "Original unchanged source on pass2; this exact whole authored output on passes3/4/5",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "wholeStdout": "",
+      "expectedStderrBasis": "Manually enumerated unchanged existing formatter --write/--check full message contract",
+      "args": [
+        "fmt",
+        "--no-config",
+        "--write",
+        "App.vue"
+      ],
+      "sourceOptions": "{\"formatter\":{}}\n",
+      "wholeStderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+    },
+    {
+      "id": "formatter/number-original/4",
+      "wholeFileAfter": "<style>\na {\n  text-size-adjust: calc(5);\n}\n</style>\n",
+      "wholeFileBeforePolicy": "Original unchanged source on pass2; this exact whole authored output on passes3/4/5",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "wholeStdout": "",
+      "expectedStderrBasis": "Manually enumerated unchanged existing formatter --write/--check full message contract",
+      "args": [
+        "fmt",
+        "--no-config",
+        "--write",
+        "App.vue"
+      ],
+      "sourceOptions": "{\"formatter\":{}}\n",
+      "wholeStderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+    },
+    {
+      "id": "formatter/number-original/5",
+      "wholeFileAfter": "<style>\na {\n  text-size-adjust: calc(5);\n}\n</style>\n",
+      "wholeFileBeforePolicy": "Original unchanged source on pass2; this exact whole authored output on passes3/4/5",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "wholeStdout": "",
+      "expectedStderrBasis": "Manually enumerated unchanged existing formatter --write/--check full message contract",
+      "args": [
+        "fmt",
+        "--no-config",
+        "--check",
+        "App.vue"
+      ],
+      "sourceOptions": "{\"formatter\":{}}\n",
+      "wholeStderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+    },
+    {
+      "id": "formatter/original-combined/2",
+      "wholeFileAfter": "<style>\na {\n  opacity: abs(-50%);\n}\n</style>\n\n<style>\na {\n  color: hsl(0 abs(-50%) 0%);\n}\n</style>\n\n<style>\na {\n  text-size-adjust: calc(5);\n}\n</style>\n",
+      "wholeFileBeforePolicy": "Original unchanged source on pass2; this exact whole authored output on passes3/4/5",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "wholeStdout": "",
+      "expectedStderrBasis": "Manually enumerated unchanged existing formatter --write/--check full message contract",
+      "args": [
+        "fmt",
+        "--no-config",
+        "--write",
+        "App.vue"
+      ],
+      "sourceOptions": "{\"formatter\":{}}\n",
+      "wholeStderr": "Found 1 file(s)\nReformatted: App.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+    },
+    {
+      "id": "formatter/original-combined/3",
+      "wholeFileAfter": "<style>\na {\n  opacity: abs(-50%);\n}\n</style>\n\n<style>\na {\n  color: hsl(0 abs(-50%) 0%);\n}\n</style>\n\n<style>\na {\n  text-size-adjust: calc(5);\n}\n</style>\n",
+      "wholeFileBeforePolicy": "Original unchanged source on pass2; this exact whole authored output on passes3/4/5",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "wholeStdout": "",
+      "expectedStderrBasis": "Manually enumerated unchanged existing formatter --write/--check full message contract",
+      "args": [
+        "fmt",
+        "--no-config",
+        "--write",
+        "App.vue"
+      ],
+      "sourceOptions": "{\"formatter\":{}}\n",
+      "wholeStderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+    },
+    {
+      "id": "formatter/original-combined/4",
+      "wholeFileAfter": "<style>\na {\n  opacity: abs(-50%);\n}\n</style>\n\n<style>\na {\n  color: hsl(0 abs(-50%) 0%);\n}\n</style>\n\n<style>\na {\n  text-size-adjust: calc(5);\n}\n</style>\n",
+      "wholeFileBeforePolicy": "Original unchanged source on pass2; this exact whole authored output on passes3/4/5",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "wholeStdout": "",
+      "expectedStderrBasis": "Manually enumerated unchanged existing formatter --write/--check full message contract",
+      "args": [
+        "fmt",
+        "--no-config",
+        "--write",
+        "App.vue"
+      ],
+      "sourceOptions": "{\"formatter\":{}}\n",
+      "wholeStderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+    },
+    {
+      "id": "formatter/original-combined/5",
+      "wholeFileAfter": "<style>\na {\n  opacity: abs(-50%);\n}\n</style>\n\n<style>\na {\n  color: hsl(0 abs(-50%) 0%);\n}\n</style>\n\n<style>\na {\n  text-size-adjust: calc(5);\n}\n</style>\n",
+      "wholeFileBeforePolicy": "Original unchanged source on pass2; this exact whole authored output on passes3/4/5",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "wholeStdout": "",
+      "expectedStderrBasis": "Manually enumerated unchanged existing formatter --write/--check full message contract",
+      "args": [
+        "fmt",
+        "--no-config",
+        "--check",
+        "App.vue"
+      ],
+      "sourceOptions": "{\"formatter\":{}}\n",
+      "wholeStderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+    },
+    {
+      "id": "formatter/panic-style-next-healthy/2",
+      "wholeFileAfter": "<style>\na {\n  opacity: abs(-50%);\n}\n</style>\n\n<style>\na {\n  text-size-adjust: 50%;\n}\n</style>\n",
+      "wholeFileBeforePolicy": "Original unchanged source on pass2; this exact whole authored output on passes3/4/5",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "wholeStdout": "",
+      "expectedStderrBasis": "Manually enumerated unchanged existing formatter --write/--check full message contract",
+      "args": [
+        "fmt",
+        "--no-config",
+        "--write",
+        "App.vue"
+      ],
+      "sourceOptions": "{\"formatter\":{}}\n",
+      "wholeStderr": "Found 1 file(s)\nReformatted: App.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+    },
+    {
+      "id": "formatter/panic-style-next-healthy/3",
+      "wholeFileAfter": "<style>\na {\n  opacity: abs(-50%);\n}\n</style>\n\n<style>\na {\n  text-size-adjust: 50%;\n}\n</style>\n",
+      "wholeFileBeforePolicy": "Original unchanged source on pass2; this exact whole authored output on passes3/4/5",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "wholeStdout": "",
+      "expectedStderrBasis": "Manually enumerated unchanged existing formatter --write/--check full message contract",
+      "args": [
+        "fmt",
+        "--no-config",
+        "--write",
+        "App.vue"
+      ],
+      "sourceOptions": "{\"formatter\":{}}\n",
+      "wholeStderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+    },
+    {
+      "id": "formatter/panic-style-next-healthy/4",
+      "wholeFileAfter": "<style>\na {\n  opacity: abs(-50%);\n}\n</style>\n\n<style>\na {\n  text-size-adjust: 50%;\n}\n</style>\n",
+      "wholeFileBeforePolicy": "Original unchanged source on pass2; this exact whole authored output on passes3/4/5",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "wholeStdout": "",
+      "expectedStderrBasis": "Manually enumerated unchanged existing formatter --write/--check full message contract",
+      "args": [
+        "fmt",
+        "--no-config",
+        "--write",
+        "App.vue"
+      ],
+      "sourceOptions": "{\"formatter\":{}}\n",
+      "wholeStderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+    },
+    {
+      "id": "formatter/panic-style-next-healthy/5",
+      "wholeFileAfter": "<style>\na {\n  opacity: abs(-50%);\n}\n</style>\n\n<style>\na {\n  text-size-adjust: 50%;\n}\n</style>\n",
+      "wholeFileBeforePolicy": "Original unchanged source on pass2; this exact whole authored output on passes3/4/5",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "wholeStdout": "",
+      "expectedStderrBasis": "Manually enumerated unchanged existing formatter --write/--check full message contract",
+      "args": [
+        "fmt",
+        "--no-config",
+        "--check",
+        "App.vue"
+      ],
+      "sourceOptions": "{\"formatter\":{}}\n",
+      "wholeStderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+    },
+    {
+      "id": "linter/a11y-opacity-original/1",
+      "wholeStdout": "[\n  {\n    \"file\": \"Boundary.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "wholeStdoutValue": [
+        {
+          "file": "Boundary.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "wholeStderr": "",
+      "wholeFileBefore": "<template>\n  <ul class=\"plain\" role=\"list\"><li>a</li></ul>\n</template>\n<style scoped>\na{opacity:abs(-50%)}\n.plain{list-style:none}\n</style>\n",
+      "wholeFileAfter": "<template>\n  <ul class=\"plain\" role=\"list\"><li>a</li></ul>\n</template>\n<style scoped>\na{opacity:abs(-50%)}\n.plain{list-style:none}\n</style>\n",
+      "args": [
+        "lint",
+        "-f",
+        "json",
+        "--help-level",
+        "full",
+        "--locale",
+        "en",
+        "--config",
+        "vize.config.json",
+        "Boundary.vue"
+      ],
+      "sourceOptions": "{\"linter\":{\"preset\":\"incremental\",\"rules\":{\"a11y/no-redundant-roles\":\"warn\"}}}\n",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "basis": "Manually authored complete no-finding CLI JSON for the required-role markerless-list case, without stderr/file mutation"
+    },
+    {
+      "id": "linter/a11y-opacity-original/2",
+      "wholeStdout": "[\n  {\n    \"file\": \"Boundary.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "wholeStdoutValue": [
+        {
+          "file": "Boundary.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "wholeStderr": "",
+      "wholeFileBefore": "<template>\n  <ul class=\"plain\" role=\"list\"><li>a</li></ul>\n</template>\n<style scoped>\na{opacity:abs(-50%)}\n.plain{list-style:none}\n</style>\n",
+      "wholeFileAfter": "<template>\n  <ul class=\"plain\" role=\"list\"><li>a</li></ul>\n</template>\n<style scoped>\na{opacity:abs(-50%)}\n.plain{list-style:none}\n</style>\n",
+      "args": [
+        "lint",
+        "-f",
+        "json",
+        "--help-level",
+        "full",
+        "--locale",
+        "en",
+        "--config",
+        "vize.config.json",
+        "Boundary.vue"
+      ],
+      "sourceOptions": "{\"linter\":{\"preset\":\"incremental\",\"rules\":{\"a11y/no-redundant-roles\":\"warn\"}}}\n",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "basis": "Manually authored complete no-finding CLI JSON for the required-role markerless-list case, without stderr/file mutation"
+    },
+    {
+      "id": "linter/a11y-color-original/1",
+      "wholeStdout": "[\n  {\n    \"file\": \"Boundary.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "wholeStdoutValue": [
+        {
+          "file": "Boundary.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "wholeStderr": "",
+      "wholeFileBefore": "<template>\n  <ul class=\"plain\" role=\"list\"><li>a</li></ul>\n</template>\n<style scoped>\na{color:hsl(0 abs(-50%) 0%)}\n.plain{list-style:none}\n</style>\n",
+      "wholeFileAfter": "<template>\n  <ul class=\"plain\" role=\"list\"><li>a</li></ul>\n</template>\n<style scoped>\na{color:hsl(0 abs(-50%) 0%)}\n.plain{list-style:none}\n</style>\n",
+      "args": [
+        "lint",
+        "-f",
+        "json",
+        "--help-level",
+        "full",
+        "--locale",
+        "en",
+        "--config",
+        "vize.config.json",
+        "Boundary.vue"
+      ],
+      "sourceOptions": "{\"linter\":{\"preset\":\"incremental\",\"rules\":{\"a11y/no-redundant-roles\":\"warn\"}}}\n",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "basis": "Manually authored complete no-finding CLI JSON for the required-role markerless-list case, without stderr/file mutation"
+    },
+    {
+      "id": "linter/a11y-color-original/2",
+      "wholeStdout": "[\n  {\n    \"file\": \"Boundary.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "wholeStdoutValue": [
+        {
+          "file": "Boundary.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "wholeStderr": "",
+      "wholeFileBefore": "<template>\n  <ul class=\"plain\" role=\"list\"><li>a</li></ul>\n</template>\n<style scoped>\na{color:hsl(0 abs(-50%) 0%)}\n.plain{list-style:none}\n</style>\n",
+      "wholeFileAfter": "<template>\n  <ul class=\"plain\" role=\"list\"><li>a</li></ul>\n</template>\n<style scoped>\na{color:hsl(0 abs(-50%) 0%)}\n.plain{list-style:none}\n</style>\n",
+      "args": [
+        "lint",
+        "-f",
+        "json",
+        "--help-level",
+        "full",
+        "--locale",
+        "en",
+        "--config",
+        "vize.config.json",
+        "Boundary.vue"
+      ],
+      "sourceOptions": "{\"linter\":{\"preset\":\"incremental\",\"rules\":{\"a11y/no-redundant-roles\":\"warn\"}}}\n",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "basis": "Manually authored complete no-finding CLI JSON for the required-role markerless-list case, without stderr/file mutation"
+    },
+    {
+      "id": "linter/a11y-number-original/1",
+      "wholeStdout": "[\n  {\n    \"file\": \"Boundary.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "wholeStdoutValue": [
+        {
+          "file": "Boundary.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "wholeStderr": "",
+      "wholeFileBefore": "<template>\n  <ul class=\"plain\" role=\"list\"><li>a</li></ul>\n</template>\n<style scoped>\na{text-size-adjust:calc(5)}\n.plain{list-style:none}\n</style>\n",
+      "wholeFileAfter": "<template>\n  <ul class=\"plain\" role=\"list\"><li>a</li></ul>\n</template>\n<style scoped>\na{text-size-adjust:calc(5)}\n.plain{list-style:none}\n</style>\n",
+      "args": [
+        "lint",
+        "-f",
+        "json",
+        "--help-level",
+        "full",
+        "--locale",
+        "en",
+        "--config",
+        "vize.config.json",
+        "Boundary.vue"
+      ],
+      "sourceOptions": "{\"linter\":{\"preset\":\"incremental\",\"rules\":{\"a11y/no-redundant-roles\":\"warn\"}}}\n",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "basis": "Manually authored complete no-finding CLI JSON for the required-role markerless-list case, without stderr/file mutation"
+    },
+    {
+      "id": "linter/a11y-number-original/2",
+      "wholeStdout": "[\n  {\n    \"file\": \"Boundary.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "wholeStdoutValue": [
+        {
+          "file": "Boundary.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "wholeStderr": "",
+      "wholeFileBefore": "<template>\n  <ul class=\"plain\" role=\"list\"><li>a</li></ul>\n</template>\n<style scoped>\na{text-size-adjust:calc(5)}\n.plain{list-style:none}\n</style>\n",
+      "wholeFileAfter": "<template>\n  <ul class=\"plain\" role=\"list\"><li>a</li></ul>\n</template>\n<style scoped>\na{text-size-adjust:calc(5)}\n.plain{list-style:none}\n</style>\n",
+      "args": [
+        "lint",
+        "-f",
+        "json",
+        "--help-level",
+        "full",
+        "--locale",
+        "en",
+        "--config",
+        "vize.config.json",
+        "Boundary.vue"
+      ],
+      "sourceOptions": "{\"linter\":{\"preset\":\"incremental\",\"rules\":{\"a11y/no-redundant-roles\":\"warn\"}}}\n",
+      "status": 0,
+      "signal": null,
+      "processError": null,
+      "readError": null,
+      "basis": "Manually authored complete no-finding CLI JSON for the required-role markerless-list case, without stderr/file mutation"
+    }
+  ],
+  "atelierRoles": [
+    {
+      "input": {
+        "index": 0,
+        "law": "parse_css_ast_reports_under_guarded_engine_panics_as_errors",
+        "source": "a{border-image-slice:abs(-50%)}",
+        "sourceSha256": "7b53eff923f65fec1819c191b9a745d9a8454ebd8b49535e2a6caeb085cc45a6"
+      },
+      "wholeExpected": {
+        "parsed": {
+          "ast": {
+            "licenseComments": [],
+            "rules": [
+              {
+                "type": "style",
+                "value": {
+                  "declarations": {
+                    "declarations": [
+                      {
+                        "property": "unparsed",
+                        "value": {
+                          "propertyId": {
+                            "property": "border-image-slice"
+                          },
+                          "value": [
+                            {
+                              "type": "function",
+                              "value": {
+                                "arguments": [
+                                  {
+                                    "type": "token",
+                                    "value": {
+                                      "type": "percentage",
+                                      "value": -0.5
+                                    }
+                                  }
+                                ],
+                                "name": "abs"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "importantDeclarations": []
+                  },
+                  "loc": {
+                    "column": 1,
+                    "line": 0,
+                    "source_index": 0
+                  },
+                  "rules": [],
+                  "selectors": [
+                    [
+                      {
+                        "name": "a",
+                        "type": "type"
+                      }
+                    ]
+                  ]
+                }
+              }
+            ],
+            "sourceMapUrls": [
+              null
+            ],
+            "sources": [
+              "style.css"
+            ]
+          },
+          "errors": [],
+          "warnings": []
+        },
+        "compiled": {
+          "code": "a {\n  border-image-slice: abs(-50%);\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        },
+        "printed": {
+          "code": "a {\n  border-image-slice: abs(-50.0%);\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        }
+      },
+      "basis": "Manually constructed complete single-rule token/color AST and exact serialization; syntax failure preserves original full input and recorded ordinary message. Positions require root review, not inferred historical healthy-AST equality."
+    },
+    {
+      "input": {
+        "index": 0,
+        "law": "parse_css_ast_reports_number_folding_math_in_percentage_slots_as_errors",
+        "source": "losrasinable-p {\n t>px`5;  text-size-adjust:asin(5\f)\u0000\u0000\u0000\u0000\u0000\u0000\u0000UUUrath",
+        "sourceSha256": "ede20ce735d239ad7d3dc4baee83e057a827f95b4541759cf9b5483adfa8d284"
+      },
+      "wholeExpected": {
+        "parsed": {
+          "errors": [
+            "CSS parse error: Unexpected token Delim('>') at style.css:1:3"
+          ],
+          "warnings": []
+        },
+        "compiled": {
+          "code": "losrasinable-p {\n t>px`5;  text-size-adjust:asin(5\f)\u0000\u0000\u0000\u0000\u0000\u0000\u0000UUUrath",
+          "cssVars": [],
+          "errors": [
+            "CSS parse error: Unexpected token Delim('>') at style.css:1:3"
+          ],
+          "warnings": []
+        },
+        "printed": null
+      },
+      "basis": "Manually constructed complete single-rule token/color AST and exact serialization; syntax failure preserves original full input and recorded ordinary message. Positions require root review, not inferred historical healthy-AST equality."
+    },
+    {
+      "input": {
+        "index": 1,
+        "law": "parse_css_ast_reports_number_folding_math_in_percentage_slots_as_errors",
+        "source": "a{text-size-adjust:asin(5)}",
+        "sourceSha256": "f0eea888b4036961c28a7743ed1c4816384db8ed6dec452eedf515c063307b70"
+      },
+      "wholeExpected": {
+        "parsed": {
+          "ast": {
+            "licenseComments": [],
+            "rules": [
+              {
+                "type": "style",
+                "value": {
+                  "declarations": {
+                    "declarations": [
+                      {
+                        "property": "unparsed",
+                        "value": {
+                          "propertyId": {
+                            "property": "text-size-adjust",
+                            "vendor_prefix": []
+                          },
+                          "value": [
+                            {
+                              "type": "function",
+                              "value": {
+                                "arguments": [
+                                  {
+                                    "type": "token",
+                                    "value": {
+                                      "type": "number",
+                                      "value": 5.0
+                                    }
+                                  }
+                                ],
+                                "name": "asin"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "importantDeclarations": []
+                  },
+                  "loc": {
+                    "column": 1,
+                    "line": 0,
+                    "source_index": 0
+                  },
+                  "rules": [],
+                  "selectors": [
+                    [
+                      {
+                        "name": "a",
+                        "type": "type"
+                      }
+                    ]
+                  ]
+                }
+              }
+            ],
+            "sourceMapUrls": [
+              null
+            ],
+            "sources": [
+              "style.css"
+            ]
+          },
+          "errors": [],
+          "warnings": []
+        },
+        "compiled": {
+          "code": "a {\n  text-size-adjust: asin(5);\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        },
+        "printed": {
+          "code": "a {\n  text-size-adjust: asin(5);\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        }
+      },
+      "basis": "Manually constructed complete single-rule token/color AST and exact serialization; syntax failure preserves original full input and recorded ordinary message. Positions require root review, not inferred historical healthy-AST equality."
+    },
+    {
+      "input": {
+        "index": 2,
+        "law": "parse_css_ast_reports_number_folding_math_in_percentage_slots_as_errors",
+        "source": "a{text-size-adjust:calc(5)}",
+        "sourceSha256": "d790ef1ee15baffebd81b761f8ae144620e2f5d229b71d4961218c891db0e912"
+      },
+      "wholeExpected": {
+        "parsed": {
+          "ast": {
+            "licenseComments": [],
+            "rules": [
+              {
+                "type": "style",
+                "value": {
+                  "declarations": {
+                    "declarations": [
+                      {
+                        "property": "unparsed",
+                        "value": {
+                          "propertyId": {
+                            "property": "text-size-adjust",
+                            "vendor_prefix": []
+                          },
+                          "value": [
+                            {
+                              "type": "function",
+                              "value": {
+                                "arguments": [
+                                  {
+                                    "type": "token",
+                                    "value": {
+                                      "type": "number",
+                                      "value": 5.0
+                                    }
+                                  }
+                                ],
+                                "name": "calc"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "importantDeclarations": []
+                  },
+                  "loc": {
+                    "column": 1,
+                    "line": 0,
+                    "source_index": 0
+                  },
+                  "rules": [],
+                  "selectors": [
+                    [
+                      {
+                        "name": "a",
+                        "type": "type"
+                      }
+                    ]
+                  ]
+                }
+              }
+            ],
+            "sourceMapUrls": [
+              null
+            ],
+            "sources": [
+              "style.css"
+            ]
+          },
+          "errors": [],
+          "warnings": []
+        },
+        "compiled": {
+          "code": "a {\n  text-size-adjust: calc(5);\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        },
+        "printed": {
+          "code": "a {\n  text-size-adjust: calc(5);\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        }
+      },
+      "basis": "Manually constructed complete single-rule token/color AST and exact serialization; syntax failure preserves original full input and recorded ordinary message. Positions require root review, not inferred historical healthy-AST equality."
+    },
+    {
+      "input": {
+        "index": 3,
+        "law": "parse_css_ast_reports_number_folding_math_in_percentage_slots_as_errors",
+        "source": "a{text-size-adjust:calc(1 + 1)}",
+        "sourceSha256": "6a84b67f46c8a8f948095290f4168af7a07cbec0a6629f4d6001864aeac0f0c9"
+      },
+      "wholeExpected": {
+        "parsed": {
+          "ast": {
+            "licenseComments": [],
+            "rules": [
+              {
+                "type": "style",
+                "value": {
+                  "declarations": {
+                    "declarations": [
+                      {
+                        "property": "unparsed",
+                        "value": {
+                          "propertyId": {
+                            "property": "text-size-adjust",
+                            "vendor_prefix": []
+                          },
+                          "value": [
+                            {
+                              "type": "function",
+                              "value": {
+                                "arguments": [
+                                  {
+                                    "type": "token",
+                                    "value": {
+                                      "type": "number",
+                                      "value": 1.0
+                                    }
+                                  },
+                                  {
+                                    "type": "token",
+                                    "value": {
+                                      "type": "white-space",
+                                      "value": " "
+                                    }
+                                  },
+                                  {
+                                    "type": "token",
+                                    "value": {
+                                      "type": "delim",
+                                      "value": "+"
+                                    }
+                                  },
+                                  {
+                                    "type": "token",
+                                    "value": {
+                                      "type": "white-space",
+                                      "value": " "
+                                    }
+                                  },
+                                  {
+                                    "type": "token",
+                                    "value": {
+                                      "type": "number",
+                                      "value": 1.0
+                                    }
+                                  }
+                                ],
+                                "name": "calc"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "importantDeclarations": []
+                  },
+                  "loc": {
+                    "column": 1,
+                    "line": 0,
+                    "source_index": 0
+                  },
+                  "rules": [],
+                  "selectors": [
+                    [
+                      {
+                        "name": "a",
+                        "type": "type"
+                      }
+                    ]
+                  ]
+                }
+              }
+            ],
+            "sourceMapUrls": [
+              null
+            ],
+            "sources": [
+              "style.css"
+            ]
+          },
+          "errors": [],
+          "warnings": []
+        },
+        "compiled": {
+          "code": "a {\n  text-size-adjust: calc(1 + 1);\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        },
+        "printed": {
+          "code": "a {\n  text-size-adjust: calc(1 + 1);\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        }
+      },
+      "basis": "Manually constructed complete single-rule token/color AST and exact serialization; syntax failure preserves original full input and recorded ordinary message. Positions require root review, not inferred historical healthy-AST equality."
+    },
+    {
+      "input": {
+        "index": 4,
+        "law": "parse_css_ast_reports_number_folding_math_in_percentage_slots_as_errors",
+        "source": "a{text-size-adjust:sqrt(2)}",
+        "sourceSha256": "8f40629695cc448526192c893ee0cfc292bcfaf3c225a794317ce34041e70a6e"
+      },
+      "wholeExpected": {
+        "parsed": {
+          "ast": {
+            "licenseComments": [],
+            "rules": [
+              {
+                "type": "style",
+                "value": {
+                  "declarations": {
+                    "declarations": [
+                      {
+                        "property": "unparsed",
+                        "value": {
+                          "propertyId": {
+                            "property": "text-size-adjust",
+                            "vendor_prefix": []
+                          },
+                          "value": [
+                            {
+                              "type": "function",
+                              "value": {
+                                "arguments": [
+                                  {
+                                    "type": "token",
+                                    "value": {
+                                      "type": "number",
+                                      "value": 2.0
+                                    }
+                                  }
+                                ],
+                                "name": "sqrt"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "importantDeclarations": []
+                  },
+                  "loc": {
+                    "column": 1,
+                    "line": 0,
+                    "source_index": 0
+                  },
+                  "rules": [],
+                  "selectors": [
+                    [
+                      {
+                        "name": "a",
+                        "type": "type"
+                      }
+                    ]
+                  ]
+                }
+              }
+            ],
+            "sourceMapUrls": [
+              null
+            ],
+            "sources": [
+              "style.css"
+            ]
+          },
+          "errors": [],
+          "warnings": []
+        },
+        "compiled": {
+          "code": "a {\n  text-size-adjust: sqrt(2);\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        },
+        "printed": {
+          "code": "a {\n  text-size-adjust: sqrt(2);\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        }
+      },
+      "basis": "Manually constructed complete single-rule token/color AST and exact serialization; syntax failure preserves original full input and recorded ordinary message. Positions require root review, not inferred historical healthy-AST equality."
+    },
+    {
+      "input": {
+        "index": 5,
+        "law": "parse_css_ast_reports_number_folding_math_in_percentage_slots_as_errors",
+        "source": "a{text-size-adjust:sign(5)}",
+        "sourceSha256": "07e53e3b4346919f2a04bf1d7484ac8a6a8d8d9b2c6b3ac30435ad25e02647ce"
+      },
+      "wholeExpected": {
+        "parsed": {
+          "ast": {
+            "licenseComments": [],
+            "rules": [
+              {
+                "type": "style",
+                "value": {
+                  "declarations": {
+                    "declarations": [
+                      {
+                        "property": "unparsed",
+                        "value": {
+                          "propertyId": {
+                            "property": "text-size-adjust",
+                            "vendor_prefix": []
+                          },
+                          "value": [
+                            {
+                              "type": "function",
+                              "value": {
+                                "arguments": [
+                                  {
+                                    "type": "token",
+                                    "value": {
+                                      "type": "number",
+                                      "value": 5.0
+                                    }
+                                  }
+                                ],
+                                "name": "sign"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "importantDeclarations": []
+                  },
+                  "loc": {
+                    "column": 1,
+                    "line": 0,
+                    "source_index": 0
+                  },
+                  "rules": [],
+                  "selectors": [
+                    [
+                      {
+                        "name": "a",
+                        "type": "type"
+                      }
+                    ]
+                  ]
+                }
+              }
+            ],
+            "sourceMapUrls": [
+              null
+            ],
+            "sources": [
+              "style.css"
+            ]
+          },
+          "errors": [],
+          "warnings": []
+        },
+        "compiled": {
+          "code": "a {\n  text-size-adjust: sign(5);\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        },
+        "printed": {
+          "code": "a {\n  text-size-adjust: sign(5);\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        }
+      },
+      "basis": "Manually constructed complete single-rule token/color AST and exact serialization; syntax failure preserves original full input and recorded ordinary message. Positions require root review, not inferred historical healthy-AST equality."
+    },
+    {
+      "input": {
+        "index": 6,
+        "law": "parse_css_ast_reports_number_folding_math_in_percentage_slots_as_errors",
+        "source": "a{font-stretch:calc(5)}",
+        "sourceSha256": "de867473a89ce479d8462752ebfc09312e502e852d8e2a47b5d1e65c40183b68"
+      },
+      "wholeExpected": {
+        "parsed": {
+          "ast": {
+            "licenseComments": [],
+            "rules": [
+              {
+                "type": "style",
+                "value": {
+                  "declarations": {
+                    "declarations": [
+                      {
+                        "property": "unparsed",
+                        "value": {
+                          "propertyId": {
+                            "property": "font-stretch"
+                          },
+                          "value": [
+                            {
+                              "type": "function",
+                              "value": {
+                                "arguments": [
+                                  {
+                                    "type": "token",
+                                    "value": {
+                                      "type": "number",
+                                      "value": 5.0
+                                    }
+                                  }
+                                ],
+                                "name": "calc"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "importantDeclarations": []
+                  },
+                  "loc": {
+                    "column": 1,
+                    "line": 0,
+                    "source_index": 0
+                  },
+                  "rules": [],
+                  "selectors": [
+                    [
+                      {
+                        "name": "a",
+                        "type": "type"
+                      }
+                    ]
+                  ]
+                }
+              }
+            ],
+            "sourceMapUrls": [
+              null
+            ],
+            "sources": [
+              "style.css"
+            ]
+          },
+          "errors": [],
+          "warnings": []
+        },
+        "compiled": {
+          "code": "a {\n  font-stretch: calc(5);\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        },
+        "printed": {
+          "code": "a {\n  font-stretch: calc(5);\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        }
+      },
+      "basis": "Manually constructed complete single-rule token/color AST and exact serialization; syntax failure preserves original full input and recorded ordinary message. Positions require root review, not inferred historical healthy-AST equality."
+    },
+    {
+      "input": {
+        "index": 7,
+        "law": "parse_css_ast_reports_number_folding_math_in_percentage_slots_as_errors",
+        "source": "@property --x{syntax:\"<percentage>\";inherits:false;initial-value:calc(5);}",
+        "sourceSha256": "3462475ba787b64f48ae7c7f6b1adf28bd62fdf7bdadea9872c84b9d3ed8aec2"
+      },
+      "wholeExpected": {
+        "parsed": {
+          "errors": [
+            "CSS parse error: Unexpected token Function(\"calc\") at style.css:0:6"
+          ],
+          "warnings": []
+        },
+        "compiled": {
+          "code": "@property --x{syntax:\"<percentage>\";inherits:false;initial-value:calc(5);}",
+          "cssVars": [],
+          "errors": [
+            "CSS parse error: Unexpected token Function(\"calc\") at style.css:0:6"
+          ],
+          "warnings": []
+        },
+        "printed": null
+      },
+      "basis": "Manually constructed complete single-rule token/color AST and exact serialization; syntax failure preserves original full input and recorded ordinary message. Positions require root review, not inferred historical healthy-AST equality."
+    },
+    {
+      "input": {
+        "index": 0,
+        "law": "parse_css_ast_survives_non_finite_hue",
+        "source": "a{color:hsl(1e40 0 0)}",
+        "sourceSha256": "c7e1ae168a588272ce472240ba0bd6115eb394d4eb2bd196252044c872214444"
+      },
+      "wholeExpected": {
+        "parsed": {
+          "ast": {
+            "licenseComments": [],
+            "rules": [
+              {
+                "type": "style",
+                "value": {
+                  "declarations": {
+                    "declarations": [
+                      {
+                        "property": "color",
+                        "value": {
+                          "alpha": 1.0,
+                          "b": 0.0,
+                          "g": 0.0,
+                          "r": 0.0,
+                          "type": "rgb"
+                        }
+                      }
+                    ],
+                    "importantDeclarations": []
+                  },
+                  "loc": {
+                    "column": 1,
+                    "line": 0,
+                    "source_index": 0
+                  },
+                  "rules": [],
+                  "selectors": [
+                    [
+                      {
+                        "name": "a",
+                        "type": "type"
+                      }
+                    ]
+                  ]
+                }
+              }
+            ],
+            "sourceMapUrls": [
+              null
+            ],
+            "sources": [
+              "style.css"
+            ]
+          },
+          "errors": [],
+          "warnings": []
+        },
+        "compiled": {
+          "code": "a {\n  color: #000;\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        },
+        "printed": {
+          "code": "a {\n  color: #000;\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        }
+      },
+      "basis": "Manually constructed complete single-rule token/color AST and exact serialization; syntax failure preserves original full input and recorded ordinary message. Positions require root review, not inferred historical healthy-AST equality."
+    },
+    {
+      "input": {
+        "index": 1,
+        "law": "parse_css_ast_survives_non_finite_hue",
+        "source": "a{color:hsl(1111111111111111111111111111111111111111111111111111112 0 0)}",
+        "sourceSha256": "75739ad072cab0e8177573a6ecede7b096c994e7abbd2f42aa5aa8e71b5a735b"
+      },
+      "wholeExpected": {
+        "parsed": {
+          "ast": {
+            "licenseComments": [],
+            "rules": [
+              {
+                "type": "style",
+                "value": {
+                  "declarations": {
+                    "declarations": [
+                      {
+                        "property": "color",
+                        "value": {
+                          "alpha": 1.0,
+                          "b": 0.0,
+                          "g": 0.0,
+                          "r": 0.0,
+                          "type": "rgb"
+                        }
+                      }
+                    ],
+                    "importantDeclarations": []
+                  },
+                  "loc": {
+                    "column": 1,
+                    "line": 0,
+                    "source_index": 0
+                  },
+                  "rules": [],
+                  "selectors": [
+                    [
+                      {
+                        "name": "a",
+                        "type": "type"
+                      }
+                    ]
+                  ]
+                }
+              }
+            ],
+            "sourceMapUrls": [
+              null
+            ],
+            "sources": [
+              "style.css"
+            ]
+          },
+          "errors": [],
+          "warnings": []
+        },
+        "compiled": {
+          "code": "a {\n  color: #000;\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        },
+        "printed": {
+          "code": "a {\n  color: #000;\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        }
+      },
+      "basis": "Manually constructed complete single-rule token/color AST and exact serialization; syntax failure preserves original full input and recorded ordinary message. Positions require root review, not inferred historical healthy-AST equality."
+    },
+    {
+      "input": {
+        "index": 2,
+        "law": "parse_css_ast_survives_non_finite_hue",
+        "source": "a{color:hsl(calc(1e20 * 1e20) 0% 0%)}",
+        "sourceSha256": "596502b4ae44b7e001e3e075e7401aa27912380eb870658e5c456f6cc0311fba"
+      },
+      "wholeExpected": {
+        "parsed": {
+          "ast": {
+            "licenseComments": [],
+            "rules": [
+              {
+                "type": "style",
+                "value": {
+                  "declarations": {
+                    "declarations": [
+                      {
+                        "property": "color",
+                        "value": {
+                          "alpha": 1.0,
+                          "b": 0.0,
+                          "g": 0.0,
+                          "r": 0.0,
+                          "type": "rgb"
+                        }
+                      }
+                    ],
+                    "importantDeclarations": []
+                  },
+                  "loc": {
+                    "column": 1,
+                    "line": 0,
+                    "source_index": 0
+                  },
+                  "rules": [],
+                  "selectors": [
+                    [
+                      {
+                        "name": "a",
+                        "type": "type"
+                      }
+                    ]
+                  ]
+                }
+              }
+            ],
+            "sourceMapUrls": [
+              null
+            ],
+            "sources": [
+              "style.css"
+            ]
+          },
+          "errors": [],
+          "warnings": []
+        },
+        "compiled": {
+          "code": "a {\n  color: #000;\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        },
+        "printed": {
+          "code": "a {\n  color: #000;\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        }
+      },
+      "basis": "Manually constructed complete single-rule token/color AST and exact serialization; syntax failure preserves original full input and recorded ordinary message. Positions require root review, not inferred historical healthy-AST equality."
+    },
+    {
+      "input": {
+        "index": 0,
+        "law": "parse_css_ast_survives_the_hue_assert_artifact",
+        "source": "\n.t {\n  \n.comglsdhriight {\n  --code;\n  box-shadow: inset 0 \u0011U\u0007\u0000\u0000\u0000.primeighlio\n\u0004UUUUurlh255p\u0001\u0000\u0000\u0000\u000052:, .(255p\u0001\u0000\u0000\u0000\u0000\u00002rad, 2primeighlig\n\u0004UUUUUU hsla(-842 5 2\n\u0004UUUUhsl, 2\n\u0004UUUUUUU.primeighlig\n\u0004UUUUUU hsla(-842 5 1\n\u0004UUUUhsla(-555 52:, 2\n\u0004UUUUUUUa(-555 52:.l {\n m:\u0004,\nU U2px(-3ody[da\u0000\u0000\u0000B\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000a-them=\u0000\u0000\u0000\u0000\u0000\u0000\u0000] .codsohighlight :deUUUUep(.codel\\\\\\fff 2\n\u0004UUUUhsl, 2\n\u0004UUUUUUU.primeighlig\n\u0004UUUUUU hsla(-8555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555542 5 1\n\u0004UUUUhsla(-555 52:, 2\n\u0004UUUUprimeighlig\n\u0004UUUUUU hsla(-842 5 2\n\u0004UUUUhsl, 2\n\u0004UUUUUUU.primeighlig\n\u0004UUUUUU hsla(-842 5 1\n\u0004UUUUhsla(-555 52:, 2\n\u0004UUUUUUUa(-555 52:.l {\n m:\u0004,\nU U2px(-3ody[da\u0000\u0000\u0000B\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000a-them=\u0000\u0000\u0000\u0000\u0000\u0000\u0000] .codsohighlight :deUUUUep(.codel\\\\\\fff 2\n\u0004UUUUhsl, 2\n\u0004UUUUUUU.primeighlig\n\u0004UUUUUU hsla(-842 5 1\n\u0004UUUUhsla(-555 52:, 2\n\u0004UUUUUUUa(-555 52:.l {\n m:\u0004,\nU U2px(-3ody[daUUUa(-555 52:.l {\n m:\u0004,\nU U2px(-3ody[da\u0000\u0000\u0000B\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000a-them=\u0000\u0000\u0000\u0000\u0000\u0000\u0000] .codsohighlight :deUUUUep(.codel\\\\\\fff\\ffyininset \u0011p x0UU cd);\n  or: \u0000\u00000ar(et--\n",
+        "sourceSha256": "4a6a20d7e513adf9f55f52f58949f1524d7657c982470b899f0f8ad32083eb05"
+      },
+      "wholeExpected": {
+        "parsed": {
+          "errors": [
+            "CSS parse error: Unexpected end of input at style.css:4:9"
+          ],
+          "warnings": []
+        },
+        "compiled": {
+          "code": "\n.t {\n  \n.comglsdhriight {\n  --code;\n  box-shadow: inset 0 \u0011U\u0007\u0000\u0000\u0000.primeighlio\n\u0004UUUUurlh255p\u0001\u0000\u0000\u0000\u000052:, .(255p\u0001\u0000\u0000\u0000\u0000\u00002rad, 2primeighlig\n\u0004UUUUUU hsla(-842 5 2\n\u0004UUUUhsl, 2\n\u0004UUUUUUU.primeighlig\n\u0004UUUUUU hsla(-842 5 1\n\u0004UUUUhsla(-555 52:, 2\n\u0004UUUUUUUa(-555 52:.l {\n m:\u0004,\nU U2px(-3ody[da\u0000\u0000\u0000B\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000a-them=\u0000\u0000\u0000\u0000\u0000\u0000\u0000] .codsohighlight :deUUUUep(.codel\\\\\\fff 2\n\u0004UUUUhsl, 2\n\u0004UUUUUUU.primeighlig\n\u0004UUUUUU hsla(-8555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555542 5 1\n\u0004UUUUhsla(-555 52:, 2\n\u0004UUUUprimeighlig\n\u0004UUUUUU hsla(-842 5 2\n\u0004UUUUhsl, 2\n\u0004UUUUUUU.primeighlig\n\u0004UUUUUU hsla(-842 5 1\n\u0004UUUUhsla(-555 52:, 2\n\u0004UUUUUUUa(-555 52:.l {\n m:\u0004,\nU U2px(-3ody[da\u0000\u0000\u0000B\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000a-them=\u0000\u0000\u0000\u0000\u0000\u0000\u0000] .codsohighlight :deUUUUep(.codel\\\\\\fff 2\n\u0004UUUUhsl, 2\n\u0004UUUUUUU.primeighlig\n\u0004UUUUUU hsla(-842 5 1\n\u0004UUUUhsla(-555 52:, 2\n\u0004UUUUUUUa(-555 52:.l {\n m:\u0004,\nU U2px(-3ody[daUUUa(-555 52:.l {\n m:\u0004,\nU U2px(-3ody[da\u0000\u0000\u0000B\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000a-them=\u0000\u0000\u0000\u0000\u0000\u0000\u0000] .codsohighlight :deUUUUep(.codel\\\\\\fff\\ffyininset \u0011p x0UU cd);\n  or: \u0000\u00000ar(et--\n",
+          "cssVars": [],
+          "errors": [
+            "CSS parse error: Unexpected end of input at style.css:4:9"
+          ],
+          "warnings": []
+        },
+        "printed": null
+      },
+      "basis": "Manually constructed complete single-rule token/color AST and exact serialization; syntax failure preserves original full input and recorded ordinary message. Positions require root review, not inferred historical healthy-AST equality."
+    },
+    {
+      "input": {
+        "index": 1,
+        "law": "parse_css_ast_survives_the_hue_assert_artifact",
+        "source": "a{color:hsla(-842 5 2 / 1)}",
+        "sourceSha256": "e68b2e0c0497748efc5be417f85fac6614b41deb78deb970e9b60b83e53605f8"
+      },
+      "wholeExpected": {
+        "parsed": {
+          "ast": {
+            "licenseComments": [],
+            "rules": [
+              {
+                "type": "style",
+                "value": {
+                  "declarations": {
+                    "declarations": [
+                      {
+                        "property": "color",
+                        "value": {
+                          "alpha": 1.0,
+                          "b": 5.0,
+                          "g": 5.0,
+                          "r": 5.0,
+                          "type": "rgb"
+                        }
+                      }
+                    ],
+                    "importantDeclarations": []
+                  },
+                  "loc": {
+                    "column": 1,
+                    "line": 0,
+                    "source_index": 0
+                  },
+                  "rules": [],
+                  "selectors": [
+                    [
+                      {
+                        "name": "a",
+                        "type": "type"
+                      }
+                    ]
+                  ]
+                }
+              }
+            ],
+            "sourceMapUrls": [
+              null
+            ],
+            "sources": [
+              "style.css"
+            ]
+          },
+          "errors": [],
+          "warnings": []
+        },
+        "compiled": {
+          "code": "a {\n  color: #050505;\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        },
+        "printed": {
+          "code": "a {\n  color: #050505;\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        }
+      },
+      "basis": "Manually constructed complete single-rule token/color AST and exact serialization; syntax failure preserves original full input and recorded ordinary message. Positions require root review, not inferred historical healthy-AST equality."
+    }
+  ],
+  "additionalAtelier": [
+    {
+      "input": {
+        "id": "fuzz-recovery",
+        "origin": "crates/vize_atelier_sfc/tests/fixtures/css-engine/6190.css",
+        "source": "\n@keyframes kflex{\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\n tcodeht {\u0017\u0000 flex-pack: cos4)cos(8)kelineke:;\n}cos(8)kelineke:;\n}\u0000\u0000k\n",
+        "sourceSha256": "562de29c854bfc90a513528f8a653a90c21144ee31d7b1d7d8da73d5748a3431"
+      },
+      "wholeExpected": {
+        "parsed": {
+          "errors": [
+            "CSS parse error: Unexpected end of input at style.css:5:1"
+          ],
+          "warnings": []
+        },
+        "compiled": {
+          "code": "\n@keyframes kflex{\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\n tcodeht {\u0017\u0000 flex-pack: cos4)cos(8)kelineke:;\n}cos(8)kelineke:;\n}\u0000\u0000k\n",
+          "cssVars": [],
+          "errors": [
+            "CSS parse error: Unexpected end of input at style.css:5:1"
+          ],
+          "warnings": []
+        },
+        "printed": null
+      }
+    },
+    {
+      "input": {
+        "id": "release-border-image",
+        "origin": "crates/vize_atelier_sfc/examples/css_engine_recovery.rs",
+        "source": "a{border-image-slice:abs(-50%)}",
+        "sourceSha256": "7b53eff923f65fec1819c191b9a745d9a8454ebd8b49535e2a6caeb085cc45a6"
+      },
+      "wholeExpected": {
+        "parsed": {
+          "ast": {
+            "licenseComments": [],
+            "rules": [
+              {
+                "type": "style",
+                "value": {
+                  "declarations": {
+                    "declarations": [
+                      {
+                        "property": "unparsed",
+                        "value": {
+                          "propertyId": {
+                            "property": "border-image-slice"
+                          },
+                          "value": [
+                            {
+                              "type": "function",
+                              "value": {
+                                "arguments": [
+                                  {
+                                    "type": "token",
+                                    "value": {
+                                      "type": "percentage",
+                                      "value": -0.5
+                                    }
+                                  }
+                                ],
+                                "name": "abs"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "importantDeclarations": []
+                  },
+                  "loc": {
+                    "column": 1,
+                    "line": 0,
+                    "source_index": 0
+                  },
+                  "rules": [],
+                  "selectors": [
+                    [
+                      {
+                        "name": "a",
+                        "type": "type"
+                      }
+                    ]
+                  ]
+                }
+              }
+            ],
+            "sourceMapUrls": [
+              null
+            ],
+            "sources": [
+              "style.css"
+            ]
+          },
+          "errors": [],
+          "warnings": []
+        },
+        "compiled": {
+          "code": "a {\n  border-image-slice: abs(-50%);\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        },
+        "printed": {
+          "code": "a {\n  border-image-slice: abs(-50.0%);\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        }
+      }
+    },
+    {
+      "input": {
+        "id": "release-number",
+        "origin": "crates/vize_atelier_sfc/examples/css_engine_recovery.rs",
+        "source": "a{text-size-adjust:calc(5)}",
+        "sourceSha256": "d790ef1ee15baffebd81b761f8ae144620e2f5d229b71d4961218c891db0e912"
+      },
+      "wholeExpected": {
+        "parsed": {
+          "ast": {
+            "licenseComments": [],
+            "rules": [
+              {
+                "type": "style",
+                "value": {
+                  "declarations": {
+                    "declarations": [
+                      {
+                        "property": "unparsed",
+                        "value": {
+                          "propertyId": {
+                            "property": "text-size-adjust",
+                            "vendor_prefix": []
+                          },
+                          "value": [
+                            {
+                              "type": "function",
+                              "value": {
+                                "arguments": [
+                                  {
+                                    "type": "token",
+                                    "value": {
+                                      "type": "number",
+                                      "value": 5.0
+                                    }
+                                  }
+                                ],
+                                "name": "calc"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "importantDeclarations": []
+                  },
+                  "loc": {
+                    "column": 1,
+                    "line": 0,
+                    "source_index": 0
+                  },
+                  "rules": [],
+                  "selectors": [
+                    [
+                      {
+                        "name": "a",
+                        "type": "type"
+                      }
+                    ]
+                  ]
+                }
+              }
+            ],
+            "sourceMapUrls": [
+              null
+            ],
+            "sources": [
+              "style.css"
+            ]
+          },
+          "errors": [],
+          "warnings": []
+        },
+        "compiled": {
+          "code": "a {\n  text-size-adjust: calc(5);\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        },
+        "printed": {
+          "code": "a {\n  text-size-adjust: calc(5);\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        }
+      }
+    },
+    {
+      "input": {
+        "id": "release-property",
+        "origin": "crates/vize_atelier_sfc/examples/css_engine_recovery.rs",
+        "source": "@property --x{syntax:\"<percentage>\";inherits:false;initial-value:calc(5);}",
+        "sourceSha256": "3462475ba787b64f48ae7c7f6b1adf28bd62fdf7bdadea9872c84b9d3ed8aec2"
+      },
+      "wholeExpected": {
+        "parsed": {
+          "errors": [
+            "CSS parse error: Unexpected token Function(\"calc\") at style.css:0:6"
+          ],
+          "warnings": []
+        },
+        "compiled": {
+          "code": "@property --x{syntax:\"<percentage>\";inherits:false;initial-value:calc(5);}",
+          "cssVars": [],
+          "errors": [
+            "CSS parse error: Unexpected token Function(\"calc\") at style.css:0:6"
+          ],
+          "warnings": []
+        },
+        "printed": null
+      }
+    },
+    {
+      "input": {
+        "id": "release-keyframes",
+        "origin": "crates/vize_atelier_sfc/examples/css_engine_recovery.rs",
+        "source": "@keyframes x { cos(8) {} }",
+        "sourceSha256": "570f5b59ecc78a34d31494dd7e50932ea05b7d6effa4595a161e4753185ef302"
+      },
+      "wholeExpected": {
+        "parsed": {
+          "ast": {
+            "rules": [
+              {
+                "type": "keyframes",
+                "value": {
+                  "name": {
+                    "type": "ident",
+                    "value": "x"
+                  },
+                  "keyframes": [],
+                  "vendorPrefix": [],
+                  "loc": {
+                    "source_index": 0,
+                    "line": 0,
+                    "column": 1
+                  }
+                }
+              }
+            ],
+            "sources": [
+              "style.css"
+            ],
+            "sourceMapUrls": [
+              null
+            ],
+            "licenseComments": []
+          },
+          "errors": [],
+          "warnings": []
+        },
+        "compiled": {
+          "code": "@keyframes x {\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        },
+        "printed": {
+          "code": "@keyframes x {\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        }
+      },
+      "basis": "Authored invalid selector is omitted under existing keyframes error recovery; empty frames are a recovery result, not syntax-valid cos(8)."
+    },
+    {
+      "input": {
+        "id": "release-healthy-next",
+        "origin": "crates/vize_atelier_sfc/examples/css_engine_recovery.rs",
+        "source": "@keyframes x { 50% { opacity: 0.5 } }",
+        "sourceSha256": "bad99ca7b1ea56b3866ac3048deeed56805856292431e1804b28add6c9f1ba2c"
+      },
+      "wholeExpected": {
+        "parsed": {
+          "ast": {
+            "rules": [
+              {
+                "type": "keyframes",
+                "value": {
+                  "name": {
+                    "type": "ident",
+                    "value": "x"
+                  },
+                  "keyframes": [
+                    {
+                      "selectors": [
+                        {
+                          "type": "percentage",
+                          "value": 0.5
+                        }
+                      ],
+                      "declarations": {
+                        "declarations": [
+                          {
+                            "property": "opacity",
+                            "value": 0.5
+                          }
+                        ],
+                        "importantDeclarations": []
+                      }
+                    }
+                  ],
+                  "vendorPrefix": [],
+                  "loc": {
+                    "source_index": 0,
+                    "line": 0,
+                    "column": 1
+                  }
+                }
+              }
+            ],
+            "sources": [
+              "style.css"
+            ],
+            "sourceMapUrls": [
+              null
+            ],
+            "licenseComments": []
+          },
+          "errors": [],
+          "warnings": []
+        },
+        "compiled": {
+          "code": "@keyframes x {\n  50% {\n    opacity: .5;\n  }\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        },
+        "printed": {
+          "code": "@keyframes x {\n  50% {\n    opacity: .5;\n  }\n}\n",
+          "cssVars": [],
+          "errors": [],
+          "warnings": []
+        }
+      },
+      "basis": "Authored one keyframe at50% with typed opacity0.5, fixed structural fields and complete existing printer contract."
+    }
+  ],
+  "subsequentHealthy": {
+    "ast": {
+      "rules": [
+        {
+          "type": "keyframes",
+          "value": {
+            "name": {
+              "type": "ident",
+              "value": "x"
+            },
+            "keyframes": [
+              {
+                "selectors": [
+                  {
+                    "type": "percentage",
+                    "value": 0.5
+                  }
+                ],
+                "declarations": {
+                  "declarations": [
+                    {
+                      "property": "opacity",
+                      "value": 0.5
+                    }
+                  ],
+                  "importantDeclarations": []
+                }
+              }
+            ],
+            "vendorPrefix": [],
+            "loc": {
+              "source_index": 0,
+              "line": 0,
+              "column": 1
+            }
+          }
+        }
+      ],
+      "sources": [
+        "style.css"
+      ],
+      "sourceMapUrls": [
+        null
+      ],
+      "licenseComments": []
+    },
+    "errors": [],
+    "warnings": []
+  },
+  "denominators": {
+    "rustOriginal": 99,
+    "rustSuccessorCells": 33,
+    "rustUnchanged": 66,
+    "fixedInputNeighbors": 9,
+    "cliOriginal": 90,
+    "cliSuccessorCells": 26,
+    "cliUnchanged": 64,
+    "atelierOriginal": 66,
+    "atelierUnchanged": 52,
+    "atelierAdditional": 6,
+    "atelierNamedRoles": 14,
+    "atelierRepairedRoles": 13,
+    "atelierStrengthenedHealthyRole": 1
+  },
+  "precisionLimits": [
+    "Unparsed AST success preserves the existing error-recovery policy, not a claim that unsupported calc is a valid percentage.",
+    "Original1045-byte hue artifact is malformed and remains an ordinary EOF error, distinct from three successful black nonfinite-hue controls.",
+    "Typed @property error column is actual backend position; root should review its source-coordinate basis before pinning it as correctness.",
+    "Retain guard22/twooverreject/compileguard intact; separate retirement requires scope.",
+    "Retain actual production recovery vs escaping-panic controls; authored injection tests boundary wiring and cannot invent a remaining engine defect.",
+    "Property0:6 is source-proven value-relative from a fresh ParserInput(initial-value); retained raw diagnostic, no global-document-position correctness claim."
+  ],
+  "provenance": {
+    "actualBeforeAndAfterSourcesRemainSeparate": true,
+    "oldFixturesUnchanged": true,
+    "publicationQualification": false,
+    "nativeBindingQualification": false,
+    "noGlobalDocumentLocationClaimForProperty": true
+  }
+}

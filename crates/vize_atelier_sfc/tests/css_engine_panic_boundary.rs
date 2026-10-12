@@ -20,18 +20,20 @@
 //! guard rejects the crashing math-function shapes in color-function and
 //! opacity contexts in every profile, and a `catch_unwind` boundary converts
 //! the remaining engine panics into error results in unwinding profiles.
-//! These tests pin the empirically-mapped panic matrix, the guard's
-//! documented over-rejections, and the neighboring shapes that must keep
-//! parsing, so an upstream bump that shifts the surface is visible.
+//! The full original source remains frozen in the vendor-exit fixture. The
+//! guard matrix, over-rejections and neighbors retain their original laws;
+//! only14 named roles use complete independently authored repaired results.
 #![cfg(feature = "native")]
 
 use vize_atelier_sfc::{CssCompileOptions, compile_css, parse_css_ast};
+
+mod support;
+use support::css_engine_successors as successors;
 
 /// The 39-byte css_parse fuzz artifact from #3276 (run 30147643440).
 const LCH_SIGN_ARTIFACT: &str = "\n@t (lch(sign(-50%);\n  mask-clipatenv5,";
 
 const GUARD_ERROR: &str = "CSS parse error: unsupported math function in a percentage context (upstream lightningcss defect; see vize issue #3295)";
-const PARSE_BOUNDARY_ERROR: &str = "CSS parse error: the CSS engine hit an internal defect (upstream lightningcss panic; see vize issue #3295)";
 const COMPILE_GUARD_ERROR: &str = "CSS parse error: unsupported math function in a percentage context (upstream lightningcss defect; see vize issue #3295)";
 
 /// Math-function shapes in guarded contexts (color functions, opacity-family
@@ -99,13 +101,16 @@ fn parse_css_ast_documents_the_guard_over_rejections() {
 
 /// Percentage-typed slots outside the guarded contexts still reach the
 /// engine; in unwinding profiles (this test binary) the `catch_unwind`
-/// boundary must convert the upstream panic into an error result. Native releases also unwind; #3295 tracks removal of the upstream defect.
+/// original boundary converted the panic into an error. The named successor now
+/// checks the complete repaired AST/error/code/print without dropping this input.
 #[test]
 fn parse_css_ast_reports_under_guarded_engine_panics_as_errors() {
     let source = "a{border-image-slice:abs(-50%)}";
-    let result = parse_css_ast(source, &CssCompileOptions::default());
-    assert!(result.ast.is_none());
-    assert_eq!(result.errors, [PARSE_BOUNDARY_ERROR]);
+    successors::assert_role(
+        "parse_css_ast_reports_under_guarded_engine_panics_as_errors",
+        0,
+        source,
+    );
 }
 
 /// The 66-byte css_parse fuzz artifact from #4961 (run 32932217923) plus the
@@ -126,7 +131,7 @@ fn parse_css_ast_reports_number_folding_math_in_percentage_slots_as_errors() {
         66,
         "fuzz artifact must stay verbatim"
     );
-    for source in [
+    for (index, source) in [
         NUMBER_FOLD_ARTIFACT,
         "a{text-size-adjust:asin(5)}",
         "a{text-size-adjust:calc(5)}",
@@ -135,41 +140,33 @@ fn parse_css_ast_reports_number_folding_math_in_percentage_slots_as_errors() {
         "a{text-size-adjust:sign(5)}",
         "a{font-stretch:calc(5)}",
         "@property --x{syntax:\"<percentage>\";inherits:false;initial-value:calc(5);}",
-    ] {
-        let result = parse_css_ast(source, &CssCompileOptions::default());
-        assert!(
-            result.ast.is_none(),
-            "expected boundary error for {source:?}"
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        successors::assert_role(
+            "parse_css_ast_reports_number_folding_math_in_percentage_slots_as_errors",
+            index,
+            source,
         );
-        assert_eq!(result.errors, [PARSE_BOUNDARY_ERROR], "source {source:?}");
     }
 }
 
 /// A non-finite hue trips an upstream `debug_assert`, so the boundary reports
 /// an error in debug-assertion builds; in release builds the parse currently
-/// succeeds with a folded garbage value. Either way the process must survive
-/// and the boundary error must not appear outside the panic path.
+/// succeeded with a folded garbage value. The repaired finite contract now pins
+/// the complete black RGB result in both profiles without profile-dependent credit.
 #[test]
 fn parse_css_ast_survives_non_finite_hue() {
-    for source in [
+    for (index, source) in [
         "a{color:hsl(1e40 0 0)}",
         "a{color:hsl(1111111111111111111111111111111111111111111111111111112 0 0)}",
         "a{color:hsl(calc(1e20 * 1e20) 0% 0%)}",
-    ] {
-        let result = parse_css_ast(source, &CssCompileOptions::default());
-        if cfg!(debug_assertions) {
-            assert!(
-                result.ast.is_none(),
-                "expected boundary error for {source:?}"
-            );
-            assert_eq!(result.errors, [PARSE_BOUNDARY_ERROR], "source {source:?}");
-        } else {
-            assert_eq!(
-                result.errors,
-                Vec::<vize_l0::String>::new(),
-                "source {source:?}"
-            );
-        }
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        successors::assert_role("parse_css_ast_survives_non_finite_hue", index, source);
     }
 }
 
@@ -239,8 +236,8 @@ fn parse_css_ast_keeps_accepting_resolvable_math_functions() {
 /// `hsl_to_rgb` `debug_assert` — a plain finite negative hue like
 /// `hsla(-842 ...)` normalizes fine, so the trigger hides in the mangled
 /// body. With the boundary in place the parse must survive in every profile;
-/// the exact result stays profile-dependent because the panic is an upstream
-/// `debug_assert`.
+/// the historical result was profile-dependent. The fixed engine now exposes
+/// the whole ordinary EOF diagnostic, distinct from the successful hue controls.
 #[test]
 fn parse_css_ast_survives_the_hue_assert_artifact() {
     const ARTIFACT: &str = "\n.t {\n  \n.comglsdhriight {\n  --code;\n  box-shadow: inset 0 \u{11}U\u{7}\u{0}\u{0}\u{0}.primeighlio\n\u{4}UUUUurlh255p\u{1}\u{0}\u{0}\u{0}\u{0}52:, .(255p\u{1}\u{0}\u{0}\u{0}\u{0}\u{0}2rad, 2primeighlig\n\u{4}UUUUUU hsla(-842 5 2\n\u{4}UUUUhsl, 2\n\u{4}UUUUUUU.primeighlig\n\u{4}UUUUUU hsla(-842 5 1\n\u{4}UUUUhsla(-555 52:, 2\n\u{4}UUUUUUUa(-555 52:.l {\n m:\u{4},\nU U2px(-3ody[da\u{0}\u{0}\u{0}B\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}a-them=\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}] .codsohighlight :deUUUUep(.codel\\\\\\fff 2\n\u{4}UUUUhsl, 2\n\u{4}UUUUUUU.primeighlig\n\u{4}UUUUUU hsla(-8555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555542 5 1\n\u{4}UUUUhsla(-555 52:, 2\n\u{4}UUUUprimeighlig\n\u{4}UUUUUU hsla(-842 5 2\n\u{4}UUUUhsl, 2\n\u{4}UUUUUUU.primeighlig\n\u{4}UUUUUU hsla(-842 5 1\n\u{4}UUUUhsla(-555 52:, 2\n\u{4}UUUUUUUa(-555 52:.l {\n m:\u{4},\nU U2px(-3ody[da\u{0}\u{0}\u{0}B\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}a-them=\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}] .codsohighlight :deUUUUep(.codel\\\\\\fff 2\n\u{4}UUUUhsl, 2\n\u{4}UUUUUUU.primeighlig\n\u{4}UUUUUU hsla(-842 5 1\n\u{4}UUUUhsla(-555 52:, 2\n\u{4}UUUUUUUa(-555 52:.l {\n m:\u{4},\nU U2px(-3ody[daUUUa(-555 52:.l {\n m:\u{4},\nU U2px(-3ody[da\u{0}\u{0}\u{0}B\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}a-them=\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}] .codsohighlight :deUUUUep(.codel\\\\\\fff\\ffyininset \u{11}p x0UU cd);\n  or: \u{0}\u{0}0ar(et--\n";
@@ -248,22 +245,18 @@ fn parse_css_ast_survives_the_hue_assert_artifact() {
     // fuzzer produced, so an accidental truncation cannot quietly turn this
     // into a weaker input that no longer reaches the assert.
     assert_eq!(ARTIFACT.len(), 1045, "fuzz artifact must stay verbatim");
-    let result = parse_css_ast(ARTIFACT, &CssCompileOptions::default());
-    if cfg!(debug_assertions) {
-        assert!(result.ast.is_none());
-        assert_eq!(result.errors, [PARSE_BOUNDARY_ERROR]);
-    } else {
-        assert!(
-            !result
-                .errors
-                .contains(&vize_l0::String::from(PARSE_BOUNDARY_ERROR))
-        );
-    }
+    successors::assert_role(
+        "parse_css_ast_survives_the_hue_assert_artifact",
+        0,
+        ARTIFACT,
+    );
 
     // A plain finite negative hue is not the crasher: hue normalization
     // handles it, so this must keep parsing cleanly in every profile.
     let negative_hue = "a{color:hsla(-842 5 2 / 1)}";
-    let negative_hue_result = parse_css_ast(negative_hue, &CssCompileOptions::default());
-    assert!(negative_hue_result.ast.is_some());
-    assert_eq!(negative_hue_result.errors, Vec::<vize_l0::String>::new());
+    successors::assert_role(
+        "parse_css_ast_survives_the_hue_assert_artifact",
+        1,
+        negative_hue,
+    );
 }

@@ -4,7 +4,17 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
+import "./css-engine-finite-custody.ts";
+
 const root = process.cwd();
+const preserved: Record<string, string> = {
+  "crates/vize_atelier_sfc/tests/css_engine_panic_boundary.rs":
+    "tests/_fixtures/differential/css-engine-vendor-exit/finite-before/css_engine_panic_boundary.rs.txt",
+  "crates/vize_atelier_sfc/tests/css_fuzz_recovery.rs":
+    "tests/_fixtures/differential/css-engine-vendor-exit/finite-before/css_fuzz_recovery.rs.txt",
+  "crates/vize_atelier_sfc/examples/css_engine_recovery.rs":
+    "tests/_fixtures/differential/css-engine-vendor-exit/finite-before/css_engine_recovery.rs.txt",
+};
 const sha256 = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 const modified: Record<string, string | null> = {
   "lightningcss/Cargo.toml": null,
@@ -83,7 +93,7 @@ const originals = JSON.parse(
 );
 assert.equal(originals.files.length, 20);
 for (const row of originals.files) {
-  const bytes = fs.readFileSync(path.join(root, row.path));
+  const bytes = fs.readFileSync(path.join(root, preserved[row.path] ?? row.path));
   assert.equal(bytes.length, row.bytes, row.path);
   assert.equal(sha256(bytes), row.sha256, row.path);
 }
@@ -207,7 +217,14 @@ for (const [filename, checksum] of [
   ],
 ]) {
   assert.equal(
-    sha256(fs.readFileSync(path.join(root, "crates/vize_atelier_sfc", filename))),
+    sha256(
+      fs.readFileSync(
+        path.join(
+          root,
+          preserved[`crates/vize_atelier_sfc/${filename}`] ?? `crates/vize_atelier_sfc/${filename}`,
+        ),
+      ),
+    ),
     checksum,
   );
 }
