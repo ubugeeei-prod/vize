@@ -36,9 +36,10 @@ export function parseTrace(pid, text) {
     }
     const record = { pid, time: pending?.time ?? time, end: time, line: index + 1, call };
     pending = undefined;
-    const io = /^(read|write|readv|writev)\((\d+)(<[^>]*>)?,\s*(.*)\)\s+=\s+(\d+)(?:\s|$)/.exec(
-      call,
-    );
+    const io =
+      /^(read|write|readv|writev)\((\d+)(<[^<>]*(?:<char \d+:\d+>)?>)?,\s*(.*)\)\s+=\s+(\d+)(?:\s|$)/.exec(
+        call,
+      );
     if (/^(?:read|write|readv|writev)\(/.test(call) && /\)\s+=\s+\d+(?:\s|$)/.test(call)) {
       assert.ok(io, "unsupported positive I/O syntax; completeness refused");
     }
@@ -86,12 +87,25 @@ export function framedMessages(bytes) {
   return messages;
 }
 
+// Keep the raw annotation in every event; -xx also hex-encodes FD names.
+export function pipeInode(target) {
+  const literal = /^<pipe:\[(\d+)\]>$/.exec(target);
+  if (literal) return literal[1];
+  const escaped = /^<((?:\\x[0-9a-f]{2})+)>$/i.exec(target);
+  return escaped
+    ? /^pipe:\[(\d+)\]$/.exec(quotedBytes(escaped[1]).toString("latin1"))?.[1]
+    : undefined;
+}
+
+export function pipeInodes(call) {
+  return [...call.matchAll(/<[^<>]*>/g)].map((match) => pipeInode(match[0])).filter(Boolean);
+}
+
 export function collectPipes(records) {
   const pipes = new Map();
   for (const record of records.filter((item) => item.io)) {
-    const match = /^<pipe:\[(\d+)\]>$/.exec(record.io.target);
-    if (!match) continue;
-    const key = match[1];
+    const key = pipeInode(record.io.target);
+    if (!key) continue;
     if (!pipes.has(key)) pipes.set(key, { read: [], write: [] });
     pipes.get(key)[record.io.direction].push(record);
   }
@@ -132,7 +146,7 @@ export function nativeSessions(records, provider) {
   return native;
 }
 
-export function processClosure(records, nextestPaths, binary, sessions) {
+export function processClosure(records, nextestPaths, binary, sessions, selectedTest) {
   const pids = new Set(records.map((record) => record.pid));
   const parents = new Map();
   for (const record of records) {
@@ -162,11 +176,48 @@ export function processClosure(records, nextestPaths, binary, sessions) {
   for (const pid of pids)
     assert.ok(descends({ pid, time: Infinity }, { pid: roots[0], time: -Infinity }));
   const nextest = records.filter((record) => nextestPaths.includes(record.exec?.[0]));
-  const tests = records.filter((record) => record.exec?.[0] === binary);
+  const executions = records.filter((record) => record.exec?.[0] === binary);
+  const listingArgs = [
+    ["--list", "--format", "terse"],
+    ["--list", "--format", "terse", "--ignored"],
+  ];
+  const listings = executions.filter((record) => record.exec.slice(2).includes("--list"));
+  if (selectedTest || listings.length) {
+    assert.equal(listings.length, 2, "exact two archive listing executions required");
+    for (const args of listingArgs)
+      assert.equal(
+        listings.filter(
+          (record) => JSON.stringify(record.exec) === JSON.stringify([binary, binary, ...args]),
+        ).length,
+        1,
+        "one exact archive listing argv required",
+      );
+  }
+  const tests = executions.filter((record) => !listings.includes(record));
   assert.equal(nextest.length, 1, "one pinned nextest execution required");
   assert.equal(tests.length, 1, "one original archive test binary execution required");
-  assert.ok(descends(tests[0], nextest[0]), "test does not descend from pinned nextest");
+  if (selectedTest)
+    assert.deepEqual(
+      tests[0].exec,
+      [binary, binary, "--exact", selectedTest, "--nocapture"],
+      "original selected test argv required",
+    );
+  for (const event of [...listings, tests[0]])
+    assert.ok(descends(event, nextest[0]), "test does not descend from pinned nextest");
+  for (const listing of listings)
+    assert.ok(
+      records.some(
+        (record) => record.pid === listing.pid && record.call === "+++ exited with 0 +++",
+      ),
+      "archive listing did not exit successfully",
+    );
   for (const session of sessions)
     assert.ok(descends(session, tests[0]), "native session does not descend from original test");
-  return { root: roots[0], nextest: nextest[0].pid, test: tests[0].pid, parents: [...parents] };
+  return {
+    root: roots[0],
+    nextest: nextest[0].pid,
+    test: tests[0].pid,
+    listings: listings.map(({ pid, exec }) => ({ pid, argv: exec })),
+    parents: [...parents],
+  };
 }

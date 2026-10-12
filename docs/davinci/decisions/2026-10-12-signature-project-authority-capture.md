@@ -125,3 +125,36 @@ identity and complete editor/API root state. Preserve unsaved authored
 buffers and independent ownership; clearing them to the disk version is
 not a valid repair. A source fix needs its own complete finite custody
 successor and genuine original native qualification before queue admission.
+
+## Single retained observation and offline interpretation
+
+The approved single label observation ran at driver
+`0dba8eeb72f8a904b5b68de1c40b5599d5160889`, Actions run
+[38193883416](https://github.com/ubugeeei-prod/vize/actions/runs/38193883416),
+job 114632238453. The untouched archived case failed its original second
+signature assertion at tests.rs:211:14 (0.359 instrumented seconds, exit
+100). Its sole JUnit case has one failure and no skips. `context canceled`
+in stderr is retained without treating it as a cause diagnosis.
+
+Raw artifact 11722991118 is 91,991,916 bytes, ZIP SHA-256
+`ea8c169ff88c2eb428bb05f4f9347a133d69baab5624aebde2709cce1a89d965`;
+all 292 entries pass CRC and their whole bodies are retained. The original
+integrity receipt is false: a Linux nested `/dev/urandom<char 1:9>` FD
+annotation was not recognized. A separately reviewed offline decoder adds
+only that finite nested character-device form, decodes exact `-xx` hex pipe
+names while preserving every raw target, and distinguishes the two exact
+nextest listing invocations from the sole exact-case execution. Neither
+listing may own a native session. Unknown listing argv, duplicate cases,
+failed listings, foreign native owners and invalid FD annotations refuse.
+The original complete control assertions remain; its synthetic test exec
+uses the same exact-case argv as the actual archive. Nineteen pure parser
+and loader laws pass without executing any native process or test archive.
+
+The first corrected offline interpretation still refuses completeness:
+retained strace.7838 ends with `???( <unfinished ...>` followed by exit 0,
+without a resumed syscall. That unknown observer boundary is preserved,
+never dropped or promoted into complete evidence. Offline outputs are
+separate from all 292 original files, the original driver, failed job,
+JUnit and integrity receipt. No second observation or additional RPC was
+performed. Partial source/root interpretation must name the missing
+boundary; it cannot qualify production or erase the original failures.

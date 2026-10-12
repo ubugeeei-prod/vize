@@ -284,16 +284,21 @@ void test("complete passive observation keeps original FAIL and rejects missing 
     const response = frame('{"jsonrpc":"2.0","id":1,"result":null}');
     put(
       "strace.9",
-      `0.8 execve("${hex(nextest)}", ["${hex(nextest)}"], 0x1 /* 20 vars */) = 0\n0.9 clone(flags=SIGCHLD) = 10\n2.0 +++ exited with 100 +++\n`,
+      `0.8 execve("${hex(nextest)}", ["${hex(nextest)}"], 0x1 /* 20 vars */) = 0\n0.9 clone(flags=SIGCHLD) = 10\n0.9 clone(flags=SIGCHLD) = 11\n0.9 clone(flags=SIGCHLD) = 12\n2.0 +++ exited with 100 +++\n`,
     );
     put(
       "strace.10",
-      `1.0 execve("${hex(binary)}", ["${hex(binary)}"], 0x1 /* 20 vars */) = 0\n1.01 pipe2([3<pipe:[42]>, 5<pipe:[42]>], O_CLOEXEC) = 0\n1.02 pipe2([4<pipe:[43]>, 6<pipe:[43]>], O_CLOEXEC) = 0\n1.1 clone(flags=SIGCHLD) = 20\n1.2 write(3<pipe:[42]>, "${hex(request)}", ${request.length}) = ${request.length}\n1.5 read(4<pipe:[43]>, "${hex(response)}", 4096) = ${response.length}\n2.0 +++ exited with 101 +++\n`,
+      `1.0 execve("${hex(binary)}", ["${hex(binary)}", "${hex("--exact")}", "${hex(originalTest)}", "${hex("--nocapture")}"], 0x1 /* 20 vars */) = 0\n1.01 pipe2([3<pipe:[42]>, 5<pipe:[42]>], O_CLOEXEC) = 0\n1.02 pipe2([4<pipe:[43]>, 6<pipe:[43]>], O_CLOEXEC) = 0\n1.1 clone(flags=SIGCHLD) = 20\n1.2 write(3<pipe:[42]>, "${hex(request)}", ${request.length}) = ${request.length}\n1.5 read(4<pipe:[43]>, "${hex(response)}", 4096) = ${response.length}\n2.0 +++ exited with 101 +++\n`,
     );
     put(
       "strace.20",
       `1.11 execve("${hex(provider)}", ["${hex(provider)}", "${hex("--lsp")}"], 0x1 /* 20 vars */) = 0\n1.3 read(0<pipe:[42]>, "${hex(request)}", 4096) = ${request.length}\n1.4 write(1<pipe:[43]>, "${hex(response)}", ${response.length}) = ${response.length}\n2.0 +++ exited with 0 +++\n`,
     );
+    for (const pid of [11, 12])
+      put(
+        `strace.${pid}`,
+        `0.91 execve("${hex(binary)}", ["${hex(binary)}", "${hex("--list")}", "${hex("--format")}", "${hex("terse")}"${pid === 12 ? `, "${hex("--ignored")}"` : ""}], 0x1 /* 20 vars */) = 0\n0.99 +++ exited with 0 +++\n`,
+      );
     const result = validateCapture(directory);
     assert.equal(result.captureComplete, true);
     assert.equal(result.instrumentedTestPassed, false);

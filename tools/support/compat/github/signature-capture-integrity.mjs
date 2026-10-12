@@ -15,6 +15,8 @@ import {
   framedMessages,
   nativeSessions,
   parseTrace,
+  pipeInode,
+  pipeInodes,
   processClosure,
 } from "./signature-strace.mjs";
 
@@ -149,6 +151,7 @@ export function validateCapture(directory) {
     [runtime.nextestCommand, runtime.nextest],
     manifest.binary,
     records.filter((record) => record.exec?.[0] === manifest.provider),
+    originalTest,
   );
   const sessions = nativeSessions(records, manifest.provider);
   const pipes = collectPipes(records);
@@ -175,7 +178,7 @@ export function validateCapture(directory) {
       const keys = new Set(
         records
           .filter((record) => threads.has(record.pid) && record.io?.fd === fd)
-          .map((record) => /^<pipe:\[(\d+)\]>$/.exec(record.io.target)?.[1]),
+          .map((record) => pipeInode(record.io.target)),
       );
       assert.equal(keys.size, 1, "one observed native stdio pipe required per fd");
       const key = [...keys][0];
@@ -184,7 +187,7 @@ export function validateCapture(directory) {
         (record) =>
           /^pipe2?\(/.test(record.call) &&
           /\)\s+=\s+0$/.test(record.call) &&
-          record.call.includes(`pipe:[${key}]`),
+          pipeInodes(record.call).includes(key),
       );
       assert.equal(
         creations.length,
