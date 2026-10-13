@@ -61,3 +61,24 @@ remain untouched. These original tests retain every assertion and refusal;
 no individual clause is disabled or rewritten. The new source admission
 provides no native, performance, original-400 or published-consumer credit.
 Actions must independently execute the actual positive-read native corpora.
+
+The native lint Stack composition retains #8805's complete incoming 323-row
+physical source family and both original historical frames. Only four owned
+positive-read production rows and the two inserted inventory lines change.
+The frozen cumulative receipt includes complete parent, own and composed
+manifest bodies, exact production bodies, reversible whole-parent edits and
+both coupled checksum inverses. Historical receipts do not reassert obsolete
+live checkpoints; the original five physical/refusal laws remain responsible
+for every live body. All five incoming inheritance documents and explain
+snapshots remain byte-exact, and all 415 Star/JavaScript counterpart bodies
+remain unchanged after this Stack composition.
+
+Before making a private historical snapshot, the actual source checkout
+prepares fourteen literal commits derived from both immutable original
+component frames and the Star/JavaScript sources. It uses the unchanged
+owned-Actions fetch boundary. A complete current-only private repository,
+even with forged Actions variables and an official origin, refuses missing
+history without changing HEAD, shallow state, object counts or FETCH_HEAD.
+Private snapshots never obtain independent fetch authority. The shared
+snapshot utility is pinned by actual committed bytes; no lock or generic
+history-admission extension is required for this lane.
