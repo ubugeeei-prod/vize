@@ -33,13 +33,14 @@ test("hosted operator keeps user authority on protected main and does not deadlo
   assert.equal(invocation.env.VIZE_RELEASE_OPERATOR_TIMEOUT_SECONDS, "14400");
   assert.equal(
     invocation.env.VIZE_RELEASE_EXPECTED_CUT_SHA,
-    "${{ inputs.operation == 'start' && github.sha || '' }}",
+    "${{ (inputs.operation == 'start' || inputs.operation == 'patch') && github.sha || '' }}",
   );
   assert.equal(invocation.env.GITHUB_ACTOR, undefined);
   assert.equal(invocation.env.GITHUB_TRIGGERING_ACTOR, undefined);
   assert.equal(invocation.env.GITHUB_SHA, undefined);
   assert.deepEqual(workflow.on.workflow_dispatch.inputs.operation.options, [
     "start",
+    "patch",
     "resume",
     "retire",
   ]);
@@ -59,7 +60,7 @@ test("hosted operator keeps user authority on protected main and does not deadlo
     operator.steps.find(
       (step: { uses?: string }) => step.uses === "./.github/actions/setup-moonbit",
     ).if,
-    "${{ inputs.operation == 'start' || inputs.operation == 'resume' }}",
+    "${{ inputs.operation == 'start' || inputs.operation == 'patch' || inputs.operation == 'resume' }}",
   );
   assert.equal(dependencies.env.RELEASE_OPERATION, "${{ inputs.operation }}");
   assert.ok(dependencies.run.startsWith("vp install --frozen-lockfile\n"));
@@ -227,6 +228,7 @@ test("hosted entry invokes the unchanged public protocol only for its actual mai
         GITHUB_REPOSITORY: "ubugeeei-prod/vize",
         RELEASE_OPERATION: operation,
         RELEASE_SOURCE_PR: source,
+        RELEASE_SOURCE_CUT: "",
         RELEASE_SOURCE_HEAD: retirement.head ?? "",
         RELEASE_SOURCE_TAG: retirement.tag ?? "",
         RELEASE_RUN: retirement.run ?? "",

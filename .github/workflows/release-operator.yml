@@ -4,11 +4,16 @@ on:
   workflow_dispatch:
     inputs:
       operation:
-        description: Start, resume, or retire an immutable minor cut
+        description: Start a minor, prepare a reviewed stable patch, resume, or retire an immutable cut
         type: choice
-        options: [start, resume, retire]
+        options: [start, patch, resume, retire]
         default: start
         required: true
+      source_cut:
+        description: Exact reviewed stable C; required only for patch
+        type: string
+        default: ""
+        required: false
       source_pr:
         description: Original source PR number; required for resume and retire
         type: string
@@ -69,13 +74,13 @@ jobs:
         with: { toolchain: "1.99.0" }
       - uses: ./.github/actions/setup-rust-script
       - uses: ./.github/actions/setup-moonbit
-        if: ${{ inputs.operation == 'start' || inputs.operation == 'resume' }}
+        if: ${{ inputs.operation == 'start' || inputs.operation == 'patch' || inputs.operation == 'resume' }}
 
       - name: Install the frozen graph and refresh the source preparation registry
         env: { RELEASE_OPERATION: "${{ inputs.operation }}" }
         run: |
           vp install --frozen-lockfile
-          if [[ "$RELEASE_OPERATION" == "start" || "$RELEASE_OPERATION" == "resume" ]]; then
+          if [[ "$RELEASE_OPERATION" == "start" || "$RELEASE_OPERATION" == "patch" || "$RELEASE_OPERATION" == "resume" ]]; then
             moon update
           fi
 
@@ -84,13 +89,14 @@ jobs:
           GH_TOKEN: ${{ secrets.RELEASE_OPERATOR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.RELEASE_OPERATOR_TOKEN }}
           RELEASE_OPERATION: ${{ inputs.operation }}
+          RELEASE_SOURCE_CUT: ${{ inputs.source_cut }}
           RELEASE_SOURCE_PR: ${{ inputs.source_pr }}
           RELEASE_SOURCE_HEAD: ${{ inputs.source_head }}
           RELEASE_SOURCE_TAG: ${{ inputs.source_tag }}
           RELEASE_RUN: ${{ inputs.release_run }}
           RELEASE_ORIGINAL_OPERATOR_RUN: ${{ inputs.operator_run }}
           VIZE_RELEASE_OPERATOR_TIMEOUT_SECONDS: "14400"
-          VIZE_RELEASE_EXPECTED_CUT_SHA: ${{ inputs.operation == 'start' && github.sha || '' }}
+          VIZE_RELEASE_EXPECTED_CUT_SHA: ${{ (inputs.operation == 'start' || inputs.operation == 'patch') && github.sha || '' }}
         run: |
           set -euo pipefail
           test -n "$GH_TOKEN" || { echo "::error::Missing protected maintainer user credential"; exit 1; }
@@ -105,11 +111,19 @@ jobs:
           git config user.email "$id+$login@users.noreply.github.com"
           gh auth setup-git --hostname github.com
           case "$RELEASE_OPERATION" in
-            start|resume)
+            start|patch|resume)
               [[ -z "$RELEASE_SOURCE_HEAD" && -z "$RELEASE_SOURCE_TAG" && -z "$RELEASE_RUN" && -z "$RELEASE_ORIGINAL_OPERATOR_RUN" ]] || { echo "::error::Only retire accepts source head, tag, Release run and original operator run inputs"; exit 1; }
               ;;
           esac
+          if [[ "$RELEASE_OPERATION" != "patch" && -n "$RELEASE_SOURCE_CUT" ]]; then
+            echo "::error::Only patch accepts an explicit stable cut"; exit 1
+          fi
           case "$RELEASE_OPERATION" in
+            patch)
+              test -z "$RELEASE_SOURCE_PR" || { echo "::error::A stable patch cannot reuse a source PR input"; exit 1; }
+              [[ "$RELEASE_SOURCE_CUT" =~ ^[0-9a-f]{40}$ && "$GITHUB_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::Patch requires exact reviewed policy and stable C identities"; exit 1; }
+              rust-script tools/commands/release/pr.rs start-stable "$GITHUB_SHA" "$RELEASE_SOURCE_CUT"
+              ;;
             start)
               test -z "$RELEASE_SOURCE_PR" || { echo "::error::A fresh cut cannot reuse a source PR input"; exit 1; }
               vp run release minor -y --pin

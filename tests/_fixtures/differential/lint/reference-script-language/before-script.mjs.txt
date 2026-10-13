@@ -1,0 +1,47 @@
+
+import { createRequire } from "node:module";
+import { readFileSync } from "node:fs";
+const input = JSON.parse(readFileSync(0, "utf8"));
+const requireFromBench = createRequire(input.benchPackageJson);
+const ESLint = requireFromBench("eslint").ESLint;
+const plugin = requireFromBench("eslint-plugin-vue");
+const vueParser = requireFromBench("vue-eslint-parser");
+const scriptParser = requireFromBench("@typescript-eslint/parser");
+const manifest = requireFromBench("eslint-plugin-vue/package.json");
+const eslint = new ESLint({
+  cwd: input.cwd,
+  passOnNoPatterns: input.files.length === 0,
+  overrideConfigFile: true,
+  overrideConfig: [{
+    files: ["**/*.vue"],
+    languageOptions: {
+      parser: vueParser,
+      parserOptions: {
+        parser: scriptParser,
+        ecmaVersion: "latest",
+        sourceType: "module",
+        ecmaFeatures: { jsx: true },
+        extraFileExtensions: [".vue"]
+      }
+    },
+    linterOptions: { reportUnusedDisableDirectives: "off" },
+    plugins: { vue: plugin }, processor: "vue/vue",
+    rules: input.rules
+  }],
+  errorOnUnmatchedPattern: false
+});
+if (input.files.length === 0) {
+  await eslint.calculateConfigForFile("__vize_empty_vue_config__.vue");
+}
+const results = await eslint.lintFiles(input.files);
+const enabled = new Set(Object.keys(input.rules));
+let droppedConfigMessageCount = 0;
+const retained = results.map((result) => ({
+  ...result,
+  messages: result.messages.filter((message) => {
+    if (message.ruleId == null || enabled.has(message.ruleId)) return true;
+    droppedConfigMessageCount += 1;
+    return false;
+  })
+}));
+process.stdout.write(JSON.stringify({ version: manifest.version, results: retained, droppedConfigMessageCount }));

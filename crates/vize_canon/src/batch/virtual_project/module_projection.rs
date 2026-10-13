@@ -26,8 +26,8 @@ impl VirtualProject {
             self.finalize_editor_imports();
             return;
         }
-        self.finalize_declaration_imports();
-        if !self.jsx_typecheck {
+        if !self.jsx_typecheck && !self.virtual_files.values().any(is_denied_javascript_sfc) {
+            self.finalize_declaration_imports();
             return;
         }
 
@@ -52,19 +52,26 @@ impl VirtualProject {
                     )
                     .0;
                 let resolver = |specifier: &str, mode| {
-                    // Native Node ESM still owns invalid extensionless imports.
-                    // Projection must not turn an invalid authored edge valid.
-                    if requires_explicit_extension(specifier, mode, &context) {
-                        return None;
-                    }
                     let path = super::dependency_scan::resolve_dependency(
                         specifier,
                         file.original_path.parent()?,
                         &self.project_root,
                         &aliases,
-                    )?;
-                    let target = self
-                        .find_by_original(&vize_carton::path::canonicalize_non_verbatim(&path))?;
+                    );
+                    let target = path.as_ref().and_then(|path| {
+                        self.find_by_original(&vize_carton::path::canonicalize_non_verbatim(path))
+                    });
+                    if target.is_some_and(is_denied_javascript_sfc) {
+                        // The project owns this edge through its authored declaration;
+                        // a generated TypeScript projection cannot admit a denied JS module.
+                        return Some(specifier.to_owned());
+                    }
+                    // Native Node ESM still owns invalid extensionless imports.
+                    // Projection must not turn an invalid authored edge valid.
+                    if requires_explicit_extension(specifier, mode, &context) {
+                        return None;
+                    }
+                    let target = target?;
                     is_lowered_jsx(target)
                         .then(|| target.virtual_path.to_string_lossy().replace('\\', "/"))
                 };
@@ -207,6 +214,24 @@ impl VirtualProject {
             }
         }
     }
+}
+
+fn is_denied_javascript_sfc(file: &VirtualFile) -> bool {
+    file.source_map.sfc_map.is_some()
+        && file
+            .original_path
+            .extension()
+            .is_some_and(|extension| extension == "vue")
+        && is_javascript_projection_path(&file.virtual_path)
+}
+
+pub(super) fn is_javascript_projection_path(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| {
+            name.ends_with(".vue.__vize_javascript__.ts")
+                || name.ends_with(".vue.__vize_javascript__.tsx")
+        })
 }
 
 fn is_lowered_jsx(file: &VirtualFile) -> bool {

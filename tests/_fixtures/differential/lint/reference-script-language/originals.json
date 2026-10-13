@@ -1,0 +1,687 @@
+{
+  "run": "38331707741",
+  "head": "2817a0aa13518dd46c16bc8bf56ac831f68c24dc",
+  "producerSha256": "b5134e909d0ea3af2282445234b8588051f9464768fe293f86186b8f77d81320",
+  "beforeScriptSha256": "1d6f5c3c6869b3e1f9d4c2c1273dd387d0ebf5a6f498756b2d55d4654a00a809",
+  "provenance": "Whole pinned source replay with exact benchmark parser pins; original Matrix retained parse-error counts but discarded fatal bodies.",
+  "inputs": [
+    {
+      "project": "gui-for-singbox",
+      "repository": "https://github.com/GUI-for-Cores/GUI.for.SingBox",
+      "revision": "1be4816dea1e8793d8e08ae4f8f016c28101672d",
+      "license": {
+        "spdx": "GPL-3.0-only",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "path": "frontend/src/components/CustomAction/index.vue",
+      "source": "<script lang=\"ts\" setup>\nimport { computed, h, isVNode, ref, resolveComponent, watch } from 'vue'\n\ninterface Props {\n  actions: (App.CustomAction | App.CustomActionFn)[]\n}\n\nconst props = defineProps<Props>()\n\nconst resolvedActionMap = ref(new Map<string, App.CustomAction>())\nconst api: App.CustomActionApi = {\n  h: (type: any, ...args: any[]) => h(resolveComponent(type), ...args),\n  ref,\n}\n\nconst computedActions = computed(() => Array.from(resolvedActionMap.value.values()))\n\nconst resolveDynamicField = <T>(field: T): T => (typeof field === 'function' ? field(api) : field)\n\nconst renderCustomActionSlot = (slot: App.CustomAction['componentSlots']) => {\n  const resolved = resolveDynamicField(slot ?? {})\n  return isVNode(resolved) ? resolved : h('div', resolved)\n}\n\nwatch(\n  () => props.actions,\n  (actions) => {\n    const newMap = new Map<string, App.CustomAction>()\n    for (const action of actions) {\n      const id = action.id!\n      if (resolvedActionMap.value.has(id)) {\n        newMap.set(id, resolvedActionMap.value.get(id)!)\n      } else {\n        newMap.set(id, typeof action === 'function' ? action(api) : action)\n      }\n    }\n    resolvedActionMap.value = newMap\n  },\n  { immediate: true, deep: true },\n)\n</script>\n<template>\n  <div class=\"flex items-center gap-8 mx-8 overflow-hidden\">\n    <component\n      :is=\"action.component\"\n      v-for=\"action in computedActions\"\n      :key=\"action.id\"\n      v-memo=\"action.id\"\n      v-bind=\"resolveDynamicField(action.componentProps)\"\n    >\n      <template\n        v-for=\"[name, slot] in Object.entries(resolveDynamicField(action.componentSlots ?? {}))\"\n        :key=\"name\"\n        #[name]\n      >\n        <component :is=\"renderCustomActionSlot(slot)\" />\n      </template>\n    </component>\n  </div>\n</template>\n",
+      "sourceSha256": "39bb4ac6006b3acfb0fc5f196fbdb925712f719cf2fba06ba6a2ee78ca734f3e",
+      "before": {
+        "version": "10.9.2",
+        "results": [
+          {
+            "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-matrix-eslint-script-language-20261013/tests/_fixtures/_git/gui-for-singbox/frontend/src/components/CustomAction/index.vue",
+            "messages": [
+              {
+                "ruleId": null,
+                "fatal": true,
+                "severity": 2,
+                "message": "Parsing error: Unexpected token. Did you mean `{'>'}` or `&gt;`?",
+                "line": 18,
+                "column": 46
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 1,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<script lang=\"ts\" setup>\nimport { computed, h, isVNode, ref, resolveComponent, watch } from 'vue'\n\ninterface Props {\n  actions: (App.CustomAction | App.CustomActionFn)[]\n}\n\nconst props = defineProps<Props>()\n\nconst resolvedActionMap = ref(new Map<string, App.CustomAction>())\nconst api: App.CustomActionApi = {\n  h: (type: any, ...args: any[]) => h(resolveComponent(type), ...args),\n  ref,\n}\n\nconst computedActions = computed(() => Array.from(resolvedActionMap.value.values()))\n\nconst resolveDynamicField = <T>(field: T): T => (typeof field === 'function' ? field(api) : field)\n\nconst renderCustomActionSlot = (slot: App.CustomAction['componentSlots']) => {\n  const resolved = resolveDynamicField(slot ?? {})\n  return isVNode(resolved) ? resolved : h('div', resolved)\n}\n\nwatch(\n  () => props.actions,\n  (actions) => {\n    const newMap = new Map<string, App.CustomAction>()\n    for (const action of actions) {\n      const id = action.id!\n      if (resolvedActionMap.value.has(id)) {\n        newMap.set(id, resolvedActionMap.value.get(id)!)\n      } else {\n        newMap.set(id, typeof action === 'function' ? action(api) : action)\n      }\n    }\n    resolvedActionMap.value = newMap\n  },\n  { immediate: true, deep: true },\n)\n</script>\n<template>\n  <div class=\"flex items-center gap-8 mx-8 overflow-hidden\">\n    <component\n      :is=\"action.component\"\n      v-for=\"action in computedActions\"\n      :key=\"action.id\"\n      v-memo=\"action.id\"\n      v-bind=\"resolveDynamicField(action.componentProps)\"\n    >\n      <template\n        v-for=\"[name, slot] in Object.entries(resolveDynamicField(action.componentSlots ?? {}))\"\n        :key=\"name\"\n        #[name]\n      >\n        <component :is=\"renderCustomActionSlot(slot)\" />\n      </template>\n    </component>\n  </div>\n</template>\n",
+            "usedDeprecatedRules": [
+              {
+                "ruleId": "vue/no-v-for-template-key",
+                "replacedBy": []
+              },
+              {
+                "ruleId": "vue/no-v-model-argument",
+                "replacedBy": []
+              },
+              {
+                "ruleId": "vue/valid-model-definition",
+                "replacedBy": []
+              },
+              {
+                "ruleId": "vue/valid-v-bind-sync",
+                "replacedBy": []
+              }
+            ]
+          }
+        ],
+        "droppedConfigMessageCount": 0
+      },
+      "expectedRepaired": true
+    },
+    {
+      "project": "hoppscotch",
+      "repository": "https://github.com/hoppscotch/hoppscotch",
+      "revision": "1acb8a3a7581e4db32ba0d529170c4669a2e1053",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "path": "packages/hoppscotch-sh-admin/src/components/settings/OAuthProviderConfigurations.vue",
+      "source": "<template>\n  <div v-if=\"workingConfigs\" class=\"grid md:grid-cols-3 gap-8 md:gap-4 pt-8\">\n    <div class=\"md:col-span-1\">\n      <h3 class=\"heading\">{{ t('configs.auth_providers.title') }}</h3>\n      <p class=\"my-1 text-secondaryLight\">\n        {{ t('configs.auth_providers.description') }}\n      </p>\n    </div>\n\n    <div class=\"space-y-8 sm:px-8 md:col-span-2\">\n      <section>\n        <h4 class=\"font-semibold text-secondaryDark\">\n          {{ t('configs.auth_providers.title') }}\n        </h4>\n\n        <div\n          v-for=\"provider in workingConfigs.providers\"\n          class=\"space-y-4 py-4\"\n        >\n          <div class=\"flex justify-between\">\n            <HoppSmartToggle\n              :on=\"provider.enabled\"\n              @change=\"provider.enabled = !provider.enabled\"\n            >\n              {{ capitalize(provider.name) }}\n            </HoppSmartToggle>\n            <HoppButtonSecondary\n              v-tippy=\"{ theme: 'tooltip', allowHTML: true }\"\n              to=\"https://docs.hoppscotch.io/documentation/self-host/community-edition/prerequisites#oauth\"\n              blank\n              :title=\"t('support.documentation')\"\n              :icon=\"IconCircleHelp\"\n              class=\"rounded hover:bg-primaryDark focus-visible:bg-primaryDark\"\n            />\n          </div>\n\n          <div v-if=\"provider.enabled\" class=\"ml-12\">\n            <div\n              v-for=\"field in providerConfigFields\"\n              :key=\"field.key\"\n              class=\"mt-5\"\n            >\n              <template\n                v-if=\"field.applicableProviders.includes(provider.name)\"\n              >\n                <label>{{ makeReadableKey(field.name, true) }}</label>\n                <span class=\"flex max-w-lg\">\n                  <HoppSmartInput\n                    v-model=\"provider.fields[field.key as keyof typeof provider['fields']]\"\n                    :type=\"\n                      isMasked(provider.name, field.key) ? 'password' : 'text'\n                    \"\n                    :autofocus=\"false\"\n                    class=\"!my-2 !bg-primaryLight flex-1 border border-divider rounded\"\n                    :class=\"{\n                      '!border-red-500': isConfigFieldErrored(\n                        provider.name,\n                        field.key,\n                      ),\n                    }\"\n                    input-styles=\"!border-0\"\n                  >\n                    <template #button>\n                      <HoppButtonSecondary\n                        :icon=\"\n                          isMasked(provider.name, field.key)\n                            ? IconEye\n                            : IconEyeOff\n                        \"\n                        class=\"bg-primaryLight rounded\"\n                        @click=\"toggleMask(provider.name, field.key)\"\n                      />\n                    </template>\n                  </HoppSmartInput>\n                </span>\n              </template>\n            </div>\n          </div>\n        </div>\n      </section>\n    </div>\n  </div>\n</template>\n\n<script setup lang=\"ts\">\nimport { useVModel } from '@vueuse/core';\nimport { reactive } from 'vue';\nimport { useI18n } from '~/composables/i18n';\nimport {\n  ServerConfigs,\n  SsoAuthProviders,\n  useConfigValidation,\n} from '~/helpers/configs';\nimport { makeReadableKey } from '~/helpers/utils/readableKey';\nimport IconCircleHelp from '~icons/lucide/circle-help';\nimport IconEye from '~icons/lucide/eye';\nimport IconEyeOff from '~icons/lucide/eye-off';\n\nconst t = useI18n();\n\nconst { isConfigFieldErrored } = useConfigValidation();\n\nconst props = defineProps<{\n  config: ServerConfigs;\n}>();\n\nconst emit = defineEmits<{\n  (e: 'update:config', v: ServerConfigs): void;\n}>();\n\nconst workingConfigs = useVModel(props, 'config', emit);\n\n// Capitalize first letter of a string\nconst capitalize = (text: string) =>\n  text.charAt(0).toUpperCase() + text.slice(1);\n\n// Union type for all possible field keys\ntype ProviderFieldKeys = keyof ProviderFields;\n\ntype ProviderFields = {\n  [Field in keyof ServerConfigs['providers'][SsoAuthProviders]['fields']]: boolean;\n} & Partial<{ tenant: boolean }>;\n\ntype ProviderFieldMetadata = {\n  name: string;\n  key: ProviderFieldKeys;\n  applicableProviders: SsoAuthProviders[];\n};\n\nconst providerConfigFields = <ProviderFieldMetadata[]>[\n  {\n    name: t('configs.auth_providers.client_id'),\n    key: 'client_id',\n    applicableProviders: ['google', 'github', 'microsoft'],\n  },\n  {\n    name: t('configs.auth_providers.client_secret'),\n    key: 'client_secret',\n    applicableProviders: ['google', 'github', 'microsoft'],\n  },\n  {\n    name: t('configs.auth_providers.callback_url'),\n    key: 'callback_url',\n    applicableProviders: ['google', 'github', 'microsoft'],\n  },\n  {\n    name: t('configs.auth_providers.scope'),\n    key: 'scope',\n    applicableProviders: ['google', 'github', 'microsoft'],\n  },\n  {\n    name: t('configs.auth_providers.tenant'),\n    key: 'tenant',\n    applicableProviders: ['microsoft'],\n  },\n];\n\nconst maskState = reactive<Record<SsoAuthProviders, ProviderFields>>({\n  google: {\n    client_id: true,\n    client_secret: true,\n    callback_url: true,\n    scope: true,\n  },\n  github: {\n    client_id: true,\n    client_secret: true,\n    callback_url: true,\n    scope: true,\n  },\n  microsoft: {\n    client_id: true,\n    client_secret: true,\n    callback_url: true,\n    scope: true,\n    tenant: true,\n  },\n});\n\nconst toggleMask = (\n  provider: SsoAuthProviders,\n  fieldKey: ProviderFieldKeys\n) => {\n  maskState[provider][fieldKey] = !maskState[provider][fieldKey];\n};\n\nconst isMasked = (provider: SsoAuthProviders, fieldKey: ProviderFieldKeys) =>\n  maskState[provider][fieldKey];\n</script>\n",
+      "sourceSha256": "cdb85b29ed9ea679e87b8aebacec1c9f507df7f912310ffab0cc202a8a0e8d98",
+      "before": {
+        "version": "10.9.2",
+        "results": [
+          {
+            "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-matrix-eslint-script-language-20261013/tests/_fixtures/_git/hoppscotch/packages/hoppscotch-sh-admin/src/components/settings/OAuthProviderConfigurations.vue",
+            "messages": [
+              {
+                "ruleId": null,
+                "fatal": true,
+                "severity": 2,
+                "message": "Parsing error: Identifier expected.",
+                "line": 130,
+                "column": 51
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 1,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n  <div v-if=\"workingConfigs\" class=\"grid md:grid-cols-3 gap-8 md:gap-4 pt-8\">\n    <div class=\"md:col-span-1\">\n      <h3 class=\"heading\">{{ t('configs.auth_providers.title') }}</h3>\n      <p class=\"my-1 text-secondaryLight\">\n        {{ t('configs.auth_providers.description') }}\n      </p>\n    </div>\n\n    <div class=\"space-y-8 sm:px-8 md:col-span-2\">\n      <section>\n        <h4 class=\"font-semibold text-secondaryDark\">\n          {{ t('configs.auth_providers.title') }}\n        </h4>\n\n        <div\n          v-for=\"provider in workingConfigs.providers\"\n          class=\"space-y-4 py-4\"\n        >\n          <div class=\"flex justify-between\">\n            <HoppSmartToggle\n              :on=\"provider.enabled\"\n              @change=\"provider.enabled = !provider.enabled\"\n            >\n              {{ capitalize(provider.name) }}\n            </HoppSmartToggle>\n            <HoppButtonSecondary\n              v-tippy=\"{ theme: 'tooltip', allowHTML: true }\"\n              to=\"https://docs.hoppscotch.io/documentation/self-host/community-edition/prerequisites#oauth\"\n              blank\n              :title=\"t('support.documentation')\"\n              :icon=\"IconCircleHelp\"\n              class=\"rounded hover:bg-primaryDark focus-visible:bg-primaryDark\"\n            />\n          </div>\n\n          <div v-if=\"provider.enabled\" class=\"ml-12\">\n            <div\n              v-for=\"field in providerConfigFields\"\n              :key=\"field.key\"\n              class=\"mt-5\"\n            >\n              <template\n                v-if=\"field.applicableProviders.includes(provider.name)\"\n              >\n                <label>{{ makeReadableKey(field.name, true) }}</label>\n                <span class=\"flex max-w-lg\">\n                  <HoppSmartInput\n                    v-model=\"provider.fields[field.key as keyof typeof provider['fields']]\"\n                    :type=\"\n                      isMasked(provider.name, field.key) ? 'password' : 'text'\n                    \"\n                    :autofocus=\"false\"\n                    class=\"!my-2 !bg-primaryLight flex-1 border border-divider rounded\"\n                    :class=\"{\n                      '!border-red-500': isConfigFieldErrored(\n                        provider.name,\n                        field.key,\n                      ),\n                    }\"\n                    input-styles=\"!border-0\"\n                  >\n                    <template #button>\n                      <HoppButtonSecondary\n                        :icon=\"\n                          isMasked(provider.name, field.key)\n                            ? IconEye\n                            : IconEyeOff\n                        \"\n                        class=\"bg-primaryLight rounded\"\n                        @click=\"toggleMask(provider.name, field.key)\"\n                      />\n                    </template>\n                  </HoppSmartInput>\n                </span>\n              </template>\n            </div>\n          </div>\n        </div>\n      </section>\n    </div>\n  </div>\n</template>\n\n<script setup lang=\"ts\">\nimport { useVModel } from '@vueuse/core';\nimport { reactive } from 'vue';\nimport { useI18n } from '~/composables/i18n';\nimport {\n  ServerConfigs,\n  SsoAuthProviders,\n  useConfigValidation,\n} from '~/helpers/configs';\nimport { makeReadableKey } from '~/helpers/utils/readableKey';\nimport IconCircleHelp from '~icons/lucide/circle-help';\nimport IconEye from '~icons/lucide/eye';\nimport IconEyeOff from '~icons/lucide/eye-off';\n\nconst t = useI18n();\n\nconst { isConfigFieldErrored } = useConfigValidation();\n\nconst props = defineProps<{\n  config: ServerConfigs;\n}>();\n\nconst emit = defineEmits<{\n  (e: 'update:config', v: ServerConfigs): void;\n}>();\n\nconst workingConfigs = useVModel(props, 'config', emit);\n\n// Capitalize first letter of a string\nconst capitalize = (text: string) =>\n  text.charAt(0).toUpperCase() + text.slice(1);\n\n// Union type for all possible field keys\ntype ProviderFieldKeys = keyof ProviderFields;\n\ntype ProviderFields = {\n  [Field in keyof ServerConfigs['providers'][SsoAuthProviders]['fields']]: boolean;\n} & Partial<{ tenant: boolean }>;\n\ntype ProviderFieldMetadata = {\n  name: string;\n  key: ProviderFieldKeys;\n  applicableProviders: SsoAuthProviders[];\n};\n\nconst providerConfigFields = <ProviderFieldMetadata[]>[\n  {\n    name: t('configs.auth_providers.client_id'),\n    key: 'client_id',\n    applicableProviders: ['google', 'github', 'microsoft'],\n  },\n  {\n    name: t('configs.auth_providers.client_secret'),\n    key: 'client_secret',\n    applicableProviders: ['google', 'github', 'microsoft'],\n  },\n  {\n    name: t('configs.auth_providers.callback_url'),\n    key: 'callback_url',\n    applicableProviders: ['google', 'github', 'microsoft'],\n  },\n  {\n    name: t('configs.auth_providers.scope'),\n    key: 'scope',\n    applicableProviders: ['google', 'github', 'microsoft'],\n  },\n  {\n    name: t('configs.auth_providers.tenant'),\n    key: 'tenant',\n    applicableProviders: ['microsoft'],\n  },\n];\n\nconst maskState = reactive<Record<SsoAuthProviders, ProviderFields>>({\n  google: {\n    client_id: true,\n    client_secret: true,\n    callback_url: true,\n    scope: true,\n  },\n  github: {\n    client_id: true,\n    client_secret: true,\n    callback_url: true,\n    scope: true,\n  },\n  microsoft: {\n    client_id: true,\n    client_secret: true,\n    callback_url: true,\n    scope: true,\n    tenant: true,\n  },\n});\n\nconst toggleMask = (\n  provider: SsoAuthProviders,\n  fieldKey: ProviderFieldKeys\n) => {\n  maskState[provider][fieldKey] = !maskState[provider][fieldKey];\n};\n\nconst isMasked = (provider: SsoAuthProviders, fieldKey: ProviderFieldKeys) =>\n  maskState[provider][fieldKey];\n</script>\n",
+            "usedDeprecatedRules": [
+              {
+                "ruleId": "vue/no-v-for-template-key",
+                "replacedBy": []
+              },
+              {
+                "ruleId": "vue/no-v-model-argument",
+                "replacedBy": []
+              },
+              {
+                "ruleId": "vue/valid-model-definition",
+                "replacedBy": []
+              },
+              {
+                "ruleId": "vue/valid-v-bind-sync",
+                "replacedBy": []
+              }
+            ]
+          }
+        ],
+        "droppedConfigMessageCount": 0
+      },
+      "expectedRepaired": true
+    },
+    {
+      "project": "inertia",
+      "repository": "https://github.com/inertiajs/inertia",
+      "revision": "59bb8cbff028b9b405cf606588f1f713806f9187",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE.md"
+        ]
+      },
+      "path": "packages/vue3/test-app/Pages/Events.vue",
+      "source": "<script setup lang=\"ts\">\nimport { Link, router, usePage } from '@inertiajs/vue3'\n\ndeclare global {\n  interface Window {\n    messages: unknown[]\n  }\n}\n\nconst payloadWithFile = {\n  file: new File(['foobar'], 'example.bin'),\n}\n\nconst page = usePage()\n\nwindow.messages = []\n\nconst internalAlert = (...args: unknown[]) => {\n  window.messages.push(...args)\n}\n\nconst withoutEventListeners = () => {\n  router.post(page.url, {})\n}\n\nconst removeInertiaListener = () => {\n  const removeEventListener = router.on('before', () => internalAlert('Inertia.on(before)'))\n\n  internalAlert('Removing Inertia.on Listener')\n  removeEventListener()\n\n  router.post(\n    page.url,\n    {},\n    {\n      onBefore: () => internalAlert('onBefore'),\n      onStart: () => internalAlert('onStart'),\n    },\n  )\n}\n\nconst onceInertiaListener = () => {\n  router.once('before', () => internalAlert('Inertia.once(before)'))\n\n  router.post(page.url, {}, { onBefore: () => internalAlert('onBefore-1') })\n  router.post(page.url, {}, { onBefore: () => internalAlert('onBefore-2') })\n}\n\nconst removeOnceInertiaListener = () => {\n  const removeEventListener = router.once('before', () => internalAlert('Inertia.once(before)'))\n\n  internalAlert('Removing Inertia.once Listener')\n  removeEventListener()\n\n  router.post(page.url, {}, { onBefore: () => internalAlert('onBefore') })\n}\n\nconst beforeVisit = () => {\n  router.on('before', (event) => {\n    internalAlert('Inertia.on(before)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:before', (event) => {\n    internalAlert('addEventListener(inertia:before)')\n    internalAlert(event)\n  })\n\n  router.post(\n    page.url,\n    {},\n    {\n      onBefore: (event) => {\n        internalAlert('onBefore')\n        internalAlert(event)\n      },\n      onStart: () => internalAlert('onStart'),\n    },\n  )\n}\n\nconst beforeVisitPreventLocal = () => {\n  document.addEventListener('inertia:before', () => internalAlert('addEventListener(inertia:before)'))\n  router.on('before', () => internalAlert('Inertia.on(before)'))\n\n  router.post(\n    page.url,\n    {},\n    {\n      onBefore: () => {\n        internalAlert('onBefore')\n        return false\n      },\n      onStart: () => internalAlert('This listener should not have been called.'),\n    },\n  )\n}\n\nconst beforeVisitPreventGlobalInertia = () => {\n  document.addEventListener('inertia:before', () => internalAlert('addEventListener(inertia:before)'))\n  router.on('before', () => {\n    internalAlert('Inertia.on(before)')\n    return false\n  })\n\n  router.post(\n    page.url,\n    {},\n    {\n      onBefore: () => internalAlert('onBefore'),\n      onStart: () => internalAlert('This listener should not have been called.'),\n    },\n  )\n}\n\nconst beforeVisitPreventGlobalNative = () => {\n  router.on('before', () => internalAlert('Inertia.on(before)'))\n  document.addEventListener('inertia:before', (event) => {\n    internalAlert('addEventListener(inertia:before)')\n    event.preventDefault()\n  })\n\n  router.post(\n    page.url,\n    {},\n    {\n      onBefore: () => internalAlert('onBefore'),\n      onStart: () => internalAlert('This listener should not have been called.'),\n    },\n  )\n}\n\nconst cancelTokenVisit = () => {\n  // @ts-expect-error - We're testing that the router doesn't have an onCancelToken listener\n  router.on('cancelToken', () => internalAlert('This listener should not have been called.'))\n  document.addEventListener('inertia:cancelToken', () => internalAlert('This listener should not have been called.'))\n\n  router.post(\n    page.url,\n    {},\n    {\n      onCancelToken: (event) => {\n        internalAlert('onCancelToken')\n        internalAlert(event)\n      },\n    },\n  )\n}\n\nconst startVisit = () => {\n  router.on('start', (event) => {\n    internalAlert('Inertia.on(start)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:start', (event) => {\n    internalAlert('addEventListener(inertia:start)')\n    internalAlert(event)\n  })\n\n  router.post(\n    page.url,\n    {},\n    {\n      onStart: (event) => {\n        internalAlert('onStart')\n        internalAlert(event)\n      },\n    },\n  )\n}\n\nconst progressVisit = () => {\n  router.on('progress', (event) => {\n    internalAlert('Inertia.on(progress)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:progress', (event) => {\n    internalAlert('addEventListener(inertia:progress)')\n    internalAlert(event)\n  })\n\n  router.post(page.url, payloadWithFile, {\n    onProgress: (event) => {\n      internalAlert('onProgress')\n      internalAlert(event)\n    },\n  })\n}\n\nconst progressNoFilesVisit = () => {\n  router.on('progress', (event) => {\n    internalAlert('Inertia.on(progress)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:progress', (event) => {\n    internalAlert('addEventListener(inertia:progress)')\n    internalAlert(event)\n  })\n\n  router.post(\n    page.url,\n    {},\n    {\n      onBefore: () => internalAlert('progressNoFilesOnBefore'),\n      onProgress: (event) => {\n        internalAlert('onProgress')\n        internalAlert(event)\n      },\n    },\n  )\n}\n\nconst cancelVisit = () => {\n  router.on('cancel', (event) => {\n    internalAlert('Inertia.on(cancel)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:cancel', (event) => {\n    internalAlert('addEventListener(inertia:cancel)')\n    internalAlert(event)\n  })\n\n  router.post(\n    page.url,\n    {},\n    {\n      onCancelToken: (token) => token.cancel(),\n      // @ts-expect-error - We're testing that the onCancel callback has no arguments, so event will be undefined\n      onCancel: (event) => {\n        internalAlert('onCancel')\n        internalAlert(event)\n      },\n    },\n  )\n}\n\nconst errorVisit = () => {\n  router.on('error', (event) => {\n    internalAlert('Inertia.on(error)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:error', (event) => {\n    internalAlert('addEventListener(inertia:error)')\n    internalAlert(event)\n  })\n\n  router.post(\n    '/events/errors',\n    {},\n    {\n      onError: (errors) => {\n        internalAlert('onError')\n        internalAlert(errors)\n      },\n    },\n  )\n}\n\nconst errorPromiseVisit = () => {\n  router.post(\n    '/events/errors',\n    {},\n    {\n      onError: () => callbackSuccessErrorPromise('onError'),\n      onSuccess: () => internalAlert('This listener should not have been called'),\n      onFinish: () => internalAlert('onFinish'),\n    },\n  )\n}\n\nconst successVisit = () => {\n  router.on('success', (event) => {\n    internalAlert('Inertia.on(success)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:success', (event) => {\n    internalAlert('addEventListener(inertia:success)')\n    internalAlert(event)\n  })\n\n  router.post(\n    page.url,\n    {},\n    {\n      onError: () => internalAlert('This listener should not have been called'),\n      onSuccess: (page) => {\n        internalAlert('onSuccess')\n        internalAlert(page)\n      },\n    },\n  )\n}\n\nconst successPromiseVisit = () => {\n  router.post(\n    page.url,\n    {},\n    {\n      onSuccess: () => callbackSuccessErrorPromise('onSuccess'),\n      onError: () => internalAlert('This listener should not have been called'),\n      onFinish: () => internalAlert('onFinish'),\n    },\n  )\n}\n\nconst finishVisit = () => {\n  router.on('finish', (event) => {\n    internalAlert('Inertia.on(finish)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:finish', (event) => {\n    internalAlert('addEventListener(inertia:finish)')\n    internalAlert(event)\n  })\n\n  router.post(\n    page.url,\n    {},\n    {\n      onFinish: (event) => {\n        internalAlert('onFinish')\n        internalAlert(event)\n      },\n    },\n  )\n}\n\nconst httpExceptionVisit = () => {\n  router.on('httpException', (event) => {\n    internalAlert('Inertia.on(httpException)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:httpException', (event) => {\n    internalAlert('addEventListener(inertia:httpException)')\n    internalAlert(event)\n  })\n\n  router.post(\n    '/non-inertia',\n    {},\n    {\n      onHttpException: () => internalAlert('onHttpException'),\n    },\n  )\n}\n\nconst httpExceptionPreventVisit = () => {\n  router.on('httpException', (event) => {\n    internalAlert('Inertia.on(httpException)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:httpException', (event) => {\n    internalAlert('addEventListener(inertia:httpException)')\n    internalAlert(event)\n  })\n\n  router.post(\n    '/non-inertia',\n    {},\n    {\n      onHttpException: (response) => {\n        internalAlert('onHttpException')\n        internalAlert(response)\n        return false\n      },\n    },\n  )\n}\n\nconst httpExceptionInertiaResponseVisit = () => {\n  router.on('httpException', (event) => {\n    internalAlert('Inertia.on(httpException)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:httpException', (event) => {\n    internalAlert('addEventListener(inertia:httpException)')\n    internalAlert(event)\n  })\n\n  router.get(\n    '/inertia-error-page',\n    {},\n    {\n      onHttpException: () => internalAlert('onHttpException'),\n    },\n  )\n}\n\nconst httpExceptionInertiaResponsePreventVisit = () => {\n  router.on('httpException', (event) => {\n    internalAlert('Inertia.on(httpException)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:httpException', (event) => {\n    internalAlert('addEventListener(inertia:httpException)')\n    internalAlert(event)\n  })\n\n  router.get(\n    '/inertia-error-page',\n    {},\n    {\n      onHttpException: (response) => {\n        internalAlert('onHttpException')\n        internalAlert(response)\n        return false\n      },\n    },\n  )\n}\n\nconst networkErrorVisit = () => {\n  router.on('networkError', (event) => {\n    internalAlert('Inertia.on(networkError)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:networkError', (event) => {\n    internalAlert('addEventListener(inertia:networkError)')\n    internalAlert(event)\n  })\n\n  router.post(\n    '/disconnect',\n    {},\n    {\n      onNetworkError: () => internalAlert('onNetworkError'),\n    },\n  )\n}\n\nconst networkErrorPreventVisit = () => {\n  router.on('networkError', (event) => {\n    internalAlert('Inertia.on(networkError)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:networkError', (event) => {\n    internalAlert('addEventListener(inertia:networkError)')\n    internalAlert(event)\n  })\n\n  router.post(\n    '/disconnect',\n    {},\n    {\n      onNetworkError: (error) => {\n        internalAlert('onNetworkError')\n        internalAlert(error)\n        return false\n      },\n    },\n  )\n}\n\nconst navigateVisit = () => {\n  router.on('navigate', (event) => {\n    internalAlert('Inertia.on(navigate)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:navigate', (event) => {\n    internalAlert('addEventListener(inertia:navigate)')\n    internalAlert(event)\n  })\n\n  router.get(\n    '/',\n    {},\n    {\n      // @ts-expect-error - We're testing that the VisitCallbacks interface does not have an onNavigate method\n      onNavigate: () => internalAlert('This listener should not have been called.'),\n    },\n  )\n}\n\nconst registerAllListeners = () => {\n  router.on('before', () => internalAlert('Inertia.on(before)'))\n  // @ts-expect-error - We're testing that the router doesn't have an onCancelToken listener\n  router.on('cancelToken', () => internalAlert('Inertia.on(cancelToken)'))\n  router.on('cancel', () => internalAlert('Inertia.on(cancel)'))\n  router.on('start', () => internalAlert('Inertia.on(start)'))\n  router.on('progress', () => internalAlert('Inertia.on(progress)'))\n  router.on('error', () => internalAlert('Inertia.on(error)'))\n  router.on('success', () => internalAlert('Inertia.on(success)'))\n  router.on('httpException', () => internalAlert('Inertia.on(httpException)'))\n  router.on('networkError', () => internalAlert('Inertia.on(networkError)'))\n  router.on('finish', () => internalAlert('Inertia.on(finish)'))\n  router.on('navigate', () => internalAlert('Inertia.on(navigate)'))\n  document.addEventListener('inertia:before', () => internalAlert('addEventListener(inertia:before)'))\n  document.addEventListener('inertia:cancelToken', () => internalAlert('addEventListener(inertia:cancelToken)'))\n  document.addEventListener('inertia:cancel', () => internalAlert('addEventListener(inertia:cancel)'))\n  document.addEventListener('inertia:start', () => internalAlert('addEventListener(inertia:start)'))\n  document.addEventListener('inertia:progress', () => internalAlert('addEventListener(inertia:progress)'))\n  document.addEventListener('inertia:error', () => internalAlert('addEventListener(inertia:error)'))\n  document.addEventListener('inertia:success', () => internalAlert('addEventListener(inertia:success)'))\n  document.addEventListener('inertia:httpException', () => internalAlert('addEventListener(inertia:httpException)'))\n  document.addEventListener('inertia:networkError', () => internalAlert('addEventListener(inertia:networkError)'))\n  document.addEventListener('inertia:finish', () => internalAlert('addEventListener(inertia:finish)'))\n  document.addEventListener('inertia:navigate', () => internalAlert('addEventListener(inertia:navigate)'))\n\n  return {\n    onBefore: () => internalAlert('onBefore'),\n    onCancelToken: () => internalAlert('onCancelToken'),\n    onCancel: () => internalAlert('onCancel'),\n    onStart: () => internalAlert('onStart'),\n    onProgress: () => internalAlert('onProgress'),\n    onError: () => internalAlert('onError'),\n    onSuccess: () => internalAlert('onSuccess'),\n    onHttpException: () => internalAlert('onHttpException'),\n    onNetworkError: () => internalAlert('onNetworkError'),\n    onFinish: () => internalAlert('onFinish'),\n    onNavigate: () => internalAlert('onNavigate'), // Does not exist.\n  }\n}\n\nconst lifecycleSuccess = () => {\n  router.post(page.url, payloadWithFile, registerAllListeners())\n}\n\nconst lifecycleError = () => {\n  router.post('/events/errors', payloadWithFile, registerAllListeners())\n}\n\nconst lifecycleCancel = () => {\n  router.post('/sleep', payloadWithFile, {\n    ...registerAllListeners(),\n    onCancelToken: (token) => {\n      internalAlert('onCancelToken')\n\n      setTimeout(() => {\n        internalAlert('CANCELLING!')\n        token.cancel()\n      }, 250)\n    },\n  })\n}\n\nconst lifecycleCancelAfterFinish = () => {\n  type CancelToken = {\n    cancel: () => void\n  }\n\n  let cancelToken = <CancelToken | null>null\n\n  router.post(page.url, payloadWithFile, {\n    ...registerAllListeners(),\n    onCancelToken: (token: CancelToken) => {\n      internalAlert('onCancelToken')\n      cancelToken = token\n    },\n    onFinish: () => {\n      internalAlert('onFinish')\n      internalAlert('CANCELLING!')\n      cancelToken?.cancel()\n    },\n  })\n}\n\nconst callbackSuccessErrorPromise = (eventName: string) => {\n  internalAlert(eventName)\n  setTimeout(() => internalAlert('onFinish should have been fired by now if Promise functionality did not work'), 5)\n  return new Promise((resolve) => setTimeout(resolve, 20))\n}\n</script>\n\n<template>\n  <div>\n    <!-- Listeners -->\n    <a href=\"#\" @click.prevent=\"withoutEventListeners\" class=\"without-listeners\">Basic Visit</a>\n    <a href=\"#\" @click.prevent=\"removeInertiaListener\" class=\"remove-inertia-listener\">Remove Inertia Listener</a>\n    <a href=\"#\" @click.prevent=\"onceInertiaListener\" class=\"register-inertia-once-listener\"\n      >Register Inertia Once Listener</a\n    >\n    <a href=\"#\" @click.prevent=\"removeOnceInertiaListener\" class=\"remove-inertia-once-listener\"\n      >Remove Inertia Once Listener</a\n    >\n\n    <!-- Events: Before -->\n    <a href=\"#\" @click.prevent=\"beforeVisit\" class=\"before\">Before Event</a>\n    <a href=\"#\" @click.prevent=\"beforeVisitPreventLocal\" class=\"before-prevent-local\">Before Event (Prevent)</a>\n    <Link\n      :href=\"$page.url\"\n      method=\"post\"\n      @before=\"(visit) => internalAlert('linkOnBefore', visit)\"\n      @start=\"() => internalAlert('linkOnStart')\"\n      class=\"link-before\"\n      >Before Event Link</Link\n    >\n    <Link\n      :href=\"$page.url\"\n      method=\"post\"\n      @before=\"\n        () => {\n          internalAlert('linkOnBefore')\n          return false\n        }\n      \"\n      @start=\"() => internalAlert('This listener should not have been called.')\"\n      class=\"link-before-prevent-local\"\n      >Before Event Link (Prevent)</Link\n    >\n    <a href=\"#\" @click.prevent=\"beforeVisitPreventGlobalInertia\" class=\"before-prevent-global-inertia\"\n      >Before Event - Prevent globally using Inertia Event Listener</a\n    >\n    <a href=\"#\" @click.prevent=\"beforeVisitPreventGlobalNative\" class=\"before-prevent-global-native\"\n      >Before Event - Prevent globally using Native Event Listeners</a\n    >\n\n    <!-- Events: CancelToken -->\n    <a href=\"#\" @click.prevent=\"cancelTokenVisit\" class=\"canceltoken\">Cancel Token Event</a>\n    <Link\n      :href=\"$page.url\"\n      method=\"post\"\n      @cancelToken=\"(event) => internalAlert('linkOnCancelToken', event)\"\n      class=\"link-canceltoken\"\n      >Cancel Token Event Link</Link\n    >\n\n    <!-- Events: Cancel -->\n    <a href=\"#\" @click.prevent=\"cancelVisit\" class=\"cancel\">Cancel Event</a>\n\n    <!-- @vue-expect-error - We're testing that the onCancel callback has no arguments, so event will be undefined -->\n    <Link\n      :href=\"$page.url\"\n      method=\"post\"\n      @cancelToken=\"(token) => token.cancel()\"\n      @cancel=\"(event) => internalAlert('linkOnCancel', event)\"\n      class=\"link-cancel\"\n      >Cancel Event Link</Link\n    >\n\n    <!-- Events: Start -->\n    <a href=\"#\" @click.prevent=\"startVisit\" class=\"start\">Start Event</a>\n    <Link :href=\"$page.url\" method=\"post\" @start=\"(event) => internalAlert('linkOnStart', event)\" class=\"link-start\"\n      >Start Event Link</Link\n    >\n\n    <!-- Events: Progress -->\n    <a href=\"#\" @click.prevent=\"progressVisit\" class=\"progress\">Progress Event</a>\n    <a href=\"#\" @click.prevent=\"progressNoFilesVisit\" class=\"progress-no-files\">Missing Progress Event (no files)</a>\n    <Link\n      :href=\"$page.url\"\n      method=\"post\"\n      :data=\"payloadWithFile\"\n      @progress=\"(event) => internalAlert('linkOnProgress', event)\"\n      class=\"link-progress\"\n      >Progress Event Link</Link\n    >\n    <Link\n      :href=\"$page.url\"\n      method=\"post\"\n      @before=\"() => internalAlert('linkProgressNoFilesOnBefore')\"\n      @progress=\"(event) => internalAlert('linkOnProgress', event)\"\n      class=\"link-progress-no-files\"\n      >Progress Event Link (no files)</Link\n    >\n\n    <!-- Events: Error -->\n    <a href=\"#\" @click.prevent=\"errorVisit\" class=\"error\">Error Event</a>\n    <a href=\"#\" @click.prevent=\"errorPromiseVisit\" class=\"error-promise\">Error Event (delaying onFinish w/ Promise)</a>\n    <Link\n      href=\"/events/errors\"\n      method=\"post\"\n      @error=\"(errors) => internalAlert('linkOnError', errors)\"\n      @success=\"() => internalAlert('This listener should not have been called')\"\n      class=\"link-error\"\n      >Error Event Link</Link\n    >\n    <Link\n      href=\"/events/errors\"\n      method=\"post\"\n      @error=\"() => callbackSuccessErrorPromise('linkOnError')\"\n      @success=\"() => internalAlert('This listener should not have been called')\"\n      @finish=\"() => internalAlert('linkOnFinish')\"\n      class=\"link-error-promise\"\n      >Error Event Link (delaying onFinish w/ Promise)</Link\n    >\n\n    <!-- Events: Success -->\n    <a href=\"#\" @click.prevent=\"successVisit\" class=\"success\">Success Event</a>\n    <a href=\"#\" @click.prevent=\"successPromiseVisit\" class=\"success-promise\"\n      >Success Event (delaying onFinish w/ Promise)</a\n    >\n    <Link\n      :href=\"$page.url\"\n      method=\"post\"\n      @error=\"() => internalAlert('This listener should not have been called')\"\n      @success=\"(event) => internalAlert('linkOnSuccess', event)\"\n      class=\"link-success\"\n      >Success Event Link</Link\n    >\n    <Link\n      :href=\"$page.url\"\n      method=\"post\"\n      @error=\"() => internalAlert('This listener should not have been called')\"\n      @success=\"() => callbackSuccessErrorPromise('linkOnSuccess')\"\n      @finish=\"() => internalAlert('linkOnFinish')\"\n      class=\"link-success-promise\"\n      >Success Event Link (delaying onFinish w/ Promise)</Link\n    >\n\n    <!-- Events: HTTP Exception -->\n    <a href=\"#\" @click.prevent=\"httpExceptionVisit\" class=\"http-exception\">HTTP Exception Event</a>\n    <a href=\"#\" @click.prevent=\"httpExceptionPreventVisit\" class=\"http-exception-prevent\"\n      >HTTP Exception Event (Prevent)</a\n    >\n    <a href=\"#\" @click.prevent=\"httpExceptionInertiaResponseVisit\" class=\"http-exception-inertia-response\"\n      >HTTP Exception Event (Inertia Response)</a\n    >\n    <a\n      href=\"#\"\n      @click.prevent=\"httpExceptionInertiaResponsePreventVisit\"\n      class=\"http-exception-inertia-response-prevent\"\n      >HTTP Exception Event (Inertia Response Prevent)</a\n    >\n\n    <!-- Events: Network Error -->\n    <a href=\"#\" @click.prevent=\"networkErrorVisit\" class=\"network-error\">Network Error Event</a>\n    <a href=\"#\" @click.prevent=\"networkErrorPreventVisit\" class=\"network-error-prevent\"\n      >Network Error Event (Prevent)</a\n    >\n\n    <!-- Events: Finish -->\n    <a href=\"#\" @click.prevent=\"finishVisit\" class=\"finish\">Finish Event</a>\n    <Link :href=\"$page.url\" method=\"post\" @finish=\"(event) => internalAlert('linkOnFinish', event)\" class=\"link-finish\"\n      >Finish Event Link</Link\n    >\n\n    <!-- Events: Navigate -->\n    <a href=\"#\" @click.prevent=\"navigateVisit\" class=\"navigate\">Navigate Event</a>\n\n    <!-- Events: Prefetch -->\n    <Link\n      as=\"button\"\n      href=\"/prefetch/2\"\n      prefetch=\"hover\"\n      @prefetching=\"(visit) => internalAlert('linkOnPrefetching', visit)\"\n      @prefetched=\"(response, visit) => internalAlert('linkOnPrefetched', response, visit)\"\n      class=\"link-prefetch-hover\"\n    >\n      Prefetch Event Link (Hover)\n    </Link>\n\n    <!-- Lifecycles -->\n    <a href=\"#\" @click.prevent=\"lifecycleSuccess\" class=\"lifecycle-success\">Lifecycle Success</a>\n    <a href=\"#\" @click.prevent=\"lifecycleError\" class=\"lifecycle-error\">Lifecycle Error</a>\n    <a href=\"#\" @click.prevent=\"lifecycleCancel\" class=\"lifecycle-cancel\">Lifecycle Cancel</a>\n    <a href=\"#\" @click.prevent=\"lifecycleCancelAfterFinish\" class=\"lifecycle-cancel-after-finish\"\n      >Lifecycle Cancel - After Finish</a\n    >\n  </div>\n</template>\n",
+      "sourceSha256": "02b34b59c9ae95098693c385e8caa13f368edce8859a343909ae90ac3d9cefd0",
+      "before": {
+        "version": "10.9.2",
+        "results": [
+          {
+            "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-matrix-eslint-script-language-20261013/tests/_fixtures/_git/inertia/packages/vue3/test-app/Pages/Events.vue",
+            "messages": [
+              {
+                "ruleId": null,
+                "fatal": true,
+                "severity": 2,
+                "message": "Parsing error: Identifier expected.",
+                "line": 555,
+                "column": 33
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 1,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<script setup lang=\"ts\">\nimport { Link, router, usePage } from '@inertiajs/vue3'\n\ndeclare global {\n  interface Window {\n    messages: unknown[]\n  }\n}\n\nconst payloadWithFile = {\n  file: new File(['foobar'], 'example.bin'),\n}\n\nconst page = usePage()\n\nwindow.messages = []\n\nconst internalAlert = (...args: unknown[]) => {\n  window.messages.push(...args)\n}\n\nconst withoutEventListeners = () => {\n  router.post(page.url, {})\n}\n\nconst removeInertiaListener = () => {\n  const removeEventListener = router.on('before', () => internalAlert('Inertia.on(before)'))\n\n  internalAlert('Removing Inertia.on Listener')\n  removeEventListener()\n\n  router.post(\n    page.url,\n    {},\n    {\n      onBefore: () => internalAlert('onBefore'),\n      onStart: () => internalAlert('onStart'),\n    },\n  )\n}\n\nconst onceInertiaListener = () => {\n  router.once('before', () => internalAlert('Inertia.once(before)'))\n\n  router.post(page.url, {}, { onBefore: () => internalAlert('onBefore-1') })\n  router.post(page.url, {}, { onBefore: () => internalAlert('onBefore-2') })\n}\n\nconst removeOnceInertiaListener = () => {\n  const removeEventListener = router.once('before', () => internalAlert('Inertia.once(before)'))\n\n  internalAlert('Removing Inertia.once Listener')\n  removeEventListener()\n\n  router.post(page.url, {}, { onBefore: () => internalAlert('onBefore') })\n}\n\nconst beforeVisit = () => {\n  router.on('before', (event) => {\n    internalAlert('Inertia.on(before)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:before', (event) => {\n    internalAlert('addEventListener(inertia:before)')\n    internalAlert(event)\n  })\n\n  router.post(\n    page.url,\n    {},\n    {\n      onBefore: (event) => {\n        internalAlert('onBefore')\n        internalAlert(event)\n      },\n      onStart: () => internalAlert('onStart'),\n    },\n  )\n}\n\nconst beforeVisitPreventLocal = () => {\n  document.addEventListener('inertia:before', () => internalAlert('addEventListener(inertia:before)'))\n  router.on('before', () => internalAlert('Inertia.on(before)'))\n\n  router.post(\n    page.url,\n    {},\n    {\n      onBefore: () => {\n        internalAlert('onBefore')\n        return false\n      },\n      onStart: () => internalAlert('This listener should not have been called.'),\n    },\n  )\n}\n\nconst beforeVisitPreventGlobalInertia = () => {\n  document.addEventListener('inertia:before', () => internalAlert('addEventListener(inertia:before)'))\n  router.on('before', () => {\n    internalAlert('Inertia.on(before)')\n    return false\n  })\n\n  router.post(\n    page.url,\n    {},\n    {\n      onBefore: () => internalAlert('onBefore'),\n      onStart: () => internalAlert('This listener should not have been called.'),\n    },\n  )\n}\n\nconst beforeVisitPreventGlobalNative = () => {\n  router.on('before', () => internalAlert('Inertia.on(before)'))\n  document.addEventListener('inertia:before', (event) => {\n    internalAlert('addEventListener(inertia:before)')\n    event.preventDefault()\n  })\n\n  router.post(\n    page.url,\n    {},\n    {\n      onBefore: () => internalAlert('onBefore'),\n      onStart: () => internalAlert('This listener should not have been called.'),\n    },\n  )\n}\n\nconst cancelTokenVisit = () => {\n  // @ts-expect-error - We're testing that the router doesn't have an onCancelToken listener\n  router.on('cancelToken', () => internalAlert('This listener should not have been called.'))\n  document.addEventListener('inertia:cancelToken', () => internalAlert('This listener should not have been called.'))\n\n  router.post(\n    page.url,\n    {},\n    {\n      onCancelToken: (event) => {\n        internalAlert('onCancelToken')\n        internalAlert(event)\n      },\n    },\n  )\n}\n\nconst startVisit = () => {\n  router.on('start', (event) => {\n    internalAlert('Inertia.on(start)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:start', (event) => {\n    internalAlert('addEventListener(inertia:start)')\n    internalAlert(event)\n  })\n\n  router.post(\n    page.url,\n    {},\n    {\n      onStart: (event) => {\n        internalAlert('onStart')\n        internalAlert(event)\n      },\n    },\n  )\n}\n\nconst progressVisit = () => {\n  router.on('progress', (event) => {\n    internalAlert('Inertia.on(progress)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:progress', (event) => {\n    internalAlert('addEventListener(inertia:progress)')\n    internalAlert(event)\n  })\n\n  router.post(page.url, payloadWithFile, {\n    onProgress: (event) => {\n      internalAlert('onProgress')\n      internalAlert(event)\n    },\n  })\n}\n\nconst progressNoFilesVisit = () => {\n  router.on('progress', (event) => {\n    internalAlert('Inertia.on(progress)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:progress', (event) => {\n    internalAlert('addEventListener(inertia:progress)')\n    internalAlert(event)\n  })\n\n  router.post(\n    page.url,\n    {},\n    {\n      onBefore: () => internalAlert('progressNoFilesOnBefore'),\n      onProgress: (event) => {\n        internalAlert('onProgress')\n        internalAlert(event)\n      },\n    },\n  )\n}\n\nconst cancelVisit = () => {\n  router.on('cancel', (event) => {\n    internalAlert('Inertia.on(cancel)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:cancel', (event) => {\n    internalAlert('addEventListener(inertia:cancel)')\n    internalAlert(event)\n  })\n\n  router.post(\n    page.url,\n    {},\n    {\n      onCancelToken: (token) => token.cancel(),\n      // @ts-expect-error - We're testing that the onCancel callback has no arguments, so event will be undefined\n      onCancel: (event) => {\n        internalAlert('onCancel')\n        internalAlert(event)\n      },\n    },\n  )\n}\n\nconst errorVisit = () => {\n  router.on('error', (event) => {\n    internalAlert('Inertia.on(error)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:error', (event) => {\n    internalAlert('addEventListener(inertia:error)')\n    internalAlert(event)\n  })\n\n  router.post(\n    '/events/errors',\n    {},\n    {\n      onError: (errors) => {\n        internalAlert('onError')\n        internalAlert(errors)\n      },\n    },\n  )\n}\n\nconst errorPromiseVisit = () => {\n  router.post(\n    '/events/errors',\n    {},\n    {\n      onError: () => callbackSuccessErrorPromise('onError'),\n      onSuccess: () => internalAlert('This listener should not have been called'),\n      onFinish: () => internalAlert('onFinish'),\n    },\n  )\n}\n\nconst successVisit = () => {\n  router.on('success', (event) => {\n    internalAlert('Inertia.on(success)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:success', (event) => {\n    internalAlert('addEventListener(inertia:success)')\n    internalAlert(event)\n  })\n\n  router.post(\n    page.url,\n    {},\n    {\n      onError: () => internalAlert('This listener should not have been called'),\n      onSuccess: (page) => {\n        internalAlert('onSuccess')\n        internalAlert(page)\n      },\n    },\n  )\n}\n\nconst successPromiseVisit = () => {\n  router.post(\n    page.url,\n    {},\n    {\n      onSuccess: () => callbackSuccessErrorPromise('onSuccess'),\n      onError: () => internalAlert('This listener should not have been called'),\n      onFinish: () => internalAlert('onFinish'),\n    },\n  )\n}\n\nconst finishVisit = () => {\n  router.on('finish', (event) => {\n    internalAlert('Inertia.on(finish)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:finish', (event) => {\n    internalAlert('addEventListener(inertia:finish)')\n    internalAlert(event)\n  })\n\n  router.post(\n    page.url,\n    {},\n    {\n      onFinish: (event) => {\n        internalAlert('onFinish')\n        internalAlert(event)\n      },\n    },\n  )\n}\n\nconst httpExceptionVisit = () => {\n  router.on('httpException', (event) => {\n    internalAlert('Inertia.on(httpException)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:httpException', (event) => {\n    internalAlert('addEventListener(inertia:httpException)')\n    internalAlert(event)\n  })\n\n  router.post(\n    '/non-inertia',\n    {},\n    {\n      onHttpException: () => internalAlert('onHttpException'),\n    },\n  )\n}\n\nconst httpExceptionPreventVisit = () => {\n  router.on('httpException', (event) => {\n    internalAlert('Inertia.on(httpException)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:httpException', (event) => {\n    internalAlert('addEventListener(inertia:httpException)')\n    internalAlert(event)\n  })\n\n  router.post(\n    '/non-inertia',\n    {},\n    {\n      onHttpException: (response) => {\n        internalAlert('onHttpException')\n        internalAlert(response)\n        return false\n      },\n    },\n  )\n}\n\nconst httpExceptionInertiaResponseVisit = () => {\n  router.on('httpException', (event) => {\n    internalAlert('Inertia.on(httpException)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:httpException', (event) => {\n    internalAlert('addEventListener(inertia:httpException)')\n    internalAlert(event)\n  })\n\n  router.get(\n    '/inertia-error-page',\n    {},\n    {\n      onHttpException: () => internalAlert('onHttpException'),\n    },\n  )\n}\n\nconst httpExceptionInertiaResponsePreventVisit = () => {\n  router.on('httpException', (event) => {\n    internalAlert('Inertia.on(httpException)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:httpException', (event) => {\n    internalAlert('addEventListener(inertia:httpException)')\n    internalAlert(event)\n  })\n\n  router.get(\n    '/inertia-error-page',\n    {},\n    {\n      onHttpException: (response) => {\n        internalAlert('onHttpException')\n        internalAlert(response)\n        return false\n      },\n    },\n  )\n}\n\nconst networkErrorVisit = () => {\n  router.on('networkError', (event) => {\n    internalAlert('Inertia.on(networkError)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:networkError', (event) => {\n    internalAlert('addEventListener(inertia:networkError)')\n    internalAlert(event)\n  })\n\n  router.post(\n    '/disconnect',\n    {},\n    {\n      onNetworkError: () => internalAlert('onNetworkError'),\n    },\n  )\n}\n\nconst networkErrorPreventVisit = () => {\n  router.on('networkError', (event) => {\n    internalAlert('Inertia.on(networkError)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:networkError', (event) => {\n    internalAlert('addEventListener(inertia:networkError)')\n    internalAlert(event)\n  })\n\n  router.post(\n    '/disconnect',\n    {},\n    {\n      onNetworkError: (error) => {\n        internalAlert('onNetworkError')\n        internalAlert(error)\n        return false\n      },\n    },\n  )\n}\n\nconst navigateVisit = () => {\n  router.on('navigate', (event) => {\n    internalAlert('Inertia.on(navigate)')\n    internalAlert(event)\n  })\n\n  document.addEventListener('inertia:navigate', (event) => {\n    internalAlert('addEventListener(inertia:navigate)')\n    internalAlert(event)\n  })\n\n  router.get(\n    '/',\n    {},\n    {\n      // @ts-expect-error - We're testing that the VisitCallbacks interface does not have an onNavigate method\n      onNavigate: () => internalAlert('This listener should not have been called.'),\n    },\n  )\n}\n\nconst registerAllListeners = () => {\n  router.on('before', () => internalAlert('Inertia.on(before)'))\n  // @ts-expect-error - We're testing that the router doesn't have an onCancelToken listener\n  router.on('cancelToken', () => internalAlert('Inertia.on(cancelToken)'))\n  router.on('cancel', () => internalAlert('Inertia.on(cancel)'))\n  router.on('start', () => internalAlert('Inertia.on(start)'))\n  router.on('progress', () => internalAlert('Inertia.on(progress)'))\n  router.on('error', () => internalAlert('Inertia.on(error)'))\n  router.on('success', () => internalAlert('Inertia.on(success)'))\n  router.on('httpException', () => internalAlert('Inertia.on(httpException)'))\n  router.on('networkError', () => internalAlert('Inertia.on(networkError)'))\n  router.on('finish', () => internalAlert('Inertia.on(finish)'))\n  router.on('navigate', () => internalAlert('Inertia.on(navigate)'))\n  document.addEventListener('inertia:before', () => internalAlert('addEventListener(inertia:before)'))\n  document.addEventListener('inertia:cancelToken', () => internalAlert('addEventListener(inertia:cancelToken)'))\n  document.addEventListener('inertia:cancel', () => internalAlert('addEventListener(inertia:cancel)'))\n  document.addEventListener('inertia:start', () => internalAlert('addEventListener(inertia:start)'))\n  document.addEventListener('inertia:progress', () => internalAlert('addEventListener(inertia:progress)'))\n  document.addEventListener('inertia:error', () => internalAlert('addEventListener(inertia:error)'))\n  document.addEventListener('inertia:success', () => internalAlert('addEventListener(inertia:success)'))\n  document.addEventListener('inertia:httpException', () => internalAlert('addEventListener(inertia:httpException)'))\n  document.addEventListener('inertia:networkError', () => internalAlert('addEventListener(inertia:networkError)'))\n  document.addEventListener('inertia:finish', () => internalAlert('addEventListener(inertia:finish)'))\n  document.addEventListener('inertia:navigate', () => internalAlert('addEventListener(inertia:navigate)'))\n\n  return {\n    onBefore: () => internalAlert('onBefore'),\n    onCancelToken: () => internalAlert('onCancelToken'),\n    onCancel: () => internalAlert('onCancel'),\n    onStart: () => internalAlert('onStart'),\n    onProgress: () => internalAlert('onProgress'),\n    onError: () => internalAlert('onError'),\n    onSuccess: () => internalAlert('onSuccess'),\n    onHttpException: () => internalAlert('onHttpException'),\n    onNetworkError: () => internalAlert('onNetworkError'),\n    onFinish: () => internalAlert('onFinish'),\n    onNavigate: () => internalAlert('onNavigate'), // Does not exist.\n  }\n}\n\nconst lifecycleSuccess = () => {\n  router.post(page.url, payloadWithFile, registerAllListeners())\n}\n\nconst lifecycleError = () => {\n  router.post('/events/errors', payloadWithFile, registerAllListeners())\n}\n\nconst lifecycleCancel = () => {\n  router.post('/sleep', payloadWithFile, {\n    ...registerAllListeners(),\n    onCancelToken: (token) => {\n      internalAlert('onCancelToken')\n\n      setTimeout(() => {\n        internalAlert('CANCELLING!')\n        token.cancel()\n      }, 250)\n    },\n  })\n}\n\nconst lifecycleCancelAfterFinish = () => {\n  type CancelToken = {\n    cancel: () => void\n  }\n\n  let cancelToken = <CancelToken | null>null\n\n  router.post(page.url, payloadWithFile, {\n    ...registerAllListeners(),\n    onCancelToken: (token: CancelToken) => {\n      internalAlert('onCancelToken')\n      cancelToken = token\n    },\n    onFinish: () => {\n      internalAlert('onFinish')\n      internalAlert('CANCELLING!')\n      cancelToken?.cancel()\n    },\n  })\n}\n\nconst callbackSuccessErrorPromise = (eventName: string) => {\n  internalAlert(eventName)\n  setTimeout(() => internalAlert('onFinish should have been fired by now if Promise functionality did not work'), 5)\n  return new Promise((resolve) => setTimeout(resolve, 20))\n}\n</script>\n\n<template>\n  <div>\n    <!-- Listeners -->\n    <a href=\"#\" @click.prevent=\"withoutEventListeners\" class=\"without-listeners\">Basic Visit</a>\n    <a href=\"#\" @click.prevent=\"removeInertiaListener\" class=\"remove-inertia-listener\">Remove Inertia Listener</a>\n    <a href=\"#\" @click.prevent=\"onceInertiaListener\" class=\"register-inertia-once-listener\"\n      >Register Inertia Once Listener</a\n    >\n    <a href=\"#\" @click.prevent=\"removeOnceInertiaListener\" class=\"remove-inertia-once-listener\"\n      >Remove Inertia Once Listener</a\n    >\n\n    <!-- Events: Before -->\n    <a href=\"#\" @click.prevent=\"beforeVisit\" class=\"before\">Before Event</a>\n    <a href=\"#\" @click.prevent=\"beforeVisitPreventLocal\" class=\"before-prevent-local\">Before Event (Prevent)</a>\n    <Link\n      :href=\"$page.url\"\n      method=\"post\"\n      @before=\"(visit) => internalAlert('linkOnBefore', visit)\"\n      @start=\"() => internalAlert('linkOnStart')\"\n      class=\"link-before\"\n      >Before Event Link</Link\n    >\n    <Link\n      :href=\"$page.url\"\n      method=\"post\"\n      @before=\"\n        () => {\n          internalAlert('linkOnBefore')\n          return false\n        }\n      \"\n      @start=\"() => internalAlert('This listener should not have been called.')\"\n      class=\"link-before-prevent-local\"\n      >Before Event Link (Prevent)</Link\n    >\n    <a href=\"#\" @click.prevent=\"beforeVisitPreventGlobalInertia\" class=\"before-prevent-global-inertia\"\n      >Before Event - Prevent globally using Inertia Event Listener</a\n    >\n    <a href=\"#\" @click.prevent=\"beforeVisitPreventGlobalNative\" class=\"before-prevent-global-native\"\n      >Before Event - Prevent globally using Native Event Listeners</a\n    >\n\n    <!-- Events: CancelToken -->\n    <a href=\"#\" @click.prevent=\"cancelTokenVisit\" class=\"canceltoken\">Cancel Token Event</a>\n    <Link\n      :href=\"$page.url\"\n      method=\"post\"\n      @cancelToken=\"(event) => internalAlert('linkOnCancelToken', event)\"\n      class=\"link-canceltoken\"\n      >Cancel Token Event Link</Link\n    >\n\n    <!-- Events: Cancel -->\n    <a href=\"#\" @click.prevent=\"cancelVisit\" class=\"cancel\">Cancel Event</a>\n\n    <!-- @vue-expect-error - We're testing that the onCancel callback has no arguments, so event will be undefined -->\n    <Link\n      :href=\"$page.url\"\n      method=\"post\"\n      @cancelToken=\"(token) => token.cancel()\"\n      @cancel=\"(event) => internalAlert('linkOnCancel', event)\"\n      class=\"link-cancel\"\n      >Cancel Event Link</Link\n    >\n\n    <!-- Events: Start -->\n    <a href=\"#\" @click.prevent=\"startVisit\" class=\"start\">Start Event</a>\n    <Link :href=\"$page.url\" method=\"post\" @start=\"(event) => internalAlert('linkOnStart', event)\" class=\"link-start\"\n      >Start Event Link</Link\n    >\n\n    <!-- Events: Progress -->\n    <a href=\"#\" @click.prevent=\"progressVisit\" class=\"progress\">Progress Event</a>\n    <a href=\"#\" @click.prevent=\"progressNoFilesVisit\" class=\"progress-no-files\">Missing Progress Event (no files)</a>\n    <Link\n      :href=\"$page.url\"\n      method=\"post\"\n      :data=\"payloadWithFile\"\n      @progress=\"(event) => internalAlert('linkOnProgress', event)\"\n      class=\"link-progress\"\n      >Progress Event Link</Link\n    >\n    <Link\n      :href=\"$page.url\"\n      method=\"post\"\n      @before=\"() => internalAlert('linkProgressNoFilesOnBefore')\"\n      @progress=\"(event) => internalAlert('linkOnProgress', event)\"\n      class=\"link-progress-no-files\"\n      >Progress Event Link (no files)</Link\n    >\n\n    <!-- Events: Error -->\n    <a href=\"#\" @click.prevent=\"errorVisit\" class=\"error\">Error Event</a>\n    <a href=\"#\" @click.prevent=\"errorPromiseVisit\" class=\"error-promise\">Error Event (delaying onFinish w/ Promise)</a>\n    <Link\n      href=\"/events/errors\"\n      method=\"post\"\n      @error=\"(errors) => internalAlert('linkOnError', errors)\"\n      @success=\"() => internalAlert('This listener should not have been called')\"\n      class=\"link-error\"\n      >Error Event Link</Link\n    >\n    <Link\n      href=\"/events/errors\"\n      method=\"post\"\n      @error=\"() => callbackSuccessErrorPromise('linkOnError')\"\n      @success=\"() => internalAlert('This listener should not have been called')\"\n      @finish=\"() => internalAlert('linkOnFinish')\"\n      class=\"link-error-promise\"\n      >Error Event Link (delaying onFinish w/ Promise)</Link\n    >\n\n    <!-- Events: Success -->\n    <a href=\"#\" @click.prevent=\"successVisit\" class=\"success\">Success Event</a>\n    <a href=\"#\" @click.prevent=\"successPromiseVisit\" class=\"success-promise\"\n      >Success Event (delaying onFinish w/ Promise)</a\n    >\n    <Link\n      :href=\"$page.url\"\n      method=\"post\"\n      @error=\"() => internalAlert('This listener should not have been called')\"\n      @success=\"(event) => internalAlert('linkOnSuccess', event)\"\n      class=\"link-success\"\n      >Success Event Link</Link\n    >\n    <Link\n      :href=\"$page.url\"\n      method=\"post\"\n      @error=\"() => internalAlert('This listener should not have been called')\"\n      @success=\"() => callbackSuccessErrorPromise('linkOnSuccess')\"\n      @finish=\"() => internalAlert('linkOnFinish')\"\n      class=\"link-success-promise\"\n      >Success Event Link (delaying onFinish w/ Promise)</Link\n    >\n\n    <!-- Events: HTTP Exception -->\n    <a href=\"#\" @click.prevent=\"httpExceptionVisit\" class=\"http-exception\">HTTP Exception Event</a>\n    <a href=\"#\" @click.prevent=\"httpExceptionPreventVisit\" class=\"http-exception-prevent\"\n      >HTTP Exception Event (Prevent)</a\n    >\n    <a href=\"#\" @click.prevent=\"httpExceptionInertiaResponseVisit\" class=\"http-exception-inertia-response\"\n      >HTTP Exception Event (Inertia Response)</a\n    >\n    <a\n      href=\"#\"\n      @click.prevent=\"httpExceptionInertiaResponsePreventVisit\"\n      class=\"http-exception-inertia-response-prevent\"\n      >HTTP Exception Event (Inertia Response Prevent)</a\n    >\n\n    <!-- Events: Network Error -->\n    <a href=\"#\" @click.prevent=\"networkErrorVisit\" class=\"network-error\">Network Error Event</a>\n    <a href=\"#\" @click.prevent=\"networkErrorPreventVisit\" class=\"network-error-prevent\"\n      >Network Error Event (Prevent)</a\n    >\n\n    <!-- Events: Finish -->\n    <a href=\"#\" @click.prevent=\"finishVisit\" class=\"finish\">Finish Event</a>\n    <Link :href=\"$page.url\" method=\"post\" @finish=\"(event) => internalAlert('linkOnFinish', event)\" class=\"link-finish\"\n      >Finish Event Link</Link\n    >\n\n    <!-- Events: Navigate -->\n    <a href=\"#\" @click.prevent=\"navigateVisit\" class=\"navigate\">Navigate Event</a>\n\n    <!-- Events: Prefetch -->\n    <Link\n      as=\"button\"\n      href=\"/prefetch/2\"\n      prefetch=\"hover\"\n      @prefetching=\"(visit) => internalAlert('linkOnPrefetching', visit)\"\n      @prefetched=\"(response, visit) => internalAlert('linkOnPrefetched', response, visit)\"\n      class=\"link-prefetch-hover\"\n    >\n      Prefetch Event Link (Hover)\n    </Link>\n\n    <!-- Lifecycles -->\n    <a href=\"#\" @click.prevent=\"lifecycleSuccess\" class=\"lifecycle-success\">Lifecycle Success</a>\n    <a href=\"#\" @click.prevent=\"lifecycleError\" class=\"lifecycle-error\">Lifecycle Error</a>\n    <a href=\"#\" @click.prevent=\"lifecycleCancel\" class=\"lifecycle-cancel\">Lifecycle Cancel</a>\n    <a href=\"#\" @click.prevent=\"lifecycleCancelAfterFinish\" class=\"lifecycle-cancel-after-finish\"\n      >Lifecycle Cancel - After Finish</a\n    >\n  </div>\n</template>\n",
+            "usedDeprecatedRules": [
+              {
+                "ruleId": "vue/no-v-for-template-key",
+                "replacedBy": []
+              },
+              {
+                "ruleId": "vue/no-v-model-argument",
+                "replacedBy": []
+              },
+              {
+                "ruleId": "vue/valid-model-definition",
+                "replacedBy": []
+              },
+              {
+                "ruleId": "vue/valid-v-bind-sync",
+                "replacedBy": []
+              }
+            ]
+          }
+        ],
+        "droppedConfigMessageCount": 0
+      },
+      "expectedRepaired": true
+    },
+    {
+      "project": "uni-app",
+      "repository": "https://github.com/dcloudio/uni-app",
+      "revision": "b6cc3df9c10fb058510cc13d7648d4abb50a4fbb",
+      "license": {
+        "spdx": "Apache-2.0",
+        "files": [
+          "LICENSE",
+          "license.md"
+        ]
+      },
+      "path": "src/uni_modules/uts-button/utssdk/app-ios/index.vue",
+      "source": "<template>\r\n  <view class=\"defaultStyles\">\r\n  </view>\r\n</template>\r\n<script lang=\"uts\">\r\n  /**\r\n   * 引用 iOS 系统库\r\n   * [可选实现，按需引入]\r\n   */\r\n  import {\r\n    UIButton,\r\n    UIControl\r\n  } from \"UIKit\"\r\n\r\n  /**\r\n   * 引入三方库\r\n   * [可选实现，按需引入]\r\n   *\r\n   * 在 iOS 平台引入三方库有以下两种方式：\r\n   * 1、通过引入三方库framework 或者.a 等方式，需要将 .framework 放到 ./Frameworks 目录下，将.a 放到 ./Libs 目录下。更多信息[详见](https://uniapp.dcloud.net.cn/plugin/uts-plugin.html#ios-平台原生配置)\r\n   * 2、通过 cocoaPods 方式引入，将要引入的 pod 信息配置到 config.json 文件下的 dependencies-pods 字段下。详细配置方式[详见](https://uniapp.dcloud.net.cn/plugin/uts-ios-cocoapods.html)\r\n   *\r\n   * 在通过上述任意方式依赖三方库后，使用时需要在文件中 import:\r\n   * 示例：import { LottieAnimationView, LottieAnimation, LottieLoopMode\t} from 'Lottie'\r\n   */\r\n\r\n  /**\r\n   * UTSiOS、UTSComponent 为平台内置对象，不需要 import 可直接调用其API，[详见](https://uniapp.dcloud.net.cn/uts/utsios.html)\r\n   */\r\n  import { UTSComponent } from \"DCloudUTSFoundation\"\r\n\r\n  //原生提供以下属性或方法的实现\r\n  export default {\r\n    data() {\r\n      return {\r\n      };\r\n    },\r\n    /**\r\n     * 组件名称，也就是开发者使用的标签\r\n     */\r\n    name: \"uts-button\",\r\n    /**\r\n     * 组件涉及的事件声明，只有声明过的事件，才能被正常发送\r\n     */\r\n    emits: ['buttonclick'],\r\n    /**\r\n     * 属性声明，组件的使用者会传递这些属性值到组件\r\n     */\r\n    props: {\r\n      /**\r\n       * 字符串类型 属性：buttontext  需要设置默认值\r\n       */\r\n      \"buttontext\": {\r\n        type: String,\r\n        default: \"点击触发\"\r\n      }\r\n    },\r\n    /**\r\n     * 组件内部变量声明\r\n     */\r\n\r\n    /**\r\n     * 属性变化监听器实现\r\n     */\r\n    watch: {\r\n      \"buttontext\": {\r\n        /**\r\n         * 这里监听属性变化，并进行组件内部更新\r\n         */\r\n        handler(newValue : String, oldValue : String) {\r\n          this.$el.setTitle(newValue, for = UIControl.State.normal)\r\n        },\r\n        /**\r\n         * 创建时是否通过此方法更新属性，默认值为false\r\n         */\r\n        immediate: false\r\n      },\r\n    },\r\n    /**\r\n     * 规则：如果没有配置expose，则methods中的方法均对外暴露，如果配置了expose，则以expose的配置为准向外暴露\r\n     * ['publicMethod'] 含义为：只有 `publicMethod` 在实例上可用\r\n     */\r\n    expose: ['doSomething'],\r\n    methods: {\r\n      /**\r\n       * 对外公开的组件方法\r\n       * 在uni-app中调用组件方法，可以通过指定ref的方式，例如指定uts-button 标签的ref 为 ’button‘， 调用时使用：this.$refs[\"button\"].doSomething('message');\r\n       */\r\n      doSomething(paramA : string) {\r\n        // 这是组件的自定义方法\r\n        console.log(paramA, 'this is in uts-button component')\r\n      },\r\n\r\n\r\n      /**\r\n       * 内部使用的组件方法\r\n       */\r\n    },\r\n\r\n\r\n    /**\r\n     * 组件被创建，组件第一个生命周期，\r\n     * 在内存中被占用的时候被调用，开发者可以在这里执行一些需要提前执行的初始化逻辑\r\n     * [可选实现]\r\n     */\r\n    created() {\r\n\r\n    },\r\n    /**\r\n     * 对应平台的view载体即将被创建，对应前端beforeMount\r\n     * [可选实现]\r\n     */\r\n    NVBeforeLoad() {\r\n\r\n    },\r\n    /**\r\n     * 创建原生View，必须定义返回值类型\r\n     * 开发者需要重点实现这个函数，声明原生组件被创建出来的过程，以及最终生成的原生组件类型\r\n     * [必须实现]\r\n     */\r\n    NVLoad() : UIButton {\r\n      //必须实现\r\n      buttonClickListsner = new ButtonClickListsner(this)\r\n\r\n      let button = new UIButton()\r\n      button.setTitle(this.buttontext, for = UIControl.State.normal)\r\n      // 在 swift target-action 对应的方法需要以OC的方式来调用，那么OC语言中用Selector来表示一个方法的名称（又称方法选择器），创建一个Selector可以使用 Selector(\"functionName\") 的方式。\r\n      const method = Selector(\"buttonClickAction\")\r\n      if (buttonClickListsner != null) {\r\n        button.addTarget(buttonClickListsner!, action = method, for = UIControl.Event.touchUpInside)\r\n      }\r\n      return button\r\n    },\r\n\r\n    /**\r\n     * 原生View已创建\r\n     * [可选实现]\r\n     */\r\n    NVLoaded() {\r\n      /**\r\n       * 通过 this.$el 来获取原生控件。\r\n       */\r\n      this.$el.setTitle(this.buttontext, for = UIControl.State.normal)\r\n    },\r\n    /**\r\n     * 原生View布局完成\r\n     * [可选实现]\r\n     */\r\n    NVLayouted() {\r\n\r\n    },\r\n    /**\r\n     * 原生View将释放\r\n     * [可选实现]\r\n     */\r\n    NVBeforeUnload() { },\r\n    /**\r\n     * 原生View已释放，这里可以做释放View之后的操作\r\n     * [可选实现]\r\n     */\r\n    NVUnloaded() {\r\n\r\n    },\r\n    /**\r\n     * 组件销毁\r\n     * [可选实现]\r\n     */\r\n    unmounted() { }\r\n\r\n    /**\r\n     * 更多组件开发的信息详见：https://uniapp.dcloud.net.cn/plugin/uts-component.html\r\n     */\r\n  }\r\n\r\n  /**\r\n   * 定义按钮点击后触发回调的类\r\n   * [可选实现]\r\n   */\r\n  class ButtonClickListsner {\r\n    /**\r\n     * 如果需要在回调类或者代理类中对组件进行操作，比如调用组件方法，发送事件等，需要在该类中持有组件对应的原生类的对象。\r\n     * 组件原生类的基类为 UTSComponent，该类是一个泛型类，需要接收一个类型变量，该类型变量就是原生组件的类型。\r\n     */\r\n    private component : UTSComponent<UIButton>\r\n\r\n    constructor(component : UTSComponent<UIButton>) {\r\n      this.component = component\r\n      super.init()\r\n    }\r\n\r\n    /**\r\n     * 按钮点击回调方法\r\n     * 在 swift 中，所有target-action (例如按钮的点击事件，NotificationCenter 的通知事件等)对应的 action 函数前面都要使用 @objc 进行标记。\r\n     * [可选实现]\r\n     */\r\n    @objc buttonClickAction() {\r\n      console.log(\"按钮被点击\")\r\n      // 发送事件\r\n      this.component.__$$emit(\"buttonclick\");\r\n    }\r\n  }\r\n\r\n  /**\r\n   * 定义回调类或者代理类的实例\r\n   * [可选实现]\r\n   */\r\n  let buttonClickListsner : ButtonClickListsner | null = null\r\n</script>\n\r\n<style>\r\n\r\n</style>",
+      "sourceSha256": "bf76f0fdcd05de80434639c3125473ad775e94fe16f856a7171f5b88e0d2ec0f",
+      "before": {
+        "version": "10.9.2",
+        "results": [
+          {
+            "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-matrix-eslint-script-language-20261013/tests/_fixtures/_git/uni-app/src/uni_modules/uts-button/utssdk/app-ios/index.vue",
+            "messages": [
+              {
+                "ruleId": null,
+                "fatal": true,
+                "severity": 2,
+                "message": "Parsing error: Argument expression expected.",
+                "line": 71,
+                "column": 38
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 1,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\r\n  <view class=\"defaultStyles\">\r\n  </view>\r\n</template>\r\n<script lang=\"uts\">\r\n  /**\r\n   * 引用 iOS 系统库\r\n   * [可选实现，按需引入]\r\n   */\r\n  import {\r\n    UIButton,\r\n    UIControl\r\n  } from \"UIKit\"\r\n\r\n  /**\r\n   * 引入三方库\r\n   * [可选实现，按需引入]\r\n   *\r\n   * 在 iOS 平台引入三方库有以下两种方式：\r\n   * 1、通过引入三方库framework 或者.a 等方式，需要将 .framework 放到 ./Frameworks 目录下，将.a 放到 ./Libs 目录下。更多信息[详见](https://uniapp.dcloud.net.cn/plugin/uts-plugin.html#ios-平台原生配置)\r\n   * 2、通过 cocoaPods 方式引入，将要引入的 pod 信息配置到 config.json 文件下的 dependencies-pods 字段下。详细配置方式[详见](https://uniapp.dcloud.net.cn/plugin/uts-ios-cocoapods.html)\r\n   *\r\n   * 在通过上述任意方式依赖三方库后，使用时需要在文件中 import:\r\n   * 示例：import { LottieAnimationView, LottieAnimation, LottieLoopMode\t} from 'Lottie'\r\n   */\r\n\r\n  /**\r\n   * UTSiOS、UTSComponent 为平台内置对象，不需要 import 可直接调用其API，[详见](https://uniapp.dcloud.net.cn/uts/utsios.html)\r\n   */\r\n  import { UTSComponent } from \"DCloudUTSFoundation\"\r\n\r\n  //原生提供以下属性或方法的实现\r\n  export default {\r\n    data() {\r\n      return {\r\n      };\r\n    },\r\n    /**\r\n     * 组件名称，也就是开发者使用的标签\r\n     */\r\n    name: \"uts-button\",\r\n    /**\r\n     * 组件涉及的事件声明，只有声明过的事件，才能被正常发送\r\n     */\r\n    emits: ['buttonclick'],\r\n    /**\r\n     * 属性声明，组件的使用者会传递这些属性值到组件\r\n     */\r\n    props: {\r\n      /**\r\n       * 字符串类型 属性：buttontext  需要设置默认值\r\n       */\r\n      \"buttontext\": {\r\n        type: String,\r\n        default: \"点击触发\"\r\n      }\r\n    },\r\n    /**\r\n     * 组件内部变量声明\r\n     */\r\n\r\n    /**\r\n     * 属性变化监听器实现\r\n     */\r\n    watch: {\r\n      \"buttontext\": {\r\n        /**\r\n         * 这里监听属性变化，并进行组件内部更新\r\n         */\r\n        handler(newValue : String, oldValue : String) {\r\n          this.$el.setTitle(newValue, for = UIControl.State.normal)\r\n        },\r\n        /**\r\n         * 创建时是否通过此方法更新属性，默认值为false\r\n         */\r\n        immediate: false\r\n      },\r\n    },\r\n    /**\r\n     * 规则：如果没有配置expose，则methods中的方法均对外暴露，如果配置了expose，则以expose的配置为准向外暴露\r\n     * ['publicMethod'] 含义为：只有 `publicMethod` 在实例上可用\r\n     */\r\n    expose: ['doSomething'],\r\n    methods: {\r\n      /**\r\n       * 对外公开的组件方法\r\n       * 在uni-app中调用组件方法，可以通过指定ref的方式，例如指定uts-button 标签的ref 为 ’button‘， 调用时使用：this.$refs[\"button\"].doSomething('message');\r\n       */\r\n      doSomething(paramA : string) {\r\n        // 这是组件的自定义方法\r\n        console.log(paramA, 'this is in uts-button component')\r\n      },\r\n\r\n\r\n      /**\r\n       * 内部使用的组件方法\r\n       */\r\n    },\r\n\r\n\r\n    /**\r\n     * 组件被创建，组件第一个生命周期，\r\n     * 在内存中被占用的时候被调用，开发者可以在这里执行一些需要提前执行的初始化逻辑\r\n     * [可选实现]\r\n     */\r\n    created() {\r\n\r\n    },\r\n    /**\r\n     * 对应平台的view载体即将被创建，对应前端beforeMount\r\n     * [可选实现]\r\n     */\r\n    NVBeforeLoad() {\r\n\r\n    },\r\n    /**\r\n     * 创建原生View，必须定义返回值类型\r\n     * 开发者需要重点实现这个函数，声明原生组件被创建出来的过程，以及最终生成的原生组件类型\r\n     * [必须实现]\r\n     */\r\n    NVLoad() : UIButton {\r\n      //必须实现\r\n      buttonClickListsner = new ButtonClickListsner(this)\r\n\r\n      let button = new UIButton()\r\n      button.setTitle(this.buttontext, for = UIControl.State.normal)\r\n      // 在 swift target-action 对应的方法需要以OC的方式来调用，那么OC语言中用Selector来表示一个方法的名称（又称方法选择器），创建一个Selector可以使用 Selector(\"functionName\") 的方式。\r\n      const method = Selector(\"buttonClickAction\")\r\n      if (buttonClickListsner != null) {\r\n        button.addTarget(buttonClickListsner!, action = method, for = UIControl.Event.touchUpInside)\r\n      }\r\n      return button\r\n    },\r\n\r\n    /**\r\n     * 原生View已创建\r\n     * [可选实现]\r\n     */\r\n    NVLoaded() {\r\n      /**\r\n       * 通过 this.$el 来获取原生控件。\r\n       */\r\n      this.$el.setTitle(this.buttontext, for = UIControl.State.normal)\r\n    },\r\n    /**\r\n     * 原生View布局完成\r\n     * [可选实现]\r\n     */\r\n    NVLayouted() {\r\n\r\n    },\r\n    /**\r\n     * 原生View将释放\r\n     * [可选实现]\r\n     */\r\n    NVBeforeUnload() { },\r\n    /**\r\n     * 原生View已释放，这里可以做释放View之后的操作\r\n     * [可选实现]\r\n     */\r\n    NVUnloaded() {\r\n\r\n    },\r\n    /**\r\n     * 组件销毁\r\n     * [可选实现]\r\n     */\r\n    unmounted() { }\r\n\r\n    /**\r\n     * 更多组件开发的信息详见：https://uniapp.dcloud.net.cn/plugin/uts-component.html\r\n     */\r\n  }\r\n\r\n  /**\r\n   * 定义按钮点击后触发回调的类\r\n   * [可选实现]\r\n   */\r\n  class ButtonClickListsner {\r\n    /**\r\n     * 如果需要在回调类或者代理类中对组件进行操作，比如调用组件方法，发送事件等，需要在该类中持有组件对应的原生类的对象。\r\n     * 组件原生类的基类为 UTSComponent，该类是一个泛型类，需要接收一个类型变量，该类型变量就是原生组件的类型。\r\n     */\r\n    private component : UTSComponent<UIButton>\r\n\r\n    constructor(component : UTSComponent<UIButton>) {\r\n      this.component = component\r\n      super.init()\r\n    }\r\n\r\n    /**\r\n     * 按钮点击回调方法\r\n     * 在 swift 中，所有target-action (例如按钮的点击事件，NotificationCenter 的通知事件等)对应的 action 函数前面都要使用 @objc 进行标记。\r\n     * [可选实现]\r\n     */\r\n    @objc buttonClickAction() {\r\n      console.log(\"按钮被点击\")\r\n      // 发送事件\r\n      this.component.__$$emit(\"buttonclick\");\r\n    }\r\n  }\r\n\r\n  /**\r\n   * 定义回调类或者代理类的实例\r\n   * [可选实现]\r\n   */\r\n  let buttonClickListsner : ButtonClickListsner | null = null\r\n</script>\n\r\n<style>\r\n\r\n</style>",
+            "usedDeprecatedRules": [
+              {
+                "ruleId": "vue/no-v-for-template-key",
+                "replacedBy": []
+              },
+              {
+                "ruleId": "vue/no-v-model-argument",
+                "replacedBy": []
+              },
+              {
+                "ruleId": "vue/valid-model-definition",
+                "replacedBy": []
+              },
+              {
+                "ruleId": "vue/valid-v-bind-sync",
+                "replacedBy": []
+              }
+            ]
+          }
+        ],
+        "droppedConfigMessageCount": 0
+      },
+      "expectedRepaired": false
+    },
+    {
+      "project": "uni-app",
+      "repository": "https://github.com/dcloudio/uni-app",
+      "revision": "b6cc3df9c10fb058510cc13d7648d4abb50a4fbb",
+      "license": {
+        "spdx": "Apache-2.0",
+        "files": [
+          "LICENSE",
+          "license.md"
+        ]
+      },
+      "path": "examples/hello-uts/uni_modules/uts-hello-component/utssdk/app-ios/index.vue",
+      "source": "<template>\n\t<view class=\"defaultStyles\">\n\t</view>\n</template>\n<script lang=\"uts\">\n\timport {\n\t\tUIButton,\n\t\tUIControl\n\t} from \"UIKit\"\n\n\t// 定义按钮点击后触发回调的类\n\tclass ButtonClickListsner {\n\t\t// 按钮点击回调方法\n\t\t@objc buttonClick() {\n\t\t\tconsole.log(\"按钮被点击\")\n\t\t}\n\t}\n\n\t//原生提供以下属性或方法的实现  \n\texport default {\n\t\tname: \"uts-hello-view\",\n\t\temits: ['buttonClick'],\n\t\tprops: {\n\t\t\t\"buttonText\": {\n\t\t\t\ttype: String,\n\t\t\t\tdefault: \"点击触发\"\n\t\t\t}\n\t\t},\n\t\twatch: {\n\t\t\t\"buttonText\": {\n\t\t\t\t/**\n\t\t\t\t * 这里监听属性变化，并进行组件内部更新\n\t\t\t\t */\n\t\t\t\thandler(newButtonText: string, oldButtonText) {\n\t\t\t\t\tthis.$el.setTitle(newButtonText, for = UIControl.State.normal)\n\t\t\t\t},\n\t\t\t\timmediate: false //创建时是否通过此方法更新属性，默认值为false  \n\t\t\t},\n\t\t},\n\t\tdata() {\n\t\t\treturn {\n\t\t\t\tbuttonClickListsner : new ButtonClickListsner()\n\t\t\t}\n\t\t},\n\t\texpose: ['doSth'],\n\t\tmethods: {\n\t\t\t/**\n\t\t\t * 对外公开的组件方法\n\t\t\t */\n\t\t\tdoSth(paramA: string) {\n\t\t\t\t// 这是组件的自定义方法\n\t\t\t\tconsole.log(\"paramA\")\n\t\t\t}\n\t\t},\n\t\t/**\n\t\t * 创建原生View，必须定义返回值类型\n\t\t */\n\t\tNVLoad(): UIButton {\n\t\t\t//必须实现  \n\t\t\tlet button = new UIButton()\n\t\t\tbutton.setTitle(this.buttonText, for = UIControl.State.normal)\n\t\t\tconst method = Selector(\"buttonClick\")\n\t\t\tbutton.addTarget(this.buttonClickListsner, action = method, for = UIControl.Event.touchUpInside)\n\t\t\treturn button\n\t\t}\n\t}\n</script>",
+      "sourceSha256": "24bc6da0e2edf4ecd3479e96be230cdcecefa9af797767ed6f15f40a7b26279f",
+      "before": {
+        "version": "10.9.2",
+        "results": [
+          {
+            "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-matrix-eslint-script-language-20261013/tests/_fixtures/_git/uni-app/examples/hello-uts/uni_modules/uts-hello-component/utssdk/app-ios/index.vue",
+            "messages": [
+              {
+                "ruleId": null,
+                "fatal": true,
+                "severity": 2,
+                "message": "Parsing error: Argument expression expected.",
+                "line": 35,
+                "column": 38
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 1,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n\t<view class=\"defaultStyles\">\n\t</view>\n</template>\n<script lang=\"uts\">\n\timport {\n\t\tUIButton,\n\t\tUIControl\n\t} from \"UIKit\"\n\n\t// 定义按钮点击后触发回调的类\n\tclass ButtonClickListsner {\n\t\t// 按钮点击回调方法\n\t\t@objc buttonClick() {\n\t\t\tconsole.log(\"按钮被点击\")\n\t\t}\n\t}\n\n\t//原生提供以下属性或方法的实现  \n\texport default {\n\t\tname: \"uts-hello-view\",\n\t\temits: ['buttonClick'],\n\t\tprops: {\n\t\t\t\"buttonText\": {\n\t\t\t\ttype: String,\n\t\t\t\tdefault: \"点击触发\"\n\t\t\t}\n\t\t},\n\t\twatch: {\n\t\t\t\"buttonText\": {\n\t\t\t\t/**\n\t\t\t\t * 这里监听属性变化，并进行组件内部更新\n\t\t\t\t */\n\t\t\t\thandler(newButtonText: string, oldButtonText) {\n\t\t\t\t\tthis.$el.setTitle(newButtonText, for = UIControl.State.normal)\n\t\t\t\t},\n\t\t\t\timmediate: false //创建时是否通过此方法更新属性，默认值为false  \n\t\t\t},\n\t\t},\n\t\tdata() {\n\t\t\treturn {\n\t\t\t\tbuttonClickListsner : new ButtonClickListsner()\n\t\t\t}\n\t\t},\n\t\texpose: ['doSth'],\n\t\tmethods: {\n\t\t\t/**\n\t\t\t * 对外公开的组件方法\n\t\t\t */\n\t\t\tdoSth(paramA: string) {\n\t\t\t\t// 这是组件的自定义方法\n\t\t\t\tconsole.log(\"paramA\")\n\t\t\t}\n\t\t},\n\t\t/**\n\t\t * 创建原生View，必须定义返回值类型\n\t\t */\n\t\tNVLoad(): UIButton {\n\t\t\t//必须实现  \n\t\t\tlet button = new UIButton()\n\t\t\tbutton.setTitle(this.buttonText, for = UIControl.State.normal)\n\t\t\tconst method = Selector(\"buttonClick\")\n\t\t\tbutton.addTarget(this.buttonClickListsner, action = method, for = UIControl.Event.touchUpInside)\n\t\t\treturn button\n\t\t}\n\t}\n</script>",
+            "usedDeprecatedRules": [
+              {
+                "ruleId": "vue/no-v-for-template-key",
+                "replacedBy": []
+              },
+              {
+                "ruleId": "vue/no-v-model-argument",
+                "replacedBy": []
+              },
+              {
+                "ruleId": "vue/valid-model-definition",
+                "replacedBy": []
+              },
+              {
+                "ruleId": "vue/valid-v-bind-sync",
+                "replacedBy": []
+              }
+            ]
+          }
+        ],
+        "droppedConfigMessageCount": 0
+      },
+      "expectedRepaired": false
+    },
+    {
+      "project": "uni-app",
+      "repository": "https://github.com/dcloudio/uni-app",
+      "revision": "b6cc3df9c10fb058510cc13d7648d4abb50a4fbb",
+      "license": {
+        "spdx": "Apache-2.0",
+        "files": [
+          "LICENSE",
+          "license.md"
+        ]
+      },
+      "path": "examples/hello-uvue/uni_modules/test-props/utssdk/app-ios/index.vue",
+      "source": "<template>\n  <view class=\"defaultStyles\">\n  </view>\n</template>\n<script lang=\"uts\">\n  /**\n   * 引用 iOS 系统库\n   * [可选实现，按需引入]\n   */\n  import {\n    UIButton,\n    UIControl\n  } from \"UIKit\"\n\n  /**\n   * 引入三方库\n   * [可选实现，按需引入]\n   *\n   * 在 iOS 平台引入三方库有以下两种方式：\n   * 1、通过引入三方库framework 或者.a 等方式，需要将 .framework 放到 ./Frameworks 目录下，将.a 放到 ./Libs 目录下。更多信息[详见](https://uniapp.dcloud.net.cn/plugin/uts-plugin.html#ios-平台原生配置)\n   * 2、通过 cocoaPods 方式引入，将要引入的 pod 信息配置到 config.json 文件下的 dependencies-pods 字段下。详细配置方式[详见](https://uniapp.dcloud.net.cn/plugin/uts-ios-cocoapods.html)\n   *\n   * 在通过上述任意方式依赖三方库后，使用时需要在文件中 import:\n   * 示例：import { LottieAnimationView, LottieAnimation, LottieLoopMode\t} from 'Lottie'\n   */\n\n  /**\n   * UTSiOS、UTSComponent 为平台内置对象，不需要 import 可直接调用其API，[详见](https://uniapp.dcloud.net.cn/uts/utsios.html)\n   */\n  import { UTSComponent } from \"DCloudUTSFoundation\"\n  import { IObjItem } from '../interface.uts'\n\n  //原生提供以下属性或方法的实现\n  export default {\n    data() {\n      return {\n      };\n    },\n    /**\n     * 组件名称，也就是开发者使用的标签\n     */\n    name: \"test-props\",\n    /**\n     * 组件涉及的事件声明，只有声明过的事件，才能被正常发送\n     */\n    emits: ['buttonclick', 'numListChange', 'objListChange'],\n    /**\n     * 属性声明，组件的使用者会传递这些属性值到组件\n     */\n    props: {\n      /**\n       * 字符串类型 属性：buttontext  需要设置默认值\n       */\n      \"buttontext\": {\n        type: String,\n        default: \"点击触发\"\n      },\n      numList: {\n        type: Array as PropType<number[]>,\n        default: () => [] as number[]\n      },\n      objList: {\n        type: Array as PropType<IObjItem[]>,\n        default: () => [] as IObjItem[]\n      }\n    },\n    /**\n     * 组件内部变量声明\n     */\n\n    /**\n     * 属性变化监听器实现\n     */\n    watch: {\n      \"buttontext\": {\n        /**\n         * 这里监听属性变化，并进行组件内部更新\n         */\n        handler(newValue : String, oldValue : String) {\n          this.$el.setTitle(newValue, for = UIControl.State.normal)\n        },\n        /**\n         * 创建时是否通过此方法更新属性，默认值为false\n         */\n        immediate: false\n      },\n      numList: {\n        handler(newVal : number[], oldVal : number[]) {\n          let detail = new Map<string, any>()\n          detail.set(\"value\", newVal)\n          let data = new Map<string, any>()\n          data.set(\"detail\", detail)\n          this.$emit('numListChange', data)\n        },\n        immediate: true\n      },\n      objList: {\n        handler(newVal : any[], oldVal : any[]) {\n          let detail = new Map<string, any>()\n          detail.set(\"value\", newVal)\n          let data = new Map<string, any>()\n          data.set(\"detail\", detail)\n          this.$emit('objListChange', data)\n        },\n        immediate: true\n      }\n    },\n    /**\n     * 规则：如果没有配置expose，则methods中的方法均对外暴露，如果配置了expose，则以expose的配置为准向外暴露\n     * ['publicMethod'] 含义为：只有 `publicMethod` 在实例上可用\n     */\n    expose: ['doSomething'],\n    methods: {\n      /**\n       * 对外公开的组件方法\n       * 在uni-app中调用组件方法，可以通过指定ref的方式，例如指定uts-button 标签的ref 为 ’button‘， 调用时使用：this.$refs[\"button\"].doSomething('message');\n       */\n      doSomething(paramA : string) {\n        // 这是组件的自定义方法\n        console.log(paramA, 'this is in uts-button component')\n      },\n\n\n      /**\n       * 内部使用的组件方法\n       */\n    },\n\n\n    /**\n     * 组件被创建，组件第一个生命周期，\n     * 在内存中被占用的时候被调用，开发者可以在这里执行一些需要提前执行的初始化逻辑\n     * [可选实现]\n     */\n    created() {\n\n    },\n    /**\n     * 对应平台的view载体即将被创建，对应前端beforeMount\n     * [可选实现]\n     */\n    NVBeforeLoad() {\n\n    },\n    /**\n     * 创建原生View，必须定义返回值类型\n     * 开发者需要重点实现这个函数，声明原生组件被创建出来的过程，以及最终生成的原生组件类型\n     * [必须实现]\n     */\n    NVLoad() : UIButton {\n      //必须实现\n      buttonClickListsner = new ButtonClickListsner(this)\n\n      let button = new UIButton()\n      button.setTitle(this.buttontext, for = UIControl.State.normal)\n      // 在 swift target-action 对应的方法需要以OC的方式来调用，那么OC语言中用Selector来表示一个方法的名称（又称方法选择器），创建一个Selector可以使用 Selector(\"functionName\") 的方式。\n      const method = Selector(\"buttonClickAction\")\n      if (buttonClickListsner != null) {\n        button.addTarget(buttonClickListsner!, action = method, for = UIControl.Event.touchUpInside)\n      }\n      return button\n    },\n\n    /**\n     * 原生View已创建\n     * [可选实现]\n     */\n    NVLoaded() {\n      /**\n       * 通过 this.$el 来获取原生控件。\n       */\n      this.$el.setTitle(this.buttontext, for = UIControl.State.normal)\n    },\n    /**\n     * 原生View布局完成\n     * [可选实现]\n     */\n    NVLayouted() {\n\n    },\n    /**\n     * 原生View将释放\n     * [可选实现]\n     */\n    NVBeforeUnload() { },\n    /**\n     * 原生View已释放，这里可以做释放View之后的操作\n     * [可选实现]\n     */\n    NVUnloaded() {\n\n    },\n    /**\n     * 组件销毁\n     * [可选实现]\n     */\n    unmounted() { }\n\n    /**\n     * 更多组件开发的信息详见：https://uniapp.dcloud.net.cn/plugin/uts-component.html\n     */\n  }\n\n  /**\n   * 定义按钮点击后触发回调的类\n   * [可选实现]\n   */\n  class ButtonClickListsner {\n    /**\n     * 如果需要在回调类或者代理类中对组件进行操作，比如调用组件方法，发送事件等，需要在该类中持有组件对应的原生类的对象。\n     * 组件原生类的基类为 UTSComponent，该类是一个泛型类，需要接收一个类型变量，该类型变量就是原生组件的类型。\n     */\n    private component : UTSComponent<UIButton>\n\n    constructor(component : UTSComponent<UIButton>) {\n      this.component = component\n      super.init()\n    }\n\n    /**\n     * 按钮点击回调方法\n     * 在 swift 中，所有target-action (例如按钮的点击事件，NotificationCenter 的通知事件等)对应的 action 函数前面都要使用 @objc 进行标记。\n     * [可选实现]\n     */\n    @objc buttonClickAction() {\n      console.log(\"按钮被点击\")\n      // 发送事件\n      this.component.__$$emit(\"buttonclick\");\n    }\n  }\n\n  /**\n   * 定义回调类或者代理类的实例\n   * [可选实现]\n   */\n  let buttonClickListsner : ButtonClickListsner | null = null\n</script>\n\n<style>\n\n</style>\n",
+      "sourceSha256": "256be78ea3f32da57b095f26e77c6c359598d221fd30610bd303eb8bdb5669b1",
+      "before": {
+        "version": "10.9.2",
+        "results": [
+          {
+            "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-matrix-eslint-script-language-20261013/tests/_fixtures/_git/uni-app/examples/hello-uvue/uni_modules/test-props/utssdk/app-ios/index.vue",
+            "messages": [
+              {
+                "ruleId": null,
+                "fatal": true,
+                "severity": 2,
+                "message": "Parsing error: Argument expression expected.",
+                "line": 80,
+                "column": 38
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 1,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n  <view class=\"defaultStyles\">\n  </view>\n</template>\n<script lang=\"uts\">\n  /**\n   * 引用 iOS 系统库\n   * [可选实现，按需引入]\n   */\n  import {\n    UIButton,\n    UIControl\n  } from \"UIKit\"\n\n  /**\n   * 引入三方库\n   * [可选实现，按需引入]\n   *\n   * 在 iOS 平台引入三方库有以下两种方式：\n   * 1、通过引入三方库framework 或者.a 等方式，需要将 .framework 放到 ./Frameworks 目录下，将.a 放到 ./Libs 目录下。更多信息[详见](https://uniapp.dcloud.net.cn/plugin/uts-plugin.html#ios-平台原生配置)\n   * 2、通过 cocoaPods 方式引入，将要引入的 pod 信息配置到 config.json 文件下的 dependencies-pods 字段下。详细配置方式[详见](https://uniapp.dcloud.net.cn/plugin/uts-ios-cocoapods.html)\n   *\n   * 在通过上述任意方式依赖三方库后，使用时需要在文件中 import:\n   * 示例：import { LottieAnimationView, LottieAnimation, LottieLoopMode\t} from 'Lottie'\n   */\n\n  /**\n   * UTSiOS、UTSComponent 为平台内置对象，不需要 import 可直接调用其API，[详见](https://uniapp.dcloud.net.cn/uts/utsios.html)\n   */\n  import { UTSComponent } from \"DCloudUTSFoundation\"\n  import { IObjItem } from '../interface.uts'\n\n  //原生提供以下属性或方法的实现\n  export default {\n    data() {\n      return {\n      };\n    },\n    /**\n     * 组件名称，也就是开发者使用的标签\n     */\n    name: \"test-props\",\n    /**\n     * 组件涉及的事件声明，只有声明过的事件，才能被正常发送\n     */\n    emits: ['buttonclick', 'numListChange', 'objListChange'],\n    /**\n     * 属性声明，组件的使用者会传递这些属性值到组件\n     */\n    props: {\n      /**\n       * 字符串类型 属性：buttontext  需要设置默认值\n       */\n      \"buttontext\": {\n        type: String,\n        default: \"点击触发\"\n      },\n      numList: {\n        type: Array as PropType<number[]>,\n        default: () => [] as number[]\n      },\n      objList: {\n        type: Array as PropType<IObjItem[]>,\n        default: () => [] as IObjItem[]\n      }\n    },\n    /**\n     * 组件内部变量声明\n     */\n\n    /**\n     * 属性变化监听器实现\n     */\n    watch: {\n      \"buttontext\": {\n        /**\n         * 这里监听属性变化，并进行组件内部更新\n         */\n        handler(newValue : String, oldValue : String) {\n          this.$el.setTitle(newValue, for = UIControl.State.normal)\n        },\n        /**\n         * 创建时是否通过此方法更新属性，默认值为false\n         */\n        immediate: false\n      },\n      numList: {\n        handler(newVal : number[], oldVal : number[]) {\n          let detail = new Map<string, any>()\n          detail.set(\"value\", newVal)\n          let data = new Map<string, any>()\n          data.set(\"detail\", detail)\n          this.$emit('numListChange', data)\n        },\n        immediate: true\n      },\n      objList: {\n        handler(newVal : any[], oldVal : any[]) {\n          let detail = new Map<string, any>()\n          detail.set(\"value\", newVal)\n          let data = new Map<string, any>()\n          data.set(\"detail\", detail)\n          this.$emit('objListChange', data)\n        },\n        immediate: true\n      }\n    },\n    /**\n     * 规则：如果没有配置expose，则methods中的方法均对外暴露，如果配置了expose，则以expose的配置为准向外暴露\n     * ['publicMethod'] 含义为：只有 `publicMethod` 在实例上可用\n     */\n    expose: ['doSomething'],\n    methods: {\n      /**\n       * 对外公开的组件方法\n       * 在uni-app中调用组件方法，可以通过指定ref的方式，例如指定uts-button 标签的ref 为 ’button‘， 调用时使用：this.$refs[\"button\"].doSomething('message');\n       */\n      doSomething(paramA : string) {\n        // 这是组件的自定义方法\n        console.log(paramA, 'this is in uts-button component')\n      },\n\n\n      /**\n       * 内部使用的组件方法\n       */\n    },\n\n\n    /**\n     * 组件被创建，组件第一个生命周期，\n     * 在内存中被占用的时候被调用，开发者可以在这里执行一些需要提前执行的初始化逻辑\n     * [可选实现]\n     */\n    created() {\n\n    },\n    /**\n     * 对应平台的view载体即将被创建，对应前端beforeMount\n     * [可选实现]\n     */\n    NVBeforeLoad() {\n\n    },\n    /**\n     * 创建原生View，必须定义返回值类型\n     * 开发者需要重点实现这个函数，声明原生组件被创建出来的过程，以及最终生成的原生组件类型\n     * [必须实现]\n     */\n    NVLoad() : UIButton {\n      //必须实现\n      buttonClickListsner = new ButtonClickListsner(this)\n\n      let button = new UIButton()\n      button.setTitle(this.buttontext, for = UIControl.State.normal)\n      // 在 swift target-action 对应的方法需要以OC的方式来调用，那么OC语言中用Selector来表示一个方法的名称（又称方法选择器），创建一个Selector可以使用 Selector(\"functionName\") 的方式。\n      const method = Selector(\"buttonClickAction\")\n      if (buttonClickListsner != null) {\n        button.addTarget(buttonClickListsner!, action = method, for = UIControl.Event.touchUpInside)\n      }\n      return button\n    },\n\n    /**\n     * 原生View已创建\n     * [可选实现]\n     */\n    NVLoaded() {\n      /**\n       * 通过 this.$el 来获取原生控件。\n       */\n      this.$el.setTitle(this.buttontext, for = UIControl.State.normal)\n    },\n    /**\n     * 原生View布局完成\n     * [可选实现]\n     */\n    NVLayouted() {\n\n    },\n    /**\n     * 原生View将释放\n     * [可选实现]\n     */\n    NVBeforeUnload() { },\n    /**\n     * 原生View已释放，这里可以做释放View之后的操作\n     * [可选实现]\n     */\n    NVUnloaded() {\n\n    },\n    /**\n     * 组件销毁\n     * [可选实现]\n     */\n    unmounted() { }\n\n    /**\n     * 更多组件开发的信息详见：https://uniapp.dcloud.net.cn/plugin/uts-component.html\n     */\n  }\n\n  /**\n   * 定义按钮点击后触发回调的类\n   * [可选实现]\n   */\n  class ButtonClickListsner {\n    /**\n     * 如果需要在回调类或者代理类中对组件进行操作，比如调用组件方法，发送事件等，需要在该类中持有组件对应的原生类的对象。\n     * 组件原生类的基类为 UTSComponent，该类是一个泛型类，需要接收一个类型变量，该类型变量就是原生组件的类型。\n     */\n    private component : UTSComponent<UIButton>\n\n    constructor(component : UTSComponent<UIButton>) {\n      this.component = component\n      super.init()\n    }\n\n    /**\n     * 按钮点击回调方法\n     * 在 swift 中，所有target-action (例如按钮的点击事件，NotificationCenter 的通知事件等)对应的 action 函数前面都要使用 @objc 进行标记。\n     * [可选实现]\n     */\n    @objc buttonClickAction() {\n      console.log(\"按钮被点击\")\n      // 发送事件\n      this.component.__$$emit(\"buttonclick\");\n    }\n  }\n\n  /**\n   * 定义回调类或者代理类的实例\n   * [可选实现]\n   */\n  let buttonClickListsner : ButtonClickListsner | null = null\n</script>\n\n<style>\n\n</style>\n",
+            "usedDeprecatedRules": [
+              {
+                "ruleId": "vue/no-v-for-template-key",
+                "replacedBy": []
+              },
+              {
+                "ruleId": "vue/no-v-model-argument",
+                "replacedBy": []
+              },
+              {
+                "ruleId": "vue/valid-model-definition",
+                "replacedBy": []
+              },
+              {
+                "ruleId": "vue/valid-v-bind-sync",
+                "replacedBy": []
+              }
+            ]
+          }
+        ],
+        "droppedConfigMessageCount": 0
+      },
+      "expectedRepaired": false
+    },
+    {
+      "project": "vitepress",
+      "repository": "https://github.com/vuejs/vitepress",
+      "revision": "9ee401d7adefc39fd960990cc032be5464e4eb27",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "path": "template/.vitepress/theme/Layout.vue",
+      "source": "<script setup<%= useTs ? ' lang=\"ts\"' : '' %>>\nimport { useData } from 'vitepress'\n\n// https://vitepress.dev/reference/runtime-api#usedata\nconst { site, frontmatter } = useData()\n</script>\n\n<template>\n  <div v-if=\"frontmatter.home\">\n    <h1>{{ site.title }}</h1>\n    <p>{{ site.description }}</p>\n    <ul>\n      <li><a href=\"/markdown-examples.html\">Markdown Examples</a></li>\n      <li><a href=\"/api-examples.html\">API Examples</a></li>\n    </ul>\n  </div>\n  <div v-else>\n    <a href=\"/\">Home</a>\n    <Content />\n  </div>\n</template>\n",
+      "sourceSha256": "566cdce4eebbb12bd16f1aa94e514a8ee5afbee97fddb4e2a581e5b707da636f",
+      "before": {
+        "version": "10.9.2",
+        "results": [
+          {
+            "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-matrix-eslint-script-language-20261013/tests/_fixtures/_git/vitepress/template/.vitepress/theme/Layout.vue",
+            "messages": [
+              {
+                "ruleId": null,
+                "fatal": true,
+                "severity": 2,
+                "message": "Parsing error: Expression expected.",
+                "line": 1,
+                "column": 45
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 1,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<script setup<%= useTs ? ' lang=\"ts\"' : '' %>>\nimport { useData } from 'vitepress'\n\n// https://vitepress.dev/reference/runtime-api#usedata\nconst { site, frontmatter } = useData()\n</script>\n\n<template>\n  <div v-if=\"frontmatter.home\">\n    <h1>{{ site.title }}</h1>\n    <p>{{ site.description }}</p>\n    <ul>\n      <li><a href=\"/markdown-examples.html\">Markdown Examples</a></li>\n      <li><a href=\"/api-examples.html\">API Examples</a></li>\n    </ul>\n  </div>\n  <div v-else>\n    <a href=\"/\">Home</a>\n    <Content />\n  </div>\n</template>\n",
+            "usedDeprecatedRules": [
+              {
+                "ruleId": "vue/no-v-for-template-key",
+                "replacedBy": []
+              },
+              {
+                "ruleId": "vue/no-v-model-argument",
+                "replacedBy": []
+              },
+              {
+                "ruleId": "vue/valid-model-definition",
+                "replacedBy": []
+              },
+              {
+                "ruleId": "vue/valid-v-bind-sync",
+                "replacedBy": []
+              }
+            ]
+          }
+        ],
+        "droppedConfigMessageCount": 0
+      },
+      "expectedRepaired": false
+    },
+    {
+      "project": "vux",
+      "repository": "https://github.com/airyland/vux",
+      "revision": "881e6803832b535aff3ef90a9aee9fba6aae1a9a",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "path": "packages/loader/test/fixtures/pre.vue",
+      "source": "<style lang=\"stylus\">\r\nfont-stack = Helvetica, sans-serif\r\nprimary-color = #999\r\nbody\r\n  font 100% font-stack\r\n  color primary-color\r\n</style>\r\n\r\n<template lang=\"pug\">\r\ndiv\r\n  h1 This is the app\r\n  comp-a\r\n  comp-b\r\n</template>\r\n\r\n<script lang=\"coffee\">\r\nmodule.exports =\r\n  data: ->\r\n    msg: 'Hello from coffee!'\r\n</script>\r\n",
+      "sourceSha256": "73c0ad664390dc3bed44fe0a207ca16e67fcd2ad199f09d247579dc59ecd7b37",
+      "before": {
+        "version": "10.9.2",
+        "results": [
+          {
+            "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-matrix-eslint-script-language-20261013/tests/_fixtures/_git/vux/packages/loader/test/fixtures/pre.vue",
+            "messages": [
+              {
+                "ruleId": null,
+                "fatal": true,
+                "severity": 2,
+                "message": "Parsing error: ';' expected.",
+                "line": 18,
+                "column": 6
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 1,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<style lang=\"stylus\">\r\nfont-stack = Helvetica, sans-serif\r\nprimary-color = #999\r\nbody\r\n  font 100% font-stack\r\n  color primary-color\r\n</style>\r\n\r\n<template lang=\"pug\">\r\ndiv\r\n  h1 This is the app\r\n  comp-a\r\n  comp-b\r\n</template>\r\n\r\n<script lang=\"coffee\">\r\nmodule.exports =\r\n  data: ->\r\n    msg: 'Hello from coffee!'\r\n</script>\r\n",
+            "usedDeprecatedRules": [
+              {
+                "ruleId": "vue/no-v-for-template-key",
+                "replacedBy": []
+              },
+              {
+                "ruleId": "vue/no-v-model-argument",
+                "replacedBy": []
+              },
+              {
+                "ruleId": "vue/valid-model-definition",
+                "replacedBy": []
+              },
+              {
+                "ruleId": "vue/valid-v-bind-sync",
+                "replacedBy": []
+              }
+            ]
+          }
+        ],
+        "droppedConfigMessageCount": 0
+      },
+      "expectedRepaired": false
+    }
+  ],
+  "originalRuleMapSha256": "1bcfea743f3d01df9f69a79a61f17a221a723b54b8a40ddcc08ae9c328ba2dc2",
+  "originalRules": {
+    "vue/array-bracket-newline": "warn",
+    "vue/array-bracket-spacing": "warn",
+    "vue/array-element-newline": "warn",
+    "vue/arrow-spacing": "warn",
+    "vue/attribute-hyphenation": "warn",
+    "vue/attributes-order": "warn",
+    "vue/block-lang": "warn",
+    "vue/block-order": "warn",
+    "vue/block-spacing": "warn",
+    "vue/block-tag-newline": "warn",
+    "vue/brace-style": "warn",
+    "vue/camelcase": "warn",
+    "vue/comma-dangle": "warn",
+    "vue/comma-spacing": "warn",
+    "vue/comma-style": "warn",
+    "vue/comment-directive": "warn",
+    "vue/component-api-style": "warn",
+    "vue/dot-location": "warn",
+    "vue/dot-notation": "warn",
+    "vue/enforce-style-attribute": "warn",
+    "vue/eqeqeq": "warn",
+    "vue/first-attribute-linebreak": "warn",
+    "vue/func-call-spacing": "warn",
+    "vue/html-closing-bracket-newline": "warn",
+    "vue/html-closing-bracket-spacing": "warn",
+    "vue/html-comment-content-newline": "warn",
+    "vue/html-comment-content-spacing": "warn",
+    "vue/html-comment-indent": "warn",
+    "vue/html-end-tags": "warn",
+    "vue/html-indent": "warn",
+    "vue/html-quotes": "warn",
+    "vue/jsx-uses-vars": "warn",
+    "vue/key-spacing": "warn",
+    "vue/keyword-spacing": "warn",
+    "vue/match-component-file-name": "warn",
+    "vue/match-component-import-name": "warn",
+    "vue/max-attributes-per-line": "warn",
+    "vue/max-len": "warn",
+    "vue/max-lines-per-block": "warn",
+    "vue/max-props": "warn",
+    "vue/max-template-depth": "warn",
+    "vue/multiline-html-element-content-newline": "warn",
+    "vue/multiline-ternary": "warn",
+    "vue/mustache-interpolation-spacing": "warn",
+    "vue/new-line-between-multi-line-property": "warn",
+    "vue/next-tick-style": "warn",
+    "vue/no-arrow-functions-in-watch": "error",
+    "vue/no-async-in-computed-properties": "error",
+    "vue/no-child-content": "error",
+    "vue/no-computed-properties-in-data": "warn",
+    "vue/no-console": "warn",
+    "vue/no-constant-condition": "warn",
+    "vue/no-custom-modifiers-on-v-model": "warn",
+    "vue/no-deprecated-delete-set": "warn",
+    "vue/no-deprecated-functional-template": "error",
+    "vue/no-deprecated-model-definition": "warn",
+    "vue/no-deprecated-scope-attribute": "error",
+    "vue/no-deprecated-slot-attribute": "error",
+    "vue/no-deprecated-slot-scope-attribute": "error",
+    "vue/no-deprecated-v-bind-sync": "error",
+    "vue/no-deprecated-v-is": "warn",
+    "vue/no-deprecated-v-on-native-modifier": "error",
+    "vue/no-deprecated-v-on-number-modifiers": "error",
+    "vue/no-deprecated-vue-config-keycodes": "warn",
+    "vue/no-dupe-keys": "error",
+    "vue/no-dupe-v-else-if": "error",
+    "vue/no-duplicate-attr-inheritance": "warn",
+    "vue/no-duplicate-attributes": "error",
+    "vue/no-duplicate-class-names": "warn",
+    "vue/no-empty-pattern": "warn",
+    "vue/no-export-in-script-setup": "error",
+    "vue/no-expose-after-await": "warn",
+    "vue/no-extra-parens": "warn",
+    "vue/no-implicit-coercion": "warn",
+    "vue/no-import-compiler-macros": "error",
+    "vue/no-irregular-whitespace": "warn",
+    "vue/no-lifecycle-after-await": "warn",
+    "vue/no-literals-in-template": "warn",
+    "vue/no-lone-template": "warn",
+    "vue/no-loss-of-precision": "warn",
+    "vue/no-multi-spaces": "warn",
+    "vue/no-multiple-slot-args": "warn",
+    "vue/no-mutating-props": "error",
+    "vue/no-negated-condition": "warn",
+    "vue/no-parsing-error": "warn",
+    "vue/no-potential-component-option-typo": "error",
+    "vue/no-ref-as-operand": "error",
+    "vue/no-ref-object-reactivity-loss": "warn",
+    "vue/no-required-prop-with-default": "error",
+    "vue/no-reserved-component-names": "error",
+    "vue/no-reserved-keys": "error",
+    "vue/no-reserved-props": "error",
+    "vue/no-restricted-block": "warn",
+    "vue/no-restricted-call-after-await": "warn",
+    "vue/no-restricted-class": "warn",
+    "vue/no-restricted-component-names": "warn",
+    "vue/no-restricted-component-options": "warn",
+    "vue/no-restricted-custom-event": "warn",
+    "vue/no-restricted-html-elements": "warn",
+    "vue/no-restricted-props": "warn",
+    "vue/no-restricted-static-attribute": "warn",
+    "vue/no-restricted-syntax": "warn",
+    "vue/no-restricted-v-bind": "warn",
+    "vue/no-restricted-v-on": "warn",
+    "vue/no-setup-props-reactivity-loss": "warn",
+    "vue/no-shared-component-data": "warn",
+    "vue/no-side-effects-in-computed-properties": "error",
+    "vue/no-spaces-around-equal-signs-in-attribute": "warn",
+    "vue/no-sparse-arrays": "warn",
+    "vue/no-template-key": "error",
+    "vue/no-template-target-blank": "warn",
+    "vue/no-textarea-mustache": "error",
+    "vue/no-this-in-before-route-enter": "warn",
+    "vue/no-undef-components": "warn",
+    "vue/no-undef-directives": "warn",
+    "vue/no-undef-properties": "warn",
+    "vue/no-unsupported-features": "warn",
+    "vue/no-unused-components": "warn",
+    "vue/no-unused-vars": "warn",
+    "vue/no-use-computed-property-like-method": "error",
+    "vue/no-use-v-if-with-v-for": "warn",
+    "vue/no-useless-concat": "warn",
+    "vue/no-useless-template-attributes": "error",
+    "vue/no-v-for-template-key": "warn",
+    "vue/no-v-for-template-key-on-child": "error",
+    "vue/no-v-html": "warn",
+    "vue/no-v-model-argument": "warn",
+    "vue/no-v-text-v-html-on-component": "error",
+    "vue/no-watch-after-await": "warn",
+    "vue/object-curly-newline": "warn",
+    "vue/object-curly-spacing": "warn",
+    "vue/object-property-newline": "warn",
+    "vue/object-shorthand": "warn",
+    "vue/one-component-per-file": "warn",
+    "vue/operator-linebreak": "warn",
+    "vue/order-in-components": "warn",
+    "vue/padding-line-between-blocks": "warn",
+    "vue/padding-line-between-tags": "warn",
+    "vue/padding-lines-in-component-definition": "warn",
+    "vue/prefer-import-from-vue": "warn",
+    "vue/prefer-prop-type-boolean-first": "warn",
+    "vue/prefer-separate-static-class": "warn",
+    "vue/prefer-single-event-payload": "warn",
+    "vue/prefer-template": "warn",
+    "vue/prefer-v-model": "warn",
+    "vue/prop-name-casing": "warn",
+    "vue/quote-props": "warn",
+    "vue/require-component-is": "error",
+    "vue/require-default-export": "warn",
+    "vue/require-direct-export": "warn",
+    "vue/require-emit-validator": "warn",
+    "vue/require-expose": "warn",
+    "vue/require-macro-variable-name": "warn",
+    "vue/require-name-property": "warn",
+    "vue/require-prop-comment": "warn",
+    "vue/require-prop-type-constructor": "error",
+    "vue/require-render-return": "warn",
+    "vue/require-slots-as-functions": "warn",
+    "vue/require-toggle-inside-transition": "error",
+    "vue/require-v-for-key": "error",
+    "vue/require-valid-default-prop": "error",
+    "vue/restricted-component-names": "warn",
+    "vue/return-in-computed-property": "error",
+    "vue/return-in-emits-validator": "error",
+    "vue/script-indent": "warn",
+    "vue/singleline-html-element-content-newline": "warn",
+    "vue/sort-keys": "warn",
+    "vue/space-in-parens": "warn",
+    "vue/space-infix-ops": "warn",
+    "vue/space-unary-ops": "warn",
+    "vue/static-class-names-order": "warn",
+    "vue/template-curly-spacing": "warn",
+    "vue/v-for-delimiter-style": "warn",
+    "vue/v-if-else-key": "warn",
+    "vue/v-on-style": "warn",
+    "vue/v-slot-style": "warn",
+    "vue/valid-attribute-name": "error",
+    "vue/valid-define-emits": "error",
+    "vue/valid-define-options": "error",
+    "vue/valid-define-props": "error",
+    "vue/valid-model-definition": "warn",
+    "vue/valid-next-tick": "warn",
+    "vue/valid-template-root": "error",
+    "vue/valid-v-bind": "error",
+    "vue/valid-v-bind-sync": "warn",
+    "vue/valid-v-cloak": "error",
+    "vue/valid-v-else": "error",
+    "vue/valid-v-else-if": "warn",
+    "vue/valid-v-for": "error",
+    "vue/valid-v-html": "error",
+    "vue/valid-v-if": "error",
+    "vue/valid-v-is": "warn",
+    "vue/valid-v-memo": "error",
+    "vue/valid-v-model": "error",
+    "vue/valid-v-on": "error",
+    "vue/valid-v-once": "error",
+    "vue/valid-v-pre": "warn",
+    "vue/valid-v-show": "error",
+    "vue/valid-v-slot": "error",
+    "vue/valid-v-text": "error"
+  }
+}

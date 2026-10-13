@@ -9,7 +9,14 @@ type Job = {
   needs?: string[] | string;
   uses?: string;
   "continue-on-error"?: boolean;
-  steps?: Array<{ if?: string; run?: string; "continue-on-error"?: boolean }>;
+  "timeout-minutes"?: number;
+  steps?: Array<{
+    if?: string;
+    run?: string;
+    uses?: string;
+    with?: Record<string, unknown>;
+    "continue-on-error"?: boolean;
+  }>;
 };
 type Workflow = { jobs: Record<string, Job> };
 const workflow = parse(readRepoFile(".github", "workflows", "check.yml")) as Workflow;
@@ -44,4 +51,24 @@ test("docs-only dependency policy changes still run a mandatory metadata gate", 
     /node tools\/support\/compat\/davinci\/level-dependencies\.mjs --base/,
   );
   assert.ok(workflow.jobs?.["test-report"]?.needs?.includes("level-dependency-direction"));
+});
+
+test("dependency checks start without a package-manager bootstrap inside their five-minute budget", () => {
+  const implementation = dependencyWorkflow.jobs["level-dependencies"];
+  assert.equal(implementation["timeout-minutes"], 5);
+  const steps = implementation.steps ?? [];
+  const setupIndex = steps.findIndex((step) => step.uses?.startsWith("actions/setup-node@"));
+  assert.ok(setupIndex >= 0, "set up Node directly before the mandatory checks");
+  const setup = steps[setupIndex];
+  assert.match(setup.uses ?? "", /^actions\/setup-node@[a-f0-9]{40}$/u);
+  assert.equal(setup.with?.["node-version-file"], "package.json");
+  assert.equal(setup.with?.["package-manager-cache"], false);
+  assert.equal(setup.with?.cache, undefined);
+  assert.ok(steps.every((step) => !step.uses?.includes("setup-vp@")));
+  for (const command of [
+    "node --test tests/tooling/davinci-level-dependencies.test.mjs tests/tooling/davinci-directory-dependencies.test.mjs",
+    'node tools/support/compat/davinci/level-dependencies.mjs --base "$DEPENDENCY_BASE"',
+  ]) {
+    assert.ok(steps.findIndex((step) => step.run === command) > setupIndex);
+  }
 });

@@ -45,3 +45,9 @@ range comparisons with the pinned reference. Empty `=` tokens are skipped; HTML
 whitespace keeps newline-spanning attribute values intact. Matching only the
 block parser’s spaces/tabs would diverge from the verified provider on those
 newlines, so no opening-tag fallback or parser-syntax weakening is introduced.
+
+The fresh main composition retains all 323 closed source rows and both historical
+frames. A sealed whole-body receipt reconstructs and reverses the three approved
+current-body edits; the other 320 rows and every non-current manifest field stay
+byte-identical to main. Mutation, omission, reorder, extra-row, mode and source
+refusals remain required. This source evidence grants no native or release credit.

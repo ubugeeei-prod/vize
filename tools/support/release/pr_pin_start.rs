@@ -5,8 +5,11 @@ use super::super::{
 };
 use super::integration::{integration_pr, open_pr};
 use super::{Source, marker, metadata, source, watch};
+#[path = "pr_pin_source_body.rs"]
+mod body;
+use body::{set_body, source_body};
 use serde_json::Value;
-use std::{env, fs, path::Path};
+use std::{env, path::Path};
 
 pub(super) fn expected_cut(expected: Option<&str>, cut: &str) -> Result<(), String> {
     if let Some(expected) = expected {
@@ -46,18 +49,48 @@ fn supports_pin(head: &str, root: &Path) -> Result<(), String> {
 }
 
 pub fn start(bump: &str, root: &Path) -> Result<(), String> {
+    start_selected(bump, None, root)
+}
+
+pub fn start_stable(policy: &str, cut: &str, root: &Path) -> Result<(), String> {
+    start_selected("patch", Some((policy, cut)), root)
+}
+
+fn start_selected(bump: &str, requested: Option<(&str, &str)>, root: &Path) -> Result<(), String> {
     let budget = pr_budget::configured()?;
     if !["patch", "minor", "major", "alpha", "beta", "rc", "release"].contains(&bump) {
         return Err("Unknown release bump".into());
     }
     let repository = authorize(root)?;
-    let cut = github::fetch_main(root)?;
+    let main = github::fetch_main(root)?;
     let expected = match env::var("VIZE_RELEASE_EXPECTED_CUT_SHA") {
         Ok(value) => Some(value),
         Err(env::VarError::NotPresent) => None,
         Err(_) => return Err("VIZE_RELEASE_EXPECTED_CUT_SHA is not valid Unicode.".into()),
     };
-    expected_cut(expected.as_deref(), &cut)?;
+    expected_cut(expected.as_deref(), &main)?;
+    let (cut, stable) = match requested {
+        None => (main.clone(), None),
+        Some((policy, cut)) => {
+            if policy != main {
+                return Err(
+                    "Stable preparation policy is stale; redispatch from current main".into(),
+                );
+            }
+            pr_contract::sha(cut)?;
+            github::git(&["fetch", "--no-tags", "origin", cut], root)?;
+            let (context, plan) = super::stable::load(policy, cut, &repository, root)?;
+            supports_pin(cut, root)?;
+            super::stable::supports_cut(&context, cut, root)?;
+            let latest = github::api(&repository, "releases/latest", root)?;
+            if pr_contract::field(&latest, "/tag_name")?
+                != pr_contract::field(&plan, "/published/tag")?
+            {
+                return Err("A newer public version owns the stable line".into());
+            }
+            (cut.to_owned(), Some(context))
+        }
+    };
     let work = pr_start::pinned_worktree(&cut, root)?;
     let result = (|| {
         let base_version = github::version(&work)?;
@@ -73,6 +106,20 @@ pub fn start(bump: &str, root: &Path) -> Result<(), String> {
         let head = github::git(&["rev-parse", "HEAD"], &work)?;
         let tag = format!("v{}", github::version(&work)?);
         supports_pin(&head, &work)?;
+        if let Some(context) = &stable {
+            if super::stable::target(context, &work)? != tag {
+                return Err("Stable preparation produced a different PATCH version".into());
+            }
+            github::git(
+                &[
+                    "--no-replace-objects",
+                    "cat-file",
+                    "-e",
+                    &format!("{head}:tools/support/release/pr_pin_stable.rs"),
+                ],
+                &work,
+            )?;
+        }
         let branch = format!("release/{tag}");
         super::dispatch::version_owner(&repository, &tag, &work)?;
         pr_budget::check(budget.as_ref())?;
@@ -95,7 +142,8 @@ pub fn start(bump: &str, root: &Path) -> Result<(), String> {
             &["push", "origin", &format!("HEAD:refs/heads/{branch}")],
             &work,
         )?;
-        let body = source_body(&tag, bump, &base_version, &cut, &head, None);
+        let body = source_body(&tag, bump, &base_version, &cut, &head, None)
+            + &super::stable::markers(stable.as_ref());
         let number = open_pr(
             &repository,
             &branch,
@@ -119,6 +167,7 @@ pub fn start(bump: &str, root: &Path) -> Result<(), String> {
             base_version,
             integration: 0,
             closed: false,
+            stable: stable.clone(),
         };
         source.integration = integration_pr(&source, bump, budget.as_ref(), &work)?;
         pr_budget::check(budget.as_ref())?;
@@ -161,13 +210,15 @@ pub fn resume(number: u64, root: &Path) -> Result<(), String> {
             .lines()
             .any(|line| line.starts_with("<!-- vize-release-pin:"))
             && marker(body, "vize-release-integration").is_ok();
-        if complete {
-            source(&repository, number, &head, &tag, true, &work)?;
-        } else {
-            authenticate_partial(&pr, &repository, &head, &tag, &work)?;
-        }
-        pr_budget::check(budget.as_ref())?;
-        let operator = super::lock::acquire(&tag, &head, &work)?;
+        let (stable, operator) = resume_operator(&tag, &head, &work, &|| {
+            let stable = if complete {
+                source(&repository, number, &head, &tag, true, &work)?.stable
+            } else {
+                authenticate_partial(&pr, &repository, &head, &tag, &work)?
+            };
+            pr_budget::check(budget.as_ref())?;
+            Ok(stable)
+        })?;
         if !complete {
             if github::tag_target(&tag, &work)?.is_some() {
                 return Err(
@@ -195,10 +246,11 @@ pub fn resume(number: u64, root: &Path) -> Result<(), String> {
                     tag: tag.clone(),
                     merged: false,
                 },
-                cut,
+                cut: cut.clone(),
                 base_version,
                 integration: 0,
                 closed: false,
+                stable,
             };
             source.integration = integration_pr(&source, &bump, budget.as_ref(), &work)?;
             pr_budget::check(budget.as_ref())?;
@@ -219,13 +271,23 @@ pub fn resume(number: u64, root: &Path) -> Result<(), String> {
     pr_start::finish(result, &work, root)
 }
 
+pub(super) fn resume_operator(
+    tag: &str,
+    head: &str,
+    root: &Path,
+    authenticate: &dyn Fn() -> Result<Option<super::stable::Stable>, String>,
+) -> Result<(Option<super::stable::Stable>, super::lock::Operator), String> {
+    let stable = authenticate()?;
+    Ok((stable, super::lock::acquire(tag, head, root)?))
+}
+
 pub(super) fn authenticate_partial(
     pr: &Value,
     repository: &str,
     head: &str,
     tag: &str,
     root: &Path,
-) -> Result<(), String> {
+) -> Result<Option<super::stable::Stable>, String> {
     pr_contract::candidate_fields(
         pr,
         &github::author(repository, pr_contract::field(pr, "/user/login")?, root)?,
@@ -261,49 +323,8 @@ pub(super) fn authenticate_partial(
         return Err("The interrupted pin fields changed; preserve the source receipt.".into());
     }
     let base = marker(body, "vize-release-base-version")?;
-    metadata::verify_delta(&cut, head, &base, tag.trim_start_matches('v'), root)
-}
-
-fn source_body(
-    tag: &str,
-    bump: &str,
-    base_version: &str,
-    cut: &str,
-    head: &str,
-    integration: Option<u64>,
-) -> String {
-    format!(
-        "## Release {tag}\n\nImmutable source receipt C={cut}, H={head}. Full exact-H checks, release preflight, and all build artifacts qualify this cut. Ordinary main merges continue.\n\nThe separate version integration PR enters the protected queue under maintainer control. The official --pin command verifies actual signed delivery, identical registry closure, and every generated version byte, then creates only an annotated tag at H. This source PR stays draft and is never merged; close it only after successful external publication verification.\n\nResume: `vp run release --resume <PR> --pin`\n\n<!-- vize-release-bump: {bump} -->\n<!-- vize-release-base-version: {base_version} -->\n<!-- vize-release-pin: immutable-v1 -->\n<!-- vize-release-pin-cut: {cut} -->\n<!-- vize-release-pin-head: {head} -->\n{}",
-        integration
-            .map(|id| format!("<!-- vize-release-integration: {id} -->\n"))
-            .unwrap_or_default()
-    )
-}
-
-fn set_body(source: &Source, bump: &str, root: &Path) -> Result<(), String> {
-    let body = source_body(
-        &source.candidate.tag,
-        bump,
-        &source.base_version,
-        &source.cut,
-        &source.candidate.head,
-        Some(source.integration),
-    );
-    let path = root.join(".git-release-pinned-body.md");
-    fs::write(&path, body).map_err(|e| e.to_string())?;
-    let result = github::output(
-        "gh",
-        &[
-            "pr",
-            "edit",
-            &source.candidate.number.to_string(),
-            "--repo",
-            &source.candidate.repository,
-            "--body-file",
-            path.to_str().ok_or("Invalid receipt path")?,
-        ],
-        root,
-    );
-    let _ = fs::remove_file(path);
-    result.map(|_| ())
+    metadata::verify_delta(&cut, head, &base, tag.trim_start_matches('v'), root)?;
+    super::stable::resume_authority(body, tag, &cut, root, &|| {
+        super::stable::from_body(body, &cut, repository, root)
+    })
 }

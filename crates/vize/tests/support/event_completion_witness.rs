@@ -10,10 +10,14 @@ use serde_json::{Value, json};
 
 const MARKER: &str = "vize-event-fixture";
 const PACKAGE: &str = "{\"name\":\"vize-event-fixture\",\"version\":\"0.0.0\",\"private\":true}\n";
+const SLOT_NAVIGATION_PRELUDE: &str = include_str!(
+    "../../../../tests/_fixtures/differential/lsp/component-native-events/slot-navigation-prelude.expected.txt"
+);
 
 pub(super) struct Witness {
     pub app_path: PathBuf,
     pub query_position: usize,
+    pub historical_query_position: usize,
 }
 
 pub(super) fn create_marker(root: &Path) {
@@ -108,6 +112,8 @@ pub(super) fn observe(root: &Path, mut record: impl FnMut(Value)) -> Witness {
     // from this fixture's complete generated binding pattern, never its result.
     let query_position = app[..cursor].encode_utf16().count();
     receipt["query"] = json!({ "sourceRange": [source_start, source_end], "construct": construct, "byteCursor": cursor, "utf16Position": query_position });
+    let (counterfactual, historical_query_position) = historical_counterfactual(&app, construct);
+    receipt["navigationPreludeCounterfactual"] = counterfactual;
     record(receipt);
     let parsed: Value = serde_json::from_str(&config).unwrap();
     assert_eq!(
@@ -120,10 +126,86 @@ pub(super) fn observe(root: &Path, mut record: impl FnMut(Value)) -> Witness {
     Witness {
         app_path,
         query_position,
+        historical_query_position,
     }
 }
 
 fn file(path: &Path) -> Value {
     let source = std::fs::read_to_string(path).unwrap();
     json!({ "path": path, "source": source, "sha256": super::hash(source.as_bytes()) })
+}
+
+// A named source counterfactual preserves the old position; it is not an old backend run.
+fn historical_counterfactual(app: &str, construct: &str) -> (Value, usize) {
+    assert_eq!(SLOT_NAVIGATION_PRELUDE.len(), 1_138);
+    assert_eq!(
+        app.matches(SLOT_NAVIGATION_PRELUDE).count(),
+        1,
+        "one exact slot-navigation prelude"
+    );
+    let source = app.replacen(SLOT_NAVIGATION_PRELUDE, "", 1);
+    assert_eq!(source.matches(construct).count(), 1);
+    let cursor = source.find(construct).unwrap() + "\n  void MySwitch;\n  const { ".len();
+    let query_position = source[..cursor].encode_utf16().count();
+    let digest = super::hash(source.as_bytes());
+    (
+        json!({
+            "kind": "remove-only-exact-slot-navigation-prelude-source-counterfactual",
+            "helperBytesRemoved": SLOT_NAVIGATION_PRELUDE.len(),
+            "source": source,
+            "sha256": digest,
+            "byteCursor": cursor,
+            "utf16Position": query_position,
+            "historicalBackendExecution": false
+        }),
+        query_position,
+    )
+}
+
+#[test]
+fn complete_event_source_counterfactual_recovers_original_position() {
+    // Authored final source is the whole original hosted mirror with only its known helper changed.
+    let current = include_str!(
+        "../../../../tests/_fixtures/differential/lsp/component-native-events/slot-navigation-current-source-counterfactual.txt"
+    );
+    let original = include_str!(
+        "../../../../tests/_fixtures/differential/lsp/component-native-events/slot-navigation-before-source-counterfactual.txt"
+    );
+    let construct =
+        "\n  void MySwitch;\n  const { } = undefined as unknown as __MySwitch_Props_0;\n";
+    let (counterfactual, position) = historical_counterfactual(current, construct);
+    assert_eq!(position, 20_908);
+    assert_eq!(counterfactual["source"].as_str(), Some(original));
+    let cursor = current.find(construct).unwrap() + "\n  void MySwitch;\n  const { ".len();
+    assert_eq!(current[..cursor].encode_utf16().count(), 22_046);
+    let current_maps = current
+        .lines()
+        .filter(|line| line.contains("@vize-map"))
+        .collect::<Vec<_>>();
+    let original_maps = original
+        .lines()
+        .filter(|line| line.contains("@vize-map"))
+        .collect::<Vec<_>>();
+    assert_eq!(current_maps, original_maps);
+    assert_eq!(
+        current_maps,
+        vec![
+            "  // @vize-map: 14458:14560 -> 0:153",
+            "  // @vize-map: expr -> 226:228",
+            "  // @vize-map: component -> 201:214",
+        ]
+    );
+}
+
+#[test]
+#[should_panic(expected = "one exact slot-navigation prelude")]
+fn event_counterfactual_refuses_unknown_prelude() {
+    let current = include_str!(
+        "../../../../tests/_fixtures/differential/lsp/component-native-events/slot-navigation-current-source-counterfactual.txt"
+    );
+    let unknown = current.replace("[keyof NonNullable<__S>]", "[keyof NonNullable<Unknown>]");
+    historical_counterfactual(
+        &unknown,
+        "\n  void MySwitch;\n  const { } = undefined as unknown as __MySwitch_Props_0;\n",
+    );
 }

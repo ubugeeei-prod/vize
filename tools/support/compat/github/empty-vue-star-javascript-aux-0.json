@@ -1,0 +1,137 @@
+[
+  {
+    "path": "tests/performance/support/warm-type-backed-empty-vue-star-host.ts",
+    "before": {
+      "mode": "100644",
+      "blob": "57baf75563bc66643376b61dc7c3084c04bcb495",
+      "byteLength": 10566,
+      "sha256": "4668a48d816279308c341ff3a7c839dc39ea129a2901b0484b65f4905e00386b"
+    },
+    "after": {
+      "mode": "100644",
+      "blob": "57baf75563bc66643376b61dc7c3084c04bcb495",
+      "byteLength": 10566,
+      "sha256": "4668a48d816279308c341ff3a7c839dc39ea129a2901b0484b65f4905e00386b"
+    }
+  },
+  {
+    "path": "tests/tooling/warm-type-backed-empty-vue-star-host.test.ts",
+    "before": {
+      "mode": "100644",
+      "blob": "ccc8d4a3dfc7bc7ba8d1f2f1c7e32bed6a4256ab",
+      "byteLength": 6642,
+      "sha256": "3dc6a16c6e9869302858df257d21e2e2b03acdc13606460bd7849d9d9ce28fc2"
+    },
+    "after": {
+      "mode": "100644",
+      "blob": "ccc8d4a3dfc7bc7ba8d1f2f1c7e32bed6a4256ab",
+      "byteLength": 6642,
+      "sha256": "3dc6a16c6e9869302858df257d21e2e2b03acdc13606460bd7849d9d9ce28fc2"
+    }
+  },
+  {
+    "path": "tools/support/compat/github/native-empty-vue-star-exports.sh",
+    "before": {
+      "mode": "100644",
+      "blob": "e607dba9e31549d587e0be77184bc9228c023518",
+      "byteLength": 1051,
+      "sha256": "d3fe39c13d19ea52a84df1e434fedd235cf9d78366362661bed5b58c21482df4"
+    },
+    "after": {
+      "mode": "100644",
+      "blob": "e607dba9e31549d587e0be77184bc9228c023518",
+      "byteLength": 1051,
+      "sha256": "d3fe39c13d19ea52a84df1e434fedd235cf9d78366362661bed5b58c21482df4"
+    }
+  },
+  {
+    "path": "tools/support/compat/github/native-empty-vue-star-exports.mjs",
+    "before": {
+      "mode": "100644",
+      "blob": "2882bac6e9d6c0b85e91c0bd53342dad1023df3c",
+      "byteLength": 7415,
+      "sha256": "47d2698be04858ebad2e2fc8794069ec54a5df5e6f6aa5d7f9e06f3896f8684f"
+    },
+    "after": {
+      "mode": "100644",
+      "blob": "2882bac6e9d6c0b85e91c0bd53342dad1023df3c",
+      "byteLength": 7415,
+      "sha256": "47d2698be04858ebad2e2fc8794069ec54a5df5e6f6aa5d7f9e06f3896f8684f"
+    }
+  },
+  {
+    "path": "tools/support/compat/github/native-empty-vue-star-exports.test.mjs",
+    "before": {
+      "mode": "100644",
+      "blob": "f53de8a228742fbbab4058ed3e97dc7ae3add630",
+      "byteLength": 2895,
+      "sha256": "d28ea7e813fcd523aea33b42033eedc9dde451382c880203bb94d9674dd9b1f1"
+    },
+    "after": {
+      "mode": "100644",
+      "blob": "f53de8a228742fbbab4058ed3e97dc7ae3add630",
+      "byteLength": 2895,
+      "sha256": "d28ea7e813fcd523aea33b42033eedc9dde451382c880203bb94d9674dd9b1f1"
+    }
+  },
+  {
+    "path": ".github/workflows/typechecker-native-phases.yml",
+    "before": {
+      "mode": "100644",
+      "blob": "eebb794b2a256a090ea4e69019fd7c09b1994bcc",
+      "byteLength": 30759,
+      "sha256": "52b9647e53c976c816762d385254e6f99eadbca8cc084982c44d52db4977acad"
+    },
+    "after": {
+      "mode": "100644",
+      "blob": "e5460f0701ec00d2d9e344d95f8dafcf19eacee9",
+      "byteLength": 30829,
+      "sha256": "ad9f421caf73b7b6131a978bac37436c0c8e2f887389ee7ef91fe443c76c3a38"
+    }
+  },
+  {
+    "path": "tests/performance/support/warm-type-backed-host-qualifications.ts",
+    "before": {
+      "mode": "100644",
+      "blob": "1ac0c7be4fc8aca527fa5ec117639d349ffde956",
+      "byteLength": 3205,
+      "sha256": "bec16c021cf11fce5e41180b42eb7df3ec5a38c6c14bdba64d0aba14991e78fe"
+    },
+    "after": {
+      "mode": "100644",
+      "blob": "6ec974bcbc6c28ed5536084c3f09044430ca00d4",
+      "byteLength": 3465,
+      "sha256": "9d22006fc19d80e1ebb8051cba2dc753a5bbf7756d87e4e5216bdf4fa2a46be4"
+    }
+  },
+  {
+    "path": "docs/davinci/plan/consumer-migration-surfaces/typechecker/vize_canon.tsv",
+    "before": {
+      "mode": "100644",
+      "blob": "86eb874d951cdd595a6569e7512cf3cd25d56e28",
+      "byteLength": 186609,
+      "sha256": "19e4cd3d3c5995da7c3a9a748300da9f54a4c2c012923805e59a8ad340040448"
+    },
+    "after": {
+      "mode": "100644",
+      "blob": "ebe117c979991b9950d2a0693a5b605d9a2ec04c",
+      "byteLength": 187339,
+      "sha256": "2087ce6a7d5a742275c377f699a83f41b913a2ed92fce1ed92fd3bb7925cf575"
+    }
+  },
+  {
+    "path": "tests/tooling/warm-type-backed-empty-vue-star-custody.test.ts",
+    "before": {
+      "mode": "100644",
+      "blob": "4f956ff0f002252459d66b1b502b3db6a1e5f7ba",
+      "byteLength": 10621,
+      "sha256": "f7bcbc31fc8ba8728e1a2c655ac7a034d2c76b7454dbef1e36d5191fd7f53723"
+    },
+    "after": {
+      "mode": "100644",
+      "blob": "88cc1aec3bd663f6f54fe2ea7ae4c13c708b3b9f",
+      "byteLength": 734,
+      "sha256": "ba3c87f92097f4e98d8d9d7fefcbaba6017b688fea1ec282dc29985435b504cb"
+    }
+  }
+]
