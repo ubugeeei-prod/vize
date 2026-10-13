@@ -779,10 +779,10 @@ assert.doesNotMatch(
   /<primitive><\/primitive>/,
   "Custom renderer SSR builds must not stringify imported lowercase components as plain elements",
 );
-assert.doesNotMatch(
-  customRendererSsrCompiled.code,
-  /__vapor/,
-  "Custom renderer SSR builds should not keep the Vapor marker after the SSR fallback",
+assert.equal(
+  customRendererSsrCompiled.code.match(/__vapor: true/g)?.length,
+  1,
+  "Custom renderer SSR builds mark the Vapor component like other SSR builds",
 );
 
 const ssrSuspenseSource = `<script setup lang="ts">
