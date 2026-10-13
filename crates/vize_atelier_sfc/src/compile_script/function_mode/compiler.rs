@@ -24,6 +24,7 @@ use super::super::props::{
     runtime_prop_key, validate_macro_scope_and_props,
 };
 use super::super::typescript::transform_typescript_to_js;
+use super::expose::emit_expose;
 use super::helpers::{collect_runtime_identifier_references, is_reserved_word};
 use super::imports::dedupe_imports;
 use super::model::emit_model_bindings;
@@ -57,6 +58,18 @@ pub fn compile_script_setup(
 
     // Check if we have props destructure
     let has_props_destructure = ctx.macros.props_destructure.is_some();
+    let rest_proxy = ctx
+        .macros
+        .props_destructure
+        .as_ref()
+        .map(|destructure| destructure.rest_proxy_declaration())
+        .transpose()?
+        .flatten();
+    if rest_proxy.is_some() {
+        output.extend_from_slice(
+            b"import { createPropsRestProxy as _createPropsRestProxy } from 'vue'\n",
+        );
+    }
 
     let (imports, setup_lines, module_scope) = super::module_scope::extract(content);
 
@@ -170,6 +183,11 @@ pub fn compile_script_setup(
     // Always call __expose() - Vue runtime requires this for proper component initialization
     // If defineExpose has args, use those; otherwise call with no args
     emit_expose(&mut output, &ctx);
+    if let Some(declaration) = rest_proxy {
+        output.extend_from_slice(b"  ");
+        output.extend_from_slice(declaration.as_bytes());
+        output.push(b'\n');
+    }
 
     // Collect emit binding name for inclusion in __returned__
     let emit_binding_name: Option<String> = ctx
@@ -541,24 +559,6 @@ fn emit_emits_definition(
         output.extend_from_slice(b"  emits: ");
         output.extend_from_slice(emits_macro.args.as_bytes());
         output.extend_from_slice(b",\n");
-    }
-}
-
-/// Emit the __expose() call to the output buffer.
-fn emit_expose(output: &mut vize_carton::Vec<u8>, ctx: &ScriptCompileContext) {
-    if let Some(ref expose_macro) = ctx.macros.define_expose {
-        // args contains the argument content (e.g., "{ foo, bar }")
-        let args = expose_macro.args.trim();
-        if args.is_empty() {
-            output.extend_from_slice(b"  __expose();\n");
-        } else {
-            output.extend_from_slice(b"  __expose(");
-            output.extend_from_slice(args.as_bytes());
-            output.extend_from_slice(b");\n");
-        }
-    } else {
-        // No defineExpose, but still need to call __expose() for Vue runtime
-        output.extend_from_slice(b"  __expose();\n");
     }
 }
 

@@ -1,0 +1,12 @@
+<!-- Child.vue -->
+<script setup lang="ts">
+const { label, ...rest } = defineProps<{
+  label: string;
+  placeholder?: string;
+}>();
+</script>
+
+
+<template>
+  <input :aria-label="label" v-bind="rest" />
+</template>

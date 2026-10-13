@@ -262,7 +262,7 @@ export function hydrateCorpus({ artifact = artifactDir, runCommand = run } = {})
       "--depth",
       "1",
       "--jobs",
-      "8",
+      "32",
       "--",
       ...fixturePaths,
     ]);

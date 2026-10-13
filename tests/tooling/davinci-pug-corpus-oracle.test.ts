@@ -19,6 +19,13 @@ import { test } from "node:test";
 import { loadGlyphCorpusProjects } from "../../tools/support/compat/fixtures/glyph-corpus.mjs";
 import { parseSfc, pug, pugOptions, sha256 } from "./support/pug/oracle-runtime.ts";
 import { findStep, readCanonicalCorpusWorkflow } from "./support/real-project-matrix-workflow.ts";
+import {
+  cargoArguments,
+  observerProcesses,
+  processArguments,
+  processEnvironment,
+} from "../../tools/support/compat/github/canonical-corpus-shard-plan.ts";
+import type { ObserverProcess } from "../../tools/support/compat/github/canonical-corpus-shard-plan.ts";
 
 type Project = { id: string; fixturePath: string; fixtureDir: string; revision: string };
 type Row = { project: string; revision: string; file: string; sha256: string };
@@ -155,12 +162,46 @@ test("the real-project matrix runs the pug corpus compile oracle on the hydrated
   const steps = workflow.jobs?.["canonical-observers"]?.steps ?? [];
   const lane = findStep(steps, "Run L4 SSR and pug L1 differential corpora");
   assert.equal(lane["continue-on-error"], undefined);
-  const corpus = "VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test";
   assert.equal(
     lane.run,
-    "set -o pipefail\n(" +
-      `${corpus} -p vize_atelier_ssr --features legacy-differential --test davinci_ssr_corpus -- --nocapture && ` +
-      `${corpus} -p vize_l1_to_l2 --features legacy-differential --test davinci_pug_corpus -- --nocapture) 2>&1 | tee real-project-davinci-dom-corpus/ssr-pug.log\n`,
+    "node tools/support/compat/github/canonical-corpus-shards.ts run ssr-pug ssr-pug.log",
+  );
+  // The runner builds each binary once and runs it as `cargo test` did:
+  // render every planned process as the equivalent original command.
+  const command = (entry: ObserverProcess) => {
+    const env = processEnvironment(entry, {}, "<package>", "<workspace>");
+    const shard = env.VIZE_DAVINCI_DIFFERENTIAL_CORPUS_SHARD;
+    return [
+      `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=${env.VIZE_DAVINCI_DIFFERENTIAL_CORPUS}`,
+      ...(shard ? [`VIZE_DAVINCI_DIFFERENTIAL_CORPUS_SHARD=${shard}`] : []),
+      "cargo",
+      ...cargoArguments(entry.suite, ["--", ...processArguments(entry)]),
+    ].join(" ");
+  };
+  const corpus = "VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git";
+  const commands = observerProcesses("ssr-pug").map(command);
+  // The complete, unsharded hydrated-corpus pug compile oracle, exactly once.
+  assert.deepEqual(
+    commands.filter((line) => line.includes("davinci_pug_corpus")),
+    [
+      `${corpus} cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_pug_corpus -- --nocapture`,
+    ],
+  );
+  // The SSR corpus binary: every other test once, its corpus sweep in shards.
+  const ssr = `${corpus}%s cargo test -p vize_atelier_ssr --features legacy-differential --test davinci_ssr_corpus -- --exact`;
+  const sweep = "ssr_lanes_agree_on_sfc_templates";
+  const shards = commands.filter((line) => line.includes("_SHARD=")).length;
+  assert(shards > 0);
+  assert.deepEqual(
+    commands.filter((line) => line.includes("davinci_ssr_corpus")),
+    [
+      `${ssr.replace("%s", "")} --skip ${sweep} --nocapture`,
+      ...Array.from(
+        { length: shards },
+        (_, index) =>
+          `${ssr.replace("%s", ` VIZE_DAVINCI_DIFFERENTIAL_CORPUS_SHARD=${index}/${shards}`)} ${sweep} --nocapture`,
+      ),
+    ],
   );
   assert.ok(
     steps.indexOf(lane) < steps.indexOf(findStep(steps, "Record required observer evidence")),

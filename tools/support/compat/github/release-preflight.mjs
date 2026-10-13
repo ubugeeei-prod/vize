@@ -30,6 +30,7 @@ import {
   assertRealProjectMatrixReleaseArtifacts,
   requireRealProjectMatrixRun,
 } from "./release-preflight-matrix-evidence.mjs";
+import { releaseTypecheckParityEnforced } from "./release-preflight-typecheck-evidence.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
 const releasePackageRoots = ["editors", "npm"];
@@ -304,8 +305,8 @@ export async function verifyReleasePreflight(env = process.env, { bootstrap = tr
   await assertRealProjectMatrixReleaseArtifacts({
     run: realProjectMatrixRun,
     artifacts,
-    enforceParity: true,
-    requireTypecheckArtifacts: true,
+    enforceParity: releaseTypecheckParityEnforced,
+    requireTypecheckArtifacts: releaseTypecheckParityEnforced,
     readArtifactEntries: async (artifact) => downloadArtifactEntries({ artifact, token }),
   });
   verifyGitReleaseTarget(tag, sha, version);

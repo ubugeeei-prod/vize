@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { join, posix } from "node:path";
 import { finiteCommittedInventory, walkCommittedGraph } from "./canonical-corpus-logical-walk.mjs";
+import { commandOutput, runChainsSync } from "./canonical-corpus-batch.ts";
 
 export const corpusRoot = "tests/_fixtures/_git";
 const excluded = new Set(["node_modules", "_git-worktrees"]);
@@ -182,11 +182,13 @@ export function verifyCommittedInventory(proof, gitlinks) {
   return files;
 }
 
-function readObjects(repository, requests) {
-  const bytes = execFileSync("git", ["-C", repository, "cat-file", "--batch"], {
-    input: `${requests.map(([id]) => id).join("\n")}\n`,
-    maxBuffer: 256 * 1024 * 1024,
-  });
+const batchRequest = (repository, requests) => ({
+  cwd: process.cwd(),
+  args: ["-C", repository, "cat-file", "--batch"],
+  input: `${requests.map(([id]) => id).join("\n")}\n`,
+});
+
+function parseObjects(bytes, requests) {
   let offset = 0;
   const objects = [];
   for (const [id, type] of requests) {
@@ -210,17 +212,21 @@ function readObjects(repository, requests) {
 }
 
 export function createCommittedProof(cwd, gitlinks, repositoryFor = (row) => join(cwd, row.path)) {
-  const repositories = gitlinks.map((row) => {
-    const repository = repositoryFor(row);
-    const commit = execFileSync("git", ["-C", repository, "cat-file", "commit", row.sha], {
-      maxBuffer: 256 * 1024 * 1024,
-    });
+  // Each fixture's commands are unchanged; fixtures run concurrently in two
+  // dependent phases and are checked in committed gitlink order.
+  const repositoryPaths = gitlinks.map(repositoryFor);
+  const listed = runChainsSync(
+    gitlinks.map((row, index) => [
+      { cwd: process.cwd(), args: ["-C", repositoryPaths[index], "cat-file", "commit", row.sha] },
+      { cwd: process.cwd(), args: ["-C", repositoryPaths[index], "ls-tree", "-trz", row.sha] },
+    ]),
+  );
+  const requested = gitlinks.map((row, index) => {
+    const [commitResult, treeResult] = listed[index];
+    const commit = commandOutput(commitResult);
     const match = /^tree ([0-9a-f]{40})\n/.exec(commit.toString("utf8"));
     assert(match, "Missing pinned root tree");
-    const tree = execFileSync("git", ["-C", repository, "ls-tree", "-trz", row.sha], {
-      encoding: "utf8",
-      maxBuffer: 64 * 1024 * 1024,
-    });
+    const tree = commandOutput(treeResult, "utf8");
     const requests = new Map([
       [row.sha, "commit"],
       [match[1], "tree"],
@@ -230,8 +236,15 @@ export function createCommittedProof(cwd, gitlinks, repositoryFor = (row) => joi
       assert(entry, "Invalid pinned tree inventory");
       if (entry[2] === "tree" || entry[1] === "120000") requests.set(entry[3], entry[2]);
     }
-    return { ...row, objects: readObjects(repository, [...requests]) };
+    return [...requests];
   });
+  const objects = runChainsSync(
+    requested.map((requests, index) => [batchRequest(repositoryPaths[index], requests)]),
+  );
+  const repositories = gitlinks.map((row, index) => ({
+    ...row,
+    objects: parseObjects(commandOutput(objects[index][0]), requested[index]),
+  }));
   return { schema: "vize.canonical-committed-inventory", version: 1, repositories };
 }
 

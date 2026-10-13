@@ -163,7 +163,7 @@ function releaseWorkflowRuns(tag: string) {
       "Real Project Matrix",
       ".github/workflows/real-project-matrix.yml",
       "workflow_dispatch",
-      `Real Project Matrix enforced @ ${releaseSha}`,
+      `Real Project Matrix release-gated @ ${releaseSha}`,
     ),
   ];
 }

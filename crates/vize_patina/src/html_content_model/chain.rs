@@ -11,6 +11,7 @@
 use super::facts::{Attr, Cond, ElemId, Ns, Row, eval_attr_cond, facts};
 use super::skeleton::AttrFacts;
 use super::tri::Tri;
+use super::walk::{self, Role};
 
 /// A set of possible namespaces.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -198,14 +199,6 @@ pub struct Chain {
 /// A scan's verdict and, when `Yes`, the index of the deciding frame.
 pub type Scan = (Tri, Option<usize>);
 
-/// How a frame participates in a scan.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Role {
-    Target,
-    Stop,
-    Pass,
-}
-
 impl Chain {
     /// An unknown context with no known frames.
     pub fn truncated() -> Self {
@@ -220,10 +213,10 @@ impl Chain {
         self.frames.last()
     }
 
-    fn exhausted(&self) -> Scan {
+    fn exhausted(&self) -> Tri {
         match self.base {
-            Base::Document => (Tri::No, None),
-            Base::Truncated => (Tri::Maybe, None),
+            Base::Document => Tri::No,
+            Base::Truncated => Tri::Maybe,
         }
     }
 
@@ -231,19 +224,10 @@ impl Chain {
     /// namespace. A frame whose role differs across its possible namespaces
     /// makes the scan unknown.
     fn walk(&self, role: impl Fn(&Frame, Ns) -> Role) -> Scan {
-        for (index, frame) in self.frames.iter().enumerate().rev() {
-            let mut roles = frame.ns.iter().map(|ns| role(frame, ns));
-            let first = roles.next().unwrap_or(Role::Pass);
-            if roles.any(|other| other != first) {
-                return (Tri::Maybe, None);
-            }
-            match first {
-                Role::Target => return (Tri::Yes, Some(index)),
-                Role::Stop => return (Tri::No, None),
-                Role::Pass => {}
-            }
-        }
-        self.exhausted()
+        let role = &role;
+        walk::walk(&self.frames, self.exhausted(), |frame| {
+            frame.ns.iter().map(move |ns| role(frame, ns))
+        })
     }
 
     /// "has an HTML `target` element in the specific scope" whose boundary

@@ -371,7 +371,7 @@ fn production_reach_body() {
     assert_parity(&committed);
     assert_floors(&committed);
 
-    let Some(sweep_root) = davinci_test_support::corpus::resolve_env_sweep() else {
+    let Some(sweep_root) = davinci_test_support::corpus::resolve_env_shard() else {
         eprintln!("VIZE_DAVINCI_DIFFERENTIAL_CORPUS unset: committed fixtures only");
         return;
     };

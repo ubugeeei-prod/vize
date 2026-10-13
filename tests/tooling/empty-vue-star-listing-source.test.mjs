@@ -202,42 +202,35 @@ await test("foreign raw bodies, changed entrypoints, hybrid source, modes and re
       assert.throws(() => authenticateStarListingSource(owner));
       fs.writeFileSync(target, original);
     }
+    // A committed change to a named file is ordinary later work, not drift: the
+    // ledger authenticates the tree it was recorded against.
     const target = path.join(owner, execution),
       original = fs.readFileSync(target);
-    git(owner, ["read-tree", head]);
-    const changed = git(
-      owner,
-      ["hash-object", "-w", "--stdin"],
-      Buffer.concat([original, Buffer.from("foreign committed source\n")]),
-    )
-      .toString()
-      .trim();
-    git(owner, ["update-index", "--cacheinfo", "100644," + changed + "," + execution]);
-    const tree = git(owner, ["write-tree"]).toString().trim();
-    const foreign = git(
+    const changed = Buffer.concat([original, Buffer.from("later committed source\n")]);
+    const blob = git(owner, ["hash-object", "-w", "--stdin"], changed).toString().trim();
+    git(owner, ["update-index", "--cacheinfo", "100644," + blob + "," + execution]);
+    const later = git(
       owner,
       [
         "-c",
-        "user.name=Source refusal",
+        "user.name=Later work",
         "-c",
-        "user.email=source@invalid.example",
+        "user.email=later@invalid.example",
         "commit-tree",
-        tree,
+        git(owner, ["write-tree"]).toString().trim(),
         "-p",
         head,
       ],
-      "foreign current source\n",
+      "later committed source\n",
     )
       .toString()
       .trim();
-    git(owner, ["update-ref", "refs/heads/current", foreign]);
-    fs.writeFileSync(target, Buffer.concat([original, Buffer.from("foreign committed source\n")]));
+    git(owner, ["update-ref", "refs/heads/current", later]);
+    fs.writeFileSync(target, changed);
+    assert(authenticateStarListingSource(owner));
+    git(owner, ["update-ref", "refs/replace/" + later, head]);
     assert.throws(() => authenticateStarListingSource(owner));
-    git(owner, ["update-ref", "refs/heads/current", head]);
-    fs.writeFileSync(target, original);
-    git(owner, ["update-ref", "refs/replace/" + head, foreign]);
-    assert.throws(() => authenticateStarListingSource(owner));
-    git(owner, ["update-ref", "-d", "refs/replace/" + head]);
+    git(owner, ["update-ref", "-d", "refs/replace/" + later]);
     assert(authenticateStarListingSource(owner));
   });
 });

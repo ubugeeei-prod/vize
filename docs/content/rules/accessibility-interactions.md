@@ -13,7 +13,7 @@ For example, a focusable element hidden from assistive technology is covered by
 Compare its Bad/Good examples, use the shown configuration, then run `vp run lint`.
 The [complete accessibility guide](./accessibility.md) explains how these checks fit together.
 
-Every rule on this page includes its purpose, prerequisites, configuration, and complete Bad/Good examples. Highlighted lines show the changes; copied code keeps the complete source. Each packet states its current support limits.
+Every rule on this page includes its purpose, prerequisites, configuration, and complete Bad/Good examples. Highlighted lines show what changes; copying an example gives you the complete source. Each rule also states its current support limits.
 
 
 | Rule | Examples | Purpose |

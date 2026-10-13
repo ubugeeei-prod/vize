@@ -1,0 +1,22 @@
+name: Full tooling plan
+on:
+  workflow_call:
+    outputs:
+      matrix: { value: "${{ jobs.plan.outputs.matrix }}" }
+permissions: { contents: read }
+env: { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true }
+jobs:
+  plan:
+    name: Plan the exhaustive tooling shard matrix
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.plan.outputs.tooling-matrix }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      # The zero base selects the whole inventory; every worker regenerates the same partition.
+      - name: Plan the timed shard matrix
+        id: plan
+        run: node tools/support/compat/github/plan-tooling-tests.mjs 0000000000000000000000000000000000000000 "$GITHUB_SHA" --tier merge --output "$RUNNER_TEMP/tooling-plan.json" --github-output
