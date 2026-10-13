@@ -1,0 +1,109 @@
+{
+  "original": {
+    "run": "38347489618",
+    "attempt": 1,
+    "job": "115133871779",
+    "head": "8fa23ba197df9df384f9375b4fab69852d788505",
+    "logSha256": "983d042a2330e2da470cecb0ac7451ae746202634efbd20d9485b3edfa30a426",
+    "durationMs": 622176,
+    "curlStatus": 56,
+    "httpStatus": "200",
+    "frozenDownloaderSha256": "411e305f26470090d419a0eed7e2a916fafe481a03f8ada4b072ff2829f37912",
+    "comparisonMain": "e78d2cb93e278032cd262201b0a444273618ee25"
+  },
+  "controls": {
+    "rawSha256": "003cf23758e7ad49f9bd808764e95df636908f7c89ec1e96e365804489809265",
+    "packets": [
+      {
+        "file": "candidate-partial-false-1791870300396.json",
+        "status": 0,
+        "elapsedMs": 1718,
+        "requestCount": 2,
+        "curl": [
+          {
+            "status": 18,
+            "http": "200",
+            "url": "https://github.com/fornwall/rust-script/releases/download/0.34.0/rust-script-x86_64-unknown-linux-gnu.tar.gz"
+          },
+          {
+            "status": 0,
+            "http": "200",
+            "url": "https://github.com/fornwall/rust-script/releases/download/0.34.0/rust-script-x86_64-unknown-linux-gnu.tar.gz"
+          }
+        ],
+        "sourceSha256": "ff0ef021dca4b70b9af82b8e240a2e01e516f21b7f8ab1cf0aba69721e6a855d"
+      },
+      {
+        "file": "candidate-partial-false-1791870316145.json",
+        "status": 0,
+        "elapsedMs": 2126,
+        "requestCount": 2,
+        "curl": [
+          {
+            "status": 18,
+            "http": "200",
+            "url": "https://github.com/fornwall/rust-script/releases/download/0.34.0/rust-script-x86_64-unknown-linux-gnu.tar.gz"
+          },
+          {
+            "status": 0,
+            "http": "200",
+            "url": "https://github.com/fornwall/rust-script/releases/download/0.34.0/rust-script-x86_64-unknown-linux-gnu.tar.gz"
+          }
+        ],
+        "sourceSha256": "ff0ef021dca4b70b9af82b8e240a2e01e516f21b7f8ab1cf0aba69721e6a855d"
+      },
+      {
+        "file": "candidate-stall-false-1791870297580.json",
+        "status": 0,
+        "elapsedMs": 7826,
+        "requestCount": 2,
+        "curl": [
+          {
+            "status": 28,
+            "http": "200",
+            "url": "https://github.com/fornwall/rust-script/releases/download/0.34.0/rust-script-x86_64-unknown-linux-gnu.tar.gz"
+          },
+          {
+            "status": 0,
+            "http": "200",
+            "url": "https://github.com/fornwall/rust-script/releases/download/0.34.0/rust-script-x86_64-unknown-linux-gnu.tar.gz"
+          }
+        ],
+        "sourceSha256": "ff0ef021dca4b70b9af82b8e240a2e01e516f21b7f8ab1cf0aba69721e6a855d"
+      },
+      {
+        "file": "candidate-stall-true-1791870313786.json",
+        "status": 28,
+        "elapsedMs": 13240,
+        "requestCount": 2,
+        "curl": [
+          {
+            "status": 28,
+            "http": "200",
+            "url": "https://github.com/fornwall/rust-script/releases/download/0.34.0/rust-script-x86_64-unknown-linux-gnu.tar.gz"
+          },
+          {
+            "status": 28,
+            "http": "200",
+            "url": "https://github.com/fornwall/rust-script/releases/download/0.34.0/rust-script-x86_64-unknown-linux-gnu.tar.gz"
+          }
+        ],
+        "sourceSha256": "ff0ef021dca4b70b9af82b8e240a2e01e516f21b7f8ab1cf0aba69721e6a855d"
+      },
+      {
+        "file": "original-partial-false-1791870298456.json",
+        "status": 18,
+        "elapsedMs": 613,
+        "requestCount": 1,
+        "curl": [
+          {
+            "status": 18,
+            "http": "200",
+            "url": "https://github.com/fornwall/rust-script/releases/download/0.34.0/rust-script-x86_64-unknown-linux-gnu.tar.gz"
+          }
+        ],
+        "sourceSha256": "411e305f26470090d419a0eed7e2a916fafe481a03f8ada4b072ff2829f37912"
+      }
+    ]
+  }
+}
