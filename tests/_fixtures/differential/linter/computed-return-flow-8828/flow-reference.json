@@ -1,0 +1,416 @@
+[
+  {
+    "body": "try{return value}catch{}",
+    "source": "<script setup>import {computed} from \"vue\";computed(()=>{try{return value}catch{}})</script><template><div/></template>",
+    "results": [
+      {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/flow-control.vue",
+        "messages": [
+          {
+            "ruleId": "vue/return-in-computed-property",
+            "severity": 2,
+            "message": "Expected to return a value in computed function.",
+            "line": 1,
+            "column": 53,
+            "messageId": "expectedReturnInFunction",
+            "endLine": 1,
+            "endColumn": 83
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 1,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<script setup>import {computed} from \"vue\";computed(()=>{try{return value}catch{}})</script><template><div/></template>",
+        "usedDeprecatedRules": []
+      }
+    ]
+  },
+  {
+    "body": "try{const value=1;return value}catch{}",
+    "source": "<script setup>import {computed} from \"vue\";computed(()=>{try{const value=1;return value}catch{}})</script><template><div/></template>",
+    "results": [
+      {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/flow-control.vue",
+        "messages": [
+          {
+            "ruleId": "vue/return-in-computed-property",
+            "severity": 2,
+            "message": "Expected to return a value in computed function.",
+            "line": 1,
+            "column": 53,
+            "messageId": "expectedReturnInFunction",
+            "endLine": 1,
+            "endColumn": 97
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 1,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<script setup>import {computed} from \"vue\";computed(()=>{try{const value=1;return value}catch{}})</script><template><div/></template>",
+        "usedDeprecatedRules": []
+      }
+    ]
+  },
+  {
+    "body": "try{return obj.value}catch{}",
+    "source": "<script setup>import {computed} from \"vue\";computed(()=>{try{return obj.value}catch{}})</script><template><div/></template>",
+    "results": [
+      {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/flow-control.vue",
+        "messages": [
+          {
+            "ruleId": "vue/return-in-computed-property",
+            "severity": 2,
+            "message": "Expected to return a value in computed function.",
+            "line": 1,
+            "column": 53,
+            "messageId": "expectedReturnInFunction",
+            "endLine": 1,
+            "endColumn": 87
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 1,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<script setup>import {computed} from \"vue\";computed(()=>{try{return obj.value}catch{}})</script><template><div/></template>",
+        "usedDeprecatedRules": []
+      }
+    ]
+  },
+  {
+    "body": "try{return 1+2}catch{}",
+    "source": "<script setup>import {computed} from \"vue\";computed(()=>{try{return 1+2}catch{}})</script><template><div/></template>",
+    "results": [
+      {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/flow-control.vue",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+      }
+    ]
+  },
+  {
+    "body": "try{const value=1+2;return value}catch{}",
+    "source": "<script setup>import {computed} from \"vue\";computed(()=>{try{const value=1+2;return value}catch{}})</script><template><div/></template>",
+    "results": [
+      {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/flow-control.vue",
+        "messages": [
+          {
+            "ruleId": "vue/return-in-computed-property",
+            "severity": 2,
+            "message": "Expected to return a value in computed function.",
+            "line": 1,
+            "column": 53,
+            "messageId": "expectedReturnInFunction",
+            "endLine": 1,
+            "endColumn": 99
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 1,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<script setup>import {computed} from \"vue\";computed(()=>{try{const value=1+2;return value}catch{}})</script><template><div/></template>",
+        "usedDeprecatedRules": []
+      }
+    ]
+  },
+  {
+    "body": "throw Error()",
+    "source": "<script setup>import {computed} from \"vue\";computed(()=>{throw Error()})</script><template><div/></template>",
+    "results": [
+      {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/flow-control.vue",
+        "messages": [
+          {
+            "ruleId": "vue/return-in-computed-property",
+            "severity": 2,
+            "message": "Expected to return a value in computed function.",
+            "line": 1,
+            "column": 53,
+            "messageId": "expectedReturnInFunction",
+            "endLine": 1,
+            "endColumn": 72
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 1,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<script setup>import {computed} from \"vue\";computed(()=>{throw Error()})</script><template><div/></template>",
+        "usedDeprecatedRules": []
+      }
+    ]
+  },
+  {
+    "body": "while(true){}",
+    "source": "<script setup>import {computed} from \"vue\";computed(()=>{while(true){}})</script><template><div/></template>",
+    "results": [
+      {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/flow-control.vue",
+        "messages": [
+          {
+            "ruleId": "vue/return-in-computed-property",
+            "severity": 2,
+            "message": "Expected to return a value in computed function.",
+            "line": 1,
+            "column": 53,
+            "messageId": "expectedReturnInFunction",
+            "endLine": 1,
+            "endColumn": 72
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 1,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<script setup>import {computed} from \"vue\";computed(()=>{while(true){}})</script><template><div/></template>",
+        "usedDeprecatedRules": []
+      }
+    ]
+  },
+  {
+    "body": "while(true){if(ok)return 1}",
+    "source": "<script setup>import {computed} from \"vue\";computed(()=>{while(true){if(ok)return 1}})</script><template><div/></template>",
+    "results": [
+      {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/flow-control.vue",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+      }
+    ]
+  },
+  {
+    "body": "try{return 1}catch{}",
+    "source": "<script setup>import {computed} from \"vue\";computed(()=>{try{return 1}catch{}})</script><template><div/></template>",
+    "results": [
+      {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/flow-control.vue",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+      }
+    ]
+  },
+  {
+    "body": "try{return call()}catch{}",
+    "source": "<script setup>import {computed} from \"vue\";computed(()=>{try{return call()}catch{}})</script><template><div/></template>",
+    "results": [
+      {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/flow-control.vue",
+        "messages": [
+          {
+            "ruleId": "vue/return-in-computed-property",
+            "severity": 2,
+            "message": "Expected to return a value in computed function.",
+            "line": 1,
+            "column": 53,
+            "messageId": "expectedReturnInFunction",
+            "endLine": 1,
+            "endColumn": 84
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 1,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<script setup>import {computed} from \"vue\";computed(()=>{try{return call()}catch{}})</script><template><div/></template>",
+        "usedDeprecatedRules": []
+      }
+    ]
+  },
+  {
+    "body": "try{return 1}finally{}",
+    "source": "<script setup>import {computed} from \"vue\";computed(()=>{try{return 1}finally{}})</script><template><div/></template>",
+    "results": [
+      {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/flow-control.vue",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+      }
+    ]
+  },
+  {
+    "body": "try{return 1}finally{return;}",
+    "source": "<script setup>import {computed} from \"vue\";computed(()=>{try{return 1}finally{return;}})</script><template><div/></template>",
+    "results": [
+      {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/flow-control.vue",
+        "messages": [
+          {
+            "ruleId": "vue/return-in-computed-property",
+            "severity": 2,
+            "message": "Expected to return a value in computed function.",
+            "line": 1,
+            "column": 53,
+            "messageId": "expectedReturnInFunction",
+            "endLine": 1,
+            "endColumn": 88
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 1,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<script setup>import {computed} from \"vue\";computed(()=>{try{return 1}finally{return;}})</script><template><div/></template>",
+        "usedDeprecatedRules": []
+      }
+    ]
+  },
+  {
+    "body": "try{return;}finally{return 1}",
+    "source": "<script setup>import {computed} from \"vue\";computed(()=>{try{return;}finally{return 1}})</script><template><div/></template>",
+    "results": [
+      {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/flow-control.vue",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+      }
+    ]
+  },
+  {
+    "body": "if(ok)return;else return 1",
+    "source": "<script setup>import {computed} from \"vue\";computed(()=>{if(ok)return;else return 1})</script><template><div/></template>",
+    "results": [
+      {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/flow-control.vue",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+      }
+    ]
+  },
+  {
+    "body": "if(true)return 1",
+    "source": "<script setup>import {computed} from \"vue\";computed(()=>{if(true)return 1})</script><template><div/></template>",
+    "results": [
+      {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/flow-control.vue",
+        "messages": [
+          {
+            "ruleId": "vue/return-in-computed-property",
+            "severity": 2,
+            "message": "Expected to return a value in computed function.",
+            "line": 1,
+            "column": 53,
+            "messageId": "expectedReturnInFunction",
+            "endLine": 1,
+            "endColumn": 75
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 1,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<script setup>import {computed} from \"vue\";computed(()=>{if(true)return 1})</script><template><div/></template>",
+        "usedDeprecatedRules": []
+      }
+    ]
+  },
+  {
+    "body": "do{return 1}while(ok)",
+    "source": "<script setup>import {computed} from \"vue\";computed(()=>{do{return 1}while(ok)})</script><template><div/></template>",
+    "results": [
+      {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/flow-control.vue",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+      }
+    ]
+  },
+  {
+    "body": "for(;;){return 1}",
+    "source": "<script setup>import {computed} from \"vue\";computed(()=>{for(;;){return 1}})</script><template><div/></template>",
+    "results": [
+      {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/flow-control.vue",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+      }
+    ]
+  },
+  {
+    "body": "switch(kind){default:return 1;case 1:break;} return 2",
+    "source": "<script setup>import {computed} from \"vue\";computed(()=>{switch(kind){default:return 1;case 1:break;} return 2})</script><template><div/></template>",
+    "results": [
+      {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/flow-control.vue",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+      }
+    ]
+  }
+]
