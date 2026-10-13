@@ -6,6 +6,7 @@ on:
   workflow_call:
     inputs:
       run-js: { required: true, type: boolean }
+      run-original-project: { required: true, type: boolean }
 permissions: { contents: read }
 env:
   CARGO_TERM_COLOR: always
@@ -90,6 +91,7 @@ jobs:
           retention-days: 14
   pr-oxlint-project-qualification:
     name: PR Oxlint original project qualification
+    if: ${{ inputs.run-original-project }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 35
     env:

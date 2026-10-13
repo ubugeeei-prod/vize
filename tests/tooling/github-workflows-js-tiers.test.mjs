@@ -52,10 +52,18 @@ void test("PR and merge queue preserve package tests, native declaration, type a
     if: "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}",
     needs: "pr-source-plan",
     uses: jsChecksPath,
-    with: { "run-js": selectedJs },
+    with: {
+      "run-js": selectedJs,
+      "run-original-project": "${{ needs.pr-source-plan.outputs.heavy == 'true' }}",
+    },
   });
   assert.deepEqual(jsChecks.on, {
-    workflow_call: { inputs: { "run-js": { required: true, type: "boolean" } } },
+    workflow_call: {
+      inputs: {
+        "run-js": { required: true, type: "boolean" },
+        "run-original-project": { required: true, type: "boolean" },
+      },
+    },
   });
   assert.deepEqual(Object.keys(jsChecks.jobs), [
     "pr-js-package-tests",
@@ -63,9 +71,14 @@ void test("PR and merge queue preserve package tests, native declaration, type a
     "pr-js-package-conformance",
   ]);
   for (const [name, job] of Object.entries(jsChecks.jobs)) {
-    // Inner jobs never skip: the caller holds the event guard and every
-    // expensive step holds the plan guard, so the caller result covers all.
-    assert.equal(job.if, undefined, name);
+    // The caller holds the event guard and every expensive step holds the plan
+    // guard. Only the original project qualification follows the PR tier: the
+    // merge queue always runs it.
+    assert.equal(
+      job.if,
+      name === "pr-oxlint-project-qualification" ? "${{ inputs.run-original-project }}" : undefined,
+      name,
+    );
     assert.equal(job.needs, undefined, name);
     assert.equal(job.steps[0].if, "${{ !inputs.run-js }}", name);
     assert.match(job.steps[0].run, /skipped because this PR changes no package/, name);
