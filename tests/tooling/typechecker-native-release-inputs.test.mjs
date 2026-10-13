@@ -195,11 +195,12 @@ void test("the actual full local imports and physical source bytes match one ato
       "reviewed-native-ssr-direct-child-custody",
       "reviewed-init-native-ssr-composition",
       "reviewed-stable-patch-operator-inventory",
+      "reviewed-timed-tooling-shards",
     ].includes(verifyReviewedReleaseInputs()),
   );
-  assert.equal(pins.reviews.length, 8);
+  assert.equal(pins.reviews.length, 9);
   const rootCounts = pins.reviews.map((review) => review.presentRoots.length);
-  assert.deepEqual(rootCounts, [2, 3, 3, 3, 3, 3, 3, 3]);
+  assert.deepEqual(rootCounts, [2, 3, 3, 3, 3, 3, 3, 3, 3]);
 });
 void test("a native command with unchanged imports fails for both roots and transitive helpers", (t) => {
   for (const member of [excluded[0], "tools/support/release/retirement_evidence.ts"]) {
