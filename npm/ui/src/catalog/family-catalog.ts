@@ -10,6 +10,7 @@ import { floatingActionButtonFamilyCatalog } from "./family-catalog-floating-act
 import { backToTopFamilyCatalog } from "./family-catalog-back-to-top.ts";
 import { sidebarFamilyCatalog } from "./family-catalog-sidebar.ts";
 import { resizableFamilyCatalog } from "./family-catalog-resizable.ts";
+import { splitButtonFamilyCatalog } from "./family-catalog-split-button.ts";
 import { stickyFamilyCatalog } from "./family-catalog-sticky.ts";
 import { actionFamilyCatalog } from "./family-catalog-actions.ts";
 import { accessibilityFamilyCatalog } from "./family-catalog-accessibility.ts";
@@ -146,6 +147,7 @@ const allFamilyCatalogEntries = [
   ...webcamCaptureFamilyCatalog,
   ...selectionFamilyCatalog,
   ...sliderFamilyCatalog,
+  ...splitButtonFamilyCatalog,
   ...structureFamilyCatalog,
   ...autocompleteFamilyCatalog,
   ...listboxGridFamilyCatalog,

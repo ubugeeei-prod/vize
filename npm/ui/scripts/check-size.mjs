@@ -57,6 +57,7 @@ const budgets = new Map([
   ["floating-action-button.mjs", 19_300],
   ["back-to-top.mjs", 2_000],
   ["button-group.mjs", 3_700],
+  ["split-button.mjs", 43_000],
   ["copy-button.mjs", 2_250],
   ["fullscreen-button.mjs", 2_750],
   ["print-button.mjs", 2_250],

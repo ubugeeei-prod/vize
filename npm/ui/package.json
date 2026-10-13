@@ -390,6 +390,11 @@
       "import": "./dist/button-group.mjs",
       "default": "./dist/button-group.mjs"
     },
+    "./split-button": {
+      "types": "./dist/split-button.d.mts",
+      "import": "./dist/split-button.mjs",
+      "default": "./dist/split-button.mjs"
+    },
     "./copy-button": {
       "types": "./dist/copy-button.d.mts",
       "import": "./dist/copy-button.mjs",

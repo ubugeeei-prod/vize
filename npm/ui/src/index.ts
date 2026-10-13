@@ -70,6 +70,7 @@ export * from "./families/actions/button/button.ts";
 export * from "./families/actions/floating-action-button/floating-action-button.ts";
 export * from "./families/actions/back-to-top/back-to-top.ts";
 export * from "./families/actions/button-group/button-group.ts";
+export * from "./families/actions/split-button/split-button.ts";
 export * from "./families/actions/copy-button/copy-button.ts";
 export * from "./families/actions/fullscreen-button/fullscreen-button.ts";
 export * from "./families/actions/print-button/print-button.ts";

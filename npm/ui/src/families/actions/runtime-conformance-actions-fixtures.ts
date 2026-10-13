@@ -6,6 +6,7 @@ import { floatingActionButtonRuntimeFixtures } from "./floating-action-button/ru
 import { fullscreenButtonRuntimeFixture } from "./fullscreen-button/runtime-conformance-fullscreen-button-fixtures.ts";
 import { printButtonRuntimeFixture } from "./print-button/runtime-conformance-print-button-fixtures.ts";
 import { shareButtonRuntimeFixture } from "./share-button/runtime-conformance-share-button-fixtures.ts";
+import { splitButtonRuntimeFixtures } from "./split-button/runtime-conformance-split-button-fixtures.ts";
 import { toolbarRuntimeFixtures } from "./toolbar/runtime-conformance-toolbar-fixtures.ts";
 
 /** Runtime conformance fixtures owned by the actions family; new action components add theirs here. */
@@ -17,5 +18,6 @@ export const actionRuntimeFixtures: readonly RuntimeFixture[] = [
   fullscreenButtonRuntimeFixture,
   printButtonRuntimeFixture,
   shareButtonRuntimeFixture,
+  ...splitButtonRuntimeFixtures,
   ...toolbarRuntimeFixtures,
 ];

@@ -226,6 +226,7 @@ export const uiFamilyRoots = new Map<string, string>([
   ["spacer", "src/families/layout/spacer/"],
   ["spatial-navigation", "src/families/interaction/spatial-navigation/"],
   ["spinner", "src/families/feedback/spinner/"],
+  ["split-button", "src/families/actions/split-button/"],
   ["splitter", "src/families/layout/splitter/"],
   ["stack", "src/families/layout/stack/"],
   ["status-light", "src/families/feedback/status-light/"],
