@@ -46,7 +46,7 @@ await test("only the selected browser-owning runner needs Chromium, with complet
   );
 });
 
-await test("selected and unsharded workflows provision the actual tests-package browser before execution", () => {
+await test("selected and full workflows provision the actual tests-package browser before execution", () => {
   const read = (file) => fs.readFileSync(new URL(`../../${file}`, import.meta.url), "utf8");
   const source = read(".github/workflows/pr-source-checks.yml");
   const prepare = source.indexOf(
@@ -61,11 +61,18 @@ await test("selected and unsharded workflows provision the actual tests-package 
     /VIZE_TOOLING_TEST_PLAN: \$\{\{ runner\.temp \}\}\/tooling-plan\.json/,
   );
   const check = read(".github/workflows/check.yml");
-  assert.ok(
-    check.indexOf("- name: Install CSS formatter reference browser") >= 0 &&
-      check.indexOf("- name: Install CSS formatter reference browser") <
-        check.indexOf("- name: Test release scripts"),
+  const tooling = check.slice(
+    check.indexOf("\n  test-scripts:"),
+    check.indexOf("\n  editor-extensions:"),
   );
+  assert.match(tooling, /uses: \.\/\.github\/actions\/test-full-tooling/);
+  const worker = read(".github/actions/test-full-tooling/action.yml");
+  assert.ok(
+    worker.indexOf("- name: Install CSS formatter reference browser") >= 0 &&
+      worker.indexOf("- name: Install CSS formatter reference browser") <
+        worker.indexOf("- name: Test release scripts"),
+  );
+  assert.match(worker, /uses: \.\/\.github\/actions\/install-formatter-css-browser/);
   const action = read(".github/actions/install-formatter-css-browser/action.yml");
   assert.ok(action.indexOf("prepare-pkl-schema.mjs") < action.indexOf("id: formatter-css-browser"));
   assert.ok(action.indexOf("id: formatter-css-browser") < action.indexOf("setup-ubuntu-archive"));

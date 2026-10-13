@@ -66,6 +66,27 @@ function assertSourceCoverageHydration(job: {
 test("whole-workspace source coverage prepares the native fixture in its own runner", () => {
   const job = check().jobs["source-coverage"];
   assertSourceCoverageHydration(job);
+  const report = job.steps.find(
+    (step: { name?: string }) => step.name === "Source coverage report",
+  );
+  assert.equal(report.run, "vp run --workspace-root coverage:source");
+  assert.deepEqual(report.env, {
+    VIZE_NATIVE_SYNTAX_CAPTURE_DIR: "${{ runner.temp }}/source-coverage-native-syntax",
+  });
+  assert.equal(report.if, undefined);
+  assert.notEqual(report["continue-on-error"], true);
+  assert.equal(job.env.VIZE_NATIVE_SYNTAX_CAPTURE_DIR, undefined);
+  const packets = job.steps.find(
+    (step: { name?: string }) => step.name === "Retain raw source coverage native syntax packets",
+  );
+  assert.ok(job.steps.indexOf(report) < job.steps.indexOf(packets));
+  assert.equal(packets.if, "${{ always() }}");
+  assert.equal(packets.uses, "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a");
+  assert.deepEqual(packets.with, {
+    name: "source-coverage-native-syntax-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}",
+    path: "${{ runner.temp }}/source-coverage-native-syntax/",
+    "if-no-files-found": "warn",
+  });
   const taskSource = readRepoFile("tools", "config", "vite-plus", "tasks", "test-benchmark.ts");
   const source = taskSource
     .split("const rustSourceCoverageCommand = [")[1]

@@ -13,7 +13,7 @@ import {
   shardEntries,
   typecheckRegistry,
 } from "../_helpers/release-preflight-matrix-evidence-fixture.ts";
-import { createReleasePreflightVerifyOnlyFixture } from "../support/release-preflight-runner-fixture.ts";
+import { runVerifyOnlyPreflight as actualPreflight } from "../support/release-preflight-verify-only.ts";
 import { releaseSha, successfulReleaseRun } from "../support/release-preflight.ts";
 import {
   createReleaseGateDispatchPlans,
@@ -45,7 +45,21 @@ const modeOutcomes = {
   lsp_mode: ["LSP_MODE", "VIZE_LSP_OUTCOME"],
   typecheck_divergence_mode: ["TYPECHECK_DIVERGENCE_MODE", "VIZE_TYPECHECK_DIVERGENCE_OUTCOME"],
 } as const;
-const modeInputs = [...Object.keys(modeOutcomes), "davinci_dom_corpus_mode"];
+// Tool surfaces and the Davinci corpus gate a release. Lint and LSP parity are
+// recorded, and typecheck divergence is skipped, until per-project budgets gate
+// the three parity surfaces again.
+const releaseModes = {
+  core_tools_mode: "enforce",
+  typecheck_dependencies_mode: "enforce",
+  lint_divergence_mode: "record-only",
+  lsp_mode: "record-only",
+  typecheck_divergence_mode: "skip",
+  davinci_dom_corpus_mode: "enforce",
+} as const;
+const enforcedModes = ["core_tools_mode", "typecheck_dependencies_mode"] as const;
+const recordedModes = ["lint_divergence_mode", "lsp_mode"] as const;
+const modeInputs = Object.keys(releaseModes);
+const refusedSurfaceSet = /complete release-gated surface set/;
 const workflow = parse(
   fs.readFileSync(path.join(repoRoot, ".github/workflows/real-project-matrix.yml"), "utf8"),
 );
@@ -67,42 +81,49 @@ function primaryTitle(inputs: Record<string, string>) {
   );
 }
 
-test("primary Matrix enum, actual run-name expression and strict selector bind all six modes", () => {
-  assert.deepEqual(Object.keys(matrixPlan.inputs).sort(byCodeUnit), modeInputs.sort(byCodeUnit));
+function assertSelectorRefuses(title: string, message: string) {
+  const runs = plans.map(
+    (plan: { workflowName: string; expectedRunName: string }, index: number) => ({
+      ...successfulReleaseRun(plan.workflowName, index + 1),
+      display_title: plan.workflowName === "Real Project Matrix" ? title : plan.expectedRunName,
+      head_branch: "release/v0.446.0",
+      event: "workflow_dispatch",
+    }),
+  );
+  assert.throws(
+    () =>
+      selectRequiredWorkflowRuns(
+        runs,
+        releaseSha,
+        requiredReleaseWorkflows,
+        releaseGateRunQualifiers(plans),
+      ),
+    /Real Project Matrix: missing/,
+    message,
+  );
+}
+
+test("primary Matrix enum, actual run-name expression and release selector bind the exact release dispatch", () => {
+  assert.deepEqual(matrixPlan.inputs, releaseModes);
+  assert.equal(matrixPlan.expectedRunName, `Real Project Matrix release-gated @ ${releaseSha}`);
+  assert.equal(primaryTitle(matrixPlan.inputs), matrixPlan.expectedRunName);
   for (const name of modeInputs) {
     const input = workflow.on.workflow_dispatch.inputs[name];
     assert.equal(input.default, "enforce");
     assert.ok(input.options.includes(matrixPlan.inputs[name]));
-    assert.equal(matrixPlan.inputs[name], "enforce");
-    for (const mode of input.options.filter((value: string) => value !== "enforce")) {
+    for (const mode of input.options.filter((value: string) => value !== matrixPlan.inputs[name])) {
       const title = primaryTitle({ ...matrixPlan.inputs, [name]: mode });
       assert.equal(title, `Real Project Matrix observational @ ${releaseSha}`, `${name}=${mode}`);
-      const runs = plans.map(
-        (plan: { workflowName: string; expectedRunName: string }, index: number) => ({
-          ...successfulReleaseRun(plan.workflowName, index + 1),
-          display_title: plan.workflowName === "Real Project Matrix" ? title : plan.expectedRunName,
-          head_branch: "release/v0.446.0",
-          event: "workflow_dispatch",
-        }),
-      );
-      assert.throws(
-        () =>
-          selectRequiredWorkflowRuns(
-            runs,
-            releaseSha,
-            requiredReleaseWorkflows,
-            releaseGateRunQualifiers(plans),
-          ),
-        /Real Project Matrix: missing/,
-      );
+      assertSelectorRefuses(title, `${name}=${mode}`);
     }
   }
-  assert.equal(primaryTitle(matrixPlan.inputs), matrixPlan.expectedRunName);
+  const enforcedTitle = `Real Project Matrix enforced @ ${releaseSha}`;
+  assert.equal(primaryTitle({}), enforcedTitle, "default/scheduled modes are enforced");
   assert.equal(
-    primaryTitle({}),
-    matrixPlan.expectedRunName,
-    "default/scheduled modes are enforced",
+    primaryTitle(Object.fromEntries(modeInputs.map((name) => [name, "enforce"]))),
+    enforcedTitle,
   );
+  assertSelectorRefuses(enforcedTitle, "a fully enforced run is a different dispatch");
   assert.deepEqual(
     plans.map((plan: { workflowName: string }) => plan.workflowName).sort(byCodeUnit),
     [...requiredReleaseWorkflows].sort(byCodeUnit),
@@ -110,7 +131,7 @@ test("primary Matrix enum, actual run-name expression and strict selector bind a
 });
 
 function actualSurfaceReport(overrides: NodeJS.ProcessEnv = {}) {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-enforced-surface-"));
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-gated-surface-"));
   try {
     const output = path.join(directory, "surface-verdict.json");
     const environment: NodeJS.ProcessEnv = {
@@ -120,9 +141,9 @@ function actualSurfaceReport(overrides: NodeJS.ProcessEnv = {}) {
       VIZE_SYNTAX_HIGHLIGHTER_OUTCOME: "success",
       VIZE_GLYPH_OUTCOME: "success",
     };
-    for (const [mode, outcome] of Object.values(modeOutcomes)) {
-      environment[mode] = "enforce";
-      environment[outcome] = "success";
+    for (const [name, [mode, outcome]] of Object.entries(modeOutcomes)) {
+      environment[mode] = releaseModes[name as keyof typeof modeOutcomes];
+      environment[outcome] = environment[mode] === "skip" ? "skipped" : "success";
     }
     const result = spawnSync(
       "rust-script",
@@ -146,52 +167,54 @@ function actualSurfaceReport(overrides: NodeJS.ProcessEnv = {}) {
   }
 }
 
-function actualPreflight(mutate?: (entries: Record<string, string>) => void) {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-enforced-matrix-"));
-  try {
-    const fixture = createReleasePreflightVerifyOnlyFixture(directory, {
-      mutateShardEntries(shard, entries) {
-        if (shard === 0) mutate?.(entries);
-      },
-    });
-    const result = spawnSync(
-      "rust-script",
-      ["tools/commands/ci/github/release-preflight.rs", "--verify-only"],
-      {
-        cwd: repoRoot,
-        encoding: "utf8",
-        env: {
-          ...process.env,
-          PATH: `${fixture.binDir}${path.delimiter}${process.env.PATH ?? ""}`,
-          ...fixture.env,
-        },
-      },
-    );
-    assert.ifError(result.error);
-    return result;
-  } finally {
-    fs.rmSync(directory, { recursive: true, force: true });
-  }
-}
-
-test("actual Rust producer and full 22-archive runtime accept genuine complete enforcement", () => {
-  const report = actualSurfaceReport();
-  assert.equal(report.version, 2);
-  assert.ok(
-    report.surfaces.every(
-      (surface: { budgetMode: string; rawOutcome: string }) =>
-        surface.budgetMode === "enforce" && surface.rawOutcome === "success",
-    ),
-  );
-  const result = actualPreflight((entries) => {
+function preflightWithReport(report: SurfaceReport) {
+  return actualPreflight((entries) => {
     entries["surface-verdict.json"] = JSON.stringify(report);
   });
+}
+
+test("actual Rust producer and full 22-archive runtime accept the exact release-gated dispatch", () => {
+  const report = actualSurfaceReport();
+  assert.equal(report.version, 2);
+  assert.deepEqual(
+    report.surfaces.map((surface) => [surface.name, surface.budgetMode, surface.rawOutcome]),
+    [
+      ["waiver-audit", "enforce", "success"],
+      ["typecheck-dependencies", "enforce", "success"],
+      ["core-tools", "enforce", "success"],
+      ["lsp", "record-only", "success"],
+      ["lint-divergence", "record-only", "success"],
+      ["syntax-highlighter", "enforce", "success"],
+      ["glyph", "enforce", "success"],
+      ["typecheck-divergence", "skip", "skipped"],
+    ],
+  );
+  const result = preflightWithReport(report);
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /Release preflight passed/);
 });
 
-test("actual Rust release runtime refuses record-only and skipped producer successes", () => {
-  for (const [mode, outcome] of Object.values(modeOutcomes)) {
+test("recorded parity surfaces retain a raw failure without refusing the release", () => {
+  for (const name of recordedModes) {
+    const [, outcome] = modeOutcomes[name];
+    const report = actualSurfaceReport({ [outcome]: "failure" });
+    assert.equal(report.status, "success");
+    assert.deepEqual(
+      report.surfaces
+        .filter((surface) => surface.rawOutcome === "failure")
+        .map((surface) => [surface.budgetMode, surface.outcome]),
+      [["record-only", "success"]],
+      name,
+    );
+    const result = preflightWithReport(report);
+    assert.equal(result.status, 0, `${name}: ${result.stderr}`);
+    assert.match(result.stdout, /Release preflight passed/);
+  }
+});
+
+test("actual Rust release runtime refuses observational tool surfaces", () => {
+  for (const name of enforcedModes) {
+    const [mode, outcome] = modeOutcomes[name];
     for (const rawOutcome of ["success", "failure"]) {
       const report = actualSurfaceReport({ [mode]: "record-only", [outcome]: rawOutcome });
       assert.equal(
@@ -199,32 +222,33 @@ test("actual Rust release runtime refuses record-only and skipped producer succe
         "success",
         "observational policy stays distinct from release eligibility",
       );
-      assert.ok(
-        report.surfaces.some(
-          (surface: { budgetMode: string; rawOutcome: string }) =>
-            surface.budgetMode === "record-only" && surface.rawOutcome === rawOutcome,
-        ),
-      );
-      const result = actualPreflight((entries) => {
-        entries["surface-verdict.json"] = JSON.stringify(report);
-      });
-      assert.equal(result.status, 1, `${mode}: ${result.stderr}`);
-      assert.match(result.stderr, /complete enforced surface set/);
+      const result = preflightWithReport(report);
+      assert.equal(result.status, 1, `${name}: ${result.stderr}`);
+      assert.match(result.stderr, refusedSurfaceSet);
     }
   }
-  const report = actualSurfaceReport({
-    TYPECHECK_DIVERGENCE_MODE: "skip",
-    VIZE_TYPECHECK_DIVERGENCE_OUTCOME: "skipped",
-  });
-  assert.equal(report.status, "success");
-  const result = actualPreflight((entries) => {
-    entries["surface-verdict.json"] = JSON.stringify(report);
-  });
-  assert.equal(result.status, 1, result.stderr);
-  assert.match(result.stderr, /complete enforced surface set/);
 });
 
-test("compatibility archive validator also refuses stale, foreign and incomplete strict reports", async () => {
+test("actual Rust release runtime refuses parity surfaces that were not dispatched as release-gated", () => {
+  for (const name of recordedModes) {
+    const [mode] = modeOutcomes[name];
+    const result = preflightWithReport(actualSurfaceReport({ [mode]: "enforce" }));
+    assert.equal(result.status, 1, `${name}: ${result.stderr}`);
+    assert.match(result.stderr, refusedSurfaceSet);
+  }
+  for (const mode of ["enforce", "record-only"]) {
+    const result = preflightWithReport(
+      actualSurfaceReport({
+        TYPECHECK_DIVERGENCE_MODE: mode,
+        VIZE_TYPECHECK_DIVERGENCE_OUTCOME: "success",
+      }),
+    );
+    assert.equal(result.status, 1, `typecheck ${mode}: ${result.stderr}`);
+    assert.match(result.stderr, refusedSurfaceSet);
+  }
+});
+
+test("compatibility archive validator also refuses stale, foreign and incomplete release-gated reports", async () => {
   const run = successfulReleaseRun("Real Project Matrix", 600);
   for (const mutate of [
     (report: SurfaceReport) => {
@@ -249,7 +273,19 @@ test("compatibility archive validator also refuses stale, foreign and incomplete
       report.surfaces[1].budgetMode = "record-only";
     },
     (report: SurfaceReport) => {
-      report.surfaces[7].rawOutcome = "skipped";
+      report.surfaces[2].rawOutcome = "failure";
+    },
+    (report: SurfaceReport) => {
+      report.surfaces[3].rawOutcome = "cancelled";
+    },
+    (report: SurfaceReport) => {
+      report.surfaces[4].budgetMode = "enforce";
+    },
+    (report: SurfaceReport) => {
+      report.surfaces[7].budgetMode = "record-only";
+    },
+    (report: SurfaceReport) => {
+      report.surfaces[7].rawOutcome = "success";
     },
   ]) {
     await assert.rejects(
@@ -271,36 +307,5 @@ test("compatibility archive validator also refuses stale, foreign and incomplete
         }),
       /surface verdict/,
     );
-  }
-});
-
-test("actual Rust release runtime refuses omitted typecheck coverage and retained nonzero divergences", () => {
-  for (const mutate of [
-    (entries: Record<string, string>) => {
-      for (const name of Object.keys(entries))
-        if (name.endsWith("-typecheck-divergence.json")) delete entries[name];
-    },
-    (entries: Record<string, string>) => {
-      const report = JSON.parse(entries["lint-divergence-summary.json"]);
-      report.budget.status = "failure";
-      report.budget.passed = false;
-      report.budget.failedCount = 1;
-      entries["lint-divergence-summary.json"] = JSON.stringify(report);
-    },
-    (entries: Record<string, string>) => {
-      const name = Object.keys(entries).find((name) => name.endsWith("-typecheck-divergence.json"));
-      assert.ok(name);
-      const report = JSON.parse(entries[name]);
-      report.divergence.summary.falseNegativeCount = 1;
-      entries[name] = JSON.stringify(report);
-    },
-  ]) {
-    const result = actualPreflight(mutate);
-    assert.equal(result.status, 1, result.stderr);
-    assert.match(
-      result.stderr,
-      /typecheck dependency artifact count|zero unexplained false positives and false negatives|lint divergence budget/,
-    );
-    assert.doesNotMatch(result.stdout, /Release preflight passed/);
   }
 });

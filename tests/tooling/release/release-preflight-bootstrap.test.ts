@@ -85,12 +85,12 @@ test("release gate plans bind exact SHAs to expected evidence titles", () => {
         inputs: {
           core_tools_mode: "enforce",
           typecheck_dependencies_mode: "enforce",
-          lint_divergence_mode: "enforce",
-          lsp_mode: "enforce",
-          typecheck_divergence_mode: "enforce",
+          lint_divergence_mode: "record-only",
+          lsp_mode: "record-only",
+          typecheck_divergence_mode: "skip",
           davinci_dom_corpus_mode: "enforce",
         },
-        expectedRunName: `Real Project Matrix enforced @ ${releaseSha}`,
+        expectedRunName: `Real Project Matrix release-gated @ ${releaseSha}`,
       },
     ].map((plan) => ({ ref: "v1.2.3", ...plan })),
   );

@@ -62,6 +62,11 @@ Input、Textarea、Checkbox、Switch にはそれぞれ専用の CSS エクス�
 
 Card、Badge、Alert、Tooltip にもそれぞれ個別のビジュアルファイルがあります。Card は `variant`、`density`、`tone` のフックを使います。Badge はラベル、カウント、ステータステキストを区別します。Alert は閉じるボタンを追加せずにライブリージョンのバリアントに従います。Tooltip はトリガーのキーボードフォーカスを見えたままにし、フローティング位置が計測された後にのみ短い登場アニメーションを開始します。静的な Card のサーフェスはアニメーションしません。Badge のトーン変化と Alert/Tooltip の登場アニメーションは `prefers-reduced-motion` の下では停止し、forced-colors モードではシステムの境界線が復元されます。これらのスタイルは Shadow DOM ホストを含め、ネストされたテーマ境界でリセットされます。
 
+Tabs、Breadcrumb、Pagination、Stepper にも、それぞれ独立した CSS ファイルがあります。
+Tabs では、選択状態を示す線が短いアニメーションで移動し、選択中のパネルがなめらかに表示されます。Breadcrumb の区切り文字は、利用側のマークアップで指定します。
+Pagination と Stepper は、スタイルを付けていない場合のナビゲーション動作を変えずに、現在の位置を表示します。画面幅が狭くラベルが収まらない場合、Stepper は横方向の並びを保ったままスクロールします。
+`prefers-reduced-motion` ではアニメーションが停止し、forced-colors モードでもフォーカスと選択状態を見分けられます。Paper、Signal、Atelier のスタイルの上書きは、ネストされたテーマと Shadow DOM ホストの境界でリセットされます。
+
 既存の ProgressBar と ScrollArea の構造およびモーションのレシピも、CSS のみの独立したファイルとして公開されています。それらの JavaScript エントリは、必要な挙動のためにすでにレガシーの集約スタイルシートを読み込みます。JavaScript エントリを使わずに CSS フックを使う場合や、スタイルシートを明示的に制御する場合は、独立したファイルをインポートしてください。1 つのページで両方の経路をインポートするのは避けてください。
 
 | プリセット | 特徴                                                               |
@@ -82,4 +87,4 @@ document.documentElement.dataset.vizeTheme = "signal";
 
 既存の `midnight`、`play`、`high-contrast`、`headless` プリセットも引き続き利用できます。ダイアログやツールチップがドキュメントの body にテレポートされる場合は、フローティングコンテンツがページと同じパレットを継承するよう、`<html>` に `data-vize-theme` を設定してください。保存された設定を使う場合は、`@vizejs/ui/theme-scope` が描画前に実行されるブートストラップスクリプトを提供します。以前の `theme.css`、`theme-preset-*.css`、`style.css` のインポートも引き続き動作します。ただし `style.css` にはすでにベースとすべてのレガシープリセットが含まれているため、`base.css` と一緒にインポートするのは避けてください。
 
-Button には短いホバー、押下、フォーカスのフィードバックがあります。`dialog.css` を使うと、Dialog は表示時にアニメーションし、200ms の退出アニメーションを行います。閉じると、フォーカスの閉じ込め、外側の inert、スクロールロックは即座に解除されます。退出中のシートはアニメーションが終わるまで inert のままで、支援技術からも隠されます。Headless の Dialog は引き続き即座にアンマウントされ、`prefers-reduced-motion: reduce` に一致する場合はスタイル付きの Dialog も同様です。どちらのビジュアルファイルも、forced-colors モードで明確な境界を保ちます。Vize のカスケードレイヤーの外にあるアプリケーションの CSS は、どのルールでも上書きできます。
+Button には短いホバー、押下、フォーカスのフィードバックがあります。`component-dialog.css` を使うと、Dialog は表示時にアニメーションし、200ms の退出アニメーションを行います。閉じると、フォーカスの閉じ込め、外側の inert、スクロールロックは即座に解除されます。退出中のシートはアニメーションが終わるまで inert のままで、支援技術からも隠されます。Headless の Dialog は引き続き即座にアンマウントされ、`prefers-reduced-motion: reduce` に一致する場合はスタイル付きの Dialog も同様です。どちらのビジュアルファイルも、forced-colors モードで明確な境界を保ちます。Vize のカスケードレイヤーの外にあるアプリケーションの CSS は、どのルールでも上書きできます。

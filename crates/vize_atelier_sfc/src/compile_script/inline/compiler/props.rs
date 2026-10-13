@@ -200,7 +200,7 @@ pub(super) fn build_user_props_decl(
             for (i, (key, binding)) in defaults.iter().enumerate() {
                 let default_val = binding.default.as_deref().unwrap_or_default();
                 decl.extend_from_slice(b"  ");
-                decl.extend_from_slice(key.as_bytes());
+                decl.extend_from_slice(runtime_prop_key(key).as_bytes());
                 decl.extend_from_slice(b": ");
                 if binding.default_needs_factory {
                     // Wrap non-literal expressions in a factory: `() => (expr)`.

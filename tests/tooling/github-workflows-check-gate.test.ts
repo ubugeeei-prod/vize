@@ -2,20 +2,12 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 import { parse } from "yaml";
-
 import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.ts";
 import { sourceInventoryLanes } from "../../tools/support/compat/davinci/source-inventories.ts";
 import { readRepoFile, root } from "./support/github-workflows.ts";
-
-const CORE_PR_JOBS = [
-  "fmt-rust",
-  "check-js",
-  "security-audit",
-  "node-engine-compat",
-  "check-vize-apps",
-];
+const CORE = ["fmt-rust", "check-js", "security-audit", "node-engine-compat", "check-vize-apps"];
 const PR_JOBS = [
-  ...CORE_PR_JOBS,
+  ...CORE,
   "pr-source-checks",
   "instruction-counts",
   "level-dependency-direction",
@@ -35,7 +27,6 @@ const FULL_SUITE_JOBS = [
   "branch-coverage",
   "playground-test",
 ];
-
 type Job = {
   if?: string;
   needs?: string[] | string;
@@ -55,11 +46,9 @@ const workflow = parse(readRepoFile(".github", "workflows", "check.yml")) as {
   jobs?: Record<string, Job>;
   concurrency?: { group?: string; "cancel-in-progress"?: boolean };
 };
-
 function needs(results: Record<string, string> = {}): Record<string, { result: string }> {
   return Object.fromEntries(PR_JOBS.map((job) => [job, { result: results[job] ?? "success" }]));
 }
-
 test("obsolete main validation is cancelled when the branch advances", () => {
   for (const candidate of [
     workflow,
@@ -77,7 +66,6 @@ test("obsolete main validation is cancelled when the branch advances", () => {
     }
   }
 });
-
 test("source gates cover PRs and merge groups while full JS qualification also runs on main", () => {
   assert.ok(workflow.on?.pull_request);
   assert.deepEqual(workflow.on?.merge_group, {
@@ -92,15 +80,17 @@ test("source gates cover PRs and merge groups while full JS qualification also r
     workflow.jobs?.["test-report"]?.if,
     "${{ always() && (github.event_name == 'pull_request' || github.event_name == 'merge_group') }}",
   );
-  for (const job of CORE_PR_JOBS) {
+  for (const job of CORE) {
     assert.equal(workflow.jobs?.[job]?.if, undefined, `${job} must run on pull requests`);
   }
   for (const job of FULL_SUITE_JOBS) {
     assert.equal(
       workflow.jobs?.[job]?.if,
-      ["test-scripts", "build-js-packages", "test-js-packages"].includes(job)
-        ? "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}"
-        : "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
+      job === "test-scripts"
+        ? "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')) }}"
+        : ["build-js-packages", "test-js-packages"].includes(job)
+          ? "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}"
+          : "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
     );
   }
   assert.equal(
@@ -188,7 +178,10 @@ test("source gates cover PRs and merge groups while full JS qualification also r
       configExports < appSteps.findIndex((step) => step.name === "Check Vize app fixtures"),
     "workspace config imports need built public JS exports before the source CLI checks apps",
   );
-  assert.match(commands("test-scripts"), /vp run --workspace-root test:scripts/);
+  assert.match(
+    readRepoFile(".github", "actions", "test-full-tooling", "action.yml"),
+    /vp run --workspace-root test:scripts/,
+  );
   const history = parse(
     readRepoFile(".github", "actions", "test-js-packages-with-history", "action.yml"),
   ) as { runs: { steps: Array<{ run?: string }> } };
@@ -205,7 +198,6 @@ test("source gates cover PRs and merge groups while full JS qualification also r
   assert.match(commands("playground-test"), /test:browser/);
   assert.deepEqual(workflow.jobs?.["playground-test"]?.needs, ["build-js-packages"]);
 });
-
 test("report fails closed when any PR check fails or skips", () => {
   assert.equal(aggregateNeedsResults(needs()).exitCode, 0);
   for (const result of ["failure", "cancelled", "skipped"] as const) {
@@ -229,7 +221,6 @@ test("report fails closed when any PR check fails or skips", () => {
   );
   assert.throws(() => aggregateNeedsResults({}), /needs context is empty/);
 });
-
 test("report command exits nonzero for a failed dependency", () => {
   const script = "tools/support/compat/github/require-needs-success.ts";
   const result = spawnSync(process.execPath, [script], {
@@ -240,7 +231,6 @@ test("report command exits nonzero for a failed dependency", () => {
   assert.equal(result.status, 1);
   assert.match(result.stderr, /check-vize-apps: failure/);
 });
-
 test("full JS qualification retains independent native builds and strictly gates all full events", () => {
   const full = workflow.jobs?.["full-js-report"];
   assert.ok(full);
@@ -248,7 +238,13 @@ test("full JS qualification retains independent native builds and strictly gates
     full.if,
     "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')) }}",
   );
-  const fullJobs = ["test-js-packages", "build-js-packages", "test-scripts", "check-js"];
+  const fullJobs = [
+    "test-js-packages",
+    "build-js-packages",
+    "test-scripts",
+    "full-source-cli",
+    "check-js",
+  ];
   assert.deepEqual(full.needs, fullJobs);
   const caller = full.steps?.at(-1);
   assert.equal(caller?.uses, "./.github/actions/report-full-js-qualification");
@@ -304,7 +300,6 @@ test("full JS qualification retains independent native builds and strictly gates
     }
   }
 });
-
 test("slow suites use schedules or explicit dispatch without starting on PRs", () => {
   const pushOrDispatch = [
     "davinci-contracts.yml",

@@ -59,7 +59,7 @@ test("real-project workflow carries a full-canonical L2 DOM corpus job", () => {
     /EXPECTED_GITLINKS: usize = 148/,
     /ARTIFACT_DIR: &str = "real-project-davinci-dom-corpus"/,
     /selected-gitlinks\.txt/,
-    /"submodule",\s+"update",\s+"--init",\s+"--checkout",\s+"--depth",\s+"1",\s+"--jobs",\s+"8"/,
+    /"submodule",\s+"update",\s+"--init",\s+"--checkout",\s+"--depth",\s+"1",\s+"--jobs",\s+"32"/,
     /"submodule",\s+"update",\s+"--init",\s+"--checkout",\s+"--force"/,
     /run_git\(&\["submodule", "status", "--", CORPUS_ROOT\]/,
   ]) {
@@ -218,7 +218,7 @@ test("L2 DOM corpus hydrate falls back from bulk shallow failures", () => {
         .join("\n");
     }
     if (args[0] === "submodule" && args[1] === "update" && args.includes("--jobs")) {
-      if (args.includes("8")) throw new Error("bulk shallow failed");
+      if (args.includes("32")) throw new Error("bulk shallow failed");
       if (args.includes("tests/_fixtures/_git/project-7")) {
         throw new Error("single shallow failed");
       }
@@ -236,7 +236,7 @@ test("L2 DOM corpus hydrate falls back from bulk shallow failures", () => {
   };
   try {
     assert.equal(hydrateCorpus({ artifact, runCommand }), 0);
-    assert.ok(calls.some(([, args]) => jobCount(args) === "8"));
+    assert.ok(calls.some(([, args]) => jobCount(args) === "32"));
     assert.equal(calls.filter(([, args]) => jobCount(args) === "1").length, expectedGitlinks);
     assert.deepEqual(
       calls.filter(([, args]) => args.includes("--force")).map(([, args]) => args.at(-1)),

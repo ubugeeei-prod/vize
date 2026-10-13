@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const { ...attrs } = defineProps<{ placeholder?: string }>();
+</script>
+<template><input v-bind="attrs" /></template>

@@ -66,6 +66,7 @@ mod table_rules;
 mod tag_ids;
 mod tests;
 mod tri;
+mod walk;
 pub mod witness;
 mod witness_tests;
 

@@ -114,7 +114,7 @@ test("a version-only release dispatches Check, Miri, and Docs at the tag", async
     greenRun(
       ".github/workflows/real-project-matrix.yml",
       parentSha,
-      `Real Project Matrix enforced @ ${parentSha}`,
+      `Real Project Matrix release-gated @ ${parentSha}`,
     ),
   ];
   const fullCheck = greenRun(".github/workflows/check.yml", tagSha, `Check full @ ${tagSha}`);

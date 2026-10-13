@@ -15,7 +15,6 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { createArchiveReceipt } from "../../tools/support/compat/github/rust-test-archive.mjs";
-
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const workflow = (path) => parse(readFileSync(join(root, path), "utf8"));
 const rust = workflow(".github/workflows/pr-rust-checks.yml");
@@ -23,7 +22,15 @@ const differential = workflow(".github/workflows/pr-rust-differential.yml");
 const job = differential.jobs.differential;
 const recipePath = ".github/actions/test-rust-workspace-differential";
 const recipe = workflow(`${recipePath}/action.yml`);
-
+const fixturePath = "tests/_fixtures/_git/element-plus";
+const hydrationArgs = ["submodule", "update", "--init", "--depth", "1", "--", fixturePath];
+const realGit = execFileSync("/bin/sh", ["-c", "command -v git"], { encoding: "utf8" }).trim();
+const fixturePin = execFileSync(realGit, ["ls-tree", "HEAD", fixturePath], {
+  cwd: root,
+  encoding: "utf8",
+})
+  .trim()
+  .split(/\s+/)[2];
 await test("full Rust differential checks and shards independently require the same completed producer", () => {
   const sibling = rust.jobs["merge-rust-differential"];
   assert.equal(sibling.needs, "merge-rust-source");
@@ -70,7 +77,6 @@ await test("full Rust differential checks and shards independently require the s
     "rust-script tools/commands/ci/github/write-coverage-summary.rs",
   );
 });
-
 function expandedRecipe() {
   return recipe.runs.steps.flatMap((step) => {
     if (step.if === "${{ inputs.workspace-already-tested != 'true' }}") return [];
@@ -83,7 +89,6 @@ function expandedRecipe() {
     }));
   });
 }
-
 async function fixture() {
   const cwd = realpathSync(mkdtempSync(join(tmpdir(), "vize-rust-differential-")));
   const git = (...args) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
@@ -92,6 +97,7 @@ async function fixture() {
   git("config", "user.email", "ci@example.invalid");
   writeFileSync(join(cwd, "source"), "source\n");
   git("add", "source");
+  git("update-index", "--add", "--cacheinfo", `160000,${fixturePin},${fixturePath}`);
   git("commit", "-qm", "fixture");
   const helper = "tools/support/compat/github/rust-test-archive.mjs";
   mkdirSync(dirname(join(cwd, helper)), { recursive: true });
@@ -117,26 +123,27 @@ async function fixture() {
   writeFileSync(receiptPath, JSON.stringify(receipt));
   const bin = join(cwd, "bin");
   const log = join(cwd, "commands.jsonl");
+  const gitLog = join(cwd, "git-commands.jsonl");
   mkdirSync(bin);
   writeFileSync(log, "");
+  writeFileSync(gitLog, "");
+  writeFileSync(
+    join(bin, "git"),
+    `#!/bin/sh\nif [ "$1" = submodule ]; then\nexec "$NODE" -e 'const fs=require("node:fs"),cp=require("node:child_process"),assert=require("node:assert/strict"),path=require("node:path"),args=process.argv.slice(1);assert.deepEqual(args,${JSON.stringify(hydrationArgs)});const tree=cp.execFileSync(process.env.REAL_GIT,["ls-tree","HEAD",args.at(-1)],{encoding:"utf8"}).trim();assert.equal(tree,"160000 commit "+process.env.FIXTURE_PIN+"\\t"+args.at(-1));fs.appendFileSync(process.env.GIT_LOG,JSON.stringify(args)+"\\n");if(process.env.FAIL==="fixture-hydration")process.exit(42);fs.mkdirSync(args.at(-1),{recursive:true});fs.writeFileSync(path.join(args.at(-1),"fixture-pin"),process.env.FIXTURE_PIN);' -- "$@"\nfi\nexec "$REAL_GIT" "$@"\n`,
+    { mode: 0o755 },
+  );
   writeFileSync(join(bin, "rustc"), `#!/bin/sh\nprintf '%s\\n' '${rustcVersion}'\n`, {
     mode: 0o755,
   });
   const simulated = `#!/bin/sh
 exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);if(args.join(" ")==="nextest --version"){console.log("cargo-nextest 0.9.146");process.exit(0);}fs.appendFileSync(process.env.LOG,JSON.stringify({tool:process.env.TOOL,args,tsgo:process.env.VIZE_TEST_REQUIRE_TSGO,disable:process.env.VIZE_TEST_DISABLE_TSGO,iterations:process.env.VIZE_NUXT_CONFIG_ITERATIONS,production:process.env.VIZE_VUE_RUNTIME_PRODUCTION})+"\\n");if(process.env.VIZE_TEST_REQUIRE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_DISABLE_TSGO")||process.env.VIZE_NUXT_CONFIG_ITERATIONS!=="100")process.exit(92);if(args.includes(process.env.FAIL))process.exit(42);' -- "$@"
 `;
-  writeFileSync(
-    join(bin, "cargo"),
-    simulated.replace('exec "$NODE"', 'export TOOL=cargo\nexec "$NODE"'),
-    {
-      mode: 0o755,
-    },
-  );
-  writeFileSync(
-    join(bin, "rust-script"),
-    simulated.replace('exec "$NODE"', 'export TOOL=rust-script\nexec "$NODE"'),
-    { mode: 0o755 },
-  );
+  for (const tool of ["cargo", "rust-script"])
+    writeFileSync(
+      join(bin, tool),
+      simulated.replace('exec "$NODE"', `export TOOL=${tool}\nexec "$NODE"`),
+      { mode: 0o755 },
+    );
   const verify = job.steps.find((step) => step.name === "Verify Rust archive identity");
   const restore = job.steps.find(
     (step) => step.name === "Restore the exact completed workspace archive",
@@ -157,6 +164,9 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);if
       PATH: `${bin}:${dirname(process.execPath)}:${process.env.PATH ?? ""}`,
       NODE: process.execPath,
       LOG: log,
+      REAL_GIT: realGit,
+      GIT_LOG: gitLog,
+      FIXTURE_PIN: fixturePin,
       GITHUB_WORKSPACE: cwd,
       RUNNER_TEMP: cwd,
       FAIL: failure,
@@ -175,10 +185,10 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);if
     receiptPath,
     execute,
     calls: () => readFileSync(log, "utf8").trim().split("\n").filter(Boolean).map(JSON.parse),
+    gitCalls: () => readFileSync(gitLog, "utf8").trim().split("\n").filter(Boolean).map(JSON.parse),
     cleanup: () => rmSync(cwd, { recursive: true, force: true }),
   };
 }
-
 await test("the differential sibling refuses foreign or corrupt archives before running any feature gate", async () => {
   for (const mutation of ["sha", "tree", "workspaceRoot", "archiveSha256", "bytes", "runtime"]) {
     const f = await fixture();
@@ -192,16 +202,17 @@ await test("the differential sibling refuses foreign or corrupt archives before 
       );
       assert.notEqual(result.status, 0, mutation);
       assert.deepEqual(f.calls(), [], mutation);
+      assert.deepEqual(f.gitCalls(), [], "archive refusal precedes hydration");
       assert.match(result.stderr, /mismatch|pinned CI toolchain and TSGO runtime envelope/);
     } finally {
       f.cleanup();
     }
   }
 });
-
 await test("the restored sibling executes the original feature recipe and propagates every failure", async () => {
   for (const failure of [
     "no-such-command",
+    "fixture-hydration",
     "source_folding::tests::",
     "davinci_dom_corpus",
     "tools/commands/ci/github/write-coverage-summary.rs",
@@ -211,6 +222,7 @@ await test("the restored sibling executes the original feature recipe and propag
       const result = f.execute(failure);
       assert.equal(result.status, failure === "no-such-command" ? 0 : 42, result.stderr);
       const calls = f.calls();
+      assert.deepEqual(f.gitCalls(), [hydrationArgs]);
       assert.deepEqual(calls[0].args, [
         "nextest",
         "list",
@@ -236,7 +248,9 @@ await test("the restored sibling executes the original feature recipe and propag
         assert.equal(calls.at(-2).args.at(-1), "vue_ssr_render");
         assert.equal(calls.at(-2).production, "1");
         assert(!calls.some((call) => call.args.join(" ") === "test --workspace"));
-      } else assert(calls.at(-1).args.includes(failure));
+      } else if (failure === "fixture-hydration")
+        assert.equal(calls.length, 1, "no feature gate runs after hydration failure");
+      else assert(calls.at(-1).args.includes(failure));
     } finally {
       f.cleanup();
     }
