@@ -11,6 +11,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 // @ts-expect-error -- untyped release smoke helpers
 import { CONFIG_FREE_PROJECT_SHAPES } from "./smoke-release-init-config-free.mjs";
@@ -43,6 +44,15 @@ interface SmokeContext {
 }
 
 const PACKAGE_DIRECTORY = path.join("packages", "app");
+const LSP_SESSION = fileURLToPath(new URL("./smoke-release-lsp-session.ts", import.meta.url));
+
+/**
+ * Runs hover, definition, completion and rename against the project-local
+ * `vize lsp` of a TypeScript fresh project (see `smoke-release-lsp-session.ts`).
+ */
+export function runProjectLspSession(projectRoot: string): void {
+  run(process.execPath, [LSP_SESSION, projectRoot], { cwd: projectRoot, env: projectEnv() });
+}
 
 export function runWorkspacePackageCheck(context: SmokeContext): void {
   const shape = CONFIG_FREE_PROJECT_SHAPES["vite-vue-ts"];
@@ -102,5 +112,6 @@ export function runWorkspacePackageCheck(context: SmokeContext): void {
   writeFiles(project, Object.fromEntries(repairs));
   const repaired = checkReport(project);
   assert.equal(repaired.status, 0, `repaired workspace package failed\n${repaired.rendered}`);
-  console.log("runtime: fresh pnpm workspace package (init, install, check triple)");
+  runProjectLspSession(project);
+  console.log("runtime: fresh pnpm workspace package (init, install, check triple, LSP)");
 }
