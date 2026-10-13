@@ -7,6 +7,11 @@ that success cannot establish delivery on an included public release.
 
 The separate `release-nuxt-dev-ssr-acceptance.yml` observer authenticates the
 existing official C/H/tag/source-PR/Release-run tuple and actual #8602 ancestry.
+This observer accepts only the existing pinned stable minor release tuple and
+requires the actual main correction merge in H. A future stable patch or
+cherry-picked publication cannot satisfy it. Such delivery needs separately
+authenticated stable-plan/picked-commit custody; do not loosen these validators.
+
 It retains the original Nuxt 4.5.0 / Vue 3.5.40 / Vite 8.3.4 fixture and original whole source
 observer from H against frozen hashes, including its historical package-lock.
 Fresh runner consumers install exact public packages for baseline 0.443.0 and
