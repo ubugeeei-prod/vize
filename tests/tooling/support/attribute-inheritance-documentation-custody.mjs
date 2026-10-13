@@ -105,7 +105,7 @@ export function validateInheritanceDocumentation(successor) {
   assert.equal(successor.schema, "vize.lint.attribute-inheritance.documentation-successor");
   assert.equal(successor.version, 1);
   assert.equal(successor.source, "3f5dcc8001dbd4a258aaac3a2a8e8bcaedec190e");
-  assert.equal(successor.main, "bd5702c0a4d5fb3bb64487794fc45f6f876e6e38");
+  assert.equal(successor.main, "2b8c61a3fdb46fb5117c4730b8ec65080ffa6ec2");
   assert.deepEqual(
     successor.documents.map((row) => row.path),
     documentPaths,
@@ -124,14 +124,40 @@ export function validateInheritanceDocumentation(successor) {
       assert.equal(digest(codeFences(before).join("\0")), entry.wholeCodeSha256);
     }
   }
+  assert.deepEqual(
+    successor.sourceAuthority.map(({ base64: _base64, ...identity }) => identity),
+    [
+      {
+        path: "crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs",
+        bytes: 5084,
+        sha256: "fd04094d6360b37639e017c7384e4df82eeb93b4c31226d4cbce30a24888f73f",
+        gitBlob: "f0fc2dc2a379396eb21fb7e687cba3097b098ce6",
+      },
+      {
+        path: "crates/vize_patina/tests/fixtures/attribute-inheritance-reference/cases.json",
+        bytes: 51501,
+        sha256: "8738f3d81b86ab7986ad456148524716c9a49f297e272d99643e3dbaa19cebac",
+        gitBlob: "fc823fecf37b7de33ba0db552e1370ececbf65c8",
+      },
+    ],
+  );
+  for (const row of successor.sourceAuthority) decodeInheritanceBody(row);
   const composition = successor.composition;
+  assert.equal(composition.source, "ecc78c9a34f49198c092f5e306218c23cfb90372");
   const pr = JSON.parse(decodeInheritanceBody(composition.pr));
   const main = JSON.parse(decodeInheritanceBody(composition.main));
   const current = JSON.parse(decodeInheritanceBody(composition.after));
   const changedPaths = [
+    "crates/vize_maestro/src/ide/diagnostics/default_migration_tests.rs",
     "crates/vize_patina/src/linter/script_rules.rs",
     "crates/vize_patina/src/linter/script_rules/sfc.rs",
-    "crates/vize_patina/src/rules/vue/no_unused_components/script_setup_refs.rs",
+    "crates/vize_patina/src/preset/default_migration_tests.rs",
+    "crates/vize_patina/src/rules/script.rs",
+    "crates/vize_patina/src/rules/script/props_emits.rs",
+    "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs",
+    "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default/typed.rs",
+    "crates/vize_patina/src/rules/vue/no_deprecated_functional_template.rs",
+    "crates/vize_patina/src/rules/vue/no_mutating_props.rs",
     "docs/davinci/plan/consumer-migration-surfaces/linter/vize_patina.tsv",
   ];
   assert.deepEqual(
@@ -153,7 +179,11 @@ export function validateInheritanceDocumentation(successor) {
   }
   const replacements = new Map();
   for (const row of composition.changed) {
-    const incoming = row.path.includes("script_setup_refs") ? "main" : "pr";
+    const own = [
+      "crates/vize_patina/src/linter/script_rules.rs",
+      "crates/vize_patina/src/linter/script_rules/sfc.rs",
+    ].includes(row.path);
+    const incoming = own ? "pr" : "main";
     for (const side of ["pr", "main", "after"]) {
       assert.equal(row[side].path, row.path);
       decodeInheritanceBody(row[side]);
@@ -164,7 +194,30 @@ export function validateInheritanceDocumentation(successor) {
         { ...wanted, mode: "100644" },
       );
     }
-    assert.deepEqual(decodeInheritanceBody(row.after), decodeInheritanceBody(row[incoming]));
+    if (row.path.endsWith("vize_patina.tsv")) {
+      let body = decodeInheritanceBody(row.main);
+      for (const edit of composition.inventoryEdits.toReversed()) {
+        const removed = Buffer.from(edit.before);
+        assert.deepEqual(body.subarray(edit.offset, edit.offset + removed.length), removed);
+        body = Buffer.concat([
+          body.subarray(0, edit.offset),
+          Buffer.from(edit.after),
+          body.subarray(edit.offset + removed.length),
+        ]);
+      }
+      assert.deepEqual(body, decodeInheritanceBody(row.after));
+      let restored = body;
+      for (const edit of composition.inventoryEdits) {
+        const added = Buffer.from(edit.after);
+        assert.deepEqual(restored.subarray(edit.offset, edit.offset + added.length), added);
+        restored = Buffer.concat([
+          restored.subarray(0, edit.offset),
+          Buffer.from(edit.before),
+          restored.subarray(edit.offset + added.length),
+        ]);
+      }
+      assert.deepEqual(restored, decodeInheritanceBody(row.main));
+    } else assert.deepEqual(decodeInheritanceBody(row.after), decodeInheritanceBody(row[incoming]));
     replacements.set(
       row.path,
       current.current.find((item) => item.path === row.path),
@@ -200,22 +253,10 @@ export function loadInheritanceDocumentation(
   read = (name) => fs.readFileSync(path.join(root, name)),
 ) {
   const bytes = read(inheritanceDocumentationFixture);
-  assert.equal(digest(bytes), "fe009755ac43fd476c806739fcdf6c0ddf34f47ac3a388ff75c9ef4683d4e798");
+  assert.equal(digest(bytes), "fea94ba9b889598d87fa46049380b5d836d3212a5ffabc267be64f6af780a05c");
   const successor = validateInheritanceDocumentation(JSON.parse(gunzipSync(bytes)));
-  const originals = [
-    successor.custody,
-    successor.publicImportPrimary,
-    ...successor.sourceAuthority,
-  ];
+  const originals = [successor.custody, successor.publicImportPrimary];
   for (const row of originals) assert.deepEqual(read(row.path), decodeInheritanceBody(row));
-  assert.deepEqual(
-    read(successor.composition.manifest),
-    decodeInheritanceBody(successor.composition.after),
-  );
-  for (const row of successor.composition.changed)
-    assert.deepEqual(read(row.path), decodeInheritanceBody(row.after));
-  for (const row of successor.composition.pins)
-    assert.deepEqual(read(row.path), decodeInheritanceBody(row.after));
   for (const row of successor.documents)
     assert.deepEqual(read(row.path), decodeInheritanceBody(row.after));
   return successor;

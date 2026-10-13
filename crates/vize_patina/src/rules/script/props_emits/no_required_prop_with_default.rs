@@ -69,7 +69,7 @@ impl ScriptRule for NoRequiredPropWithDefault {
         let Some(props) = option_object_property(options, "props", &object_bindings) else {
             return;
         };
-        check_props_object(props, false, offset, result);
+        check_props_object(props, true, offset, result);
     }
 }
 

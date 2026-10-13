@@ -11,11 +11,11 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | product                                    | kind  | module                         | files | sites |
 | ------------------------------------------ | ----- | ------------------------------ | ----: | ----: |
 | `COMPILER_MACRO_NAMES`                     | type  | `croquis`                      |     1 |     1 |
-| `Croquis`                                  | type  | `croquis`                      |    18 |    38 |
+| `Croquis`                                  | type  | `croquis`                      |    19 |    39 |
 | `Drawer`                                   | type  | `drawer`                       |     2 |     2 |
 | `DrawerOptions`                            | type  | `drawer`                       |     1 |     1 |
 | `ElementIdKind`                            | type  | `croquis::template`            |     1 |     2 |
-| `OptionGroup`                              | type  | `croquis`                      |     1 |     7 |
+| `OptionGroup`                              | type  | `croquis`                      |     2 |     8 |
 | `OptionMember`                             | type  | `croquis`                      |     2 |     4 |
 | `Scope`                                    | type  | `scope`                        |     2 |     2 |
 | `ScopeData`                                | type  | `scope`                        |     2 |     2 |
@@ -29,6 +29,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `Croquis.element_ids`                      | field | `croquis`                      |     1 |     2 |
 | `Croquis.import_statements`                | field | `croquis`                      |     1 |     1 |
 | `Croquis.macros`                           | field | `croquis`                      |     9 |    23 |
+| `Croquis.options_descriptor`               | field | `croquis`                      |     1 |     1 |
 | `Croquis.scopes`                           | field | `croquis`                      |     2 |     4 |
 | `Croquis.template_component_registrations` | field | `croquis`                      |     1 |     1 |
 | `Croquis.types`                            | field | `croquis`                      |     1 |     2 |
@@ -38,7 +39,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 
 | item                                      | files | sites |
 | ----------------------------------------- | ----: | ----: |
-| `Bindings`                                |     1 |     2 |
+| `Bindings`                                |     2 |     2 |
 | `BlockLocation`                           |     2 |     3 |
 | `CroquisFacts`                            |     4 |     5 |
 | `Demand`                                  |     3 |     6 |

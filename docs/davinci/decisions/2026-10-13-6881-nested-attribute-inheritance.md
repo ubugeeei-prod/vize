@@ -64,3 +64,15 @@ fields remain unchanged. The two helper/law checksum edits each have a
 complete before/after inverse from both parents; every assertion is preserved.
 The receipt grants source custody only. It grants no native, performance,
 merge, release, or complete historical Matrix qualification.
+
+The cumulative native Stack counterpart uses exact parent #8804
+`2b8c61a3fdb46fb5117c4730b8ec65080ffa6ec2`. Eleven differing source identities
+retain complete bodies from both parents; the two owned callers preserve PR
+bytes, all other production bytes come from the parent, and four inventory
+edits have complete forward/inverse witnesses with generator verification.
+The sealed proof remains historical. The unchanged original physical/refusal
+family qualifies later live sources, rather than freezing later children to a
+past helper or manifest. Live documentation still authenticates the original
+317-rule/private-import fixtures and the complete five named documents.
+Four explicit `void` registrations repair the actual configured lint refusal
+in source run 38355192945 without changing any assertion.

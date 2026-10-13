@@ -26,7 +26,15 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::visitor::parse_v_for_variables;
-use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
+use oxc_allocator::Allocator;
+use oxc_ast::ast::IdentifierReference;
+use oxc_ast_visit::Visit;
+use oxc_parser::Parser;
+use oxc_span::SourceType;
+use vize_l0::{CompactString, ensure_sufficient_stack};
+use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode, TemplateChildNode};
+
+use super::require_v_for_key::relief_element_is_custom_component;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/valid-v-for",
@@ -53,6 +61,10 @@ impl Rule for ValidVFor {
         // Only check v-for directives
         if directive.name != "for" {
             return;
+        }
+
+        if !ctx.is_petite_vue() {
+            check_iteration_keys(ctx, element, directive.exp.as_ref());
         }
 
         // Check for modifiers (v-for should not have modifiers)
@@ -159,12 +171,57 @@ impl Rule for ValidVFor {
                         &directive.loc,
                         ctx.t("vue/valid-v-for.help"),
                     );
-                    return;
                 }
-
-                check_key_uses_v_for_variables(ctx, element, exp);
             }
         }
+    }
+}
+
+fn check_iteration_keys(
+    ctx: &mut LintContext<'_>,
+    element: &ElementNode<'_>,
+    v_for_exp: Option<&ExpressionNode<'_>>,
+) {
+    if element.tag == "template" && bound_key_directive(element).is_none() {
+        let variables = v_for_exp.map(parse_v_for_variables).unwrap_or_default();
+        for child in &element.children {
+            if let TemplateChildNode::Element(child) = child {
+                // A nested loop over the parent's alias is keyed by its own iteration.
+                let depends_on_parent = child.props.iter().any(|prop| {
+                    let PropNode::Directive(directive) = prop else {
+                        return false;
+                    };
+                    if directive.name != "for" {
+                        return false;
+                    }
+                    let Some(ExpressionNode::Simple(expression)) = &directive.exp else {
+                        return false;
+                    };
+                    expression
+                        .content
+                        .split_once(" in ")
+                        .or_else(|| expression.content.split_once(" of "))
+                        .is_some_and(|(_, source)| expression_references_any(source, &variables))
+                });
+                if !depends_on_parent {
+                    ensure_sufficient_stack(|| check_iteration_keys(ctx, child, v_for_exp));
+                }
+            }
+        }
+        return;
+    }
+    if relief_element_is_custom_component(element)
+        && !matches!(element.tag, "template" | "slot")
+        && bound_key_directive(element).is_none()
+    {
+        ctx.error_with_help(
+            ctx.t("vue/valid-v-for.require_key"),
+            &element.loc,
+            ctx.t("vue/valid-v-for.help"),
+        );
+    }
+    if let Some(expression) = v_for_exp {
+        check_key_uses_v_for_variables(ctx, element, expression);
     }
 }
 
@@ -184,10 +241,7 @@ fn check_key_uses_v_for_variables(
     if vars.is_empty() {
         return;
     }
-    if vars
-        .iter()
-        .any(|var| expression_references_identifier(key_expression.content, var.as_str()))
-    {
+    if expression_references_any(key_expression.content, &vars) {
         return;
     }
 
@@ -213,100 +267,35 @@ fn bound_key_directive<'a>(element: &'a ElementNode<'a>) -> Option<&'a Directive
     })
 }
 
-fn expression_references_identifier(expression: &str, name: &str) -> bool {
-    if name.is_empty() || expression.is_empty() {
-        return false;
+fn expression_references_any(expression: &str, names: &[CompactString]) -> bool {
+    struct References<'name> {
+        names: &'name [CompactString],
+        found: bool,
     }
-    let bytes = expression.as_bytes();
-    let needle = name.as_bytes();
-    let mut i = 0;
-    while i + needle.len() <= bytes.len() {
-        if bytes.get(i..i + needle.len()) == Some(needle) {
-            let prev_is_ident = i
-                .checked_sub(1)
-                .and_then(|prev| bytes.get(prev))
-                .is_some_and(|&byte| is_ident_byte(byte));
-            let next_is_ident = bytes
-                .get(i + needle.len())
-                .is_some_and(|byte| is_ident_byte(*byte));
-            if !prev_is_ident && !next_is_ident {
-                return true;
-            }
+    impl<'a> Visit<'a> for References<'_> {
+        fn visit_identifier_reference(&mut self, reference: &IdentifierReference<'a>) {
+            self.found |= self
+                .names
+                .iter()
+                .any(|name| reference.name == name.as_str());
         }
-        i += 1;
     }
-    false
-}
 
-#[inline]
-fn is_ident_byte(byte: u8) -> bool {
-    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
+    let allocator = Allocator::default();
+    let Ok(expression) = Parser::new(&allocator, expression, SourceType::ts()).parse_expression()
+    else {
+        return false;
+    };
+    let mut references = References {
+        names,
+        found: false,
+    };
+    references.visit_expression(&expression);
+    references.found
 }
 
 #[cfg(test)]
 mod key_tests;
 
 #[cfg(test)]
-mod tests {
-    use super::ValidVFor;
-    use crate::linter::Linter;
-    use crate::rule::RuleRegistry;
-
-    fn create_linter() -> Linter {
-        let mut registry = RuleRegistry::new();
-        registry.register(Box::new(ValidVFor));
-        Linter::with_registry(registry)
-    }
-
-    #[test]
-    fn test_valid_v_for() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<div v-for="item in items" :key="item.id"></div>"#,
-            "test.vue",
-        );
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_valid_v_for_with_index() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<div v-for="(item, index) in items" :key="index"></div>"#,
-            "test.vue",
-        );
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_valid_v_for_of() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<div v-for="item of items" :key="item.id"></div>"#,
-            "test.vue",
-        );
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_invalid_v_for_no_expression() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div v-for></div>"#, "test.vue");
-        assert_eq!(result.error_count, 1);
-        insta::assert_debug_snapshot!(result.diagnostics);
-    }
-
-    #[test]
-    fn test_invalid_v_for_empty_expression() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div v-for=""></div>"#, "test.vue");
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_invalid_v_for_no_in_or_of() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div v-for="items"></div>"#, "test.vue");
-        assert_eq!(result.error_count, 1);
-    }
-}
+mod tests;

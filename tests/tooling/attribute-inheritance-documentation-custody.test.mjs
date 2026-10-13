@@ -23,7 +23,7 @@ const reseal = (row, bytes) => ({
   gitBlob: createHash("sha1").update(`blob ${bytes.length}\0`).update(bytes).digest("hex"),
 });
 
-test("all five complete documents preserve the finite original bodies and inverse edits", () => {
+void test("all five complete documents preserve the finite original bodies and inverse edits", () => {
   for (const row of successor.documents) {
     const before = decodeInheritanceBody(row.before).toString();
     assert.equal(composeInheritanceDocument(before, row.path), read(row.path).toString());
@@ -38,7 +38,7 @@ test("all five complete documents preserve the finite original bodies and invers
   }
 });
 
-test("the original 317-rule fence custody has one named pair and no neighboring bypass", () => {
+void test("the original 317-rule fence custody has one named pair and no neighboring bypass", () => {
   const verify = createInheritanceFenceVerifier(root);
   const entries = JSON.parse(decodeInheritanceBody(successor.custody)).entries;
   for (const entry of entries) {
@@ -61,15 +61,11 @@ test("the original 317-rule fence custody has one named pair and no neighboring 
   }
 });
 
-test("every frozen fixture, source, whole document and source composition rejects physical mutation", () => {
+void test("every live frozen fixture and whole document rejects physical mutation", () => {
   const names = [
     inheritanceDocumentationFixture,
     successor.custody.path,
     successor.publicImportPrimary.path,
-    ...successor.sourceAuthority.map((row) => row.path),
-    successor.composition.manifest,
-    ...successor.composition.changed.map((row) => row.path),
-    ...successor.composition.pins.map((row) => row.path),
     ...successor.documents.map((row) => row.path),
   ];
   for (const name of names) {
@@ -89,13 +85,21 @@ test("every frozen fixture, source, whole document and source composition reject
   }
 });
 
-test("closed source composition preserves all 323 rows and both complete historical frames", () => {
-  assert.equal(successor.composition.changed.length, 4);
+void test("closed source composition preserves all 323 rows and both complete historical frames", () => {
+  assert.equal(successor.composition.changed.length, 11);
   const mutate = (change) => {
     const value = structuredClone(successor);
     change(value);
     assert.throws(() => validateInheritanceDocumentation(value));
   };
+  mutate((value) => value.sourceAuthority.pop());
+  mutate((value) => value.sourceAuthority.reverse());
+  mutate((value) => {
+    value.sourceAuthority[0].base64 += "foreign";
+  });
+  mutate((value) => {
+    value.composition.inventoryEdits[0].offset++;
+  });
   mutate((value) => value.composition.changed.pop());
   mutate((value) => value.composition.changed.reverse());
   mutate((value) => value.composition.pins.pop());
@@ -131,5 +135,18 @@ test("closed source composition preserves all 323 rows and both complete histori
       row.after,
       Buffer.concat([decodeInheritanceBody(row.after), Buffer.from("foreign\n")]),
     );
+  });
+});
+
+void test("historical source checkpoints grant no live checkpoint gate to future descendants", () => {
+  const historical = new Set([
+    ...successor.sourceAuthority.map((row) => row.path),
+    successor.composition.manifest,
+    ...successor.composition.changed.map((row) => row.path),
+    ...successor.composition.pins.map((row) => row.path),
+  ]);
+  loadInheritanceDocumentation(root, (name) => {
+    assert(!historical.has(name), "the existing physical family owns live source qualification");
+    return read(name);
   });
 });

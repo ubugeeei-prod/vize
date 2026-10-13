@@ -6,7 +6,7 @@ use vize_l0::config::VueVersion;
 
 fn corpus() -> Value {
     serde_json::from_str(include_str!(
-        "../../../../tests/_fixtures/lint-default-migrations/cases.json"
+        "../../../../tests/_fixtures/lint-default-migrations/current-range-cases.json"
     ))
     .unwrap()
 }
