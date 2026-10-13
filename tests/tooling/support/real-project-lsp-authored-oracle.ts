@@ -25,14 +25,13 @@ import {
 import {
   change,
   open,
+  renameEditLocations,
   requestCompletion,
   waitForDiagnostics,
 } from "./real-project-lsp-authored-oracle-session.ts";
-import type {
-  AuthoredLspExerciseEvidence,
-  FixtureProject,
-  LspAuthoredOracle,
-} from "./real-project-lsp-report.ts";
+
+export { assertOracleFilesAreInCorpus } from "./real-project-lsp-authored-oracle-session.ts";
+import type { AuthoredLspExerciseEvidence, LspAuthoredOracle } from "./real-project-lsp-report.ts";
 import { authoredAnchorEvidence } from "./real-project-lsp-report-authored.ts";
 import { exerciseAuthoredFileLifecycle } from "./real-project-lsp-file-lifecycle.ts";
 
@@ -177,14 +176,8 @@ export async function exerciseAuthoredLspOracle(
     );
     // Rename must edit the same authored set that references report, so a
     // declared prop also updates its component consumers in other documents.
-    const renameLocations = Object.entries(rename?.changes ?? {}).flatMap(([uri, edits]) =>
-      edits.map((edit) => {
-        assert.equal(edit.newText, binding.renameTo, `rename text in ${uri}`);
-        return { range: edit.range, uri };
-      }),
-    );
     assert.deepEqual(
-      sortLocations(renameLocations),
+      sortLocations(renameEditLocations(rename, binding.renameTo)),
       authoredReferences,
       "rename must edit exactly the authored references",
     );
@@ -341,22 +334,5 @@ export async function exerciseAuthoredLspOracle(
         // Preserve the primary oracle failure instead of the cleanup error.
       }
     }
-  }
-}
-
-export function assertOracleFilesAreInCorpus(
-  project: FixtureProject,
-  files: string[],
-  oracle: LspAuthoredOracle,
-): void {
-  for (const file of [
-    oracle.templateBinding.file,
-    oracle.componentBoundary.importerFile,
-    oracle.componentBoundary.componentFile,
-  ]) {
-    assert.ok(
-      files.includes(file),
-      `${project.id} authored LSP oracle file is outside vueGlobs: ${file}`,
-    );
   }
 }
