@@ -5,7 +5,7 @@ use vize_carton::{String, ToCompactString, cstr};
 
 use super::GenerateContext;
 use crate::generate::destructure::{
-    DestructureBinding, parse_destructure_bindings, resolve_props_binding,
+    DestructureBinding, needs_parsed_reads, parse_destructure_bindings, resolve_props_binding,
 };
 
 impl GenerateContext<'_> {
@@ -52,6 +52,14 @@ impl GenerateContext<'_> {
             if let Some(ref value_alias) = scope.value_alias {
                 let for_var = cstr!("_for_item{}", scope.depth);
 
+                if let Some(binding) = scope
+                    .read_overrides
+                    .iter()
+                    .rev()
+                    .find(|binding| name == binding.local.as_str())
+                {
+                    return Some(binding.path.clone());
+                }
                 if value_alias.starts_with(['{', '[', '(']) {
                     for binding in parse_destructure_bindings(value_alias.as_str()) {
                         if name == binding.local.as_str() {
@@ -144,7 +152,7 @@ impl GenerateContext<'_> {
             whole: false,
             read_overrides,
         });
-        if destructure_pattern.contains('=') {
+        if needs_parsed_reads(destructure_pattern) {
             self.resolve_slot_defaults(destructure_pattern, &slot_props_var);
         }
         slot_props_var
@@ -153,6 +161,30 @@ impl GenerateContext<'_> {
     /// Pop the current slot scope
     pub(crate) fn pop_slot_scope(&mut self) {
         self.slot_scopes.pop();
+    }
+
+    /// Push a loop scope. A destructured value the textual scanner cannot
+    /// follow gets its parsed reads, rooted at the loop item.
+    pub(crate) fn push_for_scope(
+        &mut self,
+        value_alias: Option<&str>,
+        key_alias: Option<&str>,
+        index_alias: Option<&str>,
+    ) {
+        let depth = self.for_scopes.len();
+        self.for_scopes.push(ForScope {
+            value_alias: value_alias.map(String::new),
+            key_alias: key_alias.map(String::new),
+            index_alias: index_alias.map(String::new),
+            depth,
+            read_overrides: std::vec::Vec::new(),
+        });
+        if let Some(pattern) = value_alias
+            && pattern.trim_start().starts_with(['{', '['])
+            && needs_parsed_reads(pattern)
+        {
+            self.resolve_for_value_reads(pattern, &cstr!("_for_item{depth}.value"));
+        }
     }
 }
 
@@ -167,6 +199,9 @@ pub(crate) struct ForScope {
     pub(crate) index_alias: Option<String>,
     /// Depth of for nesting (0-based)
     pub(crate) depth: usize,
+    /// Parsed reads for value patterns with defaults, computed keys or rest
+    /// elements; the last one recorded for a name wins.
+    pub(in crate::generate) read_overrides: std::vec::Vec<DestructureBinding>,
 }
 
 /// Slot scope entry for scoped slots

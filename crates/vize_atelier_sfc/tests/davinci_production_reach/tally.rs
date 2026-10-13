@@ -9,7 +9,12 @@ use std::collections::BTreeMap;
 
 use vize_l0::profiler::CounterSummary;
 
+use super::refusal::RefusalCensus;
 use super::shapes::Shape;
+use vize_l1_to_l2::EmitError;
+
+/// The selection reason of a template the L2 DOM emitter attempted and refused.
+pub const EMIT_REFUSED: &str = "emit_refused";
 
 /// The lane one template compile took, read from its selection counters.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -112,6 +117,8 @@ pub struct Tally {
     pub divergences: Vec<String>,
     /// Selection-law violations.
     pub violations: Vec<String>,
+    /// DOM `emit_refused` templates per typed L2 refusal bucket.
+    pub refusals: RefusalCensus,
 }
 
 impl Tally {
@@ -121,6 +128,19 @@ impl Tally {
             self.unrecorded_samples.push(name.to_owned());
         }
         self.record(lane);
+    }
+
+    /// Attribute a DOM `emit_refused` template to its typed L2 bucket.
+    pub fn note_refusal(
+        &mut self,
+        shape: Shape,
+        name: &str,
+        lane: &Lane,
+        refusal: Option<EmitError>,
+    ) {
+        if shape.is_dom() && *lane == Lane::Legacy(EMIT_REFUSED.to_owned()) {
+            self.refusals.note(name, refusal);
+        }
     }
 
     pub fn record(&mut self, lane: Lane) {

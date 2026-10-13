@@ -47,7 +47,7 @@ test("TS-24: the wasm32-wasip2 lanes run in scheduled and manual Check", () => {
   assert.doesNotMatch(workflowJobBody(workflow, "test-report"), /- clippy-and-test\b/);
 
   // The wasip2 std installs through the pinned toolchain: cargo runs under
-  // rust-toolchain.toml (channel 1.95.0), so a `targets:` input on the
+  // rust-toolchain.toml, so a `targets:` input on the
   // stable action never reaches the build - the first CI run proved that.
   // rustup materializes the toolchain file's targets, so the pin lives there.
   const toolchainFile = readRepoFile("rust-toolchain.toml");

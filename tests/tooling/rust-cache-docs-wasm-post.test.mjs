@@ -19,6 +19,19 @@ const action = parse(
   ),
 );
 const original = structuredClone(action);
+// Keep the original secondary policy as the before-frame for these primary laws.
+const secondarySave = original.runs.steps.find(
+  ({ name }) => name === "Cache the secondary Rust target or seed its trusted clone",
+);
+const secondaryRestore = original.runs.steps.find(
+  ({ name }) => name === "Restore a secondary target without registering a save",
+);
+secondarySave.if =
+  "${{ steps.cache-policy.outputs.secondary-save == 'true' && steps.cache-policy.outputs.secondary == 'true' && (inputs.key != 'docs-wasm' || inputs.secondary-key != 'docs-example' || steps.cache-mounts.outputs.secondary != 'true') }}";
+secondaryRestore.if =
+  "${{ (steps.cache-policy.outputs.secondary-save == 'false' || (inputs.key == 'docs-wasm' && inputs.secondary-key == 'docs-example' && steps.cache-mounts.outputs.secondary == 'true')) && steps.cache-policy.outputs.secondary == 'true' }}";
+secondaryRestore.with.key =
+  "${{ inputs.key == 'docs-wasm' && inputs.secondary-key == 'docs-example' && steps.cache-mounts.outputs.secondary == 'true' && steps.cache-policy.outputs.secondary-seed-key || steps.cache-policy.outputs.secondary-key }}";
 const save = original.runs.steps.find(
   ({ name }) => name === "Cache Rust target or seed it from the trusted sticky clone",
 );
@@ -172,7 +185,7 @@ await test("PR, merge-group, foreign source and other untrusted events retain or
     });
 });
 
-await test("other roles and a failed secondary preserve independent primary behavior", () => {
+await test("every other mounted role omits its primary post independently of the secondary", () => {
   for (const role of [
     "docs-napi",
     "docs-wasm-extra",
@@ -190,8 +203,11 @@ await test("other roles and a failed secondary preserve independent primary beha
       const after = executeCacheAction(fixture, context, options);
       workloads(fixture, before);
       workloads(fixture, after);
-      assert.deepEqual(identity(target(after)), identity(target(before)));
-      assert.equal(posts(after, "target").length, posts(before, "target").length);
+      for (const key of ["path", "lookup", "version", "restorePrefix", "hit"])
+        assert.equal(target(after)[key], target(before)[key], key);
+      assert.equal(target(after).restoreOnly, true);
+      assert.equal(target(after).key, after.outputs["cache-policy"]["target-seed-key"]);
+      assert.equal(posts(after, "target").length, 0);
     });
   cacheFixture((fixture) => {
     const result = executeCacheAction(

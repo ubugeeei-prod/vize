@@ -34,7 +34,10 @@ const selected = (path) => new Set(planToolingTests([path], { cwd: scopeFixture 
 
 void test("unrelated guide docs omit audited heavy subprocesses while full merge retains them", () => {
   const pr = selected("docs/content/guide.md");
-  const merge = planToolingTests(["docs/content/guide.md"], { tier: "merge", cwd: scopeFixture });
+  const merge = planToolingTests(["tools/support/compat/github/new-helper.mjs"], {
+    tier: "merge",
+    cwd: scopeFixture,
+  });
   for (const file of heavy) {
     assert.equal(pr.has(file), false, file);
     assert.ok(merge.tests.includes(file), file);
@@ -110,9 +113,11 @@ void test("real test import closures permit the five scopes while package genera
   for (const file of heavy) assert.equal(guide.has(file), false, file);
   // Generated fixture code imports App.vue relative to a temporary consumer.
   // The current literal-import scanner cannot prove that resolution, so the
-  // package test must keep its existing broad coverage.
-  assert.ok(guide.has(pack));
-  const merge = planToolingTests(["docs/content/guide.md"], { tier: "merge" });
+  // package test keeps its broad coverage for code. Prose it never names is
+  // left to the merge queue.
+  assert.ok(!guide.has(pack));
+  assert.ok(planToolingTests(["tools/support/compat/github/new-helper.mjs"]).tests.includes(pack));
+  const merge = planToolingTests(["tools/support/compat/github/new-helper.mjs"], { tier: "merge" });
   assert.deepEqual(merge.tests, toolingTestFiles());
 });
 

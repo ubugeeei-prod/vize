@@ -33,13 +33,13 @@ impl ScriptCompileContext {
         visited: &mut FxHashSet<String>,
         sources: &TypeSourceSnapshot,
     ) {
-        let Some(path) = sources.resolve_import(current, specifier) else {
+        let Some(path) = sources.resolve_import_from_identity(current, specifier) else {
             return;
         };
         if visited.len() >= 512 || !visited.insert(path_key(&path)) {
             return;
         }
-        let Some(content) = sources.read(&path) else {
+        let Some(content) = sources.read_identity(path.clone()) else {
             return;
         };
         let specifiers = {

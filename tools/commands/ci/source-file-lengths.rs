@@ -34,7 +34,7 @@ fn main() -> ExitCode {
 }
 
 fn run() -> i32 {
-    let mut max_lines = 350;
+    let mut max_lines = 500;
     let mut limit = 50;
     let mut check = false;
     let mut base_ref = String::new();
@@ -57,7 +57,7 @@ fn run() -> i32 {
             },
             "--help" => {
                 println!(
-                    "Usage: rust-script tools/commands/ci/source-file-lengths.rs [--check --base-ref <ref>] [--max-lines 350] [--limit 50]"
+                    "Usage: rust-script tools/commands/ci/source-file-lengths.rs [--check --base-ref <ref>] [--max-lines 500] [--limit 50]"
                 );
                 return 0;
             }

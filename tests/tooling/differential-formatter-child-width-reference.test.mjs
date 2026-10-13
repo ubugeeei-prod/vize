@@ -199,7 +199,9 @@ void test("sole-child Vue references retain old whole bytes and reject altered i
       original = fs.readFileSync(target);
     try {
       fs.appendFileSync(target, "\n");
-      assert.throws(() => resolveSoleChildVueSource(scratch, artifact), relative);
+      // A later edit to the live owner is admitted; the preserved asset is not.
+      if (relative === owner) resolveSoleChildVueSource(scratch, artifact);
+      else assert.throws(() => resolveSoleChildVueSource(scratch, artifact), relative);
     } finally {
       fs.writeFileSync(target, original);
     }

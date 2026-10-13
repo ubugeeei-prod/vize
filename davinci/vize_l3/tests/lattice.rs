@@ -105,6 +105,74 @@ fn verdict_axis_is_orthogonal_and_consumers_fire_only_on_proven_values() {
     assert!(proven.fires_as(ReactivityClass::Reactive));
 }
 
+/// Every binding summary there is: 4 origins, 256 effect sets, 4 escapes and
+/// 3 verdicts. The Kani harness `tests/formal/kani/l3_lattice.rs` verifies
+/// the value axis; these are the laws that also read the verdict axis.
+#[test]
+fn the_verdict_never_changes_the_class_and_only_proven_facts_fire() {
+    const ORIGINS: [BindingOrigin; 4] = [
+        BindingOrigin::Local,
+        BindingOrigin::Prop,
+        BindingOrigin::ProvideInject,
+        BindingOrigin::TemplateRef,
+    ];
+    const EFFECTS: [EffectKind; 8] = [
+        EffectKind::Freeze,
+        EffectKind::Capture,
+        EffectKind::ReadProp,
+        EffectKind::ReadReactive,
+        EffectKind::MutateLocal,
+        EffectKind::MutateGlobal,
+        EffectKind::CallUnknown,
+        EffectKind::Allocate,
+    ];
+    const ESCAPES: [EscapeKind; 4] = [
+        EscapeKind::None,
+        EscapeKind::Returned,
+        EscapeKind::Stored,
+        EscapeKind::Global,
+    ];
+    const VERDICTS: [Verdict; 3] = [Verdict::Proven, Verdict::Refuted, Verdict::Unknown];
+    const CLASSES: [ReactivityClass; 4] = [
+        ReactivityClass::Static,
+        ReactivityClass::PropsStable,
+        ReactivityClass::Reactive,
+        ReactivityClass::Unstable,
+    ];
+
+    let mut checked = 0_u32;
+    for origin in ORIGINS {
+        for mask in 0_u16..256 {
+            let effects = EFFECTS
+                .into_iter()
+                .enumerate()
+                .filter(|(bit, _)| mask & (1 << bit) != 0)
+                .fold(EffectSet::empty(), |set, (_, effect)| set.with(effect));
+            for escape in ESCAPES {
+                let summary = input(0)
+                    .with_origin(origin)
+                    .with_effects(effects)
+                    .with_escape(escape);
+                let proven = evaluate_binding(summary.with_verdict(Verdict::Proven));
+                for verdict in VERDICTS {
+                    let fact = evaluate_binding(summary.with_verdict(verdict));
+                    // Lean `classify_verdict_orthogonal`.
+                    assert_eq!(fact.class, proven.class);
+                    assert_eq!(fact.verdict, verdict);
+                    let is_proven = verdict == Verdict::Proven;
+                    assert_eq!(fact.proven_class(), is_proven.then_some(fact.class));
+                    for class in CLASSES {
+                        // Lean `fires_iff` and `fires_only_proven`.
+                        assert_eq!(fact.fires_as(class), is_proven && fact.class == class);
+                    }
+                    checked += 1;
+                }
+            }
+        }
+    }
+    assert_eq!(checked, 4 * 256 * 4 * 3);
+}
+
 #[test]
 fn fact_group_lookup_keeps_binding_ids_exact() {
     let arena = Allocator::default();

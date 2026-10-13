@@ -55,7 +55,12 @@ impl TypeSourceSnapshot {
     /// Overlay text wins over disk. Disk reads and misses are captured on first
     /// use, so compatibility props and the public type world read identical text.
     pub fn read(&self, path: &Path) -> Option<Arc<str>> {
-        let path = source_path(path);
+        self.read_identity(source_path(path))
+    }
+
+    /// Read a source through an identity this snapshot already produced,
+    /// without canonicalizing it again.
+    pub(super) fn read_identity(&self, path: PathBuf) -> Option<Arc<str>> {
         if let Some(source) = self.overlays.get(&path) {
             return Some(Arc::clone(source));
         }
