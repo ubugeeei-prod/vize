@@ -20,7 +20,20 @@ const INDEX_NAMES: &[&str] = &[
 
 impl TypeSourceSnapshot {
     pub fn resolve_import(&self, current_file: &Path, specifier: &str) -> Option<PathBuf> {
-        let current_file = source_path(current_file);
+        self.resolve_import_from_identity(&source_path(current_file), specifier)
+    }
+
+    /// Resolve from an importer identity this snapshot already produced.
+    ///
+    /// A type world resolves every import of every module it visits. Those
+    /// importers are identities returned by this snapshot, so canonicalizing
+    /// each one again costs a `realpath` per import and dominates a
+    /// workspace-wide scan. Public importers still refresh on every call.
+    pub(in crate::script::context) fn resolve_import_from_identity(
+        &self,
+        current_file: &Path,
+        specifier: &str,
+    ) -> Option<PathBuf> {
         // The uncached compatibility package resolver rejects node_modules,
         // even when it is the filename. Parentless paths also differ from a
         // normal importer in the root directory. Keep these rare file contexts
@@ -33,7 +46,7 @@ impl TypeSourceSnapshot {
             {
                 ResolutionScope::Directory(directory.to_path_buf())
             }
-            _ => ResolutionScope::File(current_file.clone()),
+            _ => ResolutionScope::File(current_file.to_path_buf()),
         };
         // This resolver uses only the importer directory and exact specifier,
         // including for package ancestry and @/ aliases. It has no module-mode
@@ -49,7 +62,7 @@ impl TypeSourceSnapshot {
         // A shared import resolves once. Filesystem work never holds the map
         // lock, so unrelated directories and specifiers can resolve in parallel.
         entry
-            .get_or_init(|| self.resolve_uncached(&current_file, specifier))
+            .get_or_init(|| self.resolve_uncached(current_file, specifier))
             .clone()
     }
 

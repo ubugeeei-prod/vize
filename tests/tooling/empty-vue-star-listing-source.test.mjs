@@ -49,6 +49,8 @@ function fixture(run) {
     git(owner, ["update-ref", "refs/heads/current", head]);
     git(owner, ["symbolic-ref", "HEAD", "refs/heads/current"]);
     for (const file of new Set([...files, ...manifest.mainUnion.cells.map(([file]) => file)])) {
+      // A recorded cell that a later change deleted is absent from HEAD as well.
+      if (!fs.existsSync(path.join(root, file))) continue;
       const target = path.join(owner, file);
       fs.mkdirSync(path.dirname(target), { recursive: true });
       fs.copyFileSync(path.join(root, file), target);

@@ -117,18 +117,17 @@ void test("full formatter denominator rejects missing original fixes, source arm
   );
   assert.throws(
     () => validateCurrentFormatterWitness(scratch, owner, "unregistered_retained_function"),
-    /unregistered retained Rust law transition/,
+    /retained Rust law is missing/,
   );
   const unknown = { ...owner, path: "crates/vize_glyph/src/unregistered-owner.rs" };
   fs.writeFileSync(path.join(scratch, unknown.path), current);
-  assert.throws(
-    () => validateCurrentFormatterWitness(scratch, unknown, "test_format_simple_script"),
-    /current witness source changed/,
+  // Later edits to a live owner are ordinary work while its original law remains.
+  assert.doesNotThrow(() =>
+    validateCurrentFormatterWitness(scratch, unknown, "test_format_simple_script"),
   );
   fs.writeFileSync(file, Buffer.concat([Buffer.from("// changed main owner\n"), current]));
-  assert.throws(
-    () => validateCurrentFormatterWitness(scratch, owner, "test_format_simple_script"),
-    /current witness source changed/,
+  assert.doesNotThrow(() =>
+    validateCurrentFormatterWitness(scratch, owner, "test_format_simple_script"),
   );
   const body = retainedFormatterFunction(current, "test_format_simple_script").toString();
   const driftedBody = `${body.slice(0, -1)}panic!("changed retained law");}`;
@@ -138,7 +137,7 @@ void test("full formatter denominator rejects missing original fixes, source arm
   fs.writeFileSync(file, drifted);
   assert.throws(
     () => validateCurrentFormatterWitness(scratch, owner, "test_format_simple_script"),
-    /current witness source changed/,
+    /retained Rust law body changed/,
   );
   for (const mutate of [
     (copy) => {
@@ -155,10 +154,6 @@ void test("full formatter denominator rejects missing original fixes, source arm
     },
     (copy) => {
       copy.fixes[0].requirements[0].caseIds = [];
-    },
-    (copy) => {
-      const witness = copy.witnessCatalog[copy.fixes[0].currentWitnessRefs[0]];
-      copy.sourceCatalog[witness.sourceRef].sha256 = "0".repeat(64);
     },
     (copy) => {
       copy.validation.nativeHandled = 1;
@@ -216,7 +211,10 @@ void test("CSS shared-helper visibility retains the original law and refuses for
   fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.writeFileSync(target, current);
   assert.doesNotThrow(() => validateCurrentFormatterWitness(scratch, entry, name));
-  fs.appendFileSync(target, "\n// forged current owner\n");
+  // Ordinary edits to the live owner are admitted; removing the original law is not.
+  fs.appendFileSync(target, "\n// later edit to the current owner\n");
+  assert.doesNotThrow(() => validateCurrentFormatterWitness(scratch, entry, name));
+  fs.writeFileSync(target, current.toString().replace(`fn ${name}(`, "fn renamed_law("));
   assert.throws(() => validateCurrentFormatterWitness(scratch, entry, name));
 });
 
@@ -241,13 +239,13 @@ void test("optimized suppression owner preserves the original placement law and 
   );
   assert.throws(
     () => validateCurrentFormatterWitness(scratch, entry, "unregistered_retained_function"),
-    sha256(current) === entry.sha256
-      ? /retained Rust law is missing/
-      : /unregistered retained Rust law transition/,
+    /retained Rust law is missing/,
   );
-  fs.writeFileSync(file, Buffer.concat([current, Buffer.from("\n// drifted owner\n")]));
+  fs.writeFileSync(file, Buffer.concat([current, Buffer.from("\n// later edit\n")]));
+  assert.doesNotThrow(() => validateCurrentFormatterWitness(scratch, entry, name));
+  fs.writeFileSync(file, current.toString().replace(`fn ${name}(`, "fn renamed_law("));
   assert.throws(
     () => validateCurrentFormatterWitness(scratch, entry, name),
-    /current witness source changed/,
+    /retained Rust law is missing/,
   );
 });

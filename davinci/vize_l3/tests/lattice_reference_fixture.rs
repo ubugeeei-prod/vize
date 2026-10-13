@@ -3,9 +3,10 @@
 //! The committed fact page is exactly what `evaluate` prints for an enumerated
 //! input matrix. `lake exe impetoRef --check-lattice-fixtures` re-enumerates the
 //! same matrix, parses this page without Rust code and recomputes every class
-//! with the independent Lean classifier whose laws are proved in
-//! `tests/formal/impeto/Impeto/LatticeLaws.lean`. Regenerate the page with
-//! `VIZE_UPDATE_LATTICE_REFERENCE_FIXTURE=1` only when the rule spec changes.
+//! with the independent Lean classifier. The lattice laws themselves are
+//! verified on this evaluator by `tests/formal/kani/l3_lattice.rs`. Regenerate
+//! the page with `VIZE_UPDATE_LATTICE_REFERENCE_FIXTURE=1` only when the rule
+//! spec changes.
 
 #![expect(
     clippy::indexing_slicing,

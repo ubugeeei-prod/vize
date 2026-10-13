@@ -31,6 +31,9 @@ pub fn report(scope: &str, sweep: &Sweep) {
     );
     for (shape, tally) in sweep.tallies.values() {
         eprintln!("{}", tally.line(*shape));
+        for line in tally.refusals.lines(scope, shape.id()) {
+            eprintln!("{line}");
+        }
         eprintln!("{}", report_native_only(scope, *shape, sweep));
     }
 }

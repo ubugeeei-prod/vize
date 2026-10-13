@@ -131,13 +131,13 @@ fn walk_attribute_value_roots<'a>(
         }
         JSXAttributeValue::Element(element) => {
             visitor(MarkupElement::from_jsx_element(
-                &**element as *const _,
+                &raw const **element,
                 offset,
             ));
         }
         JSXAttributeValue::Fragment(fragment) => {
             visitor(MarkupElement::from_jsx_fragment(
-                &**fragment as *const _,
+                &raw const **fragment,
                 offset,
             ));
         }

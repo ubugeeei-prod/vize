@@ -25,14 +25,13 @@ import {
 import {
   change,
   open,
+  renameEditLocations,
   requestCompletion,
   waitForDiagnostics,
 } from "./real-project-lsp-authored-oracle-session.ts";
-import type {
-  AuthoredLspExerciseEvidence,
-  FixtureProject,
-  LspAuthoredOracle,
-} from "./real-project-lsp-report.ts";
+
+export { assertOracleFilesAreInCorpus } from "./real-project-lsp-authored-oracle-session.ts";
+import type { AuthoredLspExerciseEvidence, LspAuthoredOracle } from "./real-project-lsp-report.ts";
 import { authoredAnchorEvidence } from "./real-project-lsp-report-authored.ts";
 import { exerciseAuthoredFileLifecycle } from "./real-project-lsp-file-lifecycle.ts";
 
@@ -133,14 +132,17 @@ export async function exerciseAuthoredLspOracle(
       `references must resolve the authored ${binding.symbol} binding`,
     );
     assert.deepEqual(definition, [{ range: declarationRange, uri: bindingDocument.uri }]);
+    // A declared prop contract adds its authored component consumers; every
+    // other binding keeps exactly the local template use and declaration.
+    const authoredReferences = sortLocations(
+      authoredPropReferenceLocations(workspaceDir, oracle, [
+        { range: usageRange, uri: bindingDocument.uri },
+        { range: declarationRange, uri: bindingDocument.uri },
+      ]),
+    );
     assert.deepEqual(
       sortLocations(references),
-      sortLocations(
-        authoredPropReferenceLocations(workspaceDir, oracle, [
-          { range: usageRange, uri: bindingDocument.uri },
-          { range: declarationRange, uri: bindingDocument.uri },
-        ]),
-      ),
+      authoredReferences,
       "references must cover exactly the authored template use and declaration",
     );
 
@@ -172,7 +174,13 @@ export async function exerciseAuthoredLspOracle(
       ]),
       "rename must edit exactly the authored template use and declaration",
     );
-    assert.deepEqual(Object.keys(rename?.changes ?? {}), [bindingDocument.uri]);
+    // Rename must edit the same authored set that references report, so a
+    // declared prop also updates its component consumers in other documents.
+    assert.deepEqual(
+      sortLocations(renameEditLocations(rename, binding.renameTo)),
+      authoredReferences,
+      "rename must edit exactly the authored references",
+    );
 
     open(session, childDocument.uri, childDocument.source, 1, openUris);
     const fixedChildDiagnostics = await waitForDiagnostics(
@@ -326,22 +334,5 @@ export async function exerciseAuthoredLspOracle(
         // Preserve the primary oracle failure instead of the cleanup error.
       }
     }
-  }
-}
-
-export function assertOracleFilesAreInCorpus(
-  project: FixtureProject,
-  files: string[],
-  oracle: LspAuthoredOracle,
-): void {
-  for (const file of [
-    oracle.templateBinding.file,
-    oracle.componentBoundary.importerFile,
-    oracle.componentBoundary.componentFile,
-  ]) {
-    assert.ok(
-      files.includes(file),
-      `${project.id} authored LSP oracle file is outside vueGlobs: ${file}`,
-    );
   }
 }

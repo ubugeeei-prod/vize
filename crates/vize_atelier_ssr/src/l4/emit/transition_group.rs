@@ -86,7 +86,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         }
         self.children(Flags {
             as_fragment: tag.is_none(),
-            disable_nested_fragments: true,
+            disable_nested_fragments: !self.ctx.options.vapor,
             disable_comments: true,
             inherit_attrs: false,
             css_vars: false,

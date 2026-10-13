@@ -43,7 +43,11 @@ function immutableArtifact(root, artifact) {
   const preserved = resolvePreservedFormatterSource(root, artifact);
   if (preserved) return preserved;
   const bytes = fs.readFileSync(resolved);
-  assert.equal(sha256(bytes), artifact.sha256, `fixture bytes changed: ${artifact.path}`);
+  // Recorded fixtures are immutable. A witness that points at a live source
+  // file (a crate's tests or snapshots) records where an expectation came
+  // from; later edits to that file are ordinary work, so it is not pinned.
+  if (relative.split(path.sep).join("/").startsWith("tests/_fixtures/"))
+    assert.equal(sha256(bytes), artifact.sha256, `fixture bytes changed: ${artifact.path}`);
   return bytes;
 }
 

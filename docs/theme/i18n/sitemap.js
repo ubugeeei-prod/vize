@@ -179,7 +179,12 @@
           "/guide/vite-scoped-compiler",
           "/guide/experimentals",
         ],
-        ja: [...projectSetupPaths, "/guide/vue-configuration", "/guide/experimentals"],
+        ja: [
+          ...projectSetupPaths,
+          "/guide/vue-configuration",
+          "/guide/vite-scoped-compiler",
+          "/guide/experimentals",
+        ],
       },
     },
     {

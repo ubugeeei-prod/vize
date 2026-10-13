@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import type { TreeProps } from './defaults';
+import { partialDefaults, text } from './defaults';
+
+const props = withDefaults(defineProps<TreeProps>(), partialDefaults());
+void props;
+</script>
+
+<template>
+  <p>{{ text(valueField) }}{{ text(props.valueField) }}{{ text($props.valueField) }}</p>
+  <p>{{ text(labelField) }}</p>
+</template>

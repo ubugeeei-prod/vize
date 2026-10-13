@@ -222,6 +222,7 @@ compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_implicit_default_sl
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_implicit_default_slot.rs	13	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_implicit_default_slot.rs	13	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_insertion_state.rs	14	carton	Carton host/compatibility	old	vize_carton	legacy	1
+compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_once_components.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_root_component.rs	8	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_same_event_listeners.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_setup_components.rs	11	carton	Carton host/compatibility	old	vize_carton	legacy	3

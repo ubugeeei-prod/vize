@@ -140,7 +140,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { fetch-depth: 0 }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: 1.95.0 }
+        with: { toolchain: 1.99.0 }
       - uses: ./.github/actions/setup-rust-script
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: "package.json", package-manager-cache: false }
@@ -161,7 +161,7 @@ jobs:
       - name: Check public API SemVer compatibility
         env:
           BASELINE_REV: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || (github.event_name == 'push' && github.event.before || '') }}
-          RUSTUP_TOOLCHAIN: 1.95.0
+          RUSTUP_TOOLCHAIN: 1.99.0
         run: bash tools/commands/ci/github/check-semver.sh "${{ matrix.crate }}"
   security-audit:
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -658,7 +658,7 @@ jobs:
     name: test-report-comment
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    if: ${{ always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+    if: ${{ !cancelled() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
     needs:
       - test-report
     permissions:

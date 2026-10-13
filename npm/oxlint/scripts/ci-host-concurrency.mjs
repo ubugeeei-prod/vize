@@ -65,6 +65,7 @@ export async function runHostProcesses(jobs, { workers, timeoutMs = 1_800_000 })
       const started = performance.now();
       const finish = (result) => {
         const row = { id: job.id, ...result, elapsedMs: performance.now() - started };
+        if (row.status !== 0 || row.signal || row.error) row.stderrTail = stderrTail(job.output);
         fs.writeFileSync(
           path.join(job.output, "worker-process.json"),
           JSON.stringify(row, null, 2) + "\n",
@@ -127,13 +128,30 @@ export async function runHostProcesses(jobs, { workers, timeoutMs = 1_800_000 })
   }
 }
 
+// A failed worker's own error otherwise reaches the job log only as "exit 1";
+// its full stderr stays in the evidence artifact.
+function stderrTail(output, lines = 30) {
+  try {
+    return fs
+      .readFileSync(path.join(output, "worker.stderr.log"), "utf8")
+      .trimEnd()
+      .split("\n")
+      .slice(-lines)
+      .join("\n");
+  } catch {
+    return "";
+  }
+}
+
 export function requireSuccessfulHosts(results) {
   const failures = results.filter(({ status, signal, error }) => status !== 0 || signal || error);
   if (failures.length)
     throw new AggregateError(
       failures.map(
-        ({ id, status, signal, error }) =>
-          new Error(`${id}: ${error ?? signal ?? `exit ${status}`}`),
+        ({ id, status, signal, error, stderrTail }) =>
+          new Error(
+            `${id}: ${error ?? signal ?? `exit ${status}`}${stderrTail ? `\n${stderrTail}` : ""}`,
+          ),
       ),
       `Oxlint qualification failed for ${failures.map(({ id }) => id).join(", ")}; all worker evidence retained`,
     );
