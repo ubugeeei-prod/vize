@@ -68,8 +68,14 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
 
     if set_event.delegate {
         ctx.add_delegate_event(event_name);
-        let mut line =
-            EmitDocument::plain(&cstr!("{}.$evt{} = _createInvoker(", element, event_name));
+        // Assigning the slot again would drop the earlier listener, so a
+        // second `@click` on the element joins it through `delegate`.
+        let mut line = if ctx.claim_delegated_listener(set_event.element, event_name) {
+            EmitDocument::plain(&cstr!("{}.$evt{} = _createInvoker(", element, event_name))
+        } else {
+            ctx.use_helper("delegate");
+            EmitDocument::plain(&cstr!("_delegate({}, \"{}\", ", element, event_name))
+        };
         line.push_spanned(&wrapped_handler);
         line.push_str(")");
         ctx.push_line_spanned(&line);

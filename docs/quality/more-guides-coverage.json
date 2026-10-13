@@ -72,8 +72,8 @@
     {
       "route": "/guide/compiler-inspector",
       "locales": ["en", "ja"],
-      "entry": "audited",
-      "note": "Playground entry and concrete commands present; Japanese body still needs review."
+      "entry": "revised",
+      "note": "English and Japanese read as authored; both introductions now link to Testing & Feedback for turning a finding into a report."
     },
     {
       "route": "/guide/cross-file-complexity",
@@ -162,8 +162,8 @@
     {
       "route": "/guide/musea-globals",
       "locales": ["en", "ja"],
-      "entry": "audited",
-      "note": "Toolbar purpose, configuration, and state examples present; Japanese body still needs review."
+      "entry": "revised",
+      "note": "Japanese body reviewed against the English toolbar fields, preview context and URL state; both introductions link to the Musea guide."
     },
     {
       "route": "/guide/musea-hosting",
@@ -193,15 +193,15 @@
     },
     {
       "route": "/guide/vite-plus-editor",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Existing-project editor setup is handled in #8370 and #8371."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Authored Japanese page added and listed in the Japanese Start group; both locales lead from the Vite+ helper to VS Code and other editors."
     },
     {
       "route": "/guide/vite-scoped-compiler",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Scoped setup is retained; shared setup changes are handled in #8370 and #8371."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "English introduction explains when to scope compiler settings and links to Configuration and the compiler options; authored Japanese page added."
     },
     {
       "route": "/guide/wasm",
@@ -248,8 +248,8 @@
     {
       "route": "/rules/migration",
       "locales": ["en", "ja"],
-      "entry": "audited",
-      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+      "entry": "revised",
+      "note": "Both locales open with the mapping totals, a before/after configuration and links to Rule Options; the Japanese table labels read naturally."
     },
     {
       "route": "/rules/options",

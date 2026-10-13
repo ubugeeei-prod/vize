@@ -6,6 +6,7 @@ on:
   workflow_call:
     inputs:
       run-js: { required: true, type: boolean }
+      run-original-project: { required: true, type: boolean }
 permissions: { contents: read }
 env:
   CARGO_TERM_COLOR: always
@@ -52,7 +53,7 @@ jobs:
         env: { VIZE_JS_PACKAGE_GROUP: "${{ matrix.group }}" }
         run: python3 .github/actions/test-js-packages-with-history/native-fault-evidence.py -- vp run --workspace-root "test:js:$VIZE_JS_PACKAGE_GROUP"
       - name: Preserve public native formatter evidence
-        if: ${{ always() && inputs.run-js }}
+        if: ${{ !cancelled() && inputs.run-js }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: public-native-formatter-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ matrix.group }}
@@ -60,7 +61,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
       - name: Preserve original template style fix observations
-        if: ${{ always() && inputs.run-js }}
+        if: ${{ !cancelled() && inputs.run-js }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: template-style-fixes-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ matrix.group }}
@@ -68,7 +69,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
       - name: Preserve original Oxlint package locations
-        if: ${{ always() && inputs.run-js }}
+        if: ${{ !cancelled() && inputs.run-js }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: oxlint-original-locations-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ matrix.group }}
@@ -81,7 +82,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
       - name: Preserve bounded JS native fault diagnostics
-        if: ${{ always() && inputs.run-js }}
+        if: ${{ !cancelled() && inputs.run-js }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: js-native-fault-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ matrix.group }}
@@ -90,6 +91,7 @@ jobs:
           retention-days: 14
   pr-oxlint-project-qualification:
     name: PR Oxlint original project qualification
+    if: ${{ inputs.run-original-project }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 35
     env:
@@ -131,7 +133,7 @@ jobs:
           VIZE_N8N_BASELINE_MODE: partitioned
         run: node npm/oxlint/scripts/check-project-transport.mjs
       - name: Preserve public native formatter evidence
-        if: ${{ always() && inputs.run-js }}
+        if: ${{ !cancelled() && inputs.run-js }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: public-native-formatter-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}
@@ -140,7 +142,7 @@ jobs:
           retention-days: 14
       - name: Preserve original Oxlint bridge locations
         id: original-project-evidence
-        if: ${{ always() && inputs.run-js }}
+        if: ${{ !cancelled() && inputs.run-js }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: oxlint-original-locations-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}

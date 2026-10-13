@@ -168,7 +168,7 @@ fn resolve_target(
     follow: bool,
     sources: &TypeSourceSnapshot,
 ) {
-    if let Some(path) = sources.resolve_import(current, &target.specifier) {
+    if let Some(path) = sources.resolve_import_from_identity(current, &target.specifier) {
         target.module = Some(path_key(&path));
         if follow {
             pending.push((path, None));
@@ -177,7 +177,7 @@ fn resolve_target(
 }
 
 fn read_module_source(path: &Path, sources: &TypeSourceSnapshot) -> Option<ModuleSource> {
-    let source = sources.read(path)?;
+    let source = sources.read_identity(path.to_path_buf())?;
     if path.extension().is_some_and(|ext| ext == "vue") {
         let descriptor = crate::parse_sfc(&source, crate::SfcParseOptions::default()).ok()?;
         let is_tsx = descriptor

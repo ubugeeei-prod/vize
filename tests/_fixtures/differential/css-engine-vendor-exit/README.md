@@ -1,18 +1,20 @@
-# CSS engine vendor candidate custody
+# CSS engine fork fixtures
 
-`originals.json` authenticates all 19 complete existing #3295 containment packet
-files and the initial entire `css_engine_panic_boundary.rs` authority on main
-`a6633fb68b110d07abd5ee5a6049bc15f20f9c7f`. The original packets are retained
-unchanged. The source guard checks complete file bytes before any focused build.
+Inputs for the tests that cover the vendored CSS engine forks
+(`vendor/lightningcss`, `vendor/parcel_sourcemap`) and their consumers.
 
-Packaged direct engine tests replay the verbatim 39-byte, 66-byte and 1045-byte
-fuzz artifacts under `vendor/lightningcss/tests/vize_fixtures/` without Vize's
-pre-parse or catch-unwind boundaries. Their source checksums are pinned separately.
+- `atelier-inputs.json` — CSS inputs replayed by the
+  `css_engine_vendor_observer` example in `crates/vize`.
+- `finite-successors.json` — the expected results for the percentage and hue
+  inputs that used to panic inside the engine
+  ([#3295](https://github.com/ubugeeei-prod/vize/issues/3295)). The Atelier,
+  Glyph and Patina boundary tests read it.
+- `finite-before/css_engine_panic_boundary.rs.txt` — the boundary test source
+  as it was before the engine repairs, read by the Atelier stage-alias test.
+- `release-inheritance/metadata/` — a frozen workspace manifest and lockfile
+  used as input by the release version-rewrite test. It is test input only;
+  the live `Cargo.toml` and `Cargo.lock` are not compared against it.
 
-This initial candidate deliberately preserves old profile-dependent boundary
-laws. Intentional behavior differences need a complete authenticated finite
-successor and independent review before admission. Historical observation is
-not current-source, published or installed consumer acceptance.
-
-Scope and remaining proof live in the paired
-[decision](../../../../docs/davinci/decisions/2026-10-12-css-engine-vendor-exit.md).
+The candidate qualification that pinned the live workspace manifests and
+release drivers to these fixtures was retired; see the
+[decision](../../../../docs/davinci/decisions/2026-10-13-3864-css-fork-candidate-custody-retired.md).

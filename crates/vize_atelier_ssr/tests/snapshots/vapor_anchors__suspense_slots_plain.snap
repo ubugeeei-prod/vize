@@ -1,0 +1,15 @@
+---
+source: crates/vize_atelier_ssr/tests/vapor_anchors.rs
+expression: "compile(SUSPENSE_SLOTS, false)"
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _ssrRenderSuspense(_push, {
+    fallback: () => {
+      _push(`f`)
+    },
+    default: () => {
+      _push(`<div>a</div>`)
+    },
+    _: 1
+  })
+}

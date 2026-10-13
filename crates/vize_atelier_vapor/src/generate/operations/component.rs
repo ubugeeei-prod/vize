@@ -226,9 +226,17 @@ pub(super) fn generate_create_component(
 
         ctx.deindent();
         ctx.push_indent();
-        ctx.push(&cstr!("}}, {})\n", creation_flags(ctx, component)));
+        ctx.push(&cstr!(
+            "}}, {}{})\n",
+            creation_flags(ctx, component),
+            once_flag(component, create_fn)
+        ));
     } else {
-        ctx.push(&cstr!(", null, {})\n", creation_flags(ctx, component)));
+        ctx.push(&cstr!(
+            ", null, {}{})\n",
+            creation_flags(ctx, component),
+            once_flag(component, create_fn)
+        ));
     }
 
     // v-show after component creation
@@ -240,6 +248,16 @@ pub(super) fn generate_create_component(
             component.id,
             resolved
         ));
+    }
+}
+
+/// The trailing `once` argument of a component created under `v-once`.
+/// `createDynamicComponent` takes other arguments in that position.
+fn once_flag(component: &CreateComponentIRNode<'_>, create_fn: &str) -> &'static str {
+    if component.once && matches!(create_fn, "createComponent" | "createComponentWithFallback") {
+        ", true"
+    } else {
+        ""
     }
 }
 

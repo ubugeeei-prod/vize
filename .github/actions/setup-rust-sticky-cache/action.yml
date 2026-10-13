@@ -93,8 +93,8 @@ runs:
       run: node "$GITHUB_ACTION_PATH/cache-policy.mjs" --mounted
 
     # Trusted sticky clones are already mounted. Lookup-only never extracts a
-    # second cache into them. A mounted target seeds once per lock/toolchain/role,
-    # before sticky unmount; exact seed hits avoid re-archiving at every main SHA.
+    # second cache into them. Mounted targets commit through the sticky provider;
+    # compatible existing Actions seeds remain lookup-only, without another archive.
     # A failed mount or GitHub-hosted runner retains the per-checkout save key.
     - name: Cache Cargo registry or seed it from the trusted sticky clone
       if: ${{ steps.cache-policy.outputs.trusted == 'true' }}
@@ -111,9 +111,8 @@ runs:
         key: ${{ steps.cache-policy.outputs.git-key }}
         lookup-only: ${{ steps.cache-mounts.outputs.git == 'true' }}
     - name: Cache Rust target or seed it from the trusted sticky clone
-      # The mounted tooling target uses its existing provider post.
-      # Its repeated full archive exceeded the job deadline after tests passed.
-      if: ${{ steps.cache-policy.outputs.target-save == 'true' && ((inputs.key != 'test-scripts' && inputs.key != 'docs-wasm') || steps.cache-mounts.outputs.target != 'true') }}
+      # Every healthy mounted target already has its provider post.
+      if: ${{ steps.cache-policy.outputs.target-save == 'true' && steps.cache-mounts.outputs.target != 'true' }}
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         # Nested post steps retain inputs, but not this action's step outputs.
@@ -123,8 +122,7 @@ runs:
         restore-keys: ${{ steps.cache-policy.outputs.target-restore }}
         lookup-only: ${{ steps.cache-mounts.outputs.target == 'true' }}
     - name: Cache the secondary Rust target or seed its trusted clone
-      # The mounted docs example already has its original sticky provider post.
-      if: ${{ steps.cache-policy.outputs.secondary-save == 'true' && steps.cache-policy.outputs.secondary == 'true' && (inputs.key != 'docs-wasm' || inputs.secondary-key != 'docs-example' || steps.cache-mounts.outputs.secondary != 'true') }}
+      if: ${{ steps.cache-policy.outputs.secondary-save == 'true' && steps.cache-policy.outputs.secondary == 'true' && steps.cache-mounts.outputs.secondary != 'true' }}
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         path: ${{ inputs.secondary-target-path }}
@@ -149,19 +147,19 @@ runs:
         key: ${{ steps.cache-policy.outputs.git-key }}
         lookup-only: ${{ steps.cache-mounts.outputs.git == 'true' }}
     - name: Restore a Rust target without registering a save
-      if: ${{ steps.cache-policy.outputs.target-save == 'false' || ((inputs.key == 'test-scripts' || inputs.key == 'docs-wasm') && steps.cache-mounts.outputs.target == 'true') }}
+      if: ${{ steps.cache-policy.outputs.target-save == 'false' || steps.cache-mounts.outputs.target == 'true' }}
       uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         path: ${{ inputs.target-path }}
-        key: ${{ inputs.key == 'docs-wasm' && steps.cache-mounts.outputs.target == 'true' && steps.cache-policy.outputs.target-seed-key || steps.cache-policy.outputs.target-key }}
+        key: ${{ steps.cache-mounts.outputs.target == 'true' && steps.cache-policy.outputs.target-seed-key || steps.cache-policy.outputs.target-key }}
         restore-keys: ${{ steps.cache-policy.outputs.target-restore }}
         lookup-only: ${{ steps.cache-mounts.outputs.target == 'true' }}
     - name: Restore a secondary target without registering a save
-      if: ${{ (steps.cache-policy.outputs.secondary-save == 'false' || (inputs.key == 'docs-wasm' && inputs.secondary-key == 'docs-example' && steps.cache-mounts.outputs.secondary == 'true')) && steps.cache-policy.outputs.secondary == 'true' }}
+      if: ${{ (steps.cache-policy.outputs.secondary-save == 'false' || steps.cache-mounts.outputs.secondary == 'true') && steps.cache-policy.outputs.secondary == 'true' }}
       uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         path: ${{ inputs.secondary-target-path }}
-        key: ${{ inputs.key == 'docs-wasm' && inputs.secondary-key == 'docs-example' && steps.cache-mounts.outputs.secondary == 'true' && steps.cache-policy.outputs.secondary-seed-key || steps.cache-policy.outputs.secondary-key }}
+        key: ${{ steps.cache-mounts.outputs.secondary == 'true' && steps.cache-policy.outputs.secondary-seed-key || steps.cache-policy.outputs.secondary-key }}
         restore-keys: ${{ steps.cache-policy.outputs.secondary-restore }}
         lookup-only: ${{ steps.cache-mounts.outputs.secondary == 'true' }}
 

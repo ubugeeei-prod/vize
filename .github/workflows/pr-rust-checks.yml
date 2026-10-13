@@ -110,7 +110,7 @@ jobs:
           compression-level: 0
           retention-days: 1
       - name: Summarize Rust test timing evidence
-        if: ${{ always() && inputs.run-rust }}
+        if: ${{ !cancelled() && inputs.run-rust }}
         env:
           BUILD_OUTCOME: ${{ steps.rust-test-build.outcome }}
           RUN_OUTCOME: ${{ steps.rust-test-run.outcome }}
@@ -122,7 +122,7 @@ jobs:
           CACHE_NAMESPACE: ${{ github.repository }}-${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}clippy-test-target-${{ runner.os }}-${{ runner.arch }}
         run: node tools/support/compat/github/rust-test-timings.mjs
       - name: Upload Rust test timing evidence
-        if: ${{ always() && inputs.run-rust }}
+        if: ${{ !cancelled() && inputs.run-rust }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: rust-test-timings-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
@@ -130,10 +130,12 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  # The feature tail compiles its own dev/test-profile binaries and never runs
+  # the producer's ci archive, so it starts beside the producer instead of
+  # after it. The Rust source report still requires both.
   merge-rust-differential:
     name: Required Rust differential corpora
     if: ${{ github.event_name == 'merge_group' && inputs.run-rust }}
-    needs: merge-rust-source
     uses: ./.github/workflows/pr-rust-differential.yml
     with: { run-rust: "${{ inputs.run-rust }}" }
 
@@ -286,7 +288,8 @@ jobs:
   rust-source-report:
     name: Rust source report
     permissions: { contents: read, actions: read }
-    if: ${{ always() }}
+    # A superseded run reports nothing: its required check fails in test-report.
+    if: ${{ always() && !contains(needs.*.result, 'cancelled') }}
     needs: [merge-rust-source, merge-rust-differential, pr-rust-build, pr-rust-shard]
     runs-on: ubuntu-24.04
     timeout-minutes: 5

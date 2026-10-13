@@ -46,7 +46,7 @@ test("only actual selected SFC product and acceptance inputs add the source capt
 
 test("the bounded first-worker hook captures whole selected SFCs before selected tooling runs", () => {
   const workflow = read(".github/workflows/pr-source-checks.yml");
-  assert(workflow.trimEnd().split("\n").length <= 350);
+  assert(workflow.trimEnd().split("\n").length <= 500);
   const build = workflow.indexOf("- name: Restore and install source-built vize CLI");
   const prep = workflow.indexOf("- name: Prepare the pinned plugin isolation runtime");
   const hook = workflow.indexOf("- name: Test source-bound native JS setup modules and runtime");

@@ -62,8 +62,28 @@ export interface ProjectDetection {
  * command in its corsa-not-found message; if the two ever disagreed, a user
  * would be told to run `pnpm add` by one half of the toolchain and `npm install`
  * by the other.
+ *
+ * A workspace package has no lockfile of its own, so the search continues in
+ * the parent directories and the nearest answer wins. It stops at the
+ * repository root: a lockfile above the directory that holds `.git` belongs to
+ * something else.
  */
 export function detectPackageManager(root: string): PackageManager | null {
+  let directory = path.resolve(root);
+  for (;;) {
+    const detected = detectPackageManagerIn(directory);
+    if (detected !== null) {
+      return detected;
+    }
+    const parent = path.dirname(directory);
+    if (parent === directory || fs.existsSync(path.join(directory, ".git"))) {
+      return null;
+    }
+    directory = parent;
+  }
+}
+
+function detectPackageManagerIn(root: string): PackageManager | null {
   const exists = (name: string): boolean => fs.existsSync(path.join(root, name));
   if (exists("pnpm-lock.yaml")) {
     return "pnpm";

@@ -41,9 +41,13 @@
 mod davinci_production_reach {
     pub mod acceptance;
     pub mod diff;
+    pub mod fixtures;
     #[cfg(test)]
     mod inline_parity_regressions;
     pub mod parity;
+    pub mod refusal;
+    #[cfg(test)]
+    mod refusal_tests;
     #[cfg(test)]
     mod selection_tests;
     pub mod shapes;
@@ -53,12 +57,12 @@ mod davinci_production_reach {
 }
 
 use std::collections::BTreeMap;
-use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
 use davinci_production_reach::acceptance::report;
 use davinci_production_reach::diff::{divergence, error_divergence};
+use davinci_production_reach::fixtures::collect_committed_fixtures;
 use davinci_production_reach::parity::{absorb_prebackend, parity_failures};
 use davinci_production_reach::shapes::{Shape, compile, explicit_vapor_source};
 use davinci_production_reach::tally::{Lane, Tally, classify, classify_route, floors};
@@ -380,31 +384,6 @@ fn production_reach_body() {
     assert_parity(&hydrated);
 }
 
-/// Every `.vue` file under `tests/_fixtures`, sorted, skipping the
-/// `_git` submodule corpus (swept only through the env root) and
-/// `node_modules`.
-fn collect_committed_fixtures(dir: &Path, out: &mut Vec<PathBuf>) {
-    let Ok(entries) = fs::read_dir(dir) else {
-        return;
-    };
-    let mut children: Vec<PathBuf> = entries
-        .filter_map(|entry| entry.ok().map(|entry| entry.path()))
-        .collect();
-    children.sort();
-    for child in children {
-        if child.is_dir() {
-            if child.file_name().is_some_and(|name| {
-                name == "node_modules" || name == "_git" || name == "_git-worktrees"
-            }) {
-                continue;
-            }
-            collect_committed_fixtures(&child, out);
-        } else if child.extension().is_some_and(|ext| ext == "vue") {
-            out.push(child);
-        }
-    }
-}
-
 struct Sweep {
     files: u64,
     unreadable: u64,
@@ -457,6 +436,8 @@ fn measure(
     shape: Shape,
     tally: &mut Tally,
 ) {
+    // Drop a stale note so the refusal read below belongs to this compile.
+    let _ = vize_atelier_dom::differential::take_emit_refusal();
     let profiler = global_profiler();
     profiler.clear();
     profiler.enable();
@@ -464,6 +445,7 @@ fn measure(
     let counters = profiler.counter_summary();
     profiler.disable();
     profiler.clear();
+    let refusal = vize_atelier_dom::differential::take_emit_refusal();
 
     let selected = match selected {
         Ok(selected) => selected,
@@ -495,6 +477,7 @@ fn measure(
     }
     let accepted = lane == Lane::Accepted;
     let croquis = lane == Lane::Legacy("croquis".to_owned());
+    tally.note_refusal(shape, name, &lane, refusal);
     tally.note(name, lane);
     if accepted && shape.is_dom() {
         compare_with_legacy(descriptor, name, shape, &selected, tally);

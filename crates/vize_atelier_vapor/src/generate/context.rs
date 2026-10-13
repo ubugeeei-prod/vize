@@ -9,7 +9,7 @@ mod slot_defaults;
 pub(crate) use scopes::{ForScope, SlotScope};
 use vize_atelier_core::options::BindingMetadata;
 use vize_atelier_core::steps::expression::is_template_global;
-use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString, cstr};
+use vize_carton::{FxHashMap, FxHashSet, SmallVec, String, ToCompactString, cstr};
 
 /// Generate context
 pub(crate) struct GenerateContext<'a> {
@@ -25,6 +25,9 @@ pub(crate) struct GenerateContext<'a> {
     pub(crate) used_helpers: FxHashSet<&'static str>,
     /// Events that need delegation (event names)
     pub(crate) delegate_events: NameSet,
+    /// Delegated listeners already assigned, as `(element, event)`. Inline,
+    /// so claiming one allocates nothing for an ordinary template.
+    delegated_listeners: SmallVec<[(usize, String); 16]>,
     /// Text node references (element_id -> text_node_var)
     pub(crate) text_nodes: FxHashMap<usize, String>,
     /// Position of every node reached by a `ChildRef`/`NextRef` operation
@@ -85,6 +88,7 @@ impl<'a> GenerateContext<'a> {
             temp_count: 0,
             used_helpers: FxHashSet::default(),
             delegate_events: NameSet::default(),
+            delegated_listeners: SmallVec::new(),
             text_nodes: FxHashMap::default(),
             node_positions: FxHashMap::default(),
             is_fragment: false,
@@ -176,6 +180,21 @@ impl<'a> GenerateContext<'a> {
 
     pub(crate) fn add_delegate_event(&mut self, event_name: &str) {
         self.delegate_events.insert(event_name.to_compact_string());
+    }
+
+    /// Whether this is the element's first delegated listener for the event.
+    /// The first owns the `$evt` slot; a later one must join it.
+    pub(crate) fn claim_delegated_listener(&mut self, element: usize, event_name: &str) -> bool {
+        if self
+            .delegated_listeners
+            .iter()
+            .any(|(claimed, event)| *claimed == element && event == event_name)
+        {
+            return false;
+        }
+        self.delegated_listeners
+            .push((element, event_name.to_compact_string()));
+        true
     }
 
     pub(crate) fn next_text_node(&mut self, element_id: usize) -> String {
