@@ -102,8 +102,12 @@ void test("the actual exempt ledger has no compiled Rust consumer and still sele
     }
   }
   assert.ok(planToolingTests([ledger]).tests.length > 0);
-  // A prose-only queue candidate gets the PR plan, and no Rust consumes this ledger.
-  assert.deepEqual(planSourceChecks([ledger], "merge_group"), planSourceChecks([ledger]));
+  assert.deepEqual(planSourceChecks([ledger], "merge_group"), {
+    rust: true,
+    js: true,
+    tooling: true,
+    playground: true,
+  });
   assert.equal(planAffectedRust(metadata, [ledger], "merge_group").scope, "workspace");
 });
 
