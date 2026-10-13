@@ -68,3 +68,26 @@ The shared foundation retains every current-main byte and adds only the existing
 planner setup cancellation remains historical; the merged direct-Node planner
 requires fresh source Actions on the actual composed head. Hosted native
 preparation and full diagnostic/declaration-load qualification remain pending.
+
+## Literal Star source counterpart
+
+Source Check `38354748231` at `08eb7f0e` genuinely refused the registry's
+439-byte declaration-preparation addition in both tooling owners. The original
+Star322 gate correctly requires the entire old registry, so it remains unchanged.
+The named `misskey-registry-source` gate first authenticates all 412 literal-BD
+source counterparts, regular committed and physical bytes, and its own selected
+helpers, metadata and entrypoints. Its only three successors are the registry and
+two exact test entrypoints. Removing the one 18-line Misskey baseline insertion
+reconstructs the entire literal-BD registry; every neighboring corpus, pin,
+config, lockfile and budget remains exact.
+
+Only after this actual-source gate passes may either entrypoint execute its whole
+unchanged original literal-BD test body. The original Star322/290, JS93 and eight
+custody laws and all original negative controls remain in that immutable frame.
+The shared counterpart snapshot utility selects raw regular files and grants no
+admission. Additive controls reject missing, mutated or executable physical
+source, symlink ancestors, raw/physical hybrids, neighbor budgets, stale or forged
+packets, replacement refs and ambient source overrides. This relation is source
+custody only; it adds no emitter, diagnostic, native runtime, original400 or
+performance acceptance. The actual emitter and complete declaration-load and
+diagnostic comparisons remain unfinished as described above.
