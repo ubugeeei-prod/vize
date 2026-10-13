@@ -45,6 +45,8 @@ search covers those too.
    typed yet are simply absent.
 4. **Verify.** The strict project, `vp fmt`, `vp lint`, every test that
    imports or names a moved file, and the source-length budget must all pass.
+   Run `vp lint` on directories: given a single file it printed no warnings
+   in the pilot, while the directory run reported five.
 
 ## Typing rules
 
