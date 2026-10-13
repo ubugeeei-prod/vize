@@ -35,7 +35,7 @@ const parts = [
 ];
 const cells = [
   "empty-vue-star-component-read-cells.json",
-  "0c7474246e58214814708a10f2a3456e15445a200d9fa7a95a35f866fe2e496a",
+  "ef863dac9e002d90be4e02746a8e0866f012f5b37ba71920cbd0a0ca61215cd4",
 ];
 const loaded = new Map();
 function metadata(name, checksum) {
@@ -143,19 +143,30 @@ export function authenticateStarComponentReadSource(root) {
   for (const row of declared("after")) joinPhysical(root, row);
   ensureHostedLiteralSource(root, source);
   ensureHostedLiteralSource(root, data.sdkSource);
-  const sdkBefore = joinRawBodies(
-    root,
-    data.sdkSource,
-    data.sdkCollisions.map((row) => ({
+  const sdkBefore = joinRawBodies(root, data.sdkSource, [
+    ...data.sdkCollisions.map((row) => ({
       path: row.path,
       mode: row.before.mode,
       bytes: row.before.byteLength,
       sha256: row.before.sha256,
       gitBlob: row.before.blob,
     })),
-  );
+    {
+      path: data.sdkMetadata.path,
+      mode: data.sdkMetadata.mode,
+      bytes: data.sdkMetadata.byteLength,
+      sha256: data.sdkMetadata.sha256,
+      gitBlob: data.sdkMetadata.blob,
+    },
+  ]);
   for (const row of data.sdkCollisions)
     assert.deepEqual(sdkBefore.get(row.path), decode(row.before));
+  assert.equal(data.sdkMetadata.path, "tools/support/compat/github/misskey-registry-source.json");
+  assert.deepEqual(sdkBefore.get(data.sdkMetadata.path), decode(data.sdkMetadata));
+  assert.deepEqual(JSON.parse(decode(data.sdkMetadata)).history, data.sdkHistory);
+  assert.equal(data.sdkHistory.length, 20);
+  assert(data.sdkHistory.every((historical) => data.history.includes(historical)));
+
   const before = joinRawBodies(root, source, declared("before"));
   const current = joinRawBodies(root, head, declared("after"));
   for (const row of data.changes) {
@@ -233,8 +244,8 @@ export async function runRetainedComponentReadStarLaws(root) {
 /** Literal history is prepared only through the original owned-Actions refusal boundary. */
 export function prepareRootComponentReadHistory(root) {
   const current = authenticateStarComponentReadSource(root);
-  assert.equal(data.history.length, 15);
-  assert.equal(new Set(data.history).size, 15);
+  assert.equal(data.history.length, 22);
+  assert.equal(new Set(data.history).size, 22);
   for (const historical of data.history) ensureHostedLiteralSource(root, historical);
   assert.equal(joinGit(root, ["rev-parse", "HEAD"]).toString().trim(), current.head);
   return current;

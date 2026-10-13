@@ -93,5 +93,12 @@ executes every unchanged original Misskey/SDK427 law in that literal context.
 Its table, module and original test bytes remain unchanged; foreign history,
 source mutation and private snapshot fetch refusals still apply. The only
 snapshot admission change is that one named literal source, with no new helper.
-Fifteen exact historical commits and all prior Star322/JS93 laws remain required;
+Twenty-two exact historical commits and all prior Star322/JS93 laws remain required;
 source-only evidence does not grant native, original-400 or release credit.
+
+The literal SDK metadata requires twenty historical commits. Before private
+replay, the actual repository prepares the exact 22-member union with its
+original component histories and SDK source through the unchanged owned-Actions
+boundary. The SDK metadata's complete Git body authenticates all twenty source
+identities; local full-object tests do not establish cold hosted qualification.
+Private snapshots retain their existing missing-history refusal and never fetch.
