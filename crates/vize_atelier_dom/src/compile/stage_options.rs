@@ -215,6 +215,8 @@ pub(super) fn try_emit_l2(
     hoisted_scope_id: Option<&str>,
     experimental_component_name: Option<&str>,
     pre_s2_walks: Option<WalkCounts>,
+    strict_slot_params: bool,
+    no_slotted: bool,
 ) -> Option<CodegenResultWithSections> {
     let binding_table = l2_binding_table_for(options);
     let emit_options = l2_emit_options(
@@ -233,8 +235,8 @@ pub(super) fn try_emit_l2(
             options.dialect,
             &emit_options,
             pre_s2_walks,
-            false,
-            false,
+            strict_slot_params,
+            no_slotted,
         )
     ))
     .ok()

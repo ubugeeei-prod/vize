@@ -27,6 +27,8 @@ pub(in crate::compile) fn try_emit_l2_captured<C: CaptureSink>(
     hoisted_scope_id: Option<&str>,
     experimental_component_name: Option<&str>,
     pre_s2_walks: Option<WalkCounts>,
+    strict_slot_params: bool,
+    no_slotted: bool,
     capture: &mut C,
 ) -> Option<CodegenResultWithSections> {
     if !C::RECORDING {
@@ -39,6 +41,8 @@ pub(in crate::compile) fn try_emit_l2_captured<C: CaptureSink>(
             hoisted_scope_id,
             experimental_component_name,
             pre_s2_walks,
+            strict_slot_params,
+            no_slotted,
         );
     }
     let binding_table = l2_binding_table_for(options);
@@ -59,8 +63,8 @@ pub(in crate::compile) fn try_emit_l2_captured<C: CaptureSink>(
             &emit_options,
             pre_s2_walks,
             SlotEmitPolicy {
-                strict_slot_params: false,
-                no_slotted: false,
+                strict_slot_params,
+                no_slotted,
             },
             capture,
         )

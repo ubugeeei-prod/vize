@@ -54,6 +54,7 @@ pub(super) fn compile_template_inner_with_sections<'a>(
         codegen_experimental_options,
         l2_emit_selection,
         no_slotted,
+        strict_slot_params,
     } = pipeline_options;
     let parser_opts = stage_options::parser_options(&options);
 
@@ -124,6 +125,8 @@ pub(super) fn compile_template_inner_with_sections<'a>(
             hoisted_scope_id.as_deref(),
             codegen_experimental_options.component_name.as_deref(),
             None,
+            strict_slot_params,
+            no_slotted,
         ) {
             selection::record(Ok(()));
             return (root, errors.to_vec(), result);
@@ -171,6 +174,8 @@ pub(super) fn compile_template_inner_with_sections<'a>(
             hoisted_scope_id.as_deref(),
             experimental_component_name.as_deref(),
             template_walks,
+            strict_slot_params,
+            no_slotted,
         )
     });
     let codegen_result = match l2_emit {

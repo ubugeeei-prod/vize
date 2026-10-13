@@ -3,6 +3,7 @@ use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_l0::Span;
 use vize_l1_to_l2::{EmitError, UnsupportedReason};
 
+use super::diff::divergence;
 use super::refusal::{DIAGNOSTICS, RefusalCensus, SELECTOR, bucket};
 use super::shapes::{Shape, compile};
 use super::tally::{EMIT_REFUSED, Lane, classify};
@@ -53,7 +54,7 @@ fn every_unsupported_reason_keeps_its_own_bucket() {
 }
 
 #[test]
-fn dom_compile_notes_l2_errors_and_leaves_selector_refusals_unnoted() {
+fn dom_compile_notes_l2_errors_only_when_l2_refuses() {
     let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
     let rejected = EmitError::unsupported(UnsupportedReason::PrefixExpressionRejected);
     let cases = [
@@ -61,11 +62,6 @@ fn dom_compile_notes_l2_errors_and_leaves_selector_refusals_unnoted() {
             r#"<template><Widget><template #actions="v-slot:actions"><button>Run</button></template></Widget></template>"#,
             Lane::Legacy(EMIT_REFUSED.to_owned()),
             Some(rejected),
-        ),
-        (
-            "<script setup>const a = 1, b = 2</script><template><p v-if=\"a && b\">x</p></template>",
-            Lane::Legacy(EMIT_REFUSED.to_owned()),
-            None,
         ),
         ("<template><p>static</p></template>", Lane::Accepted, None),
     ];
@@ -87,6 +83,77 @@ fn dom_compile_notes_l2_errors_and_leaves_selector_refusals_unnoted() {
             );
             assert_eq!(take_emit_refusal(), refusal, "{shape:?}: {source}");
             assert_eq!(take_emit_refusal(), None, "taken once: {shape:?}");
+        }
+    }
+}
+
+/// The SFC selector used to keep these on the compatibility lane without
+/// running L2: any `&` in a template expression, and scoped styles without
+/// `:slotted` on a source the fast path cannot take. Only a possible
+/// character reference still needs the shipped lane, which decodes it.
+
+#[test]
+fn shared_pipeline_runs_l2_for_expression_ampersands_and_scoped_slot_outlets() {
+    let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
+    let cases = [
+        (
+            "<script setup>const a = 1, b = 2</script><template><p v-if=\"a && b\">{{ a && b }}</p></template>",
+            None,
+        ),
+        (
+            "<script setup>const a = 1</script><template><div><i /><slot :a=\"a\" /><slot name=\"x\" /></div></template><style scoped>div { color: red; }</style>",
+            None,
+        ),
+        (
+            "<script setup>const a = 1, b = 2</script><template><div><br><slot v-if=\"a && b\" /></div></template><style scoped>div { color: red; }</style>",
+            None,
+        ),
+        (
+            "<script setup>const a = 1, b = 2</script><template><p :title=\"a &amp;&amp; b\">{{ a }}</p></template>",
+            Some(None),
+        ),
+        (
+            "<script setup>const a = 1</script><template><span :title=\"'&lt;b&gt;'\">{{ a &#x26;&#x26; a }}</span></template>",
+            Some(None),
+        ),
+        (
+            "<script setup>const a = 1, b = 2</script><template><p :title=\"a&&b\" @click=\"a & b\">{{ a &&b }}</p></template>",
+            Some(None),
+        ),
+        // L2 runs before the shipped transform reports malformed slot
+        // parameters, so the shared pipeline must refuse them itself.
+        (
+            "<script setup>const a = 1, b = 2</script><template><Widget v-if=\"a && b\"><template #actions=\"v-slot:actions\"><button>Run</button></template></Widget></template>",
+            Some(Some(UnsupportedReason::PrefixExpressionRejected)),
+        ),
+    ];
+    // `None`: L2 emits. `Some(None)`: the selector keeps the shipped lane.
+    // `Some(Some(reason))`: L2 runs and refuses with `reason`.
+    for (source, refused) in cases {
+        let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
+        for shape in [Shape::DomInline, Shape::DomModule] {
+            let _ = take_emit_refusal();
+            let profiler = vize_l0::profiler::global_profiler();
+            profiler.clear();
+            profiler.enable();
+            let selected = compile(&descriptor, "Gate.vue", shape).unwrap();
+            let counters = profiler.counter_summary();
+            profiler.disable();
+            profiler.clear();
+            let lane = match refused {
+                Some(_) => Lane::Legacy(EMIT_REFUSED.to_owned()),
+                None => Lane::Accepted,
+            };
+            assert_eq!(classify(shape, &counters), Ok(lane), "{shape:?}: {source}");
+            let reason = take_emit_refusal().and_then(|error| match error {
+                EmitError::Unsupported(refusal) => Some(refusal.reason),
+                EmitError::Diagnostics => None,
+            });
+            assert_eq!(reason, refused.flatten(), "{shape:?}: {source}");
+            let legacy = vize_atelier_dom::differential::with_legacy_lane(|| {
+                compile(&descriptor, "Gate.vue", shape)
+            });
+            assert_eq!(divergence(&selected, &legacy), None, "{shape:?}: {source}");
         }
     }
 }
