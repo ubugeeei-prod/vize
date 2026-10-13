@@ -25,10 +25,7 @@ test("fresco-native publishes bundled binaries directly from the root package", 
     frescoNativePackage.scripts?.["build:ci"],
     "napi build --platform --profile ci --manifest-path ../../crates/vize_fresco/Cargo.toml -p vize_fresco --features napi --output-dir .",
   );
-  assert.equal(
-    vizeNativePackage.scripts?.["build:ci"],
-    "napi build --platform --profile ci --manifest-path ../../crates/vize_vitrine/Cargo.toml -p vize_vitrine --features napi,legacy --output-dir . && node ./scripts/sync-entrypoint.mjs",
-  );
+  assert.equal(vizeNativePackage.scripts?.["build:ci"], "node ./scripts/build-ci.mjs");
 
   const frescoNativeLoader = fs.readFileSync(
     path.join(root, "npm/fresco-native/index.js"),

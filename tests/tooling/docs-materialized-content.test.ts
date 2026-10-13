@@ -22,8 +22,26 @@ await test("native renderer input preserves route/source bytes and replaces only
     for (const [path, bytes] of Object.entries(originals)) put(`content/${path}`, bytes);
     assert.equal(
       CATALOGUE_SOURCES.length,
-      66,
-      "five complete catalogue locales and eleven retained subgroups",
+      77,
+      "five complete catalogue locales, eleven retained English subgroups, four Japanese accessibility groups, Japanese components, directive conventions, directive validity, template formatting, SFC blocks, template safety and template structure",
+    );
+    assert.ok(CATALOGUE_SOURCES.includes("generated/rules/ja/accessibility-core.md"));
+    assert.ok(CATALOGUE_SOURCES.includes("generated/rules/ja/accessibility-integrity.md"));
+    assert.ok(CATALOGUE_SOURCES.includes("generated/rules/ja/accessibility-interactions.md"));
+    assert.ok(CATALOGUE_SOURCES.includes("generated/rules/ja/accessibility-structure.md"));
+    assert.ok(CATALOGUE_SOURCES.includes("generated/rules/ja/vue-components.md"));
+    assert.ok(CATALOGUE_SOURCES.includes("generated/rules/ja/vue-directives.md"));
+    assert.ok(CATALOGUE_SOURCES.includes("generated/rules/ja/vue-directive-validity.md"));
+    assert.ok(CATALOGUE_SOURCES.includes("generated/rules/ja/vue-template-structure.md"));
+    assert.ok(CATALOGUE_SOURCES.includes("generated/rules/ja/vue-formatting.md"));
+    assert.equal(
+      CATALOGUE_SOURCES.filter((source) => source === "generated/rules/ja/vue-sfc.md").length,
+      1,
+    );
+    assert.equal(
+      CATALOGUE_SOURCES.filter((source) => source === "generated/rules/ja/vue-template-safety.md")
+        .length,
+      1,
     );
     const catalogues = CATALOGUE_SOURCES.map((source) => {
       const match = source.match(/^generated\/rules\/([^/]+)\/(.+)$/);

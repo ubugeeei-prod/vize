@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "sourceBase": "9708be553d7dcf5ae3a546bde6061e5630be02ba",
+  "producer": "npm/builder/vite-musea/gallery/views/ComponentView.vue",
+  "beforeSourceSha256": "0b1c2518b59848ad5988fd97b055ab6cdedc33b22a49c5d96507ec151eebf07c",
+  "beforeScriptSha256": "2e30c7098da8d15432766b36a580534e18d4f9dfdf1a571aae46a107c232cdfc",
+  "originalFailure": {
+    "run": 38189727825,
+    "job": 114619686264,
+    "source": "b4e8a0289255236cedf0ef6b879b0af1b6810431",
+    "artifact": 11721336653,
+    "archiveSha256": "94fa026fece33961e675f728caac89fcb845a1284825b7509f7157300d1ea80a",
+    "packetSha256": "5053496fd0acf831fcde4b5beba93a911ee1fa8c2f585a36d778ce97f3283f0c",
+    "eventOrdering": "unrecorded",
+    "loadedNativeSha256": null
+  },
+  "variants": {
+    "Controls": ["Default", "Custom theme"],
+    "Keys": ["__proto__", "constructor", "hasOwnProperty"]
+  },
+  "controls": [
+    "last-first",
+    "first-last",
+    "direct-hash",
+    "manual-scroll",
+    "keyboard",
+    "tab-replacement",
+    "route-replacement",
+    "no-hash-view-landing",
+    "unmount",
+    "pending-setup",
+    "pending-hash-tab",
+    "pending-hash-route",
+    "pending-hash-unmount",
+    "superseded-hash",
+    "retained-native-callback"
+  ]
+}

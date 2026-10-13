@@ -188,6 +188,7 @@ fn premerge_integration_fields_fail_closed_on_changed_custody() {
     let candidate = "c".repeat(40);
     let mut pr = valid.clone();
     pr["base"]["sha"] = json!(cut);
+    pr["body"] = json!(super::super::body::generated(42, &cut, &head, "v1.2.3"));
     let event = json!({"repository":{"full_name":"owner/repo"},"number":99,"pull_request":pr,"merge_group":{"head_sha":candidate,"base_sha":cut,"base_ref":"refs/heads/main","head_ref":format!("refs/heads/gh-readonly-queue/main/pr-99-{cut}")}});
     assert!(
         !event_fields(

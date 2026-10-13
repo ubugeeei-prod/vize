@@ -1,0 +1,455 @@
+{
+  "schema": 1,
+  "role": "explicit correction of unexecuted authored Promise expectations; no NoFloating production improvement",
+  "originalOracle": {
+    "path": "slot-query-direct-controls.json",
+    "bytes": 14239,
+    "sha256": "b7cee3c362495d4d33654a68938d08f5e23e9ecaf83b975873eb45cb5e166767"
+  },
+  "unchangedProducer": {
+    "path": "crates/vize_patina/src/linter/native_type_aware/template_queries/calls.rs",
+    "bytes": 17726,
+    "sha256": "53109ca0f066fa90aca7a716c0324b0b2c8edeb2cfc15a135369e365d994f283",
+    "gitBlob": "16f29fa1885471533562168502cc4cb305a21ba9"
+  },
+  "basis": "Existing expression floating collector visits call/new/logical/conditional/sequence and does not descend ObjectExpression computed keys. These four computed-key floating Promise gaps remain unimplemented; unsafe callees and descendants remain required.",
+  "cases": [
+    {
+      "id": "TypedComputedSlotKey",
+      "templateSource": "<Child v-slot=\"{ [key()]: value }\"><p :title=\"value\" /></Child>",
+      "templateOffset": 0,
+      "templateSourceSha256": "99b0d74756b5fcd0550fcc5bd6c30501bb15c7cb2c44afea500b2846cf03ae9e",
+      "virtualDocument": "declare const slotProps: Record<string,string>;\ndeclare function key(): string;\nconst { [key()]: value } = slotProps;\nconsume(value);\n",
+      "virtualDocumentSha256": "7e32dc795365971f16e56de01658802eca7ab772347dc9bfa66b6fec5dc8ac2a",
+      "projectionMappings": [
+        {
+          "genRange": [
+            86,
+            104
+          ],
+          "srcRange": [
+            15,
+            33
+          ],
+          "subSpans": []
+        },
+        {
+          "genRange": [
+            126,
+            131
+          ],
+          "srcRange": [
+            46,
+            51
+          ],
+          "subSpans": []
+        }
+      ],
+      "includeTemplateQueries": true,
+      "includeTemplatePromiseQueries": true,
+      "beforeQueries": [
+        {
+          "kind": "CallCallee",
+          "context": "Directive",
+          "generated_offset": 91,
+          "source_start": 18,
+          "source_end": 21,
+          "owner_start": 15,
+          "owner_end": 33
+        },
+        {
+          "kind": "Expression",
+          "context": "Directive",
+          "generated_offset": 103,
+          "source_start": 15,
+          "source_end": 33,
+          "owner_start": 15,
+          "owner_end": 33
+        },
+        {
+          "kind": "Expression",
+          "context": "Binding",
+          "generated_offset": 130,
+          "source_start": 46,
+          "source_end": 51,
+          "owner_start": 46,
+          "owner_end": 51
+        }
+      ],
+      "afterQueries": [
+        {
+          "kind": "CallCallee",
+          "context": "Directive",
+          "generated_offset": 91,
+          "source_start": 18,
+          "source_end": 21,
+          "owner_start": 15,
+          "owner_end": 33
+        },
+        {
+          "kind": "Expression",
+          "context": "Binding",
+          "generated_offset": 130,
+          "source_start": 46,
+          "source_end": 51,
+          "owner_start": 46,
+          "owner_end": 51
+        }
+      ],
+      "beforePromiseQueries": [],
+      "afterPromiseQueries": [],
+      "qualification": "Synthetic complete projection/collector source oracle, independently authored before candidate execution. A Promise candidate exists for any parsed call; type probing determines whether it actually returns a Promise. This is not a Corsa/native outcome or Canon-emission snapshot.",
+      "formerAuthoredBeforePromiseQueries": [
+        {
+          "context": "Directive",
+          "generated_offset": 91,
+          "source_start": 18,
+          "source_end": 23
+        }
+      ],
+      "formerAuthoredAfterPromiseQueries": [
+        {
+          "context": "Directive",
+          "generated_offset": 91,
+          "source_start": 18,
+          "source_end": 23
+        }
+      ]
+    },
+    {
+      "id": "UnsafeComputedSlotKey",
+      "templateSource": "<Child v-slot=\"{ [unsafeKey()]: value }\"><p :title=\"value\" /></Child>",
+      "templateOffset": 0,
+      "templateSourceSha256": "4fc9d5b87779da19d6b4ef6324602517e6ce59111c95b540ecc8999149367831",
+      "virtualDocument": "declare const slotProps: Record<string,string>;\ndeclare const unsafeKey: any;\nconst { [unsafeKey()]: value } = slotProps;\nconsume(value);\n",
+      "virtualDocumentSha256": "3eee6ef7287ebce9bb05f4a1a9e6c6ff71fc1e4b3f941b9b981a1b20991dd293",
+      "projectionMappings": [
+        {
+          "genRange": [
+            84,
+            108
+          ],
+          "srcRange": [
+            15,
+            39
+          ],
+          "subSpans": []
+        },
+        {
+          "genRange": [
+            130,
+            135
+          ],
+          "srcRange": [
+            52,
+            57
+          ],
+          "subSpans": []
+        }
+      ],
+      "includeTemplateQueries": true,
+      "includeTemplatePromiseQueries": true,
+      "beforeQueries": [
+        {
+          "kind": "CallCallee",
+          "context": "Directive",
+          "generated_offset": 95,
+          "source_start": 18,
+          "source_end": 27,
+          "owner_start": 15,
+          "owner_end": 39
+        },
+        {
+          "kind": "Expression",
+          "context": "Directive",
+          "generated_offset": 107,
+          "source_start": 15,
+          "source_end": 39,
+          "owner_start": 15,
+          "owner_end": 39
+        },
+        {
+          "kind": "Expression",
+          "context": "Binding",
+          "generated_offset": 134,
+          "source_start": 52,
+          "source_end": 57,
+          "owner_start": 52,
+          "owner_end": 57
+        }
+      ],
+      "afterQueries": [
+        {
+          "kind": "CallCallee",
+          "context": "Directive",
+          "generated_offset": 95,
+          "source_start": 18,
+          "source_end": 27,
+          "owner_start": 15,
+          "owner_end": 39
+        },
+        {
+          "kind": "Expression",
+          "context": "Binding",
+          "generated_offset": 134,
+          "source_start": 52,
+          "source_end": 57,
+          "owner_start": 52,
+          "owner_end": 57
+        }
+      ],
+      "beforePromiseQueries": [],
+      "afterPromiseQueries": [],
+      "qualification": "Synthetic complete projection/collector source oracle, independently authored before candidate execution. A Promise candidate exists for any parsed call; type probing determines whether it actually returns a Promise. This is not a Corsa/native outcome or Canon-emission snapshot.",
+      "formerAuthoredBeforePromiseQueries": [
+        {
+          "context": "Directive",
+          "generated_offset": 95,
+          "source_start": 18,
+          "source_end": 29
+        }
+      ],
+      "formerAuthoredAfterPromiseQueries": [
+        {
+          "context": "Directive",
+          "generated_offset": 95,
+          "source_start": 18,
+          "source_end": 29
+        }
+      ]
+    },
+    {
+      "id": "PromiseComputedSlotKey",
+      "templateSource": "<Child v-slot=\"{ [loadKey()]: value }\"><p :title=\"value\" /></Child>",
+      "templateOffset": 0,
+      "templateSourceSha256": "14bf454ff5cc1051986587e9a64bf8b358f800bf6f4a11d70a0679710f565ddb",
+      "virtualDocument": "declare const slotProps: Record<string,string>;\ndeclare function loadKey(): Promise<string>;\nconst { [loadKey()]: value } = slotProps;\nconsume(value);\n",
+      "virtualDocumentSha256": "0973455e7ee9ac626b083426b588f949743725187eec21f472d48e654475d8f8",
+      "projectionMappings": [
+        {
+          "genRange": [
+            99,
+            121
+          ],
+          "srcRange": [
+            15,
+            37
+          ],
+          "subSpans": []
+        },
+        {
+          "genRange": [
+            143,
+            148
+          ],
+          "srcRange": [
+            50,
+            55
+          ],
+          "subSpans": []
+        }
+      ],
+      "includeTemplateQueries": true,
+      "includeTemplatePromiseQueries": true,
+      "beforeQueries": [
+        {
+          "kind": "CallCallee",
+          "context": "Directive",
+          "generated_offset": 108,
+          "source_start": 18,
+          "source_end": 25,
+          "owner_start": 15,
+          "owner_end": 37
+        },
+        {
+          "kind": "Expression",
+          "context": "Directive",
+          "generated_offset": 120,
+          "source_start": 15,
+          "source_end": 37,
+          "owner_start": 15,
+          "owner_end": 37
+        },
+        {
+          "kind": "Expression",
+          "context": "Binding",
+          "generated_offset": 147,
+          "source_start": 50,
+          "source_end": 55,
+          "owner_start": 50,
+          "owner_end": 55
+        }
+      ],
+      "afterQueries": [
+        {
+          "kind": "CallCallee",
+          "context": "Directive",
+          "generated_offset": 108,
+          "source_start": 18,
+          "source_end": 25,
+          "owner_start": 15,
+          "owner_end": 37
+        },
+        {
+          "kind": "Expression",
+          "context": "Binding",
+          "generated_offset": 147,
+          "source_start": 50,
+          "source_end": 55,
+          "owner_start": 50,
+          "owner_end": 55
+        }
+      ],
+      "beforePromiseQueries": [],
+      "afterPromiseQueries": [],
+      "qualification": "Synthetic complete projection/collector source oracle, independently authored before candidate execution. A Promise candidate exists for any parsed call; type probing determines whether it actually returns a Promise. This is not a Corsa/native outcome or Canon-emission snapshot.",
+      "formerAuthoredBeforePromiseQueries": [
+        {
+          "context": "Directive",
+          "generated_offset": 108,
+          "source_start": 18,
+          "source_end": 27
+        }
+      ],
+      "formerAuthoredAfterPromiseQueries": [
+        {
+          "context": "Directive",
+          "generated_offset": 108,
+          "source_start": 18,
+          "source_end": 27
+        }
+      ]
+    },
+    {
+      "id": "ComputedSlotAndUnsafeValueSibling",
+      "templateSource": "<Child v-slot=\"{ [key()]: value }\"><p :title=\"value\" /></Child><p :title=\"unsafeValue\" />",
+      "templateOffset": 0,
+      "templateSourceSha256": "6584707f07a30f6849353e82d8c5a1fd3db598b4c39b467148a18cb8c8e98d0e",
+      "virtualDocument": "declare const slotProps: Record<string,string>;\ndeclare function key(): string;\ndeclare const unsafeValue: unknown;\nconst { [key()]: value } = slotProps;\nconsume(value);\nconsume(unsafeValue);\n",
+      "virtualDocumentSha256": "18eb616265a6cd10c7a123aa8d6db8e58023ae2ef3d7ca4b14e684a59ae5cfba",
+      "projectionMappings": [
+        {
+          "genRange": [
+            122,
+            140
+          ],
+          "srcRange": [
+            15,
+            33
+          ],
+          "subSpans": []
+        },
+        {
+          "genRange": [
+            162,
+            167
+          ],
+          "srcRange": [
+            46,
+            51
+          ],
+          "subSpans": []
+        },
+        {
+          "genRange": [
+            178,
+            189
+          ],
+          "srcRange": [
+            74,
+            85
+          ],
+          "subSpans": []
+        }
+      ],
+      "includeTemplateQueries": true,
+      "includeTemplatePromiseQueries": true,
+      "beforeQueries": [
+        {
+          "kind": "CallCallee",
+          "context": "Directive",
+          "generated_offset": 127,
+          "source_start": 18,
+          "source_end": 21,
+          "owner_start": 15,
+          "owner_end": 33
+        },
+        {
+          "kind": "Expression",
+          "context": "Directive",
+          "generated_offset": 139,
+          "source_start": 15,
+          "source_end": 33,
+          "owner_start": 15,
+          "owner_end": 33
+        },
+        {
+          "kind": "Expression",
+          "context": "Binding",
+          "generated_offset": 166,
+          "source_start": 46,
+          "source_end": 51,
+          "owner_start": 46,
+          "owner_end": 51
+        },
+        {
+          "kind": "Expression",
+          "context": "Binding",
+          "generated_offset": 188,
+          "source_start": 74,
+          "source_end": 85,
+          "owner_start": 74,
+          "owner_end": 85
+        }
+      ],
+      "afterQueries": [
+        {
+          "kind": "CallCallee",
+          "context": "Directive",
+          "generated_offset": 127,
+          "source_start": 18,
+          "source_end": 21,
+          "owner_start": 15,
+          "owner_end": 33
+        },
+        {
+          "kind": "Expression",
+          "context": "Binding",
+          "generated_offset": 166,
+          "source_start": 46,
+          "source_end": 51,
+          "owner_start": 46,
+          "owner_end": 51
+        },
+        {
+          "kind": "Expression",
+          "context": "Binding",
+          "generated_offset": 188,
+          "source_start": 74,
+          "source_end": 85,
+          "owner_start": 74,
+          "owner_end": 85
+        }
+      ],
+      "beforePromiseQueries": [],
+      "afterPromiseQueries": [],
+      "qualification": "Synthetic complete projection/collector source oracle, independently authored before candidate execution. A Promise candidate exists for any parsed call; type probing determines whether it actually returns a Promise. This is not a Corsa/native outcome or Canon-emission snapshot.",
+      "formerAuthoredBeforePromiseQueries": [
+        {
+          "context": "Directive",
+          "generated_offset": 127,
+          "source_start": 18,
+          "source_end": 23
+        }
+      ],
+      "formerAuthoredAfterPromiseQueries": [
+        {
+          "context": "Directive",
+          "generated_offset": 127,
+          "source_start": 18,
+          "source_end": 23
+        }
+      ]
+    }
+  ]
+}

@@ -72,14 +72,19 @@ impl Rule for NoDeprecatedVBindSync {
             return;
         }
 
-        let Some(sync) = directive.modifiers.iter().find(|m| m.content == "sync") else {
+        if !directive
+            .modifiers
+            .iter()
+            .any(|modifier| modifier.content == "sync")
+        {
             return;
-        };
+        }
 
-        // Report on the `.sync` modifier itself for a precise underline.
+        // The removed binding is the complete directive, including its value.
+        // Keep the same diagnostic target as eslint-plugin-vue.
         ctx.error_with_help(
             ctx.t("vue/no-deprecated-v-bind-sync.message"),
-            &sync.loc,
+            &directive.loc,
             ctx.t("vue/no-deprecated-v-bind-sync.help"),
         );
     }

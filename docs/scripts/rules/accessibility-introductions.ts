@@ -37,3 +37,40 @@ export const accessibilityIntroductions: Readonly<Record<string, readonly string
     "The [complete accessibility guide](./accessibility.md) links the other checks.",
   ],
 };
+
+export const japaneseAccessibilityIntroductions: Readonly<Record<string, readonly string[]>> = {
+  core: [
+    "このルール群では、画像の代替テキスト、リンクの内容、ARIA 属性、キーボード操作、フォームのラベルなど、",
+    "Vue テンプレートの基本的なアクセシビリティ情報を確認します。",
+    "画像やリンク、入力欄をコンポーネントに追加するときは、ここから確認してください。",
+    "",
+    "たとえば、入力欄を追加する前に[フォーム部品のラベル](./reference/a11y-form-control-has-label.md)を開き、",
+    "悪い例と良い例を比較します。掲載された Vite+ の設定でルールを有効にし、`vp run lint` を実行してください。",
+    "[アクセシビリティの全ルール](./accessibility.md)では、関連するルールも確認できます。",
+  ],
+  integrity: [
+    "このルール群では、テンプレートの role、フォーカスの順序、ラベル、要素同士の対応に矛盾がないかを確認します。",
+    "ARIA の role を追加したときや、操作に使う要素を変更したときに、関連する属性や要素の関係を見直してください。",
+    "",
+    "たとえば、[role に必要な ARIA 属性](./reference/a11y-role-has-required-aria-props.md)では、role に必要な属性が不足した場合の変更例を確認できます。",
+    "悪い例と良い例を比較し、掲載された設定でルールを有効にして、`vp run lint` を実行してください。",
+    "[アクセシビリティの全ルール](./accessibility.md)では、ほかの検査も確認できます。",
+  ],
+  interactions: [
+    "このルール群では、キーボード操作に関わる指定、フォーカス、マウスのイベント処理、支援技術から隠す要素、要素同士の参照を確認します。",
+    "独自の操作部品を追加したり、表示の切り替えやイベントの処理を変更したりするときに確認してください。",
+    "",
+    "たとえば、[フォーカスと aria-hidden の関係](./reference/a11y-no-aria-hidden-on-focusable.md)では、フォーカスできる要素を支援技術から隠してしまう指定の例を確認できます。",
+    "悪い例と良い例を比較し、掲載された設定を使って、`vp run lint` を実行してください。",
+    "[アクセシビリティの全ルール](./accessibility.md)では、関連するルールも確認できます。",
+  ],
+  structure: [
+    "このルール群では、見出しの内容と階層、ランドマーク、フォームのラベル、iframe の説明、",
+    "画像の代替テキスト、音声・動画の字幕、操作する要素のフォーカスを確認します。",
+    "コンポーネントに新しい領域や埋め込みコンテンツ、画像、メディアプレイヤーを追加するときに、ページ構造を見直してください。",
+    "",
+    "たとえば、[見出しの階層](./reference/a11y-heading-levels.md)では、見出しのレベルを飛ばした場合の変更例を確認できます。",
+    "悪い例と良い例を比較し、掲載された設定でルールを有効にして、`vp run lint` を実行してください。",
+    "[アクセシビリティの全ルール](./accessibility.md)では、関連するルールも確認できます。",
+  ],
+};

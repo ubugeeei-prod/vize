@@ -1,0 +1,28 @@
+/* Canvas */
+#vein-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0 !important;
+  opacity: var(--vize-background-opacity, 0.6);
+  pointer-events: none;
+}
+
+/* One visible background sits behind the page and its seamless navigation. */
+body:not(.entry-page) #vein-canvas {
+  opacity: var(--vize-article-background-opacity, 0.32);
+}
+
+[data-theme="dark"] {
+  --vize-background-opacity: 0.64;
+  --vize-article-background-opacity: 0.4;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --vize-background-opacity: 0.64;
+    --vize-article-background-opacity: 0.4;
+  }
+}

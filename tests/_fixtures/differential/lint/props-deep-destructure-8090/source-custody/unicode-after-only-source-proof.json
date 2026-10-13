@@ -1,0 +1,172 @@
+{
+  "schema": "vize.lint.no-deep-unicode-after-only-source-proof",
+  "version": 1,
+  "originalNeighbors": {
+    "path": "/tmp/vize-next-preset-readonly-audit-20261012/correctness-neighbors.json",
+    "sha256": "ffc6df355e15eb06d128dc593652c508eeced0b78bc9bb423ac7a1199affa22f"
+  },
+  "nativeAfterUnexecuted": true,
+  "inputSourceSha256": "8a36d378d1b07a6dbf30f03efd9e11247be3b994e059d1f401dab0e46e1b3c40",
+  "originalPublicH": "15e116fa258c7aaba5c6fdd2456442535605abe8",
+  "producerSources": [
+    {
+      "path": "crates/vize_patina/src/output/shared.rs",
+      "archive": "/tmp/vize-next-preset-readonly-audit-20261012/original-public-shared.rs.fixture",
+      "bytes": 7473,
+      "sha256": "5c41a5fb774e5acdeff210a2620abb727bdadcbcaafd0ae9ea0f35fd4b299e43",
+      "gitBlob": "d2e6035accdb173b993e324b0f009d1defcc6538",
+      "sameAtCurrentSource": true
+    },
+    {
+      "path": "crates/vize_patina/src/output/json.rs",
+      "archive": "/tmp/vize-next-preset-readonly-audit-20261012/original-public-json.rs.fixture",
+      "bytes": 2810,
+      "sha256": "32937f0714c101c226814a2fe3c3a3ae7aadab54a289aafcbe84809b7f146fdc",
+      "gitBlob": "b91c9d7a73bc1bfb1618d25f4ec09344d45dd3e1",
+      "sameAtCurrentSource": true
+    }
+  ],
+  "reason": "SourceLineIndex::new records len_utf8-1 for each multibyte Unicode scalar; offset_to_line_col subtracts these adjustments from byte column. JSON format consumes diagnostic_location from that index. This counts 日本🦊 as three scalars rather than four UTF16 units. Prior expected-column author chose wrong consumer convention; byte spans/source/status/diagnostic/help/rule/fix/labels/order remain unchanged.",
+  "exactAllowedFields": [
+    "afterCli[0].messages[0].column",
+    "afterCli[0].messages[0].endColumn"
+  ],
+  "before": {
+    "id": "unicode-crlf-array",
+    "filename": "UnicodeArray.vue",
+    "source": "<script setup lang=\"ts\">\r\nconst label = \"日本🦊\"; const { items: [first] } = defineProps<{ items: string[] }>();\r\n</script>\r\n<template><div /></template>\r\n",
+    "sourceSha256": "8a36d378d1b07a6dbf30f03efd9e11247be3b994e059d1f401dab0e46e1b3c40",
+    "config": {
+      "preset": "incremental",
+      "rules": {
+        "script/no-deep-destructure-in-props": "warn"
+      }
+    },
+    "beforeApi": {
+      "filename": "UnicodeArray.vue",
+      "error_count": 0,
+      "warning_count": 0,
+      "diagnostics": []
+    },
+    "beforeCli": [
+      {
+        "file": "UnicodeArray.vue",
+        "messages": [],
+        "errorCount": 0,
+        "warningCount": 0
+      }
+    ],
+    "beforeStatus": 0,
+    "afterApi": {
+      "filename": "UnicodeArray.vue",
+      "error_count": 0,
+      "warning_count": 1,
+      "diagnostics": [
+        {
+          "rule_name": "script/no-deep-destructure-in-props",
+          "severity": "warning",
+          "message": "Avoid deeply nested destructuring in defineProps",
+          "start": 60,
+          "end": 78,
+          "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+          "fix": null,
+          "labels": []
+        }
+      ]
+    },
+    "afterCli": [
+      {
+        "file": "UnicodeArray.vue",
+        "messages": [
+          {
+            "ruleId": "script/no-deep-destructure-in-props",
+            "ruleDocsPath": "docs/content/rules/type-and-script.md",
+            "severity": 1,
+            "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+            "line": 2,
+            "column": 29,
+            "endLine": 2,
+            "endColumn": 47,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 1
+      }
+    ],
+    "afterStatus": 0,
+    "compilerOptions": {},
+    "sourceInferredCompilerAccepted": false,
+    "origin": "Independently source-authored neighbor before any native/compiler observation.",
+    "limit": "Native byte spans and CLI UTF16 columns independently authored."
+  },
+  "after": {
+    "id": "unicode-crlf-array",
+    "filename": "UnicodeArray.vue",
+    "source": "<script setup lang=\"ts\">\r\nconst label = \"日本🦊\"; const { items: [first] } = defineProps<{ items: string[] }>();\r\n</script>\r\n<template><div /></template>\r\n",
+    "sourceSha256": "8a36d378d1b07a6dbf30f03efd9e11247be3b994e059d1f401dab0e46e1b3c40",
+    "config": {
+      "preset": "incremental",
+      "rules": {
+        "script/no-deep-destructure-in-props": "warn"
+      }
+    },
+    "beforeApi": {
+      "filename": "UnicodeArray.vue",
+      "error_count": 0,
+      "warning_count": 0,
+      "diagnostics": []
+    },
+    "beforeCli": [
+      {
+        "file": "UnicodeArray.vue",
+        "messages": [],
+        "errorCount": 0,
+        "warningCount": 0
+      }
+    ],
+    "beforeStatus": 0,
+    "afterApi": {
+      "filename": "UnicodeArray.vue",
+      "error_count": 0,
+      "warning_count": 1,
+      "diagnostics": [
+        {
+          "rule_name": "script/no-deep-destructure-in-props",
+          "severity": "warning",
+          "message": "Avoid deeply nested destructuring in defineProps",
+          "start": 60,
+          "end": 78,
+          "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+          "fix": null,
+          "labels": []
+        }
+      ]
+    },
+    "afterCli": [
+      {
+        "file": "UnicodeArray.vue",
+        "messages": [
+          {
+            "ruleId": "script/no-deep-destructure-in-props",
+            "ruleDocsPath": "docs/content/rules/type-and-script.md",
+            "severity": 1,
+            "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+            "line": 2,
+            "column": 28,
+            "endLine": 2,
+            "endColumn": 46,
+            "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 1
+      }
+    ],
+    "afterStatus": 0,
+    "compilerOptions": {},
+    "sourceInferredCompilerAccepted": false,
+    "origin": "Independently source-authored neighbor before any native/compiler observation.",
+    "limit": "Native byte spans and CLI UTF16 columns independently authored."
+  }
+}

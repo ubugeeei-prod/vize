@@ -162,6 +162,11 @@ fn measure_project(
             "skippedByPresetCount": comparable.skipped_by_preset_count,
             "droppedConfigMessageCount": baseline.dropped_config_message_count,
             "durationMs": baseline_duration_ms,
+            "parseErrorResults": baseline.results.iter().filter(|result| {
+                result.get("messages").and_then(Value::as_array).is_some_and(|messages| {
+                    messages.iter().any(|message| message.get("ruleId").is_none_or(Value::is_null))
+                })
+            }).collect::<Vec<_>>(),
         },
         "divergence": divergence,
     });
@@ -268,6 +273,7 @@ fn run_eslint_baseline(
     let script = r#"
 import { createRequire } from "node:module";
 import { readFileSync } from "node:fs";
+import { baselineConfig } from "./tools/support/compat/fixtures/lint-divergence-baseline.mjs";
 const input = JSON.parse(readFileSync(0, "utf8"));
 const requireFromBench = createRequire(input.benchPackageJson);
 const ESLint = requireFromBench("eslint").ESLint;
@@ -279,22 +285,7 @@ const eslint = new ESLint({
   cwd: input.cwd,
   passOnNoPatterns: input.files.length === 0,
   overrideConfigFile: true,
-  overrideConfig: [{
-    files: ["**/*.vue"],
-    languageOptions: {
-      parser: vueParser,
-      parserOptions: {
-        parser: scriptParser,
-        ecmaVersion: "latest",
-        sourceType: "module",
-        ecmaFeatures: { jsx: true },
-        extraFileExtensions: [".vue"]
-      }
-    },
-    linterOptions: { reportUnusedDisableDirectives: "off" },
-    plugins: { vue: plugin },
-    rules: input.rules
-  }],
+  overrideConfig: baselineConfig({ vueParser, scriptParser, plugin }, input.rules),
   errorOnUnmatchedPattern: false
 });
 if (input.files.length === 0) {

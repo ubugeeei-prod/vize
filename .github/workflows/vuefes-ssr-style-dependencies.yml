@@ -19,6 +19,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   CARGO_TERM_COLOR: always
   QUALIFIER_SHA: ${{ inputs.target_sha }}
+  VIZE_NATIVE_CI_FORMATTER_HISTORY: "1"
 
 jobs:
   vuefes-ssr-style-dependencies:
@@ -39,6 +40,7 @@ jobs:
           fi
           mkdir -p target/vuefes-ssr-style-dependencies
           git show HEAD:npm/native/index.d.ts > target/vuefes-ssr-style-dependencies/original-index.d.ts
+          node npm/native/scripts/build-ci.mjs --request-ci-capture
       - name: Original full VueFes VRT, with one native build
         uses: ./.github/actions/app-e2e-row
         with:
@@ -60,9 +62,21 @@ jobs:
         if: ${{ !cancelled() }}
         working-directory: tools/support/compat/vuefes/fixtures/heading-cascade
         run: npm ci --no-audit --no-fund
+      - name: Install exact Nuxt component transform oracle
+        if: ${{ !cancelled() }}
+        working-directory: tools/support/compat/vuefes/fixtures/app-component-order
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Complete original VueFes app component import differential
+        if: ${{ !cancelled() }}
+        run: node tools/support/compat/vuefes/app-component-order.mjs
       - name: Native metadata corpus and existing Vite contracts
         if: ${{ !cancelled() }}
-        run: vp run --filter './npm/builder/vite' test:prepared
+        run: |
+          vuefes_contract_rc=0
+          node --test tests/tooling/vuefes-failure-*.test.mjs tools/support/compat/vuefes/passive-failure-sidecar.browser.test.mjs || vuefes_contract_rc=$?
+          node --experimental-vm-modules tools/support/compat/vuefes/page-meta-dependencies.mjs || vuefes_contract_rc=$?
+          node npm/native/scripts/test-preparation.mjs vp run --filter './npm/builder/vite' test:prepared || vuefes_contract_rc=$?
+          exit "$vuefes_contract_rc"
       - name: Complete official/native SSR, DOM and hydration differential
         if: ${{ !cancelled() }}
         run: node tools/support/compat/vuefes/ssr-style-dependencies.mjs
@@ -74,8 +88,15 @@ jobs:
           path: |
             target/vuefes-ssr-style-dependencies/
             !target/vuefes-ssr-style-dependencies/project-*/node_modules/**
+            npm/native/.artifacts/native/formatter-history/*.json
+            npm/native/.artifacts/native/formatter-history/*.bin
+            npm/native/.artifacts/native/formatter-history/*.diff
+            npm/native/.artifacts/native/formatter-history/*.node
+            npm/native/*.node
+            target/**/ci/libvize_vitrine.so
             target/app-e2e-logs/
             .vize/artifacts/vuefes-vrt/
             tests/app/results/
           if-no-files-found: error
           retention-days: 7
+          include-hidden-files: true

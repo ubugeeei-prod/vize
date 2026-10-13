@@ -83,10 +83,35 @@ CLI ラッパー、静的ホスト、テストの要件は [Musea のホステ�
 
 ## 共有構成
 
-複数のツールで既定値を共有したい場合は、共有設定を使います。
-Vite+ のギャラリーだけなら、上の `vite.config.ts` にオプションをまとめられます。
+共有の既定値は `vite.config.*` のトップレベルの `vize.musea` にまとめます。`musea()` に直接渡したオプションが、その項目の共有設定より優先されます。同じ Vite プロジェクトに既存の専用設定がある場合は、その設定を優先します。
 
-`musea()` に渡すオプションは、共有設定より優先されます。複数のツールで使う既定値は `vize.config.ts` に、プレビュー専用の設定は `vite.config.ts` に置いてください。
+```ts
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+import { musea } from "@vizejs/vite-plugin-musea";
+
+export default defineConfig({
+  plugins: [musea()],
+  vize: {
+    musea: {
+      include: ["src/**/*.art.vue"],
+      exclude: ["node_modules/**", "dist/**"],
+      basePath: "/__musea__",
+      storybookCompat: false,
+      inlineArt: false,
+    },
+  },
+});
+```
+
+共有設定に指定できるのは `include`、`exclude`、`basePath`、`storybookCompat`、`inlineArt` です。`previewCss`、`previewSetup`、`tokensPath`、`theme`、`storybookOutDir` は `musea()` に直接渡します。
+
+`musea-vrt` も同じ Vite 設定から `include`、`exclude`、`vrt` を読み込みます。`vrt.outDir` はスナップショットの保存先で、プラグインに渡した `vrt` の各項目が共有設定より優先されます。`vize musea new` は既定の探索規則で Art ファイルを作成し、専用設定ファイルは生成しません。
+
+<details>
+<summary>既存の専用設定を引き続き使う</summary>
+
+同じ Vite プロジェクトに専用設定がある場合は、こちらの設定が優先されます。
 
 ```ts
 // vize.config.ts
@@ -103,7 +128,7 @@ export default defineConfig({
 });
 ```
 
-共有設定に指定できる項目は、`include`、`exclude`、`basePath`、`storybookCompat`、`inlineArt` です。`previewCss`、`previewSetup`、`tokensPath`、`theme`、`storybookOutDir` は、`musea()` に直接渡してください。
+</details>
 
 ## アート ファイル
 
@@ -292,6 +317,8 @@ export default function setup(app: App) {
   );
 }
 ```
+
+<span id="visual-regression-testing"></span>
 
 ## 視覚的な回帰テスト
 

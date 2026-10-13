@@ -25,7 +25,12 @@ fn native_vite_settings_use_the_same_projection_as_public_js() {
     );
     assert_eq!(
         loaded.config.type_checker.tsconfig.as_deref(),
-        Some("tsconfig.app.json")
+        project
+            .path()
+            .canonicalize()
+            .unwrap()
+            .join("tsconfig.app.json")
+            .to_str()
     );
     assert!(!loaded.features.type_checker_jsx_typecheck);
     assert_eq!(loaded.linter.preset.as_deref(), Some("essential"));
@@ -91,6 +96,91 @@ fn invalid_dedicated_editor_config_is_not_a_fresh_project_default() {
     assert_eq!(loaded.source_path, None);
     assert!(!loaded.features.type_checker_jsx_typecheck);
     assert_eq!(loaded.config.language_server.formatting, None);
+}
+
+#[test]
+fn project_snapshot_resolves_vite_root_paths_from_one_evaluation() {
+    let project = tempfile::tempdir().unwrap();
+    std::fs::write(
+        project.path().join("vite.config.mjs"),
+        r#"import { appendFileSync } from 'node:fs';
+        export default () => {
+            appendFileSync(new URL('.evaluations', import.meta.url), 'once');
+            return {root:'app',vize:{
+                typeChecker:{tsconfig:'tsconfig.json'}, ignores:['src/Ignored.vue'],
+                entries:[{files:['src/*.vue'],linter:{rules:{'a11y/alt-text':'error'}}}]
+            }};
+        };"#,
+    )
+    .unwrap();
+    let loaded = super::try_load_project_config_with_source(Some(project.path())).unwrap();
+    let root = project.path().canonicalize().unwrap().join("app");
+    assert_eq!(loaded.project_root.as_deref(), Some(root.as_path()));
+    assert_eq!(
+        std::fs::read_to_string(project.path().join(".evaluations")).unwrap(),
+        "once"
+    );
+    let ignores = loaded.document.entry_ignores();
+    assert_eq!(
+        ignores
+            .iter()
+            .map(|ignore| (ignore.base_path.as_deref(), ignore.pattern.as_str()))
+            .collect::<Vec<_>>(),
+        vec![(root.to_str(), "src/Ignored.vue")]
+    );
+    let plan = loaded.document.linter_plan();
+    assert_eq!(plan.entries[0].base_path.as_deref(), root.to_str());
+    let (config, _) = loaded.document.into_config_and_features();
+    assert_eq!(
+        config.type_checker.tsconfig.as_deref(),
+        root.join("tsconfig.json").to_str()
+    );
+
+    std::fs::write(
+        project.path().join("vize.config.json"),
+        "{\"projectRoot\":42,\"__vizeProjectRoot\":42}",
+    )
+    .unwrap();
+    let dedicated = super::try_load_project_config_with_source(Some(project.path())).unwrap();
+    assert_eq!(dedicated.project_root, None);
+    assert_eq!(
+        dedicated.source_path,
+        Some(project.path().join("vize.config.json"))
+    );
+
+    std::fs::write(
+        project.path().join("vize.config.json"),
+        r#"{"__vizeProjectRoot":"untrusted","ignores":["src/Ignored.vue"]}"#,
+    )
+    .unwrap();
+    let dedicated = super::try_load_project_config_with_source(Some(project.path())).unwrap();
+    assert_eq!(dedicated.document.project_root(), None);
+    assert_eq!(
+        dedicated
+            .document
+            .entry_ignores()
+            .iter()
+            .map(|ignore| (ignore.base_path.as_deref(), ignore.pattern.as_str()))
+            .collect::<Vec<_>>(),
+        vec![(None, "src/Ignored.vue")]
+    );
+}
+
+#[test]
+fn native_array_projection_retains_global_settings_and_ordered_root_scopes() {
+    let project = tempfile::tempdir().unwrap();
+    std::fs::write(project.path().join("vite.config.mjs"), "export default {root:'app',vize:[{__vizeProjectRoot:'decoy',formatter:{singleQuote:true},linter:{preset:'essential'}},{basePath:'ui',files:['*.vue'],linter:{rules:{'a11y/alt-text':'error'}}}]};").unwrap();
+    let loaded = super::try_load_project_config_with_source(Some(project.path())).unwrap();
+    let root = project.path().canonicalize().unwrap().join("app");
+    assert_eq!(loaded.project_root.as_deref(), Some(root.as_path()));
+    let plan = loaded.document.linter_plan();
+    assert_eq!(plan.base.preset.as_deref(), Some("essential"));
+    assert_eq!(
+        plan.entries[0].base_path.as_deref(),
+        root.join("ui").to_str()
+    );
+    let (config, _) = loaded.document.into_config_and_features();
+    assert!(config.formatter.single_quote);
 }
 
 #[test]

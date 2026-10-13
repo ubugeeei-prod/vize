@@ -1,0 +1,52 @@
+{
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/8625",
+  "originalBaseline": "runtime-baseline.json",
+  "originalOutput": "AfsStepperDialog.stories.vapor.runtime.json.txt",
+  "originalOutputSha256": "5c259e1823d7289cb0defd73dcf3f42ad4533f144bc664fab28af013d98549ac",
+  "successorOutput": "AfsStepperDialog.stories.vapor.root-fallthrough-8625.runtime.json.txt",
+  "successorOutputSha256": "6300a9b6d103a0ea8211421ac97af24795a6f9690a68f88fc5173959537d95c2",
+  "source": "AfsStepperDialog.stories.tsx.txt",
+  "sourceSha256": "8b46599f16d4ac31ed91677a729c9058087ebf2978fd5e62490d512db9e04b8f",
+  "change": "Only the nested AfsButton actions-slot component is no longer the enclosing Stepper render root; retain the Dialog root, other components, diagnostics, module, and all source-map fields.",
+  "capturedActionsRun": 38143613522,
+  "capturedActionsJob": 114484144005,
+  "productHead": "5758c393f30916da542c0ab3945974918dc836a5",
+  "qualification": "Fresh complete-packet source Actions and merge-group gates remain required.",
+  "officialVueEmissionControls": [
+    {
+      "id": "ordinary-slot",
+      "source": "<Dialog><template #actions><Button>Next</Button></template></Dialog>",
+      "version": "3.6.0-rc.9",
+      "codeSha256": "9b2736f2f0aa14ff824fd57c033b2c80b419e291855f89fc8c19c313bb7a51e7"
+    },
+    {
+      "id": "ordinary-slot",
+      "source": "<Dialog><template #actions><Button>Next</Button></template></Dialog>",
+      "version": "3.6.0-rc.10",
+      "codeSha256": "9b2736f2f0aa14ff824fd57c033b2c80b419e291855f89fc8c19c313bb7a51e7"
+    },
+    {
+      "id": "sibling-root",
+      "source": "<List :items=\"items\"/><input/>",
+      "version": "3.6.0-rc.9",
+      "codeSha256": "adb7a4efff4b8fb447a28c7cf9d775d68030d431d58b9532b5067687b6dc367b"
+    },
+    {
+      "id": "sibling-root",
+      "source": "<List :items=\"items\"/><input/>",
+      "version": "3.6.0-rc.10",
+      "codeSha256": "adb7a4efff4b8fb447a28c7cf9d775d68030d431d58b9532b5067687b6dc367b"
+    }
+  ],
+  "officialVueOracleLocks": [
+    {
+      "version": "3.6.0-rc.9",
+      "sha256": "d711d836975844a9cd924b3db5efade51d62b04f287aadf95e1bb99f6124c21d"
+    },
+    {
+      "version": "3.6.0-rc.10",
+      "sha256": "ac9a72e9edf9149006e51b4cefbb9dec4d1aaae0f0e1ee0b939786c0beff9238"
+    }
+  ],
+  "reportedVueOracleCredit": "Independent official compiler emission diagnostic; no installed public Vize or release-consumer credit."
+}

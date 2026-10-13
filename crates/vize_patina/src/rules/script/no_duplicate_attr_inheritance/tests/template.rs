@@ -7,17 +7,17 @@
 use super::{findings, lint_sfc, none};
 use crate::diagnostic::Severity;
 
-const SPREAD_MESSAGE: &str = "`v-bind=\"$attrs\"` on the root element applies the fallthrough \
-     attributes twice, because `inheritAttrs` defaults to true.";
+const SPREAD_MESSAGE: &str = "Set \"inheritAttrs\" to false.";
 
 /// The finding the `v-bind="$attrs"` written as `directive` produces.
 fn duplicated(sfc: &str, directive: &str) -> (&'static str, Severity, u32, u32, &'static str) {
-    let start = sfc.find(directive).expect("bind directive");
+    let start = sfc.find(directive).expect("bind directive")
+        + directive.find("$attrs").expect("forwarding reference");
     (
         "script/no-duplicate-attr-inheritance",
         Severity::Warning,
         start as u32,
-        (start + directive.len()) as u32,
+        (start + "$attrs".len()) as u32,
         SPREAD_MESSAGE,
     )
 }
@@ -101,9 +101,7 @@ export default { inheritAttrs: false };
 }
 
 #[test]
-fn reports_only_the_redundant_true_when_both_signals_are_present() {
-    // The explicit `true` is the smaller edit and is reported there; the
-    // template must not add a second diagnostic for the same defect.
+fn reports_the_forwarded_reference_when_inherit_attrs_is_explicitly_true() {
     let sfc = r#"<script setup lang="ts">
 defineOptions({ inheritAttrs: true });
 </script>
@@ -112,16 +110,9 @@ defineOptions({ inheritAttrs: true });
   <div v-bind="$attrs"></div>
 </template>
 "#;
-    let literal = sfc.find("true").expect("boolean literal");
     assert_eq!(
         findings(&lint_sfc(sfc)),
-        vec![(
-            "script/no-duplicate-attr-inheritance",
-            Severity::Warning,
-            literal as u32,
-            (literal + "true".len()) as u32,
-            "`inheritAttrs: true` is redundant because it is the default.",
-        )]
+        vec![duplicated(sfc, r#"v-bind="$attrs""#)]
     );
 }
 
@@ -164,9 +155,9 @@ const id = 'x';
 
 #[test]
 fn ignores_an_attrs_spread_on_a_nested_element() {
-    // Forwarding `$attrs` to an inner node is the idiomatic pattern; only the
-    // root element duplicates the fallthrough attributes.
+    // Forwarding to an inner node is safe with explicit inheritance opt-out.
     let sfc = r#"<script setup lang="ts">
+defineOptions({ inheritAttrs: false });
 </script>
 
 <template>
@@ -266,9 +257,7 @@ fn ignores_an_argument_bind_of_attrs() {
 }
 
 #[test]
-fn ignores_a_spread_of_an_object_containing_attrs() {
-    // `v-bind="{ ...$attrs }"` is not matched: the construct must be the whole
-    // expression. A missed report is the tolerable direction.
+fn reports_a_real_attrs_reference_in_an_object_spread() {
     let sfc = r#"<script setup lang="ts">
 </script>
 
@@ -276,13 +265,14 @@ fn ignores_a_spread_of_an_object_containing_attrs() {
   <div v-bind="{ ...$attrs }"></div>
 </template>
 "#;
-    assert_eq!(findings(&lint_sfc(sfc)), none());
+    assert_eq!(
+        findings(&lint_sfc(sfc)),
+        vec![duplicated(sfc, r#"v-bind="{ ...$attrs }""#)]
+    );
 }
 
 #[test]
-fn ignores_a_root_template_wrapper() {
-    // A root `<template v-if>` renders its children, so the element that
-    // receives the fallthrough attributes is not statically known.
+fn reports_inside_a_conditional_template_wrapper() {
     let sfc = r#"<script setup lang="ts">
 const ok = true;
 </script>
@@ -291,7 +281,10 @@ const ok = true;
   <template v-if="ok"><div v-bind="$attrs"></div></template>
 </template>
 "#;
-    assert_eq!(findings(&lint_sfc(sfc)), none());
+    assert_eq!(
+        findings(&lint_sfc(sfc)),
+        vec![duplicated(sfc, r#"v-bind="$attrs""#)]
+    );
 }
 
 #[test]
@@ -304,4 +297,44 @@ fn ignores_a_template_with_no_attrs_spread_at_all() {
 </template>
 "#;
     assert_eq!(findings(&lint_sfc(sfc)), none());
+}
+
+#[test]
+fn scriptless_disabled_rule_stays_disabled() {
+    let result = crate::linter::Linter::new()
+        .with_enabled_rules(Some(Vec::new()))
+        .lint_sfc(
+            "<template><div v-bind=\"$attrs\" /></template>",
+            "Probe.vue",
+        );
+    assert_eq!(findings(&result), none());
+}
+
+#[test]
+fn fatal_template_never_lends_partial_attrs_evidence() {
+    let result = lint_sfc("<template><div v-bind=\"$attrs\"></></template>");
+    assert!(result.error_count > 0);
+    assert!(
+        !result
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.rule_name == "script/no-duplicate-attr-inheritance")
+    );
+}
+
+#[test]
+fn escaped_vm_identifier_keeps_its_authored_full_span() {
+    let sfc = r#"<script setup></script><template><div v-bind="$\u0061ttrs" /></template>"#;
+    let token = r#"$\u0061ttrs"#;
+    let start = sfc.find(token).unwrap() as u32;
+    assert_eq!(
+        findings(&lint_sfc(sfc)),
+        vec![(
+            "script/no-duplicate-attr-inheritance",
+            Severity::Warning,
+            start,
+            start + token.len() as u32,
+            "Set \"inheritAttrs\" to false."
+        )]
+    );
 }

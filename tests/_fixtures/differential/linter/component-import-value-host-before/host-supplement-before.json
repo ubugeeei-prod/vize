@@ -1,0 +1,223 @@
+{
+  "version": 1,
+  "source": "b82f3080f1fa028ca07e03bcd42700742271613f",
+  "sourceTree": "4171ca983af96da63f7d51d60184ca8bf817a403",
+  "entries": [
+    {
+      "path": "crates/vize/tests/lint_component_value_reads_cli.rs",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-cli-runtime-reads/cases.json",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-cli-runtime-reads/comment-only.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-cli-runtime-reads/error.config.json",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-cli-runtime-reads/off.config.json",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-cli-runtime-reads/template-value.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-cli-runtime-reads/unused.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/arrow-shadow-keeps-import-unread.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/cases.json",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/comment-only-component.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/for-shadow-keeps-import-unread.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/generic-capture-refusal-retained.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/literal-is-not-read.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/member-name-is-not-read.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/object-key-is-not-read.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/original-current447-whole-vectors.json",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/passed-component-in-object-value.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/passed-component-prop.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/script-only-use-retained.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/slot-shadow-keeps-import-unread.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/unused-options-alias.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/unused-setup-import.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/used-options-alias.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/whole-frappe-builder.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/whole-tiny-rdm.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-import-value-reads/whole-vue-data-ui.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/array-default-target-write-only-keeps-warning.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/array-rest-target-write-only-keeps-warning.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/array-target-write-only-keeps-warning.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/as-target-write-only-keeps-warning.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/assignment-with-rhs-read-remains-unproved.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/cases.json",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/javascript-typeof-is-a-read.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/javascript-typeof-statement-is-a-read.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/mixed-arrow-runtime-child-type-other-remains-unproved.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/mixed-arrow-type-child-runtime-other-remains-unproved.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/mixed-statement-runtime-child-type-other-remains-unproved.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/mixed-statement-type-child-runtime-other-remains-unproved.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/nonnull-target-write-only-keeps-warning.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/object-alias-target-write-only-keeps-warning.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/object-shorthand-target-write-only-keeps-warning.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/ordinary-type-cast-keeps-warning.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/retained-type-query-keeps-warning.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/satisfies-target-write-only-keeps-warning.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/statement-type-query-keeps-warning.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/type-assertion-target-write-only-keeps-warning.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/component-template-runtime-reads/write-only-template-keeps-warning.vue.txt",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/differential/component-cli-runtime-reads.ts",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/differential/component-import-value-reads.ts",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/differential/component-template-runtime-reads.ts",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/performance/support/warm-type-backed-component-value-originals.json",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/tooling/component-cli-runtime-reads-corpus.test.ts",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/tooling/component-import-value-reads-corpus.test.ts",
+      "gitEntryHex": ""
+    },
+    {
+      "path": "tests/tooling/component-template-runtime-reads-corpus.test.ts",
+      "gitEntryHex": ""
+    }
+  ]
+}

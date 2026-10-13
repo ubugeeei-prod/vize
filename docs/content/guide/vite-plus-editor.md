@@ -55,24 +55,27 @@ for native rules. Vue formatting is selected with the language-specific
 
 ## Native editor configuration
 
-The editor's native language server discovers `vize.config.*`; it does not
-evaluate `vite.config.ts`. Inline `lint.vize`, `fmt.vize`, and `typecheck` settings
-configure the helper's tasks. To share those settings with native editor
-consumers, keep common native settings in a supported `vize.config.*` file:
+The native language server can read settings from `vite.config.*`, including
+the Vite+ helper's `lint.vize`, `fmt.vize`, and `typecheck` sections. Common
+native settings also belong in the same file's top-level `vize` object:
 
-```json
-{
-  "linter": { "preset": "essential" },
-  "formatter": { "singleQuote": true },
-  "typeChecker": { "strict": true }
-}
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vize: {
+    linter: { preset: "essential" },
+    formatter: { singleQuote: true },
+    typeChecker: { strict: true },
+  },
+});
 ```
 
-The helper reads an existing native config automatically when its `vize` section
-is omitted. Task-specific inline sections override those shared settings.
-JSON or Pkl is the simplest common format for the native language server.
-Keep this file as the source of shared editor/task rules instead of copying the
-same rule list into editor settings.
+Keep project types in `tsconfig.json` and select workspace folders explicitly.
+Explicit editor feature switches retain their precedence over project settings.
+An existing dedicated config in the same directory still takes priority over
+Vite config. See [Configuration](./configuration.md) for discovery, monorepo
+bounds and the current release availability of shared Vite discovery.
 
 ## Other editors
 

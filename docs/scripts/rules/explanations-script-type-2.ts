@@ -66,9 +66,9 @@ export const scriptType2Explanations: readonly ExplanationRecord[] = [
   [
     "script/prefer-import-from-vue",
     "`ref` and `h` are imported from the internal `@vue/runtime-core` and `@vue/runtime-dom` packages rather than the public `vue` package.",
-    "Both helpers are imported together from `vue`, using the public package entry point instead of either internal package.",
+    "The public helpers are imported from `vue`. Private `isString` retains `@vue/shared`, because `vue` does not export it. Namespace, default and mixed public/private imports keep a warning without an automatic fix.",
     "`ref` と `h` を公開パッケージ `vue` ではなく、内部の `@vue/runtime-core` と `@vue/runtime-dom` からインポートしています。",
-    "両ヘルパーを `vue` からまとめてインポートし、内部パッケージではなく公開エントリーポイントを使います。",
+    "公開ヘルパーは `vue` からインポートします。`vue` が公開しない `isString` は `@vue/shared` を維持します。名前空間・デフォルト・公開と非公開の混在 import は警告のみで、自動修正しません。",
   ],
   [
     "script/prefer-ref-over-reactive",

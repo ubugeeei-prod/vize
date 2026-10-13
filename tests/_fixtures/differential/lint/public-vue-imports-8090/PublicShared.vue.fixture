@@ -1,0 +1,4 @@
+<script setup lang="ts">
+import { camelize } from '@vue/shared'
+</script>
+<template><div>ok</div></template>

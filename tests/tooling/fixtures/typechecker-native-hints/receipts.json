@@ -1,0 +1,57 @@
+{
+  "schema": "vize.fixtureTypecheckerHintEvidence",
+  "version": 1,
+  "run": 38147644073,
+  "sourceCommit": "9466fdbb90bfae8803d5e57ae267b656be051721",
+  "authority": "Authenticated original CLI stdout bytes; project inputs, counts and diagnostic arrays are not rewritten.",
+  "reports": [
+    {
+      "project": "hoppscotch",
+      "artifactId": 11704559698,
+      "artifactSha256": "15c248fc30e21cbabd362203f08e87cb3071824ab1c8be3b8e98cfd685948f24",
+      "stdoutSha256": "d24d8073295543cbdcf6121b8cb877f7dec47db55d5de34c90868c3aeb62f40d",
+      "stdoutBytes": 386436,
+      "exitCode": 1,
+      "errorCount": 1121,
+      "warningCount": 17,
+      "hintCount": 356,
+      "fileCount": 754
+    },
+    {
+      "project": "vue-element-admin",
+      "artifactId": 11704909722,
+      "artifactSha256": "76b81650e5429a6e681a1166f2a4562af3d255dfd4be289144e441465f411140",
+      "stdoutSha256": "507318b47ae0976b71d933e41898223f2a4b999cbaf2fde71b70cb455c053caf",
+      "stdoutBytes": 24310,
+      "exitCode": 1,
+      "errorCount": 2,
+      "warningCount": 0,
+      "hintCount": 6,
+      "fileCount": 169
+    },
+    {
+      "project": "vue3-antd-admin",
+      "artifactId": 11705688315,
+      "artifactSha256": "c98b2c2cf1a5cc4b68ba98db9dc1933b804e24ed651066dac60aed8834cadc32",
+      "stdoutSha256": "2bf022c8ed6cae1ac93f639bb0b65024003f93738c6d7cd58975280cd2fbc824",
+      "stdoutBytes": 135169,
+      "exitCode": 1,
+      "errorCount": 779,
+      "warningCount": 0,
+      "hintCount": 5,
+      "fileCount": 176
+    },
+    {
+      "project": "vitepress",
+      "artifactId": 11706401015,
+      "artifactSha256": "b7e164fc9fa09eef567ad00a3dc3b01d8a1760adbc484d7b214ceb3df4749639",
+      "stdoutSha256": "d6a6fc31bf6ce971a8db15906e2d3c5e4317f7198fa356c21334d17187b678c7",
+      "stdoutBytes": 30898,
+      "exitCode": 1,
+      "errorCount": 92,
+      "warningCount": 0,
+      "hintCount": 2,
+      "fileCount": 120
+    }
+  ]
+}

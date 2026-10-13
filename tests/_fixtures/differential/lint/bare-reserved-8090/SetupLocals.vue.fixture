@@ -1,0 +1,6 @@
+<script setup lang="ts">
+const data = 0, props = 0, slots = 0, options = 0
+const emit = () => true
+const $emit = () => true
+const _private = 0
+</script>

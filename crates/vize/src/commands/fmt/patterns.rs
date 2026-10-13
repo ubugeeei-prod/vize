@@ -5,6 +5,8 @@ pub(super) const FORMAT_EXTENSIONS: &[&str] = &[
 
 pub(super) const FORMAT_EXTENSIONS_DISPLAY: &str = ".vue, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, .json, .jsonc, .yaml, .yml, .md, or .markdown";
 
+pub(super) const FORMAT_PATTERN_HELP: &str = "Vue/JS/TS/JSON/JSONC globs; YAML/Markdown formatting is not implemented\n\n[default: ./**/*.vue ./**/*.js ./**/*.mjs ./**/*.cjs ./**/*.ts ./**/*.mts ./**/*.cts ./**/*.jsx ./**/*.tsx ./**/*.json ./**/*.jsonc]";
+
 pub(super) fn is_unimplemented_document_extension(extension: &str) -> bool {
     matches!(extension, "yaml" | "yml" | "md" | "markdown")
 }
@@ -16,12 +18,6 @@ pub(super) fn default_fmt_patterns() -> Vec<std::string::String> {
         .filter(|extension| !is_unimplemented_document_extension(extension))
         .map(|extension| vize_l0::cstr!("./**/*.{extension}").into())
         .collect()
-}
-
-#[inline]
-#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
-pub(super) fn has_explicit_patterns(patterns: &[std::string::String]) -> bool {
-    patterns != default_fmt_patterns().as_slice()
 }
 
 #[inline]

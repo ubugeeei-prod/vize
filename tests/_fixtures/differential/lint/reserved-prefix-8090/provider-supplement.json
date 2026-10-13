@@ -1,0 +1,256 @@
+{
+  "schema": "vize.lint.reserved-prefix-provider-supplement",
+  "version": 1,
+  "authority": "Explicit complete provider metadata authored from pinned source producer contracts and immutable source comments before replay. Original wrong expected vectors and every first-attempt packet remain exact in initial-provider-expectations.json.gz. This supplement changes no native before/after vectors and copies no observed diagnostic vector into normative expectations.",
+  "initialCorpusSha256": "016061653fcd7781d87c2d542ee4d982a013e7059e1858ca9405cd589cae5d77",
+  "initialOriginalsSha256": "65d7e2cbbdc5552f1d28338163d88506716fc8ebd6a2a88a0c5eab5670283144",
+  "firstProviderReceiptSha256": "cdfb4bc16755392984b379dd9297b53cced7fcabf40c55b31f3667c75ec0c7bb",
+  "correctionCounts": {
+    "macroNodeMetadataCases": 1,
+    "unusedDirectiveCases": 3,
+    "unusedDirectiveWarnings": 7,
+    "unusedDirectiveFixes": 7,
+    "nativeAfterVectorChanges": 0,
+    "disabledChecks": 0
+  },
+  "sourceBasis": [
+    {
+      "path": "node_modules/eslint-plugin-vue/dist/utils/index.js",
+      "sha256": "4727c10651f789ee6308b4311f3694dd302faae9e5b821ae4b31432c3b105925",
+      "bytes": 80367,
+      "lines": "1881-1884,1988-1994"
+    },
+    {
+      "path": "node_modules/eslint-plugin-vue/dist/rules/no-reserved-keys.js",
+      "sha256": "f1a390ef50439b87ee88f348d14e276b8edff14733d87f2c374754aff7157652",
+      "bytes": 2481,
+      "lines": "55-61"
+    },
+    {
+      "path": "node_modules/eslint/lib/linter/apply-disable-directives.js",
+      "sha256": "2653bbe7f446f4a9bf34c7e6c43459f43954de89e037a990ad18c3d35ef48f55",
+      "bytes": 19105,
+      "lines": "160-188,398-443"
+    },
+    {
+      "path": "node_modules/eslint/lib/config/default-config.js",
+      "sha256": "b257a73f4890e08ce3298d851971afb0ff4a06a5669ba4bd897ebde3e401b36e",
+      "bytes": 1697,
+      "lines": "61-63"
+    },
+    {
+      "path": "node_modules/eslint/lib/eslint/eslint-helpers.js",
+      "sha256": "82e8a293c3491a43361acb1f58c75aa823f4bd361aad63eb7500c22b4d532d8c",
+      "bytes": 45262,
+      "lines": "729-760,1198-1218"
+    }
+  ],
+  "cases": [
+    {
+      "id": "unsupported-define-props",
+      "reason": "The pinned macro utility passes the complete object Property as prop.node to the rule. Initial Identifier/key-only metadata was an authorship mistake; native vectors and target diagnostic count are unchanged.",
+      "sourceDerivation": [
+        {
+          "sourceFile": "UnsupportedDefineProps.vue.fixture",
+          "sourceSha256": "a1d6bae2bf43c2584b63dd121acdfbf433a5e5979ee0dec15e642012be531808",
+          "propertyText": "$props: Number",
+          "propertyStartByte": 39,
+          "propertyEndByte": 53,
+          "utility": "eslint-plugin-vue/dist/utils/index.js:1881-1884,1988-1994",
+          "rule": "eslint-plugin-vue/dist/rules/no-reserved-keys.js:55-61"
+        }
+      ],
+      "providerDiagnostics": [
+        {
+          "ruleId": "vue/no-reserved-keys",
+          "severity": 2,
+          "message": "Key '$props' is reserved.",
+          "line": 2,
+          "column": 15,
+          "nodeType": "Property",
+          "messageId": "reserved",
+          "endLine": 2,
+          "endColumn": 29
+        }
+      ]
+    },
+    {
+      "id": "original-habitica-website-client-src-components-chat-emojiautocomplete",
+      "reason": "The configured single-rule provider still applies its default warning for unused inline directives. Preserve these complete non-rule findings and their fixes; no directive checking is disabled.",
+      "sourceDerivation": [
+        {
+          "sourceFile": "original-habitica-website-client-src-components-chat-emojiautocomplete.vue.fixture",
+          "sourceSha256": "08d5559ebff4e3d2f8a0d9612ce829e36d6a4fc9f6b592a70a5c561c09d51754",
+          "line": 89,
+          "comment": "// eslint-disable-next-line no-unused-vars",
+          "directive": "eslint-disable-next-line",
+          "unconfiguredRuleIds": ["no-unused-vars"],
+          "rangeUnit": "utf16-code-unit",
+          "commentRange": [1792, 1834]
+        },
+        {
+          "sourceFile": "original-habitica-website-client-src-components-chat-emojiautocomplete.vue.fixture",
+          "sourceSha256": "08d5559ebff4e3d2f8a0d9612ce829e36d6a4fc9f6b592a70a5c561c09d51754",
+          "line": 192,
+          "comment": "// eslint-disable-line prefer-destructuring",
+          "directive": "eslint-disable-line",
+          "unconfiguredRuleIds": ["prefer-destructuring"],
+          "rangeUnit": "utf16-code-unit",
+          "commentRange": [5616, 5659]
+        }
+      ],
+      "providerDiagnostics": [
+        {
+          "ruleId": null,
+          "message": "Unused eslint-disable directive (no problems were reported from 'no-unused-vars').",
+          "line": 89,
+          "column": 7,
+          "severity": 1,
+          "nodeType": null,
+          "fix": {
+            "range": [1792, 1834],
+            "text": " "
+          }
+        },
+        {
+          "ruleId": null,
+          "message": "Unused eslint-disable directive (no problems were reported from 'prefer-destructuring').",
+          "line": 192,
+          "column": 41,
+          "severity": 1,
+          "nodeType": null,
+          "fix": {
+            "range": [5616, 5659],
+            "text": " "
+          }
+        }
+      ]
+    },
+    {
+      "id": "original-bootstrap-vue-docs-pages-play",
+      "reason": "The configured single-rule provider still applies its default warning for unused inline directives. Preserve these complete non-rule findings and their fixes; no directive checking is disabled.",
+      "sourceDerivation": [
+        {
+          "sourceFile": "original-bootstrap-vue-docs-pages-play.vue.fixture",
+          "sourceSha256": "9297e6f5dd8e25dda9df68de21967150cd60727a97ea992a7b0ce835de29e469",
+          "line": 459,
+          "comment": "// eslint-disable-line",
+          "directive": "eslint-disable-line",
+          "unconfiguredRuleIds": [],
+          "rangeUnit": "utf16-code-unit",
+          "commentRange": [14428, 14450]
+        },
+        {
+          "sourceFile": "original-bootstrap-vue-docs-pages-play.vue.fixture",
+          "sourceSha256": "9297e6f5dd8e25dda9df68de21967150cd60727a97ea992a7b0ce835de29e469",
+          "line": 663,
+          "comment": "// eslint-disable-next-line prefer-const",
+          "directive": "eslint-disable-next-line",
+          "unconfiguredRuleIds": ["prefer-const"],
+          "rangeUnit": "utf16-code-unit",
+          "commentRange": [19914, 19954]
+        },
+        {
+          "sourceFile": "original-bootstrap-vue-docs-pages-play.vue.fixture",
+          "sourceSha256": "9297e6f5dd8e25dda9df68de21967150cd60727a97ea992a7b0ce835de29e469",
+          "line": 669,
+          "comment": "/* eslint-disable no-eval */",
+          "directive": "eslint-disable",
+          "unconfiguredRuleIds": ["no-eval"],
+          "rangeUnit": "utf16-code-unit",
+          "commentRange": [20178, 20206]
+        }
+      ],
+      "providerDiagnostics": [
+        {
+          "ruleId": null,
+          "message": "Unused eslint-disable directive (no problems were reported).",
+          "line": 459,
+          "column": 23,
+          "severity": 1,
+          "nodeType": null,
+          "fix": {
+            "range": [14428, 14450],
+            "text": " "
+          }
+        },
+        {
+          "ruleId": null,
+          "message": "Unused eslint-disable directive (no problems were reported from 'prefer-const').",
+          "line": 663,
+          "column": 7,
+          "severity": 1,
+          "nodeType": null,
+          "fix": {
+            "range": [19914, 19954],
+            "text": " "
+          }
+        },
+        {
+          "ruleId": null,
+          "message": "Unused eslint-disable directive (no problems were reported from 'no-eval').",
+          "line": 669,
+          "column": 9,
+          "severity": 1,
+          "nodeType": null,
+          "fix": {
+            "range": [20178, 20206],
+            "text": " "
+          }
+        }
+      ]
+    },
+    {
+      "id": "original-vue-select-src-components-select",
+      "reason": "The configured single-rule provider still applies its default warning for unused inline directives. Preserve these complete non-rule findings and their fixes; no directive checking is disabled.",
+      "sourceDerivation": [
+        {
+          "sourceFile": "original-vue-select-src-components-select.vue.fixture",
+          "sourceSha256": "12f3b27bb0d85e07ab538f2813e7f3ddaaf8708ed4167b95c50a366f4cfd9b68",
+          "line": 165,
+          "comment": "// eslint-disable-next-line vue/require-default-prop,vue/require-prop-types",
+          "directive": "eslint-disable-next-line",
+          "unconfiguredRuleIds": ["vue/require-default-prop", "vue/require-prop-types"],
+          "rangeUnit": "utf16-code-unit",
+          "commentRange": [5232, 5307]
+        },
+        {
+          "sourceFile": "original-vue-select-src-components-select.vue.fixture",
+          "sourceSha256": "12f3b27bb0d85e07ab538f2813e7f3ddaaf8708ed4167b95c50a366f4cfd9b68",
+          "line": 543,
+          "comment": "// eslint-disable-next-line vue/require-default-prop",
+          "directive": "eslint-disable-next-line",
+          "unconfiguredRuleIds": ["vue/require-default-prop"],
+          "rangeUnit": "utf16-code-unit",
+          "commentRange": [14542, 14594]
+        }
+      ],
+      "providerDiagnostics": [
+        {
+          "ruleId": null,
+          "message": "Unused eslint-disable directive (no problems were reported from 'vue/require-default-prop' or 'vue/require-prop-types').",
+          "line": 165,
+          "column": 5,
+          "severity": 1,
+          "nodeType": null,
+          "fix": {
+            "range": [5232, 5307],
+            "text": " "
+          }
+        },
+        {
+          "ruleId": null,
+          "message": "Unused eslint-disable directive (no problems were reported from 'vue/require-default-prop').",
+          "line": 543,
+          "column": 5,
+          "severity": 1,
+          "nodeType": null,
+          "fix": {
+            "range": [14542, 14594],
+            "text": " "
+          }
+        }
+      ]
+    }
+  ]
+}

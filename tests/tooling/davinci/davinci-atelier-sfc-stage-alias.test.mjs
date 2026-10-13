@@ -25,7 +25,8 @@ const sfcPreferredL0Rows = [
   ["crates/vize_atelier_sfc/src/compile_template/vapor.rs", "source", 7],
   ["crates/vize_atelier_sfc/tests/allocation_budget.rs", "test", 1],
   ["crates/vize_atelier_sfc/tests/component_spread_props.rs", "test", 1],
-  ["crates/vize_atelier_sfc/tests/css_engine_panic_boundary.rs", "test", 5],
+  ["crates/vize_atelier_sfc/tests/css_engine_panic_boundary.rs", "test", 2],
+  ["crates/vize_atelier_sfc/tests/support/css_engine_successors.rs", "test", 1],
   ["crates/vize_atelier_sfc/tests/css_nesting_guard.rs", "test", 6],
   ["crates/vize_atelier_sfc/tests/custom_directive_patch_flag.rs", "test", 1],
   ["crates/vize_atelier_sfc/tests/davinci_arena_pool.rs", "test", 1],
@@ -104,6 +105,14 @@ void test("Atelier SFC selected compiler and integration test slices import L0 t
     const source = fs.readFileSync(path.join(repoRoot, relPath), "utf8");
     assertPreferredSource(source, relPath);
   }
+
+  // The finite whole-result law replaces three partial Vec<String> assertions.
+  // Keep all five original preferred aliases in the complete archived authority.
+  const preservedPath =
+    "tests/_fixtures/differential/css-engine-vendor-exit/finite-before/css_engine_panic_boundary.rs.txt";
+  const preserved = fs.readFileSync(path.join(repoRoot, preservedPath), "utf8");
+  assertPreferredSource(preserved, preservedPath);
+  assert.equal(preserved.match(/\bvize_l0\b/gu)?.length, 5, preservedPath);
 });
 
 void test("Atelier SFC admits only its exact host allocator selection and rejects Carton storage", () => {

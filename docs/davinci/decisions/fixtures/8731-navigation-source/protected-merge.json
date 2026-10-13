@@ -1,0 +1,1905 @@
+{
+  "scope": "source/native and protected merge only; fresh installed release pending",
+  "source": "c1935b3db661318e2df231d1506dfd720f2bae7d",
+  "actualMerge": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+  "mergedAt": "2026-10-12T03:39:37Z",
+  "actualMainAtReadback": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+  "originalLocalFullMergeReceiptSha256": "36ec6f5d7a9d221071fd47cd9e1c61fbae5a2ca9abc32644ae562270594fb2e2",
+  "allOriginalFiveProtectedRuns": [
+    {
+      "id": 38199314805,
+      "event": "merge_group",
+      "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805"
+    },
+    {
+      "id": 38199314722,
+      "event": "merge_group",
+      "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314722"
+    },
+    {
+      "id": 38199314727,
+      "event": "merge_group",
+      "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314727"
+    },
+    {
+      "id": 38199314726,
+      "event": "merge_group",
+      "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314726"
+    },
+    {
+      "id": 38199314782,
+      "event": "merge_group",
+      "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314782"
+    }
+  ],
+  "allOriginalProtectedJobs": {
+    "38199314805": [
+      {
+        "id": 114648950282,
+        "name": "fmt-rust",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114648950282",
+        "started_at": "2026-10-12T03:19:51Z",
+        "completed_at": "2026-10-12T03:20:18Z"
+      },
+      {
+        "id": 114648950398,
+        "name": "security-audit",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114648950398",
+        "started_at": "2026-10-12T03:19:51Z",
+        "completed_at": "2026-10-12T03:20:30Z"
+      },
+      {
+        "id": 114648950464,
+        "name": "check-js",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114648950464",
+        "started_at": "2026-10-12T03:19:51Z",
+        "completed_at": "2026-10-12T03:22:04Z"
+      },
+      {
+        "id": 114648950598,
+        "name": "level-dependency-direction / Level dependency direction",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114648950598",
+        "started_at": "2026-10-12T03:19:51Z",
+        "completed_at": "2026-10-12T03:20:14Z"
+      },
+      {
+        "id": 114648950619,
+        "name": "node-engine-compat (22)",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114648950619",
+        "started_at": "2026-10-12T03:19:51Z",
+        "completed_at": "2026-10-12T03:20:10Z"
+      },
+      {
+        "id": 114648950621,
+        "name": "node-engine-compat (24)",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114648950621",
+        "started_at": "2026-10-12T03:19:51Z",
+        "completed_at": "2026-10-12T03:20:14Z"
+      },
+      {
+        "id": 114648950668,
+        "name": "PR source checks / Plan PR source checks",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114648950668",
+        "started_at": "2026-10-12T03:19:51Z",
+        "completed_at": "2026-10-12T03:20:29Z"
+      },
+      {
+        "id": 114648950688,
+        "name": "release-integration-catalog / Release integration catalog",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114648950688",
+        "started_at": "2026-10-12T03:19:51Z",
+        "completed_at": "2026-10-12T03:19:58Z"
+      },
+      {
+        "id": 114648950720,
+        "name": "check-vize-apps",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114648950720",
+        "started_at": "2026-10-12T03:19:51Z",
+        "completed_at": "2026-10-12T03:21:13Z"
+      },
+      {
+        "id": 114648950728,
+        "name": "Instruction ceilings / Per-stage instruction ceilings",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114648950728",
+        "started_at": "2026-10-12T03:19:51Z",
+        "completed_at": "2026-10-12T03:22:51Z"
+      },
+      {
+        "id": 114648950788,
+        "name": "PR source checks / Guest contracts / WIT contract round trip (TS-48)",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114648950788",
+        "started_at": "2026-10-12T03:19:51Z",
+        "completed_at": "2026-10-12T03:22:01Z"
+      },
+      {
+        "id": 114648950990,
+        "name": "build-js-packages",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114648950990",
+        "started_at": "2026-10-12T03:19:45Z",
+        "completed_at": "2026-10-12T03:19:45Z"
+      },
+      {
+        "id": 114648951018,
+        "name": "source-coverage",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114648951018",
+        "started_at": "2026-10-12T03:19:45Z",
+        "completed_at": "2026-10-12T03:19:45Z"
+      },
+      {
+        "id": 114648951038,
+        "name": "cargo-semver-checks (${{ matrix.crate }})",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114648951038",
+        "started_at": "2026-10-12T03:19:45Z",
+        "completed_at": "2026-10-12T03:19:45Z"
+      },
+      {
+        "id": 114648951077,
+        "name": "coverage",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114648951077",
+        "started_at": "2026-10-12T03:19:45Z",
+        "completed_at": "2026-10-12T03:19:45Z"
+      },
+      {
+        "id": 114648951087,
+        "name": "test-js-packages",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114648951087",
+        "started_at": "2026-10-12T03:19:45Z",
+        "completed_at": "2026-10-12T03:19:45Z"
+      },
+      {
+        "id": 114648951211,
+        "name": "nix-flake",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114648951211",
+        "started_at": "2026-10-12T03:19:45Z",
+        "completed_at": "2026-10-12T03:19:44Z"
+      },
+      {
+        "id": 114648951260,
+        "name": "vue-parity",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114648951260",
+        "started_at": "2026-10-12T03:19:45Z",
+        "completed_at": "2026-10-12T03:19:45Z"
+      },
+      {
+        "id": 114648951262,
+        "name": "clippy-and-test",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114648951262",
+        "started_at": "2026-10-12T03:19:45Z",
+        "completed_at": "2026-10-12T03:19:45Z"
+      },
+      {
+        "id": 114648951295,
+        "name": "allocation-ownership-diagnostic",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114648951295",
+        "started_at": "2026-10-12T03:19:45Z",
+        "completed_at": "2026-10-12T03:19:44Z"
+      },
+      {
+        "id": 114648951417,
+        "name": "branch-coverage",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114648951417",
+        "started_at": "2026-10-12T03:19:45Z",
+        "completed_at": "2026-10-12T03:19:45Z"
+      },
+      {
+        "id": 114648951474,
+        "name": "editor-extensions",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114648951474",
+        "started_at": "2026-10-12T03:19:45Z",
+        "completed_at": "2026-10-12T03:19:44Z"
+      },
+      {
+        "id": 114648951485,
+        "name": "editor-host-smoke",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114648951485",
+        "started_at": "2026-10-12T03:19:45Z",
+        "completed_at": "2026-10-12T03:19:45Z"
+      },
+      {
+        "id": 114648951514,
+        "name": "test-scripts",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114648951514",
+        "started_at": "2026-10-12T03:19:45Z",
+        "completed_at": "2026-10-12T03:19:45Z"
+      },
+      {
+        "id": 114648951655,
+        "name": "playground-test",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114648951655",
+        "started_at": "2026-10-12T03:19:45Z",
+        "completed_at": "2026-10-12T03:19:45Z"
+      },
+      {
+        "id": 114649104644,
+        "name": "PR source checks / PR playground browser tests",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114649104644",
+        "started_at": "2026-10-12T03:20:35Z",
+        "completed_at": "2026-10-12T03:25:30Z"
+      },
+      {
+        "id": 114649104672,
+        "name": "PR source checks / PR JS package build and tests",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114649104672",
+        "started_at": "2026-10-12T03:20:36Z",
+        "completed_at": "2026-10-12T03:35:35Z"
+      },
+      {
+        "id": 114649104815,
+        "name": "PR source checks / canonical-corpus / canonical observer (dom)",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114649104815",
+        "started_at": "2026-10-12T03:20:36Z",
+        "completed_at": "2026-10-12T03:23:24Z"
+      },
+      {
+        "id": 114649104817,
+        "name": "PR source checks / PR Rust Clippy, tests, and fixtures / PR Rust Clippy, tests, and fixtures",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114649104817",
+        "started_at": "2026-10-12T03:20:36Z",
+        "completed_at": "2026-10-12T03:26:51Z"
+      },
+      {
+        "id": 114649104850,
+        "name": "PR source checks / canonical-corpus / canonical observer (ssr-pug)",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114649104850",
+        "started_at": "2026-10-12T03:20:36Z",
+        "completed_at": "2026-10-12T03:29:40Z"
+      },
+      {
+        "id": 114649104865,
+        "name": "PR source checks / pr-source-cli / Build shared source CLI and SFC oracle",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114649104865",
+        "started_at": "2026-10-12T03:20:36Z",
+        "completed_at": "2026-10-12T03:22:04Z"
+      },
+      {
+        "id": 114649104924,
+        "name": "PR source checks / canonical-corpus / canonical observer (reach)",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114649104924",
+        "started_at": "2026-10-12T03:20:36Z",
+        "completed_at": "2026-10-12T03:33:52Z"
+      },
+      {
+        "id": 114649106028,
+        "name": "PR source checks / PR Rust Clippy, tests, and fixtures / Build affected Rust tests",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114649106028",
+        "started_at": "2026-10-12T03:20:30Z",
+        "completed_at": "2026-10-12T03:20:30Z"
+      },
+      {
+        "id": 114649428239,
+        "name": "PR source checks / PR tooling scripts (2/4)",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114649428239",
+        "started_at": "2026-10-12T03:22:11Z",
+        "completed_at": "2026-10-12T03:30:28Z"
+      },
+      {
+        "id": 114649428243,
+        "name": "PR source checks / PR tooling scripts (4/4)",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114649428243",
+        "started_at": "2026-10-12T03:22:11Z",
+        "completed_at": "2026-10-12T03:31:07Z"
+      },
+      {
+        "id": 114649428292,
+        "name": "PR source checks / PR tooling scripts (1/4)",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114649428292",
+        "started_at": "2026-10-12T03:22:11Z",
+        "completed_at": "2026-10-12T03:33:43Z"
+      },
+      {
+        "id": 114649428293,
+        "name": "PR source checks / PR tooling scripts (3/4)",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114649428293",
+        "started_at": "2026-10-12T03:22:12Z",
+        "completed_at": "2026-10-12T03:30:16Z"
+      },
+      {
+        "id": 114649429354,
+        "name": "full-js-report",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114649429354",
+        "started_at": "2026-10-12T03:22:05Z",
+        "completed_at": "2026-10-12T03:22:05Z"
+      },
+      {
+        "id": 114650383725,
+        "name": "PR source checks / PR Rust Clippy, tests, and fixtures / Rust tests (4/4)",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114650383725",
+        "started_at": "2026-10-12T03:26:57Z",
+        "completed_at": "2026-10-12T03:29:50Z"
+      },
+      {
+        "id": 114650383743,
+        "name": "PR source checks / PR Rust Clippy, tests, and fixtures / Rust tests (3/4)",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114650383743",
+        "started_at": "2026-10-12T03:26:57Z",
+        "completed_at": "2026-10-12T03:29:54Z"
+      },
+      {
+        "id": 114650383752,
+        "name": "PR source checks / PR Rust Clippy, tests, and fixtures / Rust tests (2/4)",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114650383752",
+        "started_at": "2026-10-12T03:26:57Z",
+        "completed_at": "2026-10-12T03:29:41Z"
+      },
+      {
+        "id": 114650383761,
+        "name": "PR source checks / PR Rust Clippy, tests, and fixtures / Rust tests (1/4)",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114650383761",
+        "started_at": "2026-10-12T03:26:57Z",
+        "completed_at": "2026-10-12T03:30:07Z"
+      },
+      {
+        "id": 114650383786,
+        "name": "PR source checks / PR Rust Clippy, tests, and fixtures / Required Rust differential corpora / Rust feature corpora and fixture coverage",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114650383786",
+        "started_at": "2026-10-12T03:26:58Z",
+        "completed_at": "2026-10-12T03:38:01Z"
+      },
+      {
+        "id": 114651823299,
+        "name": "PR source checks / canonical-corpus / s2 dom corpus",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114651823299",
+        "started_at": "2026-10-12T03:33:59Z",
+        "completed_at": "2026-10-12T03:34:30Z"
+      },
+      {
+        "id": 114652665015,
+        "name": "PR source checks / PR Rust Clippy, tests, and fixtures / Rust source report",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114652665015",
+        "started_at": "2026-10-12T03:38:03Z",
+        "completed_at": "2026-10-12T03:38:27Z"
+      },
+      {
+        "id": 114652755242,
+        "name": "PR source checks / PR source report",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114652755242",
+        "started_at": "2026-10-12T03:38:30Z",
+        "completed_at": "2026-10-12T03:38:43Z"
+      },
+      {
+        "id": 114652809509,
+        "name": "test-report",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114652809509",
+        "started_at": "2026-10-12T03:38:45Z",
+        "completed_at": "2026-10-12T03:39:25Z"
+      },
+      {
+        "id": 114652958781,
+        "name": "test-report-comment",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314805/job/114652958781",
+        "started_at": "2026-10-12T03:39:25Z",
+        "completed_at": "2026-10-12T03:39:25Z"
+      }
+    ],
+    "38199314722": [
+      {
+        "id": 114648949453,
+        "name": "Musea real Chromium contracts",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314722/job/114648949453",
+        "started_at": "2026-10-12T03:19:51Z",
+        "completed_at": "2026-10-12T03:21:04Z"
+      },
+      {
+        "id": 114648949585,
+        "name": "Musea native inline Art contracts",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314722/job/114648949585",
+        "started_at": "2026-10-12T03:19:51Z",
+        "completed_at": "2026-10-12T03:23:41Z"
+      }
+    ],
+    "38199314727": [
+      {
+        "id": 114648949398,
+        "name": "Pinned n8n adoption corpus",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314727/job/114648949398",
+        "started_at": "2026-10-12T03:19:50Z",
+        "completed_at": "2026-10-12T03:20:13Z"
+      },
+      {
+        "id": 114648949624,
+        "name": "Authored n8n navigation and type diagnostics",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314727/job/114648949624",
+        "started_at": "2026-10-12T03:19:51Z",
+        "completed_at": "2026-10-12T03:22:47Z"
+      },
+      {
+        "id": 114648949651,
+        "name": "Complete n8n compiler source before and after",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314727/job/114648949651",
+        "started_at": "2026-10-12T03:19:51Z",
+        "completed_at": "2026-10-12T03:22:44Z"
+      }
+    ],
+    "38199314726": [
+      {
+        "id": 114648949480,
+        "name": "Nuxt 4 scoped CSS build and SSR",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314726/job/114648949480",
+        "started_at": "2026-10-12T03:19:51Z",
+        "completed_at": "2026-10-12T03:22:12Z"
+      }
+    ],
+    "38199314782": [
+      {
+        "id": 114648949579,
+        "name": "Nuxt 3 build and SSR",
+        "head_sha": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/38199314782/job/114648949579",
+        "started_at": "2026-10-12T03:19:51Z",
+        "completed_at": "2026-10-12T03:28:45Z"
+      }
+    ]
+  },
+  "sourcePreservation": {
+    "source": "c1935b3db661318e2df231d1506dfd720f2bae7d",
+    "candidate": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182",
+    "parents": "5b3c0eb26a5cc56e66c2a0a0651a04da60241182 0d63bc7e392b952351c9f2ebdc2d1725954f9606",
+    "incomingActualMainAncestral": "5459e40a23ca7e647ace8ebd20e1fe00c9294437",
+    "ownedBlobsExact": [
+      {
+        "path": ".github/workflows/musea-browser.yml",
+        "entry": "100644 blob 9586d4996c0cded866ff41dee7c1cdaaab2e5130\t.github/workflows/musea-browser.yml",
+        "bytes": 8161,
+        "sha256": "e9ebf47cfee166eaab7bc33930dcd75927b6f934b871170d0cbdb6f6e825ad9f"
+      },
+      {
+        "path": "docs/davinci/decisions/2026-10-12-musea-variant-navigation-owner.md",
+        "entry": "100644 blob ad7748dd5298e21530df67a3b0c5d791ed1f03d4\tdocs/davinci/decisions/2026-10-12-musea-variant-navigation-owner.md",
+        "bytes": 9771,
+        "sha256": "f16df325f4b6869aef9fe2321857c8c0695c9c45424aa8878bf7ff66cb13927c"
+      },
+      {
+        "path": "npm/builder/vite-musea/gallery/utils/variantNavigation.ts",
+        "entry": "100644 blob 7470e6f5ba91adedceba4c6ad73c7ec280069f57\tnpm/builder/vite-musea/gallery/utils/variantNavigation.ts",
+        "bytes": 3745,
+        "sha256": "394a80704e11cac5239ef54317007839eac4df6d0482003eac80115a0b14441d"
+      },
+      {
+        "path": "npm/builder/vite-musea/gallery/views/ComponentView.vue",
+        "entry": "100644 blob 80cbb56fe567b45427e00630186d00c2299e5067\tnpm/builder/vite-musea/gallery/views/ComponentView.vue",
+        "bytes": 17983,
+        "sha256": "456efa5d584b8dd87b71018e46fc88e964c711bdcac9cabd13ed98049f3489ba"
+      },
+      {
+        "path": "npm/builder/vite-musea/src/variant-navigation-browser.instrumentation.js",
+        "entry": "100644 blob a8fd8a9d12444f876a88afdac9ca872cd6d11630\tnpm/builder/vite-musea/src/variant-navigation-browser.instrumentation.js",
+        "bytes": 2136,
+        "sha256": "4366ff30fba405675eeeb1cd36fd2a4cceb996dbcdfa5e80598e52c7743ca592"
+      },
+      {
+        "path": "npm/builder/vite-musea/src/variant-navigation-browser.mutant.ts",
+        "entry": "100644 blob 567f48b845f00761c1dc0496340ae8499e99ff71\tnpm/builder/vite-musea/src/variant-navigation-browser.mutant.ts",
+        "bytes": 5628,
+        "sha256": "f728540bca9b714f6ba57e03577178071ce480cd41dc8035a4f0d5535d0e939b"
+      },
+      {
+        "path": "npm/builder/vite-musea/src/variant-navigation-browser.observer.ts",
+        "entry": "100644 blob 37bb6db803404169f8f7757fa8d8115e082f8d9d\tnpm/builder/vite-musea/src/variant-navigation-browser.observer.ts",
+        "bytes": 5560,
+        "sha256": "3ac5bedce1fd6a694254fe8d10db82155f8f716ecc5c489b42fae7bc904d0dee"
+      },
+      {
+        "path": "npm/builder/vite-musea/src/variant-navigation-browser.routes.ts",
+        "entry": "100644 blob afee472bbcfb88ae6884672fa00fce6ce6bbb6ef\tnpm/builder/vite-musea/src/variant-navigation-browser.routes.ts",
+        "bytes": 1003,
+        "sha256": "6b617ef3eeab8ab22683b3a243a1f6bdd38388339c671af6deb1ba5f3029f47a"
+      },
+      {
+        "path": "npm/builder/vite-musea/src/variant-navigation-owner.browser.test.ts",
+        "entry": "100644 blob 1ce4473e848c1e9ccccab949937e18220197bc79\tnpm/builder/vite-musea/src/variant-navigation-owner.browser.test.ts",
+        "bytes": 13479,
+        "sha256": "dd64f97508078497166a20a8ec68e93a9e74405bbfb321cf9cb7649912dd18d5"
+      },
+      {
+        "path": "npm/builder/vite-musea/src/variant-navigation-owner.test.ts",
+        "entry": "100644 blob 2a2f42164c1926e7aba956e3e740c306a1f8b88f\tnpm/builder/vite-musea/src/variant-navigation-owner.test.ts",
+        "bytes": 8664,
+        "sha256": "8016287d783d0c5efc1c5605d49dc58c5b3a906122acdf79d09d4a36d44da4d2"
+      },
+      {
+        "path": "npm/builder/vite-musea/src/variant-navigation-probe.browser.test.ts",
+        "entry": "100644 blob dbfbe96d1887158abac3915d46e3bd66020f1a6a\tnpm/builder/vite-musea/src/variant-navigation-probe.browser.test.ts",
+        "bytes": 3593,
+        "sha256": "9955705997b5a891c2ae364c0280979d758fd121ecd81ae39c772f8580a71d87"
+      },
+      {
+        "path": "tests/_fixtures/differential/musea/variant-navigation/before-script.txt",
+        "entry": "100644 blob 523321bac8c590a9fa800d248540d710c7317abd\ttests/_fixtures/differential/musea/variant-navigation/before-script.txt",
+        "bytes": 7473,
+        "sha256": "2e30c7098da8d15432766b36a580534e18d4f9dfdf1a571aae46a107c232cdfc"
+      },
+      {
+        "path": "tests/_fixtures/differential/musea/variant-navigation/manifest.json",
+        "entry": "100644 blob 4837a87312740aee81778a1010d4d3f449a00d66\ttests/_fixtures/differential/musea/variant-navigation/manifest.json",
+        "bytes": 1224,
+        "sha256": "49afbcce543c35ee836928e5cd48dfb30561c8e87e1edf43aafb89856536b91c"
+      },
+      {
+        "path": "tests/_fixtures/differential/musea/variant-navigation/original-failure.json",
+        "entry": "100644 blob 4a1ec2ee0d8b44ad2242cb3ca425bee1b2d19f25\ttests/_fixtures/differential/musea/variant-navigation/original-failure.json",
+        "bytes": 20859,
+        "sha256": "5053496fd0acf831fcde4b5beba93a911ee1fa8c2f585a36d778ce97f3283f0c"
+      }
+    ],
+    "qualification": "protected Actions pending; no actual merge/public credit",
+    "canonicalActualParent": "0d63bc7e392b952351c9f2ebdc2d1725954f9606",
+    "canonicalRows": 350,
+    "onlyCanonicalRowChanged": 311,
+    "incomingAll350PrefixesPreserved": true
+  },
+  "sameShaPostMergePolicy": "only immutable merge_group run IDs selected; new push runs are separate and unqualified here",
+  "positiveWholeGeometryAriaVectors": [
+    {
+      "phase": "Controls:last-first",
+      "name": "Default",
+      "id": "variant-default",
+      "aria": "true",
+      "rect": {
+        "x": 272,
+        "y": 132,
+        "width": 664,
+        "height": 563.796875,
+        "top": 132,
+        "right": 936,
+        "bottom": 695.796875,
+        "left": 272
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "ancestors": [
+        {
+          "tag": "SECTION",
+          "class": "content",
+          "overflow": "auto",
+          "top": 56,
+          "clientHeight": 664,
+          "scrollHeight": 1462,
+          "scrollTop": 179
+        }
+      ],
+      "selected": ["Default"],
+      "variantVector": [
+        {
+          "name": "Default",
+          "aria": "true",
+          "ariaControls": "variant-default",
+          "id": "variant-default",
+          "sectionName": "Default",
+          "rect": {
+            "x": 272,
+            "y": 132,
+            "width": 664,
+            "height": 563.796875,
+            "top": 132,
+            "right": 936,
+            "bottom": 695.796875,
+            "left": 272
+          }
+        },
+        {
+          "name": "Custom theme",
+          "aria": null,
+          "ariaControls": "variant-custom-theme",
+          "id": "variant-custom-theme",
+          "sectionName": "Custom theme",
+          "rect": {
+            "x": 272,
+            "y": 719.796875,
+            "width": 664,
+            "height": 563.796875,
+            "top": 719.796875,
+            "right": 936,
+            "bottom": 1283.59375,
+            "left": 272
+          }
+        }
+      ],
+      "time": 365.80000000001746
+    },
+    {
+      "phase": "Controls:first-last",
+      "name": "Custom theme",
+      "id": "variant-custom-theme",
+      "aria": "true",
+      "rect": {
+        "x": 272,
+        "y": 131.796875,
+        "width": 664,
+        "height": 563.796875,
+        "top": 131.796875,
+        "right": 936,
+        "bottom": 695.59375,
+        "left": 272
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "ancestors": [
+        {
+          "tag": "SECTION",
+          "class": "content",
+          "overflow": "auto",
+          "top": 56,
+          "clientHeight": 664,
+          "scrollHeight": 1462,
+          "scrollTop": 767
+        }
+      ],
+      "selected": ["Custom theme"],
+      "variantVector": [
+        {
+          "name": "Default",
+          "aria": null,
+          "ariaControls": "variant-default",
+          "id": "variant-default",
+          "sectionName": "Default",
+          "rect": {
+            "x": 272,
+            "y": -456,
+            "width": 664,
+            "height": 563.796875,
+            "top": -456,
+            "right": 936,
+            "bottom": 107.796875,
+            "left": 272
+          }
+        },
+        {
+          "name": "Custom theme",
+          "aria": "true",
+          "ariaControls": "variant-custom-theme",
+          "id": "variant-custom-theme",
+          "sectionName": "Custom theme",
+          "rect": {
+            "x": 272,
+            "y": 131.796875,
+            "width": 664,
+            "height": 563.796875,
+            "top": 131.796875,
+            "right": 936,
+            "bottom": 695.59375,
+            "left": 272
+          }
+        }
+      ],
+      "time": 498.6000000000058
+    },
+    {
+      "phase": "Controls:hash",
+      "name": "Default",
+      "id": "variant-default",
+      "aria": "true",
+      "rect": {
+        "x": 272,
+        "y": 132,
+        "width": 664,
+        "height": 563.796875,
+        "top": 132,
+        "right": 936,
+        "bottom": 695.796875,
+        "left": 272
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "ancestors": [
+        {
+          "tag": "SECTION",
+          "class": "content",
+          "overflow": "auto",
+          "top": 56,
+          "clientHeight": 664,
+          "scrollHeight": 1462,
+          "scrollTop": 179
+        }
+      ],
+      "selected": ["Default"],
+      "variantVector": [
+        {
+          "name": "Default",
+          "aria": "true",
+          "ariaControls": "variant-default",
+          "id": "variant-default",
+          "sectionName": "Default",
+          "rect": {
+            "x": 272,
+            "y": 132,
+            "width": 664,
+            "height": 563.796875,
+            "top": 132,
+            "right": 936,
+            "bottom": 695.796875,
+            "left": 272
+          }
+        },
+        {
+          "name": "Custom theme",
+          "aria": null,
+          "ariaControls": "variant-custom-theme",
+          "id": "variant-custom-theme",
+          "sectionName": "Custom theme",
+          "rect": {
+            "x": 272,
+            "y": 719.796875,
+            "width": 664,
+            "height": 563.796875,
+            "top": 719.796875,
+            "right": 936,
+            "bottom": 1283.59375,
+            "left": 272
+          }
+        }
+      ],
+      "time": 565.1000000000058
+    },
+    {
+      "phase": "Controls:keyboard",
+      "name": "Custom theme",
+      "id": "variant-custom-theme",
+      "aria": "true",
+      "rect": {
+        "x": 272,
+        "y": 131.796875,
+        "width": 664,
+        "height": 563.796875,
+        "top": 131.796875,
+        "right": 936,
+        "bottom": 695.59375,
+        "left": 272
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "ancestors": [
+        {
+          "tag": "SECTION",
+          "class": "content",
+          "overflow": "auto",
+          "top": 56,
+          "clientHeight": 664,
+          "scrollHeight": 1462,
+          "scrollTop": 767
+        }
+      ],
+      "selected": ["Custom theme"],
+      "variantVector": [
+        {
+          "name": "Default",
+          "aria": null,
+          "ariaControls": "variant-default",
+          "id": "variant-default",
+          "sectionName": "Default",
+          "rect": {
+            "x": 272,
+            "y": -456,
+            "width": 664,
+            "height": 563.796875,
+            "top": -456,
+            "right": 936,
+            "bottom": 107.796875,
+            "left": 272
+          }
+        },
+        {
+          "name": "Custom theme",
+          "aria": "true",
+          "ariaControls": "variant-custom-theme",
+          "id": "variant-custom-theme",
+          "sectionName": "Custom theme",
+          "rect": {
+            "x": 272,
+            "y": 131.796875,
+            "width": 664,
+            "height": 563.796875,
+            "top": 131.796875,
+            "right": 936,
+            "bottom": 695.59375,
+            "left": 272
+          }
+        }
+      ],
+      "time": 631.7000000000116
+    },
+    {
+      "phase": "Keys:last-first",
+      "name": "__proto__",
+      "id": "variant-proto",
+      "aria": "true",
+      "rect": {
+        "x": 272,
+        "y": 132,
+        "width": 664,
+        "height": 563.796875,
+        "top": 132,
+        "right": 936,
+        "bottom": 695.796875,
+        "left": 272
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "ancestors": [
+        {
+          "tag": "SECTION",
+          "class": "content",
+          "overflow": "auto",
+          "top": 56,
+          "clientHeight": 664,
+          "scrollHeight": 2049,
+          "scrollTop": 179
+        }
+      ],
+      "selected": ["__proto__"],
+      "variantVector": [
+        {
+          "name": "__proto__",
+          "aria": "true",
+          "ariaControls": "variant-proto",
+          "id": "variant-proto",
+          "sectionName": "__proto__",
+          "rect": {
+            "x": 272,
+            "y": 132,
+            "width": 664,
+            "height": 563.796875,
+            "top": 132,
+            "right": 936,
+            "bottom": 695.796875,
+            "left": 272
+          }
+        },
+        {
+          "name": "constructor",
+          "aria": null,
+          "ariaControls": "variant-constructor",
+          "id": "variant-constructor",
+          "sectionName": "constructor",
+          "rect": {
+            "x": 272,
+            "y": 719.796875,
+            "width": 664,
+            "height": 563.796875,
+            "top": 719.796875,
+            "right": 936,
+            "bottom": 1283.59375,
+            "left": 272
+          }
+        },
+        {
+          "name": "hasOwnProperty",
+          "aria": null,
+          "ariaControls": "variant-hasownproperty",
+          "id": "variant-hasownproperty",
+          "sectionName": "hasOwnProperty",
+          "rect": {
+            "x": 272,
+            "y": 1307.59375,
+            "width": 664,
+            "height": 563.796875,
+            "top": 1307.59375,
+            "right": 936,
+            "bottom": 1871.390625,
+            "left": 272
+          }
+        }
+      ],
+      "time": 898.3999999999942
+    },
+    {
+      "phase": "Keys:first-last",
+      "name": "hasOwnProperty",
+      "id": "variant-hasownproperty",
+      "aria": "true",
+      "rect": {
+        "x": 272,
+        "y": 131.59375,
+        "width": 664,
+        "height": 563.796875,
+        "top": 131.59375,
+        "right": 936,
+        "bottom": 695.390625,
+        "left": 272
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "ancestors": [
+        {
+          "tag": "SECTION",
+          "class": "content",
+          "overflow": "auto",
+          "top": 56,
+          "clientHeight": 664,
+          "scrollHeight": 2049,
+          "scrollTop": 1355
+        }
+      ],
+      "selected": ["hasOwnProperty"],
+      "variantVector": [
+        {
+          "name": "__proto__",
+          "aria": null,
+          "ariaControls": "variant-proto",
+          "id": "variant-proto",
+          "sectionName": "__proto__",
+          "rect": {
+            "x": 272,
+            "y": -1044,
+            "width": 664,
+            "height": 563.796875,
+            "top": -1044,
+            "right": 936,
+            "bottom": -480.203125,
+            "left": 272
+          }
+        },
+        {
+          "name": "constructor",
+          "aria": null,
+          "ariaControls": "variant-constructor",
+          "id": "variant-constructor",
+          "sectionName": "constructor",
+          "rect": {
+            "x": 272,
+            "y": -456.203125,
+            "width": 664,
+            "height": 563.796875,
+            "top": -456.203125,
+            "right": 936,
+            "bottom": 107.59375,
+            "left": 272
+          }
+        },
+        {
+          "name": "hasOwnProperty",
+          "aria": "true",
+          "ariaControls": "variant-hasownproperty",
+          "id": "variant-hasownproperty",
+          "sectionName": "hasOwnProperty",
+          "rect": {
+            "x": 272,
+            "y": 131.59375,
+            "width": 664,
+            "height": 563.796875,
+            "top": 131.59375,
+            "right": 936,
+            "bottom": 695.390625,
+            "left": 272
+          }
+        }
+      ],
+      "time": 1031.8999999999942
+    },
+    {
+      "phase": "Keys:hash",
+      "name": "__proto__",
+      "id": "variant-proto",
+      "aria": "true",
+      "rect": {
+        "x": 272,
+        "y": 132,
+        "width": 664,
+        "height": 563.796875,
+        "top": 132,
+        "right": 936,
+        "bottom": 695.796875,
+        "left": 272
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "ancestors": [
+        {
+          "tag": "SECTION",
+          "class": "content",
+          "overflow": "auto",
+          "top": 56,
+          "clientHeight": 664,
+          "scrollHeight": 2049,
+          "scrollTop": 179
+        }
+      ],
+      "selected": ["__proto__"],
+      "variantVector": [
+        {
+          "name": "__proto__",
+          "aria": "true",
+          "ariaControls": "variant-proto",
+          "id": "variant-proto",
+          "sectionName": "__proto__",
+          "rect": {
+            "x": 272,
+            "y": 132,
+            "width": 664,
+            "height": 563.796875,
+            "top": 132,
+            "right": 936,
+            "bottom": 695.796875,
+            "left": 272
+          }
+        },
+        {
+          "name": "constructor",
+          "aria": null,
+          "ariaControls": "variant-constructor",
+          "id": "variant-constructor",
+          "sectionName": "constructor",
+          "rect": {
+            "x": 272,
+            "y": 719.796875,
+            "width": 664,
+            "height": 563.796875,
+            "top": 719.796875,
+            "right": 936,
+            "bottom": 1283.59375,
+            "left": 272
+          }
+        },
+        {
+          "name": "hasOwnProperty",
+          "aria": null,
+          "ariaControls": "variant-hasownproperty",
+          "id": "variant-hasownproperty",
+          "sectionName": "hasOwnProperty",
+          "rect": {
+            "x": 272,
+            "y": 1307.59375,
+            "width": 664,
+            "height": 563.796875,
+            "top": 1307.59375,
+            "right": 936,
+            "bottom": 1871.390625,
+            "left": 272
+          }
+        }
+      ],
+      "time": 1098.3000000000175
+    },
+    {
+      "phase": "Keys:keyboard",
+      "name": "hasOwnProperty",
+      "id": "variant-hasownproperty",
+      "aria": "true",
+      "rect": {
+        "x": 272,
+        "y": 131.59375,
+        "width": 664,
+        "height": 563.796875,
+        "top": 131.59375,
+        "right": 936,
+        "bottom": 695.390625,
+        "left": 272
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "ancestors": [
+        {
+          "tag": "SECTION",
+          "class": "content",
+          "overflow": "auto",
+          "top": 56,
+          "clientHeight": 664,
+          "scrollHeight": 2049,
+          "scrollTop": 1355
+        }
+      ],
+      "selected": ["hasOwnProperty"],
+      "variantVector": [
+        {
+          "name": "__proto__",
+          "aria": null,
+          "ariaControls": "variant-proto",
+          "id": "variant-proto",
+          "sectionName": "__proto__",
+          "rect": {
+            "x": 272,
+            "y": -1044,
+            "width": 664,
+            "height": 563.796875,
+            "top": -1044,
+            "right": 936,
+            "bottom": -480.203125,
+            "left": 272
+          }
+        },
+        {
+          "name": "constructor",
+          "aria": null,
+          "ariaControls": "variant-constructor",
+          "id": "variant-constructor",
+          "sectionName": "constructor",
+          "rect": {
+            "x": 272,
+            "y": -456.203125,
+            "width": 664,
+            "height": 563.796875,
+            "top": -456.203125,
+            "right": 936,
+            "bottom": 107.59375,
+            "left": 272
+          }
+        },
+        {
+          "name": "hasOwnProperty",
+          "aria": "true",
+          "ariaControls": "variant-hasownproperty",
+          "id": "variant-hasownproperty",
+          "sectionName": "hasOwnProperty",
+          "rect": {
+            "x": 272,
+            "y": 131.59375,
+            "width": 664,
+            "height": 563.796875,
+            "top": 131.59375,
+            "right": 936,
+            "bottom": 695.390625,
+            "left": 272
+          }
+        }
+      ],
+      "time": 1165.2000000000116
+    },
+    {
+      "phase": "manual-scroll",
+      "name": "hasOwnProperty",
+      "id": "variant-hasownproperty",
+      "aria": "true",
+      "rect": {
+        "x": 272,
+        "y": 131.59375,
+        "width": 664,
+        "height": 563.796875,
+        "top": 131.59375,
+        "right": 936,
+        "bottom": 695.390625,
+        "left": 272
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "ancestors": [
+        {
+          "tag": "SECTION",
+          "class": "content",
+          "overflow": "auto",
+          "top": 56,
+          "clientHeight": 664,
+          "scrollHeight": 2049,
+          "scrollTop": 1355
+        }
+      ],
+      "selected": ["hasOwnProperty"],
+      "variantVector": [
+        {
+          "name": "__proto__",
+          "aria": null,
+          "ariaControls": "variant-proto",
+          "id": "variant-proto",
+          "sectionName": "__proto__",
+          "rect": {
+            "x": 272,
+            "y": -1044,
+            "width": 664,
+            "height": 563.796875,
+            "top": -1044,
+            "right": 936,
+            "bottom": -480.203125,
+            "left": 272
+          }
+        },
+        {
+          "name": "constructor",
+          "aria": null,
+          "ariaControls": "variant-constructor",
+          "id": "variant-constructor",
+          "sectionName": "constructor",
+          "rect": {
+            "x": 272,
+            "y": -456.203125,
+            "width": 664,
+            "height": 563.796875,
+            "top": -456.203125,
+            "right": 936,
+            "bottom": 107.59375,
+            "left": 272
+          }
+        },
+        {
+          "name": "hasOwnProperty",
+          "aria": "true",
+          "ariaControls": "variant-hasownproperty",
+          "id": "variant-hasownproperty",
+          "sectionName": "hasOwnProperty",
+          "rect": {
+            "x": 272,
+            "y": 131.59375,
+            "width": 664,
+            "height": 563.796875,
+            "top": 131.59375,
+            "right": 936,
+            "bottom": 695.390625,
+            "left": 272
+          }
+        }
+      ],
+      "time": 1331.8999999999942
+    },
+    {
+      "phase": "retained:before",
+      "name": "__proto__",
+      "id": "variant-proto",
+      "aria": "true",
+      "rect": {
+        "x": 272,
+        "y": 132,
+        "width": 664,
+        "height": 563.796875,
+        "top": 132,
+        "right": 936,
+        "bottom": 695.796875,
+        "left": 272
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "ancestors": [
+        {
+          "tag": "SECTION",
+          "class": "content",
+          "overflow": "auto",
+          "top": 56,
+          "clientHeight": 664,
+          "scrollHeight": 2049,
+          "scrollTop": 179
+        }
+      ],
+      "selected": ["__proto__"],
+      "variantVector": [
+        {
+          "name": "__proto__",
+          "aria": "true",
+          "ariaControls": "variant-proto",
+          "id": "variant-proto",
+          "sectionName": "__proto__",
+          "rect": {
+            "x": 272,
+            "y": 132,
+            "width": 664,
+            "height": 563.796875,
+            "top": 132,
+            "right": 936,
+            "bottom": 695.796875,
+            "left": 272
+          }
+        },
+        {
+          "name": "constructor",
+          "aria": null,
+          "ariaControls": "variant-constructor",
+          "id": "variant-constructor",
+          "sectionName": "constructor",
+          "rect": {
+            "x": 272,
+            "y": 719.796875,
+            "width": 664,
+            "height": 563.796875,
+            "top": 719.796875,
+            "right": 936,
+            "bottom": 1283.59375,
+            "left": 272
+          }
+        },
+        {
+          "name": "hasOwnProperty",
+          "aria": null,
+          "ariaControls": "variant-hasownproperty",
+          "id": "variant-hasownproperty",
+          "sectionName": "hasOwnProperty",
+          "rect": {
+            "x": 272,
+            "y": 1307.59375,
+            "width": 664,
+            "height": 563.796875,
+            "top": 1307.59375,
+            "right": 936,
+            "bottom": 1871.390625,
+            "left": 272
+          }
+        }
+      ],
+      "time": 1431.8000000000175
+    },
+    {
+      "phase": "retained:refused",
+      "name": "hasOwnProperty",
+      "id": "variant-hasownproperty",
+      "aria": "true",
+      "rect": {
+        "x": 272,
+        "y": 131.59375,
+        "width": 664,
+        "height": 563.796875,
+        "top": 131.59375,
+        "right": 936,
+        "bottom": 695.390625,
+        "left": 272
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "ancestors": [
+        {
+          "tag": "SECTION",
+          "class": "content",
+          "overflow": "auto",
+          "top": 56,
+          "clientHeight": 664,
+          "scrollHeight": 2049,
+          "scrollTop": 1355
+        }
+      ],
+      "selected": ["hasOwnProperty"],
+      "variantVector": [
+        {
+          "name": "__proto__",
+          "aria": null,
+          "ariaControls": "variant-proto",
+          "id": "variant-proto",
+          "sectionName": "__proto__",
+          "rect": {
+            "x": 272,
+            "y": -1044,
+            "width": 664,
+            "height": 563.796875,
+            "top": -1044,
+            "right": 936,
+            "bottom": -480.203125,
+            "left": 272
+          }
+        },
+        {
+          "name": "constructor",
+          "aria": null,
+          "ariaControls": "variant-constructor",
+          "id": "variant-constructor",
+          "sectionName": "constructor",
+          "rect": {
+            "x": 272,
+            "y": -456.203125,
+            "width": 664,
+            "height": 563.796875,
+            "top": -456.203125,
+            "right": 936,
+            "bottom": 107.59375,
+            "left": 272
+          }
+        },
+        {
+          "name": "hasOwnProperty",
+          "aria": "true",
+          "ariaControls": "variant-hasownproperty",
+          "id": "variant-hasownproperty",
+          "sectionName": "hasOwnProperty",
+          "rect": {
+            "x": 272,
+            "y": 131.59375,
+            "width": 664,
+            "height": 563.796875,
+            "top": 131.59375,
+            "right": 936,
+            "bottom": 695.390625,
+            "left": 272
+          }
+        }
+      ],
+      "time": 1565
+    },
+    {
+      "phase": "tab:hash-restored",
+      "name": "__proto__",
+      "id": "variant-proto",
+      "aria": "true",
+      "rect": {
+        "x": 272,
+        "y": 132,
+        "width": 664,
+        "height": 563.796875,
+        "top": 132,
+        "right": 936,
+        "bottom": 695.796875,
+        "left": 272
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "ancestors": [
+        {
+          "tag": "SECTION",
+          "class": "content",
+          "overflow": "auto",
+          "top": 56,
+          "clientHeight": 664,
+          "scrollHeight": 2049,
+          "scrollTop": 179
+        }
+      ],
+      "selected": ["__proto__"],
+      "variantVector": [
+        {
+          "name": "__proto__",
+          "aria": "true",
+          "ariaControls": "variant-proto",
+          "id": "variant-proto",
+          "sectionName": "__proto__",
+          "rect": {
+            "x": 272,
+            "y": 132,
+            "width": 664,
+            "height": 563.796875,
+            "top": 132,
+            "right": 936,
+            "bottom": 695.796875,
+            "left": 272
+          }
+        },
+        {
+          "name": "constructor",
+          "aria": null,
+          "ariaControls": "variant-constructor",
+          "id": "variant-constructor",
+          "sectionName": "constructor",
+          "rect": {
+            "x": 272,
+            "y": 719.796875,
+            "width": 664,
+            "height": 563.796875,
+            "top": 719.796875,
+            "right": 936,
+            "bottom": 1283.59375,
+            "left": 272
+          }
+        },
+        {
+          "name": "hasOwnProperty",
+          "aria": null,
+          "ariaControls": "variant-hasownproperty",
+          "id": "variant-hasownproperty",
+          "sectionName": "hasOwnProperty",
+          "rect": {
+            "x": 272,
+            "y": 1307.59375,
+            "width": 664,
+            "height": 563.796875,
+            "top": 1307.59375,
+            "right": 936,
+            "bottom": 1871.390625,
+            "left": 272
+          }
+        }
+      ],
+      "time": 1881.8000000000175
+    },
+    {
+      "phase": "rapid-hash-tab:restored",
+      "name": "constructor",
+      "id": "variant-constructor",
+      "aria": "true",
+      "rect": {
+        "x": 272,
+        "y": 131.796875,
+        "width": 664,
+        "height": 563.796875,
+        "top": 131.796875,
+        "right": 936,
+        "bottom": 695.59375,
+        "left": 272
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "ancestors": [
+        {
+          "tag": "SECTION",
+          "class": "content",
+          "overflow": "auto",
+          "top": 56,
+          "clientHeight": 664,
+          "scrollHeight": 2049,
+          "scrollTop": 767
+        }
+      ],
+      "selected": ["constructor"],
+      "variantVector": [
+        {
+          "name": "__proto__",
+          "aria": null,
+          "ariaControls": "variant-proto",
+          "id": "variant-proto",
+          "sectionName": "__proto__",
+          "rect": {
+            "x": 272,
+            "y": -456,
+            "width": 664,
+            "height": 563.796875,
+            "top": -456,
+            "right": 936,
+            "bottom": 107.796875,
+            "left": 272
+          }
+        },
+        {
+          "name": "constructor",
+          "aria": "true",
+          "ariaControls": "variant-constructor",
+          "id": "variant-constructor",
+          "sectionName": "constructor",
+          "rect": {
+            "x": 272,
+            "y": 131.796875,
+            "width": 664,
+            "height": 563.796875,
+            "top": 131.796875,
+            "right": 936,
+            "bottom": 695.59375,
+            "left": 272
+          }
+        },
+        {
+          "name": "hasOwnProperty",
+          "aria": null,
+          "ariaControls": "variant-hasownproperty",
+          "id": "variant-hasownproperty",
+          "sectionName": "hasOwnProperty",
+          "rect": {
+            "x": 272,
+            "y": 719.59375,
+            "width": 664,
+            "height": 563.796875,
+            "top": 719.59375,
+            "right": 936,
+            "bottom": 1283.390625,
+            "left": 272
+          }
+        }
+      ],
+      "time": 2031.8000000000175
+    },
+    {
+      "phase": "route:before-former-callback",
+      "name": "Default",
+      "id": "variant-default",
+      "aria": "true",
+      "rect": {
+        "x": 272,
+        "y": 132,
+        "width": 664,
+        "height": 563.796875,
+        "top": 132,
+        "right": 936,
+        "bottom": 695.796875,
+        "left": 272
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "ancestors": [
+        {
+          "tag": "SECTION",
+          "class": "content",
+          "overflow": "auto",
+          "top": 56,
+          "clientHeight": 664,
+          "scrollHeight": 1462,
+          "scrollTop": 179
+        }
+      ],
+      "selected": ["Default"],
+      "variantVector": [
+        {
+          "name": "Default",
+          "aria": "true",
+          "ariaControls": "variant-default",
+          "id": "variant-default",
+          "sectionName": "Default",
+          "rect": {
+            "x": 272,
+            "y": 132,
+            "width": 664,
+            "height": 563.796875,
+            "top": 132,
+            "right": 936,
+            "bottom": 695.796875,
+            "left": 272
+          }
+        },
+        {
+          "name": "Custom theme",
+          "aria": null,
+          "ariaControls": "variant-custom-theme",
+          "id": "variant-custom-theme",
+          "sectionName": "Custom theme",
+          "rect": {
+            "x": 272,
+            "y": 719.796875,
+            "width": 664,
+            "height": 563.796875,
+            "top": 719.796875,
+            "right": 936,
+            "bottom": 1283.59375,
+            "left": 272
+          }
+        }
+      ],
+      "time": 2149.5
+    },
+    {
+      "phase": "route:former-callback-refused",
+      "name": "Default",
+      "id": "variant-default",
+      "aria": "true",
+      "rect": {
+        "x": 272,
+        "y": 132,
+        "width": 664,
+        "height": 563.796875,
+        "top": 132,
+        "right": 936,
+        "bottom": 695.796875,
+        "left": 272
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "ancestors": [
+        {
+          "tag": "SECTION",
+          "class": "content",
+          "overflow": "auto",
+          "top": 56,
+          "clientHeight": 664,
+          "scrollHeight": 1462,
+          "scrollTop": 179
+        }
+      ],
+      "selected": ["Default"],
+      "variantVector": [
+        {
+          "name": "Default",
+          "aria": "true",
+          "ariaControls": "variant-default",
+          "id": "variant-default",
+          "sectionName": "Default",
+          "rect": {
+            "x": 272,
+            "y": 132,
+            "width": 664,
+            "height": 563.796875,
+            "top": 132,
+            "right": 936,
+            "bottom": 695.796875,
+            "left": 272
+          }
+        },
+        {
+          "name": "Custom theme",
+          "aria": null,
+          "ariaControls": "variant-custom-theme",
+          "id": "variant-custom-theme",
+          "sectionName": "Custom theme",
+          "rect": {
+            "x": 272,
+            "y": 719.796875,
+            "width": 664,
+            "height": 563.796875,
+            "top": 719.796875,
+            "right": 936,
+            "bottom": 1283.59375,
+            "left": 272
+          }
+        }
+      ],
+      "time": 2181.899999999994
+    }
+  ],
+  "nativeIndependentAuditSha256": "73183ee4493cb0d77c0dd12637e7e6ca076d651f560520f182c22649a9adb473",
+  "publicVersion": "0.443.0",
+  "retiredUnpublishedVersion": "0.446.0",
+  "publication": false,
+  "sourcePreservationSnapshotContext": "Historical pre-merge source/body preservation snapshot retained unchanged. Its qualification predates the actual merge; the five protected merge_group runs and actualMerge above record terminal source integration, with public/installed acceptance still pending."
+}

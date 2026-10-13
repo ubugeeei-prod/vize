@@ -17,6 +17,13 @@ export interface PatinaDiagnostic {
   message: string;
   location: PatinaLocation;
   help: string | null;
+  /** Present only when the native caller requests includeFixes. */
+  fix?: NativeLintFix | null;
+}
+
+export interface NativeLintFix {
+  message: string;
+  edits: { start: number; end: number; newText: string }[];
 }
 
 export interface PatinaLintResult {
@@ -45,6 +52,7 @@ export interface PatinaBinding {
       helpLevel?: HelpLevel;
       preset?: PatinaPreset;
       enabledRules?: string[];
+      includeFixes?: boolean;
       typeAware?: boolean;
       corsaPath?: string;
       componentNameInTemplateCasing?: ComponentNameInTemplateCasingOption;

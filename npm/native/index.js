@@ -45,6 +45,7 @@ module.exports.generateDesignTokensMarkdown = nativeBinding.generateDesignTokens
 module.exports.generateSfcScopeId = nativeBinding.generateSfcScopeId;
 module.exports.generateVariants = nativeBinding.generateVariants;
 module.exports.generateViteHmrCode = nativeBinding.generateViteHmrCode;
+module.exports.getNativeBuildToken = nativeBinding.getNativeBuildToken;
 module.exports.getPatinaRules = nativeBinding.getPatinaRules;
 module.exports.getTypeCheckCapabilities = nativeBinding.getTypeCheckCapabilities;
 module.exports.hasSfcScopedStyle = nativeBinding.hasSfcScopedStyle;

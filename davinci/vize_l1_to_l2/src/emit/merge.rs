@@ -163,10 +163,11 @@ pub(super) fn emit_spread_props(
         cx.suppress_template_for_child_key,
     )?;
     let scope_id = cx.scope_id_here();
-    // The shipped scan selects merge semantics before suppressing an authored
-    // key. A remaining spread keeps that selection, even as the sole argument.
+    // The shipped for-item emitter and a suppressed authored key retain merge
+    // semantics, even when the resulting spread is the sole argument.
     if let Some(lone) = lone_kind_spread(&args)
         && !suppressed_authored_key
+        && !for_item
     {
         // A scope id turns the lone spread into a merge: the shipped lane
         // writes `_mergeProps(_normalizeProps(_guardReactiveProps(obj)),

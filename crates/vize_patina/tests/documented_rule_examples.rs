@@ -4,6 +4,8 @@ use std::path::{Path, PathBuf};
 use vize_l0::{String, cstr};
 use vize_patina::{LintPreset, Linter};
 
+mod public_expression_reports;
+
 #[test]
 fn documented_single_file_bad_and_good_examples_match_the_real_rules() {
     verify_examples(false);
@@ -16,6 +18,7 @@ fn documented_type_aware_examples_match_with_the_required_corsa_runtime() {
         return;
     }
     verify_examples(true);
+    public_expression_reports::verify_required_reports();
 }
 
 fn reference_root() -> PathBuf {

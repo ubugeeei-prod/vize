@@ -1,0 +1,19 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: full source cut C required
+    at publicInputs (file:///home/runner/_work/vize/vize/tools/support/release/public_acceptance/inputs.ts:9:10)
+    at file:///home/runner/_work/vize/vize/tools/support/release/musea_literal_acceptance/prepare.ts:17:12
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: '123c0f363d90bfae20cbf669f52ddb85343332568',
+  expected: /^[0-9a-f]{40}$/u,
+  operator: 'match',
+  diff: 'simple'
+}
+
+Node.js v24.14.0

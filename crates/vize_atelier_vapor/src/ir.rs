@@ -135,12 +135,13 @@ pub enum OperationNode<'a> {
     NextRef(NextRefIRNode),
 }
 
-/// Set prop operation
+/// Set prop operation with the element's inherited namespace.
 #[derive(Debug)]
 pub struct SetPropIRNode<'a> {
     pub element: usize,
     pub prop: IRProp<'a>,
     pub tag: &'a str,
+    pub namespace: Namespace,
     /// `.camel` modifier was used
     pub camel: bool,
     /// `.prop` modifier was used

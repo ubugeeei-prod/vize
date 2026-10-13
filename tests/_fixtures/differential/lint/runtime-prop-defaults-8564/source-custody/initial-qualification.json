@@ -1,0 +1,32 @@
+{
+  "schema": "vize.lint.runtime-props-initial-source-refusal",
+  "version": 1,
+  "head": "029b7facb57d56e0c94780a4bc1f0820ceef996b",
+  "compiledSource": "1b20ab16662301832717cbfd072d9e1bfe9c12ff",
+  "run": 38183136962,
+  "scope": "79 complete source CLI packets pass; whole source workflow fails old source-identity guard and generated references. No successor/merge/release credit.",
+  "packets": 79,
+  "artifacts": [
+    {
+      "path": "initial-cli79.json.gz",
+      "sha256": "1b97e327efd670be661bf26db910c9b1ed21058f22d868ce7e878103f3df9f72",
+      "bytes": 31542,
+      "rawSha256": "aaf279c2d3c3295915f6f2a747cfa7bf56b785240348955c2c7839a40f493dce",
+      "rawBytes": 299688
+    },
+    {
+      "path": "initial-tooling3.log.gz",
+      "sha256": "4a0fe349c781ef1d445a4e2ad398ecf64061f148930312e3b67e3dce786d599f",
+      "bytes": 101701,
+      "rawSha256": "d766a8016f1ffe80d8fe89ce5b82fd170e1e5a2ad4eb2a07d97c7bc43962410d",
+      "rawBytes": 681259
+    },
+    {
+      "path": "initial-tooling4.log.gz",
+      "sha256": "b33927f2f3c9288072311ec0a90b8f75d024fb357613e9edcf7d50eb0ed20f0d",
+      "bytes": 126459,
+      "rawSha256": "b2f02003fefd962f312ebf58b6d26839af89905a4edf8ed5374583a0e7474e96",
+      "rawBytes": 839655
+    }
+  ]
+}

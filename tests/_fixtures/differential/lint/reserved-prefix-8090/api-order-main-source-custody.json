@@ -1,0 +1,81 @@
+{
+  "schema": "vize.lint.reserved-prefix-api-main-source-custody",
+  "version": 1,
+  "originalPrefixHead": "83fb46be270ac2141d7a05d0cf1b152d306efd00",
+  "freshMain": "67e3d0e6775cc3a1f29bfb9309d991252f9e75ff",
+  "includedSetupMerge": "2284cb1d47009c5d19a4c626e7029d5c22d6bdda",
+  "originalAuthority": {
+    "path": "api-order-successors.json",
+    "sha256": "f4b162011d5aa250c55b1cc0bcb33ce1ce2e87286e8cf0c8eeed7f84f353c6e6"
+  },
+  "previousSources": [
+    {
+      "path": "crates/vize_patina/src/linter/engine/sfc.rs",
+      "sha256": "bcd3c09c4db78c4bf93514bf177848eb816bb1d665f3c9185fe332550c28eb23",
+      "bytes": 11157,
+      "lines": "31-53,185-201",
+      "contract": "No-template descriptor appends all script rule diagnostics in iteration order and returns. The caller merges that result with the SFC lane."
+    },
+    {
+      "path": "crates/vize_patina/src/linter/engine.rs",
+      "sha256": "0ee0a7230e1cceca0868d7637eb31978dff372bf3b16c2699f06e0a97b74d9fa",
+      "bytes": 19940,
+      "lines": "154-164",
+      "contract": "merge_lint_results returns template_result immediately when sfc_result.diagnostics is empty, without sorting."
+    },
+    {
+      "path": "crates/vize_patina/src/linter/script_rules.rs",
+      "sha256": "feb6eaded87162e55bfe42383754c8546f23c3e6b375a48c6f6a12c05aaee436",
+      "bytes": 12591,
+      "lines": "52-69,194-228",
+      "contract": "Active rules iterate linter.script_rules in their existing order. Each rule appends its complete findings before the next rule."
+    },
+    {
+      "path": "crates/vize_patina/src/linter/script_rules/registry/rules.rs",
+      "sha256": "eaa4722cc76a7471137d797c255a8b5e5bcb09aa4d199a9b89624a1d506a6c03",
+      "bytes": 21919,
+      "lines": "104,134",
+      "contract": "Preset rule-name collection preserves registry order: script/no-reserved-keys precedes script/no-reserved-props."
+    }
+  ],
+  "currentSources": [
+    {
+      "path": "crates/vize_patina/src/linter/engine/sfc.rs",
+      "sha256": "bcd3c09c4db78c4bf93514bf177848eb816bb1d665f3c9185fe332550c28eb23",
+      "bytes": 11157
+    },
+    {
+      "path": "crates/vize_patina/src/linter/engine.rs",
+      "sha256": "0ee0a7230e1cceca0868d7637eb31978dff372bf3b16c2699f06e0a97b74d9fa",
+      "bytes": 19940
+    },
+    {
+      "path": "crates/vize_patina/src/linter/script_rules.rs",
+      "sha256": "bdab1932f2d6d0f80d2a4b93372fa69c2294a4acd5700fd2174913ab85eaabb0",
+      "bytes": 8744
+    },
+    {
+      "path": "crates/vize_patina/src/linter/script_rules/registry/rules.rs",
+      "sha256": "eaa4722cc76a7471137d797c255a8b5e5bcb09aa4d199a9b89624a1d506a6c03",
+      "bytes": 21919
+    },
+    {
+      "path": "crates/vize_patina/src/linter/script_rules/sfc.rs",
+      "sha256": "cacbe030dc59399908463b3170cc80999c73a8a6bee486f580d54fd1b35f27df",
+      "bytes": 7312
+    }
+  ],
+  "retainedRuleIterator": {
+    "path": "crates/vize_patina/src/linter/script_rules.rs",
+    "sha256": "3929049ac9f50aeee3e8ace4a5fa4adc321d0c4c9e4eb9685f70a1dfd4944801",
+    "bytes": 527
+  },
+  "dispatchContract": "The actual setup-emits merge moves the SFC dispatcher while preserving active registry iteration and the complete per-rule sequence. Normal script precedes setup for each rule. Ownership extension applies only to the actual return-validator capability. Reserved-key vectors and ordering remain unchanged.",
+  "refusal": {
+    "path": "api-order-main-source-refusal.log.gz",
+    "sha256": "f69fa0d47995218cdfc600da4328cec60042038be342060933dd18b23503176b",
+    "rawSha256": "43e13593ce39677ce6b5daaae4d606a33436abcbc5107785f96470bf8459cae6",
+    "rawBytes": 1533
+  },
+  "qualification": "Current-main full source and protected Actions remain required; historical source receipts do not transfer."
+}

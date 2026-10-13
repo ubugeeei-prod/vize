@@ -8,6 +8,7 @@ mod define_macros_order;
 mod define_props_declaration;
 mod define_props_destructuring;
 mod exports;
+mod linter;
 mod no_arrow_functions_in_watch;
 mod no_async_in_computed;
 mod no_boolean_default;
@@ -68,16 +69,16 @@ mod valid_next_tick;
 mod vue_router_prefer_named_push;
 mod vue_test_utils_no_html_snapshot;
 
-use memchr::memmem;
 use oxc_allocator::Allocator;
 use oxc_ast::ast::Program;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
-use vize_l0::profile;
 
 pub use exports::*;
+pub use props_emits::EmitsModuleScript;
+pub(crate) use props_emits::collect_options_props;
 pub use sfc_context::SfcScriptContext;
 
 /// Metadata for a script-level rule
@@ -187,6 +188,22 @@ pub trait ScriptRule: Send + Sync {
         None
     }
 
+    /// Actual return-validator capability. Namesake configured rules preserve
+    /// their existing dispatch and cannot request a sibling-module parse.
+    fn as_setup_emits_validator(&self) -> Option<&ReturnInEmitsValidator> {
+        None
+    }
+
+    /// Actual runtime props capability; configured namesakes keep default dispatch.
+    fn as_setup_props_defaults(&self) -> Option<&NoRequiredPropWithDefault> {
+        None
+    }
+
+    /// Actual destructure capability; configured namesakes retain default dispatch.
+    fn as_setup_props_destructure(&self) -> Option<&NoDeepDestructureInProps> {
+        None
+    }
+
     /// AST rules return true for shared check_program/check_program_with_sfc
     /// dispatch; byte-only rules return false.
     #[inline]
@@ -213,137 +230,6 @@ pub trait ScriptRule: Send + Sync {
 /// Linter for script blocks
 pub struct ScriptLinter {
     rules: Vec<Box<dyn ScriptRule>>,
-}
-
-impl ScriptLinter {
-    /// Create a new script linter with default rules (all disabled by default)
-    pub fn new() -> Self {
-        Self { rules: Vec::new() }
-    }
-
-    /// Create a script linter with all available rules enabled
-    pub fn with_all_rules() -> Self {
-        Self {
-            rules: vec![
-                Box::new(NoOptionsApi),
-                Box::new(NoGetCurrentInstance),
-                Box::new(NoNextTick),
-                Box::new(PiniaPreferStoreToRefs),
-                Box::new(VueRouterPreferNamedPush),
-                Box::new(VueTestUtilsNoHtmlSnapshot),
-                Box::new(PreferImportMeta),
-                Box::new(NoPageMetaRuntimeValues),
-                Box::new(PreferComputed),
-                Box::new(NoAsyncInComputed),
-                Box::new(NoReactiveDestructure),
-                Box::new(NoTopLevelRefInScript),
-                Box::new(PreferRefOverReactive),
-                Box::new(PreferUseTemplateRef),
-                Box::new(PreferUseSlots),
-                Box::new(PreferUseAttrs),
-                Box::new(PreferUseId),
-                Box::new(PreferImportFromVue),
-                Box::new(NoWithDefaults),
-                Box::new(NoDeepDestructureInProps::default()),
-                Box::new(NoDupeKeys),
-                Box::new(NoSideEffectsInComputed),
-                Box::new(NoInternalImports),
-                Box::new(NoImportCompilerMacros),
-                Box::new(NoReservedIdentifiers),
-                Box::new(RequireSymbolProvide),
-                Box::new(RequireFunctionReturnType),
-            ],
-        }
-    }
-
-    /// Create a script linter preloaded with Vapor-specific rules
-    /// (`no-options-api`, `no-get-current-instance`, `no-next-tick`).
-    pub fn with_vapor_rules() -> Self {
-        Self {
-            rules: vec![
-                Box::new(NoOptionsApi),
-                Box::new(NoGetCurrentInstance),
-                Box::new(NoNextTick),
-            ],
-        }
-    }
-
-    /// Add a rule to the linter
-    pub fn add_rule(&mut self, rule: Box<dyn ScriptRule>) {
-        self.rules.push(rule);
-    }
-
-    /// Lint a script block.
-    ///
-    /// AST-based rules share a **single** oxc parse of the source (one
-    /// [`Allocator`] + one [`Program`]) via [`ScriptRule::check_program`],
-    /// collapsing N redundant per-rule parses into one. Byte-only rules scan
-    /// the raw source directly via [`ScriptRule::check`].
-    pub fn lint(&self, source: &str, offset: usize) -> ScriptLintResult {
-        let mut result = ScriptLintResult::default();
-
-        if self.rules.is_empty() {
-            return result;
-        }
-
-        // Parse once only if at least one rule actually consumes the AST.
-        let needs_ast = self.rules.iter().any(|rule| rule.uses_ast());
-        let allocator;
-        let parsed = if needs_ast {
-            allocator = Allocator::default();
-            Some(profile!(
-                "patina.script_linter.parse",
-                Parser::new(&allocator, source, script_source_type()).parse()
-            ))
-        } else {
-            None
-        };
-        // AST rules only run when parsing succeeded, as per-rule guards did.
-        let program = parsed.as_ref().and_then(|parsed| {
-            if parsed.panicked || !parsed.diagnostics.is_empty() {
-                None
-            } else {
-                Some(&parsed.program)
-            }
-        });
-
-        for rule in &self.rules {
-            profile!("patina.script_linter.rule.check", {
-                if rule.uses_ast() {
-                    if let Some(program) = program {
-                        // Standalone script linting has no SFC, so cross-block context is empty.
-                        rule.check_program_with_sfc(
-                            program,
-                            source,
-                            offset,
-                            SfcScriptContext::default(),
-                            &mut result,
-                        );
-                    }
-                } else {
-                    rule.check(source, offset, &mut result);
-                }
-            });
-        }
-
-        result
-    }
-
-    /// Check if a script contains Vue imports (SIMD-accelerated)
-    #[inline]
-    pub fn has_vue_imports(source: &str) -> bool {
-        let bytes = source.as_bytes();
-        memmem::find(bytes, b"from 'vue'").is_some()
-            || memmem::find(bytes, b"from \"vue\"").is_some()
-            || memmem::find(bytes, b"from '@vue/").is_some()
-            || memmem::find(bytes, b"from \"@vue/").is_some()
-    }
-}
-
-impl Default for ScriptLinter {
-    fn default() -> Self {
-        Self::new()
-    }
 }
 
 #[cfg(test)]

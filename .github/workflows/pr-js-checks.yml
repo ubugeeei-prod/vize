@@ -1,0 +1,198 @@
+name: PR JS package checks
+# The package tests, the Oxlint project qualification and the Fresco and UI
+# conformance checks run as parallel jobs. pr-source-checks.yml gates on this
+# whole workflow through its `pr-js-packages` job.
+on:
+  workflow_call:
+    inputs:
+      run-js: { required: true, type: boolean }
+permissions: { contents: read }
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  pr-js-package-tests:
+    name: PR JS package tests (${{ matrix.group }})
+    strategy:
+      fail-fast: false
+      # Groups partition `testedPackages`; see
+      # tools/config/vite-plus/tested-package-groups.ts.
+      matrix: { group: [builders, ui, oxlint] }
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 35
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      CARGO_BUILD_JOBS: "12"
+    steps:
+      - name: Explain documentation-only skip
+        if: ${{ !inputs.run-js }}
+        run: echo 'JS package checks skipped because this PR changes no package, compiler, or unknown source paths.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        if: ${{ inputs.run-js }}
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        if: ${{ inputs.run-js }}
+        with: { node-version-file: "package.json", cache: true, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+        if: ${{ inputs.run-js }}
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        if: ${{ inputs.run-js }}
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        if: ${{ inputs.run-js }}
+        with:
+          cache-key-prefix: ${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}
+          key: test-js-packages
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install JS dependencies
+        if: ${{ inputs.run-js }}
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Test JS package group
+        if: ${{ inputs.run-js }}
+        env: { VIZE_JS_PACKAGE_GROUP: "${{ matrix.group }}" }
+        run: python3 .github/actions/test-js-packages-with-history/native-fault-evidence.py -- vp run --workspace-root "test:js:$VIZE_JS_PACKAGE_GROUP"
+      - name: Preserve public native formatter evidence
+        if: ${{ always() && inputs.run-js }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: public-native-formatter-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ matrix.group }}
+          path: npm/native/.artifacts/native/formatter-history/**
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve original template style fix observations
+        if: ${{ always() && inputs.run-js }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: template-style-fixes-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ matrix.group }}
+          path: target/template-style-fixes-7905.json
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve original Oxlint package locations
+        if: ${{ always() && inputs.run-js }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: oxlint-original-locations-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ matrix.group }}
+          # Project qualification staging belongs to its own job below.
+          path: |
+            target/oxlint-original-locations-7904.json
+            target/oxlint-original-project-checks-7903.json
+            target/oxlint-script-safe-carrier-7903.json
+            target/oxlint-original-html-binding-7903/**
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve bounded JS native fault diagnostics
+        if: ${{ always() && inputs.run-js }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: js-native-fault-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ matrix.group }}
+          path: ${{ runner.temp }}/js-native-fault-evidence-*/**/*.json
+          if-no-files-found: warn
+          retention-days: 14
+  pr-oxlint-project-qualification:
+    name: PR Oxlint original project qualification
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 35
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      CARGO_BUILD_JOBS: "12"
+    steps:
+      - name: Explain documentation-only skip
+        if: ${{ !inputs.run-js }}
+        run: echo 'Oxlint project qualification skipped because this PR changes no package, compiler, or unknown source paths.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        if: ${{ inputs.run-js }}
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        if: ${{ inputs.run-js }}
+        with: { node-version-file: "package.json", cache: true, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+        if: ${{ inputs.run-js }}
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        if: ${{ inputs.run-js }}
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        if: ${{ inputs.run-js }}
+        with:
+          cache-key-prefix: ${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}
+          key: test-js-packages
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install JS dependencies
+        if: ${{ inputs.run-js }}
+        run: vp install --frozen-lockfile --prefer-offline
+      # The qualification reads the source addon receipt from this job's own
+      # debug build and the bundles that the oxlint package test packs.
+      - name: Build the source addon and Oxlint bundles
+        if: ${{ inputs.run-js }}
+        run: vp run --workspace-root build:oxlint-qualification
+      - name: Qualify original project checks with both real Oxlint hosts
+        id: original-project-qualification
+        if: ${{ inputs.run-js }}
+        env:
+          VIZE_N8N_BASELINE_MODE: partitioned
+        run: node npm/oxlint/scripts/check-project-transport.mjs
+      - name: Preserve public native formatter evidence
+        if: ${{ always() && inputs.run-js }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: public-native-formatter-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}
+          path: npm/native/.artifacts/native/formatter-history/**
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve original Oxlint bridge locations
+        id: original-project-evidence
+        if: ${{ always() && inputs.run-js }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: oxlint-original-locations-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}
+          path: |
+            target/oxlint-original-locations-7904.json
+            target/oxlint-original-project-checks-7903.json
+            target/oxlint-script-safe-carrier-7903.json
+            target/oxlint-original-project-transport/**
+            target/oxlint-original-html-binding-7903/**
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Clean completed original project staging after evidence upload
+        if: ${{ always() && steps.original-project-qualification.outcome == 'success' && steps.original-project-evidence.outcome == 'success' }}
+        env:
+          VIZE_OXLINT_STAGING_DIRECTORY: ${{ steps.original-project-qualification.outputs.staging-directory }}
+        run: node npm/oxlint/scripts/project-native-staging.ts --cleanup
+  pr-js-package-conformance:
+    name: PR Fresco and UI package conformance
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 35
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      CARGO_BUILD_JOBS: "12"
+    steps:
+      - name: Explain documentation-only skip
+        if: ${{ !inputs.run-js }}
+        run: echo 'Fresco and UI conformance skipped because this PR changes no package, compiler, or unknown source paths.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        if: ${{ inputs.run-js }}
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        if: ${{ inputs.run-js }}
+        with: { node-version-file: "package.json", cache: true, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+        if: ${{ inputs.run-js }}
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        if: ${{ inputs.run-js }}
+        with: { wild-version: "0.9.0" }
+      # check.yml's trusted `build-js-packages` job runs the same Fresco,
+      # native `build:ci` and UI checks and writes this role on main.
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        if: ${{ inputs.run-js }}
+        with:
+          cache-key-prefix: ${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}
+          key: build-js-packages
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install JS dependencies
+        if: ${{ inputs.run-js }}
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Check Fresco native declarations and consumer types
+        if: ${{ inputs.run-js }}
+        run: vp run --filter './npm/fresco-native' check:generated && vp run --filter './npm/fresco-native' check:types
+      - name: Check UI package conformance
+        if: ${{ inputs.run-js }}
+        run: vp run --filter './npm/native' build:ci && vp run --filter './npm/ui' check

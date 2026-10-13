@@ -2,7 +2,7 @@
 title: 源码分发 (vize lib)
 ---
 
-<!-- Generated translation; source: guide/lib-pull.md -->
+<!-- Reviewed translation; source: guide/lib-pull.md; scope: shared native configuration and init -->
 
 # 源码分发 (`vize lib`)
 
@@ -66,22 +66,26 @@ node_modules/@vizejs/ui/
 `foundations/id/deterministic-id.ts` 等)，因此条目之间的相对导入无需改写即可工作。目录按以下顺序确定：
 
 1. `--dir <dir>` (必须位于项目内)
-2. `vize.config.*` 中的 `lib` 部分
+2. 现有 Vite 配置中的共享 `vize.lib` 设置
 3. 注册表默认值：`src/components/vize` (ui) 和 `src/composables/vize` (composable)
 
 ```ts
-// vize.config.ts
-import { defineConfig } from "vize";
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lib: {
-    uiDir: "src/ui/vendor",
-    composableDir: "src/composables/vendor",
-    // dir: "src/vendor",        // 两种类型共用的回退目录
-    // lockfile: "vize-lib.lock.json",
+  vize: {
+    lib: {
+      uiDir: "src/ui/vendor",
+      composableDir: "src/composables/vendor",
+      // dir: "src/vendor",
+      // lockfile: "vize-lib.lock.json",
+    },
   },
 });
 ```
+
+已有专用配置中的 `lib` 仍受支持；优先级和当前版本的支持范围请参阅[配置指南](./configuration.md)。
 
 某个种类一旦拉取到某个目录，之后该种类的拉取都会复用它；会拆分依赖图的冲突 `--dir` 会被拒绝。
 
@@ -94,10 +98,9 @@ vize lib init --dry-run   # 显示检测到的结构和配置变更
 vize lib init             # 写入
 ```
 
-`init` 会检测源码目录 (`src/`，Nuxt 4 项目为 `app/`) 和 TypeScript，然后写入 `lib.uiDir` / `lib.composableDir`。
-没有配置时创建 `vize.config.json`；已有 `vize.config.json` 时只追加 `lib` 部分而不改动其余内容；对于
-`vize.config.ts` / `.pkl` 则打印代码片段而不编辑代码。已有的 `lib` 部分会被保留，除非使用 `--force`。
-若 `tsconfig.json` 缺少 `allowImportingTsExtensions`，`init` 会给出提示：拉取的源码以 `./x.ts` 形式导入同级文件。
+`init` 检测源目录（通常为 `src/`，Nuxt 4 为 `app/`）和 TypeScript。没有配置时，会创建 `vite.config.mjs`，写入 `vize.lib.uiDir` 和 `vize.lib.composableDir`。它不会编辑已有的 Vite 配置；如果仍需添加设置，会显示 `vize.lib` 代码片段。
+
+已有专用配置保留原有行为：向 `vize.config.json` 添加 `lib`，对代码或 Pkl 配置显示片段。已有的 `lib` 会被保留；专用 JSON 配置可用 `--force` 替换。如果 `tsconfig.json` 缺少 `allowImportingTsExtensions`，`init` 会提示，因为拉取的源文件以 `./x.ts` 形式导入相邻文件。
 
 ## 检查更新：`outdated`
 

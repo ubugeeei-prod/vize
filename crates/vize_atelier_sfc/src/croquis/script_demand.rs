@@ -51,6 +51,39 @@ mod tests;
 
 pub(super) struct CapturedScript;
 
+pub(super) struct ModuleExportsScript;
+
+impl ScriptDemand for ModuleExportsScript {
+    type Output = (Croquis, bool);
+
+    fn prepare(drawer: Drawer) -> Drawer {
+        drawer.with_empty_module_exports()
+    }
+
+    fn disabled() -> Self::Output {
+        (Croquis::new(), false)
+    }
+
+    fn empty() -> Self::Output {
+        (Croquis::new(), true)
+    }
+
+    fn finish(drawer: Drawer) -> Self::Output {
+        drawer.finish_with_empty_module_exports()
+    }
+
+    fn merge(
+        (plain, plain_empty): Self::Output,
+        (setup, setup_empty): Self::Output,
+        offset: u32,
+    ) -> Self::Output {
+        (
+            OrdinaryScript::merge(plain, setup, offset),
+            plain_empty && setup_empty,
+        )
+    }
+}
+
 impl ScriptDemand for CapturedScript {
     type Output = (Croquis, Option<BindingOccurrences>);
 

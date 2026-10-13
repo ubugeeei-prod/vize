@@ -11,6 +11,7 @@ import { resolvePuppeteerExecutablePath } from "../../browser-path.js";
 import { captureComposablePreviews } from "./capture-composables.ts";
 import { previewComposableExamples } from "./build-config.ts";
 import { exerciseEmbeddedClipboard } from "./interactions-observed-browser.ts";
+import { verifyScreenshotResponse } from "./screenshot-file.ts";
 
 const docsRoot = path.resolve(import.meta.dirname, "../..");
 const root = path.join(docsRoot, "dist");
@@ -132,6 +133,11 @@ try {
           checkedLinks.add(target.href);
           const linked = await page.request.get(target.href);
           assert.equal(linked.status(), 200, `${route}: ${target.pathname}`);
+          if (
+            target.pathname.startsWith("/component-previews/") &&
+            target.pathname.endsWith(".png")
+          )
+            verifyScreenshotResponse(target.pathname, await linked.body());
         }
         const frame = page.frameLocator('iframe[src*="family=button"]');
         if ((await page.locator('iframe[src*="family=button"]').count()) > 0) {

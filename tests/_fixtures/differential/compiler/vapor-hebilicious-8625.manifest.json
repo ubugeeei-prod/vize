@@ -1,0 +1,53 @@
+{
+  "schema": "vize.differential.runtime-pack",
+  "version": 1,
+  "product": "compiler",
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/8625",
+  "cases": [
+    {
+      "id": "compiler/vapor-root-fallthrough-8625",
+      "inputs": {
+        "root": "vapor-root-fallthrough-8625",
+        "files": [
+          {
+            "path": "App.vue.json",
+            "sha256": "752519d9cd37630ae49921d2e00a0eeb20850327e84c19685bcf3d53390cea20"
+          },
+          {
+            "path": "Child.vue.txt",
+            "sha256": "4764f1f4b7b956ab14bbf091be0c5c0919e88a58fe88a5316ebd9ccded21eaee"
+          },
+          {
+            "path": "controls.json",
+            "sha256": "29b874be99cc45f0150017e76293ad29d46377a111884a292a63c2f4d2ac7192"
+          },
+          {
+            "path": "original-issue.md",
+            "sha256": "193fe166acbbadb062ecc2a9b9841c95fc527fc760bd07b4cd1ff1bd987480a7"
+          },
+          {
+            "path": "reported.vue.txt",
+            "sha256": "f74c5705996ebc9d0bdc3f5cc5fd99ec7462e61dcbced5fe9271544bb6a42a8d"
+          },
+          {
+            "path": "wrapper-controls.json",
+            "sha256": "3a19a5ea2c64b15351a5429d532dfed2e3deea9f938226dac422ce86b96dc05b"
+          }
+        ]
+      },
+      "reference": {
+        "path": "vapor-root-fallthrough-8625/controls.json",
+        "sha256": "29b874be99cc45f0150017e76293ad29d46377a111884a292a63c2f4d2ac7192",
+        "source": "original whole reported SFCs and independently authored runtime expectations; complete locked Vue VDOM differential packet"
+      },
+      "runtime": {
+        "rustTarget": "crates/vize_atelier_sfc/tests/vapor_third_party_reports.rs",
+        "helper": "tests/tooling/support/vapor-slot-defaults-7886.mjs",
+        "lockedVue": "3.6.0-rc.9",
+        "reportedVue": "3.6.0-rc.10",
+        "reportedVueExecution": "unexecuted",
+        "nativeHandled": 0
+      }
+    }
+  ]
+}

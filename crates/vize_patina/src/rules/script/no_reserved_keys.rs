@@ -2,60 +2,36 @@
 //!
 //! Disallow Vue-reserved names as Options API keys.
 //!
-//! Every member declared in `props`, `data`, `computed`, `methods`, `setup`, or
-//! `inject` is exposed on the component instance via `this`. Names that start
-//! with `$` or `_`, or that collide with a Vue built-in instance property
-//! (`$el`, `$data`, `$props`, `$emit`, `$nextTick`, ...), are reserved by Vue:
-//! the declaration is shadowed by the framework internal and silently breaks at
-//! runtime.
+//! The default Options API groups are `props`, `data`, `computed`, `methods`,
+//! and `setup`. Only exact Vue-reserved public instance spellings are forbidden
+//! in those groups; a leading `_` is additionally reserved in returned `data`.
+//! Custom `$` names and private `_` members in the other groups are valid.
+//! The existing descriptor does not provide `asyncData` or setup macro props.
 //!
-//! This is a port of [`vue/no-reserved-keys`](https://eslint.vuejs.org/rules/no-reserved-keys.html)
-//! from eslint-plugin-vue, covering the `props`, `data`, `computed`, `methods`,
-//! `setup`, and `inject` groups.
+//! This is a bounded port of [`vue/no-reserved-keys`](https://eslint.vuejs.org/rules/no-reserved-keys.html)
+//! from eslint-plugin-vue; `inject` is outside its default groups.
 //!
 //! ### Invalid
 //! ```ts
 //! export default {
-//!   props: ['$el'],       // reserved: starts with `$`
-//!   computed: { _foo() { return 1 } }, // reserved: starts with `_`
-//!   methods: { emit() {} } // reserved: Vue built-in instance name
+//!   props: ['$el'],
+//!   data() { return { _private: 1 } },
+//!   methods: { $emit() {} }
 //! }
 //! ```
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::Program;
-use vize_croquis::OptionMember;
 use vize_croquis::script_parser::collect_options_descriptor;
+use vize_croquis::{OptionGroup, OptionMember};
 use vize_l0::CompactString;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-reserved-keys",
-    description: "Disallow Vue-reserved names as Options API props/data/computed/methods/setup/inject keys",
+    description: "Disallow Vue-reserved names as Options API props/data/computed/methods/setup keys",
     default_severity: Severity::Error,
 };
-
-/// Vue built-in instance property names, with their conventional `$` prefix
-/// stripped. These are exposed on the instance (as `$el`, `$data`, ...), so a
-/// bare member of the same name still collides with the framework internal once
-/// Vue re-exposes it. The `$`/`_` prefix check already covers the prefixed
-/// spellings; this list also flags the bare reserved words.
-const RESERVED_INSTANCE_NAMES: &[&str] = &[
-    "el",
-    "data",
-    "props",
-    "attrs",
-    "slots",
-    "refs",
-    "parent",
-    "root",
-    "options",
-    "emit",
-    "nextTick",
-    "watch",
-    "forceUpdate",
-    "isMounted",
-];
 
 /// Disallow Vue-reserved names as Options API keys.
 pub struct NoReservedKeys;
@@ -87,29 +63,56 @@ impl ScriptRule for NoReservedKeys {
     }
 }
 
-/// Why a member name is reserved, used to phrase the diagnostic.
-enum Reservation {
-    /// Starts with `$` or `_`.
-    Prefix(char),
-    /// Bare collision with a Vue built-in instance name.
-    BuiltIn,
-}
+/// Exact default reserved spellings from eslint-plugin-vue 10.9.2.
+const RESERVED_PUBLIC_KEYS: &[&str] = &[
+    "$data",
+    "$props",
+    "$el",
+    "$options",
+    "$parent",
+    "$root",
+    "$children",
+    "$slots",
+    "$scopedSlots",
+    "$refs",
+    "$isServer",
+    "$attrs",
+    "$listeners",
+    "$watch",
+    "$set",
+    "$delete",
+    "$on",
+    "$once",
+    "$off",
+    "$emit",
+    "$mount",
+    "$forceUpdate",
+    "$nextTick",
+    "$destroy",
+];
 
-/// Classify a member name as reserved, if it is.
-fn reservation_for(name: &str) -> Option<Reservation> {
-    if let Some(first) = name.chars().next()
-        && (first == '$' || first == '_')
-    {
-        return Some(Reservation::Prefix(first));
+fn reserved_prefix(member: &OptionMember) -> Option<char> {
+    match member.group {
+        OptionGroup::Inject => None,
+        OptionGroup::Data if member.name.starts_with('_') => Some('_'),
+        OptionGroup::Props
+        | OptionGroup::Computed
+        | OptionGroup::Methods
+        | OptionGroup::Data
+        | OptionGroup::Setup => {
+            if member.name.starts_with('$') {
+                RESERVED_PUBLIC_KEYS
+                    .contains(&member.name.as_str())
+                    .then_some('$')
+            } else {
+                None
+            }
+        }
     }
-    if RESERVED_INSTANCE_NAMES.contains(&name) {
-        return Some(Reservation::BuiltIn);
-    }
-    None
 }
 
 fn check_member(member: &OptionMember, offset: usize, result: &mut ScriptLintResult) {
-    let Some(reservation) = reservation_for(&member.name) else {
+    let Some(prefix) = reserved_prefix(member) else {
         return;
     };
 
@@ -122,22 +125,11 @@ fn check_member(member: &OptionMember, offset: usize, result: &mut ScriptLintRes
     message.push_str(&member.name);
     message.push('\'');
 
-    let reason: CompactString = match reservation {
-        Reservation::Prefix(prefix) => {
-            let mut label = CompactString::with_capacity(group.len() + 40);
-            label.push_str(group);
-            label.push_str(" key starts with reserved '");
-            label.push(prefix);
-            label.push('\'');
-            label
-        }
-        Reservation::BuiltIn => {
-            let mut label = CompactString::with_capacity(group.len() + 48);
-            label.push_str(group);
-            label.push_str(" key collides with a Vue built-in instance property");
-            label
-        }
-    };
+    let mut reason = CompactString::with_capacity(group.len() + 40);
+    reason.push_str(group);
+    reason.push_str(" key starts with reserved '");
+    reason.push(prefix);
+    reason.push('\'');
 
     let diagnostic = LintDiagnostic::error(META.name, message, start, end)
         .with_label(reason, start, end)
@@ -205,7 +197,7 @@ export default {
     }
 
     #[test]
-    fn test_computed_underscore_prefixed() {
+    fn test_computed_underscore_is_valid() {
         let source = r#"
 export default {
   computed: {
@@ -214,12 +206,11 @@ export default {
 }
 "#;
         let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-        insta::assert_debug_snapshot!(result.diagnostics);
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]
-    fn test_method_bare_builtin_name() {
+    fn test_method_bare_instance_name_is_distinct() {
         let source = r#"
 export default {
   methods: {
@@ -228,8 +219,7 @@ export default {
 }
 "#;
         let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-        insta::assert_debug_snapshot!(result.diagnostics);
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]
@@ -246,7 +236,7 @@ export default {
     }
 
     #[test]
-    fn test_data_bare_builtin_name() {
+    fn test_data_bare_instance_name_is_distinct() {
         let source = r#"
 export default {
   data() {
@@ -255,18 +245,18 @@ export default {
 }
 "#;
         let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]
-    fn test_inject_array_form_underscore() {
+    fn test_inject_array_is_outside_default_groups() {
         let source = r#"
 export default {
   inject: ['_theme']
 }
 "#;
         let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]
@@ -293,7 +283,7 @@ export default {
 }
 "#;
         let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 3);
+        assert_eq!(result.error_count, 1);
     }
 
     #[test]

@@ -2,7 +2,7 @@
 title: ソース配布 (vize lib)
 ---
 
-<!-- Reviewed translation; source: guide/lib-pull.md; scope: introduction, headings and reading order -->
+<!-- Reviewed translation; source: guide/lib-pull.md; scope: introduction, headings and reading order; shared native configuration and init -->
 
 # ソース配布 (`vize lib`)
 
@@ -20,6 +20,38 @@ vpx vize lib pull rating
 
 `rating` ファミリーと、それが import するもの (`controllable-state`、`id` など) がすべて
 `src/components/vize/` に書き込まれ、`vize-lib.lock.json` に記録されます。
+
+<!-- First-copy reader example: start -->
+
+## 取得したコンポーネントを表示する
+
+この例は Vue 3.5 以降を使う Vue 3 アプリで、既定の `src/components/vize` にソースを置く手順です。まず、取得元のバージョンと必要な npm パッケージを確認し、同梱された使用例も取得します。
+
+```bash
+vpx vize lib info rating
+vpx vize lib pull rating --with-examples --dry-run
+vpx vize lib pull rating --with-examples
+```
+
+最後のコマンドを実行する前に、dry-run のファイル一覧を確認してください。`pull` は宣言されていないパッケージを報告しますが、依存のインストールやバージョンの互換性の確認は行いません。アプリを起動する前に、必要なパッケージをパッケージマネージャーで追加してください。取得したソースは `.ts` ファイルを直接 import するため、アプリの TypeScript 設定で `allowImportingTsExtensions` を有効にします。[init の手順](#はじめに-init)で、この設定を確認する方法を説明しています。
+
+使用例は `src/components/vize/families/form/rating/examples/rating-basic.vue` に保存されます。新しいアプリでは、`src/App.vue` から次のように表示できます。
+
+```vue
+<script setup lang="ts">
+import RatingExample from "./components/vize/families/form/rating/examples/rating-basic.vue";
+</script>
+
+<template>
+  <RatingExample />
+</template>
+```
+
+初期値は星 3 個です。別の星を選ぶと値と表示が変わり、選択中の星をもう一度選ぶと値が空になって `Not rated` と表示されます。操作には標準のラジオボタンを使い、ラベルも関連付けています。コンポーネント自体に見た目のスタイルは付いていないため、アプリ側の CSS で調整してください。
+
+使用例は隣にある取得済みの `rating.ts` を import するので、コンポーネントを編集するとアプリにも反映されます。[配置先ディレクトリ](#配置先ディレクトリ)を変更した場合は、`App.vue` の import も合わせて変更してください。`vize-lib.lock.json` をバージョン管理に含め、取得したファイルの変更後はこのページの更新手順で差分を確認できます。
+
+<!-- First-copy reader example: end -->
 
 ## ソースの取得元
 
@@ -76,22 +108,26 @@ node_modules/@vizejs/ui/
 import は書き換えなしでそのまま動作します。ディレクトリは次の順で決まります。
 
 1. `--dir <dir>` (プロジェクト内である必要があります)
-2. `vize.config.*` の `lib` セクション
+2. 既存の Vite 設定にある共通の `vize.lib` 設定
 3. レジストリの既定値: `src/components/vize` (ui)、`src/composables/vize` (composable)
 
 ```ts
-// vize.config.ts
-import { defineConfig } from "vize";
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lib: {
-    uiDir: "src/ui/vendor",
-    composableDir: "src/composables/vendor",
-    // dir: "src/vendor",        // 両方の種類に共通のフォールバック
-    // lockfile: "vize-lib.lock.json",
+  vize: {
+    lib: {
+      uiDir: "src/ui/vendor",
+      composableDir: "src/composables/vendor",
+      // dir: "src/vendor",
+      // lockfile: "vize-lib.lock.json",
+    },
   },
 });
 ```
+
+既存の専用設定の `lib` も利用できます。優先順位と公開済みバージョンの対応範囲は[設定ガイド](./configuration.md)を参照してください。
 
 ある種類を一度ディレクトリに取得すると、その種類の以降の取得は同じディレクトリを使います。依存グラフを分割
 してしまう競合する `--dir` は拒否されます。
@@ -106,11 +142,9 @@ vize lib init --dry-run   # 検出した構成と設定の変更を表示
 vize lib init             # 書き込む
 ```
 
-`init` はソースディレクトリ (`src/`、Nuxt 4 では `app/`) と TypeScript を検出し、`lib.uiDir` / `lib.composableDir`
-を書き込みます。設定がなければ `vize.config.json` を作成し、既存の `vize.config.json` には他の部分を変えずに
-`lib` セクションを追加し、`vize.config.ts` / `.pkl` の場合はコードを編集せずにスニペットを表示します。既存の
-`lib` セクションは `--force` がない限り保持されます。`tsconfig.json` に `allowImportingTsExtensions` がない場合は
-その旨を表示します (取得したソースは兄弟ファイルを `./x.ts` として import します)。
+`init` はソースディレクトリ（通常は `src/`、Nuxt 4 では `app/`）と TypeScript を検出します。設定がなければ、新しい `vite.config.mjs` に `vize.lib.uiDir` と `vize.lib.composableDir` を書き込みます。既存の Vite 設定は編集せず、設定を追加する必要があれば `vize.lib` のスニペットを表示します。
+
+既存の専用設定では従来の動作を維持します。`vize.config.json` には `lib` を追加し、コードや Pkl の設定ではスニペットを表示します。既存の `lib` は保持し、専用 JSON の場合は `--force` で置き換えられます。`tsconfig.json` に `allowImportingTsExtensions` がなければ、その旨を表示します。取得したソースは兄弟ファイルを `./x.ts` として import します。
 
 ## 更新の確認: `outdated`
 

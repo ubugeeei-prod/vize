@@ -72,3 +72,13 @@ Measure the actual parent and overview with the same complete original route man
 built-source custody and native controls. The earlier Doctor 96-job timing is a
 profiling lead, not a before/after result for this source or workload. Preserve
 all original full-packet HTTP/code comparisons independently of index captures.
+
+## Completed public acceptance (2026-10-11)
+
+The contract above reached actual public acceptance and its issue is closed.
+[The acceptance record](./2026-10-11-rule-reader-public-acceptance.md) binds the
+complete Docs build, immutable Pages publication and public manifest to source
+`b8ab77aa7325b28f1531f7b195898e4652d744b6`, with all original rule packets,
+indentation references and actual native reading flows qualified. Earlier
+pending delivery paragraphs describe the original required gates; they do not
+reopen this completed historical acceptance or qualify later source heads.

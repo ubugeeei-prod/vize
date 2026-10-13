@@ -1,6 +1,8 @@
 //! Demand-only editor facts carried through the existing descriptor analysis.
 
-use super::analysis::{DescriptorAnalysisMode, analyze_sfc_descriptor_resolved_impl};
+use super::analysis::{
+    DescriptorAnalysisMode, DescriptorObservation, analyze_sfc_descriptor_resolved_impl,
+};
 use super::{SfcCroquisAnalysis, SfcCroquisOptions};
 use crate::SfcDescriptor;
 use vize_atelier_core::RootNode;
@@ -15,7 +17,7 @@ pub fn analyze_sfc_descriptor_with_occurrences(
     options: SfcCroquisOptions,
 ) -> (SfcCroquisAnalysis, Option<BindingOccurrences>) {
     let mut packet = None;
-    let analysis = analyze_sfc_descriptor_resolved_impl::<true>(
+    let mut analysis = analyze_sfc_descriptor_resolved_impl::<true>(
         descriptor,
         root,
         options,
@@ -26,7 +28,10 @@ pub fn analyze_sfc_descriptor_with_occurrences(
         },
         None,
         None,
-        Some(&mut packet),
+        DescriptorObservation {
+            occurrences: Some(&mut packet),
+            ..Default::default()
+        },
     );
     if options.template_is_derived
         || descriptor
@@ -50,6 +55,35 @@ pub fn analyze_sfc_descriptor_with_occurrences(
         // Setup generic attributes have no identifier AST in the script view.
         packet = None;
     }
+    let component_reads = !options.template_is_derived
+        && options.analyzer_options.analyze_script
+        && options.analyzer_options.analyze_template_scopes
+        && options.analyzer_options.detect_undefined
+        && descriptor.script_setup.as_ref().is_some_and(|block| {
+            block.src.is_none()
+                && !block.attrs.contains_key("generic")
+                && block
+                    .lang
+                    .as_deref()
+                    .is_none_or(|lang| matches!(lang, "js" | "ts" | "jsx" | "tsx"))
+        })
+        && descriptor.script.as_ref().is_none_or(|block| {
+            block.src.is_none()
+                && block
+                    .lang
+                    .as_deref()
+                    .is_none_or(|lang| matches!(lang, "js" | "ts" | "jsx" | "tsx"))
+        })
+        && root.is_some_and(|root| {
+            descriptor.template.as_ref().is_some_and(|block| {
+                block.src.is_none()
+                    && block.lang.as_deref().is_none_or(|lang| lang == "html")
+                    && root.source == block.content.as_ref()
+            })
+        });
+    analysis
+        .croquis
+        .qualify_authored_component_reads(component_reads);
     (analysis, packet)
 }
 

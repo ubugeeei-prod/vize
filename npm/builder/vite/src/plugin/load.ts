@@ -15,11 +15,7 @@ import { registerSfcModule, normalizeVueServerRendererImport } from "./ssr-modul
 import { compileFile, compileJsxModule } from "../compiler.ts";
 import { embedsInlineCss, generateOutputWithMap, hasDelegatedStyles } from "../utils/index.ts";
 import { MappedModule, type SourceMapV3 } from "../utils/source-map.ts";
-import {
-  resolveCssImports,
-  scopeCssForPipeline,
-  transformCssVarsForPipeline,
-} from "../utils/css.ts";
+import { resolveCssImports } from "../utils/css.ts";
 import {
   fromPluginVisibleVirtualId,
   isPluginVisibleSsrVirtualId,
@@ -33,7 +29,11 @@ import {
 } from "../transform.ts";
 import { transformVizeVirtualModule } from "./vite-transform.ts";
 import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
-import { getCompiledStyleSource, normalizeStyleVirtualId } from "./load-style.ts";
+import {
+  getCompiledStyleSource,
+  getVirtualStyleContent,
+  normalizeStyleVirtualId,
+} from "./load-style.ts";
 import { loadedSfcModule } from "./tree-shaking.ts";
 
 export { normalizeVueServerRendererImport };
@@ -222,21 +222,14 @@ export function loadHook(
       blockIndex < fallbackCompiled.styles.length
     ) {
       const block = fallbackCompiled.styles[blockIndex];
-      // Virtual style blocks retain source whitespace; apply the plugin-vue
-      // trim option before handing their contents to Vite's CSS pipeline.
-      let styleContent =
-        state.mergedOptions.style?.trim === false ? block.content : block.content.trim();
-
-      // Keep delegated plain CSS scoped while preserving PostCSS-only syntax
-      // such as `@apply` for the downstream CSS pipeline.
-      if (scoped && block.scoped && (!lang || lang === "css")) {
-        styleContent = scopeCssForPipeline(styleContent, scoped);
-      }
-
-      styleContent = transformCssVarsForPipeline(styleContent, fallbackCompiled.scopeId);
-
       return {
-        code: styleContent,
+        code: getVirtualStyleContent(block, {
+          scopeId: fallbackCompiled.scopeId,
+          scoped,
+          lang,
+          trim: state.mergedOptions.style?.trim,
+          productionFilename: state.isProduction ? realPath : undefined,
+        }),
         map: null,
       };
     }

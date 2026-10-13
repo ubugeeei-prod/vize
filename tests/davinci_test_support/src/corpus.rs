@@ -18,6 +18,9 @@ mod tests;
 #[cfg(test)]
 mod io_tests;
 
+#[cfg(all(test, unix))]
+mod symlink_tests;
+
 pub use inventory::{
     IndexedGitlinks, InventoryError, SubmoduleState, parse_indexed_gitlinks,
     parse_submodule_status, reconcile,
@@ -179,24 +182,53 @@ pub fn read_corpus_source(file: &Path) -> CompactString {
 /// Fails the calling test with the directory and original IO error when
 /// enumeration fails, rather than reporting a partial corpus as complete.
 pub fn collect_vue_files(root: &Path, out: &mut Vec<PathBuf>) {
-    let entries =
-        fs::read_dir(root).unwrap_or_else(|error| fail_corpus_io("read directory", root, &error));
+    let physical = fs::canonicalize(root)
+        .unwrap_or_else(|error| fail_corpus_io("read directory", root, &error));
+    collect_vue_edges(root, &physical, &physical, &mut Vec::new(), out);
+}
+
+fn collect_vue_edges(
+    logical: &Path,
+    physical: &Path,
+    boundary: &Path,
+    edges: &mut Vec<(PathBuf, PathBuf)>,
+    out: &mut Vec<PathBuf>,
+) {
+    let entries = fs::read_dir(physical)
+        .unwrap_or_else(|error| fail_corpus_io("read directory", logical, &error));
     let mut children: Vec<PathBuf> = entries
-        .map(|entry| corpus_entry_path(root, entry))
+        .map(|entry| corpus_entry_path(logical, entry))
         .collect();
     children.sort();
     for child in children {
+        let Some(name) = child.file_name() else {
+            panic!("directory entry has no file name: {}", child.display());
+        };
+        let selected = logical.join(name);
         if child.is_dir() {
-            // `_git-worktrees` is a gitignored local checkout, not project code.
-            if child
-                .file_name()
-                .is_some_and(|name| name == "node_modules" || name == "_git-worktrees")
-            {
+            if name == "node_modules" || name == "_git-worktrees" {
                 continue;
             }
-            collect_vue_files(&child, out);
+            let resolved = fs::canonicalize(&child)
+                .unwrap_or_else(|error| fail_corpus_io("read directory", &selected, &error));
+            if !resolved.starts_with(boundary) {
+                continue;
+            }
+            // Keep a logical alias once, but never repeat the same physical
+            // directory edge along a route. Other routes remain independent.
+            let edge = (physical.to_path_buf(), resolved);
+            if edges.contains(&edge) {
+                continue;
+            }
+            edges.push(edge.clone());
+            collect_vue_edges(&selected, &edge.1, boundary, edges, out);
+            edges.pop();
         } else if child.extension().is_some_and(|ext| ext == "vue") {
-            out.push(child);
+            let resolved = fs::canonicalize(&child)
+                .unwrap_or_else(|error| fail_corpus_io("read source", &selected, &error));
+            if resolved.starts_with(boundary) {
+                out.push(selected);
+            }
         }
     }
 }

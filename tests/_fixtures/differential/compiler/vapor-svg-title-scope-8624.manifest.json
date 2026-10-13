@@ -1,0 +1,61 @@
+{
+  "schema": "vize.differential.runtime-pack",
+  "version": 1,
+  "product": "compiler",
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/8624",
+  "cases": [
+    {
+      "id": "compiler/parser/vapor-svg-title-scope-8624",
+      "inputs": {
+        "root": ".",
+        "files": [
+          {
+            "path": "vapor-svg-title-scope-8624/before-armature.log.txt",
+            "sha256": "a211dbaf9b157155f103d473145e0327aa3b39e8178f9e1d5f0a17652b954573"
+          },
+          {
+            "path": "vapor-svg-title-scope-8624/before-native.log.txt",
+            "sha256": "385e441574429f757408985cbb348607aed8a6eee1f91dc7761999f5cbb7d79c"
+          },
+          {
+            "path": "vapor-svg-title-scope-8624/controls.tsv",
+            "sha256": "c460c2f0f0d02616b0a95d917a0670e30c9ea84d9cd0e19fbabf1389c81fecce"
+          },
+          {
+            "path": "vapor-svg-title-scope-8624/vue-3.5.35-diagnostic.json.txt",
+            "sha256": "74e137b1922dc520f67ff995f82b119b5558a96d26807d6b02d45abe988c4e15"
+          },
+          {
+            "path": "vapor-svg-title-scope-8624/vue-rc10.json.txt",
+            "sha256": "adb1db45c9b708d4e87161d0899d6134fc543e4cc7e1e96c7fa92386ae8774d7"
+          },
+          {
+            "path": "vapor-svg-title-scope-8624/vue-rc9.json.txt",
+            "sha256": "a80b3e1bceffc0d3a92abb51df18865f903fa41b03def6e674cc9f136aba6938"
+          }
+        ]
+      },
+      "reference": {
+        "path": "vapor-svg-title-scope-8624/controls.tsv",
+        "sha256": "c460c2f0f0d02616b0a95d917a0670e30c9ea84d9cd0e19fbabf1389c81fecce",
+        "source": "eleven complete ordered source projections from agreeing pinned Vue 3.6 rc.9 and rc.10 parse/DOM-emitter packets; Vue 3.5.35 remains a separate initial diagnostic provider and grants no RED or product acceptance"
+      },
+      "runtime": {
+        "rustTargets": [
+          "davinci/vize_l1/tests/native_svg_title.rs",
+          "crates/vize_armature/src/parser/svg_title_tests.rs"
+        ],
+        "phase": "parser-source-controls",
+        "caseCount": 11,
+        "nativeHandled": 0,
+        "publicationQualification": false,
+        "productionChange": false,
+        "referenceVersions": [
+          "3.6.0-rc.9",
+          "3.6.0-rc.10"
+        ],
+        "diagnosticVersion": "3.5.35"
+      }
+    }
+  ]
+}

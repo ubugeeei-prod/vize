@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
+import { reviewedSetupCommand } from "../../docs/scripts/command-tab-render-assertions.ts";
 import "../../docs/theme/command-variants.js";
 
 type Choice = { manager: string; command: string | null; gap: string };
@@ -120,4 +121,27 @@ void test("the complete guide/integration corpus is eligible in every locale", (
     }
   }
   assert.ok(eligible >= 150, `complete existing guides eligible: ${eligible}`);
+});
+
+void test("reviewed setup policies match the complete first authored shell recipes", () => {
+  const root = new URL("../../docs/content/", import.meta.url);
+  const install = "vp install -D @vizejs/vite-plugin";
+  const init = "vpx vize init";
+  const cases = [
+    ["/getting-started", "install", install],
+    ["/ja/getting-started", "install", install],
+    ["/fr/getting-started", "install", install],
+    ["/pt-BR/getting-started", "install", install],
+    ["/zh-CN/getting-started", "install", install],
+    ["/guide/init", "init", init],
+  ] as const;
+  for (const [route, policy, original] of cases) {
+    const source = readFileSync(new URL(`${route.slice(1)}.md`, root), "utf8");
+    const first = source.match(/^```(?:bash|sh|shell)\n([^]*?)^```/m);
+    assert(first, `${route}: reviewed first shell recipe exists`);
+    assert.equal(first[1].trim(), original, `${route}: complete reviewed authored command`);
+    assert.equal(reviewedSetupCommand(route), policy);
+  }
+  for (const route of ["/guide/configuration", "/fr/guide/init", "/other/getting-started"])
+    assert.equal(reviewedSetupCommand(route), undefined, `${route}: no unreviewed policy`);
 });

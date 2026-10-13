@@ -28,6 +28,8 @@ mod legacy_tests;
 #[cfg(all(test, feature = "native-lex-parity"))]
 mod native_adapter_tests;
 mod pending_text;
+#[cfg(test)]
+mod svg_title_tests;
 #[cfg(all(test, feature = "legacy"))]
 mod tokenizer_contract_tests;
 #[cfg(all(test, feature = "legacy"))]

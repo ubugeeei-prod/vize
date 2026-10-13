@@ -2,12 +2,9 @@
  * Project lint rules layered under the generated Nuxt oxlint config.
  *
  * The artifact keeps `settings.vize.preset` at `incremental` so Nuxt-only rules
- * stay enabled. A preset from `vize.config.json` is therefore expanded into
+ * stay enabled. A preset from the shared project config is therefore expanded into
  * explicit rule entries instead of replacing that runtime preset.
  */
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-
 import type { NuxtLintSeverity } from "@vizejs/nuxt-lint-config";
 import type { VizeRuleConfigPreset } from "oxlint-plugin-vize";
 
@@ -66,16 +63,12 @@ async function loadPresetRules(
 }
 
 async function readVizeConfigLinter(rootDir: string): Promise<ProjectLinterConfig | undefined> {
-  const file = path.join(rootDir, "vize.config.json");
-  let text: string;
-  try {
-    text = await readFile(file, "utf8");
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
-    throw error;
-  }
-
-  const parsed = JSON.parse(text) as { linter?: unknown };
+  const { loadConfig } = await import("vize/config");
+  const parsed = await loadConfig(rootDir, {
+    mode: "auto",
+    env: { command: "lint", mode: "development" },
+  });
+  if (!parsed) return undefined;
   if (!parsed.linter || typeof parsed.linter !== "object") return undefined;
   const linter = parsed.linter as { preset?: unknown; rules?: unknown; typeAware?: unknown };
   return {

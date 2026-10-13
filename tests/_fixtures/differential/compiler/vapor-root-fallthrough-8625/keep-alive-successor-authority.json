@@ -1,0 +1,19 @@
+{
+  "issue": 8625,
+  "case": "KeepAlive",
+  "source": "<KeepAlive><Component /></KeepAlive>",
+  "originalAuthority": "tests/expected/vapor/component.snap",
+  "originalAuthoritySha256": "2d9b49734e9867e840a1e408c2476244ab9eab030950d033a6ebc1e0f410ef57",
+  "successorAuthority": "tests/_fixtures/differential/compiler/vapor-root-fallthrough-8625/keep-alive-successor.snap",
+  "successorAuthoritySha256": "336d5cc5c25b978f9228ff64fb7c4fcb42fd9cffaf09abe87eba26f5b1753c9b",
+  "onlyChange": {
+    "before": "_createComponentWithFallback(_component_Component)",
+    "after": "_createComponentWithFallback(_component_Component, null, null, true)"
+  },
+  "semanticAuthority": "tests/_fixtures/differential/compiler/vapor-root-fallthrough-8625/wrapper-controls.json",
+  "semanticAuthoritySha256": "3a19a5ea2c64b15351a5429d532dfed2e3deea9f938226dac422ce86b96dc05b",
+  "sourceQualification": "pending",
+  "publicationQualification": false,
+  "currentPublicEmissions": "tests/_fixtures/differential/compiler/vapor-root-fallthrough-8625/keep-alive-current-public-emissions.json",
+  "currentPublicEmissionsSha256": "e76c3c1b54add748c46464970c95acddc79b50328bab96b05407aa4ab483d2bf"
+}

@@ -66,6 +66,14 @@ jobs:
           vp exec tsx --test src/art-component.test.ts src/inline-art.browser.test.ts src/vrt-api.browser.test.ts src/vrt-report.browser.test.ts src/vrt/report-identity.test.ts src/usage-component.browser.test.ts src/compact-props.test.ts src/api-routes/handler-palette-compact.test.ts src/compact-props.browser.test.ts src/cli/serve.test.ts src/cli/service/input.test.ts src/cli/service/reports.test.ts src/hosted-vrt-service.browser.test.ts src/hosted-vrt-lifecycle.browser.test.ts src/literal-variant-keys.browser.test.ts src/literal-variant-keys.test.ts src/hosted-vrt-literal.browser.test.ts src/hosted-vrt-reconnect.browser.test.ts src/packed-gallery-base.browser.test.ts src/unsupported-props.browser.test.ts gallery/utils/supportedProps.test.ts
           vp exec tsx --test src/inline-art-static.browser.test.ts
           vp exec tsx --test src/variant-bindings-native.browser.test.ts src/variant-bindings-http.test.ts
+          vp exec tsx --test src/variant-navigation-owner.test.ts src/variant-navigation-probe.browser.test.ts src/variant-navigation-owner.browser.test.ts
+      - name: Verify hosted CLI capture and snapshot identities with the exact source packages
+        working-directory: npm/builder/vite-musea
+        env:
+          VIZE_MUSEA_BROWSER_TESTS: "1"
+        run: |
+          vp exec tsx --test gallery/components/hosted-vrt.browser.test.ts
+          vp exec tsx --test gallery/components/snapshot-identities.browser.test.ts
       - name: Retain native inline Art browser observations
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -85,6 +93,19 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
           include-hidden-files: true
+      - name: Retain hosted CLI captures and snapshot identities
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: musea-hosted-cli-${{ github.sha }}
+          path: |
+            artifacts/musea-hosted-vrt/**/*.png
+            artifacts/musea-hosted-vrt/*.json
+            artifacts/musea-snapshot-identities/**/*.png
+            artifacts/musea-snapshot-identities/**/*.json
+          if-no-files-found: error
+          retention-days: 7
+          include-hidden-files: false
   musea-browser:
     name: Musea real Chromium contracts
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -118,8 +139,6 @@ jobs:
           VIZE_MUSEA_BROWSER_TESTS: "1"
         run: |
           vp exec tsx --test src/a11y/browser-contracts.test.ts src/a11y/node-report.test.ts gallery/components/code-display.browser.test.ts gallery/components/global-toolbar.browser.test.ts gallery/components/public-browser-observation.browser.test.ts gallery/components/hosted-tests.browser.test.ts gallery/components/snapshot-collisions.browser.test.ts
-          vp exec tsx --test gallery/components/hosted-vrt.browser.test.ts
-          vp exec tsx --test gallery/components/snapshot-identities.browser.test.ts
       - name: Retain gallery browser observations and screenshots
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -132,10 +151,6 @@ jobs:
             artifacts/musea-globals/observations.json
             artifacts/musea-hosted/*.png
             artifacts/musea-hosted/observations.json
-            artifacts/musea-hosted-vrt/**/*.png
-            artifacts/musea-hosted-vrt/*.json
-            artifacts/musea-snapshot-identities/**/*.png
-            artifacts/musea-snapshot-identities/**/*.json
             artifacts/musea-snapshot-collisions/*.png
             artifacts/musea-snapshot-collisions/*.json
           if-no-files-found: error

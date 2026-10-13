@@ -1,0 +1,3 @@
+<script lang="ts">
+export default { data() { return { _private: 0 } } } // eslint-disable-line vue/no-reserved-keys
+</script>

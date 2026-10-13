@@ -1,10 +1,11 @@
 import type { ResolvedConfig } from "vite";
-import { VIZE_CONFIG_FILE_ENV, loadConfig } from "@vizejs/vite-plugin";
+import { VIZE_CONFIG_FILE_ENV, loadConfig, resolveViteConfigExport } from "@vizejs/vite-plugin";
 import { getResolvedVizeConfigRegistration } from "@vizejs/vite-plugin/internal/config-bridge";
 
 export async function resolveMuseaSharedConfig(
   resolvedConfig: ResolvedConfig,
   loadConfigFile: typeof loadConfig = loadConfig,
+  projectViteConfig: typeof resolveViteConfigExport = resolveViteConfigExport,
 ) {
   let registration = getResolvedVizeConfigRegistration(resolvedConfig);
   if (!registration.registered) {
@@ -18,22 +19,21 @@ export async function resolveMuseaSharedConfig(
   }
 
   const configFile = process.env[VIZE_CONFIG_FILE_ENV];
-  if (!configFile) {
-    return null;
-  }
-
   try {
-    return await loadConfigFile(resolvedConfig.root, {
+    const env = {
+      mode: resolvedConfig.mode,
+      command: resolvedConfig.command === "build" ? ("build" as const) : ("serve" as const),
+      isSsrBuild: !!resolvedConfig.build?.ssr,
+    };
+    const dedicatedConfig = await loadConfigFile(resolvedConfig.root, {
       configFile,
-      env: {
-        mode: resolvedConfig.mode,
-        command: resolvedConfig.command === "build" ? "build" : "serve",
-        isSsrBuild: !!resolvedConfig.build?.ssr,
-      },
+      viteConfig: false,
+      env,
     });
+    return dedicatedConfig ?? (await projectViteConfig(resolvedConfig, env));
   } catch (error) {
     throw new Error(
-      `[musea] Failed to load Vize config from ${configFile}: ${
+      `[musea] Failed to load Vize config from ${configFile ?? resolvedConfig.root}: ${
         error instanceof Error ? error.message : String(error)
       }`,
       { cause: error },

@@ -140,7 +140,7 @@ pub struct PullArgs {
     /// Items to pull: `name`, `name@version`, `ui:name`, `composable:name@version`, `@ns/name`
     #[arg(required = true)]
     pub items: Vec<String>,
-    /// Target directory (default: vize.config `lib` section, then the registry default)
+    /// Target directory (default: shared Vize `lib` settings, then the registry default)
     #[arg(long, short = 'p', visible_alias = "path")]
     pub dir: Option<PathBuf>,
     /// Print the plan without writing files

@@ -1,91 +1,72 @@
 ---
 title: Bien démarrer
+description: Ajoutez Vize à Vue avec votre configuration Vite et votre projet TypeScript.
 ---
 
-<!-- Generated translation; source: getting-started.md -->
+<!-- Reviewed translation; source: getting-started.md -->
 
 # Bien démarrer
 
-> **⚠️ En cours de développement :** Vize évolue activement et n’est pas encore prêt pour la
-> production. Les API et les frontières entre paquets peuvent changer sans préavis.
+Ajoutez Vize à votre application Vue 3 avec [Vite+](https://viteplus.dev/guide/install). Gardez les réglages des outils dans `vite.config.ts` et le projet TypeScript dans `tsconfig.json`. Vize est en développement ; vérifiez son [niveau de support](./stability.md) avant de l'adopter.
 
-Vize (_/viːz/_) est une chaîne d’outils Vue.js native en Rust. Elle réunit la compilation, le lint,
-le formatage, la vérification de types, les diagnostics dans l’éditeur et l’exploration de composants
-dans un même workspace, tout en proposant chaque fonction via des paquets et commandes spécialisés.
+## 1. Installer l'intégration
 
-| Besoin                                                                                | Point d’entrée recommandé   |
-| ------------------------------------------------------------------------------------- | --------------------------- |
-| Compiler des SFC Vue avec Vite                                                        | `@vizejs/vite-plugin`       |
-| Compiler des SFC Vue avec Nuxt                                                        | `@vizejs/nuxt`              |
-| Lancer le lint, le formatage et la vérification de types depuis les scripts du projet | `vize`                      |
-| Combiner les diagnostics Vize avec Oxlint                                             | `oxlint-plugin-vize`        |
-| Explorer et tester les composants                                                     | `@vizejs/vite-plugin-musea` |
-| Évaluer les fonctions d’édition                                                       | VS Code, Zed ou `vize lsp`  |
-
-## Configurer un projet existant
-
-Lancez l’initialisation interactive à la racine du projet :
+Dans un projet Vue existant équipé de Vite+ :
 
 ```bash
-vpx vize init
+vp install -D @vizejs/vite-plugin
 ```
 
-`vpx` est fourni avec [Vite+](https://viteplus.dev/guide/install). Installez d’abord Vite+ si la
-commande n’est pas disponible dans votre shell.
+L'intégration utilise la version Vite+ du projet (0.2.3 ou ultérieure). Pour Vite classique, consultez la [migration du plugin](/guide/migration.md#vite-plugin) ; pour Nuxt, consultez l'[intégration Nuxt](./integrations/nuxt.md).
 
-Avant toute écriture, `vize init` détecte Vite, Vite+ ou Nuxt, le gestionnaire de paquets,
-TypeScript, la commande de lint active et la configuration Vize existante. Vous choisissez les
-éléments à configurer :
+## 2. Modifier `vite.config.ts`
 
-- le plugin Vite ou le module Nuxt
-- le plugin Oxlint, dans le fichier réellement lu par la commande de lint active
-- les scripts de projet `vize fmt` et `vize check`
-- les réglages partagés `vize.config.*`
-- une recommandation d’extension VS Code
+La fonction ajoute le compilateur Vize et les tâches natives de vérification. Retirez l'import de l'ancien plugin Vue et `vue()` de `plugins`, puis conservez les alias, le serveur, les tests et les autres plugins. Le [guide de migration](/guide/migration.md) montre les exemples avant et après.
 
-Prévisualisez toutes les modifications de fichiers et de dépendances sans rien écrire :
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({});
+```
+
+## 3. Construire et vérifier l'application
 
 ```bash
-vpx vize init --dry-run
+vp dev
+vp build
+vp run check
 ```
 
-Dans la CI ou tout autre environnement non interactif, sélectionnez explicitement les fonctions :
+`vp run check` combine la vérification des types Vue, le lint et le formatage avec Oxlint et Oxfmt. Utilisez les tâches ciblées pendant le développement :
 
 ```bash
-vpx vize init --yes --lint --bundler --fmt --typecheck --editor
+vp run typecheck
+vp run lint
+vp run fmt:check
 ```
 
-Consultez [Project Setup (en anglais)](../guide/init.md) pour les règles de détection, toutes les
-options, les garanties d’idempotence et les cas où l’initialiseur refuse volontairement de modifier
-un fichier.
+Appliquez les corrections avec `vp run check -- --fix`. Utilisez `vp run` pour les tâches Vize générées : `vp check`, `vp lint` et `vp fmt` exécutent les outils propres à Vite+. Vize conserve les scripts existants et génère `vize:<nom>` en cas de conflit ; consultez les [noms et remplacements](/guide/vite-plus.md#tasks).
 
-## Choisir une configuration manuelle
+## Choisir la suite
 
-Préférez la configuration manuelle pour préserver une configuration existante ou adopter une seule
-partie de Vize à la fois :
+- [Configurer une règle ou une option du compilateur](./guide/configuration.md).
+- [Migrer les outils existants](/guide/migration.md) avec des exemples avant/après complets.
+- [Comprendre un diagnostic lint](./rules/all.md) avec des exemples Vue incorrects et corrigés.
+- [Explorer les composants](./guide/ui/index.md), leurs recettes et leur API.
+- [Prévisualiser les composants avec Musea](./guide/musea.md).
+- [Configurer l'éditeur](/guide/vite-plus-editor.md) avec les réglages natifs partagés.
 
-- [Plugin Vite](./guide/vite-plugin.md) — compilation native des SFC Vue dans Vite
-- [Intégration Nuxt](./integrations/nuxt.md) — voie prise en charge dans le pipeline Vite de Nuxt
-- [Scripts de paquet et CLI](./guide/cli.md) — `vize build`, `fmt`, `lint`, `check`, `ready` et la CLI
-  Rust complète
+Les guides qui ne sont pas encore traduits s'ouvrent en anglais.
 
-Vite est l’intégration de bundler recommandée. Les paquets unplugin et Rspack restent expérimentaux ;
-leur périmètre actuel est décrit dans [Autres bundlers](./guide/unplugin.md).
+> [!NOTE]
+> La découverte de la configuration Vite par la CLI et l'éditeur natifs, ainsi qu'init sans fichier dédié, sont en préparation pour la prochaine version. D'ici là, les outils natifs publiés utilisent encore le format dédié existant pour les réglages partagés personnalisés. La [référence](./guide/configuration-reference.md) décrit ce format.
 
-## Consulter les guides spécialisés
+## Utiliser Vize sans Vite+
 
-Cette page sert volontairement de point d’orientation. Pour les détails de configuration et
-d’intégration, les guides spécialisés constituent la source de référence :
+La [CLI autonome](./guide/cli.md) fournit `vize lint`, `vize fmt` et `vize check`. Lancez-les depuis la racine du paquet ciblé et gardez le projet TypeScript dans `tsconfig.json`. Les commandes natives peuvent partager l'objet `vize` à la racine de `vite.config.*` ; consultez la [configuration CLI](./guide/configuration.md#standalone-cli) pour la recherche et ses limites actuelles.
 
-- [Configuration](./guide/configuration.md) — `vize.config.*`, options du compilateur, vérification
-  de types et réglages Musea
-- [Analyse statique](./guide/static-analysis.md) — modèle de lint et de vérification de types
-- [Documentation des règles](./rules/index.md) — diagnostics concrets et exemples
-- [Plugin Oxlint](./guide/oxlint.md) — préréglages, options et fichier de configuration réellement lu
-  par chaque commande
-- [VS Code et autres éditeurs](./integrations/vscode.md) — profil d’édition optionnel et configuration LSP
-- [JSX et TSX](./guide/jsx.md) — composants Vue écrits hors des SFC `.vue`
-- [Musea](./guide/musea.md) — exemples, documentation, jetons, a11y et VRT des composants
+Prévisualisez l'installation interactive avec `vpx vize init --dry-run`, puis lancez `vpx vize init` pour choisir les fonctions. Le [guide d'installation](/guide/init.md) décrit la détection et les limites d'édition. Init utilise les réglages du projet et les valeurs par défaut, sans créer de configuration Vize dédiée.
 
-Tant que l’intégration de Vize aux éditeurs reste expérimentale, continuez à utiliser l’outil
-officiel [`vuejs/language-tools`](https://github.com/vuejs/language-tools) au quotidien.
+<span id="configurer-un-projet-existant"></span>
+<span id="choisir-une-configuration-manuelle"></span>
+<span id="consulter-les-guides-spécialisés"></span>

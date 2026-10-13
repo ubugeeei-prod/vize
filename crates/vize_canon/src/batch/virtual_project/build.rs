@@ -27,7 +27,7 @@ pub(super) use script_build::build_script_registered_file;
 
 use super::VirtualFile;
 use super::diagnostics::collect_sfc_block_ranges;
-use super::javascript_sfc::descriptor_is_unchecked_javascript;
+use super::javascript_sfc::{descriptor_is_javascript, descriptor_is_unchecked_javascript};
 pub(super) use super::javascript_sfc::{descriptor_uses_jsx_script, prepare_script_blocks};
 use super::jsx_build::build_jsx_registered_file;
 use super::passthrough::collect_passthrough_modules;
@@ -51,6 +51,8 @@ pub(super) struct RegisteredFile {
     /// reportable only under `checkJs` (see `javascript_sfc`, #3322).
     pub(super) unchecked_javascript: bool,
     pub(super) typed_router_import: bool,
+    pub(super) empty_module_exports: bool,
+    pub(super) star_projection: Option<super::star_exports::StarProjection>,
 }
 
 pub(super) fn build_registered_file(
@@ -103,9 +105,25 @@ pub(super) fn build_vue_registered_file(
         )
         .map_err(|error| CorsaError::SfcParse(error.message.to_compact_string()))
     )?;
+    let module_sources_known =
+        vize_atelier_sfc::croquis::descriptor_module_sources_are_known(&descriptor);
     let descriptor = prepare_script_blocks(descriptor);
 
     let use_tsx_virtual = descriptor_uses_jsx_script(&descriptor);
+    // Options API codegen gives a normal script a typed component surface,
+    // including the normal block in a mixed normal/setup SFC. Match the
+    // generator's Vue 2 mode; a setup-only JS block retains allowJs membership.
+    let typed_options_projection = descriptor.script.is_some()
+        && (context.options_api
+            || context.legacy_vue2
+            || matches!(
+                context.dialect,
+                vize_carton::config::VueVersion::V2 | vize_carton::config::VueVersion::V2_7
+            ));
+    let denied_javascript = context.editor_document_options.is_none()
+        && !context.allow_javascript
+        && !typed_options_projection
+        && descriptor_is_javascript(&descriptor);
     let source_type = if use_tsx_virtual {
         SourceType::tsx()
     } else {
@@ -151,6 +169,7 @@ pub(super) fn build_vue_registered_file(
         mut prop_default_key_links,
         diagnostics,
         typed_router_import,
+        empty_module_exports,
     } = generated;
     if use_tsx_virtual {
         prepend_vue_jsx_reference(
@@ -160,11 +179,11 @@ pub(super) fn build_vue_registered_file(
             &mut prop_default_key_links,
         );
     }
-    let rewritten = profile!(
+    let (rewritten, stars) = profile!(
         "canon.import.rewrite.vue",
         context
             .rewriter
-            .rewrite_generated_for_virtual_project_with_alias_policy(
+            .rewrite_generated_for_virtual_project_with_captured_stars(
                 &code,
                 source_type,
                 (context.project_root, context.virtual_root),
@@ -177,6 +196,9 @@ pub(super) fn build_vue_registered_file(
                 },
             )
     );
+    let star_projection = super::star_exports::StarProjection::from_rewrite(&rewritten, stars);
+    let preserve_module_source = !context.allow_javascript
+        && rewritten.source_map != crate::batch::import_rewriter::ImportSourceMap::empty();
     let mut projection = crate::virtual_ts::ProjectionMapping::from_parts(mappings, semantic_links);
     projection.set_prop_default_key_links(prop_default_key_links);
     let source_map = CompositeSourceMap::new_vue(
@@ -188,8 +210,9 @@ pub(super) fn build_vue_registered_file(
         context.virtual_root,
         path,
         use_tsx_virtual,
+        denied_javascript,
     )?;
-    let extra_virtual_files = if use_tsx_virtual {
+    let extra_virtual_files = if use_tsx_virtual && !denied_javascript {
         vec![build_tsx_vue_import_shim(
             context.project_root,
             context.virtual_root,
@@ -201,6 +224,7 @@ pub(super) fn build_vue_registered_file(
     };
 
     Ok(RegisteredFile {
+        star_projection,
         file: VirtualFile {
             content: rewritten.code,
             source_map,
@@ -209,7 +233,9 @@ pub(super) fn build_vue_registered_file(
         },
         extra_virtual_files,
         original_content: content.to_compact_string(),
-        pre_rewrite_code: (context.editor_document_options.is_some() || context.jsx_typecheck)
+        pre_rewrite_code: (context.editor_document_options.is_some()
+            || context.jsx_typecheck
+            || preserve_module_source)
             .then_some(code),
         passthrough_files: collect_passthrough_modules(
             path,
@@ -218,8 +244,9 @@ pub(super) fn build_vue_registered_file(
             context.virtual_root,
         ),
         diagnostics,
-        unchecked_javascript: descriptor_is_unchecked_javascript(&descriptor),
+        unchecked_javascript: denied_javascript || descriptor_is_unchecked_javascript(&descriptor),
         typed_router_import,
+        empty_module_exports: empty_module_exports && module_sources_known,
     })
 }
 
@@ -263,13 +290,13 @@ pub(super) fn mirrored_virtual_path(
     super::external_mirror::external_mirror_path(virtual_root, &canonical)
 }
 
-fn build_tsx_vue_import_shim(
+pub(super) fn build_tsx_vue_import_shim(
     project_root: &Path,
     virtual_root: &Path,
     path: &Path,
     target_path: &Path,
 ) -> CorsaResult<VirtualFile> {
-    let shim_path = virtual_vue_path(project_root, virtual_root, path, false)?;
+    let shim_path = virtual_vue_path(project_root, virtual_root, path, false, false)?;
     let target_name = target_path
         .file_name()
         .and_then(|name| name.to_str())
@@ -293,13 +320,17 @@ fn virtual_vue_path(
     virtual_root: &Path,
     path: &Path,
     use_tsx_virtual: bool,
+    denied_javascript: bool,
 ) -> CorsaResult<PathBuf> {
     let mut virtual_path = mirrored_virtual_path(project_root, virtual_root, path)?;
     let file_name = virtual_path
         .file_name()
         .and_then(|name| name.to_str())
         .map(|name| {
-            if use_tsx_virtual {
+            if denied_javascript {
+                let extension = if use_tsx_virtual { "tsx" } else { "ts" };
+                cstr!("{name}.__vize_javascript__.{extension}")
+            } else if use_tsx_virtual {
                 cstr!("{name}.tsx")
             } else {
                 cstr!("{name}.ts")

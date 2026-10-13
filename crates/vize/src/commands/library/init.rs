@@ -15,7 +15,7 @@ use super::{InitArgs, LibContext};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "kebab-case")]
 enum ConfigAction {
-    /// No config file exists; `vize.config.json` is created.
+    /// No config file exists; `vite.config.mjs` is created with `vize.lib`.
     Create,
     /// `vize.config.json` gains (or with --force, replaces) its `lib` section.
     Update,
@@ -83,9 +83,18 @@ pub fn init(context: &LibContext, args: &InitArgs) -> LibResult<String> {
         [
             "vize.config.pkl",
             "vize.config.ts",
+            "vize.config.mts",
+            "vize.config.cts",
             "vize.config.js",
             "vize.config.mjs",
+            "vize.config.cjs",
             "vize.config.json",
+            "vite.config.ts",
+            "vite.config.mts",
+            "vite.config.cts",
+            "vite.config.js",
+            "vite.config.mjs",
+            "vite.config.cjs",
         ]
         .into_iter()
         .map(|name| root.join(name))
@@ -95,7 +104,7 @@ pub fn init(context: &LibContext, args: &InitArgs) -> LibResult<String> {
     // bypass the project boundary when the lib section is added or replaced.
     let config_destination = discovered_config
         .as_deref()
-        .map_or_else(|| root.join("vize.config.json"), Path::to_path_buf);
+        .map_or_else(|| root.join("vite.config.mjs"), Path::to_path_buf);
     ensure_project_path(root, &config_destination)?;
     let (source_dir, framework) = detect_source_dir(root);
     let ui_dir = match &args.ui_dir {
@@ -132,10 +141,14 @@ pub fn init(context: &LibContext, args: &InitArgs) -> LibResult<String> {
     let (config_path, action, new_text): (PathBuf, ConfigAction, Option<String>) =
         match &discovered_config {
             None => (
-                root.join("vize.config.json"),
+                root.join("vite.config.mjs"),
                 ConfigAction::Create,
-                Some(String::from(
-                    ["{\n  \"lib\": ", lib_text.as_str(), "\n}\n"].concat(),
+                Some(cstr!(
+                    "export default {};\n",
+                    serde_json::to_string_pretty(&serde_json::json!({ "vize": { "lib": lib } }))
+                        .map_err(|error| LibError::new(cstr!(
+                            "failed to serialize Vite config: {error}"
+                        )))?
                 )),
             ),
             Some(path)
@@ -167,6 +180,9 @@ pub fn init(context: &LibContext, args: &InitArgs) -> LibResult<String> {
                     }
                 }
             }
+            Some(path) if context.config != Default::default() && !args.force => {
+                (path.clone(), ConfigAction::Unchanged, None)
+            }
             Some(path) => (path.clone(), ConfigAction::Manual, None),
         };
     if action == ConfigAction::Manual {
@@ -175,6 +191,13 @@ pub fn init(context: &LibContext, args: &InitArgs) -> LibResult<String> {
             .is_some_and(|extension| extension == "pkl")
         {
             cstr!("lib {{\n  uiDir = \"{ui_dir}\"\n  composableDir = \"{composable_dir}\"\n}}")
+        } else if config_path
+            .file_name()
+            .is_some_and(|name| name.to_string_lossy().starts_with("vite.config."))
+        {
+            cstr!(
+                "vize: {{ lib: {{ uiDir: \"{ui_dir}\", composableDir: \"{composable_dir}\" }} }},"
+            )
         } else {
             cstr!("lib: {{ uiDir: \"{ui_dir}\", composableDir: \"{composable_dir}\" }},")
         };

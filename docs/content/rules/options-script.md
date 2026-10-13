@@ -157,7 +157,7 @@ export default defineConfig({
     vize: {
       preset: "incremental",
       rules: { "script/define-props-destructuring": "warn" },
-      ruleOptions: { "script/define-props-destructuring": { mode: "only-when-assigned" } },
+      ruleOptions: { "script/define-props-destructuring": { destructure: "only-when-assigned" } },
     },
   },
 });
@@ -184,7 +184,7 @@ When migrating from ESLint, use the Vize rule ID and typed options separately:
 ```ts annotate="remove:1;add:2,3"
  rules: { "vue/define-props-destructuring": ["warn", "always"] }
  rules: { "script/define-props-destructuring": "warn" },
- ruleOptions: { "script/define-props-destructuring": { mode: "always" } }
+ ruleOptions: { "script/define-props-destructuring": { destructure: "always" } }
 ```
 
 Place the added entries inside `lint.vize` in the Vite+ config above.

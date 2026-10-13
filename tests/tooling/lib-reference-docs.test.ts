@@ -16,6 +16,7 @@ import {
   composableExampleSource,
 } from "../../npm/ui/scripts/reference-docs/composable-examples.ts";
 import { previewComposableExamples } from "../../docs/previews/ui/build-config.ts";
+import { previewImageUrl } from "../../docs/previews/ui/screenshot-file.ts";
 import { repoRoot } from "./_helpers/moonbit.ts";
 
 await import("../../docs/theme/i18n/sitemap.js");
@@ -163,10 +164,9 @@ void test("component hub guides tasks in English and Japanese and links real cap
   assert.match(ja, /確認・補足を表示する/);
   assert.match(en, /vp install @vizejs\/ui/);
   for (const family of featuredExamples) {
-    for (const hub of [en, ja])
-      assert.ok(hub.includes(`/component-previews/${family}.png`), family);
+    for (const hub of [en, ja]) assert.ok(hub.includes(previewImageUrl(`${family}.png`)), family);
     assert.ok(
-      (rendered.get(`guide/ui/${family}.md`) ?? "").includes(`/component-previews/${family}.png`),
+      (rendered.get(`guide/ui/${family}.md`) ?? "").includes(previewImageUrl(`${family}.png`)),
       family,
     );
   }
@@ -175,8 +175,8 @@ void test("component hub guides tasks in English and Japanese and links real cap
 void test("practical composable examples share complete source with their live preview", () => {
   const packageRoot = path.join(repoRoot, "npm/compose/core");
   const exports = JSON.parse(readFileSync(path.join(packageRoot, "package.json"), "utf8")).exports;
-  assert.equal(composableExamples.length, 24);
-  assert.equal(new Set(composableExamples.map((example) => example.name)).size, 24);
+  assert.equal(composableExamples.length, 37);
+  assert.equal(new Set(composableExamples.map((example) => example.name)).size, 37);
   for (const example of composableExamples) {
     const source = composableExampleSource(packageRoot, example.name);
     const preview = previewComposableExamples.find((item) => item.name === example.name);

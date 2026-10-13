@@ -2,6 +2,8 @@
 
 use std::path::{Path, PathBuf};
 
+use crate::batch::error::{CorsaError, CorsaResult};
+
 use super::super::build::RegisteredFile;
 use super::super::{SourceArtifacts, VirtualFile, VirtualProject};
 
@@ -21,7 +23,20 @@ impl VirtualProject {
             })
     }
 
-    pub(super) fn absorb_registered_file(&mut self, registered: RegisteredFile) {
+    pub(super) fn absorb_registered_file(&mut self, registered: RegisteredFile) -> CorsaResult<()> {
+        if super::super::module_projection::is_javascript_projection_path(
+            &registered.file.virtual_path,
+        ) && self
+            .virtual_files
+            .get(&registered.file.virtual_path)
+            .is_some_and(|existing| existing.original_path != registered.file.original_path)
+        {
+            // Refuse the real collision before changing either source owner,
+            // counters, diagnostics, mappings or retirement candidates.
+            return Err(CorsaError::PathError {
+                path: registered.file.original_path.clone(),
+            });
+        }
         let shared_helpers_before = self.uses_shared_helpers();
         self.incremental_source_nodes_rebuilt += 1;
         let original_path = registered.file.original_path.clone();
@@ -32,7 +47,11 @@ impl VirtualProject {
                 .insert(registered.file.virtual_path.clone());
         }
         let auto_import_count = self.virtual_ts_options.auto_import_stubs.len();
-        let mut artifacts = SourceArtifacts::default();
+        let mut artifacts = SourceArtifacts {
+            empty_module_exports: registered.empty_module_exports,
+            star_projection: registered.star_projection,
+            ..Default::default()
+        };
         if is_musea_art_vue_path(&registered.file.original_path)
             && !self
                 .virtual_ts_options
@@ -110,6 +129,7 @@ impl VirtualProject {
         if auto_import_count != self.virtual_ts_options.auto_import_stubs.len() {
             self.mark_incremental_stub_files();
         }
+        Ok(())
     }
 
     fn replace_virtual_file(&mut self, file: VirtualFile) {
@@ -182,3 +202,9 @@ fn is_musea_art_vue_path(path: &Path) -> bool {
         .and_then(|name| name.to_str())
         .is_some_and(|name| name.ends_with(".art.vue"))
 }
+
+#[cfg(test)]
+mod javascript_collision_tests;
+
+#[cfg(test)]
+mod options_projection_tests;

@@ -1,0 +1,79 @@
+[
+  {
+    "name": "ordinary Windows drive",
+    "windows": true,
+    "input": "C:\\project\\vite.config.ts",
+    "expected": "C:\\project\\vite.config.ts",
+    "expectedSpecifier": "\"C:\\\\project\\\\vite.config.ts\""
+  },
+  {
+    "name": "verbatim Windows drive",
+    "windows": true,
+    "input": "\\\\?\\C:\\project\\vite.config.ts",
+    "expected": "C:\\project\\vite.config.ts",
+    "expectedSpecifier": "\"C:\\\\project\\\\vite.config.ts\""
+  },
+  {
+    "name": "ordinary UNC",
+    "windows": true,
+    "input": "\\\\server\\share\\vite.config.ts",
+    "expected": "\\\\server\\share\\vite.config.ts",
+    "expectedSpecifier": "\"\\\\\\\\server\\\\share\\\\vite.config.ts\""
+  },
+  {
+    "name": "verbatim UNC",
+    "windows": true,
+    "input": "\\\\?\\UNC\\server\\share\\vite.config.ts",
+    "expected": "\\\\server\\share\\vite.config.ts",
+    "expectedSpecifier": "\"\\\\\\\\server\\\\share\\\\vite.config.ts\""
+  },
+  {
+    "name": "verbatim Unicode and spaces",
+    "windows": true,
+    "input": "\\\\?\\C:\\project 日本語\\vite config.ts",
+    "expected": "C:\\project 日本語\\vite config.ts",
+    "expectedSpecifier": "\"C:\\\\project 日本語\\\\vite config.ts\""
+  },
+  {
+    "name": "UNC Unicode and spaces",
+    "windows": true,
+    "input": "\\\\?\\UNC\\server\\share\\project 日本語\\vite config.ts",
+    "expected": "\\\\server\\share\\project 日本語\\vite config.ts",
+    "expectedSpecifier": "\"\\\\\\\\server\\\\share\\\\project 日本語\\\\vite config.ts\""
+  },
+  {
+    "name": "Windows quote and URL punctuation transport",
+    "windows": true,
+    "input": "\\\\?\\C:\\project\\vite 'quoted' \"double\" #100%.config.ts",
+    "expected": "C:\\project\\vite 'quoted' \"double\" #100%.config.ts",
+    "expectedSpecifier": "\"C:\\\\project\\\\vite 'quoted' \\\"double\\\" #100%.config.ts\""
+  },
+  {
+    "name": "drive letter case",
+    "windows": true,
+    "input": "\\\\?\\c:\\project\\vite.config.ts",
+    "expected": "c:\\project\\vite.config.ts",
+    "expectedSpecifier": "\"c:\\\\project\\\\vite.config.ts\""
+  },
+  {
+    "name": "POSIX ordinary absolute path",
+    "windows": false,
+    "input": "/project/vite.config.ts",
+    "expected": "/project/vite.config.ts",
+    "expectedSpecifier": "\"/project/vite.config.ts\""
+  },
+  {
+    "name": "POSIX Unicode spaces quote backslash URL punctuation",
+    "windows": false,
+    "input": "/project 日本語/vite 'quoted' \"double\" \\ #100%.config.ts",
+    "expected": "/project 日本語/vite 'quoted' \"double\" \\ #100%.config.ts",
+    "expectedSpecifier": "\"/project 日本語/vite 'quoted' \\\"double\\\" \\\\ #100%.config.ts\""
+  },
+  {
+    "name": "POSIX Windows-like literal filename",
+    "windows": false,
+    "input": "/project/\\\\?\\C:\\vite.config.ts",
+    "expected": "/project/\\\\?\\C:\\vite.config.ts",
+    "expectedSpecifier": "\"/project/\\\\\\\\?\\\\C:\\\\vite.config.ts\""
+  }
+]

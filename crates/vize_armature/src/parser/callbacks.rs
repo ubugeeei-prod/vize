@@ -62,6 +62,13 @@ impl<'a, 'p> Callbacks for ParserCallbacks<'a, 'p> {
         self.parser.on_open_tag_name_impl(start, end);
     }
 
+    fn svg_title_children(&self) -> bool {
+        self.parser.stack.last().is_some_and(|parent| {
+            parent.element.ns == vize_relief::Namespace::Svg
+                && !matches!(parent.element.tag, "foreignObject" | "desc" | "title")
+        })
+    }
+
     fn on_open_tag_end(&mut self, end: usize) {
         self.parser.flush_pending_text();
         self.parser.on_open_tag_end_impl(end);

@@ -1,0 +1,102 @@
+{
+  "schema": "vize.lint.reserved-suppression-authority",
+  "version": 1,
+  "sourceParentCommit": "790fce805cd4bda04b05ad91e81e6a8417e478bc",
+  "issue": 8090,
+  "authority": "Complete vectors were authored from the existing report producer and comment range ownership before observation. The original pinned Vue Select ESLint packet proves the registered alias suppression; no official provider run is claimed for the 24 additional controls. Candidate-source execution and release qualification remain separate.",
+  "scope": {
+    "coreCases": 24,
+    "beforeDiagnostics": 22,
+    "afterDiagnostics": 12,
+    "sourceRoutes": 7,
+    "sourceCliPackets": 169,
+    "changedOriginalCases": [
+      "original-vue-select-src-components-select"
+    ],
+    "otherOriginalCases": 20,
+    "providerCoreRuns": 0,
+    "newPipelineStages": 0,
+    "otherRuleAliasesAdded": 0
+  },
+  "files": [
+    {
+      "path": "cases.json",
+      "bytes": 30801,
+      "sha256": "00c17f8aa15a815efea86378d54881af531a3c894fa64f588f32c2d8a4cd0f0a"
+    },
+    {
+      "path": "original-public-before.json",
+      "bytes": 65193,
+      "sha256": "0c950d0911afcf1616c4f49d3b9c2738a9037eb3abb9f9b7dfb19c4a1f375025"
+    },
+    {
+      "path": "observe-public-before.mjs",
+      "bytes": 2560,
+      "sha256": "d50e9a75595d96ac9917494c3b61d3a71d693731bc745df0a83de5166adc735e"
+    },
+    {
+      "path": "initial-twenty-two-before.json.gz",
+      "bytes": 6834,
+      "sha256": "3c4dc70bda46ed70ce9fd98ee487850350cfb69d29c217a3910a0a9683040c6b"
+    },
+    {
+      "path": "original-vue-select-successor.json",
+      "bytes": 3095,
+      "sha256": "773d654025a57d7314d754e415c5627e977d2c9453cf6c67ddbceaf5c3cfdf05"
+    },
+    {
+      "path": "original-prefix-successors.json",
+      "bytes": 4376,
+      "sha256": "208183efe221526fd194226b719bf8321819a93b6c3d8132061cd8aca70b2097"
+    },
+    {
+      "path": "original-suppression-oracle.json",
+      "bytes": 159279,
+      "sha256": "d3eac1bd7094e5a64434a72d85c35afe48a4d836700b54995c960cc010a92f70"
+    },
+    {
+      "path": "prior-eslint-directive.rs.fixture",
+      "bytes": 3571,
+      "sha256": "212c95ac2b375d3856619e3d5dceecb5881c47f01c9b19f9547ebb410a9e3025"
+    }
+  ],
+  "producer": {
+    "path": "crates/vize_patina/src/context/eslint_directive.rs",
+    "before": {
+      "commit": "790fce805cd4bda04b05ad91e81e6a8417e478bc",
+      "fixture": "prior-eslint-directive.rs.fixture",
+      "sha256": "212c95ac2b375d3856619e3d5dceecb5881c47f01c9b19f9547ebb410a9e3025",
+      "bytes": 3571
+    },
+    "after": {
+      "sha256": "81a4ea14abffbac88fcc47a072679e03cc517dedccf0d26ff88794c608ab3fac",
+      "bytes": 3861
+    }
+  },
+  "originalReferences": [
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/official-provider.json",
+      "sha256": "25339fe5144eb1ba6e8d2a620af9912ea7882a6538c0d8743fb88424c18f7aee"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/original-public-before.json",
+      "sha256": "99033a79fa52c9b47e9def815d9367a25107acb4f41ee99bd4bbc89fa7dcdc6c"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/primary-sources.json",
+      "sha256": "4f63098b509aebb4bbc761002d1fb314574cfeb822e6ae2b58fbbd76f22a650a"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/observe-before.mjs",
+      "sha256": "a8e7d018cc6a2f0cd166d5091a79326b4911261f5f1718047bbf531a7525579a"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/originals.json",
+      "sha256": "65d7e2cbbdc5552f1d28338163d88506716fc8ebd6a2a88a0c5eab5670283144"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/original-vue-select-src-components-select.vue.fixture",
+      "sha256": "12f3b27bb0d85e07ab538f2813e7f3ddaaf8708ed4167b95c50a366f4cfd9b68"
+    }
+  ]
+}

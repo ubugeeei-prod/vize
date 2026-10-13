@@ -52,6 +52,10 @@ impl<C: Callbacks> Sink for OriginalFirstScalarSink<C> {
         self.compat.on_open_tag_name(start, end);
     }
 
+    fn svg_title_children(&self) -> bool {
+        self.compat.svg_title_children()
+    }
+
     fn on_open_tag_end(&mut self, end: usize) {
         self.compat.on_open_tag_end(end);
     }

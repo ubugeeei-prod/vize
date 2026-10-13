@@ -1,6 +1,7 @@
 /** Practical SFC examples: one source packet owns the displayed code and live demo. */
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { previewImageUrl } from "../../../../docs/previews/ui/screenshot-file.ts";
 import { COMPOSABLE_CATALOG } from "../../../compose/core/src/catalog.ts";
 import { blocks, table } from "./markdown.ts";
 import { asyncEffectExamples } from "./async-effect-examples.ts";
@@ -8,6 +9,10 @@ import { browserEffectExamples } from "./browser-effect-examples.ts";
 import { formStateExamples } from "./form-state-examples.ts";
 import { domInteractionExamples } from "./dom-interaction-examples.ts";
 import { observedBrowserExamples } from "./observed-browser-examples.ts";
+import { scopedInputExamples } from "./scoped-input-examples.ts";
+import { preferenceBrowserExamples } from "./preference-browser-examples.ts";
+import { environmentExamples } from "./environment-examples.ts";
+import { pointerSelectionExamples } from "./pointer-selection-examples.ts";
 
 const stateExamples = [
   {
@@ -79,6 +84,20 @@ export const composableExamples = [
   ...formStateExamples,
   ...domInteractionExamples,
   ...observedBrowserExamples,
+  ...scopedInputExamples,
+  ...preferenceBrowserExamples,
+  ...environmentExamples,
+  ...pointerSelectionExamples,
+  {
+    name: "use-throttled",
+    title: "Preview a release title while editing",
+    purpose:
+      "Keep the latest release-title draft editable while limiting how often its local preview updates.",
+    observe:
+      "Change the title once to update the preview immediately. Further edits in the same 800 ms window wait; the newest draft appears when that window ends. Update preview now applies the waiting draft immediately. Cancel waiting update keeps both your draft and the last accepted preview; the next edit starts a fresh window.",
+    context:
+      "The example uses useThrottled's default leading and trailing edges and its real timer. `pending` describes a queued update, not whether the draft equals the preview. `flush()` applies waiting work and closes its window; `cancel()` discards waiting work and closes its window without changing the draft. SSR mirrors the source without starting timers. Call inside setup so scope disposal releases the watcher and timer. This local preview neither saves nor publishes a title; the package remains experimental.",
+  },
 ] as const;
 
 export function composableExampleSource(packageRoot: string, name: string): string {
@@ -105,9 +124,9 @@ export function composableExampleSection(packageRoot: string, name: string): str
     composablePreviewMarkup(name, example.title),
     `**What to observe:** ${example.observe}`,
     example.context,
-    `<details><summary>Compare the initial and interacted states</summary><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:16px"><figure style="margin:0"><img src="/component-previews/composables/${name}-720-initial.png" alt="${example.title}: initial state" loading="lazy" style="width:100%" /><figcaption>Initial state</figcaption></figure><figure style="margin:0"><img src="/component-previews/composables/${name}-720-interacted.png" alt="${example.title}: state after the verified interactions" loading="lazy" style="width:100%" /><figcaption>After the verified interactions</figcaption></figure></div></details>`,
+    `<details><summary>Compare the initial and interacted states</summary><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:16px"><figure style="margin:0"><img src="${previewImageUrl(`composables/${name}-720-initial.png`)}" alt="${example.title}: initial state" loading="lazy" style="width:100%" /><figcaption>Initial state</figcaption></figure><figure style="margin:0"><img src="${previewImageUrl(`composables/${name}-720-interacted.png`)}" alt="${example.title}: state after the verified interactions" loading="lazy" style="width:100%" /><figcaption>After the verified interactions</figcaption></figure></div></details>`,
     name === "use-storage"
-      ? '<details><summary>When browser storage is unavailable</summary><p>Choices still change in this tab. Reloading restores Getting started because the browser cannot save the choice. This capture uses actual Chromium with localStorage disabled.</p><img src="/component-previews/composables/use-storage-unavailable-360-interacted.png" alt="Publishing selected in this tab while browser storage is unavailable" loading="lazy" width="360" style="max-width:100%" /></details>'
+      ? `<details><summary>When browser storage is unavailable</summary><p>Choices still change in this tab. Reloading restores Getting started because the browser cannot save the choice. This capture uses actual Chromium with localStorage disabled.</p><img src="${previewImageUrl("composables/use-storage-unavailable-360-interacted.png")}" alt="Publishing selected in this tab while browser storage is unavailable" loading="lazy" width="360" style="max-width:100%" /></details>`
       : "",
     "## Copy the example",
     "Save this complete SFC in your Vue project. Its public imports and source are the same ones executed in the preview.",
@@ -120,7 +139,7 @@ export function composableHub(locale: string, linkPrefix: string): string {
   return blocks(
     ja ? "## 動作から選ぶ" : "## Try a behavior",
     ja
-      ? "入力、検証、検索、履歴、ページ切り替え、非同期処理、タイマー、保存、画面サイズ、フォーカス、フォーム、手順、選択、循環する案内、クリップボード、スクロール、要素のサイズと表示範囲を実例で試せます。各リンクのプレビューと表示コードは同じ Vue SFC を使っています (英語)。"
+      ? "入力、入力に追従するプレビュー、検証、検索、履歴、ページ切り替え、非同期処理、タイマー、保存、画面サイズ、フォーカス、フォーム、手順、選択、循環する案内、クリップボード、スクロール、要素のサイズと表示範囲、通信状態、配色、画面幅に応じた表示、ポインター座標、ドラッグ、文書のテキスト選択を実例で試せます。各リンクのプレビューと表示コードは同じ Vue SFC を使っています (英語)。"
       : "See how reactive state changes an interface. Each live preview and its copyable code come from the same complete Vue SFC.",
     table(
       [ja ? "やりたいこと" : "Goal", "Composable"],

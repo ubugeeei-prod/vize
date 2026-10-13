@@ -1,0 +1,62 @@
+{
+  "schema": "vize-lexical-dollar-slot-inputs-v1",
+  "issue": 6879,
+  "sourceBaseline": "a6633fb68b110d07abd5ee5a6049bc15f20f9c7f",
+  "registration": "independently executable focused normal batch law; no historical differential adapter claim",
+  "inputs": [
+    {
+      "path": "Panel.vue.txt",
+      "byteLength": 233,
+      "sha256": "c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61"
+    },
+    {
+      "path": "valid.vue.txt",
+      "byteLength": 514,
+      "sha256": "9dbb96b225273b4cb5a547f0dc29e9524efd5c2f0ccda8cddbea49e835a755ea"
+    },
+    {
+      "path": "wrong.vue.txt",
+      "byteLength": 516,
+      "sha256": "7af50154c2b6f40e8726aa1877e2ae284cd59a48562df5e93fe9f731d9030f6d"
+    },
+    {
+      "path": "escape.vue.txt",
+      "byteLength": 347,
+      "sha256": "90a9b6e4d7660d78f8cd24ebe9cce4f4ab32110557453ee38c73730b8a35260e"
+    },
+    {
+      "path": "foreign.vue.txt",
+      "byteLength": 173,
+      "sha256": "22dbba92224bf894119fed3421cc3972786c8883b14e0b1e81d9f6ff06981686"
+    },
+    {
+      "path": "globals.vue.txt",
+      "byteLength": 128,
+      "sha256": "00c50d4e0f462e92971580105e2f733f4f1f4f18dd37493cf7239055779ffacc"
+    },
+    {
+      "path": "case.tsconfig.json.txt",
+      "byteLength": 237,
+      "sha256": "67e6f635b07d6be9eb4a13234569264c735dd0f5e40c195bcb9fdf5a5d3cff50"
+    },
+    {
+      "path": "loop-source.vue.txt",
+      "byteLength": 112,
+      "sha256": "0251f10ec5850bb2c99fb304ef04769e0b194e6efae89f22d329d91a149681b4"
+    }
+  ],
+  "nativeLaw": {
+    "moduleRegistration": "crates/vize_canon/src/batch/type_checker/tests/recent_issues.rs",
+    "source": "crates/vize_canon/src/batch/type_checker/tests/recent_issues/lexical_dollar_slots.rs",
+    "test": "batch::type_checker::tests::recent_issues::lexical_dollar_slots::lexical_dollar_slots_preserve_complete_native_diagnostics_and_repairs",
+    "requirement": "VIZE_TEST_REQUIRE_TSGO=1; genuine installed Vue; complete nine observations",
+    "historicalDifferentialCredit": false
+  },
+  "expected": {
+    "path": "expected.json",
+    "byteLength": 3340,
+    "sha256": "54c2ff42c61dfa94bb15e9f72dea283c94191637d2e5687a2a30bac5d7d6f122",
+    "observations": 9,
+    "comparison": "complete ordered diagnostic vector, success and exit code for every case"
+  }
+}

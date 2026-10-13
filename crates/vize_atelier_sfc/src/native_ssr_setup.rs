@@ -62,10 +62,12 @@ impl<'a> NativeSetupSsrSfcCompilation<'a> {
 
 /// One original JS/TS setup owner, external SSR function and full component.
 /// Bounded primitive declarations and one root primitive/Identifier
-/// interpolation beside comments or static markup use Vue's actual sixth setup-state argument. Original HTML
-/// listeners stay owned and are omitted without evaluation. Adjacent root text
-/// runs, nested reads, For/components/dynamic markup and unsupported original
-/// scripts/styles/profiles remain typed refusals with no partial module.
+/// interpolation beside comments or static markup, or a sole direct interpolation
+/// child of one non-void HTML root, uses Vue's actual sixth setup-state argument.
+/// Original HTML listeners stay owned and are omitted without evaluation.
+/// Adjacent root text runs, deeper/mixed children, extra roots,
+/// For/components/dynamic markup and unsupported original scripts/styles/profiles
+/// remain typed refusals with no partial module.
 /// This additive entry does not replace default compiler routing or add Vite's
 /// SSR-context registration, HMR or upstream raw-map parity.
 #[must_use]

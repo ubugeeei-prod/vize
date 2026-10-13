@@ -1,0 +1,1 @@
+<template><img src="app.png" /></template>

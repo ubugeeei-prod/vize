@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { parse as parseToml } from "@iarna/toml";
 import { parse } from "yaml";
@@ -111,11 +112,18 @@ test("only the present audited real-TSGO cases leave the PR default filter", () 
   );
 });
 
-for (const [event, profile] of [
-  ["merge_group", "full"],
-  ["pull_request", "pr"],
-]) {
-  test(`${profile} shard shell restores Cargo paths with the exclusive runtime flag`, () => {
+const plan = {
+  schemaVersion: 1,
+  scope: "affected",
+  packages: ["vize_armature", "vize_l1"],
+  cargoArgs: ["--package", "vize_armature", "--package", "vize_l1"],
+};
+
+for (const [event, profile, stepName] of [
+  ["merge_group", "full", "Run Rust test shard without rebuilding"],
+  ["pull_request", "pr", "Build and run the affected Rust test shard"],
+] as const) {
+  test(`${profile} shard shell keeps its partition with the exclusive runtime flag`, () => {
     const cwd = mkdtempSync(join(tmpdir(), "vize-shard-prepare-"));
     try {
       const bin = join(cwd, "bin");
@@ -124,12 +132,12 @@ for (const [event, profile] of [
       writeFileSync(
         join(bin, "cargo"),
         `#!/bin/sh
-exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);if(process.env.NEXTEST_PROFILE==="full"?(process.env.VIZE_TEST_REQUIRE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_DISABLE_TSGO")):(process.env.VIZE_TEST_DISABLE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_REQUIRE_TSGO")))process.exit(92);if(process.env.VIZE_NUXT_CONFIG_ITERATIONS!=="100")process.exit(93);if(!args.includes("--extract-overwrite"))process.exit(91);fs.writeFileSync("target/tmp/observation","writable");fs.mkdirSync("target/nextest/"+process.env.NEXTEST_PROFILE,{recursive:true});fs.writeFileSync(process.env.ARGV,JSON.stringify(args));' -- "$@"
+exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);const full=process.env.NEXTEST_PROFILE==="full";if(full?(process.env.VIZE_TEST_REQUIRE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_DISABLE_TSGO")):(process.env.VIZE_TEST_DISABLE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_REQUIRE_TSGO")))process.exit(92);if(process.env.VIZE_NUXT_CONFIG_ITERATIONS!=="100")process.exit(93);if(full!==args.includes("--extract-overwrite"))process.exit(91);if(full)fs.writeFileSync("target/tmp/observation","writable");fs.mkdirSync("target/nextest/"+process.env.NEXTEST_PROFILE,{recursive:true});fs.writeFileSync(process.env.ARGV,JSON.stringify(args));' -- "$@"
 `,
         { mode: 0o755 },
       );
       const step = workflow.jobs["pr-rust-shard"].steps.find(
-        (candidate) => candidate.name === "Run Rust test shard without rebuilding",
+        (candidate) => candidate.name === stepName,
       );
       assert.ok(step?.run);
       const runtime = workflow.jobs["pr-rust-shard"].steps.find(
@@ -151,7 +159,17 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);if
         NEXTEST_PROFILE: profile,
         VIZE_NUXT_CONFIG_ITERATIONS: "100",
         ARGV: argv,
+        RUNNER_TEMP: cwd,
+        RUST_PLAN_JSON: JSON.stringify(plan),
       };
+      // The PR step resolves the checked-out runner relative to the workspace.
+      mkdirSync(join(cwd, "tools/support/compat/github"), { recursive: true });
+      copyFileSync(
+        fileURLToPath(
+          new URL("../../tools/support/compat/github/run-affected-rust.mjs", import.meta.url),
+        ),
+        join(cwd, "tools/support/compat/github/run-affected-rust.mjs"),
+      );
       delete environment.VIZE_TEST_DISABLE_TSGO;
       delete environment.VIZE_TEST_REQUIRE_TSGO;
       const result = spawnSync(
@@ -171,23 +189,41 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);if
         },
       );
       assert.equal(result.status, 0, result.stderr);
-      assert.equal(readFileSync(join(cwd, "target/tmp/observation"), "utf8"), "writable");
-      assert.deepEqual(JSON.parse(readFileSync(argv, "utf8")), [
-        "nextest",
-        "run",
-        "--archive-file",
-        ".artifacts/rust-test-archive/tests.tar.zst",
-        "--extract-to",
-        cwd,
-        "--extract-overwrite",
-        "--workspace-remap",
-        cwd,
-        "--profile",
-        profile,
-        "--partition",
-        "hash:2/4",
-        "--no-tests=pass",
-      ]);
+      const partition = ["--profile", profile, "--partition", "hash:2/4", "--no-tests=pass"];
+      if (event === "merge_group") {
+        assert.equal(readFileSync(join(cwd, "target/tmp/observation"), "utf8"), "writable");
+        assert.deepEqual(JSON.parse(readFileSync(argv, "utf8")), [
+          "nextest",
+          "run",
+          "--archive-file",
+          ".artifacts/rust-test-archive/tests.tar.zst",
+          "--extract-to",
+          cwd,
+          "--extract-overwrite",
+          "--workspace-remap",
+          cwd,
+          ...partition,
+        ]);
+      } else {
+        // The same affected packages and Cargo profile the archive was built from.
+        assert.deepEqual(JSON.parse(readFileSync(argv, "utf8")), [
+          "nextest",
+          "run",
+          ...plan.cargoArgs,
+          "--cargo-profile",
+          "ci",
+          ...partition,
+        ]);
+      }
+      assert.equal(
+        (
+          JSON.parse(readFileSync(join(cwd, `target/nextest/${profile}/timing.json`), "utf8")) as {
+            shard: number;
+            exit_code: number;
+          }
+        ).exit_code,
+        0,
+      );
     } finally {
       rmSync(cwd, { recursive: true, force: true });
     }

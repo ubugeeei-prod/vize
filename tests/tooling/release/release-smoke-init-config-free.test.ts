@@ -108,6 +108,8 @@ test("the delivered Yarn cell retains its whole archive and declares three curre
   assert.deepEqual(FRESH_INIT_MATRIX, [
     ...historical.originalSevenCells,
     historical.proposedEighthCell,
+    { packageManager: "bun", shape: "vite-vue-js-checkjs" },
+    { packageManager: "vp", shape: "vite-vue-js-checkjs" },
   ]);
   assert.deepEqual(
     { ...shape.files(current.peers), ...manager.projectFiles },

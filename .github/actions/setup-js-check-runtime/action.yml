@@ -4,6 +4,7 @@ description: Install the MoonBit and Rust tools required by the JS check job
 runs:
   using: composite
   steps:
+    - uses: ./.github/actions/check-workflow-syntax
     - uses: ./.github/actions/setup-moonbit
       if: ${{ github.event_name != 'pull_request' }}
     - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable

@@ -4,7 +4,7 @@ title: "script/no-reserved-keys"
 
 # `script/no-reserved-keys`
 
-Disallow Vue-reserved names as Options API props/data/computed/methods/setup/inject keys
+Disallow Vue-reserved names as Options API props/data/computed/methods/setup keys
 
 [Bad](#bad) · [Good](#good)
 
@@ -57,4 +57,4 @@ export default { data() { return { elementLabel: "custom" }; } };
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reserved_keys.rs#L32) · [All rules](../all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reserved_keys.rs#L30) · [All rules](../all.md)

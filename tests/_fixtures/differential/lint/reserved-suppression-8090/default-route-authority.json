@@ -1,0 +1,50 @@
+{
+  "schema": "vize.lint.reserved-suppression-default-route-authority",
+  "version": 1,
+  "authority": "Complete initial source and first/second public attempt packets are immutable. Successor whole vectors are authored from unchanged SFC producers, Essential/HappyPath/Ecosystem registry membership and the exact n8n order/severity configuration; original24 target vectors and production stay unchanged. Final168 complete authenticated443 before packets match every field.",
+  "initialSourceCommit": "d20d205ee3252ab9067882db881539c68f057973",
+  "files": [
+    {
+      "path": "default-route-successors.json",
+      "bytes": 58051,
+      "sha256": "9dd4a3df61e72455c8d39c76ecca09ac3d3f4a6b648e912600595202f5dee7e6"
+    },
+    {
+      "path": "default-route-public-before.json",
+      "bytes": 419115,
+      "sha256": "a7a29996d01c676365bbf8fcf78bcd23e8bd5d30f894aa191d83ebae74ed5217"
+    },
+    {
+      "path": "observe-default-route-before.mjs",
+      "bytes": 4072,
+      "sha256": "90c8f172a2937cb24e143ea6cb0438c3871b8d8750ecf577aa59693102a54f68"
+    },
+    {
+      "path": "initial-source-failure.json",
+      "bytes": 390941,
+      "sha256": "2ca6e03345a0d0841d73a867c738169d64ce92f2c50abf1630904602bb82fe08"
+    },
+    {
+      "path": "initial-default-route-before.json.gz",
+      "bytes": 12013,
+      "sha256": "72220d2c60689fecbaa71a7a9a641c114420adfed5fd0b7b7beb43abfdab4e9b"
+    },
+    {
+      "path": "second-default-route-before.json.gz",
+      "bytes": 12819,
+      "sha256": "6375a51db38c25e73526bc2402a47b223a0efcca5b806c82cd9b953c962ff492"
+    }
+  ],
+  "summary": {
+    "coreCases": 24,
+    "targetBefore": 22,
+    "targetAfter": 12,
+    "defaultAfter": 14,
+    "essentialAfter": 12,
+    "offWarnings": 2,
+    "projectionErrors": 1,
+    "beforeProcesses": 168,
+    "sourceProcesses": 169,
+    "productionChanged": false
+  }
+}

@@ -162,9 +162,9 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
     ),
     (
         "script/no-reserved-keys.description",
-        "Disallow Vue-reserved names as Options API props/data/computed/methods/setup/inject keys",
-        "Options API の props・data・computed・methods・setup・inject のキーに Vue の予約名を使うことを禁止する",
-        "禁止将 Vue 保留名称用作选项式 API 的 props/data/computed/methods/setup/inject 键",
+        "Disallow Vue-reserved names as Options API props/data/computed/methods/setup keys",
+        "Options API の props・data・computed・methods・setup のキーに Vue の予約名を使うことを禁止する",
+        "禁止将 Vue 保留名称用作选项式 API 的 props/data/computed/methods/setup 键",
     ),
     (
         "script/no-reserved-props.description",

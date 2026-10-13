@@ -2,7 +2,7 @@
 title: 博物馆
 ---
 
-<!-- Generated translation; source: guide/musea.md -->
+<!-- Reviewed translation; source: guide/musea.md; scope: shared native configuration -->
 
 # 博物馆
 
@@ -70,27 +70,31 @@ vp exec vize musea --build
 
 ## 共享配置
 
-`musea()`选项覆盖共享配置。把稳定的项目默认设置在`vize.config.ts`，保持
-`vite.config.ts`中仅有预览设置。
+将共享默认值放在 `vite.config.*` 顶层的 `vize.musea` 中。直接传给 `musea()` 的选项优先于对应的共享值。同一 Vite 项目中已有的专用配置仍保留优先级。
 
 ```ts
-// vize.config.ts
-import { defineConfig } from "vize";
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+import { musea } from "@vizejs/vite-plugin-musea";
 
 export default defineConfig({
-  musea: {
-    include: ["src/**/*.art.vue"],
-    exclude: ["node_modules/**", "dist/**"],
-    basePath: "/__musea__",
-    storybookCompat: false,
-    inlineArt: false,
+  plugins: [musea()],
+  vize: {
+    musea: {
+      include: ["src/**/*.art.vue"],
+      exclude: ["node_modules/**", "dist/**"],
+      basePath: "/__musea__",
+      storybookCompat: false,
+      inlineArt: false,
+    },
   },
 });
 ```
 
-共享配置目前涵盖`include`、`exclude`、`basePath`、`storybookCompat`
-`inlineArt`。传递`previewCss`、`previewSetup`、`tokensPath`、`theme`和`storybookOutDir`
-直接给`musea()`。
+共享选项包括 `include`、`exclude`、`basePath`、`storybookCompat` 和 `inlineArt`。将 `previewCss`、`previewSetup`、`tokensPath`、`theme` 和 `storybookOutDir` 直接传给 `musea()`。
+
+`musea-vrt` 也从同一个 Vite 配置中读取 `include`、`exclude` 和 `vrt`。`vrt.outDir` 指定快照目录；插件的 `vrt` 选项优先于对应的共享值。`vize musea new` 使用默认搜索规则创建 Art 文件，不会生成专用配置文件。
+
 
 ## 艺术档案
 
@@ -119,20 +123,13 @@ const pressed = ref(false);
 </art>
 ```
 
-`defineArt(source, options)` 是一个编译器宏。它声明了 Musea 应加载的组件，
-还有以前存在`<art>`的元数据。偏好使用相对分量路径串，如
-`defineArt("./MyButton.vue", { title: "MyButton" })`;Musea会导入生成的组件
-运行时代码和语言服务器在prop和slot推理中使用相同的源代码。
-源字符串参与路径补全、未解析文件诊断、文档链接和
-必看定义。
+`defineArt(source, options)` 是一个编译器宏。它声明了 Musea 应加载的组件， 还有以前存在`<art>`的元数据。偏好使用相对分量路径串，如 `defineArt("./MyButton.vue", { title: "MyButton" })`;Musea会导入生成的组件 运行时代码和语言服务器在prop和slot推理中使用相同的源代码。 源字符串参与路径补全、未解析文件诊断、文档链接和 必看定义。
 
-`<art title="..." component="...">`仍然兼容，并且有明确的`<art>`属性
-当两者同时存在时，覆盖`defineArt`元数据。
+`<art title="..." component="...">`仍然兼容，并且有明确的`<art>`属性 当两者同时存在时，覆盖`defineArt`元数据。
 
 ### 变体地方国家
 
-根`<script setup>`状态默认是每个变体的隔离状态。每个变体都有自己的设置
-实例，这样一个变体中的参考和计算值不会泄漏到另一个变体中：
+根`<script setup>`状态默认是每个变体的隔离状态。每个变体都有自己的设置 实例，这样一个变体中的参考和计算值不会泄漏到另一个变体中：
 
 ```art-vue
 <script setup lang="ts">
@@ -154,8 +151,7 @@ const doubled = computed(() => count.value * 2);
 </art>
 ```
 
-只有当艺术文件需要一个共享设置时才使用`<script setup isolate="false">`
-所有变体的实例：
+只有当艺术文件需要一个共享设置时才使用`<script setup isolate="false">` 所有变体的实例：
 
 ```art-vue
 <script setup lang="ts" isolate="false">
@@ -191,8 +187,7 @@ src/components/Button.vue
 src/components/Button.art.vue
 ```
 
-当设计系统拥有许多横切实例时，使用单独的`stories`或`art`目录，
-或者当Nuxt组件自动发现扫描组件目录时：
+当设计系统拥有许多横切实例时，使用单独的`stories`或`art`目录， 或者当Nuxt组件自动发现扫描组件目录时：
 
 ```txt
 src/components/Button.vue
@@ -202,8 +197,7 @@ stories/navigation/Menu.art.vue
 
 ## 内联艺术
 
-启用`inlineArt`时，包含`<art>`块的普通`.vue`文件可以出现在
-画廊。这对于小型组件非常有用，因为示例应存在于同一文件中。
+启用`inlineArt`时，包含`<art>`块的普通`.vue`文件可以出现在 画廊。这对于小型组件非常有用，因为示例应存在于同一文件中。
 
 ```ts
 musea({
@@ -236,8 +230,7 @@ Musaa可以浮现：
 
 ![博物馆设计代币](/musea-tokens.png)
 
-`@vizejs/vite-plugin-musea`可以导入一个与样式字典兼容的令牌文件，并在
-画廊界面。
+`@vizejs/vite-plugin-musea`可以导入一个与样式字典兼容的令牌文件，并在 画廊界面。
 
 ```ts
 musea({
@@ -297,17 +290,9 @@ vp dev --host 0.0.0.0
 vp exec musea-vrt --base-url http://localhost:5173 --ci --json
 ```
 
-工作流程是：在快照目录下提交基线，`musea-vrt --ci --json`对
-运行开发服务器，然后检查`vrt-report.json`/`vrt-report.html`加`snapshots/current`
-`snapshots/diff`失败。重新运行时`--update`（或部分变体`approve`）
-有意识的修改，并且在移除美术文件后运行`clean`，这样陈旧的基线就不会遮盖空洞。
-`--ci` 因视觉差异和预览/捕获错误（缺少路由、浏览器）而非零退出
-失败，选择器超时）;新的基线会报告为`new`，因此请先在本地`--update`运行。
+工作流程是：在快照目录下提交基线，`musea-vrt --ci --json`对 运行开发服务器，然后检查`vrt-report.json`/`vrt-report.html`加`snapshots/current` `snapshots/diff`失败。重新运行时`--update`（或部分变体`approve`） 有意识的修改，并且在移除美术文件后运行`clean`，这样陈旧的基线就不会遮盖空洞。 `--ci` 因视觉差异和预览/捕获错误（缺少路由、浏览器）而非零退出 失败，选择器超时）;新的基线会报告为`new`，因此请先在本地`--update`运行。
 
-示例应用还连接了Playwright原生的VRT路径（`examples/vite-musea`，运行于
-`vp run test:vrt` / `vp run test:vrt:update`）。快照存在于`e2e/vrt/__snapshots__`，失败
-工件在`e2e/vrt/test-results`，HTML报告在`playwright-report`;GitHub 操作
-故障时上传，方便审核员检查基线、当前和差异图像。
+示例应用还连接了Playwright原生的VRT路径（`examples/vite-musea`，运行于 `vp run test:vrt` / `vp run test:vrt:update`）。快照存在于`e2e/vrt/__snapshots__`，失败 工件在`e2e/vrt/test-results`，HTML报告在`playwright-report`;GitHub 操作 故障时上传，方便审核员检查基线、当前和差异图像。
 
 ## 生成艺术文件
 
@@ -317,8 +302,7 @@ vp exec musea-vrt --base-url http://localhost:5173 --ci --json
 vp exec musea-vrt generate src/components/Button.vue
 ```
 
-生成的文件是一个起点。在阅读前请复习变体、标题、标签和道具内容
-犯下了。
+生成的文件是一个起点。在阅读前请复习变体、标题、标签和道具内容 犯下了。
 
 ## 童话书输出
 
@@ -333,8 +317,7 @@ musea({
 
 ## CLI状态
 
-`vize musea`存在于 Rust CLI 中，但目前推荐的 Musea 工作流程仍然是 Vite
-插件路径。在专用画廊工作流程稳定下来之前，把 Rust 子命令当作实验性操作。
+`vize musea`存在于 Rust CLI 中，但目前推荐的 Musea 工作流程仍然是 Vite 插件路径。在专用画廊工作流程稳定下来之前，把 Rust 子命令当作实验性操作。
 
 Rust子指挥部可以搭建一个入门艺术项目：
 

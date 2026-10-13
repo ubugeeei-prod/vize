@@ -20,8 +20,12 @@ export function scopeCssForPipeline(css: string, scopeId: string): string {
   return scopeViteCssForPipeline(css, scopeId);
 }
 
-export function transformCssVarsForPipeline(css: string, scopeId: string): string {
-  return transformViteCssVarsForPipeline(css, scopeId);
+export function transformCssVarsForPipeline(
+  css: string,
+  scopeId: string,
+  productionFilename?: string,
+): string {
+  return transformViteCssVarsForPipeline(css, scopeId, productionFilename);
 }
 
 /**

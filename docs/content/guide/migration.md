@@ -130,8 +130,9 @@ review the formatter diff before changing CI. Formatting writes files;
 
 ## Migrate standalone config into Vite+
 
-Only a standalone CLI/LSP workflow needs a separate `vize.config.ts`.
-For integration tasks, move these settings into `vite.config.ts`:
+CLI and editor workflows can share the top-level `vize` settings in
+`vite.config.*`; see [configuration and release availability](./configuration.md).
+For Vite+ integration tasks, move these settings into the tool sections:
 
 ```ts annotate="remove:1,5,6,7;add:2,8,9,10"
 import { defineConfig } from "vize";
@@ -147,6 +148,6 @@ export default defineConfig({
 });
 ```
 
-Move the settings, not just the import: the field names differ. Preserve a
-standalone config when a separate CLI/LSP consumer still needs it.
+Move the settings, not just the import: the field names differ. Keep an existing
+dedicated config only when you still need its separate format or precedence.
 See [Configuration](./configuration.md) for the canonical location per integration.

@@ -18,7 +18,9 @@ mod global_component_callbacks;
 mod import_meta;
 mod imported_component_ref_expose;
 mod imported_runtime_props;
+mod javascript_sfc_membership;
 mod large_declaration_identity;
+mod lexical_dollar_slots;
 mod literal_dynamic_slot_names;
 mod native_prop_anchors;
 mod normalization;
@@ -343,3 +345,5 @@ watchEffect(() => {
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+mod options_projection;

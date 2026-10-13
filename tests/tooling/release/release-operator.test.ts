@@ -7,11 +7,15 @@ import { test } from "node:test";
 import { parse } from "yaml";
 import { repoRoot } from "../_helpers/moonbit.ts";
 import { writeFakeCommand } from "../support/fake-command.ts";
+import { dependencyCommands, dependencyShell } from "../support/release-operator-dependency-law.ts";
 import { readRepoFile } from "../support/github-workflows.ts";
 
 const workflow = parse(readRepoFile(".github", "workflows", "release-operator.yml"));
 const operator = workflow.jobs.operator;
 const invocation = operator.steps.at(-1);
+const dependencies = operator.steps.find((step: { run?: string }) =>
+  step.run?.includes("vp install --frozen-lockfile"),
+);
 
 test("hosted operator keeps user authority on protected main and does not deadlock Release", () => {
   assert.deepEqual(Object.keys(workflow.on), ["workflow_dispatch"]);
@@ -29,13 +33,14 @@ test("hosted operator keeps user authority on protected main and does not deadlo
   assert.equal(invocation.env.VIZE_RELEASE_OPERATOR_TIMEOUT_SECONDS, "14400");
   assert.equal(
     invocation.env.VIZE_RELEASE_EXPECTED_CUT_SHA,
-    "${{ inputs.operation == 'start' && github.sha || '' }}",
+    "${{ (inputs.operation == 'start' || inputs.operation == 'patch') && github.sha || '' }}",
   );
   assert.equal(invocation.env.GITHUB_ACTOR, undefined);
   assert.equal(invocation.env.GITHUB_TRIGGERING_ACTOR, undefined);
   assert.equal(invocation.env.GITHUB_SHA, undefined);
   assert.deepEqual(workflow.on.workflow_dispatch.inputs.operation.options, [
     "start",
+    "patch",
     "resume",
     "retire",
   ]);
@@ -51,11 +56,14 @@ test("hosted operator keeps user authority on protected main and does not deadlo
     assert.equal(workflow.on.workflow_dispatch.inputs[input].required, false);
     assert.equal(invocation.env[variable], `\${{ inputs.${input} }}`);
   }
-  assert.ok(
-    operator.steps.some((step: { run?: string }) =>
-      step.run?.includes("vp install --frozen-lockfile\nmoon update"),
-    ),
+  assert.equal(
+    operator.steps.find(
+      (step: { uses?: string }) => step.uses === "./.github/actions/setup-moonbit",
+    ).if,
+    "${{ inputs.operation == 'start' || inputs.operation == 'patch' || inputs.operation == 'resume' }}",
   );
+  assert.equal(dependencies.env.RELEASE_OPERATION, "${{ inputs.operation }}");
+  assert.ok(dependencies.run.startsWith("vp install --frozen-lockfile\n"));
 });
 
 test("actual pinned starter refuses stale cuts before mutation and installs the requested isolated frozen graph", () => {
@@ -182,6 +190,7 @@ test("hosted entry invokes the unchanged public protocol only for its actual mai
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-operator-"));
   const bin = path.join(root, "bin");
   const capture = path.join(root, "public-command.json");
+  const dependencyCapture = path.join(root, "dependencies.jsonl");
   fs.mkdirSync(bin);
   writeFakeCommand(
     bin,
@@ -197,11 +206,7 @@ test("hosted entry invokes the unchanged public protocol only for its actual mai
   `,
   );
   writeFakeCommand(bin, "git", "process.exit(process.argv[2] === 'config' ? 0 : 1);");
-  writeFakeCommand(
-    bin,
-    "vp",
-    `require('node:fs').writeFileSync(${JSON.stringify(capture)}, JSON.stringify(process.argv.slice(2)));`,
-  );
+  dependencyCommands(bin, capture, dependencyCapture);
   const invoke = (
     operation: string,
     source = "",
@@ -223,6 +228,7 @@ test("hosted entry invokes the unchanged public protocol only for its actual mai
         GITHUB_REPOSITORY: "ubugeeei-prod/vize",
         RELEASE_OPERATION: operation,
         RELEASE_SOURCE_PR: source,
+        RELEASE_SOURCE_CUT: "",
         RELEASE_SOURCE_HEAD: retirement.head ?? "",
         RELEASE_SOURCE_TAG: retirement.tag ?? "",
         RELEASE_RUN: retirement.run ?? "",
@@ -232,6 +238,23 @@ test("hosted entry invokes the unchanged public protocol only for its actual mai
       },
     });
   try {
+    const original = parse(
+      readRepoFile(
+        "tests",
+        "_fixtures",
+        "release",
+        "retire-moon-447",
+        "original-release-operator.yml",
+      ),
+    ).jobs.operator.steps.find((step: { run?: string }) =>
+      step.run?.includes("vp install --frozen-lockfile"),
+    );
+    assert.throws(
+      () => dependencyShell(original.run, root, bin, capture, dependencyCapture),
+      assert.AssertionError,
+    );
+    fs.rmSync(dependencyCapture);
+    dependencyShell(dependencies.run, root, bin, capture, dependencyCapture);
     for (const [operation, source, expected] of [
       ["start", "", ["run", "release", "minor", "-y", "--pin"]],
       ["resume", "42", ["run", "release", "--resume", "42", "--pin"]],
@@ -265,17 +288,13 @@ test("hosted entry invokes the unchanged public protocol only for its actual mai
     const accepted = retire();
     assert.equal(accepted.status, 0, accepted.stderr);
     assert.deepEqual(JSON.parse(fs.readFileSync(capture, "utf8")), [
-      "run",
-      "release",
-      "--retire",
+      "rust-script",
+      "tools/commands/release/pr.rs",
+      "retire",
       "42",
-      "--head",
       retirement.head,
-      "--tag",
       retirement.tag,
-      "--run",
       retirement.run,
-      "--operator-run",
       retirement.entry,
     ]);
     fs.rmSync(capture);

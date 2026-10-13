@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const { items: [first] } = defineProps<{ items: string[] }>();
+</script>
+<template><div /></template>

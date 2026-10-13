@@ -96,6 +96,7 @@ function runtimeUrl(specifier: string) {
 const vueUrl = runtimeUrl("vue");
 const serverUrl = runtimeUrl("@vue/server-renderer");
 const fromSfc = createRequire(fromVue.resolve("@vue/compiler-sfc/package.json"));
+export const compilerSourceMapPrototype = fromSfc("magic-string").SourceMap.prototype;
 const parser = fromSfc("@babel/parser");
 
 async function loadModule(code: string, helper?: string) {

@@ -26,7 +26,15 @@ const DIALECT_MARKUP_HOOKS = new Set(["enter_directive"]);
 export const DIALECT_NAME_PREFIXES = ["ecosystem", "nuxt", "petite-vue", "vapor"];
 
 export function parseRuleFile(abs, model) {
-  const raw = readFileSync(abs, "utf8");
+  return parseRuleSource(
+    readFileSync(abs, "utf8"),
+    path.relative(RULES_DIR, abs).split(path.sep).join("/"),
+    model,
+    abs,
+  );
+}
+
+export function parseRuleSource(raw, rel, model, abs = rel) {
   const stripped = stripRust(raw);
   const code = stripRustComments(raw); // strings kept, comments blanked
 
@@ -55,6 +63,7 @@ export function parseRuleFile(abs, model) {
   for (const block of impls) {
     if (block.trait === "Rule") {
       for (const [fn, body] of block.fns) {
+        if (fn === "as_sfc_script_rule") continue; // SFC capability, never a template/JSX hook.
         if (fn === "as_markup_rule" && /\bSome\b/.test(body)) asMarkup = true;
         else if (fn === "jsx_needs_lowering" && /\btrue\b/.test(body)) jsxLowered = true;
         else if (fn === "run_on_sfc" || model.templateHooks.includes(fn)) hooks.add(fn);
@@ -159,7 +168,8 @@ export function parseRuleFile(abs, model) {
 
   return {
     abs,
-    rel: path.relative(RULES_DIR, abs).split(path.sep).join("/"),
+    rel,
+    source: stripped,
     meta,
     impls,
     ruleImplTypes,

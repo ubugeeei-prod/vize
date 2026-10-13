@@ -1,0 +1,27 @@
+{
+  "head": "9a699b6960c3d8bae1c5e22ae22d8738979cacef",
+  "run": 38229343824,
+  "logs": {
+    "check-js-114744673873": {
+      "rawBytes": 98583,
+      "rawSha256": "e4b34c6161c90dd5716f9eadc42ba770da80d2dcb8fc7dc4db678266c4223250"
+    },
+    "nuxt3-114744670463": {
+      "rawBytes": 33986,
+      "rawSha256": "383deed7dc08e44aac1b0bc440f8d81eff29247871310713b750acaf29e8f35a"
+    },
+    "plan-114744673489": {
+      "rawBytes": 112596,
+      "rawSha256": "daafd82e27b303a0a13e3229a508694f37773b8e62c5ab88c9ec4105465ebccb"
+    }
+  },
+  "meaningfulBeforeRegressionsExecuted": false,
+  "ownFailures": {
+    "plan": "Exact Node consumer surface shard stale due test hook offset and four new test-only surface records.",
+    "checkJs": "20 warnings only in passive copied official declaration files, actual frozen dependency install passed; no source warning/gate budget accepted."
+  },
+  "independentFailure": {
+    "Nuxt3": "Pinned MoonBitLinux archive GET403 before consumer/build; central transport source owner."
+  },
+  "qualification": "Preserved raw hosted failure only; no native/Corsa product before/after acceptance."
+}

@@ -2287,12 +2287,12 @@ script/no-duplicate-attr-inheritance · lint 规则
 文档: docs/content/rules/type-and-script.md
 
 错误示例:
-  defineOptions({ inheritAttrs: true })
-  export default { inheritAttrs: true }
+  <script setup></script>
+  <template><div><button v-bind="$attrs">Save</button></div></template>
 
 正确示例:
-  defineOptions({ inheritAttrs: false }) // intentional opt-out
-  export default {}                      // default inheritance, unstated
+  <script setup>defineOptions({ inheritAttrs: false })</script>
+  <template><div><button v-bind="$attrs">Save</button></div></template>
 === script/no-export-in-script-setup
 script/no-export-in-script-setup · lint 规则
 禁止在 <script setup> 中使用 export 语句
@@ -2550,10 +2550,10 @@ script/no-reserved-identifiers · lint 规则
   const myData = {}
 === script/no-reserved-keys
 script/no-reserved-keys · lint 规则
-禁止将 Vue 保留名称用作选项式 API 的 props/data/computed/methods/setup/inject 键
+禁止将 Vue 保留名称用作选项式 API 的 props/data/computed/methods/setup 键
 
 精度层级: exact
-适用范围: Options API component definitions written as object literals
+适用范围: props/data/computed/methods/setup members of resolved Options API objects with block-scoped script/no-reserved-keys or registered vue/no-reserved-keys suppression; asyncData and script-setup defineProps are outside
 严重级别: 错误
 类别: script
 自动修复: 不支持
@@ -2561,9 +2561,9 @@ script/no-reserved-keys · lint 规则
 
 错误示例:
   export default {
-    props: ['$el'],       // reserved: starts with `$`
-    computed: { _foo() { return 1 } }, // reserved: starts with `_`
-    methods: { emit() {} } // reserved: Vue built-in instance name
+    props: ['$el'],
+    data() { return { _private: 1 } },
+    methods: { $emit() {} }
   }
 === script/no-reserved-props
 script/no-reserved-props · lint 规则
@@ -2839,6 +2839,7 @@ script/prefer-import-from-vue · lint 规则
 
 正确示例:
   import { ref, h } from 'vue'
+  import { isString } from '@vue/shared'
 === script/prefer-ref-over-reactive
 script/prefer-ref-over-reactive · lint 规则
 推荐使用 ref() 而不是 reactive() 管理状态
@@ -3239,10 +3240,10 @@ script/return-in-computed-property · lint 规则
 文档: docs/content/rules/type-and-script.md
 === script/return-in-emits-validator
 script/return-in-emits-validator · lint 规则
-要求选项式 API 的每个 emits 校验函数都有返回值
+要求 Vue 的每个 emits 校验函数都有返回值
 
 精度层级: complete
-适用范围: Options API component definitions written as object literals
+适用范围: Vue emits validator functions in resolved Options API objects and compiler-owned inline setup runtime objects or immutable const chains; unavailable external blocks, namespace-shadowed calls and all-path return analysis are outside
 严重级别: 错误
 类别: script
 自动修复: 不支持

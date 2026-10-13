@@ -10,18 +10,22 @@ see the [VS Code integration](../integrations/vscode.md).
 
 Content Mappers are TypeScript's plugin surface for checking file types the compiler cannot parse
 itself — the [TypeScript 7.1 API roadmap](https://github.com/microsoft/typescript-go/issues/4830)
-identifies them as the TS Server plugin replacement needed by Vue. The API merged into
-`typescript-go` main in [microsoft/typescript-go#4712](https://github.com/microsoft/typescript-go/pull/4712).
+identifies them as the TS Server plugin replacement needed by Vue. The initial API merged in
+[microsoft/typescript-go#4712](https://github.com/microsoft/typescript-go/pull/4712).
+That staging repository is now archived; native TypeScript development continues in
+[microsoft/TypeScript](https://github.com/microsoft/TypeScript).
+The [Content Mapper conformance workflow](https://github.com/ubugeeei-prod/vize/blob/main/.github/workflows/content-mapper-conformance.yml)
+shows the exact checkout and build steps for the host described below.
 
 Vize ships a conforming content mapper inside the `vize` npm package: a `tsgo` build with
 content-mapper support spawns `vize content-mapper` and checks `.vue` files directly — hover,
 go-to-definition, rename, completions, and diagnostics all map back to your authored SFC, with no
 parallel `.vue.ts` project to materialize.
 
-> **⚠️ Preview:** Content Mappers are merged upstream but not yet in the released TypeScript 7
-> platform packages. Until a release ships the protocol, build a content-mapper-enabled native
-> TypeScript binary from `typescript-go` main and keep [`vize check`](./cli.md#check) as the
-> supported typecheck path.
+> **⚠️ Preview:** This integration requires a native TypeScript host that exposes Content Mappers
+> and accepts `--runExternalCode`. A native TypeScript version number alone does not establish
+> that support. Use the exact host revision described below for the qualified mapper route;
+> keep [`vize check`](./cli.md#check) as the supported production typecheck path.
 
 ## Setup
 
@@ -47,14 +51,16 @@ vp install -D vize
 }
 ```
 
-Running external mapper processes requires explicit opt-in:
+Running external mapper processes requires explicit opt-in. The following command uses the
+content-mapper-enabled binary named `tsgo` in Vize's conformance workflow. That workflow builds
+the current native compiler entrypoint, `tsc/cmd/tsc`, at the exact revision specified below.
 
 ```bash
 tsgo --runExternalCode --noEmit -p tsconfig.json
 ```
 
-In VS Code, the Vize extension registers `.vue` support with the TypeScript 7
-content-mapper host automatically in trusted workspaces — the same mapper then powers the editor.
+In VS Code, when a trusted workspace uses a content-mapper-enabled TypeScript host, the Vize
+extension registers `.vue` support automatically. The same mapper then powers the editor.
 
 ## Options
 
@@ -106,11 +112,17 @@ next non-empty line.
 
 ## Protocol
 
-Vize speaks content-mapper protocol v1 as merged upstream: UTF-8 position encoding, per-project
-`openProject`/`closeProject` lifecycle, and `.tsx` virtual output so both TypeScript and embedded
-JSX parse correctly. Conformance is enforced in CI against a pinned `typescript-go` revision that
-builds the exact upstream compiler and runs the full CLI, build-mode, and LSP suites through the
-packed npm artifacts.
+Vize uses the current Content Mapper initialization contract without numbered `protocolVersion`
+negotiation. It selects UTF-8 position encoding, maintains a per-project
+`openProject`/`closeProject` lifecycle, and emits `.tsx` virtual output so both TypeScript and
+embedded JSX parse correctly.
+
+The conformance workflow builds the native compiler from `microsoft/TypeScript` at exact revision
+`d6c4afddb2c55f4a9dea7b59293a99a8fdea1799`, the merged
+[Content Mappers round 2 change](https://github.com/microsoft/TypeScript/pull/63936).
+It runs the full CLI, build-mode and LSP suites through packed npm artifacts, including authored
+Vue declaration-map emission and navigation from a separately packed consumer back to `.vue`
+source. This qualifies that exact host; it does not establish support in every published package.
 
 Diagnostic codes reported under the `vize` source:
 
@@ -123,8 +135,11 @@ Diagnostic codes reported under the `vize` source:
 
 ## Limitations
 
-- Requires a `tsgo` built from `typescript-go` main until a TypeScript 7 release ships the API.
-- Declaration maps for mapped inputs await
-  [microsoft/typescript-go#4860](https://github.com/microsoft/typescript-go/issues/4860).
-- `vize check` remains the supported production typecheck path while the upstream API is in
-  preview.
+- Requires a host with the Content Mapper API and explicit external-code opt-in. The archived
+  staging repository is not the current development source.
+- The declaration-map request
+  [microsoft/typescript-go#4860](https://github.com/microsoft/typescript-go/issues/4860)
+  was completed by the round 2 change above. Vize's exact-host tests cover declaration-map
+  emission and packed-consumer navigation; other host revisions require their own qualification.
+- `vize check` remains the supported production typecheck path. Check that your installed host
+  and editor expose this integration before using the mapper route.

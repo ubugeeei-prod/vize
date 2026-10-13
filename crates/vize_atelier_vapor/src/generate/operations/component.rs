@@ -160,7 +160,8 @@ pub(super) fn generate_create_component(
     // Check if this is a simple inner component (pre-resolved, no props, no slots)
     // In that case, emit simplified call: _createComponentWithFallback(_component_Foo)
     let is_pre_resolved = was_already_resolved;
-    if is_pre_resolved && !has_slots && props == "null" {
+    if is_pre_resolved && !has_slots && props == "null" && creation_flags(ctx, component) == "false"
+    {
         ctx.push_line(&cstr!(
             "const n{} = _{}({})",
             component.id,
@@ -248,6 +249,7 @@ fn creation_flags(
 ) -> &'static str {
     if ctx.keep_alive_slot
         && component.parent.is_none()
+        && ctx.root_components.contains(&component.id)
         && component.kind == ComponentKind::Dynamic
         && component
             .is_expr
@@ -255,7 +257,11 @@ fn creation_flags(
             .is_none_or(|expression| !expression.is_static)
     {
         "4"
-    } else {
+    } else if ctx.root_components.contains(&component.id) {
         "true"
+    } else {
+        // Nested in an element, a slot, a `v-for`, or among sibling roots: not the owner's single
+        // root, so the owner's fallthrough attrs must not reach it.
+        "false"
     }
 }

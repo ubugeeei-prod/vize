@@ -1,0 +1,31 @@
+[
+  {
+    "name": "original-nested-owner-attrs",
+    "childModule": "./FallthroughInner.vue",
+    "rootProps": {
+      "data-owner": "outer"
+    },
+    "expectedTree": [
+      {
+        "tag": "section",
+        "attributes": {
+          "data-owner": "outer",
+          "id": "outer"
+        },
+        "children": [
+          {
+            "tag": "span",
+            "attributes": {
+              "id": "inner"
+            },
+            "children": [
+              "inner"
+            ]
+          }
+        ]
+      }
+    ],
+    "context": {},
+    "steps": []
+  }
+]

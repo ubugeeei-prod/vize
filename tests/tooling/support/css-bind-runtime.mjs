@@ -25,6 +25,11 @@ async function load(code, runtime) {
 for (const fixture of cases) {
   const names = [...fixture.css.matchAll(/var\(--([a-zA-Z0-9_-]+)\)/g)].map((match) => match[1]);
   assert.equal(names.length, 2, `${fixture.name}: both declarations survive`);
+  assert.deepEqual(
+    [...fixture.delegated.matchAll(/var\(--([a-zA-Z0-9_-]+)\)/g)].map((match) => match[1]),
+    names,
+    `${fixture.name}: delegated stylesheet uses every runtime name`,
+  );
   if (!fixture.isProd) {
     for (const name of names) assert.ok(fixture.pipeline.includes(`var(--${name})`));
     assert.equal(names[1], "f82a533a-fogOpacity");
@@ -72,6 +77,38 @@ for (const fixture of cases) {
     scoped: true,
   });
   assert.deepEqual(css.errors, []);
+  if (fixture.isProd) {
+    // Vue's filename-based production naming independently owns the full vector.
+    const productionCss = compileStyle({
+      source: descriptor.styles[0].content,
+      filename: fixture.filename,
+      id: fixture.filename,
+      isProd: true,
+    });
+    assert.deepEqual(productionCss.errors, []);
+    assert.deepEqual(
+      [...productionCss.code.matchAll(/var\(--([a-zA-Z0-9_-]+)\)/g)].map((match) => match[1]),
+      names,
+    );
+    let officialGetter;
+    const productionScript = compileScript(descriptor, {
+      id: fixture.filename,
+      isProd: true,
+      inlineTemplate: true,
+    });
+    const official = await load(productionScript.content, {
+      vue: {
+        ...vue,
+        useCssVars: (callback) => {
+          officialGetter = callback;
+        },
+      },
+      server,
+    });
+    await server.renderToString(vue.createSSRApp(official));
+    assert.equal(typeof officialGetter, "function");
+    assert.deepEqual(officialGetter({}), values, "complete official JS variable map");
+  }
   const upstream = await load(
     `${script.content.replace("export default", "const component =")}\n${template.code}\ncomponent.ssrRender = ssrRender; export default component;`,
     { vue, server },

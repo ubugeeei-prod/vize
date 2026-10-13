@@ -15,7 +15,7 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
     const n4 = t0()
     const _component_primitive = _ctx.Primitive
     _setInsertionState(n4)
-    const n3 = _createComponentWithFallback(_component_primitive, null, null, true)
+    const n3 = _createComponentWithFallback(_component_primitive, null, null, false)
     return n4
   })
   return n0

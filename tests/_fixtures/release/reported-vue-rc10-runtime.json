@@ -1,0 +1,30 @@
+{
+  "version": "3.6.0-rc.10",
+  "tarball": "https://registry.npmjs.org/vue/-/vue-3.6.0-rc.10.tgz",
+  "integrity": "sha512-0EzC+EPILPDSaGGgTFh04FrdFcFRNLAygULbM4DU/UzZsEsQOeLQ6pPG4fno6ZkU6njfzjIe9AwqDHKER8zY/A==",
+  "manifestUtf8": "{\n  \"name\": \"vue\",\n  \"version\": \"3.6.0-rc.10\",\n  \"description\": \"The progressive JavaScript framework for building modern web UI.\",\n  \"main\": \"index.js\",\n  \"module\": \"dist/vue.runtime.esm-bundler.js\",\n  \"types\": \"dist/vue.d.ts\",\n  \"unpkg\": \"dist/vue.global.js\",\n  \"jsdelivr\": \"dist/vue.global.js\",\n  \"files\": [\n    \"index.js\",\n    \"index.mjs\",\n    \"dist\",\n    \"compiler-sfc\",\n    \"server-renderer\",\n    \"jsx-runtime\",\n    \"jsx.d.ts\"\n  ],\n  \"exports\": {\n    \".\": {\n      \"import\": {\n        \"types\": \"./dist/vue.d.mts\",\n        \"node\": \"./index.mjs\",\n        \"default\": \"./dist/vue.runtime.esm-bundler.js\"\n      },\n      \"require\": {\n        \"types\": \"./dist/vue.d.ts\",\n        \"node\": {\n          \"production\": \"./dist/vue.cjs.prod.js\",\n          \"development\": \"./dist/vue.cjs.js\",\n          \"default\": \"./index.js\"\n        },\n        \"default\": \"./index.js\"\n      }\n    },\n    \"./server-renderer\": {\n      \"import\": {\n        \"types\": \"./server-renderer/index.d.mts\",\n        \"default\": \"./server-renderer/index.mjs\"\n      },\n      \"require\": {\n        \"types\": \"./server-renderer/index.d.ts\",\n        \"default\": \"./server-renderer/index.js\"\n      }\n    },\n    \"./compiler-sfc\": {\n      \"import\": {\n        \"types\": \"./compiler-sfc/index.d.mts\",\n        \"browser\": \"./compiler-sfc/index.browser.mjs\",\n        \"default\": \"./compiler-sfc/index.mjs\"\n      },\n      \"require\": {\n        \"types\": \"./compiler-sfc/index.d.ts\",\n        \"browser\": \"./compiler-sfc/index.browser.js\",\n        \"default\": \"./compiler-sfc/index.js\"\n      }\n    },\n    \"./jsx-runtime\": {\n      \"types\": \"./jsx-runtime/index.d.ts\",\n      \"import\": \"./jsx-runtime/index.mjs\",\n      \"require\": \"./jsx-runtime/index.js\"\n    },\n    \"./jsx-dev-runtime\": {\n      \"types\": \"./jsx-runtime/index.d.ts\",\n      \"import\": \"./jsx-runtime/index.mjs\",\n      \"require\": \"./jsx-runtime/index.js\"\n    },\n    \"./jsx\": \"./jsx.d.ts\",\n    \"./dist/*\": \"./dist/*\",\n    \"./package.json\": \"./package.json\"\n  },\n  \"buildOptions\": {\n    \"name\": \"Vue\",\n    \"formats\": [\n      \"esm-bundler\",\n      \"esm-bundler-runtime\",\n      \"cjs\",\n      \"global\",\n      \"global-runtime\",\n      \"esm-browser\",\n      \"esm-browser-runtime\",\n      \"esm-browser-vapor\"\n    ]\n  },\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"git+https://github.com/vuejs/core.git\"\n  },\n  \"keywords\": [\n    \"vue\"\n  ],\n  \"author\": \"Evan You\",\n  \"license\": \"MIT\",\n  \"bugs\": {\n    \"url\": \"https://github.com/vuejs/core/issues\"\n  },\n  \"homepage\": \"https://vuejs.org/\",\n  \"dependencies\": {\n    \"@vue/shared\": \"3.6.0-rc.10\",\n    \"@vue/compiler-dom\": \"3.6.0-rc.10\",\n    \"@vue/runtime-dom\": \"3.6.0-rc.10\",\n    \"@vue/runtime-vapor\": \"3.6.0-rc.10\",\n    \"@vue/compiler-sfc\": \"3.6.0-rc.10\",\n    \"@vue/server-renderer\": \"3.6.0-rc.10\"\n  },\n  \"peerDependencies\": {\n    \"typescript\": \"*\"\n  },\n  \"peerDependenciesMeta\": {\n    \"typescript\": {\n      \"optional\": true\n    }\n  },\n  \"devDependencies\": {\n    \"vitest\": \"5.0.1\"\n  }\n}",
+  "distFiles": [
+    "dist/vue.cjs.js",
+    "dist/vue.cjs.prod.js",
+    "dist/vue.d.mts",
+    "dist/vue.d.ts",
+    "dist/vue.esm-browser.js",
+    "dist/vue.esm-browser.prod.js",
+    "dist/vue.esm-bundler.js",
+    "dist/vue.global.js",
+    "dist/vue.global.prod.js",
+    "dist/vue.runtime-with-vapor.esm-browser.js",
+    "dist/vue.runtime-with-vapor.esm-browser.prod.js",
+    "dist/vue.runtime.esm-browser.js",
+    "dist/vue.runtime.esm-browser.prod.js",
+    "dist/vue.runtime.esm-bundler.js",
+    "dist/vue.runtime.global.js",
+    "dist/vue.runtime.global.prod.js"
+  ],
+  "module": {
+    "file": "dist/vue.runtime.esm-bundler.js",
+    "sha256": "00dba16368a44c065bbee611d0785dab98f6032e56c47e029700d645a220c9cc",
+    "utf8": "/**\n  * vue v3.6.0-rc.10\n  * (c) 2018-present Yuxi (Evan) You and Vue contributors\n  * @license MIT\n  **/\nimport { NOOP } from \"@vue/shared\";\nimport { initCustomFormatter, warn } from \"@vue/runtime-dom\";\nimport { defineVaporAsyncComponent } from \"@vue/runtime-vapor\";\nexport * from \"@vue/runtime-dom\";\nexport * from \"@vue/runtime-vapor\";\n//#region packages/vue/src/dev.ts\nfunction initDev() {\n\tinitCustomFormatter();\n}\n//#endregion\n//#region packages/vue/src/runtime.ts\nif (!!(process.env.NODE_ENV !== \"production\")) initDev();\nconst compile = (_template) => {\n\tif (!!(process.env.NODE_ENV !== \"production\")) warn(\"Runtime compilation is not supported in this build of Vue. Configure your bundler to alias \\\"vue\\\" to \\\"vue/dist/vue.esm-bundler.js\\\".\");\n\treturn NOOP;\n};\n//#endregion\nexport { compile, defineVaporAsyncComponent };\n"
+  },
+  "custody": "Actual exact public rc.10 npm-ci installation; package manifest, complete dist file inventory and complete MIT runtime entry, not a Vize or release qualification."
+}

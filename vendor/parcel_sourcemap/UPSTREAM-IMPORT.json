@@ -1,0 +1,52 @@
+{
+  "archive": "parcel_sourcemap-2.1.1.crate",
+  "archiveSha256": "485b74d7218068b2b7c0e3ff12fbc61ae11d57cb5d8224f525bd304c6be05bbb",
+  "upstreamRevision": "a136bd6ba9f1d3cded501ae824341be0a54c5ce3",
+  "files": [
+    {
+      "path": ".cargo_vcs_info.json",
+      "bytes": 110,
+      "sha256": "4df511a7e321c35e1fa79d2a898733d25cf4dae5fede4e0c7dd78ecf0e873455"
+    },
+    {
+      "path": "Cargo.toml",
+      "bytes": 1185,
+      "sha256": "c89c3cbf225b4d78c4b0754b2552af90c35ee41fa8cefa958cbdde0dec23df45"
+    },
+    {
+      "path": "Cargo.toml.orig",
+      "bytes": 621,
+      "sha256": "aaa388dbe4866c71599c36caef491fd71a3b7606e4294681f1e28fb46587ab31"
+    },
+    {
+      "path": "src/lib.rs",
+      "bytes": 31095,
+      "sha256": "1d7e8b45a952ab217cec5b9d73be79ea1653727d918a9d74c1560ac2c0a8547a"
+    },
+    {
+      "path": "src/mapping.rs",
+      "bytes": 706,
+      "sha256": "2a7414a28f156372f598d054f6dcbf24e67dfa793a2a13b0f30067ee6dc28506"
+    },
+    {
+      "path": "src/mapping_line.rs",
+      "bytes": 3661,
+      "sha256": "e60740559542a77949215f18ad0a38f81cb4562924dfe579b849c4850a8689dc"
+    },
+    {
+      "path": "src/sourcemap_error.rs",
+      "bytes": 5781,
+      "sha256": "01aa6b6aa0b334019be577367f1841cbdd1478c338c335e58b43d51748a13fbb"
+    },
+    {
+      "path": "src/utils.rs",
+      "bytes": 2977,
+      "sha256": "9dc369efa1dec1646672020e7767b1ec415efc15065c7a8fe45998a917f30094"
+    },
+    {
+      "path": "src/vlq_utils.rs",
+      "bytes": 813,
+      "sha256": "b840122fd15b2410447a3f449d0a143a6b5a58ae47c1965dba301425b7590895"
+    }
+  ]
+}

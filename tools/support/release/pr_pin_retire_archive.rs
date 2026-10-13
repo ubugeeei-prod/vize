@@ -53,7 +53,10 @@ pub(super) fn reference(tag: &str) -> String {
 }
 
 pub(super) fn identity(receipt: &Value) -> Result<&Value, String> {
-    if receipt["schema"] != "vize-unpublished-retirement-v1" {
+    if !matches!(
+        receipt["schema"].as_str(),
+        Some("vize-unpublished-retirement-v1" | "vize-unpublished-retirement-v2")
+    ) {
         return Err("Unknown immutable retirement schema".into());
     }
     let identity = receipt
@@ -77,6 +80,14 @@ pub(super) fn identity(receipt: &Value) -> Result<&Value, String> {
         }
     }
     Ok(identity)
+}
+
+pub(super) fn log_suffix(receipt: &Value) -> &'static str {
+    if receipt["schema"] == "vize-unpublished-retirement-v2" {
+        ".log.gz"
+    } else {
+        ".log"
+    }
 }
 
 pub(super) fn read(tag: &str, root: &Path) -> Result<Option<(String, Value)>, String> {
@@ -122,7 +133,7 @@ pub(super) fn read(tag: &str, root: &Path) -> Result<Option<(String, Value)>, St
             || fields[0] != "100644"
             || fields[1] != "blob"
             || !(path == "retirement.json"
-                || (path.starts_with("failure/") && path.ends_with(".log")))
+                || (path.starts_with("failure/") && path.ends_with(log_suffix(&receipt))))
         {
             return Err("Archive contains an unexpected path/type/mode".into());
         }
@@ -204,7 +215,7 @@ pub(super) fn install_authorized(
     for (path, bytes) in logs {
         let number = path
             .strip_prefix("failure/")
-            .and_then(|v| v.strip_suffix(".log"));
+            .and_then(|v| v.strip_suffix(log_suffix(&receipt)));
         if number.is_none_or(|v| v.is_empty() || !v.bytes().all(|b| b.is_ascii_digit())) {
             return Err("Unsafe retirement failure-log path".into());
         }

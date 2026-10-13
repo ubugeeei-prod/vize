@@ -11,7 +11,7 @@ export default defineConfig({
     ignorePatterns: ["dist/**"],
   },
   pack: {
-    entry: ["src/index.ts", "src/cli.ts"],
+    entry: ["src/index.ts", "src/cli.ts", "src/eslint.ts"],
     format: "esm",
     dts: true,
     clean: true,

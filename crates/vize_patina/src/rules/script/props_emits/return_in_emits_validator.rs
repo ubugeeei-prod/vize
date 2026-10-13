@@ -1,6 +1,6 @@
 //! script/return-in-emits-validator
 //!
-//! Require a return value in every Options API emits validator.
+//! Require a return value in every resolved Vue emits validator.
 //!
 //! The object form of the `emits` option maps each event name to a validator
 //! function: `emits: { submit(payload) { return !!payload } }`. Vue calls the
@@ -13,9 +13,8 @@
 //! arrow with a block body) whose body has no value-returning `return`. A
 //! concise-body arrow (`(p) => expr`) always returns its expression and is never
 //! flagged; a `return` inside a nested function is that function's own and does
-//! not count. Only the Options API `emits` option is covered (the
-//! `<script setup>` `defineEmits` validator object is the same shape and is
-//! handled too when it resolves to an object literal).
+//! not count. The Options API `emits` option and compiler-owned top-level
+//! `<script setup>` `defineEmits` objects share this validator analysis.
 //!
 //! Port of [`vue/return-in-emits-validator`](https://eslint.vuejs.org/rules/return-in-emits-validator.html).
 //!
@@ -52,13 +51,16 @@ use oxc_ast::ast::{
 use oxc_ast_visit::Visit;
 use oxc_span::Span;
 
-use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use super::emits_source::resolve_emits_object;
 use crate::diagnostic::{LintDiagnostic, Severity};
 
+mod setup;
+pub use setup::EmitsModuleScript;
+
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/return-in-emits-validator",
-    description: "Require a return value in every Options API emits validator",
+    description: "Require a return value in every Vue emits validator",
     default_severity: Severity::Error,
 };
 
@@ -75,6 +77,10 @@ impl ScriptRule for ReturnInEmitsValidator {
         true
     }
 
+    fn as_setup_emits_validator(&self) -> Option<&ReturnInEmitsValidator> {
+        Some(self)
+    }
+
     fn check_program<'a>(
         &self,
         program: &'a Program<'a>,
@@ -86,6 +92,45 @@ impl ScriptRule for ReturnInEmitsValidator {
             return;
         };
         check_emits_object(emits, offset, result);
+    }
+
+    fn check_program_with_sfc<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        sfc: SfcScriptContext<'_>,
+        result: &mut ScriptLintResult,
+    ) {
+        if sfc.is_sfc && sfc.is_script_setup {
+            let module = if sfc.sole_script_block {
+                EmitsModuleScript::Absent
+            } else {
+                EmitsModuleScript::Unavailable
+            };
+            self.check_setup_with_module(program, source, offset, module, result);
+        } else {
+            self.check_program(program, source, offset, result);
+        }
+    }
+}
+
+impl ReturnInEmitsValidator {
+    /// Called only for this actual rule in an actual SFC setup block.
+    pub(crate) fn setup_needs_module(program: &Program<'_>) -> bool {
+        setup::has_candidate(program)
+    }
+
+    pub(crate) fn check_setup_with_module<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        module: EmitsModuleScript<'a>,
+        result: &mut ScriptLintResult,
+    ) {
+        self.check_program(program, source, offset, result);
+        setup::check(program, offset, module, result);
     }
 }
 

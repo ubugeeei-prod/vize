@@ -1,0 +1,5 @@
+{
+  "bytes": 208,
+  "sha256": "747a8bbbd5c91e0ed763fb3dc197706678662a7222495c99faea166b46500ddf",
+  "wholeUtf8": "export {} from './A.vue.ts';\nexport {} from './B.vue.ts';\nexport { default as A } from './A.vue.ts';\nexport { default as B } from './B.vue.ts';\nexport * from './Absent.vue.ts/__vize_missing_vue_import__.js';\n"
+}

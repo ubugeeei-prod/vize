@@ -1,438 +1,119 @@
 ---
 title: Configuration
+description: Partagez les réglages Vize depuis votre configuration Vite et votre projet TypeScript.
 ---
 
-<!-- Generated translation; source: guide/configuration.md -->
+<!-- Reviewed translation; source: guide/configuration.md -->
 
 # Configuration
 
-Vize utilise `vize.config.*` pour les commandes de package npm partagées, le plugin Vite et les paramètres de la ligne de commande Rust.
+Gardez les réglages Vize dans `vite.config.ts` et le projet TypeScript dans `tsconfig.json`. Les valeurs par défaut ne nécessitent aucun fichier Vize supplémentaire.
 
-## Fichiers de configuration
+> [!NOTE]
+> La découverte de la configuration Vite par la CLI et l'éditeur natifs, ainsi qu'init sans fichier dédié, sont en préparation pour la prochaine version. D'ici là, les outils natifs publiés utilisent encore le format dédié existant pour les réglages partagés personnalisés. La [référence](./configuration-reference.md) décrit ce format.
 
-Le paquet npm commande et `@vizejs/vite-plugin` charger ces fichiers depuis la racine du projet dans cet ordre de priorité
-:
-
-- `vize.config.pkl`
-- `vize.config.ts`
-- `vize.config.js`
-- `vize.config.mjs`
-- `vize.config.json`
-
-La ligne de commande Rust lit les mêmes noms de fichiers de configuration dans l’ordre ci-dessus pour les paramètres natifs des commandes tels que
-`check`, `lint`, `lsp`et `fmt`.
-
-## Configuration TypeScript
+## Configuration Vite+
 
 ```ts
-import { defineConfig } from "vize";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig(({ command, mode, isSsrBuild }) => ({
-  compiler: {
-    sourceMap: mode !== "production",
-    ssr: isSsrBuild,
-    vapor: false,
-    customRenderer: false,
-    templateSyntax: "standard",
-  },
-  vite: {
-    include: [/\.vue$/],
-    exclude: [/node_modules/],
-    scanPatterns: ["src/**/*.vue"],
-    ignorePatterns: ["node_modules/**", "dist/**", ".git/**"],
-  },
-  linter: {
-    enabled: command !== "build",
-    preset: "happy-path",
-  },
-  typeChecker: {
-    enabled: true,
-    strict: true,
-  },
-  formatter: {
-    printWidth: 100,
-    singleQuote: false,
-  },
-  lsp: {
-    lint: true,
-    typecheck: false,
-    editor: false,
-    formatting: false,
-  },
-  musea: {
-    include: ["src/**/*.art.vue"],
-    basePath: "/__musea__",
-  },
-}));
-```
-
-## Résolution de type Vue
-
-Vize ne fixe pas la surface de type de Vue à partir du paquet `vize` publié : `vize check`, le langage
-le serveur et les commandes package résolvent `vue`, `@vue/compiler-sfc`, et types d’ambiance associés issus du projet
-analysé, donc les choix de patch, mineurs et pré-release de Vue 3 restent sous le contrôle de ce projet
-plutôt que la version utilisée pour construire Vize. Pour des résultats prévisibles, déclarez la version prise en charge de Vue
-dans le projet utilisateur (pas via les internes Vize), gardez `vue`, `@vue/compiler-sfc`
-intégrations comme Nuxt alignées à cet endroit, et exécutez `vize check` depuis la racine du projet ou un point
-`typeChecker.tsconfig` vers le package cible ; utiliser `typeChecker.corsaPath` uniquement pour choisir le checker
-binaire, jamais pour remplacer les versions de type Vue. Lorsqu’un projet prend en charge plusieurs plages Vue, testez chaque
-dans sa propre matrice de paquets afin que Vize suive le graphe de dépendance active, et non un chemin de type codé en dur.
-
-## Entrées expérimentales sur le plat
-
-Les monorepos peuvent décrire les paramètres par défaut racines et les overrides à portée de paquet avec `entries`. Les configurations d’objets
-simples sont normalisées en une seule entrée en interne, et les exportations de tableaux sont acceptées par `defineConfig` pour
-création de type ESLint-flat-config.
-
-```ts
 export default defineConfig({
-  formatter: {
-    printWidth: 100,
-  },
-  entries: [
-    {
-      name: "web app",
-      basePath: "apps/web",
-      files: ["src/**/*.vue"],
-      typeChecker: {
-        tsconfig: "tsconfig.app.json",
-      },
-    },
-    {
-      name: "ui package",
-      basePath: "packages/ui",
-      files: ["src/**/*.vue"],
-      formatter: {
-        singleQuote: true,
-      },
-    },
-  ],
+  compiler: { sourceMap: true },
+  lint: { vize: { preset: "essential" } },
+  fmt: { vize: { printWidth: 100 } },
+  typecheck: { strict: true },
 });
 ```
 
-## Configuration PKL
+| Emplacement | Fonction | Commande |
+| --- | --- | --- |
+| `compiler` | Compilation Vue | `vp dev`, `vp build` |
+| `lint.vize` | Règles lint Vue | `vp run lint` |
+| `fmt.vize` | Formatage Vue | `vp run fmt:check` |
+| `typecheck` | Vérification des types Vue | `vp run typecheck` |
+| `pack.vize` | Déclarations de bibliothèque | `vp run pack` |
 
-```pkl
-amends "node_modules/vize/pkl/vize.pkl"
+Utilisez `vp run check` pour les tâches Vize combinées. Les commandes intégrées `vp check`, `vp lint` et `vp fmt` conservent le fonctionnement propre à Vite+. Un script existant peut renommer une tâche générée en `vize:<nom>` ; consultez les [noms et remplacements des tâches](/guide/vite-plus.md#tasks).
 
-compiler {
-  sourceMap = true
-  vapor = false
-  customRenderer = false
-  templateSyntax = "standard"
-}
+## Modifier une règle
 
-vite {
-  scanPatterns = new Listing {
-    "src/**/*.vue"
-  }
-}
+Placez les règles Vue dans `lint.vize.rules` et celles d'Oxlint dans `lint.rules`. Les [options des règles](/rules/options.md) décrivent les paramètres et le [catalogue](../rules/all.md) donne les exemples complets.
 
-linter {
-  preset = "happy-path"
-}
-
-typeChecker {
-  enabled = true
-  strict = true
-}
-
-entries = new Listing {
-  new ConfigEntry {
-    name = "web app"
-    basePath = "apps/web"
-    files = new Listing { "src/**/*.vue" }
-    typeChecker {
-      tsconfig = "tsconfig.app.json"
-    }
-  }
-}
-
-lsp {
-  lint = true
-  typecheck = false
-  editor = false
-  formatting = false
-}
+```ts
+export default defineConfig({
+  lint: {
+    vize: { rules: { "vue/no-v-html": "error" } },
+    rules: { "no-debugger": "error" },
+  },
+});
 ```
 
-## Configuration JSON
+<span id="lint-rule-options"></span>
 
-```json
-{
-  "$schema": "./node_modules/vize/schemas/vize.config.schema.json",
-  "compiler": {
-    "sourceMap": true,
-    "vapor": false,
-    "customRenderer": false,
-    "templateSyntax": "standard"
-  },
-  "vite": {
-    "scanPatterns": ["src/**/*.vue"]
-  },
-  "linter": {
-    "preset": "happy-path"
-  },
-  "typeChecker": {
-    "enabled": true,
-    "strict": true
-  },
-  "musea": {
-    "include": ["src/**/*.art.vue"],
-    "basePath": "/__musea__"
-  }
-}
-```
+### Options des règles lint
 
-## Options du compilateur
+Les [options des règles](/rules/options.md) détaillent les objets typés et les exemples incorrects/corrigés (en anglais). Les champs inconnus sont refusés.
 
-Ces options sont placées sous `compiler`. Ils sont soutenus par un schéma et partagés via `defineConfig`; Pas
-chaque intégration consomme tous les domaines pour l’instant.
+## Choisir les fonctions à adopter
 
-| Option              | Valeurs                               | Usage courant                                                                                               |
-| ------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `sourceMap`         | `boolean`                             | Activer les cartes sources dans le plugin Vite                                                              |
-| `ssr`               | `boolean`                             | Compiler pour SSR lorsque vous ne dépendez pas du drapeau de compilation SSR de Vite                        |
-| `vapor`             | `boolean`                             | Activer la compilation en mode Vapor                                                                        |
-| `jsxMode`           | `"vdom"` ou `"vapor"`                 | Backend de sortie par défaut pour les composants `.jsx`/`.tsx`                                              |
-| `customRenderer`    | `boolean`                             | Considérez les balises minuscules non HTML comme des éléments de rendu personnalisés                        |
-| `customElements`    | `string[]`                            | Motifs de balises compilés comme éléments personnalisés (`Tres*` pour TresJS)                               |
-| `templateSyntax`    | `"standard"`, `"strict"`ou `"quirks"` | Choisissez la gestion des avertissements, des erreurs ou des particularités Vue pour la syntaxe des modèles |
-| `scriptExt`         | `"ts"` ou `"js"`                      | Conserver la sortie TS ou décompiler vers JS dans la commande de compilation npm                            |
-| `mode`              | `"module"` ou `"function"`            | Mode de sortie de compilateur de bas niveau                                                                 |
-| `prefixIdentifiers` | `boolean`                             | Identifiants de modèles préfixes avec `_ctx`                                                                |
-| `hoistStatic`       | `boolean`                             | Contrôle du levage statique du nœud                                                                         |
-| `cacheHandlers`     | `boolean`                             | Mise en cache du gestionnaire d’événements de contrôle                                                      |
-| `isTs`              | `boolean`                             | Analyser les blocs de script sous forme de TypeScript                                                       |
-| `runtimeModuleName` | `string`                              | Module d’importation à l’exécution de surcharge                                                             |
-| `runtimeGlobalName` | `string`                              | Surpasser globalement l’exécution pour la sortie fonction/IIFE                                              |
+Définissez `compiler`, `typecheck`, `lint.vize` ou `fmt.vize` sur `false` pour désactiver la fonction concernée. Vize formate Vue et Oxfmt les autres fichiers. Consultez la [répartition et la gestion des conflits](/guide/vite-plus.md#lint-and-formatter-ownership).
 
-Pour les projets Vite, les options de plugin direct suppriment la configuration partagée :
+## Vite classique
+
+Utilisez le plugin pour la compilation et un objet `vize` à la racine de la configuration pour les réglages partagés avec la CLI et l'éditeur. L'import du plugin ajoute aussi les types de configuration Vite.
 
 ```ts
 import { defineConfig } from "vite";
 import vize from "@vizejs/vite-plugin";
 
 export default defineConfig({
-  plugins: [
-    vize({
-      vapor: true,
-      sourceMap: true,
-      customRenderer: true,
-      templateSyntax: "standard",
-    }),
-  ],
-});
-```
-
-## Syntaxe des modèles
-
-`compiler.templateSyntax` par défaut sur `"standard"`.
-
-- `"standard"` accepte une syntaxe invalide récupérable, émet des avertissements et réécrit en sortie valide.
-- `"strict"` rapporte une syntaxe invalide comme étant des erreurs de compilation.
-- `"quirks"` préserve les particularités de compatibilité syntaxique des modèles sans avertissements supplémentaires.
-
-Les cas connus sont :
-
-- `v-for` alias avec une parenthèse d’arête non appariée. Vue dégage une `(` ou une `)` de traînée
-  de l’alias précédent il se sépare `value`, `key`et `index`; les modes standard et strict rapportent
-  ces alias comme malformés, tandis que le mode quirk reflète Vue.
-- Éléments HTML non nul écrits avec une syntaxe auto-fermeuse, tels que `<div />` ou `<span />`.
-  mode Standard les avertit et les réécrit comme des éléments vides, des erreurs strictes de mode, et le mode quirk les
-  comme des feuilles qui se ferment automatiquement.
-
-```text
-<template>
-  <!-- Standard/strict reject this. Quirk mode compiles it as `item in items`. -->
-  <div v-for="(item in items">{{ item }}</div>
-
-  <!-- Standard/strict reject this. Quirk mode compiles it as `item in items`. -->
-  <div v-for="item) in items">{{ item }}</div>
-
-  <!-- Standard warns and rewrites this as `<div></div>`. Strict errors. Quirk keeps it as a leaf. -->
-  <div />
-</template>
-```
-
-Implémentation en amont de Vue :
-
-- [`forAliasRE`](https://github.com/vuejs/core/blob/main/packages/compiler-core/src/utils.ts#L571)
-- [`stripParensRE` in `parseForExpression`](https://github.com/vuejs/core/blob/main/packages/compiler-core/src/parser.ts#L493-L530)
-
-Voir [Troubleshooting](./troubleshooting.md) pour le comportement HTML en mode strict derrière les balises invalides
-auto-fermantes.
-
-## Mode de sortie JSX & TSX
-
-> Pour l’API complète d’auteur, les styles à cadrage, la vérification de type, le support de l’éditeur et les limitations, voir le
-> [JSX & TSX guide](./jsx.md). Cette section ne couvre que les clés de configuration en mode de sortie.
-
-Vize compile les composants Vue `.jsx`/`.tsx` en sortie soit en DOM Virtual, soit en sortie
-[Vapor](https://blog.vuejs.org/posts/vue-vapor). `compiler.jsxMode` sélectionne le \*\*global
-
-- - par défaut pour les composants qui ne s’inscrivent pas explicitement ; par défaut, il est `"vdom"`.
-
-```ts
-// vize.config.ts
-import { defineConfig } from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  compiler: {
-    // Default every .jsx/.tsx component to Vapor output.
-    jsxMode: "vapor",
+  plugins: [vize()],
+  vize: {
+    linter: { preset: "essential" },
+    formatter: { printWidth: 100 },
+    typeChecker: { strict: true },
   },
 });
 ```
 
-`jsxMode` est indépendant de `compiler.vapor`: `vapor` bascule Vapor pour `.vue` SFC, tandis que `jsxMode`
-contrôle le backend par défaut pour JSX/TSX. Un projet peut garder les SFC sur VDOM tout en mettant par défaut JSX sur
-Vapor, ou inversement. Le plugin Vite accepte aussi `jsxMode` directement comme option plugin, ce qui
-remplace la configuration partagée.
+<span id="standalone-cli"></span>
 
-### Directives par composant
+## CLI autonome
 
-Un composant individuel remplace le défaut par un prologue directif, reflétant `"use strict"`:
+Installez `vize` et lancez les commandes depuis la racine du paquet ciblé. La CLI lit aussi `vite.config.*` et votre projet TypeScript. Les réglages Vite+ `compiler`, `typecheck`, `lint.vize` et `fmt.vize` sont également traduits pour les commandes natives. Les réglages natifs explicites de l'objet `vize` ont priorité sur cette traduction.
 
-```tsx
-// Compiled to Vapor regardless of the configured default.
-const Fast = () => {
-  "use vue:vapor";
-  return <div class="fast" />;
-};
-
-// Compiled to Virtual DOM regardless of the configured default.
-const Classic = () => {
-  "use vue:vdom";
-  return <div class="classic" />;
-};
+```bash
+vp install -D vize
+vp exec vize check
 ```
 
-Comme chaque composant est routé indépendamment, un **seul module peut mélanger les deux backends** :
+La recherche s'arrête au répertoire contenant le plus proche `package.json`, `tsconfig.json` ou `jsconfig.json`. Dans un monorepo, lancez les commandes depuis le paquet ciblé ou utilisez `vize.entries`, et choisissez explicitement les dossiers de travail de l'éditeur. La découverte des configurations Vite imbriquées par document est encore en cours.
 
-```tsx
-// vize.config: { compiler: { jsxMode: "vapor" } }
+Avec une configuration Vite, `build`, `lint`, `fmt` et `check` sans argument d'entrée utilisent le `root` Vite sélectionné. Un `root` relatif part du répertoire de configuration. Les chemins `typeChecker` de Vite et les `basePath` des périmètres partent de cette racine ; les configurations dédiées conservent leur base dans le répertoire de configuration. Les fichiers, globs et `--tsconfig` explicitement passés à la CLI restent relatifs au répertoire d'exécution.
 
-// No directive -> takes the configured default (Vapor here).
-export const Dashboard = () => <main>{/* ... */}</main>;
+Les exclusions globales partagées retirent les fichiers de la recherche CLI et du lint de l'éditeur. Un fichier exclu ouvert dans l'éditeur conserve les diagnostics de syntaxe, de types et de navigation. L'ordre et le sens des motifs, y compris la négation `!`, sont préservés.
 
-// Opts back into Virtual DOM just for this component.
-export const LegacyWidget = () => {
-  "use vue:vdom";
-  return <aside>{/* ... */}</aside>;
-};
-```
+## Configuration dédiée facultative
 
-### Préséance
+Un fichier `vize.config.*` existant reste accepté et a priorité sur la configuration Vite du même répertoire. L'option CLI `--config` sélectionne un fichier explicitement. Les options directes du plugin et les fonctions explicitement choisies dans l'éditeur ont priorité sur les réglages partagés ; `config: false` désactive le chargement automatique par le plugin.
 
-Le mode de sortie d’un composant se résout dans cet ordre :
+<span id="fichiers-de-configuration"></span>
+<span id="configuration-typescript"></span>
+<span id="résolution-de-type-vue"></span>
+<span id="entrées-expérimentales-sur-le-plat"></span>
+<span id="configuration-pkl"></span>
+<span id="configuration-json"></span>
+<span id="options-du-compilateur"></span>
+<span id="syntaxe-des-modèles"></span>
+<span id="mode-de-sortie-jsx-tsx"></span>
+<span id="directives-par-composant"></span>
+<span id="préséance"></span>
+<span id="diagnostic"></span>
+<span id="dialecte-vue"></span>
+<span id="options-d-analyse-statique"></span>
+<span id="musea-options"></span>
 
-1. Une directive `"use vue:vapor"` / `"use vue:vdom"` par composant.
-2. Le `compiler.jsxMode` par défaut depuis la configuration (ou l’option `jsxMode` du plugin).
-3. Le plan B intégré, `"vdom"`.
+## Référence détaillée
 
-### Diagnostic
+La [référence partagée](./configuration-reference.md) décrit la recherche des fichiers, les formats dédiés TypeScript/JSON/PKL, les entrées par périmètre, la résolution des types Vue et les réglages LSP/Musea. Consultez la [référence du compilateur](./compiler-configuration-reference.md) pour ses options et ses syntaxes, et les [fonctions expérimentales](/guide/experimentals.md) pour les options à activer explicitement.
 
-Une directive qui commence par `"use vue:"` mais ne nomme pas un mode connu (une faute de frappe comme
-`"use vue:vdomx"`) est signalée comme une erreur de compilation plutôt qu’ignorée silencieusement, et deux directives de mode
-conflictuelles dans un composant (`"use vue:vapor"` suivies de `"use vue:vdom"`) sont également
-diagnostiquées. Des prologues sans lien comme `"use strict"` sont laissés intacts.
-
-## Dialecte Vue
-
-`dialect` sélectionne le profil dialectal Vue pour les documents HTML autonomes (`.html`/`.htm`) :
-
-```json
-{
-  "dialect": "petite-vue"
-}
-```
-
-- `"vue"` considère les documents HTML autonomes comme de simples documents Vue-from-CDN.
-- `"petite-vue"` opte pour intégrer des documents HTML autonomes dans le
-  [petite-vue](https://github.com/vuejs/petite-vue) dialecte (complétions`v-scope`/`v-effect`
-  et fonctionnalités IDE sensibles à la petite vue).
-
-Lorsque la clé est absente, le dialecte est détecté structurellement par document : un `<script src>`
-résolvant vers le package petite-vue, une importation ES en ligne de `petite-vue`, ou un appel `PetiteVue.createApp`
-. Les mentions de petite-vue dans les commentaires ou la prose ne changent jamais de dialecte, et les composantes de
-en file indienne utilisent toujours le dialecte standard de Vue.
-
-## Options d’analyse statique
-
-Utilisez `linter` pour le chemin de peluches npm :
-
-```ts
-export default defineConfig({
-  linter: {
-    enabled: true,
-    preset: "opinionated",
-    rules: {
-      "vue/require-v-for-key": "error",
-      "vue/no-v-html": "warn",
-    },
-  },
-});
-```
-
-Utilisez `typeChecker` pour le chemin de vérification du npm :
-
-```ts
-export default defineConfig({
-  typeChecker: {
-    enabled: true,
-    strict: true,
-    checkProps: true,
-    checkEmits: true,
-    checkTemplateBindings: true,
-    // Vue 3 Options API template bindings; default-on (matches vue-tsc).
-    optionsApi: true,
-  },
-});
-```
-
-`typeChecker.optionsApi` résout les liaisons de modèles API des options de Vue 3
-(`data`/`computed`/`methods`/`inject`/`setup`/`props` sur un `<script> export default { ... }`simple).
-Il est livré dans la version standard (pas la fonction `legacy`), est **activé par défaut** (correspondant `vue-tsc`),
-et ne fonctionne que pour des composants non`<script setup>`, de sorte que le chemin commun reste sans coût ; Configurez
-`optionsApi: false` pour vous désinscrire. Le support Legacy Vue 2.7 / Nuxt 2 (`typeChecker.legacyVue2`, qui ajoute
-les globals de modèles Nuxt 2) est un op-in séparé `legacy`-build.
-
-`typeChecker.tsconfig` et `typeChecker.corsaPath` font partie du schéma partagé, mais le chemin Corsa
-soutenu par le projet est aujourd’hui la surface Rust CLI. `corsaPath` est partagé par `vize check`,
-`vize lint`sensibles au type , et `vize lsp` (`typeChecker.tsgoPath` est un alias obsolète) ; la pile
-à l’exécution est le package de plateforme native TypeScript 7 (`typescript` / `@typescript/typescript-*`)
-avec la couche API Corsa/corsa-bind. Laissez `corsaPath` non défini sauf si vous devez pointer Vize
-vers un exécutable `lib/tsc` installé précis. Gardez les déclarations d’ambiance, les fichiers d’auto-importation générés, les alias de chemin et les déclarations Vue
-`ComponentCustomProperties` dans votre `tsconfig.json`de projet, et utilisez un script de paquet
-comme `vize:check:app` pour `--tsconfig` ou `--corsa-path` overrides.
-
-```json
-{
-  "typeChecker": {
-    "servers": 1
-  }
-}
-```
-
-`typeChecker.servers` est réservé aux futurs pools de travailleurs Corsa. Le runner direct de session de projet
-ne supporte actuellement que `1`; les valeurs plus élevées échouent rapidement au lieu de faire semblant d’ajuster la concurrence.
-
-## Musea Options
-
-La configuration partagée couvre actuellement l’ensemble de fichiers et le routage de la galerie :
-
-```ts
-export default defineConfig({
-  musea: {
-    include: ["src/**/*.art.vue"],
-    exclude: ["node_modules/**", "dist/**"],
-    basePath: "/__musea__",
-    storybookCompat: false,
-    inlineArt: false,
-  },
-});
-```
-
-Passez directement des options axées sur la présentation telles que `previewCss`, `previewSetup`, `tokensPath`, `theme`et
-`storybookOutDir` directement pour `musea()` dans `vite.config.ts`.

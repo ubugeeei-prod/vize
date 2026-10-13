@@ -128,3 +128,5 @@ fn the_permissive_form_maps_the_single_declaration_to_the_first_occurrence() {
     let first = authored_offsets()[0];
     assert_eq!(mapped, vec![first..first + "$missing".len()]);
 }
+
+mod lexical_scope;

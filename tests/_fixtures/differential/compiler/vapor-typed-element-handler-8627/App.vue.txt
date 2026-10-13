@@ -1,0 +1,12 @@
+<script setup lang="ts" vapor>
+import { shallowRef } from "vue";
+
+const clicked = shallowRef("none");
+</script>
+
+<template>
+  <div>
+    <button id="typed-click" type="button" @click="(event: MouseEvent) => (clicked = event.type)">Click</button>
+    <span id="typed-clicked">{{ clicked }}</span>
+  </div>
+</template>

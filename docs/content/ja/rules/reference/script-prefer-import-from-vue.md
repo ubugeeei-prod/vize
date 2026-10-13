@@ -48,14 +48,15 @@ import { h } from '@vue/runtime-dom'
 
 ## 良い
 
-両ヘルパーを `vue` からまとめてインポートし、内部パッケージではなく公開エントリーポイントを使います。
+公開ヘルパーは `vue` からインポートします。`vue` が公開しない `isString` は `@vue/shared` を維持します。名前空間・デフォルト・公開と非公開の混在 import は警告のみで、自動修正しません。
 
 ```vue
 <script setup lang="ts">
 import { ref, h } from 'vue'
+import { isString } from '@vue/shared'
 </script>
 ```
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L32) · [全ルール](../all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L36) · [全ルール](../all.md)

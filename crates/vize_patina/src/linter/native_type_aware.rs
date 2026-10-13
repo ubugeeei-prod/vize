@@ -16,10 +16,14 @@ mod markers;
 mod options_prop_shape;
 mod parsing;
 pub(in crate::linter) mod plain_module;
+#[cfg(test)]
+mod public_expression_tests;
 mod reactivity_loss;
 mod relative_imports;
 mod rule_queries;
 mod script_options;
+#[cfg(test)]
+mod slot_binding_tests;
 mod source_path;
 mod strict_boolean;
 #[cfg(test)]

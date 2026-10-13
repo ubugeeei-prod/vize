@@ -1,12 +1,16 @@
 ---
-title: Standalone Configuration Reference
+title: Shared Configuration Reference
 ---
 
-# Standalone Configuration Reference
+<span id="standalone-configuration-reference"></span>
 
-Vize uses `vize.config.*` for shared npm package commands, Vite plugin, and Rust CLI settings.
+# Shared Configuration Reference
+
+Prefer existing `vite.config.*` and `tsconfig.json`; see [Configuration](./configuration.md). This page documents the native settings and optional dedicated formats.
 
 ## Config Files
+
+Vite config is discovered when no dedicated config exists in the same nearest project directory. The CLI also accepts an explicit `--config`; direct plugin options and explicit editor feature switches take precedence. Dedicated-config paths use the config directory. Vite-owned `typeChecker` paths and scoped `basePath` use the selected Vite `root`; explicit CLI inputs retain their invocation-directory base. For package scopes, use `vize.entries` and the target package's TypeScript project.
 
 The npm package commands and `@vizejs/vite-plugin` load these files from the project root in this priority order:
 
@@ -260,3 +264,59 @@ export default defineConfig({
 
 Pass presentation-focused options such as `previewCss`, `previewSetup`, `tokensPath`, `theme`, and
 `storybookOutDir` directly to `musea()` in `vite.config.ts`.
+
+## Existing dedicated workflow settings
+
+Projects already using a dedicated `vize.config.*` can retain this complete workflow preset. For new projects, prefer the existing Vite configuration in [User Workflows](./workflows.md); published-release availability is explained in [Configuration](./configuration.md).
+
+```ts
+import { defineConfig } from "vize";
+
+export default defineConfig({
+  formatter: {
+    printWidth: 100,
+  },
+  linter: {
+    preset: "happy-path",
+  },
+  typeChecker: {
+    enabled: true,
+    strict: true,
+    tsconfig: "tsconfig.json",
+  },
+  vite: {
+    scanPatterns: ["src/**/*.vue"],
+  },
+});
+```
+
+## Musea shared configuration
+
+Put shared defaults in the top-level `vize.musea` option of `vite.config.*`.
+`musea()` options override individual shared options. Existing `vize.config.*`
+files remain supported and take precedence over shared settings in the same Vite project.
+
+```ts
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+import { musea } from "@vizejs/vite-plugin-musea";
+
+export default defineConfig({
+  plugins: [musea()],
+  vize: {
+    musea: {
+      include: ["src/**/*.art.vue"],
+      exclude: ["node_modules/**", "dist/**"],
+      basePath: "/__musea__",
+      storybookCompat: false,
+      inlineArt: false,
+    },
+  },
+});
+```
+
+`musea-vrt` also reads shared `include`, `exclude`, and `vrt` settings from this
+Vite configuration. Shared `vrt.outDir` selects the snapshot directory; plugin
+`vrt` options override the corresponding shared options. `vize musea new` creates
+an example art file and uses Musea's default discovery without generating a
+dedicated configuration file.

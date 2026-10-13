@@ -6,7 +6,7 @@ import {
   criterionSideTargetDirs,
   cargoBenchArgs,
   resolveSuiteSelection,
-} from "../../tools/benchmarks/scripts/criterion-ab.mjs";
+} from "../../tools/benchmarks/scripts/criterion-ab.ts";
 import {
   compareBaselineExports,
   compareVaporNativePairs,
@@ -16,8 +16,8 @@ import {
   evaluateAbsoluteBudgets,
   parseCritcmpExport,
   validateComparisonTable,
-} from "../../tools/benchmarks/scripts/criterion-baselines.mjs";
-import { renderSummary } from "../../tools/benchmarks/scripts/criterion-summary.mjs";
+} from "../../tools/benchmarks/scripts/criterion-baselines.ts";
+import { renderSummary } from "../../tools/benchmarks/scripts/criterion-summary.ts";
 
 test("Criterion driver snapshots both baselines before comparing them", () => {
   assert.deepEqual(criterionSideTargetDirs("/work/head/target"), {

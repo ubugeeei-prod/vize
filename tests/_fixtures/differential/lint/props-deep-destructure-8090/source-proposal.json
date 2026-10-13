@@ -1,0 +1,58 @@
+{
+  "schema": "vize.lint.props-deep-destructure-correctness-source-proposal",
+  "version": 1,
+  "preparationOnly": true,
+  "sourceReadHead": "d99206189ef9a18f6248ac1f63f37829c9b30759",
+  "actualDefaultParentMerge": "edc003416dafd322aa6cd100dde488fb112a2abb",
+  "sourceScope": [
+    {
+      "path": "crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs",
+      "gitBlob": "27b222f88a40cdf5602f63939df27928244d0232",
+      "bytes": 10631,
+      "sha256": "c4a0134e786feca78007040fcfd49b9c8686aca3e63af3b24d81df172ad11ab0"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/props_emits.rs",
+      "gitBlob": "f80104f94b80d850d6c8b8e3aacdaf3830b05192",
+      "bytes": 1142,
+      "sha256": "6ab8bce216974ed76eaee32f2a494c2a039401a62eab5dbc98b90da0e8ed1c2f"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script.rs",
+      "gitBlob": "3510a3c90f696765defb7e3524dfddd4c1e1bb24",
+      "bytes": 7512,
+      "sha256": "5836f482fd17f2a6b789d4ac892c8ebf1f191d3cddd7d7a07fda17b6e2b26d7f"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/script_rules.rs",
+      "gitBlob": "3dfc28110d86205541150b7e477cbdc6b82eb014",
+      "bytes": 9310,
+      "sha256": "88ea29b144566d5324df9299009331dd50da1c160ecf753d01d1b001dba0100e"
+    }
+  ],
+  "newTestModule": "crates/vize_patina/src/rules/script/no_deep_destructure_in_props/tests.rs",
+  "fixtureScope": "tests/_fixtures/differential/lint/props-deep-destructure-8090",
+  "neighbors": {
+    "path": "/tmp/vize-next-preset-readonly-audit-20261012/correctness-neighbors.json",
+    "bytes": 76190,
+    "sha256": "ffc6df355e15eb06d128dc593652c508eeced0b78bc9bb423ac7a1199affa22f",
+    "cases": 31
+  },
+  "algorithm": [
+    "No rule membership/severity/fix/help/range convention change. Preserve max_depth public field and default one.",
+    "Move existing unit bodies byte exact to private tests module in move-only commit before semantic changes; archive whole original producer/tests/snapshot authority.",
+    "Actual NoDeep ScriptRule capability defaults to None; namesake overrides retain generic default dispatch. Real builtin dispatch uses existing runtime_props_eligible predicate (already genuine sole-inline setup) and shared successful Program; no new descriptor/sibling parse or public SFC context field.",
+    "Expose only a crate-private props_emits ownership wrapper accepting Program and macro name, delegating byte-exact existing compiler_macro_bindings::shadowed. New producer computes this existing conservative binding proof lazily once per relevant macro identity.",
+    "Iterate direct nonambient Program variable declarations only; no generic visitor for producer collection. Ignore optional/member calls and unwrap existing TS/parenthesized expressions with get_inner_expression. withDefaults requires proven wrapper and direct defineProps first argument.",
+    "Count recursive object AND array BindingPatterns as depth; assignment-left recurses, default expressions are not binding patterns, identifiers/rest identifiers stay shallow; object-root reporting span stays whole outer object.",
+    "Conservative unavailable sibling/external scripts and local/foreign/hoisted runtime macro bindings produce no diagnostic. Type-only imports remain eligible. Vue macro imports keep existing exception.",
+    "Producer check_program/check_program_with_sfc delegation must preserve standalone refusal and direct trait entry consistency; real sole-inline consumer gating is separately authenticated with a namesake/false/true dispatch test."
+  ],
+  "modeLimitation": "Native CLI exposes no compiler propsDestructure mode and no such field exists in SfcScriptContext/LinterFeatureFlags/RawCompilerConfig. Do not add it here or reinterpret style destructure:never. Preserve explicit compiler false and withDefaults acceptance plus opt-in native depth warnings as named differences; no readiness/default-promotion/compiler-error-proxy claim.",
+  "authorityRequirements": [
+    "Freeze complete original eight inputs/whole CLI, compiler and related-provider outputs including initial resolver and /tmp→/private/tmp refusals.",
+    "Keep original 70/default 12-body authority, 618 corpora, Matrix budgets and all preset membership unchanged; finite body-authenticated successor for exactly three affected existing family paths, with whole remaining bodies and mutation refusals.",
+    "Peer entire source/fixture/source-family and exact frozen after vectors before ordinary Actions; no local native build, manual Matrix or new CI dispatch campaign.",
+    "Generated only owned implementation links; preserve all other generated rows. Concise paired issue8090 + decision companion after accepted source preparation."
+  ]
+}

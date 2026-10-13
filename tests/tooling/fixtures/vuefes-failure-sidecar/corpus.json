@@ -1,0 +1,26 @@
+{
+  "source": "605429c660b328bb03bec5bbfef15961e59fcaf0",
+  "boundary": "Original full38 VRT workload; additive failure-sidecar only, no acceptance credit",
+  "files": {
+    "tests/app/vrt/vuefes.spec.ts": {
+      "bytes": 10453,
+      "sha256": "3300660d8fef3285629b8ce1abcfd11d1993c4a48342fd77e9f19222ef994bd0"
+    },
+    ".github/actions/app-e2e-row/action.yml": {
+      "bytes": 7079,
+      "sha256": "3770e4566d5529f9c6c266a6f507c2588a607115dd060d1369241cb349a5ad7e"
+    },
+    "tests/app/playwright.vrt.config.ts": {
+      "bytes": 555,
+      "sha256": "f15c919ccffd5873bc57314a55117d2a3f224dfff5efafa3a6da4e9c1fe771d6"
+    },
+    "tools/commands/ci/github/app-e2e-plan.rs": {
+      "bytes": 11525,
+      "sha256": "46983c8019bfb809f418eccdab5afeb73b3cea5dcc7c4aa8354d2726bf9c617b"
+    },
+    "tests/_helpers/visual-parity.ts": {
+      "bytes": 7821,
+      "sha256": "0288099f8b54cb90037a70db9510489c5b770673da23b6463933eefa2746052b"
+    }
+  }
+}

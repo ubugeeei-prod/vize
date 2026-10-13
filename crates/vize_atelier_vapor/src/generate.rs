@@ -9,6 +9,7 @@ mod expression_retained;
 mod helpers;
 mod names;
 mod operations;
+mod root_component;
 mod root_key;
 mod setup;
 pub(crate) mod spans;
@@ -24,6 +25,7 @@ pub use entry::{
 };
 use helpers::generate_effect;
 use operations::generate_operation;
+use root_component::collect_single_root_returns;
 pub(crate) use setup::escape_js_string_literal;
 
 fn block_has_template_refs(block: &BlockIRNode<'_>) -> bool {

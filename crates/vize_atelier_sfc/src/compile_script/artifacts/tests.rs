@@ -219,11 +219,9 @@ fn retains_runtime_binding_in_mixed_nuxt_import() {
             format!("{import}\ndefinePageMeta({{ name: 'docs' }})\nconst route = useRoute()\n");
         let artifacts = extract_macro_artifacts(&content, 0, true);
         assert_eq!(artifacts.len(), 1, "{import}");
-        assert!(
-            artifacts[0]
-                .module_code
-                .as_deref()
-                .is_some_and(|code| code.contains("import { useRoute } from '#imports'")),
+        assert_eq!(
+            artifacts[0].module_code.as_deref(),
+            Some("const __nuxt_page_meta = { name: 'docs' }\nexport default __nuxt_page_meta\n"),
             "{import}"
         );
         let erased = erase_artifact_macro_statements_traced(&content, true)
@@ -235,6 +233,14 @@ fn retains_runtime_binding_in_mixed_nuxt_import() {
         );
         assert!(!erased.contains("definePageMeta"), "{erased}");
         assert!(erased.contains("const route = useRoute()"), "{erased}");
+        let referenced = content.replace("name: 'docs'", "middleware: useRoute");
+        let artifact = extract_macro_artifacts(&referenced, 0, true);
+        assert_eq!(
+            artifact[0].module_code.as_deref(),
+            Some(
+                "import { useRoute } from '#imports'\nconst __nuxt_page_meta = { middleware: useRoute }\nexport default __nuxt_page_meta\n"
+            )
+        );
     }
 }
 
@@ -252,10 +258,17 @@ fn removes_all_macros_from_mixed_typed_router_import() {
         assert_eq!(artifacts.len(), 2, "{import}");
         for artifact in &artifacts {
             let module = artifact.module_code.as_deref().expect("artifact module");
-            assert!(
-                module.contains("import { useRoute } from '@typed-router'"),
-                "{module}"
-            );
+            if artifact.kind == "nuxt.definePageMeta" {
+                assert_eq!(
+                    module,
+                    "const __nuxt_page_meta = { title: 'Docs' }\nexport default __nuxt_page_meta\n"
+                );
+            } else {
+                assert_eq!(
+                    module,
+                    "import { useRoute } from '@typed-router'\nexport default { name: 'docs' }\n"
+                );
+            }
             assert!(!module.contains("import { definePage"), "{module}");
         }
         let erased = erase_artifact_macro_statements(&content).expect("macro erasure");

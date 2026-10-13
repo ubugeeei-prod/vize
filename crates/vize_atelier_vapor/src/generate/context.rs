@@ -1,17 +1,13 @@
 //! Code generation context that tracks state during Vapor code emission.
 
-use super::{
-    destructure::{parse_destructure_bindings, resolve_props_binding},
-    expression,
-    names::NameSet,
-};
+use super::{expression, names::NameSet};
 use vize_atelier_core::codegen::document::EmitDocument;
 
 mod component_resolution;
 mod scopes;
 mod slot_defaults;
 pub(crate) use scopes::{ForScope, SlotScope};
-use vize_atelier_core::options::{BindingMetadata, BindingType};
+use vize_atelier_core::options::BindingMetadata;
 use vize_atelier_core::steps::expression::is_template_global;
 use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString, cstr};
 
@@ -41,6 +37,9 @@ pub(crate) struct GenerateContext<'a> {
     pub(crate) is_fragment: bool,
     /// A dynamic component at this KeepAlive slot root needs SLOT_ROOT (4).
     pub(crate) keep_alive_slot: bool,
+    /// Components that are the render's single root (directly, or inside a lone root `v-if`
+    /// branch or keyed fragment), which alone receive the owner's fallthrough attrs.
+    pub(crate) root_components: FxHashSet<usize>,
     /// Structural slot bodies keep authored inline handler wrapper anchors.
     pub(crate) structural_slot_spans: bool,
     /// A Transition/TransitionGroup slot root owns its runtime boundary flags.
@@ -90,6 +89,7 @@ impl<'a> GenerateContext<'a> {
             node_positions: FxHashMap::default(),
             is_fragment: false,
             keep_alive_slot: false,
+            root_components: FxHashSet::default(),
             structural_slot_spans: false,
             transition_slot: false,
             for_scopes: std::vec::Vec::new(),
@@ -128,85 +128,6 @@ impl<'a> GenerateContext<'a> {
         node: &vize_atelier_core::SimpleExpressionNode<'_>,
     ) -> String {
         super::expression_retained::resolve_expression_node(self, node)
-    }
-
-    /// Resolve a name through active loop/slot scopes and prop metadata.
-    pub(super) fn resolve_scope_binding_inner(&self, name: &str) -> Option<String> {
-        // Innermost scope first. Loop and slot scopes interleave, so a slot
-        // parameter declared inside a loop shadows the loop's alias.
-        let (mut loops, mut slots) = (self.for_scopes.len(), self.slot_scopes.len());
-        while loops > 0 || slots > 0 {
-            if let Some(scope) = (slots.checked_sub(1))
-                .and_then(|slot| self.slot_scopes.get(slot))
-                .filter(|scope| scope.for_depth >= loops)
-            {
-                slots -= 1;
-                if scope
-                    .names
-                    .iter()
-                    .any(|slot_name| name == slot_name.as_str())
-                {
-                    // Default-bearing reads are recorded after the plain key
-                    // paths, so the last override for a name wins.
-                    if let Some(binding) = scope
-                        .read_overrides
-                        .iter()
-                        .rev()
-                        .find(|binding| name == binding.local.as_str())
-                    {
-                        return Some(binding.path.clone());
-                    }
-                    return Some(if scope.whole {
-                        scope.slot_props_var.clone()
-                    } else {
-                        cstr!("{}.{}", scope.slot_props_var, name)
-                    });
-                }
-                continue;
-            }
-            // Every slot scope sits inside `loops >= 0` loop scopes, so a
-            // remaining slot scope is taken above and `loops > 0` here.
-            loops -= 1;
-            let Some(scope) = self.for_scopes.get(loops) else {
-                continue;
-            };
-            if let Some(ref value_alias) = scope.value_alias {
-                let for_var = cstr!("_for_item{}", scope.depth);
-
-                if value_alias.starts_with(['{', '[', '(']) {
-                    for binding in parse_destructure_bindings(value_alias.as_str()) {
-                        if name == binding.local.as_str() {
-                            return Some(cstr!("{}.value{}", for_var, binding.path));
-                        }
-                    }
-                } else if name == value_alias.as_str() {
-                    return Some(cstr!("{}.value", for_var));
-                }
-            }
-
-            if let Some(ref key_alias) = scope.key_alias
-                && name == key_alias.as_str()
-            {
-                return Some(cstr!("_for_key{}.value", scope.depth));
-            }
-
-            if let Some(ref index_alias) = scope.index_alias
-                && name == index_alias.as_str()
-            {
-                return Some(cstr!("_for_index{}.value", scope.depth));
-            }
-        }
-
-        // Literal constants, including static enums, are hoisted into the
-        // module scope. They do not belong to the component proxy.
-        if self
-            .binding_metadata
-            .and_then(|bindings| bindings.bindings.get(name))
-            == Some(&BindingType::LiteralConst)
-        {
-            return Some(name.to_compact_string());
-        }
-        resolve_props_binding(self.binding_metadata, name)
     }
 
     pub(super) fn resolve_simple_reference(&self, expr: &str) -> String {

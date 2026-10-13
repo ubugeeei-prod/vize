@@ -585,7 +585,13 @@
       "status": "unimplemented"
     },
     "vue/no-export-in-script-setup": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "script/no-export-in-script-setup",
       "patinaSeverity": "error",
       "status": "mapped"

@@ -6,16 +6,16 @@
 
 use super::super::types::VizeMapping;
 use crate::virtual_ts::script_facts::ScriptBindings;
-use vize_carton::{CompactString, FxHashMap, String, append, camelize, capitalize};
+use vize_carton::{CompactString, String, append, camelize, capitalize};
 use vize_croquis::TemplateExpression;
 use vize_relief::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode,
 };
 
+mod arguments;
 mod presence;
+pub(crate) use arguments::DirectiveValueBindings;
 pub(crate) use presence::generate_valueless_directive_presence;
-
-pub(crate) type DirectiveValueBindings = FxHashMap<(u32, u32), DirectiveValueBinding>;
 
 pub(crate) struct DirectiveValueBinding {
     /// Vue's resolution name of the directive, e.g. `vFocus`.
@@ -45,14 +45,17 @@ pub(crate) fn collect_directive_value_bindings(
     (has_default_alias, vapor): (bool, bool),
     (enabled, include_valueless): (bool, bool),
 ) -> DirectiveValueBindings {
-    let mut collected = DirectiveValueBindings::default();
-    let Some(root) = root.filter(|_| enabled) else {
+    let mut collected = DirectiveValueBindings {
+        enabled,
+        ..DirectiveValueBindings::default()
+    };
+    let Some(root) = root else {
         return collected;
     };
     for child in &root.children {
         collect_child_bindings(child, bindings, &mut collected, include_valueless);
     }
-    for binding in collected.values_mut() {
+    for binding in collected.values.values_mut() {
         binding.has_default_alias = has_default_alias;
         binding.vapor = vapor;
     }
@@ -100,10 +103,12 @@ fn collect_element_bindings(
         let PropNode::Directive(directive) = prop else {
             continue;
         };
-        if let Some((range, binding)) =
-            directive_value_binding(directive, bindings, include_valueless)
+        arguments::collect(directive, collected);
+        if collected.enabled
+            && let Some((range, binding)) =
+                directive_value_binding(directive, bindings, include_valueless)
         {
-            collected.insert(range, binding);
+            collected.values.insert(range, binding);
         }
     }
     for child in &element.children {

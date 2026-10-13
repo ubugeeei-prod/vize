@@ -74,23 +74,6 @@ defineArt("../src/Button.vue", {
         std::process::exit(1);
     }
 
-    let config_path = target_dir.join("vize.config.ts");
-    if !config_path.exists() {
-        let config_content = r#"import { defineConfig } from "vize";
-
-export default defineConfig({
-  musea: {
-    include: ["./stories/**/*.art.vue"],
-  },
-});
-"#;
-        if let Err(e) = fs::write(&config_path, config_content) {
-            eprintln!("vize musea new: failed to create vize.config.ts: {}", e);
-            std::process::exit(1);
-        }
-        eprintln!("  Created vize.config.ts");
-    }
-
     eprintln!("  Created stories/Button.art.vue");
     eprintln!();
     eprintln!("Musea project '{}' created successfully!", project_name);
@@ -98,4 +81,7 @@ export default defineConfig({
     eprintln!("Next steps:");
     eprintln!("  1. Add more art files in the 'stories' directory");
     eprintln!("  2. Enable @vizejs/vite-plugin-musea in your Vite or Nuxt project");
+    eprintln!(
+        "     Musea discovers .art.vue files by default; configure vize.musea in vite.config.* when needed"
+    );
 }

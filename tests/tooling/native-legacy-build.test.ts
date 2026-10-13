@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
+import { ciBuildCommand } from "../../npm/native/scripts/formatter-history-ci-build.mjs";
 import fs, { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { runMoonScript } from "./_helpers/moonbit.ts";
+import { runToolCommand } from "./_helpers/tool-commands.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -39,7 +40,8 @@ test("vize native package builds with legacy Vue support", () => {
     scripts?: Record<string, string>;
   };
 
-  assert.match(packageJson.scripts?.["build:ci"] ?? "", /--features napi,legacy(?:\s|$)/);
+  assert.equal(packageJson.scripts?.["build:ci"], "node ./scripts/build-ci.mjs");
+  assert.match(ciBuildCommand.join(" "), /--features napi,legacy(?:\s|$)/);
   assert.match(readRepoFile("npm/native/scripts/build-local.mjs"), /"--features",\s+"napi,legacy"/);
   assert.match(
     readRepoFile("crates/vize_vitrine/Cargo.toml"),
@@ -47,7 +49,7 @@ test("vize native package builds with legacy Vue support", () => {
   );
 });
 
-test("github/build_napi_package keeps legacy features scoped to vize_vitrine", () => {
+test("github/build-napi-package keeps legacy features scoped to vize_vitrine", () => {
   const tempDir = mkdtempSync(path.join(tmpdir(), "native-legacy-build-"));
   const binDir = path.join(tempDir, "bin");
   const packageDir = path.join(tempDir, "npm", "native");
@@ -63,8 +65,8 @@ test("github/build_napi_package keeps legacy features scoped to vize_vitrine", (
     );
 
     const runForCrate = (crateName: string): string => {
-      const result = runMoonScript(
-        "github/build_napi_package",
+      const result = runToolCommand(
+        "tools/support/github/build-napi-package.ts",
         [packageDir, `../../crates/${crateName}/Cargo.toml`, crateName, "x86_64-unknown-linux-gnu"],
         {
           cwd: tempDir,

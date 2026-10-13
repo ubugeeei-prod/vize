@@ -51,6 +51,9 @@ pub(in crate::emit) fn emit_template_pieces(
         return Ok(());
     }
     for op in children.ops.iter() {
+        if crate::emit::annotations::skip(cx, op) {
+            continue;
+        }
         bucket.push(capture_child(cx, op)?);
     }
     Ok(())

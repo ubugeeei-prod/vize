@@ -2,7 +2,7 @@
 title: Vite Plugin
 ---
 
-<!-- Generated translation; source: guide/vite-plugin.md -->
+<!-- Reviewed translation; source: guide/vite-plugin.md; scope: native configuration guidance -->
 
 # Vite Plugin
 
@@ -64,110 +64,15 @@ Para projetos Vite Plus, mantenha o tipo cliente Vite Plus e anexe o pacote de p
 }
 ```
 
-Para a maioria dos projetos, mantenha as opções de plugins diretas pequenas e coloque configurações estáveis do compilador em
-`vize.config.ts`.
+## Compartilhar as opções nativas
 
-## Configuração Compartilhada
+No Vite+, use o campo `compiler` da integração. No Vite convencional, use as opções diretas do plugin. Coloque as opções nativas da CLI e do editor no objeto `vize` do nível superior do mesmo arquivo Vite; o [guia de configuração](./configuration.md) descreve a sintaxe, a busca e a disponibilidade por versão. Os formatos específicos continuam opcionais.
 
-O ponto de entrada compartilhado recomendado é `vize`. Um único arquivo `vize.config.*` é lido tanto pelos comandos npm
-package quanto pelo `@vizejs/vite-plugin`.
-
-```bash
-vp install -D vize
-```
-
-Arquivos de configuração suportados:
-
-- `vize.config.pkl`
-- `vize.config.ts`
-- `vize.config.js`
-- `vize.config.mjs`
-- `vize.config.json`
-
-Configuração do TypeScript:
-
-```ts
-// vize.config.ts
-import { defineConfig } from "vize";
-
-export default defineConfig({
-  compiler: {
-    sourceMap: true,
-    vapor: false,
-    customRenderer: false,
-    templateSyntax: "standard",
-  },
-  vite: {
-    scanPatterns: ["src/**/*.vue"],
-  },
-});
-```
-
-Configuração PKL:
-
-```pkl
-amends "node_modules/vize/pkl/vize.pkl"
-
-compiler {
-  sourceMap = true
-}
-
-vite {
-  scanPatterns = new Listing {
-    "src/**/*.vue"
-  }
-}
-```
-
-Configuração JSON com esquema:
-
-```json
-{
-  "$schema": "./node_modules/vize/schemas/vize.config.schema.json",
-  "vite": {
-    "scanPatterns": ["src/**/*.vue"]
-  }
-}
-```
-
-Importar `defineConfig` do `@vizejs/vite-plugin` ainda funciona para compatibilidade retroativa, mas `import { defineConfig } from "vize"` é o caminho compartilhado daqui para frente.
-
-Veja [Configuration](./configuration.md) para a configuração compartilhada completa.
-
-Projetos Vite Plus primeiro também podem manter as configurações apenas de startup ativadas em `vite.config.ts`:
-
-```ts
-import { defineConfig } from "vite-plus";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [
-    vize({
-      config: {
-        compiler: {
-          sourceMap: true,
-          vapor: false,
-        },
-        vite: {
-          scanPatterns: ["src/**/*.vue"],
-        },
-        musea: {
-          include: ["src/**/*.art.vue"],
-        },
-      },
-    }),
-  ],
-});
-```
-
-A configuração inline está disponível para o plugin Vite e para a loja compartilhada de plugins durante a execução do Vite Plus.
-Use `vize.config.*` para configurações que também devem ser lidas por comandos CLI e LSP.
+<span id="compiler-options"></span>
 
 ## Opções do compilador
 
-Opções diretas passaram para `vize()` sobreposição `vize.config.*`.
-A precedência completa são opções de plugin direto, depois `config`em linha, depois `vize.config.*`, e depois
-padrão.
+As opções diretas de `vize()` têm prioridade, seguidas de `config` inline, das opções descobertas do projeto e dos valores padrão. Um `vize.config.*` tem prioridade sobre Vite no mesmo diretório. `config: false` desativa a busca automática.
 
 ```ts
 vize({
@@ -327,3 +232,5 @@ Veja [Nuxt Integration](../integrations/nuxt.md) para mais detalhes.
 - O plugin suporta `virtual:vize-styles` para importar todo o CSS compilado como um módulo
 - `.jsx`/`.tsx` Componentes do Vue são compilados automaticamente pelo mesmo plugin — veja o guia [JSX & TSX](./jsx.md)
 - Para suporte experimental a rollup / webpack / esbuild / rspack, veja [Experimental Bundler Integrations](./unplugin.md)
+
+<span id="configuração-compartilhada"></span>

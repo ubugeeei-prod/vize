@@ -1,0 +1,6 @@
+<script>
+export default { emits: { submit: function (payload) { void payload } } }
+</script>
+<script setup src="./foreign.ts">
+const emit = defineEmits({ submit(payload) { void payload } })
+</script>

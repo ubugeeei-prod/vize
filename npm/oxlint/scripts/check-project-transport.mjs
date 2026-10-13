@@ -16,12 +16,14 @@ import {
 import { stageProjectNative } from "./project-native-staging.ts";
 import { qualifyMixedDirectory8507 } from "./mixed-directory-8507-qualification.mjs";
 import { runQualificationBranches } from "./project-qualification-branches.mjs";
+import { parsePreparationOptions, runPreparationBranches } from "./n8n-preparation-overlap.mjs";
 import {
   nativeHistoryReceipt,
   validateNativeHistoryBuild,
 } from "../../native/scripts/formatter-history-build.mjs";
 
-const options = parseHostOptions(process.argv.slice(2));
+const preparation = parsePreparationOptions(process.argv.slice(2));
+const options = parseHostOptions(preparation.args);
 const packageDir = fileURLToPath(new URL("..", import.meta.url));
 const root = path.resolve(packageDir, "../..");
 const started = performance.now();
@@ -30,6 +32,7 @@ const timing = {
   version: 1,
   mode: options.mode,
   workers: options.workers,
+  preparationMode: preparation.mode,
   status: "failed",
   phaseWalltimeMs: {},
   hosts: [],
@@ -84,9 +87,7 @@ try {
       {
         id: "n8n",
         run: async () => {
-          const n8nReplay = await timed("baselinePreparation", () =>
-            beginN8nReplay({ root, packageDir, artifacts, receipt, binary }),
-          );
+          const context = { artifacts, receipt, binary };
           const worker = fileURLToPath(new URL("./ci-host-worker.mjs", import.meta.url));
           const jobs = hostVersions.map(({ version, types }) => {
             const output = path.join(artifacts, version);
@@ -104,11 +105,6 @@ try {
                   version,
                   types,
                   temporary,
-                  replay: {
-                    output: n8nReplay.output,
-                    custody: n8nReplay.custody,
-                    reference: n8nReplay.reference,
-                  },
                 },
                 null,
                 2,
@@ -125,20 +121,30 @@ try {
               env: { ...process.env, TMPDIR: temporary, TMP: temporary, TEMP: temporary },
             };
           });
-          const results = await timed("hosts", () =>
-            runHostProcesses(jobs, { workers: options.workers }),
-          );
-          timing.hosts = results.map((result, index) => {
-            const file = path.join(jobs[index].output, "phase-walltime.json");
-            const phases = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : {};
-            return {
-              ...hostVersions[index],
-              status: result.status === 0 && !result.signal && !result.error ? "passed" : "failed",
-              elapsedMs: result.elapsedMs,
-              phaseWalltimeMs: phases.phaseWalltimeMs ?? {},
-            };
+          const [n8nReplay] = await runPreparationBranches(context, {
+            mode: preparation.mode,
+            prepare: () =>
+              timed("baselinePreparation", () =>
+                beginN8nReplay({ root, packageDir, artifacts, receipt, binary }),
+              ),
+            runHosts: async () => {
+              const results = await timed("hosts", () =>
+                runHostProcesses(jobs, { workers: options.workers }),
+              );
+              timing.hosts = results.map((result, index) => {
+                const file = path.join(jobs[index].output, "phase-walltime.json");
+                const phases = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : {};
+                return {
+                  ...hostVersions[index],
+                  status:
+                    result.status === 0 && !result.signal && !result.error ? "passed" : "failed",
+                  elapsedMs: result.elapsedMs,
+                  phaseWalltimeMs: phases.phaseWalltimeMs ?? {},
+                };
+              });
+              requireSuccessfulHosts(results);
+            },
           });
-          requireSuccessfulHosts(results); // Every host settles and saves evidence first.
           return { jobs, n8nReplay };
         },
       },

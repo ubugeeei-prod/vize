@@ -2,7 +2,7 @@
 title: Vite 插件
 ---
 
-<!-- Generated translation; source: guide/vite-plugin.md -->
+<!-- Reviewed translation; source: guide/vite-plugin.md; scope: native configuration guidance -->
 
 # Vite 插件
 
@@ -64,110 +64,15 @@ export default defineConfig({
 }
 ```
 
-对于大多数项目，保持直接插件选项较小，并在编译器设置中保持稳定
-`vize.config.ts`。
+## 共享原生设置
 
-## 共享配置
+Vite+ 使用集成的 `compiler` 字段；普通 Vite 使用插件的直接选项。CLI 和编辑器共用的原生设置放在同一 Vite 配置的顶层 `vize` 对象中；[配置指南](./configuration.md)介绍语法、发现规则和版本可用性。专用格式仍可按需使用。
 
-推荐的共享入口是`vize`。两个npm都会读取单个`vize.config.*`文件
-打包命令和`@vizejs/vite-plugin`。
-
-```bash
-vp install -D vize
-```
-
-支持的配置文件：
-
-- `vize.config.pkl`
-- `vize.config.ts`
-- `vize.config.js`
-- `vize.config.mjs`
-- `vize.config.json`
-
-TypeScript 配置：
-
-```ts
-// vize.config.ts
-import { defineConfig } from "vize";
-
-export default defineConfig({
-  compiler: {
-    sourceMap: true,
-    vapor: false,
-    customRenderer: false,
-    templateSyntax: "standard",
-  },
-  vite: {
-    scanPatterns: ["src/**/*.vue"],
-  },
-});
-```
-
-PKL 配置：
-
-```pkl
-amends "node_modules/vize/pkl/vize.pkl"
-
-compiler {
-  sourceMap = true
-}
-
-vite {
-  scanPatterns = new Listing {
-    "src/**/*.vue"
-  }
-}
-```
-
-带模式的JSON配置：
-
-```json
-{
-  "$schema": "./node_modules/vize/schemas/vize.config.schema.json",
-  "vite": {
-    "scanPatterns": ["src/**/*.vue"]
-  }
-}
-```
-
-从`@vizejs/vite-plugin`导入`defineConfig`仍然可以实现向后兼容，但`import { defineConfig } from "vize"`是未来的共享路径。
-
-完整的共享配置形状请参见[配置](./configuration.md)。
-
-Vite Plus-first项目还可以在`vite.config.ts`中保持仅启动时的设置：
-
-```ts
-import { defineConfig } from "vite-plus";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [
-    vize({
-      config: {
-        compiler: {
-          sourceMap: true,
-          vapor: false,
-        },
-        vite: {
-          scanPatterns: ["src/**/*.vue"],
-        },
-        musea: {
-          include: ["src/**/*.art.vue"],
-        },
-      },
-    }),
-  ],
-});
-```
-
-Vite插件和插件商店在执行Vite Plus时可以使用内联配置。
-使用 `vize.config.*` 来处理那些必须由 CLI 和 LSP 命令读取的设置。
+<span id="compiler-options"></span>
 
 ## 编译器选项
 
-直接选项被传递到`vize()`覆盖`vize.config.*`。
-完整的优先级是直接插件选项，然后是内联`config`，然后是`vize.config.*`，然后
-默认值。
+直接传给 `vize()` 的选项优先，然后是内联 `config`、发现的项目设置和默认值。同目录的 `vize.config.*` 优先于 Vite 配置。`config: false` 禁用自动发现。
 
 ```ts
 vize({
@@ -327,3 +232,5 @@ export default defineNuxtConfig({
 - 插件支持导入所有编译后的CSS模块`virtual:vize-styles`
 - `.jsx`/`.tsx` Vue 组件通过同一插件自动编译 — 详见 [JSX & TSX](./jsx.md) 指南
 - 关于实验性汇总/webpack / esbuild / Rspack支持，请参见[实验性捆绑器集成](./unplugin.md)
+
+<span id="共享配置"></span>

@@ -8,8 +8,30 @@ on:
       component:
         description: Compare serial and concurrent execution on the same source
         type: choice
-        options: [all, js, docs, rust, native, n8n-baseline]
+        options:
+          [
+            all,
+            js,
+            docs,
+            rust,
+            native,
+            n8n-baseline,
+            n8n-preparation,
+            artifact-payload,
+            rust-archive-window,
+            owned-worker-fault,
+            owned-worker-controls,
+          ]
         default: all
+      artifact_id:
+        description: Existing same-repository artifact for the manual transport trial
+        type: string
+        default: "11709550349"
+      artifact_source_sha:
+        description: Exact source SHA of the original artifact, checked against API custody
+        type: string
+        default: a49936db24d9540e0630b42474654190d575294b
+      owned_worker_source_sha: { description: Fresh full SDK source SHA, type: string }
 permissions: { contents: read }
 concurrency:
   group: ci-walltime-${{ github.sha }}-${{ inputs.component || 'all' }}
@@ -18,6 +40,12 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   CARGO_TERM_COLOR: always
 jobs:
+  owned-worker-fault:
+    if: ${{ github.event_name == 'workflow_dispatch' && (inputs.component == 'owned-worker-fault' || inputs.component == 'owned-worker-controls') }}
+    uses: ./.github/workflows/owned-worker-fault.yml
+    with:
+      source-sha: ${{ inputs.owned_worker_source_sha }}
+      controls-only: ${{ inputs.component == 'owned-worker-controls' }}
   js:
     if: ${{ (github.event_name == 'pull_request' && (github.event.label.name == 'ci-walltime-benchmark' || (github.event.action != 'labeled' && startsWith(github.head_ref, 'ci/optimize-')))) || (github.event_name == 'workflow_dispatch' && (inputs.component == 'all' || inputs.component == 'js')) }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -44,6 +72,38 @@ jobs:
             target/oxlint-original-project-transport/
           if-no-files-found: error
           retention-days: 14
+  n8n-preparation:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.component == 'n8n-preparation' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 60
+    env: { CARGO_BUILD_JOBS: "12", VIZE_N8N_BASELINE_MODE: partitioned }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.sha }}" }
+      - uses: ./.github/actions/setup-js-package-tests
+      - name: Build the same source native binary and bridge once
+        run: |
+          vp run --workspace-root build:native:test
+          vp run --filter './npm/oxlint' build
+      - name: Sequential preparation with unchanged concurrent project hosts
+        run: node npm/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --preparation-mode sequential --phase-walltime target/ci-walltime/n8n-preparation-sequential.json
+      - name: Overlapping preparation with unchanged concurrent project hosts
+        if: ${{ !cancelled() }}
+        run: node npm/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --preparation-mode overlap --phase-walltime target/ci-walltime/n8n-preparation-overlap.json
+      - name: Preserve both complete preparation campaigns and the one native build
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ci-walltime-n8n-preparation-${{ github.sha }}
+          path: |
+            target/ci-walltime/
+            target/oxlint-original-project-transport/
+            npm/native/.artifacts/native/formatter-history/build-receipt.json
+            npm/native/.artifacts/native/formatter-history/build-process.json
+            npm/native/.artifacts/native/formatter-history/cargo.stdout.bin
+            npm/native/.artifacts/native/formatter-history/cargo.stderr.bin
+          if-no-files-found: error
+          retention-days: 14
   docs:
     if: ${{ (github.event_name == 'pull_request' && (github.event.label.name == 'ci-walltime-benchmark' || (github.event.action != 'labeled' && startsWith(github.head_ref, 'ci/optimize-')))) || (github.event_name == 'workflow_dispatch' && (inputs.component == 'all' || inputs.component == 'docs')) }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -61,11 +121,10 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: package.json, cache: true, run-install: false }
-      - uses: ./.github/actions/setup-moonbit
       - uses: ./.github/actions/setup-rust-script
       - name: Install identical Docs dependencies and rendering fonts
         run: |
-          moon run --target native tools/moon/cmd/github/vp_install -- --filter './docs...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' --filter './npm/ui...' --filter './npm/compose/core...'
+          node tools/support/github/vp-install.ts --filter './docs...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' --filter './npm/ui...' --filter './npm/compose/core...'
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends fonts-noto-cjk
       - name: Build the same native packages and Docs once
@@ -187,3 +246,84 @@ jobs:
             npm/native/.artifacts/native/formatter-history/cargo.stderr.bin
           if-no-files-found: error
           retention-days: 14
+  js-native-fault-diagnostic:
+    if: ${{ github.event_name == 'pull_request' && github.event.action == 'labeled' && github.event.label.name == 'ci-native-fault-diagnostic' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 35
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      CARGO_BUILD_JOBS: "12"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.sha }}", persist-credentials: false }
+      - name: Retain diagnostic orchestration before checking out the failed source
+        run: |
+          mkdir -p "$RUNNER_TEMP/js-native-fault-evidence-orchestration"
+          cp .github/actions/test-js-packages-with-history/native-fault-evidence.py "$RUNNER_TEMP/native-fault-evidence.py"
+          cp .github/actions/test-js-packages-with-history/native_fault_core.py "$RUNNER_TEMP/native_fault_core.py"
+          python3 - <<'PYTHON'
+          import hashlib, json, os, subprocess
+          from pathlib import Path
+          helper = Path(os.environ["RUNNER_TEMP"]) / "native-fault-evidence.py"
+          receipt = {"orchestration": subprocess.check_output(["git", "rev-parse", "HEAD", "HEAD^{tree}"], text=True).splitlines(),
+                     "helpers": [{"file": path.name, "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
+                                 for path in [helper, helper.with_name("native_fault_core.py")]],
+                     "reportedFailureHead": "17bb01881b3e9721c273048d4698a1fb887c6a2e",
+                     "physicalFailedSource": "a16d50297208eb4635c824449bdbb345c462351d",
+                     "physicalFailedTree": "670e62ad66b6ff29b441e887bc7f62abb641c106",
+                     "originalRun": 38150949243, "originalFailedJob": 114504704179}
+          (helper.parent / "js-native-fault-evidence-orchestration/identity.json").write_text(json.dumps(receipt, indent=2) + "\n")
+          PYTHON
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: a16d50297208eb4635c824449bdbb345c462351d
+          persist-credentials: false
+      - name: Authenticate the exact physical failed source
+        run: |
+          test "$(git rev-parse HEAD)" = a16d50297208eb4635c824449bdbb345c462351d
+          test "$(git rev-parse 'HEAD^{tree}')" = 670e62ad66b6ff29b441e887bc7f62abb641c106
+          test -z "$(git status --porcelain --untracked-files=no)"
+      - uses: ./.github/actions/setup-js-package-tests
+      - name: Observe the original mandatory JS command once
+        run: python3 "$RUNNER_TEMP/native-fault-evidence.py" -- vp run --workspace-root test:js
+      - name: Preserve bounded diagnostics and original native build receipts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: js-native-fault-controlled-${{ github.sha }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/js-native-fault-evidence-*/**/*.json
+            npm/native/.artifacts/native/formatter-history/*.json
+            npm/native/.artifacts/native/formatter-history/*.log
+          if-no-files-found: error
+          retention-days: 14
+  artifact-payload:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.component == 'artifact-payload' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 60
+    permissions: { contents: read, actions: read }
+    env:
+      PAYLOAD_ARTIFACT_ID: ${{ inputs.artifact_id }}
+      PAYLOAD_SOURCE_SHA: ${{ inputs.artifact_source_sha }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.sha }}" }
+      - uses: ./.github/actions/measure-artifact-payload
+  artifact-payload-restore:
+    needs: artifact-payload
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.component == 'artifact-payload' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.sha }}" }
+      - uses: ./.github/actions/restore-artifact-payload
+        with:
+          artifact_id: ${{ inputs.artifact_id }}
+          artifact_source_sha: ${{ inputs.artifact_source_sha }}
+      - uses: ./.github/actions/upload-artifact-payload-receipt
+        if: ${{ always() }}
+  rust-archive-window:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.component == 'rust-archive-window' }}
+    permissions: { contents: read, actions: read }
+    uses: ./.github/workflows/rust-archive-transport-benchmark.yml

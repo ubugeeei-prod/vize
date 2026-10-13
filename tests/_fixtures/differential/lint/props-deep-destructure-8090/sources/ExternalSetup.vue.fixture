@@ -1,0 +1,4 @@
+<script setup lang="ts" src="./props.ts">
+const { user: { name } } = defineProps<{ user: { name: string } }>();
+</script>
+<template><div /></template>

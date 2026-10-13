@@ -2,12 +2,11 @@
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::Program;
-use oxc_ast_visit::Visit;
-use oxc_ast_visit::walk::{walk_arrow_function_expression, walk_for_of_statement, walk_function};
 use oxc_span::SourceType;
-use oxc_syntax::scope::ScopeFlags;
 
 use super::globals::setup_global_scopes;
+use super::module_exports::ModuleExportCapture;
+pub(crate) use super::module_exports::{parse_script_plain, parse_script_setup_for_unused};
 use super::process;
 use super::recovery::parse_program_for_analysis;
 use super::result::{ScriptParseResult, ScriptParserOptions};
@@ -34,13 +33,14 @@ pub fn parse_script_setup_with_generic_and_jsx(
     parse_script_setup_for_unused::<false>(source, generic, jsx, false, false, false)
 }
 
-pub(crate) fn parse_script_setup_for_unused<const BUILTIN_TYPES: bool>(
+pub(crate) fn parse_script_setup_with_exports<const BUILTIN_TYPES: bool>(
     source: &str,
     generic: Option<&str>,
     jsx: bool,
     unused: bool,
     skip_diagnostics: bool,
     occurrences: bool,
+    mut exports: Option<&mut ModuleExportCapture>,
 ) -> ScriptParseResult {
     let allocator = Allocator::default();
     let path = if jsx { "script.tsx" } else { "script.ts" };
@@ -50,7 +50,7 @@ pub(crate) fn parse_script_setup_for_unused<const BUILTIN_TYPES: bool>(
         "croquis.script_setup.oxc_parse",
         parse_program_for_analysis(&allocator, source, source_type)
     );
-
+    ModuleExportCapture::observe_if(exports.as_deref_mut(), &ret);
     if ret.panicked {
         return ScriptParseResult::default();
     }
@@ -61,6 +61,7 @@ pub(crate) fn parse_script_setup_for_unused<const BUILTIN_TYPES: bool>(
         generic,
         skip_diagnostics,
         occurrences,
+        exports,
     );
     if !ret.diagnostics.is_empty() {
         result.setup_context.clear_ssr_facts();
@@ -102,6 +103,7 @@ pub(crate) fn analyze_script_setup_program_skipping<const BUILTIN_TYPES: bool>(
         generic,
         skip_diagnostics,
         false,
+        None,
     )
 }
 
@@ -111,6 +113,7 @@ pub(crate) fn analyze_script_setup_program_demand<const BUILTIN_TYPES: bool>(
     generic: Option<&str>,
     skip_diagnostics: bool,
     occurrences: bool,
+    mut exports: Option<&mut ModuleExportCapture>,
 ) -> ScriptParseResult {
     let source_len = source.len() as u32;
 
@@ -128,11 +131,17 @@ pub(crate) fn analyze_script_setup_program_demand<const BUILTIN_TYPES: bool>(
         setup_global_scopes(&mut result.scopes, source_len)
     );
 
+    let (is_async, callbacks) = super::execution_facts::execution_facts(
+        program,
+        !skip_diagnostics && source.contains(".map") && source.contains("vue"),
+    );
+    result.reexecuted_callbacks = callbacks;
+
     // Enter script setup scope (parent: ~mod)
     result.scopes.enter_script_setup_scope(
         ScriptSetupScopeData {
             is_ts: true,
-            is_async: contains_top_level_await(program),
+            is_async,
             generic: generic.map(CompactString::new),
         },
         0,
@@ -142,6 +151,7 @@ pub(crate) fn analyze_script_setup_program_demand<const BUILTIN_TYPES: bool>(
     // Process all statements
     profile!("croquis.script_setup.walk_statements", {
         for stmt in program.body.iter() {
+            ModuleExportCapture::observe_statement_if(exports.as_deref_mut(), stmt, true);
             if BUILTIN_TYPES {
                 process::process_statement_with_builtin(&mut result, stmt, source);
             } else {
@@ -161,53 +171,6 @@ pub(crate) fn analyze_script_setup_program_demand<const BUILTIN_TYPES: bool>(
     super::expose::extract_exposes(&mut result, program, source);
     result.macros.invalidate_default_objects();
     result
-}
-
-/// Detect script-setup top-level await from an already parsed AST.
-///
-/// A script setup block needs an async setup wrapper when `await` or
-/// `for await` appears in the setup execution flow. Awaits inside nested
-/// functions are not top-level and must not force the wrapper async.
-fn contains_top_level_await(program: &Program<'_>) -> bool {
-    #[derive(Default)]
-    struct TopLevelAwaitVisitor {
-        function_depth: usize,
-        found: bool,
-    }
-
-    impl<'a> Visit<'a> for TopLevelAwaitVisitor {
-        fn visit_function(&mut self, it: &oxc_ast::ast::Function<'a>, flags: ScopeFlags) {
-            self.function_depth += 1;
-            walk_function(self, it, flags);
-            self.function_depth = self.function_depth.saturating_sub(1);
-        }
-
-        fn visit_arrow_function_expression(
-            &mut self,
-            it: &oxc_ast::ast::ArrowFunctionExpression<'a>,
-        ) {
-            self.function_depth += 1;
-            walk_arrow_function_expression(self, it);
-            self.function_depth = self.function_depth.saturating_sub(1);
-        }
-
-        fn visit_await_expression(&mut self, _it: &oxc_ast::ast::AwaitExpression<'a>) {
-            if self.function_depth == 0 {
-                self.found = true;
-            }
-        }
-
-        fn visit_for_of_statement(&mut self, it: &oxc_ast::ast::ForOfStatement<'a>) {
-            if self.function_depth == 0 && it.r#await {
-                self.found = true;
-            }
-            walk_for_of_statement(self, it);
-        }
-    }
-
-    let mut visitor = TopLevelAwaitVisitor::default();
-    visitor.visit_program(program);
-    visitor.found
 }
 
 /// Parse script setup source code using OXC parser.
@@ -231,6 +194,7 @@ pub fn parse_script_with_options(source: &str, options: ScriptParserOptions) -> 
         SourceType::from_path("script.ts").unwrap_or_default(),
         false,
         false,
+        None,
     )
 }
 
@@ -243,12 +207,13 @@ pub fn parse_script_with_options_and_jsx(
     parse_script_plain(source, options, jsx, false, false)
 }
 
-pub(crate) fn parse_script_plain(
+pub(crate) fn parse_script_plain_with_exports(
     source: &str,
     options: ScriptParserOptions,
     jsx: bool,
     skip_diagnostics: bool,
     occurrences: bool,
+    exports: Option<&mut ModuleExportCapture>,
 ) -> ScriptParseResult {
     let path = if jsx { "script.tsx" } else { "script.ts" };
     parse_script_with_options_source_type(
@@ -257,6 +222,7 @@ pub(crate) fn parse_script_plain(
         SourceType::from_path(path).unwrap_or_default(),
         skip_diagnostics,
         occurrences,
+        exports,
     )
 }
 
@@ -266,6 +232,7 @@ pub(crate) fn parse_script_with_options_source_type(
     source_type: SourceType,
     skip_diagnostics: bool,
     occurrences: bool,
+    mut exports: Option<&mut ModuleExportCapture>,
 ) -> ScriptParseResult {
     let allocator = Allocator::default();
 
@@ -273,7 +240,7 @@ pub(crate) fn parse_script_with_options_source_type(
         "croquis.script_plain.oxc_parse",
         parse_program_for_analysis(&allocator, source, source_type)
     );
-
+    ModuleExportCapture::observe_if(exports.as_deref_mut(), &ret);
     if ret.panicked {
         return ScriptParseResult::default();
     }
@@ -316,6 +283,7 @@ pub(crate) fn parse_script_with_options_source_type(
     // Process all statements
     profile!("croquis.script_plain.walk_statements", {
         for stmt in ret.program.body.iter() {
+            ModuleExportCapture::observe_statement_if(exports.as_deref_mut(), stmt, false);
             process::process_statement(&mut result, stmt, source);
         }
     });

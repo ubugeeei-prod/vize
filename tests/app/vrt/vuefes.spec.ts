@@ -15,6 +15,8 @@ import {
   prepareStableVisualState,
 } from "../../_helpers/visual-parity";
 import { waitForMountedAppContent } from "../../_helpers/assertions";
+import { performance } from "node:perf_hooks";
+import { createVuefesFailureSidecar } from "../../_helpers/vuefes-failure-sidecar.mjs";
 
 interface VisualRoute {
   maxDiffRatio?: number;
@@ -77,8 +79,13 @@ test.describe("vuefes-2025 visual parity", () => {
       });
 
       for (const route of routes) {
-        test(route.name, async ({ browser }) => {
-          await compareRoute(browser, apps, mode, route);
+        test(route.name, async ({ browser }, testInfo) => {
+          const callbackStartedAt = performance.now();
+          await compareRoute(browser, apps, mode, route, {
+            callbackStartedAt,
+            declaredTimeout: testInfo.timeout,
+            retry: testInfo.retry,
+          });
         });
       }
     });
@@ -100,6 +107,7 @@ async function compareRoute(
   apps: ReturnType<typeof createVuefesVisualParityApps>,
   mode: VisualMode,
   route: VisualRoute,
+  failureMetadata: { callbackStartedAt: number; declaredTimeout: number; retry: number },
 ): Promise<void> {
   const context = await browser.newContext({
     colorScheme: "light",
@@ -108,9 +116,27 @@ async function compareRoute(
     viewport: route.viewport ?? DEFAULT_VIEWPORT,
   });
 
+  let sidecar: ReturnType<typeof createVuefesFailureSidecar> = null;
   try {
     const referencePage = await context.newPage();
     const candidatePage = await context.newPage();
+    if (mode === "dev" && (route.name === "home" || route.name === "speaker")) {
+      sidecar = createVuefesFailureSidecar(
+        [
+          { page: referencePage, name: "reference" },
+          { page: candidatePage, name: "candidate" },
+        ],
+        {
+          ...failureMetadata,
+          outputDir: path.resolve(
+            __dirname,
+            route.name === "speaker"
+              ? "../../../target/app-e2e-logs/vuefes-speaker"
+              : "../../../target/app-e2e-logs/vuefes-cascade",
+          ),
+        },
+      );
+    }
 
     await Promise.all([setupPage(referencePage), setupPage(candidatePage)]);
     await Promise.all([
@@ -120,12 +146,22 @@ async function compareRoute(
 
     await Promise.all([prepareVuefesPage(referencePage), prepareVuefesPage(candidatePage)]);
 
-    await expectVisualParity(referencePage, candidatePage, {
-      maxDiffRatio: route.maxDiffRatio,
-      name: `${mode}-${route.name}`,
-      outputDir: OUTPUT_DIR,
-    });
+    try {
+      await expectVisualParity(referencePage, candidatePage, {
+        maxDiffRatio: route.maxDiffRatio,
+        name: `${mode}-${route.name}`,
+        outputDir: OUTPUT_DIR,
+      });
+    } catch (error) {
+      try {
+        await sidecar?.failed(error);
+      } catch {
+        /* Preserve the original matcher error. */
+      }
+      throw error;
+    }
   } finally {
+    sidecar?.stop();
     await context.close();
   }
 }

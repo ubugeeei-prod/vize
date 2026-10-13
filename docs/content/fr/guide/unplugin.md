@@ -53,7 +53,7 @@ export default {
 };
 ```
 
-## ESBUILD
+## esbuild
 
 ```javascript
 // build.mjs

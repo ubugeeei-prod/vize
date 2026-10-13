@@ -29,6 +29,19 @@ impl ConfigDocument {
         Self(RawVizeConfig::project_defaults())
     }
 
+    /// Project identity supplied by the Vite host projection.
+    pub fn project_root(&self) -> Option<&str> {
+        self.0.project_root.as_deref()
+    }
+
+    /// Discard host identity when reading a dedicated native config file.
+    ///
+    /// This reserved key was formerly an ignored extension field; native files
+    /// cannot change their established path contract by authoring its value.
+    pub fn clear_project_root(&mut self) {
+        self.0.project_root = None;
+    }
+
     /// Borrow configured import sorting without changing the stable formatter model.
     pub fn formatter_sort_imports(&self) -> Option<&crate::config::SortImportsSetting> {
         self.0.formatter.sort_imports.as_ref()

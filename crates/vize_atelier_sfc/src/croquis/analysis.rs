@@ -1,6 +1,9 @@
 //! Descriptor analysis orchestration shared by all SFC consumers.
 
-use super::drawer::{analyze_scripts, analyze_scripts_with_occurrences, apply_options_api_mode};
+use super::drawer::{
+    analyze_scripts, analyze_scripts_with_empty_module_exports, analyze_scripts_with_occurrences,
+    apply_options_api_mode,
+};
 use super::resolved::{
     merge_resolved_props_into_croquis, merge_resolved_props_into_croquis_with_sources,
 };
@@ -17,6 +20,12 @@ pub(super) struct DescriptorAnalysisMode {
     pub(super) include_script_content: bool,
 }
 
+#[derive(Default)]
+pub(super) struct DescriptorObservation<'a> {
+    pub(super) occurrences: Option<&'a mut Option<BindingOccurrences>>,
+    pub(super) empty_module_exports: Option<&'a mut bool>,
+}
+
 pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
     descriptor: &SfcDescriptor<'_>,
     template_ast: Option<&RootNode<'_>>,
@@ -24,8 +33,12 @@ pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
     mode: DescriptorAnalysisMode,
     resolve_filename: Option<&str>,
     sources: Option<&crate::script::TypeSourceSnapshot>,
-    occurrences: Option<&mut Option<BindingOccurrences>>,
+    observation: DescriptorObservation<'_>,
 ) -> SfcCroquisAnalysis {
+    let DescriptorObservation {
+        occurrences,
+        empty_module_exports,
+    } = observation;
     let drawer_options = options.analyzer_options;
     let script_analyzed = drawer_options.analyze_script
         && (descriptor.script.is_some() || descriptor.script_setup.is_some());
@@ -38,6 +51,15 @@ pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
             mode.legacy_vue2,
         );
         packet = captured;
+        summary
+    } else if let Some(empty) = empty_module_exports {
+        let (summary, observed_empty) = analyze_scripts_with_empty_module_exports(
+            descriptor,
+            options,
+            mode.options_api,
+            mode.legacy_vue2,
+        );
+        *empty = observed_empty;
         summary
     } else {
         analyze_scripts(descriptor, options, mode.options_api, mode.legacy_vue2)

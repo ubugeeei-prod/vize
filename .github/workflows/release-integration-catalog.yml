@@ -31,3 +31,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           INTEGRATION_PR: ${{ steps.candidate.outputs.integration }}
         run: rust-script tools/commands/release/pr.rs check-integration-candidate "$INTEGRATION_PR"
+      - name: Retain complete integration event and current body snapshots
+        if: ${{ always() && steps.candidate.outputs.integration != '' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-integration-body-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/vize-release-integration-catalog/
+          if-no-files-found: error
+          retention-days: 30

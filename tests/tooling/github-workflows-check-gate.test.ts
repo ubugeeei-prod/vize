@@ -4,6 +4,7 @@ import { test } from "node:test";
 import { parse } from "yaml";
 
 import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.ts";
+import { sourceInventoryLanes } from "../../tools/support/compat/davinci/source-inventories.ts";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 
 const CORE_PR_JOBS = [
@@ -141,11 +142,10 @@ test("source gates cover PRs and merge groups while full JS qualification also r
   const validate = inventoryAction.runs.steps.find(
     (step) => step.name === "Check Davinci source inventories",
   );
+  assert.equal(validate?.run, "node tools/support/compat/davinci/source-inventories.ts");
+  // The same five checks, in the same order within each dependent lane.
   assert.deepEqual(
-    validate?.run
-      ?.trim()
-      .split("\n")
-      .map((line) => line.trim()),
+    sourceInventoryLanes.flat().map((args) => `node ${args.join(" ")}`),
     [
       "node tools/support/compat/davinci/croquis-consumers.mjs --check",
       "node tools/support/compat/davinci/consumer-migration-surfaces.mjs --check",
@@ -182,6 +182,12 @@ test("source gates cover PRs and merge groups while full JS qualification also r
     "generated reference docs must be checked before the Rust build",
   );
   assert.match(commands("check-vize-apps"), /cargo build --profile ci -p vize/);
+  const configExports = appSteps.findIndex((step) => step.run?.includes("(cd npm/cli && vp pack)"));
+  assert.ok(
+    configExports >= 0 &&
+      configExports < appSteps.findIndex((step) => step.name === "Check Vize app fixtures"),
+    "workspace config imports need built public JS exports before the source CLI checks apps",
+  );
   assert.match(commands("test-scripts"), /vp run --workspace-root test:scripts/);
   const history = parse(
     readRepoFile(".github", "actions", "test-js-packages-with-history", "action.yml"),

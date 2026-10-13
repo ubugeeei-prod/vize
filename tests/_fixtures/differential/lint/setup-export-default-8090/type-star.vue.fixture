@@ -1,0 +1,4 @@
+<script setup lang="ts">
+export type * from 'vue';
+</script>
+<template><div /></template>

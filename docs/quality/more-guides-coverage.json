@@ -59,9 +59,9 @@
     },
     {
       "route": "/guide/check-performance",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Concrete worker/profile commands present; standalone purpose and safety context still need reader-flow review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "English purpose and complete authored Japanese worker/profile guidance preserve both original commands, all inline API tokens, the one-worker default and the historical diagnostic limitation; fresh native browser and deployed reader acceptance remain pending."
     },
     {
       "route": "/guide/cli",
@@ -83,15 +83,15 @@
     },
     {
       "route": "/guide/doctor",
-      "locales": ["en"],
+      "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Practical first-run, source inspection, exit policy and JSON report guidance precede the retained complete filter/scoring reference. Actual CLI arguments and reporter reviewed; native desktop/mobile and deployed acceptance remain required."
+      "note": "Complete authored Japanese guide retains every original command, filter token, category, confidence, exit policy, scoring boundary and English heading alias. Existing practical English guidance remains byte-exact. Native desktop/mobile, actual next-step links and stable deployed acceptance remain required."
     },
     {
       "route": "/guide/experimentals",
       "locales": ["en", "ja"],
-      "entry": "audited",
-      "note": "Opt-in introduction and examples present; long switch inventory still needs reader-flow review."
+      "entry": "revised",
+      "note": "Complete Japanese guide reviewed against the current English contract: seven flags, disabled defaults, precedence, original examples and public aliases; practical Canon single-file trial retains its project-check boundary. English/Japanese or-pattern cells now preserve the complete literal and limitation in the original native flow."
     },
     {
       "route": "/guide/experimentals-reference",
@@ -102,62 +102,62 @@
     {
       "route": "/guide/experimentals-vue-rfcs",
       "locales": ["en", "ja"],
-      "entry": "audited",
-      "note": "Reference expands opt-in guide; Japanese body still needs review."
+      "entry": "revised",
+      "note": "Complete Japanese RFC detail page reviewed: independent opt-in, diagnostics, native and virtual-TypeScript boundaries, comments, self recursion and slot cardinality; all sixteen original recipes, seven destinations, 109 syntax tokens and ten public bookmarks are preserved."
     },
     {
       "route": "/guide/formatter-import-sorting",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Concrete setting and example retained; complete reader-flow review remains pending."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "English purpose, usage choice and descriptive shared-configuration next step added; complete authored Japanese preserves all original examples, defaults, raw-text rules and Node/WASM availability. Regeneration retains the entire reviewed body; fresh native desktop/mobile and deployed reading acceptance remain required."
     },
     {
       "route": "/guide/formatter-indent-width",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Concrete setting and example retained; complete reader-flow review remains pending."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "English purpose, usage choice and descriptive shared-configuration next step added; complete authored Japanese preserves all original examples, defaults, raw-text rules and Node/WASM availability. Regeneration retains the entire reviewed body; fresh native desktop/mobile and deployed reading acceptance remain required."
     },
     {
       "route": "/guide/formatter-jsx-quotes",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Concrete setting and example retained; complete reader-flow review remains pending."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "English purpose, usage choice and descriptive shared-configuration next step added; complete authored Japanese preserves all original examples, defaults, raw-text rules and Node/WASM availability. Regeneration retains the entire reviewed body; fresh native desktop/mobile and deployed reading acceptance remain required."
     },
     {
       "route": "/guide/formatter-line-endings",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Concrete setting and example retained; complete reader-flow review remains pending."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "English purpose, usage choice and descriptive shared-configuration next step added; complete authored Japanese preserves all original examples, defaults, raw-text rules and Node/WASM availability. Regeneration retains the entire reviewed body; fresh native desktop/mobile and deployed reading acceptance remain required."
     },
     {
       "route": "/guide/formatter-property-quotes",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Concrete setting and example retained; complete reader-flow review remains pending."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "English purpose, usage choice and descriptive shared-configuration next step added; complete authored Japanese preserves all original examples, defaults, raw-text rules and Node/WASM availability. Regeneration retains the entire reviewed body; fresh native desktop/mobile and deployed reading acceptance remain required."
     },
     {
       "route": "/guide/init",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Existing-project setup is handled in #8370 and #8371."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Complete authored Japanese preserves all nine original code/output blocks, inline code and link destinations. English and Japanese explain feature selection before dry-run, missing tsconfig creation and feature-scoped edit refusal with possible partial changes. This reader change does not qualify released config-free behavior or close #8371; regeneration, exact-source desktop/mobile and deployed reading acceptance remain required."
     },
     {
       "route": "/guide/lib-pull",
       "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+      "note": "English and Japanese first-copy steps inspect the registry, preview the copy and display the existing Rating example from App.vue, with Vue, TypeScript, peer-report and custom-directory boundaries explicit. All original eight complete code blocks and whole prior guide bytes remain; complete body review and deployed desktop/mobile reading remain pending."
     },
     {
       "route": "/guide/lint-execution",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Configuration example present; purpose and next action still need review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "English purpose and descriptive CLI/cross-file next steps added; complete authored Japanese retains the full Vite+ example, every option and rule token, file-selection scope, explicit-off precedence and warning/default/invalid-limit boundaries. Native and stable deployed reading acceptance remain required."
     },
     {
       "route": "/guide/musea-capture",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Capture defaults and report examples present; practical first-run flow still needs review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "English context and complete authored Japanese explain first capture and report reading while preserving the original recipe, defaults and node evidence fields. A localized stable VRT bookmark and exact editorial succession preserve the full existing Musea guide. Native capture and stable deployed reading acceptance remain required."
     },
     {
       "route": "/guide/musea-globals",
@@ -223,27 +223,27 @@
     },
     {
       "route": "/rules/accessibility-core",
-      "locales": ["en"],
+      "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, practical rule example, and next lint action revised; deployed review remains pending."
+      "note": "English and authored Japanese introductions explain when to use the eight core rules and link to complete existing label examples and the accessibility guide. Original reference packets, code and bookmarks are retained; native and deployed reader acceptance remain pending."
     },
     {
       "route": "/rules/accessibility-integrity",
-      "locales": ["en"],
+      "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, practical rule example, and next lint action revised; deployed review remains pending."
+      "note": "English and authored Japanese introductions explain when to review the seven integrity rules and link to complete existing ARIA examples and the accessibility guide. Original reference packets, code, defaults and bookmarks are retained; native and deployed reader acceptance remain pending."
     },
     {
       "route": "/rules/accessibility-interactions",
-      "locales": ["en"],
+      "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, practical rule example, and next lint action revised; deployed review remains pending."
+      "note": "English and authored Japanese introductions explain when to review the eight interaction rules and link to complete existing focus/ARIA examples and the accessibility guide. Original reference packets, code, defaults and bookmarks are retained; native and deployed reader acceptance remain pending."
     },
     {
       "route": "/rules/accessibility-structure",
-      "locales": ["en"],
+      "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, practical rule example, and next lint action revised; deployed review remains pending."
+      "note": "English and authored Japanese introductions explain when to review the eight structure rules and link to complete existing heading examples and the accessibility guide. Original reference packets, code, defaults, explicit img-alt selection and bookmarks are retained; native and deployed reader acceptance remain pending."
     },
     {
       "route": "/rules/migration",
@@ -254,20 +254,20 @@
     {
       "route": "/rules/options",
       "locales": ["en", "ja"],
-      "entry": "audited",
-      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+      "entry": "revised",
+      "note": "Complete authored Japanese prose explains rule selection, defaults, full-object replacement and file-specific settings; all 43 original recipes and API tokens remain. Native reading and deployed acceptance remain pending."
     },
     {
       "route": "/rules/options-musea",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Complete authored Japanese and the explicit off precedence explain design-token selection in the CLI while preserving every original recipe, API token, link and bookmark. Regeneration, native anchors and deployed reader acceptance remain required."
     },
     {
       "route": "/rules/options-script",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Complete authored Japanese article retains all thirteen current examples, API names, default meanings, Vue 3.5 boundary and bookmarks. The inherited props option key is corrected to the actual typed destructure API in both languages; original recipes and the finite correction remain recorded. Fresh native desktop/mobile and deployed reader acceptance remain required."
     },
     {
       "route": "/rules/options-type",
@@ -277,57 +277,63 @@
     },
     {
       "route": "/rules/options-vue",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Complete authored Japanese explains each Vue rule option and preserves all twenty full examples, API tokens, the reference link and eight original bookmarks. Both languages describe never as forbidding self-closing syntax without requiring invalid paired HTML void tags; original defaults and source policies remain unchanged. Regeneration, native reading and deployed acceptance remain required."
     },
     {
       "route": "/rules/vue-components",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Authored Japanese explains when to review components and props and links complete prop-update examples and the Vue guide. All ten original references, filename and global-registration boundaries, forty code blocks, defaults and bookmarks remain intact; native and deployed reader acceptance remain pending."
     },
     {
       "route": "/rules/vue-directive-validity",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Authored Japanese explains directive syntax and placement, then links complete v-for and slot examples and the Vue guide. All nine original references, thirty-six code blocks, defaults, presets, option boundaries and source links remain intact; native and deployed reader acceptance remain pending."
     },
     {
       "route": "/rules/vue-directives",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Authored Japanese explains directive and event conventions, when to adopt them, and the complete modifier-key examples and next lint action. All six original references, twenty-four code blocks, defaults, presets and optional custom-directive boundaries remain intact; native and deployed reader acceptance remain pending."
     },
     {
       "route": "/rules/vue-formatting",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Authored Japanese explains attribute naming/order, quotes, whitespace and empty-element conventions, then links complete attribute-order and Vue 3.4 shorthand examples and typed options. All eleven original references, forty-four code blocks, defaults, presets and bookmarks remain intact; native and deployed reader acceptance remain pending."
     },
     {
       "route": "/rules/vue-sfc",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Authored Japanese explains SFC block structure and the interchangeable script/template default, then links complete block-order examples and the Vue guide. All eight original references, thirty-two code blocks, defaults, presets and three no-SFC-finding qualifications remain intact; native and deployed reader acceptance remain pending."
     },
     {
       "route": "/rules/vue-template-safety",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Authored Japanese explains template safety and HTML structure, then links complete text-rendering and unique-ID examples and the Vue guide. All seven original references, twenty-eight code blocks, defaults, presets, options and source links remain intact; native and deployed reader acceptance remain pending."
     },
     {
       "route": "/rules/vue-template-structure",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Authored Japanese explains repetition, conditional branches and template structure, then links complete key and v-if/v-for examples and the Vue guide. All nine references, thirty-six code blocks, defaults, presets, options, current nested-v-for shadowing boundaries and source links remain intact; native and deployed reader acceptance remain pending."
     },
     {
       "route": "/stability",
       "locales": ["en", "ja"],
       "entry": "audited",
       "note": "Support tables retained; Japanese body review is handled in #8372."
+    },
+    {
+      "route": "/guide/vue-configuration",
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Reviewed canonical Vue API and options-first drop-in recipes retain exact bilingual code, native scoped limits and next-minor availability."
     }
   ]
 }

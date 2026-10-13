@@ -177,11 +177,14 @@ runs:
       run: xvfb-run -a vp run --workspace-root test:vscode-extension:host-real
 
     - name: Retain the real host failure before fixture cleanup
-      if: ${{ failure() }}
+      if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: vscode-real-host-failure
-        path: editors/vscode/.vscode-test/host-smoke-real/failure/
+        path: |
+          editors/vscode/.vscode-test/host-smoke-real/failure/
+          editors/vscode/.vscode-test/host-smoke/failure/
+          editors/vscode/.vscode-test/host-smoke/output-channel/
         include-hidden-files: true
         if-no-files-found: ignore
         retention-days: 7

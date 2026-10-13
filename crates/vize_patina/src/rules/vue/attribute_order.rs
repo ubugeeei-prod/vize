@@ -67,7 +67,7 @@ impl AttrCategory {
             },
             PropNode::Directive(dir) => {
                 let arg = dir.arg.as_ref().and_then(|arg| match arg {
-                    ExpressionNode::Simple(simple) => Some(simple.content),
+                    ExpressionNode::Simple(simple) if simple.is_static => Some(simple.content),
                     _ => None,
                 });
 
@@ -78,6 +78,12 @@ impl AttrCategory {
                     "model" => AttrCategory::TwoWayBinding,
                     "on" => AttrCategory::Events,
                     "html" | "text" => AttrCategory::Content,
+                    // A bare `#` is an ordinary attribute in the pinned
+                    // vue-eslint-parser, unlike `#default` and `v-slot`.
+                    // Relief retains the prefix, so named slots need the arg check.
+                    "slot" if dir.raw_name == Some("#") && dir.arg.is_none() => {
+                        AttrCategory::OtherAttrs
+                    }
                     "slot" => AttrCategory::UniqueAttrs,
                     "is" => AttrCategory::Definition,
                     "bind" => match arg {
@@ -94,14 +100,23 @@ impl AttrCategory {
     }
 }
 
-fn is_ordering_barrier(prop: &PropNode<'_>) -> bool {
-    match prop {
-        PropNode::Directive(dir) => dir.name == "bind" && dir.arg.is_none(),
-        PropNode::Attribute(attr) => attr
-            .value
-            .as_ref()
-            .is_some_and(|value| value.content.contains("{{")),
-    }
+fn is_object_binding(prop: &PropNode<'_>) -> bool {
+    matches!(prop, PropNode::Directive(dir) if dir.name == "bind" && dir.arg.is_none())
+}
+
+fn is_attribute_or_binding(prop: &PropNode<'_>) -> bool {
+    matches!(prop, PropNode::Attribute(_))
+        || matches!(prop, PropNode::Directive(dir) if matches!(dir.name, "bind" | "model")
+            || (dir.name == "slot" && dir.raw_name == Some("#") && dir.arg.is_none()))
+}
+
+fn ignored_object_binding(props: &[PropNode<'_>], index: usize) -> bool {
+    props.get(index).is_some_and(is_object_binding)
+        && (index
+            .checked_sub(1)
+            .and_then(|previous| props.get(previous))
+            .is_some_and(is_attribute_or_binding)
+            || props.get(index + 1).is_some_and(is_attribute_or_binding))
 }
 
 pub struct AttributeOrder;
@@ -117,13 +132,32 @@ impl Rule for AttributeOrder {
         }
 
         let mut highest_category = None;
+        let mut next_binding = (0, None);
 
-        for prop in element.props.iter() {
-            if is_ordering_barrier(prop) {
-                highest_category = None;
+        for (index, prop) in element.props.iter().enumerate() {
+            // Vue 3 spread precedence prevents moving an adjacent binding.
+            // Skip only that spread; earlier ordering still constrains later props.
+            if ignored_object_binding(&element.props, index) {
                 continue;
             }
-            let category = AttrCategory::from_prop(prop);
+            let category = if is_object_binding(prop) {
+                // An isolated spread shares the next non-spread binding's
+                // position. Cache the lookahead to scan each prop at most once.
+                if next_binding.0 <= index {
+                    next_binding = element
+                        .props
+                        .iter()
+                        .enumerate()
+                        .skip(index + 1)
+                        .find(|(_, next)| is_attribute_or_binding(next) && !is_object_binding(next))
+                        .map_or((element.props.len(), None), |(index, next)| {
+                            (index, Some(AttrCategory::from_prop(next)))
+                        });
+                }
+                next_binding.1.unwrap_or(AttrCategory::OtherAttrs)
+            } else {
+                AttrCategory::from_prop(prop)
+            };
 
             if let Some(highest_category_value) = highest_category
                 && category < highest_category_value
@@ -217,7 +251,7 @@ mod tests {
     }
 
     #[test]
-    fn object_v_bind_resets_ordering() {
+    fn adjacent_object_v_bind_does_not_force_its_own_order() {
         let linter = create_linter();
         for source in [
             r#"<Comp v-bind="attrs" v-model="value" />"#,

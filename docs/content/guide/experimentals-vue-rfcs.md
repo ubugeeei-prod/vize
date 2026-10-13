@@ -106,7 +106,7 @@ Supported branch patterns:
 | Object shorthand | `v-when="{ kind: 'ok', const data }"` | `{ const data }` means `{ data: const data }` |
 | Object rest | `v-when="{ kind: 'error', ...const payload }"` | binds remaining own enumerable properties; lone `...` is accepted |
 | Array / tuple | `v-when="[const first, ...const rest]"` | requires `Array.isArray`; rest allows additional items |
-| Or | `v-when="'idle' | 'loading'"` | tries alternatives from left to right |
+| Or | `v-when="'idle' \| 'loading'"` | tries alternatives from left to right |
 | As binding | `v-when="{ kind: 'ok' } as whole"` | binds the matched value as `whole` |
 | Guard | `v-when="{ error: const e } if (e.retriable)"` | runs after the pattern succeeds |
 

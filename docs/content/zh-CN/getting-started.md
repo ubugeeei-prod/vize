@@ -1,85 +1,72 @@
 ---
 title: 入门指南
+description: 通过 Vite 配置和 TypeScript 项目将 Vize 加入 Vue。
 ---
 
-<!-- Generated translation; source: getting-started.md -->
+<!-- Reviewed translation; source: getting-started.md -->
 
 # 入门指南
 
-> **⚠️ 开发中：** Vize 正在积极开发，目前尚未准备好用于生产环境。
-> API 和软件包边界可能会随时更改，恕不另行通知。
+通过 [Vite+](https://viteplus.dev/guide/install) 将 Vize 加入 Vue 3 应用。工具设置放在 `vite.config.ts` 中，TypeScript 项目设置保留在 `tsconfig.json` 中。Vize 仍在开发；采用前请查看[支持状态](./stability.md)。
 
-Vize (_/viːz/_) 是一个用 Rust 原生实现的 Vue.js 工具链。它将编译、代码检查、格式化、
-类型检查、编辑器诊断和组件浏览整合在同一个工作区中，同时仍可通过专用的软件包和命令
-单独使用每项功能。
+## 1. 安装集成
 
-| 需求                                     | 推荐入口                    |
-| ---------------------------------------- | --------------------------- |
-| 在 Vite 中编译 Vue SFC                   | `@vizejs/vite-plugin`       |
-| 在 Nuxt 中编译 Vue SFC                   | `@vizejs/nuxt`              |
-| 从项目脚本运行代码检查、格式化和类型检查 | `vize`                      |
-| 将 Vize 诊断与 Oxlint 组合使用           | `oxlint-plugin-vize`        |
-| 浏览和测试组件                           | `@vizejs/vite-plugin-musea` |
-| 试用编辑器功能                           | VS Code、Zed 或 `vize lsp`  |
-
-## 设置现有项目
-
-在项目根目录运行交互式初始化命令：
+在已安装 Vite+ 的现有 Vue 项目中运行：
 
 ```bash
-vpx vize init
+vp install -D @vizejs/vite-plugin
 ```
 
-`vpx` 随 [Vite+](https://viteplus.dev/guide/install) 一起提供。如果当前 shell 中没有此命令，
-请先安装 Vite+。
+集成使用项目的 Vite+ 版本（0.2.3 或更高）。普通 Vite 请参阅[插件迁移](/guide/migration.md#vite-plugin)，Nuxt 请参阅 [Nuxt 集成](./integrations/nuxt.md)。
 
-写入任何文件之前，`vize init` 会检测 Vite、Vite+ 或 Nuxt、软件包管理器、TypeScript、
-当前使用的 lint 命令以及已有的 Vize 配置。你可以单独选择要配置的功能：
+## 2. 更新 `vite.config.ts`
 
-- Vite 插件或 Nuxt 模块
-- Oxlint 插件，并写入当前 lint 命令实际读取的配置文件
-- `vize fmt` 和 `vize check` 项目脚本
-- 共享的 `vize.config.*` 设置
-- VS Code 扩展推荐
+该函数添加 Vize 编译器和原生检查任务。删除旧 Vue 插件的 import 以及 `plugins` 中的 `vue()`，保留 alias、server、test 和其他插件。[迁移指南](/guide/migration.md)提供完整的修改前后示例。
 
-不写入任何内容，预览所有计划中的文件和依赖项更改：
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({});
+```
+
+## 3. 构建并检查应用
 
 ```bash
-vpx vize init --dry-run
+vp dev
+vp build
+vp run check
 ```
 
-在 CI 或其他非交互环境中，请明确选择所需功能：
+`vp run check` 将 Vue 类型检查、lint 和格式化与 Oxlint、Oxfmt 一起执行。开发时也可以运行单独的任务：
 
 ```bash
-vpx vize init --yes --lint --bundler --fmt --typecheck --editor
+vp run typecheck
+vp run lint
+vp run fmt:check
 ```
 
-有关检测规则、全部选项、幂等性保证，以及初始化程序会主动拒绝编辑文件的情况，
-请参阅 [Project Setup（英文）](../guide/init.md)。
+使用 `vp run check -- --fix` 应用修复。生成的 Vize 任务应通过 `vp run` 执行：内置的 `vp check`、`vp lint` 和 `vp fmt` 运行 Vite+ 自身的工具。Vize 保留已有脚本，名称冲突时生成 `vize:<名称>`；请参阅[任务名称和覆盖设置](/guide/vite-plus.md#tasks)。
 
-## 选择手动配置
+## 选择下一步
 
-如果需要保留现有配置，或希望逐步采用 Vize 的单项功能，请使用手动配置：
+- [修改规则或编译器选项](./guide/configuration.md)。
+- [迁移现有工具](/guide/migration.md)，查看完整的修改前后示例。
+- [理解 lint 诊断](./rules/all.md)，对照 Vue 的问题示例和修正示例。
+- [浏览组件](./guide/ui/index.md)，查看用法和 API。
+- [使用 Musea 预览组件](./guide/musea.md)。
+- [设置编辑器](/guide/vite-plus-editor.md)，共享原生工具配置。
 
-- [Vite 插件](./guide/vite-plugin.md) — 在 Vite 中原生编译 Vue SFC
-- [Nuxt 集成](./integrations/nuxt.md) — 通过 Nuxt 自身 Vite 管线的受支持方式
-- [软件包脚本和 CLI](./guide/cli.md) — `vize build`、`fmt`、`lint`、`check`、`ready`
-  以及完整的 Rust CLI
+尚未翻译的指南链接指向英文版。
 
-Vite 是推荐的打包器集成。unplugin 和 Rspack 软件包仍处于实验阶段；请参阅
-[其他打包器](./guide/unplugin.md)了解当前范围。
+> [!NOTE]
+> 原生 CLI 和编辑器读取 Vite 配置，以及不创建专用配置的 init，正在为下一个版本准备。在该版本发布前，已发布的原生工具仍需使用现有的专用格式来自定义共享设置。[参考文档](./guide/configuration-reference.md)介绍该格式。
 
-## 继续阅读专题指南
+## 不使用 Vite+ 的场景
 
-本页有意只提供入门导览。有关配置和集成的详细信息，请以以下专题指南为准：
+[独立 CLI](./guide/cli.md)提供 `vize lint`、`vize fmt` 和 `vize check`。从目标包的根目录运行，并将 TypeScript 项目保留在 `tsconfig.json` 中。原生命令也可以共享 `vite.config.*` 顶层的 `vize` 设置；搜索规则和当前限制请参阅 [CLI 配置](./guide/configuration.md#standalone-cli)。
 
-- [配置](./guide/configuration.md) — `vize.config.*`、编译器选项、类型检查和 Musea 设置
-- [静态分析](./guide/static-analysis.md) — 代码检查和类型检查模型
-- [规则文档](./rules/index.md) — 具体诊断及示例
-- [Oxlint 插件](./guide/oxlint.md) — 预设、设置以及每个命令实际读取的配置文件
-- [VS Code 和其他编辑器](./integrations/vscode.md) — 选择启用的编辑器配置和 LSP 设置
-- [JSX 与 TSX](./guide/jsx.md) — 在 `.vue` SFC 之外编写 Vue 组件
-- [Musea](./guide/musea.md) — 组件示例、文档、设计令牌、a11y 和 VRT
+先用 `vpx vize init --dry-run` 预览交互式设置，再运行 `vpx vize init` 选择功能。[项目设置](/guide/init.md)介绍检测和编辑限制。init 使用项目设置和默认值，不会创建专用的 Vize 配置文件。
 
-在 Vize 编辑器集成仍处于实验阶段时，日常 Vue 开发请继续使用官方的
-[`vuejs/language-tools`](https://github.com/vuejs/language-tools)。
+<span id="设置现有项目"></span>
+<span id="选择手动配置"></span>
+<span id="继续阅读专题指南"></span>

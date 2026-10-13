@@ -1,5 +1,10 @@
 # Native lint execution settings
 
+Use this guide to include relationships between files in a lint run or make warnings fail CI.
+Keep these settings in configuration when the CLI and Vite+ tasks should follow the same policy.
+For a first run and the available command options, see [linting with the CLI](./cli.md#lint).
+To understand the cross-file reports, see [component trees and complexity](./cross-file-complexity.md).
+
 Use the same native lint settings from `vize.config.*` or the Vite+ integration:
 
 ```ts

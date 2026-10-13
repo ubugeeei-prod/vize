@@ -14,7 +14,7 @@ impl ConfigDocument {
             .iter()
             .cloned()
             .map(|pattern| ConfigEntryIgnore {
-                base_path: None,
+                base_path: self.0.project_root.clone(),
                 pattern,
             });
         let entry_ignores = self

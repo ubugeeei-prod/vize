@@ -31,6 +31,9 @@ const MUSEA: Domain = Domain::new("<art> and <variant> blocks of .art.vue files"
 const NUXT: Domain =
     Domain::new("Nuxt configuration objects and definePageMeta calls written as literals");
 const OPTIONS: Domain = Domain::new("Options API component definitions written as object literals");
+const EMITS_RETURN: Domain = Domain::new(
+    "Vue emits validator functions in resolved Options API objects and compiler-owned inline setup runtime objects or immutable const chains; unavailable external blocks, namespace-shadowed calls and all-path return analysis are outside",
+);
 const SCRIPT: Domain =
     Domain::new("the syntax of <script> and <script setup> programs, without type information");
 const STYLE: Domain = Domain::new(
@@ -44,6 +47,9 @@ const BOOLEAN_CONDITIONS: Domain = Domain::new(
 );
 const TYPES: Domain =
     Domain::new("types the Corsa session resolves for the component; unresolved types are outside");
+const RESERVED_OPTIONS: Domain = Domain::new(
+    "props/data/computed/methods/setup members of resolved Options API objects with block-scoped script/no-reserved-keys or registered vue/no-reserved-keys suppression; asyncData and script-setup defineProps are outside",
+);
 
 /// Every Patina rule, sorted by name.
 #[rustfmt::skip]
@@ -149,7 +155,7 @@ pub static RULE_CONTRACTS: &[RuleEntry] = &[
     row!("script/no-ref-as-operand", Complete, BINDINGS, Error),
     row!("script/no-required-prop-with-default", Exact, OPTIONS, Error),
     row!("script/no-reserved-identifiers", Exact, SCRIPT, Error),
-    row!("script/no-reserved-keys", Exact, OPTIONS, Error),
+    row!("script/no-reserved-keys", Exact, RESERVED_OPTIONS, Error),
     row!("script/no-reserved-props", Exact, OPTIONS, Error),
     row!("script/no-restricted-globals", Exact, SCRIPT, Error),
     row!("script/no-restricted-members", Exact, SCRIPT, Error),
@@ -178,7 +184,7 @@ pub static RULE_CONTRACTS: &[RuleEntry] = &[
     row!("script/require-typed-ref", Exact, SCRIPT, Warning),
     row!("script/require-valid-default-prop", Complete, OPTIONS, Error),
     row!("script/return-in-computed-property", Complete, OPTIONS, Error),
-    row!("script/return-in-emits-validator", Complete, OPTIONS, Error),
+    row!("script/return-in-emits-validator", Complete, EMITS_RETURN, Error),
     row!("script/valid-define-emits", Exact, MACROS, Error),
     row!("script/valid-define-options", Exact, MACROS, Error),
     row!("script/valid-define-props", Exact, MACROS, Error),

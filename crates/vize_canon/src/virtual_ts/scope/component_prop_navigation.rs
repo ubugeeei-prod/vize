@@ -31,8 +31,6 @@ pub(super) fn emit_references(
                 usage.name.as_str(),
             )
         });
-        let tag_src_start = (ctx.template_offset + usage.start + 1) as usize;
-        let tag_src_end = tag_src_start + usage.name.len();
 
         if inference_only {
             ts.push_str("  // @ts-ignore Navigation-only reference; the authored v-bind statement owns diagnostics.\n");
@@ -43,11 +41,17 @@ pub(super) fn emit_references(
         let tag_gen_end = ts.len();
         ts.push_str(";\n");
         let tag_gen_range = tag_gen_start..tag_gen_end;
-        mappings.push(VizeMapping {
-            gen_range: tag_gen_range.clone(),
-            src_range: tag_src_start..tag_src_end,
-            sub_spans: Vec::new(),
-        });
+        if let Some(src_range) = crate::virtual_ts::component_tag::source_range(
+            ctx.template_source,
+            ctx.template_offset,
+            usage,
+        ) {
+            mappings.push(VizeMapping {
+                gen_range: tag_gen_range.clone(),
+                src_range,
+                sub_spans: Vec::new(),
+            });
+        }
 
         emit_prop_references(
             ts,
@@ -186,7 +190,7 @@ fn emit_slot_references(
             );
             append!(
                 *ts,
-                "  const {slots_ref} = undefined as unknown as __VizeStructuralSlots<typeof {component_ref}>;\n"
+                "  const {slots_ref} = undefined as unknown as __VizeNavigationSlots<typeof {component_ref}>;\n"
             );
             emitted_slots_ref = true;
         }

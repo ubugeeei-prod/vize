@@ -2,11 +2,12 @@
 //! ```cargo
 //! [dependencies]
 //! serde_json = "1"
+//! flate2 = { version = "1", default-features = false, features = ["rust_backend"] }
 //!
 //! [package]
 //! edition = "2024"
 //! ```
-//! Driver source pin: pinned-raw-parent-custody-v13.
+//! Driver source pin: release-bot-envelope-variants-v16.
 
 #[path = "../../support/release/pr_budget.rs"]
 mod pr_budget;
@@ -51,8 +52,10 @@ fn run() -> Result<(), String> {
         .as_slice()
     {
         ["rewrite-guest-lock", path, old, new] => pr_pin::rewrite_guest_lock(path, old, new, &root),
+        ["verify-producer-metadata", frozen] => pr_pin::verify_producer_metadata(frozen, &root),
         ["start", bump] => pr_start::start(bump, &root),
         ["start", bump, "--pin"] => pr_start::start_pinned(bump, &root),
+        ["start-stable", policy, cut] => pr_pin::start_stable(policy, cut, &root),
         ["retire", number, head, tag, run, operator] => pr_pin::retire(
             number.parse().map_err(|_| "Invalid original source PR number")?, head, tag,
             run.parse().map_err(|_| "Invalid original Release run number")?,
@@ -94,7 +97,7 @@ fn run() -> Result<(), String> {
             }
         }
         _ => Err(
-            "Usage: pr.rs start <bump> [--pin] | resume <PR> [--pin] | retire <source PR> <H> <tag> <R> <original operator run> | validate|wait-promotion|validate-pinned|wait-promotion-pinned <PR> <SHA> <tag> | verify-pinned <PR> <SHA> <tag> <run> | verify-integration-candidate <integration PR> <candidate SHA> <base SHA> <integration head SHA> | check-integration-candidate <integration PR>"
+            "Usage: pr.rs start <bump> [--pin] | resume <PR> [--pin] | retire <source PR> <H> <tag> <R> <original operator run> | validate|wait-promotion|validate-pinned|wait-promotion-pinned <PR> <SHA> <tag> | verify-pinned <PR> <SHA> <tag> <run> | verify-integration-candidate <integration PR> <candidate SHA> <base SHA> <integration head SHA> | check-integration-candidate <integration PR> | verify-producer-metadata <frozen-directory>"
                 .into(),
         ),
     }

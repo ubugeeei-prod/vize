@@ -2,7 +2,8 @@ use super::super::document::TypeAwareDocument;
 use super::{
     TemplateContext, TemplatePromiseQuery, TemplateQuery, TemplateQueryKind,
     absolute_expression_range, calls::collect_template_call_ranges,
-    generated_offset_for_expression, generated_offset_for_text, v_for_source_binding_offset,
+    generated_offset_for_expression, generated_offset_for_text, slot_spread_callee_offset,
+    v_for_source_binding_offset,
 };
 use oxc_allocator::Allocator as OxcAllocator;
 use oxc_span::SourceType;
@@ -366,7 +367,19 @@ fn collect_directive(
         source_type,
         sinks,
     );
-    if directive.name == "for" {
+    if directive.name == "slot" {
+        // A slot parameter declares bindings. Its computed keys can still
+        // call unsafe or async values, and descendants still query their uses.
+        if let Some(queries) = sinks.template_queries.as_deref_mut()
+            && let Some(index) = queries.get(first_query..).and_then(|recent| {
+                recent
+                    .iter()
+                    .position(|query| query.kind == TemplateQueryKind::Expression)
+            })
+        {
+            queries.remove(first_query + index);
+        }
+    } else if directive.name == "for" {
         retarget_v_for_source_queries(virtual_ts, sinks, first_query);
     } else if directive.name == "bind" && directive.arg.is_none() {
         retarget_slot_spread_call_queries(
@@ -425,33 +438,6 @@ fn retarget_slot_spread_call_queries(
             expression.kind = TemplateQueryKind::CallReturn;
         }
     }
-}
-
-fn slot_spread_callee_offset(
-    generated: &str,
-    expression_offset: u32,
-    callee_text: &str,
-) -> Option<u32> {
-    let at = expression_offset as usize;
-    let line_start = generated
-        .get(..at)?
-        .rfind('\n')
-        .map_or(0, |index| index + 1);
-    let line_end = generated
-        .get(at..)?
-        .find('\n')
-        .map_or(generated.len(), |index| at + index);
-    let line = generated.get(line_start..line_end)?;
-    if !line.contains("__vizeSlotOutletSpread<") {
-        return None;
-    }
-    let before_expression = line.get(..at - line_start)?;
-    let callee_start = before_expression.rfind(callee_text)?;
-    let after_callee = line.get(callee_start + callee_text.len()..)?;
-    if !after_callee.starts_with('(') && !after_callee.starts_with("?.(") {
-        return None;
-    }
-    u32::try_from(line_start + callee_start + callee_text.len() - 1).ok()
 }
 
 fn retarget_v_for_source_queries(

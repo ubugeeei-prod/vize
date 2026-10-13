@@ -12,10 +12,12 @@ const catalogues: readonly (readonly [string, string])[] = [
       `${locale === "en" ? "" : `${locale}/`}rules/${file}.md`,
     ]),
   ),
-  ...Object.keys(catalogueSubgroups).map((file): [string, string] => [
-    `generated/rules/en/${file}.md`,
-    `rules/${file}.md`,
-  ]),
+  ...Object.entries(catalogueSubgroups).flatMap(([file, subgroup]) =>
+    (subgroup.jaTitle ? ["en", "ja"] : ["en"]).map((locale): [string, string] => [
+      `generated/rules/${locale}/${file}.md`,
+      `${locale === "en" ? "" : `${locale}/`}rules/${file}.md`,
+    ]),
+  ),
 ];
 export const CATALOGUE_SOURCES = catalogues.map(([source]) => source);
 

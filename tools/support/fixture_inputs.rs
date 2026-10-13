@@ -144,3 +144,74 @@ fn ignored_source_path(path: &Path) -> bool {
         name == ".yarn" || name == "node_modules"
     })
 }
+
+/// Physical script roots for a generated zero-SFC fixture project. Keep this
+/// separate from the frozen Vue glob walker and reject ownership escapes.
+pub fn collect_owned_script_files(cwd: &Path) -> Result<Vec<String>, String> {
+    let root = fs::canonicalize(cwd).map_err(|error| error.to_string())?;
+    let mut files = Vec::new();
+    collect_owned_scripts(&root, &root, &mut Vec::new(), &mut files)?;
+    files.sort_by(|left, right| left.as_bytes().cmp(right.as_bytes()));
+    files.dedup();
+    Ok(files)
+}
+
+fn collect_owned_scripts(
+    root: &Path,
+    directory: &Path,
+    ancestors: &mut Vec<PathBuf>,
+    files: &mut Vec<String>,
+) -> Result<(), String> {
+    let canonical = fs::canonicalize(directory).map_err(|error| error.to_string())?;
+    if !canonical.starts_with(root) {
+        return Err(format!(
+            "fixture script ownership escapes root: {}",
+            directory.display()
+        ));
+    }
+    if ancestors.contains(&canonical) {
+        return Err(format!(
+            "fixture script ownership cycles: {}",
+            directory.display()
+        ));
+    }
+    ancestors.push(canonical);
+    let result = (|| {
+        for entry in fs::read_dir(directory).map_err(|error| error.to_string())? {
+            let path = entry.map_err(|error| error.to_string())?.path();
+            if path.file_name().is_some_and(|name| {
+                matches!(name.to_str(), Some(".git" | ".yarn" | "node_modules"))
+            }) {
+                continue;
+            }
+            let canonical = fs::canonicalize(&path).map_err(|error| error.to_string())?;
+            if !canonical.starts_with(root) {
+                return Err(format!(
+                    "fixture script ownership escapes root: {}",
+                    path.display()
+                ));
+            }
+            let metadata = fs::metadata(&path).map_err(|error| error.to_string())?;
+            if metadata.is_dir() {
+                collect_owned_scripts(root, &path, ancestors, files)?;
+            } else if metadata.is_file()
+                && path.extension().is_some_and(|extension| {
+                    matches!(
+                        extension.to_str(),
+                        Some("js" | "jsx" | "mjs" | "cjs" | "ts" | "tsx" | "mts" | "cts")
+                    )
+                })
+            {
+                files.push(
+                    path.strip_prefix(root)
+                        .map_err(|error| error.to_string())?
+                        .to_string_lossy()
+                        .replace('\\', "/"),
+                );
+            }
+        }
+        Ok(())
+    })();
+    ancestors.pop();
+    result
+}

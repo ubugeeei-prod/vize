@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { parse } from "yaml";
 import { rustCachePolicy } from "../../.github/actions/setup-rust-sticky-cache/cache-policy.mjs";
 import { cacheFixture, executeCacheAction } from "./support/rust-cache-fixture.mjs";
+import { allMountFailures, assertNoCandidateCommit } from "./support/rust-cache-candidates.ts";
 
 const steps = parse(
   readFileSync(
@@ -104,13 +105,11 @@ await test("a mounted stable seed remains a compatible restore for untrusted cur
         ...paths,
         ...changed,
       },
-      options,
+      { ...options, mountFailures: allMountFailures },
     );
     assert.equal(result.status, 0);
-    assert.equal(
-      result.trace.filter((row) => row.kind === "sticky" || row.kind === "cache-post").length,
-      0,
-    );
+    assert.equal(result.trace.filter((row) => row.kind === "cache-post").length, 0);
+    assertNoCandidateCommit(result.trace);
     for (const seed of seeds) {
       const restored = result.trace.find((row) => row.kind === "cache" && row.name === seed.name);
       assert.equal(restored.matchedKey, seed.key);

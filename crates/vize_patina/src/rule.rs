@@ -54,6 +54,13 @@ pub trait Rule: Send + Sync {
     /// Get rule metadata
     fn meta(&self) -> &'static RuleMeta;
 
+    /// Borrow this actual configured instance's ordinary-SFC script callback.
+    /// Names alone confer no capability. The existing shared parse supplies
+    /// the Program; unprovided instances keep their original dispatch.
+    fn as_sfc_script_rule(&self) -> Option<&dyn crate::rules::script::ScriptRule> {
+        None
+    }
+
     /// Project this rule onto the zero-copy markup IR, when it has a
     /// cross-backend [`MarkupRule`] implementation.
     ///

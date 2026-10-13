@@ -43,13 +43,6 @@ use stats_run::StatsRun;
 pub(crate) fn run(args: BuildArgs) {
     let start = Instant::now();
     let slow_threshold = Duration::from_millis(args.slow_threshold);
-    if let Some(path) = args.config.as_deref()
-        && !args.no_config
-        && let Err(error) = crate::config::validate_explicit_config_path(path)
-    {
-        eprintln!("\x1b[31mError:\x1b[0m {}", error);
-        std::process::exit(1);
-    }
     let build_config = load_build_config(args.no_config, args.config.as_deref());
     if build_config
         .dialect
@@ -75,7 +68,14 @@ pub(crate) fn run(args: BuildArgs) {
         std::process::exit(1);
     }
 
-    let CollectedFiles { mut files, roots } = collect_files_or_exit(&args.patterns);
+    let default_patterns = args.patterns.is_empty().then(|| {
+        vec![build_config.project_root.as_deref().map_or_else(
+            || "./**/*.vue".to_owned(),
+            |root| root.join("**/*.vue").to_string_lossy().into_owned(),
+        )]
+    });
+    let patterns = default_patterns.as_deref().unwrap_or(&args.patterns);
+    let CollectedFiles { mut files, roots } = collect_files_or_exit(patterns);
 
     if files.is_empty() {
         eprintln!("No .vue files found matching the patterns");

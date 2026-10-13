@@ -94,6 +94,13 @@ const config = {
       "**/__ubugeeei__/**",
       "tests/_fixtures/**",
       editorScenarioFixtureIgnorePattern,
+      // Authenticated upstream originals keep their complete source/fixture bytes.
+      // The CSS vendor custody guard verifies them before focused Rust checks.
+      "vendor/{lightningcss,parcel_sourcemap}/.cargo_vcs_info.json",
+      "vendor/{lightningcss,parcel_sourcemap}/Cargo.toml.orig",
+      "vendor/{lightningcss,parcel_sourcemap}/UPSTREAM-Cargo.toml",
+      "vendor/lightningcss/rustfmt.toml",
+      "vendor/lightningcss/tests/testdata/**",
       ...formatterSensitiveContentIgnorePatterns,
     ],
   },

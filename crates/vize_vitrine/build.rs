@@ -21,6 +21,14 @@ fn main() -> BuildResult {
     #[cfg(all(feature = "napi", not(target_arch = "wasm32")))]
     napi_build::setup();
 
+    println!("cargo:rerun-if-env-changed=VIZE_NATIVE_BUILD_TOKEN");
+    if let Ok(token) = std::env::var("VIZE_NATIVE_BUILD_TOKEN") {
+        if token.len() != 32 || !token.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+            return Err("VIZE_NATIVE_BUILD_TOKEN must contain 32 hexadecimal characters".into());
+        }
+        println!("cargo:rustc-env=VIZE_NATIVE_BUILD_TOKEN={token}");
+    }
+
     let crate_dir = PathBuf::from(
         std::env::var_os("CARGO_MANIFEST_DIR").ok_or("CARGO_MANIFEST_DIR is not set")?,
     );

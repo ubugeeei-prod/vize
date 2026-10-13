@@ -1,0 +1,212 @@
+{
+  "schema": "vize.lint.read-only-no-export-reference",
+  "version": 1,
+  "inputSha256": "db5a69507f8b01c966c6549a0534b5807126629952334706ffe5371de03c3b97",
+  "provider": {
+    "version": "3.5.43",
+    "path": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-sfc@3.5.43/node_modules/@vue/compiler-sfc/dist/compiler-sfc.cjs.js",
+    "sha256": "884835f119c169afc7c3913a3f80bea700491ea96a3606e815441a0e9e8b702b",
+    "officialSource": "https://raw.githubusercontent.com/vuejs/core/v3.5.43/packages/compiler-sfc/src/compileScript.ts"
+  },
+  "authority": "Read-only installed official JS reference; current-rule classifications source inferred, no native build/consumer/full Matrix proof",
+  "cases": [
+    {
+      "id": "runtime-const",
+      "source": "<script setup lang=\"ts\">\nexport const answer = 42;\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": true,
+      "parseErrors": [],
+      "compiler": {
+        "accepted": false,
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] <script setup> cannot contain ES module exports. If you are using a previous version of <script setup>, please consult the updated RFC at https://github.com/vuejs/rfcs/pull/227.\n\nruntime-const.vue\n1  |  <script setup lang=\"ts\">\n   |                           ^\n2  |  export const answer = 42;\n   |  ^^^^^^^^^^^^^^^^^^^^^^^^^\n3  |  </script>"
+      }
+    },
+    {
+      "id": "runtime-default",
+      "source": "<script setup lang=\"ts\">\nexport default {};\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": true,
+      "parseErrors": [],
+      "compiler": {
+        "accepted": false,
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] <script setup> cannot contain ES module exports. If you are using a previous version of <script setup>, please consult the updated RFC at https://github.com/vuejs/rfcs/pull/227.\n\nruntime-default.vue\n1  |  <script setup lang=\"ts\">\n   |                           ^\n2  |  export default {};\n   |  ^^^^^^^^^^^^^^^^^^\n3  |  </script>"
+      }
+    },
+    {
+      "id": "runtime-reexport",
+      "source": "<script setup lang=\"ts\">\nexport { ref } from 'vue';\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": true,
+      "parseErrors": [],
+      "compiler": {
+        "accepted": false,
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] <script setup> cannot contain ES module exports. If you are using a previous version of <script setup>, please consult the updated RFC at https://github.com/vuejs/rfcs/pull/227.\n\nruntime-reexport.vue\n1  |  <script setup lang=\"ts\">\n   |                           ^\n2  |  export { ref } from 'vue';\n   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^\n3  |  </script>"
+      }
+    },
+    {
+      "id": "runtime-star",
+      "source": "<script setup lang=\"ts\">\nexport * from 'vue';\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": true,
+      "parseErrors": [],
+      "compiler": {
+        "accepted": false,
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] <script setup> cannot contain ES module exports. If you are using a previous version of <script setup>, please consult the updated RFC at https://github.com/vuejs/rfcs/pull/227.\n\nruntime-star.vue\n1  |  <script setup lang=\"ts\">\n   |                           ^\n2  |  export * from 'vue';\n   |  ^^^^^^^^^^^^^^^^^^^^\n3  |  </script>"
+      }
+    },
+    {
+      "id": "empty-export",
+      "source": "<script setup lang=\"ts\">\nexport {};\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": true,
+      "parseErrors": [],
+      "compiler": {
+        "accepted": false,
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] <script setup> cannot contain ES module exports. If you are using a previous version of <script setup>, please consult the updated RFC at https://github.com/vuejs/rfcs/pull/227.\n\nempty-export.vue\n1  |  <script setup lang=\"ts\">\n   |                           ^\n2  |  export {};\n   |  ^^^^^^^^^^\n3  |  </script>"
+      }
+    },
+    {
+      "id": "type-alias",
+      "source": "<script setup lang=\"ts\">\nexport type Props = { title: string };\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": false,
+      "parseErrors": [],
+      "compiler": {
+        "accepted": true,
+        "content": "import { defineComponent as _defineComponent } from 'vue'\nexport type Props = { title: string };\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'type-alias',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\nconst __returned__ = {  }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+        "bindings": {}
+      }
+    },
+    {
+      "id": "type-interface",
+      "source": "<script setup lang=\"ts\">\nexport interface Props { title: string }\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": false,
+      "parseErrors": [],
+      "compiler": {
+        "accepted": true,
+        "content": "import { defineComponent as _defineComponent } from 'vue'\nexport interface Props { title: string }\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'type-interface',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\nconst __returned__ = {  }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+        "bindings": {}
+      }
+    },
+    {
+      "id": "type-star",
+      "source": "<script setup lang=\"ts\">\nexport type * from 'vue';\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": false,
+      "parseErrors": [],
+      "compiler": {
+        "accepted": false,
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] <script setup> cannot contain ES module exports. If you are using a previous version of <script setup>, please consult the updated RFC at https://github.com/vuejs/rfcs/pull/227.\n\ntype-star.vue\n1  |  <script setup lang=\"ts\">\n   |                           ^\n2  |  export type * from 'vue';\n   |  ^^^^^^^^^^^^^^^^^^^^^^^^^\n3  |  </script>"
+      }
+    },
+    {
+      "id": "all-type-specifiers",
+      "source": "<script setup lang=\"ts\">\ntype Props = { title: string }; export { type Props };\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": false,
+      "parseErrors": [],
+      "compiler": {
+        "accepted": false,
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] <script setup> cannot contain ES module exports. If you are using a previous version of <script setup>, please consult the updated RFC at https://github.com/vuejs/rfcs/pull/227.\n\nall-type-specifiers.vue\n1  |  <script setup lang=\"ts\">\n2  |  type Props = { title: string }; export { type Props };\n   |                                  ^^^^^^^^^^^^^^^^^^^^^^\n3  |  </script>\n4  |  <template><div /></template>"
+      }
+    },
+    {
+      "id": "mixed-specifiers",
+      "source": "<script setup lang=\"ts\">\ntype Props = { title: string }; const answer = 42; export { type Props, answer };\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": true,
+      "parseErrors": [],
+      "compiler": {
+        "accepted": false,
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] <script setup> cannot contain ES module exports. If you are using a previous version of <script setup>, please consult the updated RFC at https://github.com/vuejs/rfcs/pull/227.\n\nmixed-specifiers.vue\n1  |  <script setup lang=\"ts\">\n2  |  type Props = { title: string }; const answer = 42; export { type Props, answer };\n   |                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n3  |  </script>\n4  |  <template><div /></template>"
+      }
+    },
+    {
+      "id": "ambient-variable",
+      "source": "<script setup lang=\"ts\">\nexport declare const answer: number;\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": false,
+      "parseErrors": [],
+      "compiler": {
+        "accepted": true,
+        "content": "import { defineComponent as _defineComponent } from 'vue'\nexport declare const answer: number;\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'ambient-variable',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\nconst __returned__ = {  }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+        "bindings": {}
+      }
+    },
+    {
+      "id": "ambient-function",
+      "source": "<script setup lang=\"ts\">\nexport declare function helper(): void;\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": false,
+      "parseErrors": [],
+      "compiler": {
+        "accepted": true,
+        "content": "import { defineComponent as _defineComponent } from 'vue'\nexport declare function helper(): void;\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'ambient-function',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\nconst __returned__ = {  }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+        "bindings": {}
+      }
+    },
+    {
+      "id": "ambient-class",
+      "source": "<script setup lang=\"ts\">\nexport declare class Helper {}\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": false,
+      "parseErrors": [],
+      "compiler": {
+        "accepted": true,
+        "content": "import { defineComponent as _defineComponent } from 'vue'\nexport declare class Helper {}\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'ambient-class',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\nconst __returned__ = {  }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+        "bindings": {}
+      }
+    },
+    {
+      "id": "ambient-enum",
+      "source": "<script setup lang=\"ts\">\nexport declare enum Direction { North }\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": false,
+      "parseErrors": [],
+      "compiler": {
+        "accepted": true,
+        "content": "import { defineComponent as _defineComponent } from 'vue'\nexport declare enum Direction { North }\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'ambient-enum',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\nconst __returned__ = {  }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+        "bindings": {}
+      }
+    },
+    {
+      "id": "ambient-namespace",
+      "source": "<script setup lang=\"ts\">\nexport declare namespace Shapes { interface Point { x: number } }\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": false,
+      "parseErrors": [],
+      "compiler": {
+        "accepted": true,
+        "content": "import { defineComponent as _defineComponent } from 'vue'\nexport declare namespace Shapes { interface Point { x: number } }\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'ambient-namespace',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\nconst __returned__ = {  }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+        "bindings": {}
+      }
+    },
+    {
+      "id": "pure-type-namespace",
+      "source": "<script setup lang=\"ts\">\nexport namespace Shapes { export interface Point { x: number } }\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": true,
+      "parseErrors": [],
+      "compiler": {
+        "accepted": false,
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] <script setup> cannot contain ES module exports. If you are using a previous version of <script setup>, please consult the updated RFC at https://github.com/vuejs/rfcs/pull/227.\n\npure-type-namespace.vue\n1  |  <script setup lang=\"ts\">\n   |                           ^\n2  |  export namespace Shapes { export interface Point { x: number } }\n   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n3  |  </script>"
+      }
+    },
+    {
+      "id": "runtime-enum",
+      "source": "<script setup lang=\"ts\">\nexport enum Direction { North }\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": true,
+      "parseErrors": [],
+      "compiler": {
+        "accepted": false,
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] <script setup> cannot contain ES module exports. If you are using a previous version of <script setup>, please consult the updated RFC at https://github.com/vuejs/rfcs/pull/227.\n\nruntime-enum.vue\n1  |  <script setup lang=\"ts\">\n   |                           ^\n2  |  export enum Direction { North }\n   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n3  |  </script>"
+      }
+    },
+    {
+      "id": "normal-module",
+      "source": "<script lang=\"ts\">\nexport const answer = 42;\n</script>\n<template><div /></template>\n",
+      "currentRuleReports": false,
+      "parseErrors": [],
+      "compiler": {
+        "accepted": true,
+        "content": "\nexport const answer = 42;\n",
+        "bindings": {}
+      }
+    }
+  ]
+}

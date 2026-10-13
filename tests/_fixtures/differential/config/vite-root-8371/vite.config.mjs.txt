@@ -1,0 +1,17 @@
+import { appendFileSync } from "node:fs";
+
+export default () => {
+  appendFileSync(new URL(".evaluations", import.meta.url), "evaluated\n");
+  return {
+    root: "./app",
+    vize: {
+      compiler: { whitespace: "preserve", customElements: ["my-widget"] },
+      linter: { preset: "essential", rules: { "a11y/alt-text": "off" } },
+      formatter: { singleQuote: true },
+      ignores: ["src/Ignored.vue"],
+      entries: [
+        { files: ["src/**/*.vue"], linter: { rules: { "a11y/alt-text": "error" } } },
+      ],
+    },
+  };
+};

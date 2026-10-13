@@ -1,0 +1,85 @@
+{
+  "schema": "vize.lint.original-suppression-successor",
+  "version": 1,
+  "authority": "Preserve the unchanged complete VueSelect source and original source/Matrix/public/official vectors; the registered ESLint suppression maps the existing correct data finding to an explicit empty native successor. Official unused-directive warnings and suppressedMessages remain frozen in the prefix reference receipt.",
+  "originalCorpus": {
+    "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/originals.json",
+    "sha256": "65d7e2cbbdc5552f1d28338163d88506716fc8ebd6a2a88a0c5eab5670283144"
+  },
+  "id": "original-vue-select-src-components-select",
+  "filename": "original-vue-select-src-components-select.vue",
+  "sourceFile": "../reserved-prefix-8090/original-vue-select-src-components-select.vue.fixture",
+  "sourceSha256": "12f3b27bb0d85e07ab538f2813e7f3ddaaf8708ed4167b95c50a366f4cfd9b68",
+  "beforeDiagnostics": [
+    {
+      "rule_name": "script/no-reserved-keys",
+      "severity": "error",
+      "message": "Reserved key '_value'",
+      "start": 18163,
+      "end": 18169,
+      "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+      "labels": [
+        {
+          "message": "data key starts with reserved '_'",
+          "start": 18163,
+          "end": 18169
+        }
+      ],
+      "fix": null
+    }
+  ],
+  "diagnostics": [],
+  "publicBeforeDiagnostics": [
+    {
+      "rule_name": "script/no-reserved-keys",
+      "severity": "error",
+      "message": "Reserved key 'options'",
+      "start": 5990,
+      "end": 5997,
+      "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+      "labels": [
+        {
+          "message": "props key collides with a Vue built-in instance property",
+          "start": 5990,
+          "end": 5997
+        }
+      ],
+      "fix": null
+    },
+    {
+      "rule_name": "script/no-reserved-keys",
+      "severity": "error",
+      "message": "Reserved key '_value'",
+      "start": 18163,
+      "end": 18169,
+      "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+      "labels": [
+        {
+          "message": "data key starts with reserved '_'",
+          "start": 18163,
+          "end": 18169
+        }
+      ],
+      "fix": null
+    }
+  ],
+  "providerSuppressedDiagnostics": [
+    {
+      "ruleId": "vue/no-reserved-keys",
+      "severity": 2,
+      "message": "Keys starting with '_' are reserved in '_value' group.",
+      "line": 681,
+      "column": 7,
+      "nodeType": "Identifier",
+      "messageId": "startsWithUnderscore",
+      "endLine": 681,
+      "endColumn": 13,
+      "suppressions": [
+        {
+          "kind": "directive",
+          "justification": ""
+        }
+      ]
+    }
+  ]
+}

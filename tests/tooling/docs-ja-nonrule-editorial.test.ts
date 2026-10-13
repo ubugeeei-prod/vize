@@ -8,6 +8,10 @@ import {
   witnessBlocks,
 } from "../../docs/scripts/ja-nonrule-render-assertions.ts";
 import { defaultNavigationRenderRoutes } from "../../docs/scripts/navigation-render-routes.ts";
+import {
+  currentEditorialWitness,
+  originalEditorialSource,
+} from "../../docs/scripts/config-editorial-succession.ts";
 
 const root = resolve(import.meta.dirname, "../..");
 const read = (path: string) => readFileSync(resolve(root, path), "utf8");
@@ -18,13 +22,18 @@ test("Japanese configuration and Musea retain every original complete code block
   assert.equal(fixture.custody.length, 2);
   let count = 0;
   for (const entry of fixture.custody) {
-    const source = read(entry.path);
+    const source = originalEditorialSource(entry.path, read(entry.path));
     const fences = [...source.matchAll(/^```[^\n]*\n[\s\S]*?^```[^\n]*$/gm)].map(
       (match) => match[0],
     );
     count += fences.length;
     assert.equal(fences.length, entry.originalCodeBlocks, entry.path);
     assert.equal(sha(fences.join("\0")), entry.originalWholeCodeSha256, entry.path);
+    for (const fence of fences)
+      assert(
+        read(entry.path).includes(fence),
+        `${entry.path}: original complete example remains published`,
+      );
     assert.deepEqual(
       [...source.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)].map((match) => match[1]),
       entry.originalLinks,
@@ -37,7 +46,11 @@ test("Japanese configuration and Musea retain every original complete code block
 test("the bounded Japanese changes preserve readable pages and English and measured authority", () => {
   assert.equal(fixture.unchangedAuthority.length, 17);
   for (const entry of fixture.unchangedAuthority)
-    assert.equal(sha(read(entry.path)), entry.originalSha256, entry.path);
+    assert.equal(
+      sha(originalEditorialSource(entry.path, read(entry.path))),
+      entry.originalSha256,
+      entry.path,
+    );
   const backend = fixture.cases.find((entry: { case: string }) => entry.case === "N31");
   assert.equal(fixture.measurementCustody.length, 2);
   for (const entry of fixture.measurementCustody) {
@@ -53,7 +66,8 @@ test("the bounded Japanese changes preserve readable pages and English and measu
 
 test("all whole native witnesses reject original mistranslations and preserve native bookmarks", () => {
   assert.equal(fixture.cases.length, 31);
-  for (const entry of fixture.cases) {
+  for (const original of fixture.cases) {
+    const entry = currentEditorialWitness(original);
     const path = `docs/content${entry.route}.md`;
     const source = read(path);
     assert(source.includes(entry.after), `${entry.case}: entire authored successor`);
@@ -71,4 +85,21 @@ test("all whole native witnesses reject original mistranslations and preserve na
       `${entry.route}: original full native route campaign`,
     );
   }
+});
+
+test("configuration succession refuses missing, changed, and added editorial bytes", () => {
+  const path = "docs/content/guide/configuration-reference.md";
+  const source = read(path);
+  const original = originalEditorialSource(path, source);
+  assert.equal(
+    sha(original),
+    fixture.unchangedAuthority.find((entry: { path: string }) => entry.path === path)
+      .originalSha256,
+  );
+  for (const changed of [
+    source.slice(1),
+    source + "\nUnreviewed configuration.\n",
+    source.replace("musea", "other"),
+  ])
+    assert.throws(() => originalEditorialSource(path, changed), /complete configuration successor/);
 });

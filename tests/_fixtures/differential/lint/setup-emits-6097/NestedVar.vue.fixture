@@ -1,0 +1,4 @@
+<script setup lang="ts">
+function unrelated() { var defineEmits = api }
+const emit = defineEmits({ submit(payload) { void payload } })
+</script>

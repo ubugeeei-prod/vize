@@ -11,7 +11,7 @@ export function render(_ctx) {
     max: () => ("2")
   }, {
     "default": _extend(() => {
-      const n0 = _createComponentWithFallback(_component_MyComp)
+      const n0 = _createComponentWithFallback(_component_MyComp, null, null, true)
       return n0
     }, { _: 1 })
   }, true)

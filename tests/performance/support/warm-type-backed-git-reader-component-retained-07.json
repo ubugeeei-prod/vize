@@ -1,0 +1,86 @@
+[
+  {
+    "file": "tests/performance/support/warm-type-backed-git-reader-family-2.json",
+    "mode": "100644",
+    "blob": "f9f6d0899f4a02b2e60f910d7c07aada35aa8ccd",
+    "bytes": 8918,
+    "sha256": "c999edc4c12145306972c056a2d4ae7da06f960658a0935f3a918da1015aa326"
+  },
+  {
+    "file": "tests/performance/support/warm-type-backed-git-reader-harness.ts",
+    "mode": "100644",
+    "blob": "4f0215f3ccb27319bd9cca4e47b923047fcdafcb",
+    "bytes": 4900,
+    "sha256": "62d90a628e8bfc79c2748ca69daa0a80603636a777b03bc9d09d816c5ed06bc9"
+  },
+  {
+    "file": "tests/performance/support/warm-type-backed-git-reader-incoming.json",
+    "mode": "100644",
+    "blob": "aafa4199c239c9ffd0ffa3905849265699564628",
+    "bytes": 1735,
+    "sha256": "dd570005abfeb4627bd4a80ec8c8b708ea57add07a068722100b237ef7b92b80"
+  },
+  {
+    "file": "tests/performance/support/warm-type-backed-git-reader-incoming.ts",
+    "mode": "100644",
+    "blob": "2e926d5600b14a5d3650066cb097c222eb6f0cc7",
+    "bytes": 2691,
+    "sha256": "931d2770c0f1fafe5465fec409e720918bf8e71b0df5e759d61feec81baa0fba"
+  },
+  {
+    "file": "tests/performance/support/warm-type-backed-git-reader-nodeep-family-1.json",
+    "mode": "100644",
+    "blob": "444b135ff5752ea0032c1e6ccd1565fd98afaad6",
+    "bytes": 6983,
+    "sha256": "02eba2d44a67fa4977e615b7f381cffe7fdd869e1b770ed9fc9cf1c461d8dba3"
+  },
+  {
+    "file": "tests/performance/support/warm-type-backed-git-reader-nodeep-family-2.json",
+    "mode": "100644",
+    "blob": "4cae47244e34f45dd66ce2da71140712a94ad27b",
+    "bytes": 7993,
+    "sha256": "323254f32bcf498c85b8afa365db0a4cdfea994682f5d1004affb24d52d92d17"
+  },
+  {
+    "file": "tests/performance/support/warm-type-backed-git-reader-nodeep-family-3.json",
+    "mode": "100644",
+    "blob": "cf8431bc8dd726f04becd76d0f6fca2e301d4c40",
+    "bytes": 7509,
+    "sha256": "c7eb01f4537c4ca639cd28619a2cbae430fb8c9d1b4df2a0eb1fa5adf635979d"
+  },
+  {
+    "file": "tests/performance/support/warm-type-backed-git-reader-nodeep.json",
+    "mode": "100644",
+    "blob": "856eb7245c052cb45e1c41aa544d6873f00e373f",
+    "bytes": 2843,
+    "sha256": "bcecdd3cbc3fa8dbaafb7c7f4dc48f491d1a0a82e861ef034e69bdaa83c52adb"
+  },
+  {
+    "file": "tests/performance/support/warm-type-backed-git-reader-nodeep.ts",
+    "mode": "100644",
+    "blob": "d9e71bdcf154c8b4602ba38067a183c97731c4fd",
+    "bytes": 6852,
+    "sha256": "ad25378cc7272fb2fde533d6a6796a9462dec3d3e157217abef13a5a69cf6a96"
+  },
+  {
+    "file": "tests/performance/support/warm-type-backed-git-reader-setup.json",
+    "mode": "100644",
+    "blob": "7b3452f8e4e224d46c822ac1a4186050d1e95765",
+    "bytes": 2510,
+    "sha256": "2a098a6c73610cf6b3ba31d8f37e22da0e57fc6dd748260b3ad7adbdcef93933"
+  },
+  {
+    "file": "tests/performance/support/warm-type-backed-git-reader-setup.ts",
+    "mode": "100644",
+    "blob": "2596bee2e95f28a1c6f046bc53279f821965c9b1",
+    "bytes": 5704,
+    "sha256": "16fa61566684e0aa675186be50aa6405c3c88d223c7ad19a1d3747bf4cfad5e6"
+  },
+  {
+    "file": "tests/performance/support/warm-type-backed-path-host-manifest.json",
+    "mode": "100644",
+    "blob": "365eaa9ecfd9cb14fe30f6aa2235190796ae5ead",
+    "bytes": 13587,
+    "sha256": "36256d2672412efe1681fab3137fab4f641622920360ea690a98a463a7325805"
+  }
+]

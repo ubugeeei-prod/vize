@@ -12,7 +12,7 @@ export const portugueseRules3: Record<string, readonly [string, string, string]>
   "script/prefer-import-from-vue": [
     "Preferir importar de 'vue' em vez de pacotes internos",
     "`ref` e `h` são importados dos pacotes internos `@vue/runtime-core` e `@vue/runtime-dom` em vez do pacote público `vue`.",
-    "Ambas as funções auxiliares são importadas juntas de `vue`, usando o ponto de entrada público do pacote em vez de qualquer um dos pacotes internos.",
+    "As funções públicas são importadas de `vue`. A função privada `isString` mantém `@vue/shared`, pois `vue` não a exporta. Imports de namespace, padrão e mistos públicos/privados mantêm um aviso sem correção automática.",
   ],
   "script/prefer-ref-over-reactive": [
     "Recomendar o uso de ref() em vez de reactive() para gerenciar estado",

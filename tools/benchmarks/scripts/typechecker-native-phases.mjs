@@ -105,6 +105,7 @@ export function main(argv = process.argv.slice(2)) {
     "typechecker-native-phase-capture.mjs",
     "typechecker-native-phase-report.mjs",
     "typechecker-native-phase-runner.mjs",
+    "typechecker-native-phase-membership.mjs",
     "typechecker-native-phase-forwarding.test.mjs",
     "typechecker-native-profile-corpus-fixture.mjs",
     "typechecker-native-dependency-link.test.mjs",

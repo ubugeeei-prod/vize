@@ -6,7 +6,6 @@ import { fileURLToPath } from "node:url";
 import {
   BUILD_RECIPE,
   expectedBuildIdentity,
-  sourceRevision,
   validateBuildReceipt,
 } from "../../../../tests/differential/build-receipt.ts";
 import {
@@ -18,6 +17,11 @@ import {
   physicalParent,
   regularMember,
   runtimeIdentity,
+  CONSUMER_USE_MEMBER,
+  expectedProducerIdentity,
+  sourceCliProducerOutputs,
+  sourceCliCheckout,
+  verifySourceCliConsumerUse,
 } from "./source-cli-identity.ts";
 
 type Identity = ReturnType<typeof runtimeIdentity>;
@@ -44,6 +48,18 @@ function validateMembers(root: string, envelope: Envelope): void {
 }
 
 export function packSourceCli(root: string, archive: string, identity: Identity) {
+  expectedProducerIdentity(identity);
+  const checkout = sourceCliCheckout(root);
+  assert.equal(
+    identity.sourceRevision,
+    checkout.sourceRevision,
+    "source CLI producer identity changed: sourceRevision",
+  );
+  assert.equal(
+    identity.sourceTree,
+    checkout.sourceTree,
+    "source CLI producer identity changed: sourceTree",
+  );
   const envelope: Envelope = {
     identity,
     recipe: BUILD_RECIPE,
@@ -79,7 +95,20 @@ export function restoreSourceCli(
   archive: string,
   expectedSha: string,
   identity: Identity,
-): void {
+  producerAttempt = identity.runAttempt,
+  expectedProducerReceiptSha256?: string,
+): string {
+  const checkout = sourceCliCheckout(root);
+  assert.equal(
+    identity.sourceRevision,
+    checkout.sourceRevision,
+    "source CLI producer identity changed: sourceRevision",
+  );
+  assert.equal(
+    identity.sourceTree,
+    checkout.sourceTree,
+    "source CLI producer identity changed: sourceTree",
+  );
   archive = path.resolve(archive);
   assert.match(expectedSha, /^[a-f0-9]{64}$/);
   assert.ok(fs.lstatSync(archive).isFile(), "regular source CLI archive required");
@@ -96,17 +125,29 @@ export function restoreSourceCli(
   try {
     command(stage, "tar", ["-xzf", archive]);
     assert.equal(regularMember(stage, TRANSPORT_MEMBER).mode, 0o644);
+    if (expectedProducerReceiptSha256 !== undefined) {
+      assert.match(expectedProducerReceiptSha256, /^[a-f0-9]{64}$/);
+      assert.equal(
+        regularMember(stage, TRANSPORT_MEMBER).sha256,
+        expectedProducerReceiptSha256,
+        "producer envelope digest changed",
+      );
+    }
     const envelope = JSON.parse(
       fs.readFileSync(path.join(stage, TRANSPORT_MEMBER), "utf8"),
     ) as Envelope;
-    assert.deepEqual(envelope.identity, identity, "source CLI producer identity changed");
+    assert.deepEqual(
+      envelope.identity,
+      expectedProducerIdentity(identity, producerAttempt),
+      "source CLI producer identity changed",
+    );
     assert.equal(envelope.recipe, BUILD_RECIPE);
     assert.equal(envelope.oracleRecipe, ORACLE_RECIPE);
     const cargo = fs.readFileSync(path.join(root, "Cargo.toml"), "utf8");
     const version = cargo.match(/\[workspace\.package\][\s\S]*?^version = "([^"]+)"/m);
     assert.ok(version, "workspace package version is required");
     const expected = {
-      sourceRevision: sourceRevision(root),
+      sourceRevision: checkout.sourceRevision,
       binaryPath: CLI_MEMBERS[0],
       binarySha256: envelope.members[0].sha256,
       cliVersion: `vize ${version[1]}`,
@@ -148,6 +189,32 @@ export function restoreSourceCli(
       envelope.members,
       CLI_MEMBERS.map((member) => regularMember(root, member)),
     );
+    const producerReceiptSha256 = regularMember(root, "target/ci/vize.source-build.json").sha256;
+    const useBytes = Buffer.from(
+      `${JSON.stringify(
+        {
+          schema: "vize.source-cli.consumer-use",
+          version: 1,
+          archiveSha256: expectedSha,
+          producerReceiptSha256,
+          producerIdentity: envelope.identity,
+          consumerIdentity: identity,
+          recipe: envelope.recipe,
+          oracleRecipe: envelope.oracleRecipe,
+          members: envelope.members,
+        },
+        null,
+        2,
+      )}\n`,
+    );
+    physicalParent(root, CONSUMER_USE_MEMBER);
+    const usePath = path.join(root, CONSUMER_USE_MEMBER);
+    const temporary = `${usePath}.shared-${process.pid}`;
+    fs.writeFileSync(temporary, useBytes, { mode: 0o644, flag: "wx" });
+    fs.renameSync(temporary, usePath);
+    const useSha256 = digest(useBytes);
+    verifySourceCliConsumerUse(root, envelope, identity, producerReceiptSha256, useSha256);
+    return useSha256;
   } finally {
     fs.rmSync(stage, { recursive: true, force: true });
   }
@@ -155,20 +222,81 @@ export function restoreSourceCli(
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const root = process.cwd();
-  const [mode, archive, expectedSha] = process.argv.slice(2);
-  assert.ok(archive, "archive path is required");
-  const identity = runtimeIdentity(root);
-  if (mode === "pack") {
-    assert.equal(expectedSha, undefined);
-    const hashes = packSourceCli(root, archive, identity);
+  const [mode, archive, expectedSha, producerAttempt, producerReceiptSha256] =
+    process.argv.slice(2);
+  if (mode === "producer") {
+    assert.equal(archive, undefined);
     assert.ok(process.env.GITHUB_OUTPUT);
+    const outputs = sourceCliProducerOutputs(
+      process.env.SOURCE_CLI_PRODUCER_OUTPUTS!,
+      process.env.GITHUB_RUN_ATTEMPT!,
+    );
     fs.appendFileSync(
       process.env.GITHUB_OUTPUT,
-      `sha256=${hashes.sha256}\nreceipt-sha256=${hashes.receiptSha256}\n`,
+      Object.entries(outputs)
+        .map(([key, value]) => `${key}=${value}\n`)
+        .join(""),
+    );
+  } else if (mode === "consumer-use") {
+    assert.equal(process.argv.slice(2).length, 1);
+    const checkout = sourceCliCheckout(root);
+    assert.equal(
+      checkout.sourceRevision,
+      process.env.GITHUB_SHA,
+      "checked source differs from workflow source",
+    );
+    assert.match(process.env.GITHUB_RUN_ID ?? "", /^[1-9][0-9]*$/);
+    const producerSha = process.env.VIZE_SOURCE_CLI_RECEIPT_SHA256;
+    const useSha = process.env.VIZE_SOURCE_CLI_USE_RECEIPT_SHA256;
+    assert.ok(producerSha, "original producer receipt digest is required");
+    assert.ok(useSha, "verified consumer use receipt digest is required");
+    const producer = JSON.parse(
+      fs.readFileSync(path.join(root, "target/ci/vize.source-build.json"), "utf8"),
+    ) as Envelope;
+    const consumer = {
+      ...checkout,
+      runId: process.env.GITHUB_RUN_ID!,
+      runAttempt: process.env.GITHUB_RUN_ATTEMPT!,
+    };
+    verifySourceCliConsumerUse(root, producer, consumer, producerSha, useSha);
+    process.stdout.write(
+      `${JSON.stringify({
+        useReceiptSha256: useSha,
+        producerAttempt: producer.identity.runAttempt,
+        consumerAttempt: consumer.runAttempt,
+      })}\n`,
     );
   } else {
-    assert.equal(mode, "restore");
-    assert.ok(expectedSha);
-    restoreSourceCli(root, archive, expectedSha, identity);
+    assert.ok(archive, "archive path is required");
+    const identity = runtimeIdentity(root);
+    if (mode === "pack") {
+      assert.equal(expectedSha, undefined);
+      assert.equal(producerAttempt, undefined);
+      assert.equal(producerReceiptSha256, undefined);
+      const hashes = packSourceCli(root, archive, identity);
+      assert.ok(process.env.GITHUB_OUTPUT);
+      fs.appendFileSync(
+        process.env.GITHUB_OUTPUT,
+        `sha256=${hashes.sha256}\nreceipt-sha256=${hashes.receiptSha256}\nproducer-attempt=${identity.runAttempt}\n`,
+      );
+    } else {
+      assert.equal(mode, "restore");
+      assert.ok(expectedSha);
+      const useSha256 = restoreSourceCli(
+        root,
+        archive,
+        expectedSha,
+        identity,
+        producerAttempt,
+        producerReceiptSha256,
+      );
+      if (producerAttempt !== undefined && producerAttempt !== identity.runAttempt) {
+        assert.ok(process.env.GITHUB_ENV);
+        fs.appendFileSync(
+          process.env.GITHUB_ENV,
+          `VIZE_SOURCE_CLI_USE_RECEIPT_SHA256=${useSha256}\n`,
+        );
+      }
+    }
   }
 }

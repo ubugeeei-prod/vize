@@ -54,7 +54,7 @@ export interface NuxtLintGenerationDependencies {
   resolveAddons?: () => Awaitable<readonly NuxtLintConfigItem[]>;
   hasTypeScript?: (rootDir: string) => boolean;
   resolvePluginSpecifier?: (configDir: string) => string;
-  /** `vize.config.json` rules. Tests inject this so generation never loads the native preset binding. */
+  /** Shared project rules. Tests inject this so generation never loads the native preset binding. */
   resolveProjectLintRules?: (rootDir: string) => Awaitable<ProjectLintRules | undefined>;
 }
 

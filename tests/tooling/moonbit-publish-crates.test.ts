@@ -128,19 +128,44 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
     assert.match(curlCalls[0], /--write-out VIZE_HTTP_STATUS:%\{http_code\}/);
     assert.ok(curlCalls[0].endsWith(`/${publishedCrates[0]}/${version}`));
 
-    const somePublished = publishedCrates.slice(0, 5);
+    const originalPartialPrefix = [
+      "vize_oxc_parser",
+      "vize_l0_derive",
+      "vize_l0",
+      "vize_carton",
+      "vize_relief",
+    ];
+    const somePublished = publishedCrates.slice(0, 7);
+    assert.deepEqual(somePublished, [
+      "vize_oxc_parser",
+      "vize_parcel_sourcemap",
+      "vize_lightningcss",
+      "vize_l0_derive",
+      "vize_l0",
+      "vize_carton",
+      "vize_relief",
+    ]);
+    assert.deepEqual(
+      somePublished.filter(
+        (name) => !["vize_parcel_sourcemap", "vize_lightningcss"].includes(name),
+      ),
+      originalPartialPrefix,
+    );
     const partial = runDryRun(somePublished);
     assert.equal(partial.status, 0, partial.stderr);
     assert.deepEqual(fs.readFileSync(cargoLogPath, "utf8").trim().split("\n"), [
       ...somePublished.map(expectedInfo),
-      expectedFrontier(publishedCrates[5]),
+      expectedFrontier(publishedCrates[somePublished.length]),
     ]);
     assert.match(partial.stdout, /vize_carton .* already published and resolvable/i);
     assert.match(
       partial.stdout,
-      new RegExp(`registry-resolvable frontier ${publishedCrates[5]}`, "i"),
+      new RegExp(`registry-resolvable frontier ${publishedCrates[somePublished.length]}`, "i"),
     );
-    assert.equal(fs.readFileSync(curlLogPath, "utf8").trim().split("\n").length, 6);
+    assert.equal(
+      fs.readFileSync(curlLogPath, "utf8").trim().split("\n").length,
+      somePublished.length + 1,
+    );
 
     const allPublished = runDryRun(publishedCrates);
     assert.equal(allPublished.status, 0, allPublished.stderr);

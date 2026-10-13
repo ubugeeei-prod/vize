@@ -1,0 +1,23 @@
+{
+  "app": {
+    "directory": true
+  },
+  "app/src": {
+    "directory": true
+  },
+  "app/src/App.js": {
+    "text": "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\";\nconst message = \"hello\";\nexport default {\n  __name: \"App\",\n  setup(__props) {\n    return (_ctx, _cache) => {\n      const _component_my_widget = _resolveComponent(\"my-widget\");\n      return _openBlock(), _createElementBlock(\n        _Fragment,\n        null,\n        [_createVNode(_component_my_widget, null, {\n          default: _withCtx(() => [_createTextVNode(\" two spaces \")]),\n          _: 1\n        }), _createElementVNode(\"p\", null, _toDisplayString(message))],\n        64\n        /* STABLE_FRAGMENT */\n      );\n    };\n  }\n};"
+  },
+  "app/src/Ignored.js": {
+    "text": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst _hoisted_1 = { src: \"app.png\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"img\", _hoisted_1))\n}"
+  },
+  "app/src/Image.js": {
+    "text": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst _hoisted_1 = { src: \"app.png\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"img\", _hoisted_1))\n}"
+  },
+  "src": {
+    "directory": true
+  },
+  "src/Decoy.js": {
+    "text": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst _hoisted_1 = { src: \"app.png\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"img\", _hoisted_1))\n}"
+  }
+}

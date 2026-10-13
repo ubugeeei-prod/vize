@@ -1,0 +1,5 @@
+<script setup lang="ts">
+const api = { defineProps() { return { user: { name: "Ada" } }; } };
+const { user: { name } } = api.defineProps();
+</script>
+<template><div /></template>

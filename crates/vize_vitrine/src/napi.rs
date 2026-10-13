@@ -10,6 +10,7 @@
 
 mod art;
 mod art_status;
+mod build_token;
 mod cli;
 mod config;
 mod format;
@@ -31,6 +32,7 @@ pub use napi_typecheck::*;
 
 pub use art::*;
 pub use art_status::*;
+pub use build_token::*;
 pub use cli::*;
 pub use config::*;
 pub use format::*;

@@ -100,6 +100,10 @@ vize_l0.workspace = true
 name = "davinci_projection_differential"
 required-features = ["legacy-differential"]
 
+[[test]]
+name = "empty_vue_star_exports"
+required-features = ["native"]
+
 [[bench]]
 name = "package_route"
 harness = false

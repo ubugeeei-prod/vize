@@ -5,6 +5,7 @@ use crate::config;
 
 pub(crate) struct FmtIgnoreSet {
     patterns: Vec<FmtPattern>,
+    project: Option<config::matcher::ProjectIgnoreSet>,
 }
 
 impl FmtIgnoreSet {
@@ -15,11 +16,17 @@ impl FmtIgnoreSet {
             .flat_map(|ignore| expand_entry_ignore_patterns(ignore, config_dir))
             .filter_map(|pattern| FmtPattern::new(pattern.to_string_lossy().as_ref(), &cwd))
             .collect::<Vec<_>>();
-        (!patterns.is_empty()).then_some(Self { patterns })
+        (!patterns.is_empty()).then_some(Self {
+            patterns,
+            project: None,
+        })
     }
 
     pub(super) fn is_ignored(&self, path: &Path) -> bool {
-        self.patterns.iter().any(|pattern| pattern.matches(path))
+        self.project.as_ref().map_or_else(
+            || self.patterns.iter().any(|pattern| pattern.matches(path)),
+            |project| project.is_ignored(path),
+        )
     }
 }
 
@@ -36,7 +43,16 @@ pub(super) fn load_fmt_ignore_set(
         .and_then(Path::parent)
         .map(Path::to_path_buf)
         .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
-    FmtIgnoreSet::new(&snapshot.ignores, &config_dir)
+    if snapshot.project_root.is_some() {
+        config::matcher::ProjectIgnoreSet::new(&snapshot.ignores, &config_dir).map(|project| {
+            FmtIgnoreSet {
+                patterns: Vec::new(),
+                project: Some(project),
+            }
+        })
+    } else {
+        FmtIgnoreSet::new(&snapshot.ignores, &config_dir)
+    }
 }
 
 fn expand_entry_ignore_patterns(

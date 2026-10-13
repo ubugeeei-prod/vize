@@ -1,0 +1,44 @@
+{
+  "schema": "vize.differential.runtime-pack",
+  "version": 1,
+  "product": "compiler",
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/8624",
+  "cases": [
+    {
+      "id": "compiler/vapor-svg-namespace-8624",
+      "inputs": {
+        "root": "vapor-svg-namespace-8624",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "3302b4bdfbe306a97822e360314ea018aca6cb3e95de85426d30d9ec3baf3abe"
+          },
+          {
+            "path": "Child.vue.txt",
+            "sha256": "7ee80a14ddd4dbd687fb30c137cabee5d6be8416765c4734ff6b7f2d86cce5a1"
+          },
+          {
+            "path": "controls.json",
+            "sha256": "de63dc5c776f6286350015b64524e17ef9d91af77446e3e6f46af21884e36b01"
+          }
+        ]
+      },
+      "reference": {
+        "path": "vapor-svg-namespace-8624/controls.json",
+        "sha256": "de63dc5c776f6286350015b64524e17ef9d91af77446e3e6f46af21884e36b01",
+        "source": "independently authored complete SVG and HTML integration-point mount/update/removal/unmount expectations; whole locked Vue VDOM differential packet"
+      },
+      "runtime": {
+        "helper": "playground/e2e/support/svg-namespace-corpus-plugin.ts",
+        "lockedVue": "3.6.0-rc.9",
+        "reportedVue": "3.6.0-rc.10",
+        "reportedVueExecution": "unexecuted",
+        "nativeHandled": 0,
+        "browserTarget": "playground/e2e/vapor-svg-namespace-corpus.test.ts",
+        "sourceProvider": "fresh-source-napi",
+        "oracleProvider": "independent-stock-vdom",
+        "sourceBrowser": "physical Chromium"
+      }
+    }
+  ]
+}

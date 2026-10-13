@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { join, posix } from "node:path";
-import { walkCommittedGraph } from "./canonical-corpus-logical-walk.mjs";
+import { finiteCommittedInventory, walkCommittedGraph } from "./canonical-corpus-logical-walk.mjs";
 
 export const corpusRoot = "tests/_fixtures/_git";
 const excluded = new Set(["node_modules", "_git-worktrees"]);
@@ -119,7 +119,16 @@ export function committedGraph(proof, gitlinks) {
 
 export function verifyCommittedInventory(proof, gitlinks) {
   const { nodes, children } = committedGraph(proof, gitlinks);
-  if (proof.kernelBoundary) return walkCommittedGraph(nodes, children, proof.kernelBoundary).files;
+  assert(
+    proof.traversal === undefined || proof.kernelBoundary,
+    "Missing traversal kernel observation",
+  );
+  if (proof.kernelBoundary) {
+    if (proof.traversal === "finite-physical-edges")
+      return finiteCommittedInventory(nodes, children, proof.kernelBoundary).files;
+    assert(proof.traversal === undefined, "Unknown committed corpus traversal");
+    return walkCommittedGraph(nodes, children, proof.kernelBoundary).files;
+  }
   const resolveNode = (path, active = new Set()) => {
     assert(!path.startsWith("/") && !path.includes("\0"), "Foreign committed symlink path");
     let current = "";

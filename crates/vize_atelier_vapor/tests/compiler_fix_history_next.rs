@@ -33,6 +33,14 @@ const CASES: &[(&str, &str)] = &[
     ),
 ];
 
+const CURRENT_CASES: &[&str] = &[
+    include_str!("fixtures/fix-history-next/once-directive.expected.json"),
+    include_str!("fixtures/fix-history-next/insertion-placeholder.expected.json"),
+    include_str!("fixtures/fix-history-next/root-document-order.corrected-8625.expected.json"),
+    include_str!("fixtures/fix-history-next/hydration-sibling-element.expected.json"),
+    include_str!("fixtures/fix-history-next/mounted-control-slot.expected.json"),
+];
+
 #[test]
 fn five_history_fixes_preserve_complete_vapor_outputs() {
     assert_eq!(
@@ -47,14 +55,20 @@ fn five_history_fixes_preserve_complete_vapor_outputs() {
         .expect("captured cases");
     assert_eq!(observed.len(), fixtures::CASES.len());
     assert_eq!(CASES.len(), fixtures::CASES.len());
-    for (((id, source, prefix), (expected_id, expected)), captured) in
-        fixtures::CASES.iter().zip(CASES).zip(observed)
+    assert_eq!(CURRENT_CASES.len(), fixtures::CASES.len());
+    for ((((id, source, prefix), (expected_id, expected)), captured), current) in fixtures::CASES
+        .iter()
+        .zip(CASES)
+        .zip(observed)
+        .zip(CURRENT_CASES)
     {
         assert_eq!(id, expected_id, "fixture order changed");
         assert_eq!(captured.get("id").and_then(Value::as_str), Some(*id));
         let expected = serde_json::from_str::<Value>(expected).expect("immutable case result");
         assert_eq!(captured.get("options"), expected.get("options"));
         assert_eq!(captured.get("output"), expected.get("output"));
+        let current = serde_json::from_str::<Value>(current).expect("current complete case result");
+        assert_eq!(current.get("options"), expected.get("options"));
         assert_eq!(
             fixtures::option_payload(*prefix),
             expected.get("options").expect("captured options").clone(),
@@ -62,11 +76,32 @@ fn five_history_fixes_preserve_complete_vapor_outputs() {
         );
         assert_eq!(
             fixtures::observe(source, *prefix),
-            expected
+            current
                 .get("output")
                 .expect("captured complete output")
                 .clone(),
             "complete raw Vapor output changed for {id}"
         );
     }
+}
+
+#[test]
+fn root_flag_correction_preserves_every_other_historical_output_byte() {
+    let historical = serde_json::from_str::<Value>(CASES[2].1).expect("immutable original case");
+    let current = serde_json::from_str::<Value>(CURRENT_CASES[2]).expect("corrected complete case");
+    let old_code = historical["output"]["code"]
+        .as_str()
+        .expect("whole original module");
+    let old_call = "_createComponentWithFallback(_component_Child, null, null, true)";
+    assert_eq!(old_code.matches(old_call).count(), 1);
+    let mut authorized = historical.clone();
+    authorized["output"]["code"] = Value::String(old_code.replacen(
+        old_call,
+        "_createComponentWithFallback(_component_Child, null, null, false)",
+        1,
+    ));
+    assert_eq!(
+        current, authorized,
+        "only the explicit #8625 sibling-root flag changes"
+    );
 }

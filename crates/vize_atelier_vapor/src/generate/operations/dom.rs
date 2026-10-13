@@ -1,11 +1,8 @@
 use crate::ir::{SetDynamicPropsIRNode, SetHtmlIRNode, SetPropIRNode, SetTextIRNode};
-use vize_atelier_core::{SimpleExpressionNode, codegen::document::EmitDocument};
+use vize_atelier_core::{Namespace, SimpleExpressionNode, codegen::document::EmitDocument};
 use vize_carton::cstr;
 
-use super::super::{
-    context::GenerateContext,
-    setup::{escape_js_string_literal, is_svg_tag},
-};
+use super::super::{context::GenerateContext, setup::escape_js_string_literal};
 
 /// Generate SetProp
 pub(super) fn generate_set_prop(ctx: &mut GenerateContext, set_prop: &SetPropIRNode<'_>) {
@@ -23,7 +20,7 @@ pub(crate) fn set_prop_call(
     let raw_key = set_prop.prop.key.content;
     let forced_attr = raw_key.strip_prefix('^');
     let key = &forced_attr.unwrap_or(raw_key);
-    let is_svg = is_svg_tag(set_prop.tag);
+    let is_svg = set_prop.namespace == Namespace::Svg;
 
     // Build value handling multiple values (static+dynamic merge)
     let value = if set_prop.prop.values.len() > 1 {

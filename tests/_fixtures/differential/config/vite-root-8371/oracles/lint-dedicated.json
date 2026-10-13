@@ -1,0 +1,80 @@
+[
+  {
+    "errorCount": 0,
+    "file": "app/src/App.vue",
+    "messages": [],
+    "warningCount": 0
+  },
+  {
+    "errorCount": 1,
+    "file": "app/src/Ignored.vue",
+    "messages": [
+      {
+        "column": 11,
+        "endColumn": 11,
+        "endLine": 1,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+        "line": 1,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Ignored\" should be multi-word to avoid conflicts with HTML elements",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleId": "vue/multi-word-component-names",
+        "severity": 2
+      }
+    ],
+    "warningCount": 0
+  },
+  {
+    "errorCount": 1,
+    "file": "app/src/Image.vue",
+    "messages": [
+      {
+        "column": 11,
+        "endColumn": 11,
+        "endLine": 1,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+        "line": 1,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Image\" should be multi-word to avoid conflicts with HTML elements",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleId": "vue/multi-word-component-names",
+        "severity": 2
+      }
+    ],
+    "warningCount": 0
+  },
+  {
+    "errorCount": 0,
+    "file": "app/src/valid.ts",
+    "messages": [],
+    "warningCount": 0
+  },
+  {
+    "errorCount": 1,
+    "file": "src/Decoy.vue",
+    "messages": [
+      {
+        "column": 11,
+        "endColumn": 11,
+        "endLine": 1,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+        "line": 1,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Decoy\" should be multi-word to avoid conflicts with HTML elements",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleId": "vue/multi-word-component-names",
+        "severity": 2
+      }
+    ],
+    "warningCount": 0
+  },
+  {
+    "errorCount": 0,
+    "file": "src/invalid.ts",
+    "messages": [],
+    "warningCount": 0
+  },
+  {
+    "errorCount": 0,
+    "file": "vite.config.mjs",
+    "messages": [],
+    "warningCount": 0
+  }
+]

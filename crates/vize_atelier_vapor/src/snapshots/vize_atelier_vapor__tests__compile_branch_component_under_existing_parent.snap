@@ -9,7 +9,7 @@ const n0 = t0()
 _setInsertionState(n0)
 const n1 = _createIf(() => (_ctx.ok), () => {
 const _component_MyComp = _resolveComponent("MyComp")
-const n3 = _createComponentWithFallback(_component_MyComp, null, null, true)
+const n3 = _createComponentWithFallback(_component_MyComp, null, null, false)
 return n3
 })
 return n0

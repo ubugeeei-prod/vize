@@ -15,7 +15,7 @@ use super::{js::parse_js_config, pkl};
 pub(super) fn parse_raw_config_file(
     path: &Path,
 ) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
-    let config = match path.extension().and_then(|ext| ext.to_str()) {
+    let mut config = match path.extension().and_then(|ext| ext.to_str()) {
         Some("pkl") => pkl::parse_pkl_config(path)?,
         Some("ts" | "js" | "mjs" | "cjs" | "mts" | "cts") => parse_js_config(path)?,
         Some("json") => {
@@ -27,6 +27,12 @@ pub(super) fn parse_raw_config_file(
         _ => return Ok(ConfigDocument::default()),
     };
 
+    if !super::CONFIG_FILE_NAMES[5..]
+        .iter()
+        .any(|name| path.file_name().is_some_and(|file| file == *name))
+    {
+        config.clear_project_root();
+    }
     Ok(config)
 }
 

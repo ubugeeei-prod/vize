@@ -123,7 +123,7 @@ test("check workflow gates PRs and merge groups, and comments on PRs", () => {
   const inventoryAction = readRepoFile(".github", "actions", "report-test-inventory", "action.yml");
   assert.match(
     inventoryAction,
-    /node tools\/benchmarks\/scripts\/test-inventory\.mjs --json test-inventory\.json --markdown "\$GITHUB_STEP_SUMMARY"/,
+    /node tools\/benchmarks\/scripts\/test-inventory\.ts --json test-inventory\.json --markdown "\$GITHUB_STEP_SUMMARY"/,
   );
   assert.match(inventoryAction, /name:\s*test-inventory/);
 
@@ -173,7 +173,7 @@ test("check workflow runs the editor extension host smoke against a real vize se
 test("test inventory script counts JS, Rust, e2e, VRT, and fixture cases", () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-test-inventory-"));
   const inventoryPath = path.join(tempDir, "inventory.json");
-  const inventoryScript = "tools/benchmarks/scripts/test-inventory.mjs";
+  const inventoryScript = "tools/benchmarks/scripts/test-inventory.ts";
   const inventoryArgs = [inventoryScript, "--json", inventoryPath];
 
   try {

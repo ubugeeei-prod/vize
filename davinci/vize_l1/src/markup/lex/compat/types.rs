@@ -93,6 +93,13 @@ pub trait Callbacks {
     }
 
     fn on_open_tag_name(&mut self, start: usize, end: usize);
+
+    /// Resolve SVG `title` content from the owner's existing parent scope.
+    /// Queried after `on_open_tag_name`; stateless callbacks retain RCDATA.
+    fn svg_title_children(&self) -> bool {
+        false
+    }
+
     fn on_open_tag_end(&mut self, end: usize);
     fn on_self_closing_tag(&mut self, end: usize);
     fn on_close_tag(&mut self, start: usize, end: usize);

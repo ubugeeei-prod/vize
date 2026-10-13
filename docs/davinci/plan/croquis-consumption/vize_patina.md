@@ -11,13 +11,15 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | product                                    | kind  | module                         | files | sites |
 | ------------------------------------------ | ----- | ------------------------------ | ----: | ----: |
 | `COMPILER_MACRO_NAMES`                     | type  | `croquis`                      |     1 |     1 |
-| `Croquis`                                  | type  | `croquis`                      |    18 |    37 |
+| `Croquis`                                  | type  | `croquis`                      |    19 |    39 |
 | `Drawer`                                   | type  | `drawer`                       |     2 |     2 |
 | `DrawerOptions`                            | type  | `drawer`                       |     1 |     1 |
 | `ElementIdKind`                            | type  | `croquis::template`            |     1 |     2 |
-| `OptionMember`                             | type  | `croquis`                      |     2 |     3 |
+| `OptionGroup`                              | type  | `croquis`                      |     2 |     8 |
+| `OptionMember`                             | type  | `croquis`                      |     2 |     4 |
 | `Scope`                                    | type  | `scope`                        |     2 |     2 |
 | `ScopeData`                                | type  | `scope`                        |     2 |     2 |
+| `ScopeId`                                  | type  | `scope`                        |     1 |     2 |
 | `ScopeKind`                                | type  | `scope`                        |     3 |     4 |
 | `TemplateComponentRegistrations`           | type  | `croquis::template_components` |     1 |     1 |
 | `UnusedVarContext`                         | type  | `croquis`                      |     1 |     4 |
@@ -27,6 +29,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `Croquis.element_ids`                      | field | `croquis`                      |     1 |     2 |
 | `Croquis.import_statements`                | field | `croquis`                      |     1 |     1 |
 | `Croquis.macros`                           | field | `croquis`                      |     9 |    23 |
+| `Croquis.options_descriptor`               | field | `croquis`                      |     1 |     1 |
 | `Croquis.scopes`                           | field | `croquis`                      |     2 |     4 |
 | `Croquis.template_component_registrations` | field | `croquis`                      |     1 |     1 |
 | `Croquis.types`                            | field | `croquis`                      |     1 |     2 |
@@ -36,7 +39,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 
 | item                                      | files | sites |
 | ----------------------------------------- | ----: | ----: |
-| `Bindings`                                |     1 |     2 |
+| `Bindings`                                |     2 |     2 |
 | `BlockLocation`                           |     2 |     3 |
 | `CroquisFacts`                            |     4 |     5 |
 | `Demand`                                  |     3 |     6 |
@@ -50,7 +53,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `ScriptParseResult`                       |     3 |     3 |
 | `ScriptParserOptions`                     |     2 |     2 |
 | `SfcCustomBlock`                          |     1 |     2 |
-| `SfcDescriptor`                           |    17 |    26 |
+| `SfcDescriptor`                           |    18 |    26 |
 | `SfcError`                                |     1 |     2 |
 | `SfcParseOptions`                         |    14 |    15 |
 | `SfcScriptBlock`                          |     2 |     2 |
@@ -70,7 +73,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `parse_script_with_options`               |     2 |     2 |
 | `parse_script_with_options_and_jsx`       |     1 |     1 |
 | `parse_v_for_expression`                  |     1 |     1 |
-| `parse_v_for_scope_expression`            |     1 |     1 |
+| `parse_v_for_scope_expression`            |     2 |     2 |
 | `reactivity_lookup`                       |     1 |     1 |
 | `to_pascal_case`                          |     5 |     7 |
 | `used_component_name_list`                |     1 |     1 |

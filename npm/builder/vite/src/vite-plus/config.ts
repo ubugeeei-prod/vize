@@ -1,5 +1,9 @@
 import type { ConfigEnv, UserConfig } from "vite-plus";
-import type { CompilerConfig, VueVersion } from "../../../../cli/src/types/index.ts";
+import type {
+  CompilerConfig,
+  UserConfigInput,
+  VueVersion,
+} from "../../../../cli/src/types/index.ts";
 import type { VizeCompilerOptions } from "./types.ts";
 import type { UserConfigExport } from "../types.ts";
 import type {
@@ -14,6 +18,11 @@ import { sourceConfigKey } from "./types.ts";
 import { resolveVitePlus } from "./runtime.ts";
 import { loadConfig, resolveConfigExport } from "../config.ts";
 import { mergeSharedConfig } from "../plugin/shared-config.ts";
+import {
+  mergeVueConfigOptions,
+  projectViteConfigSource,
+  vueConfigOptions,
+} from "../../../../cli/src/config/vite-runtime.mjs";
 
 export async function resolveConfig(
   config: VueConfig,
@@ -30,17 +39,33 @@ export async function resolveConfig(
     if (!bases) return own;
     let result: VueConfigObject = {};
     const { mergeConfig } = resolveVitePlus().require("vite-plus") as typeof import("vite-plus");
+    const compose = (base: VueConfigObject, selected: VueConfigObject): VueConfigObject => {
+      const merged = mergeConfig(base, selected);
+      const vue = mergeVueConfigOptions(base.vue, selected.vue);
+      return vue === undefined ? merged : { ...merged, vue };
+    };
     for (const base of Array.isArray(bases) ? bases : bases ? [bases] : []) {
-      result = mergeConfig(result, await resolveConfig(base, env, parents));
+      result = compose(result, await resolveConfig(base, env, parents));
     }
-    return mergeConfig(result, own);
+    return compose(result, own);
   } finally {
     parents.delete(config);
   }
 }
 
 export function normalizeConfig(source: VueConfigObject, integration: VizePlusOptions) {
-  const { compiler: compilerOption, typecheck, vize, lint, fmt, extends: _bases, ...rest } = source;
+  const {
+    compiler: compilerOption,
+    typecheck,
+    vize,
+    lint,
+    fmt,
+    vue: _vue,
+    extends: _bases,
+    ...rest
+  } = source;
+  const vue = vueConfigOptions(source);
+  const configDirectory = process.cwd();
   const { vize: nativeLint, ...oxlint } = lint ?? {};
   const { vize: nativeFmt, ...oxfmt } = fmt ?? {};
   const formatter = {
@@ -57,19 +82,31 @@ export function normalizeConfig(source: VueConfigObject, integration: VizePlusOp
       : nativeLint === undefined
         ? alias
         : nativeLint;
-  const compiler = compilerOption ?? integration.plugin ?? {};
+  const compiler = vueCompiler(compilerOption ?? integration.plugin ?? {}, vue);
   const options: VizePlusOptions = {
     ...integration,
     check:
-      typecheck === false
-        ? false
-        : typeof typecheck === "object"
-          ? typecheck.enabled !== false
-          : (typecheck ?? integration.check),
-    lint: lintConfig === undefined ? integration.lint : lintConfig !== false,
-    fmt: nativeFmt === undefined ? integration.fmt : nativeFmt !== false,
+      vue?.typeChecker?.enabled !== undefined
+        ? vue.typeChecker.enabled
+        : typecheck === false
+          ? false
+          : typeof typecheck === "object"
+            ? typecheck.enabled !== false
+            : (typecheck ?? integration.check),
+    lint:
+      vue?.linter?.enabled !== undefined
+        ? vue.linter.enabled
+        : lintConfig === undefined
+          ? integration.lint
+          : lintConfig !== false,
+    fmt:
+      vue?.formatter !== undefined
+        ? true
+        : nativeFmt === undefined
+          ? integration.fmt
+          : nativeFmt !== false,
   };
-  const config: UserConfigExport = async (env) => {
+  const legacyConfig: UserConfigExport = async (env) => {
     let base = vize;
     if (vize && typeof vize === "object" && !Array.isArray(vize)) {
       const { lint: _alias, ...shared } = vize as VizeSharedConfig;
@@ -96,6 +133,11 @@ export function normalizeConfig(source: VueConfigObject, integration: VizePlusOp
         : null;
     return mergeSharedConfig(mergeSharedConfig(defaults, inherited), overrides) ?? {};
   };
+  const config: UserConfigExport =
+    vue === undefined
+      ? legacyConfig
+      : async (env) =>
+          (await projectViteConfigSource(source, env, configDirectory)) as UserConfigInput;
   const metadata: VizeTaskConfig = {
     config,
     options,
@@ -126,6 +168,7 @@ function nativeCompiler(options: VizeCompilerOptions): CompilerConfig {
   const { compatibility, ...compiler } = options;
   const version = options.vueVersion ?? compatibility?.vueVersion;
   const versions: Record<NonNullable<typeof version>, VueVersion> = {
+    0.1: "0.10",
     0.11: "0.11",
     1: "1",
     2: "2",
@@ -139,5 +182,35 @@ function nativeCompiler(options: VizeCompilerOptions): CompilerConfig {
       ...compatibility,
       vueVersion: version === undefined ? undefined : versions[version],
     },
+  };
+}
+
+/** Keep plugin-only fields while native canonical leaves choose their own values. */
+function vueCompiler(
+  legacy: VizeCompilerOptions | false,
+  vue: VueConfigObject["vue"],
+): VizeCompilerOptions | false {
+  if (vue?.compiler === undefined && vue?.version === undefined) return legacy;
+  if (legacy === false && vue.compiler === undefined) return false;
+  const { compatibility, ...native } = vue.compiler ?? {};
+  const version = vue.version ?? compatibility?.vueVersion;
+  const versions: Record<VueVersion, NonNullable<VizeCompilerOptions["vueVersion"]>> = {
+    "0.10": 0.1,
+    "0.11": 0.11,
+    "1": 1,
+    "2": 2,
+    "2.7": "2.7",
+    "3": 3,
+  };
+  const previous = legacy === false ? {} : legacy;
+  return {
+    ...previous,
+    ...native,
+    compatibility: {
+      ...previous.compatibility,
+      ...compatibility,
+      ...(version === undefined ? {} : { vueVersion: versions[version] }),
+    },
+    ...(version === undefined ? {} : { vueVersion: versions[version] }),
   };
 }

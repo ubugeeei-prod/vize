@@ -1,0 +1,4 @@
+<script setup lang="ts">
+import { "isString" as chosen } from "@vue/shared"
+</script>
+<template><div>ok</div></template>

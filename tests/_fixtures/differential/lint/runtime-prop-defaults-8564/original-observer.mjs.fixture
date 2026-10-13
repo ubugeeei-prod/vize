@@ -1,0 +1,96 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
+import { createRequire } from 'node:module';
+import { createHash } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
+
+const sha = bytes => createHash('sha256').update(bytes).digest('hex');
+const root = '/tmp/vize-8564-defaults-readonly-sources-20261012';
+const originalBytes = fs.readFileSync(path.join(root, 'original-sources.json'));
+const authoredBytes = fs.readFileSync(path.join(root, 'authored-proposal.json'));
+const originals = JSON.parse(originalBytes);
+const authored = JSON.parse(authoredBytes);
+const providerRoot = '/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-bare-reserved-reference-34eq4st_';
+const provider = createRequire(path.join(providerRoot, 'package.json'));
+const bench = createRequire('/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/tools/benchmarks/scripts/package.json');
+const tsParser = bench('@typescript-eslint/parser');
+const packages = [
+  ...['eslint', 'eslint-plugin-vue', 'vue-eslint-parser'].map(name => ({ name, resolver: provider })),
+  { name: '@typescript-eslint/parser', resolver: bench },
+  { name: 'typescript', resolver: createRequire(bench.resolve('@typescript-eslint/parser/package.json')) },
+].map(({name, resolver}) => {
+  const location = resolver.resolve(`${name}/package.json`);
+  const bytes = fs.readFileSync(location);
+  return { name, version: JSON.parse(bytes).version, path: location, sha256: sha(bytes) };
+});
+assert.deepEqual(packages.slice(0, 3).map(p => p.version), ['9.39.1', '10.9.2', '10.4.1']);
+const binary = '/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-lint-prefilter-public-n57i19hn/vize';
+const binarySha = '9ad7cf956351265a152a9bbfa08b8c50c85dadacef66529474bbb6170267e254';
+assert.equal(sha(fs.readFileSync(binary)), binarySha);
+const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'vize-runtime-props-readonly-'));
+const config = JSON.stringify({ linter: { rules: { 'script/no-required-prop-with-default': 'error' } } }) + '\n';
+const configPath = path.join(directory, 'vize.config.json');
+fs.writeFileSync(configPath, config);
+const eslint = new (provider('eslint').ESLint)({
+  cwd: directory,
+  overrideConfigFile: true,
+  ignore: false,
+  overrideConfig: [{
+    files: ['**/*.vue'],
+    languageOptions: {
+      parser: provider('vue-eslint-parser'),
+      parserOptions: { parser: tsParser, ecmaVersion: 'latest', sourceType: 'module', ecmaFeatures: { jsx: true }, extraFileExtensions: ['.vue'] },
+    },
+    linterOptions: { reportUnusedDisableDirectives: 'off' },
+    plugins: { vue: provider('eslint-plugin-vue') },
+    rules: { 'vue/no-required-prop-with-default': 'error' },
+  }],
+});
+const entries = [
+  ...originals.sources.map((source, index) => ({
+    id: `original-${index + 1}`, filename: path.basename(source.file), sourcePath: source.sourcePath,
+    sourceSha256: source.sha256, expectedPinnedProviderCount: source.findings.length,
+    expectedNewRuntimeCount: source.findings.length, original: source,
+  })),
+  ...authored.cases,
+];
+const receipt = {
+  claim: 'Read-only proposal: existing authenticated old public v0.443.0 before observations only, no current-source or installed-success qualification.',
+  originalManifestSha256: sha(originalBytes), authoredManifestSha256: sha(authoredBytes),
+  helperSha256: sha(fs.readFileSync(import.meta.filename)), packages,
+  providerRule: 'vue/no-required-prop-with-default', rule: 'script/no-required-prop-with-default',
+  providerRuleSha256: sha(fs.readFileSync(path.join(providerRoot, 'node_modules/eslint-plugin-vue/dist/rules/no-required-prop-with-default.js'))),
+  baseline: { version: '0.443.0', head: '15e116fa258c7aaba5c6fdd2456442535605abe8', officialRun: 38081199501, binary, binarySha256: binarySha },
+  config, runs: [],
+};
+for (const entry of entries) {
+  const sourceBytes = fs.readFileSync(entry.sourcePath);
+  assert.equal(sha(sourceBytes), entry.sourceSha256);
+  const source = sourceBytes.toString('utf8');
+  const filename = `${entry.id}-${entry.filename}`;
+  const inputPath = path.join(directory, filename);
+  fs.writeFileSync(inputPath, sourceBytes);
+  const providerResults = await eslint.lintText(source, { filePath: inputPath });
+  const argv = ['lint', inputPath, '--format', 'json', '--preset', 'incremental', '--config', configPath];
+  const processResult = spawnSync(binary, argv, { cwd: directory, encoding: 'utf8', timeout: 30000 });
+  assert.equal(sha(fs.readFileSync(binary)), binarySha);
+  const actual = JSON.parse(processResult.stdout);
+  receipt.runs.push({
+    ...entry, source, config, argv, expectedNewRuntimeCount: entry.expectedNewRuntimeCount,
+    providerResults, actual, status: processResult.status, signal: processResult.signal,
+    error: processResult.error?.message ?? null, stdout: processResult.stdout, stderr: processResult.stderr,
+  });
+}
+const output = path.join(root, 'read-only-original-provider-and-public-packets.json');
+fs.writeFileSync(output, JSON.stringify(receipt, null, 2) + '\n');
+for (const run of receipt.runs) {
+  const errors = run.providerResults.flatMap(result => result.messages);
+  if (run.expectedPinnedProviderCount != null) assert.equal(errors.length, run.expectedPinnedProviderCount, run.id);
+  assert(errors.every(error => !error.fatal), run.id);
+}
+console.log(JSON.stringify({
+  packet: output, sha256: sha(fs.readFileSync(output)), runs: receipt.runs.length,
+  cases: receipt.runs.map(run => ({id: run.id, provider: run.providerResults.flatMap(result => result.messages).length, oldPublic: run.actual.flatMap(result => result.messages ?? []).length, expectedNew: run.expectedNewRuntimeCount})),
+}));

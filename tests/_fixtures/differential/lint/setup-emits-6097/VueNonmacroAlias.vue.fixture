@@ -1,0 +1,4 @@
+<script setup lang="ts">
+import { computed as defineEmits } from 'vue'
+const emit = defineEmits({ submit(payload) { void payload } })
+</script>

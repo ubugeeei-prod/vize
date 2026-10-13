@@ -95,6 +95,19 @@ test(
     try {
       const dir = path.join(temporary, "dist");
       const routes = ["/a/b", "/a-b"];
+      // These pages use the real theme assertion gate. Serve its complete
+      // owned CSS dependencies rather than inventing rules or skipping checks.
+      const styles = ["style.css", "features.css", "letter-case.css"];
+      await mkdir(path.join(dir, "theme-fixture"), { recursive: true });
+      for (const file of styles) {
+        await writeFile(
+          path.join(dir, "theme-fixture", file),
+          await readFile(path.join(root, "docs/theme", file)),
+        );
+      }
+      const themeLinks = styles
+        .map((file) => `<link rel="stylesheet" href="/theme-fixture/${file}">`)
+        .join("\n");
       // Deliberately small pages exercise the runner and linked-page assertions.
       // The real capture control separately exercises long-page layout fallback.
       for (const route of [...routes, "/broken", "/linked"]) {
@@ -102,7 +115,7 @@ test(
         const href = route === "/broken" ? "/missing/" : "/linked/#anchor";
         await writeFile(
           path.join(dir, route, "index.html"),
-          `<!doctype html><html><head><title>Render runner fixture</title></head><body>
+          `<!doctype html><html><head><title>Render runner fixture</title>${themeLinks}</head><body>
         <h1>Render runner fixture</h1><a class="feature-card" href="${href}">Linked page</a>
         <span id="anchor">Anchor</span></body></html>`,
         );

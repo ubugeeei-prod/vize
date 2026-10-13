@@ -1,0 +1,6 @@
+<script>
+function defineProps(value) { return value }
+</script>
+<script setup>
+const props = defineProps({ value: { required: true, default: 1 } });
+</script>

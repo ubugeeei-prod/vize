@@ -53,11 +53,12 @@ pub(super) fn write_unmatched_explicit_patterns(
 
 #[inline]
 pub(super) fn has_explicit_patterns(patterns: &[vize_l0::String]) -> bool {
-    patterns.len() != LINT_DEFAULT_PATTERNS.len()
-        || patterns
-            .iter()
-            .zip(LINT_DEFAULT_PATTERNS)
-            .any(|(actual, expected)| actual.as_str() != *expected)
+    !patterns.is_empty()
+        && (patterns.len() != LINT_DEFAULT_PATTERNS.len()
+            || patterns
+                .iter()
+                .zip(LINT_DEFAULT_PATTERNS)
+                .any(|(actual, expected)| actual.as_str() != *expected))
 }
 
 #[inline]

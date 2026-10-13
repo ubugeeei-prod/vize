@@ -1,0 +1,5 @@
+<script lang="ts">
+function defineProps() { return { user: { name: "Ada" } }; }
+const { user: { name } } = defineProps();
+</script>
+<template><div /></template>

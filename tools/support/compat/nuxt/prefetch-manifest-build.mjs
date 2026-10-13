@@ -8,6 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { prepareNuxtSourceBinding } from "./source-binding.mjs";
 import { assertPrefetchManifest, observePrefetchManifest } from "./prefetch-manifest-observe.mjs";
+import { preparePriorNuxtHostContext } from "./prior-host-context.mjs";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const fixtureDirectory = "tools/support/compat/nuxt/fixtures/nuxt-prefetch-manifest";
@@ -68,6 +69,7 @@ execFileSync(
 );
 fs.mkdirSync(priorRoot);
 execFileSync("tar", ["-xf", priorArchive, "-C", priorRoot]);
+preparePriorNuxtHostContext(priorRoot, prior, artifacts);
 fs.symlinkSync(
   path.join(root, "npm/framework/nuxt/node_modules"),
   path.join(priorPackage, "node_modules"),

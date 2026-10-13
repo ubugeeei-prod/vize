@@ -7,6 +7,7 @@ use crate::{ide::IdeContext, server::ServerState};
 
 mod component_props;
 mod imported_symbols;
+mod options_methods;
 mod package_specifiers;
 mod script_unicode;
 mod template_bindings;

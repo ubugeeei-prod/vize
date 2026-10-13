@@ -55,13 +55,13 @@ function currentTargetPackageName(): string {
   }
   throw new Error(`Unsupported native loader test host: ${process.platform}-${process.arch}`);
 }
-
 function copyPackableNativePackage(destination: string): void {
   fs.mkdirSync(destination, { recursive: true });
   for (const file of [
     "index.js",
     "index.d.ts",
     "native-binding.js",
+    "native-binding-identity.js",
     "native-targets.js",
     "README.md",
   ]) {
@@ -233,10 +233,7 @@ module.exports.compileSfc = nativeBinding.compileSfc
   const manifest = JSON.parse(
     fs.readFileSync(path.join(nativePackageDir, "package.json"), "utf8"),
   ) as { scripts?: Record<string, string> };
-  assert.match(
-    manifest.scripts?.["build:ci"] ?? "",
-    /napi build[\s\S]*&& node \.\/scripts\/sync-entrypoint\.mjs$/,
-  );
+  assert.equal(manifest.scripts?.["build:ci"], "node ./scripts/build-ci.mjs");
   assert.match(
     manifest.scripts?.prepublishOnly ?? "",
     /napi pre-publish[\s\S]*&& node \.\/scripts\/sync-entrypoint\.mjs$/,

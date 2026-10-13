@@ -145,7 +145,10 @@ fn has_props(slot: &SlotOp<'_>) -> bool {
 }
 
 fn meaningful_fallback(region: &Region<'_>) -> bool {
-    region.ops.iter().any(|op| !is_whitespace_text(op))
+    region
+        .ops
+        .iter()
+        .any(|op| !is_whitespace_text(op) && !super::annotations::is_annotation(op))
 }
 
 pub(super) fn emit_fallback(
@@ -158,6 +161,9 @@ pub(super) fn emit_fallback(
     }
     let mut first = true;
     for op in region.ops.iter() {
+        if super::annotations::skip(cx, op) {
+            continue;
+        }
         if is_whitespace_text(op) {
             let _id = cx.walk.mint();
             continue;

@@ -8,6 +8,7 @@
 mod boundary;
 mod css;
 mod css_scope;
+mod css_vars;
 mod hmr;
 pub(crate) mod js_string;
 mod middleware;
@@ -21,9 +22,8 @@ mod transform;
 #[cfg(test)]
 mod tests;
 
-pub use css::{
-    CssAliasRule, resolve_css_imports, scope_css_for_pipeline, transform_css_vars_for_pipeline,
-};
+pub use css::{CssAliasRule, resolve_css_imports, scope_css_for_pipeline};
+pub use css_vars::{transform_css_vars_for_pipeline, transform_css_vars_for_pipeline_with_context};
 pub use hmr::{HmrHashes, detect_hmr_update_type, generate_hmr_code, has_hmr_changes};
 pub use middleware::{
     ViteDevMiddlewareRewrite, normalize_css_module_filename, normalize_dev_middleware_url,

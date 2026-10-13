@@ -12,7 +12,7 @@
 //! ```
 
 use regex::Regex;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap},
@@ -779,6 +779,11 @@ fn compare_typecheck_diagnostics(
         &comparable_vue_files,
         &support_classifier,
     )?;
+    let vize_hint_count = vize_input
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.severity == "hint")
+        .count();
     let mut vize_groups = group_by_identity(vize_input.diagnostics);
     let mut baseline_groups = group_by_identity(baseline_input.diagnostics);
     let mut identities = vize_groups
@@ -837,11 +842,9 @@ fn compare_typecheck_diagnostics(
         .count();
     let vize_count =
         shared.len() + message_mismatches.len() + documented_vize_count + false_positives.len();
-    let baseline_count = shared.len()
-        + message_mismatches.len()
-        + documented_baseline_count
-        + false_negatives.len();
-    let summary = json!({
+    let baseline_count =
+        shared.len() + message_mismatches.len() + documented_baseline_count + false_negatives.len();
+    let mut summary = json!({
         "vizeDiagnosticCount": vize_count,
         "baselineDiagnosticCount": baseline_count,
         "sharedCount": shared.len(),
@@ -857,6 +860,9 @@ fn compare_typecheck_diagnostics(
         "baselineExcludedExternalCount": baseline_input.excluded_external_count,
         "baselineExcludedSupportVueCount": baseline_input.excluded_support_vue_count,
     });
+    if vize_hint_count > 0 {
+        summary["vizeHintCount"] = json!(vize_hint_count);
+    }
     let shared_values = shared.iter().map(shared_json).collect::<Vec<_>>();
     let mismatch_values = message_mismatches
         .iter()
@@ -898,7 +904,7 @@ fn collect_vize_diagnostics(report: &Value, cwd: &Path) -> Result<DiagnosticInpu
         .get("files")
         .and_then(Value::as_array)
         .ok_or_else(|| divergence_error("Vize report must contain files"))?;
-    let pattern = Regex::new(r"^(error|warning):(\d+):(\d+) \[TS(\d+)\] ([\s\S]+)$").unwrap();
+    let pattern = Regex::new(r"^(error|warning|hint):(\d+):(\d+) \[TS(\d+)\] ([\s\S]+)$").unwrap();
     let mut diagnostics = Vec::new();
     for (file_index, file) in files.iter().enumerate() {
         let entries = file
@@ -920,6 +926,9 @@ fn collect_vize_diagnostics(report: &Value, cwd: &Path) -> Result<DiagnosticInpu
                     "Vize diagnostic {file_index}:{diagnostic_index} must be a string"
                 ))
             })?;
+            if diagnostic.starts_with("hint:") {
+                validate_hint_diagnostic(diagnostic, &normalized_file)?;
+            }
             let captures = pattern.captures(diagnostic).ok_or_else(|| {
                 divergence_error(&format!("unparseable Vize diagnostic {normalized_file}"))
             })?;
@@ -3052,6 +3061,36 @@ fn ratio(count: usize, total: usize) -> f64 {
     }
 }
 
+fn validate_hint_diagnostic(diagnostic: &str, file: &str) -> Result<(), String> {
+    let malformed = || {
+        format!(
+            "invalid typechecker JSON output: hint must have positive safe location/code and non-empty message: {file}"
+        )
+    };
+    let (position, typed) = diagnostic
+        .strip_prefix("hint:")
+        .and_then(|body| body.split_once(' '))
+        .ok_or_else(malformed)?;
+    let (line, column) = position.split_once(':').ok_or_else(malformed)?;
+    let (code, message) = typed
+        .strip_prefix("[TS")
+        .and_then(|body| body.split_once("] "))
+        .ok_or_else(malformed)?;
+    for field in [line, column, code] {
+        if !field.bytes().all(|byte| byte.is_ascii_digit()) {
+            return Err(malformed());
+        }
+        let value = field.parse::<u64>().map_err(|_| malformed())?;
+        if value == 0 || value > 9_007_199_254_740_991 {
+            return Err(malformed());
+        }
+    }
+    if message.trim().is_empty() {
+        return Err(malformed());
+    }
+    Ok(())
+}
+
 fn validate_typechecker_output(
     project: &Value,
     output: &Value,
@@ -3152,6 +3191,8 @@ fn validate_typechecker_output(
                 error_count += 1;
             } else if diagnostic.starts_with("warning:") {
                 warning_count += 1;
+            } else if diagnostic.starts_with("hint:") {
+                validate_hint_diagnostic(diagnostic, file_name)?;
             } else {
                 invalid_typechecker(&format!(
                     "diagnostic has no error or warning prefix: {file_name}"
@@ -4672,4 +4713,87 @@ fn sha256(value: &str) -> String {
 
 fn sha256_bytes(value: &[u8]) -> String {
     format!("{:x}", Sha256::digest(value))
+}
+
+#[cfg(test)]
+mod native_hint_contract_tests {
+    use super::*;
+
+    fn output(diagnostic: &str) -> Value {
+        json!({
+            "files": [{ "file": "src/App.vue", "diagnostics": [diagnostic] }],
+            "errorCount": 0, "warningCount": 0, "fileCount": 1
+        })
+    }
+
+    #[test]
+    fn hints_remain_full_divergences_against_the_unchanged_baseline() {
+        let cwd = env::current_dir().unwrap();
+        let report = output("hint:77:22 [TS6385] 'typescript' is deprecated.");
+        let comparison =
+            compare_typecheck_diagnostics("hints".to_string(), &cwd, &report, "", &[], &[])
+                .unwrap();
+        assert_eq!(comparison["summary"]["vizeDiagnosticCount"], 1);
+        assert_eq!(comparison["summary"]["vizeHintCount"], 1);
+        assert_eq!(comparison["summary"]["falsePositiveCount"], 1);
+        assert_eq!(comparison["summary"]["falsePositiveRatio"], 1.0);
+        assert_eq!(
+            comparison["falsePositives"],
+            json!([{
+                "file": "src/App.vue", "severity": "hint", "line": 77, "column": 22,
+                "code": 6385, "message": "'typescript' is deprecated."
+            }])
+        );
+        let mismatch = compare_typecheck_diagnostics(
+            "hints".to_string(),
+            &cwd,
+            &report,
+            "src/App.vue(77,22): warning TS6385: 'typescript' is deprecated.\n",
+            &[],
+            &[],
+        )
+        .unwrap();
+        assert_eq!(mismatch["summary"]["sharedCount"], 0);
+        assert_eq!(mismatch["summary"]["falsePositiveCount"], 1);
+        assert_eq!(mismatch["summary"]["falseNegativeCount"], 1);
+    }
+
+    #[test]
+    fn hints_keep_original_count_exit_and_coverage_validation() {
+        let report = output("hint:77:22 [TS6385] 'typescript' is deprecated.");
+        let original = report.clone();
+        let project = json!({ "id": "hints" });
+        validate_typechecker_output(&project, &report, 0, None, None).unwrap();
+        assert_eq!(report, original);
+        for field in ["errorCount", "warningCount"] {
+            let mut corrupted = report.clone();
+            corrupted[field] = json!(1);
+            assert!(validate_typechecker_output(&project, &corrupted, 0, None, None).is_err());
+        }
+        assert!(validate_typechecker_output(&project, &report, 1, None, None).is_err());
+    }
+
+    #[test]
+    fn malformed_hint_fields_fail_both_validation_and_comparison() {
+        let cwd = env::current_dir().unwrap();
+        let project = json!({ "id": "hints" });
+        for diagnostic in [
+            "info:77:22 [TS6385] deprecated",
+            "hint: malformed",
+            "hint:0:22 [TS6385] deprecated",
+            "hint:77:0 [TS6385] deprecated",
+            "hint:-1:22 [TS6385] deprecated",
+            "hint:1.5:22 [TS6385] deprecated",
+            "hint:9007199254740992:22 [TS6385] deprecated",
+            "hint:77:9007199254740992 [TS6385] deprecated",
+            "hint:77:22 [TS0] deprecated",
+            "hint:77:22 [TS9007199254740992] deprecated",
+            "hint:77:22 [TS6385]",
+            "hint:77:22 [TS6385]   ",
+        ] {
+            let report = output(diagnostic);
+            assert!(validate_typechecker_output(&project, &report, 0, None, None).is_err());
+            assert!(collect_vize_diagnostics(&report, &cwd).is_err());
+        }
+    }
 }

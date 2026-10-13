@@ -12,7 +12,7 @@ use super::setup::generate_imports;
 use super::spans::{TEMPLATE_ESCAPES, VaporSourceSpans};
 use super::{
     block_has_template_refs, collect_custom_directives, collect_root_if_templates,
-    directive_resolution_ident, generate_block,
+    collect_single_root_returns, directive_resolution_ident, generate_block,
 };
 
 /// Vapor code generation result
@@ -134,6 +134,9 @@ pub(crate) fn generate_vapor_with_spans(
             );
         }
     }
+
+    // Only the render's single root component inherits the owner's fallthrough attrs.
+    collect_single_root_returns(&ir.block, &mut ctx.root_components);
 
     // Template strings keep the links lowering gave them through escaping.
     let mut template_code = EmitDocument::new(spans.is_some());

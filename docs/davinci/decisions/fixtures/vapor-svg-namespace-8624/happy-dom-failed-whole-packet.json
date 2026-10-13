@@ -1,0 +1,829 @@
+{
+  "sourceHead": "a581b18c90ad41fd0ca6f4b30b5d53d613fe1381",
+  "run": 38148305379,
+  "job": 114497876339,
+  "status": "failed",
+  "runtime": "Vue 3.6.0-rc.9 in Happy DOM",
+  "productTrace": [
+    {
+      "events": [],
+      "namespaces": [
+        "http://www.w3.org/1999/xhtml",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/1999/xhtml"
+      ],
+      "tree": [
+        {
+          "attributes": {},
+          "children": [
+            {
+              "attributes": {
+                "height": "64",
+                "id": "namespace-icon",
+                "viewBox": "0 0 64 64",
+                "width": "64"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "class": "node array active",
+                    "id": "svg-a",
+                    "style": "color: rgb(200, 0, 0);",
+                    "title": "mount"
+                  },
+                  "children": [
+                    {
+                      "attributes": {
+                        "height": "32",
+                        "width": "32",
+                        "x": "16",
+                        "y": "16"
+                      },
+                      "children": [],
+                      "tag": "rect"
+                    }
+                  ],
+                  "tag": "a"
+                },
+                {
+                  "attributes": {},
+                  "children": [
+                    {
+                      "attributes": {
+                        "class": "node array active",
+                        "id": "svg-filter",
+                        "style": "color: rgb(200, 0, 0);",
+                        "title": "mount"
+                      },
+                      "children": [
+                        {
+                          "attributes": {
+                            "class": "node array active",
+                            "id": "svg-blur",
+                            "stdDeviation": "0",
+                            "style": "color: rgb(200, 0, 0);",
+                            "title": "mount"
+                          },
+                          "children": [],
+                          "tag": "feGaussianBlur"
+                        }
+                      ],
+                      "tag": "filter"
+                    }
+                  ],
+                  "tag": "defs"
+                },
+                {
+                  "attributes": {
+                    "class": "node array active",
+                    "id": "svg-view",
+                    "style": "color: rgb(200, 0, 0);",
+                    "title": "mount"
+                  },
+                  "children": [],
+                  "tag": "view"
+                },
+                {
+                  "attributes": {
+                    "class": "node array active",
+                    "id": "svg-switch",
+                    "style": "color: rgb(200, 0, 0);",
+                    "title": "mount"
+                  },
+                  "children": [],
+                  "tag": "switch"
+                },
+                {
+                  "attributes": {
+                    "height": "1",
+                    "width": "1",
+                    "x": "0",
+                    "y": "0"
+                  },
+                  "children": [
+                    {
+                      "attributes": {
+                        "class": "node array active",
+                        "id": "foreign-html-a",
+                        "style": "color: rgb(200, 0, 0);",
+                        "title": "mount"
+                      },
+                      "children": ["foreign"],
+                      "tag": "a"
+                    }
+                  ],
+                  "tag": "foreignObject"
+                }
+              ],
+              "tag": "svg"
+            },
+            {
+              "attributes": {
+                "class": "node array active",
+                "id": "html-a",
+                "style": "color: rgb(200, 0, 0);",
+                "title": "mount"
+              },
+              "children": ["html"],
+              "tag": "a"
+            }
+          ],
+          "tag": "div"
+        }
+      ]
+    },
+    {
+      "events": [],
+      "namespaces": [
+        "http://www.w3.org/1999/xhtml",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/1999/xhtml"
+      ],
+      "tree": [
+        {
+          "attributes": {},
+          "children": [
+            {
+              "attributes": {
+                "height": "64",
+                "id": "namespace-icon",
+                "viewBox": "0 0 64 64",
+                "width": "64"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "class": "node selected",
+                    "id": "svg-a",
+                    "style": "color: rgb(0, 0, 200);",
+                    "title": "update"
+                  },
+                  "children": [
+                    {
+                      "attributes": {
+                        "height": "32",
+                        "width": "32",
+                        "x": "16",
+                        "y": "16"
+                      },
+                      "children": [],
+                      "tag": "rect"
+                    }
+                  ],
+                  "tag": "a"
+                },
+                {
+                  "attributes": {},
+                  "children": [
+                    {
+                      "attributes": {
+                        "class": "node selected",
+                        "id": "svg-filter",
+                        "style": "color: rgb(0, 0, 200);",
+                        "title": "update"
+                      },
+                      "children": [
+                        {
+                          "attributes": {
+                            "class": "node selected",
+                            "id": "svg-blur",
+                            "stdDeviation": "0",
+                            "style": "color: rgb(0, 0, 200);",
+                            "title": "update"
+                          },
+                          "children": [],
+                          "tag": "feGaussianBlur"
+                        }
+                      ],
+                      "tag": "filter"
+                    }
+                  ],
+                  "tag": "defs"
+                },
+                {
+                  "attributes": {
+                    "class": "node selected",
+                    "id": "svg-view",
+                    "style": "color: rgb(0, 0, 200);",
+                    "title": "update"
+                  },
+                  "children": [],
+                  "tag": "view"
+                },
+                {
+                  "attributes": {
+                    "class": "node selected",
+                    "id": "svg-switch",
+                    "style": "color: rgb(0, 0, 200);",
+                    "title": "update"
+                  },
+                  "children": [],
+                  "tag": "switch"
+                },
+                {
+                  "attributes": {
+                    "height": "1",
+                    "width": "1",
+                    "x": "0",
+                    "y": "0"
+                  },
+                  "children": [
+                    {
+                      "attributes": {
+                        "class": "node selected",
+                        "id": "foreign-html-a",
+                        "style": "color: rgb(0, 0, 200);",
+                        "title": "update"
+                      },
+                      "children": ["foreign"],
+                      "tag": "a"
+                    }
+                  ],
+                  "tag": "foreignObject"
+                }
+              ],
+              "tag": "svg"
+            },
+            {
+              "attributes": {
+                "class": "node selected",
+                "id": "html-a",
+                "style": "color: rgb(0, 0, 200);",
+                "title": "update"
+              },
+              "children": ["html"],
+              "tag": "a"
+            }
+          ],
+          "tag": "div"
+        }
+      ]
+    },
+    {
+      "events": [],
+      "namespaces": [
+        "http://www.w3.org/1999/xhtml",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/1999/xhtml"
+      ],
+      "tree": [
+        {
+          "attributes": {},
+          "children": [
+            {
+              "attributes": {
+                "height": "64",
+                "id": "namespace-icon",
+                "viewBox": "0 0 64 64",
+                "width": "64"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "class": "node",
+                    "id": "svg-a",
+                    "title": "clear"
+                  },
+                  "children": [
+                    {
+                      "attributes": {
+                        "height": "32",
+                        "width": "32",
+                        "x": "16",
+                        "y": "16"
+                      },
+                      "children": [],
+                      "tag": "rect"
+                    }
+                  ],
+                  "tag": "a"
+                },
+                {
+                  "attributes": {},
+                  "children": [
+                    {
+                      "attributes": {
+                        "class": "node",
+                        "id": "svg-filter",
+                        "title": "clear"
+                      },
+                      "children": [
+                        {
+                          "attributes": {
+                            "class": "node",
+                            "id": "svg-blur",
+                            "stdDeviation": "0",
+                            "title": "clear"
+                          },
+                          "children": [],
+                          "tag": "feGaussianBlur"
+                        }
+                      ],
+                      "tag": "filter"
+                    }
+                  ],
+                  "tag": "defs"
+                },
+                {
+                  "attributes": {
+                    "class": "node",
+                    "id": "svg-view",
+                    "title": "clear"
+                  },
+                  "children": [],
+                  "tag": "view"
+                },
+                {
+                  "attributes": {
+                    "class": "node",
+                    "id": "svg-switch",
+                    "title": "clear"
+                  },
+                  "children": [],
+                  "tag": "switch"
+                },
+                {
+                  "attributes": {
+                    "height": "1",
+                    "width": "1",
+                    "x": "0",
+                    "y": "0"
+                  },
+                  "children": [
+                    {
+                      "attributes": {
+                        "class": "node",
+                        "id": "foreign-html-a",
+                        "title": "clear"
+                      },
+                      "children": ["foreign"],
+                      "tag": "a"
+                    }
+                  ],
+                  "tag": "foreignObject"
+                }
+              ],
+              "tag": "svg"
+            },
+            {
+              "attributes": {
+                "class": "node",
+                "id": "html-a",
+                "title": "clear"
+              },
+              "children": ["html"],
+              "tag": "a"
+            }
+          ],
+          "tag": "div"
+        }
+      ]
+    },
+    {
+      "events": [],
+      "namespaces": [],
+      "tree": []
+    }
+  ],
+  "independentVdomTrace": [
+    {
+      "events": [],
+      "namespaces": [
+        "http://www.w3.org/1999/xhtml",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/1999/xhtml",
+        "http://www.w3.org/1999/xhtml"
+      ],
+      "tree": [
+        {
+          "attributes": {},
+          "children": [
+            {
+              "attributes": {
+                "height": "64",
+                "id": "namespace-icon",
+                "viewBox": "0 0 64 64",
+                "width": "64"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "class": "node array active",
+                    "id": "svg-a",
+                    "style": "color: rgb(200, 0, 0);",
+                    "title": "mount"
+                  },
+                  "children": [
+                    {
+                      "attributes": {
+                        "height": "32",
+                        "width": "32",
+                        "x": "16",
+                        "y": "16"
+                      },
+                      "children": [],
+                      "tag": "rect"
+                    }
+                  ],
+                  "tag": "a"
+                },
+                {
+                  "attributes": {},
+                  "children": [
+                    {
+                      "attributes": {
+                        "class": "node array active",
+                        "id": "svg-filter",
+                        "style": "color: rgb(200, 0, 0);",
+                        "title": "mount"
+                      },
+                      "children": [
+                        {
+                          "attributes": {
+                            "class": "node array active",
+                            "id": "svg-blur",
+                            "stdDeviation": "0",
+                            "style": "color: rgb(200, 0, 0);",
+                            "title": "mount"
+                          },
+                          "children": [],
+                          "tag": "feGaussianBlur"
+                        }
+                      ],
+                      "tag": "filter"
+                    }
+                  ],
+                  "tag": "defs"
+                },
+                {
+                  "attributes": {
+                    "class": "node array active",
+                    "id": "svg-view",
+                    "style": "color: rgb(200, 0, 0);",
+                    "title": "mount"
+                  },
+                  "children": [],
+                  "tag": "view"
+                },
+                {
+                  "attributes": {
+                    "class": "node array active",
+                    "id": "svg-switch",
+                    "style": "color: rgb(200, 0, 0);",
+                    "title": "mount"
+                  },
+                  "children": [],
+                  "tag": "switch"
+                },
+                {
+                  "attributes": {
+                    "height": "1",
+                    "width": "1",
+                    "x": "0",
+                    "y": "0"
+                  },
+                  "children": [
+                    {
+                      "attributes": {
+                        "class": "node array active",
+                        "id": "foreign-html-a",
+                        "style": "color: rgb(200, 0, 0);",
+                        "title": "mount"
+                      },
+                      "children": ["foreign"],
+                      "tag": "a"
+                    }
+                  ],
+                  "tag": "foreignObject"
+                }
+              ],
+              "tag": "svg"
+            },
+            {
+              "attributes": {
+                "class": "node array active",
+                "id": "html-a",
+                "style": "color: rgb(200, 0, 0);",
+                "title": "mount"
+              },
+              "children": ["html"],
+              "tag": "a"
+            }
+          ],
+          "tag": "div"
+        }
+      ]
+    },
+    {
+      "events": [],
+      "namespaces": [
+        "http://www.w3.org/1999/xhtml",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/1999/xhtml",
+        "http://www.w3.org/1999/xhtml"
+      ],
+      "tree": [
+        {
+          "attributes": {},
+          "children": [
+            {
+              "attributes": {
+                "height": "64",
+                "id": "namespace-icon",
+                "viewBox": "0 0 64 64",
+                "width": "64"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "class": "node selected",
+                    "id": "svg-a",
+                    "style": "color: rgb(0, 0, 200);",
+                    "title": "update"
+                  },
+                  "children": [
+                    {
+                      "attributes": {
+                        "height": "32",
+                        "width": "32",
+                        "x": "16",
+                        "y": "16"
+                      },
+                      "children": [],
+                      "tag": "rect"
+                    }
+                  ],
+                  "tag": "a"
+                },
+                {
+                  "attributes": {},
+                  "children": [
+                    {
+                      "attributes": {
+                        "class": "node selected",
+                        "id": "svg-filter",
+                        "style": "color: rgb(0, 0, 200);",
+                        "title": "update"
+                      },
+                      "children": [
+                        {
+                          "attributes": {
+                            "class": "node selected",
+                            "id": "svg-blur",
+                            "stdDeviation": "0",
+                            "style": "color: rgb(0, 0, 200);",
+                            "title": "update"
+                          },
+                          "children": [],
+                          "tag": "feGaussianBlur"
+                        }
+                      ],
+                      "tag": "filter"
+                    }
+                  ],
+                  "tag": "defs"
+                },
+                {
+                  "attributes": {
+                    "class": "node selected",
+                    "id": "svg-view",
+                    "style": "color: rgb(0, 0, 200);",
+                    "title": "update"
+                  },
+                  "children": [],
+                  "tag": "view"
+                },
+                {
+                  "attributes": {
+                    "class": "node selected",
+                    "id": "svg-switch",
+                    "style": "color: rgb(0, 0, 200);",
+                    "title": "update"
+                  },
+                  "children": [],
+                  "tag": "switch"
+                },
+                {
+                  "attributes": {
+                    "height": "1",
+                    "width": "1",
+                    "x": "0",
+                    "y": "0"
+                  },
+                  "children": [
+                    {
+                      "attributes": {
+                        "class": "node selected",
+                        "id": "foreign-html-a",
+                        "style": "color: rgb(0, 0, 200);",
+                        "title": "update"
+                      },
+                      "children": ["foreign"],
+                      "tag": "a"
+                    }
+                  ],
+                  "tag": "foreignObject"
+                }
+              ],
+              "tag": "svg"
+            },
+            {
+              "attributes": {
+                "class": "node selected",
+                "id": "html-a",
+                "style": "color: rgb(0, 0, 200);",
+                "title": "update"
+              },
+              "children": ["html"],
+              "tag": "a"
+            }
+          ],
+          "tag": "div"
+        }
+      ]
+    },
+    {
+      "events": [],
+      "namespaces": [
+        "http://www.w3.org/1999/xhtml",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/2000/svg",
+        "http://www.w3.org/1999/xhtml",
+        "http://www.w3.org/1999/xhtml"
+      ],
+      "tree": [
+        {
+          "attributes": {},
+          "children": [
+            {
+              "attributes": {
+                "height": "64",
+                "id": "namespace-icon",
+                "viewBox": "0 0 64 64",
+                "width": "64"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "class": "node",
+                    "id": "svg-a",
+                    "title": "clear"
+                  },
+                  "children": [
+                    {
+                      "attributes": {
+                        "height": "32",
+                        "width": "32",
+                        "x": "16",
+                        "y": "16"
+                      },
+                      "children": [],
+                      "tag": "rect"
+                    }
+                  ],
+                  "tag": "a"
+                },
+                {
+                  "attributes": {},
+                  "children": [
+                    {
+                      "attributes": {
+                        "class": "node",
+                        "id": "svg-filter",
+                        "title": "clear"
+                      },
+                      "children": [
+                        {
+                          "attributes": {
+                            "class": "node",
+                            "id": "svg-blur",
+                            "stdDeviation": "0",
+                            "title": "clear"
+                          },
+                          "children": [],
+                          "tag": "feGaussianBlur"
+                        }
+                      ],
+                      "tag": "filter"
+                    }
+                  ],
+                  "tag": "defs"
+                },
+                {
+                  "attributes": {
+                    "class": "node",
+                    "id": "svg-view",
+                    "title": "clear"
+                  },
+                  "children": [],
+                  "tag": "view"
+                },
+                {
+                  "attributes": {
+                    "class": "node",
+                    "id": "svg-switch",
+                    "title": "clear"
+                  },
+                  "children": [],
+                  "tag": "switch"
+                },
+                {
+                  "attributes": {
+                    "height": "1",
+                    "width": "1",
+                    "x": "0",
+                    "y": "0"
+                  },
+                  "children": [
+                    {
+                      "attributes": {
+                        "class": "node",
+                        "id": "foreign-html-a",
+                        "title": "clear"
+                      },
+                      "children": ["foreign"],
+                      "tag": "a"
+                    }
+                  ],
+                  "tag": "foreignObject"
+                }
+              ],
+              "tag": "svg"
+            },
+            {
+              "attributes": {
+                "class": "node",
+                "id": "html-a",
+                "title": "clear"
+              },
+              "children": ["html"],
+              "tag": "a"
+            }
+          ],
+          "tag": "div"
+        }
+      ]
+    },
+    {
+      "events": [],
+      "namespaces": [],
+      "tree": []
+    }
+  ],
+  "originalTraceSha256": {
+    "product": "1262460eabbbc5e779d1143d42f155b246b081fd02c6fe98ecfbee6db286300c",
+    "oracle": "6622a32c40d886925b850ea429c5c49aaef5946146fe9db5ac8dfd8ed4d95094"
+  },
+  "diagnosis": "Only namespaces[10] differs in mounted, updated, cleared phases: Happy DOM parses foreignObject HTML anchor as SVG; physical Chromium parses XHTML. This is failed source evidence, not candidate or publication acceptance.",
+  "publicationQualification": false
+}

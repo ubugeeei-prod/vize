@@ -1,0 +1,59 @@
+{
+  "schema": "vize.native.custom-directive-argument.v1",
+  "baseRevision": "006c564067bacd05be9eac5660e34992e0bdabe8",
+  "test": "custom_directive_arguments_keep_native_expression_and_hook_value_errors",
+  "configuration": "tsconfig.json.txt",
+  "source": "App.vue.txt",
+  "cases": [
+    {
+      "name": "original",
+      "edits": [],
+      "diagnostics": []
+    },
+    {
+      "name": "unknown-argument",
+      "edits": [
+        {
+          "from": "[contentRef]",
+          "to": "[missingContent]",
+          "occurrences": 1
+        }
+      ],
+      "diagnostics": [
+        "App.vue(12,24): severity 1 TS2339: Property 'missingContent' does not exist on the component instance."
+      ]
+    },
+    {
+      "name": "argument-member",
+      "edits": [
+        {
+          "from": "[contentRef]",
+          "to": "[contentRef.missing]",
+          "occurrences": 1
+        }
+      ],
+      "diagnostics": [
+        "App.vue(12,35): severity 1 TS2339: Property 'missing' does not exist on type 'HTMLDivElement'."
+      ]
+    },
+    {
+      "name": "hook-value",
+      "edits": [
+        {
+          "from": "=\"handleClickOutside\"",
+          "to": "=\"wrongHandler\"",
+          "occurrences": 1
+        }
+      ],
+      "diagnostics": [
+        "App.vue(12,37): severity 1 TS2322: Type 'number' is not assignable to type '() => void'."
+      ]
+    }
+  ],
+  "repairs": "After each negative case, recheck the entire original source and require the complete empty diagnostic vector.",
+  "baselineDiagnostics": [
+    "App.vue(12,8): severity 1 TS2464: A computed property name must be of type 'string', 'number', 'symbol', or 'any'.",
+    "App.vue(13,8): severity 1 TS2464: A computed property name must be of type 'string', 'number', 'symbol', or 'any'.",
+    "App.vue(14,8): severity 1 TS2464: A computed property name must be of type 'string', 'number', 'symbol', or 'any'."
+  ]
+}

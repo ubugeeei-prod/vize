@@ -1,0 +1,4 @@
+<script setup lang="ts">
+import validators from './foreign'
+const emit = defineEmits(validators)
+</script>

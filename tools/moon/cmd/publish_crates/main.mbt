@@ -13,6 +13,8 @@
 /// crate can require exact versions of earlier workspace crates.
 let published_crates : Array[String] = [
   "vize_oxc_parser",
+  "vize_parcel_sourcemap",
+  "vize_lightningcss",
   "vize_l0_derive",
   "vize_l0",
   "vize_carton",

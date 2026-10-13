@@ -1,0 +1,57 @@
+{
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/8652",
+  "baseRevision": "20528bc54d622411581b2d40ff199d4fbbc98615",
+  "compileOptions": {
+    "isProd": false,
+    "templateComments": true,
+    "sourceMap": false
+  },
+  "files": [
+    {
+      "path": "groups.vue.txt",
+      "sha256": "194e4f5e662dfa7537a6041527d71996ea9f184e41a90ae2cfe7a56929914fab"
+    },
+    {
+      "path": "inline-slot.vue.txt",
+      "sha256": "50496c33f51cd68469042898ceb4596980e27699dfc5acafe06771ad25a7fda5"
+    },
+    {
+      "path": "inline-slot-non-ascii.vue.txt",
+      "sha256": "385cd34918cab2ae0aedd269680f89bdeee51b3a4cb31ce2dffa35852a53f13e"
+    },
+    {
+      "path": "leading.template.txt",
+      "sha256": "ec0b12fc94a15063db5b62b2020c19593edf82e1115ca9f454cf72c34a60fdc5"
+    },
+    {
+      "path": "slots.vue.txt",
+      "sha256": "05edcab5458f976078508af996b07f0f1417dd3a6da17a39a6c753cbbf776247"
+    },
+    {
+      "path": "ssr.expected.json",
+      "sha256": "9d35efd417515aecdf3d6734d4a7993bd8d2a9e941e235571e042fb4daa1162b"
+    }
+  ],
+  "inlineSlots": [
+    {
+      "fixture": "inline-slot.vue.txt",
+      "ssrCodeSha256": "550381e455c765c93334d51d58559e05822799d6d80380920cc4f6c724cdb0a1",
+      "html": "<div><section>a  b Session</section></div>"
+    },
+    {
+      "fixture": "inline-slot-non-ascii.vue.txt",
+      "ssrCodeSha256": "1a92138754aa9e3850e3578f7de02581e7128116a89116ffe7e351d82bc1569b",
+      "html": "<div><section>a <!-- eslint-disable rule --> b Session</section></div>"
+    }
+  ],
+  "contract": [
+    "complete-development-native-dom-and-ssr-modules",
+    "existing-ssr-module-sha256-and-html",
+    "hydrated-image-name-pairs",
+    "ordinary-comment-retention",
+    "no-hydration-warning",
+    "surface-annotation-custody",
+    "page-id-alignment",
+    "unchanged-inline-text-patch-flag"
+  ]
+}

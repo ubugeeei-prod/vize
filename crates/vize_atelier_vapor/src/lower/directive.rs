@@ -104,6 +104,7 @@ pub(crate) fn transform_directive<'a>(
                         element: element_id,
                         prop: IRProp::new(key, final_values, el.tag_type == ElementType::Component),
                         tag: el.tag,
+                        namespace: el.ns,
                         camel: has_camel,
                         prop_modifier: has_prop,
                     };
@@ -112,9 +113,7 @@ pub(crate) fn transform_directive<'a>(
                 }
             } else {
                 // v-bind without arg = v-bind object (v-bind="attrs")
-                if let Some(ref exp) = dir.exp
-                    && let ExpressionNode::Simple(val_exp) = exp
-                {
+                if let Some(ExpressionNode::Simple(val_exp)) = &dir.exp {
                     let mut props = Vec::new_in(&ctx.allocator);
                     let val_node = SimpleExpressionNode::from_node(val_exp);
                     props.push(Box::new_in(val_node, &ctx.allocator));

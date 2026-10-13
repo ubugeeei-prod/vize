@@ -1,0 +1,5 @@
+{
+  "bytes": 173,
+  "sha256": "4e4e4a28d216361d991a7d8b9cc13193b213df02d4cf90179b6b92ff24252766",
+  "wholeUtf8": "export * from './A.vue';\nexport * from './B.vue';\nexport { default as A } from './A.vue';\nexport { default as B } from './B.vue';\nexport * as PanelNamespace from './A.vue';\n"
+}

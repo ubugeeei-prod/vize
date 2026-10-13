@@ -1,0 +1,1628 @@
+{
+  "schema": "vize.lint.reserved-suppression-default-route-successors",
+  "version": 1,
+  "authority": "Source-authored whole companion diagnostics from the unchanged two SFC producers and authored exact descriptor ranges, before the new full public-before observation. Initial target-only corpus/source failures stay frozen; production is unchanged. Essential uses only with_essential, while Ecosystem extends with_happy_path; the initial broad-warning preset assumption and whole failed public attempt remain archived. The immutable n8n projection explicitly configures SFC element order error and script/template/style order; its complete separate projection vector is authored from that input and existing option/severity producers.",
+  "initialSourceCommit": "d20d205ee3252ab9067882db881539c68f057973",
+  "initialCorpus": {
+    "path": "cases.json",
+    "sha256": "00c17f8aa15a815efea86378d54881af531a3c894fa64f588f32c2d8a4cd0f0a"
+  },
+  "producers": [
+    {
+      "path": "crates/vize_patina/src/rules/vue/require_scoped_style.rs",
+      "sha256": "c080a11482b658af322cd4ecaf6e0ddc8ef94c226877200e792e8cdb8fdb2ead"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/sfc_element_order.rs",
+      "sha256": "5c85e10d4cb8277e6fcb89d452828b2a5041fd702950f393dcdded63bdf45153"
+    },
+    {
+      "path": "crates/vize_patina/src/rules/vue/sfc_element_order/options.rs",
+      "sha256": "0319f762c49f548d016881c294b111c7a14b745ef87162d677e109ff13672df0"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/engine/sfc.rs",
+      "sha256": "bcd3c09c4db78c4bf93514bf177848eb816bb1d665f3c9185fe332550c28eb23"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/engine.rs",
+      "sha256": "0ee0a7230e1cceca0868d7637eb31978dff372bf3b16c2699f06e0a97b74d9fa"
+    },
+    {
+      "path": "crates/vize_patina/src/rule.rs",
+      "sha256": "6dd7a1f3fb7ef88dd13278e1e9f73191cd922ab18e2524af22e7413fb6b15bc1"
+    },
+    {
+      "path": "crates/vize_patina/src/rule/happy_path.rs",
+      "sha256": "b08dd788756457fe33ca63076d4372c0aa5c511564809ab675c0f3c5fd2f11a8"
+    },
+    {
+      "path": "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
+      "sha256": "810d884d2b275b43799dc097bb8dfee7f63e892a4a7956846a0a7c5c87367da0"
+    },
+    {
+      "path": "tests/_fixtures/n8n-cli-adoption.json",
+      "sha256": "8b0c91b481d28f8477f4af222d98b5b4a73ef5c92baaa86bae34fe4cb4b0b5d1"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/restricted_rules.rs",
+      "sha256": "7ca73f71ebde1dff4cadae283541bd50ac878f39a9c4a4b2447d9a7199059df7"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/config.rs",
+      "sha256": "08c7bece87e46b927f550b8b0b503af83da19f1de989ad1a34b044605dedb568"
+    }
+  ],
+  "summary": {
+    "cases": 24,
+    "targetBefore": 22,
+    "targetAfter": 12,
+    "companionDiagnostics": 2,
+    "defaultBefore": 24,
+    "defaultAfter": 14,
+    "offDiagnostics": 2,
+    "sourcePackets": 169,
+    "essentialBefore": 22,
+    "essentialAfter": 12,
+    "projectionDiagnostics": 1
+  },
+  "cases": [
+    {
+      "id": "no-directive",
+      "filename": "Control1.vue",
+      "sourceSha256": "0c5946a41c6e50aef49e560680475e187e1f2449763d46ec1340a9e1a0d9b1d1",
+      "companionDiagnostics": [],
+      "defaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 54,
+          "end": 62,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 54,
+              "end": 62
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeDefaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 54,
+          "end": 62,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 54,
+              "end": 62
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "offDiagnostics": [],
+      "incrementalDiagnostics": [],
+      "projectionDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 54,
+          "end": 62,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 54,
+              "end": 62
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeEssentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 54,
+          "end": 62,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 54,
+              "end": 62
+            }
+          ],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "alias-next-line",
+      "filename": "Control2.vue",
+      "sourceSha256": "cfcca874602703fb60d0a50ba8847680cae78e10e63d9779d7c746c5e4d84646",
+      "companionDiagnostics": [],
+      "defaultDiagnostics": [],
+      "beforeDefaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 103,
+          "end": 111,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 103,
+              "end": 111
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "offDiagnostics": [],
+      "incrementalDiagnostics": [],
+      "projectionDiagnostics": [],
+      "essentialDiagnostics": [],
+      "beforeEssentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 103,
+          "end": 111,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 103,
+              "end": 111
+            }
+          ],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "canonical-next-line",
+      "filename": "Control3.vue",
+      "sourceSha256": "d2e7f7b8faa17922cbb8b1cb29a239a75b94a39c7b8eaece0cf879e9357414d5",
+      "companionDiagnostics": [],
+      "defaultDiagnostics": [],
+      "beforeDefaultDiagnostics": [],
+      "offDiagnostics": [],
+      "incrementalDiagnostics": [],
+      "projectionDiagnostics": [],
+      "essentialDiagnostics": [],
+      "beforeEssentialDiagnostics": []
+    },
+    {
+      "id": "plugin-canonical",
+      "filename": "Control4.vue",
+      "sourceSha256": "57c8e90a52bf2707b2e1f78679e4dd9baedcc556df6cbf7dace138188c50d1a7",
+      "companionDiagnostics": [],
+      "defaultDiagnostics": [],
+      "beforeDefaultDiagnostics": [],
+      "offDiagnostics": [],
+      "incrementalDiagnostics": [],
+      "projectionDiagnostics": [],
+      "essentialDiagnostics": [],
+      "beforeEssentialDiagnostics": []
+    },
+    {
+      "id": "plugin-alias",
+      "filename": "Control5.vue",
+      "sourceSha256": "93db310ab70f369970b5eddb8f86b4c3e800fb98e0258b65403215919a96c59f",
+      "companionDiagnostics": [],
+      "defaultDiagnostics": [],
+      "beforeDefaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 108,
+          "end": 116,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 108,
+              "end": 116
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "offDiagnostics": [],
+      "incrementalDiagnostics": [],
+      "projectionDiagnostics": [],
+      "essentialDiagnostics": [],
+      "beforeEssentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 108,
+          "end": 116,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 108,
+              "end": 116
+            }
+          ],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "foreign-rule",
+      "filename": "Control6.vue",
+      "sourceSha256": "ed65de392a046e68ed7593fa69ea19537cb51a764782ac5735a30b1b7a563906",
+      "companionDiagnostics": [],
+      "defaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 104,
+          "end": 112,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 104,
+              "end": 112
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeDefaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 104,
+          "end": 112,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 104,
+              "end": 112
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "offDiagnostics": [],
+      "incrementalDiagnostics": [],
+      "projectionDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 104,
+          "end": 112,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 104,
+              "end": 112
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeEssentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 104,
+          "end": 112,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 104,
+              "end": 112
+            }
+          ],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "foreign-plugin",
+      "filename": "Control7.vue",
+      "sourceSha256": "faf34810f64950fd045bc1d94e3d09d6430fc8c0fabf3a8d13f71474b4bb4dd0",
+      "companionDiagnostics": [],
+      "defaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 107,
+          "end": 115,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 107,
+              "end": 115
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeDefaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 107,
+          "end": 115,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 107,
+              "end": 115
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "offDiagnostics": [],
+      "incrementalDiagnostics": [],
+      "projectionDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 107,
+          "end": 115,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 107,
+              "end": 115
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeEssentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 107,
+          "end": 115,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 107,
+              "end": 115
+            }
+          ],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "case-sensitive-id",
+      "filename": "Control8.vue",
+      "sourceSha256": "e534dbfa4c498574f2e20f0e9cc381b298306b6f0ea6a01232be07a1fe555b4b",
+      "companionDiagnostics": [],
+      "defaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 103,
+          "end": 111,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 103,
+              "end": 111
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeDefaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 103,
+          "end": 111,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 103,
+              "end": 111
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "offDiagnostics": [],
+      "incrementalDiagnostics": [],
+      "projectionDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 103,
+          "end": 111,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 103,
+              "end": 111
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeEssentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 103,
+          "end": 111,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 103,
+              "end": 111
+            }
+          ],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "string-marker",
+      "filename": "Control9.vue",
+      "sourceSha256": "72c6c3a1c8ee95884eda5d7ce97611a4842dc7a6e3e43862a0fe6ffe8117db04",
+      "companionDiagnostics": [],
+      "defaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 110,
+          "end": 118,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 110,
+              "end": 118
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeDefaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 110,
+          "end": 118,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 110,
+              "end": 118
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "offDiagnostics": [],
+      "incrementalDiagnostics": [],
+      "projectionDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 110,
+          "end": 118,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 110,
+              "end": 118
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeEssentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 110,
+          "end": 118,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 110,
+              "end": 118
+            }
+          ],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "template-marker",
+      "filename": "Control10.vue",
+      "sourceSha256": "fcf4911b4535ab25ee8d4b28878c5f4d94db5a5d6951c69a42a6c8df7c7688bd",
+      "companionDiagnostics": [],
+      "defaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 110,
+          "end": 118,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 110,
+              "end": 118
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeDefaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 110,
+          "end": 118,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 110,
+              "end": 118
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "offDiagnostics": [],
+      "incrementalDiagnostics": [],
+      "projectionDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 110,
+          "end": 118,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 110,
+              "end": 118
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeEssentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 110,
+          "end": 118,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 110,
+              "end": 118
+            }
+          ],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "block-next-line",
+      "filename": "Control11.vue",
+      "sourceSha256": "e58578cf653c3dee423863bc1c3b69236c0d47407909e22881f63ef0550b4547",
+      "companionDiagnostics": [],
+      "defaultDiagnostics": [],
+      "beforeDefaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 106,
+          "end": 114,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 106,
+              "end": 114
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "offDiagnostics": [],
+      "incrementalDiagnostics": [],
+      "projectionDiagnostics": [],
+      "essentialDiagnostics": [],
+      "beforeEssentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 106,
+          "end": 114,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 106,
+              "end": 114
+            }
+          ],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "same-line",
+      "filename": "Control12.vue",
+      "sourceSha256": "0f694c53ab80d01f0b42085f1069487ac8906381ffe7639cca525c9a90e8756e",
+      "companionDiagnostics": [],
+      "defaultDiagnostics": [],
+      "beforeDefaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 54,
+          "end": 62,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 54,
+              "end": 62
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "offDiagnostics": [],
+      "incrementalDiagnostics": [],
+      "projectionDiagnostics": [],
+      "essentialDiagnostics": [],
+      "beforeEssentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 54,
+          "end": 62,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 54,
+              "end": 62
+            }
+          ],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "adjacent-next-line",
+      "filename": "Control13.vue",
+      "sourceSha256": "6bbcbb781f5374e02ac33535c8e4cec001da7dc852f162fde8014a0adadcfec0",
+      "companionDiagnostics": [],
+      "defaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 120,
+          "end": 128,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 120,
+              "end": 128
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeDefaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 120,
+          "end": 128,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 120,
+              "end": 128
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "offDiagnostics": [],
+      "incrementalDiagnostics": [],
+      "projectionDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 120,
+          "end": 128,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 120,
+              "end": 128
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeEssentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 120,
+          "end": 128,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 120,
+              "end": 128
+            }
+          ],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "region-enable",
+      "filename": "Control14.vue",
+      "sourceSha256": "196cfeb10a3a3b8627dde4fc99da37ac42fe7c7aacf7a339f4e9f9a6197e1f3a",
+      "companionDiagnostics": [],
+      "defaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_shown'",
+          "start": 149,
+          "end": 155,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 149,
+              "end": 155
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeDefaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_hidden'",
+          "start": 96,
+          "end": 103,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 96,
+              "end": 103
+            }
+          ],
+          "fix": null
+        },
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_shown'",
+          "start": 149,
+          "end": 155,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 149,
+              "end": 155
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "offDiagnostics": [],
+      "incrementalDiagnostics": [],
+      "projectionDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_shown'",
+          "start": 149,
+          "end": 155,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 149,
+              "end": 155
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeEssentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_hidden'",
+          "start": 96,
+          "end": 103,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 96,
+              "end": 103
+            }
+          ],
+          "fix": null
+        },
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_shown'",
+          "start": 149,
+          "end": 155,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 149,
+              "end": 155
+            }
+          ],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "mixed-list-reason",
+      "filename": "Control15.vue",
+      "sourceSha256": "107ad0dfb8134b751f387fab436a38495ca3811826bacdc82d384f4b9a7adbf1",
+      "companionDiagnostics": [],
+      "defaultDiagnostics": [],
+      "beforeDefaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 149,
+          "end": 157,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 149,
+              "end": 157
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "offDiagnostics": [],
+      "incrementalDiagnostics": [],
+      "projectionDiagnostics": [],
+      "essentialDiagnostics": [],
+      "beforeEssentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 149,
+          "end": 157,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 149,
+              "end": 157
+            }
+          ],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "unrestricted-disable",
+      "filename": "Control16.vue",
+      "sourceSha256": "a2bcc604cd0f031dca9e6884766cf8b671340e334519ab9f9bde66c9249ae06a",
+      "companionDiagnostics": [],
+      "defaultDiagnostics": [],
+      "beforeDefaultDiagnostics": [],
+      "offDiagnostics": [],
+      "incrementalDiagnostics": [],
+      "projectionDiagnostics": [],
+      "essentialDiagnostics": [],
+      "beforeEssentialDiagnostics": []
+    },
+    {
+      "id": "oxlint-alias",
+      "filename": "Control17.vue",
+      "sourceSha256": "1ab193d46a03b9d10060a4691f0a350e65e4f3336856bd13e2ae823c13c008d6",
+      "companionDiagnostics": [],
+      "defaultDiagnostics": [],
+      "beforeDefaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 103,
+          "end": 111,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 103,
+              "end": 111
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "offDiagnostics": [],
+      "incrementalDiagnostics": [],
+      "projectionDiagnostics": [],
+      "essentialDiagnostics": [],
+      "beforeEssentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 103,
+          "end": 111,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 103,
+              "end": 111
+            }
+          ],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "setup-block-cannot-leak",
+      "filename": "Control18.vue",
+      "sourceSha256": "b7dec103fc004c294345df1b7baff646bb2b2ec6b0617dd2a88cc5b078ce71ea",
+      "companionDiagnostics": [],
+      "defaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 124,
+          "end": 132,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 124,
+              "end": 132
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeDefaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 124,
+          "end": 132,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 124,
+              "end": 132
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "offDiagnostics": [],
+      "incrementalDiagnostics": [],
+      "projectionDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 124,
+          "end": 132,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 124,
+              "end": 132
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeEssentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 124,
+          "end": 132,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 124,
+              "end": 132
+            }
+          ],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "normal-block-contained",
+      "filename": "Control19.vue",
+      "sourceSha256": "89a44578dd638d82283c5f452820712142f59aebf8fcdec072c04ed8ac62ae2a",
+      "companionDiagnostics": [],
+      "defaultDiagnostics": [],
+      "beforeDefaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 85,
+          "end": 93,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 85,
+              "end": 93
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "offDiagnostics": [],
+      "incrementalDiagnostics": [],
+      "projectionDiagnostics": [],
+      "essentialDiagnostics": [],
+      "beforeEssentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 85,
+          "end": 93,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 85,
+              "end": 93
+            }
+          ],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "style-block-cannot-leak",
+      "filename": "Control20.vue",
+      "sourceSha256": "c257ebb4c1c1c0dcf466228e1885dbf7b1383358f8adb0f65393f2b97a608d80",
+      "companionDiagnostics": [
+        {
+          "rule_name": "vue/require-scoped-style",
+          "severity": "warning",
+          "message": "Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+          "start": 0,
+          "end": 7,
+          "help": "Add `scoped` attribute: `<style scoped>`",
+          "labels": [],
+          "fix": null
+        },
+        {
+          "rule_name": "vue/sfc-element-order",
+          "severity": "warning",
+          "message": "<script> should come before <style>",
+          "start": 56,
+          "end": 125,
+          "help": "Recommended order: <script> and <template> (either order) -> <style>",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "defaultDiagnostics": [
+        {
+          "rule_name": "vue/require-scoped-style",
+          "severity": "warning",
+          "message": "Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+          "start": 0,
+          "end": 7,
+          "help": "Add `scoped` attribute: `<style scoped>`",
+          "labels": [],
+          "fix": null
+        },
+        {
+          "rule_name": "vue/sfc-element-order",
+          "severity": "warning",
+          "message": "<script> should come before <style>",
+          "start": 56,
+          "end": 125,
+          "help": "Recommended order: <script> and <template> (either order) -> <style>",
+          "labels": [],
+          "fix": null
+        },
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 99,
+          "end": 107,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 99,
+              "end": 107
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeDefaultDiagnostics": [
+        {
+          "rule_name": "vue/require-scoped-style",
+          "severity": "warning",
+          "message": "Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+          "start": 0,
+          "end": 7,
+          "help": "Add `scoped` attribute: `<style scoped>`",
+          "labels": [],
+          "fix": null
+        },
+        {
+          "rule_name": "vue/sfc-element-order",
+          "severity": "warning",
+          "message": "<script> should come before <style>",
+          "start": 56,
+          "end": 125,
+          "help": "Recommended order: <script> and <template> (either order) -> <style>",
+          "labels": [],
+          "fix": null
+        },
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 99,
+          "end": 107,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 99,
+              "end": 107
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "offDiagnostics": [
+        {
+          "rule_name": "vue/require-scoped-style",
+          "severity": "warning",
+          "message": "Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+          "start": 0,
+          "end": 7,
+          "help": "Add `scoped` attribute: `<style scoped>`",
+          "labels": [],
+          "fix": null
+        },
+        {
+          "rule_name": "vue/sfc-element-order",
+          "severity": "warning",
+          "message": "<script> should come before <style>",
+          "start": 56,
+          "end": 125,
+          "help": "Recommended order: <script> and <template> (either order) -> <style>",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "incrementalDiagnostics": [],
+      "projectionDiagnostics": [
+        {
+          "rule_name": "vue/sfc-element-order",
+          "severity": "error",
+          "message": "<script> should come before <style>",
+          "start": 56,
+          "end": 125,
+          "help": "Recommended order: <script> -> <template> -> <style>",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 99,
+          "end": 107,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 99,
+              "end": 107
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeEssentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 99,
+          "end": 107,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 99,
+              "end": 107
+            }
+          ],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "unicode-crlf",
+      "filename": "Control21.vue",
+      "sourceSha256": "90998f6f04004212f1fdfbe32c489aadf56145f08434765a79b4e8577e7d64b8",
+      "companionDiagnostics": [],
+      "defaultDiagnostics": [],
+      "beforeDefaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 128,
+          "end": 136,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 128,
+              "end": 136
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "offDiagnostics": [],
+      "incrementalDiagnostics": [],
+      "projectionDiagnostics": [],
+      "essentialDiagnostics": [],
+      "beforeEssentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_private'",
+          "start": 128,
+          "end": 136,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 128,
+              "end": 136
+            }
+          ],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "method-public-instance",
+      "filename": "Control22.vue",
+      "sourceSha256": "7eece5d05200746083fcb6243d8b0925a4bc53bfdececef6d1f516e0b9c76618",
+      "companionDiagnostics": [],
+      "defaultDiagnostics": [],
+      "beforeDefaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '$emit'",
+          "start": 96,
+          "end": 101,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "methods key starts with reserved '$'",
+              "start": 96,
+              "end": 101
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "offDiagnostics": [],
+      "incrementalDiagnostics": [],
+      "projectionDiagnostics": [],
+      "essentialDiagnostics": [],
+      "beforeEssentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '$emit'",
+          "start": 96,
+          "end": 101,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "methods key starts with reserved '$'",
+              "start": 96,
+              "end": 101
+            }
+          ],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "alias-disable-canonical-enable",
+      "filename": "Control23.vue",
+      "sourceSha256": "af8960903d697fb76e420bcb8e52787fe5ed59eed4ae953cda3e049f4fd12e27",
+      "companionDiagnostics": [],
+      "defaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_shown'",
+          "start": 152,
+          "end": 158,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 152,
+              "end": 158
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeDefaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_hidden'",
+          "start": 96,
+          "end": 103,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 96,
+              "end": 103
+            }
+          ],
+          "fix": null
+        },
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_shown'",
+          "start": 152,
+          "end": 158,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 152,
+              "end": 158
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "offDiagnostics": [],
+      "incrementalDiagnostics": [],
+      "projectionDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_shown'",
+          "start": 152,
+          "end": 158,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 152,
+              "end": 158
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeEssentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_hidden'",
+          "start": 96,
+          "end": 103,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 96,
+              "end": 103
+            }
+          ],
+          "fix": null
+        },
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_shown'",
+          "start": 152,
+          "end": 158,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 152,
+              "end": 158
+            }
+          ],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "canonical-disable-alias-enable",
+      "filename": "Control24.vue",
+      "sourceSha256": "6ff76b1095685b496ec1452155289f0bad83d72a1b722f66fbf0f67951f6c009",
+      "companionDiagnostics": [],
+      "defaultDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_shown'",
+          "start": 152,
+          "end": 158,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 152,
+              "end": 158
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeDefaultDiagnostics": [],
+      "offDiagnostics": [],
+      "incrementalDiagnostics": [],
+      "projectionDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '_shown'",
+          "start": 152,
+          "end": 158,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '_'",
+              "start": 152,
+              "end": 158
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "beforeEssentialDiagnostics": []
+    }
+  ]
+}

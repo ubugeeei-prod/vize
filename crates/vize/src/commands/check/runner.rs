@@ -55,7 +55,6 @@ use global_components::{
     collect_workspace_global_component_declarations_for_files, dialect_from_features,
     template_syntax_mode,
 };
-use ignores::load_check_ignore_set;
 use input_scope::{exit_if_default_run_leaves_cwd, report_no_inputs};
 use invocation::{resolve_invocation_program, resolve_nuxt_project_root};
 use nuxt_tsconfig::resolve_checker_tsconfig_path;
@@ -306,17 +305,6 @@ fn prepare_and_execute(
         execution: Some(execution),
         excluded_explicit_inputs: false,
     })
-}
-
-fn validate_config_arg(args: &CheckArgs) {
-    if let Some(path) = args.config.as_deref()
-        && !args.no_config
-        && let Err(error) = crate::config::validate_explicit_config_path(path)
-    {
-        let style = TextStyle::stderr();
-        eprintln!("{} {}", style.red("Error:"), error);
-        std::process::exit(2);
-    }
 }
 
 #[cfg(not(feature = "legacy"))]

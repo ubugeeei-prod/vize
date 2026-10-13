@@ -1,0 +1,230 @@
+{
+  "schema": "vize.8752-8755-independent-owner-supplement",
+  "version": 1,
+  "status": "Independently source-authored complete isolated-rule envelopes before any candidate execution; no native/Corsa/provider/Actions qualification. Initial 22-case proposal remains immutable.",
+  "initialProposal": {
+    "path": "independent-semantic-oracle-proposal.json",
+    "sha256": "35c59a4c8fec4eeb71ebeef352d407c5779e761729c40f3b3318b4ebfd50a0b8"
+  },
+  "sourceRevision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+  "sourceBasis": [
+    {
+      "path": "crates/vize_patina/src/linter/native_type_aware/expression_bindings.rs",
+      "sourceRevision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+      "bytes": 10935,
+      "sha256": "281ec17b102471f6454938bb578bf3d11be7d6884ca5e5cc44a7515a69177b15"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/native_type_aware/expression_bindings/mapped.rs",
+      "sourceRevision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+      "bytes": 4074,
+      "sha256": "da80c412581ed81198dd4e708d776e7a57b5d724c0aa9561110e86ccd5a67689"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/native_type_aware/template_queries.rs",
+      "sourceRevision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+      "bytes": 10575,
+      "sha256": "ca67f4293364d7436bf9af7e66efe6c3f6412ebfd6db580fc56acf44155e4034"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/native_type_aware/template_queries/collector.rs",
+      "sourceRevision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+      "bytes": 20232,
+      "sha256": "3061ea16b6631bd5ea715eb2e2d702c156b4783eb59a2ba407faac2f5b6a511a"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/native_type_aware/template_queries/calls.rs",
+      "sourceRevision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+      "bytes": 17726,
+      "sha256": "53109ca0f066fa90aca7a716c0324b0b2c8edeb2cfc15a135369e365d994f283"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/native_type_aware/driver/probes.rs",
+      "sourceRevision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+      "bytes": 4998,
+      "sha256": "2186e7c9d202c8111f3b493734da44ea2a9dda94fb8b0fa46028b8a29ff3fedc"
+    },
+    {
+      "path": "crates/vize_patina/src/linter/native_type_aware/unsafe_template_tests.rs",
+      "sourceRevision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+      "bytes": 6622,
+      "sha256": "fb63510b0811baf357264fec382a9b15826fa40dd5bf1d3ebc0058ddf03a92b8"
+    },
+    {
+      "path": "crates/vize_armature/src/parser/attribute.rs",
+      "sourceRevision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+      "bytes": 13588,
+      "sha256": "4b70c8451d24837933d4e8dc08f62a881a8f068c33c9eabb6da0b72414463996"
+    },
+    {
+      "path": "crates/vize_patina/src/output/json.rs",
+      "sourceRevision": "d73c43cfadc779093ebdb1497ef143c40dffa583",
+      "bytes": 2810,
+      "sha256": "32937f0714c101c226814a2fe3c3a3ae7aadab54a289aafcbe84809b7f146fdc"
+    }
+  ],
+  "cases": [
+    {
+      "id": "UnsafeAnyConsequentTypedObjectAlternate",
+      "filename": "UnsafeAnyConsequentTypedObjectAlternate.vue",
+      "source": "<script setup lang=\"ts\">\nconst flag: boolean = Math.random() > 0.5;\nconst t = (p: {text: string}): string => p.text;\nconst value: any = \"x\";\n</script>\n<template>\n<p>{{ flag\n ? value\n : t({text: 'safe'}) }}</p>\n</template>\n",
+      "sourceSha256": "f88a7c33a6d514fa1022fb5027d346fca5cc4657d832b99e78fbff74b6171590",
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "typeAware": true,
+          "rules": {
+            "type/no-unsafe-template-binding": "warn"
+          }
+        }
+      },
+      "afterApi": {
+        "filename": "UnsafeAnyConsequentTypedObjectAlternate.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "message": "Template interpolation resolves to an unsafe `any` or `unknown` type",
+            "start": 168,
+            "end": 202,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "afterCli": [
+        {
+          "file": "UnsafeAnyConsequentTypedObjectAlternate.vue",
+          "messages": [
+            {
+              "ruleId": "type/no-unsafe-template-binding",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:type/no-unsafe-template-binding] Template interpolation resolves to an unsafe `any` or `unknown` type",
+              "line": 7,
+              "column": 7,
+              "endLine": 9,
+              "endColumn": 21,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template."
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterStatus": 0,
+      "semanticBasis": "Both conditional arms contribute to the owner type; the typed function callee is safe and must not hide an any or unknown consequent/alternate. Scope, call-callee ordering and source ranges remain independent from real Corsa qualification."
+    },
+    {
+      "id": "UnsafeUnknownConsequentTypedObjectAlternate",
+      "filename": "UnsafeUnknownConsequentTypedObjectAlternate.vue",
+      "source": "<script setup lang=\"ts\">\nconst flag: boolean = Math.random() > 0.5;\nconst t = (p: {text: string}): string => p.text;\nconst value: unknown = \"x\";\n</script>\n<template>\n<p>{{ flag\n ? value\n : t({text: 'safe'}) }}</p>\n</template>\n",
+      "sourceSha256": "55c9f774ed0a55ad3c099c70d85da7bced1a9e7f5a92222c1d87c040a7d37783",
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "typeAware": true,
+          "rules": {
+            "type/no-unsafe-template-binding": "warn"
+          }
+        }
+      },
+      "afterApi": {
+        "filename": "UnsafeUnknownConsequentTypedObjectAlternate.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "message": "Template interpolation resolves to an unsafe `any` or `unknown` type",
+            "start": 172,
+            "end": 206,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "afterCli": [
+        {
+          "file": "UnsafeUnknownConsequentTypedObjectAlternate.vue",
+          "messages": [
+            {
+              "ruleId": "type/no-unsafe-template-binding",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:type/no-unsafe-template-binding] Template interpolation resolves to an unsafe `any` or `unknown` type",
+              "line": 7,
+              "column": 7,
+              "endLine": 9,
+              "endColumn": 21,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template."
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterStatus": 0,
+      "semanticBasis": "Both conditional arms contribute to the owner type; the typed function callee is safe and must not hide an any or unknown consequent/alternate. Scope, call-callee ordering and source ranges remain independent from real Corsa qualification."
+    },
+    {
+      "id": "UnsafeAnyObjectReturnAlternate",
+      "filename": "UnsafeAnyObjectReturnAlternate.vue",
+      "source": "<script setup lang=\"ts\">\nconst flag: boolean = Math.random() > 0.5;\nconst text = \"safe\";\nconst t = (p: {text: string}): any => p.text;\n</script>\n<template>\n<p>{{ flag\n ? text\n : t({text: 'unsafe'}) }}</p>\n</template>\n",
+      "sourceSha256": "bc3157f4fba8c136668ba7319e220f1c907e6f3b9b6ca51ee02b288e27781851",
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "typeAware": true,
+          "rules": {
+            "type/no-unsafe-template-binding": "warn"
+          }
+        }
+      },
+      "afterApi": {
+        "filename": "UnsafeAnyObjectReturnAlternate.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "type/no-unsafe-template-binding",
+            "severity": "warning",
+            "message": "Template interpolation resolves to an unsafe `any` or `unknown` type",
+            "start": 162,
+            "end": 197,
+            "help": "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+            "fix": null,
+            "labels": []
+          }
+        ]
+      },
+      "afterCli": [
+        {
+          "file": "UnsafeAnyObjectReturnAlternate.vue",
+          "messages": [
+            {
+              "ruleId": "type/no-unsafe-template-binding",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:type/no-unsafe-template-binding] Template interpolation resolves to an unsafe `any` or `unknown` type",
+              "line": 7,
+              "column": 7,
+              "endLine": 9,
+              "endColumn": 23,
+              "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template."
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "afterStatus": 0,
+      "semanticBasis": "Both conditional arms contribute to the owner type; the typed function callee is safe and must not hide an any or unknown consequent/alternate. Scope, call-callee ordering and source ranges remain independent from real Corsa qualification."
+    }
+  ]
+}

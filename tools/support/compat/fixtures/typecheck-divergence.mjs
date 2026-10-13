@@ -91,6 +91,7 @@ export function compareTypecheckDiagnostics({
     falseNegatives,
     documentedDifferences: documented,
   };
+  const vizeHintCount = vize.filter((diagnostic) => diagnostic.severity === "hint").length;
   const summary = {
     vizeDiagnosticCount: vize.length,
     baselineDiagnosticCount: baseline.length,
@@ -106,6 +107,7 @@ export function compareTypecheckDiagnostics({
     baselineExcludedProjectCount: baselineInput.excludedProjectCount,
     baselineExcludedExternalCount: baselineInput.excludedExternalCount,
     baselineExcludedSupportVueCount: baselineInput.excludedSupportVueCount,
+    ...(vizeHintCount > 0 ? { vizeHintCount } : {}),
   };
   return {
     schema: "vize.fixtureTypecheckDivergence",

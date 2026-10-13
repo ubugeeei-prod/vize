@@ -124,3 +124,45 @@ pub(crate) fn analyze_descriptor_for_lint(
     };
     analyze_sfc_descriptor(descriptor, template_ast, options)
 }
+
+/// Request positive authored reads within the existing single descriptor draw.
+pub(super) fn analyze_descriptor_for_component_reads(
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+    template_ast: Option<&RootNode<'_>>,
+    unused: bool,
+    derived: bool,
+) -> Croquis {
+    if descriptor.script_setup.as_ref().is_none_or(|script| {
+        script.src.is_some()
+            || script
+                .lang
+                .as_deref()
+                .is_some_and(|lang| !matches!(lang, "js" | "ts" | "jsx" | "tsx"))
+    }) {
+        return analyze_descriptor_for_lint(descriptor, template_ast, unused, derived);
+    }
+    let options = SfcCroquisOptions::lint_demand();
+    let options = if unused {
+        options.with_unused_bindings()
+    } else {
+        options
+    };
+    let options = if derived {
+        options.with_derived_template()
+    } else {
+        options
+    };
+    let (mut analysis, packet) = vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_occurrences(
+        descriptor,
+        template_ast,
+        options,
+    );
+    let component_reads = analysis.croquis.authored_component_reads_are_qualified();
+    // Preserve the complete editor refusal separately from independently
+    // source-witnessed positive reads admitted by the original SFC wrapper.
+    analysis.croquis.retain_authored_binding_reads(packet);
+    analysis
+        .croquis
+        .qualify_authored_component_reads(component_reads);
+    analysis.croquis
+}

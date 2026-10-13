@@ -1,0 +1,52 @@
+name: Seed PR Rust target
+# Trusted writer of the `nextest-ci` sticky disk that PR Rust jobs mount
+# read-only. It repeats a workspace-scope PR's exact toolchain, linker,
+# environment, package list and Cargo commands, so a PR clone only rebuilds
+# what changed.
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Daily 02:41 UTC, ahead of the full Check run.
+    - cron: "41 2 * * *"
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions: { contents: read }
+env: { CARGO_TERM_COLOR: always, FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true }
+jobs:
+  rust-pr-target-seed:
+    name: Seed PR Rust target
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 45
+    env:
+      CARGO_BUILD_JOBS: "12"
+      VIZE_TEST_DISABLE_TSGO: "1"
+      VIZE_NUXT_CONFIG_ITERATIONS: "100"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
+        with:
+          components: clippy
+          toolchain: "1.99.0"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: nextest-ci
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Plan every PR Rust crate
+        run: node tools/support/compat/github/plan-affected-rust.mjs "$GITHUB_SHA" "$GITHUB_SHA" merge_group "$RUNNER_TEMP/rust-plan.json"
+      - name: Clippy every PR Rust crate
+        run: node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/rust-plan.json" cargo clippy @packages@ --profile ci -- -D warnings -D clippy::wildcard_imports
+      - name: Build every PR Rust test binary
+        run: node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/rust-plan.json" cargo test @packages@ --profile ci --no-run
+      - name: Build the PR feature lanes
+        run: |
+          cargo test -p vize_armature --features native-lex-parity,legacy --lib --test markup_lex_parity --no-run
+          cargo test -p vize_l1 --features legacy-differential --test surface_corpus --no-run
+      - name: Seed native Program and Vue navigation
+        uses: ./.github/actions/test-native-navigation

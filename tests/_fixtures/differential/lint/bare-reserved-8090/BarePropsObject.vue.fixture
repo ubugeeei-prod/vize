@@ -1,0 +1,3 @@
+<script lang="ts">
+export default { props: { el: Number, data: Number, props: Number, attrs: Number, slots: Number, refs: Number, parent: Number, root: Number, options: Number, emit: Number, nextTick: Number, watch: Number, forceUpdate: Number, isMounted: Number } }
+</script>

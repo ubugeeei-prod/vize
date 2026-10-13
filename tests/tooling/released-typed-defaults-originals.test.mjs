@@ -6,6 +6,10 @@ import { test } from "node:test";
 import { apiRoot, gitBlob } from "../../tools/support/release/typed_defaults/custody.mjs";
 import { originalScenarios } from "../../tools/support/release/typed_defaults/contracts.mjs";
 import {
+  returnDirectory,
+  returnScenarios,
+} from "../../tools/support/release/typed_defaults/return_prefilter.mjs";
+import {
   loadFixtures,
   typedDirectory,
 } from "../../tools/support/release/typed_defaults/fixtures.mjs";
@@ -39,9 +43,27 @@ await test("immutable H source must retain every authored fixture and all 51 n8n
   const root = temporary(t),
     good = corpusFixture();
   const fixtures = await loadFixtures(good.head, path.join(root, "good"), good.read, good.treeSha);
-  assert.equal(fixtures.authorities.length, 40);
+  assert.equal(
+    fixtures.authorities.filter(
+      (entry) =>
+        !entry.path.startsWith(returnDirectory) &&
+        entry.path !== "tests/tooling/lint-return-prefilter.test.mjs",
+    ).length,
+    40,
+  );
+  assert.equal(
+    fixtures.authorities.filter((entry) => entry.path.startsWith(returnDirectory)).length,
+    17,
+  );
+  assert.equal(
+    fixtures.authorities.filter(
+      (entry) => entry.path === "tests/tooling/lint-return-prefilter.test.mjs",
+    ).length,
+    1,
+  );
   const vectors = originalScenarios(fixtures);
   assert.equal(vectors.length, 280);
+  assert.equal(returnScenarios(fixtures).length, 112);
   const mutations = [
     [
       "wrong source tree",

@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import Panel from './Panel.vue'
+</script>
+<template>
+  <Panel :title="$before.label" v-slot="$before">{{ $before.label }}</Panel>
+  <Panel v-slot="$after" :title="$after.label">{{ $after.label }}</Panel>
+  <Panel v-slot="$form">{{ $form.label }}</Panel>
+  <p>{{ $form.label }}</p>
+  <p>{{ $absent.label }}</p>
+</template>

@@ -3,7 +3,7 @@ use super::{
     LoadedConfigWithFeatures, LoadedRawConfig, load_raw_config_checked, load_raw_config_with_source,
 };
 use crate::config::{ConfigEntryFiles, ConfigEntryIgnore, SortImportsSetting};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 /// All formatting and source-selection settings from one configuration evaluation.
 #[derive(Debug, Clone, Default)]
@@ -15,6 +15,8 @@ pub struct LoadedFormatterSnapshot {
     pub ignores: Vec<ConfigEntryIgnore>,
     /// Explicit compiler whitespace mode from the same configuration evaluation.
     pub compiler_whitespace: Option<&'static str>,
+    /// Vite's root, derived from the same evaluation as the formatting options.
+    pub project_root: Option<PathBuf>,
 }
 
 /// Load stable formatting options, Vue features, and import sorting in one parse.
@@ -33,6 +35,7 @@ pub fn try_load_formatter_snapshot(
 }
 
 fn snapshot(loaded: LoadedRawConfig) -> LoadedFormatterSnapshot {
+    let project_root = loaded.project_root();
     let compiler_whitespace = loaded.config.compiler_whitespace();
     let sort_imports = loaded.config.formatter_sort_imports().cloned();
     let ignores = loaded.config.entry_ignores();
@@ -48,5 +51,6 @@ fn snapshot(loaded: LoadedRawConfig) -> LoadedFormatterSnapshot {
         entries,
         ignores,
         compiler_whitespace,
+        project_root,
     }
 }

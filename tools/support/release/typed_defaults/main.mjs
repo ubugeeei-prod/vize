@@ -7,7 +7,14 @@ import { authenticate, consumerPaths, githubReader, optionsFrom, sha256 } from "
 import { acquireDistribution, assertLoadedBinary } from "./distribution.mjs";
 import { loadFixtures } from "./fixtures.mjs";
 import { observe } from "./observe.mjs";
+import { assertStableFix, assertStableOfficial } from "./post_observation.mjs";
 import { originalContracts, originalObservers, originalScenarios } from "./contracts.mjs";
+import {
+  authenticateReturnFix,
+  returnContract,
+  returnObserver,
+  returnScenarios,
+} from "./return_prefilter.mjs";
 
 const checkout = fs.realpathSync(fileURLToPath(new URL("../../../../", import.meta.url)));
 const options = optionsFrom(process.env);
@@ -42,6 +49,7 @@ try {
   const json = githubReader(output);
   const official = await authenticate(options, json);
   receipt.official = official;
+  receipt.returnFix = await authenticateReturnFix(options.head, json);
   persist();
   const fixtures = await loadFixtures(
     options.head,
@@ -49,12 +57,15 @@ try {
     json,
     official.commit.tree.sha,
   );
-  fixtures.vectors = originalScenarios(fixtures);
+  fixtures.vectors = [...originalScenarios(fixtures), ...returnScenarios(fixtures)];
   receipt.originalContracts = originalContracts;
   receipt.originalObservers = originalObservers;
+  receipt.returnContract = returnContract;
+  receipt.returnObserver = returnObserver;
   receipt.sourceAuthorities = fixtures.authorities;
   receipt.corpora = {
     typed: fixtures.typed,
+    returns: fixtures.returns,
     first: fixtures.first,
     second: fixtures.second,
     projection: fixtures.projection,
@@ -93,24 +104,24 @@ try {
   assert.deepEqual(versionOut, Buffer.from(`vize ${options.tag.slice(1)}\n`));
   receipt.observations = observe(fixtures, distribution, consumer, output);
   const final = await authenticate(options, json);
-  assert.equal(final.releaseRun.run_attempt, official.releaseRun.run_attempt);
-  assert.equal(final.release.id, official.release.id);
-  assert.deepEqual(
-    final.release.assets,
-    official.release.assets,
-    "official assets changed during public observation",
-  );
+  const finalReturnFix = await authenticateReturnFix(options.head, json);
+  receipt.finalOfficial = final;
+  receipt.finalReturnFix = finalReturnFix;
+  persist();
+  assertStableFix(receipt.returnFix, finalReturnFix);
+  assertStableOfficial(official, final);
   assertLoadedBinary(distribution.member.binary, distribution.member, consumer);
   receipt.completedAt = new Date().toISOString();
   receipt.success = true;
   receipt.evidence =
-    "56 original typed-default and 224 original compatibility whole CLI packets; no full ecosystem Matrix acceptance";
+    "56 original typed-default, 224 original compatibility, and 112 original return-prefilter whole CLI packets; no full ecosystem Matrix acceptance";
   persist();
   console.log(
     JSON.stringify({
       success: true,
       typed: 56,
       compatibility: 224,
+      returns: 112,
       head: options.head,
       binarySha256: distribution.member.sha256,
       receiptSha256: sha256(fs.readFileSync(path.join(output, "receipt.json"))),

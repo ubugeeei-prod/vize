@@ -1,7 +1,10 @@
 //! The parse entry: L1's moved tokenizer → event stream → surface tree,
 //! with the byte-fidelity verifier asserted on every construction.
 
-use crate::markup::lex::compat::Tokenizer;
+mod namespace;
+
+use crate::markup::{Component, LexOptions, Lexer};
+use namespace::NamespaceSink;
 use vize_l0::ErrorCode;
 use vize_l0::{Allocator, Vec};
 
@@ -83,9 +86,16 @@ fn parse_projection<'a>(
 ) {
     construct::<false>(allocator, source, authored, |events, errors| {
         let recorder = Recorder { events, errors };
-        let mut tokenizer = Tokenizer::new(source, recorder);
-        tokenizer.set_in_tag_comments(options.experimental_in_tag_comments);
-        tokenizer.tokenize();
+        let sink = NamespaceSink::new(allocator, source, recorder);
+        Lexer::<Component, _>::new(
+            source,
+            sink,
+            LexOptions {
+                in_tag_comments: options.experimental_in_tag_comments,
+                ..LexOptions::default()
+            },
+        )
+        .run();
     })
 }
 

@@ -1,4 +1,4 @@
-export type VizeVueVersion = 0.11 | 1 | 2 | "2.7" | 3 | "legacy";
+export type VizeVueVersion = 0.1 | 0.11 | 1 | 2 | "2.7" | 3 | "legacy";
 
 export interface VizeCompatibilityOptions {
   /**

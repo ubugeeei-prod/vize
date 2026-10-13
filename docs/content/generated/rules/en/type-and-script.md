@@ -39,7 +39,7 @@ Every rule on this page includes its purpose, prerequisites, configuration, and 
 | [`script/no-ref-as-operand`](#script-no-ref-as-operand) | [Bad](#script-no-ref-as-operand-bad) · [Good](#script-no-ref-as-operand-good) | Require ref-bound variables to be accessed via `.value` when used as an operand |
 | [`script/no-required-prop-with-default`](#script-no-required-prop-with-default) | [Bad](#script-no-required-prop-with-default-bad) · [Good](#script-no-required-prop-with-default-good) | Disallow a prop that is both required: true and has a default |
 | [`script/no-reserved-identifiers`](#script-no-reserved-identifiers) | [Bad](#script-no-reserved-identifiers-bad) · [Good](#script-no-reserved-identifiers-good) | Disallow using Vue compiler reserved identifiers |
-| [`script/no-reserved-keys`](#script-no-reserved-keys) | [Bad](#script-no-reserved-keys-bad) · [Good](#script-no-reserved-keys-good) | Disallow Vue-reserved names as Options API props/data/computed/methods/setup/inject keys |
+| [`script/no-reserved-keys`](#script-no-reserved-keys) | [Bad](#script-no-reserved-keys-bad) · [Good](#script-no-reserved-keys-good) | Disallow Vue-reserved names as Options API props/data/computed/methods/setup keys |
 | [`script/no-reserved-props`](#script-no-reserved-props) | [Bad](#script-no-reserved-props-bad) · [Good](#script-no-reserved-props-good) | Disallow reserved names in a component's props declaration |
 | [`script/no-restricted-globals`](#script-no-restricted-globals) | [Bad](#script-no-restricted-globals-bad) · [Good](#script-no-restricted-globals-good) | Disallow references to runtime-environment globals that must go through a typed wrapper |
 | [`script/no-restricted-members`](#script-no-restricted-members) | [Bad](#script-no-restricted-members-bad) · [Good](#script-no-restricted-members-good) | Disallow project-configured object.property member accesses |
@@ -68,7 +68,7 @@ Every rule on this page includes its purpose, prerequisites, configuration, and 
 | [`script/require-typed-ref`](#script-require-typed-ref) | [Bad](#script-require-typed-ref-bad) · [Good](#script-require-typed-ref-good) | Require an explicit type argument on a ref() initialized with no value, null, or undefined |
 | [`script/require-valid-default-prop`](#script-require-valid-default-prop) | [Bad](#script-require-valid-default-prop-bad) · [Good](#script-require-valid-default-prop-good) | Require a prop's default value to be valid for its declared type |
 | [`script/return-in-computed-property`](#script-return-in-computed-property) | [Bad](#script-return-in-computed-property-bad) · [Good](#script-return-in-computed-property-good) | Require a return value in every computed getter |
-| [`script/return-in-emits-validator`](#script-return-in-emits-validator) | [Bad](#script-return-in-emits-validator-bad) · [Good](#script-return-in-emits-validator-good) | Require a return value in every Options API emits validator |
+| [`script/return-in-emits-validator`](#script-return-in-emits-validator) | [Bad](#script-return-in-emits-validator-bad) · [Good](#script-return-in-emits-validator-good) | Require a return value in every Vue emits validator |
 | [`script/valid-define-emits`](#script-valid-define-emits) | [Bad](#script-valid-define-emits-bad) · [Good](#script-valid-define-emits-good) | Enforce valid defineEmits() usage (no type+runtime args, no local references, single call) |
 | [`script/valid-define-options`](#script-valid-define-options) | [Bad](#script-valid-define-options-bad) · [Good](#script-valid-define-options-good) | Enforce valid defineOptions() usage (single object arg, no props/emits/expose/slots) |
 | [`script/valid-define-props`](#script-valid-define-props) | [Bad](#script-valid-define-props-bad) · [Good](#script-valid-define-props-good) | Enforce valid defineProps() usage (single call, not both type and runtime args, no local references) |
@@ -734,7 +734,7 @@ vp run lint
 
 **Bad**
 
-The binding pattern descends through `user` to destructure `name`, exceeding the default shallow props-destructuring depth.
+This sole inline `<script setup>` has a top-level compiler macro binding that destructures `name` through `user`, exceeding the default depth of one. Arrays nested inside object bindings also increase depth. This opt-in warning enforces a depth policy: it does not read the compiler's `propsDestructure` setting, and `withDefaults` can compile despite the warning.
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
@@ -758,7 +758,7 @@ const userName = computed(() => props.user.name);
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L37) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L39) · [All rules](all.md)
 
 ### `script/no-deprecated-data-object-declaration`
 
@@ -1300,31 +1300,27 @@ vp run lint
 
 **Bad**
 
-The explicit `inheritAttrs: true` values restate Vue’s default. This rule reports that redundant literal even when no root `$attrs` spread is shown.
+The component keeps automatic attribute inheritance and also forwards `$attrs` to its button. The same fallthrough attributes can be applied twice.
 
-```vue annotate="remove:2,3"
-<script lang="ts">
-defineOptions({ inheritAttrs: true })
-export default { inheritAttrs: true }
-</script>
+```vue annotate="remove:1"
+<script setup></script>
+<template><div><button v-bind="$attrs">Save</button></div></template>
 ```
 
 <span id="script-no-duplicate-attr-inheritance-good"></span>
 
 **Good**
 
-`inheritAttrs: false` expresses a real opt-out, while the empty options object leaves default inheritance implicit. Neither restates the redundant `true` value.
+`inheritAttrs: false` disables automatic inheritance, leaving the explicit button binding as the single forwarding path.
 
-```vue annotate="add:2,3"
-<script lang="ts">
-defineOptions({ inheritAttrs: false }) // intentional opt-out
-export default {}                      // default inheritance, unstated
-</script>
+```vue annotate="add:1"
+<script setup>defineOptions({ inheritAttrs: false })</script>
+<template><div><button v-bind="$attrs">Save</button></div></template>
 ```
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs#L73) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs#L35) · [All rules](all.md)
 
 ### `script/no-export-in-script-setup`
 
@@ -1333,7 +1329,7 @@ Disallow export statements inside &lt;script setup&gt;
 [Bad](#script-no-export-in-script-setup-bad) · [Good](#script-no-export-in-script-setup-good)
 
 Default severity: `error`  
-Presets: _none_  
+Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
 Options: No rule-specific options. Severity and preset selection are configurable.
@@ -2023,7 +2019,7 @@ export default { props: { title: { type: String, default: "Untitled" } } };
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs#L29) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs#L34) · [All rules](all.md)
 
 ### `script/no-reserved-identifiers`
 
@@ -2092,7 +2088,7 @@ Good avoids this rule's finding under the configuration above; other rules may s
 
 ### `script/no-reserved-keys`
 
-Disallow Vue-reserved names as Options API props/data/computed/methods/setup/inject keys
+Disallow Vue-reserved names as Options API props/data/computed/methods/setup keys
 
 [Bad](#script-no-reserved-keys-bad) · [Good](#script-no-reserved-keys-good)
 
@@ -2149,7 +2145,7 @@ export default { data() { return { elementLabel: "custom" }; } };
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reserved_keys.rs#L32) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reserved_keys.rs#L30) · [All rules](all.md)
 
 ### `script/no-reserved-props`
 
@@ -2974,17 +2970,18 @@ import { h } from '@vue/runtime-dom'
 
 **Good**
 
-Both helpers are imported together from `vue`, using the public package entry point instead of either internal package.
+The public helpers are imported from `vue`. Private `isString` retains `@vue/shared`, because `vue` does not export it. Namespace, default and mixed public/private imports keep a warning without an automatic fix.
 
-```vue annotate="add:2"
+```vue annotate="add:2,3"
 <script setup lang="ts">
 import { ref, h } from 'vue'
+import { isString } from '@vue/shared'
 </script>
 ```
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L32) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L36) · [All rules](all.md)
 
 ### `script/prefer-ref-over-reactive`
 
@@ -4099,7 +4096,7 @@ Good avoids this rule's finding under the configuration above; other rules may s
 
 ### `script/return-in-emits-validator`
 
-Require a return value in every Options API emits validator
+Require a return value in every Vue emits validator
 
 [Bad](#script-return-in-emits-validator-bad) · [Good](#script-return-in-emits-validator-good)
 
@@ -4158,7 +4155,7 @@ export default { emits: { submit: (payload: unknown) => { return payload != null
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs#L59) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs#L61) · [All rules](all.md)
 
 ### `script/valid-define-emits`
 

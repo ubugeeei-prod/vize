@@ -1,0 +1,75 @@
+{
+  "id": "config-permissive",
+  "nativeContract": "exact",
+  "inputs": [
+    {
+      "file": "tsconfig.json",
+      "bytes": 262,
+      "sha256": "ae48b51eb6c43c7411ad1d01920b5cd2d74836aced109714277002de0991b405",
+      "relativeBlob": "blobs/ae48b51eb6c43c7411ad1d01920b5cd2d74836aced109714277002de0991b405.json"
+    },
+    {
+      "file": "A.vue",
+      "bytes": 233,
+      "sha256": "c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61",
+      "relativeBlob": "blobs/c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61.json"
+    },
+    {
+      "file": "B.vue",
+      "bytes": 233,
+      "sha256": "c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61",
+      "relativeBlob": "blobs/c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61.json"
+    },
+    {
+      "file": "consumer.ts",
+      "bytes": 392,
+      "sha256": "a63d0dfe7bbe8f1e801f350a5f33d1b08f56f40ed7d3f73fb21483917dd05c10",
+      "relativeBlob": "blobs/a63d0dfe7bbe8f1e801f350a5f33d1b08f56f40ed7d3f73fb21483917dd05c10.json"
+    },
+    {
+      "file": "barrel.ts",
+      "bytes": 130,
+      "sha256": "a7c105b81822b7324998a2ec9447f2121058630315560bac31687380bd35df89",
+      "relativeBlob": "blobs/a7c105b81822b7324998a2ec9447f2121058630315560bac31687380bd35df89.json"
+    },
+    {
+      "file": "base.json",
+      "bytes": 51,
+      "sha256": "3b7fc55b0b995241e50c22c1164a240230ae59ce8ae5818abf57a2ed8f704e76",
+      "relativeBlob": "blobs/3b7fc55b0b995241e50c22c1164a240230ae59ce8ae5818abf57a2ed8f704e76.json"
+    },
+    {
+      "file": "tsconfig.decoy.json",
+      "bytes": 48,
+      "sha256": "8ad6b8dc90920bbbe86af1a1c8cb31497580db07073c3d7f1adf16ea36ef0de2",
+      "relativeBlob": "blobs/8ad6b8dc90920bbbe86af1a1c8cb31497580db07073c3d7f1adf16ea36ef0de2.json"
+    }
+  ],
+  "diagnostics": [],
+  "projectedEquals": {
+    "consumer.ts": {
+      "bytes": 395,
+      "sha256": "94a494ad18da5edc9279f32a9e6e6bde062c1978fe3838f5d403b987a3cd9c94",
+      "relativeBlob": "blobs/94a494ad18da5edc9279f32a9e6e6bde062c1978fe3838f5d403b987a3cd9c94.json"
+    },
+    "barrel.ts": {
+      "bytes": 144,
+      "sha256": "f8f1f17e858ce72de2934681a821f12e5f15fff12eda5c3c5c5c863eaf83e863",
+      "relativeBlob": "blobs/f8f1f17e858ce72de2934681a821f12e5f15fff12eda5c3c5c5c863eaf83e863.json"
+    }
+  },
+  "exportedNamesEquals": {
+    "A.vue": [
+      "Emits",
+      "Props",
+      "Slots",
+      "default"
+    ],
+    "B.vue": [
+      "Emits",
+      "Props",
+      "Slots",
+      "default"
+    ]
+  }
+}

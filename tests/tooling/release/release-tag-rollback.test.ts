@@ -218,7 +218,7 @@ test("release stabilizes apt before installing ARM64 cross-compilation tools", (
     (step) => step.uses === "./.github/actions/setup-ubuntu-archive",
   );
   const aptInstall = steps.findIndex((step) =>
-    step.run?.includes("install_cross_compile_tools --"),
+    step.run?.includes("install-cross-compile-tools.ts"),
   );
   assert.ok(archiveSetup >= 0);
   assert.ok(aptInstall > archiveSetup);

@@ -191,6 +191,11 @@ fn generated_offset_for_content(
     source_text: &str,
     content: &str,
 ) -> Option<u32> {
+    let authored = source_start as usize..source_start as usize + source_text.len();
+    if let Some(offset) = super::expression_bindings::inferred_binding_offset(virtual_ts, &authored)
+    {
+        return Some(offset);
+    }
     let trimmed = source_text.trim_end_matches(char::is_whitespace);
     let expected = content.trim_end_matches(char::is_whitespace);
     let probe_offset = probe_offset_for_text(source_start, source_text)?;
@@ -264,4 +269,31 @@ pub(super) fn v_for_source_binding_offset(generated: &str, expression_offset: u3
 fn probe_offset_for_text(source_start: u32, source_text: &str) -> Option<u32> {
     let trimmed = source_text.trim_end_matches(char::is_whitespace);
     (!trimmed.is_empty()).then_some(source_start + trimmed.len() as u32 - 1)
+}
+
+fn slot_spread_callee_offset(
+    generated: &str,
+    expression_offset: u32,
+    callee_text: &str,
+) -> Option<u32> {
+    let at = expression_offset as usize;
+    let line_start = generated
+        .get(..at)?
+        .rfind('\n')
+        .map_or(0, |index| index + 1);
+    let line_end = generated
+        .get(at..)?
+        .find('\n')
+        .map_or(generated.len(), |index| at + index);
+    let line = generated.get(line_start..line_end)?;
+    if !line.contains("__vizeSlotOutletSpread<") {
+        return None;
+    }
+    let before_expression = line.get(..at - line_start)?;
+    let callee_start = before_expression.rfind(callee_text)?;
+    let after_callee = line.get(callee_start + callee_text.len()..)?;
+    if !after_callee.starts_with('(') && !after_callee.starts_with("?.(") {
+        return None;
+    }
+    u32::try_from(line_start + callee_start + callee_text.len() - 1).ok()
 }

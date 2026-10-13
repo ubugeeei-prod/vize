@@ -630,6 +630,12 @@ export declare function generateVariants(
 
 export declare function generateViteHmrCode(scopeId: string, updateType: string): string;
 
+/**
+ * An opaque identity minted once by the native build invocation.
+ * Direct builds without the instrumented producer return no identity.
+ */
+export declare function getNativeBuildToken(): string | null;
+
 /** Get Patina's currently registered rule metadata. */
 export declare function getPatinaRules(): any;
 
@@ -1028,6 +1034,8 @@ export declare function parseTemplate(
 
 /** Single-file Patina lint options for NAPI */
 export interface PatinaLintOptionsNapi {
+  /** Include native fix messages and UTF-8 byte text edits in diagnostics. */
+  includeFixes?: boolean;
   /** Filename used for diagnostics */
   filename?: string;
   /** Locale code: "en", "ja", or "zh" */
@@ -1375,7 +1383,11 @@ export interface TransformPluginNapi {
   run: (arg: string) => string;
 }
 
-export declare function transformViteCssVarsForPipeline(css: string, scopeId: string): string;
+export declare function transformViteCssVarsForPipeline(
+  css: string,
+  scopeId: string,
+  productionFilename?: string | undefined | null,
+): string;
 
 /**
  * Perform type checking on a Vue SFC

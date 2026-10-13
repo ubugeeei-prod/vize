@@ -1,0 +1,3383 @@
+{
+  "schema": "vize.lint.setup-export-default-full-routes",
+  "version": 1,
+  "corpusSha256": "d4d9d15024a4df328fd7b32fca416fbf6d92a99952824e6b4405b74a6854ffcb",
+  "n8nProjectionSha256": "8b0c91b481d28f8477f4af222d98b5b4a73ef5c92baaa86bae34fe4cb4b0b5d1",
+  "scope": "Four full sources times thirteen full preset/off/config/CLI-precedence routes. All/default/recommended are actual existing aliases; type/normal/UTF8-CRLF order controls; no real-project or public successor qualification.",
+  "cases": [
+    {
+      "id": "runtime-export",
+      "filename": "runtime-export.vue",
+      "sourceFile": "runtime-export.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nexport const answer = 42;\n</script>\n",
+      "sourceSha256": "24622cb8bb0f420bd69a81d1997f4b9cc8c05fda384b20917331577648ba5a85",
+      "diagnostics": [
+        {
+          "rule_name": "script/no-export-in-script-setup",
+          "severity": "error",
+          "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+          "start": 25,
+          "end": 50,
+          "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+          "fix": null,
+          "labels": [
+            {
+              "message": "named export",
+              "start": 25,
+              "end": 50
+            }
+          ]
+        }
+      ],
+      "routes": [
+        {
+          "id": "default",
+          "preset": null,
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 1,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-export-in-script-setup",
+                "severity": "error",
+                "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                "start": 25,
+                "end": 50,
+                "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "named export",
+                    "start": 25,
+                    "end": 50
+                  }
+                ]
+              }
+            ]
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-export-in-script-setup",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                  "line": 2,
+                  "column": 1,
+                  "endLine": 2,
+                  "endColumn": 26,
+                  "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 1
+        },
+        {
+          "id": "recommended",
+          "preset": "recommended",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "recommended",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 1,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-export-in-script-setup",
+                "severity": "error",
+                "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                "start": 25,
+                "end": 50,
+                "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "named export",
+                    "start": 25,
+                    "end": 50
+                  }
+                ]
+              }
+            ]
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-export-in-script-setup",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                  "line": 2,
+                  "column": 1,
+                  "endLine": 2,
+                  "endColumn": 26,
+                  "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 1
+        },
+        {
+          "id": "essential",
+          "preset": "essential",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "essential",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 1,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-export-in-script-setup",
+                "severity": "error",
+                "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                "start": 25,
+                "end": 50,
+                "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "named export",
+                    "start": 25,
+                    "end": 50
+                  }
+                ]
+              }
+            ]
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-export-in-script-setup",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                  "line": 2,
+                  "column": 1,
+                  "endLine": 2,
+                  "endColumn": 26,
+                  "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 1
+        },
+        {
+          "id": "ecosystem",
+          "preset": "ecosystem",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "ecosystem",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 1,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-export-in-script-setup",
+                "severity": "error",
+                "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                "start": 25,
+                "end": 50,
+                "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "named export",
+                    "start": 25,
+                    "end": 50
+                  }
+                ]
+              }
+            ]
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-export-in-script-setup",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                  "line": 2,
+                  "column": 1,
+                  "endLine": 2,
+                  "endColumn": 26,
+                  "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 1
+        },
+        {
+          "id": "opinionated",
+          "preset": "opinionated",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "opinionated",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 1,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-export-in-script-setup",
+                "severity": "error",
+                "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                "start": 25,
+                "end": 50,
+                "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "named export",
+                    "start": 25,
+                    "end": 50
+                  }
+                ]
+              }
+            ]
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-export-in-script-setup",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                  "line": 2,
+                  "column": 1,
+                  "endLine": 2,
+                  "endColumn": 26,
+                  "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 1
+        },
+        {
+          "id": "nuxt",
+          "preset": "nuxt",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "nuxt",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 1,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-export-in-script-setup",
+                "severity": "error",
+                "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                "start": 25,
+                "end": 50,
+                "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "named export",
+                    "start": 25,
+                    "end": 50
+                  }
+                ]
+              }
+            ]
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-export-in-script-setup",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                  "line": 2,
+                  "column": 1,
+                  "endLine": 2,
+                  "endColumn": 26,
+                  "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 1
+        },
+        {
+          "id": "all",
+          "preset": "all",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "all",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 1,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-export-in-script-setup",
+                "severity": "error",
+                "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                "start": 25,
+                "end": 50,
+                "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "named export",
+                    "start": 25,
+                    "end": 50
+                  }
+                ]
+              }
+            ]
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-export-in-script-setup",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                  "line": 2,
+                  "column": 1,
+                  "endLine": 2,
+                  "endColumn": 26,
+                  "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 1
+        },
+        {
+          "id": "incremental",
+          "preset": "incremental",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "incremental",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "explicit-off",
+          "preset": null,
+          "config": "{\"linter\":{\"rules\":{\"script/no-export-in-script-setup\":\"off\"}}}\n",
+          "argv": [
+            "lint",
+            "--config",
+            "vize.config.json",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "config-incremental-cli-essential",
+          "preset": "essential",
+          "config": "{\"linter\":{\"preset\":\"incremental\"}}\n",
+          "argv": [
+            "lint",
+            "--config",
+            "vize.config.json",
+            "--preset",
+            "essential",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 1,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-export-in-script-setup",
+                "severity": "error",
+                "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                "start": 25,
+                "end": 50,
+                "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "named export",
+                    "start": 25,
+                    "end": 50
+                  }
+                ]
+              }
+            ]
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-export-in-script-setup",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                  "line": 2,
+                  "column": 1,
+                  "endLine": 2,
+                  "endColumn": 26,
+                  "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 1
+        },
+        {
+          "id": "config-essential-cli-incremental",
+          "preset": "incremental",
+          "config": "{\"linter\":{\"preset\":\"essential\"}}\n",
+          "argv": [
+            "lint",
+            "--config",
+            "vize.config.json",
+            "--preset",
+            "incremental",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "config-off-cli-essential",
+          "preset": "essential",
+          "config": "{\"linter\":{\"preset\":\"incremental\",\"rules\":{\"script/no-export-in-script-setup\":\"off\"}}}\n",
+          "argv": [
+            "lint",
+            "--config",
+            "vize.config.json",
+            "--preset",
+            "essential",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "n8n-projection",
+          "preset": null,
+          "config": "{\"linter\":{\"enabled\":true,\"preset\":\"incremental\",\"rules\":{\"vue/attribute-hyphenation\":\"error\",\"vue/component-name-in-template-casing\":\"error\",\"vue/no-child-content\":\"error\",\"vue/no-deprecated-functional-template\":\"error\",\"vue/no-deprecated-html-element-is\":\"error\",\"vue/no-deprecated-inline-template\":\"error\",\"vue/no-deprecated-router-link-tag-prop\":\"error\",\"vue/no-deprecated-scope-attribute\":\"error\",\"vue/no-deprecated-slot-attribute\":\"error\",\"vue/no-deprecated-slot-scope-attribute\":\"error\",\"vue/no-deprecated-v-bind-sync\":\"error\",\"vue/no-deprecated-v-on-native-modifier\":\"error\",\"vue/no-deprecated-v-on-number-modifiers\":\"error\",\"vue/no-dupe-v-else-if\":\"error\",\"vue/no-duplicate-attributes\":\"error\",\"vue/no-multiple-template-root\":\"error\",\"vue/no-template-key\":\"error\",\"vue/no-textarea-mustache\":\"error\",\"vue/no-unused-components\":\"error\",\"vue/no-unused-vars\":\"error\",\"vue/no-use-v-if-with-v-for\":\"error\",\"vue/no-useless-template-attributes\":\"error\",\"vue/no-v-for-template-key-on-child\":\"error\",\"vue/no-v-html\":\"error\",\"vue/require-component-is\":\"error\",\"vue/require-component-registration\":\"error\",\"vue/require-toggle-inside-transition\":\"error\",\"vue/require-v-for-key\":\"error\",\"vue/sfc-element-order\":\"error\",\"vue/use-v-on-exact\":\"error\",\"vue/v-slot-style\":\"error\",\"vue/valid-attribute-name\":\"error\",\"vue/valid-template-root\":\"error\",\"vue/valid-v-bind\":\"error\",\"vue/valid-v-cloak\":\"error\",\"vue/valid-v-else\":\"error\",\"vue/valid-v-for\":\"error\",\"vue/valid-v-html\":\"error\",\"vue/valid-v-if\":\"error\",\"vue/valid-v-memo\":\"error\",\"vue/valid-v-model\":\"error\",\"vue/valid-v-on\":\"error\",\"vue/valid-v-once\":\"error\",\"vue/valid-v-show\":\"error\",\"vue/valid-v-slot\":\"error\",\"vue/valid-v-text\":\"error\",\"script/no-deprecated-dollar-listeners-api\":\"error\",\"script/no-deprecated-dollar-scopedslots-api\":\"error\",\"script/no-ref-as-operand\":\"error\",\"script/no-use-computed-property-like-method\":\"error\",\"script/require-valid-default-prop\":\"error\"},\"ruleOptions\":{\"vue/attribute-hyphenation\":\"always\",\"vue/component-name-in-template-casing\":{\"casing\":\"PascalCase\"},\"vue/sfc-element-order\":{\"order\":[\"script\",\"template\",\"style\"]}}}}\n",
+          "argv": [
+            "lint",
+            "--config",
+            "vize.config.json",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        }
+      ]
+    },
+    {
+      "id": "type-export",
+      "filename": "type-export.vue",
+      "sourceFile": "type-export.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nexport type Props = { title: string };\n</script>\n",
+      "sourceSha256": "7a10c889bddd7c409bf44abc62f557848e81d8a50c92a957030b09bbb7b93d54",
+      "diagnostics": [],
+      "routes": [
+        {
+          "id": "default",
+          "preset": null,
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "type-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "recommended",
+          "preset": "recommended",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "recommended",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "type-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "essential",
+          "preset": "essential",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "essential",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "type-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "ecosystem",
+          "preset": "ecosystem",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "ecosystem",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "type-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "opinionated",
+          "preset": "opinionated",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "opinionated",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "type-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "nuxt",
+          "preset": "nuxt",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "nuxt",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "type-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "all",
+          "preset": "all",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "all",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "type-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "incremental",
+          "preset": "incremental",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "incremental",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "type-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "explicit-off",
+          "preset": null,
+          "config": "{\"linter\":{\"rules\":{\"script/no-export-in-script-setup\":\"off\"}}}\n",
+          "argv": [
+            "lint",
+            "--config",
+            "vize.config.json",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "type-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "config-incremental-cli-essential",
+          "preset": "essential",
+          "config": "{\"linter\":{\"preset\":\"incremental\"}}\n",
+          "argv": [
+            "lint",
+            "--config",
+            "vize.config.json",
+            "--preset",
+            "essential",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "type-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "config-essential-cli-incremental",
+          "preset": "incremental",
+          "config": "{\"linter\":{\"preset\":\"essential\"}}\n",
+          "argv": [
+            "lint",
+            "--config",
+            "vize.config.json",
+            "--preset",
+            "incremental",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "type-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "config-off-cli-essential",
+          "preset": "essential",
+          "config": "{\"linter\":{\"preset\":\"incremental\",\"rules\":{\"script/no-export-in-script-setup\":\"off\"}}}\n",
+          "argv": [
+            "lint",
+            "--config",
+            "vize.config.json",
+            "--preset",
+            "essential",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "type-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "n8n-projection",
+          "preset": null,
+          "config": "{\"linter\":{\"enabled\":true,\"preset\":\"incremental\",\"rules\":{\"vue/attribute-hyphenation\":\"error\",\"vue/component-name-in-template-casing\":\"error\",\"vue/no-child-content\":\"error\",\"vue/no-deprecated-functional-template\":\"error\",\"vue/no-deprecated-html-element-is\":\"error\",\"vue/no-deprecated-inline-template\":\"error\",\"vue/no-deprecated-router-link-tag-prop\":\"error\",\"vue/no-deprecated-scope-attribute\":\"error\",\"vue/no-deprecated-slot-attribute\":\"error\",\"vue/no-deprecated-slot-scope-attribute\":\"error\",\"vue/no-deprecated-v-bind-sync\":\"error\",\"vue/no-deprecated-v-on-native-modifier\":\"error\",\"vue/no-deprecated-v-on-number-modifiers\":\"error\",\"vue/no-dupe-v-else-if\":\"error\",\"vue/no-duplicate-attributes\":\"error\",\"vue/no-multiple-template-root\":\"error\",\"vue/no-template-key\":\"error\",\"vue/no-textarea-mustache\":\"error\",\"vue/no-unused-components\":\"error\",\"vue/no-unused-vars\":\"error\",\"vue/no-use-v-if-with-v-for\":\"error\",\"vue/no-useless-template-attributes\":\"error\",\"vue/no-v-for-template-key-on-child\":\"error\",\"vue/no-v-html\":\"error\",\"vue/require-component-is\":\"error\",\"vue/require-component-registration\":\"error\",\"vue/require-toggle-inside-transition\":\"error\",\"vue/require-v-for-key\":\"error\",\"vue/sfc-element-order\":\"error\",\"vue/use-v-on-exact\":\"error\",\"vue/v-slot-style\":\"error\",\"vue/valid-attribute-name\":\"error\",\"vue/valid-template-root\":\"error\",\"vue/valid-v-bind\":\"error\",\"vue/valid-v-cloak\":\"error\",\"vue/valid-v-else\":\"error\",\"vue/valid-v-for\":\"error\",\"vue/valid-v-html\":\"error\",\"vue/valid-v-if\":\"error\",\"vue/valid-v-memo\":\"error\",\"vue/valid-v-model\":\"error\",\"vue/valid-v-on\":\"error\",\"vue/valid-v-once\":\"error\",\"vue/valid-v-show\":\"error\",\"vue/valid-v-slot\":\"error\",\"vue/valid-v-text\":\"error\",\"script/no-deprecated-dollar-listeners-api\":\"error\",\"script/no-deprecated-dollar-scopedslots-api\":\"error\",\"script/no-ref-as-operand\":\"error\",\"script/no-use-computed-property-like-method\":\"error\",\"script/require-valid-default-prop\":\"error\"},\"ruleOptions\":{\"vue/attribute-hyphenation\":\"always\",\"vue/component-name-in-template-casing\":{\"casing\":\"PascalCase\"},\"vue/sfc-element-order\":{\"order\":[\"script\",\"template\",\"style\"]}}}}\n",
+          "argv": [
+            "lint",
+            "--config",
+            "vize.config.json",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "type-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "type-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "type-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        }
+      ]
+    },
+    {
+      "id": "normal-export",
+      "filename": "normal-export.vue",
+      "sourceFile": "normal-export.vue.fixture",
+      "source": "<script lang=\"ts\">\nexport const answer = 42;\n</script>\n",
+      "sourceSha256": "82cc434d6401afe2e4ea2cc170a64afb68132ccc23af38a51e49f6b497406f89",
+      "diagnostics": [],
+      "routes": [
+        {
+          "id": "default",
+          "preset": null,
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "normal-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "recommended",
+          "preset": "recommended",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "recommended",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "normal-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "essential",
+          "preset": "essential",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "essential",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "normal-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "ecosystem",
+          "preset": "ecosystem",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "ecosystem",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "normal-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "opinionated",
+          "preset": "opinionated",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "opinionated",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "normal-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "nuxt",
+          "preset": "nuxt",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "nuxt",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "normal-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "all",
+          "preset": "all",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "all",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "normal-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "incremental",
+          "preset": "incremental",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "incremental",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "normal-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "explicit-off",
+          "preset": null,
+          "config": "{\"linter\":{\"rules\":{\"script/no-export-in-script-setup\":\"off\"}}}\n",
+          "argv": [
+            "lint",
+            "--config",
+            "vize.config.json",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "normal-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "config-incremental-cli-essential",
+          "preset": "essential",
+          "config": "{\"linter\":{\"preset\":\"incremental\"}}\n",
+          "argv": [
+            "lint",
+            "--config",
+            "vize.config.json",
+            "--preset",
+            "essential",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "normal-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "config-essential-cli-incremental",
+          "preset": "incremental",
+          "config": "{\"linter\":{\"preset\":\"essential\"}}\n",
+          "argv": [
+            "lint",
+            "--config",
+            "vize.config.json",
+            "--preset",
+            "incremental",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "normal-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "config-off-cli-essential",
+          "preset": "essential",
+          "config": "{\"linter\":{\"preset\":\"incremental\",\"rules\":{\"script/no-export-in-script-setup\":\"off\"}}}\n",
+          "argv": [
+            "lint",
+            "--config",
+            "vize.config.json",
+            "--preset",
+            "essential",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "normal-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "n8n-projection",
+          "preset": null,
+          "config": "{\"linter\":{\"enabled\":true,\"preset\":\"incremental\",\"rules\":{\"vue/attribute-hyphenation\":\"error\",\"vue/component-name-in-template-casing\":\"error\",\"vue/no-child-content\":\"error\",\"vue/no-deprecated-functional-template\":\"error\",\"vue/no-deprecated-html-element-is\":\"error\",\"vue/no-deprecated-inline-template\":\"error\",\"vue/no-deprecated-router-link-tag-prop\":\"error\",\"vue/no-deprecated-scope-attribute\":\"error\",\"vue/no-deprecated-slot-attribute\":\"error\",\"vue/no-deprecated-slot-scope-attribute\":\"error\",\"vue/no-deprecated-v-bind-sync\":\"error\",\"vue/no-deprecated-v-on-native-modifier\":\"error\",\"vue/no-deprecated-v-on-number-modifiers\":\"error\",\"vue/no-dupe-v-else-if\":\"error\",\"vue/no-duplicate-attributes\":\"error\",\"vue/no-multiple-template-root\":\"error\",\"vue/no-template-key\":\"error\",\"vue/no-textarea-mustache\":\"error\",\"vue/no-unused-components\":\"error\",\"vue/no-unused-vars\":\"error\",\"vue/no-use-v-if-with-v-for\":\"error\",\"vue/no-useless-template-attributes\":\"error\",\"vue/no-v-for-template-key-on-child\":\"error\",\"vue/no-v-html\":\"error\",\"vue/require-component-is\":\"error\",\"vue/require-component-registration\":\"error\",\"vue/require-toggle-inside-transition\":\"error\",\"vue/require-v-for-key\":\"error\",\"vue/sfc-element-order\":\"error\",\"vue/use-v-on-exact\":\"error\",\"vue/v-slot-style\":\"error\",\"vue/valid-attribute-name\":\"error\",\"vue/valid-template-root\":\"error\",\"vue/valid-v-bind\":\"error\",\"vue/valid-v-cloak\":\"error\",\"vue/valid-v-else\":\"error\",\"vue/valid-v-for\":\"error\",\"vue/valid-v-html\":\"error\",\"vue/valid-v-if\":\"error\",\"vue/valid-v-memo\":\"error\",\"vue/valid-v-model\":\"error\",\"vue/valid-v-on\":\"error\",\"vue/valid-v-once\":\"error\",\"vue/valid-v-show\":\"error\",\"vue/valid-v-slot\":\"error\",\"vue/valid-v-text\":\"error\",\"script/no-deprecated-dollar-listeners-api\":\"error\",\"script/no-deprecated-dollar-scopedslots-api\":\"error\",\"script/no-ref-as-operand\":\"error\",\"script/no-use-computed-property-like-method\":\"error\",\"script/require-valid-default-prop\":\"error\"},\"ruleOptions\":{\"vue/attribute-hyphenation\":\"always\",\"vue/component-name-in-template-casing\":{\"casing\":\"PascalCase\"},\"vue/sfc-element-order\":{\"order\":[\"script\",\"template\",\"style\"]}}}}\n",
+          "argv": [
+            "lint",
+            "--config",
+            "vize.config.json",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "normal-export.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "normal-export.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "normal-export.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        }
+      ]
+    },
+    {
+      "id": "runtime-two-utf8-crlf",
+      "filename": "runtime-two-utf8-crlf.vue",
+      "sourceFile": "runtime-two-utf8-crlf.vue.fixture",
+      "source": "<script setup lang=\"ts\">\r\n// 日本語\r\nexport const answer = 42;\r\nexport default {};\r\n</script>\r\n",
+      "sourceSha256": "365b5cfdf34da3573175f7d707ac5ce695df9c96f5f8da5512f525d6cf3e5578",
+      "diagnostics": [
+        {
+          "rule_name": "script/no-export-in-script-setup",
+          "severity": "error",
+          "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+          "start": 40,
+          "end": 65,
+          "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+          "fix": null,
+          "labels": [
+            {
+              "message": "named export",
+              "start": 40,
+              "end": 65
+            }
+          ]
+        },
+        {
+          "rule_name": "script/no-export-in-script-setup",
+          "severity": "error",
+          "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+          "start": 67,
+          "end": 85,
+          "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+          "fix": null,
+          "labels": [
+            {
+              "message": "default export",
+              "start": 67,
+              "end": 85
+            }
+          ]
+        }
+      ],
+      "routes": [
+        {
+          "id": "default",
+          "preset": null,
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-two-utf8-crlf.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 2,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-export-in-script-setup",
+                "severity": "error",
+                "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                "start": 40,
+                "end": 65,
+                "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "named export",
+                    "start": 40,
+                    "end": 65
+                  }
+                ]
+              },
+              {
+                "rule_name": "script/no-export-in-script-setup",
+                "severity": "error",
+                "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                "start": 67,
+                "end": 85,
+                "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "default export",
+                    "start": 67,
+                    "end": 85
+                  }
+                ]
+              }
+            ]
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-export-in-script-setup",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                  "line": 3,
+                  "column": 1,
+                  "endLine": 3,
+                  "endColumn": 26,
+                  "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+                },
+                {
+                  "ruleId": "script/no-export-in-script-setup",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                  "line": 4,
+                  "column": 1,
+                  "endLine": 4,
+                  "endColumn": 19,
+                  "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+                }
+              ],
+              "errorCount": 2,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 1
+        },
+        {
+          "id": "recommended",
+          "preset": "recommended",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "recommended",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-two-utf8-crlf.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 2,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-export-in-script-setup",
+                "severity": "error",
+                "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                "start": 40,
+                "end": 65,
+                "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "named export",
+                    "start": 40,
+                    "end": 65
+                  }
+                ]
+              },
+              {
+                "rule_name": "script/no-export-in-script-setup",
+                "severity": "error",
+                "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                "start": 67,
+                "end": 85,
+                "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "default export",
+                    "start": 67,
+                    "end": 85
+                  }
+                ]
+              }
+            ]
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-export-in-script-setup",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                  "line": 3,
+                  "column": 1,
+                  "endLine": 3,
+                  "endColumn": 26,
+                  "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+                },
+                {
+                  "ruleId": "script/no-export-in-script-setup",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                  "line": 4,
+                  "column": 1,
+                  "endLine": 4,
+                  "endColumn": 19,
+                  "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+                }
+              ],
+              "errorCount": 2,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 1
+        },
+        {
+          "id": "essential",
+          "preset": "essential",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "essential",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-two-utf8-crlf.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 2,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-export-in-script-setup",
+                "severity": "error",
+                "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                "start": 40,
+                "end": 65,
+                "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "named export",
+                    "start": 40,
+                    "end": 65
+                  }
+                ]
+              },
+              {
+                "rule_name": "script/no-export-in-script-setup",
+                "severity": "error",
+                "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                "start": 67,
+                "end": 85,
+                "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "default export",
+                    "start": 67,
+                    "end": 85
+                  }
+                ]
+              }
+            ]
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-export-in-script-setup",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                  "line": 3,
+                  "column": 1,
+                  "endLine": 3,
+                  "endColumn": 26,
+                  "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+                },
+                {
+                  "ruleId": "script/no-export-in-script-setup",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                  "line": 4,
+                  "column": 1,
+                  "endLine": 4,
+                  "endColumn": 19,
+                  "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+                }
+              ],
+              "errorCount": 2,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 1
+        },
+        {
+          "id": "ecosystem",
+          "preset": "ecosystem",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "ecosystem",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-two-utf8-crlf.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 2,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-export-in-script-setup",
+                "severity": "error",
+                "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                "start": 40,
+                "end": 65,
+                "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "named export",
+                    "start": 40,
+                    "end": 65
+                  }
+                ]
+              },
+              {
+                "rule_name": "script/no-export-in-script-setup",
+                "severity": "error",
+                "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                "start": 67,
+                "end": 85,
+                "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "default export",
+                    "start": 67,
+                    "end": 85
+                  }
+                ]
+              }
+            ]
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-export-in-script-setup",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                  "line": 3,
+                  "column": 1,
+                  "endLine": 3,
+                  "endColumn": 26,
+                  "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+                },
+                {
+                  "ruleId": "script/no-export-in-script-setup",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                  "line": 4,
+                  "column": 1,
+                  "endLine": 4,
+                  "endColumn": 19,
+                  "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+                }
+              ],
+              "errorCount": 2,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 1
+        },
+        {
+          "id": "opinionated",
+          "preset": "opinionated",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "opinionated",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-two-utf8-crlf.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 1,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-options-api",
+                "severity": "error",
+                "message": "Options API component declarations are not supported",
+                "start": 82,
+                "end": 84,
+                "help": "Use <script setup> with Composition API. Move props/emits to defineProps()/defineEmits(), lifecycle options to onMounted()/onUnmounted(), and component metadata to defineOptions() when needed.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "Component options object",
+                    "start": 82,
+                    "end": 84
+                  }
+                ]
+              }
+            ]
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 3,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-options-api",
+                "severity": "error",
+                "message": "Options API component declarations are not supported",
+                "start": 82,
+                "end": 84,
+                "help": "Use <script setup> with Composition API. Move props/emits to defineProps()/defineEmits(), lifecycle options to onMounted()/onUnmounted(), and component metadata to defineOptions() when needed.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "Component options object",
+                    "start": 82,
+                    "end": 84
+                  }
+                ]
+              },
+              {
+                "rule_name": "script/no-export-in-script-setup",
+                "severity": "error",
+                "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                "start": 40,
+                "end": 65,
+                "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "named export",
+                    "start": 40,
+                    "end": 65
+                  }
+                ]
+              },
+              {
+                "rule_name": "script/no-export-in-script-setup",
+                "severity": "error",
+                "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                "start": 67,
+                "end": 85,
+                "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "default export",
+                    "start": 67,
+                    "end": 85
+                  }
+                ]
+              }
+            ]
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-options-api",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-options-api] Options API component declarations are not supported",
+                  "line": 4,
+                  "column": 16,
+                  "endLine": 4,
+                  "endColumn": 18,
+                  "help": "Use <script setup> with Composition API. Move props/emits to defineProps()/defineEmits(), lifecycle options to onMounted()/onUnmounted(), and component metadata to defineOptions() when needed."
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-export-in-script-setup",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                  "line": 3,
+                  "column": 1,
+                  "endLine": 3,
+                  "endColumn": 26,
+                  "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+                },
+                {
+                  "ruleId": "script/no-export-in-script-setup",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                  "line": 4,
+                  "column": 1,
+                  "endLine": 4,
+                  "endColumn": 19,
+                  "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+                },
+                {
+                  "ruleId": "script/no-options-api",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-options-api] Options API component declarations are not supported",
+                  "line": 4,
+                  "column": 16,
+                  "endLine": 4,
+                  "endColumn": 18,
+                  "help": "Use <script setup> with Composition API. Move props/emits to defineProps()/defineEmits(), lifecycle options to onMounted()/onUnmounted(), and component metadata to defineOptions() when needed."
+                }
+              ],
+              "errorCount": 3,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 1,
+          "afterStatus": 1
+        },
+        {
+          "id": "nuxt",
+          "preset": "nuxt",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "nuxt",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-two-utf8-crlf.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 2,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-export-in-script-setup",
+                "severity": "error",
+                "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                "start": 40,
+                "end": 65,
+                "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "named export",
+                    "start": 40,
+                    "end": 65
+                  }
+                ]
+              },
+              {
+                "rule_name": "script/no-export-in-script-setup",
+                "severity": "error",
+                "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                "start": 67,
+                "end": 85,
+                "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "default export",
+                    "start": 67,
+                    "end": 85
+                  }
+                ]
+              }
+            ]
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-export-in-script-setup",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                  "line": 3,
+                  "column": 1,
+                  "endLine": 3,
+                  "endColumn": 26,
+                  "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+                },
+                {
+                  "ruleId": "script/no-export-in-script-setup",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                  "line": 4,
+                  "column": 1,
+                  "endLine": 4,
+                  "endColumn": 19,
+                  "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+                }
+              ],
+              "errorCount": 2,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 1
+        },
+        {
+          "id": "all",
+          "preset": "all",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "all",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-two-utf8-crlf.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 1,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-options-api",
+                "severity": "error",
+                "message": "Options API component declarations are not supported",
+                "start": 82,
+                "end": 84,
+                "help": "Use <script setup> with Composition API. Move props/emits to defineProps()/defineEmits(), lifecycle options to onMounted()/onUnmounted(), and component metadata to defineOptions() when needed.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "Component options object",
+                    "start": 82,
+                    "end": 84
+                  }
+                ]
+              }
+            ]
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 3,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-options-api",
+                "severity": "error",
+                "message": "Options API component declarations are not supported",
+                "start": 82,
+                "end": 84,
+                "help": "Use <script setup> with Composition API. Move props/emits to defineProps()/defineEmits(), lifecycle options to onMounted()/onUnmounted(), and component metadata to defineOptions() when needed.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "Component options object",
+                    "start": 82,
+                    "end": 84
+                  }
+                ]
+              },
+              {
+                "rule_name": "script/no-export-in-script-setup",
+                "severity": "error",
+                "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                "start": 40,
+                "end": 65,
+                "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "named export",
+                    "start": 40,
+                    "end": 65
+                  }
+                ]
+              },
+              {
+                "rule_name": "script/no-export-in-script-setup",
+                "severity": "error",
+                "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                "start": 67,
+                "end": 85,
+                "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "default export",
+                    "start": 67,
+                    "end": 85
+                  }
+                ]
+              }
+            ]
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-options-api",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-options-api] Options API component declarations are not supported",
+                  "line": 4,
+                  "column": 16,
+                  "endLine": 4,
+                  "endColumn": 18,
+                  "help": "Use <script setup> with Composition API. Move props/emits to defineProps()/defineEmits(), lifecycle options to onMounted()/onUnmounted(), and component metadata to defineOptions() when needed."
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-export-in-script-setup",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                  "line": 3,
+                  "column": 1,
+                  "endLine": 3,
+                  "endColumn": 26,
+                  "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+                },
+                {
+                  "ruleId": "script/no-export-in-script-setup",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                  "line": 4,
+                  "column": 1,
+                  "endLine": 4,
+                  "endColumn": 19,
+                  "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+                },
+                {
+                  "ruleId": "script/no-options-api",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-options-api] Options API component declarations are not supported",
+                  "line": 4,
+                  "column": 16,
+                  "endLine": 4,
+                  "endColumn": 18,
+                  "help": "Use <script setup> with Composition API. Move props/emits to defineProps()/defineEmits(), lifecycle options to onMounted()/onUnmounted(), and component metadata to defineOptions() when needed."
+                }
+              ],
+              "errorCount": 3,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 1,
+          "afterStatus": 1
+        },
+        {
+          "id": "incremental",
+          "preset": "incremental",
+          "config": null,
+          "argv": [
+            "lint",
+            "--no-config",
+            "--preset",
+            "incremental",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-two-utf8-crlf.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "explicit-off",
+          "preset": null,
+          "config": "{\"linter\":{\"rules\":{\"script/no-export-in-script-setup\":\"off\"}}}\n",
+          "argv": [
+            "lint",
+            "--config",
+            "vize.config.json",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-two-utf8-crlf.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "config-incremental-cli-essential",
+          "preset": "essential",
+          "config": "{\"linter\":{\"preset\":\"incremental\"}}\n",
+          "argv": [
+            "lint",
+            "--config",
+            "vize.config.json",
+            "--preset",
+            "essential",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-two-utf8-crlf.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 2,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "rule_name": "script/no-export-in-script-setup",
+                "severity": "error",
+                "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                "start": 40,
+                "end": 65,
+                "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "named export",
+                    "start": 40,
+                    "end": 65
+                  }
+                ]
+              },
+              {
+                "rule_name": "script/no-export-in-script-setup",
+                "severity": "error",
+                "message": "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                "start": 67,
+                "end": 85,
+                "help": "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                "fix": null,
+                "labels": [
+                  {
+                    "message": "default export",
+                    "start": 67,
+                    "end": 85
+                  }
+                ]
+              }
+            ]
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [
+                {
+                  "ruleId": "script/no-export-in-script-setup",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                  "line": 3,
+                  "column": 1,
+                  "endLine": 3,
+                  "endColumn": 26,
+                  "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+                },
+                {
+                  "ruleId": "script/no-export-in-script-setup",
+                  "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                  "severity": 2,
+                  "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                  "line": 4,
+                  "column": 1,
+                  "endLine": 4,
+                  "endColumn": 19,
+                  "help": "Remove the export. <script setup> exposes top-level bindings to the template automatically; use defineExpose() to expose bindings to a parent."
+                }
+              ],
+              "errorCount": 2,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 1
+        },
+        {
+          "id": "config-essential-cli-incremental",
+          "preset": "incremental",
+          "config": "{\"linter\":{\"preset\":\"essential\"}}\n",
+          "argv": [
+            "lint",
+            "--config",
+            "vize.config.json",
+            "--preset",
+            "incremental",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-two-utf8-crlf.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "config-off-cli-essential",
+          "preset": "essential",
+          "config": "{\"linter\":{\"preset\":\"incremental\",\"rules\":{\"script/no-export-in-script-setup\":\"off\"}}}\n",
+          "argv": [
+            "lint",
+            "--config",
+            "vize.config.json",
+            "--preset",
+            "essential",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-two-utf8-crlf.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        },
+        {
+          "id": "n8n-projection",
+          "preset": null,
+          "config": "{\"linter\":{\"enabled\":true,\"preset\":\"incremental\",\"rules\":{\"vue/attribute-hyphenation\":\"error\",\"vue/component-name-in-template-casing\":\"error\",\"vue/no-child-content\":\"error\",\"vue/no-deprecated-functional-template\":\"error\",\"vue/no-deprecated-html-element-is\":\"error\",\"vue/no-deprecated-inline-template\":\"error\",\"vue/no-deprecated-router-link-tag-prop\":\"error\",\"vue/no-deprecated-scope-attribute\":\"error\",\"vue/no-deprecated-slot-attribute\":\"error\",\"vue/no-deprecated-slot-scope-attribute\":\"error\",\"vue/no-deprecated-v-bind-sync\":\"error\",\"vue/no-deprecated-v-on-native-modifier\":\"error\",\"vue/no-deprecated-v-on-number-modifiers\":\"error\",\"vue/no-dupe-v-else-if\":\"error\",\"vue/no-duplicate-attributes\":\"error\",\"vue/no-multiple-template-root\":\"error\",\"vue/no-template-key\":\"error\",\"vue/no-textarea-mustache\":\"error\",\"vue/no-unused-components\":\"error\",\"vue/no-unused-vars\":\"error\",\"vue/no-use-v-if-with-v-for\":\"error\",\"vue/no-useless-template-attributes\":\"error\",\"vue/no-v-for-template-key-on-child\":\"error\",\"vue/no-v-html\":\"error\",\"vue/require-component-is\":\"error\",\"vue/require-component-registration\":\"error\",\"vue/require-toggle-inside-transition\":\"error\",\"vue/require-v-for-key\":\"error\",\"vue/sfc-element-order\":\"error\",\"vue/use-v-on-exact\":\"error\",\"vue/v-slot-style\":\"error\",\"vue/valid-attribute-name\":\"error\",\"vue/valid-template-root\":\"error\",\"vue/valid-v-bind\":\"error\",\"vue/valid-v-cloak\":\"error\",\"vue/valid-v-else\":\"error\",\"vue/valid-v-for\":\"error\",\"vue/valid-v-html\":\"error\",\"vue/valid-v-if\":\"error\",\"vue/valid-v-memo\":\"error\",\"vue/valid-v-model\":\"error\",\"vue/valid-v-on\":\"error\",\"vue/valid-v-once\":\"error\",\"vue/valid-v-show\":\"error\",\"vue/valid-v-slot\":\"error\",\"vue/valid-v-text\":\"error\",\"script/no-deprecated-dollar-listeners-api\":\"error\",\"script/no-deprecated-dollar-scopedslots-api\":\"error\",\"script/no-ref-as-operand\":\"error\",\"script/no-use-computed-property-like-method\":\"error\",\"script/require-valid-default-prop\":\"error\"},\"ruleOptions\":{\"vue/attribute-hyphenation\":\"always\",\"vue/component-name-in-template-casing\":{\"casing\":\"PascalCase\"},\"vue/sfc-element-order\":{\"order\":[\"script\",\"template\",\"style\"]}}}}\n",
+          "argv": [
+            "lint",
+            "--config",
+            "vize.config.json",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+            "runtime-two-utf8-crlf.vue"
+          ],
+          "apiBeforePacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "apiAfterPacket": {
+            "filename": "runtime-two-utf8-crlf.vue",
+            "error_count": 0,
+            "warning_count": 0,
+            "diagnostics": []
+          },
+          "beforeCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "afterCliPacket": [
+            {
+              "file": "runtime-two-utf8-crlf.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "beforeStatus": 0,
+          "afterStatus": 0
+        }
+      ]
+    }
+  ]
+}

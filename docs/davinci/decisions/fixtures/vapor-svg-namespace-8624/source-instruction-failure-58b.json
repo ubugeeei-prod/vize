@@ -1,0 +1,71 @@
+{
+  "phase": "protected-source-instruction-failure",
+  "sourceHead": "aad56ee00d4579d29830d8d1407b0ad9c072e508",
+  "candidate": "58b8f7d19913a3888142309851d3e73e7d0139b1",
+  "candidateParent": "1bdb716219279c68a49afd0b85696f520aa11edc",
+  "run": 38157122911,
+  "job": 114522291939,
+  "conclusion": "failure",
+  "methodology": {
+    "allocator": "counting-mimalloc-reserve128m-preinit64m-purgeoff-v1",
+    "flags": "target-cpu=x86-64;instr-atstart=no;cache-sim=no;branch-sim=no",
+    "fixture_digest": "input-identity-v2",
+    "guest_context": "fixed-env-fixed-argv0-v1",
+    "libc": "glibc 2.39",
+    "libc_dispatch": "glibc.cpu.hwcaps=-AVX,-AVX2,-AVX512F,-AVX512VL,-AVX512BW,-AVX_Fast_Unaligned_Load,-ERMS,-FSRM,-Prefer_ERMS,-Prefer_FSRM,-SSSE3,-SSE4_1,-SSE4_2",
+    "profile": "ci-opt",
+    "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+    "target": "x86_64-unknown-linux-gnu",
+    "valgrind": "valgrind-3.22.0",
+    "window_protocol": "callgrind-client-call-boundary-v1"
+  },
+  "completeMeasuredCases": 100,
+  "runsPerCase": 3,
+  "completeMeasurement": {
+    "path": "source-instruction-failure-58b.tsv",
+    "sha256": "7ececa6518afd380cf4245285e6bace18503699d452329296e1a31eda8bfc4ff",
+    "fields": "All four original observation fields and all three counts for both exact measured sources; original ordered benchmark keys."
+  },
+  "failedMeasurement": {
+    "source": "58b8f7d19913a3888142309851d3e73e7d0139b1",
+    "run": "https://github.com/ubugeeei-prod/vize/actions/runs/38157122911",
+    "sha256": "0ce08a32a5887b2831dcb25775da05098150b24cb06c3316543cc4e07df4a2e6",
+    "artifact": 11708639372
+  },
+  "baselineMeasurement": {
+    "source": "a49936db24d9540e0630b42474654190d575294b",
+    "run": "https://github.com/ubugeeei-prod/vize/actions/runs/38153756383",
+    "sha256": "e180356ec18c5f87398a28148d1aeecee64bc07a81c7108a988212efffa9b3c9",
+    "artifact": 11707159786
+  },
+  "rawFailedLog": {
+    "url": "https://github.com/ubugeeei-prod/vize/actions/runs/38157122911/job/114522291939",
+    "sha256": "7bc55a62ef2f3532ee911a9072531d751de1a58c19a251e6dad64945e3c0228f"
+  },
+  "failures": [
+    {
+      "bench": "atelier_dom_compile_small",
+      "observed": 120534,
+      "ceiling": 120449
+    },
+    {
+      "bench": "atelier_dom_compile_medium",
+      "observed": 1129832,
+      "ceiling": 1125209
+    },
+    {
+      "bench": "atelier_vapor_compile_stress-interp",
+      "observed": 5396642,
+      "ceiling": 5340048
+    },
+    {
+      "bench": "musea_parse_art_legacy_attrs",
+      "observed": 81077,
+      "ceiling": 73746
+    }
+  ],
+  "attribution": "Same whole workloads and methodology; composed sources differ. Generic live recovery duplicates structural work; the comparison alone does not isolate every source change.",
+  "decision": "Keep the candidate off the queue. Delay generic live scope until the first title callback and initialize from existing structural events once; retain recovery, fidelity, all corpus rows and existing ceilings. Short-circuit the equivalent interactive predicate before its HTML lookup.",
+  "sourceQualification": false,
+  "publicationQualification": false
+}

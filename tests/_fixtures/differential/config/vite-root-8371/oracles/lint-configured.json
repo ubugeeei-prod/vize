@@ -1,0 +1,43 @@
+[
+  {
+    "errorCount": 0,
+    "file": "<project>/app/src/App.vue",
+    "messages": [],
+    "warningCount": 0
+  },
+  {
+    "errorCount": 2,
+    "file": "<project>/app/src/Image.vue",
+    "messages": [
+      {
+        "column": 11,
+        "endColumn": 11,
+        "endLine": 1,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+        "line": 1,
+        "message": "[vize:vue/multi-word-component-names] Component name \"Image\" should be multi-word to avoid conflicts with HTML elements",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleId": "vue/multi-word-component-names",
+        "severity": 2
+      },
+      {
+        "column": 11,
+        "endColumn": 32,
+        "endLine": 1,
+        "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images",
+        "line": 1,
+        "message": "[vize:a11y/alt-text] <img> elements must have an alt attribute",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleId": "a11y/alt-text",
+        "severity": 2
+      }
+    ],
+    "warningCount": 0
+  },
+  {
+    "errorCount": 0,
+    "file": "<project>/app/src/valid.ts",
+    "messages": [],
+    "warningCount": 0
+  }
+]

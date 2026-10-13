@@ -1,0 +1,3 @@
+<script setup lang="ts">
+const emit = d\u0065fineEmits({ submit(payload) { void payload } })
+</script>

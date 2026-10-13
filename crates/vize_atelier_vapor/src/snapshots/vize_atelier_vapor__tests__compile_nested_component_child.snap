@@ -8,6 +8,6 @@ export function render(_ctx) {
 const n1 = t0()
 const _component_MyComp = _resolveComponent("MyComp")
 _setInsertionState(n1)
-const n0 = _createComponentWithFallback(_component_MyComp, null, null, true)
+const n0 = _createComponentWithFallback(_component_MyComp, null, null, false)
 return n1
 }

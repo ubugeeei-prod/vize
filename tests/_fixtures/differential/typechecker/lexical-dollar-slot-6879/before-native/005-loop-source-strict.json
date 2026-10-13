@@ -1,0 +1,37 @@
+{
+  "case": "loop-source-strict",
+  "receipt": "005-native-cli.json",
+  "receiptSha256": "117d9f57008a1bd6c6851591b0ceef5e1b9f428a30babe27a1236cbab0907386",
+  "argv": [
+    "--checkers",
+    "1",
+    "--pretty",
+    "false",
+    "--project",
+    "/Users/ubugeeei/Library/Caches/vize/canon/projects/404be6ddb13533aced7dad4c76253e17ef969f3f50e09ad5e80139ab068c60cb/tsconfig.json"
+  ],
+  "configSha256": "d177d1ef882b089d59f954f3558d9858129281b660b6d34e89114e52b108b228",
+  "rawStdout": "src/App.vue.ts(59,48): error TS2339: Property '$item' does not exist on type '__VizeStrictTemplateContext'.\nsrc/App.vue.ts(61,51): error TS2339: Property '$outside' does not exist on type '__VizeStrictTemplateContext'.\n",
+  "rawStderr": "",
+  "nativeExit": 1,
+  "diagnostics": [
+    {
+      "blockType": "template",
+      "code": 2339,
+      "column": 49,
+      "file": "src/App.vue",
+      "line": 2,
+      "message": "Property '$item' does not exist on type '__VizeStrictTemplateContext'.",
+      "severity": 1
+    },
+    {
+      "blockType": "template",
+      "code": 2339,
+      "column": 30,
+      "file": "src/App.vue",
+      "line": 2,
+      "message": "Property '$outside' does not exist on type '__VizeStrictTemplateContext'.",
+      "severity": 1
+    }
+  ]
+}

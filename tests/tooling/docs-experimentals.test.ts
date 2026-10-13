@@ -195,23 +195,23 @@ test("Japanese experimentals docs mirror the complete reference", () => {
     "utf8",
   );
 
-  assert.match(experimentals, /# Experimentals/);
-  assert.match(experimentals, /\[Vue RFC Experimental Details\]\(\.\/experimentals-vue-rfcs\.md\)/);
-  assert.match(experimentals, /\[Experimentals Reference\]\(\.\/experimentals-reference\.md\)/);
+  assert.match(experimentals, /# 実験的な機能/);
+  assert.match(experimentals, /\[Vue RFC の実験機能の詳細\]\(\.\/experimentals-vue-rfcs\.md\)/);
+  assert.match(experimentals, /\[実験機能のリファレンス\]\(\.\/experimentals-reference\.md\)/);
   assert.match(experimentals, /## 推奨設定/);
-  assert.match(experimentals, /## Surface Matrix/);
-  assert.match(experimentals, /## Direct API Fields/);
-  assert.match(experimentals, /`vize check`, LSP\/type-check project API/);
-  assert.match(experimentals, /必要な opt-in を報告/);
+  assert.match(experimentals, /## 対応範囲と制限/);
+  assert.match(experimentals, /## 低レベル API のフィールド/);
+  assert.match(experimentals, /`vize check`、LSP とプロジェクトの型検査 API/);
+  assert.match(experimentals, /機能を有効にする設定が必要だと報告/);
   assert.match(experimentals, /`vize\(\{ vapor \}\)` と `compiler\.vapor` が優先/);
   assert.match(experimentals, /`vize\(\{ jsxMode \}\)` と `compiler\.jsxMode` が優先/);
-  assert.match(experimentals, /`v-when="_"` は fallback pattern/);
-  assert.match(experimentals, /`v-case` は古い Vize 実験の互換 alias/);
-  assert.match(experimentals, /同じ行の `>` \/ `\/>` は comment text として消費されます/);
-  assert.match(experimentals, /component named `Self` を shadow/);
-  assert.match(experimentals, /`defineSlots` contract も同じ marker shape/);
-  assert.match(experimentals, /TypeScript の permissive behavior に degrade/);
-  assert.match(experimentals, /`<Self>` は特別ですが、`<self>` は特別ではありません/);
+  assert.match(experimentals, /`v-when="_"` は、他の分岐が一致しなかった場合のパターン/);
+  assert.match(experimentals, /`v-case` は、古い Vize の実験機能との互換名/);
+  assert.match(experimentals, /同じ行にある `>` や `\/>` はコメントの内容として読み込まれます/);
+  assert.match(experimentals, /`Self` という名前のコンポーネントより優先/);
+  assert.match(experimentals, /`defineSlots` も同じ形式のマーカーを公開/);
+  assert.match(experimentals, /TypeScript の通常の許容範囲になります/);
+  assert.match(experimentals, /`<Self>` は特別ですが、`<self>` は通常のタグ/);
   for (const key of experimentalKeys) {
     assert.match(experimentals, new RegExp(escapeRegExp(key)), `${key} must be documented in ja`);
   }
@@ -226,25 +226,28 @@ test("Japanese experimentals RFC detail page mirrors the implementation boundari
     "utf8",
   );
 
-  assert.match(details, /## Opt-in Contract/);
-  assert.match(details, /RFC flag はすべて独立しています/);
-  assert.match(details, /## Current Scope/);
+  assert.match(details, /## 機能を有効にする設定/);
+  assert.match(details, /RFC のフラグはすべて独立しています/);
+  assert.match(details, /## 現在の対応範囲/);
   assert.match(details, /`compile`、`compileVapor`、`parseTemplate`、`compileSfc\*`/);
-  assert.match(details, /direct native field は/);
-  assert.match(details, /`let` と `var` binding は rejected/);
-  assert.match(details, /`v-match` には少なくとも 1 つ direct branch が必要/);
-  assert.match(details, /`v-case` と `v-case\.default` は古い Vize 実験の互換 alias/);
-  assert.match(details, /網羅漏れは元の subject の位置に出て `vize check` を失敗させます/);
+  assert.match(details, /ネイティブ API に直接渡す項目は/);
+  assert.match(details, /`let` と `var` による変数束縛は拒否/);
+  assert.match(details, /`v-match` には、直下の分岐が少なくとも一つ必要/);
+  assert.match(details, /`v-case` と `v-case\.default` は過去の実験との互換性/);
+  assert.match(details, /網羅漏れは元の判定対象の位置に表示され、`vize check` が失敗/);
   assert.match(details, /`CommentKind::InTag`/);
-  assert.match(details, /closing delimiter まで comment として消費します/);
-  assert.match(details, /component named `Self` より先に解決されます/);
+  assert.match(details, /同じ行の `>` や `\/>` は、`\/\/` のコメントの一部として読み取られます/);
+  assert.match(
+    details,
+    /`Self` という名前のローカル・インポート済み・グローバルのコンポーネントより先に解決/,
+  );
   assert.match(details, /`<self>` は特別/);
-  assert.match(details, /`defineSlots` からも得られます/);
-  assert.match(details, /required slot-name check は別の仕組み/);
+  assert.match(details, /`defineSlots` からも、同じ公開契約を指定/);
+  assert.match(details, /必須のスロット名の検査は別の仕組み/);
   assert.match(details, /__VizeProvidedSlotChildren<\[typeof TabItem, HTMLButtonElement\]>/);
   assert.match(details, /\(\) => \[HTMLInputElement, HTMLInputElement\]/);
-  assert.match(details, /single child を `Only` または `\[Only\]`/);
-  assert.match(details, /open slot index signature と `any` は `any` に degrade/);
+  assert.match(details, /子を `Only` と `\[Only\]` のどちらで指定しても/);
+  assert.match(details, /制約のないスロットのインデックスシグネチャと `any` は `any` に緩和/);
   for (const key of rfcExperimentalKeys) {
     assert.match(details, new RegExp(escapeRegExp(key)), `${key} must be documented in ja`);
   }

@@ -1,0 +1,5 @@
+{
+  "bytes": 160,
+  "sha256": "c5039c3cb0348983507c981097cfaa9399e2a5fb1ea1b7986b241dd8034ca35c",
+  "wholeUtf8": "export * from './A.vue';\nexport * from './B.vue';\nexport { default as A } from './A.vue';\nexport { default as B } from './B.vue';\nexport * from './Absent.vue';\n"
+}

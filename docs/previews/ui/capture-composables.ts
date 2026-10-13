@@ -1,8 +1,8 @@
 /** Assert observable effects of the complete source-owned composable examples. */
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { saveScreenshot } from "./screenshot-file.ts";
 import type { Browser, Page } from "playwright";
 import { previewComposableExamples } from "./build-config.ts";
 import { asyncEffectExamples } from "../../../npm/ui/scripts/reference-docs/async-effect-examples.ts";
@@ -15,7 +15,16 @@ import { domInteractionExamples } from "../../../npm/ui/scripts/reference-docs/d
 import { exerciseDomExample } from "./interactions-dom.ts";
 import { observedBrowserExamples } from "../../../npm/ui/scripts/reference-docs/observed-browser-examples.ts";
 import { exerciseObservedBrowserExample } from "./interactions-observed-browser.ts";
+import { scopedInputExamples } from "../../../npm/ui/scripts/reference-docs/scoped-input-examples.ts";
+import { exerciseScopedInputExample } from "./interactions-scoped-input.ts";
+import { preferenceBrowserExamples } from "../../../npm/ui/scripts/reference-docs/preference-browser-examples.ts";
+import { exercisePreferenceBrowserExample } from "./interactions-preference-browser.ts";
+import { environmentExamples } from "../../../npm/ui/scripts/reference-docs/environment-examples.ts";
+import { exerciseEnvironmentExample } from "./interactions-environment.ts";
+import { pointerSelectionExamples } from "../../../npm/ui/scripts/reference-docs/pointer-selection-examples.ts";
+import { exercisePointerSelectionExample } from "./interactions-pointer-selection.ts";
 import { verifyUnavailableStorage } from "./capture-unavailable-storage.ts";
+import { exerciseThrottledExample } from "./interactions-throttled.ts";
 
 async function activate(page: Page, label: string): Promise<void> {
   await page.getByRole("button", { name: label, exact: true }).focus();
@@ -33,6 +42,15 @@ async function exercise(page: Page, name: string): Promise<string[]> {
     return exerciseDomExample(page, name);
   if (observedBrowserExamples.some((example) => example.name === name))
     return exerciseObservedBrowserExample(page, name);
+  if (scopedInputExamples.some((example) => example.name === name))
+    return exerciseScopedInputExample(page, name);
+  if (preferenceBrowserExamples.some((example) => example.name === name))
+    return exercisePreferenceBrowserExample(page, name);
+  if (environmentExamples.some((example) => example.name === name))
+    return exerciseEnvironmentExample(page, name);
+  if (pointerSelectionExamples.some((example) => example.name === name))
+    return exercisePointerSelectionExample(page, name);
+  if (name === "use-throttled") return exerciseThrottledExample(page);
   if (name === "use-toggle") {
     assert.equal(await page.getByText("Free delivery in 2–3 business days.").count(), 0);
     await activate(page, "Show delivery details");
@@ -238,14 +256,14 @@ export async function captureComposablePreviews(
             `${example.name}: ${width}px overflow`,
           );
           assert.deepEqual(diagnostics, [], `${example.name}: browser diagnostics`);
-          const file = `${example.name}-${width}-${state}.png`;
-          await page.screenshot({ path: path.join(outputRoot, file), fullPage: true });
+          const screenshot = saveScreenshot(
+            outputRoot,
+            `${example.name}-${width}-${state}`,
+            await page.screenshot({ fullPage: true }),
+          );
           screenshots.push({
             state,
-            file,
-            sha256: createHash("sha256")
-              .update(readFileSync(path.join(outputRoot, file)))
-              .digest("hex"),
+            ...screenshot,
             interactions,
           });
         }

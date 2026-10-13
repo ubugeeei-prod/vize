@@ -252,12 +252,14 @@ fn unavailable_native_semantic_transport_cannot_report_empty_clean() {
     let stdout = String::from_utf8(direct.stdout).unwrap();
     let stderr = String::from_utf8(direct.stderr).unwrap();
     let attempts = fs::read_to_string(project.path().join(".bin/denied-transports.log")).unwrap();
+    let denied_bootstraps = transport_refusal::capture_and_replay(project.path(), &wrapper);
     retain_packet(
         "unavailable-transport",
         &serde_json::json!({
             "native":native, "wrapper":wrapper,
             "wholeWrapper":fs::read_to_string(&wrapper).unwrap(),
             "wholeDeniedTransportTrace":attempts,
+            "wholeDeniedBootstrapPackets":denied_bootstraps,
             "cwd":virtual_root, "wholeGeneratedConfig":fs::read_to_string(virtual_root.join("tsconfig.json")).unwrap(),
             "exitCode":direct.status.code(), "wholeStdout":stdout, "wholeStderr":stderr,
             "wholeError":format!("{error:#?}"),
@@ -288,23 +290,11 @@ fn unavailable_native_semantic_transport_cannot_report_empty_clean() {
         panic!("native completion must return an execution failure: {error:#?}");
     };
     assert_eq!(exit_code, 1);
-    let cli_completion =
-        format!("{cli_error}\nSame-config native diagnostic completion failed: {cli_error}");
     let api_completion = format!(
-        "{cli_error}\nSame-config native diagnostic completion failed: corsa error (exit code -1): Failed to start Corsa API session: process is closed: jsonrpc connection"
+        "{cli_error}\nSame-config native diagnostic completion failed: corsa error (exit code -1): Failed to start Corsa API session: rpc error -32041: native diagnostic transport intentionally unavailable"
     );
-    assert!(
-        message.as_str() == cli_completion || message.as_str() == api_completion,
-        "unqualified complete native refusal: {message}"
-    );
-    if message.as_str() == api_completion {
-        assert!(
-            attempts
-                .split_inclusive('\n')
-                .any(|record| record == "--api\n"),
-            "API connection refusal requires an actual denied API invocation"
-        );
-    }
+    assert_eq!(message.as_str(), api_completion);
+    transport_refusal::assert_exact_denial(&denied_bootstraps, &attempts);
     println!("{message}");
 }
 

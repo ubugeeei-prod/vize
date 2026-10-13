@@ -94,23 +94,13 @@ For Vite Plus projects, keep the Vite Plus client type and append the plugin pac
 }
 ```
 
-For Vite+ projects, keep options in the integration helper's `compiler` field in
-`vite.config.ts`. For ordinary Vite, use direct `vize({ ... })` options. Shared
-standalone config is optional when CLI or LSP commands also need those settings.
+## Shared native settings
 
-## Optional standalone shared config
-
-When CLI or LSP commands need the same settings, use `defineConfig` from `vize`
-and a `vize.config.*` file. Install `vize` directly when importing that helper.
-The [standalone configuration reference](./configuration-reference.md) preserves
-file discovery, TypeScript/JSON/PKL examples, and scoped settings.
-Vite+ integration tasks use the helper in `vite.config.ts`.
+For Vite+, use the integration helper's `compiler` field. For ordinary Vite, use direct plugin options. Put native CLI/editor settings in the same Vite config's top-level `vize` object; see [Configuration](./configuration.md) for supported syntax, discovery and release availability. Existing dedicated formats remain an optional reference path.
 
 ## Compiler Options
 
-Direct options passed to `vize()` override `vize.config.*`.
-The full precedence is direct plugin options, then inline `config`, then `vize.config.*`, then
-defaults.
+Direct options passed to `vize()` take precedence, followed by inline `config`, then discovered project settings and defaults. A dedicated `vize.config.*` takes priority over Vite config in the same directory. `config: false` opts out of automatic discovery.
 
 ```ts
 vize({
@@ -277,3 +267,5 @@ See [Nuxt Integration](../integrations/nuxt.md) for more details.
 - The plugin supports `virtual:vize-styles` for importing all compiled CSS as a module
 - `.jsx`/`.tsx` Vue components are compiled automatically through the same plugin — see the [JSX & TSX](./jsx.md) guide
 - For experimental rollup / webpack / esbuild / Rspack support, see [Experimental Bundler Integrations](./unplugin.md)
+
+<span id="optional-standalone-shared-config"></span>

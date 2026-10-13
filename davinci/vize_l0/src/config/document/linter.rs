@@ -150,9 +150,9 @@ fn global_ignores_from_raw_config(config: &RawVizeConfig) -> Vec<ConfigEntryIgno
         .iter()
         .cloned()
         .map(|pattern| ConfigEntryIgnore {
-            // Preserve the established top-level ignore contract: patterns are
-            // resolved from the config directory, independently of `basePath`.
-            base_path: None,
+            // A Vite host supplies the project root independently of basePath.
+            // Dedicated documents retain their config-directory contract.
+            base_path: config.project_root.clone(),
             pattern,
         })
         .collect()

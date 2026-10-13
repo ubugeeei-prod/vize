@@ -1,6 +1,6 @@
 //! Read-only, pre-merge qualification of the actual version delivery candidate.
 use super::super::{pr_contract, pr_github as github};
-use super::{Source, first_parent, marker, metadata, source};
+use super::{Source, marker, metadata, source};
 use serde_json::{Value, json};
 use std::{env, fs, path::Path};
 
@@ -93,11 +93,15 @@ fn candidate_parents(
 }
 
 fn projection(source: &Source, candidate: &str, base: &str, root: &Path) -> Result<(), String> {
-    first_parent(&source.cut, base, root)?;
+    super::stable::main_anchor(source, base, root)?;
     let version = source.candidate.tag.trim_start_matches('v');
     metadata::verify_delta(base, candidate, &source.base_version, version, root)?;
     // This is the same complete catalog used after actual signed delivery.
     // Manifest scripts and every other shipping field stay authoritative.
+    if source.stable.is_some() {
+        super::stable::shipping_catalog(source, root)?;
+        return Ok(());
+    }
     if metadata::catalog(&source.candidate.head, version, root)?
         != metadata::catalog(candidate, version, root)?
     {
@@ -138,7 +142,7 @@ fn current_pr_snapshot(
     Ok(())
 }
 
-fn event_fields(
+pub(super) fn event_fields(
     event: Option<(&str, &Value)>,
     pr: &Value,
     repository: &str,
@@ -163,17 +167,22 @@ fn event_fields(
             Ok(true)
         }
         Some(("pull_request", event)) => {
-            integration_fields(
-                event
-                    .get("pull_request")
-                    .ok_or("Missing integration PR event")?,
-                repository,
-                number,
-                head,
-            )?;
+            let event_pr = event
+                .get("pull_request")
+                .ok_or("Missing integration PR event")?;
+            let (source_number, source_head, cut, tag) =
+                integration_fields(event_pr, repository, number, head)?;
+            let canonical = super::body::generated(source_number, &cut, &source_head, &tag);
+            for snapshot in [event_pr, pr] {
+                super::body::qualify(
+                    pr_contract::field(snapshot, "/body")?,
+                    &canonical,
+                    repository,
+                    number,
+                )?;
+            }
             if event.get("number").and_then(Value::as_u64) != Some(number)
                 || pr_contract::field(event, "/repository/full_name")? != repository
-                || event.pointer("/pull_request/body") != pr.get("body")
                 || pr_contract::field(event, "/pull_request/base/sha")? != base
             {
                 return Err("Integration PR body/head/base changed since this event.".into());
@@ -203,8 +212,24 @@ fn verify(
     }
     let repository = github::repository(root)?;
     let pr = github::api(&repository, &format!("pulls/{number}"), root)?;
+    if let Some(event) = event {
+        let directory =
+            env::var("RUNNER_TEMP").map_err(|_| "Missing integration evidence directory")?;
+        super::body::retain(
+            &Path::new(&directory).join("vize-release-integration-catalog"),
+            Some(event),
+            Some(&pr),
+        )?;
+    }
     let (source_number, source_head, cut, tag) =
         integration_fields(&pr, &repository, number, head)?;
+    let canonical = super::body::generated(source_number, &cut, &source_head, &tag);
+    super::body::qualify(
+        pr_contract::field(&pr, "/body")?,
+        &canonical,
+        &repository,
+        number,
+    )?;
     let remote = github::git(
         &[
             "ls-remote",
@@ -252,7 +277,7 @@ fn verify(
         return Err("Source and integration bodies do not bind the same immutable cut.".into());
     }
     let head_parent = github::parent(head, root)?;
-    first_parent(&source.cut, &head_parent, root)?;
+    super::stable::main_anchor(&source, &head_parent, root)?;
     metadata::verify_delta(
         &head_parent,
         head,
@@ -263,7 +288,7 @@ fn verify(
     projection(&source, candidate, base, root)?;
     println!(
         "{}",
-        json!({"integration":number,"source":source_number,"H":source_head,"C":cut,"tag":tag,"candidate":candidate,"base":base,"integrationHead":head,"event":if queue {"merge_group"} else {"pull_request"},"catalogEqual":true,"metadataExact":true})
+        json!({"integration":number,"source":source_number,"H":source_head,"C":cut,"tag":tag,"candidate":candidate,"base":base,"integrationHead":head,"event":if queue {"merge_group"} else {"pull_request"},"catalogEqual":source.stable.is_none(),"catalogAuthority":if source.stable.is_some(){"stable-C-to-H"}else{"main-integration"},"metadataExact":true})
     );
     Ok(())
 }
@@ -286,6 +311,13 @@ pub fn check_candidate(number: u64, root: &Path) -> Result<(), String> {
             .map_err(|e| e.to_string())?,
     )
     .map_err(|e| e.to_string())?;
+    let directory =
+        env::var("RUNNER_TEMP").map_err(|_| "Missing integration evidence directory")?;
+    super::body::retain(
+        &Path::new(&directory).join("vize-release-integration-catalog"),
+        Some((&event_name, &event)),
+        None,
+    )?;
     let candidate = env::var("GITHUB_SHA").map_err(|_| "Missing integration candidate SHA")?;
     let (base, head) = match event_name.as_str() {
         "pull_request" => (

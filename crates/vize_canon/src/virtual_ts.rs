@@ -10,6 +10,7 @@
 #[cfg(test)]
 mod class_component_props_tests;
 mod component_reference;
+mod component_tag;
 #[cfg(test)]
 mod defaults_key_links_tests;
 #[cfg(test)]

@@ -94,3 +94,34 @@ fn svg_class_and_style_bindings_are_normalized() {
         assert!(code.contains("{ color: _ctx.k })"), "{code}");
     }
 }
+
+#[test]
+fn svg_bindings_use_inherited_namespace_instead_of_a_tag_list() {
+    for tag in ["a", "filter", "feGaussianBlur", "view", "switch"] {
+        let source = cstr!("<svg><{tag} :class=\"c\" :style=\"s\" :title=\"t\" /></svg>");
+        for retained in [false, true] {
+            let code = compile(&source, retained);
+            assert!(code.contains("_ctx.c, true)"), "{tag}: {code}");
+            assert!(code.contains("\"title\", _ctx.t, true)"), "{tag}: {code}");
+            assert!(code.contains("_setStyle("), "{tag}: {code}");
+        }
+    }
+}
+
+#[test]
+fn html_anchor_bindings_keep_html_semantics_at_svg_integration_points() {
+    for source in [
+        r#"<a :class="c" :style="s" :title="t" />"#,
+        r#"<svg><foreignObject><a :class="c" :style="s" :title="t" /></foreignObject></svg>"#,
+        r#"<svg><desc><a :class="c" :style="s" :title="t" /></desc></svg>"#,
+        r#"<svg><title><a :class="c" :style="s" :title="t" /></title></svg>"#,
+    ] {
+        for retained in [false, true] {
+            let code = compile(source, retained);
+            assert!(code.contains("_ctx.c)"), "{code}");
+            assert!(!code.contains("_ctx.c, true)"), "{code}");
+            assert!(code.contains("_setProp("), "{code}");
+            assert!(code.contains("\"title\", _ctx.t)"), "{code}");
+        }
+    }
+}

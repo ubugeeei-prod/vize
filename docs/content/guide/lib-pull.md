@@ -19,6 +19,38 @@ vpx vize lib pull rating
 That writes the `rating` family plus everything it imports (`controllable-state`, `id`, ...) under
 `src/components/vize/`, and records the pull in `vize-lib.lock.json`.
 
+<!-- First-copy reader example: start -->
+
+## Show your first copied component
+
+Use a Vue 3 app with Vue 3.5 or later and the default `src/components/vize` target directory for this example. Check the package version and npm requirements before copying the bundled usage example:
+
+```bash
+vpx vize lib info rating
+vpx vize lib pull rating --with-examples --dry-run
+vpx vize lib pull rating --with-examples
+```
+
+Review the dry-run file list before running the last command. `pull` reports missing package declarations but does not install dependencies or check their version compatibility. Install the required packages with your package manager before running the app. Copied sources import `.ts` files directly; enable `allowImportingTsExtensions` in the app's TypeScript configuration. [The init guide](#getting-started-init) explains how to check that setting.
+
+The example is copied to `src/components/vize/families/form/rating/examples/rating-basic.vue`. In a new app, display it from `src/App.vue`:
+
+```vue
+<script setup lang="ts">
+import RatingExample from "./components/vize/families/form/rating/examples/rating-basic.vue";
+</script>
+
+<template>
+  <RatingExample />
+</template>
+```
+
+The example starts at three stars. Select a different star to change the value and the displayed score; select the current star again to clear it and show `Not rated`. The controls use native radio inputs and an accessible label. These are unstyled components, so their appearance follows your app's CSS.
+
+The example imports the copied `rating.ts` beside it, so local component edits are reflected in your app. If you chose a different [target directory](#target-directories), adjust the import in `App.vue` to match it. Keep `vize-lib.lock.json` in version control and use the update workflow below when you change the copied files.
+
+<!-- First-copy reader example: end -->
+
 ## Where the sources come from
 
 Every published `@vizejs/ui` and `@vizejs/composable` tarball contains a versioned registry:
@@ -75,22 +107,26 @@ Pulled files keep the registry layout (`families/form/rating/rating.vue`,
 between items keep working without any rewriting. The directory is chosen by:
 
 1. `--dir <dir>` (must stay inside the project),
-2. the `lib` section of `vize.config.*`,
+2. shared `vize.lib` settings in your existing Vite configuration,
 3. the registry default: `src/components/vize` (ui) and `src/composables/vize` (composable).
 
 ```ts
-// vize.config.ts
-import { defineConfig } from "vize";
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lib: {
-    uiDir: "src/ui/vendor",
-    composableDir: "src/composables/vendor",
-    // dir: "src/vendor",        // shared fallback for both kinds
-    // lockfile: "vize-lib.lock.json",
+  vize: {
+    lib: {
+      uiDir: "src/ui/vendor",
+      composableDir: "src/composables/vendor",
+      // dir: "src/vendor",
+      // lockfile: "vize-lib.lock.json",
+    },
   },
 });
 ```
+
+An existing dedicated `lib` section remains supported with the precedence described in [Configuration](./configuration.md).
 
 Once a kind has been pulled into a directory, later pulls of that kind reuse it; a conflicting
 `--dir` is rejected instead of splitting the dependency graph.
@@ -106,10 +142,13 @@ vize lib init             # write it
 ```
 
 `init` detects the source directory (`src/`, or `app/` for Nuxt 4 projects) and TypeScript, then
-writes `lib.uiDir` / `lib.composableDir`. It creates `vize.config.json` when there is no config,
-appends a `lib` section to an existing `vize.config.json` without touching the rest of the file,
-and prints a snippet for `vize.config.ts` / `.pkl` instead of editing code. An existing `lib`
-section is kept unless `--force` is passed. When `tsconfig.json` lacks
+writes `vize.lib.uiDir` / `vize.lib.composableDir` in a new `vite.config.mjs` when no
+configuration exists. An existing Vite configuration is preserved; `init` prints
+a `vize.lib` snippet when settings still need to be added. Existing dedicated
+configuration users retain the same behavior: `init` appends `lib` to
+`vize.config.json` and prints a snippet for code or Pkl configurations. An existing
+`lib` section is kept; `--force` can replace it in a dedicated JSON configuration.
+When `tsconfig.json` lacks
 `allowImportingTsExtensions`, `init` says so: pulled sources import siblings as `./x.ts`.
 
 ## Checking for updates: `outdated`

@@ -1,0 +1,42 @@
+{
+  "schema": "vize-independent-public443-literal-terminal-audit-v1",
+  "success": true,
+  "issue": 8489,
+  "run": 38159247065,
+  "observer": "67e3d0e6775cc3a1f29bfb9309d991252f9e75ff",
+  "source": {
+    "cut": "123c0f363d90bfa20cbf669f52ddb85343332568",
+    "head": "15e116fa258c7aaba5c6fdd2456442535605abe8",
+    "tag": "v0.443.0",
+    "sourcePr": "8541",
+    "run": "38081199501"
+  },
+  "artifact": {
+    "id": 11709144782,
+    "digest": "sha256:bf63a82c91d1eb78ae0ebc0b486c401353cbeb4721d73dbc1c25c1724d16ea9c",
+    "allFilesCompared": 485
+  },
+  "publicInstalledPackages": 6,
+  "publicPackageFiles": 282,
+  "native": {
+    "entry": "/home/runner/_work/_temp/vize-public-musea-literal-dohYy0/node_modules/@vizejs/native-linux-x64-gnu/vize-vitrine.linux-x64-gnu.node",
+    "sha256": "39f7d1eea6749af6fb76ad7fd37f70ecc040bee48dd3f59da1e8345dbac9f46f",
+    "successfulReturnObserved": true
+  },
+  "originalBrowserLaws": 2,
+  "staticPreviews": 5,
+  "galleryPreviews": 5,
+  "devControls": 2,
+  "devLiteralKeys": 3,
+  "devPhases": 2,
+  "distinctInitialSnapshotPathsAndHashes": 5,
+  "physicalSnapshotPngObservations": 10,
+  "zeroDifferenceRepeats": 5,
+  "skipped": 0,
+  "receiptSha256": "aaf13d8fd4c9da1c4c954aedb43d0b60b0ce1bbab588b8621788c9d1ba049725",
+  "originalStaticControlsRun": 38153597885,
+  "originalStaticPreviews": 8,
+  "originalSelfVariants": 6,
+  "originalSelfPhases": 3,
+  "scope": "Complete #8489 literal dictionary/grouping installed public443 Linux terminal oracle, combined with separately qualified original8+Self controls on identical public native/C/H/R. No aggregate/broader VRT update/ownership/tombstone/hosted HTTPS/LSP/platform-matrix credit."
+}

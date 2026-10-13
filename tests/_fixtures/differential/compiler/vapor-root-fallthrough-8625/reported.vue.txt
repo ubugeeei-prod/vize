@@ -1,0 +1,17 @@
+<!-- FallthroughOuter.vue, mounted with { "data-owner": "outer" } -->
+<script setup lang="ts" vapor>
+import FallthroughInner from "./FallthroughInner.vue";
+</script>
+
+<template>
+  <section id="outer">
+    <FallthroughInner />
+  </section>
+</template>
+
+<!-- FallthroughInner.vue -->
+<script setup lang="ts" vapor></script>
+
+<template>
+  <span id="inner">inner</span>
+</template>

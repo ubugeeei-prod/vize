@@ -1,10 +1,26 @@
 import assert from "node:assert/strict";
 import type { Page } from "playwright";
 
+const reviewedInstallRoutes = new Set([
+  "/getting-started",
+  "/ja/getting-started",
+  "/fr/getting-started",
+  "/pt-BR/getting-started",
+  "/zh-CN/getting-started",
+]);
+
+/** Explicit reviewed source policy; rendered commands never select the oracle. */
+export function reviewedSetupCommand(route: string): "install" | "init" | undefined {
+  if (route === "/guide/init") return "init";
+  if (reviewedInstallRoutes.has(route)) return "install";
+  return undefined;
+}
+
 /** Exercise the actual generated site's tab controls and copyable commands. */
 export async function verifyCommandTabs(page: Page, route: string) {
-  if (!route.endsWith("/getting-started")) return;
-  const initialization = /^\/(?:zh-CN|pt-BR|fr)\//.test(route);
+  const command = reviewedSetupCommand(route);
+  if (command === undefined) return;
+  const initialization = command === "init";
   const browser = page.context().browser();
   assert(browser, "fallback browser exists");
   const fallback = await browser.newContext({ javaScriptEnabled: false });

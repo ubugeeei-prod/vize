@@ -1,7 +1,9 @@
 //! Element bindings in authored order: props and content directives are
 //! render effects; static listeners and `v-show` are one-time operations.
 
-use vize_atelier_core::{DirectiveNode, ExpressionNode, SimpleExpressionNode, SourceLocation};
+use vize_atelier_core::{
+    DirectiveNode, ExpressionNode, Namespace, SimpleExpressionNode, SourceLocation,
+};
 use vize_carton::{Box, Vec};
 
 use super::super::{BindingKind, Content, Expr};
@@ -124,6 +126,7 @@ impl<'a> Emitter<'a, '_> {
                     OperationNode::SetProp(SetPropIRNode {
                         element,
                         tag,
+                        namespace: Namespace::Html,
                         camel: false,
                         prop_modifier,
                         prop: IRProp::new(key, values, false),

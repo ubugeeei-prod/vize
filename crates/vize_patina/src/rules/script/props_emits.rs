@@ -4,6 +4,7 @@
 //! `defineProps`/`defineEmits` declarations and their Options API equivalents,
 //! so the parent `script` module file does not grow per added rule.
 
+mod compiler_macro_bindings;
 mod emits_source;
 mod no_required_prop_with_default;
 mod no_reserved_props;
@@ -17,6 +18,8 @@ mod require_valid_default_prop;
 mod return_in_emits_validator;
 mod template_emits;
 
+pub(crate) use props_source::collect_options_props;
+
 pub use no_required_prop_with_default::NoRequiredPropWithDefault;
 pub use no_reserved_props::NoReservedProps;
 pub use no_unused_emit_declarations::NoUnusedEmitDeclarations;
@@ -25,4 +28,9 @@ pub use require_explicit_emits::RequireExplicitEmits;
 pub use require_prop_types::RequirePropTypes;
 pub use require_typed_object_prop::RequireTypedObjectProp;
 pub use require_valid_default_prop::RequireValidDefaultProp;
-pub use return_in_emits_validator::ReturnInEmitsValidator;
+pub use return_in_emits_validator::{EmitsModuleScript, ReturnInEmitsValidator};
+
+/// Reuse the existing conservative same-program macro binding proof.
+pub(super) fn compiler_macro_is_shadowed(program: &oxc_ast::ast::Program<'_>, name: &str) -> bool {
+    compiler_macro_bindings::shadowed(program, name)
+}

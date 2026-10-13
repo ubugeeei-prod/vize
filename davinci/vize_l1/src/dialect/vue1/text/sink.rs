@@ -71,6 +71,10 @@ impl Sink for TextSink<'_, '_> {
     fn mode(&self) -> LexMode {
         self.inner.mode()
     }
+
+    fn svg_title_children(&self) -> bool {
+        self.inner.svg_title_children()
+    }
 }
 impl TextSink<'_, '_> {
     fn observe(&mut self, start: usize, end: usize, raw: bool) {

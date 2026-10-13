@@ -18,11 +18,16 @@ use super::prefix::Site;
 use crate::lower::TextPart;
 
 pub(super) fn emit_text_like(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), EmitError> {
-    for (i, op) in ops.iter().enumerate() {
+    let mut first = true;
+    for op in ops {
+        if super::annotations::skip(cx, op) {
+            continue;
+        }
         let id = cx.walk.mint();
-        if i > 0 {
+        if !first {
             cx.buf.push(" + ");
         }
+        first = false;
         match op {
             Op::Text(text) => emit_quoted_text(cx, text.content),
             Op::Interpolation(interp) => emit_interpolation(cx, interp, id)?,

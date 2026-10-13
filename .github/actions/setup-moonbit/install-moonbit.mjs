@@ -5,6 +5,7 @@ import process from "node:process";
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
+import { preparePinnedInstaller } from "./pinned-artifacts.mjs";
 
 // The pinned toolchain lives in one file that `tools/nix/moonbit.nix` also reads, so
 // the Nix development shell and CI can never resolve different compilers for
@@ -289,6 +290,7 @@ if (!hasExistingMoonInstall()) {
       },
     );
     verifyInstaller(moonInstallerScript, moonInstallerSha256.windows);
+    await preparePinnedInstaller(moonInstallerScript, moonbitVersion, runnerTemp);
     run("pwsh", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", moonInstallerScript], {
       ...process.env,
       MOON_HOME: moonHome,
@@ -306,6 +308,7 @@ if (!hasExistingMoonInstall()) {
       },
     );
     verifyInstaller(moonInstallerUnixScript, moonInstallerSha256.unix);
+    await preparePinnedInstaller(moonInstallerUnixScript, moonbitVersion, runnerTemp);
     run("bash", [moonInstallerUnixScript], {
       ...process.env,
       HOME: runnerTemp,

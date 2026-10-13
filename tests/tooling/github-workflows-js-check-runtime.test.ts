@@ -21,3 +21,22 @@ test("JS check runtime action installs the native build prerequisites", () => {
   assert.ok(actionUses.includes("./.github/actions/setup-rust-script"));
   assert.match(action, /key:\s*check-js/);
 });
+
+test("workflow context validation belongs to the unconditional required JS gate", () => {
+  type Step = { uses?: string; if?: unknown; "continue-on-error"?: unknown };
+  const workflow = parse(readRepoFile(".github", "workflows", "check.yml"));
+  const job = workflow.jobs["check-js"] as { if?: unknown; steps: Step[] };
+  assert.equal(job.if, undefined, "missing optional workflow jobs must not bypass this gate");
+  const runtimes = job.steps.filter(
+    (step) => step.uses === "./.github/actions/setup-js-check-runtime",
+  );
+  assert.equal(runtimes.length, 1);
+  assert.equal(runtimes[0].if, undefined);
+  assert.equal(runtimes[0]["continue-on-error"], undefined);
+  const runtime = parse(readRepoFile(".github", "actions", "setup-js-check-runtime", "action.yml"));
+  const steps = runtime.runs.steps as Step[];
+  assert.equal(steps[0].uses, "./.github/actions/check-workflow-syntax");
+  assert.equal(steps[0].if, undefined);
+  assert.equal(steps[0]["continue-on-error"], undefined);
+  assert.equal(steps.filter((step) => step.uses === steps[0].uses).length, 1);
+});

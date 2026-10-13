@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { cacheFixture, executeCacheAction } from "./support/rust-cache-fixture.mjs";
+import { allMountFailures, assertNoCandidateCommit } from "./support/rust-cache-candidates.ts";
 
 await test("nested cache posts save the validated target inputs after step outputs disappear", () => {
   for (const targetPath of ["target", "head/target", "tests/fuzz/target"])
@@ -72,12 +73,13 @@ await test("nested untrusted cache hits retain fresh validation and never regist
     );
     assert.equal(result.status, 0);
     assert.equal(result.trace.filter((row) => row.kind === "cache-post").length, 0);
-    assert.equal(result.trace.filter((row) => row.kind === "sticky").length, 0);
+    assert.equal(result.trace.filter((row) => row.kind === "sticky").length, 3);
+    assertNoCandidateCommit(result.trace);
     assert.equal(result.trace.filter((row) => row.kind === "workload").length, 1);
   });
 });
 
-await test("a versioned nested seed restores both targets in a PR and a failed-mount fallback", () => {
+await test("a versioned nested seed restores both targets after failed PR and trusted mounts", () => {
   for (const targetPath of ["target", "head/target", "tests/fuzz/target"])
     cacheFixture((fixture) => {
       const paths = {
@@ -119,7 +121,7 @@ await test("a versioned nested seed restores both targets in a PR and a failed-m
         const result = executeCacheAction(fixture, context, {
           nestedPost: true,
           storedCache: true,
-          mountFailures: event === "push" ? ["target", "secondary"] : [],
+          mountFailures: ["target", "secondary"],
         });
         assert.equal(result.status, 0);
         for (const name of ["target", "secondary"]) {
@@ -134,8 +136,10 @@ await test("a versioned nested seed restores both targets in a PR and a failed-m
         assert.equal(current.before, "Actions restore");
         assert.notEqual(current.artifact, original.artifact);
         const posts = result.trace.filter((row) => row.kind === "cache-post");
-        if (event === "pull_request") assert.equal(posts.length, 0);
-        else
+        if (event === "pull_request") {
+          assert.equal(posts.length, 0);
+          assertNoCandidateCommit(result.trace);
+        } else
           assert.equal(
             posts.find((row) => row.name === "target").saved,
             `compiled:${current.artifact}`,
@@ -179,7 +183,12 @@ await test("an absolute-path reader cannot use a relative-path seed despite an i
     const result = executeCacheAction(
       fixture,
       { ...fixture.context("pull_request", "refs/pull/24/merge"), ...paths },
-      { storedCache: true, nestedPost: true, steps: action.runs.steps },
+      {
+        storedCache: true,
+        nestedPost: true,
+        steps: action.runs.steps,
+        mountFailures: allMountFailures,
+      },
     );
     for (const name of ["target", "secondary"]) {
       const writer = seed.trace.find((row) => row.kind === "cache-post" && row.name === name);

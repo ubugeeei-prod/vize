@@ -2,7 +2,7 @@
 title: CLI
 ---
 
-<!-- Reviewed translation; source: guide/cli.md; scope: complete command reference except the shared configuration entry pending source integration -->
+<!-- Reviewed translation; source: guide/cli.md; scope: complete command reference; native configuration guidance -->
 
 # CLI リファレンス
 
@@ -63,7 +63,7 @@ cargo install --path crates/vize --force --locked
 | ビルド・整形・lint・型チェック・準備・アップグレードを実行するパッケージスクリプト | npm パッケージの `vp run vize:*` |
 | `.vue`、`.ts`、`.tsx`、`.d.ts` を含むプロジェクト全体の型チェック                  | Rust `vize check`                |
 | LSP、IDE セットアップ、`check-server`、プロファイル出力                            | Rust `vize` バイナリ             |
-| 共有 Vite プラグイン、npm package コマンド、および Rust CLI 設定                   | `vize.config.*`                  |
+| 共有 Vite プラグイン、npm package コマンド、および Rust CLI 設定                   | [Vite config](./configuration.md#standalone-cli)                  |
 
 ## コマンド
 

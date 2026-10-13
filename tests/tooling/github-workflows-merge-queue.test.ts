@@ -25,6 +25,9 @@ const source = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml"
 const check = parse(readRepoFile(".github", "workflows", "check.yml")) as {
   jobs: Record<string, Job>;
 };
+const jsChecks = parse(readRepoFile(".github", "workflows", "pr-js-checks.yml")) as {
+  jobs: Record<string, Job>;
+};
 const recipe = parse(
   readRepoFile(".github", "actions", "test-rust-workspace-differential", "action.yml"),
 ) as {
@@ -93,13 +96,14 @@ test("queue scope reaches the planner and every full source lane remains require
     assert.ok(check.jobs["test-report"].needs?.includes(required), `${required} remains mandatory`);
   }
   assert.equal(check.jobs["pr-source-checks"].uses, "./.github/workflows/pr-source-checks.yml");
-  assert.equal(
-    source.jobs["pr-js-packages"].steps?.find((step) => step.uses === jsHistoryPath)?.if,
-    "${{ always() && needs.pr-source-plan.outputs.js == 'true' }}",
-  );
+  assert.equal(source.jobs["pr-js-packages"].uses, "./.github/workflows/pr-js-checks.yml");
+  const jsCommands = Object.values(jsChecks.jobs).map(commands).join("\n");
+  assert.match(jsCommands, /vp run --workspace-root "test:js:\$VIZE_JS_PACKAGE_GROUP"/);
+  assert.match(jsCommands, /node npm\/oxlint\/scripts\/check-project-transport\.mjs/);
+  assert.match(jsCommands, /vp run --filter '\.\/npm\/ui' check/);
   assert.equal(jsHistory.runs.using, "composite");
   assert.equal(jsHistory.runs.steps[0].if, "${{ success() && job.status == 'success' }}");
-  assert.match(commands(source.jobs["pr-js-packages"]), /vp run --workspace-root test:js/);
+  assert.ok(check.jobs["test-js-packages"].steps?.some((step) => step.uses === jsHistoryPath));
   assert.match(commands(source.jobs["pr-tooling-scripts"]), /vp run --workspace-root test:scripts/);
   const cli = parse(readRepoFile(".github", "workflows", "pr-source-cli.yml")) as {
     jobs: Record<string, Job>;

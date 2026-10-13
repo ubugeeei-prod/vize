@@ -2206,12 +2206,12 @@ script/no-duplicate-attr-inheritance · lint ルール
 ドキュメント: docs/content/rules/type-and-script.md
 
 不正な例:
-  defineOptions({ inheritAttrs: true })
-  export default { inheritAttrs: true }
+  <script setup></script>
+  <template><div><button v-bind="$attrs">Save</button></div></template>
 
 正しい例:
-  defineOptions({ inheritAttrs: false }) // intentional opt-out
-  export default {}                      // default inheritance, unstated
+  <script setup>defineOptions({ inheritAttrs: false })</script>
+  <template><div><button v-bind="$attrs">Save</button></div></template>
 === script/no-export-in-script-setup
 script/no-export-in-script-setup · lint ルール
 <script setup> 内の export 文を禁止する
@@ -2443,10 +2443,10 @@ Vue コンパイラーの予約識別子を使うことを禁止する
   const myData = {}
 === script/no-reserved-keys
 script/no-reserved-keys · lint ルール
-Options API の props・data・computed・methods・setup・inject のキーに Vue の予約名を使うことを禁止する
+Options API の props・data・computed・methods・setup のキーに Vue の予約名を使うことを禁止する
 
 精度: exact
-対象: Options API component definitions written as object literals
+対象: props/data/computed/methods/setup members of resolved Options API objects with block-scoped script/no-reserved-keys or registered vue/no-reserved-keys suppression; asyncData and script-setup defineProps are outside
 重大度: エラー
 カテゴリー: script
 自動修正: なし
@@ -2454,9 +2454,9 @@ Options API の props・data・computed・methods・setup・inject のキーに 
 
 不正な例:
   export default {
-    props: ['$el'],       // reserved: starts with `$`
-    computed: { _foo() { return 1 } }, // reserved: starts with `_`
-    methods: { emit() {} } // reserved: Vue built-in instance name
+    props: ['$el'],
+    data() { return { _private: 1 } },
+    methods: { $emit() {} }
   }
 === script/no-reserved-props
 script/no-reserved-props · lint ルール
@@ -2732,6 +2732,7 @@ script/prefer-import-from-vue · lint ルール
 
 正しい例:
   import { ref, h } from 'vue'
+  import { isString } from '@vue/shared'
 === script/prefer-ref-over-reactive
 script/prefer-ref-over-reactive · lint ルール
 状態管理には reactive() より ref() を推奨する
@@ -3132,10 +3133,10 @@ script/return-in-computed-property · lint ルール
 ドキュメント: docs/content/rules/type-and-script.md
 === script/return-in-emits-validator
 script/return-in-emits-validator · lint ルール
-Options API のすべての emits バリデーターで値を返すことを必須にする
+Vue のすべての emits バリデーターで値を返すことを必須にする
 
 精度: complete
-対象: Options API component definitions written as object literals
+対象: Vue emits validator functions in resolved Options API objects and compiler-owned inline setup runtime objects or immutable const chains; unavailable external blocks, namespace-shadowed calls and all-path return analysis are outside
 重大度: エラー
 カテゴリー: script
 自動修正: なし

@@ -8,17 +8,14 @@
 //!
 //! ## Coverage
 //!
-//! In `<script setup>`, assignments and updates are checked against the actual
-//! bindings returned by `defineProps` (including destructured bindings and
-//! `withDefaults`). In templates, two positions mutate a prop directly:
-//! `v-model` bound to a prop, and an assignment (or `++` / `--`) inside a
-//! `v-on` inline handler. Assignments, updates, deletes, and mutating calls are
-//! checked with real oxc syntax rather than scanning source text.
+//! Oxc checks setup prop bindings (including destructuring and `withDefaults`),
+//! literal exported Options API instance bodies, and template `v-model`/handlers.
 //!
 
 mod handlers;
 mod mutation_targets;
 mod options;
+mod options_api;
 mod scope;
 mod script_mutations;
 #[cfg(test)]
@@ -30,13 +27,10 @@ use self::scope::{PropScope, expression_source, push_for_aliases, push_identifie
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_croquis::facts::{Bindings, BindingsTable, CroquisFacts, Demand, FactConsumer, FactGroup};
-use vize_croquis::reactivity::ReactiveKind;
+use vize_croquis::facts::{Bindings, Demand, FactConsumer, FactGroup};
 use vize_l0::FxHashSet;
 use vize_l0::String;
-use vize_l0::ToCompactString;
 use vize_l0::cstr;
-use vize_relief::BindingType;
 use vize_relief::{DirectiveNode, ElementNode, ForNode, PropNode, RootNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
@@ -50,7 +44,7 @@ static META: RuleMeta = RuleMeta {
 /// Disallow mutating props.
 #[derive(Default)]
 pub struct NoMutatingProps {
-    options: NoMutatingPropsOptions,
+    options: options_api::OptionsApiScript,
 }
 
 impl FactConsumer for NoMutatingProps {
@@ -60,19 +54,30 @@ impl FactConsumer for NoMutatingProps {
 
 impl NoMutatingProps {
     pub fn new(options: NoMutatingPropsOptions) -> Self {
-        Self { options }
+        Self {
+            options: options.into(),
+        }
     }
 
-    /// Check if a `v-model` expression mutates a prop.
-    fn check_v_model_mutation<'a>(
+    /// Two-way bindings (`v-model` and Vue 2 `v-bind.sync`) write their target.
+    fn check_two_way_mutation<'a>(
         &self,
         ctx: &mut LintContext<'a>,
         directive: &DirectiveNode<'a>,
         scope: &PropScope<'_>,
     ) {
-        if directive.name != "model" {
+        let binding = if directive.name == "model" {
+            "v-model"
+        } else if directive.name == "bind"
+            && directive
+                .modifiers
+                .iter()
+                .any(|modifier| modifier.content == "sync")
+        {
+            "v-bind.sync"
+        } else {
             return;
-        }
+        };
 
         let Some(exp) = directive.exp.as_ref() else {
             return;
@@ -85,7 +90,7 @@ impl NoMutatingProps {
         ctx.report(
             crate::diagnostic::LintDiagnostic::error(
                 ctx.current_rule,
-                cstr!("Unexpected mutation of prop '{}' via v-model", content),
+                cstr!("Unexpected mutation of prop '{}' via {}", content, binding),
                 span.start,
                 span.end,
             )
@@ -212,7 +217,7 @@ impl NoMutatingProps {
 
         for prop in element.props.iter() {
             if let PropNode::Directive(dir) = prop {
-                self.check_v_model_mutation(ctx, dir, scope);
+                self.check_two_way_mutation(ctx, dir, scope);
                 self.check_handler_mutation(ctx, dir, scope);
             }
         }
@@ -250,6 +255,10 @@ struct TemplateMutation {
 impl Rule for NoMutatingProps {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_sfc_script_rule(&self) -> Option<&dyn crate::rules::script::ScriptRule> {
+        Some(&self.options)
     }
 
     fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
@@ -296,37 +305,10 @@ impl Rule for NoMutatingProps {
             return;
         }
 
-        // Collect prop names first (to avoid borrow conflicts)
-        let (prop_names, has_props_object_binding): (FxHashSet<String>, bool) = {
-            let Some(analysis) = ctx.analysis() else {
-                return;
-            };
-
-            let mut names: FxHashSet<String> = FxHashSet::default();
-
-            for prop in analysis.macros.props() {
-                names.insert(prop.name.to_compact_string());
-            }
-
-            let mut facts = CroquisFacts::new(analysis);
-            // The rule declares the `Bindings` demand, so this lookup only
-            // fails if the facts engine is broken; lint nothing in that case.
-            let Ok(bindings) = facts.prepare::<NoMutatingProps>().get::<Bindings>() else {
-                return;
-            };
-            for (name, binding_type) in bindings.typed() {
-                if matches!(binding_type, BindingType::Props | BindingType::PropsAliased) {
-                    names.insert(name.to_compact_string());
-                } else {
-                    names.remove(name);
-                }
-            }
-
-            let has_props_object_binding =
-                vize_croquis::facts::reactivity_lookup(analysis, "props")
-                    .is_some_and(|source| matches!(source.kind, ReactiveKind::Readonly));
-
-            (names, has_props_object_binding)
+        let Some((prop_names, has_props_object_binding)) =
+            ctx.analysis().and_then(scope::template_props)
+        else {
+            return;
         };
 
         // If no props binding is visible, nothing to check.

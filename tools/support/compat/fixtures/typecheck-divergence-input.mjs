@@ -28,7 +28,7 @@ export function collectVizeDiagnostics(report, cwd) {
       if (typeof diagnostic !== "string") {
         invalid(`Vize diagnostic ${fileIndex}:${diagnosticIndex} must be a string`);
       }
-      const match = /^(error|warning):(\d+):(\d+) \[TS(\d+)\] ([\s\S]+)$/.exec(diagnostic);
+      const match = /^(error|warning|hint):(\d+):(\d+) \[TS(\d+)\] ([\s\S]+)$/.exec(diagnostic);
       if (match == null) invalid(`unparseable Vize diagnostic ${normalizedFile}`);
       diagnostics.push(record(normalizedFile, match[1], match[2], match[3], match[4], match[5]));
     }

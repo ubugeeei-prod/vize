@@ -3,11 +3,13 @@
 // accounting is reconciled here (every `.rs` file is a rule, a module
 // organizer, a `*_tests.rs` companion, or a helper) and a rule trait impl
 // without a META is a hard failure, so the file model cannot drift silently.
+// A source-proven private SFC callback contributes to its registered parent.
 
 import { walkRustFiles } from "./crates.mjs";
 import { loadDispatchModel } from "./rule-parity-dispatch.mjs";
 import { parseOverrides } from "./rule-parity-overrides.mjs";
 import { META_KINDS, OVERRIDES_REL, RULES_DIR } from "./rule-parity-paths.mjs";
+import { collectPrivateScriptCallbacks } from "./rule-parity-private-script.mjs";
 import {
   collectCssRegistryNames,
   collectRegisteredRuleTypes,
@@ -24,20 +26,7 @@ export function buildMatrix() {
   const overrides = parseOverrides();
 
   const files = walkRustFiles(RULES_DIR).map((abs) => parseRuleFile(abs, model));
-
-  // File accounting: a rule file is a file with a META static (each declares
-  // exactly one rule identity; preset variants share the file's single META).
-  const ruleFiles = files.filter((f) => f.meta !== null);
-  const nonRuleFiles = files.filter((f) => f.meta === null);
-  for (const f of nonRuleFiles) {
-    if (f.impls.some((b) => b.trait !== "MarkupRule")) {
-      throw new Error(`rule trait impl without META in ${f.rel}; the file model is stale`);
-    }
-    const stem = f.rel.replace(/\.rs$/, "");
-    if (f.rel.endsWith("_tests.rs")) f.kind = "test";
-    else if (files.some((g) => g.rel.startsWith(stem + "/"))) f.kind = "module";
-    else f.kind = "helper";
-  }
+  const { privateScripts, ruleFiles, nonRuleFiles } = accountRuleFiles(files, registeredTypes);
 
   const rules = new Map();
   for (const f of ruleFiles) {
@@ -66,12 +55,17 @@ export function buildMatrix() {
     };
 
     if (family === "template-family") {
+      const callback = privateScripts.byParent.get(f.rel)?.callback;
       const templateHookSet = [...f.hooks].filter((h) => h !== "run_on_sfc");
       const corsa = model.typeAwareRules.includes(f.meta.name);
       if (templateHookSet.length > 0) rule.surfaces.push("template-ast");
       if (f.hooks.has("run_on_sfc")) rule.surfaces.push("sfc-source");
       if (f.impls.some((b) => b.trait === "MarkupRule")) rule.surfaces.push("markup-facade");
       if (corsa) rule.surfaces.push("type-aware-corsa");
+      if (callback) {
+        rule.surfaces.push(callback.scriptUsesAst ? "script-oxc" : "script-source");
+        f.signals.container.add("hook:as_sfc_script_rule");
+      }
       if (rule.surfaces.length === 0) rule.surfaces.push("none");
       rule.registered = f.ruleImplTypes.some((t) => registeredTypes.has(t));
       if (rule.registered) {
@@ -80,6 +74,7 @@ export function buildMatrix() {
         if (templateHookSet.length > 0) mechanisms.push("template-visitor");
         if (f.hooks.has("run_on_sfc")) mechanisms.push("sfc-hooks");
         if (corsa) mechanisms.push("corsa");
+        if (callback) mechanisms.push("script-blocks");
         rule.sfcDetail = mechanisms.length > 0 ? mechanisms.join("+") : "no-op-hooks";
         if (f.asMarkup) {
           rule.jsx = "yes";
@@ -144,5 +139,32 @@ export function buildMatrix() {
   }
   applyTiers(rules);
 
-  return { model, files, ruleFiles, nonRuleFiles, rules, scriptRegistry, cssRegistry, overrides };
+  return {
+    model,
+    files,
+    ruleFiles,
+    nonRuleFiles,
+    rules,
+    scriptRegistry,
+    cssRegistry,
+    overrides,
+    privateScripts,
+  };
+}
+
+export function accountRuleFiles(files, registeredTypes) {
+  const privateScripts = collectPrivateScriptCallbacks(files, registeredTypes);
+  // A META declares one rule identity; a proven private callback adds no rule.
+  const ruleFiles = files.filter((f) => f.meta !== null);
+  const nonRuleFiles = files.filter((f) => f.meta === null);
+  for (const f of nonRuleFiles) {
+    if (f.impls.some((b) => b.trait !== "MarkupRule") && !privateScripts.byCallback.has(f.rel)) {
+      throw new Error(`rule trait impl without META in ${f.rel}; the file model is stale`);
+    }
+    const stem = f.rel.replace(/\.rs$/, "");
+    if (f.rel.endsWith("_tests.rs")) f.kind = "test";
+    else if (files.some((g) => g.rel.startsWith(stem + "/"))) f.kind = "module";
+    else f.kind = "helper";
+  }
+  return { privateScripts, ruleFiles, nonRuleFiles };
 }

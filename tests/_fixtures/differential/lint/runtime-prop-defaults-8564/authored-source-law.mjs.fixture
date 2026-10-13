@@ -1,0 +1,110 @@
+// Inert authorship provenance. Executed only to freeze source-derived expectations;
+// never imported by a product, observer, test consumer, or release acceptance.
+import fs from "node:fs";
+import path from "node:path";
+import { createHash } from "node:crypto";
+import { spawnSync } from "node:child_process";
+import ts from "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/typescript@6.0.3/node_modules/typescript/lib/typescript.js";
+import { wholeJson } from "./tests/tooling/lint-default-correctness-reference.mjs";
+const directory = "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/";
+const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
+const read = (name) => fs.readFileSync(directory + name);
+const json = (name) => JSON.parse(read(name));
+const rule = "script/no-required-prop-with-default";
+const help = "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.";
+const original = json("original-sources.json"), authored = json("authored-proposal.json");
+const sourceOnlyInput = [...original.sources.map((entry, index) => ({
+  id: `original-${index + 1}`, filename: path.basename(entry.file), sourcePath: entry.sourcePath,
+  sourceSha256: entry.sha256, source: fs.readFileSync(entry.sourcePath, "utf8"),
+  expectedNewRuntimeCount: entry.findings.length, kind: "original", original: entry,
+})), ...authored.cases.map((entry) => ({ ...entry, kind: "authored" }))];
+const byteAt = (source, offset) => Buffer.byteLength(source.slice(0, offset));
+function location(source, offset) {
+  const lines = source.slice(0, offset).split("\n");
+  return { line: lines.length, column: lines.at(-1).length + 1 };
+}
+function members(entry) {
+  const setup = entry.source.match(/<script\b[^>]*\bsetup\b[^>]*>([\s\S]*?)<\/script>/);
+  const block = setup ?? entry.source.match(/<script\b[^>]*>([\s\S]*?)<\/script>/);
+  if (!block) return [];
+  const base = block.index + block[0].indexOf(">") + 1;
+  const ast = ts.createSourceFile(entry.filename + ".ts", block[1], ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const result = [];
+  function visit(node) {
+    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === "defineProps" && ts.isObjectLiteralExpression(node.arguments[0])) {
+      for (const prop of node.arguments[0].properties) {
+        if (!ts.isPropertyAssignment(prop) || !ts.isObjectLiteralExpression(prop.initializer)) continue;
+        const declaration = prop.initializer;
+        const required = declaration.properties.find((member) => ts.isPropertyAssignment(member) && member.name.getText(ast) === "required");
+        const defaultMember = declaration.properties.find((member) => ts.isPropertyAssignment(member) && member.name.getText(ast) === "default");
+        const begin = base + prop.getStart(ast), end = base + prop.end;
+        const keyBegin = base + prop.name.getStart(ast), keyEnd = base + prop.name.end;
+        const span = (node) => ({ start: byteAt(entry.source, base + node.getStart(ast)), end: byteAt(entry.source, base + node.end) });
+        const name = ts.isStringLiteral(prop.name) ? prop.name.text : prop.name.getText(ast);
+        result.push({ name, start: byteAt(entry.source, begin), end: byteAt(entry.source, end),
+          propertyText: entry.source.slice(begin, end), key: { start: byteAt(entry.source, keyBegin), end: byteAt(entry.source, keyEnd) },
+          required: required ? span(required) : null, default: defaultMember ? span(defaultMember) : null,
+          requiredTrue: required?.initializer.kind === ts.SyntaxKind.TrueKeyword,
+          requiredValueUtf16: required ? [base + required.initializer.getStart(ast), base + required.initializer.end] : null,
+          location: location(entry.source, begin), endLocation: location(entry.source, end),
+          providerEligible: Boolean(setup), nativeEligible: entry.expectedNewRuntimeCount > 0 });
+      }
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(ast);
+  return result;
+}
+function native(member) {
+  return { rule_name: rule, severity: "error", message: `Prop '${member.name}' is required but also declares a default`,
+    start: member.start, end: member.end, help,
+    labels: [{ message: "marked required here", ...member.required }, { message: "default declared here", ...member.default }], fix: null };
+}
+function provider(member) {
+  return { ruleId: "vue/no-required-prop-with-default", severity: 2, message: `Prop "${member.name}" should be optional.`,
+    ...member.location, nodeType: "Property", messageId: "requireOptional",
+    endLine: member.endLocation.line, endColumn: member.endLocation.column,
+    suggestions: [{ messageId: "fixRequiredProp", fix: { range: member.requiredValueUtf16, text: "false" }, desc: "Change this prop to be optional." }] };
+}
+const cases = sourceOnlyInput.map((entry) => {
+  if (hash(Buffer.from(entry.source)) !== entry.sourceSha256) throw Error("source input drift");
+  const sourceFile = (entry.kind === "original" ? `original-${entry.id.slice(9)}-` : "") + entry.filename + ".fixture";
+  fs.writeFileSync(directory + sourceFile, entry.source);
+  const all = members(entry), violations = all.filter((member) => member.requiredTrue && member.default);
+  const diagnostics = violations.filter((member) => member.nativeEligible).map(native);
+  const providerDiagnostics = violations.filter((member) => member.providerEligible).map(provider);
+  if (diagnostics.length !== entry.expectedNewRuntimeCount) throw Error("source-authored membership mismatch");
+  const foreign = [];
+  if (entry.id === "original-2") {
+    const comment = "// eslint-disable-next-line @typescript-eslint/ban-ts-comment";
+    const begin = entry.source.indexOf(comment), start = location(entry.source, begin), end = location(entry.source, begin + comment.length);
+    if (begin < 0) throw Error("missing original foreign directive");
+    foreign.push({ ruleId: "@typescript-eslint/ban-ts-comment", message: "Definition for rule '@typescript-eslint/ban-ts-comment' was not found.",
+      ...start, endLine: end.line, endColumn: end.column, severity: 2, nodeType: null });
+  }
+  const api = (findings) => ({ filename: entry.filename, error_count: findings.length, warning_count: 0, diagnostics: findings });
+  const routeIds = ["default", "recommended", "essential", "ecosystem", "incremental", "explicit-off", "n8n-projection"];
+  const routes = routeIds.map((id, index) => {
+    const findings = index < 4 ? diagnostics : [];
+    return { id, scope: "target-only native rule; real source full-default qualification excluded", diagnostics: findings,
+      apiPacket: api(findings), cliPacket: wholeJson(entry, findings), status: findings.length ? 1 : 0 };
+  });
+  return { id: entry.id, filename: entry.filename, sourceFile, source: entry.source, sourceSha256: entry.sourceSha256,
+    kind: entry.kind, original: entry.original ?? null,
+    scopeNote: entry.scopeNote ?? null, conservativeOwnershipRefusal: entry.expectedPinnedProviderCount === null,
+    members: all, beforeDiagnostics: [], diagnostics, providerDiagnostics, providerForeignDiagnostics: foreign,
+    apiBeforePacket: api([]), apiAfterPacket: api(diagnostics), routes };
+});
+fs.writeFileSync(directory + "cases.json", JSON.stringify({ schema: "vize.lint.runtime-prop-defaults", version: 1, issue: 8564, rule,
+  authority: "Complete literal expectations authored from immutable whole sources, existing native report contract, and pinned provider source before current native execution. Provider observations never supply expected vectors. Original eighteen sources and raw references remain distinct from any supplemental controls.",
+  sourceParser: { package: "typescript", version: ts.version, role: "Independent grammar-only span transcription; no native lint or provider rule execution" },
+  nativeContract: { primarySpan: "whole runtime prop Property", requiredLabel: "required key through boolean literal", defaultLabel: "default key through complete value expression", help, error: true, fix: null, existingTypedAndOptionsMetadataUnchanged: true },
+  summary: { originalCases: 7, authoredCases: 11, sourceCount: 18, originalNativeAfterFindings: 16, authoredNativeAfterFindings: 3, nativeBeforeFindings: 0, nativeAfterFindings: 19, providerTargetFindings: 23, providerForeignFindings: 1, conservativeOwnershipDifferenceCases: 4 },
+  qualification: { actualCurrentBefore: "pending", actualCurrentAfter: "pending", wholeProject: "unusable original Matrix; unchanged", fullDefaultRealProjects: "unfinished", publicRelease: "unfinished" }, cases }, null, 2) + "\n");
+const ids = new Set(["runtime-required", "runtime-direct-statement", "runtime-crlf-unicode", "runtime-optional", "runtime-no-default", "runtime-no-required", "ordinary-normal-script"]);
+const controls = cases.filter((entry) => ids.has(entry.id)).map((entry) => ({ id: entry.id, filename: entry.filename, sourceSha256: entry.sourceSha256,
+  companions: [], routes: entry.routes.map((route) => ({ ...route, scope: "complete full-default minimal SFC packet", beforeApiPacket: entry.apiBeforePacket, beforeCliPacket: wholeJson(entry, []), beforeStatus: 0 })) }));
+fs.writeFileSync(directory + "default-route-controls.json", JSON.stringify({ schema: "vize.lint.runtime-prop-defaults-default-controls", version: 1,
+  authority: "Three positive/four negative minimal actual SFCs qualify complete whole API/CLI output in seven routes. Companion packets are explicitly empty: type-requirement rules are opt-in; valid-default skips absent type; reserved/valid macro/other default rules do not match these source shapes. Real project sources retain explicit target-only scope.",
+  targetCorpusSha256: hash(read("cases.json")), cases: controls }, null, 2) + "\n");
+console.log({ cases: cases.length, native: cases.reduce((n, e) => n + e.diagnostics.length, 0), provider: cases.reduce((n, e) => n + e.providerDiagnostics.length, 0), casesSha256: hash(read("cases.json")), defaultControlsSha256: hash(read("default-route-controls.json")) });

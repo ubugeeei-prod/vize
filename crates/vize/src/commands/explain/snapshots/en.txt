@@ -2255,12 +2255,12 @@ autofix: no
 docs: docs/content/rules/type-and-script.md
 
 invalid:
-  defineOptions({ inheritAttrs: true })
-  export default { inheritAttrs: true }
+  <script setup></script>
+  <template><div><button v-bind="$attrs">Save</button></div></template>
 
 valid:
-  defineOptions({ inheritAttrs: false }) // intentional opt-out
-  export default {}                      // default inheritance, unstated
+  <script setup>defineOptions({ inheritAttrs: false })</script>
+  <template><div><button v-bind="$attrs">Save</button></div></template>
 === script/no-export-in-script-setup
 script/no-export-in-script-setup · lint rule
 Disallow export statements inside <script setup>
@@ -2492,10 +2492,10 @@ valid:
   const myData = {}
 === script/no-reserved-keys
 script/no-reserved-keys · lint rule
-Disallow Vue-reserved names as Options API props/data/computed/methods/setup/inject keys
+Disallow Vue-reserved names as Options API props/data/computed/methods/setup keys
 
 tier: exact
-domain: Options API component definitions written as object literals
+domain: props/data/computed/methods/setup members of resolved Options API objects with block-scoped script/no-reserved-keys or registered vue/no-reserved-keys suppression; asyncData and script-setup defineProps are outside
 severity: error
 category: script
 autofix: no
@@ -2503,9 +2503,9 @@ docs: docs/content/rules/type-and-script.md
 
 invalid:
   export default {
-    props: ['$el'],       // reserved: starts with `$`
-    computed: { _foo() { return 1 } }, // reserved: starts with `_`
-    methods: { emit() {} } // reserved: Vue built-in instance name
+    props: ['$el'],
+    data() { return { _private: 1 } },
+    methods: { $emit() {} }
   }
 === script/no-reserved-props
 script/no-reserved-props · lint rule
@@ -2781,6 +2781,7 @@ invalid:
 
 valid:
   import { ref, h } from 'vue'
+  import { isString } from '@vue/shared'
 === script/prefer-ref-over-reactive
 script/prefer-ref-over-reactive · lint rule
 Recommend using ref() over reactive() for state management
@@ -3181,10 +3182,10 @@ autofix: no
 docs: docs/content/rules/type-and-script.md
 === script/return-in-emits-validator
 script/return-in-emits-validator · lint rule
-Require a return value in every Options API emits validator
+Require a return value in every Vue emits validator
 
 tier: complete
-domain: Options API component definitions written as object literals
+domain: Vue emits validator functions in resolved Options API objects and compiler-owned inline setup runtime objects or immutable const chains; unavailable external blocks, namespace-shadowed calls and all-path return analysis are outside
 severity: error
 category: script
 autofix: no

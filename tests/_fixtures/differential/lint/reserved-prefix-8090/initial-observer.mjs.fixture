@@ -1,0 +1,320 @@
+import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import { createRequire } from "node:module";
+import os from "node:os";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { gunzipSync, gzipSync } from "node:zlib";
+import { sha256, wholeJson } from "../../../../tooling/lint-default-correctness-reference.mjs";
+
+// Every expectation must exist before this observer runs. It records complete
+// released/provider packets; it never supplies or updates any expected vector.
+const fixture = path.dirname(fileURLToPath(import.meta.url));
+const root = path.resolve(fixture, "../../../../..");
+const read = (name) => fs.readFileSync(path.join(fixture, name));
+const primaryBytes = read("primary-sources.json");
+const primary = JSON.parse(primaryBytes);
+const checked = (entry) => {
+  const bytes = read(entry.path);
+  assert.equal(sha256(bytes), entry.sha256, entry.path);
+  return bytes;
+};
+const corpusBytes = checked(primary.corpus);
+const corpus = JSON.parse(corpusBytes);
+const originalsBytes = checked(primary.originals);
+const originals = JSON.parse(originalsBytes);
+const index = JSON.parse(checked(primary.originalSources));
+assert.equal(corpus.schema, "vize.lint.reserved-prefix");
+assert.equal(originals.schema, "vize.lint.reserved-prefix-originals");
+assert.equal(corpus.cases.length, 20);
+assert.equal(originals.cases.length, 21);
+assert.equal(sha256(fs.readFileSync(fileURLToPath(import.meta.url))), primary.observer.sha256);
+assert.equal(
+  sha256(fs.readFileSync(path.join(root, primary.observer.wholeJson.path))),
+  primary.observer.wholeJson.sha256,
+);
+for (const entry of primary.inheritedBareCorpus.files) checked(entry);
+for (const entry of index.matrices) {
+  const compressed = checked(entry);
+  assert.equal(compressed.length, entry.bytes);
+  const raw = gunzipSync(compressed);
+  assert.equal(raw.length, entry.uncompressedBytes);
+  assert.equal(sha256(raw), entry.uncompressedSha256);
+  const matrix = JSON.parse(raw);
+  assert.equal(matrix.project, entry.project);
+  assert.equal(matrix.revision, entry.revision);
+  assert.equal(matrix.evidence.commitSha, entry.sourceCommit);
+  assert.equal(matrix.divergence.falsePositives.length, entry.falsePositiveCount);
+  assert.equal(matrix.divergence.falseNegatives.length, entry.falseNegativeCount);
+  assert.deepEqual(matrix.budget, entry.budget);
+}
+for (const entry of index.sources) {
+  const bytes = read(entry.sourceFile);
+  assert.equal(bytes.length, entry.bytes);
+  assert.equal(sha256(bytes), entry.sourceSha256);
+}
+const binary = process.env.VIZE_PUBLIC_BINARY;
+const providerRoot = process.env.VIZE_PROVIDER_ROOT;
+assert.ok(binary, "VIZE_PUBLIC_BINARY must name the authenticated public v0.443.0 binary");
+assert.ok(providerRoot, "VIZE_PROVIDER_ROOT must name the pinned isolated package installation");
+const binaryBefore = sha256(fs.readFileSync(binary));
+assert.equal(binaryBefore, primary.publicBefore.binarySha256);
+assert.equal(binaryBefore, corpus.publicBeforeBaseline.binarySha256);
+function providerIdentity() {
+  const identities = [];
+  for (const entry of primary.provider.packages) {
+    const packageRoot = path.join(providerRoot, "node_modules", entry.name);
+    const installed = JSON.parse(fs.readFileSync(path.join(packageRoot, "package.json")));
+    assert.equal(installed.version, entry.version, entry.name);
+    assert.equal(
+      sha256(fs.readFileSync(path.join(packageRoot, "package.json"))),
+      entry.packageJsonSha256,
+    );
+    const files = (directory) =>
+      fs.readdirSync(directory, { withFileTypes: true }).flatMap((item) => {
+        if (item.name === "node_modules") return [];
+        const filename = path.join(directory, item.name);
+        return item.isDirectory() ? files(filename) : item.isFile() ? [filename] : [];
+      });
+    const filenames = files(packageRoot).sort();
+    const tree = filenames
+      .map(
+        (filename) =>
+          `${sha256(fs.readFileSync(filename))}  ${path.relative(packageRoot, filename).split(path.sep).join("/")}\n`,
+      )
+      .join("");
+    assert.equal(filenames.length, entry.installedFileCount, entry.name);
+    assert.equal(sha256(tree), entry.installedFileTreeSha256, entry.name);
+    identities.push({ name: entry.name, files: filenames.length, treeSha256: sha256(tree) });
+  }
+  for (const entry of primary.provider.files) {
+    assert.equal(
+      sha256(fs.readFileSync(path.join(providerRoot, entry.path))),
+      entry.sha256,
+      entry.path,
+    );
+  }
+  const lockSha256 = sha256(fs.readFileSync(path.join(providerRoot, "package-lock.json")));
+  assert.equal(lockSha256, primary.provider.packageLockSha256);
+  return { packages: identities, lockSha256 };
+}
+const providerBefore = providerIdentity();
+const requireProvider = createRequire(path.join(providerRoot, "package.json"));
+const { ESLint } = requireProvider("eslint");
+const vue = requireProvider("eslint-plugin-vue");
+const parser = requireProvider("vue-eslint-parser");
+const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-reserved-prefix-reference-"));
+const nativeConfig = JSON.stringify(primary.observer.nativeConfig, null, 2) + "\n";
+fs.writeFileSync(path.join(directory, "vize.config.json"), nativeConfig);
+const eslint = new ESLint({
+  cwd: directory,
+  overrideConfigFile: true,
+  ignore: false,
+  overrideConfig: [
+    {
+      files: ["**/*.vue"],
+      languageOptions: {
+        parser,
+        ecmaVersion: 2022,
+        sourceType: "module",
+        parserOptions: { ecmaVersion: 2022, sourceType: "module" },
+      },
+      plugins: { vue },
+      rules: { "vue/no-reserved-keys": "error" },
+    },
+  ],
+});
+const custody = {
+  corpusSha256: sha256(corpusBytes),
+  originalsSha256: sha256(originalsBytes),
+  originalSourcesSha256: primary.originalSources.sha256,
+  primarySourcesSha256: sha256(primaryBytes),
+  helperSha256: primary.observer.sha256,
+  wholeJsonSha256: primary.observer.wholeJson.sha256,
+};
+function prior(name) {
+  if (!fs.existsSync(path.join(fixture, name))) return [];
+  const bytes = read(name);
+  return [
+    {
+      sha256: sha256(bytes),
+      rawBytes: bytes.length,
+      encoding: "gzip-base64",
+      completePacket: gzipSync(bytes).toString("base64"),
+    },
+  ];
+}
+const nativeReceipt = {
+  schema: "vize.lint.reserved-prefix-public-before",
+  version: 1,
+  authority:
+    "Complete authenticated released CLI output checked against previously authored publicBeforeDiagnostics. This is released before evidence, not source-after or whole Matrix parity.",
+  custody,
+  priorAttempts: prior("original-public-before.json"),
+  baseline: { ...primary.publicBefore, binary, verifiedBinarySha256: binaryBefore },
+  config: { text: nativeConfig, sha256: sha256(nativeConfig) },
+  runs: [],
+};
+const providerReceipt = {
+  schema: "vize.lint.reserved-prefix-official-provider",
+  version: 1,
+  authority:
+    "Complete pinned ESLint lintText packets, including suppressedMessages, checked against independently authored provider vectors. Native asyncData/defineProps coverage and inline-directive support remain unfinished.",
+  custody,
+  priorAttempts: prior("official-provider.json"),
+  provider: primary.provider,
+  verifiedProviderBefore: providerBefore,
+  configuration: primary.observer.providerConfig,
+  runs: [],
+};
+const failures = [];
+function compare(observation, assertions) {
+  try {
+    assertions();
+    observation.matched = true;
+  } catch (error) {
+    observation.matched = false;
+    observation.mismatch = { name: error.name, message: error.message };
+    failures.push({ id: observation.id, message: error.message });
+  }
+}
+function persist() {
+  fs.writeFileSync(
+    path.join(fixture, "original-public-before.json"),
+    JSON.stringify(nativeReceipt, null, 2) + "\n",
+  );
+  fs.writeFileSync(
+    path.join(fixture, "official-provider.json"),
+    JSON.stringify(providerReceipt, null, 2) + "\n",
+  );
+}
+try {
+  for (const { entry, kind } of [
+    ...corpus.cases.map((entry) => ({ entry, kind: "authored" })),
+    ...originals.cases.map((entry) => ({ entry, kind: "immutable-original" })),
+  ]) {
+    const bytes = read(entry.sourceFile ?? entry.filename + ".fixture");
+    assert.equal(bytes.toString("utf8"), entry.source, entry.id);
+    assert.equal(sha256(bytes), entry.sourceSha256, entry.id);
+    const input = { source: entry.source, sourceSha256: sha256(bytes), bytes: bytes.length };
+    const filename = path.join(directory, entry.filename);
+    fs.writeFileSync(filename, bytes);
+    const argv = [
+      "lint",
+      "-c",
+      "vize.config.json",
+      "--format",
+      "json",
+      "--locale",
+      "en",
+      "--help-level",
+      "none",
+      entry.filename,
+    ];
+    const run = spawnSync(binary, argv, {
+      cwd: directory,
+      encoding: "utf8",
+      timeout: 60_000,
+      maxBuffer: 8 * 1024 * 1024,
+    });
+    const observed = {
+      id: entry.id,
+      kind,
+      input,
+      argv,
+      status: run.status,
+      signal: run.signal,
+      error: run.error ? { name: run.error.name, message: run.error.message } : null,
+      stdout: run.stdout ?? "",
+      stderr: run.stderr ?? "",
+      expected: wholeJson(entry, entry.publicBeforeDiagnostics),
+      expectedStatus: entry.publicBeforeDiagnostics.some((finding) => finding.severity === "error")
+        ? 1
+        : 0,
+    };
+    nativeReceipt.runs.push(observed);
+    compare(observed, () => {
+      assert.equal(observed.error, null);
+      assert.equal(observed.signal, null);
+      assert.equal(observed.status, observed.expectedStatus);
+      assert.equal(observed.stderr, "");
+      observed.actual = JSON.parse(observed.stdout);
+      assert.deepEqual(observed.actual, observed.expected);
+    });
+    persist();
+    const messages = entry.providerDiagnostics;
+    const official = {
+      id: entry.id,
+      kind,
+      input,
+      nativeAfterDiagnosticCount: entry.diagnostics.length,
+      providerParity: entry.providerParity,
+      expected: [
+        {
+          filePath: filename,
+          messages,
+          suppressedMessages: entry.providerSuppressedDiagnostics ?? [],
+          errorCount: messages.filter((finding) => finding.severity === 2).length,
+          fatalErrorCount: 0,
+          warningCount: messages.filter((finding) => finding.severity === 1).length,
+          fixableErrorCount: 0,
+          fixableWarningCount: 0,
+          ...(messages.length ? { source: entry.source } : {}),
+          usedDeprecatedRules: [],
+        },
+      ],
+    };
+    providerReceipt.runs.push(official);
+    persist();
+    official.actual = JSON.parse(
+      JSON.stringify(await eslint.lintText(entry.source, { filePath: entry.filename })),
+    );
+    compare(official, () => assert.deepEqual(official.actual, official.expected));
+    const afterBytes = fs.readFileSync(filename);
+    observed.inputAfterSha256 = sha256(afterBytes);
+    official.inputAfterSha256 = sha256(afterBytes);
+    assert.equal(observed.inputAfterSha256, entry.sourceSha256);
+    fs.unlinkSync(filename);
+    persist();
+  }
+  for (const receipt of [nativeReceipt, providerReceipt]) {
+    receipt.summary = {
+      cases: receipt.runs.length,
+      matchedCases: receipt.runs.filter((run) => run.matched).length,
+      authoredCases: receipt.runs.filter((run) => run.kind === "authored").length,
+      originalCases: receipt.runs.filter((run) => run.kind === "immutable-original").length,
+      diagnosticCount: receipt.runs.reduce(
+        (sum, run) => sum + (run.actual?.[0]?.messages.length ?? 0),
+        0,
+      ),
+      suppressedDiagnosticCount: receipt.runs.reduce(
+        (sum, run) => sum + (run.actual?.[0]?.suppressedMessages?.length ?? 0),
+        0,
+      ),
+    };
+  }
+  assert.equal(sha256(read("cases.json")), custody.corpusSha256);
+  assert.equal(sha256(read("originals.json")), custody.originalsSha256);
+  assert.equal(sha256(read("original-sources.json")), custody.originalSourcesSha256);
+  nativeReceipt.verifiedBinaryAfterSha256 = sha256(fs.readFileSync(binary));
+  assert.equal(nativeReceipt.verifiedBinaryAfterSha256, binaryBefore);
+  providerReceipt.verifiedProviderAfter = providerIdentity();
+  assert.deepEqual(providerReceipt.verifiedProviderAfter, providerBefore);
+  persist();
+  console.log(
+    JSON.stringify(
+      { native: nativeReceipt.summary, provider: providerReceipt.summary, failures },
+      null,
+      2,
+    ),
+  );
+  assert.equal(
+    failures.length,
+    0,
+    "Reference mismatches are retained; expected vectors are never recaptured",
+  );
+} finally {
+  persist();
+  fs.rmSync(directory, { recursive: true, force: true });
+}

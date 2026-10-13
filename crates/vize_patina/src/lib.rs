@@ -124,6 +124,8 @@ pub use diagnostic::{
 pub use ir::{
     ByteRange, LintDocument, LintDocumentKind, ScriptBlock, ScriptLanguage, TemplateBlock,
 };
+/// CSS AST provider used by [`ParsedStyleSheet`] and [`rules::css::CssRule`].
+pub use lightningcss as css_ast;
 pub use linter::css_rules::{BuiltinCssRuleMeta, builtin_css_rules};
 pub use linter::script_rules::{BuiltinScriptRuleMeta, builtin_script_rules};
 pub use linter::{LintResult, Linter};

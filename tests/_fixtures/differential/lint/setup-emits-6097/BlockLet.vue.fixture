@@ -1,0 +1,4 @@
+<script setup lang="ts">
+if (false) { let defineEmits = api }
+const emit = defineEmits({ submit(payload) { void payload } })
+</script>

@@ -109,7 +109,7 @@ test("required report keeps inventory and final dependency verification in the s
     install.run,
     "vp install --frozen-lockfile --prefer-offline --filter vize-workspace --ignore-scripts",
   );
-  assert.match(collect.run ?? "", /test-inventory\.mjs --json test-inventory\.json/);
+  assert.match(collect.run ?? "", /test-inventory\.ts --json test-inventory\.json/);
   assert.match(upload.uses ?? "", /^actions\/upload-artifact@/);
 });
 

@@ -4,8 +4,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { reviewedHostPaths } from "./warm-type-backed-reviewed-hosts.ts";
 import { unqualifiedReceiptPaths } from "./warm-type-backed-build-receipt-extension.ts";
+import { gitReaderHarness } from "./warm-type-backed-git-reader-harness.ts";
 import { finiteCut } from "./warm-type-backed-cut.ts";
-import { gitBodyDigest } from "./warm-type-backed-path-host.ts";
+import { gitBodyDigest } from "./warm-type-backed-host-qualifications.ts";
 import { qualifyHostMoves } from "./warm-type-backed-host-qualifications.ts";
 import {
   driverRoot,
@@ -91,9 +92,10 @@ if (process.argv[2] === "prepare") {
       "docs/davinci/decisions/2026-09-27-level-restructure.md",
       "docs/davinci/decisions/2026-10-05-lsp-warm-query-surfaces.md",
     ]);
-    for (const file of unqualifiedReceiptPaths(changed, harness, driverRoot, baseline, head))
+    const qualified = gitReaderHarness(changed, harness, driverRoot, baseline, head);
+    for (const file of unqualifiedReceiptPaths(changed, qualified, driverRoot, baseline, head))
       assert.ok(
-        harness.has(file) ||
+        qualified.has(file) ||
           /^tests\/performance\/support\/warm-type-backed-[a-z-]+\.ts$/u.test(file),
         `unqualified harness delta: ${file}`,
       );
@@ -111,19 +113,14 @@ if (process.argv[2] === "prepare") {
       );
     }
   } else assert.ok(production.length > 0);
-  const { pathHostMove, timingHostMove, defaultMigrationHost } = qualifyHostMoves(
-    production,
-    allowed,
-    !cut,
-    (side, file) => gitBodyDigest(driverRoot, side === "before" ? baseline : head, file),
+  const hostMoves = qualifyHostMoves(production, allowed, !cut, (side, file) =>
+    gitBodyDigest(driverRoot, side === "before" ? baseline : head, file),
   );
   if (!cut) {
     for (const file of production)
       assert.ok(
         allowed.has(file) ||
-          pathHostMove?.files.includes(file) ||
-          timingHostMove?.files.includes(file) ||
-          defaultMigrationHost?.files.includes(file),
+          Object.values(hostMoves).some((qualification) => qualification?.files.includes(file)),
         `unqualified production delta: ${file}`,
       );
   }
@@ -164,9 +161,7 @@ if (process.argv[2] === "prepare") {
         base,
         baseline,
         production,
-        pathHostMove,
-        timingHostMove,
-        defaultMigrationHost,
+        ...hostMoves,
         afterRoot,
         driverSource: driver,
         authority: cut

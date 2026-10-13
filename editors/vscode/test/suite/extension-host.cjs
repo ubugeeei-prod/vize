@@ -4,6 +4,8 @@ const vscode = require("vscode");
 const { runAutoInsertSmoke } = require("./auto-insert-smoke.cjs");
 const { runEditorCapabilityProviderSmoke } = require("./editor-capability-smoke.cjs");
 const { runSyntaxHighlightContributionSmoke } = require("./extension-host-grammar-smoke.cjs");
+const { runExistingConfigSmoke } = require("./existing-config-smoke.cjs");
+const { runStartupConfigSmoke } = require("./startup-config-smoke.cjs");
 const {
   commandIds,
   explicitlyDisabledInitializationOptions,
@@ -41,6 +43,8 @@ exports.run = async function run() {
   await runSyntaxHighlightContributionSmoke();
   await runFakeServerLifecycleSmoke();
   await runConfigurationEdgeCaseSmoke();
+  await runExistingConfigSmoke();
+  await runStartupConfigSmoke();
   await runAutoInsertSmoke();
   await runDiagnosticSmoke();
   await runEditorCapabilityProviderSmoke({

@@ -7,7 +7,7 @@ import { test, type TestContext } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const summaryScript = fileURLToPath(
-  new URL("../../tools/benchmarks/scripts/davinci-production-summary.mjs", import.meta.url),
+  new URL("../../tools/benchmarks/scripts/davinci-production-summary.ts", import.meta.url),
 );
 const shapes = ["dom_inline", "dom_module", "ssr", "vapor"];
 

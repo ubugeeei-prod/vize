@@ -8,7 +8,7 @@ export function render(_ctx) {
 const n1 = t0()
 const _component_CodeHighlight = _resolveComponent("CodeHighlight")
 _setInsertionState(n1)
-const n0 = _createComponentWithFallback(_component_CodeHighlight, null, null, true)
+const n0 = _createComponentWithFallback(_component_CodeHighlight, null, null, false)
 _setInsertionState(n1, 1)
 const n2 = _createIf(() => (_ctx.visible), () => {
 const n4 = _createComponentWithFallback(_component_CodeHighlight)

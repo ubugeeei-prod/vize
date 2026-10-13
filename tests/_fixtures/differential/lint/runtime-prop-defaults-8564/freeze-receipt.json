@@ -1,0 +1,302 @@
+{
+  "schema": "vize.lint.runtime-prop-defaults-freeze",
+  "version": 1,
+  "authority": "Final complete source-authored fixture byte freeze before current native/source observation. No production, harness, registry, pin or original oracle file was changed by the fixture author. The entire raw18 before packet, foreign configuration message and original Matrix/denominators remain separate unchanged authorities. Provisional target-only seven-route arrays are explicitly retained as unexecuted preparation; the configured primary route is solely scoped-route-contract.json.",
+  "scopes": {
+    "primarySources": 18,
+    "configuredPrimaryRoutes": 18,
+    "fullMinimalRoutes": 49,
+    "supplementalSources": 12
+  },
+  "qualification": {
+    "currentNativeBefore": "pending",
+    "currentNativeAfter": "pending",
+    "supplementalProvider": "pending separate evidence",
+    "fullDefaultRealProjects": "unfinished",
+    "wholeMatrix": "unchanged unusable",
+    "merge": "pending",
+    "installedRelease": "pending"
+  },
+  "authorities": {
+    "nativeTargetVectors": "cases.json",
+    "configuredPrimary": "scoped-route-contract.json",
+    "fullMinimal": "default-route-controls.json",
+    "ownershipSupplement": "ownership-supplement.json",
+    "sourceProvenance": "source-law.json",
+    "initialPreparation": "initial-route-preparation.json",
+    "rawBefore": "read-only-original-provider-and-public-packets.json",
+    "unchangedOriginals": "frozen-originals-custody.json"
+  },
+  "fixtureFiles": [
+    {
+      "path": "authored-proposal.json",
+      "sha256": "2b2160ce93eeb08d56d30454e2c59d307341445328c24f41e06d53792de7652b",
+      "bytes": 6301
+    },
+    {
+      "path": "authored-source-law.mjs.fixture",
+      "sha256": "6b70540561a9437e50047ecd44d1b746e4073f301468d86ed3420460395f9701",
+      "bytes": 10051
+    },
+    {
+      "path": "cases.json",
+      "sha256": "95453a7cecb70ab2deb0cd2a3585d218aa6caef7a9832078e98865dbc9930ad9",
+      "bytes": 492211
+    },
+    {
+      "path": "default-route-controls.json",
+      "sha256": "3eac3263115863c9e1ff3e38b4140f10722c197d33117411aabcd145e006515e",
+      "bytes": 77154
+    },
+    {
+      "path": "frozen-originals-custody.json",
+      "sha256": "1d295171cedeafab0bc4eaf247440eeffd0a503630ce8a3871e4ac931775951d",
+      "bytes": 45719
+    },
+    {
+      "path": "initial-route-preparation.json",
+      "sha256": "a415981bbb03ce4cf628f24b4501376275b26f2b963adb03d7fa5b93774692c4",
+      "bytes": 1081
+    },
+    {
+      "path": "ordinary-normal-script.vue.fixture",
+      "sha256": "4779b5682314e9aed4daa9e0f6109d4d430c277e691346764eedbeae7e702d44",
+      "bytes": 89
+    },
+    {
+      "path": "original-1-ExampleResponse.vue.fixture",
+      "sha256": "990b2146af9aaea45c7ac692d68bd1a4e78b25b5b30dc4a4e681d9a88ace47f6",
+      "bytes": 7300
+    },
+    {
+      "path": "original-2-ImportExport.vue.fixture",
+      "sha256": "b7be8e8545f21ce97b23fc338f6be922694d4d644f52c65cb3144a2546594d84",
+      "bytes": 28325
+    },
+    {
+      "path": "original-3-MyCollections.vue.fixture",
+      "sha256": "74f829733ee880d69df08c95ad8863c98761f75f89d18d3e5a266a4329b6d779",
+      "bytes": 29348
+    },
+    {
+      "path": "original-4-Request.vue.fixture",
+      "sha256": "850d0cfd67c91e0cad3b7936916d59adbdb356c4e6bae408c6840f8740403970",
+      "bytes": 14613
+    },
+    {
+      "path": "original-5-TeamCollections.vue.fixture",
+      "sha256": "ed8e6b2f49137e61414a3b10ab049ce4992faf57b5215aedf569f8b20425ddff",
+      "bytes": 34124
+    },
+    {
+      "path": "original-6-Base.vue.fixture",
+      "sha256": "d4a3ab45175a5d75438238a0c435a88c871c68b721c65bc51760855f3f0b166b",
+      "bytes": 6048
+    },
+    {
+      "path": "original-7-Modal.vue.fixture",
+      "sha256": "126569ac47b3c13a3cd5f6fe0336fc88cfe44933526d616e9d66186d6c5574f9",
+      "bytes": 3923
+    },
+    {
+      "path": "original-api-rule-admission.rs.fixture",
+      "sha256": "78353bf543071e690be0d9640b4272eeb60b222e7c97660cc349a14f8efe1460",
+      "bytes": 4654
+    },
+    {
+      "path": "original-cli-rule-admission.rs.fixture",
+      "sha256": "b115a87fb86193bf6574c2903d3a5c8c8764293aaad7d63bef6fd7d413010322",
+      "bytes": 11577
+    },
+    {
+      "path": "original-hoppscotch-matrix.json.gz",
+      "sha256": "e8d7d64299d2d42a00d0db3a64409ce0c77e4d830e1cbe5a9d17a84d37228255",
+      "bytes": 284452
+    },
+    {
+      "path": "original-native-producer.rs.fixture",
+      "sha256": "5b3ae15fd4fc769f5fa418ec3b14039a8b30d8b1d7e06cd8f5ba6f872b12274c",
+      "bytes": 10626
+    },
+    {
+      "path": "original-observer.mjs.fixture",
+      "sha256": "d00c2beae48430936f8ad17a46a9d05946ee0e50ed401f8ac74a665e1d9fd3b4",
+      "bytes": 5684
+    },
+    {
+      "path": "original-registry.rs.fixture",
+      "sha256": "eaa4722cc76a7471137d797c255a8b5e5bcb09aa4d199a9b89624a1d506a6c03",
+      "bytes": 21919
+    },
+    {
+      "path": "original-sources.json",
+      "sha256": "ff8805d593ace233cd37a839141376579295b35985c2c82210ec9b833d612058",
+      "bytes": 11173
+    },
+    {
+      "path": "original-typed-producer.rs.fixture",
+      "sha256": "0749c7e672b42572d4c509404af7c82ba415590de5ef04988d577cdc23806c83",
+      "bytes": 8807
+    },
+    {
+      "path": "original-valid-default-producer.rs.fixture",
+      "sha256": "cb8e390094ba0aa83cd94273f0f5c6e269c0ee6d9b5b7d981a69b91e653969b0",
+      "bytes": 11333
+    },
+    {
+      "path": "ownership-supplement.json",
+      "sha256": "5847eefb4138f8ebfab0335f3179c6f7242f3419a0ed6e08bed43519df080a7c",
+      "bytes": 9274
+    },
+    {
+      "path": "pinned-provider-foreign-rule.js.fixture",
+      "sha256": "1c0d9232eec336a4c882492e17d61a94325d6ea942dfa906b10abef9e30ecf43",
+      "bytes": 18710
+    },
+    {
+      "path": "pinned-provider-rule.js.fixture",
+      "sha256": "3c51d5f8d0ccf8abc2e0b61006a32e755edc962267ea79a3d3b20b1342f67924",
+      "bytes": 3742
+    },
+    {
+      "path": "pinned-provider-utils.js.fixture",
+      "sha256": "4727c10651f789ee6308b4311f3694dd302faae9e5b821ae4b31432c3b105925",
+      "bytes": 80367
+    },
+    {
+      "path": "read-only-assessment.json",
+      "sha256": "f7cdab56e2fb7cd1e8d1f5e3574d1cc77fda900002bdd14d2dadd91629460b79",
+      "bytes": 10996
+    },
+    {
+      "path": "read-only-original-provider-and-public-packets.json",
+      "sha256": "357840d6ec0c740e52f40e0ffd95d020477dc4abdad3acfb15c3e7820860d5a0",
+      "bytes": 330367
+    },
+    {
+      "path": "runtime-bound-object.vue.fixture",
+      "sha256": "dcde71a787ea0118a21daef24cd50620c1fcfd740707660912d317ec8be26259",
+      "bytes": 140
+    },
+    {
+      "path": "runtime-crlf-unicode.vue.fixture",
+      "sha256": "b227fb4c267fe1b8c451a320337e38f19f3fdcdfa0121c6db9b43887be52a566",
+      "bytes": 121
+    },
+    {
+      "path": "runtime-direct-statement.vue.fixture",
+      "sha256": "baadf41c181fd46c5726ab6f5ad2169282bbf4b6965e04018dd4d22ca6ef1dda",
+      "bytes": 81
+    },
+    {
+      "path": "runtime-external-setup.vue.fixture",
+      "sha256": "dc8de0f5759df2c355e7fbfcb24068c9f5f0e625c1c4dd3c22a7298fb6cd3432",
+      "bytes": 114
+    },
+    {
+      "path": "runtime-foreign-import.vue.fixture",
+      "sha256": "5c77f6866204b5db4e6b39634aa25035086f9fc3cb0591b787287dd2d82c0d8b",
+      "bytes": 132
+    },
+    {
+      "path": "runtime-hoisted-var.vue.fixture",
+      "sha256": "bb9570b4e722adf15b7067f0d5bf3fb2b5aa6c268564a34a76d3a6f3321fddd6",
+      "bytes": 155
+    },
+    {
+      "path": "runtime-imported-object.vue.fixture",
+      "sha256": "c3565103cbe3e0a43a836e041609020d2d30e009f7b8f17fc040cf72eca63e96",
+      "bytes": 112
+    },
+    {
+      "path": "runtime-late-const.vue.fixture",
+      "sha256": "42a11c88829677202caca2aa147455a9ce883fb738e486d518a96539a32b742b",
+      "bytes": 143
+    },
+    {
+      "path": "runtime-namespace-import.vue.fixture",
+      "sha256": "dcfbd05f7cf430ee2ad319a34aa09eae7e5caa3ce0d281810a86c5e5ba094d4f",
+      "bytes": 145
+    },
+    {
+      "path": "runtime-nested-function.vue.fixture",
+      "sha256": "b2ae9b554f9dcf30732b342fd77c8b3478720fbe27012f0b9ed83f8baaeb1025",
+      "bytes": 119
+    },
+    {
+      "path": "runtime-no-default.vue.fixture",
+      "sha256": "5a0ec742199d9c9b14677c9007e2ef878d01ea191450c408dfaf8cbbd8b30fd1",
+      "bytes": 83
+    },
+    {
+      "path": "runtime-no-required.vue.fixture",
+      "sha256": "25d4f5e01ecbf04440760cfe0758a3e16ec622b18374371cd5edfcd6092578fe",
+      "bytes": 79
+    },
+    {
+      "path": "runtime-optional-call.vue.fixture",
+      "sha256": "3ae091405be8330159b1968d1d740b29ad812f158c48a2a82ef488a39c7b7177",
+      "bytes": 107
+    },
+    {
+      "path": "runtime-optional.vue.fixture",
+      "sha256": "7e52cc102734cdd05837c51584063fc66c73e5ead32aff16102b9186dbf6fef8",
+      "bytes": 96
+    },
+    {
+      "path": "runtime-required.vue.fixture",
+      "sha256": "25132067b76cab7309b2694748201e4f2639edd2e5fab155974a8a2e883745c6",
+      "bytes": 95
+    },
+    {
+      "path": "runtime-shadowed-function.vue.fixture",
+      "sha256": "2a184762338268e841e586d6e5bfd4711aec0ee6a02d6341f421f847daceb9b5",
+      "bytes": 141
+    },
+    {
+      "path": "runtime-sibling-shadow.vue.fixture",
+      "sha256": "83807a3d0cb12031d3f53e235fb90ba316c978b389a248bd34d40afe339189e1",
+      "bytes": 159
+    },
+    {
+      "path": "runtime-type-and-runtime.vue.fixture",
+      "sha256": "847cff58ef2ef0468cbf87cb2a2e94ef8cf71efcee4d57dc68dddb47c9d24edb",
+      "bytes": 124
+    },
+    {
+      "path": "runtime-value-namespace.vue.fixture",
+      "sha256": "1887d71622b3c86949f7b53e2d125fb5c32c5a227ac901d2de1c216d74710370",
+      "bytes": 155
+    },
+    {
+      "path": "runtime-vue-foreign-alias.vue.fixture",
+      "sha256": "a263b99c31cca257d8b1fcb1a6fd68225570e8724a0a2dcb001afa1397d5e78b",
+      "bytes": 149
+    },
+    {
+      "path": "runtime-vue-import.vue.fixture",
+      "sha256": "f89a4b4bf844f6628ced3fe6986baf4f69ad9685925dc5ee36cab152b804cc6e",
+      "bytes": 140
+    },
+    {
+      "path": "runtime-with-defaults-wrapper.vue.fixture",
+      "sha256": "2381cc4f05fb17bef6ce90a109b032767c2dd1922450b82fcda2e6a3b9a3c176",
+      "bytes": 123
+    },
+    {
+      "path": "scoped-route-contract.json",
+      "sha256": "639ab77d684f5fbb20284136a3132057ef0497f899148523f0764241d9367cc0",
+      "bytes": 64132
+    },
+    {
+      "path": "source-law.json",
+      "sha256": "1412b36aa2ea22c31941c15058a61aa7b6e519965edebba161da15a7cc19fe62",
+      "bytes": 7666
+    }
+  ],
+  "referenceTest": {
+    "path": "tests/tooling/runtime-prop-defaults-reference.test.mjs",
+    "sha256": "6c6f373f09909b85ad71f19e730e6a076fbcd976685d627b9d389d672429be88",
+    "bytes": 12013
+  }
+}

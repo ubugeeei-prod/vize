@@ -128,8 +128,9 @@ helper を使う Vite+ プロジェクトでは、次の script 変更でネイ�
 
 ## 単独設定を Vite+ に移す
 
-単独 CLI/LSP を使う場合は別の `vize.config.ts` を利用します。
-統合タスク用の設定は `vite.config.ts` に移してください。
+CLI とエディターも `vite.config.*` のトップレベルの `vize` 設定を共有できます。
+対応範囲とリリース状況は[設定ガイド](./configuration.md)を参照してください。
+Vite+ の統合タスク用の設定は、ツールごとの設定項目に移します。
 
 ```ts annotate="remove:1,5,6,7;add:2,8,9,10"
 import { defineConfig } from "vize";
@@ -146,5 +147,5 @@ export default defineConfig({
 ```
 
 import だけでなく設定も移します。項目名が異なる点に注意してください。
-別の CLI/LSP から使う場合は単独設定を維持します。
+既存の専用設定は、その形式や優先順位が必要な場合に維持します。
 [設定ガイド](./configuration.md)に統合ごとの設定場所をまとめています。

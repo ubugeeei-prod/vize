@@ -1,0 +1,143 @@
+[
+  {
+    "case": "valid-strict",
+    "exitCode": 0,
+    "success": true,
+    "diagnostics": []
+  },
+  {
+    "case": "wrong-strict",
+    "exitCode": 1,
+    "success": false,
+    "diagnostics": [
+      {
+        "file": "src/App.vue",
+        "line": 10,
+        "column": 61,
+        "severity": 1,
+        "code": 2339,
+        "message": "Property 'missing' does not exist on type '{ label: string; items: { label: string; }[]; }'.",
+        "blockType": "template"
+      }
+    ]
+  },
+  {
+    "case": "wrong-permissive",
+    "exitCode": 1,
+    "success": false,
+    "diagnostics": [
+      {
+        "file": "src/App.vue",
+        "line": 10,
+        "column": 61,
+        "severity": 1,
+        "code": 2339,
+        "message": "Property 'missing' does not exist on type '{ label: string; items: { label: string; }[]; }'.",
+        "blockType": "template"
+      }
+    ]
+  },
+  {
+    "case": "escape-strict",
+    "exitCode": 1,
+    "success": false,
+    "diagnostics": [
+      {
+        "file": "src/App.vue",
+        "line": 5,
+        "column": 18,
+        "severity": 1,
+        "code": 2339,
+        "message": "Property '$before' does not exist on type '__VizeStrictTemplateContext'.",
+        "blockType": "template"
+      },
+      {
+        "file": "src/App.vue",
+        "line": 6,
+        "column": 34,
+        "severity": 1,
+        "code": 2339,
+        "message": "Property '$after' does not exist on type '__VizeStrictTemplateContext'.",
+        "blockType": "template"
+      },
+      {
+        "file": "src/App.vue",
+        "line": 8,
+        "column": 9,
+        "severity": 1,
+        "code": 2339,
+        "message": "Property '$form' does not exist on type '__VizeStrictTemplateContext'.",
+        "blockType": "template"
+      },
+      {
+        "file": "src/App.vue",
+        "line": 9,
+        "column": 9,
+        "severity": 1,
+        "code": 2339,
+        "message": "Property '$absent' does not exist on type '__VizeStrictTemplateContext'.",
+        "blockType": "template"
+      }
+    ]
+  },
+  {
+    "case": "foreign-strict",
+    "exitCode": 1,
+    "success": false,
+    "diagnostics": [
+      {
+        "file": "src/App.vue",
+        "line": 5,
+        "column": 17,
+        "severity": 1,
+        "code": 2339,
+        "message": "Property '$foreign' does not exist on type '__VizeStrictTemplateContext'.",
+        "blockType": "template"
+      }
+    ]
+  },
+  {
+    "case": "loop-source-strict",
+    "exitCode": 1,
+    "success": false,
+    "diagnostics": [
+      {
+        "file": "src/App.vue",
+        "line": 2,
+        "column": 30,
+        "severity": 1,
+        "code": 2339,
+        "message": "Property '$outside' does not exist on type '__VizeStrictTemplateContext'.",
+        "blockType": "template"
+      }
+    ]
+  },
+  {
+    "case": "globals-strict",
+    "exitCode": 1,
+    "success": false,
+    "diagnostics": [
+      {
+        "file": "src/App.vue",
+        "line": 4,
+        "column": 17,
+        "severity": 1,
+        "code": 2339,
+        "message": "Property '$undeclared' does not exist on type '__VizeStrictTemplateContext'.",
+        "blockType": "template"
+      }
+    ]
+  },
+  {
+    "case": "globals-permissive",
+    "exitCode": 0,
+    "success": true,
+    "diagnostics": []
+  },
+  {
+    "case": "repaired-strict",
+    "exitCode": 0,
+    "success": true,
+    "diagnostics": []
+  }
+]

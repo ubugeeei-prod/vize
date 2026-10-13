@@ -1,0 +1,49 @@
+{
+  "id": "alias-refusal",
+  "nativeContract": "projection-refusal-observation",
+  "inputs": [
+    {
+      "file": "tsconfig.json",
+      "bytes": 313,
+      "sha256": "0b89a7c241ca3e3e87094513260de721c34677b8b5a731f765763fe5f5587ccd",
+      "relativeBlob": "blobs/0b89a7c241ca3e3e87094513260de721c34677b8b5a731f765763fe5f5587ccd.json"
+    },
+    {
+      "file": "A.vue",
+      "bytes": 233,
+      "sha256": "c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61",
+      "relativeBlob": "blobs/c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61.json"
+    },
+    {
+      "file": "B.vue",
+      "bytes": 233,
+      "sha256": "c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61",
+      "relativeBlob": "blobs/c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61.json"
+    },
+    {
+      "file": "consumer.ts",
+      "bytes": 334,
+      "sha256": "56e5d9ea90156fe4c89823f50435c08f26fa0bf79f5748915f555a13318dc287",
+      "relativeBlob": "blobs/56e5d9ea90156fe4c89823f50435c08f26fa0bf79f5748915f555a13318dc287.json"
+    },
+    {
+      "file": "barrel.ts",
+      "bytes": 130,
+      "sha256": "d11365103904639600b45fb6f0bf2955aeaf1bcd11b4e792a245297572cb3820",
+      "relativeBlob": "blobs/d11365103904639600b45fb6f0bf2955aeaf1bcd11b4e792a245297572cb3820.json"
+    }
+  ],
+  "semanticGolden": "unrecorded; complete native result retained as observation only",
+  "projectedEquals": {
+    "consumer.ts": {
+      "bytes": 337,
+      "sha256": "3d06469c0d63a437dc4e67cabede017df8087c77f70497bd7765239fa5bebc10",
+      "relativeBlob": "blobs/3d06469c0d63a437dc4e67cabede017df8087c77f70497bd7765239fa5bebc10.json"
+    },
+    "barrel.ts": {
+      "bytes": 143,
+      "sha256": "ffbbd8c86fde78965024c32ed771f31ff8632cf098bf19e3423893f25256d944",
+      "relativeBlob": "blobs/ffbbd8c86fde78965024c32ed771f31ff8632cf098bf19e3423893f25256d944.json"
+    }
+  }
+}

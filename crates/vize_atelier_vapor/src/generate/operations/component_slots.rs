@@ -1,7 +1,7 @@
 use crate::ir::{ComponentKind, IRSlot, OperationNode};
 use vize_carton::{FxHashMap, String, cstr};
 
-use super::super::{context::GenerateContext, generate_block};
+use super::super::{collect_single_root_returns, context::GenerateContext, generate_block};
 
 /// Generate a single slot function body
 pub(super) fn generate_slot_fn(
@@ -51,6 +51,11 @@ pub(super) fn generate_slot_fn(
     ctx.keep_alive_slot = keep_alive;
     let previous_transition = ctx.transition_slot;
     ctx.transition_slot = transition;
+    // These wrappers forward attributes only to their single slot root.
+    // TransitionGroup always owns a fragment, including with one child.
+    if keep_alive || kind == ComponentKind::Transition {
+        collect_single_root_returns(&slot.block, &mut ctx.root_components);
+    }
     generate_block(ctx, &slot.block, element_template_map);
     ctx.keep_alive_slot = previous;
     ctx.transition_slot = previous_transition;

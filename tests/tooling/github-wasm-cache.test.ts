@@ -63,7 +63,9 @@ test("WASM cache keys follow every input of the build", () => {
       "'crates/**/Cargo.toml'",
       "'Cargo.toml'",
       "'Cargo.lock'",
-      "'tools/moon/cmd/github/build_vitrine_wasm/**'",
+      "'tools/support/github/build-vitrine-wasm.ts'",
+      "'tools/support/tasks/build-vitrine-wasm.ts'",
+      "'tools/support/command-runtime.ts'",
     ]) {
       assert.ok(key.includes(input), `${workflow} ${job}: cache key hashes ${input}`);
     }

@@ -1,0 +1,97 @@
+{
+  "schema": "vize.no-mutating.current-callers.raw-ancestry-source-successor",
+  "version": 1,
+  "predecessorSource": "b48dbb85e257f1875a4df83113dfb20f4830e3a2",
+  "primaryManifestSHA256": "90d02914213ad8346bdd4a71488dd322591d0ab7dcb9588117f5ccba5caff1b9",
+  "physicalHistoricalFrameSHA256": "c498e0b14257b95acfe7f4ea4e2471d3e25c6e51d70568604af248f59f279d87",
+  "successors": [
+    {
+      "path": "tests/tooling/support/no-mutating-props-current-caller-git.mjs",
+      "before": {
+        "path": "tests/tooling/support/no-mutating-props-current-caller-git.mjs",
+        "bytes": 4317,
+        "sha256": "d54ce79f0743fdd45b8d007cfd7dde61c0a7a5457bd879001d22b1ac528e3ffd",
+        "gitBlob": "e7eb8f418d9a382dc2b7d91d64bd4242b8821ab4",
+        "archive": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/ancestry-b48/01-b48-whole-before.fixture"
+      },
+      "after": {
+        "path": "tests/tooling/support/no-mutating-props-current-caller-git.mjs",
+        "bytes": 4458,
+        "sha256": "6c899c556602975558cc0c0e7274e34a0ac7f0e13822637805bc47c90108032c",
+        "gitBlob": "5cfc3d3c973ef53247b45248f432b718e744a5e5"
+      },
+      "inverse": [
+        {
+          "before": "",
+          "after": "import { seedNoMutatingCallerAncestry } from \"./no-mutating-props-current-caller-ancestry.mjs\";\n"
+        },
+        {
+          "before": "",
+          "after": "  seedNoMutatingCallerAncestry(root, owned);\n"
+        }
+      ]
+    },
+    {
+      "path": "tests/tooling/no-mutating-props-current-callers-source.test.mjs",
+      "before": {
+        "path": "tests/tooling/no-mutating-props-current-callers-source.test.mjs",
+        "bytes": 8966,
+        "sha256": "975e1801b6c2f839b35c255802e266b2ff9fb434672b0bdca93879c7a78ad3fd",
+        "gitBlob": "5db720ca8d50c80ebd0672f4384c5f5ffbc9a4f1",
+        "archive": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/ancestry-b48/02-b48-whole-before.fixture"
+      },
+      "after": {
+        "path": "tests/tooling/no-mutating-props-current-callers-source.test.mjs",
+        "bytes": 9114,
+        "sha256": "de19ba5854518042fa90f3ea76d3589da5c22e9e3212a6976ff84ffd8ae616a1",
+        "gitBlob": "2e99ede10ca93bacec6a7b2fcf6b8934080643f6"
+      },
+      "inverse": [
+        {
+          "before": "d54ce79f0743fdd45b8d007cfd7dde61c0a7a5457bd879001d22b1ac528e3ffd",
+          "after": "6c899c556602975558cc0c0e7274e34a0ac7f0e13822637805bc47c90108032c"
+        },
+        {
+          "before": "",
+          "after": "import { noMutatingCallerAncestryCapsulePath } from \"./support/no-mutating-props-current-caller-ancestry.mjs\";\n"
+        },
+        {
+          "before": "  const files = new Set();",
+          "after": "  const files = new Set([noMutatingCallerAncestryCapsulePath]);"
+        }
+      ]
+    }
+  ],
+  "currentBodies": [
+    {
+      "path": "tests/tooling/support/no-mutating-props-current-caller-git.mjs",
+      "bytes": 4458,
+      "sha256": "6c899c556602975558cc0c0e7274e34a0ac7f0e13822637805bc47c90108032c",
+      "gitBlob": "5cfc3d3c973ef53247b45248f432b718e744a5e5"
+    },
+    {
+      "path": "tests/tooling/no-mutating-props-current-callers-source.test.mjs",
+      "bytes": 9114,
+      "sha256": "de19ba5854518042fa90f3ea76d3589da5c22e9e3212a6976ff84ffd8ae616a1",
+      "gitBlob": "2e99ede10ca93bacec6a7b2fcf6b8934080643f6"
+    },
+    {
+      "path": "tests/tooling/support/no-mutating-props-current-caller-ancestry.mjs",
+      "bytes": 8753,
+      "sha256": "977887378f814f9e7621c9908a04f029ebf4570c1f503c2bcdf9a5c2ca4c4ffb",
+      "gitBlob": "7c7760af9c32a31681332a3c969e655de4d7a5e7"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/current-callers/ancestry-b48/literal-raw-objects.json.gz",
+      "bytes": 428814,
+      "sha256": "45c44efa0dd825d8e6cf8d0d9e35f8c1b45b263abbd9463528f5ab0f46b99436",
+      "gitBlob": "41b488ff316d371df7ba9a1088af0afb7d6448ee"
+    }
+  ],
+  "trustBoundary": "This complete source index seals helper and capsule; the external source law pins this index. Runtime helper pins only the capsule, never this index or itself. External law whole executing body is sealed only by independent whole peer.",
+  "credit": {
+    "sourceOnly": true,
+    "native": false,
+    "performance": false
+  }
+}

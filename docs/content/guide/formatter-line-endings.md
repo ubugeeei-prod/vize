@@ -1,12 +1,21 @@
 # Formatter line endings
 
-Set `formatter.endOfLine` in `vize.config.*` for CLI and editor formatting:
+Keep formatter line endings consistent across a Vue file. Use an explicit mode for a project convention, or auto mode to follow the first source line ending without rewriting raw text.
+
+Check [shared formatter configuration and current release availability](./configuration.md)
+before choosing where to put these settings.
+
+## Configure line endings
+
+Set `fmt.vize.endOfLine` in your existing Vite+ configuration:
 
 ```ts
-import { defineConfig } from "vize";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  formatter: { endOfLine: "auto" },
+  fmt: {
+    vize: { endOfLine: "auto" },
+  },
 });
 ```
 
@@ -30,3 +39,5 @@ const again = formatSfc(result.code, { endOfLine: "auto" });
 Node rejects unsupported mode strings with `InvalidArg` and non-string values
 with `StringExpected`. Both diagnostics name the `endOfLine` field. Formatting
 returns the existing `code` and `changed` fields.
+
+For CLI/editor sharing and optional dedicated settings, see [Configuration](./configuration.md), including the current release availability.

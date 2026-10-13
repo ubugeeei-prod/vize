@@ -759,7 +759,7 @@ const userName = computed(() => props.user.name);
 
 O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
-[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L37) · [Todas as regras](all.md)
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L39) · [Todas as regras](all.md)
 
 ### `script/no-deprecated-data-object-declaration`
 
@@ -1303,11 +1303,9 @@ vp run lint
 
 Os valores explícitos `inheritAttrs: true` repetem o padrão do Vue. Esta regra sinaliza esse literal redundante mesmo quando não há expansão de `$attrs` na raiz.
 
-```vue annotate="remove:2,3"
-<script lang="ts">
-defineOptions({ inheritAttrs: true })
-export default { inheritAttrs: true }
-</script>
+```vue annotate="remove:1"
+<script setup></script>
+<template><div><button v-bind="$attrs">Save</button></div></template>
 ```
 
 <span id="script-no-duplicate-attr-inheritance-good"></span>
@@ -1316,16 +1314,14 @@ export default { inheritAttrs: true }
 
 `inheritAttrs: false` expressa uma desativação efetiva, enquanto o objeto vazio de opções deixa implícita a herança padrão. Nenhuma das formas repete o valor redundante `true`.
 
-```vue annotate="add:2,3"
-<script lang="ts">
-defineOptions({ inheritAttrs: false }) // intentional opt-out
-export default {}                      // default inheritance, unstated
-</script>
+```vue annotate="add:1"
+<script setup>defineOptions({ inheritAttrs: false })</script>
+<template><div><button v-bind="$attrs">Save</button></div></template>
 ```
 
 O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
-[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs#L73) · [Todas as regras](all.md)
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs#L35) · [Todas as regras](all.md)
 
 ### `script/no-export-in-script-setup`
 
@@ -1334,7 +1330,7 @@ Proibir instruções export dentro de &lt;script setup&gt;
 [Incorreto](#script-no-export-in-script-setup-bad) · [Correto](#script-no-export-in-script-setup-good)
 
 Severidade padrão: `error`  
-Predefinições: _none_  
+Predefinições: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
@@ -2024,7 +2020,7 @@ export default { props: { title: { type: String, default: "Untitled" } } };
 
 O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
-[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs#L29) · [Todas as regras](all.md)
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs#L34) · [Todas as regras](all.md)
 
 ### `script/no-reserved-identifiers`
 
@@ -2150,7 +2146,7 @@ export default { data() { return { elementLabel: "custom" }; } };
 
 O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
-[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reserved_keys.rs#L32) · [Todas as regras](all.md)
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reserved_keys.rs#L30) · [Todas as regras](all.md)
 
 ### `script/no-reserved-props`
 
@@ -2975,17 +2971,18 @@ import { h } from '@vue/runtime-dom'
 
 **Correto**
 
-Ambas as funções auxiliares são importadas juntas de `vue`, usando o ponto de entrada público do pacote em vez de qualquer um dos pacotes internos.
+As funções públicas são importadas de `vue`. A função privada `isString` mantém `@vue/shared`, pois `vue` não a exporta. Imports de namespace, padrão e mistos públicos/privados mantêm um aviso sem correção automática.
 
-```vue annotate="add:2"
+```vue annotate="add:2,3"
 <script setup lang="ts">
 import { ref, h } from 'vue'
+import { isString } from '@vue/shared'
 </script>
 ```
 
 O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
-[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L32) · [Todas as regras](all.md)
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L36) · [Todas as regras](all.md)
 
 ### `script/prefer-ref-over-reactive`
 
@@ -4159,7 +4156,7 @@ export default { emits: { submit: (payload: unknown) => { return payload != null
 
 O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
-[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs#L59) · [Todas as regras](all.md)
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs#L61) · [Todas as regras](all.md)
 
 ### `script/valid-define-emits`
 

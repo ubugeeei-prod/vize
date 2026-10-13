@@ -1,0 +1,5 @@
+{
+  "bytes": 334,
+  "sha256": "56e5d9ea90156fe4c89823f50435c08f26fa0bf79f5748915f555a13318dc287",
+  "wholeUtf8": "import { A, B } from './barrel.ts';\nimport type { Props, Slots, Emits } from './A.vue';\nconst props: Props = { title: 'typed' };\nconst slots: Slots = { default: ({ label }) => label };\nconst emits: Emits = {};\nconst title: string | undefined = new A(props).$props.title;\nnew B({ title: 'typed' });\nvoid slots; void emits; void title;\n"
+}

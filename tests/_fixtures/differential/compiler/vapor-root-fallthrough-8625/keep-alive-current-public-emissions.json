@@ -1,0 +1,36 @@
+{
+  "diagnosticOnly": true,
+  "publicationQualification": false,
+  "rows": [
+    {
+      "version": "3.6.0-rc.9",
+      "source": "<KeepAlive><Component /></KeepAlive>",
+      "sourceSha256": "a36e995debca63fade4834736a782b66da38115bb6ce4937e36616fc55fe1ab6",
+      "options": {
+        "mode": "module",
+        "prefixIdentifiers": true
+      },
+      "registry": "https://registry.npmjs.org/@vue/compiler-vapor/-/compiler-vapor-3.6.0-rc.9.tgz",
+      "integrity": "sha512-qZduuWC3PcDp8A83JlgifOpBi+edkDuMEDjkQTRU1CxqGwtjko//9d2GZesT2L93xWipYQNXLLSeXYoGWudlcQ==",
+      "lockKey": "../../private/tmp/vize-vue-rc9-root-oracle-20261011/node_modules/@vue/compiler-vapor",
+      "lockfileSha256": "d711d836975844a9cd924b3db5efade51d62b04f287aadf95e1bb99f6124c21d",
+      "code": "import { resolveComponent as _resolveComponent, VaporKeepAlive as _VaporKeepAlive, createComponentWithFallback as _createComponentWithFallback, createComponent as _createComponent } from 'vue';\n\nexport function render(_ctx) {\n  const _component_Component = _resolveComponent(\"Component\")\n  const n1 = _createComponent(_VaporKeepAlive, null, () => {\n    const n0 = _createComponentWithFallback(_component_Component)\n    return n0\n  }, true)\n  return n1\n}",
+      "codeSha256": "e3060d0a2d66277d69347df1d73cd78b86bb239b345726d5f704fd0ca7f2ac1c"
+    },
+    {
+      "version": "3.6.0-rc.10",
+      "source": "<KeepAlive><Component /></KeepAlive>",
+      "sourceSha256": "a36e995debca63fade4834736a782b66da38115bb6ce4937e36616fc55fe1ab6",
+      "options": {
+        "mode": "module",
+        "prefixIdentifiers": true
+      },
+      "registry": "https://registry.npmjs.org/@vue/compiler-vapor/-/compiler-vapor-3.6.0-rc.10.tgz",
+      "integrity": "sha512-84N3x+hoc943TUCT+YDfHYl43A0LBR9iUYTVYsyhih66fiBmbOBalJRhNeLGZDNKmo11Qpe+g5WKPWotGRjBxQ==",
+      "lockKey": "../../private/tmp/vize-vue-rc10-oracle-20261011/node_modules/@vue/compiler-vapor",
+      "lockfileSha256": "ac9a72e9edf9149006e51b4cefbb9dec4d1aaae0f0e1ee0b939786c0beff9238",
+      "code": "import { resolveComponent as _resolveComponent, VaporKeepAlive as _VaporKeepAlive, createComponentWithFallback as _createComponentWithFallback, createComponent as _createComponent } from 'vue';\n\nexport function render(_ctx) {\n  const _component_Component = _resolveComponent(\"Component\")\n  const n1 = _createComponent(_VaporKeepAlive, null, () => {\n    const n0 = _createComponentWithFallback(_component_Component, null, null, true)\n    return n0\n  }, true)\n  return n1\n}",
+      "codeSha256": "51356ce5cd3615e95297e2c2cc47060595bbd0bda63d556b60afb6eda4e3ed2d"
+    }
+  ]
+}

@@ -1,0 +1,200 @@
+[
+  {
+    "name": "keepalive-direct-no-props",
+    "app": "<script setup vapor>import Child from \"./Child.vue\"; import { state } from \"./fixture\";</script>\n<template><KeepAlive><Child /></KeepAlive></template>\n",
+    "child": "<script setup vapor>import { state } from \"./fixture\";</script>\n<template><span id=\"inner\">{{ state.label }}</span></template>\n",
+    "rootProps": {
+      "data-owner": "outer"
+    },
+    "context": {},
+    "steps": [
+      {
+        "patch": {
+          "label": "updated"
+        }
+      }
+    ],
+    "expectedTrees": [
+      [
+        {
+          "tag": "span",
+          "attributes": {
+            "data-owner": "outer",
+            "id": "inner"
+          },
+          "children": [
+            "initial"
+          ]
+        }
+      ],
+      [
+        {
+          "tag": "span",
+          "attributes": {
+            "data-owner": "outer",
+            "id": "inner"
+          },
+          "children": [
+            "updated"
+          ]
+        }
+      ],
+      []
+    ]
+  },
+  {
+    "name": "keepalive-nested-element",
+    "app": "<script setup vapor>import Child from \"./Child.vue\"; import { state } from \"./fixture\";</script>\n<template><KeepAlive><section id=\"outer\"><Child /></section></KeepAlive></template>\n",
+    "child": "<script setup vapor>import { state } from \"./fixture\";</script>\n<template><span id=\"inner\">{{ state.label }}</span></template>\n",
+    "rootProps": {
+      "data-owner": "outer"
+    },
+    "context": {},
+    "steps": [
+      {
+        "patch": {
+          "label": "updated"
+        }
+      }
+    ],
+    "expectedTrees": [
+      [
+        {
+          "tag": "section",
+          "attributes": {
+            "data-owner": "outer",
+            "id": "outer"
+          },
+          "children": [
+            {
+              "tag": "span",
+              "attributes": {
+                "id": "inner"
+              },
+              "children": [
+                "initial"
+              ]
+            }
+          ]
+        }
+      ],
+      [
+        {
+          "tag": "section",
+          "attributes": {
+            "data-owner": "outer",
+            "id": "outer"
+          },
+          "children": [
+            {
+              "tag": "span",
+              "attributes": {
+                "id": "inner"
+              },
+              "children": [
+                "updated"
+              ]
+            }
+          ]
+        }
+      ],
+      []
+    ]
+  },
+  {
+    "name": "keepalive-single-conditional-root",
+    "app": "<script setup vapor>import Child from \"./Child.vue\"; import { state } from \"./fixture\";</script>\n<template><KeepAlive><Child v-if=\"state.ready\" /></KeepAlive></template>\n",
+    "child": "<script setup vapor>import { state } from \"./fixture\";</script>\n<template><span id=\"inner\">{{ state.label }}</span></template>\n",
+    "rootProps": {
+      "data-owner": "outer"
+    },
+    "context": {},
+    "steps": [
+      {
+        "patch": {
+          "ready": false
+        }
+      },
+      {
+        "patch": {
+          "ready": true,
+          "label": "restored"
+        }
+      }
+    ],
+    "expectedTrees": [
+      [
+        {
+          "tag": "span",
+          "attributes": {
+            "data-owner": "outer",
+            "id": "inner"
+          },
+          "children": [
+            "initial"
+          ]
+        }
+      ],
+      [],
+      [
+        {
+          "tag": "span",
+          "attributes": {
+            "data-owner": "outer",
+            "id": "inner"
+          },
+          "children": [
+            "restored"
+          ]
+        }
+      ],
+      []
+    ]
+  },
+  {
+    "name": "keepalive-single-keyed-root",
+    "app": "<script setup vapor>import Child from \"./Child.vue\"; import { state } from \"./fixture\";</script>\n<template><KeepAlive><Child :key=\"state.key\" /></KeepAlive></template>\n",
+    "child": "<script setup vapor>import { state } from \"./fixture\";</script>\n<template><span id=\"inner\">{{ state.label }}</span></template>\n",
+    "rootProps": {
+      "data-owner": "outer"
+    },
+    "context": {
+      "key": 1
+    },
+    "steps": [
+      {
+        "patch": {
+          "key": 2,
+          "label": "replaced"
+        }
+      }
+    ],
+    "expectedTrees": [
+      [
+        {
+          "tag": "span",
+          "attributes": {
+            "data-owner": "outer",
+            "id": "inner"
+          },
+          "children": [
+            "initial"
+          ]
+        }
+      ],
+      [
+        {
+          "tag": "span",
+          "attributes": {
+            "data-owner": "outer",
+            "id": "inner"
+          },
+          "children": [
+            "replaced"
+          ]
+        }
+      ],
+      []
+    ]
+  }
+]

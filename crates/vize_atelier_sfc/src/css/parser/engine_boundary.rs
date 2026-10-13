@@ -38,6 +38,11 @@ use super::{
 const ENGINE_PANIC_DETAIL: &str =
     "the CSS engine hit an internal defect (upstream lightningcss panic; see vize issue #3295)";
 
+#[inline]
+fn recover_engine<T>(body: impl FnOnce() -> T, fallback: impl FnOnce() -> T) -> T {
+    catch_unwind(AssertUnwindSafe(body)).unwrap_or_else(|_| fallback())
+}
+
 fn engine_panic_message(operation: &str) -> String {
     let mut message = String::from(operation);
     message.push_str(ENGINE_PANIC_DETAIL);
@@ -59,14 +64,14 @@ pub(crate) fn parse_css_ast_guarded(
             warnings: vec![],
         };
     }
-    catch_unwind(AssertUnwindSafe(|| {
-        parse_css_ast_internal(css, filename, custom_media, css_modules)
-    }))
-    .unwrap_or_else(|_| CssAstInternalResult {
-        ast: None,
-        errors: vec![engine_panic_message("CSS parse error: ")],
-        warnings: vec![],
-    })
+    recover_engine(
+        || parse_css_ast_internal(css, filename, custom_media, css_modules),
+        || CssAstInternalResult {
+            ast: None,
+            errors: vec![engine_panic_message("CSS parse error: ")],
+            warnings: vec![],
+        },
+    )
 }
 
 /// Run `print_css_ast_internal` behind the panic boundary.
@@ -75,14 +80,14 @@ pub(crate) fn print_css_ast_guarded(
     minify: bool,
     targets: Targets,
 ) -> CssInternalResult {
-    catch_unwind(AssertUnwindSafe(|| {
-        print_css_ast_internal(ast, minify, targets)
-    }))
-    .unwrap_or_else(|_| CssInternalResult {
-        code: String::from(""),
-        errors: vec![engine_panic_message("CSS print error: ")],
-        exports: None,
-    })
+    recover_engine(
+        || print_css_ast_internal(ast, minify, targets),
+        || CssInternalResult {
+            code: String::from(""),
+            errors: vec![engine_panic_message("CSS print error: ")],
+            exports: None,
+        },
+    )
 }
 
 /// Run `compile_css_internal` behind the panic boundary. Mirrors the parse
@@ -103,14 +108,14 @@ pub(crate) fn compile_css_guarded(
             exports: None,
         };
     }
-    catch_unwind(AssertUnwindSafe(|| {
-        compile_css_internal(css, filename, minify, targets, custom_media, css_modules)
-    }))
-    .unwrap_or_else(|_| CssInternalResult {
-        code: css.to_compact_string(),
-        errors: vec![engine_panic_message("CSS compile error: ")],
-        exports: None,
-    })
+    recover_engine(
+        || compile_css_internal(css, filename, minify, targets, custom_media, css_modules),
+        || CssInternalResult {
+            code: css.to_compact_string(),
+            errors: vec![engine_panic_message("CSS compile error: ")],
+            exports: None,
+        },
+    )
 }
 
 /// Run `bundle_css_internal` behind the panic boundary.
@@ -121,12 +126,71 @@ pub(crate) fn bundle_css_guarded(
     css_modules: bool,
     custom_media: bool,
 ) -> CssInternalResult {
-    catch_unwind(AssertUnwindSafe(|| {
-        bundle_css_internal(entry_path, minify, targets, css_modules, custom_media)
-    }))
-    .unwrap_or_else(|_| CssInternalResult {
-        code: String::from(""),
-        errors: vec![engine_panic_message("CSS bundle error: ")],
-        exports: None,
-    })
+    recover_engine(
+        || bundle_css_internal(entry_path, minify, targets, css_modules, custom_media),
+        || CssInternalResult {
+            code: String::from(""),
+            errors: vec![engine_panic_message("CSS bundle error: ")],
+            exports: None,
+        },
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn injected_engine_panic_recovers_without_hiding_an_escaping_panic() {
+        let recovered = catch_unwind(AssertUnwindSafe(|| {
+            recover_engine(
+                || -> CssAstInternalResult { panic!("injected engine failure") },
+                || CssAstInternalResult {
+                    ast: None,
+                    errors: vec![engine_panic_message("CSS parse error: ")],
+                    warnings: vec![],
+                },
+            )
+        }))
+        .expect("the actual production recovery helper catches its engine panic");
+        assert!(recovered.ast.is_none());
+        assert_eq!(
+            recovered.errors,
+            [
+                "CSS parse error: the CSS engine hit an internal defect (upstream lightningcss panic; see vize issue #3295)"
+            ]
+        );
+        assert!(recovered.warnings.is_empty());
+        for (operation, source) in [
+            ("CSS compile error: ", "complete original CSS"),
+            ("CSS print error: ", ""),
+            ("CSS bundle error: ", ""),
+        ] {
+            let result = recover_engine(
+                || -> CssInternalResult { panic!("injected output failure") },
+                || CssInternalResult {
+                    code: source.to_compact_string(),
+                    errors: vec![engine_panic_message(operation)],
+                    exports: None,
+                },
+            );
+            assert_eq!(result.code, source);
+            assert_eq!(result.errors, [engine_panic_message(operation)]);
+            assert!(result.exports.is_none());
+        }
+        assert_eq!(
+            recover_engine(|| 17, || panic!("successful engine must not run fallback")),
+            17
+        );
+        let escaped = catch_unwind(|| {
+            recover_engine(
+                || -> () { panic!("injected engine failure") },
+                || panic!("uncaught integration fallback defect"),
+            )
+        });
+        assert!(
+            escaped.is_err(),
+            "an actual escaping panic remains a failure"
+        );
+    }
 }

@@ -57,7 +57,10 @@ export function createVrtOptions(options: CliOptions): ExtendedVrtOptions {
  */
 function resolveVrtSnapshotDir(options: CliOptions, snapshotDir: string | undefined): string {
   if (!snapshotDir) return path.join(options.output, "snapshots");
-  return path.resolve(path.dirname(path.resolve(options.config)), snapshotDir);
+  const configDir =
+    options.configDir ??
+    (options.config ? path.dirname(path.resolve(options.config)) : process.cwd());
+  return path.resolve(configDir, snapshotDir);
 }
 
 function withoutA11y(vrt: MuseaVrtOptions | undefined): Omit<MuseaVrtOptions, "a11y"> {

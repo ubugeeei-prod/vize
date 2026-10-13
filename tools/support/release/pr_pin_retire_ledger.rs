@@ -234,6 +234,7 @@ fn failure_objects(
     }
     let encoded = serde_json::to_vec_pretty(receipt).map_err(|e| e.to_string())?;
     archive::check_size(encoded.len(), total)?;
+    super::retire_log_storage::verify_all(receipt, objects, expected, root)?;
     Ok(())
 }
 
@@ -314,7 +315,7 @@ pub(super) fn validate(receipt: &Value, root: &Path) -> Result<(), String> {
                 return Err("Cross-run diagnostic job ID collision".into());
             }
             if matches!(row["conclusion"].as_str(), Some("failure" | "timed_out")) {
-                failures.insert(format!("failure/{job_id}.log"));
+                failures.insert(format!("failure/{job_id}{}", archive::log_suffix(receipt)));
             }
         }
         if id == release {

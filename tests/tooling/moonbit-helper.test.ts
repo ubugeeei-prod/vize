@@ -32,6 +32,10 @@ function copySetupMoonbitInstaller(tempDir: string): string {
     path.join(repoRoot, ".github", "actions", "setup-moonbit", "install-moonbit.mjs"),
     installerPath,
   );
+  fs.copyFileSync(
+    path.join(repoRoot, ".github", "actions", "setup-moonbit", "pinned-artifacts.mjs"),
+    path.join(actionDir, "pinned-artifacts.mjs"),
+  );
   return installerPath;
 }
 
@@ -100,7 +104,7 @@ test("runMoonScript falls back to the GitHub runner shim when MOON_BIN is unavai
 
     delete process.env.MOON_BIN;
 
-    const result = runMoonScript("github/install_playwright_browsers", [], {
+    const result = runMoonScript("release", [], {
       cwd: tempDir,
       env: {
         MOON_HELPER_LOG: logPath,

@@ -22,7 +22,11 @@ import {
   typecheckSourceTsconfig,
 } from "./tool-matrix-command.mjs";
 import { snapshotFormatterInputs, validateFormatterOutput } from "./tool-matrix-formatter.mjs";
-import { collectTypecheckerAuthoredPaths, collectVueInputPaths } from "./tool-matrix-inputs.mjs";
+import {
+  collectTypecheckerAuthoredPaths,
+  collectVueInputPaths,
+  prepareScriptSourceScope,
+} from "./tool-matrix-inputs.mjs";
 import { validateLinterOutput } from "./tool-matrix-linter.mjs";
 import { validatedFileCount } from "./tool-matrix-metrics.mjs";
 import {
@@ -139,8 +143,17 @@ function prepareTypecheckerFixtureTsconfig(project, tool, args, cwd, fixtureExis
   const relativePath = `.vize-fixture-typecheck-${fixtureProjectId(project)}.tsconfig.json`;
   const absolutePath = join(cwd, relativePath);
   if (!fixtureExists || args.dryRun) return { relativePath };
-  writeFileSync(absolutePath, `${JSON.stringify({ compilerOptions: {} }, null, 2)}\n`);
-  return { absolutePath, relativePath };
+  let scriptScope = null;
+  if (project.expectedVueFileCount === 0) {
+    if (collectVueInputPaths(cwd, typecheckCorpusGlobs(project)).length !== 0)
+      throw new Error("zero-Vue fixture unexpectedly owns Vue inputs");
+    scriptScope = prepareScriptSourceScope(cwd, relativePath);
+  }
+  writeFileSync(
+    absolutePath,
+    `${JSON.stringify(scriptScope?.config ?? { compilerOptions: {} }, null, 2)}\n`,
+  );
+  return { absolutePath, relativePath, scriptScope };
 }
 
 function fixtureProjectId(project) {
@@ -155,6 +168,7 @@ function completeToolRun({
   formatterStateBefore,
   outputDir,
   project,
+  typecheckerFixtureTsconfig,
   result,
   startedAt,
   tool,
@@ -199,13 +213,30 @@ function completeToolRun({
     }
     if (tool === "typechecker" && payload.parseError == null) {
       try {
+        const scope = typecheckerFixtureTsconfig?.scriptScope;
+        if (scope != null) payload.typecheckerSourceScan = scope;
         payload.typecheckerCoverage = validateTypecheckerOutput(
           project,
           payload.parsed,
           result.status,
           expectedToolFiles,
           collectTypecheckerAuthoredPaths(cwd),
+          scope,
         );
+        if (
+          scope != null &&
+          createHash("sha256")
+            .update(readFileSync(join(cwd, scope.tsconfig)))
+            .digest("hex") !== scope.configSha256
+        ) {
+          throw new Error("generated fixture config bytes changed during checking");
+        }
+        if (
+          scope != null &&
+          JSON.stringify(prepareScriptSourceScope(cwd, scope.tsconfig)) !== JSON.stringify(scope)
+        ) {
+          throw new Error("fixture script bytes changed during checking");
+        }
       } catch (error) {
         payload.validationError = errorMessage(error);
       }

@@ -200,6 +200,10 @@ fn emit_force_array(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), EmitError
     let mut rest = ops;
     let mut first = true;
     while let Some((op, tail)) = rest.split_first() {
+        if crate::emit::annotations::skip(cx, op) {
+            rest = tail;
+            continue;
+        }
         if crate::emit::vnode_children::is_text_like(op) {
             let (run, after) = crate::emit::vnode_children::split_text_run(rest);
             start_item(cx, &mut first);
@@ -217,6 +221,9 @@ fn emit_force_array(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), EmitError
 fn emit_generate_node(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), EmitError> {
     let mut first = true;
     for op in ops {
+        if crate::emit::annotations::skip(cx, op) {
+            continue;
+        }
         match op {
             Op::Text(_) => {
                 start_item(cx, &mut first);

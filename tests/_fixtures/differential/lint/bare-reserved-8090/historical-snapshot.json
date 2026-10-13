@@ -1,0 +1,20 @@
+{
+  "schema": "vize.lint.historical-snapshot",
+  "version": 1,
+  "authority": "Original tracked snapshot and authored test input retained verbatim from the pre-correction source commit; this is historical false-positive evidence, not an accepted after snapshot.",
+  "sourceCommit": "1d988f6bcac8afc6a0fcad9b76b0d5f2da27be71",
+  "originalPath": "crates/vize_patina/src/rules/script/snapshots/vize_patina__rules__script__no_reserved_keys__tests__method_bare_builtin_name.snap",
+  "originalGitBlob": "719d3074cb03a14071d24f0f1fa8f12808707e14",
+  "snapshotFile": "historical-method-bare.snap.fixture",
+  "snapshotSha256": "41d984e28428729c827b64c9d25f3acb9cf47b73289126aa7e2d341b68e36055",
+  "sourceFile": "historical-method-bare.ts.fixture",
+  "sourceSha256": "11cda92fb09893f3dd3d67357273b04f30f9e6eb9c1d76d831349bb3e6a20410",
+  "sourceRangeUnit": "utf8-byte-offset",
+  "sourceRange": {
+    "start": 35,
+    "end": 39
+  },
+  "beforeMessage": "Reserved key 'emit'",
+  "afterDiagnostics": [],
+  "sourceMeaning": "The methods member emit is not Vue public instance member $emit."
+}

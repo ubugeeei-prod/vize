@@ -6,6 +6,7 @@ import path from "node:path";
 import { performance } from "node:perf_hooks";
 import { fileURLToPath } from "node:url";
 import { replayN8nHost } from "./n8n-replay-qualification.mjs";
+import { waitForReplayReady } from "./n8n-preparation-overlap.mjs";
 
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
@@ -67,7 +68,7 @@ export function createHostCommandRunner({ temporary, output, version }) {
   };
 }
 
-function runProjectHost({ packageDir, artifacts, binary, replay, version, types, temporary }) {
+async function runProjectHost({ packageDir, artifacts, binary, version, types, temporary }) {
   const receipt = JSON.parse(fs.readFileSync(path.join(artifacts, "build-receipt.json"), "utf8"));
   assert.equal(process.env.GITHUB_ACTIONS, "true");
   assert.equal(receipt.source.head, process.env.GITHUB_SHA);
@@ -187,6 +188,13 @@ function runProjectHost({ packageDir, artifacts, binary, replay, version, types,
       assert.equal(htmlCapture.complete, true);
       qualification.originalHtml = htmlCapture.qualified;
     });
+    const waiting = performance.now();
+    let replay;
+    try {
+      replay = await waitForReplayReady({ artifacts, receipt, binary });
+    } finally {
+      phaseWalltimeMs.baselineWait = performance.now() - waiting;
+    }
     const { host: n8nHost, custody: n8nCustody } = timed("n8nReplay", () =>
       replayN8nHost({ ...replay, hosts: [], hostCustodies: [] }, engine, version),
     );
@@ -208,5 +216,5 @@ function runProjectHost({ packageDir, artifacts, binary, replay, version, types,
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   assert.equal(process.argv.length, 3, "a host worker takes only its owned configuration path");
-  runProjectHost(JSON.parse(fs.readFileSync(process.argv[2], "utf8")));
+  await runProjectHost(JSON.parse(fs.readFileSync(process.argv[2], "utf8")));
 }

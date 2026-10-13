@@ -62,7 +62,7 @@ cargo install --path crates/vize --force --locked
 | Package scripts for build, format, lint, check, ready, and upgrade     | `vp run vize:*` from the npm package |
 | Project-backed type checking across `.vue`, `.ts`, `.tsx`, and `.d.ts` | Rust `vize check`                    |
 | LSP, IDE setup, `check-server`, and profiling artifacts                | Rust `vize` binary                   |
-| Shared Vite plugin, npm package command, and Rust CLI settings         | `vize.config.*`                      |
+| Shared Vite plugin, npm package command, and Rust CLI settings         | [Vite config](./configuration.md#standalone-cli)                      |
 
 ## Commands
 

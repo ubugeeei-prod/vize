@@ -1,6 +1,7 @@
 import { defineConfig, type Plugin } from "vite-plus";
 import { playwright } from "vite-plus/test/browser/providers/playwright";
 import { vize } from "@vizejs/vite-plugin";
+import { svgNamespaceCorpusPlugin } from "./e2e/support/svg-namespace-corpus-plugin";
 
 const testOutputIgnorePattern = ["**", "target", "vize-tests", "**"].join("/");
 // Vite+ 0.1.24's browser prebundle drops a Vue shared initializer from this entry.
@@ -32,7 +33,7 @@ const vueTestUtilsOptimizerWorkaround: Plugin = {
 };
 
 export default defineConfig({
-  plugins: [vueTestUtilsOptimizerWorkaround, vize()],
+  plugins: [vueTestUtilsOptimizerWorkaround, svgNamespaceCorpusPlugin(), vize()],
   resolve: {
     alias: [{ find: /^vue$/, replacement: "vue/dist/vue.runtime.esm-bundler.js" }],
     dedupe: ["vue"],

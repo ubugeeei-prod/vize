@@ -24,7 +24,10 @@ test("check workflow runs JS package unit tests and production dependency audit"
     "test-js-packages-with-history",
     "action.yml",
   );
-  assert.match(jsAction, /run: vp run --workspace-root test:js/);
+  assert.match(
+    jsAction,
+    /run: python3 \.github\/actions\/test-js-packages-with-history\/native-fault-evidence\.py -- vp run --workspace-root test:js/,
+  );
   assert.match(jsPackageJob, /uses: \.\/\.github\/actions\/setup-js-package-tests/);
   const jsSetup = readRepoFile(".github", "actions", "setup-js-package-tests", "action.yml");
   assert.match(jsSetup, /key:\s*test-js-packages/);

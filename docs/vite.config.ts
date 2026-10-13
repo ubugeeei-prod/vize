@@ -14,12 +14,14 @@ if (puppeteerExecutablePath) {
 const themeDir = resolve(import.meta.dirname, "theme");
 const themeCss = [
   "style.css",
+  "shader.css",
   "navigation.css",
   "entry-layout.css",
   "features.css",
   "code-annotations.css",
   "command-tabs.css",
   "i18n/locale-selector.css",
+  "letter-case.css",
 ]
   .map((file) => readFileSync(resolve(themeDir, file), "utf-8"))
   .join("\n");

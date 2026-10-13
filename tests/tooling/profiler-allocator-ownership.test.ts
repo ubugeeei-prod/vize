@@ -3,6 +3,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
+import { historicalCSSNamingGateSHA } from "../../tools/support/levels/css-naming-gate-continuation.ts";
 import {
   allocatorReplayText,
   contracts,
@@ -189,4 +191,34 @@ void test("allocator checks preserve later exact exporters while old replay reta
     altered.set(profileExportContract, changed);
     rejectsBeforeWrites(altered);
   }
+});
+
+test("finite CSS naming gate keeps allocator replay output exact and never rewrites current law", () => {
+  const source = current.get(sfcImportGate)!;
+  const sha = (text: string) => createHash("sha256").update(text).digest("hex");
+  assert.equal(sha(allocatorReplayText(sfcImportGate, source)!), historicalCSSNamingGateSHA);
+  const originalGate = original.get(sfcImportGate)!;
+  assert.equal(sha(originalGate), contracts.find((row) => row.file === sfcImportGate)!.old);
+  const replay = prepareAllocatorSelection(reader(original));
+  assert.equal(replay.size, 7);
+  assert.equal(sha(replay.get(sfcImportGate)!), historicalCSSNamingGateSHA);
+  assert.equal(prepareAllocatorSelection(reader(current)).size, 0);
+  for (const changed of [
+    source.replace(
+      'css_engine_panic_boundary.rs", "test", 2]',
+      'css_engine_panic_boundary.rs", "test", 3]',
+    ),
+    source.replace(
+      '  ["crates/vize_atelier_sfc/tests/support/css_engine_successors.rs", "test", 1],\n',
+      "",
+    ),
+    source.replace("  assertPreferredSource(preserved, preservedPath);\n", ""),
+    source + "\n// unreviewed naming gate\n",
+  ]) {
+    assert.notEqual(changed, source);
+    const files = new Map(current);
+    files.set(sfcImportGate, changed);
+    rejectsBeforeWrites(files);
+  }
+  assert.equal(current.get(sfcImportGate), source);
 });

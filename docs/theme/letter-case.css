@@ -1,0 +1,11 @@
+/* Preserve authored spelling in the default theme's labels and headings. */
+.nav-title,
+.toc-title,
+.mobile-footer-label,
+.search-result-scope,
+.content .ox-callout-title,
+.content .ox-api-entry__section h4,
+.content .ox-api-entry__member-group > h5,
+.content .ox-api-entry__member-detail-section h6 {
+  text-transform: none;
+}

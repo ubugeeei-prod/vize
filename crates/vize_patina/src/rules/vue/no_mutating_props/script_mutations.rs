@@ -279,7 +279,7 @@ fn root_reference<'a>(expression: &'a Expression<'a>) -> Option<&'a IdentifierRe
     }
 }
 
-fn mutating_call_target<'a>(call: &'a CallExpression<'a>) -> Option<&'a Expression<'a>> {
+pub(super) fn mutating_call_target<'a>(call: &'a CallExpression<'a>) -> Option<&'a Expression<'a>> {
     let (object, property) = static_call_member(&call.callee)?;
 
     if MUTATING_ARRAY_METHODS.contains(&property) {

@@ -1,0 +1,4 @@
+<script setup lang="ts">
+namespace defineEmits { export const value = 1 }
+const emit = defineEmits({ submit(payload) { void payload } })
+</script>

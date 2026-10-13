@@ -1,0 +1,9 @@
+/* v-bind(ignored); var(--scope-color) */
+.box {
+  content: "v-bind(ignored) var(--scope-color)";
+  --literal: var(--scope-color);
+  color: v-bind(color);
+  border-color: v-bind('backgroundColor');
+  width: v-bind("Math.max(size, 12) + 'px'");
+  --unicode: v-bind('雪');
+}

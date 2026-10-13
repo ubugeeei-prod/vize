@@ -1,0 +1,52 @@
+{
+  "schema": "vize.lint.original-bare-reserved",
+  "version": 1,
+  "id": "wave-ui-original-accordion-api",
+  "authority": "Full source bytes fetched from the immutable upstream revision; complete before and after vectors authored from the source groups, spans, tracked descriptor and reservation producer before observing this real file.",
+  "project": "wave-ui",
+  "revision": "a95a3bb1d65369de9befed6341bdc56bb5de075a",
+  "originalPath": "src/documentation/views/ui-components/accordion/api.vue",
+  "immutableUrl": "https://raw.githubusercontent.com/antoniandre/wave-ui/a95a3bb1d65369de9befed6341bdc56bb5de075a/src/documentation/views/ui-components/accordion/api.vue",
+  "filename": "api.vue",
+  "sourceFile": "original-wave-ui-accordion.vue.fixture",
+  "sourceSha256": "3312b54575de99e7026851bcbac68c7edef605374718ecd8a727f656e7d903d6",
+  "sourceBytes": 11190,
+  "rule": "script/no-reserved-keys",
+  "beforeDiagnostics": [
+    {
+      "rule_name": "script/no-reserved-keys",
+      "severity": "error",
+      "message": "Reserved key 'slots'",
+      "start": 10625,
+      "end": 10630,
+      "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+      "labels": [
+        {
+          "message": "data key collides with a Vue built-in instance property",
+          "start": 10625,
+          "end": 10630
+        }
+      ],
+      "fix": null
+    },
+    {
+      "rule_name": "script/no-reserved-keys",
+      "severity": "error",
+      "message": "Reserved key 'props'",
+      "start": 10870,
+      "end": 10875,
+      "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+      "labels": [
+        {
+          "message": "computed key collides with a Vue built-in instance property",
+          "start": 10870,
+          "end": 10875
+        }
+      ],
+      "fix": null
+    }
+  ],
+  "diagnostics": [],
+  "providerDiagnostics": [],
+  "limit": "This pinned original source acceptance covers the two cited WaveUI findings, not full 24-project parity or a rerun of all 83 historical WaveUI findings."
+}

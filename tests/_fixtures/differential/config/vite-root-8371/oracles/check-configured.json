@@ -1,0 +1,28 @@
+{
+  "errorCount": 0,
+  "fileCount": 1,
+  "files": [
+    {
+      "diagnostics": [],
+      "file": "app/src/valid.ts"
+    }
+  ],
+  "programs": [
+    {
+      "compilerOptions": {
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "noEmit": true,
+        "skipLibCheck": true,
+        "strict": true,
+        "target": "ESNext"
+      },
+      "files": [
+        "app/src/valid.ts"
+      ],
+      "root": "app",
+      "tsconfig": "app/tsconfig.json"
+    }
+  ],
+  "warningCount": 0
+}

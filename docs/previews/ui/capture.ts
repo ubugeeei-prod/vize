@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { saveScreenshot } from "./screenshot-file.ts";
 import type { Browser } from "playwright";
 
 import { featuredExamples } from "../../../npm/ui/scripts/reference-docs/examples.ts";
@@ -23,6 +24,7 @@ export async function captureUiPreviews(browser: Browser, baseUrl: string, outpu
     family: string;
     sourceSha256: string | null;
     screenshot: string;
+    screenshotSha256: string;
     interactions: string;
     narrowViewport: number;
     browserDiagnostics: string[];
@@ -74,7 +76,11 @@ export async function captureUiPreviews(browser: Browser, baseUrl: string, outpu
         assert.equal(await page.getByRole("article", { name: "Release 2.4" }).count(), 1);
       }
       assert.deepEqual(errors, [], `${family}: browser diagnostics`);
-      await page.screenshot({ path: path.join(outputRoot, `${family}.png`), fullPage: true });
+      const screenshot = saveScreenshot(
+        outputRoot,
+        family,
+        await page.screenshot({ fullPage: true }),
+      );
       if (family === "dialog") {
         await page.keyboard.press("Escape");
         assert.equal(await page.getByRole("dialog").count(), 0);
@@ -95,7 +101,8 @@ export async function captureUiPreviews(browser: Browser, baseUrl: string, outpu
       receipts.push({
         family,
         sourceSha256,
-        screenshot: `${family}.png`,
+        screenshot: screenshot.file,
+        screenshotSha256: screenshot.sha256,
         interactions: "passed",
         narrowViewport: 360,
         browserDiagnostics: [],

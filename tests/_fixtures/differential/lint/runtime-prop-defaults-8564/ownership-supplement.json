@@ -1,0 +1,171 @@
+{
+  "schema": "vize.lint.runtime-prop-defaults-ownership-supplement",
+  "version": 1,
+  "authority": "Additional native ownership/syntax controls source-authored before any observation. Original eighteen sources/expected vectors/raw provider streams/denominators remain unchanged. This is a separate supplement, not an extension or recapture of the original provider authority.",
+  "primaryCorpus": {
+    "path": "cases.json",
+    "sha256": "95453a7cecb70ab2deb0cd2a3585d218aa6caef7a9832078e98865dbc9930ad9"
+  },
+  "summary": {
+    "cases": 12,
+    "beforeFindings": 0,
+    "afterFindings": 1,
+    "providerExecuted": false
+  },
+  "cases": [
+    {
+      "id": "runtime-vue-import",
+      "filename": "runtime-vue-import.vue",
+      "sourceFile": "runtime-vue-import.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport { defineProps } from \"vue\"; const props = defineProps({ value: { required: true, default: 1 } });\n</script>\n",
+      "sourceSha256": "f89a4b4bf844f6628ced3fe6986baf4f69ad9685925dc5ee36cab152b804cc6e",
+      "reason": "Only a same-named named Vue macro import is permitted by the shared ownership contract.",
+      "beforeDiagnostics": [],
+      "diagnostics": [
+        {
+          "rule_name": "script/no-required-prop-with-default",
+          "severity": "error",
+          "message": "Prop 'value' is required but also declares a default",
+          "start": 88,
+          "end": 125,
+          "help": "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+          "labels": [
+            {
+              "message": "marked required here",
+              "start": 97,
+              "end": 111
+            },
+            {
+              "message": "default declared here",
+              "start": 113,
+              "end": 123
+            }
+          ],
+          "fix": null
+        }
+      ],
+      "providerQualification": "pending separate reference; never inserted into original eighteen-case packet"
+    },
+    {
+      "id": "runtime-vue-foreign-alias",
+      "filename": "runtime-vue-foreign-alias.vue",
+      "sourceFile": "runtime-vue-foreign-alias.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport { other as defineProps } from \"vue\"; const props = defineProps({ value: { required: true, default: 1 } });\n</script>\n",
+      "sourceSha256": "a263b99c31cca257d8b1fcb1a6fd68225570e8724a0a2dcb001afa1397d5e78b",
+      "reason": "Renaming another Vue export to the macro name does not prove ownership.",
+      "beforeDiagnostics": [],
+      "diagnostics": [],
+      "providerQualification": "pending separate reference; never inserted into original eighteen-case packet"
+    },
+    {
+      "id": "runtime-namespace-import",
+      "filename": "runtime-namespace-import.vue",
+      "sourceFile": "runtime-namespace-import.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport * as defineProps from \"foreign\"; const props = defineProps({ value: { required: true, default: 1 } });\n</script>\n",
+      "sourceSha256": "dcfbd05f7cf430ee2ad319a34aa09eae7e5caa3ce0d281810a86c5e5ba094d4f",
+      "reason": "Namespace binding owns the macro spelling.",
+      "beforeDiagnostics": [],
+      "diagnostics": [],
+      "providerQualification": "pending separate reference; never inserted into original eighteen-case packet"
+    },
+    {
+      "id": "runtime-value-namespace",
+      "filename": "runtime-value-namespace.vue",
+      "sourceFile": "runtime-value-namespace.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nnamespace defineProps { export const value = 1 }; const props = defineProps({ value: { required: true, default: 1 } });\n</script>\n",
+      "sourceSha256": "1887d71622b3c86949f7b53e2d125fb5c32c5a227ac901d2de1c216d74710370",
+      "reason": "A value namespace declaration owns the macro spelling.",
+      "beforeDiagnostics": [],
+      "diagnostics": [],
+      "providerQualification": "pending separate reference; never inserted into original eighteen-case packet"
+    },
+    {
+      "id": "runtime-hoisted-var",
+      "filename": "runtime-hoisted-var.vue",
+      "sourceFile": "runtime-hoisted-var.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nif (true) { var defineProps = (value) => value }; const props = defineProps({ value: { required: true, default: 1 } });\n</script>\n",
+      "sourceSha256": "bb9570b4e722adf15b7067f0d5bf3fb2b5aa6c268564a34a76d3a6f3321fddd6",
+      "reason": "A var in a top-level statement is hoisted into setup scope.",
+      "beforeDiagnostics": [],
+      "diagnostics": [],
+      "providerQualification": "pending separate reference; never inserted into original eighteen-case packet"
+    },
+    {
+      "id": "runtime-late-const",
+      "filename": "runtime-late-const.vue",
+      "sourceFile": "runtime-late-const.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nconst props = defineProps({ value: { required: true, default: 1 } }); const defineProps = (value) => value;\n</script>\n",
+      "sourceSha256": "42a11c88829677202caca2aa147455a9ce883fb738e486d518a96539a32b742b",
+      "reason": "A later lexical declaration shadows the complete setup scope.",
+      "beforeDiagnostics": [],
+      "diagnostics": [],
+      "providerQualification": "pending separate reference; never inserted into original eighteen-case packet"
+    },
+    {
+      "id": "runtime-nested-function",
+      "filename": "runtime-nested-function.vue",
+      "sourceFile": "runtime-nested-function.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nfunction build() { return defineProps({ value: { required: true, default: 1 } }) };\n</script>\n",
+      "sourceSha256": "b2ae9b554f9dcf30732b342fd77c8b3478720fbe27012f0b9ed83f8baaeb1025",
+      "reason": "Nested macro calls are outside direct expression/nonambient initializer scope.",
+      "beforeDiagnostics": [],
+      "diagnostics": [],
+      "providerQualification": "pending separate reference; never inserted into original eighteen-case packet"
+    },
+    {
+      "id": "runtime-bound-object",
+      "filename": "runtime-bound-object.vue",
+      "sourceFile": "runtime-bound-object.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nconst declarations = { value: { required: true, default: 1 } }; const props = defineProps(declarations);\n</script>\n",
+      "sourceSha256": "dcde71a787ea0118a21daef24cd50620c1fcfd740707660912d317ec8be26259",
+      "reason": "This slice deliberately does not resolve even a local const object.",
+      "beforeDiagnostics": [],
+      "diagnostics": [],
+      "providerQualification": "pending separate reference; never inserted into original eighteen-case packet"
+    },
+    {
+      "id": "runtime-imported-object",
+      "filename": "runtime-imported-object.vue",
+      "sourceFile": "runtime-imported-object.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nimport declarations from \"foreign\"; const props = defineProps(declarations);\n</script>\n",
+      "sourceSha256": "c3565103cbe3e0a43a836e041609020d2d30e009f7b8f17fc040cf72eca63e96",
+      "reason": "Imported object resolution is excluded.",
+      "beforeDiagnostics": [],
+      "diagnostics": [],
+      "providerQualification": "pending separate reference; never inserted into original eighteen-case packet"
+    },
+    {
+      "id": "runtime-optional-call",
+      "filename": "runtime-optional-call.vue",
+      "sourceFile": "runtime-optional-call.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nconst props = defineProps?.({ value: { required: true, default: 1 } });\n</script>\n",
+      "sourceSha256": "3ae091405be8330159b1968d1d740b29ad812f158c48a2a82ef488a39c7b7177",
+      "reason": "Optional calls do not establish compiler macro ownership.",
+      "beforeDiagnostics": [],
+      "diagnostics": [],
+      "providerQualification": "pending separate reference; never inserted into original eighteen-case packet"
+    },
+    {
+      "id": "runtime-type-and-runtime",
+      "filename": "runtime-type-and-runtime.vue",
+      "sourceFile": "runtime-type-and-runtime.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nconst props = defineProps<{ value: number }>({ value: { required: true, default: 1 } });\n</script>\n",
+      "sourceSha256": "847cff58ef2ef0468cbf87cb2a2e94ef8cf71efcee4d57dc68dddb47c9d24edb",
+      "reason": "New runtime capability excludes all calls with type arguments; existing typed body remains unchanged.",
+      "beforeDiagnostics": [],
+      "diagnostics": [],
+      "providerQualification": "pending separate reference; never inserted into original eighteen-case packet"
+    },
+    {
+      "id": "runtime-with-defaults-wrapper",
+      "filename": "runtime-with-defaults-wrapper.vue",
+      "sourceFile": "runtime-with-defaults-wrapper.vue.fixture",
+      "source": "<script setup lang=\"ts\">\nconst props = withDefaults(defineProps({ value: { required: true, default: 1 } }), {});\n</script>\n",
+      "sourceSha256": "2381cc4f05fb17bef6ce90a109b032767c2dd1922450b82fcda2e6a3b9a3c176",
+      "reason": "Nested runtime withDefaults macro arguments are outside the direct runtime path.",
+      "beforeDiagnostics": [],
+      "diagnostics": [],
+      "providerQualification": "pending separate reference; never inserted into original eighteen-case packet"
+    }
+  ]
+}

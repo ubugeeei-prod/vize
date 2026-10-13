@@ -5,7 +5,7 @@ use serde_json::{Value, json};
 
 fn corpus() -> Value {
     serde_json::from_str(include_str!(
-        "../../../../tests/_fixtures/lint-default-correctness/cases.json"
+        "../../../../tests/_fixtures/lint-default-correctness/current-range-cases.json"
     ))
     .unwrap()
 }

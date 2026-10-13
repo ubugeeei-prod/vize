@@ -25,3 +25,18 @@ Source review covers both complete testing guides. Their new rendered desktop
 and mobile reading flow and deployed links still require verification; evidence
 from the parent does not qualify this change. Other More guides requirements
 remain open under #8365. No new test framework or runtime behavior is introduced.
+
+## Published Japanese reading flow
+
+#8629 actually merged as `5390fc5d3ffa84fe4ffcf0e71f855174203d1279`.
+Official source `130331f713bdfa1db41abce506e0f2ce2ee5486f` contains that
+merge and passed full Docs `38151503446`; successful publisher `38155628417`
+and deployment `6998412044` supplied its public site. Native Chrome at 1440 and
+390 pixels retained all six authored Japanese headings and six inline syntax
+values, with no page overflow, and actually followed the Inspector guidance to
+the Japanese compiler-inspector page. The first mobile view was visually read.
+The [public receipt](./results/japanese-public-reader-130.json) records complete
+heading/source hashes, native destinations and PNG hashes; the exact public
+manifest remained unchanged across all six contribution/testing/credits cases.
+This completes the bounded Japanese public flow, while the complete More guide
+review and other site-wide requirements remain open.

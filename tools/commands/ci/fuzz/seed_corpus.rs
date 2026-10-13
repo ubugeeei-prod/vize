@@ -76,6 +76,14 @@ fn run() -> Result<(), String> {
         sfc_count += 1;
     }
     let mut template_count = 0usize;
+    let mut lowering_regression_count = 0usize;
+    for file in glob_files(&root, &["tests/fuzz/regressions/l1_lowering/*"])? {
+        write_seed(
+            &l1_lowering_dir,
+            &fs::read(&file).map_err(|error| format!("cannot read {}: {error}", file.display()))?,
+        )?;
+        lowering_regression_count += 1;
+    }
     let mut expression_count = 0usize;
     for file in glob_files(&root, &["tests/fuzz/regressions/js_ts_expression/*"])? {
         write_seed(
@@ -135,7 +143,7 @@ fn run() -> Result<(), String> {
     }
 
     println!(
-        "Seeded {sfc_count} sfc_parse entries, {template_count} template entries (template_lexer/template_compile/l1_lowering/l2_to_l3_lowering), {expression_count} JS/TS expression entries, {program_count} native Program sources in eight explicit profiles, {style_count} CSS entries, and {folio_count} folio pages from {} fixtures.",
+        "Seeded {sfc_count} sfc_parse entries, {template_count} template entries (template_lexer/template_compile/l1_lowering/l2_to_l3_lowering), {expression_count} JS/TS expression entries, {program_count} native Program sources in eight explicit profiles, {style_count} CSS entries, {folio_count} folio pages from {} fixtures, and {lowering_regression_count} retained l1_lowering regression entries.",
         vue_files.len() + folio_count
     );
     Ok(())

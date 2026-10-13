@@ -83,6 +83,48 @@ struct LoadedRawConfig {
     source_path: Option<PathBuf>,
 }
 
+impl LoadedRawConfig {
+    fn project_root(&self) -> Option<PathBuf> {
+        let path = self.source_path.as_deref()?;
+        if !CONFIG_FILE_NAMES[5..]
+            .iter()
+            .any(|name| path.file_name().is_some_and(|file| file == *name))
+        {
+            return None;
+        }
+        self.config.project_root().map(PathBuf::from)
+    }
+}
+
+/// One project configuration evaluation, including host-supplied path identity.
+#[derive(Debug, Clone, Default)]
+#[non_exhaustive]
+pub struct LoadedProjectConfig {
+    pub document: ConfigDocument,
+    pub source_path: Option<PathBuf>,
+    pub project_root: Option<PathBuf>,
+}
+
+pub fn load_project_config_with_source(path: Option<&Path>) -> LoadedProjectConfig {
+    project_config_snapshot(load_raw_config_with_source(path))
+}
+
+/// Reject malformed discovered or explicitly selected project configuration.
+pub fn try_load_project_config_with_source(
+    path: Option<&Path>,
+) -> Result<LoadedProjectConfig, std::string::String> {
+    load_raw_config_checked(path).map(project_config_snapshot)
+}
+
+fn project_config_snapshot(loaded: LoadedRawConfig) -> LoadedProjectConfig {
+    let project_root = loaded.project_root();
+    LoadedProjectConfig {
+        document: loaded.config,
+        source_path: loaded.source_path,
+        project_root,
+    }
+}
+
 /// Validate that an explicitly-provided `--config` path exists and parses.
 ///
 /// Auto-discovery silently falls back to defaults when no config is found

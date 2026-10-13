@@ -1,0 +1,256 @@
+name: CSS engine vendor candidate
+on:
+  pull_request:
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "crates/vize_patina/Cargo.toml"
+      - "crates/vize_atelier_sfc/Cargo.toml"
+      - "crates/vize_glyph/Cargo.toml"
+      - "crates/vize/Cargo.toml"
+      - "crates/vize/examples/css_engine_vendor_observer.rs"
+      - "vendor/lightningcss/**"
+      - "vendor/parcel_sourcemap/**"
+      - "tools/support/dependencies/*css-engine*"
+      - "tests/external-consumers/css-engine-identity/**"
+      - "tests/_fixtures/differential/css-engine-vendor-exit/**"
+      - ".github/workflows/css-engine-vendor-candidate.yml"
+  workflow_dispatch:
+    inputs:
+      scope:
+        type: choice
+        default: qualification
+        options: [qualification, bundler-before]
+        description: Existing full qualification or bounded additive before observations
+permissions: { contents: read }
+defaults:
+  run: { shell: bash }
+concurrency:
+  group: css-vendor-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  CARGO_TERM_COLOR: never
+  CARGO_BUILD_JOBS: "12"
+  CARGO_PROFILE_DEV_DEBUG: "0"
+  CARGO_PROFILE_TEST_DEBUG: "0"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  engine:
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.scope != 'bundler-before' }}
+    name: CSS engines (${{ matrix.profile }})
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix: { profile: [dev, release] }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
+        with: { toolchain: "1.99.0" }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: "package.json", run-install: false }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          cache-key-prefix: css-vendor-
+          key: engines-${{ matrix.profile }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+      - name: Authenticate original source and panic authorities
+        id: custody
+        run: |
+          mkdir -p "$RUNNER_TEMP/css-engine-evidence"
+          cargo metadata --locked --format-version 1 > "$RUNNER_TEMP/css-engine-evidence/metadata.json"
+          node tools/support/dependencies/css-engine-vendor-custody.ts "$RUNNER_TEMP/css-engine-evidence/metadata.json" > "$RUNNER_TEMP/css-engine-evidence/custody.json"
+          rustc -Vv > "$RUNNER_TEMP/css-engine-evidence/rustc.txt"
+          git rev-parse HEAD > "$RUNNER_TEMP/css-engine-evidence/source.txt"
+          sha256sum Cargo.lock Cargo.toml vendor/lightningcss/Cargo.toml vendor/parcel_sourcemap/Cargo.toml > "$RUNNER_TEMP/css-engine-evidence/manifests.sha256"
+      - name: Direct original engine inputs and full upstream library regressions
+        run: cargo test --locked -p vize_lightningcss --all-features --profile ${{ matrix.profile }} --lib --tests -- --nocapture 2>&1 | tee "$RUNNER_TEMP/css-engine-evidence/engine.log"
+      - name: Build the source-after observer and retain the whole proposed producer
+        id: bundler-after-build
+        if: ${{ !cancelled() && steps.custody.outcome == 'success' }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/css-engine-evidence/bundler-after/source"
+          node tools/support/dependencies/css-engine-bundler-after.ts --authenticate > "$RUNNER_TEMP/css-engine-evidence/bundler-after/source-custody.json"
+          cp --parents Cargo.lock Cargo.toml vendor/lightningcss/Cargo.toml vendor/parcel_sourcemap/Cargo.toml vendor/lightningcss/src/bundler.rs vendor/lightningcss/src/bundler/context.rs vendor/lightningcss/src/bundler/order_contract.rs vendor/lightningcss/examples/vize_bundler_before_observer.rs vendor/lightningcss/examples/vize_bundler_before/mod.rs tools/support/dependencies/css-engine-bundler-after.ts tools/support/dependencies/css-engine-producer-manifests.ts tools/commands/release/pr.rs tools/support/release/pr_pin.rs tools/support/release/pr_pin_metadata.rs tools/support/release/pr_pin_producer_metadata.rs tools/support/dependencies/css-engine-release-driver-custody.ts tests/_fixtures/differential/css-engine-vendor-exit/release-inheritance/stable-driver/pr-original.rs.txt tests/_fixtures/differential/css-engine-vendor-exit/release-inheritance/stable-driver/pr-pin-original.rs.txt tests/_fixtures/differential/css-engine-vendor-exit/release-inheritance/metadata/Cargo.toml tests/_fixtures/differential/css-engine-vendor-exit/release-inheritance/metadata/Cargo.lock tests/_fixtures/differential/css-engine-vendor-exit/bundler-before-inputs.json tests/_fixtures/differential/css-engine-vendor-exit/bundler-before-whole.json vendor/lightningcss/tests/vize_fixtures/bundler-original-tests.rs.txt "$RUNNER_TEMP/css-engine-evidence/bundler-after/source/"
+          find "$RUNNER_TEMP/css-engine-evidence/bundler-after/source" -type f -print0 | sort -z | xargs -0 sha256sum > "$RUNNER_TEMP/css-engine-evidence/bundler-after/sources.sha256"
+          cargo build --locked -p vize_lightningcss --all-features --example vize_bundler_before_observer --profile ${{ matrix.profile }} 2>&1 | tee "$RUNNER_TEMP/css-engine-evidence/bundler-after/build.log"
+      - name: Qualify all unchanged21 graph inputs at pools1/8/32 after the repair
+        if: ${{ !cancelled() && steps.bundler-after-build.outcome == 'success' }}
+        run: node tools/support/dependencies/css-engine-bundler-after.ts target/${{ matrix.profile == 'dev' && 'debug' || 'release' }}/examples/vize_bundler_before_observer "$RUNNER_TEMP/css-engine-evidence/bundler-after/observations" ${{ matrix.profile }} 2>&1 | tee "$RUNNER_TEMP/css-engine-evidence/bundler-after/observer.log"
+      - name: Original and authored source-map archive contracts
+        if: ${{ !cancelled() && steps.custody.outcome == 'success' }}
+        run: cargo test --locked -p vize_parcel_sourcemap --features json --profile ${{ matrix.profile }} -- --nocapture 2>&1 | tee "$RUNNER_TEMP/css-engine-evidence/maps.log"
+      - name: Preserve source-bound evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: css-engine-${{ matrix.profile }}-${{ github.sha }}
+          path: ${{ runner.temp }}/css-engine-evidence/
+          if-no-files-found: error
+          retention-days: 14
+
+  observations:
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.scope != 'bundler-before' }}
+    name: Whole CSS source observations (${{ matrix.profile }})
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix: { profile: [dev, release] }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
+        with: { toolchain: "1.99.0" }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: "package.json", run-install: false }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          cache-key-prefix: css-vendor-
+          key: observations-${{ matrix.profile }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Authenticate all before authorities and preserve actual producer identity
+        run: |
+          mkdir -p "$RUNNER_TEMP/css-engine-observations"
+          cargo metadata --locked --format-version 1 > "$RUNNER_TEMP/css-engine-observations/metadata.json"
+          node tools/support/dependencies/css-engine-vendor-custody.ts "$RUNNER_TEMP/css-engine-observations/metadata.json" > "$RUNNER_TEMP/css-engine-observations/custody.json"
+          git rev-parse HEAD > "$RUNNER_TEMP/css-engine-observations/source.txt"
+          rustc -Vv > "$RUNNER_TEMP/css-engine-observations/rustc.txt"
+          sha256sum Cargo.lock Cargo.toml crates/vize/examples/css_engine_vendor_observer.rs tools/support/dependencies/css-engine-cli-observer.ts tests/_fixtures/differential/css-engine-vendor-exit/atelier-inputs.json tests/_fixtures/differential/css-engine-vendor-exit/finite-successors.json tests/tooling/support/css-engine-successors.ts tools/support/dependencies/css-engine-finite-results.ts > "$RUNNER_TEMP/css-engine-observations/sources.sha256"
+      - name: Observe all99 Rust consumers and66 original Atelier inputs without replacing expectations
+        run: |
+          export CSS_ENGINE_OBSERVATIONS="$RUNNER_TEMP/css-engine-observations/rust-consumers.json"
+          export CSS_ENGINE_SOURCE_REVISION="$(git rev-parse HEAD)"
+          cargo build --locked -p vize --example css_engine_vendor_observer --profile ${{ matrix.profile }} 2>&1 | tee "$RUNNER_TEMP/css-engine-observations/rust-build.log"
+          sha256sum target/${{ matrix.profile == 'dev' && 'debug' || 'release' }}/examples/css_engine_vendor_observer > "$RUNNER_TEMP/css-engine-observations/rust-executable.sha256"
+          target/${{ matrix.profile == 'dev' && 'debug' || 'release' }}/examples/css_engine_vendor_observer 2>&1 | tee "$RUNNER_TEMP/css-engine-observations/rust-consumers.log"
+      - name: Observe all90 original whole CLI processes with the actual source-built binary
+        run: |
+          cargo build --locked -p vize --bin vize --profile ${{ matrix.profile }} 2>&1 | tee "$RUNNER_TEMP/css-engine-observations/cli-build.log"
+          node tools/support/dependencies/css-engine-cli-observer.ts target/${{ matrix.profile == 'dev' && 'debug' || 'release' }}/vize "$RUNNER_TEMP/css-engine-observations/cli.json" ${{ matrix.profile }}
+      - name: Check finite repaired cells and every unchanged original obligation
+        run: node tools/support/dependencies/css-engine-finite-results.ts "$RUNNER_TEMP/css-engine-observations"
+      - name: Preserve every raw diagnostic source observation
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: css-engine-observations-${{ matrix.profile }}-${{ github.sha }}
+          path: ${{ runner.temp }}/css-engine-observations/
+          if-no-files-found: error
+          retention-days: 14
+
+  public-types:
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.scope != 'bundler-before' }}
+    name: CSS Rust downstream identity and SemVer
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { fetch-depth: 0 }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
+        with: { toolchain: "1.99.0" }
+      - uses: ./.github/actions/setup-moonbit
+      - name: Preserve complete publication sanitizer table contracts
+        run: moon -C tools/moon test --target native cmd/publish_crates
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          cache-key-prefix: css-vendor-
+          key: downstream
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Execute three whole downstream bodies in all three dependency planes
+        env:
+          CSS_ENGINE_BASE_SHA: a6633fb68b110d07abd5ee5a6049bc15f20f9c7f
+        run: bash tools/support/dependencies/css-engine-downstream.sh
+      - uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with: { tool: cargo-semver-checks }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
+        with: { toolchain: "1.95.0" }
+      - name: Preserve the actual unwaived Patina API comparison
+        env:
+          CSS_ENGINE_BASE_SHA: a6633fb68b110d07abd5ee5a6049bc15f20f9c7f
+          RUSTUP_TOOLCHAIN: "1.95.0"
+        run: |
+          rustc -Vv > "$RUNNER_TEMP/css-engine-identity/semver-rustc.txt"
+          cargo semver-checks --version > "$RUNNER_TEMP/css-engine-identity/semver-tool.txt"
+          status=0
+          cargo semver-checks check-release --package vize_patina --baseline-rev "$CSS_ENGINE_BASE_SHA" --release-type patch > "$RUNNER_TEMP/css-engine-identity/semver.log" 2>&1 || status=$?
+          cat "$RUNNER_TEMP/css-engine-identity/semver.log"
+          printf '%s\n' "$status" > "$RUNNER_TEMP/css-engine-identity/semver-exit.txt"
+          # Preserve a genuine API or tooling failure as a red gate. This
+          # candidate cannot claim compatibility by masking the tool's exit.
+          exit "$status"
+      - name: Preserve whole downstream and unwaived SemVer results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: css-engine-public-types-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/css-engine-identity/*/stdout.log
+            ${{ runner.temp }}/css-engine-identity/*/stderr.log
+            ${{ runner.temp }}/css-engine-identity/*/exit.txt
+            ${{ runner.temp }}/css-engine-identity/*/Cargo.toml
+            ${{ runner.temp }}/css-engine-identity/*/Cargo.lock
+            ${{ runner.temp }}/css-engine-identity/*/metadata.json
+            ${{ runner.temp }}/css-engine-identity/*.txt
+            ${{ runner.temp }}/css-engine-identity/source.sha256
+            ${{ runner.temp }}/css-engine-identity/consumer.rs
+            ${{ runner.temp }}/css-engine-identity/typed-visitors.rs
+            ${{ runner.temp }}/css-engine-identity/trait-implementation.rs
+            ${{ runner.temp }}/css-engine-identity/semver.log
+            ${{ runner.temp }}/css-engine-identity/*/src/main.rs
+            ${{ runner.temp }}/css-engine-identity/migration-source.sha256
+            ${{ runner.temp }}/css-engine-identity/patina-provider-*.rs
+          if-no-files-found: error
+          retention-days: 14
+
+  bundler-before:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.scope == 'bundler-before' }}
+    name: Whole checked-provider import observations (${{ matrix.profile }})
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix: { profile: [dev, release] }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { fetch-depth: 0 }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
+        with: { toolchain: "1.99.0" }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: "package.json", run-install: false }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          cache-key-prefix: css-vendor-
+          key: engines-${{ matrix.profile }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Authenticate unchanged checked provider and all original authorities
+        run: |
+          mkdir -p "$RUNNER_TEMP/css-bundler-before/source"
+          cargo metadata --locked --format-version 1 > "$RUNNER_TEMP/css-bundler-before/metadata.json"
+          node tools/support/dependencies/css-engine-vendor-custody.ts "$RUNNER_TEMP/css-bundler-before/metadata.json" > "$RUNNER_TEMP/css-bundler-before/custody.json"
+          node tools/support/dependencies/css-engine-bundler-before.ts --authenticate > "$RUNNER_TEMP/css-bundler-before/before-custody.json"
+          rustc -Vv > "$RUNNER_TEMP/css-bundler-before/rustc.txt"
+          git rev-parse HEAD > "$RUNNER_TEMP/css-bundler-before/source.txt"
+          cp --parents Cargo.lock Cargo.toml vendor/lightningcss/Cargo.toml vendor/parcel_sourcemap/Cargo.toml vendor/lightningcss/src/bundler.rs vendor/lightningcss/examples/vize_bundler_before_observer.rs vendor/lightningcss/examples/vize_bundler_before/mod.rs tools/support/dependencies/css-engine-bundler-before.ts tests/_fixtures/differential/css-engine-vendor-exit/bundler-before-inputs.json vendor/lightningcss/tests/vize_fixtures/bundler-original-tests.rs.txt "$RUNNER_TEMP/css-bundler-before/source/"
+          find "$RUNNER_TEMP/css-bundler-before/source" -type f -print0 | sort -z | xargs -0 sha256sum > "$RUNNER_TEMP/css-bundler-before/sources.sha256"
+      - name: Build only the additive observer against the exact checked0.8 provider
+        run: cargo build --locked -p vize_lightningcss --all-features --example vize_bundler_before_observer --profile ${{ matrix.profile }} 2>&1 | tee "$RUNNER_TEMP/css-bundler-before/build.log"
+      - name: Retain whole bounded child observations at pools1/8/32
+        run: node tools/support/dependencies/css-engine-bundler-before.ts target/${{ matrix.profile == 'dev' && 'debug' || 'release' }}/examples/vize_bundler_before_observer "$RUNNER_TEMP/css-bundler-before/observations" ${{ matrix.profile }} 2>&1 | tee "$RUNNER_TEMP/css-bundler-before/observer.log"
+      - name: Preserve failures and complete before evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: css-bundler-before-${{ matrix.profile }}-${{ github.sha }}
+          path: ${{ runner.temp }}/css-bundler-before/
+          if-no-files-found: error
+          retention-days: 14

@@ -1,17 +1,26 @@
 # Sort imports in Vue scripts
 
-Enable import sorting with `formatter.sortImports` in `vize.config.*`:
+Sort Vue script imports consistently with the rest of a Vite+ project. Use this when you want stable import groups, while keeping side-effect initialization order unless you deliberately opt in.
+
+Check [shared formatter configuration and current release availability](./configuration.md)
+before choosing where to put these settings.
+
+## Configure import sorting
+
+Enable import sorting with `fmt.vize.sortImports` in your existing Vite+ configuration:
 
 ```ts
-import { defineConfig } from "vize";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  formatter: {
-    sortImports: {
-      internalPattern: ["@/", "~/"],
-      groups: ["builtin", "external", "internal", ["parent", "sibling", "index"]],
-      newlinesBetween: true,
-      order: "asc",
+  fmt: {
+    vize: {
+      sortImports: {
+        internalPattern: ["@/", "~/"],
+        groups: ["builtin", "external", "internal", ["parent", "sibling", "index"]],
+        newlinesBetween: true,
+        order: "asc",
+      },
     },
   },
 });
@@ -51,3 +60,5 @@ modes across CLI, editor, Node and WASM formatting.
 [Configure JSX attribute quotes](./formatter-jsx-quotes.md) independently of JavaScript strings.
 
 For space and tab indentation, see [Indentation width](./formatter-indent-width.md).
+
+For CLI/editor sharing and optional dedicated settings, see [Configuration](./configuration.md), including the current release availability.

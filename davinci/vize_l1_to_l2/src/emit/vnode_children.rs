@@ -31,10 +31,15 @@ fn emit_children_inner(
     cache_static_children: bool,
 ) -> Result<(), EmitError> {
     let ops = &children.ops;
+    if ops.iter().all(super::annotations::is_annotation) {
+        cx.walk.skip(ops.len());
+        cx.buf.push("null");
+        return Ok(());
+    }
     if !force_array
         && ops
             .iter()
-            .all(|op| matches!(op, Op::Text(_) | Op::Interpolation(_)))
+            .all(|op| is_text_like(op) || super::annotations::is_annotation(op))
     {
         return emit_text_like(cx, ops);
     }
@@ -50,6 +55,10 @@ fn emit_children_inner(
     let mut rest: &[Op<'_>] = ops;
     let mut first = true;
     while let Some((op, tail)) = rest.split_first() {
+        if super::annotations::skip(cx, op) {
+            rest = tail;
+            continue;
+        }
         if is_text_like(op) {
             let (run, after) = split_text_run(rest);
             if !first {
@@ -92,6 +101,9 @@ pub(super) fn is_text_like(op: &Op<'_>) -> bool {
 
 /// `ops` split after its leading run of text and interpolation ops.
 pub(super) fn split_text_run<'o, 'a>(ops: &'o [Op<'a>]) -> (&'o [Op<'a>], &'o [Op<'a>]) {
-    let len = ops.iter().take_while(|op| is_text_like(op)).count();
+    let len = ops
+        .iter()
+        .take_while(|op| is_text_like(op) || super::annotations::is_annotation(op))
+        .count();
     ops.split_at_checked(len).unwrap_or((ops, &[]))
 }

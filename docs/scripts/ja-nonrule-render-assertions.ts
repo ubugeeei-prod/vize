@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { Page } from "playwright";
+import { currentEditorialWitness } from "./config-editorial-succession.ts";
 
 export interface NonRuleWitness {
   case: string;
@@ -65,7 +66,7 @@ export function assertNonRuleWitness(actual: string[], witness: NonRuleWitness) 
 
 /** Read complete original elements without editing text, styles, or source DOM. */
 export async function readNonRuleWitnesses(page: Page, route: string, version: "before" | "after") {
-  const cases = fixture.cases.filter((entry) => entry.route === route);
+  const cases = fixture.cases.filter((entry) => entry.route === route).map(currentEditorialWitness);
   const expected = cases.map((entry) => ({
     witness: entry,
     blocks: witnessBlocks(entry, version),

@@ -4,9 +4,9 @@
 //! Expression positions hold the payload tokens of
 //! [`expr_token`](crate::dump::parse::expr_token) - `js(...)`, `opaque(...)`,
 //! `foreign(...)`. Quoted strings escape `\\`, `\"`, `\n`, `\r`,
-//! `\t`; values embedding other control characters, attribute names
-//! containing `=`, ` ` or `"` are outside the contract (the
-//! derived-page "documented edges" rule).
+//! `\t`; attribute names with delimiters or whitespace use these quoted
+//! tokens. Values embedding other control characters remain outside the
+//! derived-page "documented edges" contract.
 
 use vize_l0::dump::Error as DumpError;
 use vize_l0::{Span, String, cstr};
@@ -134,8 +134,13 @@ pub(in crate::dump) fn parse_item(content: &str, line_no: usize) -> Result<Item,
 }
 
 fn attr(rest: &str, line_no: usize) -> Result<Item, DumpError> {
-    let name_end = rest.find(['=', ' ']).unwrap_or(rest.len());
-    let (name, after) = rest.split_at(name_end);
+    let (name, after) = if rest.starts_with('"') {
+        take_quoted(rest, line_no)?
+    } else {
+        let name_end = rest.find(['=', ' ']).unwrap_or(rest.len());
+        let (name, after) = rest.split_at(name_end);
+        (String::from(name), after)
+    };
     if name.is_empty() {
         return Err(err(line_no, cstr!("missing attribute name")));
     }
@@ -145,11 +150,7 @@ fn attr(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     } else {
         (None, tail_span(after, line_no)?)
     };
-    Ok(Item::Attr(Attribute {
-        name: String::from(name),
-        value,
-        span,
-    }))
+    Ok(Item::Attr(Attribute { name, value, span }))
 }
 
 fn branch(rest: &str, line_no: usize) -> Result<Item, DumpError> {

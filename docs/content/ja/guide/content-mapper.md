@@ -2,33 +2,36 @@
 title: TypeScript Content Mapper
 ---
 
-<!-- Generated translation; source: guide/content-mapper.md -->
+<!-- Reviewed translation; source: guide/content-mapper.md -->
 
 # TypeScript Content Mapper
 
-Content Mapper 対応の native TypeScript ホストへ Vue ファイルを統合するときに、このガイドを使ってください。
-日常のプロジェクト検査は[静的解析](./static-analysis.md)から始め、エディターの設定は
+Content Mapper に対応したネイティブ TypeScript ホストで Vue ファイルを扱うためのガイドです。
+日常の型チェックは[静的解析](./static-analysis.md)、エディターの設定は
 [VS Code 連携](../integrations/vscode.md)を参照してください。
 
-Content Mapper は、コンパイラー自身がパースできないファイルタイプをチェックするための
-TypeScript のプラグイン機構です。[TypeScript 7.1 API ロードマップ](https://github.com/microsoft/typescript-go/issues/4830)
-では、Vue に必要な TS Server プラグインの後継として位置づけられています。この API は
+Content Mapper は、TypeScript が直接解析できない種類のファイルを型チェックするための
+プラグイン機構です。[TypeScript 7.1 API ロードマップ](https://github.com/microsoft/typescript-go/issues/4830)
+では、Vue が必要とする TS Server プラグインの後継として位置づけられています。最初の API は
 [microsoft/typescript-go#4712](https://github.com/microsoft/typescript-go/pull/4712) で
-`typescript-go` の main ブランチにマージされました。
+マージされました。この開発用リポジトリは現在アーカイブされており、ネイティブ TypeScript の
+開発は [microsoft/TypeScript](https://github.com/microsoft/TypeScript) で続いています。
+[Content Mapper の準拠性検証ワークフロー](https://github.com/ubugeeei-prod/vize/blob/main/.github/workflows/content-mapper-conformance.yml)
+で、このページに示すホストの正確な取得方法とビルド手順を確認できます。
 
-Vize は `vize` npm パッケージの中に準拠した Content Mapper を同梱しています。Content Mapper
-対応の `tsgo` ビルドが `vize content-mapper` を起動し、`.vue` ファイルを直接チェックします —
-ホバー、定義ジャンプ、リネーム、補完、診断はすべて元の SFC にマップされ、並行する
-`.vue.ts` プロジェクトを生成する必要はありません。
+Vize の Content Mapper は `vize` npm パッケージに同梱されています。対応する `tsgo` が
+`vize content-mapper` を起動して `.vue` ファイルを直接検査します。ホバー、定義への移動、
+名前の変更、補完、診断の位置は、元の SFC に対応づけられます。別の `.vue.ts` プロジェクトを
+生成する必要はありません。
 
-> **⚠️ プレビュー:** Content Mapper は upstream にマージ済みですが、リリース済みの
-> TypeScript 7 platform package にはまだ含まれていません。プロトコルを含むリリースが出るまでは、
-> `typescript-go` の main から Content Mapper 対応の native TypeScript バイナリをビルドし、
-> サポートされる型チェック手段としては [`vize check`](./cli.md#check) を使い続けてください。
+> **⚠️ プレビュー:** この連携には、Content Mapper と `--runExternalCode` に対応した
+> ネイティブ TypeScript ホストが必要です。バージョン番号だけでは対応を判断できません。
+> マッパーの動作確認には、このページで示す検証済みのホストを使ってください。
+> 本番の型チェックでは、引き続きサポート対象の [`vize check`](./cli.md#check) を使えます。
 
 ## セットアップ
 
-`vize` をインストールし、`tsconfig.json` でマッパーを宣言します:
+`vize` をインストールし、`tsconfig.json` にマッパーを指定します。
 
 ```bash
 vp install -D vize
@@ -50,18 +53,21 @@ vp install -D vize
 }
 ```
 
-外部マッパープロセスの実行には明示的なオプトインが必要です:
+外部マッパーの実行には明示的な許可が必要です。次のコマンドは、Vize の準拠性検証で
+`tsgo` という名前にしている Content Mapper 対応バイナリを使います。検証ワークフローは
+現在のネイティブコンパイラーのエントリーポイント `tsc/cmd/tsc` を、このページで示す
+正確なリビジョンからビルドします。
 
 ```bash
 tsgo --runExternalCode --noEmit -p tsconfig.json
 ```
 
-VS Code では、信頼されたワークスペースであれば Vize 拡張機能が TypeScript 7
-content-mapper ホストに `.vue` サポートを自動登録し、同じマッパーがエディターでも動作します。
+VS Code では、信頼されたワークスペースで Content Mapper 対応の TypeScript ホストを使うと、
+Vize 拡張機能が `.vue` の対応を自動登録します。同じマッパーがエディターでも動作します。
 
 ## オプション
 
-マッパーエントリは `options` オブジェクトを受け取ります:
+マッパーの設定には `options` オブジェクトを指定できます。
 
 ```json
 {
@@ -77,18 +83,17 @@ content-mapper ホストに `.vue` サポートを自動登録し、同じマッ
 
 | オプション   | デフォルト | 用途                                                           |
 | ------------ | ---------- | -------------------------------------------------------------- |
-| `optionsApi` | `true`     | テンプレート内で Vue Options API のインスタンスバインディングを解決 |
+| `optionsApi` | `true`     | テンプレート内で Vue Options API のインスタンスの変数を解決する |
 
-不正なオプションでビルドが失敗することはありません。Vize は tsconfig 内の位置を指す
-オプション診断(`vize1`〜`vize3`)として報告し、デフォルト値で続行します。また Vize は
-プロジェクトの `noUnusedLocals` コンパイラーオプションへの依存を宣言しているため、
-`<script setup>` 内の未使用ローカルの報告は各プロジェクトの設定に従います。
+不正なオプションがあっても、そのためにビルドは失敗しません。Vize は tsconfig の該当箇所に
+オプションの診断（`vize1`〜`vize3`）を表示し、既定値で続行します。また、プロジェクトの
+`noUnusedLocals` コンパイラーオプションに従って、`<script setup>` 内の未使用変数を報告します。
 
 ## テンプレートディレクティブ
 
-`<script>` ブロックはそのまま透過するため `@ts-expect-error` が通常どおり使えます。
-テンプレート式には TS コメントを書けないので、Vize は Vue 標準の HTML コメント
-ディレクティブをプロトコル経由でマップします:
+`<script>` ブロックでは、通常どおり `@ts-expect-error` を使えます。テンプレート式には
+TypeScript のコメントを書けないため、Vize は Vue 標準の HTML コメントによる指示を
+プロトコルを通して伝えます。
 
 ```vue
 <template>
@@ -101,19 +106,25 @@ content-mapper ホストに `.vue` サポートを自動登録し、同じマッ
 ```
 
 - `<!-- @vue-expect-error -->` は次のテンプレート行の TypeScript 診断を抑制し、何も
-  抑制されなかった場合は `vize4: Unused '@vue-expect-error' directive` を報告します。
-- `<!-- @vue-ignore -->` は黙って抑制します。
+  抑制しなかった場合は `vize4: Unused '@vue-expect-error' directive` を報告します。
+- `<!-- @vue-ignore -->` は診断を抑制し、未使用の指示については報告しません。
 
-ディレクティブは、コメントの後ろに内容が続く場合はその行の残り、そうでなければ次の
-空でない行に適用されます。
+コメントの後ろに内容が続く場合、指示は同じ行の残りの部分に適用されます。
+そうでなければ、次の空行ではない行に適用されます。
 
 ## プロトコル
 
-Vize は upstream にマージされた Content Mapper プロトコル v1 を話します: UTF-8 位置
-エンコーディング、プロジェクトごとの `openProject`/`closeProject` ライフサイクル、そして
-TypeScript と組み込み JSX の両方が正しくパースできる `.tsx` 仮想出力です。準拠性は CI で
-担保されており、pin された `typescript-go` リビジョンから正確な upstream コンパイラーを
-ビルドし、パック済み npm 成果物を通して CLI・ビルドモード・LSP の全スイートを実行します。
+Vize は現在の Content Mapper の初期化仕様に従います。番号つきの `protocolVersion` は
+交渉しません。位置の符号化方式には UTF-8 を選び、プロジェクトごとに
+`openProject`/`closeProject` で状態を管理します。仮想出力は `.tsx` で、TypeScript と
+埋め込まれた JSX の両方を正しく解析できます。
+
+準拠性検証では、[Content Mapper の第2段階の変更](https://github.com/microsoft/TypeScript/pull/63936)
+がマージされた `microsoft/TypeScript` の正確なリビジョン
+`d6c4afddb2c55f4a9dea7b59293a99a8fdea1799` から、ネイティブコンパイラーをビルドします。
+パック済み npm 成果物を使って CLI・ビルドモード・LSP の全スイートを実行し、元の Vue
+ファイルを指す declaration map の出力や、別にパックした利用側から `.vue` への移動も検証します。
+これはそのホストの動作確認であり、公開済みのすべてのパッケージに対応するという主張ではありません。
 
 `vize` ソースで報告される診断コード:
 
@@ -126,9 +137,11 @@ TypeScript と組み込み JSX の両方が正しくパースできる `.tsx` �
 
 ## 制限事項
 
-- TypeScript 7 のリリースに API が含まれるまで、`typescript-go` の main からビルドした
-  `tsgo` が必要です。
-- マップされた入力の declaration map は
-  [microsoft/typescript-go#4860](https://github.com/microsoft/typescript-go/issues/4860) 待ちです。
-- upstream API がプレビューの間は、プロダクションの型チェック手段としては `vize check` が
-  引き続きサポート対象です。
+- Content Mapper API と、外部コードの実行を明示的に許可する設定が必要です。
+  アーカイブされた開発用リポジトリは、現在の開発元ではありません。
+- declaration map を求めた
+  [microsoft/typescript-go#4860](https://github.com/microsoft/typescript-go/issues/4860)
+  は、第2段階の変更で完了しています。Vize は検証対象のホストでマップの出力と
+  パックした利用側からの移動を確認しています。他のホストは、それぞれ動作確認が必要です。
+- 本番の型チェックでは、引き続き `vize check` がサポート対象です。マッパーを使う前に、
+  インストールしたホストとエディターがこの連携に対応していることを確認してください。

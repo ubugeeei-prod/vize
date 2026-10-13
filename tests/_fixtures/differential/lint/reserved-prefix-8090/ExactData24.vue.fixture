@@ -1,0 +1,3 @@
+<script lang="ts">
+export default { data() { return { $data: 0, $props: 0, $el: 0, $options: 0, $parent: 0, $root: 0, $children: 0, $slots: 0, $scopedSlots: 0, $refs: 0, $isServer: 0, $attrs: 0, $listeners: 0, $watch: 0, $set: 0, $delete: 0, $on: 0, $once: 0, $off: 0, $emit: 0, $mount: 0, $forceUpdate: 0, $nextTick: 0, $destroy: 0 } } }
+</script>

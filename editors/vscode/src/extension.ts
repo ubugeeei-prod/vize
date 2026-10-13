@@ -1,7 +1,6 @@
 import * as crypto from "crypto";
 import * as fs from "fs";
 import * as path from "path";
-import * as zlib from "zlib";
 import { execFile } from "child_process";
 import { promisify } from "util";
 import {
@@ -14,7 +13,6 @@ import {
   env,
   window,
   workspace,
-  type QuickPickItem,
   type StatusBarItem,
 } from "vscode";
 import { LanguageClient, Trace } from "vscode-languageclient/node.js";
@@ -35,6 +33,16 @@ import { registerTypeScriptContentMapperDiscovery } from "./content-mapper-disco
 import { createClientOptions } from "./client-options.js";
 import { isJsxDocument } from "./jsx-routing.js";
 import { downloadFile } from "./release-download.js";
+import { extractReleaseArchive } from "./release-archive.js";
+import { WorkspaceLspConfigDiscovery } from "./workspace-config.js";
+import type {
+  InspectedServerCandidate,
+  ReleaseServerTarget,
+  ServerCandidate,
+  VizeStatus,
+  VizeStatusAction,
+  VizeStatusQuickPickItem,
+} from "./server-state-types.js";
 
 const execFileAsync = promisify(execFile);
 let client: LanguageClient | undefined;
@@ -45,39 +53,20 @@ let activeInitializationOptions: LspInitializationOptions = {};
 let currentStatus: VizeStatus = "disabled";
 let currentStatusDetail = "";
 let configurationSyncTimer: ReturnType<typeof setTimeout> | undefined;
+let configurationSyncGeneration = 0;
 let suppressConfigurationSync = false;
+const workspaceLspConfig = new WorkspaceLspConfigDiscovery(WORKSPACE_LSP_CONFIG_FILES, traceConfig);
 
-type ServerCandidateSource =
-  | "configured"
-  | "bundled"
-  | "development"
-  | "release"
-  | "cargo"
-  | "path";
-type ServerCandidate = {
-  path: string;
-  source: ServerCandidateSource;
-};
-type InspectedServerCandidate = ServerCandidate & {
-  version?: string;
-  versionError?: string;
-};
-type ReleaseServerTarget = {
-  archiveName: string;
-  targetName: string;
-};
-type VizeStatus = "disabled" | "starting" | "ready" | "missing-server" | "failed";
-type VizeStatusAction =
-  | "recommended"
-  | "lintOnly"
-  | "selectServer"
-  | "restart"
-  | "settings"
-  | "output"
-  | "disable";
-type VizeStatusQuickPickItem = QuickPickItem & {
-  action: VizeStatusAction;
-};
+function traceConfig(message: string): void {
+  if (process.env.VIZE_TEST_ENABLE_HOST_COMMANDS === "1") {
+    try {
+      outputChannel.appendLine(`[config ${new Date().toISOString()}] ${message}`);
+    } catch {
+      // Diagnostic logging must not replace an existing lifecycle result.
+    }
+  }
+}
+
 const RECOMMENDED_SETUP_ACTION = "Enable Recommended";
 const LINT_ONLY_SETUP_ACTION = "Enable Lint Only";
 const OPEN_SETTINGS_ACTION = "Open Settings";
@@ -102,10 +91,13 @@ export async function activate(context: ExtensionContext): Promise<void> {
   context.subscriptions.push(
     workspace.onDidChangeConfiguration(async (event) => {
       if (!event.affectsConfiguration("vize")) {
+        traceConfig("configuration callback rejected unrelated");
         return;
       }
+      traceConfig("configuration callback accepted vize");
 
       if (suppressConfigurationSync) {
+        traceConfig("configuration callback rejected applying-profile");
         outputChannel.appendLine("Vize configuration changed while applying a profile.");
         return;
       }
@@ -113,6 +105,10 @@ export async function activate(context: ExtensionContext): Promise<void> {
       outputChannel.appendLine("Vize configuration changed. Refreshing language server...");
       scheduleClientSync(context, "configuration changed");
     }),
+  );
+
+  context.subscriptions.push(
+    ...workspaceLspConfig.watch((reason) => scheduleClientSync(context, reason)),
   );
 
   context.subscriptions.push(
@@ -161,30 +157,49 @@ export async function activate(context: ExtensionContext): Promise<void> {
   await syncClientToConfiguration(context, "initial activation");
 }
 function scheduleClientSync(context: ExtensionContext, reason: string): void {
+  traceConfig(`schedule reason=${reason} generation=${configurationSyncGeneration}`);
   if (configurationSyncTimer) {
+    traceConfig(`timer cancel generation=${configurationSyncGeneration}`);
     clearTimeout(configurationSyncTimer);
   }
 
   configurationSyncTimer = setTimeout(() => {
+    traceConfig(`timer fire reason=${reason} generation=${configurationSyncGeneration}`);
     configurationSyncTimer = undefined;
     void syncClientToConfiguration(context, reason);
   }, 150);
 }
 
 async function syncClientToConfiguration(context: ExtensionContext, reason: string): Promise<void> {
+  const generation = ++configurationSyncGeneration;
+  traceConfig(`sync enter generation=${generation} reason=${reason}`);
+  await workspaceLspConfig.refresh(generation);
+  traceConfig(`sync refreshed generation=${generation} current=${configurationSyncGeneration}`);
+  if (generation !== configurationSyncGeneration) {
+    traceConfig(`sync refused generation=${generation} stage=refresh`);
+    return;
+  }
   let config = workspace.getConfiguration("vize");
-  let enabled = shouldStartFromConfiguration(config, hasWorkspaceLspConfig());
+  let enabled = shouldStartFromConfiguration(config, workspaceLspConfig.hasConfig);
 
   if (!enabled) {
     await maybeOfferInitialSetup(context, config);
+    if (generation !== configurationSyncGeneration) {
+      traceConfig(`sync refused generation=${generation} stage=setup`);
+      return;
+    }
     config = workspace.getConfiguration("vize");
-    enabled = shouldStartFromConfiguration(config, hasWorkspaceLspConfig());
+    enabled = shouldStartFromConfiguration(config, workspaceLspConfig.hasConfig);
 
     if (!enabled) {
       if (client) {
         updateStatusBar("starting", "Stopping language server");
         outputChannel.appendLine(`Stopping Vize language server (${reason}; extension disabled).`);
         await stopClient();
+        if (generation !== configurationSyncGeneration) {
+          traceConfig(`sync refused generation=${generation} stage=disabled-stop`);
+          return;
+        }
       } else {
         outputChannel.appendLine("Vize is disabled. Set vize.enable to true to start the server.");
       }
@@ -195,17 +210,22 @@ async function syncClientToConfiguration(context: ExtensionContext, reason: stri
     }
 
     outputChannel.appendLine("Recommended Vize setup was applied. Starting language server...");
-  } else if (!config.get<boolean>("enable", false)) {
-    outputChannel.appendLine("Starting Vize language server from workspace vize.config.");
+  } else if (workspaceLspConfig.hasConfig) {
+    outputChannel.appendLine("Starting Vize language server with workspace configuration.");
   }
 
   if (client) {
     updateStatusBar("starting", "Restarting language server");
     outputChannel.appendLine(`Restarting Vize language server (${reason}).`);
     await stopClient();
+    if (generation !== configurationSyncGeneration) {
+      traceConfig(`sync refused generation=${generation} stage=restart-stop`);
+      return;
+    }
   }
 
-  await startClient(context, config);
+  await startClient(context, config, generation);
+  traceConfig(`sync finish generation=${generation} current=${configurationSyncGeneration}`);
 }
 
 async function maybeOfferInitialSetup(
@@ -255,7 +275,7 @@ async function maybeOfferCapabilitySetup(
   context: ExtensionContext,
   config: ReturnType<typeof workspace.getConfiguration>,
 ): Promise<void> {
-  if (hasAnyEnabledCapability(config) || hasWorkspaceLspConfig()) {
+  if (hasAnyEnabledCapability(config) || workspaceLspConfig.hasConfig) {
     return;
   }
 
@@ -348,7 +368,7 @@ async function selectServerExecutable(context: ExtensionContext): Promise<void> 
 async function showStatus(context: ExtensionContext): Promise<void> {
   const config = workspace.getConfiguration("vize");
   const initializationOptions = getInitializationOptions(config, {
-    hasWorkspaceLspConfig: hasWorkspaceLspConfig(),
+    hasWorkspaceLspConfig: workspaceLspConfig.hasConfig,
     logDefaultProfile: false,
   });
   const items = createStatusItems(config);
@@ -368,7 +388,7 @@ async function showStatus(context: ExtensionContext): Promise<void> {
 function createStatusItems(
   config: ReturnType<typeof workspace.getConfiguration>,
 ): VizeStatusQuickPickItem[] {
-  const enabled = config.get<boolean>("enable", false);
+  const enabled = shouldStartFromConfiguration(config, workspaceLspConfig.hasConfig);
   const items: VizeStatusQuickPickItem[] = [
     {
       action: "recommended",
@@ -463,19 +483,6 @@ function getConfigurationTarget(): ConfigurationTarget {
     : ConfigurationTarget.Global;
 }
 
-function hasWorkspaceLspConfig(): boolean {
-  const workspaceFolders = workspace.workspaceFolders;
-  if (!workspaceFolders) {
-    return false;
-  }
-
-  return workspaceFolders.some((folder) =>
-    WORKSPACE_LSP_CONFIG_FILES.some((filename) =>
-      fs.existsSync(path.join(folder.uri.fsPath, filename)),
-    ),
-  );
-}
-
 async function showServerNotFoundMessage(context: ExtensionContext): Promise<void> {
   const selection = await window.showErrorMessage(
     "Vize: Could not find the language server. Install a matching GitHub release binary or set vize.serverPath.",
@@ -510,20 +517,28 @@ async function showServerNotFoundMessage(context: ExtensionContext): Promise<voi
 async function startClient(
   context: ExtensionContext,
   config: ReturnType<typeof workspace.getConfiguration>,
+  generation: number,
 ): Promise<void> {
+  traceConfig(`start enter generation=${generation}`);
   const initializationOptions = getInitializationOptions(config, {
-    hasWorkspaceLspConfig: hasWorkspaceLspConfig(),
+    hasWorkspaceLspConfig: workspaceLspConfig.hasConfig,
     log: (message) => outputChannel.appendLine(message),
   });
   activeInitializationOptions = initializationOptions;
-  updateStatusBar("starting", `Starting with ${describeCapabilities(initializationOptions)}`);
+  const capabilityDescription = workspaceLspConfig.describeCapabilities(initializationOptions);
+  updateStatusBar("starting", `Starting with ${capabilityDescription}`);
   if (Object.keys(initializationOptions).length === 0) {
-    outputChannel.appendLine(
-      "Vize server is enabled with no opt-in features. Enable lint, typecheck, editor assistance, and ecosystem helpers to activate diagnostics and navigation.",
-    );
-    void maybeOfferCapabilitySetup(context, config);
+    outputChannel.appendLine(`Starting Vize with ${capabilityDescription}.`);
+    if (!workspaceLspConfig.hasConfig) {
+      void maybeOfferCapabilitySetup(context, config);
+    }
   }
-  const serverPath = await findServerPath(context, config);
+  const serverPath = await findServerPath(context, config, generation);
+  traceConfig(`start path-return generation=${generation} current=${configurationSyncGeneration}`);
+  if (generation !== configurationSyncGeneration) {
+    traceConfig(`start refused generation=${generation} stage=server-path`);
+    return;
+  }
   if (!serverPath) {
     updateStatusBar("missing-server", "Language server executable was not found");
     await showServerNotFoundMessage(context);
@@ -541,18 +556,31 @@ async function startClient(
   applyTraceSetting(nextClient, config);
 
   try {
+    traceConfig(`client start enter generation=${generation}`);
     await nextClient.start();
+    traceConfig(
+      `client start finish generation=${generation} current=${configurationSyncGeneration}`,
+    );
+    if (generation !== configurationSyncGeneration) {
+      traceConfig(`unpublished client stop enter generation=${generation}`);
+      await nextClient.stop();
+      traceConfig(`unpublished client stop finish generation=${generation}`);
+      return;
+    }
     client = nextClient;
     outputChannel.appendLine("Vize language server started successfully");
-    updateStatusBar("ready", `Ready with ${describeCapabilities(initializationOptions)}`);
+    updateStatusBar("ready", `Ready with ${capabilityDescription}`);
   } catch (error) {
+    traceConfig(`client start error generation=${generation}`);
     outputChannel.appendLine(`Failed to start language server: ${String(error)}`);
+    if (generation !== configurationSyncGeneration) return;
     updateStatusBar("failed", "Failed to start language server");
     window.showErrorMessage(`Vize: Failed to start language server: ${String(error)}`);
   }
 }
 
 async function stopClient(): Promise<void> {
+  traceConfig(`stop enter generation=${configurationSyncGeneration} client=${Boolean(client)}`);
   if (!client) {
     return;
   }
@@ -560,6 +588,7 @@ async function stopClient(): Promise<void> {
   const activeClient = client;
   client = undefined;
   await activeClient.stop();
+  traceConfig(`stop finish generation=${configurationSyncGeneration}`);
 }
 
 function applyTraceSetting(
@@ -579,12 +608,17 @@ function applyTraceSetting(
 }
 
 export async function deactivate(): Promise<void> {
+  ++configurationSyncGeneration;
+  traceConfig(`deactivate generation=${configurationSyncGeneration}`);
+  if (configurationSyncTimer) clearTimeout(configurationSyncTimer);
+  configurationSyncTimer = undefined;
   await stopClient();
 }
 
 async function findServerPath(
   context: ExtensionContext,
   config: ReturnType<typeof workspace.getConfiguration>,
+  generation: number,
 ): Promise<string | undefined> {
   const exeName = process.platform === "win32" ? "vize.exe" : "vize";
   const expectedVersion = getExtensionVersion(context);
@@ -597,6 +631,7 @@ async function findServerPath(
         path: configuredPath,
         source: "configured",
       });
+      if (generation !== configurationSyncGeneration) return undefined;
       logSelectedServer(candidate, expectedVersion);
       void warnAboutVersionMismatch(candidate, expectedVersion);
       selectedServerCandidate = candidate;
@@ -607,6 +642,7 @@ async function findServerPath(
   }
 
   const candidates = await inspectServerCandidates(collectServerCandidates(context, exeName));
+  if (generation !== configurationSyncGeneration) return undefined;
 
   if (expectedVersion) {
     const matchingCandidate = candidates.find((candidate) => candidate.version === expectedVersion);
@@ -616,7 +652,13 @@ async function findServerPath(
       return matchingCandidate.path;
     }
 
-    const releaseCandidate = await resolveReleaseServerCandidate(context, exeName, expectedVersion);
+    const releaseCandidate = await resolveReleaseServerCandidate(
+      context,
+      exeName,
+      expectedVersion,
+      generation,
+    );
+    if (generation !== configurationSyncGeneration) return undefined;
     if (releaseCandidate) {
       logSelectedServer(releaseCandidate, expectedVersion);
       selectedServerCandidate = releaseCandidate;
@@ -683,12 +725,12 @@ function createStatusSummary(
   config: ReturnType<typeof workspace.getConfiguration>,
   initializationOptions: LspInitializationOptions,
 ): string {
-  const enabled = config.get<boolean>("enable", false) ? "enabled" : "disabled";
+  const enabled = shouldStartFromConfiguration(config, workspaceLspConfig.hasConfig);
   const server = selectedServerCandidate
     ? `${selectedServerCandidate.source} ${selectedServerCandidate.version ?? "unknown"}`
     : "server not resolved";
 
-  return `Vize is ${formatStatus(currentStatus)} (${enabled}). Features: ${describeCapabilities(initializationOptions)}. Server: ${server}.`;
+  return `Vize is ${formatStatus(currentStatus)} (${enabled ? "enabled" : "disabled"}). Features: ${workspaceLspConfig.describeCapabilities(initializationOptions)}. Server: ${server}.`;
 }
 
 function formatStatus(status: VizeStatus): string {
@@ -897,6 +939,7 @@ async function resolveReleaseServerCandidate(
   context: ExtensionContext,
   exeName: string,
   expectedVersion: string,
+  generation: number,
 ): Promise<InspectedServerCandidate | undefined> {
   const target = getReleaseServerTarget();
   if (!target) {
@@ -914,6 +957,7 @@ async function resolveReleaseServerCandidate(
   );
   const serverPath = path.join(installDir, exeName);
   const cachedCandidate = await inspectCachedReleaseServer(serverPath, expectedVersion);
+  if (generation !== configurationSyncGeneration) return undefined;
   if (cachedCandidate) {
     return cachedCandidate;
   }
@@ -928,14 +972,19 @@ async function resolveReleaseServerCandidate(
     outputChannel.appendLine(`Downloading Vize language server ${expectedVersion}: ${downloadUrl}`);
     fs.rmSync(installDir, { force: true, recursive: true });
     await fs.promises.mkdir(installDir, { recursive: true });
+    if (generation !== configurationSyncGeneration) return undefined;
     await downloadFile(downloadUrl, archivePath);
+    if (generation !== configurationSyncGeneration) return undefined;
 
     // Verify SHA-256 sidecars before executing downloaded servers.
     // Missing, malformed, or mismatched checksums fail closed. (#969)
     await downloadFile(checksumUrl, checksumPath);
+    if (generation !== configurationSyncGeneration) return undefined;
     await verifyArchiveChecksum(archivePath, checksumPath);
+    if (generation !== configurationSyncGeneration) return undefined;
 
     await extractReleaseArchive(archivePath, installDir, exeName);
+    if (generation !== configurationSyncGeneration) return undefined;
 
     const candidate = await inspectServerCandidate({
       path: serverPath,
@@ -1043,154 +1092,4 @@ async function verifyArchiveChecksum(archivePath: string, checksumPath: string):
     throw new Error(`SHA-256 mismatch for ${archivePath}: declared ${declared}, computed ${got}`);
   }
   outputChannel.appendLine(`Verified ${path.basename(archivePath)} (SHA-256 ${got}).`);
-}
-
-async function extractReleaseArchive(
-  archivePath: string,
-  destinationDir: string,
-  exeName: string,
-): Promise<void> {
-  const archive = await fs.promises.readFile(archivePath);
-  if (archivePath.endsWith(".zip")) {
-    await extractServerFromZip(archive, destinationDir, exeName);
-    return;
-  }
-
-  const tar = zlib.gunzipSync(archive);
-  await extractServerFromTar(tar, destinationDir, exeName);
-}
-
-async function extractServerFromTar(
-  tar: Buffer,
-  destinationDir: string,
-  exeName: string,
-): Promise<void> {
-  for (let offset = 0; offset + 512 <= tar.byteLength; offset += 512) {
-    const header = tar.subarray(offset, offset + 512);
-    if (header.every((byte) => byte === 0)) {
-      break;
-    }
-
-    const name = readTarString(header, 0, 100);
-    const prefix = readTarString(header, 345, 155);
-    const entryName = prefix ? `${prefix}/${name}` : name;
-    const size = parseInt(readTarString(header, 124, 12).trim() || "0", 8);
-    const typeFlag = readTarString(header, 156, 1);
-    const dataOffset = offset + 512;
-    const nextOffset = dataOffset + Math.ceil(size / 512) * 512;
-
-    if ((typeFlag === "" || typeFlag === "0") && path.basename(entryName) === exeName) {
-      await writeExtractedServer(
-        tar.subarray(dataOffset, dataOffset + size),
-        path.join(destinationDir, exeName),
-      );
-      return;
-    }
-
-    offset = nextOffset - 512;
-  }
-
-  throw new Error(`archive did not contain ${exeName}`);
-}
-
-async function extractServerFromZip(
-  zip: Buffer,
-  destinationDir: string,
-  exeName: string,
-): Promise<void> {
-  const eocdOffset = findEndOfCentralDirectory(zip);
-  const entryCount = zip.readUInt16LE(eocdOffset + 10);
-  let centralOffset = zip.readUInt32LE(eocdOffset + 16);
-
-  for (let index = 0; index < entryCount; index++) {
-    if (zip.readUInt32LE(centralOffset) !== 0x02014b50) {
-      throw new Error("invalid zip central directory");
-    }
-
-    const compressionMethod = zip.readUInt16LE(centralOffset + 10);
-    const compressedSize = zip.readUInt32LE(centralOffset + 20);
-    const uncompressedSize = zip.readUInt32LE(centralOffset + 24);
-    const fileNameLength = zip.readUInt16LE(centralOffset + 28);
-    const extraLength = zip.readUInt16LE(centralOffset + 30);
-    const commentLength = zip.readUInt16LE(centralOffset + 32);
-    const localHeaderOffset = zip.readUInt32LE(centralOffset + 42);
-    const entryName = zip
-      .subarray(centralOffset + 46, centralOffset + 46 + fileNameLength)
-      .toString("utf-8");
-
-    if (path.basename(entryName) === exeName) {
-      const extracted = extractZipEntry(zip, {
-        compressedSize,
-        compressionMethod,
-        localHeaderOffset,
-        uncompressedSize,
-      });
-      await writeExtractedServer(extracted, path.join(destinationDir, exeName));
-      return;
-    }
-
-    centralOffset += 46 + fileNameLength + extraLength + commentLength;
-  }
-
-  throw new Error(`archive did not contain ${exeName}`);
-}
-
-function extractZipEntry(
-  zip: Buffer,
-  entry: {
-    compressedSize: number;
-    compressionMethod: number;
-    localHeaderOffset: number;
-    uncompressedSize: number;
-  },
-): Buffer {
-  if (zip.readUInt32LE(entry.localHeaderOffset) !== 0x04034b50) {
-    throw new Error("invalid zip local header");
-  }
-
-  const fileNameLength = zip.readUInt16LE(entry.localHeaderOffset + 26);
-  const extraLength = zip.readUInt16LE(entry.localHeaderOffset + 28);
-  const dataOffset = entry.localHeaderOffset + 30 + fileNameLength + extraLength;
-  const compressed = zip.subarray(dataOffset, dataOffset + entry.compressedSize);
-
-  if (entry.compressionMethod === 0) {
-    if (compressed.byteLength !== entry.uncompressedSize) {
-      throw new Error("stored zip entry has an unexpected size");
-    }
-    return compressed;
-  }
-
-  if (entry.compressionMethod === 8) {
-    const inflated = zlib.inflateRawSync(compressed);
-    if (inflated.byteLength !== entry.uncompressedSize) {
-      throw new Error("deflated zip entry has an unexpected size");
-    }
-    return inflated;
-  }
-
-  throw new Error(`unsupported zip compression method ${entry.compressionMethod}`);
-}
-
-function findEndOfCentralDirectory(zip: Buffer): number {
-  const minimumOffset = Math.max(0, zip.byteLength - 65_557);
-  for (let offset = zip.byteLength - 22; offset >= minimumOffset; offset--) {
-    if (zip.readUInt32LE(offset) === 0x06054b50) {
-      return offset;
-    }
-  }
-
-  throw new Error("invalid zip archive");
-}
-
-function readTarString(buffer: Buffer, start: number, length: number): string {
-  const raw = buffer.subarray(start, start + length);
-  const end = raw.indexOf(0);
-  return raw.subarray(0, end === -1 ? raw.byteLength : end).toString("utf-8");
-}
-
-async function writeExtractedServer(contents: Buffer, serverPath: string): Promise<void> {
-  await fs.promises.writeFile(serverPath, contents);
-  if (process.platform !== "win32") {
-    await fs.promises.chmod(serverPath, 0o755);
-  }
 }

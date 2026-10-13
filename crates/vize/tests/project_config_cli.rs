@@ -10,6 +10,8 @@ mod lsp;
 #[cfg(all(feature = "maestro", feature = "glyph"))]
 #[path = "support/lsp_process.rs"]
 mod lsp_process;
+#[path = "project_config_cli/root.rs"]
+mod root;
 #[path = "project_config_cli/support.rs"]
 mod support;
 #[path = "project_config_cli/typecheck.rs"]

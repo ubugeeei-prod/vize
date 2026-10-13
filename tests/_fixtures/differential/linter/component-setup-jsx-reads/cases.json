@@ -1,0 +1,37 @@
+{
+  "schema": "vize.lint.component-setup-jsx-reads",
+  "version": 1,
+  "cases": [
+    {
+      "id": "used-tsx",
+      "source": "used-tsx.vue.txt",
+      "expectedWarnings": 0
+    },
+    {
+      "id": "used-jsx",
+      "source": "used-jsx.vue.txt",
+      "expectedWarnings": 0
+    },
+    {
+      "id": "unused-tsx",
+      "source": "unused-tsx.vue.txt",
+      "expectedWarnings": 1
+    },
+    {
+      "id": "shadowed-tsx",
+      "source": "shadowed-tsx.vue.txt",
+      "expectedWarnings": 1
+    },
+    {
+      "id": "whole-douyin",
+      "source": "whole-douyin.vue.txt",
+      "expectedWarnings": 0,
+      "origin": {
+        "repository": "https://github.com/zyronon/douyin",
+        "revision": "8cc6172c737dfaf0c914a2b27cdfee4eb2306f2e",
+        "path": "src/components/slide/SlideVerticalInfinite.vue",
+        "sha256": "fcd13b76faff9548e59457d1b6d02cfaad35d3e1639a56da2e2845d1916106e8"
+      }
+    }
+  ]
+}

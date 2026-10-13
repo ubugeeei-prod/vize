@@ -1,0 +1,37 @@
+[
+  {
+    "file": "tests/tooling/warm-type-backed-git-reader-incoming.test.ts",
+    "mode": "100644",
+    "blob": "ed04eeef2f93bc577a0a0e2227db561f4620361b",
+    "bytes": 3133,
+    "sha256": "0c570ef6418d1c9651b2451b58d073b68b2af39662df0e2966016d54a783a4f5"
+  },
+  {
+    "file": "tests/tooling/warm-type-backed-git-reader-nodeep.test.ts",
+    "mode": "100644",
+    "blob": "03daad285234f476642a5933e179407e7e7bf478",
+    "bytes": 12629,
+    "sha256": "73527589546b593e96b58dba9f747d8e897bb5d53d476342dc9715cc25b70228"
+  },
+  {
+    "file": "tests/tooling/warm-type-backed-git-reader-setup.test.ts",
+    "mode": "100644",
+    "blob": "389b2763fb4aca9731515ac0f2baa128792578e7",
+    "bytes": 7834,
+    "sha256": "659866cd702f3a710bc068765aa7135b309519e0a1776aa6ce60a60c30a182e7"
+  },
+  {
+    "file": "tests/tooling/warm-type-backed-path-host.test.ts",
+    "mode": "100644",
+    "blob": "7582b6f37376281f97175c5b612e9a74438f2717",
+    "bytes": 2515,
+    "sha256": "3dfad726a861009ea8b906752797f6be8654adbba5955dcb649cb0e48d455d48"
+  },
+  {
+    "file": "tools/support/compat/levels/path-host-callers.ts",
+    "mode": "100644",
+    "blob": "14fea2ab19f12347b66c0c57d80ffd0f110561d4",
+    "bytes": 4426,
+    "sha256": "013e3bb593b64dcaf7a8099fa85e96d082f92f33a21ca27d7c8d0a31b5b48ff6"
+  }
+]

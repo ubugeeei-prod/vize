@@ -14,6 +14,8 @@ mod checkers;
 mod diagnostic_paths;
 mod file_diagnostics;
 mod import_resolution;
+#[cfg(test)]
+mod lexical_dollar_receipt;
 mod output;
 mod partition;
 mod patterns;
@@ -74,8 +76,13 @@ fn run_cli_for_config(
             .arg("--pretty")
             .arg("false")
             .arg("--project")
-            .arg(config_path)
-            .output()
+            .arg(config_path);
+        #[cfg(test)]
+        let receipt = lexical_dollar_receipt::requested(&command, project, config_path);
+        let output = command.output();
+        #[cfg(test)]
+        lexical_dollar_receipt::completed(receipt, &output);
+        output
     })?;
     // Native CLI stops before semantic checking when the program has a parser
     // error. Classify the actual reported file bodies before mapping can hide

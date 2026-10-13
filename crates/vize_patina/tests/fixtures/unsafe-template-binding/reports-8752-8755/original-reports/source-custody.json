@@ -1,0 +1,47 @@
+{
+  "originals": [
+    {
+      "label": "8752",
+      "path": "/tmp/vize-8752-8755-sources-20261012/8752.json",
+      "sha256": "7439c8d4c17236c6dfa92a9166d3cbceb58e650135236ee54dce807627b95a14",
+      "bodyUpdatedAt": "2026-10-12T07:08:19Z"
+    },
+    {
+      "label": "8753",
+      "path": "/tmp/vize-8752-8755-sources-20261012/8753.json",
+      "sha256": "382e776cd04f16078dd959316bd4f8850c048756a64161ad58daf28a307be4e1",
+      "bodyUpdatedAt": "2026-10-12T07:08:22Z"
+    },
+    {
+      "label": "8754",
+      "path": "/tmp/vize-8752-8755-sources-20261012/8754.json",
+      "sha256": "3993a57e6d1d66f87e962201b9885a9181c43e63b9579a496efc524985a01ff9",
+      "bodyUpdatedAt": "2026-10-12T07:08:27Z"
+    },
+    {
+      "label": "8755",
+      "path": "/tmp/vize-8752-8755-sources-20261012/8755.json",
+      "sha256": "84a7bf2c18394c55089e555f63efb98c64f7d88306cdfde775cee28cd0ac1786",
+      "bodyUpdatedAt": "2026-10-12T07:08:41Z"
+    },
+    {
+      "label": "reporter-commit",
+      "path": "/tmp/vize-8752-8755-sources-20261012/reporter-commit.json",
+      "sha256": "30379a77aaaa29088eabb156ac00ebe2a98d502cc2f394914ef16984f63842b7",
+      "bodyUpdatedAt": null
+    }
+  ],
+  "source": "Live GitHub API; read-only; original bodies and whole SFC fences",
+  "reporter": {
+    "source": "https://github.com/naitokosuke/404-not-found/commit/57865d80019f36c952c8bf841a5052f6db66fd22",
+    "sha": "57865d80019f36c952c8bf841a5052f6db66fd22",
+    "githubUserId": 102337893,
+    "login": "naitokosuke",
+    "verifiedCommitAuthor": {
+      "name": "ナイトウ(Nathan Green)",
+      "email": "102337893+engineer-naito@users.noreply.github.com",
+      "date": "2025-02-09T03:09:28Z"
+    },
+    "trailer": "Co-authored-by: ナイトウ(Nathan Green) <102337893+engineer-naito@users.noreply.github.com>"
+  }
+}

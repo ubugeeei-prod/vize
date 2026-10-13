@@ -13,6 +13,7 @@ use crate::commands::build::{BuildArgs, ScriptExtension};
 use crate::commands::davinci_ice;
 
 pub(super) struct BuildConfigSettings {
+    pub(super) project_root: Option<PathBuf>,
     pub(super) compiler_template_syntax: Option<&'static str>,
     pub(super) compiler_whitespace: Option<&'static str>,
     pub(super) features: ConfigFeatureFlags,
@@ -26,6 +27,7 @@ pub(super) struct BuildConfigSettings {
 pub(super) fn load_build_config(no_config: bool, config: Option<&Path>) -> BuildConfigSettings {
     if no_config {
         return BuildConfigSettings {
+            project_root: None,
             compiler_template_syntax: None,
             compiler_whitespace: None,
             features: ConfigFeatureFlags::default(),
@@ -36,18 +38,26 @@ pub(super) fn load_build_config(no_config: bool, config: Option<&Path>) -> Build
             host_compiler: None,
         };
     }
-    let (compiler_template_syntax, compiler_whitespace) =
-        crate::config::load_compiler_template_settings(config);
+    let loaded = if config.is_some() {
+        crate::config::try_load_project_config_with_source(config).unwrap_or_else(|error| {
+            eprintln!("\x1b[31mError:\x1b[0m {error}");
+            std::process::exit(1);
+        })
+    } else {
+        crate::config::load_project_config_with_source(config)
+    };
+    let document = loaded.document;
+    let features = document.clone().into_config_and_features().1;
     BuildConfigSettings {
-        compiler_template_syntax,
-        compiler_whitespace,
-        features: crate::config::load_config_with_features_and_source(config).features,
-        experimental_vue: crate::config::load_config_experimental_vue_flags_with_source(config)
-            .flags,
-        vapor: crate::config::load_compiler_vapor(config),
-        custom_elements: crate::config::load_compiler_custom_elements(config),
-        dialect: crate::config::load_compiler_vue_version(config),
-        host_compiler: crate::config::load_compiler_host_compiler(config),
+        project_root: loaded.project_root,
+        compiler_template_syntax: document.compiler_template_syntax(),
+        compiler_whitespace: document.compiler_whitespace(),
+        experimental_vue: document.experimental_vue_flags(),
+        vapor: document.compiler_vapor(),
+        dialect: features.vue_version,
+        features,
+        host_compiler: document.compiler_host_compiler(),
+        custom_elements: document.into_compiler_custom_elements(),
     }
 }
 

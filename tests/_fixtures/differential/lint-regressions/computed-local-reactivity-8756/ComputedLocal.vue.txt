@@ -1,0 +1,17 @@
+<script setup lang="ts">
+import { computed, ref } from "vue";
+
+const held = ref<{ id: number; shape: { rot: number } } | null>(null);
+
+// The getter re-runs whenever `held` changes, so the local is always current.
+const shown = computed(() =>
+  [1, 2].map((id) => {
+    const h = held.value;
+    return h?.id === id ? { id, ...h.shape } : { id, rot: 0 };
+  }),
+);
+</script>
+
+<template>
+  <p v-for="s in shown" :key="s.id">{{ s.rot }}</p>
+</template>

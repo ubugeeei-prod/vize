@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const fs = require("node:fs");
 const { sendResponse } = require("./auto-insert-response.cjs");
+const { sendInitializeResponse } = require("./initialize-response.cjs");
 
 const args = process.argv.slice(2);
 const logPath = process.env.VIZE_TEST_SERVER_LOG;
@@ -87,17 +88,7 @@ function handleMessage(message) {
   if (message.method === "initialize") {
     activeInitializationOptions = message.params?.initializationOptions ?? {};
     workspaceRootUri = message.params?.rootUri ?? workspaceRootUri;
-    send({
-      id: message.id,
-      jsonrpc: "2.0",
-      result: {
-        capabilities: createCapabilities(),
-        serverInfo: {
-          name: "fake-vize",
-          version,
-        },
-      },
-    });
+    sendInitializeResponse(message.id, createCapabilities(), version, send, appendLog);
     return;
   }
 

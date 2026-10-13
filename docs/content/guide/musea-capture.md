@@ -1,5 +1,10 @@
 # Stable screenshots and accessibility details
 
+Use this page when animation frames or a blinking caret make visual comparisons
+vary, or when an accessibility finding needs a closer look at the affected node.
+First set up a running gallery using the [Musea guide](./musea.md), then choose
+capture settings and inspect the report before changing a baseline.
+
 Musea freezes CSS animations and hides the text caret during screenshots by
 default. Finite animations finish and infinite animations return to their initial
 state. Existing baselines can change when they previously captured a live frame.
@@ -26,3 +31,16 @@ includes measured contrast colors and ratios when axe provides them.
 `incompleteResults` carries the same details for findings needing manual review;
 `incomplete` remains a count. Expand a node in the HTML report to inspect its
 markup, failure reason, and measured check data.
+
+For the first run, keep the gallery server running and use the
+[visual regression workflow](./musea.md#visual-regression-testing) to compare
+the baseline, current image, and diff. Check whether a change comes from your
+component or the capture settings before approving a new baseline. Setting
+`reducedMotion` to `"reduce"` asks the page to use its reduced-motion behavior;
+the default remains `"no-preference"`, independently of animation freezing.
+
+The CLI writes accessibility reports to the output directory, `.vize` by
+default. With `--json`, inspect `a11y-report.json`; without it, inspect
+`a11y-report.html`. Review `incompleteResults` manually rather than treating
+those findings as passes. An audit error means a variant was not audited,
+so inspect that error before drawing a conclusion from the findings count.

@@ -1,6 +1,7 @@
 import { Buffer } from "node:buffer";
 import { createHash } from "node:crypto";
 import { isAbsolute } from "node:path";
+import { validateScriptScope } from "./tool-matrix-inputs.mjs";
 
 const outputKeys = ["errorCount", "fileCount", "files", "programs", "warningCount"];
 const fileKeys = ["diagnostics", "file"];
@@ -13,7 +14,10 @@ export function validateTypecheckerOutput(
   exitCode,
   expectedFiles = null,
   authoredFiles = expectedFiles,
+  scriptScope = null,
 ) {
+  if (scriptScope != null)
+    validateScriptScope(project, output, expectedFiles, authoredFiles, scriptScope);
   requireRecord(output, "envelope");
   const expectedOutputKeys = Array.isArray(output.programs)
     ? outputKeys
@@ -28,7 +32,7 @@ export function validateTypecheckerOutput(
   if (output.fileCount > output.files.length) {
     invalid(`fileCount ${output.fileCount} exceeds ${output.files.length} file entries`);
   }
-  if (project.expectedVueFileCount === 0 && output.fileCount !== 0) {
+  if (project.expectedVueFileCount === 0 && output.fileCount !== 0 && scriptScope == null) {
     invalid(`expected zero checked files, received ${output.fileCount}`);
   }
   if (project.expectedVueFileCount !== 0 && output.fileCount === 0) {
@@ -62,6 +66,7 @@ export function validateTypecheckerOutput(
       }
       if (diagnostic.startsWith("error:")) errorCount += 1;
       else if (diagnostic.startsWith("warning:")) warningCount += 1;
+      else if (diagnostic.startsWith("hint:")) validateHintDiagnostic(diagnostic, file.file);
       else invalid(`diagnostic has no error or warning prefix: ${file.file}`);
     }
   }
@@ -284,4 +289,18 @@ function requireProgramPath(value, label) {
 
 function invalid(message) {
   throw new Error(`invalid typechecker JSON output: ${message}`);
+}
+
+function validateHintDiagnostic(diagnostic, file) {
+  const match = /^hint:(\d+):(\d+) \[TS(\d+)\] ([\s\S]+)$/.exec(diagnostic);
+  if (
+    match == null ||
+    match.slice(1, 4).some((field) => {
+      const value = Number(field);
+      return !Number.isSafeInteger(value) || value < 1;
+    }) ||
+    match[4].trim().length === 0
+  ) {
+    invalid(`hint must have positive safe location/code and non-empty message: ${file}`);
+  }
 }

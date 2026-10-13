@@ -1,0 +1,5 @@
+<script setup lang="ts">
+import { defineProps } from "./ordinary-api";
+const { user: { name } } = defineProps();
+</script>
+<template><div /></template>

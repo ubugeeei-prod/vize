@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { runTests } from "@vscode/test-electron";
+import { retainHostOutputBeforeCleanup } from "./host-output.mjs";
 
 const extensionDevelopmentPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const fixtureWorkspacePath = path.join(
@@ -73,6 +74,19 @@ try {
       workspacePath,
     ],
   });
+} catch (error) {
+  const destination = path.join(testDataPath, "failure");
+  fs.mkdirSync(destination, { recursive: true });
+  fs.copyFileSync(fakeServerLogPath, path.join(destination, "events.jsonl"));
+  fs.writeFileSync(
+    path.join(destination, "error.json"),
+    JSON.stringify({ message: String(error), stack: error?.stack }, null, 2) + "\n",
+  );
+  fs.cpSync(workspacePath, path.join(destination, "workspace"), {
+    recursive: true,
+    filter: (input) => !input.split(path.sep).includes("node_modules"),
+  });
+  throw error;
 } finally {
-  fs.rmSync(profilePath, { force: true, recursive: true });
+  retainHostOutputBeforeCleanup(profilePath, path.join(testDataPath, "output-channel"));
 }

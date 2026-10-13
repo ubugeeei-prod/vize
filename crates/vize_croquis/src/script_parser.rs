@@ -18,13 +18,16 @@
 //! - [`walk`] - Scope walking functions
 
 mod define_art;
+mod execution_facts;
 mod expose;
 mod extract;
 mod globals;
+mod module_exports;
 mod occurrences;
 mod parse;
 mod process;
 mod recovery;
+mod reexecution;
 mod result;
 mod ssr_calls;
 mod ssr_functions;
@@ -35,13 +38,17 @@ mod unused;
 mod walk;
 
 pub use define_art::parse_define_art;
+pub(crate) use module_exports::ModuleExportCapture;
+#[cfg(test)]
+pub(crate) use parse::parse_script_setup_for_unused;
 pub use parse::{
     analyze_script_setup_program, parse_script, parse_script_setup,
     parse_script_setup_with_generic, parse_script_setup_with_generic_and_jsx,
     parse_script_with_options, parse_script_with_options_and_jsx,
 };
 pub(crate) use parse::{
-    analyze_script_setup_program_demand, parse_script_plain, parse_script_setup_for_unused,
+    analyze_script_setup_program_demand, parse_script_plain_with_exports,
+    parse_script_setup_with_exports,
 };
 pub use process::{collect_options_descriptor, collect_options_object, process_statement};
 pub use recovery::parse_program_for_analysis;
@@ -95,3 +102,6 @@ mod setup_context_scope_tests;
 
 #[cfg(test)]
 mod with_defaults_tests;
+
+#[cfg(test)]
+mod reexecuted_map_tests;

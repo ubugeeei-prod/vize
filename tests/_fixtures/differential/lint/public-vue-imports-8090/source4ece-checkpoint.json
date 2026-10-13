@@ -1,0 +1,154 @@
+{
+  "schema": "vize.lint.public-vue-imports-source4ece-checkpoint",
+  "version": 1,
+  "authority": "Historical source-scoped whole63 proof remains separate from fullsource Check and mandatory native RED. No transfer to successor source/protected/public tuples. No diagnostic expectation recapture.",
+  "pr": 8728,
+  "prHead": "4ecee41200937d0bb945689105980a2ea3224065",
+  "checkRun": 38191191286,
+  "actualCliBuildH": "f253d4cbd78ff971e021204eec9c12824fdf8793",
+  "cli": {
+    "path": "source4ece-whole63.json.gz",
+    "sha256": "5adbe688adad53db0ef1e1ef2dc0a336b8d767efa2efeedb1b099b7b5c8d872d",
+    "rawSha256": "0cfb5d3d83b71f9d07d208660f95b4c0d592f899128e7e6020c9384d4f7f6a10",
+    "wholeCases": 63,
+    "matchedCases": 63,
+    "actualFixCases": 6,
+    "artifact": {
+      "id": 11721504446,
+      "node_id": "MDg6QXJ0aWZhY3QxMTcyMTUwNDQ0Ng==",
+      "name": "formatter-api-corpus-38191191286-1-pr-tooling-scripts-1",
+      "size_in_bytes": 863474,
+      "url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/artifacts/11721504446",
+      "archive_download_url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/artifacts/11721504446/zip",
+      "expired": false,
+      "digest": "sha256:9684be5ad6c197bc0bbc12579f07c4fe58060b849f1bbe09617f872a560b2c6d",
+      "created_at": "2026-10-12T01:23:54Z",
+      "updated_at": "2026-10-12T01:23:54Z",
+      "expires_at": "2027-01-10T01:15:33Z",
+      "workflow_run": {
+        "id": 38191191286,
+        "repository_id": 1123610216,
+        "head_repository_id": 1123610216,
+        "head_branch": "fix/lint-public-vue-imports-20261012",
+        "head_sha": "4ecee41200937d0bb945689105980a2ea3224065"
+      }
+    }
+  },
+  "builderArtifact": {
+    "id": 11721274429,
+    "node_id": "MDg6QXJ0aWZhY3QxMTcyMTI3NDQyOQ==",
+    "name": "source-cli-38191191286-1",
+    "size_in_bytes": 53426340,
+    "url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/artifacts/11721274429",
+    "archive_download_url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/artifacts/11721274429/zip",
+    "expired": false,
+    "digest": "sha256:195707984c8d5aca8c9d8dbcf8a3a6b50310d8fc1ce43ff43cdcaa53fd9caf4e",
+    "created_at": "2026-10-12T01:17:53Z",
+    "updated_at": "2026-10-12T01:17:53Z",
+    "expires_at": "2026-10-19T01:17:52Z",
+    "workflow_run": {
+      "id": 38191191286,
+      "repository_id": 1123610216,
+      "head_repository_id": 1123610216,
+      "head_branch": "fix/lint-public-vue-imports-20261012",
+      "head_sha": "4ecee41200937d0bb945689105980a2ea3224065"
+    }
+  },
+  "completeBuilderReceipts": {
+    "target/ci/vize.differential-build.json": {
+      "schema": "vize.differential.build",
+      "version": 1,
+      "recipe": "cargo build --profile ci -p vize",
+      "sourceRevision": "f253d4cbd78ff971e021204eec9c12824fdf8793",
+      "binaryPath": "target/ci/vize",
+      "binarySha256": "94d64b92fced47fa7847100c93480c91639fef643f854d6b77c74e77ad64f4b0",
+      "cliVersion": "vize 0.443.0"
+    },
+    "source-cli.json": {
+      "identity": {
+        "sourceRevision": "f253d4cbd78ff971e021204eec9c12824fdf8793",
+        "sourceTree": "25028006063a643b757ba5f6c48af2031854da0a",
+        "runId": "38191191286",
+        "runAttempt": "1",
+        "platform": "linux",
+        "arch": "x64",
+        "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)\nbinary: rustc\ncommit-hash: b940084d7eb6a299eb4bfeb8e34901bc051e7ac4\ncommit-date: 2026-09-28\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0\nLLVM version: 23.1.1",
+        "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
+        "linker": "Wild 0.9.0 (compatible with GNU linkers)",
+        "linkerSha256": "912db744a30fcef6035c663af2ee014254679ef46dc69f4338d6c9f8a62e66e8",
+        "driver": "Ubuntu clang version 18.1.3 (1ubuntu1)\nTarget: x86_64-pc-linux-gnu\nThread model: posix\nInstalledDir: /usr/bin",
+        "cargoConfig": "# Added by wild GitHub Action\n[target.x86_64-unknown-linux-gnu]\nlinker = \"clang\"\nrustflags = [\"-Clink-arg=--ld-path=$RUNNER_TEMP/wild-install/wild\"]\n\n# Added by wild GitHub Action\n[target.x86_64-unknown-linux-musl]\nlinker = \"clang\"\nrustflags = [\"-Clink-arg=--ld-path=$RUNNER_TEMP/wild-install/wild\"]\n\n",
+        "flags": {
+          "CARGO_BUILD_JOBS": "12"
+        }
+      },
+      "recipe": "cargo build --profile ci -p vize",
+      "oracleRecipe": "cargo build --profile ci -p vize_atelier_sfc --example cli_build_result_oracle",
+      "members": [
+        {
+          "path": "target/ci/vize",
+          "bytes": 221694660,
+          "mode": 493,
+          "sha256": "94d64b92fced47fa7847100c93480c91639fef643f854d6b77c74e77ad64f4b0"
+        },
+        {
+          "path": "target/ci/vize.differential-build.json",
+          "bytes": 322,
+          "mode": 420,
+          "sha256": "c37fb4aea3930ddb8c16866bc8adc1bfeeef2dcf277a293e5ef4b2a1fb64e1e2"
+        },
+        {
+          "path": "target/ci/examples/cli_build_result_oracle",
+          "bytes": 68327633,
+          "mode": 493,
+          "sha256": "d39e0f66b40ee819a223962bcccfc2c69db7d123eb3cda0af2cf6822f3746c0f"
+        }
+      ]
+    }
+  },
+  "toolingFailure": {
+    "job": 114624559452,
+    "path": "source4ece-tooling4-failure.log.gz",
+    "sha256": "3ae56061b17538ae33f05448b06a06d232ea06a3230b8d66c6e1e0c33bf081a4",
+    "rawSha256": "9f97186a2d9ef312b2a33c6a3193908e2aa63fa011958a614e937dd7fcaf6085",
+    "cause": "Original317-page fence guard rejects exactly one source-authored private Valid import line; fullold317 authority remains immutable.",
+    "artifact": {
+      "id": 11721369562,
+      "node_id": "MDg6QXJ0aWZhY3QxMTcyMTM2OTU2Mg==",
+      "name": "formatter-api-corpus-38191191286-1-pr-tooling-scripts-4",
+      "size_in_bytes": 472708,
+      "url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/artifacts/11721369562",
+      "archive_download_url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/artifacts/11721369562/zip",
+      "expired": false,
+      "digest": "sha256:086328649683c55848fac9c0b133538ffde31e404dc9346485262e2b1ea3b62f",
+      "created_at": "2026-10-12T01:22:55Z",
+      "updated_at": "2026-10-12T01:22:55Z",
+      "expires_at": "2027-01-10T01:15:33Z",
+      "workflow_run": {
+        "id": 38191191286,
+        "repository_id": 1123610216,
+        "head_repository_id": 1123610216,
+        "head_branch": "fix/lint-public-vue-imports-20261012",
+        "head_sha": "4ecee41200937d0bb945689105980a2ea3224065"
+      }
+    }
+  },
+  "mandatoryNativeFailure": {
+    "run": 38191191158,
+    "job": 114624232816,
+    "path": "source4ece-native-failure.log.gz",
+    "sha256": "7e352db0d4f19c9fcdacd67754403a089799efb1e215f99ab9f2480cc46061e1",
+    "rawSha256": "43de237910f4e54bb3aa7f67bc9f92142aa52b1718e0ecf4e903f7b54e7d1812",
+    "status": 127,
+    "cause": "Unowned driver invokes missing tools/support/compat/github/native-lexical-dollar.sh after prior phases; no native qualification.",
+    "artifact": {
+      "id": 11721674956,
+      "bytes": 96830396,
+      "sha256": "4c780682399815889940bad65b40ee1651a72c2182fbfb6f6ec761be6ee48f32",
+      "downloaded": false
+    }
+  },
+  "checksDisabled": 0,
+  "budgetsChanged": 0,
+  "oldSemanticVectorsChanged": 0
+}

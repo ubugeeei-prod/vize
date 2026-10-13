@@ -42,7 +42,7 @@ export const frenchRules3 = {
   "script/prefer-import-from-vue": [
     "Préférer les imports depuis 'vue' plutôt que depuis les packages internes",
     "`ref` et `h` sont importés depuis les packages internes `@vue/runtime-core` et `@vue/runtime-dom` plutôt que depuis le package public `vue`.",
-    "Les deux utilitaires sont importés ensemble depuis `vue`, utilisant le point d’entrée public du package plutôt que l’un ou l’autre des packages internes.",
+    "Les utilitaires publics sont importés depuis `vue`. Le privé `isString` conserve `@vue/shared`, car `vue` ne l’exporte pas. Les imports de namespace, par défaut et mixtes publics/privés gardent un avertissement sans correction automatique.",
   ],
   "script/prefer-ref-over-reactive": [
     "Recommander ref() plutôt que reactive() pour gérer l’état",

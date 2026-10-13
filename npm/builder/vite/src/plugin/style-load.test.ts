@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import { createRequire } from "node:module";
+import { compileSfc, transformViteCssVarsForPipeline } from "@vizejs/native";
 
 import type { CompiledModule } from "../types.ts";
 import type { VizePluginState } from "./state.ts";
@@ -75,6 +78,54 @@ assert.equal(
 );
 
 console.log("✅ vite-plugin-vize style load tests passed!");
+
+const official = createRequire(import.meta.url)("vue/compiler-sfc");
+const originalHead = fs.readFileSync(
+  new URL(
+    "../../../../../crates/vize_atelier_sfc/tests/fixtures/fix-history/production-extracted-css-vars.input.txt",
+    import.meta.url,
+  ),
+  "utf8",
+);
+const headPath = "/project/app/pages/timetable/_components/TimetableHead.vue";
+const scopeId = "86318631";
+const variables = (css: string) => [...css.matchAll(/var\(--([\w-]+)\)/g)].map((match) => match[1]);
+
+for (const isProduction of [false, true]) {
+  const result = compileSfc(originalHead, {
+    filename: headPath,
+    scopeId,
+    isProd: isProduction,
+    inlineTemplate: true,
+  });
+  assert.deepEqual(result.errors, []);
+  const stock = official.compileStyle({
+    source: result.styles[0].content,
+    filename: headPath,
+    id: isProduction ? headPath : scopeId,
+    isProd: isProduction,
+  });
+  assert.deepEqual(stock.errors, []);
+  const expectedNames = variables(stock.code);
+  assert.deepEqual(variables(result.css ?? ""), expectedNames);
+  const cached = {
+    ...result,
+    scopeId,
+    styles: result.styles.map((block) => ({ ...block, lang: block.lang ?? null })),
+  };
+  // Raw and Vite filesystem requests share the resolved filename.
+  for (const path of [headPath, `/@fs${headPath}`]) {
+    const loaded = loadHook(
+      { ...emptyState, isProduction, cache: new Map([[headPath, cached]]) },
+      `${path}?vue&type=style&index=0&lang=css`,
+      { ssr: false },
+    );
+    assert.ok(loaded && typeof loaded === "object", path);
+    assert.deepEqual(variables(loaded.code), expectedNames);
+  }
+  const defaultStyle = transformViteCssVarsForPipeline(result.styles[0].content, scopeId);
+  assert.deepEqual(variables(defaultStyle), ["86318631-textColor", "86318631-backgroundColor"]);
+}
 
 function compiledStyle(scopeId: string, content: string): CompiledModule {
   return {

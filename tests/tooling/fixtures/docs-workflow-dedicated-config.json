@@ -1,0 +1,7 @@
+{
+  "base": "878d7833c2a12391bb4111c6894dbe1d2c11fda3",
+  "source": "docs/content/guide/workflows.md",
+  "sourceSha256": "d96de95f7cae4cc7e878a5e69acc812e57e76c8e6e88af6b1db608e3d2ba429d",
+  "codeSha256": "2cab276794462a1126684a4e93160f7842fe1eef8b61fb13fed024bcc9714d74",
+  "code": "import { defineConfig } from \"vize\";\n\nexport default defineConfig({\n  formatter: {\n    printWidth: 100,\n  },\n  linter: {\n    preset: \"happy-path\",\n  },\n  typeChecker: {\n    enabled: true,\n    strict: true,\n    tsconfig: \"tsconfig.json\",\n  },\n  vite: {\n    scanPatterns: [\"src/**/*.vue\"],\n  },\n});"
+}

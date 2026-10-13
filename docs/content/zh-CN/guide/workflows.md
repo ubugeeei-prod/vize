@@ -2,7 +2,7 @@
 title: 用户工作流程
 ---
 
-<!-- Generated translation; source: guide/workflows.md -->
+<!-- Reviewed translation; source: guide/workflows.md; scope: native configuration guidance -->
 
 # 用户工作流程
 
@@ -42,27 +42,28 @@ vp install -D vize
 
 ## 配置一次
 
-当默认设置不足时，在项目根创建`vize.config.ts`：
+需要修改默认值时，在现有 `vite.config.*` 的顶层 `vize` 对象中添加原生选项。[配置指南](./configuration.md)介绍发现规则、版本可用性和可选的专用格式。
 
 ```ts
-import { defineConfig } from "vize";
-
-export default defineConfig({
-  formatter: {
-    printWidth: 100,
+// vite.config.ts
+export default {
+  vize: {
+    formatter: {
+      printWidth: 100,
+    },
+    linter: {
+      preset: "happy-path",
+    },
+    typeChecker: {
+      enabled: true,
+      strict: true,
+      tsconfig: "tsconfig.json",
+    },
+    vite: {
+      scanPatterns: ["src/**/*.vue"],
+    },
   },
-  linter: {
-    preset: "happy-path",
-  },
-  typeChecker: {
-    enabled: true,
-    strict: true,
-    tsconfig: "tsconfig.json",
-  },
-  vite: {
-    scanPatterns: ["src/**/*.vue"],
-  },
-});
+};
 ```
 
 参见[配置](./configuration.md)中关于扁平单仓库条目、PKL、JSON、编译器选项和

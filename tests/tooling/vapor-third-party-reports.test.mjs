@@ -26,7 +26,91 @@ void test("third-party Vapor runtime packs retain the original report and every 
         .replace("<!-- SlotOwner.vue -->\n", "");
       assert.equal(JSON.parse(read(`${pack.inputs.root}/Child.vue.json`)), owner);
     }
+    if (pack.inputs.root === "vapor-root-fallthrough-8625") {
+      const outer = reported
+        .split("<!-- FallthroughInner.vue -->\n")[0]
+        .replace('<!-- FallthroughOuter.vue, mounted with { "data-owner": "outer" } -->\n', "");
+      assert.equal(JSON.parse(read(`${pack.inputs.root}/App.vue.json`)), outer);
+    }
     assert.equal(pack.runtime.nativeHandled, 0);
     assert.equal(pack.runtime.lockedVue, "3.6.0-rc.9");
   }
+});
+
+void test("the JSX root successor retains the immutable complete #8441 packet", () => {
+  const root = new URL(
+    "../_fixtures/differential/typecheck/jsx-nested-native-expressions-8441/",
+    import.meta.url,
+  );
+  const fixture = (path) => readFileSync(new URL(path, root));
+  const successor = JSON.parse(fixture("root-fallthrough-8625-successor.json"));
+  const baseline = JSON.parse(fixture(successor.originalBaseline));
+  const original = fixture(successor.originalOutput);
+  const corrected = fixture(successor.successorOutput);
+  assert.equal(hash(original), successor.originalOutputSha256);
+  assert.equal(hash(corrected), successor.successorOutputSha256);
+  assert.equal(hash(fixture(successor.source)), successor.sourceSha256);
+  assert.equal(
+    baseline.cases.find((row) => row.output === successor.originalOutput).outputSha256,
+    successor.originalOutputSha256,
+  );
+  const expected = JSON.parse(original);
+  const component = expected.components.find((row) => row.name === "Stepper");
+  const old = "      }, true)\n      return n3";
+  assert.equal(component.code.split(old).length, 2);
+  component.code = component.code.replace(old, "      }, false)\n      return n3");
+  assert.deepEqual(JSON.parse(corrected), expected);
+});
+
+void test("KeepAlive coverage uses one explicit successor and preserves every original case", () => {
+  const repository = new URL("../../", import.meta.url);
+  const file = (path) => readFileSync(new URL(path, repository));
+  const authority = JSON.parse(
+    read("vapor-root-fallthrough-8625/keep-alive-successor-authority.json"),
+  );
+  const original = file(authority.originalAuthority);
+  const successor = file(authority.successorAuthority);
+  assert.equal(hash(original), authority.originalAuthoritySha256);
+  assert.equal(hash(successor), authority.successorAuthoritySha256);
+  assert.equal(hash(file(authority.semanticAuthority)), authority.semanticAuthoritySha256);
+  const packet = original
+    .toString()
+    .split("\n===\n")
+    .find((row) => row.startsWith("name: KeepAlive\n"));
+  assert.ok(packet);
+  assert.equal(packet.split(authority.onlyChange.before).length, 2);
+  assert.equal(
+    successor.toString(),
+    `===\n${packet.replace(authority.onlyChange.before, authority.onlyChange.after)}\n===\n`,
+  );
+  assert.equal(authority.source, "<KeepAlive><Component /></KeepAlive>");
+  assert.equal(authority.publicationQualification, false);
+  const captured = file(authority.currentPublicEmissions);
+  assert.equal(hash(captured), authority.currentPublicEmissionsSha256);
+  const emissions = JSON.parse(captured);
+  assert.equal(emissions.diagnosticOnly, true);
+  assert.equal(emissions.publicationQualification, false);
+  assert.deepEqual(
+    emissions.rows.map((row) => row.version),
+    ["3.6.0-rc.9", "3.6.0-rc.10"],
+  );
+  for (const row of emissions.rows) {
+    assert.equal(row.source, authority.source);
+    assert.equal(hash(row.source), row.sourceSha256);
+    assert.equal(hash(row.code), row.codeSha256);
+    assert.ok(row.registry.startsWith("https://registry.npmjs.org/@vue/compiler-vapor/"));
+    assert.ok(row.integrity.startsWith("sha512-"));
+  }
+  assert.equal(
+    emissions.rows[0].code.replace(authority.onlyChange.before, authority.onlyChange.after),
+    emissions.rows[1].code,
+  );
+  const producer = file("tests/vize_test_runner/src/expectation_successors.rs").toString();
+  assert.ok(producer.includes('path.ends_with("tests/expected/vapor/component.snap")'));
+  assert.ok(producer.includes('case.name == "KeepAlive"'));
+  assert.ok(producer.includes('case.input == "<KeepAlive><Component /></KeepAlive>"'));
+  const gate = file("tests/vize_test_runner/src/coverage.rs").toString();
+  assert.ok(gate.includes("MIN_VAPOR_PASSED: usize = 117"));
+  assert.ok(gate.includes("MIN_TOTAL_PASSED: usize = 743"));
+  assert.ok(gate.includes("const KNOWN_FAILURES: &[(&str, &str)] = &[]"));
 });

@@ -10,6 +10,8 @@ pub(super) fn walk_assignment_target(
     target: &AssignmentTarget<'_>,
     identifiers: &mut IdentifierWalk,
 ) {
+    // Keep every existing reference; target-role expressions remain unproved reads.
+    identifiers.refuse_runtime_read();
     match target {
         AssignmentTarget::AssignmentTargetIdentifier(id) => {
             identifiers.push(IdentifierRef::new(id.name.as_str(), id.span.start));
@@ -132,6 +134,8 @@ pub(super) fn walk_simple_assignment_target(
     target: &SimpleAssignmentTarget<'_>,
     identifiers: &mut IdentifierWalk,
 ) {
+    // Keep every existing reference; target-role expressions remain unproved reads.
+    identifiers.refuse_runtime_read();
     match target {
         SimpleAssignmentTarget::AssignmentTargetIdentifier(id) => {
             identifiers.push(IdentifierRef::new(id.name.as_str(), id.span.start));

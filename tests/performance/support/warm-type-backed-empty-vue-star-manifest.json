@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "originalSource": "a93e78147b0990c813e965a7868b32dda341eb77",
+  "reviewedProductSource": "b148ffee7526b45789ec44c16b3e3370e08a5650",
+  "reviewedSourceIndexSHA256": "63f47deb31555868bb83db4c26b250bc633c5cb20b1d1e8be0cdb2b4fc93e1b7",
+  "qualification": "finite complete source admission only; original32 and original400 must still execute",
+  "counts": {
+    "files": 42,
+    "supplementalBodies": 80,
+    "preservedBodies": 152
+  },
+  "historicalCases": 32,
+  "historicalPackBodies": 15,
+  "historicalDistinctBodies": 111,
+  "parts": [
+    {
+      "file": "tests/performance/support/warm-type-backed-empty-vue-star-part-00.json",
+      "section": "files",
+      "start": 0,
+      "entries": 42,
+      "mode": "100644",
+      "bytes": 7835,
+      "sha256": "e10fd6de29707c94eb27a5075b07d5cff27c1174be720ae6a31c5988b2896018",
+      "blob": "779581433cabfbf00d22e7bc6562f556db169327"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-empty-vue-star-part-01.json",
+      "section": "supplementalBodies",
+      "start": 0,
+      "entries": 48,
+      "mode": "100644",
+      "bytes": 11038,
+      "sha256": "48dada47277d5c208443d98a2e24d0fe5d4c6fb799afc36cb93d6d4e3e4287b8",
+      "blob": "30c3c24a296de6e90ce63f587d8dbd420493ba1a"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-empty-vue-star-part-02.json",
+      "section": "supplementalBodies",
+      "start": 48,
+      "entries": 32,
+      "mode": "100644",
+      "bytes": 6909,
+      "sha256": "a8c8168f0eb4fc177c637db8fd301e602247d0d7cd4c4ed0d5a626328a4ffe4d",
+      "blob": "cca650a4b4385d169a6d5b1d310f01bf6fd8546c"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-empty-vue-star-part-03.json",
+      "section": "preservedBodies",
+      "start": 0,
+      "entries": 48,
+      "mode": "100644",
+      "bytes": 12130,
+      "sha256": "711300b8ec4f526ac6e52abcb052947647f846f89d66661b98cb351e4115c983",
+      "blob": "3a4a169566f60877386bf28dd9ae4ca13042f601"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-empty-vue-star-part-04.json",
+      "section": "preservedBodies",
+      "start": 48,
+      "entries": 48,
+      "mode": "100644",
+      "bytes": 12821,
+      "sha256": "cf9887cbc0d7cc5a45da5850d767883f2cd1067d59fa34932301229715e330a5",
+      "blob": "2244c4db8f8685178e37ca136856f405d324f7cd"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-empty-vue-star-part-05.json",
+      "section": "preservedBodies",
+      "start": 96,
+      "entries": 48,
+      "mode": "100644",
+      "bytes": 11177,
+      "sha256": "8bf1488d7ba14758f5f48a76a07cba5fd2a70010cca65fb2bc26589a42baec19",
+      "blob": "57016b62b4a65fd59f78ca334d9204aad0415be4"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-empty-vue-star-part-06.json",
+      "section": "preservedBodies",
+      "start": 144,
+      "entries": 8,
+      "mode": "100644",
+      "bytes": 1709,
+      "sha256": "0d7718ba30669d5c95d5a17de8f3b82a1414035931701bda2d637c3ba35deb54",
+      "blob": "8977f5e1dca68f11deb7eec874c95d9063daf3a1"
+    }
+  ],
+  "integrationSourceProofSHA256": "dfa6fbbf2eee04a1ab6556035d4429912799814214456833d3e3ab535f34c6b6",
+  "correctiveSourceIndexSHA256": "4f7d67ecb2bda9ead266c7af35885f4091f8cbfb904094b6e2c688986fb3db63",
+  "originalReviewedProductSource": "5968ebfff1fde8d0503d83a414640e18d52e95b2",
+  "correction": {
+    "file": "tests/performance/support/warm-type-backed-empty-vue-star-corrective.json",
+    "mode": "100644",
+    "bytes": 3768,
+    "sha256": "2aa84f36ba8dda6c6fdf104b85f0bf6e7a463b1f5402c5ff94e0f0f4dbb7ff2f",
+    "blob": "25634d6c6d827b94776b07bd6c0752448b5b3280"
+  }
+}

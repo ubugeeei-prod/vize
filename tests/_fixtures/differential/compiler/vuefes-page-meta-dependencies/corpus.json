@@ -1,0 +1,57 @@
+{
+  "issue": 6880,
+  "upstream": {
+    "repository": "https://github.com/vuejs-jp/vuefes-2025-website",
+    "commit": "8eff3cd7dd79a7f47bbf2b78202b9aa2070ec5a6",
+    "path": "app/pages/photo/index.vue"
+  },
+  "input": {
+    "file": "Photo.vue.txt",
+    "bytes": 2911,
+    "sha256": "f20ac13971ce5918afc30ec93e74a7f36dd734050ce8610e1c820c9f6e6b9e3b",
+    "gitBlob": "9a8f71f987a6faef828056223d00b7603f5692c9"
+  },
+  "oracle": {
+    "nuxt": "4.0.3",
+    "pageMetaPluginSourceGitBlob": "f956e04a85f8689a8c89857ea14b09c2ef674da9",
+    "pageMetaPluginSourceSha256": "af17c3b1d5d035394dadf9026984e70c60dbeae6ce1a351c598aabf180cf1ec5",
+    "fullNpmModuleBytes": 287261,
+    "fullNpmModuleSha256": "3b279d9e74e3221294a437d610c7cad6ce6971a37f58f79650c0d111421318ee",
+    "privateAccessAppend": "\nexport { PageMetaPlugin };\n",
+    "vueCompiler": "3.6.0-alpha.2"
+  },
+  "actualFailure": {
+    "head": "fd8b2d9da15a31ba17da0a53622e348fcf4debd8",
+    "run": 38132920869,
+    "route": "dev-home",
+    "diffRatio": 0.1235105465271594,
+    "maxDiffRatio": 0.002,
+    "cause": "route macro for literal page metadata retains unrelated VFSection import, eagerly loading VFHeading CSS before authored app CSS"
+  },
+  "contract": "full original SFC; ordinary code, CSS, maps, diagnostics and bindings remain unchanged; only Nuxt metadata module dependencies change",
+  "beforeProducer": {
+    "head": "4115203783877511165438e5d844ee569fee76a3",
+    "productionTreeEquals": "fd8b2d9da15a31ba17da0a53622e348fcf4debd8",
+    "command": "cargo test --profile ci -p vize_atelier_sfc --test nuxt_page_meta_dependencies -- --nocapture",
+    "result": "failed literal-artifact oracle on unchanged production source",
+    "observations": 20
+  },
+  "files": {
+    "Photo.vue.txt": {
+      "bytes": 2911,
+      "sha256": "f20ac13971ce5918afc30ec93e74a7f36dd734050ce8610e1c820c9f6e6b9e3b"
+    },
+    "before.compiler.json": {
+      "bytes": 176371,
+      "sha256": "5fc8c639143e8a3091b437b6959f2d5adf6c981be1b20f1c235905d913207ecc"
+    },
+    "dependencies.json": {
+      "bytes": 8002,
+      "sha256": "c390d53f1812a8a03b3175117a9a1f2639b8eff2c78b1db303722755aa3c6afc"
+    },
+    "official.dependencies.json": {
+      "bytes": 262438,
+      "sha256": "417786824f6159475ddae3e8dea3ed9fe48febbc0ad0f37fd6e032a0174e2504"
+    }
+  }
+}

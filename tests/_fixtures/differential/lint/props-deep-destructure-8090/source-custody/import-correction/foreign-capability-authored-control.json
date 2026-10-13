@@ -1,0 +1,27 @@
+{
+  "schema": "vize.lint.props-deep-destructure-foreign-capability-control",
+  "version": 1,
+  "authority": "Independently authored positive generic-dispatch control; actual typed capability points at NoDeep but registered foreign meta identity must preserve generic dispatch. No candidate API/native execution yet.",
+  "source": "<script setup lang=\"ts\">\nconst { user: { name } } = defineProps();\n</script>\n",
+  "filename": "ForeignCapability.vue",
+  "preset": "incremental",
+  "enabledRule": "script/no-required-prop-with-default",
+  "overrideSeverity": "warning",
+  "expected": {
+    "filename": "ForeignCapability.vue",
+    "error_count": 0,
+    "warning_count": 1,
+    "diagnostics": [
+      {
+        "rule_name": "script/no-required-prop-with-default",
+        "severity": "warning",
+        "message": "foreign capability retains generic script dispatch",
+        "start": 31,
+        "end": 49,
+        "help": null,
+        "fix": null,
+        "labels": []
+      }
+    ]
+  }
+}

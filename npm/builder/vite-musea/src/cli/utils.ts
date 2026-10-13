@@ -52,3 +52,8 @@ export async function parseArtFile(filePath: string): Promise<ArtFileInfo | null
     command: "serve",
   });
 }
+
+export function parseWorkers(value: string | undefined): number {
+  const workers = Number.parseInt(value ?? "", 10);
+  return Number.isFinite(workers) ? Math.max(1, workers) : 1;
+}

@@ -1,0 +1,35 @@
+{
+  "schema": "vize.differential.runtime-pack",
+  "version": 1,
+  "product": "compiler",
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/8624",
+  "cases": [
+    {
+      "id": "compiler/parser/vapor-svg-title-8624",
+      "inputs": {
+        "root": ".",
+        "files": [
+          {
+            "path": "vapor-svg-title-8624.tsv",
+            "sha256": "34b19ba8c4363dc8d2989ce59c7acf39d89ab8375c4e54ed84d04b56de6a0162"
+          }
+        ]
+      },
+      "reference": {
+        "path": "vapor-svg-title-8624.tsv",
+        "sha256": "34b19ba8c4363dc8d2989ce59c7acf39d89ab8375c4e54ed84d04b56de6a0162",
+        "source": "twelve independently authored complete ordered element/text/interpolation streams; native component and generic projection additionally assert lossless fidelity"
+      },
+      "runtime": {
+        "rustTargets": [
+          "davinci/vize_l1/tests/native_svg_title.rs",
+          "crates/vize_armature/src/parser/svg_title_tests.rs"
+        ],
+        "phase": "parser-source-controls",
+        "caseCount": 12,
+        "nativeHandled": 0,
+        "publicationQualification": false
+      }
+    }
+  ]
+}

@@ -19,7 +19,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   public-cli:
-    name: Original 56 typed and 224 default CLI controls
+    name: Original 56 typed, 224 default, and 112 return CLI controls
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
     env:

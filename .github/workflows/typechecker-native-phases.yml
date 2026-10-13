@@ -8,41 +8,41 @@ on:
         type: string
   pull_request:
     types: [opened, synchronize, reopened, edited]
-    paths:
-      - ".github/workflows/typechecker-native-phases.yml"
-      - "tools/benchmarks/scripts/typechecker-native-*"
-      - "tools/support/compat/github/native-phase-artifact*"
-      - "tools/benchmarks/scripts/type-snapshot-cli-*.mjs"
-      - "crates/vize/tests/check_*_cli.rs"
-      - "tests/fixtures/typechecker/model-modifier-ranges/**"
-      - "crates/vize/tests/lint_unchecked_indexed_access_cli**"
-      - "crates/vize_patina/src/linter/corsa_session/paths/**"
-      - "tests/_fixtures/differential/linter/unchecked-index-access/**"
-      - "crates/vize_maestro/src/ide/diagnostics/editor_typecheck_emit_tests.rs"
-      - "docs/davinci/decisions/2026-10-04-typechecker-*.md"
-      - "tools/benchmarks/scripts/generate.mjs"
-      - "tools/benchmarks/scripts/check-gate-*.mjs"
-      - "tools/benchmarks/scripts/typecheck-command.mjs"
-      - "tools/benchmarks/scripts/benchmark-binary.mjs"
-      - "tests/_fixtures/differential/typechecker/**"
-      - "crates/vize_canon/**"
-      - "crates/vize_atelier_jsx/**"
-      - "tests/_fixtures/differential/typecheck/jsx-*/**"
-      - ".github/actions/check-*/**"
-      - "tests/tooling/**"
-      - "tests/_fixtures/differential/lsp/**"
-      - "crates/vize/tests/lsp_*_cli.rs"
-      - "crates/vize_maestro/src/ide/hover/component_prop**"
-      - "crates/vize_maestro/src/ide/completion**"
-      - "crates/vize_maestro/src/ide/inlay_hint/**"
-      - "crates/vize_maestro/src/ide/inlay_hint.rs"
-      - "crates/vize_croquis/src/**"
-      - "crates/vize/tests/support/**"
-      - "crates/vize/src/**"
-      - "crates/vize_maestro/src/ide/diagnostics/editor_typecheck_defaults_tests.rs"
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - "pnpm-lock.yaml"
+    # prettier-ignore
+    paths: [".github/workflows/typechecker-native-phases.yml", "tools/benchmarks/scripts/typechecker-native-*", "tools/support/compat/github/native-phase-artifact*", "tools/benchmarks/scripts/type-snapshot-cli-*.mjs",
+      "crates/vize/tests/check_*_cli.rs",
+      "tests/fixtures/typechecker/model-modifier-ranges/**",
+      "crates/vize/tests/lint_unchecked_indexed_access_cli**",
+      "crates/vize_patina/src/linter/corsa_session/paths/**",
+      "tests/_fixtures/differential/linter/unchecked-index-access/**",
+      "crates/vize_maestro/src/ide/diagnostics/editor_typecheck_emit_tests.rs",
+      "docs/davinci/decisions/2026-10-04-typechecker-*.md",
+      "tools/benchmarks/scripts/generate.mjs",
+      "tools/benchmarks/scripts/check-gate-*.mjs",
+      "tools/benchmarks/scripts/typecheck-command.mjs",
+      "tools/benchmarks/scripts/benchmark-binary.mjs",
+      "tests/_fixtures/differential/typechecker/**",
+      "crates/vize_canon/**",
+      "crates/vize_atelier_jsx/**",
+      "tests/_fixtures/differential/typecheck/jsx-*/**",
+      ".github/actions/check-*/**",
+      "tests/tooling/**",
+      "!tests/tooling/release-input-scopes.test.mjs",
+      "!tests/tooling/release/release-public-acceptance.test.ts",
+      "!tests/tooling/support/release-retirement-transport-law.ts",
+      "tests/_fixtures/differential/lsp/**",
+      "crates/vize/tests/lsp_*_cli.rs",
+      "crates/vize_maestro/src/ide/hover/component_prop**",
+      "crates/vize_maestro/src/ide/completion**",
+      "crates/vize_maestro/src/ide/inlay_hint/**",
+      "crates/vize_maestro/src/ide/inlay_hint.rs",
+      "crates/vize_croquis/src/**",
+      "crates/vize/tests/support/**",
+      "crates/vize/src/**",
+      "crates/vize_maestro/src/ide/diagnostics/editor_typecheck_defaults_tests.rs",
+      "Cargo.toml",
+      "Cargo.lock",
+      "pnpm-lock.yaml"]
 permissions: { contents: read }
 concurrency:
   # Inert edits must not replace a pending run or cancel genuine source evidence.
@@ -123,7 +123,7 @@ jobs:
             [[ ! -e "$NATIVE_PHASE_SOURCE_ROOT/node_modules" ]]
             ln -s "$GITHUB_WORKSPACE/node_modules" "$NATIVE_PHASE_SOURCE_ROOT/node_modules"
           fi
-          bash tools/benchmarks/scripts/typechecker-native-declaration-imports.sh
+          bash tools/support/compat/github/native-custom-directive-arguments.sh; bash tools/support/compat/github/native-syntax-semantics.sh; bash tools/support/compat/github/native-javascript-sfc-membership.sh; bash tools/support/compat/github/native-empty-vue-star-exports.sh
       - name: Qualify declared template emits and config-scoped Vue helpers in the source CLI and editor
         if: github.event_name == 'pull_request'
         env:
@@ -174,8 +174,8 @@ jobs:
           cargo test --locked --profile ci-opt -p vize --test check_outside_import_types_cli --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' --config 'profile.ci-opt.package.vize.strip="symbols"' -- --nocapture
           export VIZE_TEST_TSGO_PATH="$(node --input-type=module -e 'import {readFileSync} from "node:fs"; process.stdout.write(JSON.parse(readFileSync(process.env.VIZE_TYPECHECK_REGRESSION_CAPTURE + "/outside_import_preserves_original_type_libraries_and_real_cli_diagnostics/oracle.json", "utf8")).nativeBinary)')"
           export CORSA_PATH="$VIZE_TEST_TSGO_PATH"
-          cargo test --locked --profile ci-opt -p vize_canon --test original_program_check process_reuse:: --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture || exit $?; cargo test --locked --profile ci-opt -p vize_canon --lib lsp_client::editor_lsp::original_program::process_tests:: --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture || exit $?; cargo test --locked --profile ci-opt -p vize_canon original_outside_import_preserves_types_in_native_editor --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
-          cargo test --locked --profile ci-opt -p vize_canon native_editor_resolves_package_alias_from_monorepo_root --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
+          cargo test --locked --profile ci-opt -p vize_canon --test original_program_check process_reuse:: --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture || exit $?; cargo test --locked --profile ci-opt -p vize_canon --lib lsp_client::editor_lsp::original_program::process_tests:: --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture || exit $?; cargo test --locked --profile ci-opt -p vize_canon --lib original_outside_import_preserves_types_in_native_editor --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
+          cargo test --locked --profile ci-opt -p vize_canon --lib native_editor_resolves_package_alias_from_monorepo_root --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
           node --input-type=module <<'JS'
           import assert from 'node:assert/strict';
           import { createHash } from 'node:crypto';
@@ -316,7 +316,7 @@ jobs:
             assert.equal(version.status, 0); assert.equal(version.stdout.trim(), 'Version 7.0.2'); assert.equal(version.stderr, '');
             return { name, sourceSha: process.env.SOURCE_SHA, cliBinary: realpathSync(raw.cliBinary), cliSha256: hash(raw.cliBinary), nativeBinary, nativeSha256: hash(nativeBinary), nativePackageSha256: hash(packagePath), nativeVersion: version.stdout.trim() };
           });
-          writeFileSync(join(root, 'receipts.json'), JSON.stringify({ sourceSha: process.env.SOURCE_SHA, matchedCompleteExpectations: true, cases: receipts, fullInputsAndOutputs: files(root).map(path => ({ path: path.slice(root.length + 1), sha256: hash(path) })) }, null, 2) + '\n');
+          writeFileSync(join(root, 'receipts.json'), JSON.stringify({ sourceSha: process.env.SOURCE_SHA, matchedCompleteExpectations: true, cases: receipts, fullInputsAndOutputs: files(root).map(path => ({ path: path.slice(root.length + 1), sha256: hash(path) })) }, null, 2) + '\n'); (await import('node:child_process')).execFileSync('bash', ['tools/support/compat/github/native-lexical-dollar.sh'], { stdio: 'inherit' });
           JS
       - name: Pack complete native evidence and prove reconstruction
         id: native-artifact-pack

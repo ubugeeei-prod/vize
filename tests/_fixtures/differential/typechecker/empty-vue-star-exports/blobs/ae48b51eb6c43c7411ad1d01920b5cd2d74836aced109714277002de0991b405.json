@@ -1,0 +1,5 @@
+{
+  "bytes": 262,
+  "sha256": "ae48b51eb6c43c7411ad1d01920b5cd2d74836aced109714277002de0991b405",
+  "wholeUtf8": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true,\n    \"allowImportingTsExtensions\": true,\n    \"types\": []\n  },\n  \"include\": [\n    \"*.ts\",\n    \"*.vue\"\n  ],\n  \"extends\": \"./base.json\"\n}\n"
+}

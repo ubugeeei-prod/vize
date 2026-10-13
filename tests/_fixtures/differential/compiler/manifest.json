@@ -7,9 +7,7 @@
     {
       "id": "compiler/sfc/ssr-slot-scope",
       "state": "active",
-      "targets": [
-        "ssr"
-      ],
+      "targets": ["ssr"],
       "inputs": {
         "root": "ssr-slot-scope",
         "files": [
@@ -34,13 +32,7 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": [
-          "code",
-          "css",
-          "errors",
-          "warnings",
-          "macro_artifacts"
-        ]
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
       }
     }
   ],
@@ -79,6 +71,36 @@
       "path": "vapor-hebilicious-8626.manifest.json",
       "sha256": "78c330f6cdf9648ad091449f8b379dc10a824361dae695b9905b97fbc7f5f0c2",
       "adapter": "compiler-rust-whole-source-runtime-v1",
+      "workflow": ".github/workflows/check.yml"
+    },
+    {
+      "path": "vapor-hebilicious-8625.manifest.json",
+      "sha256": "d9b065ca071116dae54f1e3bd8f73d93afb6e40334d30e9599e5eccb60d74f9f",
+      "adapter": "compiler-rust-whole-source-runtime-v1",
+      "workflow": ".github/workflows/check.yml"
+    },
+    {
+      "path": "vapor-hebilicious-8627.manifest.json",
+      "sha256": "f9c0268cd257fac748dd747ff65e644ad0aba06ea97444398c0f461371eec0ed",
+      "adapter": "compiler-rust-whole-source-runtime-v1",
+      "workflow": ".github/workflows/check.yml"
+    },
+    {
+      "path": "vapor-svg-namespace-8624.manifest.json",
+      "sha256": "be6e0c00a3c824e87a50b5d1d0351eb93badd7fe4f7a0d927f7c993c2c10f102",
+      "adapter": "compiler-source-napi-browser-v1",
+      "workflow": ".github/workflows/check.yml"
+    },
+    {
+      "path": "vapor-svg-title-8624.manifest.json",
+      "sha256": "58ffa04961106339bfdf1ac3f76a7cdf2b16623c682fdb26e4c2a0844a3a80c6",
+      "adapter": "compiler-rust-whole-source-parser-v1",
+      "workflow": ".github/workflows/check.yml"
+    },
+    {
+      "path": "vapor-svg-title-scope-8624.manifest.json",
+      "sha256": "59a85ffc56dab9b67a7e3f658d12e58531877401f2972dd2125efc2fc6bb5a08",
+      "adapter": "compiler-rust-whole-source-parser-v1",
       "workflow": ".github/workflows/check.yml"
     }
   ]

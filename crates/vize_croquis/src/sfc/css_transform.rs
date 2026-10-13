@@ -24,6 +24,17 @@ pub fn extract_and_transform_v_bind_with_scope<'a>(
     css: &str,
     scope_id: Option<&str>,
 ) -> (&'a str, Vec<String>) {
+    extract_and_transform_v_bind_with_context(bump, css, scope_id, None)
+}
+
+/// Transform only authored v-bind calls, with an optional production filename.
+#[doc(hidden)]
+pub fn extract_and_transform_v_bind_with_context<'a>(
+    bump: &'a Allocator,
+    css: &str,
+    scope_id: Option<&str>,
+    production_filename: Option<&str>,
+) -> (&'a str, Vec<String>) {
     let css_bytes = css.as_bytes();
     let mut vars = Vec::new();
     let mut result = ArenaVec::with_capacity_in(css_bytes.len() * 2, &bump);
@@ -53,7 +64,10 @@ pub fn extract_and_transform_v_bind_with_scope<'a>(
 
                 // Generate CSS custom property reference.
                 result.extend_from_slice(b"var(--");
-                if let Some(scope_id) = scope_id {
+                if let Some(filename) = production_filename {
+                    result
+                        .extend_from_slice(prod_scoped_v_bind_name(filename, expr_str).as_bytes());
+                } else if let Some(scope_id) = scope_id {
                     result.extend_from_slice(scoped_v_bind_name(scope_id, expr_str).as_bytes());
                 } else {
                     write_v_bind_hash(&mut result, expr_str);

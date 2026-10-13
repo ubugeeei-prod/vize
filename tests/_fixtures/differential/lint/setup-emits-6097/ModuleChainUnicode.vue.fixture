@@ -1,0 +1,7 @@
+<!-- café 😀 -->
+<script lang="ts">
+const base = { submit(payload) { void payload } }; const validators = base;
+</script>
+<script setup lang="ts">
+const emit = defineEmits(validators)
+</script>

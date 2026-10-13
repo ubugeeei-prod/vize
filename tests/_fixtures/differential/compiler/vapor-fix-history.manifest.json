@@ -126,6 +126,12 @@
         "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/root-document-order.expected.json",
         "sha256": "d81f13baf5899fe5d332c2b62bc694feea6f71d6a7c75bd785e2660283efa77a"
       },
+      "currentReference": {
+        "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/root-document-order.corrected-8625.expected.json",
+        "sha256": "3b14c70412f9b33d7286488db07c56d552ae3428a62a5500200204882419063d",
+        "supersedesSha256": "d81f13baf5899fe5d332c2b62bc694feea6f71d6a7c75bd785e2660283efa77a",
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/8625"
+      },
       "historicalObservation": {
         "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/capture-b11eb/first.stdout.json",
         "sha256": "5b60b9b80a961a15e123a0ffe6c55d83038bb685f97f26e2fca28d7969935dc5"

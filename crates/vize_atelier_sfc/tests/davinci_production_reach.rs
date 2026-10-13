@@ -47,6 +47,8 @@ mod davinci_production_reach {
     #[cfg(test)]
     mod selection_tests;
     pub mod shapes;
+    #[cfg(test)]
+    mod source_io_tests;
     pub mod tally;
 }
 
@@ -60,6 +62,7 @@ use davinci_production_reach::diff::{divergence, error_divergence};
 use davinci_production_reach::parity::{absorb_prebackend, parity_failures};
 use davinci_production_reach::shapes::{Shape, compile, explicit_vapor_source};
 use davinci_production_reach::tally::{Lane, Tally, classify, classify_route, floors};
+use davinci_test_support::corpus::read_corpus_source;
 use vize_atelier_sfc::{SfcCompileResult, SfcParseOptions, parse_sfc};
 use vize_l0::profiler::global_profiler;
 
@@ -423,10 +426,7 @@ fn sweep(root: &Path, files: &[PathBuf]) -> Sweep {
     };
     for file in files {
         result.files += 1;
-        let Ok(source) = fs::read_to_string(file) else {
-            result.unreadable += 1;
-            continue;
-        };
+        let source = read_corpus_source(file);
         let name = file
             .strip_prefix(root)
             .unwrap_or(file)

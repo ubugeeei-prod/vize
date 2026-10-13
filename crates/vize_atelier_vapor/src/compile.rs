@@ -106,7 +106,9 @@ fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
     }
 
     if let Some(parent_tag) = parent {
-        if vize_carton::is_svg_tag(parent_tag) && tag != "foreignObject" {
+        if vize_carton::is_svg_tag(parent_tag)
+            && !matches!(parent_tag, "foreignObject" | "desc" | "title")
+        {
             return Namespace::Svg;
         }
         if vize_carton::is_math_ml_tag(parent_tag)

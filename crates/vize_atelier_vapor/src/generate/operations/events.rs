@@ -1,6 +1,8 @@
 use crate::ir::SetEventIRNode;
 use vize_atelier_core::codegen::document::EmitDocument;
-use vize_atelier_core::steps::{is_event_handler_reference_node, is_function_expression_node};
+use vize_atelier_core::steps::{
+    expression::is_typescript_function_expression_node, is_event_handler_reference_node,
+};
 use vize_carton::cstr;
 
 pub(super) use super::super::expression_retained::resolve_inline_handler_node as resolve_inline_handler;
@@ -25,8 +27,9 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
             body.push_spanned(&ctx.spanned_expression_node(value));
             body.push_str("(e)");
             body
-        } else if is_function_expression_node(value) {
-            // Authored and transformed callbacks already own their parameters.
+        } else if is_typescript_function_expression_node(value) {
+            // Authored and transformed callbacks already own their parameters,
+            // including TypeScript-annotated ones such as `(e: MouseEvent) => …`.
             ctx.spanned_expression_node(value)
         } else {
             let body = resolve_inline_handler(ctx, value);

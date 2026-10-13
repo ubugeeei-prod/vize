@@ -1,0 +1,12 @@
+svg-title	<svg><title><a :class='c'>value</a></title></svg>	+svg|+title|+a|=value|-a|-title|-svg
+html-title	<title><a :class='c'>value</a></title>	+title|=<a :class='c'>value</a>|-title
+html-textarea	<textarea><a :class='c'>value</a></textarea>	+textarea|=<a :class='c'>value</a>|-textarea
+title-html-child	<svg><title><span><title><b>literal</b></title></span></title></svg>	+svg|+title|+span|+title|=<b>literal</b>|-title|-span|-title|-svg
+foreign-and-nested-svg	<svg><foreignObject><title><b>literal</b></title><svg><title><a>inner</a></title></svg></foreignObject></svg>	+svg|+foreignObject|+title|=<b>literal</b>|-title|+svg|+title|+a|=inner|-a|-title|-svg|-foreignObject|-svg
+self-closing-and-sibling	<svg><title/><title><a>inner</a></title></svg><title>after<b>end</b></title>	+svg|+title|-title|+title|+a|=inner|-a|-title|-svg|+title|=after<b>end</b>|-title
+html-after-svg	<div><svg><title><a>inner</a></title></svg><title><b>after</b></title></div>	+div|+svg|+title|+a|=inner|-a|-title|-svg|+title|=<b>after</b>|-title|-div
+mathml-unchanged	<math><title><b>old</b></title></math>	+math|+title|=<b>old</b>|-title|-math
+similar-tag	<svg><titlex><a>plain</a></titlex></svg>	+svg|+titlex|+a|=plain|-a|-titlex|-svg
+desc-html-title	<svg><desc><title><b>literal</b></title></desc></svg>	+svg|+desc|+title|=<b>literal</b>|-title|-desc|-svg
+title-nested-svg	<svg><title><svg><title><a>inner</a></title></svg></title></svg>	+svg|+title|+svg|+title|+a|=inner|-a|-title|-svg|-title|-svg
+conditional-title	<svg><path><title v-if="!isTooltip || !mutableConfig.showTooltip">{{country.name}}<template v-if="typeof country.value === 'number'">:{{country.value}}</template></title></path></svg>	+svg|+path|+title|?country.name|+template|=:|?country.value|-template|-title|-path|-svg

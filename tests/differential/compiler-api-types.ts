@@ -14,6 +14,7 @@ export type CompilerFixture = {
   adapters: { legacy: string; native: null; reasons: { native: string } };
   inputs: { files: Artifact[] };
   reference: Artifact;
+  currentReference?: Artifact & { supersedesSha256: string; issue: string };
   historicalObservation: Artifact;
   options: Artifact;
 };

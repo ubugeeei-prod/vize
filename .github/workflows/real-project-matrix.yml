@@ -190,7 +190,12 @@ jobs:
           CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
           REAL_PROJECT_LSP_TIMEOUT_MS: "600000"
           VIZE_LSP_BIN: target/ci/vize
+          VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+          VIZE_LSP_BUILD_RECIPE: "cargo build --profile ci -p vize"
         run: |
+          node tests/differential/build-receipt.ts
+          node tests/tooling/support/lsp/verify-session-captures.ts snapshot "$FIXTURE_REPORT_DIR/lsp-wire-before.json"
+          printf '%s\n' 'Lifecycle timings include passive raw RPC recording; they are not paired performance acceptance.' > "$FIXTURE_REPORT_DIR/lsp-wire-timing-policy.txt"
           if [ ! -x "$CORSA_PATH" ]; then
             echo "::error title=Missing typecheck runtime::vp install produced no executable at $CORSA_PATH"
             exit 1
@@ -198,6 +203,10 @@ jobs:
           node --test --test-concurrency=1 \
             tests/tooling/real-project-lsp.test.ts
           test -s "$FIXTURE_REPORT_DIR/lsp-lifecycle-summary.json"
+
+      - name: Validate source-bound LSP wire
+        if: ${{ always() }}
+        run: node tests/tooling/support/lsp/verify-session-captures.ts verify "$FIXTURE_REPORT_DIR/lsp-wire-before.json" "$FIXTURE_REPORT_DIR/lsp-wire-integrity.json"
 
       - name: Measure real-project lint divergence
         id: lint_divergence
@@ -309,6 +318,17 @@ jobs:
         with:
           name: real-project-matrix-${{ matrix.shard }}
           path: ${{ env.FIXTURE_REPORT_DIR }}
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload source-bound LSP wire evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: real-project-lsp-wire-${{ matrix.shard }}-${{ github.sha }}
+          path: |
+            target/differential/lsp-sessions
+            target/ci/vize.differential-build.json
           if-no-files-found: error
           retention-days: 30
 

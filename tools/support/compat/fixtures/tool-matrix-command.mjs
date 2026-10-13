@@ -61,7 +61,17 @@ export function toolArgs(project, tool, compilerOutputDir, options = {}) {
     // cover for compiler/linter/formatter. Narrow the typecheck corpus to the
     // files that config owns, or vue-tsc's baseline inherits the same
     // unresolvable aliases and the comparison reports fake FNs (#4454).
-    const args = ["check", ...typecheckCorpusGlobs(project), "--format", "json", "--no-config"];
+    const generatedScripts =
+      options.typecheckTsconfigPath != null &&
+      typecheckSourceTsconfig(project) == null &&
+      project.expectedVueFileCount === 0;
+    const args = [
+      "check",
+      ...(generatedScripts ? [] : typecheckCorpusGlobs(project)),
+      "--format",
+      "json",
+      "--no-config",
+    ];
     const tsconfig = options.typecheckTsconfigPath ?? typecheckTsconfigPath(project);
     if (tsconfig != null) args.push("--tsconfig", tsconfig);
     return args;

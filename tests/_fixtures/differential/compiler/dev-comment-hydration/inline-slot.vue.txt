@@ -1,0 +1,6 @@
+<script setup>
+const name = 'Session'
+</script>
+<template>
+  <div><Group>a <!-- eslint-disable rule --> b {{ name }}</Group></div>
+</template>

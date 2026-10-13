@@ -40,27 +40,28 @@ developers can isolate formatting, lint, type-checking, and compiler failures.
 
 ## Configure Once
 
-Create `vize.config.ts` at the project root when defaults are not enough:
+When defaults are not enough, add native options to the top-level `vize` object in your existing `vite.config.*`. See [Configuration](./configuration.md) for discovery, current release availability, and optional dedicated formats.
 
 ```ts
-import { defineConfig } from "vize";
-
-export default defineConfig({
-  formatter: {
-    printWidth: 100,
+// vite.config.ts
+export default {
+  vize: {
+    formatter: {
+      printWidth: 100,
+    },
+    linter: {
+      preset: "happy-path",
+    },
+    typeChecker: {
+      enabled: true,
+      strict: true,
+      tsconfig: "tsconfig.json",
+    },
+    vite: {
+      scanPatterns: ["src/**/*.vue"],
+    },
   },
-  linter: {
-    preset: "happy-path",
-  },
-  typeChecker: {
-    enabled: true,
-    strict: true,
-    tsconfig: "tsconfig.json",
-  },
-  vite: {
-    scanPatterns: ["src/**/*.vue"],
-  },
-});
+};
 ```
 
 See [Configuration](./configuration.md) for flat monorepo entries, PKL, JSON, compiler options, and

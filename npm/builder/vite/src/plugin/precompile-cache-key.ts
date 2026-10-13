@@ -7,8 +7,8 @@
  *
  * - **Manifest identity** (`computePrecompileCacheKey`) covers everything
  *   outside the source text that determines the batch output: the manifest
- *   format version, the resolved `@vizejs/native` version, the size and mtime of
- *   the native binary actually loaded, and the fully resolved native batch
+ *   format version, the resolved `@vizejs/native` version, the immutable token
+ *   embedded in the actual native image, and the resolved native batch
  *   compile options (Vue dialect/`vueVersion`, `vapor`, `ssr`, `mode`,
  *   `templateSyntax`, `customRenderer`, `customElements`, runtime module/global
  *   names, and every experimental flag). The key names the manifest file, so a different
@@ -23,7 +23,6 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import { createRequire } from "node:module";
-import path from "node:path";
 
 /**
  * Bump when the persisted entry shape changes; abandons every old manifest.
@@ -65,46 +64,34 @@ function stableStringify(value: unknown): string {
   return JSON.stringify(value) ?? "null";
 }
 
-function describeBinary(binary: string): string {
-  try {
-    const stat = fs.statSync(binary);
-    return `${path.basename(binary)}:${stat.size}:${stat.mtimeMs}`;
-  } catch {
-    return `${path.basename(binary)}:unresolved`;
-  }
-}
+const unresolvedCompilerNonce = crypto.randomUUID();
+type BindingIdentity = { kind: "native"; token: string } | { kind: "process"; nonce: string };
 
 /**
  * Identity of the native compiler that produced (or would produce) the output.
  *
- * The package version covers releases; the binary's size and mtime cover local
- * `pnpm --dir npm/native build:debug` rebuilds, which change codegen without
- * changing any version. Hashing the binary itself would be airtight but costs
- * hundreds of milliseconds for a >30 MB artifact, so a rebuild is treated as a
- * new identity — a miss, never a stale hit.
+ * The successful loader reads the linked image's token once, including pnpm
+ * siblings and path/universal fallbacks. OS image reuse or file replacement
+ * cannot relabel code already in memory. Unknown providers get a process namespace,
+ * so an old wrapper or unknown backend cannot reuse another process's output.
  */
 function resolveCompilerIdentity(): unknown {
-  const configured = process.env.NAPI_RS_NATIVE_LIBRARY_PATH;
   try {
-    const manifestPath = createRequire(import.meta.url).resolve("@vizejs/native/package.json");
-    const packageDir = path.dirname(manifestPath);
+    const requireNative = createRequire(import.meta.url);
+    const manifestPath = requireNative.resolve("@vizejs/native/package.json");
     const version = (JSON.parse(fs.readFileSync(manifestPath, "utf-8")) as { version?: unknown })
       .version;
-    const binaries = configured
-      ? [configured]
-      : fs
-          .readdirSync(packageDir)
-          .filter((name) => name.endsWith(".node"))
-          .sort()
-          .map((name) => path.join(packageDir, name));
+    const { getBindingIdentity } = requireNative("@vizejs/native/native-binding-identity.js") as {
+      getBindingIdentity: (binding: unknown) => BindingIdentity;
+    };
+    const identity = getBindingIdentity(requireNative("@vizejs/native"));
     return {
       version: typeof version === "string" ? version : "unknown",
-      binaries: binaries.map(describeBinary),
+      binding:
+        identity.kind === "native" ? { kind: identity.kind, token: identity.token } : identity,
     };
   } catch {
-    // Without a resolvable compiler identity there is nothing safe to key on;
-    // the literal below is stable, so such a run simply shares one namespace.
-    return { version: "unresolved", binaries: [configured ?? "unresolved"] };
+    return { version: "unresolved", binding: { kind: "process", nonce: unresolvedCompilerNonce } };
   }
 }
 

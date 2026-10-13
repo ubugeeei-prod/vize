@@ -1,0 +1,3 @@
+<script setup>
+const props = defineProps({ value: { required: false, default: 1 } });
+</script>

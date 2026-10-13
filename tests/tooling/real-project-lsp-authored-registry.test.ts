@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import type { FixtureProject, LspAuthoredOracle } from "./support/real-project-lsp-report.ts";
+import { appendAiriAuthoredEventSuccessor } from "./support/airi-authored-event-authority.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const registryPath = path.join(root, "tests", "_fixtures", "vue-ecosystem-fixtures.json");
@@ -257,11 +258,12 @@ await test("common component attributes retain every complete authored ranked ba
         .map((item) => item.label),
     );
     const added = common.filter((label) => !declared.has(label));
-    const expected = [
+    const predecessor = [
       ...original.slice(0, 28),
       ...added.map((label) => ({ label, rank: 0 })),
       ...original.slice(28),
     ].map((item, rank) => ({ ...item, rank }));
+    const expected = appendAiriAuthoredEventSuccessor(project, predecessor);
     assert.equal(new Set(expected.map((item) => item.label)).size, expected.length);
     const actual = current.projects.find((candidate) => candidate.id === project.id)
       ?.lspAuthoredOracle?.componentBoundary;

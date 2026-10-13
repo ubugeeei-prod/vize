@@ -1,0 +1,53 @@
+{
+  "schema": "vize.fixtureScriptSourceEvidence",
+  "version": 1,
+  "beforeRun": 38147644073,
+  "beforeCandidate": "9466fdbb90bfae8803d5e57ae267b656be051721",
+  "authority": "Pinned project archives; every physical script byte independently equals its primary Git tree blob. This is source evidence, not replacement fixture input or native acceptance.",
+  "projects": [
+    {
+      "project": "docsify",
+      "revision": "a8f151ed79dff0ad8d857f99f073ef7969c14d80",
+      "archiveSha256": "f1d03ee6782a25c7f8f530fe592d748a83102fe2d556642e23edb38cabbd0c54",
+      "sourceCounts": {
+        ".js": 106,
+        ".cjs": 1,
+        ".ts": 2
+      },
+      "manifestSha256": "581fbc16861dc3cd8a26bf872354267f16685693c05df5c5fa9191fc4ab30b71",
+      "manifestBytes": 20100
+    },
+    {
+      "project": "vue-native-core",
+      "revision": "0c705bebec66789696830f501870ec66c144240f",
+      "archiveSha256": "d38c817d4d680e5bc042e2581011523a3711792c1e3eb5a8cb0e7a63f96c142d",
+      "sourceCounts": {
+        ".js": 194,
+        ".ts": 9
+      },
+      "manifestSha256": "0cfd4f206292c09e296b0828e5e9f82a2ab9b9dbc33c10f91cf0e8e76941e483",
+      "manifestBytes": 40129
+    },
+    {
+      "project": "wakapi",
+      "revision": "1a08af5f78d4161f8b573de6ad82615b4f2b76f4",
+      "archiveSha256": "ddd9e19ef4fe5960cac733296260bcf3ff23839972accf126734f59c1528e095",
+      "sourceCounts": {
+        ".js": 21
+      },
+      "manifestSha256": "10a9546f9bd46e6e872aa75a9acd76f6e595c4d3a5f7de2689213cf9396b15bc",
+      "manifestBytes": 4196
+    },
+    {
+      "project": "petite-vue",
+      "revision": "9ff3b98b844033b935143c221176c81244aae32e",
+      "archiveSha256": "899bc959b90a4d30ccdc41228f78bbf421a2f039d5b1eed54ee348e5bdc452b6",
+      "sourceCounts": {
+        ".js": 1,
+        ".ts": 20
+      },
+      "manifestSha256": "dac4cc7c3f681f5c7f4b6398583fa7895a3f13d27c93c5915be05a05b9bba73f",
+      "manifestBytes": 3828
+    }
+  ]
+}

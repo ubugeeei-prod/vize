@@ -1,0 +1,3752 @@
+[
+  [
+    ".github/workflows/davinci-canon-scaling.yml",
+    {
+      "mode": "100644",
+      "blob": "e08fd2b98ec7b627ac4bbc1baf3fc009190fcf18",
+      "byteLength": 14487,
+      "sha256": "3bb1ed23dcb12ccddc939a2bfefa895f5c16b8033fe07b2e2687b6c9fca288e1"
+    },
+    {
+      "mode": "100644",
+      "blob": "e08fd2b98ec7b627ac4bbc1baf3fc009190fcf18",
+      "byteLength": 14487,
+      "sha256": "3bb1ed23dcb12ccddc939a2bfefa895f5c16b8033fe07b2e2687b6c9fca288e1"
+    }
+  ],
+  [
+    ".github/workflows/typechecker-native-phases.yml",
+    {
+      "mode": "100644",
+      "blob": "e5460f0701ec00d2d9e344d95f8dafcf19eacee9",
+      "byteLength": 30829,
+      "sha256": "ad9f421caf73b7b6131a978bac37436c0c8e2f887389ee7ef91fe443c76c3a38"
+    },
+    {
+      "mode": "100644",
+      "blob": "e5460f0701ec00d2d9e344d95f8dafcf19eacee9",
+      "byteLength": 30829,
+      "sha256": "ad9f421caf73b7b6131a978bac37436c0c8e2f887389ee7ef91fe443c76c3a38"
+    }
+  ],
+  [
+    "crates/vize/tests/support/event_completion_project.rs",
+    {
+      "mode": "100644",
+      "blob": "2ab3ae6a965be14ba4956c60dc7d201c6cdf3246",
+      "byteLength": 10941,
+      "sha256": "c1f55eea105e0efbe8989bf7c36e79f789d11ac91bcd791c2db3e111751a01ca"
+    },
+    {
+      "mode": "100644",
+      "blob": "2ab3ae6a965be14ba4956c60dc7d201c6cdf3246",
+      "byteLength": 10941,
+      "sha256": "c1f55eea105e0efbe8989bf7c36e79f789d11ac91bcd791c2db3e111751a01ca"
+    }
+  ],
+  [
+    "crates/vize/tests/support/event_completion_witness.rs",
+    {
+      "mode": "100644",
+      "blob": "e15ca3b021ec756d8968eae306a3a8660756f5aa",
+      "byteLength": 8795,
+      "sha256": "77cc452c28c87ce3bceb199703474b9beb83b3f53474a3aa3ed07a41779fb1d8"
+    },
+    {
+      "mode": "100644",
+      "blob": "e15ca3b021ec756d8968eae306a3a8660756f5aa",
+      "byteLength": 8795,
+      "sha256": "77cc452c28c87ce3bceb199703474b9beb83b3f53474a3aa3ed07a41779fb1d8"
+    }
+  ],
+  [
+    "crates/vize_atelier_sfc/src/croquis.rs",
+    {
+      "mode": "100644",
+      "blob": "751224e731b1dde5e0fdaf232ddbd6119f2a937d",
+      "byteLength": 9056,
+      "sha256": "fd68730ba311adfe36fbda298fbc05bd0ffa02fdbda9f159f44589988bdbc1e5"
+    },
+    {
+      "mode": "100644",
+      "blob": "751224e731b1dde5e0fdaf232ddbd6119f2a937d",
+      "byteLength": 9056,
+      "sha256": "fd68730ba311adfe36fbda298fbc05bd0ffa02fdbda9f159f44589988bdbc1e5"
+    }
+  ],
+  [
+    "crates/vize_atelier_sfc/src/croquis/analysis.rs",
+    {
+      "mode": "100644",
+      "blob": "8870fb1075e23559e97c1af97ffc1fa2424aa159",
+      "byteLength": 4264,
+      "sha256": "4d559e7da4862c256c411d2fd16c6a962e03e4fd22a274165a94b2ac6b74e8d7"
+    },
+    {
+      "mode": "100644",
+      "blob": "8870fb1075e23559e97c1af97ffc1fa2424aa159",
+      "byteLength": 4264,
+      "sha256": "4d559e7da4862c256c411d2fd16c6a962e03e4fd22a274165a94b2ac6b74e8d7"
+    }
+  ],
+  [
+    "crates/vize_atelier_sfc/src/croquis/drawer.rs",
+    {
+      "mode": "100644",
+      "blob": "0439a3f1a8029f86480fea9f7bd66601263a8127",
+      "byteLength": 4829,
+      "sha256": "4fd005a0134a638c30986b0d3e50030c8fac5bf49608fd2274b19a9ad97d999d"
+    },
+    {
+      "mode": "100644",
+      "blob": "0439a3f1a8029f86480fea9f7bd66601263a8127",
+      "byteLength": 4829,
+      "sha256": "4fd005a0134a638c30986b0d3e50030c8fac5bf49608fd2274b19a9ad97d999d"
+    }
+  ],
+  [
+    "crates/vize_atelier_sfc/src/croquis/module_exports.rs",
+    {
+      "mode": "100644",
+      "blob": "ee9a000cae0b635f5dda964e26d28e02c2618094",
+      "byteLength": 1916,
+      "sha256": "ae33cc5e67e538cae960cd866e4fe82baf96fbbc0ab0df581f7aae9ee36fa40d"
+    },
+    {
+      "mode": "100644",
+      "blob": "ee9a000cae0b635f5dda964e26d28e02c2618094",
+      "byteLength": 1916,
+      "sha256": "ae33cc5e67e538cae960cd866e4fe82baf96fbbc0ab0df581f7aae9ee36fa40d"
+    }
+  ],
+  [
+    "crates/vize_atelier_sfc/src/croquis/module_exports/tests.rs",
+    {
+      "mode": "100644",
+      "blob": "cf4c6dce4b1b23e781dc8abdd54500c126d4dc58",
+      "byteLength": 9735,
+      "sha256": "95c75f39c28bc4dac0d5ae852cb78789248d4532f417c5dfee19fe448eef7bc3"
+    },
+    {
+      "mode": "100644",
+      "blob": "cf4c6dce4b1b23e781dc8abdd54500c126d4dc58",
+      "byteLength": 9735,
+      "sha256": "95c75f39c28bc4dac0d5ae852cb78789248d4532f417c5dfee19fe448eef7bc3"
+    }
+  ],
+  [
+    "crates/vize_atelier_sfc/src/croquis/occurrences.rs",
+    {
+      "mode": "100644",
+      "blob": "dae340831d4c340f7d8c2c72548ed8db2d2a0169",
+      "byteLength": 2033,
+      "sha256": "f48513fbc113660ca464786274e54b4fc850b8fe0f68eeb4114c4ea57904f2a2"
+    },
+    {
+      "mode": "100644",
+      "blob": "d6c6d271db6882410a62eccd7d0e40ea40aded56",
+      "byteLength": 3250,
+      "sha256": "2c4ae2471600b33e5c301e0882f84813cb8cb940b9a3a92e90fbe90ceb472da9"
+    }
+  ],
+  [
+    "crates/vize_atelier_sfc/src/croquis/script_demand.rs",
+    {
+      "mode": "100644",
+      "blob": "ed7bf37a5f3f6a757e0008e91b81700f5abd5e89",
+      "byteLength": 2787,
+      "sha256": "476e2e70ecc1b5c0f2efe382fc080c4614ce739d9cc722440b6f6f51c170fbd0"
+    },
+    {
+      "mode": "100644",
+      "blob": "ed7bf37a5f3f6a757e0008e91b81700f5abd5e89",
+      "byteLength": 2787,
+      "sha256": "476e2e70ecc1b5c0f2efe382fc080c4614ce739d9cc722440b6f6f51c170fbd0"
+    }
+  ],
+  [
+    "crates/vize_canon/Cargo.toml",
+    {
+      "mode": "100644",
+      "blob": "48592ff36c288ef5a125742a55a1a4195a421ab4",
+      "byteLength": 3192,
+      "sha256": "207057a316e1ce6f51765555b76221b4fae5e5c03f44ea1601fc595b09fb36fd"
+    },
+    {
+      "mode": "100644",
+      "blob": "48592ff36c288ef5a125742a55a1a4195a421ab4",
+      "byteLength": 3192,
+      "sha256": "207057a316e1ce6f51765555b76221b4fae5e5c03f44ea1601fc595b09fb36fd"
+    }
+  ],
+  [
+    "crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_component_prop_checks_respect_same_element_vif_guard.snap",
+    {
+      "mode": "100644",
+      "blob": "00b7559ebd68c2aa93e8c8733a02e1649460537f",
+      "byteLength": 25881,
+      "sha256": "381cb098147ab5031dcc65653f2964b15b2aaa38d570f08d6110f9aafd825f82"
+    },
+    {
+      "mode": "100644",
+      "blob": "00b7559ebd68c2aa93e8c8733a02e1649460537f",
+      "byteLength": 25881,
+      "sha256": "381cb098147ab5031dcc65653f2964b15b2aaa38d570f08d6110f9aafd825f82"
+    }
+  ],
+  [
+    "crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_reserved_prop_and_hyphenated_slot_names.snap",
+    {
+      "mode": "100644",
+      "blob": "d6c27a6eaa7f1ddf2c359399b07fa0e97f036699",
+      "byteLength": 27681,
+      "sha256": "84feeafae13506af116d862fb5f64024cc045857e04e06540e6c294db21e7f2a"
+    },
+    {
+      "mode": "100644",
+      "blob": "d6c27a6eaa7f1ddf2c359399b07fa0e97f036699",
+      "byteLength": 27681,
+      "sha256": "84feeafae13506af116d862fb5f64024cc045857e04e06540e6c294db21e7f2a"
+    }
+  ],
+  [
+    "crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_scoped_slot_expressions.snap",
+    {
+      "mode": "100644",
+      "blob": "1754c90f33434fb77b6716432758d789b64975f9",
+      "byteLength": 27133,
+      "sha256": "3019849a0e1b37b64214250fe65afb576339906c18ac68a3c3a922a800db8db5"
+    },
+    {
+      "mode": "100644",
+      "blob": "1754c90f33434fb77b6716432758d789b64975f9",
+      "byteLength": 27133,
+      "sha256": "3019849a0e1b37b64214250fe65afb576339906c18ac68a3c3a922a800db8db5"
+    }
+  ],
+  [
+    "crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_vfor_component_props_in_scope.snap",
+    {
+      "mode": "100644",
+      "blob": "b06152ad1eae2693bb5704cdcc6efc15f915a43f",
+      "byteLength": 25860,
+      "sha256": "369730d7d2d6f5d3a66336df56497670c76c9b3bf8555fd6b39fac1717e92d2d"
+    },
+    {
+      "mode": "100644",
+      "blob": "b06152ad1eae2693bb5704cdcc6efc15f915a43f",
+      "byteLength": 25860,
+      "sha256": "369730d7d2d6f5d3a66336df56497670c76c9b3bf8555fd6b39fac1717e92d2d"
+    }
+  ],
+  [
+    "crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_vfor_component_props_source_nested_in_vif_is_wrapped_for_narrowing.snap",
+    {
+      "mode": "100644",
+      "blob": "c27350f2db4602121e6ab2af4b33ca7bd7ec55a2",
+      "byteLength": 26078,
+      "sha256": "0d52e78f8f1edec11a519d1b6f4a9c24f0f6204cf6ff105d0de367f8a5a139fa"
+    },
+    {
+      "mode": "100644",
+      "blob": "c27350f2db4602121e6ab2af4b33ca7bd7ec55a2",
+      "byteLength": 26078,
+      "sha256": "0d52e78f8f1edec11a519d1b6f4a9c24f0f6204cf6ff105d0de367f8a5a139fa"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/executor/cli.rs",
+    {
+      "mode": "100644",
+      "blob": "4759bef3ac62cd4a08e8fc5a7c7d01345b32225b",
+      "byteLength": 7255,
+      "sha256": "200651676dffb81e21400bdc66477df47af0a8fee9c4d3d895fdce88ad0f3b9f"
+    },
+    {
+      "mode": "100644",
+      "blob": "4759bef3ac62cd4a08e8fc5a7c7d01345b32225b",
+      "byteLength": 7255,
+      "sha256": "200651676dffb81e21400bdc66477df47af0a8fee9c4d3d895fdce88ad0f3b9f"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/executor/cli/lexical_dollar_receipt.rs",
+    {
+      "mode": "100644",
+      "blob": "93695522006c9f9c2be293b7a29c0803ba3209d8",
+      "byteLength": 3123,
+      "sha256": "0331dae8bee61d317e7cd551d207618dd0ab621834363c32e2cc8727df399ca1"
+    },
+    {
+      "mode": "100644",
+      "blob": "93695522006c9f9c2be293b7a29c0803ba3209d8",
+      "byteLength": 3123,
+      "sha256": "0331dae8bee61d317e7cd551d207618dd0ab621834363c32e2cc8727df399ca1"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/executor/session.rs",
+    {
+      "mode": "100644",
+      "blob": "a388ca4c67c004c3efeacbc85d174cc7f6bd67cc",
+      "byteLength": 12593,
+      "sha256": "4cde74a784b7504419a7e2a9538a14d6e8ef0aa2e8ec002ca40e0d88fb1efaff"
+    },
+    {
+      "mode": "100644",
+      "blob": "a388ca4c67c004c3efeacbc85d174cc7f6bd67cc",
+      "byteLength": 12593,
+      "sha256": "4cde74a784b7504419a7e2a9538a14d6e8ef0aa2e8ec002ca40e0d88fb1efaff"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/executor/session/lexical_dollar_receipt.rs",
+    {
+      "mode": "100644",
+      "blob": "62f4e70289c0b5dc32561745dca7bcc24d84ccdf",
+      "byteLength": 2711,
+      "sha256": "d3ea145ac57aba517ac35a0f953e9b30a9d5f4b8ee6cd478ef216421df32bfd9"
+    },
+    {
+      "mode": "100644",
+      "blob": "62f4e70289c0b5dc32561745dca7bcc24d84ccdf",
+      "byteLength": 2711,
+      "sha256": "d3ea145ac57aba517ac35a0f953e9b30a9d5f4b8ee6cd478ef216421df32bfd9"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/import_rewriter.rs",
+    {
+      "mode": "100644",
+      "blob": "827145dc24ef3bfb57f75e25a92ef0f4966366a1",
+      "byteLength": 10668,
+      "sha256": "ae421c9c08a0608fdc2842e7b73bd2095fc182f47921b9a7b9242bb60e82d27f"
+    },
+    {
+      "mode": "100644",
+      "blob": "827145dc24ef3bfb57f75e25a92ef0f4966366a1",
+      "byteLength": 10668,
+      "sha256": "ae421c9c08a0608fdc2842e7b73bd2095fc182f47921b9a7b9242bb60e82d27f"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/import_rewriter_collect.rs",
+    {
+      "mode": "100644",
+      "blob": "f5b3b9eaaf8ab10d20be9f2c0486cf041cb03f9b",
+      "byteLength": 7904,
+      "sha256": "0f5f5ef4557c615bdbf85109aa41ff6d2efedb168c4f01a4190abf6e4bdfa96f"
+    },
+    {
+      "mode": "100644",
+      "blob": "f5b3b9eaaf8ab10d20be9f2c0486cf041cb03f9b",
+      "byteLength": 7904,
+      "sha256": "0f5f5ef4557c615bdbf85109aa41ff6d2efedb168c4f01a4190abf6e4bdfa96f"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/import_rewriter_empty_vue_literal_tests.rs",
+    {
+      "mode": "100644",
+      "blob": "371d1071f29892e568bff7bf641106a3f10ad5d8",
+      "byteLength": 9309,
+      "sha256": "e6ee9cd546258b14edc715e34542d19c14159c8a76e1e096cb0aeacaa727d281"
+    },
+    {
+      "mode": "100644",
+      "blob": "371d1071f29892e568bff7bf641106a3f10ad5d8",
+      "byteLength": 9309,
+      "sha256": "e6ee9cd546258b14edc715e34542d19c14159c8a76e1e096cb0aeacaa727d281"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/import_rewriter_empty_vue_star_capture_tests.rs",
+    {
+      "mode": "100644",
+      "blob": "fcec02e56846e1d76b06948eaaf9debcd260c091",
+      "byteLength": 13795,
+      "sha256": "dba6c7111ff4fee454b10f8ad8c601eb6758184279d4e2c49046c1f999f13708"
+    },
+    {
+      "mode": "100644",
+      "blob": "fcec02e56846e1d76b06948eaaf9debcd260c091",
+      "byteLength": 13795,
+      "sha256": "dba6c7111ff4fee454b10f8ad8c601eb6758184279d4e2c49046c1f999f13708"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/import_rewriter_empty_vue_stars.rs",
+    {
+      "mode": "100644",
+      "blob": "da9d5e51aa2fb148a03089513e6950dc34a63db3",
+      "byteLength": 6976,
+      "sha256": "f7f579180094ef163eb1c21e0109452e9c09fb6f98dd2a14cbd54013a88e1a0c"
+    },
+    {
+      "mode": "100644",
+      "blob": "da9d5e51aa2fb148a03089513e6950dc34a63db3",
+      "byteLength": 6976,
+      "sha256": "f7f579180094ef163eb1c21e0109452e9c09fb6f98dd2a14cbd54013a88e1a0c"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/import_rewriter_empty_vue_stars_tests.rs",
+    {
+      "mode": "100644",
+      "blob": "1c164c1f2e5c25412c2aa7c394f6010e21d0d40a",
+      "byteLength": 12739,
+      "sha256": "c58c170725aa541a9865c4c82c22ac32aef6fe1e707d7dbfee2f3dcba8248656"
+    },
+    {
+      "mode": "100644",
+      "blob": "1c164c1f2e5c25412c2aa7c394f6010e21d0d40a",
+      "byteLength": 12739,
+      "sha256": "c58c170725aa541a9865c4c82c22ac32aef6fe1e707d7dbfee2f3dcba8248656"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/import_rewriter_project_mirror.rs",
+    {
+      "mode": "100644",
+      "blob": "8f5cb7db5c8ad2310bba005a10694ca7de945107",
+      "byteLength": 12348,
+      "sha256": "ba19c8984ffb795a272d6140ac177d9e8d0215d95ede722d931725f098e8d176"
+    },
+    {
+      "mode": "100644",
+      "blob": "8f5cb7db5c8ad2310bba005a10694ca7de945107",
+      "byteLength": 12348,
+      "sha256": "ba19c8984ffb795a272d6140ac177d9e8d0215d95ede722d931725f098e8d176"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/import_rewriter_source_map.rs",
+    {
+      "mode": "100644",
+      "blob": "e435e86add1a0b9e38afd5ebe575d2838b035e56",
+      "byteLength": 4242,
+      "sha256": "506be6c7b0754ed94a892bbaedc541457b3e23c4509ae0f89e662a71583e6c54"
+    },
+    {
+      "mode": "100644",
+      "blob": "e435e86add1a0b9e38afd5ebe575d2838b035e56",
+      "byteLength": 4242,
+      "sha256": "506be6c7b0754ed94a892bbaedc541457b3e23c4509ae0f89e662a71583e6c54"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/import_rewriter_star_capture.rs",
+    {
+      "mode": "100644",
+      "blob": "598859fc516ae0aab850e86004fa4f330bfb1f18",
+      "byteLength": 5163,
+      "sha256": "aa85a10d52b859069b22141bcb69cbc419e23110ca23bef7e5c6ba2ab4b576f4"
+    },
+    {
+      "mode": "100644",
+      "blob": "598859fc516ae0aab850e86004fa4f330bfb1f18",
+      "byteLength": 5163,
+      "sha256": "aa85a10d52b859069b22141bcb69cbc419e23110ca23bef7e5c6ba2ab4b576f4"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/source_policy.rs",
+    {
+      "mode": "100644",
+      "blob": "5b9cc7445eda39337e3edc93e576b4e707434dfe",
+      "byteLength": 4403,
+      "sha256": "fcdac2213aea978d8437dd47f54b5f3565f8b0b5c0599f5eedb0aed6c54a4950"
+    },
+    {
+      "mode": "100644",
+      "blob": "5b9cc7445eda39337e3edc93e576b4e707434dfe",
+      "byteLength": 4403,
+      "sha256": "fcdac2213aea978d8437dd47f54b5f3565f8b0b5c0599f5eedb0aed6c54a4950"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/type_checker/tests/options_api_required_props.rs",
+    {
+      "mode": "100644",
+      "blob": "48746dab4a77fd5b32bd2d8ddcb2b9bbed8c1909",
+      "byteLength": 8767,
+      "sha256": "bdbac8aa2e7be2b7d027085b324eb54f81bc6817179f46224e370e662d9b5715"
+    },
+    {
+      "mode": "100644",
+      "blob": "48746dab4a77fd5b32bd2d8ddcb2b9bbed8c1909",
+      "byteLength": 8767,
+      "sha256": "bdbac8aa2e7be2b7d027085b324eb54f81bc6817179f46224e370e662d9b5715"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/type_checker/tests/recent_issues.rs",
+    {
+      "mode": "100644",
+      "blob": "3d1a61abe5381692611352de0b2251ecdcb51149",
+      "byteLength": 8997,
+      "sha256": "1eb8f4150b019efe9553f6647c47b905dd314ff79d9c0834a504f98044b48c56"
+    },
+    {
+      "mode": "100644",
+      "blob": "3d1a61abe5381692611352de0b2251ecdcb51149",
+      "byteLength": 8997,
+      "sha256": "1eb8f4150b019efe9553f6647c47b905dd314ff79d9c0834a504f98044b48c56"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/type_checker/tests/recent_issues/javascript_sfc_membership.rs",
+    {
+      "mode": "100644",
+      "blob": "7f0428b49c774e2572cf99293c6e9b8961d9157e",
+      "byteLength": 10901,
+      "sha256": "bf29d83c3710c21f99349dc6d5b9f97d553b1dcf68980e7f75361706be19d52f"
+    },
+    {
+      "mode": "100644",
+      "blob": "7f0428b49c774e2572cf99293c6e9b8961d9157e",
+      "byteLength": 10901,
+      "sha256": "bf29d83c3710c21f99349dc6d5b9f97d553b1dcf68980e7f75361706be19d52f"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/type_checker/tests/recent_issues/lexical_dollar_slots.rs",
+    {
+      "mode": "100644",
+      "blob": "f634e08991876557c0064ad5a9a6357164d1553f",
+      "byteLength": 6483,
+      "sha256": "e334c0d8db3c6456f73a57ad033f7b14105fb058e713f8defaeb016dcf40d4c8"
+    },
+    {
+      "mode": "100644",
+      "blob": "f634e08991876557c0064ad5a9a6357164d1553f",
+      "byteLength": 6483,
+      "sha256": "e334c0d8db3c6456f73a57ad033f7b14105fb058e713f8defaeb016dcf40d4c8"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/type_checker/tests/recent_issues/options_projection.rs",
+    {
+      "mode": "100644",
+      "blob": "52e28eddf141ab80f7db1ee62edc70b8fd06748e",
+      "byteLength": 5989,
+      "sha256": "676d1ed5165070301c6c8fda1cf3280ea5051ac8db1219e76f59d99bb4943a18"
+    },
+    {
+      "mode": "100644",
+      "blob": "52e28eddf141ab80f7db1ee62edc70b8fd06748e",
+      "byteLength": 5989,
+      "sha256": "676d1ed5165070301c6c8fda1cf3280ea5051ac8db1219e76f59d99bb4943a18"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/virtual_project.rs",
+    {
+      "mode": "100644",
+      "blob": "b8957526e54a17b6b6f14e23a0be91865272be5f",
+      "byteLength": 15891,
+      "sha256": "17283de0ed77b93ace108e79f8f49c76bd94983488b886a1ed3e8df95be273cb"
+    },
+    {
+      "mode": "100644",
+      "blob": "b8957526e54a17b6b6f14e23a0be91865272be5f",
+      "byteLength": 15891,
+      "sha256": "17283de0ed77b93ace108e79f8f49c76bd94983488b886a1ed3e8df95be273cb"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/virtual_project/build.rs",
+    {
+      "mode": "100644",
+      "blob": "0836482eaf9b280b13fe1e136b5905116b553043",
+      "byteLength": 13197,
+      "sha256": "9c525e986fd876a22ca727504bc59a9d472e22ee91968f1ed3f2a1d13d20ebbb"
+    },
+    {
+      "mode": "100644",
+      "blob": "0836482eaf9b280b13fe1e136b5905116b553043",
+      "byteLength": 13197,
+      "sha256": "9c525e986fd876a22ca727504bc59a9d472e22ee91968f1ed3f2a1d13d20ebbb"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/virtual_project/build/context.rs",
+    {
+      "mode": "100644",
+      "blob": "00952a6d4082d31399b113fcc1d1ef5406be507b",
+      "byteLength": 3450,
+      "sha256": "0197ed6f9a8b7a1192145608227b90a5f5f4daddfd5510afcac856f7d74309b0"
+    },
+    {
+      "mode": "100644",
+      "blob": "00952a6d4082d31399b113fcc1d1ef5406be507b",
+      "byteLength": 3450,
+      "sha256": "0197ed6f9a8b7a1192145608227b90a5f5f4daddfd5510afcac856f7d74309b0"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/virtual_project/javascript_sfc.rs",
+    {
+      "mode": "100644",
+      "blob": "25bef84a53f76d9a86e1fa5309af655795d05d4d",
+      "byteLength": 12302,
+      "sha256": "9086eb821a6a0bf9e8d6fd0558a2f93aec9b0d8b2e63ac4cee263f102e826ec6"
+    },
+    {
+      "mode": "100644",
+      "blob": "25bef84a53f76d9a86e1fa5309af655795d05d4d",
+      "byteLength": 12302,
+      "sha256": "9086eb821a6a0bf9e8d6fd0558a2f93aec9b0d8b2e63ac4cee263f102e826ec6"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/virtual_project/jsx_build.rs",
+    {
+      "mode": "100644",
+      "blob": "aea2adef0a7aa5bb77fdea46e9a9cc4300b9757d",
+      "byteLength": 3339,
+      "sha256": "097091d238bdae26cbe10e41c4b5979e543e09569d32a3fa4d4e219f3e133729"
+    },
+    {
+      "mode": "100644",
+      "blob": "aea2adef0a7aa5bb77fdea46e9a9cc4300b9757d",
+      "byteLength": 3339,
+      "sha256": "097091d238bdae26cbe10e41c4b5979e543e09569d32a3fa4d4e219f3e133729"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/virtual_project/module_projection.rs",
+    {
+      "mode": "100644",
+      "blob": "5f61ec9e4b4ac3ba5d5113e7e275c52d872d7713",
+      "byteLength": 11463,
+      "sha256": "af68c5302c7b9b7e2a85799692b9a9304f2b99ae5f1236701af5aabd2cfffac6"
+    },
+    {
+      "mode": "100644",
+      "blob": "5f61ec9e4b4ac3ba5d5113e7e275c52d872d7713",
+      "byteLength": 11463,
+      "sha256": "af68c5302c7b9b7e2a85799692b9a9304f2b99ae5f1236701af5aabd2cfffac6"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/virtual_project/project.rs",
+    {
+      "mode": "100644",
+      "blob": "255299cac8f7f4481acd1888fbd2b350112713e2",
+      "byteLength": 14788,
+      "sha256": "64bc8edb79712b0abd59644a5df0ca15cfd6958335cd2098ccfffdc0fbc2014a"
+    },
+    {
+      "mode": "100644",
+      "blob": "255299cac8f7f4481acd1888fbd2b350112713e2",
+      "byteLength": 14788,
+      "sha256": "64bc8edb79712b0abd59644a5df0ca15cfd6958335cd2098ccfffdc0fbc2014a"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/virtual_project/project/artifacts.rs",
+    {
+      "mode": "100644",
+      "blob": "9e51a17c031126b1742e8016375954e4f949c408",
+      "byteLength": 8674,
+      "sha256": "0daba22f9634e3ff029779df9ec4236ddb6b2620a9498cdbebc87d0b88b7739d"
+    },
+    {
+      "mode": "100644",
+      "blob": "9e51a17c031126b1742e8016375954e4f949c408",
+      "byteLength": 8674,
+      "sha256": "0daba22f9634e3ff029779df9ec4236ddb6b2620a9498cdbebc87d0b88b7739d"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/virtual_project/project/artifacts/javascript_collision_tests.rs",
+    {
+      "mode": "100644",
+      "blob": "4f54553485588b17d909af76d7e28e668808be87",
+      "byteLength": 5531,
+      "sha256": "2617582b36ce646524b82f23fb3e9f65a520c2470a046fa9f900fffcf83068a6"
+    },
+    {
+      "mode": "100644",
+      "blob": "4f54553485588b17d909af76d7e28e668808be87",
+      "byteLength": 5531,
+      "sha256": "2617582b36ce646524b82f23fb3e9f65a520c2470a046fa9f900fffcf83068a6"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/virtual_project/project/artifacts/options_projection_tests.rs",
+    {
+      "mode": "100644",
+      "blob": "a53c378427f9589fc760a553383566de78576d4a",
+      "byteLength": 5759,
+      "sha256": "b98894db003a3659c4ac1b8eb9f56b4adc2d599062b8143c64168b9df5528848"
+    },
+    {
+      "mode": "100644",
+      "blob": "a53c378427f9589fc760a553383566de78576d4a",
+      "byteLength": 5759,
+      "sha256": "b98894db003a3659c4ac1b8eb9f56b4adc2d599062b8143c64168b9df5528848"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/virtual_project/script_build.rs",
+    {
+      "mode": "100644",
+      "blob": "9720359604eb6c7d481e9e71acd2c8556e732fcb",
+      "byteLength": 2591,
+      "sha256": "1b1f388511bf92f94fdc35257ccf543fa817b0ae026f0e9710b89bbf40f7242a"
+    },
+    {
+      "mode": "100644",
+      "blob": "9720359604eb6c7d481e9e71acd2c8556e732fcb",
+      "byteLength": 2591,
+      "sha256": "1b1f388511bf92f94fdc35257ccf543fa817b0ae026f0e9710b89bbf40f7242a"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/virtual_project/snapshots/vize_canon__batch__virtual_project__tests__reexported_vue_interface_props_virtual_ts.snap",
+    {
+      "mode": "100644",
+      "blob": "335411c7318c40bdbe21046bc3e009299154c9ca",
+      "byteLength": 12357,
+      "sha256": "b591f369b67d4fefadc26fb7703585ddb1c3422217ac60b5a2c5bf6fb3ed0b3a"
+    },
+    {
+      "mode": "100644",
+      "blob": "335411c7318c40bdbe21046bc3e009299154c9ca",
+      "byteLength": 12357,
+      "sha256": "b591f369b67d4fefadc26fb7703585ddb1c3422217ac60b5a2c5bf6fb3ed0b3a"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/virtual_project/snapshots/vize_canon__batch__virtual_project__tests__register_vue_file_rewrites_child_imports.snap",
+    {
+      "mode": "100644",
+      "blob": "fb9975c870076a40fd1c32e5ccbfd186ae6e9273",
+      "byteLength": 11353,
+      "sha256": "f09e5968bf60d9d5164a67b4e2b5989ac6a71b361e62e8e8470de9fcef74b547"
+    },
+    {
+      "mode": "100644",
+      "blob": "fb9975c870076a40fd1c32e5ccbfd186ae6e9273",
+      "byteLength": 11353,
+      "sha256": "f09e5968bf60d9d5164a67b4e2b5989ac6a71b361e62e8e8470de9fcef74b547"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/virtual_project/star_exports.rs",
+    {
+      "mode": "100644",
+      "blob": "784ed8438cf6d7d47b039679bfc82d550064b8eb",
+      "byteLength": 3261,
+      "sha256": "7f314b5a8a6bf8f8f0648e67b71850a60c8672ce15bd8d32bdbd298830497d12"
+    },
+    {
+      "mode": "100644",
+      "blob": "784ed8438cf6d7d47b039679bfc82d550064b8eb",
+      "byteLength": 3261,
+      "sha256": "7f314b5a8a6bf8f8f0648e67b71850a60c8672ce15bd8d32bdbd298830497d12"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/virtual_project/star_exports/tests.rs",
+    {
+      "mode": "100644",
+      "blob": "091437659b4725ada694f3af4089c40408526cdb",
+      "byteLength": 14965,
+      "sha256": "ef0e0f50819a7a5374451c22fb7a07262144a5bf47c3011ce79337c9d4da7156"
+    },
+    {
+      "mode": "100644",
+      "blob": "091437659b4725ada694f3af4089c40408526cdb",
+      "byteLength": 14965,
+      "sha256": "ef0e0f50819a7a5374451c22fb7a07262144a5bf47c3011ce79337c9d4da7156"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/virtual_project/star_exports/tests/materialized.rs",
+    {
+      "mode": "100644",
+      "blob": "941620005f25867b6f3ad23fe3ebe652b321837f",
+      "byteLength": 6071,
+      "sha256": "cb3aced36b5d22140b05933631d393f44e806034e693f0570dfe92bcb535bfe2"
+    },
+    {
+      "mode": "100644",
+      "blob": "941620005f25867b6f3ad23fe3ebe652b321837f",
+      "byteLength": 6071,
+      "sha256": "cb3aced36b5d22140b05933631d393f44e806034e693f0570dfe92bcb535bfe2"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/virtual_project/vue_codegen.rs",
+    {
+      "mode": "100644",
+      "blob": "d85d0b968e8974efa69069f5bb7e7e2658167035",
+      "byteLength": 12686,
+      "sha256": "67e3071ebeb5dfded91939526bdbe6ef8e8b820453aa35aabb54efd6127f06fb"
+    },
+    {
+      "mode": "100644",
+      "blob": "d85d0b968e8974efa69069f5bb7e7e2658167035",
+      "byteLength": 12686,
+      "sha256": "67e3071ebeb5dfded91939526bdbe6ef8e8b820453aa35aabb54efd6127f06fb"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/virtual_project/vue_codegen/malformed_setup_tests.rs",
+    {
+      "mode": "100644",
+      "blob": "6b14795b55744e6c22ccce2de45e8c21fd32bc6d",
+      "byteLength": 12374,
+      "sha256": "b5bedc67a7c6de49b49efbde7926801fcfa801110e9fd7ae4e61178da3a3e2ac"
+    },
+    {
+      "mode": "100644",
+      "blob": "6b14795b55744e6c22ccce2de45e8c21fd32bc6d",
+      "byteLength": 12374,
+      "sha256": "b5bedc67a7c6de49b49efbde7926801fcfa801110e9fd7ae4e61178da3a3e2ac"
+    }
+  ],
+  [
+    "crates/vize_canon/src/batch/virtual_project/vue_codegen/types.rs",
+    {
+      "mode": "100644",
+      "blob": "4a5fc2927fb2e9766f3c2c240170e1783898e14f",
+      "byteLength": 2879,
+      "sha256": "51a22ba7892027e02c6e4686e770aed78910c11a4ed019b1b56a0c2f9fd31739"
+    },
+    {
+      "mode": "100644",
+      "blob": "4a5fc2927fb2e9766f3c2c240170e1783898e14f",
+      "byteLength": 2879,
+      "sha256": "51a22ba7892027e02c6e4686e770aed78910c11a4ed019b1b56a0c2f9fd31739"
+    }
+  ],
+  [
+    "crates/vize_canon/src/snapshots/vize_canon__tests__virtual_ts_tests__virtual_ts_dynamic_component.snap",
+    {
+      "mode": "100644",
+      "blob": "56bd79f0d7b746d211b377479c5865d6fbfcfcb1",
+      "byteLength": 25631,
+      "sha256": "ae5901a6c993e163b341a702512abe938b8585578ffe4818991e447bcc26a089"
+    },
+    {
+      "mode": "100644",
+      "blob": "56bd79f0d7b746d211b377479c5865d6fbfcfcb1",
+      "byteLength": 25631,
+      "sha256": "ae5901a6c993e163b341a702512abe938b8585578ffe4818991e447bcc26a089"
+    }
+  ],
+  [
+    "crates/vize_canon/src/snapshots/vize_canon__tests__virtual_ts_tests__virtual_ts_scoped_slots.snap",
+    {
+      "mode": "100644",
+      "blob": "e5fb08e5d7d5273dec4f06620674437648f00bfc",
+      "byteLength": 28812,
+      "sha256": "7a980aa1e09031b5bc2db14a3c747341603f4012e1a573b082819a69b1173d9a"
+    },
+    {
+      "mode": "100644",
+      "blob": "e5fb08e5d7d5273dec4f06620674437648f00bfc",
+      "byteLength": 28812,
+      "sha256": "7a980aa1e09031b5bc2db14a3c747341603f4012e1a573b082819a69b1173d9a"
+    }
+  ],
+  [
+    "crates/vize_canon/src/virtual_ts/scope/component_prop_navigation.rs",
+    {
+      "mode": "100644",
+      "blob": "24bea426a6c3c8abbb28edad23f3a2560bc441c8",
+      "byteLength": 8873,
+      "sha256": "b086c775f9dc66c44761eceab25b48d45c988a78778dc8b928d58971ecec9388"
+    },
+    {
+      "mode": "100644",
+      "blob": "24bea426a6c3c8abbb28edad23f3a2560bc441c8",
+      "byteLength": 8873,
+      "sha256": "b086c775f9dc66c44761eceab25b48d45c988a78778dc8b928d58971ecec9388"
+    }
+  ],
+  [
+    "crates/vize_canon/src/virtual_ts/scope/component_slots.rs",
+    {
+      "mode": "100644",
+      "blob": "89c538153aa9832bfd459abc3e39727d6717bed4",
+      "byteLength": 6958,
+      "sha256": "014eefc93fdc57da48a4d7ef803f8b1cbbdbeb21812f3991e1ece24e735c0cd1"
+    },
+    {
+      "mode": "100644",
+      "blob": "89c538153aa9832bfd459abc3e39727d6717bed4",
+      "byteLength": 6958,
+      "sha256": "014eefc93fdc57da48a4d7ef803f8b1cbbdbeb21812f3991e1ece24e735c0cd1"
+    }
+  ],
+  [
+    "crates/vize_canon/src/virtual_ts/scope/globals/instance.rs",
+    {
+      "mode": "100644",
+      "blob": "05c9823ce2e3739d4d1982f6683f4d281f73cb9e",
+      "byteLength": 14151,
+      "sha256": "5dc3c087bdf19671293812faa8ee74af4ef372dd6ebf40cc4473cbc05c98fdbd"
+    },
+    {
+      "mode": "100644",
+      "blob": "05c9823ce2e3739d4d1982f6683f4d281f73cb9e",
+      "byteLength": 14151,
+      "sha256": "5dc3c087bdf19671293812faa8ee74af4ef372dd6ebf40cc4473cbc05c98fdbd"
+    }
+  ],
+  [
+    "crates/vize_canon/src/virtual_ts/scope/globals/instance/tests.rs",
+    {
+      "mode": "100644",
+      "blob": "c57a9eb68009191e9293ee5b9947ef3493a54dda",
+      "byteLength": 3790,
+      "sha256": "fa25434c2d95fedd2c798c21d04cd4fbdaa10f5b288bfdb192cdf43369c5889f"
+    },
+    {
+      "mode": "100644",
+      "blob": "c57a9eb68009191e9293ee5b9947ef3493a54dda",
+      "byteLength": 3790,
+      "sha256": "fa25434c2d95fedd2c798c21d04cd4fbdaa10f5b288bfdb192cdf43369c5889f"
+    }
+  ],
+  [
+    "crates/vize_canon/src/virtual_ts/scope/globals/instance/tests/lexical_scope.rs",
+    {
+      "mode": "100644",
+      "blob": "dff189efdef0ec4a5db6f1a31859b0a87ba63f97",
+      "byteLength": 4366,
+      "sha256": "9b6fded41618b580371b366d9fca955ce312d1d40f274e40b853b1712c1e3762"
+    },
+    {
+      "mode": "100644",
+      "blob": "dff189efdef0ec4a5db6f1a31859b0a87ba63f97",
+      "byteLength": 4366,
+      "sha256": "9b6fded41618b580371b366d9fca955ce312d1d40f274e40b853b1712c1e3762"
+    }
+  ],
+  [
+    "crates/vize_canon/tests/empty_vue_star_exports.rs",
+    {
+      "mode": "100644",
+      "blob": "d133431e24d90ad4bb7a40f35880bc6cb375649a",
+      "byteLength": 1672,
+      "sha256": "d13969bf79b513a23675c28970fb56540d4d950efec4a3aa33442a8ea5911000"
+    },
+    {
+      "mode": "100644",
+      "blob": "d133431e24d90ad4bb7a40f35880bc6cb375649a",
+      "byteLength": 1672,
+      "sha256": "d13969bf79b513a23675c28970fb56540d4d950efec4a3aa33442a8ea5911000"
+    }
+  ],
+  [
+    "crates/vize_canon/tests/empty_vue_star_exports/contracts.rs",
+    {
+      "mode": "100644",
+      "blob": "590241206746f4d87a0e43e00725019243ca625e",
+      "byteLength": 8101,
+      "sha256": "9ff9a53faa73229bf63dcfdced15ebfb2a1c6937b3884a51b363df598e9ebb37"
+    },
+    {
+      "mode": "100644",
+      "blob": "590241206746f4d87a0e43e00725019243ca625e",
+      "byteLength": 8101,
+      "sha256": "9ff9a53faa73229bf63dcfdced15ebfb2a1c6937b3884a51b363df598e9ebb37"
+    }
+  ],
+  [
+    "crates/vize_canon/tests/empty_vue_star_exports/execution.rs",
+    {
+      "mode": "100644",
+      "blob": "a3738887085a64457c09cff642b3776182ec9847",
+      "byteLength": 10779,
+      "sha256": "dea4749d405c1d43c9d42de9dc38f949dc454981d933f73d6bd2eb442837e904"
+    },
+    {
+      "mode": "100644",
+      "blob": "a3738887085a64457c09cff642b3776182ec9847",
+      "byteLength": 10779,
+      "sha256": "dea4749d405c1d43c9d42de9dc38f949dc454981d933f73d6bd2eb442837e904"
+    }
+  ],
+  [
+    "crates/vize_canon/tests/empty_vue_star_exports/membership.rs",
+    {
+      "mode": "100644",
+      "blob": "251f554141bb6cf12f02d38ac87a031b4c3f471c",
+      "byteLength": 10950,
+      "sha256": "707cf4c1afb3458848fe8bda0ccdc0faf119ec507fc6d09ab1bb5de9c76bb722"
+    },
+    {
+      "mode": "100644",
+      "blob": "251f554141bb6cf12f02d38ac87a031b4c3f471c",
+      "byteLength": 10950,
+      "sha256": "707cf4c1afb3458848fe8bda0ccdc0faf119ec507fc6d09ab1bb5de9c76bb722"
+    }
+  ],
+  [
+    "crates/vize_canon/tests/empty_vue_star_exports/projection.rs",
+    {
+      "mode": "100644",
+      "blob": "20dcb8012fdd96b9a88211107dd27020dcc3f963",
+      "byteLength": 3714,
+      "sha256": "931ce0b6712498ae68850bf5b783ed3ba04ed44a92759443e82011ed113befb7"
+    },
+    {
+      "mode": "100644",
+      "blob": "20dcb8012fdd96b9a88211107dd27020dcc3f963",
+      "byteLength": 3714,
+      "sha256": "931ce0b6712498ae68850bf5b783ed3ba04ed44a92759443e82011ed113befb7"
+    }
+  ],
+  [
+    "crates/vize_canon/tests/empty_vue_star_exports/qualification.rs",
+    {
+      "mode": "100644",
+      "blob": "4e38c30d2a1fe82a43138cf70da345af394009be",
+      "byteLength": 10115,
+      "sha256": "2db1d1a4e0e60673384173fbc89d92c008fcab97498a38edb326733e7f935cd9"
+    },
+    {
+      "mode": "100644",
+      "blob": "4e38c30d2a1fe82a43138cf70da345af394009be",
+      "byteLength": 10115,
+      "sha256": "2db1d1a4e0e60673384173fbc89d92c008fcab97498a38edb326733e7f935cd9"
+    }
+  ],
+  [
+    "crates/vize_canon/tests/empty_vue_star_exports/support.rs",
+    {
+      "mode": "100644",
+      "blob": "c7fc3be9e649ad577f0823b9af3ea835aa553b04",
+      "byteLength": 6101,
+      "sha256": "ec2342872632bdc304fa97c13a6607f4aad0b583ba8462ba421aeb45b4488d3a"
+    },
+    {
+      "mode": "100644",
+      "blob": "c7fc3be9e649ad577f0823b9af3ea835aa553b04",
+      "byteLength": 6101,
+      "sha256": "ec2342872632bdc304fa97c13a6607f4aad0b583ba8462ba421aeb45b4488d3a"
+    }
+  ],
+  [
+    "crates/vize_canon/tests/snapshots/patterned_typechecking__patterned_root_virtual_ts.snap",
+    {
+      "mode": "100644",
+      "blob": "5630c0059f4359a582acd278ebc10d35ea9a6130",
+      "byteLength": 40369,
+      "sha256": "d7617b251473bdf260976f0aa01868ddb35d2ed8fd04f6a0ef877eb33293e534"
+    },
+    {
+      "mode": "100644",
+      "blob": "5630c0059f4359a582acd278ebc10d35ea9a6130",
+      "byteLength": 40369,
+      "sha256": "d7617b251473bdf260976f0aa01868ddb35d2ed8fd04f6a0ef877eb33293e534"
+    }
+  ],
+  [
+    "crates/vize_croquis/src/binding_occurrences.rs",
+    {
+      "mode": "100644",
+      "blob": "ef982a8fb0403933e839d0143e3d7796709c7f93",
+      "byteLength": 8523,
+      "sha256": "91c5637ef5c15d40abe1aec511a5431b8f91df4843fb05f3f5b24ecff6dcdf72"
+    },
+    {
+      "mode": "100644",
+      "blob": "cbe74e79ce58202dbdeb613e5d5a8172a90dff30",
+      "byteLength": 8894,
+      "sha256": "ff655862a2342425efac5efe537e1811b818cda1345d8e57e07b1b416c26bceb"
+    }
+  ],
+  [
+    "crates/vize_croquis/src/drawer.rs",
+    {
+      "mode": "100644",
+      "blob": "ca6651124bf88c6bcac19dd8d927375263c0b102",
+      "byteLength": 1058,
+      "sha256": "a43015a2947680c825f7836941062d3a8c55e48cddf5c179343cdfe8d11c5dec"
+    },
+    {
+      "mode": "100644",
+      "blob": "ca6651124bf88c6bcac19dd8d927375263c0b102",
+      "byteLength": 1058,
+      "sha256": "a43015a2947680c825f7836941062d3a8c55e48cddf5c179343cdfe8d11c5dec"
+    }
+  ],
+  [
+    "crates/vize_croquis/src/drawer/core.rs",
+    {
+      "mode": "100644",
+      "blob": "bb320505af6996fcbbadf1ad68457cbd8fb57785",
+      "byteLength": 8521,
+      "sha256": "c44a09b42c517e5f5697ca373125a52a1ce390bac781d892c3caf6d3ca91060c"
+    },
+    {
+      "mode": "100644",
+      "blob": "c4142d1f5e8146bc3343b001bb0a89479d2fa249",
+      "byteLength": 8558,
+      "sha256": "05d8026763ba3b12e15e090407ccafb9520e6bd6f208ac088f87cc148702c40a"
+    }
+  ],
+  [
+    "crates/vize_croquis/src/drawer/module_exports.rs",
+    {
+      "mode": "100644",
+      "blob": "8cbbdfa748dd748678591c0512ed4c795a1c94a7",
+      "byteLength": 879,
+      "sha256": "8815a47c5564f953abc81e544647ceeaf2e6378d2b1e8a819439884f7b753f28"
+    },
+    {
+      "mode": "100644",
+      "blob": "8cbbdfa748dd748678591c0512ed4c795a1c94a7",
+      "byteLength": 879,
+      "sha256": "8815a47c5564f953abc81e544647ceeaf2e6378d2b1e8a819439884f7b753f28"
+    }
+  ],
+  [
+    "crates/vize_croquis/src/drawer/module_exports/tests.rs",
+    {
+      "mode": "100644",
+      "blob": "9a53aaf2a9c71cf6fe9b0da3c431e50cde6754f8",
+      "byteLength": 11213,
+      "sha256": "1f53d99a5b0f40cddc327b60fb21e44e37348f4bdf82e16bbb25c15aa0be5f13"
+    },
+    {
+      "mode": "100644",
+      "blob": "9a53aaf2a9c71cf6fe9b0da3c431e50cde6754f8",
+      "byteLength": 11213,
+      "sha256": "1f53d99a5b0f40cddc327b60fb21e44e37348f4bdf82e16bbb25c15aa0be5f13"
+    }
+  ],
+  [
+    "crates/vize_croquis/src/drawer/occurrences.rs",
+    {
+      "mode": "100644",
+      "blob": "7496a8b7ac8b5d3158713bb1378d951ab60881ee",
+      "byteLength": 6742,
+      "sha256": "b75c3d8720b8c548d9f97ea7fbd6e2cc06df5ca5eeae75c14cda394ea5bdc70e"
+    },
+    {
+      "mode": "100644",
+      "blob": "e20190a217e8d275d4e1b984997e49634cae0e5f",
+      "byteLength": 10554,
+      "sha256": "291062305d48daa921380c5845fae86eaeb7bfc7075963010c0a8c3d7a715815"
+    }
+  ],
+  [
+    "crates/vize_croquis/src/drawer/script.rs",
+    {
+      "mode": "100644",
+      "blob": "17a03dfa63e11785b88ff30dc6d38214b85ae38d",
+      "byteLength": 7165,
+      "sha256": "a6a687476c2505e66df1bf0d07e2d772d2be4f2b7bd8d7f8da490cd458e3a778"
+    },
+    {
+      "mode": "100644",
+      "blob": "17a03dfa63e11785b88ff30dc6d38214b85ae38d",
+      "byteLength": 7165,
+      "sha256": "a6a687476c2505e66df1bf0d07e2d772d2be4f2b7bd8d7f8da490cd458e3a778"
+    }
+  ],
+  [
+    "crates/vize_croquis/src/script_parser.rs",
+    {
+      "mode": "100644",
+      "blob": "0c6b172b9a76f7cde253e5b81376e7e8594131da",
+      "byteLength": 2720,
+      "sha256": "69cc66c8a1dac77bf54df9be168d0fdd80defd314b5acca62f8f3be0cb2b6fa1"
+    },
+    {
+      "mode": "100644",
+      "blob": "0c6b172b9a76f7cde253e5b81376e7e8594131da",
+      "byteLength": 2720,
+      "sha256": "69cc66c8a1dac77bf54df9be168d0fdd80defd314b5acca62f8f3be0cb2b6fa1"
+    }
+  ],
+  [
+    "crates/vize_croquis/src/script_parser/module_exports.rs",
+    {
+      "mode": "100644",
+      "blob": "a0a881193e519418c347d92bbb8174e83d7ecc7f",
+      "byteLength": 3084,
+      "sha256": "32dab5febe5053b6cb5eff36db00f8c2d2cd36efe20f14fff8619e012288099c"
+    },
+    {
+      "mode": "100644",
+      "blob": "a0a881193e519418c347d92bbb8174e83d7ecc7f",
+      "byteLength": 3084,
+      "sha256": "32dab5febe5053b6cb5eff36db00f8c2d2cd36efe20f14fff8619e012288099c"
+    }
+  ],
+  [
+    "crates/vize_croquis/src/script_parser/parse.rs",
+    {
+      "mode": "100644",
+      "blob": "a8d04db6b760dee961548e5c26fa2564d70633b4",
+      "byteLength": 9935,
+      "sha256": "7d6373037c6fff6c715f0aeb544b46c784cd32fcc1946bc3d024a3fb901503cb"
+    },
+    {
+      "mode": "100644",
+      "blob": "a8d04db6b760dee961548e5c26fa2564d70633b4",
+      "byteLength": 9935,
+      "sha256": "7d6373037c6fff6c715f0aeb544b46c784cd32fcc1946bc3d024a3fb901503cb"
+    }
+  ],
+  [
+    "crates/vize_croquis/src/setup_context/ssr.rs",
+    {
+      "mode": "100644",
+      "blob": "c9c8590197baea0058d7db9af018cd168a766cfc",
+      "byteLength": 5557,
+      "sha256": "7c8e75fb0f9d44bba60c02a52683973567a316dc08410cf846845cc6069d1224"
+    },
+    {
+      "mode": "100644",
+      "blob": "74aa088e435351e99df4911213fa565cd9202774",
+      "byteLength": 6671,
+      "sha256": "c4ee6677bb1dafe32dcae264e63e34ff55f7612ab4e2f049cb0a4d8c12f29ed9"
+    }
+  ],
+  [
+    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__define-model__default.snap",
+    {
+      "mode": "100644",
+      "blob": "5cfc471892ccdb62a0318cf9f3725c31d2dbe0a7",
+      "byteLength": 2432,
+      "sha256": "99eb9a4811b39095bb8ed4c0cc5abb1f50cbb4f5d64d094c00c3fd24d3de84f5"
+    },
+    {
+      "mode": "100644",
+      "blob": "5cfc471892ccdb62a0318cf9f3725c31d2dbe0a7",
+      "byteLength": 2432,
+      "sha256": "99eb9a4811b39095bb8ed4c0cc5abb1f50cbb4f5d64d094c00c3fd24d3de84f5"
+    }
+  ],
+  [
+    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__parent-local-import__default.snap",
+    {
+      "mode": "100644",
+      "blob": "335c8ba0a01174be9f4dd26ffc900807acff015c",
+      "byteLength": 2371,
+      "sha256": "08baef12b7e8a3b4b9a0c5bd92bc93406a71df9a49a0ba24cd554628cf343e43"
+    },
+    {
+      "mode": "100644",
+      "blob": "335c8ba0a01174be9f4dd26ffc900807acff015c",
+      "byteLength": 2371,
+      "sha256": "08baef12b7e8a3b4b9a0c5bd92bc93406a71df9a49a0ba24cd554628cf343e43"
+    }
+  ],
+  [
+    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__static-slot-name__default.snap",
+    {
+      "mode": "100644",
+      "blob": "d9808d36d74203f14a36099ad3f8d3462537d380",
+      "byteLength": 2394,
+      "sha256": "f4cae5ad55fd97534265ef8b1cfdad6d707ee13ae5b52396bf4427f242f5e410"
+    },
+    {
+      "mode": "100644",
+      "blob": "d9808d36d74203f14a36099ad3f8d3462537d380",
+      "byteLength": 2394,
+      "sha256": "f4cae5ad55fd97534265ef8b1cfdad6d707ee13ae5b52396bf4427f242f5e410"
+    }
+  ],
+  [
+    "crates/vize_patina/src/linter/engine/rule_sets.rs",
+    {
+      "mode": "100644",
+      "blob": "ae984c6c149e5adbad9e7e555cf7f60008d17e0b",
+      "byteLength": 5559,
+      "sha256": "214e90ffb168b2efad7a74d8f29d0775d3ddd82da35bf97a01df3efe64387374"
+    },
+    {
+      "mode": "100644",
+      "blob": "dae74d94298e0a2cc42974b859dfaf5c7d73aed7",
+      "byteLength": 5729,
+      "sha256": "1e50f4c738925e6556feede05c5a0dd410682c9727bacef03835bdfd013d30f7"
+    }
+  ],
+  [
+    "docs/davinci/plan/consumer-migration-surfaces/typechecker/vize_canon.tsv",
+    {
+      "mode": "100644",
+      "blob": "ebe117c979991b9950d2a0693a5b605d9a2ec04c",
+      "byteLength": 187339,
+      "sha256": "2087ce6a7d5a742275c377f699a83f41b913a2ed92fce1ed92fd3bb7925cf575"
+    },
+    {
+      "mode": "100644",
+      "blob": "ebe117c979991b9950d2a0693a5b605d9a2ec04c",
+      "byteLength": 187339,
+      "sha256": "2087ce6a7d5a742275c377f699a83f41b913a2ed92fce1ed92fd3bb7925cf575"
+    }
+  ],
+  [
+    "docs/davinci/plan/croquis-consumption/vize_canon.md",
+    {
+      "mode": "100644",
+      "blob": "1f99eaa6838715dff93d0535662e49354d01462b",
+      "byteLength": 6188,
+      "sha256": "7a2263b2adbc7cd0a548c3e4c75ab87bc4077d390ba182a75269580cc60dce85"
+    },
+    {
+      "mode": "100644",
+      "blob": "1f99eaa6838715dff93d0535662e49354d01462b",
+      "byteLength": 6188,
+      "sha256": "7a2263b2adbc7cd0a548c3e4c75ab87bc4077d390ba182a75269580cc60dce85"
+    }
+  ],
+  [
+    "tests/_fixtures/ci/javascript-sfc-source-callers.json",
+    {
+      "mode": "100644",
+      "blob": "a60ddc67100ebf56a217baaa2ca5109ab3eb7b1f",
+      "byteLength": 135721,
+      "sha256": "83ec275f5c2e6c829c7bd1647e512143db5992a4ec98a31fb060ff79ed7d4f6d"
+    },
+    {
+      "mode": "100644",
+      "blob": "a60ddc67100ebf56a217baaa2ca5109ab3eb7b1f",
+      "byteLength": 135721,
+      "sha256": "83ec275f5c2e6c829c7bd1647e512143db5992a4ec98a31fb060ff79ed7d4f6d"
+    }
+  ],
+  [
+    "tests/_fixtures/ci/native-phase-membership-original.json",
+    {
+      "mode": "100644",
+      "blob": "9316eb90b8f338cf81c0e6b5c98d01a31b50603e",
+      "byteLength": 41010,
+      "sha256": "91ff0c1bb8d9563f6b0eef8ee74c4ec29a6e1f21868a84b98f6e5fc8ff2f2fe5"
+    },
+    {
+      "mode": "100644",
+      "blob": "9316eb90b8f338cf81c0e6b5c98d01a31b50603e",
+      "byteLength": 41010,
+      "sha256": "91ff0c1bb8d9563f6b0eef8ee74c4ec29a6e1f21868a84b98f6e5fc8ff2f2fe5"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/canon/javascript-sfc-membership/App.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "71ae96a7fb053f54cdcc29683fed5d86a7fef6a4",
+      "byteLength": 180,
+      "sha256": "a9e65bef4715efaac89e7157004f9ca43d304c950bf141cc71594a2039747f18"
+    },
+    {
+      "mode": "100644",
+      "blob": "71ae96a7fb053f54cdcc29683fed5d86a7fef6a4",
+      "byteLength": 180,
+      "sha256": "a9e65bef4715efaac89e7157004f9ca43d304c950bf141cc71594a2039747f18"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/canon/javascript-sfc-membership/Child.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "bb5f10f3f610991062d7d52d2d7d159f47e29f00",
+      "byteLength": 102,
+      "sha256": "95aba157d7d6949c0d1a048baf0adc614b1a5a8f6bb2fc56a4393e9858a4f192"
+    },
+    {
+      "mode": "100644",
+      "blob": "bb5f10f3f610991062d7d52d2d7d159f47e29f00",
+      "byteLength": 102,
+      "sha256": "95aba157d7d6949c0d1a048baf0adc614b1a5a8f6bb2fc56a4393e9858a4f192"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/canon/javascript-sfc-membership/NonStrictChild.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "7e193b0cef25bbdaf203d01c186c9f0afb2b0b51",
+      "byteLength": 169,
+      "sha256": "c22fe1de9a897da123b3d826b06ec9c8ae0fe1948d799a0286356e1e3b95eff8"
+    },
+    {
+      "mode": "100644",
+      "blob": "7e193b0cef25bbdaf203d01c186c9f0afb2b0b51",
+      "byteLength": 169,
+      "sha256": "c22fe1de9a897da123b3d826b06ec9c8ae0fe1948d799a0286356e1e3b95eff8"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/canon/javascript-sfc-membership/NonStrictSlots.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "9ff9781ce2bf4c46bcb11536ec4385aa4360c606",
+      "byteLength": 415,
+      "sha256": "ecc1c1c7ba1f21a8212c0639f617f2211987ab916ac657ac922e1b6ae8fdcace"
+    },
+    {
+      "mode": "100644",
+      "blob": "9ff9781ce2bf4c46bcb11536ec4385aa4360c606",
+      "byteLength": 415,
+      "sha256": "ecc1c1c7ba1f21a8212c0639f617f2211987ab916ac657ac922e1b6ae8fdcace"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/canon/javascript-sfc-membership/OptionsChild.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "b78f73af0d8def2a1b4dcbd8d504f743f02b89a8",
+      "byteLength": 112,
+      "sha256": "dd3589e7fc507f4de7ba3f056931bf7e85f4bbcf62ee5824e758ff9b47e3f84b"
+    },
+    {
+      "mode": "100644",
+      "blob": "b78f73af0d8def2a1b4dcbd8d504f743f02b89a8",
+      "byteLength": 112,
+      "sha256": "dd3589e7fc507f4de7ba3f056931bf7e85f4bbcf62ee5824e758ff9b47e3f84b"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/canon/javascript-sfc-membership/OptionsParent.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "ad5835772bf60f4008ea3b63172aa59c387d11b2",
+      "byteLength": 115,
+      "sha256": "706fcc340c64fc3741aa30d804a43b5582c5c9b7d70a823b775f701aa23737b2"
+    },
+    {
+      "mode": "100644",
+      "blob": "ad5835772bf60f4008ea3b63172aa59c387d11b2",
+      "byteLength": 115,
+      "sha256": "706fcc340c64fc3741aa30d804a43b5582c5c9b7d70a823b775f701aa23737b2"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/canon/javascript-sfc-membership/shims.d.ts.txt",
+    {
+      "mode": "100644",
+      "blob": "64c3fd9eb84eacd9bb4373055970d3719584411b",
+      "byteLength": 150,
+      "sha256": "2e605cd9dcd4c05a17cf0ccda961533a357927c422766cdc6514c60de4ec8428"
+    },
+    {
+      "mode": "100644",
+      "blob": "64c3fd9eb84eacd9bb4373055970d3719584411b",
+      "byteLength": 150,
+      "sha256": "2e605cd9dcd4c05a17cf0ccda961533a357927c422766cdc6514c60de4ec8428"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/lsp/component-native-events/slot-navigation-before-source-counterfactual.txt",
+    {
+      "mode": "100644",
+      "blob": "040460a69651a514e5bb690212d0ce51a03243db",
+      "byteLength": 23054,
+      "sha256": "515e1ba836d126da52418a7a96f4f05721f2092e1403ebe2ae12666c22874152"
+    },
+    {
+      "mode": "100644",
+      "blob": "040460a69651a514e5bb690212d0ce51a03243db",
+      "byteLength": 23054,
+      "sha256": "515e1ba836d126da52418a7a96f4f05721f2092e1403ebe2ae12666c22874152"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/lsp/component-native-events/slot-navigation-current-source-counterfactual.txt",
+    {
+      "mode": "100644",
+      "blob": "c561b7d8e3623fd8a912a781db96c1ad1fbce6e3",
+      "byteLength": 24192,
+      "sha256": "42a4e22c4596298b934552eb9dfade1c3d940f668eee752c06cb9e4e49c26dfd"
+    },
+    {
+      "mode": "100644",
+      "blob": "c561b7d8e3623fd8a912a781db96c1ad1fbce6e3",
+      "byteLength": 24192,
+      "sha256": "42a4e22c4596298b934552eb9dfade1c3d940f668eee752c06cb9e4e49c26dfd"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/lsp/component-native-events/slot-navigation-prelude.expected.txt",
+    {
+      "mode": "100644",
+      "blob": "4b2e37cbb4b944ce419451b94d309068bb0db0d3",
+      "byteLength": 1138,
+      "sha256": "3cd089f60d98cd97d3a50216546252c9e661d207ece3ebb06223ae55e6328e58"
+    },
+    {
+      "mode": "100644",
+      "blob": "4b2e37cbb4b944ce419451b94d309068bb0db0d3",
+      "byteLength": 1138,
+      "sha256": "3cd089f60d98cd97d3a50216546252c9e661d207ece3ebb06223ae55e6328e58"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/lsp/warm-type-backed-requests/case.json",
+    {
+      "mode": "100644",
+      "blob": "15461f5f48eaca74dd313f0002725e1791b3ab31",
+      "byteLength": 1249,
+      "sha256": "ba2a49365dd6e3ec9fb5077fbcd6f68101166a2d18030138bcb0a94857713470"
+    },
+    {
+      "mode": "100644",
+      "blob": "15461f5f48eaca74dd313f0002725e1791b3ab31",
+      "byteLength": 1249,
+      "sha256": "ba2a49365dd6e3ec9fb5077fbcd6f68101166a2d18030138bcb0a94857713470"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/lsp/warm-type-backed-requests/gen.mjs",
+    {
+      "mode": "100644",
+      "blob": "697b0d2417994e917452d8bebb279c883f187068",
+      "byteLength": 2142,
+      "sha256": "4d0e14d66ce6e7b0b5d2e32a51c39bbe985283aa94934616b4da0ff587d34649"
+    },
+    {
+      "mode": "100644",
+      "blob": "697b0d2417994e917452d8bebb279c883f187068",
+      "byteLength": 2142,
+      "sha256": "4d0e14d66ce6e7b0b5d2e32a51c39bbe985283aa94934616b4da0ff587d34649"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/lsp/warm-type-backed-requests/original-report.md",
+    {
+      "mode": "100644",
+      "blob": "72c5949de536dc35453099dbed6cb1d86a578682",
+      "byteLength": 6652,
+      "sha256": "247d435038eb8c53f317dc6a5fdcdd216a19fa9bc58d155e355b5ed2c3eb4a58"
+    },
+    {
+      "mode": "100644",
+      "blob": "72c5949de536dc35453099dbed6cb1d86a578682",
+      "byteLength": 6652,
+      "sha256": "247d435038eb8c53f317dc6a5fdcdd216a19fa9bc58d155e355b5ed2c3eb4a58"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/lsp/warm-type-backed-requests/package.json",
+    {
+      "mode": "100644",
+      "blob": "c284fece4473bb6d6dae1ab5bd6abe901b67c19b",
+      "byteLength": 65,
+      "sha256": "4a2c593a78dd898566bf14bc68914ae452738d0ef2de4a64fd8c2be8f097f942"
+    },
+    {
+      "mode": "100644",
+      "blob": "c284fece4473bb6d6dae1ab5bd6abe901b67c19b",
+      "byteLength": 65,
+      "sha256": "4a2c593a78dd898566bf14bc68914ae452738d0ef2de4a64fd8c2be8f097f942"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/lsp/warm-type-backed-requests/tsconfig.json",
+    {
+      "mode": "100644",
+      "blob": "97d253e37c853568cd3a730ff476ddd66825aaea",
+      "byteLength": 179,
+      "sha256": "ad4c9c378d4d01ee9230da0acc6aa86d0a5cab68de8e552124c5e557d4506181"
+    },
+    {
+      "mode": "100644",
+      "blob": "97d253e37c853568cd3a730ff476ddd66825aaea",
+      "byteLength": 179,
+      "sha256": "ad4c9c378d4d01ee9230da0acc6aa86d0a5cab68de8e552124c5e557d4506181"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/lsp/warm-type-backed-requests/vize.config.json",
+    {
+      "mode": "100644",
+      "blob": "a5cee1e774acc1a17b4becec93718ea351a41c1b",
+      "byteLength": 52,
+      "sha256": "c6f468f396b9c5afeb4a348dffc20fab9660182dd4b65364968c77c448cee85d"
+    },
+    {
+      "mode": "100644",
+      "blob": "a5cee1e774acc1a17b4becec93718ea351a41c1b",
+      "byteLength": 52,
+      "sha256": "c6f468f396b9c5afeb4a348dffc20fab9660182dd4b65364968c77c448cee85d"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/authored-unused-symbols/App.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "3c4e5b2d2a7825301baba315eb2f2e362e440bec",
+      "byteLength": 105,
+      "sha256": "569fb22ad8042b8a7f077fbf9226123e940375ae4350b86a132ad15282cfcbcb"
+    },
+    {
+      "mode": "100644",
+      "blob": "3c4e5b2d2a7825301baba315eb2f2e362e440bec",
+      "byteLength": 105,
+      "sha256": "569fb22ad8042b8a7f077fbf9226123e940375ae4350b86a132ad15282cfcbcb"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/authored-unused-symbols/base.json.txt",
+    {
+      "mode": "100644",
+      "blob": "fcc9c118a6493b4d2434f39343ef0518cd4a51b0",
+      "byteLength": 181,
+      "sha256": "06f015bffb08f3c8c0ef76cddb81a886beafe1b73da2d0674ab9f9c772f6ab8d"
+    },
+    {
+      "mode": "100644",
+      "blob": "fcc9c118a6493b4d2434f39343ef0518cd4a51b0",
+      "byteLength": 181,
+      "sha256": "06f015bffb08f3c8c0ef76cddb81a886beafe1b73da2d0674ab9f9c772f6ab8d"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/authored-unused-symbols/cases.json",
+    {
+      "mode": "100644",
+      "blob": "106d57fa07042f954e3efd43a9531b97fc6f918c",
+      "byteLength": 3413,
+      "sha256": "1a6b00add7467920f1c4a7009970d70978da006093ca20b752a0f8f1bcdae5c9"
+    },
+    {
+      "mode": "100644",
+      "blob": "106d57fa07042f954e3efd43a9531b97fc6f918c",
+      "byteLength": 3413,
+      "sha256": "1a6b00add7467920f1c4a7009970d70978da006093ca20b752a0f8f1bcdae5c9"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/authored-unused-symbols/default-locals.json.txt",
+    {
+      "mode": "100644",
+      "blob": "f7148d033e69da2f18253a53de590427c99551b0",
+      "byteLength": 188,
+      "sha256": "dc8dfa3a4e8b0710d4e5ac116b720ac314405742805e7ed31e7fd406724549a9"
+    },
+    {
+      "mode": "100644",
+      "blob": "f7148d033e69da2f18253a53de590427c99551b0",
+      "byteLength": 188,
+      "sha256": "dc8dfa3a4e8b0710d4e5ac116b720ac314405742805e7ed31e7fd406724549a9"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/authored-unused-symbols/disabled-locals.json.txt",
+    {
+      "mode": "100644",
+      "blob": "20437bc3d4e62f52b21794865112435353f4d003",
+      "byteLength": 155,
+      "sha256": "9fd92b071ba770f36017c27a42c36019afad155aeb4c9cd0965626942a50f144"
+    },
+    {
+      "mode": "100644",
+      "blob": "20437bc3d4e62f52b21794865112435353f4d003",
+      "byteLength": 155,
+      "sha256": "9fd92b071ba770f36017c27a42c36019afad155aeb4c9cd0965626942a50f144"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/authored-unused-symbols/helper.ts.txt",
+    {
+      "mode": "100644",
+      "blob": "3f9973e89e0b2a8e254a70f2daf644f73e7d1624",
+      "byteLength": 53,
+      "sha256": "8c9da8c30357f2768081854c49192f0078ba011a4f198f437a5f5a9388ffcf27"
+    },
+    {
+      "mode": "100644",
+      "blob": "3f9973e89e0b2a8e254a70f2daf644f73e7d1624",
+      "byteLength": 53,
+      "sha256": "8c9da8c30357f2768081854c49192f0078ba011a4f198f437a5f5a9388ffcf27"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/authored-unused-symbols/inherited-locals.json.txt",
+    {
+      "mode": "100644",
+      "blob": "57f834839d8054efd9ddaa61a54305ce2feb8bab",
+      "byteLength": 66,
+      "sha256": "5403ccfd0a82ae7ceecf83a356ed832ef2286b8d7e458aa2c6afbe73526a8477"
+    },
+    {
+      "mode": "100644",
+      "blob": "57f834839d8054efd9ddaa61a54305ce2feb8bab",
+      "byteLength": 66,
+      "sha256": "5403ccfd0a82ae7ceecf83a356ed832ef2286b8d7e458aa2c6afbe73526a8477"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/authored-unused-symbols/original-tsconfig.json.txt",
+    {
+      "mode": "100644",
+      "blob": "fcc8663768b2a707328d7d1ddf96f665a6e50be4",
+      "byteLength": 207,
+      "sha256": "8d7d2a7250100da29ed298c16d6a9f32ce2cb77b11fd5cb90b08c0180cd68b31"
+    },
+    {
+      "mode": "100644",
+      "blob": "fcc8663768b2a707328d7d1ddf96f665a6e50be4",
+      "byteLength": 207,
+      "sha256": "8d7d2a7250100da29ed298c16d6a9f32ce2cb77b11fd5cb90b08c0180cd68b31"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/authored-unused-symbols/parameters-only.json.txt",
+    {
+      "mode": "100644",
+      "blob": "eda1f6e0c90490b5302f92dc4c80e4a062659427",
+      "byteLength": 249,
+      "sha256": "9c0544e0d2e1454ae06f3ac2347dfe3d58e8db84bc85714a2e6d11d4f51f1688"
+    },
+    {
+      "mode": "100644",
+      "blob": "eda1f6e0c90490b5302f92dc4c80e4a062659427",
+      "byteLength": 249,
+      "sha256": "9c0544e0d2e1454ae06f3ac2347dfe3d58e8db84bc85714a2e6d11d4f51f1688"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/component-event-tuples/cases.json",
+    {
+      "mode": "100644",
+      "blob": "61abfb13cbcf9118830f16a0cbaa2dd215c097cd",
+      "byteLength": 4892,
+      "sha256": "f19f7433cf630bcef8f1c7694f31f835add8765999f18e9f6cd09fa28acd48fe"
+    },
+    {
+      "mode": "100644",
+      "blob": "61abfb13cbcf9118830f16a0cbaa2dd215c097cd",
+      "byteLength": 4892,
+      "sha256": "f19f7433cf630bcef8f1c7694f31f835add8765999f18e9f6cd09fa28acd48fe"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/component-event-tuples/inline-second-invalid/src/App.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "d938adbce6cf3c64759de0b711d92ace8e8dd3fc",
+      "byteLength": 309,
+      "sha256": "1d5defea75a27fd7d739089a017c4197dcaef443e953441b9a99397234cb7b12"
+    },
+    {
+      "mode": "100644",
+      "blob": "d938adbce6cf3c64759de0b711d92ace8e8dd3fc",
+      "byteLength": 309,
+      "sha256": "1d5defea75a27fd7d739089a017c4197dcaef443e953441b9a99397234cb7b12"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/component-event-tuples/inline-second-invalid/src/Test.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "2e4994faf1ffdd7abe8c8b40899eeed877f380b6",
+      "byteLength": 123,
+      "sha256": "8030916c09e332cb30c2dd377f4530a1c34a6b1f7ce90c35a317fe44cdcf0588"
+    },
+    {
+      "mode": "100644",
+      "blob": "2e4994faf1ffdd7abe8c8b40899eeed877f380b6",
+      "byteLength": 123,
+      "sha256": "8030916c09e332cb30c2dd377f4530a1c34a6b1f7ce90c35a317fe44cdcf0588"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/component-event-tuples/inline-tuple-valid/src/App.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "fdae4e36352506281889af416012bd1b7a1867fe",
+      "byteLength": 261,
+      "sha256": "bc094b7eba79a167e07ec5e00300568d8d1373794bdec98f55e018f57dd6c10e"
+    },
+    {
+      "mode": "100644",
+      "blob": "fdae4e36352506281889af416012bd1b7a1867fe",
+      "byteLength": 261,
+      "sha256": "bc094b7eba79a167e07ec5e00300568d8d1373794bdec98f55e018f57dd6c10e"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/component-event-tuples/inline-tuple-valid/src/Test.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "2e4994faf1ffdd7abe8c8b40899eeed877f380b6",
+      "byteLength": 123,
+      "sha256": "8030916c09e332cb30c2dd377f4530a1c34a6b1f7ce90c35a317fe44cdcf0588"
+    },
+    {
+      "mode": "100644",
+      "blob": "2e4994faf1ffdd7abe8c8b40899eeed877f380b6",
+      "byteLength": 123,
+      "sha256": "8030916c09e332cb30c2dd377f4530a1c34a6b1f7ce90c35a317fe44cdcf0588"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/component-event-tuples/native-extra-required-invalid/src/App.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "543fd442300ef2b21dcd467818327d26d4cde9e8",
+      "byteLength": 193,
+      "sha256": "3a1268133f68f62000d5a55bfcd819e47e5cd6b3eb38503523545b3660145f5f"
+    },
+    {
+      "mode": "100644",
+      "blob": "543fd442300ef2b21dcd467818327d26d4cde9e8",
+      "byteLength": 193,
+      "sha256": "3a1268133f68f62000d5a55bfcd819e47e5cd6b3eb38503523545b3660145f5f"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/component-event-tuples/resolved-first-invalid/src/App.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "177fde9e7cd79a0b53293299dae2053258d2978c",
+      "byteLength": 214,
+      "sha256": "875aa47169463f9d6dcf2fb0fd3bc52c3a4290e811e4b3183714bb12d958fed7"
+    },
+    {
+      "mode": "100644",
+      "blob": "177fde9e7cd79a0b53293299dae2053258d2978c",
+      "byteLength": 214,
+      "sha256": "875aa47169463f9d6dcf2fb0fd3bc52c3a4290e811e4b3183714bb12d958fed7"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/component-event-tuples/resolved-first-invalid/src/KnownChild.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "a2868a65ad85c3ad9167cb27d4672e9f2b38eecd",
+      "byteLength": 121,
+      "sha256": "166b1b56221060aecb0d45765baf63c58eeb5b227ddd78d1d17d80d3505704d1"
+    },
+    {
+      "mode": "100644",
+      "blob": "a2868a65ad85c3ad9167cb27d4672e9f2b38eecd",
+      "byteLength": 121,
+      "sha256": "166b1b56221060aecb0d45765baf63c58eeb5b227ddd78d1d17d80d3505704d1"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/component-event-tuples/resolved-second-invalid/src/App.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "2ca6fb46e2ed890d7d9013bcd5edbecd8f43297b",
+      "byteLength": 214,
+      "sha256": "127a92adcc33db44f9684dd77bd5bbeff2cfe259f4bc687b2b66381507c25eb3"
+    },
+    {
+      "mode": "100644",
+      "blob": "2ca6fb46e2ed890d7d9013bcd5edbecd8f43297b",
+      "byteLength": 214,
+      "sha256": "127a92adcc33db44f9684dd77bd5bbeff2cfe259f4bc687b2b66381507c25eb3"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/component-event-tuples/resolved-second-invalid/src/KnownChild.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "a2868a65ad85c3ad9167cb27d4672e9f2b38eecd",
+      "byteLength": 121,
+      "sha256": "166b1b56221060aecb0d45765baf63c58eeb5b227ddd78d1d17d80d3505704d1"
+    },
+    {
+      "mode": "100644",
+      "blob": "a2868a65ad85c3ad9167cb27d4672e9f2b38eecd",
+      "byteLength": 121,
+      "sha256": "166b1b56221060aecb0d45765baf63c58eeb5b227ddd78d1d17d80d3505704d1"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/component-event-tuples/resolved-valid/src/App.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "0b38509b22436c634a3a29bce32797389667cd6b",
+      "byteLength": 214,
+      "sha256": "cf9b276b316cbab1f398bc9cf4d2c0ef40f2027b87382a793abfd64268e769cb"
+    },
+    {
+      "mode": "100644",
+      "blob": "0b38509b22436c634a3a29bce32797389667cd6b",
+      "byteLength": 214,
+      "sha256": "cf9b276b316cbab1f398bc9cf4d2c0ef40f2027b87382a793abfd64268e769cb"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/component-event-tuples/resolved-valid/src/KnownChild.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "a2868a65ad85c3ad9167cb27d4672e9f2b38eecd",
+      "byteLength": 121,
+      "sha256": "166b1b56221060aecb0d45765baf63c58eeb5b227ddd78d1d17d80d3505704d1"
+    },
+    {
+      "mode": "100644",
+      "blob": "a2868a65ad85c3ad9167cb27d4672e9f2b38eecd",
+      "byteLength": 121,
+      "sha256": "166b1b56221060aecb0d45765baf63c58eeb5b227ddd78d1d17d80d3505704d1"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/component-event-tuples/tsconfig.json.txt",
+    {
+      "mode": "100644",
+      "blob": "bbbef9b82898f7d4622acfffef63d59e1fc84bbe",
+      "byteLength": 179,
+      "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+    },
+    {
+      "mode": "100644",
+      "blob": "bbbef9b82898f7d4622acfffef63d59e1fc84bbe",
+      "byteLength": 179,
+      "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/component-event-tuples/unresolved-valid/src/App.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "caa1028aa5b0941eec5fd5397945bdc358456441",
+      "byteLength": 220,
+      "sha256": "ef849bae30d715ebf7546c4ab578996f1dda06bc7bbe606bb85fb2cd4f2d8de3"
+    },
+    {
+      "mode": "100644",
+      "blob": "caa1028aa5b0941eec5fd5397945bdc358456441",
+      "byteLength": 220,
+      "sha256": "ef849bae30d715ebf7546c4ab578996f1dda06bc7bbe606bb85fb2cd4f2d8de3"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/component-event-tuples/unresolved-valid/src/UnknownChild.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "7759f90e41d8091146bb3911ea72976022bb6701",
+      "byteLength": 63,
+      "sha256": "59d7206ae365ffd4f28700cb1cb0e1478239f01a7ff4c7db0bc40e56442726b0"
+    },
+    {
+      "mode": "100644",
+      "blob": "7759f90e41d8091146bb3911ea72976022bb6701",
+      "byteLength": 63,
+      "sha256": "59d7206ae365ffd4f28700cb1cb0e1478239f01a7ff4c7db0bc40e56442726b0"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/declared-prop-names-original/cases.json",
+    {
+      "mode": "100644",
+      "blob": "c9b8c8a8881599c550d76e9e4e41b6213ececf78",
+      "byteLength": 1207,
+      "sha256": "bf23455900630ea4c68b0ea7f449cc8f8860310b74b094e047b9e1d09ad96c24"
+    },
+    {
+      "mode": "100644",
+      "blob": "c9b8c8a8881599c550d76e9e4e41b6213ececf78",
+      "byteLength": 1207,
+      "sha256": "bf23455900630ea4c68b0ea7f449cc8f8860310b74b094e047b9e1d09ad96c24"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/declared-prop-names-original/original-project/src/Child.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "33192861a0b29563552c80961f4b64011fb3fabb",
+      "byteLength": 134,
+      "sha256": "94b461657b2f03827686f0be2f5a45d387405e35b806d0574b9fd4c705630df5"
+    },
+    {
+      "mode": "100644",
+      "blob": "33192861a0b29563552c80961f4b64011fb3fabb",
+      "byteLength": 134,
+      "sha256": "94b461657b2f03827686f0be2f5a45d387405e35b806d0574b9fd4c705630df5"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/declared-prop-names-original/original-project/src/KebabChild.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "db17e56aa495526f24f7f3ea3a897e51b603e846",
+      "byteLength": 111,
+      "sha256": "50cdfe2b4af57df9a807921a07d0fdef88b4a5917ed779b8a3a2a6e83c9d7acb"
+    },
+    {
+      "mode": "100644",
+      "blob": "db17e56aa495526f24f7f3ea3a897e51b603e846",
+      "byteLength": 111,
+      "sha256": "50cdfe2b4af57df9a807921a07d0fdef88b4a5917ed779b8a3a2a6e83c9d7acb"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/declared-prop-names-original/original-project/src/Parent.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "785aaf60e5d541ee948cda716d240db4b7b1ef6e",
+      "byteLength": 341,
+      "sha256": "80c166665faa9ca5f6fb09fa6d81a7270bf27afa3c51a5370fec88512a81f31a"
+    },
+    {
+      "mode": "100644",
+      "blob": "785aaf60e5d541ee948cda716d240db4b7b1ef6e",
+      "byteLength": 341,
+      "sha256": "80c166665faa9ca5f6fb09fa6d81a7270bf27afa3c51a5370fec88512a81f31a"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/declared-prop-names-original/original-project/src/SnakeChild.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "a470fb87db54090094ea9206263f0df5a8c21181",
+      "byteLength": 109,
+      "sha256": "886757b3de64347c19bd3fa69a31b0da1628ebcc52da3e19b0bbd91de6cd19e2"
+    },
+    {
+      "mode": "100644",
+      "blob": "a470fb87db54090094ea9206263f0df5a8c21181",
+      "byteLength": 109,
+      "sha256": "886757b3de64347c19bd3fa69a31b0da1628ebcc52da3e19b0bbd91de6cd19e2"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/declared-prop-names-original/original-project/tsconfig.json.txt",
+    {
+      "mode": "100644",
+      "blob": "bbbef9b82898f7d4622acfffef63d59e1fc84bbe",
+      "byteLength": 179,
+      "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+    },
+    {
+      "mode": "100644",
+      "blob": "bbbef9b82898f7d4622acfffef63d59e1fc84bbe",
+      "byteLength": 179,
+      "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/README.md",
+    {
+      "mode": "100644",
+      "blob": "19f2929df443aeeb21a807f0f27a47e964c8b402",
+      "byteLength": 6702,
+      "sha256": "06a326c748242f1c64f062f9612241ec152b606d5ea37c7666ac55b5be422ceb"
+    },
+    {
+      "mode": "100644",
+      "blob": "19f2929df443aeeb21a807f0f27a47e964c8b402",
+      "byteLength": 6702,
+      "sha256": "06a326c748242f1c64f062f9612241ec152b606d5ea37c7666ac55b5be422ceb"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/authentic/authored-duplicate-before.json",
+    {
+      "mode": "100644",
+      "blob": "58ba69f10c5cef153556421b6ca8d82478cb9702",
+      "byteLength": 4432,
+      "sha256": "205f36c6e9c91ec1606b4095fc44e816423e79961399c4f3a139f489b26e8f9e"
+    },
+    {
+      "mode": "100644",
+      "blob": "58ba69f10c5cef153556421b6ca8d82478cb9702",
+      "byteLength": 4432,
+      "sha256": "205f36c6e9c91ec1606b4095fc44e816423e79961399c4f3a139f489b26e8f9e"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/authentic/authored-duplicate-counterfactual.json",
+    {
+      "mode": "100644",
+      "blob": "fd0983e5dd08af16c613ada06eb003c11398096e",
+      "byteLength": 3672,
+      "sha256": "2b8ca075976faa3b998b12b140e11801494b994d963048be2a14cc882993f185"
+    },
+    {
+      "mode": "100644",
+      "blob": "fd0983e5dd08af16c613ada06eb003c11398096e",
+      "byteLength": 3672,
+      "sha256": "2b8ca075976faa3b998b12b140e11801494b994d963048be2a14cc882993f185"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/authentic/positive-before.json",
+    {
+      "mode": "100644",
+      "blob": "8bc4b68a0876217b4d8de23d87a605c2d6d109c0",
+      "byteLength": 3653,
+      "sha256": "59a1685f9f95eacd1d9f046c763c5b186b01a8c5359782b64936f41b1436b33d"
+    },
+    {
+      "mode": "100644",
+      "blob": "8bc4b68a0876217b4d8de23d87a605c2d6d109c0",
+      "byteLength": 3653,
+      "sha256": "59a1685f9f95eacd1d9f046c763c5b186b01a8c5359782b64936f41b1436b33d"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/authentic/positive-counterfactual.json",
+    {
+      "mode": "100644",
+      "blob": "1c12ecfbbeca2406be86e8902a7bb971d031c25a",
+      "byteLength": 2915,
+      "sha256": "72a3b7c5d7d83c17e5b6aa9a5c487d68d2055623d3bbbf28b220b3f0cfa0f01b"
+    },
+    {
+      "mode": "100644",
+      "blob": "1c12ecfbbeca2406be86e8902a7bb971d031c25a",
+      "byteLength": 2915,
+      "sha256": "72a3b7c5d7d83c17e5b6aa9a5c487d68d2055623d3bbbf28b220b3f0cfa0f01b"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/authentic/receipt.json",
+    {
+      "mode": "100644",
+      "blob": "7141047ff6c93229e4289d6d669ac7ffb529a641",
+      "byteLength": 3709,
+      "sha256": "14a20c2dd5214bbf85384e72a47b27c3290845c9269d4c98603e461fdf8be7cf"
+    },
+    {
+      "mode": "100644",
+      "blob": "7141047ff6c93229e4289d6d669ac7ffb529a641",
+      "byteLength": 3709,
+      "sha256": "14a20c2dd5214bbf85384e72a47b27c3290845c9269d4c98603e461fdf8be7cf"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/authentic/wrong-prop-before.json",
+    {
+      "mode": "100644",
+      "blob": "37ced93afef0e3e5d10ef06320558712c8546555",
+      "byteLength": 4033,
+      "sha256": "18d8c7b1293a4d77d90112d1c284e8d435e29c413b0b68a4601433eebd595e80"
+    },
+    {
+      "mode": "100644",
+      "blob": "37ced93afef0e3e5d10ef06320558712c8546555",
+      "byteLength": 4033,
+      "sha256": "18d8c7b1293a4d77d90112d1c284e8d435e29c413b0b68a4601433eebd595e80"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/authentic/wrong-prop-counterfactual.json",
+    {
+      "mode": "100644",
+      "blob": "1cce7091411118dfb1a525bb9075b33902b1a3d9",
+      "byteLength": 3305,
+      "sha256": "1f7944177362d09c7d5826192ba160f4e36e89d8ae33d3bb16bc4f1af757d5fd"
+    },
+    {
+      "mode": "100644",
+      "blob": "1cce7091411118dfb1a525bb9075b33902b1a3d9",
+      "byteLength": 3305,
+      "sha256": "1f7944177362d09c7d5826192ba160f4e36e89d8ae33d3bb16bc4f1af757d5fd"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/06d6d8ffa00fe1998ecdb58a9331696133547a2fb71fa15ef93422f5b27433da.json",
+    {
+      "mode": "100644",
+      "blob": "77fa920aaf35535130375af14aeeb07f31ddc443",
+      "byteLength": 265,
+      "sha256": "2c0c58101243f5998a7f3a9e41ac9bc0a8ac25656685fd563c064846df9e8b0d"
+    },
+    {
+      "mode": "100644",
+      "blob": "77fa920aaf35535130375af14aeeb07f31ddc443",
+      "byteLength": 265,
+      "sha256": "2c0c58101243f5998a7f3a9e41ac9bc0a8ac25656685fd563c064846df9e8b0d"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/0b28918053cd0cc82d4d8aa0f1f487812a4b497977ae95886db2146bf2c67e0b.json",
+    {
+      "mode": "100644",
+      "blob": "fec3f2c13f0ec61fee73b3c9ae10d4cdaa015387",
+      "byteLength": 309,
+      "sha256": "e70acfb3f532dc9bedd3530e2a5d41178c1c0f0ccfc54995868d950810f5b5fc"
+    },
+    {
+      "mode": "100644",
+      "blob": "fec3f2c13f0ec61fee73b3c9ae10d4cdaa015387",
+      "byteLength": 309,
+      "sha256": "e70acfb3f532dc9bedd3530e2a5d41178c1c0f0ccfc54995868d950810f5b5fc"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/0b89a7c241ca3e3e87094513260de721c34677b8b5a731f765763fe5f5587ccd.json",
+    {
+      "mode": "100644",
+      "blob": "8a05746a6f6be784274dd0cc50336403751970a4",
+      "byteLength": 485,
+      "sha256": "c7cffbce5df11e70298425f09603d835268e4c2965a98bf15d94ac671809f499"
+    },
+    {
+      "mode": "100644",
+      "blob": "8a05746a6f6be784274dd0cc50336403751970a4",
+      "byteLength": 485,
+      "sha256": "c7cffbce5df11e70298425f09603d835268e4c2965a98bf15d94ac671809f499"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/108079edf0a38631edcee7da95c3d06db50aed92b5842f98e7106b53fe89c05b.json",
+    {
+      "mode": "100644",
+      "blob": "50092ce384080708eae77038cbce2868e3665623",
+      "byteLength": 814,
+      "sha256": "05bc576b96c06620234c0145fdd5d74f3e7efd601a19f8b291db38546104fbaf"
+    },
+    {
+      "mode": "100644",
+      "blob": "50092ce384080708eae77038cbce2868e3665623",
+      "byteLength": 814,
+      "sha256": "05bc576b96c06620234c0145fdd5d74f3e7efd601a19f8b291db38546104fbaf"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/1e3d82f333aad9fdd18c569f217b89ca50a24b005c56839f17312f46842aeedc.json",
+    {
+      "mode": "100644",
+      "blob": "179f6150bb3177af65d782760d4f1d00f1cb0974",
+      "byteLength": 380,
+      "sha256": "b4389387a69890164878894a39f9313b5bfd4b1268bf9567aaa04811f51ef8d5"
+    },
+    {
+      "mode": "100644",
+      "blob": "179f6150bb3177af65d782760d4f1d00f1cb0974",
+      "byteLength": 380,
+      "sha256": "b4389387a69890164878894a39f9313b5bfd4b1268bf9567aaa04811f51ef8d5"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/279e692ead9af37fb235f230df20f846640f15dae3606a73bb3e99d15fa3d06f.json",
+    {
+      "mode": "100644",
+      "blob": "3e422ff6d0eb63a0f665d932d69fbf2af9e60e01",
+      "byteLength": 430,
+      "sha256": "98d8cd3841eca3266232329bf922d46361d90f29dcca53c5d47f3d2374a28636"
+    },
+    {
+      "mode": "100644",
+      "blob": "3e422ff6d0eb63a0f665d932d69fbf2af9e60e01",
+      "byteLength": 430,
+      "sha256": "98d8cd3841eca3266232329bf922d46361d90f29dcca53c5d47f3d2374a28636"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/2bd1f12539bce04a370e854e4c98da6dec1e811d5a3fc0e3d0e41fbb5f048c74.json",
+    {
+      "mode": "100644",
+      "blob": "d17251886f749a5537cf779a0dc78f550bce826c",
+      "byteLength": 846,
+      "sha256": "a5b1152b0eae8ff8bee8a053658e7c07f921013cd451f10126c7f1f19bb99aea"
+    },
+    {
+      "mode": "100644",
+      "blob": "d17251886f749a5537cf779a0dc78f550bce826c",
+      "byteLength": 846,
+      "sha256": "a5b1152b0eae8ff8bee8a053658e7c07f921013cd451f10126c7f1f19bb99aea"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/33f772a34fd35f11375acca1c6553cd10a469333adf7e256eff5a7f407d9d67b.json",
+    {
+      "mode": "100644",
+      "blob": "ae4d530c6ad5d573872753902e19536ab6a1eef2",
+      "byteLength": 443,
+      "sha256": "a9510462c74b744d9f2765cd6fa90a33cab853d6dcba37c1d2bb6efb43a3316e"
+    },
+    {
+      "mode": "100644",
+      "blob": "ae4d530c6ad5d573872753902e19536ab6a1eef2",
+      "byteLength": 443,
+      "sha256": "a9510462c74b744d9f2765cd6fa90a33cab853d6dcba37c1d2bb6efb43a3316e"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/398caf67cc5bdbedaf3a8ec98329acb3b592a8d7af143ccc4fd242c120bc9401.json",
+    {
+      "mode": "100644",
+      "blob": "8fd1fa4af5d85c32b3c64d6cad084007b8d9f9c7",
+      "byteLength": 1248,
+      "sha256": "c1f8a7ab023a8979d1dcba5ae5d4406c61c6f64e98b86e0b5f68f84301a00e80"
+    },
+    {
+      "mode": "100644",
+      "blob": "8fd1fa4af5d85c32b3c64d6cad084007b8d9f9c7",
+      "byteLength": 1248,
+      "sha256": "c1f8a7ab023a8979d1dcba5ae5d4406c61c6f64e98b86e0b5f68f84301a00e80"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/3b7fc55b0b995241e50c22c1164a240230ae59ce8ae5818abf57a2ed8f704e76.json",
+    {
+      "mode": "100644",
+      "blob": "1a19ddce189d8458fb333b9cf2c387d118617187",
+      "byteLength": 177,
+      "sha256": "18e70a465b387d2d15950da4a93f3813fafd0ae476a39a415a882eb5dada2a27"
+    },
+    {
+      "mode": "100644",
+      "blob": "1a19ddce189d8458fb333b9cf2c387d118617187",
+      "byteLength": 177,
+      "sha256": "18e70a465b387d2d15950da4a93f3813fafd0ae476a39a415a882eb5dada2a27"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/3c1d89ccdc5e2ae3c47190db2935bfcb4605291a307690fe6b65fd37d21940a5.json",
+    {
+      "mode": "100644",
+      "blob": "df86c6cb8b590ce3115556cd3855d413c0daf824",
+      "byteLength": 843,
+      "sha256": "617025f8409ad135601a9ae8ad5a89fc4091d8af6bc9b9831aa89745d49701bf"
+    },
+    {
+      "mode": "100644",
+      "blob": "df86c6cb8b590ce3115556cd3855d413c0daf824",
+      "byteLength": 843,
+      "sha256": "617025f8409ad135601a9ae8ad5a89fc4091d8af6bc9b9831aa89745d49701bf"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/3d06469c0d63a437dc4e67cabede017df8087c77f70497bd7765239fa5bebc10.json",
+    {
+      "mode": "100644",
+      "blob": "90f31054af2d1fa6493592274a8c43fcdab877d1",
+      "byteLength": 463,
+      "sha256": "59ab66f5a825a609267221cfe988f0346813b9a8dee1a7cb535edfc3bae34a64"
+    },
+    {
+      "mode": "100644",
+      "blob": "90f31054af2d1fa6493592274a8c43fcdab877d1",
+      "byteLength": 463,
+      "sha256": "59ab66f5a825a609267221cfe988f0346813b9a8dee1a7cb535edfc3bae34a64"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/49d70afae93c30974d12147c570993c90c907dd5e3dbe7aae5472e6632182eaa.json",
+    {
+      "mode": "100644",
+      "blob": "86f1a811eb41641463fc314dc08721617656346b",
+      "byteLength": 159,
+      "sha256": "de52e6ce924c7f64a2fe1f912b4535f93a6071e45381b6dfff66a40e4e0dcd59"
+    },
+    {
+      "mode": "100644",
+      "blob": "86f1a811eb41641463fc314dc08721617656346b",
+      "byteLength": 159,
+      "sha256": "de52e6ce924c7f64a2fe1f912b4535f93a6071e45381b6dfff66a40e4e0dcd59"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/4c1c46cdeb0cc342ac2472b58dae7de3bcbc6c2ad44d94f3fa813a4f94e44db3.json",
+    {
+      "mode": "100644",
+      "blob": "4e9a99c895565432f0b9f0eefb4ab79b472b76a3",
+      "byteLength": 453,
+      "sha256": "5631a778e341eb3b02467920b22f51f0fb4e875d568ea97054c3989dd2471aef"
+    },
+    {
+      "mode": "100644",
+      "blob": "4e9a99c895565432f0b9f0eefb4ab79b472b76a3",
+      "byteLength": 453,
+      "sha256": "5631a778e341eb3b02467920b22f51f0fb4e875d568ea97054c3989dd2471aef"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/4e4e4a28d216361d991a7d8b9cc13193b213df02d4cf90179b6b92ff24252766.json",
+    {
+      "mode": "100644",
+      "blob": "deb44413aec1ff0fa5730d96a1a7cdd1d05ce18c",
+      "byteLength": 296,
+      "sha256": "6f18d8cb4f4ce09d902242387140bd55a6f97a730cab7fd463c86589e5c9eb05"
+    },
+    {
+      "mode": "100644",
+      "blob": "deb44413aec1ff0fa5730d96a1a7cdd1d05ce18c",
+      "byteLength": 296,
+      "sha256": "6f18d8cb4f4ce09d902242387140bd55a6f97a730cab7fd463c86589e5c9eb05"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/56e5d9ea90156fe4c89823f50435c08f26fa0bf79f5748915f555a13318dc287.json",
+    {
+      "mode": "100644",
+      "blob": "2b5c547f27556125046edd9e9926fdb385332142",
+      "byteLength": 460,
+      "sha256": "cfdd1297ed034b6738d5b1b4c3fce841b918dddb2e8218cece91ed2f047b4a71"
+    },
+    {
+      "mode": "100644",
+      "blob": "2b5c547f27556125046edd9e9926fdb385332142",
+      "byteLength": 460,
+      "sha256": "cfdd1297ed034b6738d5b1b4c3fce841b918dddb2e8218cece91ed2f047b4a71"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/747a8bbbd5c91e0ed763fb3dc197706678662a7222495c99faea166b46500ddf.json",
+    {
+      "mode": "100644",
+      "blob": "3e75f2ab8e98b1197093c223e8096e18d4baf840",
+      "byteLength": 331,
+      "sha256": "6b836adf65bb5096c26d7ed8dbf59945e2555f0eb1c900314469540a127cd9fe"
+    },
+    {
+      "mode": "100644",
+      "blob": "3e75f2ab8e98b1197093c223e8096e18d4baf840",
+      "byteLength": 331,
+      "sha256": "6b836adf65bb5096c26d7ed8dbf59945e2555f0eb1c900314469540a127cd9fe"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/7849dac373f35116cf8cadecbd49a7dc4e0395ecdc8eb9cabec0505544991a56.json",
+    {
+      "mode": "100644",
+      "blob": "44b249a0bd9c2b2ee58d3b4a915c6a5141158eaf",
+      "byteLength": 159,
+      "sha256": "eea121e3876d7e90d88bac3aef51e2448b4047b924637627cac92604814e2036"
+    },
+    {
+      "mode": "100644",
+      "blob": "44b249a0bd9c2b2ee58d3b4a915c6a5141158eaf",
+      "byteLength": 159,
+      "sha256": "eea121e3876d7e90d88bac3aef51e2448b4047b924637627cac92604814e2036"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/7bb0ab12259c36baec1340f2dd92a3cea96732714fb4a7c6d3538e3ed0eb6a8f.json",
+    {
+      "mode": "100644",
+      "blob": "8b9601043c2cfd7df37a5c4e57d8891bf0f6b859",
+      "byteLength": 6027,
+      "sha256": "596b0cd5ff81172606a093fa60693e3b7e42b157b48e847235318a81d231e7aa"
+    },
+    {
+      "mode": "100644",
+      "blob": "8b9601043c2cfd7df37a5c4e57d8891bf0f6b859",
+      "byteLength": 6027,
+      "sha256": "596b0cd5ff81172606a093fa60693e3b7e42b157b48e847235318a81d231e7aa"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/8ad6b8dc90920bbbe86af1a1c8cb31497580db07073c3d7f1adf16ea36ef0de2.json",
+    {
+      "mode": "100644",
+      "blob": "96a36a738eb475ff376a2c18154a86547d9ced14",
+      "byteLength": 172,
+      "sha256": "832b7f2c53ea5fe45b97e05f0ec4863a4a2d3d8d65e05da23565782a01a49e61"
+    },
+    {
+      "mode": "100644",
+      "blob": "96a36a738eb475ff376a2c18154a86547d9ced14",
+      "byteLength": 172,
+      "sha256": "832b7f2c53ea5fe45b97e05f0ec4863a4a2d3d8d65e05da23565782a01a49e61"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/8bed42739c248ff07a5bc9489840c549ef333c6da4c8c51d49e328ab4b60d913.json",
+    {
+      "mode": "100644",
+      "blob": "59c8ae08d162c04d374a0e6e0131c9abc864bb15",
+      "byteLength": 248,
+      "sha256": "4d921c41419620bfe9ba512d83c25b558a5e839bdb0ec3271f9683796382ba8a"
+    },
+    {
+      "mode": "100644",
+      "blob": "59c8ae08d162c04d374a0e6e0131c9abc864bb15",
+      "byteLength": 248,
+      "sha256": "4d921c41419620bfe9ba512d83c25b558a5e839bdb0ec3271f9683796382ba8a"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/94a494ad18da5edc9279f32a9e6e6bde062c1978fe3838f5d403b987a3cd9c94.json",
+    {
+      "mode": "100644",
+      "blob": "117c08705ef14a74199d97b59ec1f81212c285cf",
+      "byteLength": 523,
+      "sha256": "d4c53c293aa9f226761c3765d357895b8fcc7ba890cee4bc8e2a70e83049322a"
+    },
+    {
+      "mode": "100644",
+      "blob": "117c08705ef14a74199d97b59ec1f81212c285cf",
+      "byteLength": 523,
+      "sha256": "d4c53c293aa9f226761c3765d357895b8fcc7ba890cee4bc8e2a70e83049322a"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/9b015a8c83d89b43dbafd77e084af4c7257435e3ac358eff9a90908a60a9265d.json",
+    {
+      "mode": "100644",
+      "blob": "c73115eccba999a626dbd10282a1e41f9565bd9e",
+      "byteLength": 425,
+      "sha256": "073a8e440154e695faf3b12ca3687f10900dac9bd686c15b4b04e160c792e2a6"
+    },
+    {
+      "mode": "100644",
+      "blob": "c73115eccba999a626dbd10282a1e41f9565bd9e",
+      "byteLength": 425,
+      "sha256": "073a8e440154e695faf3b12ca3687f10900dac9bd686c15b4b04e160c792e2a6"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/9dc4e0a694d64b2101c15df80d0c55a0717dd4217bc5d012af6422745c0ea685.json",
+    {
+      "mode": "100644",
+      "blob": "b0da9df0d297a803fba34e5e9cca8095e0a719b0",
+      "byteLength": 313,
+      "sha256": "3fbda04884b5abdf5c4ca40d1734da639b38a9a4146d353794a8968568113126"
+    },
+    {
+      "mode": "100644",
+      "blob": "b0da9df0d297a803fba34e5e9cca8095e0a719b0",
+      "byteLength": 313,
+      "sha256": "3fbda04884b5abdf5c4ca40d1734da639b38a9a4146d353794a8968568113126"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/9f22cfcce3413480ff14eaf6c4876a96daca232a5213beb362e21afa7ded64f1.json",
+    {
+      "mode": "100644",
+      "blob": "d5fdfa3526fd52934212369a245cef8bddcb5295",
+      "byteLength": 509,
+      "sha256": "cfa998f597ac8b1a71725cd095f18255ea1c80b768baf6c40497c25d04ba85c1"
+    },
+    {
+      "mode": "100644",
+      "blob": "d5fdfa3526fd52934212369a245cef8bddcb5295",
+      "byteLength": 509,
+      "sha256": "cfa998f597ac8b1a71725cd095f18255ea1c80b768baf6c40497c25d04ba85c1"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/a5e32916175feeb304fc88744cb5fcd94ca5f39ee385dad5ed573022d893129e.json",
+    {
+      "mode": "100644",
+      "blob": "d5de82a049323737f92ea2b76aa268aef55cf740",
+      "byteLength": 300716,
+      "sha256": "899cc3428020ef207c2967bcc3bef8411c647db65170ebaa9304736952ac220a"
+    },
+    {
+      "mode": "100644",
+      "blob": "d5de82a049323737f92ea2b76aa268aef55cf740",
+      "byteLength": 300716,
+      "sha256": "899cc3428020ef207c2967bcc3bef8411c647db65170ebaa9304736952ac220a"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/a63d0dfe7bbe8f1e801f350a5f33d1b08f56f40ed7d3f73fb21483917dd05c10.json",
+    {
+      "mode": "100644",
+      "blob": "e417780f3c96717418ba1a6301d8983bcd6948d3",
+      "byteLength": 520,
+      "sha256": "254161616d46a4c23244a43cc53ae89d6a48cd201afe006ff5a4dd0d79d8e89f"
+    },
+    {
+      "mode": "100644",
+      "blob": "e417780f3c96717418ba1a6301d8983bcd6948d3",
+      "byteLength": 520,
+      "sha256": "254161616d46a4c23244a43cc53ae89d6a48cd201afe006ff5a4dd0d79d8e89f"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/a7c105b81822b7324998a2ec9447f2121058630315560bac31687380bd35df89.json",
+    {
+      "mode": "100644",
+      "blob": "35b2ff8f0050ce3e5281a771e5d0a25ff3f6e8d3",
+      "byteLength": 252,
+      "sha256": "8a55685b5e92e110ab144aaba408f024de192e27b13b4366c8472ec0480ae93b"
+    },
+    {
+      "mode": "100644",
+      "blob": "35b2ff8f0050ce3e5281a771e5d0a25ff3f6e8d3",
+      "byteLength": 252,
+      "sha256": "8a55685b5e92e110ab144aaba408f024de192e27b13b4366c8472ec0480ae93b"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/ae48b51eb6c43c7411ad1d01920b5cd2d74836aced109714277002de0991b405.json",
+    {
+      "mode": "100644",
+      "blob": "162678a546bfc0743fc3bdc2d3e0543ebb234f0b",
+      "byteLength": 425,
+      "sha256": "28865421c742c7b467a9976e2edb48ef58fceba6c57c4adea601b2ee4b0531c5"
+    },
+    {
+      "mode": "100644",
+      "blob": "162678a546bfc0743fc3bdc2d3e0543ebb234f0b",
+      "byteLength": 425,
+      "sha256": "28865421c742c7b467a9976e2edb48ef58fceba6c57c4adea601b2ee4b0531c5"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/ae91adc36d57fe37278dc69c23c99b1434ea3b4791eab49b58faf9e0deb00739.json",
+    {
+      "mode": "100644",
+      "blob": "b079cf0896fa250775790d11a89781dc0316a230",
+      "byteLength": 159,
+      "sha256": "b843e3fe88681d08c49ceab4fe04be803607460004092703188135cdfa90e3f4"
+    },
+    {
+      "mode": "100644",
+      "blob": "b079cf0896fa250775790d11a89781dc0316a230",
+      "byteLength": 159,
+      "sha256": "b843e3fe88681d08c49ceab4fe04be803607460004092703188135cdfa90e3f4"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/aff76fd6ad18712292612c21db66690dc61bc7c9ad3d3fa9df4ac8017420021b.json",
+    {
+      "mode": "100644",
+      "blob": "9b72250cf2316a3c18f4d6770f65458c26bffa9a",
+      "byteLength": 415,
+      "sha256": "9eb68da43b9a3d1ec077281524f8b958352aea3020e1d67f25806f20f826b61d"
+    },
+    {
+      "mode": "100644",
+      "blob": "9b72250cf2316a3c18f4d6770f65458c26bffa9a",
+      "byteLength": 415,
+      "sha256": "9eb68da43b9a3d1ec077281524f8b958352aea3020e1d67f25806f20f826b61d"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/b024794f26a7494b279e9b96703056642d5b44f5b8390475e8bf6b4e0f9ed1ab.json",
+    {
+      "mode": "100644",
+      "blob": "013bb2dfd4f23da653a5b2b4c8a524f38cc26f04",
+      "byteLength": 425,
+      "sha256": "7bec828a1da4139270d25112394e98e1dd14621f7d4a6d490f50e6b439712540"
+    },
+    {
+      "mode": "100644",
+      "blob": "013bb2dfd4f23da653a5b2b4c8a524f38cc26f04",
+      "byteLength": 425,
+      "sha256": "7bec828a1da4139270d25112394e98e1dd14621f7d4a6d490f50e6b439712540"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/b5b1329139699db3d0332f0ad54a552f6fd84403207b381d3ef1340a93e2dd99.json",
+    {
+      "mode": "100644",
+      "blob": "817040951e4487c285b1fcb7bf9feb6e4b450fcf",
+      "byteLength": 321,
+      "sha256": "417c694a0205acd2ae1cd7a84ef3c6ae7675356e4ed46a186ed57e3fbb2eb579"
+    },
+    {
+      "mode": "100644",
+      "blob": "817040951e4487c285b1fcb7bf9feb6e4b450fcf",
+      "byteLength": 321,
+      "sha256": "417c694a0205acd2ae1cd7a84ef3c6ae7675356e4ed46a186ed57e3fbb2eb579"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/b7cb666e2b2577499982d842fc9026f980354ca2f4bc28efae9d1da99e40acf6.json",
+    {
+      "mode": "100644",
+      "blob": "a2b1c8aaa8d68c63b0dca17b1f74054f62f10362",
+      "byteLength": 160,
+      "sha256": "6f618f07765d65a3dbde1082186a5ef4d46c38d6b6b753f75c781a16eb838f6c"
+    },
+    {
+      "mode": "100644",
+      "blob": "a2b1c8aaa8d68c63b0dca17b1f74054f62f10362",
+      "byteLength": 160,
+      "sha256": "6f618f07765d65a3dbde1082186a5ef4d46c38d6b6b753f75c781a16eb838f6c"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/bdbf54d8b85375ba3f41844772e835df89a41ffea195642db9536bb38abc5819.json",
+    {
+      "mode": "100644",
+      "blob": "ab95e9210012105ae33d6f542da630d2458186ca",
+      "byteLength": 1242,
+      "sha256": "3b7c3ab15c09e24bdf7f5cce3e88abf614c6b3854af7ad384990664c30e53aa3"
+    },
+    {
+      "mode": "100644",
+      "blob": "ab95e9210012105ae33d6f542da630d2458186ca",
+      "byteLength": 1242,
+      "sha256": "3b7c3ab15c09e24bdf7f5cce3e88abf614c6b3854af7ad384990664c30e53aa3"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/c4bb61cac8d9689e7e09e5db9fc4c7ab926b6d1e7c31396d30d507842c398314.json",
+    {
+      "mode": "100644",
+      "blob": "3fb2517b6004cc033516bd3905e91951eb841904",
+      "byteLength": 850,
+      "sha256": "8421fe320b4897aaaef4df518bc1f9b9f9d5166aa73c03c18620139dc31bb984"
+    },
+    {
+      "mode": "100644",
+      "blob": "3fb2517b6004cc033516bd3905e91951eb841904",
+      "byteLength": 850,
+      "sha256": "8421fe320b4897aaaef4df518bc1f9b9f9d5166aa73c03c18620139dc31bb984"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/c5039c3cb0348983507c981097cfaa9399e2a5fb1ea1b7986b241dd8034ca35c.json",
+    {
+      "mode": "100644",
+      "blob": "2166152fea9b81c1876b6e7a75222ae3ae7332b6",
+      "byteLength": 283,
+      "sha256": "6c8dd0b37f1282ec837e97ed7517a896dd51c06da9af8f95b9a258896d3d043b"
+    },
+    {
+      "mode": "100644",
+      "blob": "2166152fea9b81c1876b6e7a75222ae3ae7332b6",
+      "byteLength": 283,
+      "sha256": "6c8dd0b37f1282ec837e97ed7517a896dd51c06da9af8f95b9a258896d3d043b"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/c82eb00720062ed7b935af57b0bc68a63934e8b3009b11cc7b81d4136f7237b9.json",
+    {
+      "mode": "100644",
+      "blob": "7a8c784e6850f1644148a36b1715751cb86c8a54",
+      "byteLength": 811,
+      "sha256": "73d12610733c428d498d2d8d4a19c568fe7df059c19a8524d9b2abfe1142877d"
+    },
+    {
+      "mode": "100644",
+      "blob": "7a8c784e6850f1644148a36b1715751cb86c8a54",
+      "byteLength": 811,
+      "sha256": "73d12610733c428d498d2d8d4a19c568fe7df059c19a8524d9b2abfe1142877d"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61.json",
+    {
+      "mode": "100644",
+      "blob": "750a83e14a267cd82903b327edd54bcab7f06ce6",
+      "byteLength": 362,
+      "sha256": "6e1ee76689e33630c8189db0c8a350a91961a0e9422e62037002b31c85d0604e"
+    },
+    {
+      "mode": "100644",
+      "blob": "750a83e14a267cd82903b327edd54bcab7f06ce6",
+      "byteLength": 362,
+      "sha256": "6e1ee76689e33630c8189db0c8a350a91961a0e9422e62037002b31c85d0604e"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/c861a2681e7472803dd082e8667ba69bb20dbcd65a12fe96d7eab411099aab76.json",
+    {
+      "mode": "100644",
+      "blob": "f34b6807a0923f9867220d81c653ccf4dc89f1a8",
+      "byteLength": 28865,
+      "sha256": "4d73ddcc4fbd1052dfafac29615fc15859734b17d89a8c7a67d99e3435d92f5d"
+    },
+    {
+      "mode": "100644",
+      "blob": "f34b6807a0923f9867220d81c653ccf4dc89f1a8",
+      "byteLength": 28865,
+      "sha256": "4d73ddcc4fbd1052dfafac29615fc15859734b17d89a8c7a67d99e3435d92f5d"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/c8da07c75bdc3ff36752f3f33f2beb000a78a02aced96ce70ca6e807072eb913.json",
+    {
+      "mode": "100644",
+      "blob": "08851e2df64a3e2f84333e5a926d094b36588555",
+      "byteLength": 5580,
+      "sha256": "1cec2f601d46ef22e0a0a6dfaa3bc28ab48b21d942af2be2746d82197235998e"
+    },
+    {
+      "mode": "100644",
+      "blob": "08851e2df64a3e2f84333e5a926d094b36588555",
+      "byteLength": 5580,
+      "sha256": "1cec2f601d46ef22e0a0a6dfaa3bc28ab48b21d942af2be2746d82197235998e"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/cbc939cd9351f7e21a265536da5d5a0ad132a555b43687e64819722761f4dfd0.json",
+    {
+      "mode": "100644",
+      "blob": "8d046d7a74407130dadc425c647fc22acb44b9c5",
+      "byteLength": 647,
+      "sha256": "32488aa48a48eb86957798f5ea6e0b074f16e696c5e5a5a206f369c94dd36e73"
+    },
+    {
+      "mode": "100644",
+      "blob": "8d046d7a74407130dadc425c647fc22acb44b9c5",
+      "byteLength": 647,
+      "sha256": "32488aa48a48eb86957798f5ea6e0b074f16e696c5e5a5a206f369c94dd36e73"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/cee6c3f39c78ad85415fa0afbfd19fd3f9fdee0f04d92f1d33ce1fcc3ad757b9.json",
+    {
+      "mode": "100644",
+      "blob": "27d90e3b27b9996572880e308582097be9267ead",
+      "byteLength": 3389,
+      "sha256": "50a5701febf264feb7da355cbeb26ba80de9edd577edfbac9f9551a1968ff12c"
+    },
+    {
+      "mode": "100644",
+      "blob": "27d90e3b27b9996572880e308582097be9267ead",
+      "byteLength": 3389,
+      "sha256": "50a5701febf264feb7da355cbeb26ba80de9edd577edfbac9f9551a1968ff12c"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/d11365103904639600b45fb6f0bf2955aeaf1bcd11b4e792a245297572cb3820.json",
+    {
+      "mode": "100644",
+      "blob": "ee086613edb522ded1b62b21785de4c70e24818c",
+      "byteLength": 252,
+      "sha256": "5655e0cdae74fd0666ea407b2c4f616524cf0127d0ff188c7d3d57f874527dcf"
+    },
+    {
+      "mode": "100644",
+      "blob": "ee086613edb522ded1b62b21785de4c70e24818c",
+      "byteLength": 252,
+      "sha256": "5655e0cdae74fd0666ea407b2c4f616524cf0127d0ff188c7d3d57f874527dcf"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/d774b0a1075d3843ec0123c9a272f84e945f1eae62103633d75292e229a85a11.json",
+    {
+      "mode": "100644",
+      "blob": "ed1bda6e146f57accc4a7a358cd080c4b39593d5",
+      "byteLength": 415,
+      "sha256": "294d14bc3bb5600af47636cb273600facc002624fe5dd66ef5a3f48be663cb1b"
+    },
+    {
+      "mode": "100644",
+      "blob": "ed1bda6e146f57accc4a7a358cd080c4b39593d5",
+      "byteLength": 415,
+      "sha256": "294d14bc3bb5600af47636cb273600facc002624fe5dd66ef5a3f48be663cb1b"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/d7a7a3ba38405e072ed79181de9dfc0c830b09f09c7ffd8c162eb4ab74270def.json",
+    {
+      "mode": "100644",
+      "blob": "47e5ccf4133c6195e5272cb8d5f025d37d8e1d83",
+      "byteLength": 639,
+      "sha256": "729c87adaabe16cf00e34c89b5ad7b29ebedf7e912fcddc062c63506dbe05552"
+    },
+    {
+      "mode": "100644",
+      "blob": "47e5ccf4133c6195e5272cb8d5f025d37d8e1d83",
+      "byteLength": 639,
+      "sha256": "729c87adaabe16cf00e34c89b5ad7b29ebedf7e912fcddc062c63506dbe05552"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/dc5fedafc9e52406a7e3162e2a1179ff1da12d8c1c787aa6b6d063c6ce5cfc7d.json",
+    {
+      "mode": "100644",
+      "blob": "3b5fa2d4eb6f61376d0fdc33a11d55b010b1a972",
+      "byteLength": 323,
+      "sha256": "98b297d3463b5b6bbbfc958eb6edeb3aef636f500eb502d55bb0e04789c4e947"
+    },
+    {
+      "mode": "100644",
+      "blob": "3b5fa2d4eb6f61376d0fdc33a11d55b010b1a972",
+      "byteLength": 323,
+      "sha256": "98b297d3463b5b6bbbfc958eb6edeb3aef636f500eb502d55bb0e04789c4e947"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/ddb1b5636d3d163f8c96fc1ff2634758f70e0ffb9996fbb8b531085d80f0351c.json",
+    {
+      "mode": "100644",
+      "blob": "12ababc0bba76b56badf4cf619d8292f27c3050f",
+      "byteLength": 450,
+      "sha256": "3c9b31a781bb5c068631160adb0104c82db66356e5cddcd909aeba1b1f5f3b51"
+    },
+    {
+      "mode": "100644",
+      "blob": "12ababc0bba76b56badf4cf619d8292f27c3050f",
+      "byteLength": 450,
+      "sha256": "3c9b31a781bb5c068631160adb0104c82db66356e5cddcd909aeba1b1f5f3b51"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/e01b60f7b50f8f4823ba291993361a7fb4625b065e92cf0a34b6daffdf30353f.json",
+    {
+      "mode": "100644",
+      "blob": "1640b74bee8470335739f3dd0220c340d2b0f9e6",
+      "byteLength": 853,
+      "sha256": "11e0096bea0a3262137c242df784bda9e4d565dab10ae378c856a7ddc4a9f0fa"
+    },
+    {
+      "mode": "100644",
+      "blob": "1640b74bee8470335739f3dd0220c340d2b0f9e6",
+      "byteLength": 853,
+      "sha256": "11e0096bea0a3262137c242df784bda9e4d565dab10ae378c856a7ddc4a9f0fa"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/e14058b0c703cd7df25c2b88f9889f993bafb343f51e7f1942192242932d651a.json",
+    {
+      "mode": "100644",
+      "blob": "74abc661cfb94d474cdc301111fd636dbc76b8d1",
+      "byteLength": 181,
+      "sha256": "d48b3566b40bd5818ab278a3643270b33437e13642132ae0545e5a08e3d8025f"
+    },
+    {
+      "mode": "100644",
+      "blob": "74abc661cfb94d474cdc301111fd636dbc76b8d1",
+      "byteLength": 181,
+      "sha256": "d48b3566b40bd5818ab278a3643270b33437e13642132ae0545e5a08e3d8025f"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/e26397c49771e3aaf50d58a54d76f6fcc049c86c56e2a6e23cdd6e8128c8ad3c.json",
+    {
+      "mode": "100644",
+      "blob": "7bbac7e67fda4a6610402bb06660cf0a0250df33",
+      "byteLength": 636,
+      "sha256": "7346d1ec8bae1eeacae1a5c0e8dac3cc97a06683d751682a27d99c98a3e22e77"
+    },
+    {
+      "mode": "100644",
+      "blob": "7bbac7e67fda4a6610402bb06660cf0a0250df33",
+      "byteLength": 636,
+      "sha256": "7346d1ec8bae1eeacae1a5c0e8dac3cc97a06683d751682a27d99c98a3e22e77"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/f8384e17dcf188e8777341fe973e07556f56c6f70ba09f09ee1d092070f090aa.json",
+    {
+      "mode": "100644",
+      "blob": "8192a9d987a6eb2a0b69f9132a4f6707cd94faa3",
+      "byteLength": 6671,
+      "sha256": "2e9beec3a84053c6055c96e02a0a358fbd09eab85ea6a26174155121761b8b7b"
+    },
+    {
+      "mode": "100644",
+      "blob": "8192a9d987a6eb2a0b69f9132a4f6707cd94faa3",
+      "byteLength": 6671,
+      "sha256": "2e9beec3a84053c6055c96e02a0a358fbd09eab85ea6a26174155121761b8b7b"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/f8f1f17e858ce72de2934681a821f12e5f15fff12eda5c3c5c5c863eaf83e863.json",
+    {
+      "mode": "100644",
+      "blob": "74a8402cc984c164e7ecaed9ee5aa313fea64df9",
+      "byteLength": 266,
+      "sha256": "1cb8d366e190b37ebdd2fa16f8a32c1981f8bd2d3573db5a7b60b7a3052499c2"
+    },
+    {
+      "mode": "100644",
+      "blob": "74a8402cc984c164e7ecaed9ee5aa313fea64df9",
+      "byteLength": 266,
+      "sha256": "1cb8d366e190b37ebdd2fa16f8a32c1981f8bd2d3573db5a7b60b7a3052499c2"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/fae1cb4019dc4bc61cc840fec8b51f2e0c30b244dff6bbceec2877a1334a41e1.json",
+    {
+      "mode": "100644",
+      "blob": "b81f428adf7ad010afbe67804f800544d4c39edb",
+      "byteLength": 264,
+      "sha256": "f1feb77efa8ef8d4a52f22f89e5ac5d4952a3b2545c3993037e35bf9f1011479"
+    },
+    {
+      "mode": "100644",
+      "blob": "b81f428adf7ad010afbe67804f800544d4c39edb",
+      "byteLength": 264,
+      "sha256": "f1feb77efa8ef8d4a52f22f89e5ac5d4952a3b2545c3993037e35bf9f1011479"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/fc9fc38c21441b7f67a91280ed28b8ca4ad67fc69d713db441f5c0fd9a6abf9f.json",
+    {
+      "mode": "100644",
+      "blob": "0a1cdb80b7de8a56b53e4c8d89cf1592262efdf2",
+      "byteLength": 176,
+      "sha256": "eff03c4ef1a45686a71c370df76504b192e3ce5a3e04316c5e500d75fd384843"
+    },
+    {
+      "mode": "100644",
+      "blob": "0a1cdb80b7de8a56b53e4c8d89cf1592262efdf2",
+      "byteLength": 176,
+      "sha256": "eff03c4ef1a45686a71c370df76504b192e3ce5a3e04316c5e500d75fd384843"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/ffbbd8c86fde78965024c32ed771f31ff8632cf098bf19e3423893f25256d944.json",
+    {
+      "mode": "100644",
+      "blob": "acacec817bde07c415fd8c2581f750e64ee3a3cd",
+      "byteLength": 265,
+      "sha256": "3fde6c01808863e4dfdf8da3367ad9b1d6bed14dd780032ddf0e4db9730cc039"
+    },
+    {
+      "mode": "100644",
+      "blob": "acacec817bde07c415fd8c2581f750e64ee3a3cd",
+      "byteLength": 265,
+      "sha256": "3fde6c01808863e4dfdf8da3367ad9b1d6bed14dd780032ddf0e4db9730cc039"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/manifest.json",
+    {
+      "mode": "100644",
+      "blob": "ae97cd73721d8dc084bd7cb309803931b562dd41",
+      "byteLength": 2247,
+      "sha256": "161eb2c5b787f67395086b7f0fbbb80ac70b2875558da9c56c02b37946726c1c"
+    },
+    {
+      "mode": "100644",
+      "blob": "ae97cd73721d8dc084bd7cb309803931b562dd41",
+      "byteLength": 2247,
+      "sha256": "161eb2c5b787f67395086b7f0fbbb80ac70b2875558da9c56c02b37946726c1c"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/part-00.json",
+    {
+      "mode": "100644",
+      "blob": "22eb745688ea02336b71df3e5f85779660ba9ae3",
+      "byteLength": 5446,
+      "sha256": "5f315ecffe1d21a9a54d2ba3c545ebaf7cc25d1fb19395f77fe4e0b51e088264"
+    },
+    {
+      "mode": "100644",
+      "blob": "22eb745688ea02336b71df3e5f85779660ba9ae3",
+      "byteLength": 5446,
+      "sha256": "5f315ecffe1d21a9a54d2ba3c545ebaf7cc25d1fb19395f77fe4e0b51e088264"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/part-01.json",
+    {
+      "mode": "100644",
+      "blob": "d089f40308e341b87badc581f353040a11af7373",
+      "byteLength": 7105,
+      "sha256": "d21d321a89b3c7e620b067ff04353ca17fc3d9e6a878caf51c0b152032c136f5"
+    },
+    {
+      "mode": "100644",
+      "blob": "d089f40308e341b87badc581f353040a11af7373",
+      "byteLength": 7105,
+      "sha256": "d21d321a89b3c7e620b067ff04353ca17fc3d9e6a878caf51c0b152032c136f5"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/production/alias-refusal/case.json",
+    {
+      "mode": "100644",
+      "blob": "a0716fd4dcd2da678b56f4f65f10bb08d1712958",
+      "byteLength": 1894,
+      "sha256": "f92e1fb42a0c4714c667a7663df402af5ed692ee6fe57b5298499492212fca07"
+    },
+    {
+      "mode": "100644",
+      "blob": "a0716fd4dcd2da678b56f4f65f10bb08d1712958",
+      "byteLength": 1894,
+      "sha256": "f92e1fb42a0c4714c667a7663df402af5ed692ee6fe57b5298499492212fca07"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/production/authored-named-refusal/case.json",
+    {
+      "mode": "100644",
+      "blob": "9fb7a2153749dfbf8bb7311bce8fcefbcf9a3f7e",
+      "byteLength": 2027,
+      "sha256": "95e7928145f20a5010451ecf44c3ad9df532c94cd1d4aecfdefbe7abfbc3ecaa"
+    },
+    {
+      "mode": "100644",
+      "blob": "9fb7a2153749dfbf8bb7311bce8fcefbcf9a3f7e",
+      "byteLength": 2027,
+      "sha256": "95e7928145f20a5010451ecf44c3ad9df532c94cd1d4aecfdefbe7abfbc3ecaa"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/production/authored-reserved-props-refusal/case.json",
+    {
+      "mode": "100644",
+      "blob": "89fbac321e7c969903a267a35577312c2fdcd19a",
+      "byteLength": 2018,
+      "sha256": "6fe90527393bd6539fa5293deb84e58dcc8a60f4d3ea1cd41d052000b2fdf4c0"
+    },
+    {
+      "mode": "100644",
+      "blob": "89fbac321e7c969903a267a35577312c2fdcd19a",
+      "byteLength": 2018,
+      "sha256": "6fe90527393bd6539fa5293deb84e58dcc8a60f4d3ea1cd41d052000b2fdf4c0"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/production/authored-shared-duplicate/case.json",
+    {
+      "mode": "100644",
+      "blob": "90ea5bb449349658ad45f4f4a73756fdbad6ebe3",
+      "byteLength": 3064,
+      "sha256": "ae86175326e05be89bb19ef6ab23db7323ebab3376bed4ebf69dab50fc582f24"
+    },
+    {
+      "mode": "100644",
+      "blob": "90ea5bb449349658ad45f4f4a73756fdbad6ebe3",
+      "byteLength": 3064,
+      "sha256": "ae86175326e05be89bb19ef6ab23db7323ebab3376bed4ebf69dab50fc582f24"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/production/classic-default-only/case.json",
+    {
+      "mode": "100644",
+      "blob": "9b3e7ee400a5992c4d1f82e6615588eddfdad261",
+      "byteLength": 2007,
+      "sha256": "db56bceacb5a9b4ac43f4fa8b90b3224120b4c7edcb510410047706b97b08426"
+    },
+    {
+      "mode": "100644",
+      "blob": "9b3e7ee400a5992c4d1f82e6615588eddfdad261",
+      "byteLength": 2007,
+      "sha256": "db56bceacb5a9b4ac43f4fa8b90b3224120b4c7edcb510410047706b97b08426"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/production/concrete-direct-types/case.json",
+    {
+      "mode": "100644",
+      "blob": "692ff981cd49600253572a3ca66654d2d446febe",
+      "byteLength": 2008,
+      "sha256": "a62f82e2cd7a2690a61ca2620b09dab8569c4782d47fa41f71bb1f4b1cc57d56"
+    },
+    {
+      "mode": "100644",
+      "blob": "692ff981cd49600253572a3ca66654d2d446febe",
+      "byteLength": 2008,
+      "sha256": "a62f82e2cd7a2690a61ca2620b09dab8569c4782d47fa41f71bb1f4b1cc57d56"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/production/config-permissive/case.json",
+    {
+      "mode": "100644",
+      "blob": "54aa9826d7f324ff8558816984d6475c8e11c0f9",
+      "byteLength": 2500,
+      "sha256": "23bc614808419f0dc808eca7a02cb745964432d035aac2b5f44aabecee0ee1b0"
+    },
+    {
+      "mode": "100644",
+      "blob": "54aa9826d7f324ff8558816984d6475c8e11c0f9",
+      "byteLength": 2500,
+      "sha256": "23bc614808419f0dc808eca7a02cb745964432d035aac2b5f44aabecee0ee1b0"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/production/config-strict/case.json",
+    {
+      "mode": "100644",
+      "blob": "5daa2b5478ae3ebc1df62377c4435fb8ca46f12f",
+      "byteLength": 2684,
+      "sha256": "e7646f19b49e07c58655c4eabe46d79cbb8883ac3df489e9369a7c58faeadd95"
+    },
+    {
+      "mode": "100644",
+      "blob": "5daa2b5478ae3ebc1df62377c4435fb8ca46f12f",
+      "byteLength": 2684,
+      "sha256": "e7646f19b49e07c58655c4eabe46d79cbb8883ac3df489e9369a7c58faeadd95"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/production/extensionless-refusal/case.json",
+    {
+      "mode": "100644",
+      "blob": "f2a3e5ef4517c290f45f0c09a1e3fafe02ecc7ca",
+      "byteLength": 1902,
+      "sha256": "84c47d55a7d3ed9a1deea18a823e522ba8aca4b149e924bc61692ac3ff2de467"
+    },
+    {
+      "mode": "100644",
+      "blob": "f2a3e5ef4517c290f45f0c09a1e3fafe02ecc7ca",
+      "byteLength": 1902,
+      "sha256": "84c47d55a7d3ed9a1deea18a823e522ba8aca4b149e924bc61692ac3ff2de467"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/production/indirect-refusal/case.json",
+    {
+      "mode": "100644",
+      "blob": "629fb33000243566058d9ff50f06629c9b999d3f",
+      "byteLength": 2365,
+      "sha256": "88dfaf5b422e4a35966248dacbd66556bb8a308004b74d08432ea30215a37435"
+    },
+    {
+      "mode": "100644",
+      "blob": "629fb33000243566058d9ff50f06629c9b999d3f",
+      "byteLength": 2365,
+      "sha256": "88dfaf5b422e4a35966248dacbd66556bb8a308004b74d08432ea30215a37435"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/production/malformed-refusal/case.json",
+    {
+      "mode": "100644",
+      "blob": "3c977e89f69832d538b5612bfb2e194deb5a17d7",
+      "byteLength": 1898,
+      "sha256": "2c4055defa4c34c682114035499855632a333d28dd542a24f05b95dd694bce50"
+    },
+    {
+      "mode": "100644",
+      "blob": "3c977e89f69832d538b5612bfb2e194deb5a17d7",
+      "byteLength": 1898,
+      "sha256": "2c4055defa4c34c682114035499855632a333d28dd542a24f05b95dd694bce50"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/production/missing-refusal/case.json",
+    {
+      "mode": "100644",
+      "blob": "9237793210bb002db117b9c66dd7de9739214793",
+      "byteLength": 1896,
+      "sha256": "d27c0a2c0fc4afb675df314269f2998ece38cba9aae98ea0c320877cbd21561e"
+    },
+    {
+      "mode": "100644",
+      "blob": "9237793210bb002db117b9c66dd7de9739214793",
+      "byteLength": 1896,
+      "sha256": "d27c0a2c0fc4afb675df314269f2998ece38cba9aae98ea0c320877cbd21561e"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/production/namespace-typed/case.json",
+    {
+      "mode": "100644",
+      "blob": "2c9f906ec7674e7719fecc6d33b6fcec93a38b9b",
+      "byteLength": 2004,
+      "sha256": "e8ffe1488233336b5ea5c405ca44db4f83799b2987f567c56dea9c52d47e7e05"
+    },
+    {
+      "mode": "100644",
+      "blob": "2c9f906ec7674e7719fecc6d33b6fcec93a38b9b",
+      "byteLength": 2004,
+      "sha256": "e8ffe1488233336b5ea5c405ca44db4f83799b2987f567c56dea9c52d47e7e05"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/production/positive-authentic/case.json",
+    {
+      "mode": "100644",
+      "blob": "d57b720b599e6261e4364a30ba5f5e3bc1451f2b",
+      "byteLength": 2099,
+      "sha256": "7d6ca09db8267b577aa2787e7fd6d0a412a90a13d544c266a591d54b228638ad"
+    },
+    {
+      "mode": "100644",
+      "blob": "d57b720b599e6261e4364a30ba5f5e3bc1451f2b",
+      "byteLength": 2099,
+      "sha256": "7d6ca09db8267b577aa2787e7fd6d0a412a90a13d544c266a591d54b228638ad"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/production/script-src-refusal/case.json",
+    {
+      "mode": "100644",
+      "blob": "396d9c4639271a6d9b89cbbe5249f69e34e6d722",
+      "byteLength": 2375,
+      "sha256": "c2f33649195574f069ed268b626996fe3cdec349d85fb8be2a605bdd8066e68a"
+    },
+    {
+      "mode": "100644",
+      "blob": "396d9c4639271a6d9b89cbbe5249f69e34e6d722",
+      "byteLength": 2375,
+      "sha256": "c2f33649195574f069ed268b626996fe3cdec349d85fb8be2a605bdd8066e68a"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/production/wrong-prop-authentic/case.json",
+    {
+      "mode": "100644",
+      "blob": "12be3b9db6a5c0763dc8d5e3cf6cbbf0b869011c",
+      "byteLength": 2105,
+      "sha256": "aa104fbcc3f069b6a938dff358c592b1b1bf4261abe2f3cf4fe427c57e41c558"
+    },
+    {
+      "mode": "100644",
+      "blob": "12be3b9db6a5c0763dc8d5e3cf6cbbf0b869011c",
+      "byteLength": 2105,
+      "sha256": "aa104fbcc3f069b6a938dff358c592b1b1bf4261abe2f3cf4fe427c57e41c558"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/provider-roles.json",
+    {
+      "mode": "100644",
+      "blob": "7eefdbfb7d37cde8b73ac4470defec01faa1a069",
+      "byteLength": 3601,
+      "sha256": "1b9b3ae01837e9c0bbb56e0239e1bf3f4c53692b7818fd775e26ca9f8a15f096"
+    },
+    {
+      "mode": "100644",
+      "blob": "7eefdbfb7d37cde8b73ac4470defec01faa1a069",
+      "byteLength": 3601,
+      "sha256": "1b9b3ae01837e9c0bbb56e0239e1bf3f4c53692b7818fd775e26ca9f8a15f096"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/empty-vue-star-exports/supplement.json",
+    {
+      "mode": "100644",
+      "blob": "ec5a9649b162e557f3467673720889646534f8f9",
+      "byteLength": 1903,
+      "sha256": "c5961eace0a464dcccb67adf0ffbaea5706ba2219836b5b474cbcbf16917b51b"
+    },
+    {
+      "mode": "100644",
+      "blob": "ec5a9649b162e557f3467673720889646534f8f9",
+      "byteLength": 1903,
+      "sha256": "c5961eace0a464dcccb67adf0ffbaea5706ba2219836b5b474cbcbf16917b51b"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/event-handler-narrowing/cases.json",
+    {
+      "mode": "100644",
+      "blob": "de033ab82bfef550c703202e9782becf06e5e94c",
+      "byteLength": 2012,
+      "sha256": "4eff99b9e7aab7d7c494687067e327aee236822a090fe7d99e0bdb396c0eadaa"
+    },
+    {
+      "mode": "100644",
+      "blob": "de033ab82bfef550c703202e9782becf06e5e94c",
+      "byteLength": 2012,
+      "sha256": "4eff99b9e7aab7d7c494687067e327aee236822a090fe7d99e0bdb396c0eadaa"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/event-handler-narrowing/component-sibling-valid/src/child.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "55b4ced36c1ed5b47924c2bf2cc7bac1366576b3",
+      "byteLength": 204,
+      "sha256": "35c0150a8c6f8b17a833d2692ed85d8609090be7790bb1c06d4bba5133556b1b"
+    },
+    {
+      "mode": "100644",
+      "blob": "55b4ced36c1ed5b47924c2bf2cc7bac1366576b3",
+      "byteLength": 204,
+      "sha256": "35c0150a8c6f8b17a833d2692ed85d8609090be7790bb1c06d4bba5133556b1b"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/event-handler-narrowing/component-sibling-valid/src/parent.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "e3e98d68e0dff89cfdc95a68f9c0f9dbe6107e3f",
+      "byteLength": 633,
+      "sha256": "2e32bd454f725001a2e5a5feb64ce8f8f18de333e352524685b775648397d41b"
+    },
+    {
+      "mode": "100644",
+      "blob": "e3e98d68e0dff89cfdc95a68f9c0f9dbe6107e3f",
+      "byteLength": 633,
+      "sha256": "2e32bd454f725001a2e5a5feb64ce8f8f18de333e352524685b775648397d41b"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/event-handler-narrowing/component-sibling-valid/tsconfig.json.txt",
+    {
+      "mode": "100644",
+      "blob": "bbbef9b82898f7d4622acfffef63d59e1fc84bbe",
+      "byteLength": 179,
+      "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+    },
+    {
+      "mode": "100644",
+      "blob": "bbbef9b82898f7d4622acfffef63d59e1fc84bbe",
+      "byteLength": 179,
+      "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/event-handler-narrowing/handler-assignment-invalid/src/child.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "55b4ced36c1ed5b47924c2bf2cc7bac1366576b3",
+      "byteLength": 204,
+      "sha256": "35c0150a8c6f8b17a833d2692ed85d8609090be7790bb1c06d4bba5133556b1b"
+    },
+    {
+      "mode": "100644",
+      "blob": "55b4ced36c1ed5b47924c2bf2cc7bac1366576b3",
+      "byteLength": 204,
+      "sha256": "35c0150a8c6f8b17a833d2692ed85d8609090be7790bb1c06d4bba5133556b1b"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/event-handler-narrowing/handler-assignment-invalid/src/parent.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "7b8750d9d6e3120e79d837953f85cf635887e19a",
+      "byteLength": 204,
+      "sha256": "21b2d75f4b3f86054a22b52c10f6b08dc06d0ccec95afdb72920504809a85621"
+    },
+    {
+      "mode": "100644",
+      "blob": "7b8750d9d6e3120e79d837953f85cf635887e19a",
+      "byteLength": 204,
+      "sha256": "21b2d75f4b3f86054a22b52c10f6b08dc06d0ccec95afdb72920504809a85621"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/event-handler-narrowing/handler-assignment-invalid/tsconfig.json.txt",
+    {
+      "mode": "100644",
+      "blob": "bbbef9b82898f7d4622acfffef63d59e1fc84bbe",
+      "byteLength": 179,
+      "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+    },
+    {
+      "mode": "100644",
+      "blob": "bbbef9b82898f7d4622acfffef63d59e1fc84bbe",
+      "byteLength": 179,
+      "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/event-handler-narrowing/native-sibling-valid/src/App.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "d2a827df0157fa2e9c05f56c78bda7f1f3bccd82",
+      "byteLength": 268,
+      "sha256": "8b781fe49d9650f617cf0fc8de20abf051bf37ee2d2373824407e3cf79ef4b28"
+    },
+    {
+      "mode": "100644",
+      "blob": "d2a827df0157fa2e9c05f56c78bda7f1f3bccd82",
+      "byteLength": 268,
+      "sha256": "8b781fe49d9650f617cf0fc8de20abf051bf37ee2d2373824407e3cf79ef4b28"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/event-handler-narrowing/native-sibling-valid/tsconfig.json.txt",
+    {
+      "mode": "100644",
+      "blob": "bbbef9b82898f7d4622acfffef63d59e1fc84bbe",
+      "byteLength": 179,
+      "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+    },
+    {
+      "mode": "100644",
+      "blob": "bbbef9b82898f7d4622acfffef63d59e1fc84bbe",
+      "byteLength": 179,
+      "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/Panel.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "2c08ef4e6e4801e7e1e021684608d9950b5c8981",
+      "byteLength": 233,
+      "sha256": "c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61"
+    },
+    {
+      "mode": "100644",
+      "blob": "2c08ef4e6e4801e7e1e021684608d9950b5c8981",
+      "byteLength": 233,
+      "sha256": "c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native.json",
+    {
+      "mode": "100644",
+      "blob": "783090fd98444bab748498e4c4dc2e67862fd0ce",
+      "byteLength": 2247,
+      "sha256": "f5ea01411688761a9012305c20123463f7a9b06ee99a35fc3faf31bbc8d8cab0"
+    },
+    {
+      "mode": "100644",
+      "blob": "783090fd98444bab748498e4c4dc2e67862fd0ce",
+      "byteLength": 2247,
+      "sha256": "f5ea01411688761a9012305c20123463f7a9b06ee99a35fc3faf31bbc8d8cab0"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/000-valid-strict.json",
+    {
+      "mode": "100644",
+      "blob": "fec19d8178e185f4d66d4e822ebdd00cefd44601",
+      "byteLength": 2653,
+      "sha256": "26bb550e225d9f1316a9d2fea9754966f342db545296c73e5c2be37b5b6c3dc7"
+    },
+    {
+      "mode": "100644",
+      "blob": "fec19d8178e185f4d66d4e822ebdd00cefd44601",
+      "byteLength": 2653,
+      "sha256": "26bb550e225d9f1316a9d2fea9754966f342db545296c73e5c2be37b5b6c3dc7"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/001-wrong-strict.json",
+    {
+      "mode": "100644",
+      "blob": "498a2eeed0d3142699a23d37b32dfc995c688f55",
+      "byteLength": 3049,
+      "sha256": "bf283673c385811194a3a764eb2d823d3222893ec804e1968568614bae9222bc"
+    },
+    {
+      "mode": "100644",
+      "blob": "498a2eeed0d3142699a23d37b32dfc995c688f55",
+      "byteLength": 3049,
+      "sha256": "bf283673c385811194a3a764eb2d823d3222893ec804e1968568614bae9222bc"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/002-wrong-permissive.json",
+    {
+      "mode": "100644",
+      "blob": "26f1712326e91604581fa7f78a55c159d0c48551",
+      "byteLength": 943,
+      "sha256": "76c399dce9cf1bdef3da55d38e5d85f0f125278d5cf8d5a413e5a10b6e91917a"
+    },
+    {
+      "mode": "100644",
+      "blob": "26f1712326e91604581fa7f78a55c159d0c48551",
+      "byteLength": 943,
+      "sha256": "76c399dce9cf1bdef3da55d38e5d85f0f125278d5cf8d5a413e5a10b6e91917a"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/003-escape-strict.json",
+    {
+      "mode": "100644",
+      "blob": "9c5f5cab4eb8b3457abe44518a7ddc1b83499c91",
+      "byteLength": 3009,
+      "sha256": "0f2f1331d7f7c2af5b8d5025238671060c4ba818f169dc675622a693524f3cdc"
+    },
+    {
+      "mode": "100644",
+      "blob": "9c5f5cab4eb8b3457abe44518a7ddc1b83499c91",
+      "byteLength": 3009,
+      "sha256": "0f2f1331d7f7c2af5b8d5025238671060c4ba818f169dc675622a693524f3cdc"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/004-foreign-strict.json",
+    {
+      "mode": "100644",
+      "blob": "dd7eb5fd1ffedd2e728147c8040cd9f5fa64e50e",
+      "byteLength": 902,
+      "sha256": "8ee75f581972ddac224f32dc8b90b090c43d5116807e93018a411689fce57a21"
+    },
+    {
+      "mode": "100644",
+      "blob": "dd7eb5fd1ffedd2e728147c8040cd9f5fa64e50e",
+      "byteLength": 902,
+      "sha256": "8ee75f581972ddac224f32dc8b90b090c43d5116807e93018a411689fce57a21"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/005-loop-source-strict.json",
+    {
+      "mode": "100644",
+      "blob": "0d591ec91784685ecc846484c12ff7e645b9ab77",
+      "byteLength": 1256,
+      "sha256": "a36ed525fa19810e6397252834c69bdd30cae9f4c63e15b692a6d32ca2d2d996"
+    },
+    {
+      "mode": "100644",
+      "blob": "0d591ec91784685ecc846484c12ff7e645b9ab77",
+      "byteLength": 1256,
+      "sha256": "a36ed525fa19810e6397252834c69bdd30cae9f4c63e15b692a6d32ca2d2d996"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/006-globals-strict.json",
+    {
+      "mode": "100644",
+      "blob": "92ec04a2bb8db0e95aa08f99fec39af197276e99",
+      "byteLength": 908,
+      "sha256": "2700ccca92273de6bf15fb01002cdc7d3a61e94d93f9b0e2fd5229a086d69d05"
+    },
+    {
+      "mode": "100644",
+      "blob": "92ec04a2bb8db0e95aa08f99fec39af197276e99",
+      "byteLength": 908,
+      "sha256": "2700ccca92273de6bf15fb01002cdc7d3a61e94d93f9b0e2fd5229a086d69d05"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/007-globals-permissive.json",
+    {
+      "mode": "100644",
+      "blob": "a3d9dc0bbcb6e644c4403b481bfc4f937b20b994",
+      "byteLength": 548,
+      "sha256": "55008d77bb7ee1fb36ac880704f466953977713c462525759c09789cebd47fbd"
+    },
+    {
+      "mode": "100644",
+      "blob": "a3d9dc0bbcb6e644c4403b481bfc4f937b20b994",
+      "byteLength": 548,
+      "sha256": "55008d77bb7ee1fb36ac880704f466953977713c462525759c09789cebd47fbd"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/008-repaired-strict.json",
+    {
+      "mode": "100644",
+      "blob": "cb8f48bc09d0deb757d0e091cfd8bfb0d61b6bf9",
+      "byteLength": 2656,
+      "sha256": "103850edc6fb7c8c8d06a4046a19bc0fea11094b92b72694ac05337df67a0514"
+    },
+    {
+      "mode": "100644",
+      "blob": "cb8f48bc09d0deb757d0e091cfd8bfb0d61b6bf9",
+      "byteLength": 2656,
+      "sha256": "103850edc6fb7c8c8d06a4046a19bc0fea11094b92b72694ac05337df67a0514"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/case.tsconfig.json.txt",
+    {
+      "mode": "100644",
+      "blob": "fa36b3d10040616c6f306b0a599bab07278d056a",
+      "byteLength": 237,
+      "sha256": "67e6f635b07d6be9eb4a13234569264c735dd0f5e40c195bcb9fdf5a5d3cff50"
+    },
+    {
+      "mode": "100644",
+      "blob": "fa36b3d10040616c6f306b0a599bab07278d056a",
+      "byteLength": 237,
+      "sha256": "67e6f635b07d6be9eb4a13234569264c735dd0f5e40c195bcb9fdf5a5d3cff50"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/escape.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "4515e53857b8c749ee986f7fa5b34cb460170c97",
+      "byteLength": 347,
+      "sha256": "90a9b6e4d7660d78f8cd24ebe9cce4f4ab32110557453ee38c73730b8a35260e"
+    },
+    {
+      "mode": "100644",
+      "blob": "4515e53857b8c749ee986f7fa5b34cb460170c97",
+      "byteLength": 347,
+      "sha256": "90a9b6e4d7660d78f8cd24ebe9cce4f4ab32110557453ee38c73730b8a35260e"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/expected.json",
+    {
+      "mode": "100644",
+      "blob": "46401ce6ac769f48cfb01933fd9c8a255919eb7c",
+      "byteLength": 3340,
+      "sha256": "54c2ff42c61dfa94bb15e9f72dea283c94191637d2e5687a2a30bac5d7d6f122"
+    },
+    {
+      "mode": "100644",
+      "blob": "46401ce6ac769f48cfb01933fd9c8a255919eb7c",
+      "byteLength": 3340,
+      "sha256": "54c2ff42c61dfa94bb15e9f72dea283c94191637d2e5687a2a30bac5d7d6f122"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/foreign.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "a3260e1418b38b36b5f745fd21bdb08f191fa266",
+      "byteLength": 173,
+      "sha256": "22dbba92224bf894119fed3421cc3972786c8883b14e0b1e81d9f6ff06981686"
+    },
+    {
+      "mode": "100644",
+      "blob": "a3260e1418b38b36b5f745fd21bdb08f191fa266",
+      "byteLength": 173,
+      "sha256": "22dbba92224bf894119fed3421cc3972786c8883b14e0b1e81d9f6ff06981686"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/globals.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "087c79ca65975939762ca266c4abaf94491ed86f",
+      "byteLength": 128,
+      "sha256": "00c50d4e0f462e92971580105e2f733f4f1f4f18dd37493cf7239055779ffacc"
+    },
+    {
+      "mode": "100644",
+      "blob": "087c79ca65975939762ca266c4abaf94491ed86f",
+      "byteLength": 128,
+      "sha256": "00c50d4e0f462e92971580105e2f733f4f1f4f18dd37493cf7239055779ffacc"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/inputs.json",
+    {
+      "mode": "100644",
+      "blob": "b83ae064c624de434a7edb86c5707173a909e7d9",
+      "byteLength": 2280,
+      "sha256": "f4e26c211bf469c8c9bdd44aada01d15fdbcfc47235f24cbd9ec88fdab9a5f2c"
+    },
+    {
+      "mode": "100644",
+      "blob": "b83ae064c624de434a7edb86c5707173a909e7d9",
+      "byteLength": 2280,
+      "sha256": "f4e26c211bf469c8c9bdd44aada01d15fdbcfc47235f24cbd9ec88fdab9a5f2c"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/loop-source.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "4c847362c635a82a22f0e989cfd7f8ef05863357",
+      "byteLength": 112,
+      "sha256": "0251f10ec5850bb2c99fb304ef04769e0b194e6efae89f22d329d91a149681b4"
+    },
+    {
+      "mode": "100644",
+      "blob": "4c847362c635a82a22f0e989cfd7f8ef05863357",
+      "byteLength": 112,
+      "sha256": "0251f10ec5850bb2c99fb304ef04769e0b194e6efae89f22d329d91a149681b4"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/source-provenance.json",
+    {
+      "mode": "100644",
+      "blob": "927c5338d0d17b13e0e603e8748fee6613267470",
+      "byteLength": 760,
+      "sha256": "c32493197855f9ee6849ba27f00e913931811410e3a8f289263e3d41f9dd6dda"
+    },
+    {
+      "mode": "100644",
+      "blob": "927c5338d0d17b13e0e603e8748fee6613267470",
+      "byteLength": 760,
+      "sha256": "c32493197855f9ee6849ba27f00e913931811410e3a8f289263e3d41f9dd6dda"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/valid.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "022d53febbf73d606e70d99a755fb6a03ed00a91",
+      "byteLength": 514,
+      "sha256": "9dbb96b225273b4cb5a547f0dc29e9524efd5c2f0ccda8cddbea49e835a755ea"
+    },
+    {
+      "mode": "100644",
+      "blob": "022d53febbf73d606e70d99a755fb6a03ed00a91",
+      "byteLength": 514,
+      "sha256": "9dbb96b225273b4cb5a547f0dc29e9524efd5c2f0ccda8cddbea49e835a755ea"
+    }
+  ],
+  [
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/wrong.vue.txt",
+    {
+      "mode": "100644",
+      "blob": "8856fa115b7a16ec9d20a4e8e0aef67dd3ee2c58",
+      "byteLength": 516,
+      "sha256": "7af50154c2b6f40e8726aa1877e2ae284cd59a48562df5e93fe9f731d9030f6d"
+    },
+    {
+      "mode": "100644",
+      "blob": "8856fa115b7a16ec9d20a4e8e0aef67dd3ee2c58",
+      "byteLength": 516,
+      "sha256": "7af50154c2b6f40e8726aa1877e2ae284cd59a48562df5e93fe9f731d9030f6d"
+    }
+  ]
+]
