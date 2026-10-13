@@ -23,13 +23,19 @@ starting that optional workflow.
 
 ## Merge queue
 
-A merge-queue candidate whose own change is only prose (Markdown under `docs/`
-or `.changeset/`, or a Markdown file at the repository root) now gets the plan
-the same PR gets: no Rust, JS package or playground lanes. Its tooling tier stays the whole
-suite, which the merge runner requires. The candidate is built on the candidate
-ahead of it, which ran every lane on the code, so the candidate's tree differs
-from that verified tree by prose alone. Markdown inside crates and packages
-can be compiled in as Rust or package docs and keeps every lane.
+Every merge-group candidate selects the complete Rust, JS package, tooling
+and playground suites, including candidates that change only prose. The
+optimization applies to PR selection only. Each candidate must satisfy the
+existing complete-Rust gate independently of its predecessor's qualification.
+
+The initial prose exception caused the docs-only candidate for
+[#8898](https://github.com/ubugeeei-prod/vize/pull/8898),
+`273d14ed0a22fd4056d56ab7cd3d79353c5ef54a`, to select `rust=false`.
+The [Rust source report](https://github.com/ubugeeei-prod/vize/actions/runs/38435064811/job/115430252462)
+correctly rejected the incomplete merge-group plan. Restoring unconditional
+merge-group selection fixes that defect without weakening the guard. The
+regression coverage includes docs, MDX, changesets and root Markdown, plus a
+real docs-only Git comparison through the planner CLI.
 
 ## Reason
 
