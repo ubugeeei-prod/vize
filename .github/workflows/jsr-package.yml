@@ -1,0 +1,37 @@
+name: JSR package checks
+on:
+  pull_request:
+    paths:
+      - "jsr/**"
+      - "tools/support/release/jsr/**"
+      - "tests/tooling/jsr-package.test.ts"
+      - ".github/workflows/jsr-package.yml"
+      - ".github/workflows/release-jsr.yml"
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: jsr-package-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  package:
+    name: JSR publish dry-run
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24", package-manager-cache: false }
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2
+        with: { deno-version: "2.9.7" }
+      - name: Test package generation
+        run: node --test tests/tooling/jsr-package.test.ts
+      - name: Generate the package for the checked-out release
+        run: node tools/support/release/jsr/package.ts prepare "$RUNNER_TEMP/jsr-package"
+      - name: Check the publication graph and public types
+        working-directory: ${{ runner.temp }}/jsr-package
+        run: deno publish --dry-run --config jsr.json
+      - name: Import the staged entry points under Deno
+        run: |
+          cp tools/support/release/jsr/consumer.ts "$RUNNER_TEMP/consumer.ts"
+          deno run --allow-all "$RUNNER_TEMP/consumer.ts" "file://$RUNNER_TEMP/jsr-package/"
