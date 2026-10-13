@@ -254,6 +254,9 @@ corsa_runtime = { package = "corsa_runtime", version = "=1.14.0" }
 # one fails the build and every one says why it exists.
 [workspace.lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage)'] }
+# A reference that immediately decays into a raw pointer still asserts the
+# aliasing rules of a reference. Use `&raw const` / `&raw mut` instead.
+raw_borrows_via_references = "warn"
 
 [workspace.lints.clippy]
 unwrap_used = "deny"
@@ -269,6 +272,10 @@ panic_in_result_fn = "deny"
 allow_attributes = "deny"
 allow_attributes_without_reason = "deny"
 wildcard_imports = "deny"
+# `with_capacity(0)` reserves nothing and behaves like `new()`.
+with_capacity_zero = "deny"
+# `T::BITS - x.leading_zeros()` is `x.bit_width()`.
+manual_bit_width = "deny"
 
 [profile.release]
 # Release artifacts are benchmarked and shipped from this profile. Fat LTO plus
