@@ -4,6 +4,20 @@
 //! argumentless v-bind expressions. Disabled inheritance and foreign template
 //! bindings stay silent. Standalone scripts retain the existing redundant-true
 //! diagnostic, where no SFC template is available to correlate.
+//!
+//! ## Examples
+//!
+//! ### Invalid
+//! ```vue
+//! <script setup></script>
+//! <template><div><button v-bind="$attrs">Save</button></div></template>
+//! ```
+//!
+//! ### Valid
+//! ```vue
+//! <script setup>defineOptions({ inheritAttrs: false })</script>
+//! <template><div><button v-bind="$attrs">Save</button></div></template>
+//! ```
 
 mod options;
 mod template;

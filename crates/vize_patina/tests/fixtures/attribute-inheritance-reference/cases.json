@@ -1032,6 +1032,46 @@
         "warning_count": 0,
         "diagnostics": []
       }
+    },
+    {
+      "id": "collectionattrsread",
+      "source": "<script setup></script><template><div><span v-for=\"item in $attrs\" v-bind=\"$attrs\" /></div></template>",
+      "filename": "collectionattrsread.vue",
+      "reference": [
+        {
+          "ruleId": "vue/no-duplicate-attr-inheritance",
+          "severity": 1,
+          "message": "Set \"inheritAttrs\" to false.",
+          "line": 1,
+          "column": 76,
+          "messageId": "noDuplicateAttrInheritance",
+          "endLine": 1,
+          "endColumn": 82
+        }
+      ],
+      "expected": {
+        "filename": "collectionattrsread.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "message": "Set \"inheritAttrs\" to false.",
+            "start": 75,
+            "end": 81,
+            "help": "Opt out of the automatic inheritance so only this `v-bind` applies them, e.g. `defineOptions({ inheritAttrs: false })` or `inheritAttrs: false` in the component options.",
+            "labels": [
+              {
+                "message": "attributes applied twice",
+                "start": 75,
+                "end": 81
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
     }
   ]
 }

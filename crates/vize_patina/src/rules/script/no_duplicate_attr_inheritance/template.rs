@@ -138,11 +138,26 @@ fn for_shadows_attrs(directive: &DirectiveNode<'_>, source: &str) -> bool {
         .flatten()
         .any(|alias| binding_shadows_attrs(expression_source(alias, source)));
     }
-    // A recovered loop with unknown aliases cannot establish an unbound vm reference.
-    directive
-        .exp
-        .as_ref()
-        .is_some_and(|exp| expression_source(exp, source).contains("$attrs"))
+    // The cached raw template may not carry structural for aliases yet.
+    // Reuse the shared scope parser so escaped names are bindings while the
+    // iterable source remains a read; unknown bindings stay conservative.
+    directive.exp.as_ref().is_some_and(|exp| {
+        vize_croquis::drawer::parse_v_for_scope_expression(expression_source(exp, source))
+            .is_none_or(|aliases| {
+                aliases
+                    .value_bindings
+                    .iter()
+                    .any(|name| name.as_str() == "$attrs")
+                    || aliases
+                        .key_alias
+                        .as_ref()
+                        .is_some_and(|name| name.as_str() == "$attrs")
+                    || aliases
+                        .index_alias
+                        .as_ref()
+                        .is_some_and(|name| name.as_str() == "$attrs")
+            })
+    })
 }
 
 fn expression_source<'a>(exp: &'a ExpressionNode<'a>, source: &'a str) -> &'a str {
@@ -185,7 +200,7 @@ impl<'a> Visit<'a> for AttrsBinding {
     }
 
     fn visit_binding_identifier(&mut self, identifier: &BindingIdentifier<'a>) {
-        self.found |= identifier.name == "$attrs";
+        self.found |= identifier.name.as_str() == "$attrs";
     }
 }
 

@@ -59,7 +59,7 @@ fn attribute_inheritance_matches_whole_pinned_inputs_and_scope_controls() {
     assert_eq!(corpus.original_matrix["budget"]["falsePositives"], 0);
     assert_eq!(corpus.original_matrix["budget"]["falseNegatives"], 0);
     assert!(!corpus.original_observations.is_null());
-    assert_eq!(corpus.cases.len(), 26);
+    assert_eq!(corpus.cases.len(), 27);
 
     for case in corpus.cases {
         let linter = Linter::new()

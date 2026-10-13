@@ -20,10 +20,10 @@ slot or lexical bindings remain conservative. A conditional root group stays
 comparable. Standalone JavaScript retains its existing redundant-true result.
 
 The durable corpus preserves seven whole publicly pinned SFCs, all eight
-original reference tuples, the original native mismatches and 19 additional
+original reference tuples, the original native mismatches and 20 additional
 scope controls. GUI's historical baseline parse failure remains `UNUSABLE`;
 its independently parsed finite inputs do not qualify the original project.
-The installed eslint-plugin-vue 10.9.2 reference passed all 26 cases; native
+The installed eslint-plugin-vue 10.9.2 reference passed all 27 cases; native
 qualification belongs to Actions. Full native packets include severity,
 message, byte range, help, labels, fixes and counts.
 
@@ -36,3 +36,10 @@ catalog. Actual Actions then exposed a borrowed temporary and repository
 string/slicing checks; those bounded source repairs retain the same rule laws.
 Current source bookkeeping updates three existing rows and their whole-manifest
 pins, retaining all 206 historical bodies and the remaining 320 current rows.
+
+Native run 38339272169 retained an escaped-loop-alias false positive. The raw
+AST can lack structural aliases, so its fallback now uses the existing shared
+loop-scope parser: decoded aliases bind, collection expressions remain reads.
+The adjacent `$attrs` collection-read control prevents blanket suppression.
+Executable SFC Bad/Good examples and their bilingual explanations, generated
+pages and three explain snapshots now describe this actual SFC behavior.
