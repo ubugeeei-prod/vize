@@ -44,3 +44,34 @@ The first source Check on `3efdca55a4` refused the production helper's
 The successor handles an absent entry name with an explicit refusal; traversal,
 all three controls, and the original lint policy remain unchanged. Fresh
 Actions must qualify that successor; the first failure grants no test credit.
+
+The `fb67f45784` source Check then exposed an observer integration failure:
+the standalone harness omitted `collect_vue_edges`, and removing an IO
+helper was no longer rejected because its caller was also omitted. Extract
+the exact transitive helper bodies and refuse missing or duplicate helpers.
+
+Finite discovery intentionally changes the repeated ancestor-loop path
+vector. It must not silently replace the original oracle. Keep the complete
+original kernel-limited physical vector, its whole bytes, and its independent
+committed Git walk. Archive its raw NUL vector and file rows separately,
+with both hashes bound into the native receipt and source identity. The
+original hosted census remains 44,367 routes, including 5,576 Jellyfin
+routes; these observations do not become successor performance evidence.
+
+Qualify the successor against a separate committed edge walk and physical
+whole-byte traversal. Its entire ordered vector must equal the original
+vector after removing only subtrees beneath authenticated repeated physical
+directory edges. Every original resolved source and Git blob must remain,
+and each original source's SHA256, byte length, and blob must match a retained
+successor. Missing files, reordered routes, uncommitted additions, replaced
+archives, changed source/helpers, foreign links, and arbitrary cycles remain
+refusals. The frozen-original Rust vector and literal IO controls remain,
+with additive finite-successor controls. Source IO qualification now uses
+the finite native vector while retaining the original census separately.
+
+The original Rust source reader already resolves path components before
+its one full UTF-8 read; the observer integration leaves that reader and
+the production collector unchanged. Focused local harness checks use the
+pinned Rust 1.99.0 directly, without a Cargo build. Full canonical inputs,
+ordinary Actions, and the protected merge queue still require fresh
+qualification on the repaired source.

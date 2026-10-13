@@ -5,7 +5,11 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { collectorHarness, validateNativeSource } from "../../tools/support/compat/github/canonical-corpus-native-walk.mjs";
+import {
+  collectorHarness,
+  validateNativeSource,
+} from "../../tools/support/compat/github/canonical-corpus-native-walk.mjs";
+import { gitObjectId } from "../../tools/support/compat/github/canonical-corpus-inventory.mjs";
 
 await test("native archive source/head/toolchain/binary and entire raw-vector custody refuses replacements", () => {
   const temporary = mkdtempSync(join(tmpdir(), "canonical-native-archive-"));
@@ -35,6 +39,16 @@ await test("native archive source/head/toolchain/binary and entire raw-vector cu
     const vector = execFileSync(join(temporary, "native-collector"), [root]);
     writeFileSync(join(temporary, "native-rustc.txt"), toolchain);
     writeFileSync(join(temporary, "native-vector.nul"), vector);
+    const original = [
+      [
+        "Original.vue",
+        hash(readFileSync(join(root, "Original.vue"))),
+        readFileSync(join(root, "Original.vue")).length,
+        gitObjectId("blob", readFileSync(join(root, "Original.vue"))),
+      ],
+    ];
+    writeFileSync(join(temporary, "original-kernel-vector.nul"), vector);
+    writeFileSync(join(temporary, "original-kernel-files.json"), JSON.stringify(original));
     const receipt = {
       schema: "vize.canonical-native-walk",
       version: 1,
@@ -46,16 +60,28 @@ await test("native archive source/head/toolchain/binary and entire raw-vector cu
       toolchainSha256: hash(toolchain),
       vectorSha256: hash(vector),
       files: 1,
+      traversal: "finite-physical-edges",
+      originalVectorSha256: hash(vector),
+      originalFilesSha256: hash(JSON.stringify(original)),
     };
     const receiptPath = join(temporary, "native-walk.json");
     writeFileSync(receiptPath, JSON.stringify(receipt));
     assert.deepEqual(validateNativeSource(temporary, identity).paths, ["Original.vue"]);
+    for (const key of ["traversal", "originalVectorSha256", "originalFilesSha256"]) {
+      const omitted = { ...receipt };
+      delete omitted[key];
+      writeFileSync(receiptPath, JSON.stringify(omitted));
+      assert.throws(() => validateNativeSource(temporary, identity), `Omitted ${key}`);
+    }
+    writeFileSync(receiptPath, JSON.stringify(receipt));
     for (const name of [
       "native-collector-source.rs",
       "native-collector.rs",
       "native-collector",
       "native-rustc.txt",
       "native-vector.nul",
+      "original-kernel-vector.nul",
+      "original-kernel-files.json",
     ]) {
       const path = join(temporary, name);
       const original = readFileSync(path);
@@ -75,6 +101,9 @@ await test("native archive source/head/toolchain/binary and entire raw-vector cu
       "toolchainSha256",
       "vectorSha256",
       "files",
+      "traversal",
+      "originalVectorSha256",
+      "originalFilesSha256",
     ]) {
       writeFileSync(receiptPath, JSON.stringify({ ...receipt, [key]: "foreign" }));
       assert.throws(() => validateNativeSource(temporary, identity), `Foreign ${key}`);

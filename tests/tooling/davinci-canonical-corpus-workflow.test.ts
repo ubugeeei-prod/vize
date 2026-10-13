@@ -60,6 +60,8 @@ await test("selection covers pinned inputs, drivers and real producers in both c
     "tools/support/compat/github/canonical-corpus-observer.mjs",
     "tools/support/compat/github/canonical-corpus-workers.mjs",
     "tools/support/compat/github/canonical-corpus-native-walk.mjs",
+    "tools/support/compat/github/canonical-corpus-finite-walk.mjs",
+    "tests/tooling/davinci-canonical-corpus-native-archive.test.mjs",
     "tools/support/compat/github/canonical-corpus-logical-walk.mjs",
     "tools/support/compat/github/canonical-corpus-io-probe.mjs",
     "tools/support/compat/github/canonical-corpus-io-probe.rs",
