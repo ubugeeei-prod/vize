@@ -46,9 +46,13 @@ pub(super) fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
             source_may_define_component_options(bytes)
         }
         RULE_NO_SIDE_EFFECTS_IN_COMPUTED => {
-            source_may_define_component_options(bytes)
+            (source_may_define_component_options(bytes)
                 && contains(bytes, b"computed")
-                && contains(bytes, b"this.")
+                && contains(bytes, b"this"))
+                || ((imports_from_vue(bytes)
+                    || contains(bytes, b"@vue/composition-api")
+                    || (contains(bytes, b"import") && contains(bytes, b"\\")))
+                    && (contains(bytes, b"computed") || contains(bytes, b"\\")))
         }
         RULE_NO_ARROW_FUNCTIONS_IN_WATCH => {
             source_may_define_component_options(bytes)

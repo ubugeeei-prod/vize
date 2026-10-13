@@ -71,7 +71,7 @@ mod composition;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-side-effects-in-computed-properties",
-    description: "Disallow side effects in computed getters",
+    description: "Disallow side effects in Options API computed getters",
     default_severity: Severity::Error,
 };
 

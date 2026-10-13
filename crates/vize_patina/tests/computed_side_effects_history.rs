@@ -35,6 +35,22 @@ fn original_n8n_getter_preserves_the_complete_authored_mutation_report() {
 fn imported_computed_identity_and_external_write_controls() {
     for (source, errors) in [
         (
+            r#"import { computed } from 'vue'; const state={value:0}; computed(()=>{state.value=1;return 1})"#,
+            1,
+        ),
+        (
+            r#"import * as Vue from 'vue'; const state={value:0}; Vue['\u0063omputed'](()=>{state.value=1;return 1})"#,
+            1,
+        ),
+        (
+            r#"import {computed} from '@vue/composition-api';const state={value:0};computed(()=>{state.value=1;return 1})"#,
+            1,
+        ),
+        (
+            r#"export default{computed:{value(){this['count']=1;return this['count']}}}"#,
+            1,
+        ),
+        (
             "import { computed, ref } from 'vue'; const state=ref(0); computed(()=>{state.value=1;return state.value})",
             1,
         ),
