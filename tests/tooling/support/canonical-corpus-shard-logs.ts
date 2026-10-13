@@ -6,8 +6,8 @@ import {
   exitLine,
   observerProcesses,
   processHeader,
-} from "../../../tools/support/compat/github/canonical-corpus-shards.ts";
-import type { ObserverProcess } from "../../../tools/support/compat/github/canonical-corpus-shards.ts";
+} from "../../../tools/support/compat/github/canonical-corpus-shard-plan.ts";
+import type { ObserverProcess } from "../../../tools/support/compat/github/canonical-corpus-shard-plan.ts";
 
 const shapes = ["dom_inline", "dom_module", "ssr", "vapor"];
 

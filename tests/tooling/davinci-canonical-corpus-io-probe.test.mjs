@@ -14,7 +14,7 @@ import {
 } from "../../tools/support/compat/github/canonical-corpus-io-probe.mjs";
 import { gitObjectId } from "../../tools/support/compat/github/canonical-corpus-inventory.mjs";
 import { parseNativeVector } from "../../tools/support/compat/github/canonical-corpus-native-walk.mjs";
-import { observerProcesses } from "../../tools/support/compat/github/canonical-corpus-shards.ts";
+import { observerProcesses } from "../../tools/support/compat/github/canonical-corpus-shard-plan.ts";
 
 const temporary = mkdtempSync(join(tmpdir(), "canonical-io-control-"));
 after(() => rmSync(temporary, { recursive: true, force: true }));

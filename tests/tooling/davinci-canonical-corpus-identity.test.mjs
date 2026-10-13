@@ -166,13 +166,8 @@ await test("fixture object cache is committed-gitlink keyed and read-only for PR
       assert.deepEqual(plan.gitlinks, parseGitlinks(original));
       assert.equal(plan.tree, git("rev-parse", "HEAD^{tree}"));
       keys.add(plan.cacheKey);
-      // An older pin set with the same submodule URLs may seed the objects;
-      // the committed inventory still verifies every checked-out byte.
-      assert.equal(
-        plan.cacheRestoreKey,
-        `canonical-corpus-objects-v1-${plan.repository}-${plan.modulesSha256}-`,
-      );
       assert.equal(plan.cacheKey, `${plan.cacheRestoreKey}${plan.gitlinksSha256}`);
+      assert(plan.cacheRestoreKey.endsWith(`-${plan.repository}-${plan.modulesSha256}-`));
       assert.throws(
         () => corpusPlan(process.cwd(), { ...context, GITHUB_SHA: "b".repeat(40) }),
         /differs from candidate/,

@@ -20,7 +20,7 @@ import {
   sha256,
   validateFiles,
 } from "./canonical-corpus-identity.mjs";
-import { hasProcessSegments, validateShardedObserver } from "./canonical-corpus-shards.ts";
+import { hasProcessSegments, validateShardedObserver } from "./canonical-corpus-shard-evidence.ts";
 
 export const observerLogs = { dom: "dom-corpus.log", "ssr-pug": "ssr-pug.log", reach: "reach.log" };
 const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));

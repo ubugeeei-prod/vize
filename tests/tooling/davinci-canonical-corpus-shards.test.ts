@@ -4,12 +4,14 @@ import { parse } from "yaml";
 import {
   cargoArguments,
   observerProcesses,
-  parseShardVector,
   prebuildTargets,
   processArguments,
   shardedObservers,
+} from "../../tools/support/compat/github/canonical-corpus-shard-plan.ts";
+import {
+  parseShardVector,
   validateShardedObserver,
-} from "../../tools/support/compat/github/canonical-corpus-shards.ts";
+} from "../../tools/support/compat/github/canonical-corpus-shard-evidence.ts";
 import { validateObserverLog } from "../../tools/support/compat/github/canonical-corpus-observer.mjs";
 import { shardedObserverEvidence } from "./support/canonical-corpus-shard-logs.ts";
 import type { ShardedEvidence } from "./support/canonical-corpus-shard-logs.ts";
