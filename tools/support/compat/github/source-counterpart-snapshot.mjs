@@ -190,7 +190,7 @@ export function listStarCounterpartFiles(owner, source, initialNames) {
       }
     }
   }
-  return Object.freeze([...chosen].sort());
+  return Object.freeze([...chosen].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)));
 }
 
 /** Raw literal files in a disposable private Git repository; no authentication credit. */

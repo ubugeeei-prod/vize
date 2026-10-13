@@ -57,7 +57,7 @@ assert.equal(rows.length, 415);
 assert.equal(new Set(rows.map(([file]) => file)).size, 415);
 assert.deepEqual(
   rows.map(([file]) => file),
-  rows.map(([file]) => file).toSorted(),
+  rows.map(([file]) => file).toSorted((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
 );
 const changed = rows.filter(([, before, next]) => before.blob !== next.blob);
 assert.deepEqual(
