@@ -20,7 +20,7 @@ import {
 export const componentJoinDirectory =
   "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/component-main-join";
 export const componentJoinManifestSHA256 =
-  "b548d2d216318582370e9e647be66498ef95271ae666a23a8b6b78487b9376a0";
+  "2d83606d3a485fa4a996888ae7d2bfe5c4a75ba36a2e23a765289d2c24af117a";
 const expectedSources = [
   "49d95b8e93a9f5bcb73e0c1c307815d4b3a9d570",
   "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207",

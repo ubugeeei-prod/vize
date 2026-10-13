@@ -10,8 +10,7 @@ use super::{
 };
 use crate::rules::script::{
     EmitsModuleScript, NoDupeKeys, NoDupeKeysModuleScript, NoDuplicateAttrInheritance,
-    ReturnInEmitsValidator, ScriptLintResult,
-    SfcScriptContext, script_source_type,
+    ReturnInEmitsValidator, ScriptLintResult, SfcScriptContext, script_source_type,
 };
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
