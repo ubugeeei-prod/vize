@@ -112,16 +112,19 @@ pub(super) fn build(
     // Rebuild previously registered open sources in the same project revision
     // before stale contexts are pruned. Otherwise querying a dependency would
     // delete its still-open importer and recreate it on the next query.
-    let live_sources = environment
+    let refreshed_sources = environment
         .editor_session
         .cache()
-        .project_sources_to_refresh(project.virtual_root(), revision.overlay_identity);
-    for path in live_sources {
-        if path != source_path
-            && let Some(source) = overlays.get(&path)
-        {
+        .overlay_sources_to_refresh(
+            project.virtual_root(),
+            revision.overlay_identity,
+            source_path,
+            overlays,
+        );
+    for path in &refreshed_sources {
+        if let Some(source) = overlays.get(path) {
             project
-                .register_path_with_content(&path, source)
+                .register_path_with_content(path, source)
                 .map_err(bridge_error)?;
         }
     }
@@ -248,6 +251,7 @@ pub(super) fn build(
         aliases,
         package_routes,
         route_inputs,
+        refreshed_sources,
         mirror,
         virtual_ts_options: environment.virtual_ts_options.clone(),
         query_surface: Default::default(),
