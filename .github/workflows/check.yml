@@ -157,8 +157,7 @@ jobs:
       - name: Install cargo-semver-checks
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
-          # 0.50.0 is the first release that reads the rustdoc JSON v61 of Rust 1.99.
-          tool: cargo-semver-checks@0.51.0
+          tool: cargo-semver-checks@0.51.0 # 0.50.0+ reads the rustdoc JSON v61 of Rust 1.99
       - name: Check public API SemVer compatibility
         env:
           BASELINE_REV: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || (github.event_name == 'push' && github.event.before || '') }}
