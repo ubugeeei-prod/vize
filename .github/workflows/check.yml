@@ -456,7 +456,7 @@ jobs:
         run: rust-script tools/commands/ci/github/write-coverage-summary.rs
   source-coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 40
+    timeout-minutes: 50
     # Source coverage is a daily/full-run trend metric; fast checks stay on PRs and pushes.
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     env:
@@ -487,7 +487,7 @@ jobs:
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
-          tool: cargo-llvm-cov
+          tool: cargo-llvm-cov,cargo-nextest@0.9.146
       - name: Source coverage report
         env:
           VIZE_NATIVE_SYNTAX_CAPTURE_DIR: ${{ runner.temp }}/source-coverage-native-syntax
