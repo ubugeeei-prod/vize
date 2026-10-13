@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "mainSource": "bd5702c0a4d5fb3bb64487794fc45f6f876e6e38",
+  "sourceOnly": true,
+  "runtimeCredit": false,
+  "performanceCredit": false,
+  "parts": [
+    [
+      "owned-corsa-javascript-source-part-0.json",
+      "9aaaa5b74c3d769e2cc4d89a3d210b7d276895dc5ef297b6d5d0294f844f10d5"
+    ],
+    [
+      "owned-corsa-javascript-source-part-1.json",
+      "085260c35be135fb4efd16596e96513864565cafcc4677a33d3426cc4ba2d6e5"
+    ]
+  ]
+}

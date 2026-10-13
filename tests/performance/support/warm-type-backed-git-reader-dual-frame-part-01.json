@@ -1,0 +1,344 @@
+[
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/trait-scope-correction/script-rules-after.rs.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "9eddae3f363f1965b59aedbc487af25ff18f9e94",
+      "bytes": 9734,
+      "sha256": "9a3f6978f30b5895c31d5eb0f333175f8ee60c1a52bccc31615d5ceb075f1e2b"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/trait-scope-correction/successor.json",
+    "cell": {
+      "mode": "100644",
+      "blob": "8e8db63ce45f1a82a78bcc11beedb8f1bae958cc",
+      "bytes": 12331,
+      "sha256": "9591f993ff7ff20537ffbc532ce84af6ef201ec26e248b99d7788725a7dece59"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/reserved-prefix-8090/api-order-main-source-custody.json",
+    "cell": {
+      "mode": "100644",
+      "blob": "fa3838f8922c92f81da49185dba821dd5e16014d",
+      "bytes": 3733,
+      "sha256": "67cd13b5da7a18095622e1f8b68d15c4d7dcb87116498c7b4d0f33eabfa68945"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/01-after.rs.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "f80104f94b80d850d6c8b8e3aacdaf3830b05192",
+      "bytes": 1142,
+      "sha256": "6ab8bce216974ed76eaee32f2a494c2a039401a62eab5dbc98b90da0e8ed1c2f"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/01-before.rs.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "2cec60a8008cd2761c2e383f49829ed038b25bc7",
+      "bytes": 1113,
+      "sha256": "f9e158bdb40b830de0d196c90f5a0489a2327de0fcaddf87790a8375d26bb096"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/02-after.rs.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "7ba76a4d5a9256270ef258947064d9e60f103077",
+      "bytes": 5670,
+      "sha256": "2fa87c69fef9eca8cd8c39d88892a2db91bb40eadcc17fa15c1bec9a991b376f"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/03-after.rs.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "5a0328505ea2d520ecabaa404202dd4bd0861365",
+      "bytes": 6384,
+      "sha256": "458971904a70de545aca5bb441e0f4241fad91d8573ae0681bd6298a1d3136f1"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/03-before.rs.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "6897b1de7ea65cc63fdbfc6df87709b78cacb271",
+      "bytes": 11589,
+      "sha256": "b688089a3b6ebb55b8250163d190011774c88caa38d0bddd706ce2b85174ee28"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/04-after.rs.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "85243a519428825cd278e0a5f418bb71b30ff53d",
+      "bytes": 11471,
+      "sha256": "1e3e58cab0ab268e3c9e3ba5eb3e74d54283d47249d10189fe65c608cca504f1"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/04-before.rs.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "af511b0b2a53a6cae12acada663dc6a01b5de28c",
+      "bytes": 10626,
+      "sha256": "5b3ae15fd4fc769f5fa418ec3b14039a8b30d8b1d7e06cd8f5ba6f872b12274c"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/05-after.rs.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "76b7cfe95c7a8d4121580f11b67c3545036d5025",
+      "bytes": 2399,
+      "sha256": "5bed02a5b8cdf759c2939fae2f68fda41c05a3d35508383e9275b28569e4c4b2"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/06-after.rs.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "3510a3c90f696765defb7e3524dfddd4c1e1bb24",
+      "bytes": 7512,
+      "sha256": "5836f482fd17f2a6b789d4ac892c8ebf1f191d3cddd7d7a07fda17b6e2b26d7f"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/06-before.rs.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "f7faef169ee467fb7f45598454a592ba0525fad1",
+      "bytes": 7329,
+      "sha256": "ce0a4fdd7e6f09b269da94fcd361067b839e0208ecbf2fd3cb42b12f33820fb4"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/07-after.rs.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "3dfc28110d86205541150b7e477cbdc6b82eb014",
+      "bytes": 9310,
+      "sha256": "88ea29b144566d5324df9299009331dd50da1c160ecf753d01d1b001dba0100e"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/07-before.rs.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "c6a052bf5eb6db4b1041104c475d0edb895ca1db",
+      "bytes": 8744,
+      "sha256": "bdab1932f2d6d0f80d2a4b93372fa69c2294a4acd5700fd2174913ab85eaabb0"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/08-after.rs.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "e4a3c8d0a973ae13ed0c9ba97a4cf4cb72b46320",
+      "bytes": 7552,
+      "sha256": "cce4c13e30a66479b42ea078dc9f799afc81bbfb8e9d5464f78b75b874c42dc1"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/08-before.rs.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "128d57a9377398133f450ae2440b251073bbda63",
+      "bytes": 7312,
+      "sha256": "cacbe030dc59399908463b3170cc80999c73a8a6bee486f580d54fd1b35f27df"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/09-after.rs.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "897c711329161538d8fefe536e46815aea76a043",
+      "bytes": 8807,
+      "sha256": "0749c7e672b42572d4c509404af7c82ba415590de5ef04988d577cdc23806c83"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/09-before.rs.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "897c711329161538d8fefe536e46815aea76a043",
+      "bytes": 8807,
+      "sha256": "0749c7e672b42572d4c509404af7c82ba415590de5ef04988d577cdc23806c83"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/10-after.rs.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "e153615991646e5549b0c3997c2184251493fe4a",
+      "bytes": 11157,
+      "sha256": "bcd3c09c4db78c4bf93514bf177848eb816bb1d665f3c9185fe332550c28eb23"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/10-before.rs.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "e153615991646e5549b0c3997c2184251493fe4a",
+      "bytes": 11157,
+      "sha256": "bcd3c09c4db78c4bf93514bf177848eb816bb1d665f3c9185fe332550c28eb23"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/11-after.rs.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "bcab2539142ad988f851ef92dd2226395dd53981",
+      "bytes": 19940,
+      "sha256": "0ee0a7230e1cceca0868d7637eb31978dff372bf3b16c2699f06e0a97b74d9fa"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/11-before.rs.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "bcab2539142ad988f851ef92dd2226395dd53981",
+      "bytes": 19940,
+      "sha256": "0ee0a7230e1cceca0868d7637eb31978dff372bf3b16c2699f06e0a97b74d9fa"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/12-after.rs.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "b1be5a2b831b556fbc55f43924992acfdbe88ede",
+      "bytes": 21919,
+      "sha256": "eaa4722cc76a7471137d797c255a8b5e5bcb09aa4d199a9b89624a1d506a6c03"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/12-before.rs.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "b1be5a2b831b556fbc55f43924992acfdbe88ede",
+      "bytes": 21919,
+      "sha256": "eaa4722cc76a7471137d797c255a8b5e5bcb09aa4d199a9b89624a1d506a6c03"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/original-api-order-law.mjs.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "1a2ca2e2e529f54465cd9c96ebdfe16329d3831d",
+      "bytes": 6838,
+      "sha256": "7346d7e4f2b9d7958dff5dfa704d3a9ee158ba5a268e344863fbdf4384439480"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/successor.json",
+    "cell": {
+      "mode": "100644",
+      "blob": "330f340a2149247814beceb373a3dcbe357c14ea",
+      "bytes": 10298,
+      "sha256": "ea908f5de1c09c19ad59bf9f64bbbabccab676940f584fe754bb8e10f79828cb"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/membership-law.json",
+    "cell": {
+      "mode": "100644",
+      "blob": "fc061aaa7fcd065c3361eba75757023956e7eaf4",
+      "bytes": 1471,
+      "sha256": "07f1abf28be1e0583a25f9c822beaaf546cec8c863603162ad04688833237dea"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/original-preset-membership.snap.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "3c927b145e33fdaf9275f3c63a23ec78b35d0fc2",
+      "bytes": 26349,
+      "sha256": "810d884d2b275b43799dc097bb8dfee7f63e892a4a7956846a0a7c5c87367da0"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/original-warm-type-backed-default-migration-host.test.ts.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "cef45230e113a0a9debc181957e77dbb6491f3f4",
+      "bytes": 5783,
+      "sha256": "86ce5a8bcbb25c298e59d211910b6aeca3da3e280f9a2109ce0daee6ace2ca0c"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/original-warm-type-backed-default-migration-host.ts.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "c32f3cebeab5bebabaa076e011af188774f2b031",
+      "bytes": 3081,
+      "sha256": "6b6bffc7461f754b82ad996abf62cd6f958998212e95d4af600fa4b9bfa483d5"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/original-warm-type-backed-default-migration-manifest.json.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "d5e7b8ef26209efe90cad29667607c2c2a2aaeba",
+      "bytes": 3738,
+      "sha256": "73e19d2b74c4488f8feb1214dd6dc15d0d4ff15f744994bc52d9288ee61e6e0d"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/policy-caller-integration.json",
+    "cell": {
+      "mode": "100644",
+      "blob": "b62347b8b4df379cf8299b52b3e3011348609f57",
+      "bytes": 7905,
+      "sha256": "5b1065fdafafa9b4e499406a45063f31ffb1b513ec2e200daec75a8865722080"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/registry-after.rs.fixture",
+    "cell": {
+      "mode": "100644",
+      "blob": "cbf9c7f32929b3d92554b1bc8918a5d100c303c4",
+      "bytes": 21922,
+      "sha256": "e0ac436d8735f69bab0fe42465a328047dc24dc58248a22ae2315a828468f7a1"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/successor.json",
+    "cell": {
+      "mode": "100644",
+      "blob": "24956f46a50b7aa95b320596a7d7370f0e431204",
+      "bytes": 12489,
+      "sha256": "7a612fc13dfe59fd50cfa31300980eacfa645e84a410cf6e04ea5777bc8d2e4b"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lsp/warm-type-backed-requests/case.json",
+    "cell": {
+      "mode": "100644",
+      "blob": "15461f5f48eaca74dd313f0002725e1791b3ab31",
+      "bytes": 1249,
+      "sha256": "ba2a49365dd6e3ec9fb5077fbcd6f68101166a2d18030138bcb0a94857713470"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lsp/warm-type-backed-requests/gen.mjs",
+    "cell": {
+      "mode": "100644",
+      "blob": "697b0d2417994e917452d8bebb279c883f187068",
+      "bytes": 2142,
+      "sha256": "4d0e14d66ce6e7b0b5d2e32a51c39bbe985283aa94934616b4da0ff587d34649"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lsp/warm-type-backed-requests/original-report.md",
+    "cell": {
+      "mode": "100644",
+      "blob": "72c5949de536dc35453099dbed6cb1d86a578682",
+      "bytes": 6652,
+      "sha256": "247d435038eb8c53f317dc6a5fdcdd216a19fa9bc58d155e355b5ed2c3eb4a58"
+    }
+  }
+]

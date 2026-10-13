@@ -1,6 +1,7 @@
 use super::{
-    CorsaError, CorsaResult, Path, TypeCheckResult, VirtualProject, is_vue_original,
-    partition_virtual_files, profile, run_cli_for_config, shard_count,
+    CliCheckFailure, CliCheckResult, CorsaError, CorsaResult, Path, TypeCheckResult,
+    VirtualProject, is_vue_original, partition_virtual_files, profile, run_cli_for_config,
+    shard_count,
 };
 
 pub(in crate::batch::executor) fn check_with_cli(
@@ -8,6 +9,14 @@ pub(in crate::batch::executor) fn check_with_cli(
     project: &VirtualProject,
     checkers: usize,
 ) -> CorsaResult<TypeCheckResult> {
+    check_with_cli_classified(corsa_path, project, checkers).map_err(CliCheckFailure::into_error)
+}
+
+pub(in crate::batch::executor) fn check_with_cli_classified(
+    corsa_path: &Path,
+    project: &VirtualProject,
+    checkers: usize,
+) -> CliCheckResult {
     let config_path = project.generated_tsconfig_path();
     run_cli_for_config(corsa_path, project, &config_path, checkers, &|_| true)
 }
@@ -27,10 +36,10 @@ pub(in crate::batch::executor) fn check_with_cli_sharded(
     project: &VirtualProject,
     servers: usize,
     checkers: usize,
-) -> CorsaResult<TypeCheckResult> {
+) -> CliCheckResult {
     let plan = partition_virtual_files(project, servers);
     if plan.shards.len() <= 1 {
-        return check_with_cli(corsa_path, project, checkers);
+        return check_with_cli_classified(corsa_path, project, checkers);
     }
 
     let mut config_paths = Vec::with_capacity(plan.shards.len());
@@ -67,7 +76,8 @@ pub(in crate::batch::executor) fn check_with_cli_sharded(
                         Err(CorsaError::CorsaExecution {
                             exit_code: -1,
                             message: "sharded corsa CLI worker panicked".into(),
-                        })
+                        }
+                        .into())
                     })
                 })
                 .collect::<Vec<_>>()

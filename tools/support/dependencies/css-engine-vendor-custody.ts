@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 import "./css-engine-finite-custody.ts";
 import { authenticateCssReleaseDriver } from "./css-engine-release-driver-custody.ts";
@@ -219,7 +220,22 @@ for (const [filename, checksum] of [
     "273b5f7263feb8ddf5bf132ccf329a388f467bf5e1ab586d866ba2ce8eca904d",
   ],
 ]) {
-  authenticateCssReleaseDriver(filename, fs.readFileSync(path.join(root, filename)), checksum);
+  if (filename === "tools/support/dependencies/css-engine-producer-manifests.ts") {
+    const helper = path.join(
+      root,
+      "tools/support/dependencies/css-engine-producer-context-custody.mjs",
+    );
+    const stat = fs.lstatSync(helper);
+    assert(stat.isFile() && (stat.mode & 0o777) === 0o644);
+    assert.equal(
+      sha256(fs.readFileSync(helper)),
+      "81fdd0a6f99bd24d013722d2e16c79ef7e572c5d408804dd9f8b7c4ed2d5832b",
+      "whole finite CSS context verifier",
+    );
+    const { authenticateCssProducerContext } = await import(pathToFileURL(helper).href);
+    assert.equal(authenticateCssProducerContext(root).originalSha256, checksum, filename);
+  } else
+    authenticateCssReleaseDriver(filename, fs.readFileSync(path.join(root, filename)), checksum);
 }
 const bundledSource = fs.readFileSync(path.join(root, "vendor/lightningcss/src/bundler.rs"));
 const bundledTests = fs.readFileSync(

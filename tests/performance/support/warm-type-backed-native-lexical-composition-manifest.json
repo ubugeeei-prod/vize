@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "sdkManifestSHA256": "cba2a1701ebdf3af5ae2b02465507a70a9cc43d0d56b2d94271efbe24ba28a4f",
+  "lexicalManifestSHA256": "c6cee7b641ef65f599a9077cfce5936317f8bc14a5670ca4e1ad5291eb780229",
+  "reviewedSourceTree": "cb865277f93a01545af9496391ceac5461a64476",
+  "sourceSuccessors": [
+    [
+      "crates/vize_canon/src/batch/executor/cli.rs",
+      "1b0cf4101ded1769c1fa38fdb74987ffff898e5bf8b88a3e704b85f132358fe3",
+      "200651676dffb81e21400bdc66477df47af0a8fee9c4d3d895fdce88ad0f3b9f",
+      "2c1bd0967fded524636933d2913bf5b71219301e9c2b8e0e285ad45f97ba8e7c"
+    ],
+    [
+      "crates/vize_canon/src/batch/executor/session.rs",
+      "80116dd46cfa46fe5abc376cfc9576d68bc4254e6da3c64f78642f67fdd94c54",
+      "4cde74a784b7504419a7e2a9538a14d6e8ef0aa2e8ec002ca40e0d88fb1efaff",
+      "2d15812f6618426f2c5869cb449fa2a64f96893446cb9466e9db7a1b0b5f3e7a"
+    ]
+  ],
+  "qualifiedHarnessSuccessors": [
+    [
+      "tests/performance/support/warm-type-backed-native-terminal-final.ts",
+      "c38b06d14223eeaef99c2a920e818d45bd5d39e795bc42f99fefee999c617279",
+      "e5cf6338b4edbc08641aee70888b79fe0d69b27118571fcb86cd5041479f503a"
+    ]
+  ],
+  "reviewedSource": "46bebe0045e5d5ac44446d02dc4352c526c86e6c",
+  "historicalReplayBodies": [
+    [
+      "tests/_fixtures/differential/lsp/native-lexical-composition-before/entries.json",
+      null,
+      "2b5892c347f1a478cc258bc2160803f6186cd669abb4cc057e9f8048b7c0cdd8"
+    ],
+    [
+      "tests/_fixtures/differential/lsp/native-lexical-composition-before/lexical-cli.txt",
+      null,
+      "200651676dffb81e21400bdc66477df47af0a8fee9c4d3d895fdce88ad0f3b9f"
+    ],
+    [
+      "tests/_fixtures/differential/lsp/native-lexical-composition-before/lexical-legacy-manifest.txt",
+      null,
+      "29744aee2e9521353464cdd2c1d445ed6426525c1e087ac21ed56b2d55f5fdd6"
+    ],
+    [
+      "tests/_fixtures/differential/lsp/native-lexical-composition-before/lexical-session.txt",
+      null,
+      "4cde74a784b7504419a7e2a9538a14d6e8ef0aa2e8ec002ca40e0d88fb1efaff"
+    ],
+    [
+      "tests/_fixtures/differential/lsp/native-lexical-composition-before/sdk-cli.txt",
+      null,
+      "1b0cf4101ded1769c1fa38fdb74987ffff898e5bf8b88a3e704b85f132358fe3"
+    ],
+    [
+      "tests/_fixtures/differential/lsp/native-lexical-composition-before/sdk-session.txt",
+      null,
+      "80116dd46cfa46fe5abc376cfc9576d68bc4254e6da3c64f78642f67fdd94c54"
+    ],
+    [
+      "tests/_fixtures/differential/lsp/native-lexical-composition-before/sdk-warm-type-backed-native-terminal-final.txt",
+      null,
+      "c38b06d14223eeaef99c2a920e818d45bd5d39e795bc42f99fefee999c617279"
+    ]
+  ],
+  "incomingPreservedSuccessors": [
+    [
+      "tests/_fixtures/differential/typechecker/manifest.json",
+      "29744aee2e9521353464cdd2c1d445ed6426525c1e087ac21ed56b2d55f5fdd6",
+      "25a76e75a3c3e95e9cc0f474f89d0951b7d87426a0e9f7c1cb1c6fa4c1b7e8f5"
+    ]
+  ]
+}

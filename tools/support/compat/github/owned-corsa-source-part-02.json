@@ -1,0 +1,168 @@
+[
+  {
+    "file": "vendor/corsa/Cargo.lock",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "d2909a588c73a7c23e9f67cd10a821982fa1864c",
+      "bytes": 19173,
+      "sha256": "d3c3df10d043df2dbd9c4b47999d391c6089a9ebb74d2ae03f5fdf6f9d889fb8"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "Cargo.lock",
+    "archiveMemberSHA256": "d3c3df10d043df2dbd9c4b47999d391c6089a9ebb74d2ae03f5fdf6f9d889fb8",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/Cargo.toml",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "6ef8f9fd85f831b05635839703fa85f5ad080c21",
+      "bytes": 2570,
+      "sha256": "31e2a1acf6ee04eda6465500e5deed80a99ce95047194be882dd6a537165230c"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "Cargo.toml",
+    "archiveMemberSHA256": "8b25d806429b545bf2e841d7798301dc05d6b706fc5c48be8d2283358c9bd4d3",
+    "manifestSuccessor": true
+  },
+  {
+    "file": "vendor/corsa/Cargo.toml.orig",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "58932ad919dbfa7091fcbc4317355f171d3bf2c3",
+      "bytes": 2360,
+      "sha256": "5d127defac2665200229a8e0b557a88a261c42129be1d6cfd28469970bdfd061"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "Cargo.toml.orig",
+    "archiveMemberSHA256": "5d127defac2665200229a8e0b557a88a261c42129be1d6cfd28469970bdfd061",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/LICENSE",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "cc1581a0efafdc1c423eaa8077ec4f7ee7827048",
+      "bytes": 1082,
+      "sha256": "dc68b72380fc755c1bb054cff32000c716b0515bacb35ca39d08a91cd23749a7"
+    },
+    "additiveLicenseCopy": true,
+    "authenticatedOriginal": "vendor/corsa_core/LICENSE"
+  },
+  {
+    "file": "vendor/corsa/README.md",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "4041c13e49d6324739476ee255aa450a823e8ed2",
+      "bytes": 4761,
+      "sha256": "aff44743c14309956853e2e092bd3fa5652990138e495761bde32e3894d8d6e7"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "README.md",
+    "archiveMemberSHA256": "aff44743c14309956853e2e092bd3fa5652990138e495761bde32e3894d8d6e7",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/src/bin/bench_real_corsa/args.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "1feefba7083cdc4c83b395432b4edfd143d06d2b",
+      "bytes": 8927,
+      "sha256": "69dfe5ed5e6718130c1ef6fa4c9c60356a71f527d1df6e8f34a55c0a3681b597"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "src/bin/bench_real_corsa/args.rs",
+    "archiveMemberSHA256": "69dfe5ed5e6718130c1ef6fa4c9c60356a71f527d1df6e8f34a55c0a3681b597",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/src/bin/bench_real_corsa/dataset.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "f89c46bf4bc81ff0b2ebded9b1146d990faa01f3",
+      "bytes": 4409,
+      "sha256": "4d133c083b6ba1bad956fde26e462c0bf013ad99560bbb109546afaaf30bce43"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "src/bin/bench_real_corsa/dataset.rs",
+    "archiveMemberSHA256": "4d133c083b6ba1bad956fde26e462c0bf013ad99560bbb109546afaaf30bce43",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/src/bin/bench_real_corsa/main.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "372ae56528cfea446c6cf5bbf599bfed66d0534a",
+      "bytes": 3362,
+      "sha256": "024d7d9daf7a84734c752a070caaf2542b75211894ebaa3a0160e9946536e1da"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "src/bin/bench_real_corsa/main.rs",
+    "archiveMemberSHA256": "024d7d9daf7a84734c752a070caaf2542b75211894ebaa3a0160e9946536e1da",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/src/bin/bench_real_corsa/measure.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "ba343dd3f09e48196755348fba18195cf724a94b",
+      "bytes": 2129,
+      "sha256": "945a39ca3645a77865d957d84b541beb6d523dac0432ac20107efd272aad4852"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "src/bin/bench_real_corsa/measure.rs",
+    "archiveMemberSHA256": "945a39ca3645a77865d957d84b541beb6d523dac0432ac20107efd272aad4852",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/src/bin/bench_real_corsa/profile.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "f178b605567f6668c7998b03fff34a7f0a7823c6",
+      "bytes": 1859,
+      "sha256": "92a2bd3d852cfe5777267e6ffae95c67560c028145a220367b03001585290c1b"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "src/bin/bench_real_corsa/profile.rs",
+    "archiveMemberSHA256": "92a2bd3d852cfe5777267e6ffae95c67560c028145a220367b03001585290c1b",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/src/bin/bench_real_corsa/report.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "079dddfc374a505010ea099bd2892f55f4d9c38e",
+      "bytes": 4901,
+      "sha256": "c0ac625cfa6136776d541ceecb08b0a8f5673dc33762d7ee37468503457ebf44"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "src/bin/bench_real_corsa/report.rs",
+    "archiveMemberSHA256": "c0ac625cfa6136776d541ceecb08b0a8f5673dc33762d7ee37468503457ebf44",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/src/bin/bench_real_corsa/scenario.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "d56428ae5f855d809dc4036e6434e5d2582ea5c5",
+      "bytes": 25309,
+      "sha256": "e462ef043cfac86afef21d9eec9baa2c0b9364bcfe9289720308215901a533e1"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "src/bin/bench_real_corsa/scenario.rs",
+    "archiveMemberSHA256": "e462ef043cfac86afef21d9eec9baa2c0b9364bcfe9289720308215901a533e1",
+    "manifestSuccessor": false
+  }
+]

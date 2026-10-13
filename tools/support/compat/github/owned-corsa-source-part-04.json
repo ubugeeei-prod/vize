@@ -1,0 +1,170 @@
+[
+  {
+    "file": "vendor/corsa/src/bin/mock_corsa/lsp.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "6547a19dd5752c98c68cf5fec42312171f679cbc",
+      "bytes": 6951,
+      "sha256": "74400e7c298f04bfc20e4005728e35e33ea2156efa6ed25cd451c85320c3d5cf"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "src/bin/mock_corsa/lsp.rs",
+    "archiveMemberSHA256": "74400e7c298f04bfc20e4005728e35e33ea2156efa6ed25cd451c85320c3d5cf",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/src/bin/mock_corsa/main.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "093a6c9c550108f5c16765a8246a75db14fc287f",
+      "bytes": 1140,
+      "sha256": "b6497888229f43f4a49c7fc11fbbb32e14cf98df0fb71a656dfd47c050619760"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "src/bin/mock_corsa/main.rs",
+    "archiveMemberSHA256": "b6497888229f43f4a49c7fc11fbbb32e14cf98df0fb71a656dfd47c050619760",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/src/bin/mock_corsa/msgpack.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "5c7ed725e3c1674451829df695ebced6b125e128",
+      "bytes": 10687,
+      "sha256": "4fda9ff5a89bbe5941c4ff9e1c56b3aa834ff0a9996182c8ec9c91a1fe0cd065"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "src/bin/mock_corsa/msgpack.rs",
+    "archiveMemberSHA256": "4fda9ff5a89bbe5941c4ff9e1c56b3aa834ff0a9996182c8ec9c91a1fe0cd065",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/src/lib.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "f3e8d666ac70a40e1f1667109a8627e8e0639aff",
+      "bytes": 3099,
+      "sha256": "ef71ad7a5ac1456852cc5ccc72e6570f56ce2f8fb1104f23908438df5dd4a900"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "src/lib.rs",
+    "archiveMemberSHA256": "ef71ad7a5ac1456852cc5ccc72e6570f56ce2f8fb1104f23908438df5dd4a900",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/tests/api_async.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "a98bd079be24326bbe28a14b34d21bf09d93dee1",
+      "bytes": 34862,
+      "sha256": "91721b5a3d62c10df9f178c8f89d563e8bb1cc02d94cf45944e18c257cde2327"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "tests/api_async.rs",
+    "archiveMemberSHA256": "91721b5a3d62c10df9f178c8f89d563e8bb1cc02d94cf45944e18c257cde2327",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/tests/api_msgpack.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "1fc488218b2a8ddd745d9ea5e7e3ee78aad83d49",
+      "bytes": 3905,
+      "sha256": "5067912844b671750fa6b5e1bfb45a2eab04395de412a0637eb5663f7d6f9b3d"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "tests/api_msgpack.rs",
+    "archiveMemberSHA256": "5067912844b671750fa6b5e1bfb45a2eab04395de412a0637eb5663f7d6f9b3d",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/tests/data/real_corsa_api_baseline.json",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "a8d0b2c236b273b1531c5e5b5a769f86c1fa6b0e",
+      "bytes": 472,
+      "sha256": "64c04fb2f170148ce48b40a23da03e670f4aa96bbba1db7842dfc2951a5b57af"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "tests/data/real_corsa_api_baseline.json",
+    "archiveMemberSHA256": "64c04fb2f170148ce48b40a23da03e670f4aa96bbba1db7842dfc2951a5b57af",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/tests/lsp_stdio.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "0f6605f61045d43fe9cd7224427aa048c9471fc7",
+      "bytes": 9605,
+      "sha256": "9a70855537777287c0f3acdd50b045fbf52a77dcf225f3ce9852c2008a79bca4"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "tests/lsp_stdio.rs",
+    "archiveMemberSHA256": "9a70855537777287c0f3acdd50b045fbf52a77dcf225f3ce9852c2008a79bca4",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/tests/orchestrator.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "add03ff0515f866df818e9869cee4641a4f5087d",
+      "bytes": 18013,
+      "sha256": "61ca53f960e5654d3dfe854092c84f8ea8630b1d32bc7e219a68bfc6e50c75ef"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "tests/orchestrator.rs",
+    "archiveMemberSHA256": "61ca53f960e5654d3dfe854092c84f8ea8630b1d32bc7e219a68bfc6e50c75ef",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/tests/policy.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "38f28254807f91e2ab80880e302ce8ec731df116",
+      "bytes": 2888,
+      "sha256": "d216883d3cdb84db9999dfc73eeb6800fe46a0cb372967162b48b1b2a89c812b"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "tests/policy.rs",
+    "archiveMemberSHA256": "d216883d3cdb84db9999dfc73eeb6800fe46a0cb372967162b48b1b2a89c812b",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/tests/project_session.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "25b4f77e0018603267b93a11bf360f8101a5550a",
+      "bytes": 5961,
+      "sha256": "747bbf20a8cb75c4d2e765aa0e9e932a755bbd1e8cc44442788d0b1b51b8cf0c"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "tests/project_session.rs",
+    "archiveMemberSHA256": "747bbf20a8cb75c4d2e765aa0e9e932a755bbd1e8cc44442788d0b1b51b8cf0c",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/tests/real_corsa_baseline.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "c30a5a6ae615f0b276db64636d71e81a69c99d2e",
+      "bytes": 5321,
+      "sha256": "0bd3f87c99db186469e0015a1f2885985aaeabe3cf079181c43469ba95368800"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "tests/real_corsa_baseline.rs",
+    "archiveMemberSHA256": "0bd3f87c99db186469e0015a1f2885985aaeabe3cf079181c43469ba95368800",
+    "manifestSuccessor": false
+  }
+]

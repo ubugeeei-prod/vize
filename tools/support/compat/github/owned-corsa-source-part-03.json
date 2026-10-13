@@ -1,0 +1,170 @@
+[
+  {
+    "file": "vendor/corsa/src/bin/bench_real_corsa/stats.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "e541cd3afb6a23622a514040ba9bdd586fdeeb74",
+      "bytes": 3935,
+      "sha256": "cf814d1f12961b2f9810ff5fec2e14a3f566c6d050e7d67bfe821b34c7a3f50a"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "src/bin/bench_real_corsa/stats.rs",
+    "archiveMemberSHA256": "cf814d1f12961b2f9810ff5fec2e14a3f566c6d050e7d67bfe821b34c7a3f50a",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/src/bin/bench_tooling_compare/args.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "1968faefeb17e577b0841fe053781153b4f076e3",
+      "bytes": 8458,
+      "sha256": "9820f6e1ff5dca7e67a53154e5e3c84c3aaf4bff0df7dfbdc3b9eef4be98a6ac"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "src/bin/bench_tooling_compare/args.rs",
+    "archiveMemberSHA256": "9820f6e1ff5dca7e67a53154e5e3c84c3aaf4bff0df7dfbdc3b9eef4be98a6ac",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/src/bin/bench_tooling_compare/dataset.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "152814202206c309056401cd1222a02f57c7026e",
+      "bytes": 4596,
+      "sha256": "7c5906bc0dddb793fd10142e05da996bf4240e68412de66da90bb392ee2004a1"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "src/bin/bench_tooling_compare/dataset.rs",
+    "archiveMemberSHA256": "7c5906bc0dddb793fd10142e05da996bf4240e68412de66da90bb392ee2004a1",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/src/bin/bench_tooling_compare/main.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "6652f8a4473dab45eafd582e3f5f45f08f316b5d",
+      "bytes": 3010,
+      "sha256": "cbd455717620f71b4b39bf3b951fa74daa639b396f91823a253ceb695884ef1d"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "src/bin/bench_tooling_compare/main.rs",
+    "archiveMemberSHA256": "cbd455717620f71b4b39bf3b951fa74daa639b396f91823a253ceb695884ef1d",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/src/bin/bench_tooling_compare/measure.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "460703f0fcd3d5a1cd99f8e0216a3cc8b89215c2",
+      "bytes": 697,
+      "sha256": "1092a242f3c7ff53abfe860b78d1bc76ff4f2ca7c10adf6f7de8306ea904d67b"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "src/bin/bench_tooling_compare/measure.rs",
+    "archiveMemberSHA256": "1092a242f3c7ff53abfe860b78d1bc76ff4f2ca7c10adf6f7de8306ea904d67b",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/src/bin/bench_tooling_compare/process.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "539d0b2ac85b1c8bf7dcbede5eba3300b04520e7",
+      "bytes": 2616,
+      "sha256": "ec4d9ebe15c1eaffa52f152a10afb69dde39b11ad01b965ebf7f5322d419b0ae"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "src/bin/bench_tooling_compare/process.rs",
+    "archiveMemberSHA256": "ec4d9ebe15c1eaffa52f152a10afb69dde39b11ad01b965ebf7f5322d419b0ae",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/src/bin/bench_tooling_compare/report.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "98e8f9b026df0a0724d614cd556990c8c29dbbf4",
+      "bytes": 9334,
+      "sha256": "674b8287ad655fcdaf571af576523dfadd646aa45584bff05bda4786e04d0092"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "src/bin/bench_tooling_compare/report.rs",
+    "archiveMemberSHA256": "674b8287ad655fcdaf571af576523dfadd646aa45584bff05bda4786e04d0092",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/src/bin/bench_tooling_compare/runner.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "4b6f9d737bc0a1169f360c0b251c0addd8584f02",
+      "bytes": 21285,
+      "sha256": "d58c3571e82146a8e73bf22b888b3d5b977c5d79be85bf1d18138564ca04547b"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "src/bin/bench_tooling_compare/runner.rs",
+    "archiveMemberSHA256": "d58c3571e82146a8e73bf22b888b3d5b977c5d79be85bf1d18138564ca04547b",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/src/bin/bench_tooling_compare/stats.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "9d5e7d1827b589876259827b079aee1b53cac584",
+      "bytes": 3938,
+      "sha256": "505b4de2acbb46606c4f6c86dba66fa432952002cf912ffd23dcabdb8ecc0b71"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "src/bin/bench_tooling_compare/stats.rs",
+    "archiveMemberSHA256": "505b4de2acbb46606c4f6c86dba66fa432952002cf912ffd23dcabdb8ecc0b71",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/src/bin/mock_corsa/api_async.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "abe5b2194473d229375d2045b00131da2a683bc6",
+      "bytes": 16830,
+      "sha256": "6770aca62e66dc1be0c7cfd007de26f3fba39c45ffd29ab87110f6a04372ab37"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "src/bin/mock_corsa/api_async.rs",
+    "archiveMemberSHA256": "6770aca62e66dc1be0c7cfd007de26f3fba39c45ffd29ab87110f6a04372ab37",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/src/bin/mock_corsa/common.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "bbda13868d49bd6847eac6ce29560cf7f50a5770",
+      "bytes": 9679,
+      "sha256": "4e82777ea5235fc73118cb9e31779eafa65feabb444d9c7df27e623b1b5d216d"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "src/bin/mock_corsa/common.rs",
+    "archiveMemberSHA256": "4e82777ea5235fc73118cb9e31779eafa65feabb444d9c7df27e623b1b5d216d",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/src/bin/mock_corsa/jsonrpc.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "b42fc706cbeca786bea27c7d9577d7439f293717",
+      "bytes": 1362,
+      "sha256": "6d5c6dcb1a16d868f84ff164bd0101a00d103d14bf79e3f31b91695c46d1a31c"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "src/bin/mock_corsa/jsonrpc.rs",
+    "archiveMemberSHA256": "6d5c6dcb1a16d868f84ff164bd0101a00d103d14bf79e3f31b91695c46d1a31c",
+    "manifestSuccessor": false
+  }
+]

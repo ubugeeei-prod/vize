@@ -1,0 +1,140 @@
+{
+  "corsa_core": {
+    "version": "1.14.0",
+    "archiveSha256": "5e1b70c8d7c6decd3d6cff7487542e0eaa4437786bbcb8e04e2c2b73c778c715",
+    "files": {
+      ".cargo_vcs_info.json": "8648f6c0bc3dd722f42400d02852dde53acf22389643d35febde393f324b8732",
+      "Cargo.lock": "24553b36060bfa2a2f9154233e0070cb56d8531a649b57ba8440de7d0d7fac14",
+      "Cargo.toml": "b92c9f94f932a73e6d34e93c8cea493b744322b5c4892d6bf0b79654fd0c7e13",
+      "Cargo.toml.orig": "66034c88eeddfbe88f38ae48b68cff16d573e213a3acf4f2f7589e459f703481",
+      "README.md": "aff44743c14309956853e2e092bd3fa5652990138e495761bde32e3894d8d6e7",
+      "src/error.rs": "a80dd7c6e0165b9621d20bc6c057c8e68a0241af02c84508ebaec709578ec0b2",
+      "src/fast.rs": "ee72a0b7ce23aeb89f171d533901bcd899b5341e1c95f57f8d059d5c3d2417d7",
+      "src/lib.rs": "74cef6ada4255fdc52e36c2afb445939a74cb298cb5ba0a094a9914ca105a70c",
+      "src/lint/context.rs": "f1981cb32c50f3a2a61f91a870862726836384251d8fd1fe94b55d768e0e36ef",
+      "src/lint/helpers.rs": "3dbf75efec8dc312ef3224f404eb1b3b8b73416cef2ea03507c2af5ec11190d5",
+      "src/lint/host_facts.rs": "2b91f9a85b64bce3b0049628ab2b721c61ffe0278a56fd94913014333abf5e54",
+      "src/lint/mod.rs": "8ad814e2a21bae7830f4fba27d3211348689d46bc39489a200cd3e4436062109",
+      "src/lint/registry.rs": "9bf6654aecbc55690473f4a7e8a0f6b1e204b61b4a55a1ad1077e7f97fcea0b7",
+      "src/lint/rules/await_thenable.rs": "8961eea51e3a61703f83daa541ca3e947368f8c4ba34e207de9c4842224bb1cd",
+      "src/lint/rules/consistent_return.rs": "78f362578406f3938b97cfd2bfbab55389b100053bb05bc8f14683ee932ef0b7",
+      "src/lint/rules/consistent_type_exports.rs": "f73886ba1c88f6c7f3801bbfbd0bab501b7d858fa80c1813f4b3ebda84566c51",
+      "src/lint/rules/dot_notation.rs": "fa047712d8ca776506a2df138a4126a8b9c27a3b098cf5562d2b65c228b4e80c",
+      "src/lint/rules/mod.rs": "3d0a97e244d6644469d4fe8ddecfa521237a6a1edc7066d86d001f0141b801b4",
+      "src/lint/rules/no_array_delete.rs": "87378ee7d11fb4d8cbf0bfcaf208fc872e95e5a2c10e9c4de2fc50e42102119d",
+      "src/lint/rules/no_base_to_string.rs": "a8e6ae29c958c3c56a05f684696c8c25c276a43f2fbb30b0181281fb523eced5",
+      "src/lint/rules/no_confusing_void_expression.rs": "cbcb8caf33bb626ff2f8c95ef29bb5513bd210bb63a54471f2279a1396a96b56",
+      "src/lint/rules/no_deprecated.rs": "8b20cdc1078a01cb8d230a55502128960504d683f0f81867127ba7064fa6f01e",
+      "src/lint/rules/no_duplicate_type_constituents.rs": "4dd02e0873949d99638991a02ca9832de4b0567f474bf68d04a50265a3aaeece",
+      "src/lint/rules/no_floating_promises.rs": "d39eb94e6d52b97a2516daa8164fa5b39e5e85932d8fefe400ee40d670d7e58a",
+      "src/lint/rules/no_for_in_array.rs": "9dd8e689f6212e40ca4023cc8faee9188c670bfd4ae535038c68b456cb4bb4c7",
+      "src/lint/rules/no_implied_eval.rs": "df675fb50114c1c5aebbc8821fb1f0d57e9dbfd58d76488eaa675799e385fd53",
+      "src/lint/rules/no_meaningless_void_operator.rs": "bda9564d961c65d922fe97d670cf9bb3affa8437fffd2f3bbaeb4b40413636d1",
+      "src/lint/rules/no_misused_promises.rs": "326ea5af4a1b2937b824c200b5d6280973394958679f5b56cf1baa616401dee7",
+      "src/lint/rules/no_misused_spread.rs": "98fa52aeec8cb35c4207c858b10568aac863c199d72fd39dbd5a2be41d03d723",
+      "src/lint/rules/no_mixed_enums.rs": "30d8bb9de19242ec08da191c878d51003a83f7d3842b162502f6c8baf902b15c",
+      "src/lint/rules/no_redundant_type_constituents.rs": "02ce93b489eef61b3f148366a49b15463c3bab21ca91d93ffd952affaec9387b",
+      "src/lint/rules/no_unnecessary_boolean_literal_compare.rs": "58e92f7925bff0c32f93d29a28d0e51c85c59524bceb99dd2d6095d83c01c4fc",
+      "src/lint/rules/no_unnecessary_condition.rs": "387f2e390b156a6710334e966250993983d35c037385c433b44f6e2c8e978f67",
+      "src/lint/rules/no_unnecessary_qualifier.rs": "3f9fb0b50122747695294417653e7a695c3171e539d7940d92e5055ee7e3f73e",
+      "src/lint/rules/no_unnecessary_template_expression.rs": "f93551729f6a12b5d01cd3245d18270266579ad959f70a3b9aafec070cbb84b8",
+      "src/lint/rules/no_unnecessary_type_arguments.rs": "d02575446d961cc286cec7322dd5f21be5b79dd7df6cd8f01f76412acdfb1a3f",
+      "src/lint/rules/no_unnecessary_type_assertion.rs": "483f29e8dede036b42696a7a0d00f956ff3a15b6fbc4a9eb82fbd5233fa3fd76",
+      "src/lint/rules/no_unnecessary_type_conversion.rs": "e21568438810620574d5ffb5f4e8bbb2de54e82844ac2cca856991739cd72bfe",
+      "src/lint/rules/no_unnecessary_type_parameters.rs": "f3640783c63462b0419e4f938d36644f6f6aa00d42a09811842db52df834f88f",
+      "src/lint/rules/no_unsafe_argument.rs": "16473df37e6c4a16d95c1421df786cd393dcfb132e436546673a5b85e984980c",
+      "src/lint/rules/no_unsafe_assignment.rs": "22f091447d792017d57b12555382fa1df5231c91f25f57d997f1a9a55b0623f4",
+      "src/lint/rules/no_unsafe_call.rs": "70dbf578a5df4710a398a450d00d4f391708c9b3f15df3df6443a511ff8f97a9",
+      "src/lint/rules/no_unsafe_enum_comparison.rs": "d3ebf5747a07deaa76dfcb30d42379a205c53d86235e3806934fc600ba8a12c3",
+      "src/lint/rules/no_unsafe_member_access.rs": "6d756b9de012a2f6c37702fd37c84603154c014fac50e0fc70c943db26450cd5",
+      "src/lint/rules/no_unsafe_return.rs": "a143a757e36d4aad0acf0e089de26930a76031c0703538a212b353e9090202b1",
+      "src/lint/rules/no_unsafe_type_assertion.rs": "7c6753178de7b6c8c41c32f993b6fa32085a0a7b0c63e06751010fc8634f0461",
+      "src/lint/rules/no_unsafe_unary_minus.rs": "621017b5e675d44b4bc10b97104801f09334cc4eaf91b85fb351386779758e36",
+      "src/lint/rules/no_useless_default_assignment.rs": "0deaf17373c2a22e77163995f47aab2fc9b242e4ea9b6812204a008c66b97253",
+      "src/lint/rules/non_nullable_type_assertion_style.rs": "7ed0ab2957158286a9f15f0dcf555072ef7e9b482ef3dd266f96b7ea1f74369f",
+      "src/lint/rules/only_throw_error.rs": "54781bf37f097e72be5ac454be6a9faa8839001198246a3d2697cf00c3cedaeb",
+      "src/lint/rules/prefer_find.rs": "3a23bd8952700943b89c6276dcdbf93812c24bd023214b56127377a4692a9085",
+      "src/lint/rules/prefer_includes.rs": "e9a562472433ea982910990ef526964d48d475a6016135e0cdf71bc794b04ded",
+      "src/lint/rules/prefer_nullish_coalescing.rs": "24af00cb92011071cbb9d3f1cdbbc7aa6c266fe29d5b484f24864d33473b47b0",
+      "src/lint/rules/prefer_optional_chain.rs": "0b2603ed1c233e68d0a436863237971d7421d829480cd641383f1ba49504ba36",
+      "src/lint/rules/prefer_promise_reject_errors.rs": "6dad6dc331cadfaf28e4730359c0751459c5f70dea172cfcc3058b657d198ee7",
+      "src/lint/rules/prefer_readonly.rs": "244e8e13bf860fa48a661699e0c18cd8340729a2e6b67ecf4ed0428db064690d",
+      "src/lint/rules/prefer_readonly_parameter_types.rs": "0f397178f93d602a8af38b0a4baa56b66ba4609281faf1540bcaed0445b108ae",
+      "src/lint/rules/prefer_reduce_type_parameter.rs": "eb72ed0d3fdc3e1e78c9b1e464092a37523e3b825d23d35c46667b3e30d1446a",
+      "src/lint/rules/prefer_regexp_exec.rs": "820ad1da6ecbc8b934ec25189474bd7885836bb8be4b37e0eb201d9ee24b4977",
+      "src/lint/rules/prefer_return_this_type.rs": "1a55a8e12561618067fb43cb568611955009a4e771f3f7d8c54fd082d29acfa4",
+      "src/lint/rules/prefer_string_starts_ends_with.rs": "d13e03f4da37ee7493abff240ce23ec70b7662314e35c0c447465f478d094892",
+      "src/lint/rules/promise_function_async.rs": "9afa504d63d38438e7ce351bdc01249ffcfed813327eea884ad4b0e81b3694a0",
+      "src/lint/rules/related_getter_setter_pairs.rs": "4a32fa3635ca1b4e9986b56215ce1b58fc6dd0bafaff7433e0dc094e23b7c2e3",
+      "src/lint/rules/require_array_sort_compare.rs": "1eaca60b19fd99ca0b526129f64f7262984e5ada42179613cc051ca81bd7c9ad",
+      "src/lint/rules/require_await.rs": "30f821020da0ae43277762198ebaa5de362a3c22d4878c7d543803daf1c24d88",
+      "src/lint/rules/restrict_plus_operands.rs": "3d31d1dada13cd8bedd92c2466d5e86759e182488f0cfd45193d31eb8e9c915b",
+      "src/lint/rules/restrict_template_expressions.rs": "1f7486c77abe10f33ef1eb0a82699d8f97dd492808326d3bceefa950a0b1793b",
+      "src/lint/rules/return_await.rs": "52081150ad0357086f94f2dc24fb0263a407bcdaa2754aa30647a1c7f278b960",
+      "src/lint/rules/strict_boolean_expressions.rs": "4beb5852dfb01a5910c15cb7422b5e63139adfddf1a20608732617b06057f95c",
+      "src/lint/rules/strict_void_return.rs": "0e18923a8e59900588ef9e3782f43ed2c3c6b6e75371f0afc0f65b92fe4ccaf2",
+      "src/lint/rules/switch_exhaustiveness_check.rs": "9c9629d55813f50d01316ae5b8df33b5c36e29524b78937158f9daa14d81ca20",
+      "src/lint/rules/unbound_method.rs": "822720c90fb14ac32770c8a5bbb1af8b030af0916aded8e922616f367deb70a2",
+      "src/lint/rules/use_unknown_in_catch_callback_variable.rs": "bd0a5a0c8348d65f900091958926232abd6d4546377b73535a108a47ff4cd42e",
+      "src/lint/tests.rs": "6eb57916ef3895f5fe950fb09df546c7f7799952310311e36f3457d264991195",
+      "src/lint/types.rs": "62c079fb3d95b7d66df2dfc5f7428ccb069cf7fe78a0dd3e46e72eef1bb60182",
+      "src/observability.rs": "3cf191b6be2fc4fd9eb2769cb1007ea8e325a7addc44b96234382f89ddd39297",
+      "src/process.rs": "32450c58c537edcf4d6a251c22f664aed86d86bdc49ebf98c75da5853cf0ba72",
+      "src/rpc.rs": "7fc6793a2d334eaa373fc3b870dbfbbe633db39a01b665c265e95e8d7c7a4b08",
+      "src/utils/mod.rs": "ee310398a382256faebf18a9822f161cd08bd2e0166cbed8ac4b922c0659d84e",
+      "src/utils/split.rs": "67130ab9bc30d2491b18e5cf42b61ed26fbecc62118a825e75c1a1e573ad1d6c",
+      "src/utils/type_text.rs": "c40b5f509d72c401c4be8f10c7cc219504abd691602c4182443f6725aa1555c2",
+      "src/utils/unsafe_flow.rs": "36a9ae2d80ea4dee59c01ba98d8ca5845fc2dc7b0436a4bd631c777d02bbaf33",
+      "src/utils/unsafe_flow_tests.rs": "5c7960375eac5d31cdd7cf73203a77fda00c02d45100faa0e7dd700cdde712f8"
+    },
+    "modifiedPublishedFiles": {
+      "src/lib.rs": {
+        "originalSha256": "74cef6ada4255fdc52e36c2afb445939a74cb298cb5ba0a094a9914ca105a70c",
+        "patchedSha256": "31fa28fa09b2a30c8e94b99d6bfe8ca39233d27fd4bdba01cbcb4b19bb85c8be"
+      },
+      "src/process.rs": {
+        "originalSha256": "32450c58c537edcf4d6a251c22f664aed86d86bdc49ebf98c75da5853cf0ba72",
+        "patchedSha256": "892ea756bb4db66cdfaf367ee232eea619dd150836f5d0dd6863e0b88f643b9a"
+      }
+    },
+    "addedFiles": {
+      "LICENSE": "dc68b72380fc755c1bb054cff32000c716b0515bacb35ca39d08a91cd23749a7",
+      "src/process_receipt.rs": "d6ad8b5ebc92871bb302f38d74d8378103f4f643126c7605e12fa7defb9c9c1a"
+    }
+  },
+  "corsa_lsp": {
+    "version": "1.14.0",
+    "archiveSha256": "c5223d92bf4e87bee6e4aae2c85948894fb7a92618fc5264d7f8ce7c599212f8",
+    "files": {
+      ".cargo_vcs_info.json": "1ff283bb923cfeb49982a883ad22de61fe7143eed328e047b07a28661864df5e",
+      "Cargo.lock": "f4030291b24baceebabd3b8149daf7fa38a0a6d38bd816737d65bde5512a7b81",
+      "Cargo.toml": "bd752f268452ce40d174a20b03b2a7572a2d176ec4ba6b9b68aab2acd1a2018f",
+      "Cargo.toml.orig": "9f3f043ec4c68fe702b8852834f6844098b486bbf6a345949b8f1880aa2c881a",
+      "README.md": "aff44743c14309956853e2e092bd3fa5652990138e495761bde32e3894d8d6e7",
+      "src/lib.rs": "3a17c482a3962459a376630fa5def380531a5e76f6db2f8c380764471fd0e348",
+      "src/lsp/client.rs": "24a0a3242d97a057cbe889d8b5c67a52ab69d2d50ace422e7fe5e079100b2770",
+      "src/lsp/custom.rs": "a36262217eb1e97622527f2ded0c5f4c1465af9d12ecec9086a16a3779631977",
+      "src/lsp/mod.rs": "0f34b61ef0829579677931db811e079e1ca5e4862c63e7a760c341bd3441cede",
+      "src/lsp/overlay.rs": "b96541a4d44ee486452637169242aaed258ad5e5ff81053531cb735b32fe129d",
+      "src/lsp/virtual_document.rs": "b8c542c3815d4916e338c959e960b84198d42aa751b6845e152cbe1e9dc168c9",
+      "src/lsp/virtual_document_tests.rs": "48d2130b5abf64344bcbcc94ad20d02b2ae0d248d41c72610c49d4fa6662bf56"
+    },
+    "modifiedPublishedFiles": {
+      "src/lsp/client.rs": {
+        "originalSha256": "24a0a3242d97a057cbe889d8b5c67a52ab69d2d50ace422e7fe5e079100b2770",
+        "patchedSha256": "83df11f2baf268660e91b7e30e4d528c8abab8270f832f4dcacd2572c3221d9e"
+      },
+      "src/lib.rs": {
+        "originalSha256": "3a17c482a3962459a376630fa5def380531a5e76f6db2f8c380764471fd0e348",
+        "patchedSha256": "b3d5915714dc4f4495fb6b9e4c563f63b9e75b0af80f11461111e8bd57dcc4a5"
+      }
+    },
+    "addedFiles": {
+      "LICENSE": "dc68b72380fc755c1bb054cff32000c716b0515bacb35ca39d08a91cd23749a7"
+    }
+  },
+  "upstreamLicense": {
+    "url": "https://raw.githubusercontent.com/ubugeeei-prod/corsa-bind/34bb731bdcaf5d4c154596b0c32912cbffd60b18/LICENSE",
+    "sha256": "dc68b72380fc755c1bb054cff32000c716b0515bacb35ca39d08a91cd23749a7"
+  }
+}

@@ -26,6 +26,7 @@ import {
   localImportInputs,
   planToolingTests,
 } from "../../tools/support/compat/github/plan-tooling-tests.mjs";
+import { ownedCorsaNativeReleaseInputs } from "./support/owned-corsa-native-release-inputs.mjs";
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const workflowPath = ".github/workflows/typechecker-native-phases.yml";
 const workflow = parse(readFileSync(join(root, workflowPath), "utf8"));
@@ -109,7 +110,6 @@ export function verifyReviewedReleaseInputs(cwd = root) {
   assert.match(review.sourceSha, /^[0-9a-f]{40}$/);
   return review.name;
 }
-
 function sourceFixture(t) {
   const directory = mkdtempSync(join(os.tmpdir(), "vize-native-release-inputs-"));
   t.after(() => rmSync(directory, { recursive: true, force: true }));
@@ -130,7 +130,7 @@ void test("actual ordered YAML excludes exactly three reviewed release tests", (
   );
   assert.deepEqual(
     paths.filter((path) => !path.startsWith("!")),
-    pins.positivePaths,
+    ownedCorsaNativeReleaseInputs(pins.positivePaths),
   );
   const tooling = paths.indexOf("tests/tooling/**");
   assert.deepEqual(

@@ -1,0 +1,51 @@
+[
+  {
+    "file": "tests/performance/support/warm-type-backed-git-reader-nodeep.ts",
+    "originalBeforeSHA256": null,
+    "originalAfterSHA256": "ad25378cc7272fb2fde533d6a6796a9462dec3d3e157217abef13a5a69cf6a96",
+    "before": null,
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "d9e71bdcf154c8b4602ba38067a183c97731c4fd",
+      "bytes": 6852,
+      "sha256": "ad25378cc7272fb2fde533d6a6796a9462dec3d3e157217abef13a5a69cf6a96"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "d9e71bdcf154c8b4602ba38067a183c97731c4fd",
+      "bytes": 6852,
+      "sha256": "ad25378cc7272fb2fde533d6a6796a9462dec3d3e157217abef13a5a69cf6a96"
+    }
+  },
+  {
+    "file": "tests/performance/support/warm-type-backed-git-reader-setup.json",
+    "originalBeforeSHA256": null,
+    "originalAfterSHA256": "2a098a6c73610cf6b3ba31d8f37e22da0e57fc6dd748260b3ad7adbdcef93933",
+    "before": null,
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "7b3452f8e4e224d46c822ac1a4186050d1e95765",
+      "bytes": 2510,
+      "sha256": "2a098a6c73610cf6b3ba31d8f37e22da0e57fc6dd748260b3ad7adbdcef93933"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "7b3452f8e4e224d46c822ac1a4186050d1e95765",
+      "bytes": 2510,
+      "sha256": "2a098a6c73610cf6b3ba31d8f37e22da0e57fc6dd748260b3ad7adbdcef93933"
+    }
+  },
+  {
+    "file": "tests/tooling/support/ascii-symbol-composed-caller-frame.json",
+    "originalBeforeSHA256": null,
+    "originalAfterSHA256": null,
+    "before": null,
+    "retainedAfter": null,
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "ceec181a745d998917b50cfe251a792e1160e45b",
+      "bytes": 39276,
+      "sha256": "22b6a814fc44d072037fdf690761597ea68339a2a7a9e2d6537925c94ceac7a6"
+    }
+  }
+]

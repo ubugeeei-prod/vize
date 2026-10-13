@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "beforeSource": "d6b3618d2f973ae6da559130955056f5c2d8ea98",
+  "reviewedSource": "cb17883c53616062e089f618e1f51cefde1ace15",
+  "reviewedSourceTree": "9f64c496ba8fd462ad3fa6952e3de41e71094bf0",
+  "file": "crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol/lifecycle_tests.rs",
+  "before": "1f870ca48d71f40a05fcf16e6fbeed3534561a74b9dc922796f473a8dc28ecb9",
+  "after": "71afb43467a06917d6473d2bf45ea70ea2fbfb794472e6197597e9b482754f7f"
+}

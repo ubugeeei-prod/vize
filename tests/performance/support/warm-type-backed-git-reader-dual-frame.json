@@ -1,0 +1,294 @@
+{
+  "version": 1,
+  "reconstructedBytes": 304002,
+  "reconstructedSHA256": "9b42d71684332a5f6ad729ab95deb8434da0707cbe37eaa31997e0db6335d549",
+  "skeleton": {
+    "version": 1,
+    "scope": "finite-dual-current-source-frame",
+    "beforeSource": "a93e78147b0990c813e965a7868b32dda341eb77",
+    "beforeCommit": {
+      "mode": "100644",
+      "blob": "57e227f4d39c26713abe5c66f6564f7ed8ab701f",
+      "bytes": 1083,
+      "sha256": "b7d4981e01688fd26fe3124a2291d96fde2a8e4459762cb493d0299ea11de1aa"
+    },
+    "beforeRows": [],
+    "rows": [],
+    "original": {
+      "sdk": {
+        "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+        "directory": "../../..",
+        "module": "tests/performance/support/warm-type-backed-git-reader-owned-frame.ts",
+        "files": [],
+        "rows": [],
+        "retained": []
+      },
+      "component": {
+        "source": "6760ff7d5946a600de89fc795768fefe1c66188a",
+        "directory": "../../..",
+        "module": "tests/performance/support/warm-type-backed-git-reader-component-frame.ts",
+        "files": [],
+        "rows": [],
+        "retained": []
+      }
+    },
+    "changes": {
+      "sdk": [
+        "crates/vize_patina/src/linter/engine/rule_sets.rs",
+        "crates/vize_patina/src/linter/engine/sfc.rs",
+        "tests/tooling/warm-type-backed-ascii-symbol-host.test.ts",
+        "tests/tooling/warm-type-backed-default-migration-host.test.ts",
+        "tests/tooling/warm-type-backed-git-reader-nodeep.test.ts"
+      ],
+      "component": [
+        "tests/tooling/ascii-symbol-original-callers.test.ts",
+        "tests/tooling/support/ascii-symbol-original-callers.ts",
+        "tests/tooling/warm-type-backed-git-reader-nodeep.test.ts"
+      ]
+    },
+    "driver": "tests/tooling/warm-type-backed-git-reader-nodeep.test.ts",
+    "privatePrototype": false
+  },
+  "parts": [
+    {
+      "file": "warm-type-backed-git-reader-dual-frame-part-00.json",
+      "section": "beforeRows",
+      "start": 0,
+      "entries": 38,
+      "mode": "100644",
+      "bytes": 11639,
+      "sha256": "58b2c998d2c6ab800eb383527e1ffd272b7ceaaf52a38de43bbeadd141d233af",
+      "blob": "313d6a2ae0f02e7b460c97e7bd39b080b874edd4"
+    },
+    {
+      "file": "warm-type-backed-git-reader-dual-frame-part-01.json",
+      "section": "beforeRows",
+      "start": 38,
+      "entries": 38,
+      "mode": "100644",
+      "bytes": 12553,
+      "sha256": "e49518c67577b3c441bcf44acc7fcccefb66743530d51cdb1714e2ed62687c22",
+      "blob": "5d01687ebab1409964910d1edb29f61d99302acb"
+    },
+    {
+      "file": "warm-type-backed-git-reader-dual-frame-part-02.json",
+      "section": "beforeRows",
+      "start": 76,
+      "entries": 36,
+      "mode": "100644",
+      "bytes": 10342,
+      "sha256": "78dba442880fd246c2ef25478dba20c1df50483b5a4496942ee00dc977d1a03d",
+      "blob": "6969914e2dc8447830af17993230f05008364d98"
+    },
+    {
+      "file": "warm-type-backed-git-reader-dual-frame-part-03.json",
+      "section": "rows",
+      "start": 0,
+      "entries": 16,
+      "mode": "100644",
+      "bytes": 11221,
+      "sha256": "c5d0ddf4afe500b6c24c1f4d95cd480dccc1e44a3519ee8d5453f40bd53d9c85",
+      "blob": "a75600c582fb0e838884dcb2704047503465466f"
+    },
+    {
+      "file": "warm-type-backed-git-reader-dual-frame-part-04.json",
+      "section": "rows",
+      "start": 16,
+      "entries": 16,
+      "mode": "100644",
+      "bytes": 11815,
+      "sha256": "65ac8a2d174b801ae759068e0f1f7a12b2f01163c05d5d9cf4f32e29cf843737",
+      "blob": "2750e3da162c12efa5aa8098b12ba7fda2cd73af"
+    },
+    {
+      "file": "warm-type-backed-git-reader-dual-frame-part-05.json",
+      "section": "rows",
+      "start": 32,
+      "entries": 16,
+      "mode": "100644",
+      "bytes": 12063,
+      "sha256": "da51d14e8f0bdb0d0b229af1a854d6899c47396a1c6db27dbc437a34c921b87d",
+      "blob": "bd8e6d3bfe4d660e6c80504fd8759f614a566f8c"
+    },
+    {
+      "file": "warm-type-backed-git-reader-dual-frame-part-06.json",
+      "section": "rows",
+      "start": 48,
+      "entries": 16,
+      "mode": "100644",
+      "bytes": 11963,
+      "sha256": "1ac82d56a8288e51af9bf5f4e119c3ee35d1faa88330e516a5e8e16fc64bc846",
+      "blob": "14b95306c2dadd01d3cbd360c9f45263926f7270"
+    },
+    {
+      "file": "warm-type-backed-git-reader-dual-frame-part-07.json",
+      "section": "rows",
+      "start": 64,
+      "entries": 16,
+      "mode": "100644",
+      "bytes": 11888,
+      "sha256": "0d6e60db2bcda6940ffc4a2ef818715c5afb160b7d7b1cd95f6aa44519a45725",
+      "blob": "df3e19bb7a6c67bc7d36a347f167ad3f7e298038"
+    },
+    {
+      "file": "warm-type-backed-git-reader-dual-frame-part-08.json",
+      "section": "rows",
+      "start": 80,
+      "entries": 16,
+      "mode": "100644",
+      "bytes": 11271,
+      "sha256": "5c16df51289377109788eb6fe9c9b2cadd42680ebf2f88e403deb9f8690dd1b2",
+      "blob": "1e0de270ebe1e8b19fff0325338c6000dba6f43e"
+    },
+    {
+      "file": "warm-type-backed-git-reader-dual-frame-part-09.json",
+      "section": "rows",
+      "start": 96,
+      "entries": 16,
+      "mode": "100644",
+      "bytes": 11121,
+      "sha256": "59ce4b513771f632abb9e914236e5c443e8f15f0d54f71b1041bcdac7ab254c2",
+      "blob": "0975f1f2509482d7af5abf7f8a38e1506db9eb88"
+    },
+    {
+      "file": "warm-type-backed-git-reader-dual-frame-part-10.json",
+      "section": "original.sdk.files",
+      "start": 0,
+      "entries": 38,
+      "mode": "100644",
+      "bytes": 10421,
+      "sha256": "2c18586f957abbfd7221894f388df94a89c5ee260142226fcae412c9325d6944",
+      "blob": "515a69764034c053d2f1fa77bc08570ae5c61e11"
+    },
+    {
+      "file": "warm-type-backed-git-reader-dual-frame-part-11.json",
+      "section": "original.sdk.rows",
+      "start": 0,
+      "entries": 38,
+      "mode": "100644",
+      "bytes": 11443,
+      "sha256": "52d4a5aefa42601a3b5219fa9aa37aeceaa5bd74c7b9db505fcc7cd637d6e1e1",
+      "blob": "e6e19978e98922d90500c18e8896ce3e76328338"
+    },
+    {
+      "file": "warm-type-backed-git-reader-dual-frame-part-12.json",
+      "section": "original.sdk.rows",
+      "start": 38,
+      "entries": 38,
+      "mode": "100644",
+      "bytes": 12930,
+      "sha256": "5f48af753ca926e9b3f750bb0c625926e03fcc0f47ab552d332673dd2fff6a7a",
+      "blob": "aa6845609b2e2a8593d35c3744f08372e47e92a6"
+    },
+    {
+      "file": "warm-type-backed-git-reader-dual-frame-part-13.json",
+      "section": "original.sdk.rows",
+      "start": 76,
+      "entries": 35,
+      "mode": "100644",
+      "bytes": 10935,
+      "sha256": "67b5db356eec29658787a2b98fc48e2fa07d72eccec8de0a97982119a67fba60",
+      "blob": "3d747767bc198cb4db54b8f1c978ad825280ae08"
+    },
+    {
+      "file": "warm-type-backed-git-reader-dual-frame-part-14.json",
+      "section": "original.sdk.retained",
+      "start": 0,
+      "entries": 49,
+      "mode": "100644",
+      "bytes": 13907,
+      "sha256": "54025b6e108df1b8ff5ee8a47ceb301df20e384369f3e4afb1d6f942298aedbb",
+      "blob": "f1f158c6cacc3de4bb34dfa7e9b81ed5839415c2"
+    },
+    {
+      "file": "warm-type-backed-git-reader-dual-frame-part-15.json",
+      "section": "original.sdk.retained",
+      "start": 49,
+      "entries": 49,
+      "mode": "100644",
+      "bytes": 14046,
+      "sha256": "a35f798ba2b91ad93d365847ac18c17862b1823a33a82be0b1549dbb21f04d40",
+      "blob": "a76e3dc54102c15f479ffe444c893f0dd2e9d225"
+    },
+    {
+      "file": "warm-type-backed-git-reader-dual-frame-part-16.json",
+      "section": "original.sdk.retained",
+      "start": 98,
+      "entries": 15,
+      "mode": "100644",
+      "bytes": 3877,
+      "sha256": "aa96b5f75b3e3ab4f1dd116d3df3d54e2c97766e4cc31a569b3a07681ae33d41",
+      "blob": "bdba2968d0d9c17ac379fbfba7d52bd7b5c7b94d"
+    },
+    {
+      "file": "warm-type-backed-git-reader-dual-frame-part-17.json",
+      "section": "original.component.files",
+      "start": 0,
+      "entries": 38,
+      "mode": "100644",
+      "bytes": 10509,
+      "sha256": "59b7d602009534cac03254cc4711285926fcd35de90db3cc39eb09290431cb81",
+      "blob": "139ae0234580f50d08388baf0289521efa65d040"
+    },
+    {
+      "file": "warm-type-backed-git-reader-dual-frame-part-18.json",
+      "section": "original.component.rows",
+      "start": 0,
+      "entries": 38,
+      "mode": "100644",
+      "bytes": 11443,
+      "sha256": "8b8c2dfd6a155cb2fe770551dae2772097c8ffeb2632ea2d0ac259dc7d759549",
+      "blob": "1c7a667d65d197db5e68b9275bc101c81d060821"
+    },
+    {
+      "file": "warm-type-backed-git-reader-dual-frame-part-19.json",
+      "section": "original.component.rows",
+      "start": 38,
+      "entries": 38,
+      "mode": "100644",
+      "bytes": 12930,
+      "sha256": "5f48af753ca926e9b3f750bb0c625926e03fcc0f47ab552d332673dd2fff6a7a",
+      "blob": "aa6845609b2e2a8593d35c3744f08372e47e92a6"
+    },
+    {
+      "file": "warm-type-backed-git-reader-dual-frame-part-20.json",
+      "section": "original.component.rows",
+      "start": 76,
+      "entries": 35,
+      "mode": "100644",
+      "bytes": 10946,
+      "sha256": "9ccc59d6b31af6ee6c39c7a0c9a5c180ccbf0d4ada3f6ae5181c1345e45e40f0",
+      "blob": "53039900ac506279d76886f1e20ddd64045c2ded"
+    },
+    {
+      "file": "warm-type-backed-git-reader-dual-frame-part-21.json",
+      "section": "original.component.retained",
+      "start": 0,
+      "entries": 49,
+      "mode": "100644",
+      "bytes": 13907,
+      "sha256": "54025b6e108df1b8ff5ee8a47ceb301df20e384369f3e4afb1d6f942298aedbb",
+      "blob": "f1f158c6cacc3de4bb34dfa7e9b81ed5839415c2"
+    },
+    {
+      "file": "warm-type-backed-git-reader-dual-frame-part-22.json",
+      "section": "original.component.retained",
+      "start": 49,
+      "entries": 49,
+      "mode": "100644",
+      "bytes": 14046,
+      "sha256": "a35f798ba2b91ad93d365847ac18c17862b1823a33a82be0b1549dbb21f04d40",
+      "blob": "a76e3dc54102c15f479ffe444c893f0dd2e9d225"
+    },
+    {
+      "file": "warm-type-backed-git-reader-dual-frame-part-23.json",
+      "section": "original.component.retained",
+      "start": 98,
+      "entries": 15,
+      "mode": "100644",
+      "bytes": 3877,
+      "sha256": "aa96b5f75b3e3ab4f1dd116d3df3d54e2c97766e4cc31a569b3a07681ae33d41",
+      "blob": "bdba2968d0d9c17ac379fbfba7d52bd7b5c7b94d"
+    }
+  ]
+}

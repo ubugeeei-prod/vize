@@ -1,0 +1,233 @@
+[
+  {
+    "file": "tests/tooling/support/setup-export-preset-source-custody.mjs",
+    "originalBeforeSHA256": "8995c93374509bbb37be4fd0df0506df1b8d6bac4737496d5f66410d19527b7a",
+    "originalAfterSHA256": "8995c93374509bbb37be4fd0df0506df1b8d6bac4737496d5f66410d19527b7a",
+    "before": {
+      "mode": "100644",
+      "blob": "af400a192e7d2384aefdd823483caf257419b93d",
+      "bytes": 5387,
+      "sha256": "8995c93374509bbb37be4fd0df0506df1b8d6bac4737496d5f66410d19527b7a"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "af400a192e7d2384aefdd823483caf257419b93d",
+      "bytes": 5387,
+      "sha256": "8995c93374509bbb37be4fd0df0506df1b8d6bac4737496d5f66410d19527b7a"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "af400a192e7d2384aefdd823483caf257419b93d",
+      "bytes": 5387,
+      "sha256": "8995c93374509bbb37be4fd0df0506df1b8d6bac4737496d5f66410d19527b7a"
+    }
+  },
+  {
+    "file": "tests/tooling/warm-type-backed-default-migration-host.test.ts",
+    "originalBeforeSHA256": "5084578fa77c215ee7555708d9cc6284826a36dced1a9f31c5e6b417a1447704",
+    "originalAfterSHA256": "5084578fa77c215ee7555708d9cc6284826a36dced1a9f31c5e6b417a1447704",
+    "before": {
+      "mode": "100644",
+      "blob": "d74f30fd0efb7c9412b37605f6c1d28f3b3e5757",
+      "bytes": 6794,
+      "sha256": "5084578fa77c215ee7555708d9cc6284826a36dced1a9f31c5e6b417a1447704"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "d74f30fd0efb7c9412b37605f6c1d28f3b3e5757",
+      "bytes": 6794,
+      "sha256": "5084578fa77c215ee7555708d9cc6284826a36dced1a9f31c5e6b417a1447704"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "d74f30fd0efb7c9412b37605f6c1d28f3b3e5757",
+      "bytes": 6794,
+      "sha256": "5084578fa77c215ee7555708d9cc6284826a36dced1a9f31c5e6b417a1447704"
+    }
+  },
+  {
+    "file": "tests/performance/support/warm-type-backed-git-reader-nodeep.json",
+    "originalBeforeSHA256": null,
+    "originalAfterSHA256": "bcecdd3cbc3fa8dbaafb7c7f4dc48f491d1a0a82e861ef034e69bdaa83c52adb",
+    "before": null,
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "856eb7245c052cb45e1c41aa544d6873f00e373f",
+      "bytes": 2843,
+      "sha256": "bcecdd3cbc3fa8dbaafb7c7f4dc48f491d1a0a82e861ef034e69bdaa83c52adb"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "856eb7245c052cb45e1c41aa544d6873f00e373f",
+      "bytes": 2843,
+      "sha256": "bcecdd3cbc3fa8dbaafb7c7f4dc48f491d1a0a82e861ef034e69bdaa83c52adb"
+    }
+  },
+  {
+    "file": "tests/performance/support/warm-type-backed-git-reader-nodeep-family-1.json",
+    "originalBeforeSHA256": null,
+    "originalAfterSHA256": "02eba2d44a67fa4977e615b7f381cffe7fdd869e1b770ed9fc9cf1c461d8dba3",
+    "before": null,
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "444b135ff5752ea0032c1e6ccd1565fd98afaad6",
+      "bytes": 6983,
+      "sha256": "02eba2d44a67fa4977e615b7f381cffe7fdd869e1b770ed9fc9cf1c461d8dba3"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "444b135ff5752ea0032c1e6ccd1565fd98afaad6",
+      "bytes": 6983,
+      "sha256": "02eba2d44a67fa4977e615b7f381cffe7fdd869e1b770ed9fc9cf1c461d8dba3"
+    }
+  },
+  {
+    "file": "tests/performance/support/warm-type-backed-git-reader-nodeep-family-2.json",
+    "originalBeforeSHA256": null,
+    "originalAfterSHA256": "323254f32bcf498c85b8afa365db0a4cdfea994682f5d1004affb24d52d92d17",
+    "before": null,
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "4cae47244e34f45dd66ce2da71140712a94ad27b",
+      "bytes": 7993,
+      "sha256": "323254f32bcf498c85b8afa365db0a4cdfea994682f5d1004affb24d52d92d17"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "4cae47244e34f45dd66ce2da71140712a94ad27b",
+      "bytes": 7993,
+      "sha256": "323254f32bcf498c85b8afa365db0a4cdfea994682f5d1004affb24d52d92d17"
+    }
+  },
+  {
+    "file": "tests/performance/support/warm-type-backed-git-reader-nodeep-family-3.json",
+    "originalBeforeSHA256": null,
+    "originalAfterSHA256": "c7eb01f4537c4ca639cd28619a2cbae430fb8c9d1b4df2a0eb1fa5adf635979d",
+    "before": null,
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "cf8431bc8dd726f04becd76d0f6fca2e301d4c40",
+      "bytes": 7509,
+      "sha256": "c7eb01f4537c4ca639cd28619a2cbae430fb8c9d1b4df2a0eb1fa5adf635979d"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "cf8431bc8dd726f04becd76d0f6fca2e301d4c40",
+      "bytes": 7509,
+      "sha256": "c7eb01f4537c4ca639cd28619a2cbae430fb8c9d1b4df2a0eb1fa5adf635979d"
+    }
+  },
+  {
+    "file": "tests/tooling/warm-type-backed-ascii-symbol-host.test.ts",
+    "originalBeforeSHA256": "56597eaad2dbb570f377ca00a94bbb0360140ee2ad7c946301f1ac68caff397f",
+    "originalAfterSHA256": "06fdc1724b5fc98c388029203311635e5935fea64f5594bcb4431100ee052b76",
+    "before": {
+      "mode": "100644",
+      "blob": "4c1b561b29ee28b7bda1d5b48365c6b6783bc65c",
+      "bytes": 9986,
+      "sha256": "56597eaad2dbb570f377ca00a94bbb0360140ee2ad7c946301f1ac68caff397f"
+    },
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "66d6201283f8480a0ab96ab7daf9bc4ac8d1944b",
+      "bytes": 11243,
+      "sha256": "06fdc1724b5fc98c388029203311635e5935fea64f5594bcb4431100ee052b76"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "66d6201283f8480a0ab96ab7daf9bc4ac8d1944b",
+      "bytes": 11243,
+      "sha256": "06fdc1724b5fc98c388029203311635e5935fea64f5594bcb4431100ee052b76"
+    }
+  },
+  {
+    "file": "tests/tooling/support/ascii-symbol-original-callers.ts",
+    "originalBeforeSHA256": null,
+    "originalAfterSHA256": "26247a3b96d3ec476aa591a83d19c0667c5545323f1ac11ff8aadda354369de2",
+    "before": null,
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "525dc1a4e14329459b06d29cb167bd988ef7201a",
+      "bytes": 5625,
+      "sha256": "26247a3b96d3ec476aa591a83d19c0667c5545323f1ac11ff8aadda354369de2"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "6a24e80278a24d1faefb883fdbb116d90649c62f",
+      "bytes": 6180,
+      "sha256": "158cc39c3e8025e39e833321c25d6c9bdebdd594d8448a0a025b7d23c0dbf5d5"
+    }
+  },
+  {
+    "file": "tests/tooling/support/ascii-symbol-original-callers.json",
+    "originalBeforeSHA256": null,
+    "originalAfterSHA256": "0dc0852abe918f17f378a708e70d61b42f0630fe94865db96f8c7201d43ffbd3",
+    "before": null,
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "91f3b1bc4e56f5fea621c3d3594bb0468ed9cd4c",
+      "bytes": 112709,
+      "sha256": "0dc0852abe918f17f378a708e70d61b42f0630fe94865db96f8c7201d43ffbd3"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "91f3b1bc4e56f5fea621c3d3594bb0468ed9cd4c",
+      "bytes": 112709,
+      "sha256": "0dc0852abe918f17f378a708e70d61b42f0630fe94865db96f8c7201d43ffbd3"
+    }
+  },
+  {
+    "file": "tests/tooling/support/ascii-symbol-caller-frames.json",
+    "originalBeforeSHA256": null,
+    "originalAfterSHA256": "ae9cbab52a1ba62f3e31b8e4f92f80e3c973de3510d219ee940a6b89cfc716d6",
+    "before": null,
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "3e2cd37656232ea2bf1e8847ec4799cb789b8221",
+      "bytes": 69364,
+      "sha256": "ae9cbab52a1ba62f3e31b8e4f92f80e3c973de3510d219ee940a6b89cfc716d6"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "3e2cd37656232ea2bf1e8847ec4799cb789b8221",
+      "bytes": 69364,
+      "sha256": "ae9cbab52a1ba62f3e31b8e4f92f80e3c973de3510d219ee940a6b89cfc716d6"
+    }
+  },
+  {
+    "file": "tests/tooling/ascii-symbol-original-callers.test.ts",
+    "originalBeforeSHA256": null,
+    "originalAfterSHA256": "9a7c159495f48858b28fb68cb3ee8838676d4505ed98bf2366b92e96dd6e8345",
+    "before": null,
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "d9a3706a5d4a8a39930c9ec97d9d892ed0d1a053",
+      "bytes": 3381,
+      "sha256": "9a7c159495f48858b28fb68cb3ee8838676d4505ed98bf2366b92e96dd6e8345"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "783f7d515423ca40f730cb21905fd80517a50f35",
+      "bytes": 4318,
+      "sha256": "1b23dcebaebb91428f8fe06390b385f618c488a6cdb0a126003489f3064863ae"
+    }
+  },
+  {
+    "file": "tests/tooling/warm-type-backed-git-reader-setup.test.ts",
+    "originalBeforeSHA256": null,
+    "originalAfterSHA256": "659866cd702f3a710bc068765aa7135b309519e0a1776aa6ce60a60c30a182e7",
+    "before": null,
+    "retainedAfter": {
+      "mode": "100644",
+      "blob": "389b2763fb4aca9731515ac0f2baa128792578e7",
+      "bytes": 7834,
+      "sha256": "659866cd702f3a710bc068765aa7135b309519e0a1776aa6ce60a60c30a182e7"
+    },
+    "currentAfter": {
+      "mode": "100644",
+      "blob": "389b2763fb4aca9731515ac0f2baa128792578e7",
+      "bytes": 7834,
+      "sha256": "659866cd702f3a710bc068765aa7135b309519e0a1776aa6ce60a60c30a182e7"
+    }
+  }
+]

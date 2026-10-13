@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { loadNativeSemanticCompletionCases } from "./typechecker-native-semantic-completion.ts";
 import {
   loadProductManifest,
   readPinnedArtifact,
@@ -133,6 +134,10 @@ export function loadTypecheckerManifest(manifestPath: string) {
   assert.equal(loaded.manifest.contract, "batch-start-diagnostics-v1");
   assert.equal(loaded.manifest.issue, 6879);
   const root = path.dirname(manifestPath);
+  const supplementalCases = loadNativeSemanticCompletionCases(
+    root,
+    loaded.manifest.supplementalCases,
+  );
   const packs = new Map<string, Pack>();
   const cases = (loaded.cases as TypecheckerCase[]).map((fixture) => {
     assert.deepEqual(fixture.targets, ["batch"]);
@@ -181,7 +186,7 @@ export function loadTypecheckerManifest(manifestPath: string) {
       "missing, duplicated or reordered historical projects",
     );
   }
-  return { ...loaded, cases };
+  return { ...loaded, cases, supplementalCases };
 }
 
 function relativePath(input: string) {

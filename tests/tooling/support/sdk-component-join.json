@@ -1,0 +1,175 @@
+{
+  "schema": "vize.sdk-component-join.current-source-only",
+  "version": 1,
+  "sdkSource": "bee0fb6bbb4bea9947c1416f542068c1511657f1",
+  "incomingSource": "7d6e0350202643010db3a0f474eb235c8f1042c3",
+  "dualManifestSHA256": "83bb4b913b063ff03d47d2c67112f5a6f55f46b1b84f3e964e52c5a44f33aa8f",
+  "dualReviewSHA256": "9b42d71684332a5f6ad729ab95deb8434da0707cbe37eaa31997e0db6335d549",
+  "originalDriver": "tests/tooling/warm-type-backed-git-reader-nodeep.test.ts",
+  "originalDriverSHA256": "a34153758e29b6b5d44cb53291e6d0695989c6a14e9c963339b13424b92cd7c9",
+  "originalDriverRows": 233,
+  "wholeCurrentSdkBodies": 112,
+  "wholeCurrentNoMutatingBodies": 323,
+  "wholeCurrentGraphBodies": 237,
+  "wholePrivateSourceBodies": 187,
+  "privateFilesSHA256": "2b5cbb3807182cfb7ade2873ef8b2247a1cae02fad0e6297c46288579f920314",
+  "changes": [
+    {
+      "file": "crates/vize_patina/src/linter/script_rules/sfc.rs",
+      "before": {
+        "mode": "100644",
+        "blob": "e4a3c8d0a973ae13ed0c9ba97a4cf4cb72b46320",
+        "bytes": 7552,
+        "sha256": "cce4c13e30a66479b42ea078dc9f799afc81bbfb8e9d5464f78b75b874c42dc1"
+      },
+      "after": {
+        "mode": "100644",
+        "blob": "c36f934e635b6aced245ae92ce0bafa1ddb613bf",
+        "bytes": 7993,
+        "sha256": "4ba51a6cabd3fdb1ce973edfa7cf7bf4dac6d0bf12b6e9294ee75b9c3dd1ba46"
+      }
+    },
+    {
+      "file": "crates/vize_patina/src/rule.rs",
+      "before": {
+        "mode": "100644",
+        "blob": "b7dcb6da3168c457e44ac9d0af9da9aa3eae83cd",
+        "bytes": 12547,
+        "sha256": "6dd7a1f3fb7ef88dd13278e1e9f73191cd922ab18e2524af22e7413fb6b15bc1"
+      },
+      "after": {
+        "mode": "100644",
+        "blob": "20a0e112b3e6434eb05b6c9502a54974aa550301",
+        "bytes": 12879,
+        "sha256": "6537cc95fb04eb4f8f51afd7dfea9e7a695b81a7f428e01ddb38e208478c34b5"
+      }
+    },
+    {
+      "file": "tests/tooling/ascii-symbol-original-callers.test.ts",
+      "before": {
+        "mode": "100644",
+        "blob": "783f7d515423ca40f730cb21905fd80517a50f35",
+        "bytes": 4318,
+        "sha256": "1b23dcebaebb91428f8fe06390b385f618c488a6cdb0a126003489f3064863ae"
+      },
+      "after": {
+        "mode": "100644",
+        "blob": "d9a3706a5d4a8a39930c9ec97d9d892ed0d1a053",
+        "bytes": 3381,
+        "sha256": "9a7c159495f48858b28fb68cb3ee8838676d4505ed98bf2366b92e96dd6e8345"
+      }
+    },
+    {
+      "file": "tests/tooling/support/ascii-symbol-original-callers.ts",
+      "before": {
+        "mode": "100644",
+        "blob": "6a24e80278a24d1faefb883fdbb116d90649c62f",
+        "bytes": 6180,
+        "sha256": "158cc39c3e8025e39e833321c25d6c9bdebdd594d8448a0a025b7d23c0dbf5d5"
+      },
+      "after": {
+        "mode": "100644",
+        "blob": "525dc1a4e14329459b06d29cb167bd988ef7201a",
+        "bytes": 5625,
+        "sha256": "26247a3b96d3ec476aa591a83d19c0667c5545323f1ac11ff8aadda354369de2"
+      }
+    },
+    {
+      "file": "tests/tooling/support/props-deep-source-custody.mjs",
+      "before": {
+        "mode": "100644",
+        "blob": "10ba8d9be5e048d2c6ab1702965e294566d2802b",
+        "bytes": 12271,
+        "sha256": "f6bf1e93600bdd8d4d6867b81b59fd67f8cdf5c9e96544d1a953ed081d2909ad"
+      },
+      "after": {
+        "mode": "100644",
+        "blob": "71f9fbb344404e29fccc81e3af2f771116d43a41",
+        "bytes": 12527,
+        "sha256": "0473d9509d4b34e52bced41c5e8b28296c225e879ed40a2b1d3d67f164b7fbf7"
+      }
+    },
+    {
+      "file": "tests/tooling/support/runtime-props-api-source-custody.mjs",
+      "before": {
+        "mode": "100644",
+        "blob": "a8fce88502aa29db93afdfb233c892a15516e99d",
+        "bytes": 6045,
+        "sha256": "8c9e884f8099a1125ab0518d5f569baf043f7416509190dfa61b8db212a38d33"
+      },
+      "after": {
+        "mode": "100644",
+        "blob": "78d221236f13513d8afda21a124de39a49812460",
+        "bytes": 6246,
+        "sha256": "42f16bbbb5bef25f4ba20e171a32742c5b161dc4739b6bd33d605f925de0fea6"
+      }
+    },
+    {
+      "file": "tests/tooling/support/setup-export-preset-source-custody.mjs",
+      "before": {
+        "mode": "100644",
+        "blob": "af400a192e7d2384aefdd823483caf257419b93d",
+        "bytes": 5387,
+        "sha256": "8995c93374509bbb37be4fd0df0506df1b8d6bac4737496d5f66410d19527b7a"
+      },
+      "after": {
+        "mode": "100644",
+        "blob": "d3e92473a69f7cb59fc87aa664fe176e5a6b04c6",
+        "bytes": 5533,
+        "sha256": "72a84609389244088b640ab52e02e0aa4d047cea0160a60ae175c79486d7b362"
+      }
+    },
+    {
+      "file": "tests/tooling/warm-type-backed-ascii-symbol-host.test.ts",
+      "before": {
+        "mode": "100644",
+        "blob": "8805b5ad2c2d827f9940695a603ce9e877ca84cb",
+        "bytes": 11369,
+        "sha256": "519e8d0c46f9958aee015656e15d7dee36677ab3f3a39c90b734e024824afb21"
+      },
+      "after": {
+        "mode": "100644",
+        "blob": "6573027cfff95a4d3218ec224d47be9b8463ccba",
+        "bytes": 522,
+        "sha256": "9f2329d3e1e76156910afc4b7dbf3e561aafd9a0b11ca5e3573f9f4441936639"
+      }
+    },
+    {
+      "file": "tests/tooling/warm-type-backed-default-migration-host.test.ts",
+      "before": {
+        "mode": "100644",
+        "blob": "d3322da59de4ac66018b6572b37ba2dffb6a93e7",
+        "bytes": 6861,
+        "sha256": "a81dd0613ce3715f7d759e00039f444963b3edb2462ee82f5dadfd1bbc4e1704"
+      },
+      "after": {
+        "mode": "100644",
+        "blob": "7cee6e580345ad73b08dd79934161e35b302ce4b",
+        "bytes": 527,
+        "sha256": "7be159f48299af368978883ee4c926f03f5f8ec018d275fcf383cb26bc593f8a"
+      }
+    },
+    {
+      "file": "tests/tooling/warm-type-backed-git-reader-nodeep.test.ts",
+      "before": {
+        "mode": "100644",
+        "blob": "ab4c1f26c6507f17f795c8b629468263f6682b42",
+        "bytes": 10309,
+        "sha256": "a34153758e29b6b5d44cb53291e6d0695989c6a14e9c963339b13424b92cd7c9"
+      },
+      "after": {
+        "mode": "100644",
+        "blob": "0973a4a27f296371846268d9557ffe09e848f034",
+        "bytes": 522,
+        "sha256": "99a7197a30fe128fcc359669cfd5069c0bab66cfbcd641fe8f591cbc506eb3a2"
+      }
+    }
+  ],
+  "credits": {
+    "sourceOnly": true,
+    "runtime": false,
+    "native": false,
+    "performance": false,
+    "currentOld111Receipt": null
+  }
+}

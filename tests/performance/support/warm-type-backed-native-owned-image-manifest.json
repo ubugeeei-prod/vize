@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "originalManifestSHA256": "9cf1e55d33870c90456fb1e58cec379b2a5f6e39e6c4b09ddee26783b4b0783e",
+  "previousSource": "c9a37e28dec3ed683e1c993c567d289206ef34d1",
+  "reviewedSource": "7894b20f533e3838d9c2b32f223d60622eed645b",
+  "successorBodies": [
+    [
+      "crates/vize_canon/src/lsp_client/editor_lsp.rs",
+      "04ac483ea6293d0f23d59d43d787957920ff2ce9ef9d206d45aa75f9709ae884",
+      "9d03366ed6f65bd0779a1ae0db85be6787c0788a01876bab7d72db25dfd2a633"
+    ],
+    [
+      "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown.rs",
+      "c378f4026fefc8c1332239ad51cf01a6ca9b1aa12cea6044df1b3a2e9c736217",
+      "e006fc7ef8c6f3ce2aa4fc0a93fc103e7cd4d9ee60b5865de1a8b82dd401778c"
+    ],
+    [
+      "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/owned_image.rs",
+      null,
+      "3503eed561c140d83b2e591ef0161dd73b784e267270fbddd0e9a121edff8b2f"
+    ]
+  ],
+  "corpusBodies": [
+    [
+      "tests/_fixtures/differential/typechecker/native-owned-exec/exec-wrapper.sh.txt",
+      null,
+      "ea033f5e0bbeb22ab045a0d71281d07c070c43dcbc588538872102bc977f3b44"
+    ]
+  ],
+  "qualifiedHarnessBodies": [
+    [
+      "tests/performance/support/warm-type-backed-native-terminal-final.ts",
+      "6c5b4b7951227905ae940dbbecea4c0fa2cac676fa1d5e98dfae9ae8dd328589",
+      "c38b06d14223eeaef99c2a920e818d45bd5d39e795bc42f99fefee999c617279"
+    ]
+  ]
+}

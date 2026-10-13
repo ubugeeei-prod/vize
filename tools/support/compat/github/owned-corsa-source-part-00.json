@@ -1,0 +1,186 @@
+[
+  {
+    "file": "Cargo.lock",
+    "before": {
+      "mode": "100644",
+      "blob": "b867123dc3a5112e4bfe01987653419273dd3c05",
+      "bytes": 148851,
+      "sha256": "194c3098330cbeb91e441a2f035fe3cfb37650195c6ff04baf88f09a08378684"
+    },
+    "after": {
+      "mode": "100644",
+      "blob": "a20aa347d59b8bbb5eba3fe880ddc2b28c765633",
+      "bytes": 148153,
+      "sha256": "3ad745499221e06efbe6aa88df13eebc2c8e0ce9ad99509f2d831c0052b9dd8f"
+    },
+    "historicalBeforeSHA256": "ff89684d784eef5066edb7596fae1aaeac2331295d62891531d25a2c70f74c8b",
+    "historicalAfterSHA256": "04cae72140951c336ad2843b0ac5afb6842518950be3bec4db4b2f7f72aa009c"
+  },
+  {
+    "file": "Cargo.toml",
+    "before": {
+      "mode": "100644",
+      "blob": "0b50bea59d02deab61ec0e79bc93705670a7ce54",
+      "bytes": 13350,
+      "sha256": "38babfd635c5af9df1d401b0b59923940310a405868cbb0772d9bfefbd7e6e68"
+    },
+    "after": {
+      "mode": "100644",
+      "blob": "8777c36e01b04787dd6a7ae723c6860db8032498",
+      "bytes": 14030,
+      "sha256": "ac461fe6da16a75d95153be4860c1e9329a85ade7c258d894a3ea5c6390e5214"
+    },
+    "historicalBeforeSHA256": "2299add36b011596296e4546ef065148104dd017bdaa033f5ef6222f31925381",
+    "historicalAfterSHA256": "695d5bef1fe803b7ab39631d86f7a9f362b15148d81353fe4dc6751e8e5e16b2"
+  },
+  {
+    "file": "crates/vize/tests/check_canon_native_completion_cli.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "22bc21f05b6da771457485953db14d8759c2f367",
+      "bytes": 14250,
+      "sha256": "b24e6d200b4826bbca032f86a69f5a991e13cbd707428fda8c9b7bec72b462c0"
+    },
+    "historicalBeforeSHA256": null,
+    "historicalAfterSHA256": "b24e6d200b4826bbca032f86a69f5a991e13cbd707428fda8c9b7bec72b462c0"
+  },
+  {
+    "file": "crates/vize_canon/src/batch/executor.rs",
+    "before": {
+      "mode": "100644",
+      "blob": "cef6ca6e162481460f01d2aa07ea9484a3d71206",
+      "bytes": 10026,
+      "sha256": "b11c3a510bb98c5c436f055ff631500a08bb4f7ffd321dd0392e74e0501bc381"
+    },
+    "after": {
+      "mode": "100644",
+      "blob": "cb7528bb84440312fe6a8cdb8e7b0d1448ff3b18",
+      "bytes": 10241,
+      "sha256": "60722057eebd7d7490866ead33ecb02c8b5bab031ee9acaf4f3bb4315d3677b5"
+    },
+    "historicalBeforeSHA256": "b11c3a510bb98c5c436f055ff631500a08bb4f7ffd321dd0392e74e0501bc381",
+    "historicalAfterSHA256": "60722057eebd7d7490866ead33ecb02c8b5bab031ee9acaf4f3bb4315d3677b5"
+  },
+  {
+    "file": "crates/vize_canon/src/batch/executor/cli.rs",
+    "before": {
+      "mode": "100644",
+      "blob": "4759bef3ac62cd4a08e8fc5a7c7d01345b32225b",
+      "bytes": 7255,
+      "sha256": "200651676dffb81e21400bdc66477df47af0a8fee9c4d3d895fdce88ad0f3b9f"
+    },
+    "after": {
+      "mode": "100644",
+      "blob": "375672eb8dd5efd6bda30cfb806b14f6c4975906",
+      "bytes": 7493,
+      "sha256": "2c1bd0967fded524636933d2913bf5b71219301e9c2b8e0e285ad45f97ba8e7c"
+    },
+    "historicalBeforeSHA256": "200651676dffb81e21400bdc66477df47af0a8fee9c4d3d895fdce88ad0f3b9f",
+    "historicalAfterSHA256": "2c1bd0967fded524636933d2913bf5b71219301e9c2b8e0e285ad45f97ba8e7c"
+  },
+  {
+    "file": "crates/vize_canon/src/batch/executor/cli/outcome.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "bb21041b3f2c1c65626742839a464b1cca46549d",
+      "bytes": 8583,
+      "sha256": "7552ed87c0ed4904100cf50a52373f57cf520394da02b8fd25db3e7aa3749a4a"
+    },
+    "historicalBeforeSHA256": null,
+    "historicalAfterSHA256": "7552ed87c0ed4904100cf50a52373f57cf520394da02b8fd25db3e7aa3749a4a"
+  },
+  {
+    "file": "crates/vize_canon/src/batch/executor/cli/run.rs",
+    "before": {
+      "mode": "100644",
+      "blob": "fc50b3d5772911dfbf1f84ac74fe838e4ed80e80",
+      "bytes": 4227,
+      "sha256": "e03514bd39e9f6063f56c8ce57a0360fffc9dbcaf5dc26df44f3797f72825f98"
+    },
+    "after": {
+      "mode": "100644",
+      "blob": "b0c071304f569d4f67d9340736a49a5d4d6b9eaf",
+      "bytes": 4551,
+      "sha256": "def4d04b8a4f20105356c7f438b1bd5a9b34ffb1ebe712cb3495fcbd33956b51"
+    },
+    "historicalBeforeSHA256": "e03514bd39e9f6063f56c8ce57a0360fffc9dbcaf5dc26df44f3797f72825f98",
+    "historicalAfterSHA256": "def4d04b8a4f20105356c7f438b1bd5a9b34ffb1ebe712cb3495fcbd33956b51"
+  },
+  {
+    "file": "crates/vize_canon/src/batch/executor/cli/tests/checkers_support.rs",
+    "before": {
+      "mode": "100644",
+      "blob": "13aee6349fb851125bbbec1506d6a4072d743050",
+      "bytes": 2025,
+      "sha256": "bc0ebb1fba0f9ed322913aa5a8dcd716e1d1c03ed25931e67f0023f856d83eac"
+    },
+    "after": {
+      "mode": "100644",
+      "blob": "2f3a8eed170371f49b195f44ef783577c19bae01",
+      "bytes": 2056,
+      "sha256": "6b3936a3d036fe145e0a22cbbd061c517f143570856485a7dfd7a1aa6dc8568c"
+    },
+    "historicalBeforeSHA256": "bc0ebb1fba0f9ed322913aa5a8dcd716e1d1c03ed25931e67f0023f856d83eac",
+    "historicalAfterSHA256": "6b3936a3d036fe145e0a22cbbd061c517f143570856485a7dfd7a1aa6dc8568c"
+  },
+  {
+    "file": "crates/vize_canon/src/batch/executor/session.rs",
+    "before": {
+      "mode": "100644",
+      "blob": "a388ca4c67c004c3efeacbc85d174cc7f6bd67cc",
+      "bytes": 12593,
+      "sha256": "4cde74a784b7504419a7e2a9538a14d6e8ef0aa2e8ec002ca40e0d88fb1efaff"
+    },
+    "after": {
+      "mode": "100644",
+      "blob": "b494aed1e5744cbd8f619ee9d2f3c0b030359730",
+      "bytes": 13113,
+      "sha256": "2d15812f6618426f2c5869cb449fa2a64f96893446cb9466e9db7a1b0b5f3e7a"
+    },
+    "historicalBeforeSHA256": "4cde74a784b7504419a7e2a9538a14d6e8ef0aa2e8ec002ca40e0d88fb1efaff",
+    "historicalAfterSHA256": "2d15812f6618426f2c5869cb449fa2a64f96893446cb9466e9db7a1b0b5f3e7a"
+  },
+  {
+    "file": "crates/vize_canon/src/batch/executor/session/native_test_receipt.rs",
+    "before": {
+      "mode": "100644",
+      "blob": "a41b0b150688e4f98abe3213c42332d1929e6ced",
+      "bytes": 2574,
+      "sha256": "2fe0b754d7c0ef464a1d6d4bc6a61dd07e8d83a73e33ac5f0858867d7c491afe"
+    },
+    "after": {
+      "mode": "100644",
+      "blob": "cd6d3b9c523267d20654ceee721bd1746194b3c1",
+      "bytes": 2881,
+      "sha256": "6214f98443ed7bf30777fdfe3e20ddc5c503bddb1730f3e9a3f25578c9a1fa69"
+    },
+    "historicalBeforeSHA256": "2fe0b754d7c0ef464a1d6d4bc6a61dd07e8d83a73e33ac5f0858867d7c491afe",
+    "historicalAfterSHA256": "6214f98443ed7bf30777fdfe3e20ddc5c503bddb1730f3e9a3f25578c9a1fa69"
+  },
+  {
+    "file": "crates/vize_canon/src/batch/executor/session/semantic_completion_receipt.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "7d3c6abfa2b05d8d12dbaf953ad3ed6ae499dffc",
+      "bytes": 11208,
+      "sha256": "07f7a32b6ad0e470797fa1f8f69452c0875562c1572e031d67c3e3ba2a95f58a"
+    },
+    "historicalBeforeSHA256": null,
+    "historicalAfterSHA256": "07f7a32b6ad0e470797fa1f8f69452c0875562c1572e031d67c3e3ba2a95f58a"
+  },
+  {
+    "file": "crates/vize_canon/src/batch/executor/tests/native_semantic_completion.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "42f92bb6249b5d13b96279f277f01bda5f03605c",
+      "bytes": 7515,
+      "sha256": "e936611738672bd2954dc126e6c6295e990cb34586f297370e27b3169c1d5c0d"
+    },
+    "historicalBeforeSHA256": null,
+    "historicalAfterSHA256": "e936611738672bd2954dc126e6c6295e990cb34586f297370e27b3169c1d5c0d"
+  }
+]

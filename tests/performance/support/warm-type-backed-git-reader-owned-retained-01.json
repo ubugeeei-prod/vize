@@ -1,0 +1,86 @@
+[
+  {
+    "file": "crates/vize_patina/src/rule.rs",
+    "mode": "100644",
+    "blob": "b7dcb6da3168c457e44ac9d0af9da9aa3eae83cd",
+    "bytes": 12547,
+    "sha256": "6dd7a1f3fb7ef88dd13278e1e9f73191cd922ab18e2524af22e7413fb6b15bc1"
+  },
+  {
+    "file": "crates/vize_patina/src/rule/happy_path.rs",
+    "mode": "100644",
+    "blob": "37722e1144c1eefb93e9c1db8af8af7fdf85bbe2",
+    "bytes": 7361,
+    "sha256": "b08dd788756457fe33ca63076d4372c0aa5c511564809ab675c0f3c5fd2f11a8"
+  },
+  {
+    "file": "crates/vize_patina/src/rules/script.rs",
+    "mode": "100644",
+    "blob": "7b54949f6b48abe4c69b27865bf6b0165694a936",
+    "bytes": 7697,
+    "sha256": "2fcda85b4dba45248c782f475c648b4344b0cb2b008b55d241cd282efa9cf7dd"
+  },
+  {
+    "file": "crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs",
+    "mode": "100644",
+    "blob": "ec953122c810abe270b8d4e80804525ad2833bbf",
+    "bytes": 9635,
+    "sha256": "e3125601808dd6d4d0c7221c8330c9b0e02471a38b4c1819c77d7ca1389fc450"
+  },
+  {
+    "file": "crates/vize_patina/src/rules/script/props_emits.rs",
+    "mode": "100644",
+    "blob": "4a756a4d427286eb83d65e540713051736002831",
+    "bytes": 1368,
+    "sha256": "8974083b1d8e5c864f31d3f872d54d6061a84f4a8f7a181c2daa0d3f27ede6ff"
+  },
+  {
+    "file": "crates/vize_patina/src/rules/script/props_emits/compiler_macro_bindings.rs",
+    "mode": "100644",
+    "blob": "7ba76a4d5a9256270ef258947064d9e60f103077",
+    "bytes": 5670,
+    "sha256": "2fa87c69fef9eca8cd8c39d88892a2db91bb40eadcc17fa15c1bec9a991b376f"
+  },
+  {
+    "file": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs",
+    "mode": "100644",
+    "blob": "85243a519428825cd278e0a5f418bb71b30ff53d",
+    "bytes": 11471,
+    "sha256": "1e3e58cab0ab268e3c9e3ba5eb3e74d54283d47249d10189fe65c608cca504f1"
+  },
+  {
+    "file": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default/runtime.rs",
+    "mode": "100644",
+    "blob": "76b7cfe95c7a8d4121580f11b67c3545036d5025",
+    "bytes": 2399,
+    "sha256": "5bed02a5b8cdf759c2939fae2f68fda41c05a3d35508383e9275b28569e4c4b2"
+  },
+  {
+    "file": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default/typed.rs",
+    "mode": "100644",
+    "blob": "897c711329161538d8fefe536e46815aea76a043",
+    "bytes": 8807,
+    "sha256": "0749c7e672b42572d4c509404af7c82ba415590de5ef04988d577cdc23806c83"
+  },
+  {
+    "file": "crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator/setup.rs",
+    "mode": "100644",
+    "blob": "5a0328505ea2d520ecabaa404202dd4bd0861365",
+    "bytes": 6384,
+    "sha256": "458971904a70de545aca5bb441e0f4241fad91d8573ae0681bd6298a1d3136f1"
+  },
+  {
+    "file": "crates/vize_patina/src/rules/vue/no_deprecated_functional_template.rs",
+    "mode": "100644",
+    "blob": "328df640e98257fe589de6070c12aca5e130c516",
+    "bytes": 8773,
+    "sha256": "4807bf0ace61ad9db7f885402a15f8bacb88ced005367142376ac0203bd930db"
+  },
+  {
+    "file": "docs/davinci/decisions/2026-10-12-3952-raw-git-body-authority.md",
+    "mode": "100644",
+    "blob": "90359519719c3a705cf16fa3641a2d8679641f82",
+    "bytes": 5982,
+    "sha256": "615e60d862c9471662a99db2a6c255646a1c1b7d3c48e92745070e4295f8ed40"
+  }
+]

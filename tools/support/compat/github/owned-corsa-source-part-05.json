@@ -1,0 +1,168 @@
+[
+  {
+    "file": "vendor/corsa/tests/real_corsa_regression.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "6817e415fc962d0fb2da9710740d9e740c60a583",
+      "bytes": 5521,
+      "sha256": "f5a55b5505f18ee4415924d9bbf771f86bbd344f338933bde18521182b393656"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "tests/real_corsa_regression.rs",
+    "archiveMemberSHA256": "f5a55b5505f18ee4415924d9bbf771f86bbd344f338933bde18521182b393656",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/tests/real_corsa_typecheck.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "49c25f298d28244aeeb62b5ac91500d786dc77da",
+      "bytes": 19372,
+      "sha256": "78167dce6718c752eb131511765c6c74a05916d43ce0f24410dfeeea0714a041"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "tests/real_corsa_typecheck.rs",
+    "archiveMemberSHA256": "78167dce6718c752eb131511765c6c74a05916d43ce0f24410dfeeea0714a041",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa/tests/support/mod.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "26108a82bd6802df201f3c9428b848e9ae029270",
+      "bytes": 4339,
+      "sha256": "523e3f0837625e6d61483d72917484843fd44ebc0d93123e89cd84f1e8a32b83"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": "tests/support/mod.rs",
+    "archiveMemberSHA256": "523e3f0837625e6d61483d72917484843fd44ebc0d93123e89cd84f1e8a32b83",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa_client/.cargo_vcs_info.json",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "5d82631d72baa96ed3c12868ebabf0433fa78869",
+      "bytes": 115,
+      "sha256": "a81d513daffedf2e0e5b7f8f1df739c7b5431229d1b935beab59c273f0d1962c"
+    },
+    "archiveSHA256": "08c26e377a3bf66cd2f2c08953741902d942db5ece450d310025b0c19b108245",
+    "archiveMember": ".cargo_vcs_info.json",
+    "archiveMemberSHA256": "a81d513daffedf2e0e5b7f8f1df739c7b5431229d1b935beab59c273f0d1962c",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa_client/Cargo.lock",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "e8cf9fc920f76d1f9e42f5cec762e93db82f5808",
+      "bytes": 10407,
+      "sha256": "b1c654a470c026cd67ee91125aec64243c63b8c4a2bda39924ec7ef0f27ebf4f"
+    },
+    "archiveSHA256": "08c26e377a3bf66cd2f2c08953741902d942db5ece450d310025b0c19b108245",
+    "archiveMember": "Cargo.lock",
+    "archiveMemberSHA256": "b1c654a470c026cd67ee91125aec64243c63b8c4a2bda39924ec7ef0f27ebf4f",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa_client/Cargo.toml",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "260357c49d16712abfde38ed4a3efe768b798a95",
+      "bytes": 1628,
+      "sha256": "14551f7b2e6622d3286248d4978a00b9f54d34b35484fc836b2b9a2b0c373e66"
+    },
+    "archiveSHA256": "08c26e377a3bf66cd2f2c08953741902d942db5ece450d310025b0c19b108245",
+    "archiveMember": "Cargo.toml",
+    "archiveMemberSHA256": "260f1c2a49f82cd2a323553079067ec38b126512ba40b49ded2e1acc6c25d72f",
+    "manifestSuccessor": true
+  },
+  {
+    "file": "vendor/corsa_client/Cargo.toml.orig",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "bfa0304a9e10fa5106fbe6a614e24f58dcc9ebd2",
+      "bytes": 747,
+      "sha256": "68442a178c93b9f3acfb5d2c0cb37f28cb406567c46d65a197c511790d462ce9"
+    },
+    "archiveSHA256": "08c26e377a3bf66cd2f2c08953741902d942db5ece450d310025b0c19b108245",
+    "archiveMember": "Cargo.toml.orig",
+    "archiveMemberSHA256": "68442a178c93b9f3acfb5d2c0cb37f28cb406567c46d65a197c511790d462ce9",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa_client/LICENSE",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "cc1581a0efafdc1c423eaa8077ec4f7ee7827048",
+      "bytes": 1082,
+      "sha256": "dc68b72380fc755c1bb054cff32000c716b0515bacb35ca39d08a91cd23749a7"
+    },
+    "additiveLicenseCopy": true,
+    "authenticatedOriginal": "vendor/corsa_core/LICENSE"
+  },
+  {
+    "file": "vendor/corsa_client/README.md",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "4041c13e49d6324739476ee255aa450a823e8ed2",
+      "bytes": 4761,
+      "sha256": "aff44743c14309956853e2e092bd3fa5652990138e495761bde32e3894d8d6e7"
+    },
+    "archiveSHA256": "08c26e377a3bf66cd2f2c08953741902d942db5ece450d310025b0c19b108245",
+    "archiveMember": "README.md",
+    "archiveMemberSHA256": "aff44743c14309956853e2e092bd3fa5652990138e495761bde32e3894d8d6e7",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa_client/src/api/callbacks.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "1ec61a63b0632473653234f823b24467a7748166",
+      "bytes": 8128,
+      "sha256": "fd62ef1057f1bee8d5f7884051ba45fa8968ad9d21204e21c005c8a5cc3a11e7"
+    },
+    "archiveSHA256": "08c26e377a3bf66cd2f2c08953741902d942db5ece450d310025b0c19b108245",
+    "archiveMember": "src/api/callbacks.rs",
+    "archiveMemberSHA256": "fd62ef1057f1bee8d5f7884051ba45fa8968ad9d21204e21c005c8a5cc3a11e7",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa_client/src/api/callbacks_tests.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "35b1333566b86d557476c9e128c136dcffc182e3",
+      "bytes": 3665,
+      "sha256": "380fb51a78344f12d76d739debbedea39f25d068090c96cb2951035c18655e74"
+    },
+    "archiveSHA256": "08c26e377a3bf66cd2f2c08953741902d942db5ece450d310025b0c19b108245",
+    "archiveMember": "src/api/callbacks_tests.rs",
+    "archiveMemberSHA256": "380fb51a78344f12d76d739debbedea39f25d068090c96cb2951035c18655e74",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa_client/src/api/capabilities.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "d79afc1ea80b7422b2950e67073716887c0b9183",
+      "bytes": 7655,
+      "sha256": "b3128d4115e976fcc87ec970a31e5b7d994f3f0399249fee291910133ea9af1e"
+    },
+    "archiveSHA256": "08c26e377a3bf66cd2f2c08953741902d942db5ece450d310025b0c19b108245",
+    "archiveMember": "src/api/capabilities.rs",
+    "archiveMemberSHA256": "b3128d4115e976fcc87ec970a31e5b7d994f3f0399249fee291910133ea9af1e",
+    "manifestSuccessor": false
+  }
+]

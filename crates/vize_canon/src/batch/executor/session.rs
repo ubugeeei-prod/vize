@@ -73,7 +73,7 @@ impl CorsaExecutor {
             collect_virtual_file_uris(project.virtual_root(), project.source_file_policy())
         )?;
         extend_diagnostic_path_uris(project, &mut uris);
-        match check_session_client(&mut client, project, &uris) {
+        let result = match check_session_client(&mut client, project, &uris) {
             Err(error @ crate::batch::error::CorsaError::CorsaExecution { .. })
                 if explicit_config_attachment_unsupported(&error) =>
             {
@@ -81,6 +81,17 @@ impl CorsaExecutor {
                 check_with_cli(&self.corsa_path, project, self.checkers())
             }
             result => result,
+        };
+        let close_result = client.shutdown().map_err(map_corsa_error);
+        match (result, close_result) {
+            (Ok(result), Ok(())) => Ok(result),
+            (Ok(_), Err(error)) => Err(error),
+            (Err(error), close_result) => {
+                if let Err(close_error) = close_result {
+                    tracing::warn!(error = %error, close_error = %close_error, "native completion and process close both failed");
+                }
+                Err(error)
+            }
         }
     }
 

@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "beforeSource": "dd188515f8ec3c51662b4f4d69adcd39c86a0907",
+  "reviewedSource": "b4c0c5060e769465469bc9b5b95b4ff5da75b281",
+  "reviewedSourceTree": "ad637db11ee914d973e97bda375668e34947975c",
+  "files": [
+    [
+      "crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol.rs",
+      "feeabeeaab2bb0eb4b465ff55c9c6b3c0e7a295428f06858f84e223c5177eb60",
+      "17900c16be1094d5f15d359c0211388370c44b33de94ae393a6129dd9d95c70f"
+    ],
+    [
+      "crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol/executable.rs",
+      "98c5d7fb9d21d50a20dc0902a09757436a643691335d7655218f9f8d0a8bf10f",
+      "c0442850b9d8cdb98e184f51dcacb0434a0a70f00c9970f04a0d764f22f6b405"
+    ],
+    [
+      "crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol/lifecycle_tests.rs",
+      null,
+      "1f870ca48d71f40a05fcf16e6fbeed3534561a74b9dc922796f473a8dc28ecb9"
+    ],
+    [
+      "crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol/proxy.rs",
+      "842224576c1c0947443af91c04f0a00093a1c25ad7182048d87595b2fe04861c",
+      "cddbf3e822db213294169894855a43aed3f1d02c1036fd01cde9816a7c053504"
+    ],
+    [
+      "crates/vize_maestro/tests/fixtures/native-proxy-initialize.json",
+      null,
+      "a8641e61d1469332cccbd06eb2cbc7a520c17485c53abaefb2e965676902c183"
+    ],
+    [
+      "crates/vize_maestro/tests/fixtures/native-proxy-lifecycle-laws.pl",
+      null,
+      "a26da4eadf7a9c5531276f2fa57cc51c30b869544ff5300aa5a6a2dea86d5724"
+    ],
+    [
+      "crates/vize_maestro/tests/fixtures/native-proxy-lifecycle.pl",
+      null,
+      "d1b3aaedb794c2cd326de4cb3c2bdb2af2ea2d95a45b8cbc5cf4c8d71dd7bde3"
+    ]
+  ],
+  "workflowBeforeSHA256": "5f50fb377dac504d0a733e0bb5d9fb9e98392192bbb5f9d22b67f9ab85b47c0a"
+}

@@ -1,0 +1,173 @@
+[
+  {
+    "file": "crates/vize_canon/src/lsp_client/diagnostics_lsp.rs",
+    "before": {
+      "mode": "100644",
+      "blob": "c41e8b0adb262e4e913d3728bed1173778e2a861",
+      "bytes": 11255,
+      "sha256": "fe7ce85d75bdbc8f766dc9d100c0c5b64bfd1dfbbfe250ee9100a68aec270505"
+    },
+    "after": {
+      "mode": "100644",
+      "blob": "86df95ba23fb4a2c4a45dec28cc3c0d21adc885c",
+      "bytes": 11296,
+      "sha256": "e6bcf16051e2cbcd3c65227f9d6c8d40bf457166c4469c8a95227b7687cb2a35"
+    },
+    "historicalBeforeSHA256": "fe7ce85d75bdbc8f766dc9d100c0c5b64bfd1dfbbfe250ee9100a68aec270505",
+    "historicalAfterSHA256": "e6bcf16051e2cbcd3c65227f9d6c8d40bf457166c4469c8a95227b7687cb2a35"
+  },
+  {
+    "file": "crates/vize_canon/src/lsp_client/editor_lsp.rs",
+    "before": {
+      "mode": "100644",
+      "blob": "cb84efaa29a6ec5cc4e18a03ea07524817f3aa03",
+      "bytes": 12889,
+      "sha256": "67f11d411eae9bfaef00710e7147f8ed2c41ce726edb121b7db65a746f99c7c4"
+    },
+    "after": {
+      "mode": "100644",
+      "blob": "91b68d84c4302160d6e9537435c084fe98bb5a29",
+      "bytes": 11449,
+      "sha256": "9d03366ed6f65bd0779a1ae0db85be6787c0788a01876bab7d72db25dfd2a633"
+    },
+    "historicalBeforeSHA256": "67f11d411eae9bfaef00710e7147f8ed2c41ce726edb121b7db65a746f99c7c4",
+    "historicalAfterSHA256": "9d03366ed6f65bd0779a1ae0db85be6787c0788a01876bab7d72db25dfd2a633"
+  },
+  {
+    "file": "crates/vize_canon/src/lsp_client/editor_lsp/batch_test_receipt.rs",
+    "before": {
+      "mode": "100644",
+      "blob": "0f0cc7db058182432e3f2b76d54119515f5d9830",
+      "bytes": 3076,
+      "sha256": "02623d26b73a9d7eb34645756358828f00d9f995efb80f8982068538540f8731"
+    },
+    "after": {
+      "mode": "100644",
+      "blob": "5157d2528b94354771d879b51e5503fc2b0c89d1",
+      "bytes": 13122,
+      "sha256": "e81465b0ad0e077ae3ef20bd20ef79c97174c463a6cf5ffb9076684088072655"
+    },
+    "historicalBeforeSHA256": "02623d26b73a9d7eb34645756358828f00d9f995efb80f8982068538540f8731",
+    "historicalAfterSHA256": "e81465b0ad0e077ae3ef20bd20ef79c97174c463a6cf5ffb9076684088072655"
+  },
+  {
+    "file": "crates/vize_canon/src/lsp_client/editor_lsp/configured_project.rs",
+    "before": {
+      "mode": "100644",
+      "blob": "cebe18fc3c6916ea9c541b4b44fd71b382dcd0bc",
+      "bytes": 5013,
+      "sha256": "14428ad32b2449ea0ec1e528b3ce4972b9c1b075202cc4ae5e0ad894ab155228"
+    },
+    "after": {
+      "mode": "100644",
+      "blob": "1f025146a97d7e6d1ff01521f9f90241961c0299",
+      "bytes": 5495,
+      "sha256": "fac4e2cac47e7432100ad609602086afd1570f75419e841b62f9489c30f9e353"
+    },
+    "historicalBeforeSHA256": "14428ad32b2449ea0ec1e528b3ce4972b9c1b075202cc4ae5e0ad894ab155228",
+    "historicalAfterSHA256": "fac4e2cac47e7432100ad609602086afd1570f75419e841b62f9489c30f9e353"
+  },
+  {
+    "file": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "1e3a013d33494604c78ac0df16f21c97c8a14a02",
+      "bytes": 6912,
+      "sha256": "e006fc7ef8c6f3ce2aa4fc0a93fc103e7cd4d9ee60b5865de1a8b82dd401778c"
+    },
+    "historicalBeforeSHA256": null,
+    "historicalAfterSHA256": "e006fc7ef8c6f3ce2aa4fc0a93fc103e7cd4d9ee60b5865de1a8b82dd401778c"
+  },
+  {
+    "file": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/owned_image.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "8f3e0aa3f137a145bdf5b016f00bf6cd90c2d3e0",
+      "bytes": 13093,
+      "sha256": "3503eed561c140d83b2e591ef0161dd73b784e267270fbddd0e9a121edff8b2f"
+    },
+    "historicalBeforeSHA256": null,
+    "historicalAfterSHA256": "3503eed561c140d83b2e591ef0161dd73b784e267270fbddd0e9a121edff8b2f"
+  },
+  {
+    "file": "crates/vize_canon/src/lsp_client/editor_lsp/process_close.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "826e3c7668b9b237ad86fc487313edf3a514fa87",
+      "bytes": 3803,
+      "sha256": "05b5d42cea9157daf22993b52996d12dd7ccd613c34f9290a38b4f7a6bfaaf53"
+    },
+    "historicalBeforeSHA256": null,
+    "historicalAfterSHA256": "05b5d42cea9157daf22993b52996d12dd7ccd613c34f9290a38b4f7a6bfaaf53"
+  },
+  {
+    "file": "crates/vize_canon/src/lsp_client/editor_lsp/process_receipt.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "ec043124acfb5fa8583ec2fb705fc81efc8101a4",
+      "bytes": 5187,
+      "sha256": "16c36d4a0d4519480fe6b5ce182b1bed582e2896cb578fd3ac05ec0a51d601b5"
+    },
+    "historicalBeforeSHA256": null,
+    "historicalAfterSHA256": "16c36d4a0d4519480fe6b5ce182b1bed582e2896cb578fd3ac05ec0a51d601b5"
+  },
+  {
+    "file": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests.rs",
+    "before": {
+      "mode": "100644",
+      "blob": "d8f62733a28ce8c642d3d8329e99c950c1edb533",
+      "bytes": 5872,
+      "sha256": "eb0e6a39fad15a090d0f763ee5ab262f63f1263db22da69604116e7244dbe0a2"
+    },
+    "after": {
+      "mode": "100644",
+      "blob": "5acf1a70be6834d5f25bc2eef742695bcbd114a2",
+      "bytes": 5892,
+      "sha256": "78bf613b865bb249241ee87a941e2cb4616350a161f4a3206b3ff3ccd8ce5343"
+    },
+    "historicalBeforeSHA256": "eb0e6a39fad15a090d0f763ee5ab262f63f1263db22da69604116e7244dbe0a2",
+    "historicalAfterSHA256": "78bf613b865bb249241ee87a941e2cb4616350a161f4a3206b3ff3ccd8ce5343"
+  },
+  {
+    "file": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/batch_receipt.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "0899657ca1c5294d3995603358406d4ed957b440",
+      "bytes": 5066,
+      "sha256": "e784b9c902b477190fa4c8f0e36f2ee99f69a27c00f73c0be43dbd8bfaea934e"
+    },
+    "historicalBeforeSHA256": null,
+    "historicalAfterSHA256": "e784b9c902b477190fa4c8f0e36f2ee99f69a27c00f73c0be43dbd8bfaea934e"
+  },
+  {
+    "file": "vendor/corsa-published-custody.json",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "e03e408a79b3647dbd35241ad01b8236999674f0",
+      "bytes": 12220,
+      "sha256": "6215bf28acc97daf15d97865818bc9a05601e3c5ea241acf302fb05180d9d913"
+    },
+    "historicalBeforeSHA256": null,
+    "historicalAfterSHA256": "6215bf28acc97daf15d97865818bc9a05601e3c5ea241acf302fb05180d9d913"
+  },
+  {
+    "file": "vendor/corsa/.cargo_vcs_info.json",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "f6281b30fe0c088950a7b7842420c007d00aced6",
+      "bytes": 117,
+      "sha256": "21a3afeb3128fd2bb56ab0ffbef68cfedc3bd564f692ebf0d588520203c8c3d4"
+    },
+    "archiveSHA256": "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66",
+    "archiveMember": ".cargo_vcs_info.json",
+    "archiveMemberSHA256": "21a3afeb3128fd2bb56ab0ffbef68cfedc3bd564f692ebf0d588520203c8c3d4",
+    "manifestSuccessor": false
+  }
+]

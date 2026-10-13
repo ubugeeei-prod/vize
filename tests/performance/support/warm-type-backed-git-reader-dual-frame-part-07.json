@@ -1,0 +1,338 @@
+[
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/successor.json",
+    "final": {
+      "mode": "100644",
+      "blob": "330f340a2149247814beceb373a3dcbe357c14ea",
+      "bytes": 10298,
+      "sha256": "ea908f5de1c09c19ad59bf9f64bbbabccab676940f584fe754bb8e10f79828cb"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "330f340a2149247814beceb373a3dcbe357c14ea",
+      "bytes": 10298,
+      "sha256": "ea908f5de1c09c19ad59bf9f64bbbabccab676940f584fe754bb8e10f79828cb"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "330f340a2149247814beceb373a3dcbe357c14ea",
+      "bytes": 10298,
+      "sha256": "ea908f5de1c09c19ad59bf9f64bbbabccab676940f584fe754bb8e10f79828cb"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/membership-law.json",
+    "final": {
+      "mode": "100644",
+      "blob": "fc061aaa7fcd065c3361eba75757023956e7eaf4",
+      "bytes": 1471,
+      "sha256": "07f1abf28be1e0583a25f9c822beaaf546cec8c863603162ad04688833237dea"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "fc061aaa7fcd065c3361eba75757023956e7eaf4",
+      "bytes": 1471,
+      "sha256": "07f1abf28be1e0583a25f9c822beaaf546cec8c863603162ad04688833237dea"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "fc061aaa7fcd065c3361eba75757023956e7eaf4",
+      "bytes": 1471,
+      "sha256": "07f1abf28be1e0583a25f9c822beaaf546cec8c863603162ad04688833237dea"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/original-preset-membership.snap.fixture",
+    "final": {
+      "mode": "100644",
+      "blob": "3c927b145e33fdaf9275f3c63a23ec78b35d0fc2",
+      "bytes": 26349,
+      "sha256": "810d884d2b275b43799dc097bb8dfee7f63e892a4a7956846a0a7c5c87367da0"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "3c927b145e33fdaf9275f3c63a23ec78b35d0fc2",
+      "bytes": 26349,
+      "sha256": "810d884d2b275b43799dc097bb8dfee7f63e892a4a7956846a0a7c5c87367da0"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "3c927b145e33fdaf9275f3c63a23ec78b35d0fc2",
+      "bytes": 26349,
+      "sha256": "810d884d2b275b43799dc097bb8dfee7f63e892a4a7956846a0a7c5c87367da0"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/original-warm-type-backed-default-migration-host.test.ts.fixture",
+    "final": {
+      "mode": "100644",
+      "blob": "cef45230e113a0a9debc181957e77dbb6491f3f4",
+      "bytes": 5783,
+      "sha256": "86ce5a8bcbb25c298e59d211910b6aeca3da3e280f9a2109ce0daee6ace2ca0c"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "cef45230e113a0a9debc181957e77dbb6491f3f4",
+      "bytes": 5783,
+      "sha256": "86ce5a8bcbb25c298e59d211910b6aeca3da3e280f9a2109ce0daee6ace2ca0c"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "cef45230e113a0a9debc181957e77dbb6491f3f4",
+      "bytes": 5783,
+      "sha256": "86ce5a8bcbb25c298e59d211910b6aeca3da3e280f9a2109ce0daee6ace2ca0c"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/original-warm-type-backed-default-migration-host.ts.fixture",
+    "final": {
+      "mode": "100644",
+      "blob": "c32f3cebeab5bebabaa076e011af188774f2b031",
+      "bytes": 3081,
+      "sha256": "6b6bffc7461f754b82ad996abf62cd6f958998212e95d4af600fa4b9bfa483d5"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "c32f3cebeab5bebabaa076e011af188774f2b031",
+      "bytes": 3081,
+      "sha256": "6b6bffc7461f754b82ad996abf62cd6f958998212e95d4af600fa4b9bfa483d5"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "c32f3cebeab5bebabaa076e011af188774f2b031",
+      "bytes": 3081,
+      "sha256": "6b6bffc7461f754b82ad996abf62cd6f958998212e95d4af600fa4b9bfa483d5"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/original-warm-type-backed-default-migration-manifest.json.fixture",
+    "final": {
+      "mode": "100644",
+      "blob": "d5e7b8ef26209efe90cad29667607c2c2a2aaeba",
+      "bytes": 3738,
+      "sha256": "73e19d2b74c4488f8feb1214dd6dc15d0d4ff15f744994bc52d9288ee61e6e0d"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "d5e7b8ef26209efe90cad29667607c2c2a2aaeba",
+      "bytes": 3738,
+      "sha256": "73e19d2b74c4488f8feb1214dd6dc15d0d4ff15f744994bc52d9288ee61e6e0d"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "d5e7b8ef26209efe90cad29667607c2c2a2aaeba",
+      "bytes": 3738,
+      "sha256": "73e19d2b74c4488f8feb1214dd6dc15d0d4ff15f744994bc52d9288ee61e6e0d"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/policy-caller-integration.json",
+    "final": {
+      "mode": "100644",
+      "blob": "b62347b8b4df379cf8299b52b3e3011348609f57",
+      "bytes": 7905,
+      "sha256": "5b1065fdafafa9b4e499406a45063f31ffb1b513ec2e200daec75a8865722080"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "b62347b8b4df379cf8299b52b3e3011348609f57",
+      "bytes": 7905,
+      "sha256": "5b1065fdafafa9b4e499406a45063f31ffb1b513ec2e200daec75a8865722080"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "b62347b8b4df379cf8299b52b3e3011348609f57",
+      "bytes": 7905,
+      "sha256": "5b1065fdafafa9b4e499406a45063f31ffb1b513ec2e200daec75a8865722080"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/registry-after.rs.fixture",
+    "final": {
+      "mode": "100644",
+      "blob": "cbf9c7f32929b3d92554b1bc8918a5d100c303c4",
+      "bytes": 21922,
+      "sha256": "e0ac436d8735f69bab0fe42465a328047dc24dc58248a22ae2315a828468f7a1"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "cbf9c7f32929b3d92554b1bc8918a5d100c303c4",
+      "bytes": 21922,
+      "sha256": "e0ac436d8735f69bab0fe42465a328047dc24dc58248a22ae2315a828468f7a1"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "cbf9c7f32929b3d92554b1bc8918a5d100c303c4",
+      "bytes": 21922,
+      "sha256": "e0ac436d8735f69bab0fe42465a328047dc24dc58248a22ae2315a828468f7a1"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/setup-export-default-8090/source-custody/successor.json",
+    "final": {
+      "mode": "100644",
+      "blob": "24956f46a50b7aa95b320596a7d7370f0e431204",
+      "bytes": 12489,
+      "sha256": "7a612fc13dfe59fd50cfa31300980eacfa645e84a410cf6e04ea5777bc8d2e4b"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "24956f46a50b7aa95b320596a7d7370f0e431204",
+      "bytes": 12489,
+      "sha256": "7a612fc13dfe59fd50cfa31300980eacfa645e84a410cf6e04ea5777bc8d2e4b"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "24956f46a50b7aa95b320596a7d7370f0e431204",
+      "bytes": 12489,
+      "sha256": "7a612fc13dfe59fd50cfa31300980eacfa645e84a410cf6e04ea5777bc8d2e4b"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lsp/warm-type-backed-requests/case.json",
+    "final": {
+      "mode": "100644",
+      "blob": "15461f5f48eaca74dd313f0002725e1791b3ab31",
+      "bytes": 1249,
+      "sha256": "ba2a49365dd6e3ec9fb5077fbcd6f68101166a2d18030138bcb0a94857713470"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "15461f5f48eaca74dd313f0002725e1791b3ab31",
+      "bytes": 1249,
+      "sha256": "ba2a49365dd6e3ec9fb5077fbcd6f68101166a2d18030138bcb0a94857713470"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "15461f5f48eaca74dd313f0002725e1791b3ab31",
+      "bytes": 1249,
+      "sha256": "ba2a49365dd6e3ec9fb5077fbcd6f68101166a2d18030138bcb0a94857713470"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lsp/warm-type-backed-requests/gen.mjs",
+    "final": {
+      "mode": "100644",
+      "blob": "697b0d2417994e917452d8bebb279c883f187068",
+      "bytes": 2142,
+      "sha256": "4d0e14d66ce6e7b0b5d2e32a51c39bbe985283aa94934616b4da0ff587d34649"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "697b0d2417994e917452d8bebb279c883f187068",
+      "bytes": 2142,
+      "sha256": "4d0e14d66ce6e7b0b5d2e32a51c39bbe985283aa94934616b4da0ff587d34649"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "697b0d2417994e917452d8bebb279c883f187068",
+      "bytes": 2142,
+      "sha256": "4d0e14d66ce6e7b0b5d2e32a51c39bbe985283aa94934616b4da0ff587d34649"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lsp/warm-type-backed-requests/original-report.md",
+    "final": {
+      "mode": "100644",
+      "blob": "72c5949de536dc35453099dbed6cb1d86a578682",
+      "bytes": 6652,
+      "sha256": "247d435038eb8c53f317dc6a5fdcdd216a19fa9bc58d155e355b5ed2c3eb4a58"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "72c5949de536dc35453099dbed6cb1d86a578682",
+      "bytes": 6652,
+      "sha256": "247d435038eb8c53f317dc6a5fdcdd216a19fa9bc58d155e355b5ed2c3eb4a58"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "72c5949de536dc35453099dbed6cb1d86a578682",
+      "bytes": 6652,
+      "sha256": "247d435038eb8c53f317dc6a5fdcdd216a19fa9bc58d155e355b5ed2c3eb4a58"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lsp/warm-type-backed-requests/package.json",
+    "final": {
+      "mode": "100644",
+      "blob": "c284fece4473bb6d6dae1ab5bd6abe901b67c19b",
+      "bytes": 65,
+      "sha256": "4a2c593a78dd898566bf14bc68914ae452738d0ef2de4a64fd8c2be8f097f942"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "c284fece4473bb6d6dae1ab5bd6abe901b67c19b",
+      "bytes": 65,
+      "sha256": "4a2c593a78dd898566bf14bc68914ae452738d0ef2de4a64fd8c2be8f097f942"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "c284fece4473bb6d6dae1ab5bd6abe901b67c19b",
+      "bytes": 65,
+      "sha256": "4a2c593a78dd898566bf14bc68914ae452738d0ef2de4a64fd8c2be8f097f942"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lsp/warm-type-backed-requests/tsconfig.json",
+    "final": {
+      "mode": "100644",
+      "blob": "97d253e37c853568cd3a730ff476ddd66825aaea",
+      "bytes": 179,
+      "sha256": "ad4c9c378d4d01ee9230da0acc6aa86d0a5cab68de8e552124c5e557d4506181"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "97d253e37c853568cd3a730ff476ddd66825aaea",
+      "bytes": 179,
+      "sha256": "ad4c9c378d4d01ee9230da0acc6aa86d0a5cab68de8e552124c5e557d4506181"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "97d253e37c853568cd3a730ff476ddd66825aaea",
+      "bytes": 179,
+      "sha256": "ad4c9c378d4d01ee9230da0acc6aa86d0a5cab68de8e552124c5e557d4506181"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lsp/warm-type-backed-requests/vize.config.json",
+    "final": {
+      "mode": "100644",
+      "blob": "a5cee1e774acc1a17b4becec93718ea351a41c1b",
+      "bytes": 52,
+      "sha256": "c6f468f396b9c5afeb4a348dffc20fab9660182dd4b65364968c77c448cee85d"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "a5cee1e774acc1a17b4becec93718ea351a41c1b",
+      "bytes": 52,
+      "sha256": "c6f468f396b9c5afeb4a348dffc20fab9660182dd4b65364968c77c448cee85d"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "a5cee1e774acc1a17b4becec93718ea351a41c1b",
+      "bytes": 52,
+      "sha256": "c6f468f396b9c5afeb4a348dffc20fab9660182dd4b65364968c77c448cee85d"
+    }
+  },
+  {
+    "file": "tests/_fixtures/lint-default-correctness/cases.json",
+    "final": {
+      "mode": "100644",
+      "blob": "f6176d4c9902e6e91274ee35e8f6bb14c5334c95",
+      "bytes": 18863,
+      "sha256": "7fa33faea83c868ad5bb01cacd624240486ecea35177a637f09e56ec5f73e9fc"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "f6176d4c9902e6e91274ee35e8f6bb14c5334c95",
+      "bytes": 18863,
+      "sha256": "7fa33faea83c868ad5bb01cacd624240486ecea35177a637f09e56ec5f73e9fc"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "f6176d4c9902e6e91274ee35e8f6bb14c5334c95",
+      "bytes": 18863,
+      "sha256": "7fa33faea83c868ad5bb01cacd624240486ecea35177a637f09e56ec5f73e9fc"
+    }
+  }
+]

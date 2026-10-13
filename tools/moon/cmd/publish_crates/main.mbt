@@ -38,6 +38,12 @@ let published_crates : Array[String] = [
   "vize_atelier_jsx",
   "vize_marquette",
   "vize_doctor",
+  "vize_corsa_core",
+  "vize_corsa_jsonrpc",
+  "vize_corsa_client",
+  "vize_corsa_lsp",
+  "vize_corsa_orchestrator",
+  "vize_corsa",
   "vize_canon",
   "vize_patina",
 ]

@@ -69,11 +69,19 @@ impl EditorLspSession {
                 corsa::api::DocumentIdentifier::from(project.config_file_name.as_str()),
             ))
             .map_err(|error| cstr!("Cannot observe normalized diagnosing config: {error}"))?;
+            let source_names_request =
+                serde_json::json!({"snapshot":snapshot.handle,"project":project.id});
+            let source_names = block_on(
+                api.client
+                    .raw_json_request("getSourceFileNames", source_names_request.clone()),
+            )
+            .map_err(|error| cstr!("Cannot observe diagnosing source names: {error}"))?;
             Ok(serde_json::json!({
                 "project": project, "snapshotProjects": snapshot.projects,
                 "normalizedRequestedOptions": parsed.options,
                 "normalizedRequestedFiles": parsed.file_names,
                 "attachment": api.session,
+                "sourceNamesRequest":source_names_request, "sourceNamesResponse":source_names,
             }))
         })();
         let cleanup = block_on(snapshot.release())

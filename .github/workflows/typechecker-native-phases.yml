@@ -40,7 +40,7 @@ on:
       "crates/vize/tests/support/**",
       "crates/vize/src/**",
       "crates/vize_maestro/src/ide/diagnostics/editor_typecheck_defaults_tests.rs",
-      "Cargo.toml",
+      "vendor/corsa/**", "vendor/corsa_core/**", "vendor/corsa_jsonrpc/**", "vendor/corsa_client/**", "vendor/corsa_lsp/**", "vendor/corsa_orchestrator/**", "tools/support/compat/github/owned-corsa-package-*", "tools/support/compat/github/owned-canon-external-consumer.mjs", "tests/_fixtures/ci/owned-corsa-package-consumer/**", "tests/_fixtures/ci/owned-canon-external-consumer/**", "Cargo.toml",
       "Cargo.lock",
       "pnpm-lock.yaml"]
 permissions: { contents: read }
@@ -123,7 +123,7 @@ jobs:
             [[ ! -e "$NATIVE_PHASE_SOURCE_ROOT/node_modules" ]]
             ln -s "$GITHUB_WORKSPACE/node_modules" "$NATIVE_PHASE_SOURCE_ROOT/node_modules"
           fi
-          bash tools/support/compat/github/native-custom-directive-arguments.sh; bash tools/support/compat/github/native-syntax-semantics.sh; bash tools/support/compat/github/native-javascript-sfc-membership.sh; bash tools/support/compat/github/native-empty-vue-star-exports.sh
+          bash tools/support/compat/github/native-custom-directive-arguments.sh; bash tools/support/compat/github/native-syntax-semantics.sh; bash tools/benchmarks/scripts/typechecker-native-semantic-completion.sh; bash tools/support/compat/github/native-javascript-sfc-membership.sh; bash tools/support/compat/github/native-empty-vue-star-exports.sh
       - name: Qualify declared template emits and config-scoped Vue helpers in the source CLI and editor
         if: github.event_name == 'pull_request'
         env:
@@ -316,7 +316,7 @@ jobs:
             assert.equal(version.status, 0); assert.equal(version.stdout.trim(), 'Version 7.0.2'); assert.equal(version.stderr, '');
             return { name, sourceSha: process.env.SOURCE_SHA, cliBinary: realpathSync(raw.cliBinary), cliSha256: hash(raw.cliBinary), nativeBinary, nativeSha256: hash(nativeBinary), nativePackageSha256: hash(packagePath), nativeVersion: version.stdout.trim() };
           });
-          writeFileSync(join(root, 'receipts.json'), JSON.stringify({ sourceSha: process.env.SOURCE_SHA, matchedCompleteExpectations: true, cases: receipts, fullInputsAndOutputs: files(root).map(path => ({ path: path.slice(root.length + 1), sha256: hash(path) })) }, null, 2) + '\n'); (await import('node:child_process')).execFileSync('bash', ['tools/support/compat/github/native-lexical-dollar.sh'], { stdio: 'inherit' });
+          writeFileSync(join(root, 'receipts.json'), JSON.stringify({ sourceSha: process.env.SOURCE_SHA, matchedCompleteExpectations: true, cases: receipts, fullInputsAndOutputs: files(root).map(path => ({ path: path.slice(root.length + 1), sha256: hash(path) })) }, null, 2) + '\n'); (await import('node:child_process')).execFileSync('bash', ['tools/support/compat/github/native-lexical-dollar.sh'], { stdio: 'inherit' });; const owned = spawnSync('node', ['tools/support/compat/github/native-owned-image.mjs'], { stdio: 'inherit' }); assert.equal(owned.error, undefined); assert.equal(owned.signal, null); assert.equal(owned.status, 0); for (const [program, args] of [['node', ['tools/support/compat/github/owned-canon-external-consumer.mjs']], ['bash', ['tools/support/compat/github/owned-corsa-package-consumer.sh']]]) { const packaged = spawnSync(program, args, { stdio: 'inherit' }); assert.equal(packaged.error, undefined); assert.equal(packaged.signal, null); assert.equal(packaged.status, 0); }
           JS
       - name: Pack complete native evidence and prove reconstruction
         id: native-artifact-pack

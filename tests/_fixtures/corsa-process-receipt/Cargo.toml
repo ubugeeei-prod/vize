@@ -1,0 +1,19 @@
+[package]
+name = "process-receipt-prototype"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[dependencies]
+corsa_core = { path = "../../../vendor/corsa_core" }
+corsa_lsp = { path = "../../../vendor/corsa_lsp" }
+corsa_client = "=1.14.0"
+corsa_runtime = "=1.14.0"
+lsp-types = "=0.97.0"
+serde_json = "1"
+
+[patch.crates-io]
+corsa_core = { path = "../../../vendor/corsa_core" }
+corsa_lsp = { path = "../../../vendor/corsa_lsp" }

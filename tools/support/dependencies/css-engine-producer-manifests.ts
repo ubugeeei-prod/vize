@@ -4,10 +4,23 @@ import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { authenticateOwnedCorsaProducerMetadata } from "./owned-corsa-producer-metadata.ts";
 
 const checksum = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 const frozenMetadata =
   "tests/_fixtures/differential/css-engine-vendor-exit/release-inheritance/metadata";
+
+function originalMetadata(root: string) {
+  const result = spawnSync(
+    "rust-script",
+    [path.join(root, "tools/commands/release/pr.rs"), "verify-producer-metadata", frozenMetadata],
+    { cwd: root, encoding: "utf8", timeout: 180_000 },
+  );
+  assert.equal(result.error, undefined);
+  assert.equal(result.signal, null);
+  assert.equal(result.status, 0, result.stderr);
+  return JSON.parse(result.stdout);
+}
 
 export function authenticateProducerMetadata(root: string) {
   const sources = new Map<string, { baseline: Buffer; actualSha256: string }>();
@@ -23,15 +36,7 @@ export function authenticateProducerMetadata(root: string) {
       actualSha256: checksum(fs.readFileSync(path.join(root, file))),
     });
   }
-  const result = spawnSync(
-    "rust-script",
-    [path.join(root, "tools/commands/release/pr.rs"), "verify-producer-metadata", frozenMetadata],
-    { cwd: root, encoding: "utf8", timeout: 180_000 },
-  );
-  assert.equal(result.error, undefined);
-  assert.equal(result.signal, null);
-  assert.equal(result.status, 0, result.stderr);
-  const receipt = JSON.parse(result.stdout);
+  const receipt = authenticateOwnedCorsaProducerMetadata(root, sources) ?? originalMetadata(root);
   assert.equal(receipt.schema, 1);
   assert.equal(receipt.baselineVersion, "0.443.0");
   assert.equal(receipt.wholeForwardAndInverse, true);

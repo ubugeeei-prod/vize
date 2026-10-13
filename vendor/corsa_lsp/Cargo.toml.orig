@@ -1,0 +1,24 @@
+[package]
+name = "corsa_lsp"
+version = "1.14.0"
+edition = "2024"
+description = "LSP-focused clients, overlays, and virtual documents for Corsa"
+publish = ["crates-io"]
+documentation.workspace = true
+homepage.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "corsa_lsp"
+path = "src/lib.rs"
+
+[dependencies]
+lsp-types = "0.97"
+parking_lot = "0.12"
+serde = { version = "1", features = ["derive"] }
+corsa_core = { version = "1.14.0", path = "../corsa_core" }
+corsa_jsonrpc = { version = "1.14.0", path = "../corsa_jsonrpc" }
+corsa_runtime = { version = "1.14.0", path = "../corsa_runtime" }

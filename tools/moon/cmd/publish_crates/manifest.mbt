@@ -18,6 +18,12 @@ fn crate_manifest_path(crate_name : String) -> String {
     "vize_oxc_parser" => "oxc_parser"
     "vize_parcel_sourcemap" => "parcel_sourcemap"
     "vize_lightningcss" => "lightningcss"
+    "vize_corsa_core" => "corsa_core"
+    "vize_corsa_jsonrpc" => "corsa_jsonrpc"
+    "vize_corsa_client" => "corsa_client"
+    "vize_corsa_lsp" => "corsa_lsp"
+    "vize_corsa_orchestrator" => "corsa_orchestrator"
+    "vize_corsa" => "corsa"
     _ => ""
   }
   if vendor_directory != "" {

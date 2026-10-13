@@ -1,0 +1,168 @@
+[
+  {
+    "file": "vendor/corsa_jsonrpc/Cargo.toml",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "657d13d324610d382a13221c5a52a819c19e0547",
+      "bytes": 1462,
+      "sha256": "1aef00d66ca95a293c92c4bce6441d3dcc627a0d604f216bcd6e136c4a0c19b4"
+    },
+    "archiveSHA256": "984b04f58676e3a3396eba977d9e60179d5317e1189b07c1b095229242dfd5d9",
+    "archiveMember": "Cargo.toml",
+    "archiveMemberSHA256": "87338bdee0c5add31a70ca4a161179c039b0a53ec072ed781a04fd1a9a8e7ff3",
+    "manifestSuccessor": true
+  },
+  {
+    "file": "vendor/corsa_jsonrpc/Cargo.toml.orig",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "53b660e882d6f07ee6c654309e5278bdcdd58ed9",
+      "bytes": 642,
+      "sha256": "33a2b431fafc9f7807d31975af35deec82d140c05c6c37025d5532a3b8665a6a"
+    },
+    "archiveSHA256": "984b04f58676e3a3396eba977d9e60179d5317e1189b07c1b095229242dfd5d9",
+    "archiveMember": "Cargo.toml.orig",
+    "archiveMemberSHA256": "33a2b431fafc9f7807d31975af35deec82d140c05c6c37025d5532a3b8665a6a",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa_jsonrpc/LICENSE",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "cc1581a0efafdc1c423eaa8077ec4f7ee7827048",
+      "bytes": 1082,
+      "sha256": "dc68b72380fc755c1bb054cff32000c716b0515bacb35ca39d08a91cd23749a7"
+    },
+    "additiveLicenseCopy": true,
+    "authenticatedOriginal": "vendor/corsa_core/LICENSE"
+  },
+  {
+    "file": "vendor/corsa_jsonrpc/README.md",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "4041c13e49d6324739476ee255aa450a823e8ed2",
+      "bytes": 4761,
+      "sha256": "aff44743c14309956853e2e092bd3fa5652990138e495761bde32e3894d8d6e7"
+    },
+    "archiveSHA256": "984b04f58676e3a3396eba977d9e60179d5317e1189b07c1b095229242dfd5d9",
+    "archiveMember": "README.md",
+    "archiveMemberSHA256": "aff44743c14309956853e2e092bd3fa5652990138e495761bde32e3894d8d6e7",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa_jsonrpc/src/jsonrpc/connection.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "e984f6616c35adfe9bbc44285517de024d29ec61",
+      "bytes": 21807,
+      "sha256": "c2b1c36681d6be538514c03d5b0f8a58fabf63727fb3c67d994e0899964456ef"
+    },
+    "archiveSHA256": "984b04f58676e3a3396eba977d9e60179d5317e1189b07c1b095229242dfd5d9",
+    "archiveMember": "src/jsonrpc/connection.rs",
+    "archiveMemberSHA256": "c2b1c36681d6be538514c03d5b0f8a58fabf63727fb3c67d994e0899964456ef",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa_jsonrpc/src/jsonrpc/connection_tests.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "458d16ccf05b29c8ed0af67d28105ec3c2ed6088",
+      "bytes": 9725,
+      "sha256": "34385a8919e84bea2d4a829763e084c51db51c168e64ea7de136452b0c41d062"
+    },
+    "archiveSHA256": "984b04f58676e3a3396eba977d9e60179d5317e1189b07c1b095229242dfd5d9",
+    "archiveMember": "src/jsonrpc/connection_tests.rs",
+    "archiveMemberSHA256": "34385a8919e84bea2d4a829763e084c51db51c168e64ea7de136452b0c41d062",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa_jsonrpc/src/jsonrpc/frame.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "ade2da79d4885ba905568d0da0669cbe1f97e6f1",
+      "bytes": 6747,
+      "sha256": "87646a08743a8e146b065fe4ed8f5cce4ecf7dc85ddd438a9ef82fbf9d33d448"
+    },
+    "archiveSHA256": "984b04f58676e3a3396eba977d9e60179d5317e1189b07c1b095229242dfd5d9",
+    "archiveMember": "src/jsonrpc/frame.rs",
+    "archiveMemberSHA256": "87646a08743a8e146b065fe4ed8f5cce4ecf7dc85ddd438a9ef82fbf9d33d448",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa_jsonrpc/src/jsonrpc/frame_tests.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "0c3715f6f0152e793d9b32bb902a69d08413fdc9",
+      "bytes": 4631,
+      "sha256": "5bfa88ad6bac25cb829c958be0557ca3d0110c15d7b97767e2789e244aebb77d"
+    },
+    "archiveSHA256": "984b04f58676e3a3396eba977d9e60179d5317e1189b07c1b095229242dfd5d9",
+    "archiveMember": "src/jsonrpc/frame_tests.rs",
+    "archiveMemberSHA256": "5bfa88ad6bac25cb829c958be0557ca3d0110c15d7b97767e2789e244aebb77d",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa_jsonrpc/src/jsonrpc/id.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "35bca022f8d169288ee8cfbeb85b72e94ec96374",
+      "bytes": 1063,
+      "sha256": "b6efbad6680b2aa8615e326644355492a3d059af89d4fc8faeb57b9cf103b00c"
+    },
+    "archiveSHA256": "984b04f58676e3a3396eba977d9e60179d5317e1189b07c1b095229242dfd5d9",
+    "archiveMember": "src/jsonrpc/id.rs",
+    "archiveMemberSHA256": "b6efbad6680b2aa8615e326644355492a3d059af89d4fc8faeb57b9cf103b00c",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa_jsonrpc/src/jsonrpc/message.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "bd2cca1c435f16125c0fa27ff78d23b1505c0532",
+      "bytes": 10313,
+      "sha256": "ec04b6e1554f5e4985e36fedd4f2236e990db765c3eacc5246c091ac4764a5e9"
+    },
+    "archiveSHA256": "984b04f58676e3a3396eba977d9e60179d5317e1189b07c1b095229242dfd5d9",
+    "archiveMember": "src/jsonrpc/message.rs",
+    "archiveMemberSHA256": "ec04b6e1554f5e4985e36fedd4f2236e990db765c3eacc5246c091ac4764a5e9",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa_jsonrpc/src/jsonrpc/mod.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "8a10578d2f2073b0fe5e9c7d5f189182df5c1e2c",
+      "bytes": 748,
+      "sha256": "5c8bdb36a0afb20d27cd404fa9b78a0ba7946142f68dc7d23398a1a9fa89129e"
+    },
+    "archiveSHA256": "984b04f58676e3a3396eba977d9e60179d5317e1189b07c1b095229242dfd5d9",
+    "archiveMember": "src/jsonrpc/mod.rs",
+    "archiveMemberSHA256": "5c8bdb36a0afb20d27cd404fa9b78a0ba7946142f68dc7d23398a1a9fa89129e",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa_jsonrpc/src/lib.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "dd2b3b56b0e57bb3c37f03a575980c419c67970b",
+      "bytes": 939,
+      "sha256": "a0685d35c3f87ec1d76b77d4d735a28a6b49a887ac29efa75629770c7c810d1b"
+    },
+    "archiveSHA256": "984b04f58676e3a3396eba977d9e60179d5317e1189b07c1b095229242dfd5d9",
+    "archiveMember": "src/lib.rs",
+    "archiveMemberSHA256": "a0685d35c3f87ec1d76b77d4d735a28a6b49a887ac29efa75629770c7c810d1b",
+    "manifestSuccessor": false
+  }
+]

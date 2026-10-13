@@ -1235,5 +1235,67 @@
         }
       ]
     }
+  ],
+  "supplementalCases": [
+    {
+      "id": "typechecker/native-semantic-completion/complete-original-escaped-import-keyword",
+      "state": "active",
+      "targets": [
+        "source-cli",
+        "configured-lsp-owner"
+      ],
+      "pack": "native-semantic-completion",
+      "case": "complete-original-escaped-import-keyword",
+      "test": "native_semantic_completion_keeps_frozen_full_vector_and_actual_terminal_owner",
+      "regressionCommit": "7a782477742608f5fa98646448c53321974f6d44",
+      "sourceRevision": "d55b8238f89bab4418a1a961bd8db1c84911cb42",
+      "packReference": {
+        "path": "native-semantic-completion/case.json",
+        "sha256": "a84264c89bbdd611033fb372bd6d43819da4adf5527c837cf89c14cfc86e9c18"
+      },
+      "inputs": [
+        {
+          "file": "Comp0.vue",
+          "path": "native-semantic-completion/inputs/Comp0.vue.txt",
+          "sha256": "7be241354a3a2711a36aa8179d7eb5c244b3c6de033637105a8e6b1ab987a3c7"
+        },
+        {
+          "file": "Comp1.vue",
+          "path": "native-semantic-completion/inputs/Comp1.vue.txt",
+          "sha256": "c26a6a6ad0205f9d81d89d183fb3f2fb269adee684d7f77797199d0bc351aed6"
+        },
+        {
+          "file": "Comp2.vue",
+          "path": "native-semantic-completion/inputs/Comp2.vue.txt",
+          "sha256": "c26a6a6ad0205f9d81d89d183fb3f2fb269adee684d7f77797199d0bc351aed6"
+        },
+        {
+          "file": "Comp3.vue",
+          "path": "native-semantic-completion/inputs/Comp3.vue.txt",
+          "sha256": "c26a6a6ad0205f9d81d89d183fb3f2fb269adee684d7f77797199d0bc351aed6"
+        },
+        {
+          "file": "node_modules/leaf-types/index.d.ts",
+          "path": "native-semantic-completion/inputs/node_modules/leaf-types/index.d.ts.txt",
+          "sha256": "488799aee462ec3835c7f3ec8990f4fcacedc4e23ed67e3ffce41c5d8631b0c9"
+        },
+        {
+          "file": "node_modules/leaf-types/package.json",
+          "path": "native-semantic-completion/inputs/node_modules/leaf-types/package.json.txt",
+          "sha256": "4c4912f0f41028ddcf0411d44b1e666fef7a75ff83cffb3390775ac776561f00"
+        },
+        {
+          "file": "shared.ts",
+          "path": "native-semantic-completion/inputs/shared.ts.txt",
+          "sha256": "9d25c15c215b9c054320525af40ac18c0579e63d1b9d69ca9e0b9bec3bdcfc1a"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "native-semantic-completion/inputs/tsconfig.json.txt",
+          "sha256": "0365b71721cff6e83c1ec517601a8234df71f6dfba7cc0e67a5763a16a1b6f30"
+        }
+      ],
+      "contract": "source-canon-semantic-completion-v1"
+    }
   ]
 }

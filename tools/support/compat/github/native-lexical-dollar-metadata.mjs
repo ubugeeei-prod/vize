@@ -4,45 +4,19 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import {
-  nativeLexicalSourcePaths,
-  validateNativeLexicalSources,
-} from "./native-lexical-javascript-source.mjs";
+  ownedLexicalSourcePaths,
+  validateOwnedLexicalSourceBodies,
+} from "./owned-corsa-lexical-metadata.mjs";
 
-export const helperPaths = [
-  "native-lexical-dollar.sh",
-  "native-lexical-dollar-metadata.mjs",
-  "native-lexical-dollar-receipt.mjs",
-].map((name) => `tools/support/compat/github/${name}`);
+import {
+  cargoArgs,
+  helperPaths,
+  originalReceiptNames,
+  unobserved,
+} from "./native-lexical-dollar-plan.mjs";
+export { cargoArgs, helperPaths, originalReceiptNames, unobserved };
 export const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
-export const cargoArgs = [
-  "cargo",
-  "test",
-  "--locked",
-  "--profile",
-  "ci-opt",
-  "-p",
-  "vize_canon",
-  "--lib",
-  "--no-run",
-  "--message-format=json",
-  "--config",
-  'profile.ci-opt.inherits="release"',
-  "--config",
-  'profile.ci-opt.lto="thin"',
-  "--config",
-  "profile.ci-opt.codegen-units=16",
-];
-export const originalReceiptNames = [
-  "receipts.json",
-  "imported-runtime-props.runtime.json",
-  "editor-runtime.json",
-];
-export const unobserved = [
-  "diagnosing native PID",
-  "native normalized options",
-  "engine loaded source-file vector",
-];
-export const sourcePaths = (manifest) => nativeLexicalSourcePaths(manifest, helperPaths);
+export const sourcePaths = (manifest) => ownedLexicalSourcePaths(manifest, helperPaths);
 const git = (args) => execFileSync("git", ["--no-replace-objects", ...args]);
 const identity = (file) => {
   const actual = fs.realpathSync(file);
@@ -143,6 +117,7 @@ export function captureMetadata(output) {
     version: 1,
     source: { root, head, tree, noReplaceObjects: true },
     copied,
+    composition: validateOwnedLexicalSourceBodies(manifest, copied, { root, head }),
     testBinary,
     compilerArtifact: artifact,
     originalReceipts,
@@ -185,6 +160,13 @@ export function validateMetadata(output) {
   assert.equal(metadata.source.tree, sourceGit(["rev-parse", "HEAD^{tree}"]).toString().trim());
   assert.equal(text("source.sha").trim(), metadata.source.head);
   assert.equal(new Set(metadata.copied.map((entry) => entry.file)).size, metadata.copied.length);
+  const treeEntries = new Map(
+    sourceGit(["ls-tree", "-z", "HEAD", "--", ...metadata.copied.map((entry) => entry.file)])
+      .toString()
+      .split("\0")
+      .filter(Boolean)
+      .map((entry) => [entry.slice(entry.indexOf("\t") + 1), Buffer.from(entry + "\0")]),
+  );
   for (const entry of metadata.copied) {
     assert.ok(fs.lstatSync(path.join(output, "source", entry.file)).isFile());
     const body = fs.readFileSync(path.join(output, "source", entry.file));
@@ -196,12 +178,27 @@ export function validateMetadata(output) {
       .digest("hex");
     const gitEntry = Buffer.from(`100644 blob ${blob}\t${entry.file}\0`);
     assert.deepEqual(Buffer.from(entry.gitEntryHex, "hex"), gitEntry);
-    assert.deepEqual(sourceGit(["ls-tree", "-z", "HEAD", "--", entry.file]), gitEntry);
+    assert.deepEqual(treeEntries.get(entry.file), gitEntry);
   }
   const manifest = read(
     "source/tests/performance/support/warm-type-backed-lexical-dollar-manifest.json",
   );
-  validateNativeLexicalSources(output, metadata, manifest, helperPaths);
+  assert.deepEqual(
+    metadata.copied.map((entry) => entry.file).sort((a, b) => a.localeCompare(b)),
+    sourcePaths(manifest).sort((a, b) => a.localeCompare(b)),
+  );
+  for (const name of helperPaths)
+    assert.equal(
+      metadata.copied.find((entry) => entry.file === name).sha256,
+      digest(fs.readFileSync(new URL(path.basename(name), import.meta.url))),
+    );
+  assert.deepEqual(
+    metadata.composition,
+    validateOwnedLexicalSourceBodies(manifest, metadata.copied, {
+      root: metadata.source.root,
+      head: metadata.source.head,
+    }),
+  );
   assert.equal(manifest.files.length, 9);
   assert.equal(manifest.corpusBodies.length, 21);
   for (const executable of [metadata.testBinary, metadata.native])

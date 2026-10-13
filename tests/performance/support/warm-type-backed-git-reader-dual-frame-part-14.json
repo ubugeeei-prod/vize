@@ -1,0 +1,345 @@
+[
+  {
+    "file": "crates/vize_maestro/src/ide/diagnostics.rs",
+    "mode": "100644",
+    "blob": "9c0431cc5a6084608363833a2257e3decb36a91e",
+    "bytes": 3464,
+    "sha256": "7e61b0bf03d3ad3b17ef530f8db3fcaf9020e4f9402fbab01ecd89a758eab271"
+  },
+  {
+    "file": "crates/vize_maestro/src/ide/diagnostics/default_migration_tests.rs",
+    "mode": "100644",
+    "blob": "0d49e3de2462cafac5360e3591c33f6965afaa2f",
+    "bytes": 2435,
+    "sha256": "bca60b1f7a8dc6824da8a8c1bb380a0e1601ad71847c8187cb919909eb57669e"
+  },
+  {
+    "file": "crates/vize_patina/src/linter/compatibility.rs",
+    "mode": "100644",
+    "blob": "5234425df9d3c7684ba147e193c19c69987314ac",
+    "bytes": 1858,
+    "sha256": "6e5cef4759637a90b268fafb97c48979b89d4d4ec0679528aef4dfc4d3e81a58"
+  },
+  {
+    "file": "crates/vize_patina/src/linter/engine.rs",
+    "mode": "100644",
+    "blob": "bcab2539142ad988f851ef92dd2226395dd53981",
+    "bytes": 19940,
+    "sha256": "0ee0a7230e1cceca0868d7637eb31978dff372bf3b16c2699f06e0a97b74d9fa"
+  },
+  {
+    "file": "crates/vize_patina/src/linter/engine/rule_sets.rs",
+    "mode": "100644",
+    "blob": "ded044804c9011f5b22e7e479a39ef155bf59461",
+    "bytes": 4260,
+    "sha256": "9e830dffb7acd50992a90b94703e10416d6e41b74b91772327ee010326b1e3a6"
+  },
+  {
+    "file": "crates/vize_patina/src/linter/engine/sfc.rs",
+    "mode": "100644",
+    "blob": "e153615991646e5549b0c3997c2184251493fe4a",
+    "bytes": 11157,
+    "sha256": "bcd3c09c4db78c4bf93514bf177848eb816bb1d665f3c9185fe332550c28eb23"
+  },
+  {
+    "file": "crates/vize_patina/src/linter/script_rules.rs",
+    "mode": "100644",
+    "blob": "9eddae3f363f1965b59aedbc487af25ff18f9e94",
+    "bytes": 9734,
+    "sha256": "9a3f6978f30b5895c31d5eb0f333175f8ee60c1a52bccc31615d5ceb075f1e2b"
+  },
+  {
+    "file": "crates/vize_patina/src/linter/script_rules/registry/rules.rs",
+    "mode": "100644",
+    "blob": "cbf9c7f32929b3d92554b1bc8918a5d100c303c4",
+    "bytes": 21922,
+    "sha256": "e0ac436d8735f69bab0fe42465a328047dc24dc58248a22ae2315a828468f7a1"
+  },
+  {
+    "file": "crates/vize_patina/src/linter/script_rules/sfc.rs",
+    "mode": "100644",
+    "blob": "e4a3c8d0a973ae13ed0c9ba97a4cf4cb72b46320",
+    "bytes": 7552,
+    "sha256": "cce4c13e30a66479b42ea078dc9f799afc81bbfb8e9d5464f78b75b874c42dc1"
+  },
+  {
+    "file": "crates/vize_patina/src/preset.rs",
+    "mode": "100644",
+    "blob": "ef2b19f5cdb2ed2657f4daa1bf242664ca72e9a5",
+    "bytes": 5091,
+    "sha256": "6dfcc732d18a76db0907e8152d6bb61d35ef040924200ae1855b1aa4a81e3718"
+  },
+  {
+    "file": "crates/vize_patina/src/preset/default_migration_tests.rs",
+    "mode": "100644",
+    "blob": "a22b52a650dc6e5c2e02b2976303bc5cbd63b24d",
+    "bytes": 6248,
+    "sha256": "79ecfdbe72c74890ec84b4f31307bc15bbabac749334732ddf918592dc3e74d3"
+  },
+  {
+    "file": "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
+    "mode": "100644",
+    "blob": "b16e18726c7a2a1ed8452efee3ac768bd1d9ae84",
+    "bytes": 26549,
+    "sha256": "04a0a49982ed941a42ef291a91f2863531902cbfed82365ae3da223e4efcf73b"
+  },
+  {
+    "file": "crates/vize_patina/src/rule.rs",
+    "mode": "100644",
+    "blob": "b7dcb6da3168c457e44ac9d0af9da9aa3eae83cd",
+    "bytes": 12547,
+    "sha256": "6dd7a1f3fb7ef88dd13278e1e9f73191cd922ab18e2524af22e7413fb6b15bc1"
+  },
+  {
+    "file": "crates/vize_patina/src/rule/happy_path.rs",
+    "mode": "100644",
+    "blob": "37722e1144c1eefb93e9c1db8af8af7fdf85bbe2",
+    "bytes": 7361,
+    "sha256": "b08dd788756457fe33ca63076d4372c0aa5c511564809ab675c0f3c5fd2f11a8"
+  },
+  {
+    "file": "crates/vize_patina/src/rules/script.rs",
+    "mode": "100644",
+    "blob": "7b54949f6b48abe4c69b27865bf6b0165694a936",
+    "bytes": 7697,
+    "sha256": "2fcda85b4dba45248c782f475c648b4344b0cb2b008b55d241cd282efa9cf7dd"
+  },
+  {
+    "file": "crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs",
+    "mode": "100644",
+    "blob": "ec953122c810abe270b8d4e80804525ad2833bbf",
+    "bytes": 9635,
+    "sha256": "e3125601808dd6d4d0c7221c8330c9b0e02471a38b4c1819c77d7ca1389fc450"
+  },
+  {
+    "file": "crates/vize_patina/src/rules/script/props_emits.rs",
+    "mode": "100644",
+    "blob": "4a756a4d427286eb83d65e540713051736002831",
+    "bytes": 1368,
+    "sha256": "8974083b1d8e5c864f31d3f872d54d6061a84f4a8f7a181c2daa0d3f27ede6ff"
+  },
+  {
+    "file": "crates/vize_patina/src/rules/script/props_emits/compiler_macro_bindings.rs",
+    "mode": "100644",
+    "blob": "7ba76a4d5a9256270ef258947064d9e60f103077",
+    "bytes": 5670,
+    "sha256": "2fa87c69fef9eca8cd8c39d88892a2db91bb40eadcc17fa15c1bec9a991b376f"
+  },
+  {
+    "file": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs",
+    "mode": "100644",
+    "blob": "85243a519428825cd278e0a5f418bb71b30ff53d",
+    "bytes": 11471,
+    "sha256": "1e3e58cab0ab268e3c9e3ba5eb3e74d54283d47249d10189fe65c608cca504f1"
+  },
+  {
+    "file": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default/runtime.rs",
+    "mode": "100644",
+    "blob": "76b7cfe95c7a8d4121580f11b67c3545036d5025",
+    "bytes": 2399,
+    "sha256": "5bed02a5b8cdf759c2939fae2f68fda41c05a3d35508383e9275b28569e4c4b2"
+  },
+  {
+    "file": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default/typed.rs",
+    "mode": "100644",
+    "blob": "897c711329161538d8fefe536e46815aea76a043",
+    "bytes": 8807,
+    "sha256": "0749c7e672b42572d4c509404af7c82ba415590de5ef04988d577cdc23806c83"
+  },
+  {
+    "file": "crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator/setup.rs",
+    "mode": "100644",
+    "blob": "5a0328505ea2d520ecabaa404202dd4bd0861365",
+    "bytes": 6384,
+    "sha256": "458971904a70de545aca5bb441e0f4241fad91d8573ae0681bd6298a1d3136f1"
+  },
+  {
+    "file": "crates/vize_patina/src/rules/vue/no_deprecated_functional_template.rs",
+    "mode": "100644",
+    "blob": "328df640e98257fe589de6070c12aca5e130c516",
+    "bytes": 8773,
+    "sha256": "4807bf0ace61ad9db7f885402a15f8bacb88ced005367142376ac0203bd930db"
+  },
+  {
+    "file": "docs/davinci/decisions/2026-10-12-3952-raw-git-body-authority.md",
+    "mode": "100644",
+    "blob": "90359519719c3a705cf16fa3641a2d8679641f82",
+    "bytes": 5982,
+    "sha256": "615e60d862c9471662a99db2a6c255646a1c1b7d3c48e92745070e4295f8ed40"
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/n8n-cli-config/cases.json",
+    "mode": "100644",
+    "blob": "223dad7fc07192e9990a3634bc24af3d2f87fd58",
+    "bytes": 48071,
+    "sha256": "a909cebe172fbba3d145d10efd90c26c370247299d7ac62450d5867b7b45d695"
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/01-after.rs.fixture",
+    "mode": "100644",
+    "blob": "4a756a4d427286eb83d65e540713051736002831",
+    "bytes": 1368,
+    "sha256": "8974083b1d8e5c864f31d3f872d54d6061a84f4a8f7a181c2daa0d3f27ede6ff"
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/06-after.rs.fixture",
+    "mode": "100644",
+    "blob": "7b54949f6b48abe4c69b27865bf6b0165694a936",
+    "bytes": 7697,
+    "sha256": "2fcda85b4dba45248c782f475c648b4344b0cb2b008b55d241cd282efa9cf7dd"
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/07-after.rs.fixture",
+    "mode": "100644",
+    "blob": "96af9ee168b9c0d5de9b2d091efac3e7f2223b7e",
+    "bytes": 9768,
+    "sha256": "8ffd84a3c10bd6047da99d0bd8ecc9823d94900014830fff503377098d25a962"
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/helper-integration/01-after.mjs.fixture",
+    "mode": "100644",
+    "blob": "a8fce88502aa29db93afdfb233c892a15516e99d",
+    "bytes": 6045,
+    "sha256": "8c9e884f8099a1125ab0518d5f569baf043f7416509190dfa61b8db212a38d33"
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/helper-integration/01-before.mjs.fixture",
+    "mode": "100644",
+    "blob": "50368c6b88ce63186c4c5e246c4b4c0b46725a4b",
+    "bytes": 5787,
+    "sha256": "e9a91456ac78d8ec9449a1c8a539a735df3a4a7e67091ad282518c77f9564455"
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/helper-integration/02-after.mjs.fixture",
+    "mode": "100644",
+    "blob": "af400a192e7d2384aefdd823483caf257419b93d",
+    "bytes": 5387,
+    "sha256": "8995c93374509bbb37be4fd0df0506df1b8d6bac4737496d5f66410d19527b7a"
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/helper-integration/02-before.mjs.fixture",
+    "mode": "100644",
+    "blob": "5a093216152521cc580b95c27e22fc419f947bf3",
+    "bytes": 5128,
+    "sha256": "0930abbf603bb8faa5643ad1adca3b74608122f8db63df9bdfbf5155f1e2fd38"
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/helper-integration/manifest.json",
+    "mode": "100644",
+    "blob": "2fe45facd3184e00d64e40dd984a03aac275e4c8",
+    "bytes": 1479,
+    "sha256": "0a3c546ac610655d29d6f4d059a6950e195fa1ed380c77c1ebd56aca9105ba9d"
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/import-correction/script-rules-after.rs.fixture",
+    "mode": "100644",
+    "blob": "edf0f64adee0f76d0d67d4032d01a30888053954",
+    "bytes": 9722,
+    "sha256": "aba99facec3f70369a3e5c53d12b2c045d28ffba1b585d29cfb5fa3ef6bb262d"
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/import-correction/successor.json",
+    "mode": "100644",
+    "blob": "dde538cd7ead6f9919cbfefc916063ad6b897fab",
+    "bytes": 12705,
+    "sha256": "39cf7ab7633378ab462c6af46443fa0e235b070d067db739eaa040760e3e996f"
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/original-no-deep.rs.fixture",
+    "mode": "100644",
+    "blob": "27b222f88a40cdf5602f63939df27928244d0232",
+    "bytes": 10631,
+    "sha256": "c4a0134e786feca78007040fcfd49b9c8686aca3e63af3b24d81df172ad11ab0"
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/producer-after.rs.fixture",
+    "mode": "100644",
+    "blob": "ec953122c810abe270b8d4e80804525ad2833bbf",
+    "bytes": 9635,
+    "sha256": "e3125601808dd6d4d0c7221c8330c9b0e02471a38b4c1819c77d7ca1389fc450"
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/successor.json",
+    "mode": "100644",
+    "blob": "549226e039bd92e96f0e65e6083da89f7972c25d",
+    "bytes": 15445,
+    "sha256": "de01ccf20b54abc69935b2ffa844705b1704bac8f83c07ee832c339ff9aaa161"
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/trait-scope-correction/script-rules-after.rs.fixture",
+    "mode": "100644",
+    "blob": "9eddae3f363f1965b59aedbc487af25ff18f9e94",
+    "bytes": 9734,
+    "sha256": "9a3f6978f30b5895c31d5eb0f333175f8ee60c1a52bccc31615d5ceb075f1e2b"
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/trait-scope-correction/successor.json",
+    "mode": "100644",
+    "blob": "8e8db63ce45f1a82a78bcc11beedb8f1bae958cc",
+    "bytes": 12331,
+    "sha256": "9591f993ff7ff20537ffbc532ce84af6ef201ec26e248b99d7788725a7dece59"
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/reserved-prefix-8090/api-order-main-source-custody.json",
+    "mode": "100644",
+    "blob": "fa3838f8922c92f81da49185dba821dd5e16014d",
+    "bytes": 3733,
+    "sha256": "67cd13b5da7a18095622e1f8b68d15c4d7dcb87116498c7b4d0f33eabfa68945"
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/01-after.rs.fixture",
+    "mode": "100644",
+    "blob": "f80104f94b80d850d6c8b8e3aacdaf3830b05192",
+    "bytes": 1142,
+    "sha256": "6ab8bce216974ed76eaee32f2a494c2a039401a62eab5dbc98b90da0e8ed1c2f"
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/01-before.rs.fixture",
+    "mode": "100644",
+    "blob": "2cec60a8008cd2761c2e383f49829ed038b25bc7",
+    "bytes": 1113,
+    "sha256": "f9e158bdb40b830de0d196c90f5a0489a2327de0fcaddf87790a8375d26bb096"
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/02-after.rs.fixture",
+    "mode": "100644",
+    "blob": "7ba76a4d5a9256270ef258947064d9e60f103077",
+    "bytes": 5670,
+    "sha256": "2fa87c69fef9eca8cd8c39d88892a2db91bb40eadcc17fa15c1bec9a991b376f"
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/03-after.rs.fixture",
+    "mode": "100644",
+    "blob": "5a0328505ea2d520ecabaa404202dd4bd0861365",
+    "bytes": 6384,
+    "sha256": "458971904a70de545aca5bb441e0f4241fad91d8573ae0681bd6298a1d3136f1"
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/03-before.rs.fixture",
+    "mode": "100644",
+    "blob": "6897b1de7ea65cc63fdbfc6df87709b78cacb271",
+    "bytes": 11589,
+    "sha256": "b688089a3b6ebb55b8250163d190011774c88caa38d0bddd706ce2b85174ee28"
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/04-after.rs.fixture",
+    "mode": "100644",
+    "blob": "85243a519428825cd278e0a5f418bb71b30ff53d",
+    "bytes": 11471,
+    "sha256": "1e3e58cab0ab268e3c9e3ba5eb3e74d54283d47249d10189fe65c608cca504f1"
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/04-before.rs.fixture",
+    "mode": "100644",
+    "blob": "af511b0b2a53a6cae12acada663dc6a01b5de28c",
+    "bytes": 10626,
+    "sha256": "5b3ae15fd4fc769f5fa418ec3b14039a8b30d8b1d7e06cd8f5ba6f872b12274c"
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/05-after.rs.fixture",
+    "mode": "100644",
+    "blob": "76b7cfe95c7a8d4121580f11b67c3545036d5025",
+    "bytes": 2399,
+    "sha256": "5bed02a5b8cdf759c2939fae2f68fda41c05a3d35508383e9275b28569e4c4b2"
+  }
+]

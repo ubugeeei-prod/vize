@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
-import { digest } from "../../tools/support/compat/github/native-lexical-dollar-metadata.mjs";
-import { validateLexicalDollarPackets } from "../../tools/support/compat/github/native-lexical-dollar-receipt.mjs";
+import { digest } from "./support/native-sdk-historical-packets.mjs";
+import { validateLexicalDollarPackets } from "./support/native-sdk-historical-packets.mjs";
 import { createPacketFixture, editJson, write } from "./support/native-lexical-dollar-fixture.mjs";
 
 function fixtureTest(name, body) {

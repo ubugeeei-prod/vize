@@ -5,6 +5,8 @@ use serde_json::Value;
 use sha2::{Digest, Sha256};
 use vize_l0::String;
 
+mod batch_receipt;
+
 const PAYLOAD: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../tests/_fixtures/differential/typechecker/snapshot-source-text/protocol5-text.bin"

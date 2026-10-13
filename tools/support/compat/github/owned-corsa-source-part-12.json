@@ -1,0 +1,146 @@
+[
+  {
+    "file": "vendor/corsa_core/src/lint/rules/no_unnecessary_type_parameters.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "e6d8eb7a0c10eadd0a6110fb75e9b0a19e7dd6ab",
+      "bytes": 16145,
+      "sha256": "f3640783c63462b0419e4f938d36644f6f6aa00d42a09811842db52df834f88f"
+    },
+    "historicalBeforeSHA256": null,
+    "historicalAfterSHA256": "f3640783c63462b0419e4f938d36644f6f6aa00d42a09811842db52df834f88f"
+  },
+  {
+    "file": "vendor/corsa_core/src/lint/rules/no_unsafe_argument.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "cdeb247ba3588b7c1730da52cd52dd43a066e300",
+      "bytes": 19249,
+      "sha256": "16473df37e6c4a16d95c1421df786cd393dcfb132e436546673a5b85e984980c"
+    },
+    "historicalBeforeSHA256": null,
+    "historicalAfterSHA256": "16473df37e6c4a16d95c1421df786cd393dcfb132e436546673a5b85e984980c"
+  },
+  {
+    "file": "vendor/corsa_core/src/lint/rules/no_unsafe_assignment.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "b3633819436d7d10019c3d35d4238fed0d7e2076",
+      "bytes": 2912,
+      "sha256": "22f091447d792017d57b12555382fa1df5231c91f25f57d997f1a9a55b0623f4"
+    },
+    "historicalBeforeSHA256": null,
+    "historicalAfterSHA256": "22f091447d792017d57b12555382fa1df5231c91f25f57d997f1a9a55b0623f4"
+  },
+  {
+    "file": "vendor/corsa_core/src/lint/rules/no_unsafe_call.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "8046e29b50a10fc90aba61d543504f478f3bd864",
+      "bytes": 2920,
+      "sha256": "70dbf578a5df4710a398a450d00d4f391708c9b3f15df3df6443a511ff8f97a9"
+    },
+    "historicalBeforeSHA256": null,
+    "historicalAfterSHA256": "70dbf578a5df4710a398a450d00d4f391708c9b3f15df3df6443a511ff8f97a9"
+  },
+  {
+    "file": "vendor/corsa_core/src/lint/rules/no_unsafe_enum_comparison.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "052d2c1bf97a3ff37146e2d404ddc6980b67d88a",
+      "bytes": 13358,
+      "sha256": "d3ebf5747a07deaa76dfcb30d42379a205c53d86235e3806934fc600ba8a12c3"
+    },
+    "historicalBeforeSHA256": null,
+    "historicalAfterSHA256": "d3ebf5747a07deaa76dfcb30d42379a205c53d86235e3806934fc600ba8a12c3"
+  },
+  {
+    "file": "vendor/corsa_core/src/lint/rules/no_unsafe_member_access.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "16881c80c8c12deeb8b6aa686d949c2152e35bca",
+      "bytes": 3024,
+      "sha256": "6d756b9de012a2f6c37702fd37c84603154c014fac50e0fc70c943db26450cd5"
+    },
+    "historicalBeforeSHA256": null,
+    "historicalAfterSHA256": "6d756b9de012a2f6c37702fd37c84603154c014fac50e0fc70c943db26450cd5"
+  },
+  {
+    "file": "vendor/corsa_core/src/lint/rules/no_unsafe_return.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "de5463e20ba93c119bcb648c7d2cdafbb35bef4e",
+      "bytes": 2151,
+      "sha256": "a143a757e36d4aad0acf0e089de26930a76031c0703538a212b353e9090202b1"
+    },
+    "historicalBeforeSHA256": null,
+    "historicalAfterSHA256": "a143a757e36d4aad0acf0e089de26930a76031c0703538a212b353e9090202b1"
+  },
+  {
+    "file": "vendor/corsa_core/src/lint/rules/no_unsafe_type_assertion.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "353a66bbeef3f27634b6b76eec8d94a5bda38635",
+      "bytes": 7880,
+      "sha256": "7c6753178de7b6c8c41c32f993b6fa32085a0a7b0c63e06751010fc8634f0461"
+    },
+    "historicalBeforeSHA256": null,
+    "historicalAfterSHA256": "7c6753178de7b6c8c41c32f993b6fa32085a0a7b0c63e06751010fc8634f0461"
+  },
+  {
+    "file": "vendor/corsa_core/src/lint/rules/no_unsafe_unary_minus.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "8b216be97c4ff96135d8909748d55c37767918bf",
+      "bytes": 1375,
+      "sha256": "621017b5e675d44b4bc10b97104801f09334cc4eaf91b85fb351386779758e36"
+    },
+    "historicalBeforeSHA256": null,
+    "historicalAfterSHA256": "621017b5e675d44b4bc10b97104801f09334cc4eaf91b85fb351386779758e36"
+  },
+  {
+    "file": "vendor/corsa_core/src/lint/rules/no_useless_default_assignment.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "d82c7ea32853d9c1564784353f27464e4ae039fc",
+      "bytes": 19431,
+      "sha256": "0deaf17373c2a22e77163995f47aab2fc9b242e4ea9b6812204a008c66b97253"
+    },
+    "historicalBeforeSHA256": null,
+    "historicalAfterSHA256": "0deaf17373c2a22e77163995f47aab2fc9b242e4ea9b6812204a008c66b97253"
+  },
+  {
+    "file": "vendor/corsa_core/src/lint/rules/non_nullable_type_assertion_style.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "ec0f2f5ad9de7a0aba518572fbe3d751f5d40dd4",
+      "bytes": 14991,
+      "sha256": "7ed0ab2957158286a9f15f0dcf555072ef7e9b482ef3dd266f96b7ea1f74369f"
+    },
+    "historicalBeforeSHA256": null,
+    "historicalAfterSHA256": "7ed0ab2957158286a9f15f0dcf555072ef7e9b482ef3dd266f96b7ea1f74369f"
+  },
+  {
+    "file": "vendor/corsa_core/src/lint/rules/only_throw_error.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "5d87d6cd96feea3c480d5843bf0ae7a2dd3c4284",
+      "bytes": 12072,
+      "sha256": "54781bf37f097e72be5ac454be6a9faa8839001198246a3d2697cf00c3cedaeb"
+    },
+    "historicalBeforeSHA256": null,
+    "historicalAfterSHA256": "54781bf37f097e72be5ac454be6a9faa8839001198246a3d2697cf00c3cedaeb"
+  }
+]

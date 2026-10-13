@@ -1,0 +1,128 @@
+[
+  {
+    "file": "vendor/corsa_orchestrator/src/orchestrator/raft/config.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "85b7778a35820ad7596e22ab0d986f604eaa810d",
+      "bytes": 3828,
+      "sha256": "0af62a8aac1b4e25e07dedaec34b078587cf368c740643bd1756c945f0808018"
+    },
+    "archiveSHA256": "870bf975c5e7bce2be4df321cec1aa8a51193a0e09e560a023d9989215f686af",
+    "archiveMember": "src/orchestrator/raft/config.rs",
+    "archiveMemberSHA256": "0af62a8aac1b4e25e07dedaec34b078587cf368c740643bd1756c945f0808018",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa_orchestrator/src/orchestrator/raft/messages.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "d22575df1d772cbb9097e9c20d5b4cd6237bbf2c",
+      "bytes": 5633,
+      "sha256": "e9be375c061352755e6f7d0534a59cd282db99034a680d8e8a4ba927b4fcce61"
+    },
+    "archiveSHA256": "870bf975c5e7bce2be4df321cec1aa8a51193a0e09e560a023d9989215f686af",
+    "archiveMember": "src/orchestrator/raft/messages.rs",
+    "archiveMemberSHA256": "e9be375c061352755e6f7d0534a59cd282db99034a680d8e8a4ba927b4fcce61",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa_orchestrator/src/orchestrator/raft/mod.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "e2b61f043652ce70753f42c850cf558142ac1e41",
+      "bytes": 20606,
+      "sha256": "053735685c0b32b4426047ce9cce6929e02225ca9fbfdbb5ea487d36bc772d3d"
+    },
+    "archiveSHA256": "870bf975c5e7bce2be4df321cec1aa8a51193a0e09e560a023d9989215f686af",
+    "archiveMember": "src/orchestrator/raft/mod.rs",
+    "archiveMemberSHA256": "053735685c0b32b4426047ce9cce6929e02225ca9fbfdbb5ea487d36bc772d3d",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa_orchestrator/src/orchestrator/raft/node.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "9b03d2ad3fee1ca21b92cc0b0d67c597f07d37ca",
+      "bytes": 30404,
+      "sha256": "e0ff37954c1d35d10438695f8dfff377d47a7c437f766a32f09609a53f32f80a"
+    },
+    "archiveSHA256": "870bf975c5e7bce2be4df321cec1aa8a51193a0e09e560a023d9989215f686af",
+    "archiveMember": "src/orchestrator/raft/node.rs",
+    "archiveMemberSHA256": "e0ff37954c1d35d10438695f8dfff377d47a7c437f766a32f09609a53f32f80a",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa_orchestrator/src/orchestrator/raft/storage.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "ee20814fe0413f95d2361da9c3d47e1f408ac17b",
+      "bytes": 19785,
+      "sha256": "db5d8f85854a5497a04897fae847259b9acefc1c58857833742141dad81af896"
+    },
+    "archiveSHA256": "870bf975c5e7bce2be4df321cec1aa8a51193a0e09e560a023d9989215f686af",
+    "archiveMember": "src/orchestrator/raft/storage.rs",
+    "archiveMemberSHA256": "db5d8f85854a5497a04897fae847259b9acefc1c58857833742141dad81af896",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa_orchestrator/src/orchestrator/raft/tests.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "44d698aaf9f428fcbed946cdb617ff3825694ade",
+      "bytes": 8589,
+      "sha256": "9c759ae2fcbf678923233c146c6f8e0cb6ab18c6c134dcf893c078b590de8f61"
+    },
+    "archiveSHA256": "870bf975c5e7bce2be4df321cec1aa8a51193a0e09e560a023d9989215f686af",
+    "archiveMember": "src/orchestrator/raft/tests.rs",
+    "archiveMemberSHA256": "9c759ae2fcbf678923233c146c6f8e0cb6ab18c6c134dcf893c078b590de8f61",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa_orchestrator/src/orchestrator/raft/transport.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "2f170199b6f416af6b364a7d4009132799b8417e",
+      "bytes": 7046,
+      "sha256": "ed61e1a7f9921dadb43d092374b964af5ae645b40552588e18f60f85a6fcd330"
+    },
+    "archiveSHA256": "870bf975c5e7bce2be4df321cec1aa8a51193a0e09e560a023d9989215f686af",
+    "archiveMember": "src/orchestrator/raft/transport.rs",
+    "archiveMemberSHA256": "ed61e1a7f9921dadb43d092374b964af5ae645b40552588e18f60f85a6fcd330",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa_orchestrator/src/orchestrator/state.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "b58980f3b395dd6a5d708aecfc0687783a5c61d3",
+      "bytes": 6563,
+      "sha256": "49602cd948b57bbbcb0a40974ee0e091379d0763549b69041c9d7124da0a6659"
+    },
+    "archiveSHA256": "870bf975c5e7bce2be4df321cec1aa8a51193a0e09e560a023d9989215f686af",
+    "archiveMember": "src/orchestrator/state.rs",
+    "archiveMemberSHA256": "49602cd948b57bbbcb0a40974ee0e091379d0763549b69041c9d7124da0a6659",
+    "manifestSuccessor": false
+  },
+  {
+    "file": "vendor/corsa_orchestrator/src/orchestrator/state_tests.rs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "9a897b7ebd4379e4acd6e31998734d70045d4720",
+      "bytes": 3481,
+      "sha256": "803077e9687e3d6647aa71a6ddb4e41505a80249d2c4aa3e7d873a7415d54647"
+    },
+    "archiveSHA256": "870bf975c5e7bce2be4df321cec1aa8a51193a0e09e560a023d9989215f686af",
+    "archiveMember": "src/orchestrator/state_tests.rs",
+    "archiveMemberSHA256": "803077e9687e3d6647aa71a6ddb4e41505a80249d2c4aa3e7d873a7415d54647",
+    "manifestSuccessor": false
+  }
+]

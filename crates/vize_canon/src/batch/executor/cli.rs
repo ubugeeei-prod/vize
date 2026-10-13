@@ -16,7 +16,9 @@ mod file_diagnostics;
 mod import_resolution;
 #[cfg(test)]
 mod lexical_dollar_receipt;
+mod outcome;
 mod output;
+use outcome::{CliCheckFailure, CliCheckResult};
 mod partition;
 mod patterns;
 mod project_diagnostics;
@@ -36,7 +38,10 @@ use partition::partition_virtual_files;
 use shard_sizing::shard_count;
 
 mod run;
-pub(super) use run::{auto_server_count, check_with_cli, check_with_cli_sharded};
+pub(super) use outcome::CliCheckFailure as CheckFailure;
+pub(super) use run::{
+    auto_server_count, check_with_cli, check_with_cli_classified, check_with_cli_sharded,
+};
 
 struct ShardPlan<'a> {
     /// Virtual paths to include per shard (owned Vue files plus every shared
@@ -65,7 +70,7 @@ fn run_cli_for_config(
     config_path: &Path,
     checkers: usize,
     owns: &dyn Fn(&Path) -> bool,
-) -> CorsaResult<TypeCheckResult> {
+) -> CliCheckResult {
     let output = profile!("canon.corsa.cli.command", {
         let mut command = Command::new(corsa_path);
         command.current_dir(project.virtual_root());
@@ -89,13 +94,14 @@ fn run_cli_for_config(
     // their diagnostics, then require the same-config session to complete the
     // semantic phase. Its CLI degradation must refuse this outcome as well.
     if syntax_abort::output_aborted_on_syntax(&output, project) {
-        return Err(CorsaError::CorsaExecution {
+        let error = CorsaError::CorsaExecution {
             exit_code: output.status.code().unwrap_or(1),
             message: cstr!(
                 "Corsa CLI semantic diagnostics are incomplete after a syntax error:\n{}",
                 output_message(&output)
             ),
-        });
+        };
+        return Err(outcome::classify_parser_abort(error, &output));
     }
     let diagnostics = profile!(
         "canon.corsa.cli.parse",
@@ -110,7 +116,8 @@ fn run_cli_for_config(
                  deterministic diagnostics (#3905); upgrade the pinned corsa runtime.\n{}",
                 output_message(&output)
             ),
-        });
+        }
+        .into());
     }
 
     let success = (output.status.success() || patterns::only_pattern_warnings(&output, project))
@@ -131,7 +138,8 @@ fn run_cli_for_config(
         return Err(CorsaError::CorsaExecution {
             exit_code: output.status.code().unwrap_or(-1),
             message: output_message(&output),
-        });
+        }
+        .into());
     }
 
     Ok(TypeCheckResult {

@@ -1,0 +1,338 @@
+[
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/helper-integration/manifest.json",
+    "final": {
+      "mode": "100644",
+      "blob": "2fe45facd3184e00d64e40dd984a03aac275e4c8",
+      "bytes": 1479,
+      "sha256": "0a3c546ac610655d29d6f4d059a6950e195fa1ed380c77c1ebd56aca9105ba9d"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "2fe45facd3184e00d64e40dd984a03aac275e4c8",
+      "bytes": 1479,
+      "sha256": "0a3c546ac610655d29d6f4d059a6950e195fa1ed380c77c1ebd56aca9105ba9d"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "2fe45facd3184e00d64e40dd984a03aac275e4c8",
+      "bytes": 1479,
+      "sha256": "0a3c546ac610655d29d6f4d059a6950e195fa1ed380c77c1ebd56aca9105ba9d"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/import-correction/script-rules-after.rs.fixture",
+    "final": {
+      "mode": "100644",
+      "blob": "edf0f64adee0f76d0d67d4032d01a30888053954",
+      "bytes": 9722,
+      "sha256": "aba99facec3f70369a3e5c53d12b2c045d28ffba1b585d29cfb5fa3ef6bb262d"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "edf0f64adee0f76d0d67d4032d01a30888053954",
+      "bytes": 9722,
+      "sha256": "aba99facec3f70369a3e5c53d12b2c045d28ffba1b585d29cfb5fa3ef6bb262d"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "edf0f64adee0f76d0d67d4032d01a30888053954",
+      "bytes": 9722,
+      "sha256": "aba99facec3f70369a3e5c53d12b2c045d28ffba1b585d29cfb5fa3ef6bb262d"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/import-correction/successor.json",
+    "final": {
+      "mode": "100644",
+      "blob": "dde538cd7ead6f9919cbfefc916063ad6b897fab",
+      "bytes": 12705,
+      "sha256": "39cf7ab7633378ab462c6af46443fa0e235b070d067db739eaa040760e3e996f"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "dde538cd7ead6f9919cbfefc916063ad6b897fab",
+      "bytes": 12705,
+      "sha256": "39cf7ab7633378ab462c6af46443fa0e235b070d067db739eaa040760e3e996f"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "dde538cd7ead6f9919cbfefc916063ad6b897fab",
+      "bytes": 12705,
+      "sha256": "39cf7ab7633378ab462c6af46443fa0e235b070d067db739eaa040760e3e996f"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/original-no-deep.rs.fixture",
+    "final": {
+      "mode": "100644",
+      "blob": "27b222f88a40cdf5602f63939df27928244d0232",
+      "bytes": 10631,
+      "sha256": "c4a0134e786feca78007040fcfd49b9c8686aca3e63af3b24d81df172ad11ab0"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "27b222f88a40cdf5602f63939df27928244d0232",
+      "bytes": 10631,
+      "sha256": "c4a0134e786feca78007040fcfd49b9c8686aca3e63af3b24d81df172ad11ab0"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "27b222f88a40cdf5602f63939df27928244d0232",
+      "bytes": 10631,
+      "sha256": "c4a0134e786feca78007040fcfd49b9c8686aca3e63af3b24d81df172ad11ab0"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/producer-after.rs.fixture",
+    "final": {
+      "mode": "100644",
+      "blob": "ec953122c810abe270b8d4e80804525ad2833bbf",
+      "bytes": 9635,
+      "sha256": "e3125601808dd6d4d0c7221c8330c9b0e02471a38b4c1819c77d7ca1389fc450"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "ec953122c810abe270b8d4e80804525ad2833bbf",
+      "bytes": 9635,
+      "sha256": "e3125601808dd6d4d0c7221c8330c9b0e02471a38b4c1819c77d7ca1389fc450"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "ec953122c810abe270b8d4e80804525ad2833bbf",
+      "bytes": 9635,
+      "sha256": "e3125601808dd6d4d0c7221c8330c9b0e02471a38b4c1819c77d7ca1389fc450"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/successor.json",
+    "final": {
+      "mode": "100644",
+      "blob": "549226e039bd92e96f0e65e6083da89f7972c25d",
+      "bytes": 15445,
+      "sha256": "de01ccf20b54abc69935b2ffa844705b1704bac8f83c07ee832c339ff9aaa161"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "549226e039bd92e96f0e65e6083da89f7972c25d",
+      "bytes": 15445,
+      "sha256": "de01ccf20b54abc69935b2ffa844705b1704bac8f83c07ee832c339ff9aaa161"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "549226e039bd92e96f0e65e6083da89f7972c25d",
+      "bytes": 15445,
+      "sha256": "de01ccf20b54abc69935b2ffa844705b1704bac8f83c07ee832c339ff9aaa161"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/trait-scope-correction/script-rules-after.rs.fixture",
+    "final": {
+      "mode": "100644",
+      "blob": "9eddae3f363f1965b59aedbc487af25ff18f9e94",
+      "bytes": 9734,
+      "sha256": "9a3f6978f30b5895c31d5eb0f333175f8ee60c1a52bccc31615d5ceb075f1e2b"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "9eddae3f363f1965b59aedbc487af25ff18f9e94",
+      "bytes": 9734,
+      "sha256": "9a3f6978f30b5895c31d5eb0f333175f8ee60c1a52bccc31615d5ceb075f1e2b"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "9eddae3f363f1965b59aedbc487af25ff18f9e94",
+      "bytes": 9734,
+      "sha256": "9a3f6978f30b5895c31d5eb0f333175f8ee60c1a52bccc31615d5ceb075f1e2b"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/props-deep-destructure-8090/source-custody/trait-scope-correction/successor.json",
+    "final": {
+      "mode": "100644",
+      "blob": "8e8db63ce45f1a82a78bcc11beedb8f1bae958cc",
+      "bytes": 12331,
+      "sha256": "9591f993ff7ff20537ffbc532ce84af6ef201ec26e248b99d7788725a7dece59"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "8e8db63ce45f1a82a78bcc11beedb8f1bae958cc",
+      "bytes": 12331,
+      "sha256": "9591f993ff7ff20537ffbc532ce84af6ef201ec26e248b99d7788725a7dece59"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "8e8db63ce45f1a82a78bcc11beedb8f1bae958cc",
+      "bytes": 12331,
+      "sha256": "9591f993ff7ff20537ffbc532ce84af6ef201ec26e248b99d7788725a7dece59"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/reserved-prefix-8090/api-order-main-source-custody.json",
+    "final": {
+      "mode": "100644",
+      "blob": "fa3838f8922c92f81da49185dba821dd5e16014d",
+      "bytes": 3733,
+      "sha256": "67cd13b5da7a18095622e1f8b68d15c4d7dcb87116498c7b4d0f33eabfa68945"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "fa3838f8922c92f81da49185dba821dd5e16014d",
+      "bytes": 3733,
+      "sha256": "67cd13b5da7a18095622e1f8b68d15c4d7dcb87116498c7b4d0f33eabfa68945"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "fa3838f8922c92f81da49185dba821dd5e16014d",
+      "bytes": 3733,
+      "sha256": "67cd13b5da7a18095622e1f8b68d15c4d7dcb87116498c7b4d0f33eabfa68945"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/01-after.rs.fixture",
+    "final": {
+      "mode": "100644",
+      "blob": "f80104f94b80d850d6c8b8e3aacdaf3830b05192",
+      "bytes": 1142,
+      "sha256": "6ab8bce216974ed76eaee32f2a494c2a039401a62eab5dbc98b90da0e8ed1c2f"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "f80104f94b80d850d6c8b8e3aacdaf3830b05192",
+      "bytes": 1142,
+      "sha256": "6ab8bce216974ed76eaee32f2a494c2a039401a62eab5dbc98b90da0e8ed1c2f"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "f80104f94b80d850d6c8b8e3aacdaf3830b05192",
+      "bytes": 1142,
+      "sha256": "6ab8bce216974ed76eaee32f2a494c2a039401a62eab5dbc98b90da0e8ed1c2f"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/01-before.rs.fixture",
+    "final": {
+      "mode": "100644",
+      "blob": "2cec60a8008cd2761c2e383f49829ed038b25bc7",
+      "bytes": 1113,
+      "sha256": "f9e158bdb40b830de0d196c90f5a0489a2327de0fcaddf87790a8375d26bb096"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "2cec60a8008cd2761c2e383f49829ed038b25bc7",
+      "bytes": 1113,
+      "sha256": "f9e158bdb40b830de0d196c90f5a0489a2327de0fcaddf87790a8375d26bb096"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "2cec60a8008cd2761c2e383f49829ed038b25bc7",
+      "bytes": 1113,
+      "sha256": "f9e158bdb40b830de0d196c90f5a0489a2327de0fcaddf87790a8375d26bb096"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/02-after.rs.fixture",
+    "final": {
+      "mode": "100644",
+      "blob": "7ba76a4d5a9256270ef258947064d9e60f103077",
+      "bytes": 5670,
+      "sha256": "2fa87c69fef9eca8cd8c39d88892a2db91bb40eadcc17fa15c1bec9a991b376f"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "7ba76a4d5a9256270ef258947064d9e60f103077",
+      "bytes": 5670,
+      "sha256": "2fa87c69fef9eca8cd8c39d88892a2db91bb40eadcc17fa15c1bec9a991b376f"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "7ba76a4d5a9256270ef258947064d9e60f103077",
+      "bytes": 5670,
+      "sha256": "2fa87c69fef9eca8cd8c39d88892a2db91bb40eadcc17fa15c1bec9a991b376f"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/03-after.rs.fixture",
+    "final": {
+      "mode": "100644",
+      "blob": "5a0328505ea2d520ecabaa404202dd4bd0861365",
+      "bytes": 6384,
+      "sha256": "458971904a70de545aca5bb441e0f4241fad91d8573ae0681bd6298a1d3136f1"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "5a0328505ea2d520ecabaa404202dd4bd0861365",
+      "bytes": 6384,
+      "sha256": "458971904a70de545aca5bb441e0f4241fad91d8573ae0681bd6298a1d3136f1"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "5a0328505ea2d520ecabaa404202dd4bd0861365",
+      "bytes": 6384,
+      "sha256": "458971904a70de545aca5bb441e0f4241fad91d8573ae0681bd6298a1d3136f1"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/03-before.rs.fixture",
+    "final": {
+      "mode": "100644",
+      "blob": "6897b1de7ea65cc63fdbfc6df87709b78cacb271",
+      "bytes": 11589,
+      "sha256": "b688089a3b6ebb55b8250163d190011774c88caa38d0bddd706ce2b85174ee28"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "6897b1de7ea65cc63fdbfc6df87709b78cacb271",
+      "bytes": 11589,
+      "sha256": "b688089a3b6ebb55b8250163d190011774c88caa38d0bddd706ce2b85174ee28"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "6897b1de7ea65cc63fdbfc6df87709b78cacb271",
+      "bytes": 11589,
+      "sha256": "b688089a3b6ebb55b8250163d190011774c88caa38d0bddd706ce2b85174ee28"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/04-after.rs.fixture",
+    "final": {
+      "mode": "100644",
+      "blob": "85243a519428825cd278e0a5f418bb71b30ff53d",
+      "bytes": 11471,
+      "sha256": "1e3e58cab0ab268e3c9e3ba5eb3e74d54283d47249d10189fe65c608cca504f1"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "85243a519428825cd278e0a5f418bb71b30ff53d",
+      "bytes": 11471,
+      "sha256": "1e3e58cab0ab268e3c9e3ba5eb3e74d54283d47249d10189fe65c608cca504f1"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "85243a519428825cd278e0a5f418bb71b30ff53d",
+      "bytes": 11471,
+      "sha256": "1e3e58cab0ab268e3c9e3ba5eb3e74d54283d47249d10189fe65c608cca504f1"
+    }
+  },
+  {
+    "file": "tests/_fixtures/differential/lint/runtime-prop-defaults-8564/source-custody/04-before.rs.fixture",
+    "final": {
+      "mode": "100644",
+      "blob": "af511b0b2a53a6cae12acada663dc6a01b5de28c",
+      "bytes": 10626,
+      "sha256": "5b3ae15fd4fc769f5fa418ec3b14039a8b30d8b1d7e06cd8f5ba6f872b12274c"
+    },
+    "sdk": {
+      "mode": "100644",
+      "blob": "af511b0b2a53a6cae12acada663dc6a01b5de28c",
+      "bytes": 10626,
+      "sha256": "5b3ae15fd4fc769f5fa418ec3b14039a8b30d8b1d7e06cd8f5ba6f872b12274c"
+    },
+    "component": {
+      "mode": "100644",
+      "blob": "af511b0b2a53a6cae12acada663dc6a01b5de28c",
+      "bytes": 10626,
+      "sha256": "5b3ae15fd4fc769f5fa418ec3b14039a8b30d8b1d7e06cd8f5ba6f872b12274c"
+    }
+  }
+]

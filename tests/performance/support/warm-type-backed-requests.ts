@@ -6,6 +6,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { LspSession } from "../../tooling/support/lsp/session.ts";
 import type { PublishedSessionBinding } from "../../tooling/support/lsp/session-process.ts";
 import { decodeFrames } from "../../differential/lsp-wire.ts";
+import { assertFinalNativeTerminalLocks } from "./warm-type-backed-native-terminal-final.ts";
 import {
   awaitRetired,
   nativeIdentities,
@@ -31,7 +32,6 @@ import {
   sha256,
   sourceIdentity,
 } from "./warm-type-backed-source.ts";
-
 export async function runSide(
   repoRoot: string,
   workspace: string,
@@ -268,7 +268,7 @@ export async function pairedWarmRequests(beforeRoot: string, outputRoot: string)
   assert.deepEqual(before.inputs.source, after.inputs.source);
   assert.equal(before.inputs.sourceSha256, after.inputs.sourceSha256);
   if (!releaseCut) {
-    assert.deepEqual(before.source.locks, after.source.locks);
+    assertFinalNativeTerminalLocks(sourceBinding, before.source.locks, after.source.locks);
     assert.deepEqual(before.initialization, after.initialization);
   } else {
     const expected = structuredClone(before.initialization);

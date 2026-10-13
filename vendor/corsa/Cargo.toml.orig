@@ -1,0 +1,91 @@
+[package]
+name = "corsa"
+version = "1.14.0"
+edition = "2024"
+description = "Production-oriented Rust bindings, orchestration layers, and Node integration for Corsa"
+publish = ["crates-io"]
+documentation.workspace = true
+homepage.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "corsa"
+path = "src/lib.rs"
+
+[features]
+default = []
+experimental-distributed = ["corsa_orchestrator/experimental-distributed"]
+
+[[bin]]
+name = "mock_corsa"
+path = "src/bin/mock_corsa/main.rs"
+
+[[bin]]
+name = "bench_real_corsa"
+path = "src/bin/bench_real_corsa/main.rs"
+
+[[bin]]
+name = "bench_tooling_compare"
+path = "src/bin/bench_tooling_compare/main.rs"
+
+[[example]]
+name = "minimal_start"
+path = "../../../../examples/rust/minimal_start.rs"
+
+[[example]]
+name = "virtual_document"
+path = "../../../../examples/rust/virtual_document.rs"
+
+[[example]]
+name = "mock_client"
+path = "../../../../examples/rust/mock_client.rs"
+
+[[example]]
+name = "checker_queries"
+path = "../../../../examples/rust/checker_queries.rs"
+
+[[example]]
+name = "filesystem_callbacks"
+path = "../../../../examples/rust/filesystem_callbacks.rs"
+
+[[example]]
+name = "lsp_overlay"
+path = "../../../../examples/rust/lsp_overlay.rs"
+
+[[example]]
+name = "orchestrator_cache"
+path = "../../../../examples/rust/orchestrator_cache.rs"
+
+[[example]]
+name = "observer_events"
+path = "../../../../examples/rust/observer_events.rs"
+
+[[example]]
+name = "print_node_opt_in"
+path = "../../../../examples/rust/print_node_opt_in.rs"
+
+[[example]]
+name = "real_snapshot"
+path = "../../../../examples/rust/real_snapshot.rs"
+
+[[example]]
+name = "distributed_orchestrator"
+path = "../../../../examples/rust/distributed_orchestrator.rs"
+required-features = ["experimental-distributed"]
+
+[dependencies]
+base64 = "0.23"
+lsp-types = "0.97"
+serde_json = "1"
+corsa_client = { version = "1.14.0", path = "../../../core/corsa_client" }
+corsa_core = { version = "1.14.0", path = "../../../core/corsa_core" }
+corsa_jsonrpc = { version = "1.14.0", path = "../../../core/corsa_jsonrpc" }
+corsa_lsp = { version = "1.14.0", path = "../../../core/corsa_lsp" }
+corsa_orchestrator = { version = "1.14.0", path = "../../../core/corsa_orchestrator" }
+corsa_runtime = { version = "1.14.0", path = "../../../core/corsa_runtime" }
+
+[dev-dependencies]
+tempfile = "3"

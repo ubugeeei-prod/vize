@@ -1,0 +1,1204 @@
+{
+  "version": 1,
+  "selectedSource": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+  "actualBeforeSource": "2489128d5f8fab1b7442a1e5c09b4e1701cbf185",
+  "historicalRuntimeSource": "8304eb7a08a96e58ca0a318cc2fa6ffc6e9acd75",
+  "completeActualProductionBodies": 237,
+  "completeActualCallerBodies": 2,
+  "historicalRuntimeModulePaths": [
+    "tools/support/compat/github/native-lexical-dollar.sh",
+    "tools/support/compat/github/native-lexical-dollar-metadata.mjs",
+    "tools/support/compat/github/native-lexical-dollar-receipt.mjs",
+    "tools/support/compat/github/native-lexical-composition-custody.mjs"
+  ],
+  "historicalSourcePaths": [
+    "tools/support/compat/github/native-lexical-dollar.sh",
+    "tools/support/compat/github/native-lexical-dollar-metadata.mjs",
+    "tools/support/compat/github/native-lexical-dollar-receipt.mjs",
+    "tools/support/compat/github/native-lexical-composition-custody.mjs",
+    "crates/vize_canon/src/batch/executor/cli.rs",
+    "crates/vize_canon/src/batch/executor/cli/lexical_dollar_receipt.rs",
+    "crates/vize_canon/src/batch/executor/session.rs",
+    "crates/vize_canon/src/batch/executor/session/lexical_dollar_receipt.rs",
+    "crates/vize_canon/src/batch/type_checker/tests/recent_issues.rs",
+    "crates/vize_canon/src/batch/type_checker/tests/recent_issues/lexical_dollar_slots.rs",
+    "crates/vize_canon/src/virtual_ts/scope/globals/instance.rs",
+    "crates/vize_canon/src/virtual_ts/scope/globals/instance/tests.rs",
+    "crates/vize_canon/src/virtual_ts/scope/globals/instance/tests/lexical_scope.rs",
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/Panel.vue.txt",
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native.json",
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/000-valid-strict.json",
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/001-wrong-strict.json",
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/002-wrong-permissive.json",
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/003-escape-strict.json",
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/004-foreign-strict.json",
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/005-loop-source-strict.json",
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/006-globals-strict.json",
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/007-globals-permissive.json",
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/008-repaired-strict.json",
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/case.tsconfig.json.txt",
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/escape.vue.txt",
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/expected.json",
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/foreign.vue.txt",
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/globals.vue.txt",
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/inputs.json",
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/loop-source.vue.txt",
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/source-provenance.json",
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/valid.vue.txt",
+    "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/wrong.vue.txt",
+    "tests/performance/support/warm-type-backed-lexical-dollar-manifest.json",
+    "Cargo.toml",
+    "Cargo.lock",
+    "rust-toolchain.toml",
+    "crates/vize_canon/Cargo.toml",
+    "crates/vize_canon/src/lib.rs",
+    "tests/performance/support/warm-type-backed-native-lexical-composition-manifest.json",
+    "tests/performance/support/warm-type-backed-native-owned-image-manifest.json",
+    "tests/performance/support/warm-type-backed-native-terminal-manifest.json",
+    "tests/performance/support/warm-type-backed-native-terminal-members-1.json",
+    "tests/performance/support/warm-type-backed-native-terminal-members-2.json",
+    "crates/vize/tests/check_canon_native_completion_cli.rs",
+    "crates/vize_canon/src/batch/executor.rs",
+    "crates/vize_canon/src/batch/executor/cli/outcome.rs",
+    "crates/vize_canon/src/batch/executor/cli/run.rs",
+    "crates/vize_canon/src/batch/executor/cli/tests/checkers_support.rs",
+    "crates/vize_canon/src/batch/executor/session/native_test_receipt.rs",
+    "crates/vize_canon/src/batch/executor/session/semantic_completion_receipt.rs",
+    "crates/vize_canon/src/batch/executor/tests/native_semantic_completion.rs",
+    "crates/vize_canon/src/lsp_client/diagnostics_lsp.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp/batch_test_receipt.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp/configured_project.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp/process_close.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp/process_receipt.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/batch_receipt.rs",
+    "vendor/corsa-published-custody.json",
+    "vendor/corsa_core/.cargo_vcs_info.json",
+    "vendor/corsa_core/Cargo.lock",
+    "vendor/corsa_core/Cargo.toml",
+    "vendor/corsa_core/Cargo.toml.orig",
+    "vendor/corsa_core/LICENSE",
+    "vendor/corsa_core/README.md",
+    "vendor/corsa_core/src/error.rs",
+    "vendor/corsa_core/src/fast.rs",
+    "vendor/corsa_core/src/lib.rs",
+    "vendor/corsa_core/src/lint/context.rs",
+    "vendor/corsa_core/src/lint/helpers.rs",
+    "vendor/corsa_core/src/lint/host_facts.rs",
+    "vendor/corsa_core/src/lint/mod.rs",
+    "vendor/corsa_core/src/lint/registry.rs",
+    "vendor/corsa_core/src/lint/rules/await_thenable.rs",
+    "vendor/corsa_core/src/lint/rules/consistent_return.rs",
+    "vendor/corsa_core/src/lint/rules/consistent_type_exports.rs",
+    "vendor/corsa_core/src/lint/rules/dot_notation.rs",
+    "vendor/corsa_core/src/lint/rules/mod.rs",
+    "vendor/corsa_core/src/lint/rules/no_array_delete.rs",
+    "vendor/corsa_core/src/lint/rules/no_base_to_string.rs",
+    "vendor/corsa_core/src/lint/rules/no_confusing_void_expression.rs",
+    "vendor/corsa_core/src/lint/rules/no_deprecated.rs",
+    "vendor/corsa_core/src/lint/rules/no_duplicate_type_constituents.rs",
+    "vendor/corsa_core/src/lint/rules/no_floating_promises.rs",
+    "vendor/corsa_core/src/lint/rules/no_for_in_array.rs",
+    "vendor/corsa_core/src/lint/rules/no_implied_eval.rs",
+    "vendor/corsa_core/src/lint/rules/no_meaningless_void_operator.rs",
+    "vendor/corsa_core/src/lint/rules/no_misused_promises.rs",
+    "vendor/corsa_core/src/lint/rules/no_misused_spread.rs",
+    "vendor/corsa_core/src/lint/rules/no_mixed_enums.rs",
+    "vendor/corsa_core/src/lint/rules/no_redundant_type_constituents.rs",
+    "vendor/corsa_core/src/lint/rules/no_unnecessary_boolean_literal_compare.rs",
+    "vendor/corsa_core/src/lint/rules/no_unnecessary_condition.rs",
+    "vendor/corsa_core/src/lint/rules/no_unnecessary_qualifier.rs",
+    "vendor/corsa_core/src/lint/rules/no_unnecessary_template_expression.rs",
+    "vendor/corsa_core/src/lint/rules/no_unnecessary_type_arguments.rs",
+    "vendor/corsa_core/src/lint/rules/no_unnecessary_type_assertion.rs",
+    "vendor/corsa_core/src/lint/rules/no_unnecessary_type_conversion.rs",
+    "vendor/corsa_core/src/lint/rules/no_unnecessary_type_parameters.rs",
+    "vendor/corsa_core/src/lint/rules/no_unsafe_argument.rs",
+    "vendor/corsa_core/src/lint/rules/no_unsafe_assignment.rs",
+    "vendor/corsa_core/src/lint/rules/no_unsafe_call.rs",
+    "vendor/corsa_core/src/lint/rules/no_unsafe_enum_comparison.rs",
+    "vendor/corsa_core/src/lint/rules/no_unsafe_member_access.rs",
+    "vendor/corsa_core/src/lint/rules/no_unsafe_return.rs",
+    "vendor/corsa_core/src/lint/rules/no_unsafe_type_assertion.rs",
+    "vendor/corsa_core/src/lint/rules/no_unsafe_unary_minus.rs",
+    "vendor/corsa_core/src/lint/rules/no_useless_default_assignment.rs",
+    "vendor/corsa_core/src/lint/rules/non_nullable_type_assertion_style.rs",
+    "vendor/corsa_core/src/lint/rules/only_throw_error.rs",
+    "vendor/corsa_core/src/lint/rules/prefer_find.rs",
+    "vendor/corsa_core/src/lint/rules/prefer_includes.rs",
+    "vendor/corsa_core/src/lint/rules/prefer_nullish_coalescing.rs",
+    "vendor/corsa_core/src/lint/rules/prefer_optional_chain.rs",
+    "vendor/corsa_core/src/lint/rules/prefer_promise_reject_errors.rs",
+    "vendor/corsa_core/src/lint/rules/prefer_readonly.rs",
+    "vendor/corsa_core/src/lint/rules/prefer_readonly_parameter_types.rs",
+    "vendor/corsa_core/src/lint/rules/prefer_reduce_type_parameter.rs",
+    "vendor/corsa_core/src/lint/rules/prefer_regexp_exec.rs",
+    "vendor/corsa_core/src/lint/rules/prefer_return_this_type.rs",
+    "vendor/corsa_core/src/lint/rules/prefer_string_starts_ends_with.rs",
+    "vendor/corsa_core/src/lint/rules/promise_function_async.rs",
+    "vendor/corsa_core/src/lint/rules/related_getter_setter_pairs.rs",
+    "vendor/corsa_core/src/lint/rules/require_array_sort_compare.rs",
+    "vendor/corsa_core/src/lint/rules/require_await.rs",
+    "vendor/corsa_core/src/lint/rules/restrict_plus_operands.rs",
+    "vendor/corsa_core/src/lint/rules/restrict_template_expressions.rs",
+    "vendor/corsa_core/src/lint/rules/return_await.rs",
+    "vendor/corsa_core/src/lint/rules/strict_boolean_expressions.rs",
+    "vendor/corsa_core/src/lint/rules/strict_void_return.rs",
+    "vendor/corsa_core/src/lint/rules/switch_exhaustiveness_check.rs",
+    "vendor/corsa_core/src/lint/rules/unbound_method.rs",
+    "vendor/corsa_core/src/lint/rules/use_unknown_in_catch_callback_variable.rs",
+    "vendor/corsa_core/src/lint/tests.rs",
+    "vendor/corsa_core/src/lint/types.rs",
+    "vendor/corsa_core/src/observability.rs",
+    "vendor/corsa_core/src/process.rs",
+    "vendor/corsa_core/src/process_receipt.rs",
+    "vendor/corsa_core/src/rpc.rs",
+    "vendor/corsa_core/src/utils/mod.rs",
+    "vendor/corsa_core/src/utils/split.rs",
+    "vendor/corsa_core/src/utils/type_text.rs",
+    "vendor/corsa_core/src/utils/unsafe_flow.rs",
+    "vendor/corsa_core/src/utils/unsafe_flow_tests.rs",
+    "vendor/corsa_lsp/.cargo_vcs_info.json",
+    "vendor/corsa_lsp/Cargo.lock",
+    "vendor/corsa_lsp/Cargo.toml",
+    "vendor/corsa_lsp/Cargo.toml.orig",
+    "vendor/corsa_lsp/LICENSE",
+    "vendor/corsa_lsp/README.md",
+    "vendor/corsa_lsp/src/lib.rs",
+    "vendor/corsa_lsp/src/lsp/client.rs",
+    "vendor/corsa_lsp/src/lsp/custom.rs",
+    "vendor/corsa_lsp/src/lsp/mod.rs",
+    "vendor/corsa_lsp/src/lsp/overlay.rs",
+    "vendor/corsa_lsp/src/lsp/virtual_document.rs",
+    "vendor/corsa_lsp/src/lsp/virtual_document_tests.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/owned_image.rs",
+    "tests/_fixtures/differential/lsp/warm-type-backed-requests/case.json",
+    "tests/_fixtures/differential/lsp/warm-type-backed-requests/gen.mjs",
+    "tests/_fixtures/differential/lsp/warm-type-backed-requests/original-report.md",
+    "tests/_fixtures/differential/lsp/warm-type-backed-requests/package.json",
+    "tests/_fixtures/differential/lsp/warm-type-backed-requests/tsconfig.json",
+    "tests/_fixtures/differential/lsp/warm-type-backed-requests/vize.config.json",
+    "tests/performance/support/warm-type-backed-controls.ts",
+    "tests/performance/support/warm-type-backed-measure.ts",
+    "tests/performance/support/warm-type-backed-requests.ts",
+    "tests/performance/support/warm-type-backed-packets.ts",
+    "tests/performance/support/warm-type-backed-processes.ts",
+    "tests/performance/support/warm-type-backed-work.ts",
+    "tests/performance/support/warm-type-backed-dependency-custody.ts",
+    "tests/performance/support/warm-type-backed-runtime.ts",
+    "tests/performance/support/warm-type-backed-build.ts",
+    "tests/performance/support/warm-type-backed-source.ts",
+    "tests/performance/support/warm-type-backed-startup.ts",
+    "tests/performance/support/warm-type-backed-query-frames.ts",
+    "tests/performance/support/warm-type-backed-publications.ts",
+    ".github/workflows/davinci-canon-scaling.yml",
+    "package.json",
+    "pnpm-lock.yaml",
+    "tests/performance/support/warm-type-backed-native-terminal-final.ts",
+    "tests/_fixtures/differential/typechecker/native-owned-exec/exec-wrapper.sh.txt",
+    "tests/_fixtures/differential/lsp/native-lexical-composition-before/entries.json",
+    "tests/_fixtures/differential/lsp/native-lexical-composition-before/lexical-cli.txt",
+    "tests/_fixtures/differential/lsp/native-lexical-composition-before/lexical-legacy-manifest.txt",
+    "tests/_fixtures/differential/lsp/native-lexical-composition-before/lexical-session.txt",
+    "tests/_fixtures/differential/lsp/native-lexical-composition-before/sdk-cli.txt",
+    "tests/_fixtures/differential/lsp/native-lexical-composition-before/sdk-session.txt",
+    "tests/_fixtures/differential/lsp/native-lexical-composition-before/sdk-warm-type-backed-native-terminal-final.txt",
+    "tests/_fixtures/differential/typechecker/manifest.json",
+    "tests/performance/support/warm-type-backed-native-proxy-final-body.ts",
+    "tests/performance/support/warm-type-backed-native-proxy-final-body-manifest.json",
+    "tests/tooling/support/native-proxy-original-final.json",
+    "tests/performance/support/warm-type-backed-native-proxy-manifest.json",
+    "tests/performance/support/warm-type-backed-native-proxy-correction.json",
+    "crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol.rs",
+    "crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol/executable.rs",
+    "crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol/lifecycle_tests.rs",
+    "crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol/proxy.rs",
+    "crates/vize_maestro/tests/fixtures/native-proxy-initialize.json",
+    "crates/vize_maestro/tests/fixtures/native-proxy-lifecycle-laws.pl",
+    "crates/vize_maestro/tests/fixtures/native-proxy-lifecycle.pl"
+  ],
+  "runtimeCredit": false,
+  "performanceCredit": false,
+  "currentFrames": [
+    {
+      "file": ".github/workflows/davinci-canon-scaling.yml",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "c3100645b23dbddeec69788b41a4c1c34f16521b",
+      "bytes": 14229,
+      "sha256": "399537c24b593b983ebb847f1fbeb3e4f376301e69bc25b46206ce2253ec6d73"
+    },
+    {
+      "file": "crates/vize_canon/Cargo.toml",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "25b738f63066bb39984b04dae999c9cd575a025a",
+      "bytes": 3119,
+      "sha256": "18ad91a82dd3c64f64b6861502b4536b9a161d0aa3230089727e1b2e3d3a15da"
+    },
+    {
+      "file": "crates/vize_canon/src/batch/executor/cli/lexical_dollar_receipt.rs",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "93695522006c9f9c2be293b7a29c0803ba3209d8",
+      "bytes": 3123,
+      "sha256": "0331dae8bee61d317e7cd551d207618dd0ab621834363c32e2cc8727df399ca1"
+    },
+    {
+      "file": "crates/vize_canon/src/batch/executor/session/lexical_dollar_receipt.rs",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "62f4e70289c0b5dc32561745dca7bcc24d84ccdf",
+      "bytes": 2711,
+      "sha256": "d3ea145ac57aba517ac35a0f953e9b30a9d5f4b8ee6cd478ef216421df32bfd9"
+    },
+    {
+      "file": "crates/vize_canon/src/batch/type_checker/tests/recent_issues.rs",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "3d83e02cff3136e0707d61bcd836c57ca03df862",
+      "bytes": 8941,
+      "sha256": "32e031cecb75c24a5cdf70c2423b7d73504d164781ad54948b33b05cef848b53"
+    },
+    {
+      "file": "crates/vize_canon/src/batch/type_checker/tests/recent_issues/lexical_dollar_slots.rs",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "f634e08991876557c0064ad5a9a6357164d1553f",
+      "bytes": 6483,
+      "sha256": "e334c0d8db3c6456f73a57ad033f7b14105fb058e713f8defaeb016dcf40d4c8"
+    },
+    {
+      "file": "crates/vize_canon/src/lib.rs",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "15e111f598ace8c4ff914d752ffb1f148a752326",
+      "bytes": 8879,
+      "sha256": "ba63c1714c9913a7035d26e5c90856c758692c9687a4d7a387064c5015833eda"
+    },
+    {
+      "file": "crates/vize_canon/src/virtual_ts/scope/globals/instance.rs",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "05c9823ce2e3739d4d1982f6683f4d281f73cb9e",
+      "bytes": 14151,
+      "sha256": "5dc3c087bdf19671293812faa8ee74af4ef372dd6ebf40cc4473cbc05c98fdbd"
+    },
+    {
+      "file": "crates/vize_canon/src/virtual_ts/scope/globals/instance/tests.rs",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "c57a9eb68009191e9293ee5b9947ef3493a54dda",
+      "bytes": 3790,
+      "sha256": "fa25434c2d95fedd2c798c21d04cd4fbdaa10f5b288bfdb192cdf43369c5889f"
+    },
+    {
+      "file": "crates/vize_canon/src/virtual_ts/scope/globals/instance/tests/lexical_scope.rs",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "dff189efdef0ec4a5db6f1a31859b0a87ba63f97",
+      "bytes": 4366,
+      "sha256": "9b6fded41618b580371b366d9fca955ce312d1d40f274e40b853b1712c1e3762"
+    },
+    {
+      "file": "crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol.rs",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "b4807faf4d895aa5ac3147dd0c41b883a5e37b99",
+      "bytes": 10414,
+      "sha256": "17900c16be1094d5f15d359c0211388370c44b33de94ae393a6129dd9d95c70f"
+    },
+    {
+      "file": "crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol/executable.rs",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "4457b9656086b0baff377a580f3085e2e069e4b0",
+      "bytes": 4841,
+      "sha256": "c0442850b9d8cdb98e184f51dcacb0434a0a70f00c9970f04a0d764f22f6b405"
+    },
+    {
+      "file": "crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol/lifecycle_tests.rs",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "e5e6ec1cc164228334ebf3e6bbb755f537215807",
+      "bytes": 6337,
+      "sha256": "71afb43467a06917d6473d2bf45ea70ea2fbfb794472e6197597e9b482754f7f"
+    },
+    {
+      "file": "crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol/proxy.rs",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "c3a602ac6d8120c68409c194f60a7dcc5718b6ec",
+      "bytes": 4847,
+      "sha256": "cddbf3e822db213294169894855a43aed3f1d02c1036fd01cde9816a7c053504"
+    },
+    {
+      "file": "crates/vize_maestro/tests/fixtures/native-proxy-initialize.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "eb03686ecb0668e0d886335f239ca44bb84f190f",
+      "bytes": 2600,
+      "sha256": "a8641e61d1469332cccbd06eb2cbc7a520c17485c53abaefb2e965676902c183"
+    },
+    {
+      "file": "crates/vize_maestro/tests/fixtures/native-proxy-lifecycle-laws.pl",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "6667fbeb6a50d2310b494cc948ec417605c2cc17",
+      "bytes": 10513,
+      "sha256": "a26da4eadf7a9c5531276f2fa57cc51c30b869544ff5300aa5a6a2dea86d5724"
+    },
+    {
+      "file": "crates/vize_maestro/tests/fixtures/native-proxy-lifecycle.pl",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "fcedbfd546e5ab001a8cdf59edc95ca92124521d",
+      "bytes": 9432,
+      "sha256": "d1b3aaedb794c2cd326de4cb3c2bdb2af2ea2d95a45b8cbc5cf4c8d71dd7bde3"
+    },
+    {
+      "file": "package.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "424657a8ecfbe3a7d583b7d548150d9bbb2e9352",
+      "bytes": 1787,
+      "sha256": "d3a2188046e21c5dfe8d1117292136eb8ad0232c42490aed3e994fba71fac34f"
+    },
+    {
+      "file": "pnpm-lock.yaml",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "0db2f4d4badbe032b77c98e12cc22a240047e79b",
+      "bytes": 946627,
+      "sha256": "12e66667fc82ac9a5b72d1e9ab2aa59f7c1466ea8be689f17a67678bf31a0915"
+    },
+    {
+      "file": "rust-toolchain.toml",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "c348a66ef95ea8267f71fbac63c4ef1603100ab7",
+      "bytes": 132,
+      "sha256": "3cd5d0cc3a4440d9200bd1515826fc106e0499317556fb35dfde2f30f85fdcb9"
+    },
+    {
+      "file": "tests/_fixtures/differential/lsp/native-lexical-composition-before/entries.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "d6ecf1ea658cc75ce75b33fb8dd1324a9937f27b",
+      "bytes": 3351,
+      "sha256": "2b5892c347f1a478cc258bc2160803f6186cd669abb4cc057e9f8048b7c0cdd8"
+    },
+    {
+      "file": "tests/_fixtures/differential/lsp/native-lexical-composition-before/lexical-cli.txt",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "4759bef3ac62cd4a08e8fc5a7c7d01345b32225b",
+      "bytes": 7255,
+      "sha256": "200651676dffb81e21400bdc66477df47af0a8fee9c4d3d895fdce88ad0f3b9f"
+    },
+    {
+      "file": "tests/_fixtures/differential/lsp/native-lexical-composition-before/lexical-legacy-manifest.txt",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "a73d95f5dee6a34e9ae155c74122998076966104",
+      "bytes": 49275,
+      "sha256": "29744aee2e9521353464cdd2c1d445ed6426525c1e087ac21ed56b2d55f5fdd6"
+    },
+    {
+      "file": "tests/_fixtures/differential/lsp/native-lexical-composition-before/lexical-session.txt",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "a388ca4c67c004c3efeacbc85d174cc7f6bd67cc",
+      "bytes": 12593,
+      "sha256": "4cde74a784b7504419a7e2a9538a14d6e8ef0aa2e8ec002ca40e0d88fb1efaff"
+    },
+    {
+      "file": "tests/_fixtures/differential/lsp/native-lexical-composition-before/sdk-cli.txt",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "ef0a9f0cd868f9db565215d787230c9d98369694",
+      "bytes": 7227,
+      "sha256": "1b0cf4101ded1769c1fa38fdb74987ffff898e5bf8b88a3e704b85f132358fe3"
+    },
+    {
+      "file": "tests/_fixtures/differential/lsp/native-lexical-composition-before/sdk-session.txt",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "a5d64cf92e50d89642620660f7d1fb6706895f33",
+      "bytes": 12917,
+      "sha256": "80116dd46cfa46fe5abc376cfc9576d68bc4254e6da3c64f78642f67fdd94c54"
+    },
+    {
+      "file": "tests/_fixtures/differential/lsp/native-lexical-composition-before/sdk-warm-type-backed-native-terminal-final.txt",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "237c26c787addc0541982a617058fd277835f4e3",
+      "bytes": 1136,
+      "sha256": "c38b06d14223eeaef99c2a920e818d45bd5d39e795bc42f99fefee999c617279"
+    },
+    {
+      "file": "tests/_fixtures/differential/lsp/warm-type-backed-requests/case.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "15461f5f48eaca74dd313f0002725e1791b3ab31",
+      "bytes": 1249,
+      "sha256": "ba2a49365dd6e3ec9fb5077fbcd6f68101166a2d18030138bcb0a94857713470"
+    },
+    {
+      "file": "tests/_fixtures/differential/lsp/warm-type-backed-requests/gen.mjs",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "697b0d2417994e917452d8bebb279c883f187068",
+      "bytes": 2142,
+      "sha256": "4d0e14d66ce6e7b0b5d2e32a51c39bbe985283aa94934616b4da0ff587d34649"
+    },
+    {
+      "file": "tests/_fixtures/differential/lsp/warm-type-backed-requests/original-report.md",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "72c5949de536dc35453099dbed6cb1d86a578682",
+      "bytes": 6652,
+      "sha256": "247d435038eb8c53f317dc6a5fdcdd216a19fa9bc58d155e355b5ed2c3eb4a58"
+    },
+    {
+      "file": "tests/_fixtures/differential/lsp/warm-type-backed-requests/package.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "c284fece4473bb6d6dae1ab5bd6abe901b67c19b",
+      "bytes": 65,
+      "sha256": "4a2c593a78dd898566bf14bc68914ae452738d0ef2de4a64fd8c2be8f097f942"
+    },
+    {
+      "file": "tests/_fixtures/differential/lsp/warm-type-backed-requests/tsconfig.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "97d253e37c853568cd3a730ff476ddd66825aaea",
+      "bytes": 179,
+      "sha256": "ad4c9c378d4d01ee9230da0acc6aa86d0a5cab68de8e552124c5e557d4506181"
+    },
+    {
+      "file": "tests/_fixtures/differential/lsp/warm-type-backed-requests/vize.config.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "a5cee1e774acc1a17b4becec93718ea351a41c1b",
+      "bytes": 52,
+      "sha256": "c6f468f396b9c5afeb4a348dffc20fab9660182dd4b65364968c77c448cee85d"
+    },
+    {
+      "file": "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/Panel.vue.txt",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "2c08ef4e6e4801e7e1e021684608d9950b5c8981",
+      "bytes": 233,
+      "sha256": "c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61"
+    },
+    {
+      "file": "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "783090fd98444bab748498e4c4dc2e67862fd0ce",
+      "bytes": 2247,
+      "sha256": "f5ea01411688761a9012305c20123463f7a9b06ee99a35fc3faf31bbc8d8cab0"
+    },
+    {
+      "file": "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/000-valid-strict.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "fec19d8178e185f4d66d4e822ebdd00cefd44601",
+      "bytes": 2653,
+      "sha256": "26bb550e225d9f1316a9d2fea9754966f342db545296c73e5c2be37b5b6c3dc7"
+    },
+    {
+      "file": "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/001-wrong-strict.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "498a2eeed0d3142699a23d37b32dfc995c688f55",
+      "bytes": 3049,
+      "sha256": "bf283673c385811194a3a764eb2d823d3222893ec804e1968568614bae9222bc"
+    },
+    {
+      "file": "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/002-wrong-permissive.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "26f1712326e91604581fa7f78a55c159d0c48551",
+      "bytes": 943,
+      "sha256": "76c399dce9cf1bdef3da55d38e5d85f0f125278d5cf8d5a413e5a10b6e91917a"
+    },
+    {
+      "file": "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/003-escape-strict.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "9c5f5cab4eb8b3457abe44518a7ddc1b83499c91",
+      "bytes": 3009,
+      "sha256": "0f2f1331d7f7c2af5b8d5025238671060c4ba818f169dc675622a693524f3cdc"
+    },
+    {
+      "file": "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/004-foreign-strict.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "dd7eb5fd1ffedd2e728147c8040cd9f5fa64e50e",
+      "bytes": 902,
+      "sha256": "8ee75f581972ddac224f32dc8b90b090c43d5116807e93018a411689fce57a21"
+    },
+    {
+      "file": "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/005-loop-source-strict.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "0d591ec91784685ecc846484c12ff7e645b9ab77",
+      "bytes": 1256,
+      "sha256": "a36ed525fa19810e6397252834c69bdd30cae9f4c63e15b692a6d32ca2d2d996"
+    },
+    {
+      "file": "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/006-globals-strict.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "92ec04a2bb8db0e95aa08f99fec39af197276e99",
+      "bytes": 908,
+      "sha256": "2700ccca92273de6bf15fb01002cdc7d3a61e94d93f9b0e2fd5229a086d69d05"
+    },
+    {
+      "file": "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/007-globals-permissive.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "a3d9dc0bbcb6e644c4403b481bfc4f937b20b994",
+      "bytes": 548,
+      "sha256": "55008d77bb7ee1fb36ac880704f466953977713c462525759c09789cebd47fbd"
+    },
+    {
+      "file": "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/before-native/008-repaired-strict.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "cb8f48bc09d0deb757d0e091cfd8bfb0d61b6bf9",
+      "bytes": 2656,
+      "sha256": "103850edc6fb7c8c8d06a4046a19bc0fea11094b92b72694ac05337df67a0514"
+    },
+    {
+      "file": "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/case.tsconfig.json.txt",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "fa36b3d10040616c6f306b0a599bab07278d056a",
+      "bytes": 237,
+      "sha256": "67e6f635b07d6be9eb4a13234569264c735dd0f5e40c195bcb9fdf5a5d3cff50"
+    },
+    {
+      "file": "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/escape.vue.txt",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "4515e53857b8c749ee986f7fa5b34cb460170c97",
+      "bytes": 347,
+      "sha256": "90a9b6e4d7660d78f8cd24ebe9cce4f4ab32110557453ee38c73730b8a35260e"
+    },
+    {
+      "file": "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/expected.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "46401ce6ac769f48cfb01933fd9c8a255919eb7c",
+      "bytes": 3340,
+      "sha256": "54c2ff42c61dfa94bb15e9f72dea283c94191637d2e5687a2a30bac5d7d6f122"
+    },
+    {
+      "file": "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/foreign.vue.txt",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "a3260e1418b38b36b5f745fd21bdb08f191fa266",
+      "bytes": 173,
+      "sha256": "22dbba92224bf894119fed3421cc3972786c8883b14e0b1e81d9f6ff06981686"
+    },
+    {
+      "file": "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/globals.vue.txt",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "087c79ca65975939762ca266c4abaf94491ed86f",
+      "bytes": 128,
+      "sha256": "00c50d4e0f462e92971580105e2f733f4f1f4f18dd37493cf7239055779ffacc"
+    },
+    {
+      "file": "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/inputs.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "b83ae064c624de434a7edb86c5707173a909e7d9",
+      "bytes": 2280,
+      "sha256": "f4e26c211bf469c8c9bdd44aada01d15fdbcfc47235f24cbd9ec88fdab9a5f2c"
+    },
+    {
+      "file": "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/loop-source.vue.txt",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "4c847362c635a82a22f0e989cfd7f8ef05863357",
+      "bytes": 112,
+      "sha256": "0251f10ec5850bb2c99fb304ef04769e0b194e6efae89f22d329d91a149681b4"
+    },
+    {
+      "file": "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/source-provenance.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "927c5338d0d17b13e0e603e8748fee6613267470",
+      "bytes": 760,
+      "sha256": "c32493197855f9ee6849ba27f00e913931811410e3a8f289263e3d41f9dd6dda"
+    },
+    {
+      "file": "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/valid.vue.txt",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "022d53febbf73d606e70d99a755fb6a03ed00a91",
+      "bytes": 514,
+      "sha256": "9dbb96b225273b4cb5a547f0dc29e9524efd5c2f0ccda8cddbea49e835a755ea"
+    },
+    {
+      "file": "tests/_fixtures/differential/typechecker/lexical-dollar-slot-6879/wrong.vue.txt",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "8856fa115b7a16ec9d20a4e8e0aef67dd3ee2c58",
+      "bytes": 516,
+      "sha256": "7af50154c2b6f40e8726aa1877e2ae284cd59a48562df5e93fe9f731d9030f6d"
+    },
+    {
+      "file": "tests/_fixtures/differential/typechecker/manifest.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "0d2f212dd622bd46fd8bd29fedfa1e829eef079a",
+      "bytes": 51886,
+      "sha256": "25a76e75a3c3e95e9cc0f474f89d0951b7d87426a0e9f7c1cb1c6fa4c1b7e8f5"
+    },
+    {
+      "file": "tests/_fixtures/differential/typechecker/native-owned-exec/exec-wrapper.sh.txt",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "d156a4feb907a4ea3a2e86b3116f79cd25a8025b",
+      "bytes": 34,
+      "sha256": "ea033f5e0bbeb22ab045a0d71281d07c070c43dcbc588538872102bc977f3b44"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-build.ts",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "a5e9cff5a102abd536a464b1484d03b2c0b2e97a",
+      "bytes": 8773,
+      "sha256": "7660e93cfa5c908f4065e91d498a3cb778814c38bb8689efefcaa159ef9003e3"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-controls.ts",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "d73b412c3e1d8e39f1175ab54d75985007147ac0",
+      "bytes": 9361,
+      "sha256": "81a2fa2b6656e0d09ad421fa3cf772fb9187f5c3ad40c15cf24f9e46f9b25ec0"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-dependency-custody.ts",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "9ec3569cea2b812121324ccfc4e67d52020926f8",
+      "bytes": 967,
+      "sha256": "d577de728929df0372894af7ebff872afbbe4529759bd259013fd874a42ec2b8"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-lexical-dollar-manifest.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "e10e70f981b7f47129306d602d195ed98fdb9034",
+      "bytes": 7508,
+      "sha256": "0ccc580e5922fbca30bec22c52ec1d0c5f823fb046ca8faffe1558eaea959c30"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-measure.ts",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "d5afd8c4b74dbb272ca289d15a559983ec962180",
+      "bytes": 6353,
+      "sha256": "577455fb9ab4b814c233eb96a814aafc32c9755623d296c8efe3f7224a7593c8"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-native-lexical-composition-host.ts",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "77d65193a54acccbef26988924a7c9fb64dba683",
+      "bytes": 8916,
+      "sha256": "7085f25fe06cf224dc2a31a9626e9f245f70328a4d65196daac074cc7c07d749"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-native-lexical-composition-manifest.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "b6a3e45533807d7492bfc47da55cc17100a7a99b",
+      "bytes": 2885,
+      "sha256": "a906089737ed4ea9b851b96f6e76baa20771862d991d3570bf4e303e7449db4f"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-native-owned-image-host.ts",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "e053c121add6797719731124dc1a414e29ceb116",
+      "bytes": 4967,
+      "sha256": "50b06c08ce5d329718b3d9010f741c26cbb486f4ef1482047f2fe045d08e8399"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-native-owned-image-manifest.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "5f392f40adba22f3c7831af513ebab2deffd958d",
+      "bytes": 1381,
+      "sha256": "72ad42cc391380dcd80947d12f1af0b8d599a7707bd1c8f2cf3dce6d094b603f"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-native-proxy-correction.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "cb480800d4942976b34906e1d58b3a1fc02b375b",
+      "bytes": 476,
+      "sha256": "19e6cbc523685ed997d248d3ae9875c0f8428d40a3047b5a900136f53cdd8190"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-native-proxy-final-body-manifest.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "843089109bc08c026133179524393facf08dead7",
+      "bytes": 428,
+      "sha256": "6c2f6d6a1431e562e608762bb017ef77a5dc667a24456d24a74fe5966c870f24"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-native-proxy-final-body.ts",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "7eae7d58dc2f6f268ea387201d57e634c7a8196c",
+      "bytes": 4615,
+      "sha256": "1d8803f466a468508b794e32ca664543bea519f181b658cc542b38aa501abefc"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-native-proxy-host.ts",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "340c875bb7b8b759343ec275c61081b53928536d",
+      "bytes": 3806,
+      "sha256": "b69e71e6150100f9260aa13abe78c30aba93621fef3738cd561c28dddf4575f2"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-native-proxy-manifest.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "4c5311e10bfeac4bce80192557323008e50439f7",
+      "bytes": 1783,
+      "sha256": "00faed1d04b5d3d70ff54b32bc9dc32bdad6c36229df3fee8fc3d0c486381933"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-native-terminal-host.ts",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "3e04d5a7ea03cebc5934bc3a589c1edddc6db4a5",
+      "bytes": 4180,
+      "sha256": "ab1708e454cabd62ad76f8d47d3a4176fe06afce8298e66edc775fd1fabbb934"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-native-terminal-manifest.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "9058844f80be72a960d7181fc9ceaa8d1bbdf801",
+      "bytes": 3986,
+      "sha256": "638cfa9690da9ab930e559367a61beb4de88e5ca3e1f76809738b58f3b6945cf"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-native-terminal-members-1.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "fc20d7aed7434702a87af4c2f671c9704e8890c9",
+      "bytes": 9689,
+      "sha256": "b7c0aba1844c214d1e5eb58404a1f6f109a014c05626856ae1e7907c132d202a"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-native-terminal-members-2.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "41ba7db24b3d60927843a0d0375510b8316c7a0f",
+      "bytes": 8833,
+      "sha256": "2af161d1528c5c6d14ff4e4f1b310d887deca17a282204eac7fbfb29d8e798a3"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-packets.ts",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "ea213889153dd7fe94da1d35605e59970b6c5bb3",
+      "bytes": 8951,
+      "sha256": "a19fc36481942681dc93b5ae1b709af120d803ab70bda6454e98ad702c2669d2"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-processes.ts",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "324f01ef938bd0bf49b2918b69905e45718474c0",
+      "bytes": 2750,
+      "sha256": "f843bc5ef4d546862ab273363bb3d787eb4a03a5bd7e1278f88e1fccebfb6be7"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-publications.ts",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "359b53b00e20eac0333dd1e6cd88addf260a0f27",
+      "bytes": 4995,
+      "sha256": "d2e4f3ad158068541335ec0c11fa264ffeafbce3fd2851de48c736fa46836a95"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-query-frames.ts",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "e72a945b8ba1e89a02f77f692f0650ec95015c84",
+      "bytes": 879,
+      "sha256": "6cebfac0f932e86b0f89416647495531f264b477b2d64b7bc9d71f164c71c4ad"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-requests.ts",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "6e4f97f231c07043875f302b5fbc2fa496948124",
+      "bytes": 13471,
+      "sha256": "b4e0a1d473c01b6ebbb8629dcd1bc7c16cdb8538cb3c9ff4b54f3d1ea4398cb2"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-runtime.ts",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "c5dc2e0685c67d25a5068d7df93a2eaa7ddfda8c",
+      "bytes": 3764,
+      "sha256": "0a4f2307ccf00ba05e6bf2c8062f9b167c3068d243c4598f87767fdf51b46571"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-source.ts",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "9648a65c1c4d97b983cf87a1cad586c8781ba636",
+      "bytes": 7151,
+      "sha256": "3a67e29de1f0e56d4da41d3e43ca23e6375a7a84e6317879cd801407288de8cf"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-startup.ts",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "d0c08e51e79e4e35c598e8c0e77898c7969e6ac8",
+      "bytes": 2575,
+      "sha256": "d9196634e6059125d0256c78b09a06d2eb377a8b98bcdce2aa1b41b5af86017f"
+    },
+    {
+      "file": "tests/performance/support/warm-type-backed-work.ts",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "1a3da707148b9f6e25ecc08b1cd4e6f7612d044b",
+      "bytes": 2452,
+      "sha256": "a6153287d33576aef29272e05dd727e66c7dd64167f7487643466b3663064229"
+    },
+    {
+      "file": "tests/tooling/support/native-lexical-composition-source.ts",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "2db0865689bc0ac93d2603ca4755742597858ee7",
+      "bytes": 1870,
+      "sha256": "37a375a7b47697fd98d981555d4c721001d6ce6d43de77a314d02776b439d5b5"
+    },
+    {
+      "file": "tests/tooling/support/native-proxy-original-final.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "4035ddf29bde50ffb59c617aaf839be11e1e3ed3",
+      "bytes": 1874,
+      "sha256": "516019d239dc419f90bc3b14eef99f46b2c7abde550a00d49e3aecf548f18c1e"
+    },
+    {
+      "file": "tools/support/compat/github/native-lexical-composition-custody.mjs",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "fd9f5338a02008b335e6073e99c150a5e3a21ec8",
+      "bytes": 11770,
+      "sha256": "e08c10fd03853ac3b45bef52d0f4643cedd7e9186398363741561dccca24fa0e"
+    },
+    {
+      "file": "tools/support/compat/github/native-lexical-dollar-metadata.mjs",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "73e301758d2339f33314ec34e8b1c825ca6cbc2f",
+      "bytes": 13621,
+      "sha256": "8f120782ef680a34419b66145af8f1704131c513fa67a4f45ae0dd2f77cfd90f"
+    },
+    {
+      "file": "tools/support/compat/github/native-lexical-dollar-plan.mjs",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "32d1868088bf41e9a8c85b9fe9a74cb007c378a4",
+      "bytes": 808,
+      "sha256": "278cb1480db4fb5120171884aaf7681e9ca77b03a7ac19557784aa1279a6682a"
+    },
+    {
+      "file": "tools/support/compat/github/native-lexical-dollar-receipt.mjs",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "3595016730b59cfb2cb8ff786efcb3228090c69a",
+      "bytes": 12046,
+      "sha256": "e0709026b233463fd31ccbbc110d19802dac7dfc91b991b60ed7cc8130504bfa"
+    },
+    {
+      "file": "tools/support/compat/github/native-lexical-dollar.sh",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "53ab7a37235b092b878733769c77fa874bc75b7a",
+      "bytes": 2408,
+      "sha256": "24d2d5dc27ed56da38b792dbdd834f08d666da62372ba2dc31573ecc72dbc452"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-caller-custody.mjs",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "256f1be95e7c7adf279df76c56e0917b488e2b77",
+      "bytes": 4394,
+      "sha256": "5d9c3f47a45c7e8d953967016f9a5baaeaf74fea25dac9cae2a69de46b74c54f"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-caller-metadata.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "576fb054b8a68bf0814c7f00adef0584e2f694df",
+      "bytes": 103939,
+      "sha256": "5c2f55e5c0425a8c939e9501f92bd72c72ebbd7dd9eeb33e90c374d63ab448fc"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-lexical-adapter-metadata.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "6fc6c915b95963f239bfea52ea91c83751994d20",
+      "bytes": 41572,
+      "sha256": "c92a7f0a91cc67bc4a3d7e40da8baabd850ca4d02530b9da8ee9659434cf5ed2"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-lexical-source.mjs",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "740e68e15926bf8b4eb0ec0296341df858f13d6a",
+      "bytes": 6166,
+      "sha256": "4bc27091a44b94ca9fb3ff22acb68de184eec09e105b8a22c132224c95168918"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-source-custody.mjs",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "23a27d5f4a1ddfa0d3bfa814d461ab93c50af8b8",
+      "bytes": 6002,
+      "sha256": "8e3ec0a7a4362c432c3e1890203835f96e092a84fc5494d8aec8f55de7ba5734"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-source-manifest.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "95905dc6f455a371181e524fa1a9192806a0d9e9",
+      "bytes": 407232,
+      "sha256": "bffe80f1e770ad10df3af2670e01b5f53a9574f357d42df6948a458f5311040c"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-source-part-00.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "bef38181bde658005e9dd7e9c8b8d58a40788b9b",
+      "bytes": 7224,
+      "sha256": "003b7d654bb23bda3daddb58286f6271b8f6e141eba45b2baea09ece77746130"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-source-part-01.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "446e2a8773f7834e23108e7bd1869317444bcab9",
+      "bytes": 6715,
+      "sha256": "570adc5469a3256066bdc79e6157d8f2b2218a263cd867d652b80f7c30b54475"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-source-part-02.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "63bd9356352331a0e5e1e24e31623a3a818a83fb",
+      "bytes": 6499,
+      "sha256": "dc2a0304b346250b4ce13b69ad29db683fd0336723a76a9ff2989517fce52c94"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-source-part-03.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "e1fd0886b1311bac57773f8741e9abf96fbb38d0",
+      "bytes": 6938,
+      "sha256": "000f8a40493ee9695877adebc18dac9855c8bf4aaeda6e3941fd2221c8e22564"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-source-part-04.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "0497b3a1773fb1f996df79f804ce17ee9030cf95",
+      "bytes": 6623,
+      "sha256": "5c9d8156b5bf44d93a60a9de8af8ac02689f2d1ed9151fbe03a6d94560d710a3"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-source-part-05.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "210ca0e8d5439a4d3ef5dedc0c3e6f8f1b6be749",
+      "bytes": 6418,
+      "sha256": "9480de4881becab02da8cb6b0afa7d838899e609cac9584eac834c8dfaf4a417"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-source-part-06.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "73810c2187444df898272a978348aff769bcfee7",
+      "bytes": 6668,
+      "sha256": "cbb1073556672a0f840c7e45e0860d8e6f3960d3822d1c323af90be9d277d1cd"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-source-part-07.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "9ca021671040de553cb095d48b638f5d664a974b",
+      "bytes": 6823,
+      "sha256": "416b1437276eb7d51f8271547541560f22b6fa481fe18c6e59e9f6402b8425f9"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-source-part-08.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "202465a0696fb8023cd1c689d446db511c26d204",
+      "bytes": 6256,
+      "sha256": "aef0298b4cd7f80d34a75b1d794be70ca7923fff894953658287507732eabe5c"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-source-part-09.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "8ceeab781df14cb556779ec4a213d0f2ebfa0a3e",
+      "bytes": 5030,
+      "sha256": "d3a2891ea528b0d5eb69ca12f36dc382b33d8aad1668e8681f5731b4e4327c1b"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-source-part-10.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "20df9bfa3fda5a7306823beae6627d634bfb639e",
+      "bytes": 5271,
+      "sha256": "8f655980c7d23ad601a271d6fa463d53e5d6792b2dadd62ac2203f29475e9167"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-source-part-11.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "47fb241024b8ccbf6ee1faa59fe0eb15773e17ec",
+      "bytes": 5381,
+      "sha256": "0b96c9776a444100e06e446ef1ac263c2cf21404a8bf1bd2b545b165a8ad7b8b"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-source-part-12.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "82e78031afd7a5c9f5a0a64d67cc27b3c2d26e8a",
+      "bytes": 5330,
+      "sha256": "23538259df571121ad1b5320a1e86e1b11bee5116aebc34f2094463a55e63f77"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-source-part-13.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "933ab13305d9de52846f54b15a9a7c9c23ba97d1",
+      "bytes": 5328,
+      "sha256": "30118ce71e55993113104d381f79cf73f9e50c37f43c9f4ea4c60da9e43cc8d8"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-source-part-14.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "dbf374349f13324322ce310c53eae892795c1705",
+      "bytes": 5314,
+      "sha256": "dc9a3a0e1e18c027219756c1690e9e4e71402a6c0697ff694020664201029273"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-source-part-15.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "b91cdaa94af5532e12f05a6ca52b3945ce4e8625",
+      "bytes": 5314,
+      "sha256": "188b9ef8b58d07ce21489040d5ff77330da8ef9a8e5a7b37b2649d8e72784ef1"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-source-part-16.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "f64243584884578d66a89265ee096bb3929df372",
+      "bytes": 6432,
+      "sha256": "61da1c8c785191c6a00e5f9bcbdc25fb8baf7fd2a08b1bf2bfd56ce91306854c"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-source-part-17.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "c28a55efad4551207284fc265e9024d6fd94b30f",
+      "bytes": 4999,
+      "sha256": "a3716bb715153376b594a166b2f03f815a557cb5c68201e7ad2f4e9f21b40257"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-source-part-18.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "990ad732111685f592a0455792beda849826239f",
+      "bytes": 6370,
+      "sha256": "fd3ad41674e60d984e3e68d878b516130dbb3583306cc36bb31af042fcb54a98"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-source-part-19.json",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "1c38b5d347d78834b02f115d94cae116e8521154",
+      "bytes": 5223,
+      "sha256": "03615ae475fed5f66874f0fb573fe846df2a567cbc2947d37500a9c107dbc8b7"
+    },
+    {
+      "file": "tools/support/compat/github/owned-corsa-source-reader.mjs",
+      "source": "b2caebeab6fb5bc817b4e31a65d5d560449b691b",
+      "mode": "100644",
+      "blob": "bfa5bbacc8cac5c0f47b29b59ff3732514481adc",
+      "bytes": 1976,
+      "sha256": "ee08cebfda2bb3cdcaa6de23a95afec146d0e0c20d4f1a5819f588e3b42d8ae2"
+    }
+  ],
+  "historicalRuntimeBodies": [
+    {
+      "file": "tools/support/compat/github/native-lexical-dollar.sh",
+      "source": "8304eb7a08a96e58ca0a318cc2fa6ffc6e9acd75",
+      "mode": "100644",
+      "blob": "53ab7a37235b092b878733769c77fa874bc75b7a",
+      "bytes": 2408,
+      "sha256": "24d2d5dc27ed56da38b792dbdd834f08d666da62372ba2dc31573ecc72dbc452",
+      "rawBase64": "IyEvdXNyL2Jpbi9lbnYgYmFzaAojIFJldXNlIHRoZSBDYW5vbiBjaS1vcHQgbGlicmFyeSBjb21waWxlZCBpbW1lZGlhdGVseSBiZWZvcmUgdGhpcyBzdGVwLgpzZXQgLWV1byBwaXBlZmFpbAp1bnNldCBWSVpFX1RFU1RfRElTQUJMRV9UU0dPCmV4cG9ydCBWSVpFX1RFU1RfUkVRVUlSRV9UU0dPPTEgR0lUX05PX1JFUExBQ0VfT0JKRUNUUz0xCmNkICIkTkFUSVZFX1BIQVNFX1NPVVJDRV9ST09UIgpwYWNrZXRfcm9vdD0iJFJVTk5FUl9URU1QL25hdGl2ZS1zb3VyY2UtcmVjaXBlLWxleGljYWwtZG9sbGFyIgpbWyAhIC1lICIkcGFja2V0X3Jvb3QiIF1dCm1rZGlyIC1wICIkcGFja2V0X3Jvb3QiCmdpdCAtLW5vLXJlcGxhY2Utb2JqZWN0cyByZXYtcGFyc2UgSEVBRCA+ICIkcGFja2V0X3Jvb3Qvc291cmNlLnNoYSIKY3AgLVIgdGVzdHMvX2ZpeHR1cmVzL2RpZmZlcmVudGlhbC90eXBlY2hlY2tlci9sZXhpY2FsLWRvbGxhci1zbG90LTY4NzkgIiRwYWNrZXRfcm9vdC9jb3JwdXMiCmNhcmdvX2FyZ3M9KHRlc3QgLS1sb2NrZWQgLS1wcm9maWxlIGNpLW9wdCAtcCB2aXplX2Nhbm9uIC0tbGliIC0tbm8tcnVuIC0tbWVzc2FnZS1mb3JtYXQ9anNvbgogIC0tY29uZmlnICdwcm9maWxlLmNpLW9wdC5pbmhlcml0cz0icmVsZWFzZSInCiAgLS1jb25maWcgJ3Byb2ZpbGUuY2ktb3B0Lmx0bz0idGhpbiInCiAgLS1jb25maWcgJ3Byb2ZpbGUuY2ktb3B0LmNvZGVnZW4tdW5pdHM9MTYnKQpwcmludGYgJyVzXDAnIGNhcmdvICIke2NhcmdvX2FyZ3NbQF19IiA+ICIkcGFja2V0X3Jvb3QvY2FyZ28uYXJndi5udWwiCnNldCArZQpjYXJnbyAiJHtjYXJnb19hcmdzW0BdfSIgPiAiJHBhY2tldF9yb290L2NhcmdvLnN0ZG91dCIgMj4gIiRwYWNrZXRfcm9vdC9jYXJnby5zdGRlcnIiCmFjdHVhbF9zdGF0dXM9JD8Kc2V0IC1lCnByaW50ZiAnJXNcbicgIiRhY3R1YWxfc3RhdHVzIiA+ICIkcGFja2V0X3Jvb3QvY2FyZ28uc3RhdHVzIgppZiBbWyAiJGFjdHVhbF9zdGF0dXMiICE9IDAgXV07IHRoZW4gY2F0ICIkcGFja2V0X3Jvb3QvY2FyZ28uc3Rkb3V0IiAiJHBhY2tldF9yb290L2NhcmdvLnN0ZGVyciI7IGV4aXQgIiRhY3R1YWxfc3RhdHVzIjsgZmkKbm9kZSB0b29scy9zdXBwb3J0L2NvbXBhdC9naXRodWIvbmF0aXZlLWxleGljYWwtZG9sbGFyLW1ldGFkYXRhLm1qcyAiJHBhY2tldF9yb290Igp0ZXN0X2JpbmFyeT0iJChub2RlIC1wICdKU09OLnBhcnNlKHJlcXVpcmUoIm5vZGU6ZnMiKS5yZWFkRmlsZVN5bmMocHJvY2Vzcy5hcmd2WzFdLCJ1dGY4IikpLnRlc3RCaW5hcnkucGF0aCcgIiRwYWNrZXRfcm9vdC9tZXRhZGF0YS5qc29uIikiCnBoYXNlX3N0YXR1cz0wCmZvciBwaGFzZSBpbiBwcm9kdWNlciBuYXRpdmU7IGRvCiAgY2FzZSAiJHBoYXNlIiBpbgogICAgcHJvZHVjZXIpIHNlbGVjdG9yPXZpcnR1YWxfdHM6OnNjb3BlOjpnbG9iYWxzOjppbnN0YW5jZTo6dGVzdHM6OjsgZXhhY3RfYXJncz0oKSA7OwogICAgbmF0aXZlKSBzZWxlY3Rvcj1iYXRjaDo6dHlwZV9jaGVja2VyOjp0ZXN0czo6cmVjZW50X2lzc3Vlczo6bGV4aWNhbF9kb2xsYXJfc2xvdHM6OmxleGljYWxfZG9sbGFyX3Nsb3RzX3ByZXNlcnZlX2NvbXBsZXRlX25hdGl2ZV9kaWFnbm9zdGljc19hbmRfcmVwYWlyczsgZXhhY3RfYXJncz0oLS1leGFjdCkgOzsKICBlc2FjCiAgZXhwb3J0IFZJWkVfTEVYSUNBTF9ET0xMQVJfQ0FQVFVSRV9ESVI9IiRwYWNrZXRfcm9vdC8kcGhhc2UiCiAgbWtkaXIgLXAgIiRWSVpFX0xFWElDQUxfRE9MTEFSX0NBUFRVUkVfRElSIgogIHByaW50ZiAnJXNcMCcgIiR0ZXN0X2JpbmFyeSIgIiRzZWxlY3RvciIgIiR7ZXhhY3RfYXJnc1tAXX0iIC0tbm9jYXB0dXJlIC0tdGVzdC10aHJlYWRzPTEgPiAiJHBhY2tldF9yb290LyRwaGFzZS5hcmd2Lm51bCIKICBzZXQgK2UKICAiJHRlc3RfYmluYXJ5IiAiJHNlbGVjdG9yIiAiJHtleGFjdF9hcmdzW0BdfSIgLS1ub2NhcHR1cmUgLS10ZXN0LXRocmVhZHM9MSA+ICIkcGFja2V0X3Jvb3QvJHBoYXNlLnN0ZG91dCIgMj4gIiRwYWNrZXRfcm9vdC8kcGhhc2Uuc3RkZXJyIgogIGFjdHVhbF9zdGF0dXM9JD8KICBzZXQgLWUKICBwcmludGYgJyVzXG4nICIkYWN0dWFsX3N0YXR1cyIgPiAiJHBhY2tldF9yb290LyRwaGFzZS5zdGF0dXMiCiAgY2F0ICIkcGFja2V0X3Jvb3QvJHBoYXNlLnN0ZG91dCIgIiRwYWNrZXRfcm9vdC8kcGhhc2Uuc3RkZXJyIgogIGlmIFtbICIkYWN0dWFsX3N0YXR1cyIgIT0gMCBdXTsgdGhlbiBwaGFzZV9zdGF0dXM9MTsgZmkKZG9uZQp1bnNldCBWSVpFX0xFWElDQUxfRE9MTEFSX0NBUFRVUkVfRElSCm5vZGUgdG9vbHMvc3VwcG9ydC9jb21wYXQvZ2l0aHViL25hdGl2ZS1sZXhpY2FsLWRvbGxhci1yZWNlaXB0Lm1qcyAiJHBhY2tldF9yb290IgpleGl0ICIkcGhhc2Vfc3RhdHVzIgo=",
+      "importMetaOccurrences": 0
+    },
+    {
+      "file": "tools/support/compat/github/native-lexical-dollar-metadata.mjs",
+      "source": "8304eb7a08a96e58ca0a318cc2fa6ffc6e9acd75",
+      "mode": "100644",
+      "blob": "a1c3811dacc0b7d6e5f8461224ecc31ec1d30b7e",
+      "bytes": 14117,
+      "sha256": "331b0e8212b0f9458f12b3e6f5d6c371430bcf12ebbede74ee0ce7e056416b2b",
+      "rawBase64": "aW1wb3J0IGFzc2VydCBmcm9tICJub2RlOmFzc2VydC9zdHJpY3QiOwppbXBvcnQgeyBzcGF3blN5bmMsIGV4ZWNGaWxlU3luYyB9IGZyb20gIm5vZGU6Y2hpbGRfcHJvY2VzcyI7CmltcG9ydCB7IGNyZWF0ZUhhc2ggfSBmcm9tICJub2RlOmNyeXB0byI7CmltcG9ydCBmcyBmcm9tICJub2RlOmZzIjsKaW1wb3J0IHBhdGggZnJvbSAibm9kZTpwYXRoIjsKaW1wb3J0IHsKICBsZXhpY2FsU291cmNlUGF0aHMsCiAgdmFsaWRhdGVMZXhpY2FsU291cmNlQm9kaWVzLAp9IGZyb20gIi4vbmF0aXZlLWxleGljYWwtY29tcG9zaXRpb24tY3VzdG9keS5tanMiOwoKZXhwb3J0IGNvbnN0IGhlbHBlclBhdGhzID0gWwogICJuYXRpdmUtbGV4aWNhbC1kb2xsYXIuc2giLAogICJuYXRpdmUtbGV4aWNhbC1kb2xsYXItbWV0YWRhdGEubWpzIiwKICAibmF0aXZlLWxleGljYWwtZG9sbGFyLXJlY2VpcHQubWpzIiwKICAibmF0aXZlLWxleGljYWwtY29tcG9zaXRpb24tY3VzdG9keS5tanMiLApdLm1hcCgobmFtZSkgPT4gYHRvb2xzL3N1cHBvcnQvY29tcGF0L2dpdGh1Yi8ke25hbWV9YCk7CmV4cG9ydCBjb25zdCBkaWdlc3QgPSAoYnl0ZXMpID0+IGNyZWF0ZUhhc2goInNoYTI1NiIpLnVwZGF0ZShieXRlcykuZGlnZXN0KCJoZXgiKTsKZXhwb3J0IGNvbnN0IGNhcmdvQXJncyA9IFsKICAiY2FyZ28iLAogICJ0ZXN0IiwKICAiLS1sb2NrZWQiLAogICItLXByb2ZpbGUiLAogICJjaS1vcHQiLAogICItcCIsCiAgInZpemVfY2Fub24iLAogICItLWxpYiIsCiAgIi0tbm8tcnVuIiwKICAiLS1tZXNzYWdlLWZvcm1hdD1qc29uIiwKICAiLS1jb25maWciLAogICdwcm9maWxlLmNpLW9wdC5pbmhlcml0cz0icmVsZWFzZSInLAogICItLWNvbmZpZyIsCiAgJ3Byb2ZpbGUuY2ktb3B0Lmx0bz0idGhpbiInLAogICItLWNvbmZpZyIsCiAgInByb2ZpbGUuY2ktb3B0LmNvZGVnZW4tdW5pdHM9MTYiLApdOwpleHBvcnQgY29uc3Qgb3JpZ2luYWxSZWNlaXB0TmFtZXMgPSBbCiAgInJlY2VpcHRzLmpzb24iLAogICJpbXBvcnRlZC1ydW50aW1lLXByb3BzLnJ1bnRpbWUuanNvbiIsCiAgImVkaXRvci1ydW50aW1lLmpzb24iLApdOwpleHBvcnQgY29uc3QgdW5vYnNlcnZlZCA9IFsKICAiZGlhZ25vc2luZyBuYXRpdmUgUElEIiwKICAibmF0aXZlIG5vcm1hbGl6ZWQgb3B0aW9ucyIsCiAgImVuZ2luZSBsb2FkZWQgc291cmNlLWZpbGUgdmVjdG9yIiwKXTsKZXhwb3J0IGNvbnN0IHNvdXJjZVBhdGhzID0gKG1hbmlmZXN0KSA9PiBsZXhpY2FsU291cmNlUGF0aHMobWFuaWZlc3QsIGhlbHBlclBhdGhzKTsKY29uc3QgZ2l0ID0gKGFyZ3MpID0+IGV4ZWNGaWxlU3luYygiZ2l0IiwgWyItLW5vLXJlcGxhY2Utb2JqZWN0cyIsIC4uLmFyZ3NdKTsKY29uc3QgaWRlbnRpdHkgPSAoZmlsZSkgPT4gewogIGNvbnN0IGFjdHVhbCA9IGZzLnJlYWxwYXRoU3luYyhmaWxlKTsKICBhc3NlcnQub2soZnMubHN0YXRTeW5jKGFjdHVhbCkuaXNGaWxlKCkpOwogIGNvbnN0IGJ5dGVzID0gZnMucmVhZEZpbGVTeW5jKGFjdHVhbCk7CiAgcmV0dXJuIHsgcGF0aDogYWN0dWFsLCBieXRlTGVuZ3RoOiBieXRlcy5sZW5ndGgsIHNoYTI1NjogZGlnZXN0KGJ5dGVzKSB9Owp9OwoKZXhwb3J0IGZ1bmN0aW9uIGNhcHR1cmVNZXRhZGF0YShvdXRwdXQpIHsKICBhc3NlcnQuZXF1YWwocHJvY2Vzcy5lbnYuR0lUX05PX1JFUExBQ0VfT0JKRUNUUywgIjEiKTsKICBhc3NlcnQuZXF1YWwoZ2l0KFsiZm9yLWVhY2gtcmVmIiwgIi0tZm9ybWF0PSUocmVmbmFtZSkiLCAicmVmcy9yZXBsYWNlIl0pLmxlbmd0aCwgMCk7CiAgYXNzZXJ0LmVxdWFsKGdpdChbInN0YXR1cyIsICItLXBvcmNlbGFpbiIsICItLXVudHJhY2tlZC1maWxlcz1ubyJdKS5sZW5ndGgsIDApOwogIGNvbnN0IHJvb3QgPSBmcy5yZWFscGF0aFN5bmMocHJvY2Vzcy5jd2QoKSk7CiAgY29uc3QgaGVhZCA9IGdpdChbInJldi1wYXJzZSIsICJIRUFEIl0pLnRvU3RyaW5nKCkudHJpbSgpOwogIGNvbnN0IHRyZWUgPSBnaXQoWyJyZXYtcGFyc2UiLCAiSEVBRF57dHJlZX0iXSkudG9TdHJpbmcoKS50cmltKCk7CiAgYXNzZXJ0LmVxdWFsKGZzLnJlYWRGaWxlU3luYyhwYXRoLmpvaW4ob3V0cHV0LCAic291cmNlLnNoYSIpLCAidXRmOCIpLnRyaW0oKSwgaGVhZCk7CiAgY29uc3QgY29tcGlsZXJMaW5lcyA9IGZzCiAgICAucmVhZEZpbGVTeW5jKHBhdGguam9pbihvdXRwdXQsICJjYXJnby5zdGRvdXQiKSwgInV0ZjgiKQogICAgLnRyaW0oKQogICAgLnNwbGl0KCJcbiIpCiAgICAubWFwKChsaW5lKSA9PiBKU09OLnBhcnNlKGxpbmUpKTsKICBjb25zdCBleGVjdXRhYmxlcyA9IGNvbXBpbGVyTGluZXMuZmlsdGVyKAogICAgKHJlY29yZCkgPT4KICAgICAgcmVjb3JkLnJlYXNvbiA9PT0gImNvbXBpbGVyLWFydGlmYWN0IiAmJgogICAgICByZWNvcmQudGFyZ2V0Lm5hbWUgPT09ICJ2aXplX2Nhbm9uIiAmJgogICAgICByZWNvcmQudGFyZ2V0LmtpbmQuam9pbigpID09PSAibGliIiAmJgogICAgICByZWNvcmQucHJvZmlsZS50ZXN0ICYmCiAgICAgIHJlY29yZC5leGVjdXRhYmxlLAogICk7CiAgYXNzZXJ0LmVxdWFsKGV4ZWN1dGFibGVzLmxlbmd0aCwgMSk7CiAgY29uc3QgYXJ0aWZhY3QgPSBleGVjdXRhYmxlc1swXTsKICBhc3NlcnQuZXF1YWwoCiAgICBmcy5yZWFscGF0aFN5bmMoYXJ0aWZhY3QudGFyZ2V0LnNyY19wYXRoKSwKICAgIHBhdGguam9pbihyb290LCAiY3JhdGVzL3ZpemVfY2Fub24vc3JjL2xpYi5ycyIpLAogICk7CiAgYXNzZXJ0LmVxdWFsKGZzLnJlYWRGaWxlU3luYyhwYXRoLmpvaW4ob3V0cHV0LCAiY2FyZ28uc3RhdHVzIiksICJ1dGY4IikudHJpbSgpLCAiMCIpOwogIGFzc2VydC5kZWVwRXF1YWwoZnMucmVhZEZpbGVTeW5jKHBhdGguam9pbihvdXRwdXQsICJjYXJnby5hcmd2Lm51bCIpLCAidXRmOCIpLnNwbGl0KCJcMCIpLCBbCiAgICAuLi5jYXJnb0FyZ3MsCiAgICAiIiwKICBdKTsKICBjb25zdCB0ZXN0QmluYXJ5ID0gaWRlbnRpdHkoYXJ0aWZhY3QuZXhlY3V0YWJsZSk7CiAgY29uc3QgbmF0aXZlID0gaWRlbnRpdHkocHJvY2Vzcy5lbnYuQ09SU0FfUEFUSCk7CiAgY29uc3QgcGFja2FnZVBhdGggPSBwYXRoLnJlc29sdmUocGF0aC5kaXJuYW1lKG5hdGl2ZS5wYXRoKSwgIi4uL3BhY2thZ2UuanNvbiIpOwogIGNvbnN0IHBhY2thZ2VCeXRlcyA9IGZzLnJlYWRGaWxlU3luYyhwYWNrYWdlUGF0aCk7CiAgY29uc3QgbmF0aXZlUGFja2FnZSA9IEpTT04ucGFyc2UocGFja2FnZUJ5dGVzKTsKICBhc3NlcnQuZXF1YWwobmF0aXZlUGFja2FnZS5uYW1lLCBgQHR5cGVzY3JpcHQvdHlwZXNjcmlwdC0ke3Byb2Nlc3MucGxhdGZvcm19LSR7cHJvY2Vzcy5hcmNofWApOwogIGFzc2VydC5lcXVhbChuYXRpdmVQYWNrYWdlLnZlcnNpb24sICI3LjAuMiIpOwogIGFzc2VydC5lcXVhbChuYXRpdmUucGF0aCwgcGF0aC5qb2luKHBhdGguZGlybmFtZShwYWNrYWdlUGF0aCksICJsaWIvdHNjIikpOwogIGNvbnN0IHByb2JlID0gc3Bhd25TeW5jKG5hdGl2ZS5wYXRoLCBbIi0tdmVyc2lvbiJdKTsKICBhc3NlcnQuZXF1YWwocHJvYmUuc3RhdHVzLCAwKTsKICBhc3NlcnQuZXF1YWwocHJvYmUuc2lnbmFsLCBudWxsKTsKICBhc3NlcnQuZGVlcEVxdWFsKHByb2JlLnN0ZGVyciwgQnVmZmVyLmFsbG9jKDApKTsKICBhc3NlcnQuZXF1YWwocHJvYmUuc3Rkb3V0LnRvU3RyaW5nKCkudHJpbSgpLCAiVmVyc2lvbiA3LjAuMiIpOwogIGNvbnN0IGZpeHR1cmUgPSAidGVzdHMvX2ZpeHR1cmVzL2RpZmZlcmVudGlhbC90eXBlY2hlY2tlci9sZXhpY2FsLWRvbGxhci1zbG90LTY4NzkiOwogIGNvbnN0IG1hbmlmZXN0ID0gSlNPTi5wYXJzZSgKICAgIGZzLnJlYWRGaWxlU3luYygKICAgICAgInRlc3RzL3BlcmZvcm1hbmNlL3N1cHBvcnQvd2FybS10eXBlLWJhY2tlZC1sZXhpY2FsLWRvbGxhci1tYW5pZmVzdC5qc29uIiwKICAgICAgInV0ZjgiLAogICAgKSwKICApOwogIGNvbnN0IHNvdXJjZXMgPSBzb3VyY2VQYXRocyhtYW5pZmVzdCk7CiAgY29uc3QgY29waWVkID0gc291cmNlcy5tYXAoKGZpbGUpID0+IHsKICAgIGNvbnN0IGVudHJ5ID0gZ2l0KFsibHMtdHJlZSIsICIteiIsICJIRUFEIiwgIi0tIiwgZmlsZV0pOwogICAgY29uc3QgbWF0Y2ggPSAvXjEwMDY0NCBibG9iIChbYS1mMC05XXs0MH0pXHQoLispXDAkL3UuZXhlYyhlbnRyeS50b1N0cmluZygpKTsKICAgIGFzc2VydC5vayhtYXRjaCwgZmlsZSk7CiAgICBhc3NlcnQuZXF1YWwobWF0Y2hbMl0sIGZpbGUpOwogICAgY29uc3QgYnl0ZXMgPSBmcy5yZWFkRmlsZVN5bmMoZmlsZSk7CiAgICBhc3NlcnQuZGVlcEVxdWFsKGJ5dGVzLCBnaXQoWyJjYXQtZmlsZSIsICJibG9iIiwgbWF0Y2hbMV1dKSk7CiAgICBjb25zdCB0YXJnZXQgPSBwYXRoLmpvaW4ob3V0cHV0LCAic291cmNlIiwgZmlsZSk7CiAgICBmcy5ta2RpclN5bmMocGF0aC5kaXJuYW1lKHRhcmdldCksIHsgcmVjdXJzaXZlOiB0cnVlIH0pOwogICAgZnMud3JpdGVGaWxlU3luYyh0YXJnZXQsIGJ5dGVzKTsKICAgIGlmIChmaWxlLnN0YXJ0c1dpdGgoYCR7Zml4dHVyZX0vYCkpCiAgICAgIGFzc2VydC5kZWVwRXF1YWwoCiAgICAgICAgZnMucmVhZEZpbGVTeW5jKHBhdGguam9pbihvdXRwdXQsICJjb3JwdXMiLCBmaWxlLnNsaWNlKGZpeHR1cmUubGVuZ3RoICsgMSkpKSwKICAgICAgICBieXRlcywKICAgICAgKTsKICAgIHJldHVybiB7CiAgICAgIGZpbGUsCiAgICAgIGdpdEVudHJ5SGV4OiBlbnRyeS50b1N0cmluZygiaGV4IiksCiAgICAgIGJ5dGVMZW5ndGg6IGJ5dGVzLmxlbmd0aCwKICAgICAgc2hhMjU2OiBkaWdlc3QoYnl0ZXMpLAogICAgfTsKICB9KTsKICBjb25zdCBvcmlnaW5hbFJlY2VpcHRzID0gb3JpZ2luYWxSZWNlaXB0TmFtZXMubWFwKChuYW1lKSA9PiB7CiAgICBjb25zdCBvcmlnaW5hbCA9IHBhdGguam9pbihwcm9jZXNzLmVudi5WSVpFX0RFRkFVTFRfUFJPUF9DQVBUVVJFLCBuYW1lKTsKICAgIGNvbnN0IGJvZHkgPSBmcy5yZWFkRmlsZVN5bmMob3JpZ2luYWwpOwogICAgZnMubWtkaXJTeW5jKHBhdGguam9pbihvdXRwdXQsICJvcmlnaW5hbC1ydW50aW1lIiksIHsgcmVjdXJzaXZlOiB0cnVlIH0pOwogICAgZnMud3JpdGVGaWxlU3luYyhwYXRoLmpvaW4ob3V0cHV0LCAib3JpZ2luYWwtcnVudGltZSIsIG5hbWUpLCBib2R5KTsKICAgIHJldHVybiB7IG5hbWUsIC4uLmlkZW50aXR5KG9yaWdpbmFsKSB9OwogIH0pOwogIGNvbnN0IGJ1aWxkVG9vbHMgPSBbImNhcmdvIiwgInJ1c3RjIl0ubWFwKCh0b29sKSA9PiB7CiAgICBjb25zdCByZXN1bHQgPSBzcGF3blN5bmModG9vbCwgWyItLXZlcnNpb24iXSk7CiAgICBhc3NlcnQuZXF1YWwocmVzdWx0LnN0YXR1cywgMCk7CiAgICBhc3NlcnQuZGVlcEVxdWFsKHJlc3VsdC5zdGRlcnIsIEJ1ZmZlci5hbGxvYygwKSk7CiAgICByZXR1cm4geyB0b29sLCBzdGRvdXQ6IHJlc3VsdC5zdGRvdXQudG9TdHJpbmcoKSwgc3RhdHVzOiByZXN1bHQuc3RhdHVzLCBzaWduYWw6IHJlc3VsdC5zaWduYWwgfTsKICB9KTsKICBjb25zdCBtZXRhZGF0YSA9IHsKICAgIHZlcnNpb246IDEsCiAgICBzb3VyY2U6IHsgcm9vdCwgaGVhZCwgdHJlZSwgbm9SZXBsYWNlT2JqZWN0czogdHJ1ZSB9LAogICAgY29waWVkLAogICAgY29tcG9zaXRpb246IHZhbGlkYXRlTGV4aWNhbFNvdXJjZUJvZGllcyhtYW5pZmVzdCwgY29waWVkKSwKICAgIHRlc3RCaW5hcnksCiAgICBjb21waWxlckFydGlmYWN0OiBhcnRpZmFjdCwKICAgIG9yaWdpbmFsUmVjZWlwdHMsCiAgICBidWlsZFRvb2xzLAogICAgdnVlTWFuaWZlc3Q6IGlkZW50aXR5KCJ0ZXN0cy9ub2RlX21vZHVsZXMvdnVlL3BhY2thZ2UuanNvbiIpLAogICAgcnVudGltZUVudmlyb25tZW50OiB7CiAgICAgIHJlcXVpcmVkTmF0aXZlOiBwcm9jZXNzLmVudi5WSVpFX1RFU1RfUkVRVUlSRV9UU0dPLAogICAgICBkaXNhYmxlTmF0aXZlOiBwcm9jZXNzLmVudi5WSVpFX1RFU1RfRElTQUJMRV9UU0dPID8/IG51bGwsCiAgICAgIHRzZ29QYXRoOiBmcy5yZWFscGF0aFN5bmMocHJvY2Vzcy5lbnYuVklaRV9URVNUX1RTR09fUEFUSCksCiAgICAgIGNvcnNhUGF0aDogbmF0aXZlLnBhdGgsCiAgICAgIGNhcmdvVGFyZ2V0OiBmcy5yZWFscGF0aFN5bmMocHJvY2Vzcy5lbnYuQ0FSR09fVEFSR0VUX0RJUiksCiAgICB9LAogICAgbmF0aXZlOiB7CiAgICAgIC4uLm5hdGl2ZSwKICAgICAgcGFja2FnZVBhdGgsCiAgICAgIHBhY2thZ2VCeXRlczogWy4uLnBhY2thZ2VCeXRlc10sCiAgICAgIHZlcnNpb25Qcm9iZTogewogICAgICAgIHN0ZG91dEJ5dGVzOiBbLi4ucHJvYmUuc3Rkb3V0XSwKICAgICAgICBzdGRlcnJCeXRlczogWy4uLnByb2JlLnN0ZGVycl0sCiAgICAgICAgc3RhdHVzOiBwcm9iZS5zdGF0dXMsCiAgICAgICAgc2lnbmFsOiBwcm9iZS5zaWduYWwsCiAgICAgIH0sCiAgICB9LAogICAgdW5vYnNlcnZlZCwKICB9OwogIGZzLndyaXRlRmlsZVN5bmMocGF0aC5qb2luKG91dHB1dCwgIm1ldGFkYXRhLmpzb24iKSwgYCR7SlNPTi5zdHJpbmdpZnkobWV0YWRhdGEsIG51bGwsIDIpfVxuYCk7CiAgcmV0dXJuIG1ldGFkYXRhOwp9CgpleHBvcnQgZnVuY3Rpb24gdmFsaWRhdGVNZXRhZGF0YShvdXRwdXQpIHsKICBjb25zdCByZWFkID0gKG5hbWUpID0+IEpTT04ucGFyc2UoZnMucmVhZEZpbGVTeW5jKHBhdGguam9pbihvdXRwdXQsIG5hbWUpLCAidXRmOCIpKTsKICBjb25zdCB0ZXh0ID0gKG5hbWUpID0+IGZzLnJlYWRGaWxlU3luYyhwYXRoLmpvaW4ob3V0cHV0LCBuYW1lKSwgInV0ZjgiKTsKICBjb25zdCBtZXRhZGF0YSA9IHJlYWQoIm1ldGFkYXRhLmpzb24iKTsKICBjb25zdCBzb3VyY2VHaXQgPSAoYXJncykgPT4KICAgIGV4ZWNGaWxlU3luYygiZ2l0IiwgWyItLW5vLXJlcGxhY2Utb2JqZWN0cyIsIC4uLmFyZ3NdLCB7IGN3ZDogbWV0YWRhdGEuc291cmNlLnJvb3QgfSk7CiAgYXNzZXJ0LmVxdWFsKG1ldGFkYXRhLnZlcnNpb24sIDEpOwogIGFzc2VydC5lcXVhbChtZXRhZGF0YS5zb3VyY2Uubm9SZXBsYWNlT2JqZWN0cywgdHJ1ZSk7CiAgYXNzZXJ0LmVxdWFsKHNvdXJjZUdpdChbImZvci1lYWNoLXJlZiIsICItLWZvcm1hdD0lKHJlZm5hbWUpIiwgInJlZnMvcmVwbGFjZSJdKS5sZW5ndGgsIDApOwogIGFzc2VydC5lcXVhbChtZXRhZGF0YS5zb3VyY2UuaGVhZCwgc291cmNlR2l0KFsicmV2LXBhcnNlIiwgIkhFQUQiXSkudG9TdHJpbmcoKS50cmltKCkpOwogIGFzc2VydC5lcXVhbChtZXRhZGF0YS5zb3VyY2UudHJlZSwgc291cmNlR2l0KFsicmV2LXBhcnNlIiwgIkhFQURee3RyZWV9Il0pLnRvU3RyaW5nKCkudHJpbSgpKTsKICBhc3NlcnQuZXF1YWwodGV4dCgic291cmNlLnNoYSIpLnRyaW0oKSwgbWV0YWRhdGEuc291cmNlLmhlYWQpOwogIGFzc2VydC5lcXVhbChuZXcgU2V0KG1ldGFkYXRhLmNvcGllZC5tYXAoKGVudHJ5KSA9PiBlbnRyeS5maWxlKSkuc2l6ZSwgbWV0YWRhdGEuY29waWVkLmxlbmd0aCk7CiAgY29uc3QgdHJlZUVudHJpZXMgPSBuZXcgTWFwKAogICAgc291cmNlR2l0KFsibHMtdHJlZSIsICIteiIsICJIRUFEIiwgIi0tIiwgLi4ubWV0YWRhdGEuY29waWVkLm1hcCgoZW50cnkpID0+IGVudHJ5LmZpbGUpXSkKICAgICAgLnRvU3RyaW5nKCkKICAgICAgLnNwbGl0KCJcMCIpCiAgICAgIC5maWx0ZXIoQm9vbGVhbikKICAgICAgLm1hcCgoZW50cnkpID0+IFtlbnRyeS5zbGljZShlbnRyeS5pbmRleE9mKCJcdCIpICsgMSksIEJ1ZmZlci5mcm9tKGVudHJ5ICsgIlwwIildKSwKICApOwogIGZvciAoY29uc3QgZW50cnkgb2YgbWV0YWRhdGEuY29waWVkKSB7CiAgICBhc3NlcnQub2soZnMubHN0YXRTeW5jKHBhdGguam9pbihvdXRwdXQsICJzb3VyY2UiLCBlbnRyeS5maWxlKSkuaXNGaWxlKCkpOwogICAgY29uc3QgYm9keSA9IGZzLnJlYWRGaWxlU3luYyhwYXRoLmpvaW4ob3V0cHV0LCAic291cmNlIiwgZW50cnkuZmlsZSkpOwogICAgYXNzZXJ0LmVxdWFsKGJvZHkubGVuZ3RoLCBlbnRyeS5ieXRlTGVuZ3RoKTsKICAgIGFzc2VydC5lcXVhbChkaWdlc3QoYm9keSksIGVudHJ5LnNoYTI1Nik7CiAgICBjb25zdCBibG9iID0gY3JlYXRlSGFzaCgic2hhMSIpCiAgICAgIC51cGRhdGUoQnVmZmVyLmZyb20oYGJsb2IgJHtib2R5Lmxlbmd0aH1cMGApKQogICAgICAudXBkYXRlKGJvZHkpCiAgICAgIC5kaWdlc3QoImhleCIpOwogICAgY29uc3QgZ2l0RW50cnkgPSBCdWZmZXIuZnJvbShgMTAwNjQ0IGJsb2IgJHtibG9ifVx0JHtlbnRyeS5maWxlfVwwYCk7CiAgICBhc3NlcnQuZGVlcEVxdWFsKEJ1ZmZlci5mcm9tKGVudHJ5LmdpdEVudHJ5SGV4LCAiaGV4IiksIGdpdEVudHJ5KTsKICAgIGFzc2VydC5kZWVwRXF1YWwodHJlZUVudHJpZXMuZ2V0KGVudHJ5LmZpbGUpLCBnaXRFbnRyeSk7CiAgfQogIGNvbnN0IG1hbmlmZXN0ID0gcmVhZCgKICAgICJzb3VyY2UvdGVzdHMvcGVyZm9ybWFuY2Uvc3VwcG9ydC93YXJtLXR5cGUtYmFja2VkLWxleGljYWwtZG9sbGFyLW1hbmlmZXN0Lmpzb24iLAogICk7CiAgYXNzZXJ0LmRlZXBFcXVhbCgKICAgIG1ldGFkYXRhLmNvcGllZC5tYXAoKGVudHJ5KSA9PiBlbnRyeS5maWxlKS5zb3J0KChhLCBiKSA9PiBhLmxvY2FsZUNvbXBhcmUoYikpLAogICAgc291cmNlUGF0aHMobWFuaWZlc3QpLnNvcnQoKGEsIGIpID0+IGEubG9jYWxlQ29tcGFyZShiKSksCiAgKTsKICBmb3IgKGNvbnN0IG5hbWUgb2YgaGVscGVyUGF0aHMpCiAgICBhc3NlcnQuZXF1YWwoCiAgICAgIG1ldGFkYXRhLmNvcGllZC5maW5kKChlbnRyeSkgPT4gZW50cnkuZmlsZSA9PT0gbmFtZSkuc2hhMjU2LAogICAgICBkaWdlc3QoZnMucmVhZEZpbGVTeW5jKG5ldyBVUkwocGF0aC5iYXNlbmFtZShuYW1lKSwgaW1wb3J0Lm1ldGEudXJsKSkpLAogICAgKTsKICBhc3NlcnQuZGVlcEVxdWFsKG1ldGFkYXRhLmNvbXBvc2l0aW9uLCB2YWxpZGF0ZUxleGljYWxTb3VyY2VCb2RpZXMobWFuaWZlc3QsIG1ldGFkYXRhLmNvcGllZCkpOwogIGFzc2VydC5lcXVhbChtYW5pZmVzdC5maWxlcy5sZW5ndGgsIDkpOwogIGFzc2VydC5lcXVhbChtYW5pZmVzdC5jb3JwdXNCb2RpZXMubGVuZ3RoLCAyMSk7CiAgZm9yIChjb25zdCBleGVjdXRhYmxlIG9mIFttZXRhZGF0YS50ZXN0QmluYXJ5LCBtZXRhZGF0YS5uYXRpdmVdKQogICAgYXNzZXJ0LmRlZXBFcXVhbChpZGVudGl0eShleGVjdXRhYmxlLnBhdGgpLCB7CiAgICAgIHBhdGg6IGV4ZWN1dGFibGUucGF0aCwKICAgICAgYnl0ZUxlbmd0aDogZXhlY3V0YWJsZS5ieXRlTGVuZ3RoLAogICAgICBzaGEyNTY6IGV4ZWN1dGFibGUuc2hhMjU2LAogICAgfSk7CiAgYXNzZXJ0LmVxdWFsKHRleHQoImNhcmdvLnN0YXR1cyIpLCAiMFxuIik7CiAgYXNzZXJ0LmRlZXBFcXVhbCh0ZXh0KCJjYXJnby5hcmd2Lm51bCIpLnNwbGl0KCJcMCIpLCBbLi4uY2FyZ29BcmdzLCAiIl0pOwogIGNvbnN0IHJlY29yZHMgPSB0ZXh0KCJjYXJnby5zdGRvdXQiKQogICAgLnRyaW0oKQogICAgLnNwbGl0KCJcbiIpCiAgICAubWFwKChsaW5lKSA9PiBKU09OLnBhcnNlKGxpbmUpKTsKICBjb25zdCBhcnRpZmFjdHMgPSByZWNvcmRzLmZpbHRlcigKICAgIChyZWNvcmQpID0+CiAgICAgIHJlY29yZC5yZWFzb24gPT09ICJjb21waWxlci1hcnRpZmFjdCIgJiYKICAgICAgcmVjb3JkLnRhcmdldC5uYW1lID09PSAidml6ZV9jYW5vbiIgJiYKICAgICAgcmVjb3JkLnRhcmdldC5raW5kLmpvaW4oKSA9PT0gImxpYiIgJiYKICAgICAgcmVjb3JkLnByb2ZpbGUudGVzdCAmJgogICAgICByZWNvcmQuZXhlY3V0YWJsZSwKICApOwogIGFzc2VydC5kZWVwRXF1YWwoYXJ0aWZhY3RzLCBbbWV0YWRhdGEuY29tcGlsZXJBcnRpZmFjdF0pOwogIGFzc2VydC5kZWVwRXF1YWwoCiAgICByZWNvcmRzLmZpbHRlcigocmVjb3JkKSA9PiByZWNvcmQucmVhc29uID09PSAiYnVpbGQtZmluaXNoZWQiKSwKICAgIFt7IHJlYXNvbjogImJ1aWxkLWZpbmlzaGVkIiwgc3VjY2VzczogdHJ1ZSB9XSwKICApOwogIGNvbnN0IGFydGlmYWN0ID0gbWV0YWRhdGEuY29tcGlsZXJBcnRpZmFjdDsKICBhc3NlcnQuZXF1YWwoYXJ0aWZhY3QuZXhlY3V0YWJsZSwgbWV0YWRhdGEudGVzdEJpbmFyeS5wYXRoKTsKICBhc3NlcnQuZXF1YWwoCiAgICBhcnRpZmFjdC50YXJnZXQuc3JjX3BhdGgsCiAgICBwYXRoLmpvaW4obWV0YWRhdGEuc291cmNlLnJvb3QsICJjcmF0ZXMvdml6ZV9jYW5vbi9zcmMvbGliLnJzIiksCiAgKTsKICBhc3NlcnQuZXF1YWwoYXJ0aWZhY3QucHJvZmlsZS5vcHRfbGV2ZWwsICIzIik7CiAgYXNzZXJ0LmVxdWFsKGFydGlmYWN0LnByb2ZpbGUuZGVidWdfYXNzZXJ0aW9ucywgZmFsc2UpOwogIGFzc2VydC5kZWVwRXF1YWwoCiAgICBbLi4uYXJ0aWZhY3QuZmVhdHVyZXNdLnNvcnQoKGEsIGIpID0+IGEubG9jYWxlQ29tcGFyZShiKSksCiAgICBbImRlZmF1bHQiLCAibmF0aXZlIl0sCiAgKTsKICBhc3NlcnQuZGVlcEVxdWFsKAogICAgbWV0YWRhdGEuYnVpbGRUb29scy5tYXAoKGl0ZW0pID0+IGl0ZW0udG9vbCksCiAgICBbImNhcmdvIiwgInJ1c3RjIl0sCiAgKTsKICBmb3IgKGNvbnN0IGl0ZW0gb2YgbWV0YWRhdGEuYnVpbGRUb29scykgewogICAgYXNzZXJ0LmVxdWFsKGl0ZW0uc3RhdHVzLCAwKTsKICAgIGFzc2VydC5lcXVhbChpdGVtLnNpZ25hbCwgbnVsbCk7CiAgICBhc3NlcnQubWF0Y2goaXRlbS5zdGRvdXQsIG5ldyBSZWdFeHAoYF4ke2l0ZW0udG9vbH0gMVxcLjk5XFwuMCg/OiB8XFxuKWAsICJ1IikpOwogIH0KICBjb25zdCBlbnZpcm9ubWVudCA9IG1ldGFkYXRhLnJ1bnRpbWVFbnZpcm9ubWVudDsKICBhc3NlcnQuZXF1YWwoZW52aXJvbm1lbnQucmVxdWlyZWROYXRpdmUsICIxIik7CiAgYXNzZXJ0LmVxdWFsKGVudmlyb25tZW50LmRpc2FibGVOYXRpdmUsIG51bGwpOwogIGFzc2VydC5lcXVhbChlbnZpcm9ubWVudC50c2dvUGF0aCwgbWV0YWRhdGEubmF0aXZlLnBhdGgpOwogIGFzc2VydC5lcXVhbChlbnZpcm9ubWVudC5jb3JzYVBhdGgsIG1ldGFkYXRhLm5hdGl2ZS5wYXRoKTsKICBhc3NlcnQuZXF1YWwoZnMucmVhbHBhdGhTeW5jKGVudmlyb25tZW50LmNhcmdvVGFyZ2V0KSwgZW52aXJvbm1lbnQuY2FyZ29UYXJnZXQpOwogIGFzc2VydC5lcXVhbCgKICAgIHBhdGgucmVsYXRpdmUoZW52aXJvbm1lbnQuY2FyZ29UYXJnZXQsIG1ldGFkYXRhLnRlc3RCaW5hcnkucGF0aCkuc3RhcnRzV2l0aCgiLi4iKSwKICAgIGZhbHNlLAogICk7CiAgY29uc3QgcGFja2FnZUJ5dGVzID0gQnVmZmVyLmZyb20obWV0YWRhdGEubmF0aXZlLnBhY2thZ2VCeXRlcyk7CiAgYXNzZXJ0LmRlZXBFcXVhbChbLi4ucGFja2FnZUJ5dGVzXSwgbWV0YWRhdGEubmF0aXZlLnBhY2thZ2VCeXRlcyk7CiAgY29uc3QgcGtnID0gSlNPTi5wYXJzZShwYWNrYWdlQnl0ZXMudG9TdHJpbmcoKSk7CiAgYXNzZXJ0LmVxdWFsKHBrZy5uYW1lLCBgQHR5cGVzY3JpcHQvdHlwZXNjcmlwdC0ke3Byb2Nlc3MucGxhdGZvcm19LSR7cHJvY2Vzcy5hcmNofWApOwogIGFzc2VydC5lcXVhbChwa2cudmVyc2lvbiwgIjcuMC4yIik7CiAgYXNzZXJ0LmRlZXBFcXVhbChmcy5yZWFkRmlsZVN5bmMobWV0YWRhdGEubmF0aXZlLnBhY2thZ2VQYXRoKSwgcGFja2FnZUJ5dGVzKTsKICBhc3NlcnQuZXF1YWwoCiAgICBtZXRhZGF0YS5uYXRpdmUucGF0aCwKICAgIHBhdGguam9pbihwYXRoLmRpcm5hbWUobWV0YWRhdGEubmF0aXZlLnBhY2thZ2VQYXRoKSwgImxpYi90c2MiKSwKICApOwogIGFzc2VydC5lcXVhbChtZXRhZGF0YS5uYXRpdmUudmVyc2lvblByb2JlLnN0YXR1cywgMCk7CiAgYXNzZXJ0LmVxdWFsKG1ldGFkYXRhLm5hdGl2ZS52ZXJzaW9uUHJvYmUuc2lnbmFsLCBudWxsKTsKICBhc3NlcnQuZGVlcEVxdWFsKG1ldGFkYXRhLm5hdGl2ZS52ZXJzaW9uUHJvYmUuc3RkZXJyQnl0ZXMsIFtdKTsKICBhc3NlcnQuZGVlcEVxdWFsKAogICAgWy4uLkJ1ZmZlci5mcm9tKG1ldGFkYXRhLm5hdGl2ZS52ZXJzaW9uUHJvYmUuc3Rkb3V0Qnl0ZXMpXSwKICAgIG1ldGFkYXRhLm5hdGl2ZS52ZXJzaW9uUHJvYmUuc3Rkb3V0Qnl0ZXMsCiAgKTsKICBhc3NlcnQuZXF1YWwoCiAgICBCdWZmZXIuZnJvbShtZXRhZGF0YS5uYXRpdmUudmVyc2lvblByb2JlLnN0ZG91dEJ5dGVzKS50b1N0cmluZygpLnRyaW0oKSwKICAgICJWZXJzaW9uIDcuMC4yIiwKICApOwogIGFzc2VydC5kZWVwRXF1YWwoCiAgICBtZXRhZGF0YS5vcmlnaW5hbFJlY2VpcHRzLm1hcCgocmVjZWlwdCkgPT4gcmVjZWlwdC5uYW1lKSwKICAgIG9yaWdpbmFsUmVjZWlwdE5hbWVzLAogICk7CiAgZm9yIChjb25zdCByZWNlaXB0IG9mIG1ldGFkYXRhLm9yaWdpbmFsUmVjZWlwdHMpIHsKICAgIGNvbnN0IGJvZHkgPSBmcy5yZWFkRmlsZVN5bmMocGF0aC5qb2luKG91dHB1dCwgIm9yaWdpbmFsLXJ1bnRpbWUiLCByZWNlaXB0Lm5hbWUpKTsKICAgIGFzc2VydC5lcXVhbChib2R5Lmxlbmd0aCwgcmVjZWlwdC5ieXRlTGVuZ3RoKTsKICAgIGFzc2VydC5lcXVhbChkaWdlc3QoYm9keSksIHJlY2VpcHQuc2hhMjU2KTsKICAgIGFzc2VydC5kZWVwRXF1YWwoYm9keSwgZnMucmVhZEZpbGVTeW5jKHJlY2VpcHQucGF0aCkpOwogIH0KICBjb25zdCBvcmlnaW5hbCA9IHJlYWQoIm9yaWdpbmFsLXJ1bnRpbWUvcmVjZWlwdHMuanNvbiIpOwogIGFzc2VydC5lcXVhbChvcmlnaW5hbC5zb3VyY2VTaGEsIG1ldGFkYXRhLnNvdXJjZS5oZWFkKTsKICBhc3NlcnQuZXF1YWwob3JpZ2luYWwubWF0Y2hlZENvbXBsZXRlRXhwZWN0YXRpb25zLCB0cnVlKTsKICBhc3NlcnQuZGVlcEVxdWFsKAogICAgb3JpZ2luYWwuY2FzZXMubWFwKChpdGVtKSA9PiBpdGVtLm5hbWUpLAogICAgWwogICAgICAiaW1wb3J0ZWRfY2FsbGFibGVfZGVmYXVsdF9yZW1haW5zX2RlZmluZWRfaW5fYWxsX3RlbXBsYXRlX3Byb3Bfdmlld3MiLAogICAgICAidW5kZWZpbmVkX2NhbGxhYmxlX2RlZmF1bHRfa2VlcHNfb3JpZ2luYWxfY2xpX2NvbmRpdGlvbnNfb3B0aW9uYWwiLAogICAgICAidW5kZWZpbmVkX2NhbGxhYmxlX2RlZmF1bHRfc3RpbGxfcmVqZWN0c191bmd1YXJkZWRfdGVtcGxhdGVfY2FsbHMiLAogICAgXSwKICApOwogIGZvciAoY29uc3QgaXRlbSBvZiBvcmlnaW5hbC5jYXNlcykgewogICAgYXNzZXJ0LmVxdWFsKGl0ZW0uc291cmNlU2hhLCBtZXRhZGF0YS5zb3VyY2UuaGVhZCk7CiAgICBhc3NlcnQuZXF1YWwoaXRlbS5uYXRpdmVCaW5hcnksIG1ldGFkYXRhLm5hdGl2ZS5wYXRoKTsKICAgIGFzc2VydC5lcXVhbChpdGVtLm5hdGl2ZVNoYTI1NiwgbWV0YWRhdGEubmF0aXZlLnNoYTI1Nik7CiAgICBhc3NlcnQuZXF1YWwoaXRlbS5uYXRpdmVQYWNrYWdlU2hhMjU2LCBkaWdlc3QocGFja2FnZUJ5dGVzKSk7CiAgICBhc3NlcnQuZXF1YWwoaXRlbS5uYXRpdmVWZXJzaW9uLCAiVmVyc2lvbiA3LjAuMiIpOwogIH0KICBmb3IgKGNvbnN0IG5hbWUgb2Ygb3JpZ2luYWxSZWNlaXB0TmFtZXMuc2xpY2UoMSkpIHsKICAgIGNvbnN0IHJ1bnRpbWUgPSByZWFkKGBvcmlnaW5hbC1ydW50aW1lLyR7bmFtZX1gKTsKICAgIGlmIChuYW1lID09PSAiaW1wb3J0ZWQtcnVudGltZS1wcm9wcy5ydW50aW1lLmpzb24iKQogICAgICBhc3NlcnQuZXF1YWwocnVudGltZS5zb3VyY2VTaGEsIG1ldGFkYXRhLnNvdXJjZS5oZWFkKTsKICAgIGFzc2VydC5lcXVhbChmcy5yZWFscGF0aFN5bmMocnVudGltZS5uYXRpdmVCaW5hcnkpLCBtZXRhZGF0YS5uYXRpdmUucGF0aCk7CiAgfQogIGFzc2VydC5kZWVwRXF1YWwobWV0YWRhdGEudW5vYnNlcnZlZCwgdW5vYnNlcnZlZCk7CiAgYXNzZXJ0LmRlZXBFcXVhbChpZGVudGl0eShtZXRhZGF0YS52dWVNYW5pZmVzdC5wYXRoKSwgbWV0YWRhdGEudnVlTWFuaWZlc3QpOwogIGFzc2VydC5lcXVhbChKU09OLnBhcnNlKGZzLnJlYWRGaWxlU3luYyhtZXRhZGF0YS52dWVNYW5pZmVzdC5wYXRoLCAidXRmOCIpKS5uYW1lLCAidnVlIik7CiAgcmV0dXJuIHsgbWV0YWRhdGEsIG1hbmlmZXN0IH07Cn0KCmlmICgKICBwcm9jZXNzLmFyZ3ZbMV0gJiYKICBmcy5leGlzdHNTeW5jKHByb2Nlc3MuYXJndlsxXSkgJiYKICBmcy5yZWFscGF0aFN5bmMocHJvY2Vzcy5hcmd2WzFdKSA9PT0gZnMucmVhbHBhdGhTeW5jKG5ldyBVUkwoaW1wb3J0Lm1ldGEudXJsKSkKKQogIGNhcHR1cmVNZXRhZGF0YShwcm9jZXNzLmFyZ3ZbMl0pOwo=",
+      "importMetaOccurrences": 2
+    },
+    {
+      "file": "tools/support/compat/github/native-lexical-dollar-receipt.mjs",
+      "source": "8304eb7a08a96e58ca0a318cc2fa6ffc6e9acd75",
+      "mode": "100644",
+      "blob": "3595016730b59cfb2cb8ff786efcb3228090c69a",
+      "bytes": 12046,
+      "sha256": "e0709026b233463fd31ccbbc110d19802dac7dfc91b991b60ed7cc8130504bfa",
+      "rawBase64": "aW1wb3J0IGFzc2VydCBmcm9tICJub2RlOmFzc2VydC9zdHJpY3QiOwppbXBvcnQgZnMgZnJvbSAibm9kZTpmcyI7CmltcG9ydCBwYXRoIGZyb20gIm5vZGU6cGF0aCI7CmltcG9ydCB7IGRpZ2VzdCwgdmFsaWRhdGVNZXRhZGF0YSB9IGZyb20gIi4vbmF0aXZlLWxleGljYWwtZG9sbGFyLW1ldGFkYXRhLm1qcyI7CgpleHBvcnQgY29uc3QgbmF0aXZlTGF3ID0KICAiYmF0Y2g6OnR5cGVfY2hlY2tlcjo6dGVzdHM6OnJlY2VudF9pc3N1ZXM6OmxleGljYWxfZG9sbGFyX3Nsb3RzOjpsZXhpY2FsX2RvbGxhcl9zbG90c19wcmVzZXJ2ZV9jb21wbGV0ZV9uYXRpdmVfZGlhZ25vc3RpY3NfYW5kX3JlcGFpcnMiOwpleHBvcnQgY29uc3QgcHJvZHVjZXJMYXdzID0gWwogICJsZXhpY2FsX3Njb3BlOjpsZXhpY2FsX2RvbGxhcl9zY29wZXNfa2VlcF9vbmx5X3JlYWxfaW5zdGFuY2VfcmVhZHNfYW5kX2V4YWN0X2F1dGhvcmVkX3JhbmdlcyIsCiAgImxleGljYWxfc2NvcGU6OnBlcm1pc3NpdmVfZG9sbGFyX3Njb3Blc19kb19ub3RfaG9pc3RfbGV4aWNhbF9zbG90X2xvb3Bfb3JfaGFuZGxlcl9uYW1lcyIsCiAgInRoZV9wZXJtaXNzaXZlX2Zvcm1fZGVjbGFyZXNfdGhlX25hbWVfb25jZV93aXRoX2FuX2FueV9mYWxsYmFjayIsCiAgInRoZV9wZXJtaXNzaXZlX2Zvcm1fbWFwc190aGVfc2luZ2xlX2RlY2xhcmF0aW9uX3RvX3RoZV9maXJzdF9vY2N1cnJlbmNlIiwKICAidGhlX3N0cmljdF9mb3JtX21hcHNfZWFjaF9hY2Nlc3NfYmFja190b19pdHNfYXV0aG9yZWRfb2NjdXJyZW5jZSIsCiAgInRoZV9zdHJpY3RfZm9ybV9yZWFkc19ldmVyeV9vY2N1cnJlbmNlX29mZl90aGVfdGVtcGxhdGVfY29udGV4dCIsCl0ubWFwKChuYW1lKSA9PiBgdmlydHVhbF90czo6c2NvcGU6Omdsb2JhbHM6Omluc3RhbmNlOjp0ZXN0czo6JHtuYW1lfWApOwpjb25zdCBjYXNlcyA9IFsKICBbInZhbGlkLXN0cmljdCIsICJ2YWxpZC52dWUudHh0IiwgdHJ1ZV0sCiAgWyJ3cm9uZy1zdHJpY3QiLCAid3JvbmcudnVlLnR4dCIsIHRydWVdLAogIFsid3JvbmctcGVybWlzc2l2ZSIsICJ3cm9uZy52dWUudHh0IiwgZmFsc2VdLAogIFsiZXNjYXBlLXN0cmljdCIsICJlc2NhcGUudnVlLnR4dCIsIHRydWVdLAogIFsiZm9yZWlnbi1zdHJpY3QiLCAiZm9yZWlnbi52dWUudHh0IiwgdHJ1ZV0sCiAgWyJsb29wLXNvdXJjZS1zdHJpY3QiLCAibG9vcC1zb3VyY2UudnVlLnR4dCIsIHRydWVdLAogIFsiZ2xvYmFscy1zdHJpY3QiLCAiZ2xvYmFscy52dWUudHh0IiwgdHJ1ZV0sCiAgWyJnbG9iYWxzLXBlcm1pc3NpdmUiLCAiZ2xvYmFscy52dWUudHh0IiwgZmFsc2VdLAogIFsicmVwYWlyZWQtc3RyaWN0IiwgInZhbGlkLnZ1ZS50eHQiLCB0cnVlXSwKXTsKY29uc3QgYnl0ZXMgPSAodmFsdWUpID0+IHsKICBhc3NlcnQub2soCiAgICBBcnJheS5pc0FycmF5KHZhbHVlKSAmJgogICAgICB2YWx1ZS5ldmVyeSgoYnl0ZSkgPT4gTnVtYmVyLmlzSW50ZWdlcihieXRlKSAmJiBieXRlID49IDAgJiYgYnl0ZSA8PSAyNTUpLAogICk7CiAgcmV0dXJuIEJ1ZmZlci5mcm9tKHZhbHVlKTsKfTsKY29uc3QgdXRmOCA9IChidWZmZXIpID0+IHsKICBjb25zdCB0ZXh0ID0gYnVmZmVyLnRvU3RyaW5nKCJ1dGY4Iik7CiAgYXNzZXJ0LmRlZXBFcXVhbChCdWZmZXIuZnJvbSh0ZXh0KSwgYnVmZmVyKTsKICByZXR1cm4gdGV4dDsKfTsKCmZ1bmN0aW9uIGNvbXBsZXRlTWFwKG1hcCwgY29kZSwgYXV0aG9yZWQpIHsKICBhc3NlcnQuZXF1YWwodHlwZW9mIG1hcCwgInN0cmluZyIpOwogIGFzc2VydC5vayhtYXAuc3RhcnRzV2l0aCgiQ29tcG9zaXRlU291cmNlTWFwIHtcbiIpICYmIG1hcC5lbmRzV2l0aCgiXG59IikpOwogIGZvciAoY29uc3QgcmVxdWlyZWQgb2YgWwogICAgL3NmY19tYXA6IFNvbWVcKC91LAogICAgL1NmY1NvdXJjZU1hcCBcey91LAogICAgL3Byb2plY3Rpb246IFByb2plY3Rpb25NYXBwaW5nIFx7L3UsCiAgICAvc3BhbnM6IFxbL3UsCiAgICAvbWV0YTogXFsvdSwKICAgIC9zZW1hbnRpY19saW5rczogXFsvdSwKICAgIC9wcm9wX2RlZmF1bHRfa2V5X2xpbmtzOiBcWy91LAogICAgL2F1dGhvcmVkX2Jhc2U6IDAsL3UsCiAgICAvYXV0aG9yZWRfZGlzam9pbnQ6IGZhbHNlLC91LAogICAgL2Jsb2NrczogXFsvdSwKICAgIC9pbXBvcnRfbWFwOiBJbXBvcnRTb3VyY2VNYXAgXHsvdSwKICAgIC9hZGp1c3RtZW50czogXFsvdSwKICBdKQogICAgYXNzZXJ0Lm1hdGNoKG1hcCwgcmVxdWlyZWQpOwogIGNvbnN0IHN0YWNrID0gW107CiAgbGV0IHF1b3RlZCA9IGZhbHNlOwogIGxldCBlc2NhcGVkID0gZmFsc2U7CiAgZm9yIChjb25zdCBjaGFyYWN0ZXIgb2YgbWFwKSB7CiAgICBpZiAocXVvdGVkKSB7CiAgICAgIGlmIChlc2NhcGVkKSBlc2NhcGVkID0gZmFsc2U7CiAgICAgIGVsc2UgaWYgKGNoYXJhY3RlciA9PT0gIlxcIikgZXNjYXBlZCA9IHRydWU7CiAgICAgIGVsc2UgaWYgKGNoYXJhY3RlciA9PT0gJyInKSBxdW90ZWQgPSBmYWxzZTsKICAgICAgY29udGludWU7CiAgICB9CiAgICBpZiAoY2hhcmFjdGVyID09PSAnIicpIHF1b3RlZCA9IHRydWU7CiAgICBlbHNlIGlmICgiKFt7Ii5pbmNsdWRlcyhjaGFyYWN0ZXIpKSBzdGFjay5wdXNoKGNoYXJhY3Rlcik7CiAgICBlbHNlIGlmICgiKV19Ii5pbmNsdWRlcyhjaGFyYWN0ZXIpKQogICAgICBhc3NlcnQuZXF1YWwoc3RhY2sucG9wKCksIHsgIikiOiAiKCIsICJdIjogIlsiLCAifSI6ICJ7IiB9W2NoYXJhY3Rlcl0pOwogIH0KICBhc3NlcnQuZXF1YWwocXVvdGVkLCBmYWxzZSk7CiAgYXNzZXJ0LmVxdWFsKHN0YWNrLmxlbmd0aCwgMCk7CiAgY29uc3Qgc3BhbnMgPSBbLi4ubWFwLm1hdGNoQWxsKC9nZW5fcmFuZ2U6IChcZCspXC5cLihcZCspLFxzK3NyY19yYW5nZTogKFxkKylcLlwuKFxkKyksL2d1KV07CiAgYXNzZXJ0Lm9rKHNwYW5zLmxlbmd0aCA+IDApOwogIGZvciAoY29uc3QgWywgZ3MsIGdlLCBzcywgc2VdIG9mIHNwYW5zKSB7CiAgICBhc3NlcnQub2soK2dzIDw9ICtnZSAmJiArZ2UgPD0gQnVmZmVyLmJ5dGVMZW5ndGgoY29kZSkpOwogICAgYXNzZXJ0Lm9rKCtzcyA8PSArc2UgJiYgK3NlIDw9IEJ1ZmZlci5ieXRlTGVuZ3RoKGF1dGhvcmVkKSk7CiAgfQogIGNvbnN0IGJsb2NrcyA9IFsKICAgIC4uLm1hcC5tYXRjaEFsbCgvU2ZjQmxvY2tSYW5nZSBce1xzK3N0YXJ0OiAoXGQrKSxccytlbmQ6IChcZCspLFxzK2Jsb2NrX3R5cGU6IChcdyspLC9ndSksCiAgXTsKICBhc3NlcnQuZGVlcEVxdWFsKAogICAgYmxvY2tzLm1hcCgobWF0Y2gpID0+IG1hdGNoWzNdKSwKICAgIC9ePHNjcmlwdCBzZXR1cFxiW14+XSo+KFtcc1xTXSo/KTxcL3NjcmlwdD4vdS5leGVjKGF1dGhvcmVkKT8uWzFdLmxlbmd0aAogICAgICA/IFsiU2NyaXB0U2V0dXAiLCAiVGVtcGxhdGUiXQogICAgICA6IFsiVGVtcGxhdGUiXSwKICApOwogIGZvciAoY29uc3QgWywgc3RhcnQsIGVuZF0gb2YgYmxvY2tzKQogICAgYXNzZXJ0Lm9rKCtzdGFydCA8PSArZW5kICYmICtlbmQgPD0gQnVmZmVyLmJ5dGVMZW5ndGgoYXV0aG9yZWQpKTsKfQoKZXhwb3J0IGZ1bmN0aW9uIHZhbGlkYXRlTGV4aWNhbERvbGxhclBhY2tldHMocm9vdCkgewogIGNvbnN0IHJlYWQgPSAobmFtZSkgPT4gSlNPTi5wYXJzZShmcy5yZWFkRmlsZVN5bmMocGF0aC5qb2luKHJvb3QsIG5hbWUpLCAidXRmOCIpKTsKICBjb25zdCB0ZXh0ID0gKG5hbWUpID0+IGZzLnJlYWRGaWxlU3luYyhwYXRoLmpvaW4ocm9vdCwgbmFtZSksICJ1dGY4Iik7CiAgY29uc3QgeyBtZXRhZGF0YSwgbWFuaWZlc3QgfSA9IHZhbGlkYXRlTWV0YWRhdGEocm9vdCk7CiAgY29uc3QgY3VzdG9keSA9IHJlYWQoImNvcnB1cy9pbnB1dHMuanNvbiIpOwogIGNvbnN0IGV4cGVjdGVkID0gcmVhZCgiY29ycHVzL2V4cGVjdGVkLmpzb24iKTsKICBmb3IgKGNvbnN0IFtmaWxlXSBvZiBtYW5pZmVzdC5jb3JwdXNCb2RpZXMpCiAgICBhc3NlcnQuZGVlcEVxdWFsKAogICAgICBmcy5yZWFkRmlsZVN5bmMocGF0aC5qb2luKHJvb3QsICJzb3VyY2UiLCBmaWxlKSksCiAgICAgIGZzLnJlYWRGaWxlU3luYyhwYXRoLmpvaW4ocm9vdCwgImNvcnB1cyIsIGZpbGUuc3BsaXQoImxleGljYWwtZG9sbGFyLXNsb3QtNjg3OS8iKVsxXSkpLAogICAgKTsKICBmb3IgKGNvbnN0IGlucHV0IG9mIGN1c3RvZHkuaW5wdXRzKSB7CiAgICBjb25zdCBib2R5ID0gZnMucmVhZEZpbGVTeW5jKHBhdGguam9pbihyb290LCAiY29ycHVzIiwgaW5wdXQucGF0aCkpOwogICAgYXNzZXJ0LmVxdWFsKGJvZHkubGVuZ3RoLCBpbnB1dC5ieXRlTGVuZ3RoKTsKICAgIGFzc2VydC5lcXVhbChkaWdlc3QoYm9keSksIGlucHV0LnNoYTI1Nik7CiAgfQogIGFzc2VydC5lcXVhbChjdXN0b2R5LmlucHV0cy5sZW5ndGgsIDgpOwogIGFzc2VydC5lcXVhbChjdXN0b2R5Lm5hdGl2ZUxhdy50ZXN0LCBuYXRpdmVMYXcpOwogIGNvbnN0IGV4cGVjdGVkQm9keSA9IGZzLnJlYWRGaWxlU3luYyhwYXRoLmpvaW4ocm9vdCwgImNvcnB1cy9leHBlY3RlZC5qc29uIikpOwogIGFzc2VydC5lcXVhbChleHBlY3RlZEJvZHkubGVuZ3RoLCBjdXN0b2R5LmV4cGVjdGVkLmJ5dGVMZW5ndGgpOwogIGFzc2VydC5lcXVhbChkaWdlc3QoZXhwZWN0ZWRCb2R5KSwgY3VzdG9keS5leHBlY3RlZC5zaGEyNTYpOwogIGZvciAoY29uc3QgcGhhc2Ugb2YgWyJwcm9kdWNlciIsICJuYXRpdmUiXSkgewogICAgYXNzZXJ0LmVxdWFsKHRleHQoYCR7cGhhc2V9LnN0YXR1c2ApLnRyaW0oKSwgIjAiKTsKICAgIGNvbnN0IGFjdHVhbE5hbWVzID0gWy4uLnRleHQoYCR7cGhhc2V9LnN0ZG91dGApLm1hdGNoQWxsKC9edGVzdCAoXFMrKSBcLlwuXC4gb2skL2dtdSldLm1hcCgKICAgICAgKG1hdGNoKSA9PiBtYXRjaFsxXSwKICAgICk7CiAgICBhc3NlcnQuZGVlcEVxdWFsKGFjdHVhbE5hbWVzLCBwaGFzZSA9PT0gInByb2R1Y2VyIiA/IHByb2R1Y2VyTGF3cyA6IFtuYXRpdmVMYXddKTsKICAgIGFzc2VydC5tYXRjaCgKICAgICAgdGV4dChgJHtwaGFzZX0uc3Rkb3V0YCksCiAgICAgIHBoYXNlID09PSAicHJvZHVjZXIiCiAgICAgICAgPyAvdGVzdCByZXN1bHQ6IG9rXC4gNiBwYXNzZWQ7IDAgZmFpbGVkOyAwIGlnbm9yZWQ7L3UKICAgICAgICA6IC90ZXN0IHJlc3VsdDogb2tcLiAxIHBhc3NlZDsgMCBmYWlsZWQ7IDAgaWdub3JlZDsvdSwKICAgICk7CiAgICBhc3NlcnQuZXF1YWwodGV4dChgJHtwaGFzZX0uc3RkZXJyYCksICIiKTsKICAgIGFzc2VydC5kZWVwRXF1YWwodGV4dChgJHtwaGFzZX0uYXJndi5udWxgKS5zcGxpdCgiXDAiKSwgWwogICAgICBtZXRhZGF0YS50ZXN0QmluYXJ5LnBhdGgsCiAgICAgIHBoYXNlID09PSAicHJvZHVjZXIiID8gInZpcnR1YWxfdHM6OnNjb3BlOjpnbG9iYWxzOjppbnN0YW5jZTo6dGVzdHM6OiIgOiBuYXRpdmVMYXcsCiAgICAgIC4uLihwaGFzZSA9PT0gIm5hdGl2ZSIgPyBbIi0tZXhhY3QiXSA6IFtdKSwKICAgICAgIi0tbm9jYXB0dXJlIiwKICAgICAgIi0tdGVzdC10aHJlYWRzPTEiLAogICAgICAiIiwKICAgIF0pOwogIH0KICBjb25zdCBhY3R1YWwgPSByZWFkKCJuYXRpdmUvbm9ybWFsLWJhdGNoLXJlc3VsdHMuanNvbiIpOwogIGFzc2VydC5lcXVhbChhY3R1YWwubGVuZ3RoLCA5KTsKICBhc3NlcnQuZXF1YWwoZXhwZWN0ZWQubGVuZ3RoLCA5KTsKICBjb25zdCBwYWNrZXRzID0gZnMKICAgIC5yZWFkZGlyU3luYyhwYXRoLmpvaW4ocm9vdCwgIm5hdGl2ZSIpKQogICAgLmZpbHRlcigobmFtZSkgPT4gbmFtZS5lbmRzV2l0aCgiLW5hdGl2ZS1jbGkuanNvbiIpKQogICAgLnNvcnQoKGEsIGIpID0+IGEubG9jYWxlQ29tcGFyZShiKSk7CiAgYXNzZXJ0LmRlZXBFcXVhbCgKICAgIGZzLnJlYWRkaXJTeW5jKHBhdGguam9pbihyb290LCAibmF0aXZlIikpLnNvcnQoKGEsIGIpID0+IGEubG9jYWxlQ29tcGFyZShiKSksCiAgICBbLi4ucGFja2V0cywgIm5vcm1hbC1iYXRjaC1yZXN1bHRzLmpzb24iXS5zb3J0KChhLCBiKSA9PiBhLmxvY2FsZUNvbXBhcmUoYikpLAogICk7CiAgYXNzZXJ0LmRlZXBFcXVhbCgKICAgIGZzLnJlYWRkaXJTeW5jKHBhdGguam9pbihyb290LCAicHJvZHVjZXIiKSkuc29ydCgoYSwgYikgPT4gYS5sb2NhbGVDb21wYXJlKGIpKSwKICAgIFsicHJvZHVjZXItc2NvcGVzLWZhbHNlLmpzb24iLCAicHJvZHVjZXItc2NvcGVzLXRydWUuanNvbiJdLAogICk7CiAgY29uc3Qgb3duZXJTb3VyY2UgPSB0ZXh0KAogICAgInNvdXJjZS9jcmF0ZXMvdml6ZV9jYW5vbi9zcmMvdmlydHVhbF90cy9zY29wZS9nbG9iYWxzL2luc3RhbmNlL3Rlc3RzL2xleGljYWxfc2NvcGUucnMiLAogICk7CiAgY29uc3QgdGVtcGxhdGUgPSAvY29uc3QgVEVNUExBVEU6ICZzdHIgPSByIyIoW1xzXFNdKz8pIiM7L3UuZXhlYyhvd25lclNvdXJjZSlbMV07CiAgY29uc3Qgb3JpZ2luYWxTb3VyY2UgPSB0ZXh0KAogICAgInNvdXJjZS9jcmF0ZXMvdml6ZV9jYW5vbi9zcmMvdmlydHVhbF90cy9zY29wZS9nbG9iYWxzL2luc3RhbmNlL3Rlc3RzLnJzIiwKICApOwogIGNvbnN0IHNjcmlwdCA9IEpTT04ucGFyc2UoL2NvbnN0IFNDUklQVDogJnN0ciA9ICgiLioiKTsvdS5leGVjKG9yaWdpbmFsU291cmNlKVsxXSk7CiAgZm9yIChjb25zdCBzdHJpY3Qgb2YgW2ZhbHNlLCB0cnVlXSkgewogICAgY29uc3QgcHJvZHVjZXIgPSByZWFkKGBwcm9kdWNlci9wcm9kdWNlci1zY29wZXMtJHtzdHJpY3R9Lmpzb25gKTsKICAgIGFzc2VydC5lcXVhbChwcm9kdWNlci5zdHJpY3RJbnN0YW5jZUdsb2JhbHMsIHN0cmljdCk7CiAgICBhc3NlcnQuZXF1YWwocHJvZHVjZXIudGVtcGxhdGUsIHRlbXBsYXRlKTsKICAgIGFzc2VydC5lcXVhbChwcm9kdWNlci5zY3JpcHQsIHNjcmlwdCk7CiAgICBhc3NlcnQuZXF1YWwocHJvZHVjZXIudGVtcGxhdGVPZmZzZXQsIDEwMDApOwogICAgYXNzZXJ0Lm9rKHByb2R1Y2VyLmNvbXBsZXRlU3VtbWFyeS5sZW5ndGggPiAwKTsKICAgIGFzc2VydC5vayhwcm9kdWNlci5leHByZXNzaW9ucy5sZW5ndGggPiAwICYmIHByb2R1Y2VyLnNjb3Blcy5sZW5ndGggPiAwKTsKICB9CiAgYXNzZXJ0LmRlZXBFcXVhbCgKICAgIHBhY2tldHMsCiAgICBjYXNlcy5tYXAoKF8sIGkpID0+IGAke1N0cmluZyhpKS5wYWRTdGFydCgzLCAiMCIpfS1uYXRpdmUtY2xpLmpzb25gKSwKICApOwogIGZvciAobGV0IGkgPSAwOyBpIDwgY2FzZXMubGVuZ3RoOyBpKyspIHsKICAgIGNvbnN0IFtuYW1lLCBzb3VyY2VGaWxlLCBzdHJpY3RdID0gY2FzZXNbaV07CiAgICBjb25zdCBvYnNlcnZhdGlvbiA9IGFjdHVhbFtpXTsKICAgIGNvbnN0IHBhY2tldCA9IHJlYWQoYG5hdGl2ZS8ke3BhY2tldHNbaV19YCk7CiAgICBhc3NlcnQuZXF1YWwob2JzZXJ2YXRpb24uY2FzZSwgbmFtZSk7CiAgICBhc3NlcnQuZXF1YWwoZXhwZWN0ZWRbaV0uY2FzZSwgbmFtZSk7CiAgICBhc3NlcnQuZXF1YWwob2JzZXJ2YXRpb24uc3RyaWN0SW5zdGFuY2VHbG9iYWxzLCBzdHJpY3QpOwogICAgYXNzZXJ0LmRlZXBFcXVhbChvYnNlcnZhdGlvbi5kaWFnbm9zdGljcywgZXhwZWN0ZWRbaV0uZGlhZ25vc3RpY3MpOwogICAgYXNzZXJ0LmVxdWFsKG9ic2VydmF0aW9uLnN1Y2Nlc3MsIGV4cGVjdGVkW2ldLnN1Y2Nlc3MpOwogICAgYXNzZXJ0LmVxdWFsKG9ic2VydmF0aW9uLmV4aXRDb2RlLCBleHBlY3RlZFtpXS5leGl0Q29kZSk7CiAgICBjb25zdCBpbnB1dHMgPSBbCiAgICAgIHsgZmlsZTogInNyYy9QYW5lbC52dWUiLCBzb3VyY2U6IHRleHQoImNvcnB1cy9QYW5lbC52dWUudHh0IikgfSwKICAgICAgeyBmaWxlOiAic3JjL0FwcC52dWUiLCBzb3VyY2U6IHRleHQoYGNvcnB1cy8ke3NvdXJjZUZpbGV9YCkgfSwKICAgICAgeyBmaWxlOiAidHNjb25maWcuanNvbiIsIHNvdXJjZTogdGV4dCgiY29ycHVzL2Nhc2UudHNjb25maWcuanNvbi50eHQiKSB9LAogICAgXTsKICAgIGFzc2VydC5kZWVwRXF1YWwob2JzZXJ2YXRpb24uaW5wdXRzLCBpbnB1dHMpOwogICAgYXNzZXJ0LmVxdWFsKHBhY2tldC5wcm9qZWN0Um9vdCwgb2JzZXJ2YXRpb24ucHJvamVjdFJvb3QpOwogICAgYXNzZXJ0Lm9rKHBhdGguaXNBYnNvbHV0ZShwYWNrZXQucHJvamVjdFJvb3QpICYmIHBhdGguaXNBYnNvbHV0ZShwYWNrZXQudmlydHVhbFJvb3QpKTsKICAgIGNvbnN0IHZ1ZVBhdGggPSBvYnNlcnZhdGlvbi52dWVNYW5pZmVzdFBhdGg7CiAgICBhc3NlcnQuZXF1YWwodnVlUGF0aCwgbWV0YWRhdGEudnVlTWFuaWZlc3QucGF0aCk7CiAgICBhc3NlcnQuZXF1YWwoQnVmZmVyLmJ5dGVMZW5ndGgob2JzZXJ2YXRpb24udnVlTWFuaWZlc3RCeXRlcyksIG1ldGFkYXRhLnZ1ZU1hbmlmZXN0LmJ5dGVMZW5ndGgpOwogICAgYXNzZXJ0LmVxdWFsKGRpZ2VzdChvYnNlcnZhdGlvbi52dWVNYW5pZmVzdEJ5dGVzKSwgbWV0YWRhdGEudnVlTWFuaWZlc3Quc2hhMjU2KTsKICAgIGFzc2VydC5lcXVhbChmcy5yZWFscGF0aFN5bmModnVlUGF0aCksIHZ1ZVBhdGgpOwogICAgYXNzZXJ0LmVxdWFsKGZzLnJlYWRGaWxlU3luYyh2dWVQYXRoLCAidXRmOCIpLCBvYnNlcnZhdGlvbi52dWVNYW5pZmVzdEJ5dGVzKTsKICAgIGFzc2VydC5lcXVhbChKU09OLnBhcnNlKG9ic2VydmF0aW9uLnZ1ZU1hbmlmZXN0Qnl0ZXMpLm5hbWUsICJ2dWUiKTsKICAgIGFzc2VydC5lcXVhbChvYnNlcnZhdGlvbi52dWVNYW5pZmVzdFBhdGgsIGFjdHVhbFswXS52dWVNYW5pZmVzdFBhdGgpOwogICAgYXNzZXJ0LmVxdWFsKG9ic2VydmF0aW9uLnZ1ZU1hbmlmZXN0Qnl0ZXMsIGFjdHVhbFswXS52dWVNYW5pZmVzdEJ5dGVzKTsKICAgIGFzc2VydC5lcXVhbChwYWNrZXQubmF0aXZlQmluYXJ5LCBtZXRhZGF0YS5uYXRpdmUucGF0aCk7CiAgICBhc3NlcnQuZXF1YWwoZnMucmVhbHBhdGhTeW5jKG9ic2VydmF0aW9uLm5hdGl2ZUJpbmFyeSksIG1ldGFkYXRhLm5hdGl2ZS5wYXRoKTsKICAgIGFzc2VydC5lcXVhbChwYWNrZXQubmF0aXZlU2hhMjU2LCBtZXRhZGF0YS5uYXRpdmUuc2hhMjU2KTsKICAgIGFzc2VydC5lcXVhbChvYnNlcnZhdGlvbi5uYXRpdmVTaGEyNTYsIG1ldGFkYXRhLm5hdGl2ZS5zaGEyNTYpOwogICAgYXNzZXJ0LmVxdWFsKHBhY2tldC5yb3V0ZSwgIm5hdGl2ZS1jbGkiKTsKICAgIGFzc2VydC5lcXVhbChwYWNrZXQuY29tcGxldGlvbiwgIlJFQVBFRCIpOwogICAgYXNzZXJ0LmVxdWFsKHBhY2tldC5uYXRpdmVQaWQsIG51bGwpOwogICAgYXNzZXJ0LmVxdWFsKHBhY2tldC5hY3R1YWxDd2QsIHBhY2tldC52aXJ0dWFsUm9vdCk7CiAgICBhc3NlcnQuZXF1YWwocGFja2V0LnJlcXVlc3RlZENvbmZpZ1BhdGgsIHBhdGguam9pbihwYWNrZXQudmlydHVhbFJvb3QsICJ0c2NvbmZpZy5qc29uIikpOwogICAgYXNzZXJ0LmVxdWFsKHBhY2tldC5hdXRob3JlZENvbmZpZ1BhdGgsIHBhdGguam9pbihwYWNrZXQucHJvamVjdFJvb3QsICJ0c2NvbmZpZy5qc29uIikpOwogICAgYXNzZXJ0LmVxdWFsKHBhY2tldC5hdXRob3JlZENvbmZpZ0J5dGVzLCBpbnB1dHNbMl0uc291cmNlKTsKICAgIGFzc2VydC5kZWVwRXF1YWwocGFja2V0LmFjdHVhbEFyZ3MsIFsKICAgICAgIi0tY2hlY2tlcnMiLAogICAgICAiMSIsCiAgICAgICItLXByZXR0eSIsCiAgICAgICJmYWxzZSIsCiAgICAgICItLXByb2plY3QiLAogICAgICBwYWNrZXQucmVxdWVzdGVkQ29uZmlnUGF0aCwKICAgIF0pOwogICAgY29uc3QgY29uZmlnID0gSlNPTi5wYXJzZShwYWNrZXQucmVxdWVzdGVkQ29uZmlnQnl0ZXMpOwogICAgYXNzZXJ0LmRlZXBFcXVhbChjb25maWcsIHsKICAgICAgY29tcGlsZXJPcHRpb25zOiB7CiAgICAgICAgLi4uSlNPTi5wYXJzZShpbnB1dHNbMl0uc291cmNlKS5jb21waWxlck9wdGlvbnMsCiAgICAgICAgYWxsb3dJbXBvcnRpbmdUc0V4dGVuc2lvbnM6IHRydWUsCiAgICAgICAgbm9VbmNoZWNrZWRTaWRlRWZmZWN0SW1wb3J0czogZmFsc2UsCiAgICAgIH0sCiAgICAgIGV4Y2x1ZGU6IFtdLAogICAgICBpbmNsdWRlOiBbCiAgICAgICAgIl9fdml6ZV9oZWxwZXJzLmQudHMiLAogICAgICAgICJfX3ZpemVfdnVlX21vZHVsZXMuZC50cyIsCiAgICAgICAgInNyYy9BcHAudnVlLnRzIiwKICAgICAgICAic3JjL1BhbmVsLnZ1ZS50cyIsCiAgICAgIF0sCiAgICB9KTsKICAgIGFzc2VydC5lcXVhbChwYWNrZXQuZXhpdENvZGUsIG9ic2VydmF0aW9uLmV4aXRDb2RlKTsKICAgIGFzc2VydC5lcXVhbChwYWNrZXQuc3VjY2Vzcywgb2JzZXJ2YXRpb24uc3VjY2Vzcyk7CiAgICBhc3NlcnQuZXF1YWwocGFja2V0LnN0YXR1cywgYGV4aXQgc3RhdHVzOiAke3BhY2tldC5leGl0Q29kZX1gKTsKICAgIGFzc2VydC5kZWVwRXF1YWwoYnl0ZXMocGFja2V0LnJhd1N0ZGVyckJ5dGVzKSwgQnVmZmVyLmFsbG9jKDApKTsKICAgIGNvbnN0IHN0ZG91dCA9IHV0ZjgoYnl0ZXMocGFja2V0LnJhd1N0ZG91dEJ5dGVzKSk7CiAgICBhc3NlcnQuZXF1YWwoc3Rkb3V0Lmxlbmd0aCA9PT0gMCwgcGFja2V0LmV4aXRDb2RlID09PSAwKTsKICAgIGFzc2VydC5kZWVwRXF1YWwoCiAgICAgIFsuLi5zdGRvdXQubWF0Y2hBbGwoL14uKlwoXGQrLFxkK1wpOiBlcnJvciBUUyhcZCspOi9nbXUpXS5tYXAoKG1hdGNoKSA9PiBOdW1iZXIobWF0Y2hbMV0pKSwKICAgICAgb2JzZXJ2YXRpb24uZGlhZ25vc3RpY3MubWFwKChkaWFnbm9zdGljKSA9PiBkaWFnbm9zdGljLmNvZGUpLAogICAgKTsKICAgIGFzc2VydC5kZWVwRXF1YWwoCiAgICAgIHBhY2tldC5nZW5lcmF0ZWRGaWxlcy5tYXAoKGZpbGUpID0+IGZpbGUub3JpZ2luYWwpLAogICAgICBbInNyYy9BcHAudnVlIiwgInNyYy9QYW5lbC52dWUiXS5tYXAoKGZpbGUpID0+IHBhdGguam9pbihwYWNrZXQucHJvamVjdFJvb3QsIGZpbGUpKSwKICAgICk7CiAgICBmb3IgKGNvbnN0IGdlbmVyYXRlZCBvZiBwYWNrZXQuZ2VuZXJhdGVkRmlsZXMpIHsKICAgICAgY29uc3QgaW5wdXQgPSBpbnB1dHMuZmluZCgKICAgICAgICAoZW50cnkpID0+IHBhdGguam9pbihwYWNrZXQucHJvamVjdFJvb3QsIGVudHJ5LmZpbGUpID09PSBnZW5lcmF0ZWQub3JpZ2luYWwsCiAgICAgICk7CiAgICAgIGFzc2VydC5lcXVhbChnZW5lcmF0ZWQuYXV0aG9yZWRTb3VyY2UsIGlucHV0LnNvdXJjZSk7CiAgICAgIGFzc2VydC5lcXVhbChnZW5lcmF0ZWQudmlydHVhbCwgcGF0aC5qb2luKHBhY2tldC52aXJ0dWFsUm9vdCwgYCR7aW5wdXQuZmlsZX0udHNgKSk7CiAgICAgIGFzc2VydC5vayhjb25maWcuaW5jbHVkZS5pbmNsdWRlcyhgJHtpbnB1dC5maWxlfS50c2ApKTsKICAgICAgYXNzZXJ0LmVxdWFsKHR5cGVvZiBnZW5lcmF0ZWQuY29kZSwgInN0cmluZyIpOwogICAgICBhc3NlcnQub2soZ2VuZXJhdGVkLmNvZGUubGVuZ3RoID4gMCk7CiAgICAgIGNvbXBsZXRlTWFwKGdlbmVyYXRlZC5zb3VyY2VNYXAsIGdlbmVyYXRlZC5jb2RlLCBnZW5lcmF0ZWQuYXV0aG9yZWRTb3VyY2UpOwogICAgfQogICAgYXNzZXJ0LmRlZXBFcXVhbChwYWNrZXQudW5vYnNlcnZlZCwgWwogICAgICAibmF0aXZlIFBJRCIsCiAgICAgICJuYXRpdmUgZW5naW5lIG5vcm1hbGl6ZWQgb3B0aW9ucyIsCiAgICAgICJuYXRpdmUgZW5naW5lIGxvYWRlZCBzb3VyY2UtZmlsZSB2ZWN0b3IiLAogICAgXSk7CiAgfQogIHJldHVybiB7CiAgICBzb3VyY2U6IG1ldGFkYXRhLnNvdXJjZSwKICAgIG5hdGl2ZUNhc2VzOiA5LAogICAgcHJvZHVjZXJMYXdzOiA2LAogICAgaWdub3JlZDogMCwKICAgIGFwaUxzcENyZWRpdDogZmFsc2UsCiAgICBvcmlnaW5hbDQwMENyZWRpdDogZmFsc2UsCiAgICBwZXJmb3JtYW5jZUNyZWRpdDogZmFsc2UsCiAgfTsKfQoKaWYgKAogIHByb2Nlc3MuYXJndlsxXSAmJgogIGZzLmV4aXN0c1N5bmMocHJvY2Vzcy5hcmd2WzFdKSAmJgogIGZzLnJlYWxwYXRoU3luYyhwcm9jZXNzLmFyZ3ZbMV0pID09PSBmcy5yZWFscGF0aFN5bmMobmV3IFVSTChpbXBvcnQubWV0YS51cmwpKQopCiAgZnMud3JpdGVGaWxlU3luYygKICAgIHBhdGguam9pbihwcm9jZXNzLmFyZ3ZbMl0sICJhY2NlcHRhbmNlLmpzb24iKSwKICAgIGAke0pTT04uc3RyaW5naWZ5KHZhbGlkYXRlTGV4aWNhbERvbGxhclBhY2tldHMocHJvY2Vzcy5hcmd2WzJdKSwgbnVsbCwgMil9XG5gLAogICk7Cg==",
+      "importMetaOccurrences": 1
+    },
+    {
+      "file": "tools/support/compat/github/native-lexical-composition-custody.mjs",
+      "source": "8304eb7a08a96e58ca0a318cc2fa6ffc6e9acd75",
+      "mode": "100644",
+      "blob": "cfe37ea0f089df1db63e705f48c148d4e7e10292",
+      "bytes": 11775,
+      "sha256": "21fdad39f80a774d840db56205732527355e8d65cc678fd6e6ce97e0aac1b9fa",
+      "rawBase64": "aW1wb3J0IGFzc2VydCBmcm9tICJub2RlOmFzc2VydC9zdHJpY3QiOwppbXBvcnQgeyBjcmVhdGVIYXNoIH0gZnJvbSAibm9kZTpjcnlwdG8iOwppbXBvcnQgZnMgZnJvbSAibm9kZTpmcyI7Cgpjb25zdCByb290ID0gbmV3IFVSTCgiLi4vLi4vLi4vLi4vIiwgaW1wb3J0Lm1ldGEudXJsKTsKY29uc3Qgc3VwcG9ydCA9ICJ0ZXN0cy9wZXJmb3JtYW5jZS9zdXBwb3J0LyI7CmNvbnN0IG5hbWVzID0gWwogICJ3YXJtLXR5cGUtYmFja2VkLW5hdGl2ZS1sZXhpY2FsLWNvbXBvc2l0aW9uLW1hbmlmZXN0Lmpzb24iLAogICJ3YXJtLXR5cGUtYmFja2VkLW5hdGl2ZS1vd25lZC1pbWFnZS1tYW5pZmVzdC5qc29uIiwKICAid2FybS10eXBlLWJhY2tlZC1uYXRpdmUtdGVybWluYWwtbWFuaWZlc3QuanNvbiIsCiAgIndhcm0tdHlwZS1iYWNrZWQtbmF0aXZlLXRlcm1pbmFsLW1lbWJlcnMtMS5qc29uIiwKICAid2FybS10eXBlLWJhY2tlZC1uYXRpdmUtdGVybWluYWwtbWVtYmVycy0yLmpzb24iLApdOwpjb25zdCBoYXNoID0gKHZhbHVlKSA9PiBjcmVhdGVIYXNoKCJzaGEyNTYiKS51cGRhdGUoSlNPTi5zdHJpbmdpZnkodmFsdWUpKS5kaWdlc3QoImhleCIpOwpjb25zdCByZWFkID0gKG5hbWUpID0+IEpTT04ucGFyc2UoZnMucmVhZEZpbGVTeW5jKG5ldyBVUkwoc3VwcG9ydCArIG5hbWUsIHJvb3QpLCAidXRmOCIpKTsKY29uc3QgW2NvbXBvc2l0aW9uLCBzZGssIG9yaWdpbmFsLCBmaXJzdCwgc2Vjb25kXSA9IG5hbWVzLm1hcChyZWFkKTsKb3JpZ2luYWwuZmlsZXMgPSBbLi4uZmlyc3QsIC4uLnNlY29uZF07CmFzc2VydC5lcXVhbChoYXNoKGNvbXBvc2l0aW9uKSwgIjYwNTIyNmRhOWE3MDE2NTE1OTAyNjkyZTBhMjFhNGYzZmQ5ODNiYjgzODFhZmY4ZGUzMTc5NWI1YWNlNzQ2YjgiKTsKYXNzZXJ0LmVxdWFsKGhhc2goc2RrKSwgY29tcG9zaXRpb24uc2RrTWFuaWZlc3RTSEEyNTYpOwphc3NlcnQuZXF1YWwoaGFzaChvcmlnaW5hbCksIHNkay5vcmlnaW5hbE1hbmlmZXN0U0hBMjU2KTsKY29uc3QgZXhwZWN0ZWQgPSBuZXcgTWFwKG9yaWdpbmFsLmZpbGVzLm1hcCgoW2ZpbGUsICwgYWZ0ZXJdKSA9PiBbZmlsZSwgYWZ0ZXJdKSk7CmZvciAoY29uc3QgW2ZpbGUsICwgYWZ0ZXJdIG9mIHNkay5zdWNjZXNzb3JCb2RpZXMpIGV4cGVjdGVkLnNldChmaWxlLCBhZnRlcik7CmFzc2VydC5lcXVhbChleHBlY3RlZC5zaXplLCAxMjEpOwpmb3IgKGNvbnN0IFtmaWxlLCBzZGtBZnRlciwgLCBhZnRlcl0gb2YgY29tcG9zaXRpb24uc291cmNlU3VjY2Vzc29ycykgewogIGFzc2VydC5lcXVhbChleHBlY3RlZC5nZXQoZmlsZSksIHNka0FmdGVyKTsKICBleHBlY3RlZC5zZXQoZmlsZSwgYWZ0ZXIpOwp9CmZvciAoY29uc3QgW2ZpbGUsIGJvZHldIG9mIG9yaWdpbmFsLnByZXNlcnZlZEJvZGllcykgZXhwZWN0ZWQuc2V0KGZpbGUsIGJvZHkpOwpmb3IgKGNvbnN0IFtmaWxlLCAsIGFmdGVyXSBvZiBvcmlnaW5hbC5xdWFsaWZpZWRIYXJuZXNzQm9kaWVzKSBleHBlY3RlZC5zZXQoZmlsZSwgYWZ0ZXIpOwpmb3IgKGNvbnN0IFtmaWxlLCAsIGFmdGVyXSBvZiBzZGsucXVhbGlmaWVkSGFybmVzc0JvZGllcykgZXhwZWN0ZWQuc2V0KGZpbGUsIGFmdGVyKTsKZm9yIChjb25zdCBbZmlsZSwgcHJldmlvdXMsIGFmdGVyXSBvZiBjb21wb3NpdGlvbi5xdWFsaWZpZWRIYXJuZXNzU3VjY2Vzc29ycykgewogIGFzc2VydC5lcXVhbChleHBlY3RlZC5nZXQoZmlsZSksIHByZXZpb3VzKTsKICBleHBlY3RlZC5zZXQoZmlsZSwgYWZ0ZXIpOwp9CmZvciAoY29uc3QgW2ZpbGUsICwgYWZ0ZXJdIG9mIFsuLi5zZGsuY29ycHVzQm9kaWVzLCAuLi5jb21wb3NpdGlvbi5oaXN0b3JpY2FsUmVwbGF5Qm9kaWVzXSkKICBleHBlY3RlZC5zZXQoZmlsZSwgYWZ0ZXIpOwpmb3IgKGNvbnN0IFtmaWxlLCAsIGFmdGVyXSBvZiBjb21wb3NpdGlvbi5pbmNvbWluZ1ByZXNlcnZlZFN1Y2Nlc3NvcnMpIGV4cGVjdGVkLnNldChmaWxlLCBhZnRlcik7Cgpjb25zdCByYXdIYXNoID0gKGJvZHkpID0+IGNyZWF0ZUhhc2goInNoYTI1NiIpLnVwZGF0ZShib2R5KS5kaWdlc3QoImhleCIpOwpjb25zdCBzb3VyY2VCeXRlcyA9IChmaWxlKSA9PiBmcy5yZWFkRmlsZVN5bmMobmV3IFVSTChmaWxlLCByb290KSk7CmNvbnN0IGZpbmFsQ2FsbGVyID0gc3VwcG9ydCArICJ3YXJtLXR5cGUtYmFja2VkLW5hdGl2ZS10ZXJtaW5hbC1maW5hbC50cyI7CmNvbnN0IGZpbmFsSGVscGVyID0gc3VwcG9ydCArICJ3YXJtLXR5cGUtYmFja2VkLW5hdGl2ZS1wcm94eS1maW5hbC1ib2R5LnRzIjsKY29uc3QgZmluYWxNZXRhZGF0YSA9IHN1cHBvcnQgKyAid2FybS10eXBlLWJhY2tlZC1uYXRpdmUtcHJveHktZmluYWwtYm9keS1tYW5pZmVzdC5qc29uIjsKY29uc3QgZmluYWxDYXBzdWxlID0gInRlc3RzL3Rvb2xpbmcvc3VwcG9ydC9uYXRpdmUtcHJveHktb3JpZ2luYWwtZmluYWwuanNvbiI7CmNvbnN0IGZpeHR1cmVNZXRhZGF0YSA9IHN1cHBvcnQgKyAid2FybS10eXBlLWJhY2tlZC1uYXRpdmUtcHJveHktbWFuaWZlc3QuanNvbiI7CmNvbnN0IGZpeHR1cmVDb3JyZWN0aW9uID0gc3VwcG9ydCArICJ3YXJtLXR5cGUtYmFja2VkLW5hdGl2ZS1wcm94eS1jb3JyZWN0aW9uLmpzb24iOwpjb25zdCBmaW5hbERhdGFCb2RpZXMgPSBuZXcgTWFwKFsKICBbZmluYWxIZWxwZXIsICIxZDg4MDNmNDY2YTQ2ODUwOGI3OTRlMzJjYTY2NDU0M2JlYTUxOWYxODFiNjU4Y2M1NDJiMzhhYTUwMWFiZWZjIl0sCiAgW2ZpbmFsTWV0YWRhdGEsICI2YzJmNmQ2YTE0MzFlNTYyZTYwODc2MmJiMDE3ZWY3N2E1ZGM2NjdhMjQ0NTZkMjRhNzRmZTU5NjZjODcwZjI0Il0sCiAgW2ZpbmFsQ2Fwc3VsZSwgIjUxNjAxOWQyMzlkYzQxOWY5MGJjM2IxNGVlZjk5ZjQ2YjJjN2FiZGU1NTBhMDBkNDllM2FlY2Y1NDhmMThjMWUiXSwKICBbZml4dHVyZU1ldGFkYXRhLCAiMDBmYWVkMWQwNGI1ZDNkNzBmZjU0YjMyYmM5ZGMzMmJkYWQ2YzM2MjI5ZGYzZmVlOGZjM2QwYzQ4NjM4MTkzMyJdLAogIFtmaXh0dXJlQ29ycmVjdGlvbiwgIjE5ZTZjYmM1MjM2ODVlZDk5N2QyNDhkM2FlOTg3NWMwZjg0MjhkNDBhMzA0N2I1YTkwMDEzNmY1M2NkZDgxOTAiXSwKXSk7CmNvbnN0IGN1cnJlbnRGaXh0dXJlID0gSlNPTi5wYXJzZShzb3VyY2VCeXRlcyhmaXh0dXJlTWV0YWRhdGEpKTsKYXNzZXJ0LmVxdWFsKAogIGhhc2goY3VycmVudEZpeHR1cmUpLAogICJkOTBiNTEzNzBmMGVhYWE2ZTc0NTk0NzdkMDVkZDBkMjI1Y2Q4OGU5MWZlZDliYmViMTFlMDQwODNmMGUyNjgwIiwKKTsKYXNzZXJ0LmVxdWFsKGN1cnJlbnRGaXh0dXJlLmZpbGVzLmxlbmd0aCwgNyk7CmFzc2VydC5lcXVhbChuZXcgU2V0KGN1cnJlbnRGaXh0dXJlLmZpbGVzLm1hcCgoW2ZpbGVdKSA9PiBmaWxlKSkuc2l6ZSwgNyk7CmV4cG9ydCBjb25zdCBsZXhpY2FsRmluYWxTb3VyY2VQYXRocyA9IFsKICAuLi5maW5hbERhdGFCb2RpZXMua2V5cygpLAogIC4uLmN1cnJlbnRGaXh0dXJlLmZpbGVzLm1hcCgoW2ZpbGVdKSA9PiBmaWxlKSwKXTsKY29uc3QgcnVudGltZUhlbHBlcnMgPSBbCiAgIm5hdGl2ZS1sZXhpY2FsLWRvbGxhci5zaCIsCiAgIm5hdGl2ZS1sZXhpY2FsLWRvbGxhci1tZXRhZGF0YS5tanMiLAogICJuYXRpdmUtbGV4aWNhbC1kb2xsYXItcmVjZWlwdC5tanMiLAogICJuYXRpdmUtbGV4aWNhbC1jb21wb3NpdGlvbi1jdXN0b2R5Lm1qcyIsCl0ubWFwKChuYW1lKSA9PiAidG9vbHMvc3VwcG9ydC9jb21wYXQvZ2l0aHViLyIgKyBuYW1lKTsKCmZ1bmN0aW9uIG9uY2UoYm9keSwgYmVmb3JlLCBhZnRlciA9ICIiKSB7CiAgYXNzZXJ0LmVxdWFsKGJvZHkuc3BsaXQoYmVmb3JlKS5sZW5ndGgsIDIsICJ3aG9sZSBmaW5hbCBjYWxsZXIgaW52ZXJzZSBjbGF1c2UgbXVzdCBvY2N1ciBvbmNlIik7CiAgcmV0dXJuIGJvZHkucmVwbGFjZShiZWZvcmUsIGFmdGVyKTsKfQoKLyoqIFRoaXMgZmluaXRlIHNvdXJjZSBhZGFwdGVyIGdyYW50cyBubyBuYXRpdmUgb3IgcGVyZm9ybWFuY2UgcXVhbGlmaWNhdGlvbi4gKi8KZXhwb3J0IGZ1bmN0aW9uIHZhbGlkYXRlTGV4aWNhbEZpbmFsU291cmNlKGNvcGllZCwgcmVhZGVyID0gc291cmNlQnl0ZXMpIHsKICBhc3NlcnQuZXF1YWwobmV3IFNldChjb3BpZWQubWFwKCh7IGZpbGUgfSkgPT4gZmlsZSkpLnNpemUsIGNvcGllZC5sZW5ndGgpOwogIGNvbnN0IGJvZGllcyA9IG5ldyBNYXAoY29waWVkLm1hcCgoeyBmaWxlLCBzaGEyNTYgfSkgPT4gW2ZpbGUsIHNoYTI1Nl0pKTsKICBmb3IgKGNvbnN0IFtmaWxlLCBleHBlY3RlZEJvZHldIG9mIGZpbmFsRGF0YUJvZGllcykgewogICAgYXNzZXJ0LmVxdWFsKGJvZGllcy5nZXQoZmlsZSksIGV4cGVjdGVkQm9keSwgZmlsZSk7CiAgICBhc3NlcnQuZXF1YWwocmF3SGFzaChyZWFkZXIoZmlsZSkpLCBleHBlY3RlZEJvZHksIGZpbGUpOwogIH0KICBjb25zdCBtZXRhZGF0YSA9IEpTT04ucGFyc2UocmVhZGVyKGZpbmFsTWV0YWRhdGEpKTsKICBhc3NlcnQuZGVlcEVxdWFsKG1ldGFkYXRhLCB7CiAgICB2ZXJzaW9uOiAxLAogICAgYmVmb3JlU291cmNlOiAiZGQxODg1MTVmOGVjM2M1MTY2MmI0ZjRkNjlhZGNkMzljODZhMDkwNyIsCiAgICBwcmV2aW91c1NvdXJjZTogImUxN2MyN2QwNDUyMWNhMTQwOWZmYjY1YjdjNzAwZDQxN2ZjNjY3MzMiLAogICAgZmlsZTogZmluYWxDYWxsZXIsCiAgICBiZWZvcmVTSEEyNTY6IG51bGwsCiAgICBwcmV2aW91c0FmdGVyU0hBMjU2OiBleHBlY3RlZC5nZXQoZmluYWxDYWxsZXIpLAogICAgYWZ0ZXJTSEEyNTY6ICJmNWE2MDIwMmVjMWZmMWIxNDljYmIzMjBhYzNjOGY3MzgyZmY4NWEyYzlhMWM4Y2I1ZWJhZmVkODYzYmRjY2JjIiwKICB9KTsKICBjb25zdCB7IHJhd0Jhc2U2NCwgLi4uaWRlbnRpdHkgfSA9IEpTT04ucGFyc2UocmVhZGVyKGZpbmFsQ2Fwc3VsZSkpOwogIGFzc2VydC5kZWVwRXF1YWwoaWRlbnRpdHksIHsKICAgIHZlcnNpb246IDEsCiAgICBzb3VyY2U6IG1ldGFkYXRhLnByZXZpb3VzU291cmNlLAogICAgZmlsZTogZmluYWxDYWxsZXIsCiAgICBtb2RlOiAiMTAwNjQ0IiwKICAgIGJsb2I6ICIyMGFkMWNhYWFhZjNjZGVhNjNlZDc0MWE4MWFkMGRmZGI4ZTg1MzQ1IiwKICAgIGJ5dGVzOiAxMTQ0LAogICAgc2hhMjU2OiBtZXRhZGF0YS5wcmV2aW91c0FmdGVyU0hBMjU2LAogIH0pOwogIGFzc2VydC5lcXVhbCh0eXBlb2YgcmF3QmFzZTY0LCAic3RyaW5nIik7CiAgY29uc3Qgb3JpZ2luYWxCb2R5ID0gQnVmZmVyLmZyb20ocmF3QmFzZTY0LCAiYmFzZTY0Iik7CiAgYXNzZXJ0LmVxdWFsKG9yaWdpbmFsQm9keS50b1N0cmluZygiYmFzZTY0IiksIHJhd0Jhc2U2NCk7CiAgYXNzZXJ0LmVxdWFsKG9yaWdpbmFsQm9keS5sZW5ndGgsIGlkZW50aXR5LmJ5dGVzKTsKICBhc3NlcnQuZXF1YWwocmF3SGFzaChvcmlnaW5hbEJvZHkpLCBpZGVudGl0eS5zaGEyNTYpOwogIGFzc2VydC5lcXVhbCgKICAgIGNyZWF0ZUhhc2goInNoYTEiKS51cGRhdGUoYGJsb2IgJHtvcmlnaW5hbEJvZHkubGVuZ3RofVwwYCkudXBkYXRlKG9yaWdpbmFsQm9keSkuZGlnZXN0KCJoZXgiKSwKICAgIGlkZW50aXR5LmJsb2IsCiAgKTsKICBjb25zdCBjdXJyZW50ID0gcmVhZGVyKGZpbmFsQ2FsbGVyKTsKICBhc3NlcnQuZXF1YWwocmF3SGFzaChjdXJyZW50KSwgbWV0YWRhdGEuYWZ0ZXJTSEEyNTYpOwogIGFzc2VydC5lcXVhbChib2RpZXMuZ2V0KGZpbmFsQ2FsbGVyKSwgbWV0YWRhdGEuYWZ0ZXJTSEEyNTYpOwogIGxldCByZXN0b3JlZCA9IGN1cnJlbnQudG9TdHJpbmcoInV0ZjgiKTsKICByZXN0b3JlZCA9IG9uY2UoCiAgICByZXN0b3JlZCwKICAgICdpbXBvcnQgeyBxdWFsaWZ5TmF0aXZlUHJveHlIb3N0IH0gZnJvbSAiLi93YXJtLXR5cGUtYmFja2VkLW5hdGl2ZS1wcm94eS1ob3N0LnRzIjtcbicsCiAgKTsKICByZXN0b3JlZCA9IG9uY2UoCiAgICByZXN0b3JlZCwKICAgICdpbXBvcnQgeyBhc3NlcnROYXRpdmVQcm94eUZpbmFsRml4dHVyZVJlY2VpcHQgfSBmcm9tICIuL3dhcm0tdHlwZS1iYWNrZWQtbmF0aXZlLXByb3h5LWZpbmFsLWJvZHkudHMiO1xuJywKICApOwogIHJlc3RvcmVkID0gb25jZShyZXN0b3JlZCwgIiAgbmF0aXZlUHJveHlIb3N0PzogUmV0dXJuVHlwZTx0eXBlb2YgcXVhbGlmeU5hdGl2ZVByb3h5SG9zdD47XG4iKTsKICByZXN0b3JlZCA9IG9uY2UoCiAgICByZXN0b3JlZCwKICAgIGAgIGNvbnN0IGFsbG93ZWQgPSBuZXcgU2V0KHJldmlld2VkSG9zdFBhdGhzKTsKICBjb25zdCBmaXh0dXJlID0gcXVhbGlmeU5hdGl2ZVByb3h5SG9zdChiaW5kaW5nLnByb2R1Y3Rpb24sIGFsbG93ZWQsIChzaWRlLCBmaWxlKSA9PgogICAgZ2l0Qm9keURpZ2VzdChkcml2ZXJSb290LCBzaWRlID09PSAiYmVmb3JlIiA/IGJpbmRpbmcuYmFzZWxpbmUgOiBiaW5kaW5nLmhlYWQsIGZpbGUpLAogICk7CiAgYXNzZXJ0TmF0aXZlUHJveHlGaW5hbEZpeHR1cmVSZWNlaXB0KGZpeHR1cmUsIGJpbmRpbmcubmF0aXZlUHJveHlIb3N0KTsKICBmb3IgKGNvbnN0IGZpbGUgb2YgZml4dHVyZS5maWxlcykgYWxsb3dlZC5hZGQoZmlsZSk7CmAsCiAgKTsKICByZXN0b3JlZCA9IG9uY2UoCiAgICByZXN0b3JlZCwKICAgIGAgIGNvbnN0IHF1YWxpZmllZCA9IHF1YWxpZnlOYXRpdmVUZXJtaW5hbEhvc3QoYmluZGluZy5wcm9kdWN0aW9uLCBhbGxvd2VkLCAoc2lkZSwgZmlsZSkgPT4KICAgIGdpdEJvZHlEaWdlc3QoZHJpdmVyUm9vdCwgc2lkZSA9PT0gImJlZm9yZSIgPyBiaW5kaW5nLmJhc2VsaW5lIDogYmluZGluZy5oZWFkLCBmaWxlKSwKICApO2AsCiAgICBgICBjb25zdCBxdWFsaWZpZWQgPSBxdWFsaWZ5TmF0aXZlVGVybWluYWxIb3N0KAogICAgYmluZGluZy5wcm9kdWN0aW9uLAogICAgbmV3IFNldChyZXZpZXdlZEhvc3RQYXRocyksCiAgICAoc2lkZSwgZmlsZSkgPT4KICAgICAgZ2l0Qm9keURpZ2VzdChkcml2ZXJSb290LCBzaWRlID09PSAiYmVmb3JlIiA/IGJpbmRpbmcuYmFzZWxpbmUgOiBiaW5kaW5nLmhlYWQsIGZpbGUpLAogICk7YCwKICApOwogIGFzc2VydC5kZWVwRXF1YWwoQnVmZmVyLmZyb20ocmVzdG9yZWQpLCBvcmlnaW5hbEJvZHkpOwogIGNvbnN0IGZpeHR1cmUgPSBKU09OLnBhcnNlKHJlYWRlcihmaXh0dXJlTWV0YWRhdGEpKTsKICBjb25zdCBjb3JyZWN0aW9uID0gSlNPTi5wYXJzZShyZWFkZXIoZml4dHVyZUNvcnJlY3Rpb24pKTsKICBhc3NlcnQuZXF1YWwoaGFzaChmaXh0dXJlKSwgImQ5MGI1MTM3MGYwZWFhYTZlNzQ1OTQ3N2QwNWRkMGQyMjVjZDg4ZTkxZmVkOWJiZWIxMWUwNDA4M2YwZTI2ODAiKTsKICBhc3NlcnQuZXF1YWwoCiAgICBoYXNoKGNvcnJlY3Rpb24pLAogICAgImE1YmE0NDMzODYwZWEwYzNjMmNkNTNjNGY1ZWIwMGNjNWQ0YzA3OWJhNjJiMjIxYzMzYTU1ODE2MjBkMGI0MmIiLAogICk7CiAgYXNzZXJ0LmVxdWFsKGZpeHR1cmUuZmlsZXMuZmluZCgoW2ZpbGVdKSA9PiBmaWxlID09PSBjb3JyZWN0aW9uLmZpbGUpPy5bMl0sIGNvcnJlY3Rpb24uYmVmb3JlKTsKICBjb25zdCB2YXJpYW50cyA9IFsKICAgIHsKICAgICAgcmV2aWV3ZWRTb3VyY2U6IGZpeHR1cmUucmV2aWV3ZWRTb3VyY2UsCiAgICAgIHJldmlld2VkU291cmNlVHJlZTogZml4dHVyZS5yZXZpZXdlZFNvdXJjZVRyZWUsCiAgICAgIGZpbGVzOiBmaXh0dXJlLmZpbGVzLAogICAgfSwKICAgIHsKICAgICAgcmV2aWV3ZWRTb3VyY2U6IGNvcnJlY3Rpb24ucmV2aWV3ZWRTb3VyY2UsCiAgICAgIHJldmlld2VkU291cmNlVHJlZTogY29ycmVjdGlvbi5yZXZpZXdlZFNvdXJjZVRyZWUsCiAgICAgIGZpbGVzOiBmaXh0dXJlLmZpbGVzLm1hcCgoW2ZpbGUsIGJlZm9yZSwgYWZ0ZXJdKSA9PiBbCiAgICAgICAgZmlsZSwKICAgICAgICBiZWZvcmUsCiAgICAgICAgZmlsZSA9PT0gY29ycmVjdGlvbi5maWxlID8gY29ycmVjdGlvbi5hZnRlciA6IGFmdGVyLAogICAgICBdKSwKICAgIH0sCiAgXTsKICBjb25zdCBzZWxlY3RlZCA9IHZhcmlhbnRzLmZpbmQoKHsgZmlsZXMgfSkgPT4KICAgIGZpbGVzLmV2ZXJ5KChbZmlsZSwgLCBhZnRlcl0pID0+IGJvZGllcy5nZXQoZmlsZSkgPT09IGFmdGVyKSwKICApOwogIGFzc2VydChzZWxlY3RlZCwgIm9uZSBjb21wbGV0ZSByZXZpZXdlZCBzZXZlbi1ib2R5IGZpeHR1cmUgdmFyaWFudCBpcyByZXF1aXJlZCIpOwogIGZvciAoY29uc3QgW2ZpbGUsICwgYm9keV0gb2Ygc2VsZWN0ZWQuZmlsZXMpIGFzc2VydC5lcXVhbChyYXdIYXNoKHJlYWRlcihmaWxlKSksIGJvZHksIGZpbGUpOwogIHJldHVybiB7CiAgICBhdXRob3JpdHk6ICJjb21wbGV0ZS1yZXZpZXdlZC1uYXRpdmUtbGV4aWNhbC1maW5hbC1jYWxsZXItc291cmNlIiwKICAgIGZpbGU6IGZpbmFsQ2FsbGVyLAogICAgcHJldmlvdXNTb3VyY2U6IG1ldGFkYXRhLnByZXZpb3VzU291cmNlLAogICAgYmVmb3JlU0hBMjU2OiBtZXRhZGF0YS5iZWZvcmVTSEEyNTYsCiAgICBwcmV2aW91c0FmdGVyU0hBMjU2OiBtZXRhZGF0YS5wcmV2aW91c0FmdGVyU0hBMjU2LAogICAgYWZ0ZXJTSEEyNTY6IG1ldGFkYXRhLmFmdGVyU0hBMjU2LAogICAgY29tcGxldGVDYWxsZXJCb2RpZXM6IDEsCiAgICBjb21wbGV0ZUZpeHR1cmVCb2RpZXM6IDcsCiAgICBmaXh0dXJlUmV2aWV3ZWRTb3VyY2U6IHNlbGVjdGVkLnJldmlld2VkU291cmNlLAogICAgZml4dHVyZVJldmlld2VkU291cmNlVHJlZTogc2VsZWN0ZWQucmV2aWV3ZWRTb3VyY2VUcmVlLAogICAgcnVudGltZUNyZWRpdDogZmFsc2UsCiAgICBwZXJmb3JtYW5jZUNyZWRpdDogZmFsc2UsCiAgfTsKfQoKZXhwb3J0IGNvbnN0IGxleGljYWxDb21wb3NpdGlvblNvdXJjZVBhdGhzID0gWwogIC4uLm5hbWVzLm1hcCgobmFtZSkgPT4gc3VwcG9ydCArIG5hbWUpLAogIC4uLmV4cGVjdGVkLmtleXMoKSwKICAuLi5sZXhpY2FsRmluYWxTb3VyY2VQYXRocywKXTsKCmV4cG9ydCBjb25zdCBsZXhpY2FsU291cmNlUGF0aHMgPSAobWFuaWZlc3QsIGhlbHBlcnMpID0+IFsKICAuLi5uZXcgU2V0KFsKICAgIC4uLmhlbHBlcnMsCiAgICAuLi5tYW5pZmVzdC5maWxlcy5tYXAoKFtmaWxlXSkgPT4gZmlsZSksCiAgICAuLi5tYW5pZmVzdC5jb3JwdXNCb2RpZXMubWFwKChbZmlsZV0pID0+IGZpbGUpLAogICAgInRlc3RzL3BlcmZvcm1hbmNlL3N1cHBvcnQvd2FybS10eXBlLWJhY2tlZC1sZXhpY2FsLWRvbGxhci1tYW5pZmVzdC5qc29uIiwKICAgICJDYXJnby50b21sIiwKICAgICJDYXJnby5sb2NrIiwKICAgICJydXN0LXRvb2xjaGFpbi50b21sIiwKICAgICJjcmF0ZXMvdml6ZV9jYW5vbi9DYXJnby50b21sIiwKICAgICJjcmF0ZXMvdml6ZV9jYW5vbi9zcmMvbGliLnJzIiwKICAgIC4uLmxleGljYWxDb21wb3NpdGlvblNvdXJjZVBhdGhzLAogICAgLi4ubWFuaWZlc3QucHJlc2VydmVkQm9kaWVzLm1hcCgoW2ZpbGVdKSA9PiBmaWxlKSwKICBdKSwKXTsKCi8qKiBPcmlnaW5hbCBsZXhpY2FsIGF1dGhvcml0eSBpcyB1bmNoYW5nZWQ7IG9ubHkgdGhlIHdob2xlIGZpbml0ZSBTREsgY29tcG9zaXRpb24gaXMgYWRkaXRpdmUuICovCmV4cG9ydCBmdW5jdGlvbiB2YWxpZGF0ZUxleGljYWxTb3VyY2VCb2RpZXMobWFuaWZlc3QsIGNvcGllZCkgewogIGFzc2VydC5lcXVhbChoYXNoKG1hbmlmZXN0KSwgY29tcG9zaXRpb24ubGV4aWNhbE1hbmlmZXN0U0hBMjU2KTsKICBjb25zdCBib2RpZXMgPSBuZXcgTWFwKGNvcGllZC5tYXAoKGVudHJ5KSA9PiBbZW50cnkuZmlsZSwgZW50cnkuc2hhMjU2XSkpOwogIGNvbnN0IG9yaWdpbmFsQm9kaWVzID0gWy4uLm1hbmlmZXN0LmZpbGVzLCAuLi5tYW5pZmVzdC5jb3JwdXNCb2RpZXNdOwogIGlmIChvcmlnaW5hbEJvZGllcy5ldmVyeSgoW2ZpbGUsICwgYWZ0ZXJdKSA9PiBib2RpZXMuZ2V0KGZpbGUpID09PSBhZnRlcikpIHJldHVybiBudWxsOwogIGZvciAoY29uc3QgW2ZpbGUsICwgYWZ0ZXJdIG9mIG9yaWdpbmFsQm9kaWVzKSB7CiAgICBjb25zdCByZXBsYWNlbWVudCA9IGNvbXBvc2l0aW9uLnNvdXJjZVN1Y2Nlc3NvcnMuZmluZCgoW25hbWVdKSA9PiBuYW1lID09PSBmaWxlKTsKICAgIGlmIChyZXBsYWNlbWVudCkgYXNzZXJ0LmVxdWFsKHJlcGxhY2VtZW50WzJdLCBhZnRlcik7CiAgICBhc3NlcnQuZXF1YWwoYm9kaWVzLmdldChmaWxlKSwgcmVwbGFjZW1lbnQ/LlszXSA/PyBhZnRlciwgZmlsZSk7CiAgfQogIGZvciAoY29uc3QgW2ZpbGUsIGJvZHldIG9mIG1hbmlmZXN0LnByZXNlcnZlZEJvZGllcykgewogICAgY29uc3QgcmVwbGFjZW1lbnQgPSBjb21wb3NpdGlvbi5pbmNvbWluZ1ByZXNlcnZlZFN1Y2Nlc3NvcnMuZmluZCgoW25hbWVdKSA9PiBuYW1lID09PSBmaWxlKTsKICAgIGlmIChyZXBsYWNlbWVudCkgYXNzZXJ0LmVxdWFsKHJlcGxhY2VtZW50WzFdLCBib2R5KTsKICAgIGFzc2VydC5lcXVhbChib2RpZXMuZ2V0KGZpbGUpLCByZXBsYWNlbWVudD8uWzJdID8/IGJvZHksIGZpbGUpOwogIH0KICBjb25zdCBmaW5hbFNvdXJjZSA9CiAgICBib2RpZXMuZ2V0KGZpbmFsQ2FsbGVyKSA9PT0gZXhwZWN0ZWQuZ2V0KGZpbmFsQ2FsbGVyKQogICAgICA/IG51bGwKICAgICAgOiB2YWxpZGF0ZUxleGljYWxGaW5hbFNvdXJjZShjb3BpZWQpOwogIGlmIChmaW5hbFNvdXJjZSkgewogICAgYXNzZXJ0LmRlZXBFcXVhbCgKICAgICAgY29waWVkLm1hcCgoeyBmaWxlIH0pID0+IGZpbGUpLnRvU29ydGVkKChhLCBiKSA9PiBhLmxvY2FsZUNvbXBhcmUoYikpLAogICAgICBsZXhpY2FsU291cmNlUGF0aHMobWFuaWZlc3QsIHJ1bnRpbWVIZWxwZXJzKS50b1NvcnRlZCgoYSwgYikgPT4gYS5sb2NhbGVDb21wYXJlKGIpKSwKICAgICk7CiAgICBmb3IgKGNvbnN0IGVudHJ5IG9mIGNvcGllZCkKICAgICAgYXNzZXJ0LmVxdWFsKGVudHJ5LnNoYTI1NiwgcmF3SGFzaChzb3VyY2VCeXRlcyhlbnRyeS5maWxlKSksIGVudHJ5LmZpbGUpOwogIH0KICBmb3IgKGNvbnN0IFtmaWxlLCBib2R5XSBvZiBleHBlY3RlZCkKICAgIGFzc2VydC5lcXVhbCgKICAgICAgYm9kaWVzLmdldChmaWxlKSwKICAgICAgZmluYWxTb3VyY2U/LmZpbGUgPT09IGZpbGUgPyBmaW5hbFNvdXJjZS5hZnRlclNIQTI1NiA6IGJvZHksCiAgICAgIGZpbGUsCiAgICApOwogIGZvciAoY29uc3QgbmFtZSBvZiBuYW1lcykKICAgIGFzc2VydC5lcXVhbCgKICAgICAgYm9kaWVzLmdldChzdXBwb3J0ICsgbmFtZSksCiAgICAgIGNyZWF0ZUhhc2goInNoYTI1NiIpCiAgICAgICAgLnVwZGF0ZShmcy5yZWFkRmlsZVN5bmMobmV3IFVSTChzdXBwb3J0ICsgbmFtZSwgcm9vdCkpKQogICAgICAgIC5kaWdlc3QoImhleCIpLAogICAgICBuYW1lLAogICAgKTsKICByZXR1cm4gewogICAgYXV0aG9yaXR5OiAiY29tcGxldGUtcmV2aWV3ZWQtbmF0aXZlLW93bmVkLWltYWdlLWluY29taW5nLWxleGljYWwtY29tcG9zaXRpb24iLAogICAgbWFuaWZlc3RTSEEyNTY6IGhhc2goY29tcG9zaXRpb24pLAogICAgcmV2aWV3ZWRTb3VyY2U6IGNvbXBvc2l0aW9uLnJldmlld2VkU291cmNlLAogICAgcmV2aWV3ZWRTb3VyY2VUcmVlOiBjb21wb3NpdGlvbi5yZXZpZXdlZFNvdXJjZVRyZWUsCiAgICBjb21wbGV0ZVNka1Byb2R1Y3Rpb25Cb2RpZXM6IDEyMSwKICAgIGluY29taW5nTGV4aWNhbFNvdXJjZUJvZGllczogOSwKICAgIGluY29taW5nTGV4aWNhbENvcnB1c0JvZGllczogMjEsCiAgICBvcmlnaW5hbFJ1bnRpbWVCb2RpZXM6IDIzLAogICAgZmluYWxHdWFyZEJvZGllczogMiwKICAgIHJ1bnRpbWVDcmVkaXQ6IGZhbHNlLAogICAgcGVyZm9ybWFuY2VDcmVkaXQ6IGZhbHNlLAogICAgLi4uKGZpbmFsU291cmNlID8geyBmaW5hbFNvdXJjZSB9IDoge30pLAogIH07Cn0K",
+      "importMetaOccurrences": 1
+    }
+  ]
+}

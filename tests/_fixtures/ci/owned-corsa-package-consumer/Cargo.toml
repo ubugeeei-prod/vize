@@ -1,0 +1,19 @@
+[package]
+name = "owned-corsa-packaged-consumer"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[features]
+default = []
+distributed = ["corsa/experimental-distributed", "corsa_orchestrator/experimental-distributed"]
+
+[dependencies]
+corsa_core = { package = "vize_corsa_core", version = "=0.443.0" }
+corsa_jsonrpc = { package = "vize_corsa_jsonrpc", version = "=0.443.0" }
+corsa_client = { package = "vize_corsa_client", version = "=0.443.0" }
+corsa_lsp = { package = "vize_corsa_lsp", version = "=0.443.0" }
+corsa_orchestrator = { package = "vize_corsa_orchestrator", version = "=0.443.0" }
+corsa = { package = "vize_corsa", version = "=0.443.0" }

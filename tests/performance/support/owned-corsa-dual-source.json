@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sourceOnly": true,
+  "runtimeCredit": false,
+  "performanceCredit": false,
+  "originalBeforeSource": "a93e78147b0990c813e965a7868b32dda341eb77",
+  "additionalFile": "crates/vize_patina/src/linter/script_rules/sfc/registered_sfc.rs",
+  "additional": {
+    "mode": "100644",
+    "blob": "5016a21b8d925696b314a0f5d82c1194c9dd0950",
+    "bytes": 1366,
+    "sha256": "3c5def49a855e146eaea7db29798f616e31fc6a44e7bf4d9a6b0afcf70805bd3",
+    "rawBase64": "Ly8hIEJvcnJvdyBvcmRpbmFyeS1zY3JpcHQgY2FsbGJhY2tzIGZyb20gdGhlIGFscmVhZHkgY29uZmlndXJlZCBydWxlIGluc3RhbmNlcy4KCnVzZSBzdXBlcjo6c3VwZXI6OntMaW50UmVzdWx0LCBMaW50ZXIsIG1lcmdlX3NjcmlwdF9yZXN1bHR9Owp1c2UgY3JhdGU6OnJ1bGVzOjpzY3JpcHQ6OntTY3JpcHRMaW50UmVzdWx0LCBTY3JpcHRSdWxlLCBTZmNTY3JpcHRDb250ZXh0fTsKdXNlIG94Y19wYXJzZXI6OlBhcnNlclJldHVybjsKdXNlIHZpemVfbDA6OnByb2ZpbGU7CgpmbiBhY3RpdmUobGludGVyOiAmTGludGVyKSAtPiBpbXBsIEl0ZXJhdG9yPEl0ZW0gPSAmZHluIFNjcmlwdFJ1bGU+ICsgJ18gewogICAgbGludGVyLnJlZ2lzdHJ5LnJ1bGVzKCkuaXRlcigpLmZpbHRlcl9tYXAofHJ1bGV8IHsKICAgICAgICBsZXQgbmFtZSA9IHJ1bGUubWV0YSgpLm5hbWU7CiAgICAgICAgaWYgIWxpbnRlci5pc19ydWxlX2VuYWJsZWQobmFtZSkgewogICAgICAgICAgICByZXR1cm4gTm9uZTsKICAgICAgICB9CiAgICAgICAgbGV0IHNjcmlwdCA9IHJ1bGUuYXNfc2ZjX3NjcmlwdF9ydWxlKCk/OwogICAgICAgIChzY3JpcHQudXNlc19hc3QoKSAmJiBzY3JpcHQubWV0YSgpLm5hbWUgPT0gbmFtZSkudGhlbl9zb21lKHNjcmlwdCkKICAgIH0pCn0KCnB1YihzdXBlcikgZm4gaGFzX2FjdGl2ZShsaW50ZXI6ICZMaW50ZXIpIC0+IGJvb2wgewogICAgYWN0aXZlKGxpbnRlcikubmV4dCgpLmlzX3NvbWUoKQp9CgpwdWIoc3VwZXIpIGZuIHJ1bigKICAgIGxpbnRlcjogJkxpbnRlciwKICAgIHNvdXJjZTogJnN0ciwKICAgIG9mZnNldDogdXNpemUsCiAgICBwYXJzZWQ6IE9wdGlvbjwmUGFyc2VyUmV0dXJuPCdfPj4sCiAgICBzZmM6IFNmY1NjcmlwdENvbnRleHQ8J18+LAogICAgcmVzdWx0OiAmbXV0IExpbnRSZXN1bHQsCikgewogICAgbGV0IFNvbWUocGFyc2VkKSA9IHBhcnNlZC5maWx0ZXIofHBhcnNlZHwgIXBhcnNlZC5wYW5pY2tlZCAmJiBwYXJzZWQuZGlhZ25vc3RpY3MuaXNfZW1wdHkoKSkKICAgIGVsc2UgewogICAgICAgIHJldHVybjsKICAgIH07CiAgICBmb3IgcnVsZSBpbiBhY3RpdmUobGludGVyKSB7CiAgICAgICAgbGV0IG11dCBsaW50ID0gU2NyaXB0TGludFJlc3VsdDo6ZGVmYXVsdCgpOwogICAgICAgIHByb2ZpbGUhKAogICAgICAgICAgICAicGF0aW5hLnNjcmlwdF9ydWxlLnJlZ2lzdGVyZWRfc2ZjIiwKICAgICAgICAgICAgcnVsZS5jaGVja19wcm9ncmFtX3dpdGhfc2ZjKCZwYXJzZWQucHJvZ3JhbSwgc291cmNlLCBvZmZzZXQsIHNmYywgJm11dCBsaW50LCkKICAgICAgICApOwogICAgICAgIG1lcmdlX3NjcmlwdF9yZXN1bHQobGludGVyLCByZXN1bHQsIGxpbnQpOwogICAgfQp9Cg=="
+  },
+  "parts": [
+    [
+      "owned-corsa-dual-source-part-0.json",
+      "d732438da9e12c063ab387ede46e58fed91b262ef863b4def1c4522073677f8f"
+    ],
+    [
+      "owned-corsa-dual-source-part-1.json",
+      "be9ab063160ef68f619f7dff3978c662d9a14128d2ce6cc591f6c776b4a626cc"
+    ]
+  ]
+}

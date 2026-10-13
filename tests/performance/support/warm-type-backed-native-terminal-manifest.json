@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "originalSource": "006c564067bacd05be9eac5660e34992e0bdabe8",
+  "reviewedSource": "759fe6af254dbeca020d106fb31c87e26b9eff55",
+  "preservedBodies": [
+    [
+      "tests/_fixtures/differential/lsp/warm-type-backed-requests/case.json",
+      "ba2a49365dd6e3ec9fb5077fbcd6f68101166a2d18030138bcb0a94857713470"
+    ],
+    [
+      "tests/_fixtures/differential/lsp/warm-type-backed-requests/gen.mjs",
+      "4d0e14d66ce6e7b0b5d2e32a51c39bbe985283aa94934616b4da0ff587d34649"
+    ],
+    [
+      "tests/_fixtures/differential/lsp/warm-type-backed-requests/original-report.md",
+      "247d435038eb8c53f317dc6a5fdcdd216a19fa9bc58d155e355b5ed2c3eb4a58"
+    ],
+    [
+      "tests/_fixtures/differential/lsp/warm-type-backed-requests/package.json",
+      "4a2c593a78dd898566bf14bc68914ae452738d0ef2de4a64fd8c2be8f097f942"
+    ],
+    [
+      "tests/_fixtures/differential/lsp/warm-type-backed-requests/tsconfig.json",
+      "ad4c9c378d4d01ee9230da0acc6aa86d0a5cab68de8e552124c5e557d4506181"
+    ],
+    [
+      "tests/_fixtures/differential/lsp/warm-type-backed-requests/vize.config.json",
+      "c6f468f396b9c5afeb4a348dffc20fab9660182dd4b65364968c77c448cee85d"
+    ],
+    [
+      "tests/performance/support/warm-type-backed-controls.ts",
+      "81a2fa2b6656e0d09ad421fa3cf772fb9187f5c3ad40c15cf24f9e46f9b25ec0"
+    ],
+    [
+      "tests/performance/support/warm-type-backed-measure.ts",
+      "577455fb9ab4b814c233eb96a814aafc32c9755623d296c8efe3f7224a7593c8"
+    ],
+    [
+      "tests/performance/support/warm-type-backed-requests.ts",
+      "4162926bc7d02b92423e6731d8f8efaf48964fa6009df6751c087aa4372939f7"
+    ],
+    [
+      "tests/performance/support/warm-type-backed-packets.ts",
+      "a19fc36481942681dc93b5ae1b709af120d803ab70bda6454e98ad702c2669d2"
+    ],
+    [
+      "tests/performance/support/warm-type-backed-processes.ts",
+      "f843bc5ef4d546862ab273363bb3d787eb4a03a5bd7e1278f88e1fccebfb6be7"
+    ],
+    [
+      "tests/performance/support/warm-type-backed-work.ts",
+      "a6153287d33576aef29272e05dd727e66c7dd64167f7487643466b3663064229"
+    ],
+    [
+      "tests/performance/support/warm-type-backed-dependency-custody.ts",
+      "d577de728929df0372894af7ebff872afbbe4529759bd259013fd874a42ec2b8"
+    ],
+    [
+      "tests/performance/support/warm-type-backed-runtime.ts",
+      "0a4f2307ccf00ba05e6bf2c8062f9b167c3068d243c4598f87767fdf51b46571"
+    ],
+    [
+      "tests/performance/support/warm-type-backed-build.ts",
+      "7660e93cfa5c908f4065e91d498a3cb778814c38bb8689efefcaa159ef9003e3"
+    ],
+    [
+      "tests/performance/support/warm-type-backed-source.ts",
+      "3a67e29de1f0e56d4da41d3e43ca23e6375a7a84e6317879cd801407288de8cf"
+    ],
+    [
+      "tests/performance/support/warm-type-backed-startup.ts",
+      "d9196634e6059125d0256c78b09a06d2eb377a8b98bcdce2aa1b41b5af86017f"
+    ],
+    [
+      "tests/performance/support/warm-type-backed-query-frames.ts",
+      "6cebfac0f932e86b0f89416647495531f264b477b2d64b7bc9d71f164c71c4ad"
+    ],
+    [
+      "tests/performance/support/warm-type-backed-publications.ts",
+      "d2e4f3ad158068541335ec0c11fa264ffeafbce3fd2851de48c736fa46836a95"
+    ],
+    [
+      ".github/workflows/davinci-canon-scaling.yml",
+      "399537c24b593b983ebb847f1fbeb3e4f376301e69bc25b46206ce2253ec6d73"
+    ],
+    ["package.json", "d3a2188046e21c5dfe8d1117292136eb8ad0232c42490aed3e994fba71fac34f"],
+    ["pnpm-lock.yaml", "12e66667fc82ac9a5b72d1e9ab2aa59f7c1466ea8be689f17a67678bf31a0915"],
+    ["rust-toolchain.toml", "3cd5d0cc3a4440d9200bd1515826fc106e0499317556fb35dfde2f30f85fdcb9"]
+  ],
+  "qualifiedHarnessBodies": [
+    [
+      "tests/performance/support/warm-type-backed-requests.ts",
+      "4162926bc7d02b92423e6731d8f8efaf48964fa6009df6751c087aa4372939f7",
+      "b4e0a1d473c01b6ebbb8629dcd1bc7c16cdb8538cb3c9ff4b54f3d1ea4398cb2"
+    ],
+    [
+      "tests/performance/support/warm-type-backed-native-terminal-final.ts",
+      null,
+      "6c5b4b7951227905ae940dbbecea4c0fa2cac676fa1d5e98dfae9ae8dd328589"
+    ]
+  ]
+}

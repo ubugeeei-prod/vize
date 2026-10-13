@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "beforeSource": "dd188515f8ec3c51662b4f4d69adcd39c86a0907",
+  "previousSource": "e17c27d04521ca1409ffb65b7c700d417fc66733",
+  "file": "tests/performance/support/warm-type-backed-native-terminal-final.ts",
+  "beforeSHA256": null,
+  "previousAfterSHA256": "e5cf6338b4edbc08641aee70888b79fe0d69b27118571fcb86cd5041479f503a",
+  "afterSHA256": "f5a60202ec1ff1b149cbb320ac3c8f7382ff85a2c9a1c8cb5ebafed863bdccbc"
+}

@@ -41,6 +41,13 @@ const vscodeExtensionLintIgnorePatterns = [
  * byte-stable.
  */
 const formatterSensitiveContentIgnorePatterns = [
+  // Published Corsa source custody authenticates these original registry bytes.
+  "vendor/corsa_core/.cargo_vcs_info.json",
+  "vendor/corsa_lsp/.cargo_vcs_info.json",
+  "vendor/corsa/.cargo_vcs_info.json",
+  "vendor/corsa_client/.cargo_vcs_info.json",
+  "vendor/corsa_jsonrpc/.cargo_vcs_info.json",
+  "vendor/corsa_orchestrator/.cargo_vcs_info.json",
   "benchmarks/davinci_harness/fixtures/**",
   // Released extension-contract surfaces are canonical bytes checked by
   // `vize_extension_host`'s `contract_surface` test (P6-8).
