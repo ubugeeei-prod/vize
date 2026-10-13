@@ -95,10 +95,14 @@ that regenerates the pages with `publish-snapshot` and re-pins the custody
 fixture.
 
 `typechecker-native-phases.mjs` pins the SHA-256 of
-`type-snapshot-cli-{corpus,leaf-corpus,protocol}.mjs`. It also hashes
-helpers by name. A batch that changes any byte of those files must re-pin
-them and rename the provenance entries in the same commit, even when the
-only change is an import specifier.
+`type-snapshot-cli-{corpus,leaf-corpus,protocol}.mjs` and hashes its helpers
+by name, as does the `type-snapshot-cli-runner` provenance list.
+`typechecker-native-source-custody.mjs` names the same scripts in its bridge
+and infrastructure path sets. A batch that changes any byte of a pinned file
+re-pins it in the same commit, even when the only change is an import
+specifier, and every batch renames its files in those lists. Batch 3 therefore
+moves the gate foundations together with `type-snapshot-cli-*`, so the
+copied corpus is re-pinned once rather than twice.
 
 ## Runtime before setup
 
@@ -139,25 +143,25 @@ pilot rename stays at or above 55%.
 
 ## Batch plan
 
-| Batch | Scope                                                                                                                                 | Files | Lines |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------- | ----: | ----: |
-| 1     | PR budget, Criterion, dialect guard, production summary, Vapor compare, vue-benchmarks replay, doctor filter, test inventory          |    18 | 3,267 |
-| 2     | `scale/**`, Nuxt and Vite cache helpers, native batch, benchmark notes, type-snapshot pairing                                         |    17 | 2,280 |
-| 3     | Gate foundations (`benchmark-binary`, `check-gate-*`, `typecheck-*`, provenance), `generate`, Musea; re-pins the copied corpus hashes |    14 | 3,391 |
-| 4     | `compare-tools` graph, `render-results`, published snapshot                                                                           |    14 | 2,896 |
-| 5     | Pre-setup entrypoints (`comment-pr`, `comment-test-report`, SFC parse replay), vue-benchmarks current lint and typecheck              |    12 | 2,411 |
-| 6     | `type-snapshot-cli-*`, `canon-alias-*`, native canon-lib; re-pins again                                                               |    18 | 3,336 |
-| 7     | Native graph archive, profile, phase report and capture, retirement, release metadata                                                 |    15 | 2,857 |
-| 8     | Native phase runner, source custody and recipe, receipts                                                                              |    13 | 3,399 |
-| 9     | `instruction-counts*`, `level-memory*`, after `tools/support/compat/davinci/toml-lite.mjs`                                            |     8 | 1,820 |
+| Batch | Scope                                                                                                                                                                                                 | Files | Lines |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----: | ----: |
+| 1     | PR budget, Criterion, dialect guard, production summary, Vapor compare, vue-benchmarks replay, doctor filter, test inventory                                                                          |    18 | 3,267 |
+| 2     | `scale/**`, Nuxt and Vite cache helpers, native batch, Nuxt bridge, benchmark notes, type-snapshot pairing                                                                                            |    16 | 2,138 |
+| 3     | Gate foundations (`benchmark-binary`, `check-gate-*`, `typecheck-*`, provenance), `generate`, `type-snapshot-cli-*`; the one re-pin of the copied corpus hashes                                       |    14 | 3,383 |
+| 4     | Musea lane, `compare-tools` and its helpers                                                                                                                                                           |    13 | 3,274 |
+| 5     | `render-results`, published snapshot, pre-setup entrypoints (`comment-pr`, `comment-test-report`, SFC parse replay), `vite-hmr-owner-lookup` after its fix, vue-benchmarks current lint and typecheck |    20 | 3,464 |
+| 6     | `canon-alias-*`, native canon-lib, graph archive, profile replay                                                                                                                                      |    16 | 3,031 |
+| 7     | Native profile corpus, phase membership, report, capture and runner, retirement, release metadata, source custody                                                                                     |    14 | 2,741 |
+| 8     | Native phases driver, dependency link, source recipe and preparation, receipts                                                                                                                        |    10 | 2,539 |
+| 9     | `instruction-counts*`, `level-memory*`, after `tools/support/compat/davinci/toml-lite.mjs`                                                                                                            |     8 | 1,820 |
 
 Every batch imports only earlier batches or already typed `.ts` files.
 Batch 9 alone depends on a provider outside this directory.
 
 ## Unfinished
 
-- Batch 1 is the pilot. Batches 2-9 remain, as do the other directories in
-  the #8840 scope.
+- Batches 1 and 2 (34 files, 5,405 original lines) are typed and checked.
+  Batches 3-9 remain, as do the other directories in the #8840 scope.
 - `tests/tooling` callers now import typed modules, but they are not yet in a
   checked project. They join it when their own directory migrates.
 - The benchmark scripts that already were `.ts` (`run`, `vite`, `lint`,
@@ -165,6 +169,9 @@ Batch 9 alone depends on a provider outside this directory.
   `css-documentation`) are not yet in a checked project.
 - `vite-hmr-owner-lookup.mjs` imports `../npm/builder/vite/...`, a path that has
   not existed since the #5535 consolidation, so it cannot run or type-check.
-  Batch 2 needs a separate fix commit for it before its typing commit.
+  It moved from batch 2 to batch 5 and needs a separate fix commit first.
+- `scale/corpus.ts` writes its vendor package to `node_modules/@bench/ui` but
+  imports it as `@tools/ui`, so a real scale build fails on `main` too. The
+  typed harness keeps that behaviour; fixing it is separate work.
 - Exact-head Actions, the issue comment that pairs with this record, and
   protected merge all remain required.
