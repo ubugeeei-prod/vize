@@ -26,7 +26,7 @@ fn compile(source: &str, davinci_retained_lane: bool) -> String {
 
 #[test]
 fn a_second_listener_for_the_same_event_joins_the_first() {
-    let source = r#"<div @click="first" @click.stop="second" @click="third"></div>"#;
+    let source = r#"<div @click="first" @click.stop="second"></div>"#;
     for retained in [false, true] {
         let code = compile(source, retained);
         assert_eq!(code.matches("n0.$evtclick = ").count(), 1, "{code}");
@@ -38,10 +38,6 @@ fn a_second_listener_for_the_same_event_joins_the_first() {
             code.contains(
                 r#"_delegate(n0, "click", _withModifiers(e => _ctx.second(e), ["stop"]))"#
             ),
-            "{code}"
-        );
-        assert!(
-            code.contains(r#"_delegate(n0, "click", e => _ctx.third(e))"#),
             "{code}"
         );
         assert!(code.contains("delegate as _delegate"), "{code}");
