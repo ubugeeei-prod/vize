@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { buildFairnessNotes } from "../../tools/benchmarks/scripts/benchmark-notes.mjs";
+import { buildFairnessNotes } from "../../tools/benchmarks/scripts/benchmark-notes.ts";
 import { ENGINE_CLASSES_BY_SURFACE } from "../../tools/benchmarks/scripts/compare-tools-report.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");

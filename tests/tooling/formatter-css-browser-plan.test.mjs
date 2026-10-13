@@ -2,16 +2,29 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
 import { needsFormatterCssBrowser } from "../../tools/support/compat/github/formatter-css-browser-plan.mjs";
+import {
+  selectToolingShard,
+  toolingShardMatrix,
+} from "../../tools/support/compat/github/tooling-test-shards.ts";
 
 const browser = "tests/tooling/formatter-css-rule-layout.test.mjs";
-const files = ["a.test.mjs", "b.test.mjs", "c.test.mjs", browser];
+const others = Array.from({ length: 40 }, (_, index) => `tests/tooling/${index}.test.mjs`);
+const files = [...others.slice(0, 3), browser];
 
 await test("only the selected browser-owning runner needs Chromium, with complete merge validation", () => {
   for (const tier of ["pr", "merge"]) {
-    const plan = { version: 1, tier, tests: files };
-    for (let index = 1; index <= 4; index++)
-      assert.equal(needsFormatterCssBrowser(plan, files, `${index}/4`, tier), index === 4);
-    assert.equal(needsFormatterCssBrowser(plan, files, "", tier), true);
+    const tests = [...others, browser];
+    const plan = { version: 1, tier, tests };
+    const shards = toolingShardMatrix(plan).include;
+    assert.ok(shards.length > 1);
+    const owners = shards.filter(({ index, total }) => {
+      const shard = `${index}/${total}`;
+      const needed = needsFormatterCssBrowser(plan, tests, shard, tier);
+      assert.equal(needed, selectToolingShard(plan, shard).includes(browser));
+      return needed;
+    });
+    assert.equal(owners.length, 1);
+    assert.equal(needsFormatterCssBrowser(plan, tests, "", tier), true);
   }
   assert.equal(
     needsFormatterCssBrowser({ version: 1, tier: "pr", tests: [files[0]] }, files, "1/1", "pr"),

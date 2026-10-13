@@ -21,8 +21,13 @@ import { aggregateNeedsResults } from "../../tools/support/compat/github/require
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const workflow = parse(readFileSync(join(root, ".github/workflows/pr-source-checks.yml"), "utf8"));
+const jsChecksPath = "./.github/workflows/pr-js-checks.yml";
+const jsChecks = parse(readFileSync(join(root, jsChecksPath), "utf8"));
 const selectedJs = "${{ needs.pr-source-plan.outputs.js == 'true' }}";
-const selectedHistory = "${{ always() && needs.pr-source-plan.outputs.js == 'true' }}";
+const inputJs = "${{ inputs.run-js }}";
+const evidenceJs = "${{ always() && inputs.run-js }}";
+const groupCommand =
+  'python3 .github/actions/test-js-packages-with-history/native-fault-evidence.py -- vp run --workspace-root "test:js:$VIZE_JS_PACKAGE_GROUP"';
 const historyActionPath = "./.github/actions/test-js-packages-with-history";
 const history = parse(readFileSync(join(root, historyActionPath, "action.yml"), "utf8"));
 
@@ -41,31 +46,57 @@ function recordingCli(directory, source = "process.exit(0);") {
   };
 }
 
-void test("PR and merge queue preserve native declaration, type and complete UI checks", () => {
+void test("PR and merge queue preserve package tests, native declaration, type and complete UI checks", () => {
+  assert.deepEqual(workflow.jobs["pr-js-packages"], {
+    name: "PR JS packages",
+    if: "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}",
+    needs: "pr-source-plan",
+    uses: jsChecksPath,
+    with: { "run-js": selectedJs },
+  });
+  assert.deepEqual(jsChecks.on, {
+    workflow_call: { inputs: { "run-js": { required: true, type: "boolean" } } },
+  });
+  assert.deepEqual(Object.keys(jsChecks.jobs), [
+    "pr-js-package-tests",
+    "pr-oxlint-project-qualification",
+    "pr-js-package-conformance",
+  ]);
+  for (const [name, job] of Object.entries(jsChecks.jobs)) {
+    // Inner jobs never skip: the caller holds the event guard and every
+    // expensive step holds the plan guard, so the caller result covers all.
+    assert.equal(job.if, undefined, name);
+    assert.equal(job.needs, undefined, name);
+    assert.equal(job.steps[0].if, "${{ !inputs.run-js }}", name);
+    assert.match(job.steps[0].run, /skipped because this PR changes no package/, name);
+    for (const step of job.steps.slice(1)) assert.ok(step.if, `${name}: ${step.name ?? step.uses}`);
+  }
+  const testStep = jsChecks.jobs["pr-js-package-tests"].steps.find(
+    (step) => step.name === "Test JS package group",
+  );
+  assert.equal(testStep.if, inputJs);
+  assert.equal(testStep.run, groupCommand);
+  assert.deepEqual(testStep.env, { VIZE_JS_PACKAGE_GROUP: "${{ matrix.group }}" });
   const names = [
-    "Test JS packages",
     "Check Fresco native declarations and consumer types",
     "Check UI package conformance",
   ];
-  const steps = workflow.jobs["pr-js-packages"].steps.filter((step) => names.includes(step.name));
+  const steps = jsChecks.jobs["pr-js-package-conformance"].steps.filter((step) =>
+    names.includes(step.name),
+  );
   assert.deepEqual(
     steps.map((step) => step.name),
     names,
   );
   assert.deepEqual(
     steps.map((step) => step.if),
-    [selectedHistory, selectedJs, selectedJs],
-  );
-  assert.equal(steps[0].uses, historyActionPath);
-  const testStep = history.runs.steps.find((step) => step.name === "Test JS packages");
-  assert.equal(
-    testStep.run,
-    "python3 .github/actions/test-js-packages-with-history/native-fault-evidence.py -- vp run --workspace-root test:js",
+    [inputJs, inputJs],
   );
   assert.ok(workflow.jobs["source-report"].needs.includes("pr-js-packages"));
   for (const result of ["failure", "cancelled", "skipped"]) {
     assert.equal(aggregateNeedsResults({ "pr-js-packages": { result } }).exitCode, 1);
   }
+  const groups = jsChecks.jobs["pr-js-package-tests"].strategy.matrix.group;
   const fixture = mkdtempSync(join(tmpdir(), "vize-js-tier-"));
   try {
     const cli = recordingCli(fixture);
@@ -76,19 +107,23 @@ void test("PR and merge queue preserve native declaration, type and complete UI 
       ["merge_group", false],
     ]) {
       rmSync(cli.calls, { force: true });
-      for (const step of steps) {
-        if (!js) continue;
-        const command = step.uses === historyActionPath ? testStep.run : step.run;
+      const commands = js
+        ? [
+            ...groups.map((group) => ({ command: testStep.run, group })),
+            ...steps.map((step) => ({ command: step.run })),
+          ]
+        : [];
+      for (const { command, group } of commands) {
         const result = spawnSync("/bin/sh", ["-c", command], {
           cwd: root,
-          env: cli.env,
+          env: { ...cli.env, ...(group ? { VIZE_JS_PACKAGE_GROUP: group } : {}) },
           encoding: "utf8",
         });
         assert.equal(result.status, 0, `${event}: ${result.stdout}\n${result.stderr}`);
       }
       const expected = js
         ? [
-            ["run", "--workspace-root", "test:js"],
+            ...groups.map((group) => ["run", "--workspace-root", `test:js:${group}`]),
             ["run", "--filter", "./npm/fresco-native", "check:generated"],
             ["run", "--filter", "./npm/fresco-native", "check:types"],
             ["run", "--filter", "./npm/native", "build:ci"],
@@ -106,14 +141,10 @@ void test("PR and merge queue preserve native declaration, type and complete UI 
 });
 
 void test("public native evidence remains reachable after prior build or package test failure", () => {
-  const seam = workflow.jobs["pr-js-packages"].steps.find(
-    (step) => step.uses === historyActionPath,
-  );
-  assert.equal(seam.if, selectedHistory);
-  assert.equal(seam["continue-on-error"], undefined);
+  // The full main-branch suite keeps the original composite unchanged.
   assert.equal(history.runs.using, "composite");
   assert.equal(history.runs.steps.length, 7);
-  const [execute, qualification, upload, style, oxlint, cleanup] = history.runs.steps;
+  const [execute, qualification, upload, style, oxlint, cleanup, fault] = history.runs.steps;
   assert.equal(execute.if, "${{ success() && job.status == 'success' }}");
   assert.equal(execute.shell, "bash");
   assert.equal(
@@ -169,6 +200,65 @@ void test("public native evidence remains reachable after prior build or package
       "${{ steps.original-project-qualification.outputs.staging-directory }}",
   });
   assert.equal(cleanup["continue-on-error"], undefined);
+  assert.equal(fault.if, "${{ always() }}");
+
+  // Each PR package group uploads the same evidence under a per-group name.
+  const groupJob = jsChecks.jobs["pr-js-package-tests"];
+  const groupStep = (name) => groupJob.steps.find((step) => step.name === name);
+  const perGroup = (name) =>
+    name.replace(/\$\{\{ github\.job \}\}$/, "${{ github.job }}-${{ matrix.group }}");
+  const stagingPath = "target/oxlint-original-project-transport/**\n";
+  for (const original of [upload, style, oxlint, fault]) {
+    const step = groupStep(original.name.replace("bridge locations", "package locations"));
+    assert.ok(step, original.name);
+    assert.equal(step.if, evidenceJs);
+    assert.equal(step.uses, original.uses);
+    assert.equal(step["continue-on-error"], undefined);
+    assert.deepEqual(step.with, {
+      ...original.with,
+      name: perGroup(original.with.name),
+      // Only the qualification job writes project qualification staging.
+      path: original.with.path.replace(stagingPath, ""),
+    });
+  }
+  assert.equal(
+    new Set(groupJob.steps.flatMap((step) => step.with?.name ?? [])).size,
+    groupJob.steps.filter((step) => step.with?.name).length,
+  );
+
+  // The qualification job keeps the original command, guards and evidence.
+  const qualify = jsChecks.jobs["pr-oxlint-project-qualification"].steps;
+  const index = (predicate) => qualify.findIndex(predicate);
+  const build = index((step) => step.run === "vp run --workspace-root build:oxlint-qualification");
+  const run = index((step) => step.id === qualification.id);
+  const native = index((step) => step.name === upload.name);
+  const evidence = index((step) => step.id === oxlint.id);
+  const clean = index((step) => step.name === cleanup.name);
+  assert.ok(0 < build && build < run && run < native && native < evidence && evidence < clean);
+  assert.equal(qualify[build].if, inputJs);
+  assert.deepEqual(
+    { ...qualify[run] },
+    {
+      name: qualification.name,
+      id: qualification.id,
+      if: inputJs,
+      env: qualification.env,
+      run: qualification.run,
+    },
+  );
+  for (const [step, original] of [
+    [qualify[native], upload],
+    [qualify[evidence], oxlint],
+  ]) {
+    assert.equal(step.if, evidenceJs);
+    assert.equal(step.uses, original.uses);
+    assert.deepEqual(step.with, original.with);
+  }
+  assert.equal(qualify[evidence].id, oxlint.id);
+  assert.deepEqual(
+    { ...qualify[clean] },
+    { name: cleanup.name, if: cleanup.if, env: cleanup.env, run: cleanup.run },
+  );
 });
 
 void test("Fresco checks generate declarations and invoke static TypeScript without executing the loader", () => {

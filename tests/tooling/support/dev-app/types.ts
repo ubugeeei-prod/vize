@@ -20,7 +20,7 @@ export type MisskeyBeforeStartSteps = {
 };
 
 /**
- * Normalizes the target name accepted by the MoonBit `dev_app` wrapper.
+ * Normalizes the target name accepted by the `tools/support/tasks/dev-app.ts` wrapper.
  *
  * The wrapper receives user input through environment variables rather than
  * command-line flags because Vite+ forwards task arguments through several

@@ -29,8 +29,6 @@ jobs:
           cache: true
           run-install: false
 
-      - uses: ./.github/actions/setup-moonbit
-
       - name: Install rust-script
         run: |
           set -euo pipefail
@@ -47,7 +45,7 @@ jobs:
           rust-script --version
 
       - name: Install package build dependencies
-        run: moon run --target native tools/moon/cmd/github/vp_install -- --filter './npm/cli...' --filter './npm/builder/vite...' --filter './npm/oxlint...' --filter './npm/builder/unplugin...' --filter './npm/fresco...' --filter './npm/mcp-musea...' --filter './npm/builder/vite-musea...' --filter './npm/builder/rspack...' --filter './npm/framework/musea-nuxt...' --filter './npm/framework/nuxt-lint-config...' --filter './npm/framework/nuxt...' --filter './npm/ui...'
+        run: node tools/support/github/vp-install.ts --filter './npm/cli...' --filter './npm/builder/vite...' --filter './npm/oxlint...' --filter './npm/builder/unplugin...' --filter './npm/fresco...' --filter './npm/mcp-musea...' --filter './npm/builder/vite-musea...' --filter './npm/builder/rspack...' --filter './npm/framework/musea-nuxt...' --filter './npm/framework/nuxt-lint-config...' --filter './npm/framework/nuxt...' --filter './npm/ui...'
 
       - name: Build preview packages
         run: vp run --workspace-root build:packages

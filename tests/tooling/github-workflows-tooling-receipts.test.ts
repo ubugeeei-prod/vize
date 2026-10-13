@@ -60,7 +60,7 @@ for (const { file, job } of callers) {
         workflow.jobs["full-source-cli"].uses,
         "./.github/workflows/full-source-cli.yml",
       );
-      assert.equal(workflow.jobs[job].needs, "full-source-cli");
+      assert.deepEqual(workflow.jobs[job].needs, ["full-source-cli", "tooling-plan"]);
       assert.deepEqual(steps[build].with, { producer: "${{ inputs.producer }}" });
       for (const step of steps.slice(0, tests)) {
         assert.equal(step.env?.VIZE_LSP_BIN, undefined);

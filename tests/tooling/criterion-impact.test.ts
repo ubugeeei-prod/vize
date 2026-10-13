@@ -8,12 +8,12 @@ import { test } from "node:test";
 import {
   CRITERION_SUITES,
   resolveSuiteSelection,
-} from "../../tools/benchmarks/scripts/criterion-ab.mjs";
+} from "../../tools/benchmarks/scripts/criterion-ab.ts";
 import {
   changedPathsBetween,
   parseNameStatusZ,
   selectCriterionSuites,
-} from "../../tools/benchmarks/scripts/criterion-impact.mjs";
+} from "../../tools/benchmarks/scripts/criterion-impact.ts";
 
 const repoDir = "/repo";
 const suiteNames = CRITERION_SUITES.map((suite) => suite.package);
@@ -194,9 +194,9 @@ test("non-Rust CLI fixture changes skip unrelated Criterion suites", () => {
 test("lockfiles and shared benchmark infrastructure select the full inventory", () => {
   for (const changedPath of [
     "Cargo.lock",
-    "tools/benchmarks/scripts/criterion-ab.mjs",
-    "tools/benchmarks/scripts/criterion-baselines.mjs",
-    "tools/benchmarks/scripts/criterion-summary.mjs",
+    "tools/benchmarks/scripts/criterion-ab.ts",
+    "tools/benchmarks/scripts/criterion-baselines.ts",
+    "tools/benchmarks/scripts/criterion-summary.ts",
   ]) {
     const result = selectCriterionSuites({
       changedPaths: [changedPath],
@@ -213,7 +213,7 @@ test("hosted fallback smoke-runs Criterion infrastructure-only changes", () => {
     changedPaths: [
       ".github/workflows/check.yml",
       ".github/workflows/criterion-bench.yml",
-      "tools/benchmarks/scripts/criterion-ab.mjs",
+      "tools/benchmarks/scripts/criterion-ab.ts",
       "crates/vize_canon/tests/tier_l_incremental.rs",
       "tests/tooling/criterion-baselines.test.ts",
     ],
@@ -233,7 +233,7 @@ test("hosted fallback smoke-runs Criterion infrastructure-only changes", () => {
 
 test("hosted fallback preserves full Criterion coverage for Rust benchmark subjects", () => {
   const result = selectCriterionSuites({
-    changedPaths: ["Cargo.lock", "tools/benchmarks/scripts/criterion-ab.mjs"],
+    changedPaths: ["Cargo.lock", "tools/benchmarks/scripts/criterion-ab.ts"],
     metadata: metadata(),
     repoDir,
     hostedFallback: true,

@@ -50,37 +50,44 @@ function authenticateDefaultJob(name: string, configured: Job) {
     condition,
     "github.event_name != 'workflow_dispatch' || !inputs.host_only || inputs.target != 'darwin-arm64'",
   );
-  const steps = job.steps
-    .filter((step) => !extraNames.includes(step.name ?? ""))
-    .map((step) => {
-      if (name !== "host-native-smoke" || step.uses !== "./.github/actions/setup-moonbit")
-        return step;
-      assert.equal(step.if, moonSelector);
-      assert.equal(configured.steps.find((entry) => entry.name === extraNames[0])?.if, step.if);
-      for (const event of ["push", "schedule", "workflow_dispatch"])
-        for (const hostOnly of [undefined, false, true])
-          for (const target of [
-            undefined,
-            "all",
-            "linux-x64-gnu",
-            "linux-arm64-gnu",
-            "darwin-x64",
-            "darwin-arm64",
-            "win32-x64-msvc",
-            "win32-arm64-msvc",
-          ])
-            assert.equal(
-              Boolean(
-                runInNewContext(step.if!, {
-                  github: { event_name: event },
-                  inputs: { host_only: hostOnly, target },
-                }),
-              ),
-              event === "workflow_dispatch" && hostOnly === true && target === "darwin-arm64",
-            );
-      // Reverse only the independently qualified consumer predicate; preserve every other field, including unknown ones.
-      return { ...step, if: "matrix.target != 'darwin-x64'" };
+  const steps = job.steps.filter((step) => !extraNames.includes(step.name ?? ""));
+  assert.equal(
+    steps.some((step) => step.uses === "./.github/actions/setup-moonbit"),
+    false,
+    "the token laws run on Node, so no host row installs MoonBit",
+  );
+  if (name === "host-native-smoke") {
+    const laws = configured.steps.find((entry) => entry.name === extraNames[0])?.if ?? "";
+    assert.equal(laws, moonSelector);
+    for (const event of ["push", "schedule", "workflow_dispatch"])
+      for (const hostOnly of [undefined, false, true])
+        for (const target of [
+          undefined,
+          "all",
+          "linux-x64-gnu",
+          "linux-arm64-gnu",
+          "darwin-x64",
+          "darwin-arm64",
+          "win32-x64-msvc",
+          "win32-arm64-msvc",
+        ])
+          assert.equal(
+            Boolean(
+              runInNewContext(laws, {
+                github: { event_name: event },
+                inputs: { host_only: hostOnly, target },
+              }),
+            ),
+            event === "workflow_dispatch" && hostOnly === true && target === "darwin-arm64",
+          );
+    // Restore the original setup that #8840 removed with its only Moon consumer.
+    const msvc = steps.findIndex((step) => step.name === "Setup MSVC toolchain (Windows)");
+    assert.ok(msvc >= 0);
+    steps.splice(msvc + 1, 0, {
+      uses: "./.github/actions/setup-moonbit",
+      if: "matrix.target != 'darwin-x64'",
     });
+  }
   assert.deepEqual(
     { ...job, steps },
     before.jobs[name],
@@ -98,11 +105,13 @@ test("the full original six-host and twelve-fresh native smoke contract stays in
   assert.equal(after.on.workflow_dispatch.inputs.host_only.default, false);
   for (const name of ["host-native-smoke", "fresh-install-smoke"])
     authenticateDefaultJob(name, after.jobs[name]);
-  for (const changed of ["unknown-setup-field", "removed-cli-command"]) {
+  for (const changed of ["reinstalled-moon", "unknown-msvc-field", "removed-cli-command"]) {
     const altered = structuredClone(after.jobs["host-native-smoke"]);
-    if (changed === "unknown-setup-field")
+    if (changed === "reinstalled-moon")
+      altered.steps.splice(1, 0, { uses: "./.github/actions/setup-moonbit" });
+    else if (changed === "unknown-msvc-field")
       Object.assign(
-        altered.steps.find((step) => step.uses === "./.github/actions/setup-moonbit")!,
+        altered.steps.find((step) => step.name === "Setup MSVC toolchain (Windows)")!,
         { unreviewedField: true },
       );
     else altered.steps.find((step) => step.name === "Build CLI")!.run = "removed-command";
@@ -124,8 +133,8 @@ test("the explicitly selected producer reuses every host step and is not full ma
   assert.deepEqual(selected.env, before.jobs["host-native-smoke"].env);
   const extra = selected.steps.filter((step) => extraNames.includes(step.name ?? ""));
   assert.equal(extra.length, 3);
-  assert.equal(extra[0].run, "moon test --target native --deny-warn cmd/github/build_napi_package");
-  assert.equal(extra[0]["working-directory"], "tools/moon");
+  assert.equal(extra[0].run, "node --test tests/tooling/native-build-token.test.ts");
+  assert.equal(extra[0]["working-directory"], undefined);
   assert.equal(extra[1].run, "node npm/native/scripts/native-build-receipt.mjs");
   assert.match(extra[2].uses ?? "", /^actions\/upload-artifact@/);
   assert.equal(extra[2].with?.["include-hidden-files"], true);

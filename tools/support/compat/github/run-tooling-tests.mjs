@@ -1,9 +1,10 @@
 import { spawnSync } from "node:child_process";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { toolingTestFiles } from "./plan-tooling-tests.mjs";
-import { selectToolingShard } from "./tooling-test-shards.ts";
+import { TOOLING_TIMINGS_LOG_MARKER, selectToolingShard } from "./tooling-test-shards.ts";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 
@@ -79,6 +80,8 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     // Selection defers known scenarios. An unclassified new requirement must
     // still fail closed; disabling the requirement would hide missing coverage.
     const env = { ...process.env, VIZE_TEST_REQUIRE_TSGO: "1" };
+    // The spec reporter output is unchanged. A second reporter records each file's wall time,
+    // which update-tooling-test-timings.ts reads back from the job log.
     const observation = toolingTestObservation(args, env);
     if (observation) {
       mkdirSync(observation.directory, { recursive: true });
@@ -86,43 +89,71 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     }
     const startedAt = new Date().toISOString();
     const memoryBefore = observation ? toolingMemoryObservation() : null;
-    const result = spawnSync(process.execPath, observation?.args ?? args, {
-      cwd: root,
-      env,
-      stdio: "inherit",
-    });
-    if (observation)
-      writeFileSync(
-        join(observation.directory, "outer-result.json"),
-        JSON.stringify(
-          {
-            source: env.GITHUB_SHA,
-            run: env.GITHUB_RUN_ID,
-            attempt: env.GITHUB_RUN_ATTEMPT,
-            job: env.GITHUB_JOB,
-            shard: env.VIZE_TOOLING_TEST_SHARD,
-            node: process.execPath,
-            version: process.version,
-            nodeTestContext: env.NODE_TEST_CONTEXT ?? null,
-            args: observation.args,
-            originalArgs: args,
-            cwd: root,
-            startedAt,
-            completedAt: new Date().toISOString(),
-            memoryBefore,
-            memoryAfter: toolingMemoryObservation(),
-            status: result.status,
-            signal: result.signal,
-            error: result.error
-              ? { name: result.error.name, message: result.error.message, code: result.error.code }
-              : null,
-          },
-          null,
-          2,
-        ) + "\n",
-      );
-    if (result.error) throw result.error;
-    process.exitCode = result.status ?? 1;
+    const timings = mkdtempSync(join(tmpdir(), "vize-tooling-timings-"));
+    const destination = join(timings, "files.json");
+    try {
+      const timingReporter = [
+        `--test-reporter=${fileURLToPath(new URL("./tooling-test-timing-reporter.ts", import.meta.url))}`,
+        `--test-reporter-destination=${destination}`,
+      ];
+      // An observed command already carries the spec reporter beside its TAP copy.
+      const command = observation
+        ? [...timingReporter, ...observation.args]
+        : [
+            "--test-reporter=spec",
+            "--test-reporter-destination=stdout",
+            ...timingReporter,
+            ...args,
+          ];
+      const result = spawnSync(process.execPath, command, { cwd: root, env, stdio: "inherit" });
+      if (observation)
+        writeFileSync(
+          join(observation.directory, "outer-result.json"),
+          JSON.stringify(
+            {
+              source: env.GITHUB_SHA,
+              run: env.GITHUB_RUN_ID,
+              attempt: env.GITHUB_RUN_ATTEMPT,
+              job: env.GITHUB_JOB,
+              shard: env.VIZE_TOOLING_TEST_SHARD,
+              node: process.execPath,
+              version: process.version,
+              nodeTestContext: env.NODE_TEST_CONTEXT ?? null,
+              args: observation.args,
+              originalArgs: args,
+              cwd: root,
+              startedAt,
+              completedAt: new Date().toISOString(),
+              memoryBefore,
+              memoryAfter: toolingMemoryObservation(),
+              status: result.status,
+              signal: result.signal,
+              error: result.error
+                ? {
+                    name: result.error.name,
+                    message: result.error.message,
+                    code: result.error.code,
+                  }
+                : null,
+            },
+            null,
+            2,
+          ) + "\n",
+        );
+      if (result.error) throw result.error;
+      process.exitCode = result.status ?? 1;
+      try {
+        const files = JSON.parse(readFileSync(destination, "utf8"));
+        const shard = process.env.VIZE_TOOLING_TEST_SHARD ?? "";
+        const record = JSON.stringify({ tier: plan.tier, shard, files });
+        process.stdout.write(`\n${TOOLING_TIMINGS_LOG_MARKER} ${record}\n`);
+      } catch (error) {
+        // Timing evidence is advisory; it never changes the test result.
+        process.stdout.write(`\nTooling test timings unavailable: ${error.message}\n`);
+      }
+    } finally {
+      rmSync(timings, { recursive: true, force: true });
+    }
   } else {
     process.stdout.write("No tooling tests selected by the declared inputs.\n");
   }

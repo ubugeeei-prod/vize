@@ -283,7 +283,7 @@ void test("the original app slot keys and separate NAPI inputs remain reviewed",
 
 void test("the original dedicated WASM and native command producers cannot change silently", (t) => {
   for (const file of [
-    "tools/moon/cmd/github/build_vitrine_wasm/main.mbt",
+    "tools/support/github/build-vitrine-wasm.ts",
     "npm/native/scripts/build-ci.mjs",
   ]) {
     const directory = fixture(t);

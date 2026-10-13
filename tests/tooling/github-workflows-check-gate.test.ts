@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.ts";
+import { sourceInventoryLanes } from "../../tools/support/compat/davinci/source-inventories.ts";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 const CORE = ["fmt-rust", "check-js", "security-audit", "node-engine-compat", "check-vize-apps"];
 const PR_JOBS = [
@@ -131,11 +132,10 @@ test("source gates cover PRs and merge groups while full JS qualification also r
   const validate = inventoryAction.runs.steps.find(
     (step) => step.name === "Check Davinci source inventories",
   );
+  assert.equal(validate?.run, "node tools/support/compat/davinci/source-inventories.ts");
+  // The same five checks, in the same order within each dependent lane.
   assert.deepEqual(
-    validate?.run
-      ?.trim()
-      .split("\n")
-      .map((line) => line.trim()),
+    sourceInventoryLanes.flat().map((args) => `node ${args.join(" ")}`),
     [
       "node tools/support/compat/davinci/croquis-consumers.mjs --check",
       "node tools/support/compat/davinci/consumer-migration-surfaces.mjs --check",

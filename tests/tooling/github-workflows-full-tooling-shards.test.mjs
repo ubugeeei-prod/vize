@@ -9,6 +9,7 @@ import {
   toolingTestFiles,
 } from "../../tools/support/compat/github/plan-tooling-tests.mjs";
 import { toolingTestCommand } from "../../tools/support/compat/github/run-tooling-tests.mjs";
+import { toolingShardMatrix } from "../../tools/support/compat/github/tooling-test-shards.ts";
 import { mergeOnlyToolingTests } from "../../tools/config/vite-plus/tooling-test-scopes.ts";
 import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.ts";
 
@@ -27,16 +28,22 @@ const action = () => yaml(".github/actions/test-full-tooling/action.yml");
 const producer = () => yaml(".github/workflows/full-source-cli.yml");
 const uses = (steps, name) => steps.filter((step) => step.uses?.startsWith(name));
 const compareStrings = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
+const workerIndexes = toolingShardMatrix(planToolingTests([], { tier: "merge" })).include.map(
+  ({ index }) => index,
+);
 
-void test("full events require the original producer, four isolated workers and the unchanged report deadline", () => {
+void test("full events require the original producer, planned isolated workers and the unchanged report deadline", () => {
   const jobs = check().jobs;
   assert.ok(jobs["full-source-cli"], "one original full-suite CLI producer is required");
   assert.equal(jobs["full-source-cli"].uses, "./.github/workflows/full-source-cli.yml");
   assert.equal(jobs["full-source-cli"].if, fullCondition);
   const worker = jobs["test-scripts"];
   assert.equal(worker.if, alwaysFullCondition);
-  assert.equal(worker.needs, "full-source-cli");
-  assert.deepEqual(worker.strategy, { "fail-fast": false, matrix: { index: [1, 2, 3, 4] } });
+  assert.deepEqual(worker.needs, ["full-source-cli", "tooling-plan"]);
+  assert.deepEqual(worker.strategy, {
+    "fail-fast": false,
+    matrix: "${{ fromJSON(needs.tooling-plan.outputs.matrix) }}",
+  });
   assert.equal(worker["timeout-minutes"], 30);
   assert.deepEqual(worker.env, {
     NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169",
@@ -51,6 +58,7 @@ void test("full events require the original producer, four isolated workers and 
   assert.deepEqual(worker.steps[1].with, {
     producer: "${{ toJSON(needs.full-source-cli.outputs) }}",
     shard: "${{ matrix.index }}",
+    total: "${{ matrix.total }}",
   });
   assert.equal(worker.steps[1].if, undefined);
   assert.equal(worker.steps[1]["continue-on-error"], undefined);
@@ -123,15 +131,18 @@ void test("the complete original glob vector is partitioned once with all deferr
   const full = planToolingTests([], { tier: "merge" });
   assert.equal(full.deferredTests, 0);
   assert.equal(full.tests.length, files.length);
-  const shards = [1, 2, 3, 4].map((index) => toolingTestCommand(full, files, `${index}/4`));
+  const total = toolingShardMatrix(full).include.length;
+  const shards = Array.from({ length: total }, (_, index) =>
+    toolingTestCommand(full, files, `${index + 1}/${total}`),
+  );
   for (const args of shards) assert.deepEqual(args.slice(0, 2), ["--test", "--test-concurrency=1"]);
   const union = shards.flatMap((args) => args.slice(2));
   assert.deepEqual([...union].sort(compareStrings), files);
   assert.equal(new Set(union).size, files.length);
   for (const file of mergeOnlyToolingTests) assert.ok(union.includes(file), file);
   for (const tests of [files.slice(1), [...files, files[0]]])
-    assert.throws(() => toolingTestCommand({ ...full, tests }, files, "1/4"));
-  assert.throws(() => toolingTestCommand(full, files, "1/3"));
+    assert.throws(() => toolingTestCommand({ ...full, tests }, files, `1/${total}`));
+  assert.throws(() => toolingTestCommand(full, files, `1/${total + 1}`));
 });
 
 void test("the full runner retains serial execution, native preparation, source binding and required TSGO", () => {
@@ -143,16 +154,13 @@ void test("the full runner retains serial execution, native preparation, source 
   const restore = steps.findIndex((step) => step.uses === "./.github/actions/restore-source-cli");
   assert.ok(restore >= 0 && restore < plan && plan < run);
   assert.deepEqual(steps[restore].with, { producer: "${{ inputs.producer }}" });
-  assert.equal(
-    steps[plan].run,
-    'node tools/support/compat/github/plan-tooling-tests.mjs 0000000000000000000000000000000000000000 "$GITHUB_SHA" --tier merge --output "$RUNNER_TEMP/tooling-plan.json"',
-  );
+  assert.match(steps[plan].run, / 0{40} "\$GITHUB_SHA" --tier merge /);
   assert.deepEqual(steps[run].env, {
     VIZE_LSP_BIN: "${{ github.workspace }}/target/ci/vize",
     VIZE_LSP_REQUIRE_SOURCE_BUILD: "1",
     VIZE_TOOLING_TEST_TIER: "merge",
     VIZE_TOOLING_TEST_PLAN: "${{ runner.temp }}/tooling-plan.json",
-    VIZE_TOOLING_TEST_SHARD: "${{ inputs.shard }}/4",
+    VIZE_TOOLING_TEST_SHARD: "${{ inputs.shard }}/${{ inputs.total }}",
   });
   assert.equal(steps[run]["continue-on-error"], undefined);
   assert.doesNotMatch(
@@ -266,12 +274,14 @@ void test("native gates and packet consumers retain one owner while every checko
   assert.deepEqual(retained.with, { shard: "${{ inputs.shard }}" });
   const template = yaml(".github/actions/upload-formatter-api-corpus-evidence/action.yml").runs
     .steps[0].with.name;
-  const names = [1, 2, 3, 4].map((index) => template.replace("${{ inputs.shard }}", String(index)));
-  assert.equal(new Set(names).size, 4);
+  const names = workerIndexes.map((index) =>
+    template.replace("${{ inputs.shard }}", String(index)),
+  );
+  assert.equal(new Set(names).size, workerIndexes.length);
   assert.ok(names.every((name) => !name.includes("/")));
 });
 
-void test("producer and all four workers own separate trusted sticky and fallback namespaces", () => {
+void test("producer and all planned workers own separate trusted sticky and fallback namespaces", () => {
   const main = "a".repeat(40),
     repository = "ubugeeei-prod/vize";
   const base = {
@@ -299,7 +309,7 @@ void test("producer and all four workers own separate trusted sticky and fallbac
   for (const eventName of ["push", "schedule", "workflow_dispatch"]) {
     const event =
       eventName === "push" ? { ...base.event, ref: base.ref, deleted: false } : base.event;
-    const owners = ["Linux-X64", ...[1, 2, 3, 4].map((index) => `Linux-X64-shard-${index}`)];
+    const owners = ["Linux-X64", ...workerIndexes.map((index) => `Linux-X64-shard-${index}`)];
     const plans = owners.map((suffix) => rustCachePolicy({ ...base, eventName, event, suffix }));
     for (const plan of plans)
       assert.deepEqual([plan.trusted, plan.sticky, plan["target-save"]], ["true", "true", "true"]);
@@ -312,7 +322,7 @@ void test("producer and all four workers own separate trusted sticky and fallbac
       "target-key",
       "target-seed-key",
     ])
-      assert.equal(new Set(plans.map((plan) => plan[key])).size, 5, key);
+      assert.equal(new Set(plans.map((plan) => plan[key])).size, owners.length, key);
     for (const suffix of owners) {
       const untrusted = rustCachePolicy({
         ...base,

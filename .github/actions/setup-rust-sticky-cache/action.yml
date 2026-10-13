@@ -1,5 +1,5 @@
 name: Setup Rust sticky cache
-description: Cache Rust builds without creating per-candidate sticky disks
+description: Cache Rust builds on stable sticky disks that only trusted runs commit
 
 inputs:
   cache-key-prefix:
@@ -28,6 +28,10 @@ inputs:
     description: Stable runner suffix (os/arch) for the optional second target directory
     required: false
     default: ""
+  reuse-target:
+    description: Prune non-Cargo run outputs and restore recorded source mtimes so Cargo reuses unchanged crates
+    required: false
+    default: "true"
 
 runs:
   using: composite
@@ -49,31 +53,35 @@ runs:
 
     - name: Mount Cargo registry sticky disk
       if: ${{ steps.cache-policy.outputs.sticky == 'true' }}
-      uses: useblacksmith/stickydisk@d58829ad6f9be8822ec5efe74256c82cd62915ab # v1
+      uses: useblacksmith/stickydisk@3f6be1451e3cad893b778bc93495c80452a5da26 # v1.7.2
       with:
         key: ${{ steps.cache-policy.outputs.sticky-registry-key }}
         path: ~/.cargo/registry
+        commit: ${{ steps.cache-policy.outputs.sticky-commit }}
 
     - name: Mount Cargo git sticky disk
       if: ${{ steps.cache-policy.outputs.sticky == 'true' }}
-      uses: useblacksmith/stickydisk@d58829ad6f9be8822ec5efe74256c82cd62915ab # v1
+      uses: useblacksmith/stickydisk@3f6be1451e3cad893b778bc93495c80452a5da26 # v1.7.2
       with:
         key: ${{ steps.cache-policy.outputs.sticky-git-key }}
         path: ~/.cargo/git
+        commit: ${{ steps.cache-policy.outputs.sticky-commit }}
 
     - name: Mount Rust target sticky disk
       if: ${{ steps.cache-policy.outputs.sticky == 'true' }}
-      uses: useblacksmith/stickydisk@d58829ad6f9be8822ec5efe74256c82cd62915ab # v1
+      uses: useblacksmith/stickydisk@3f6be1451e3cad893b778bc93495c80452a5da26 # v1.7.2
       with:
         key: ${{ steps.cache-policy.outputs.sticky-target-key }}
         path: ${{ steps.cache-policy.outputs.target-path }}
+        commit: ${{ steps.cache-policy.outputs.sticky-commit }}
 
     - name: Mount secondary Rust target sticky disk
       if: ${{ steps.cache-policy.outputs.sticky == 'true' && steps.cache-policy.outputs.secondary == 'true' }}
-      uses: useblacksmith/stickydisk@d58829ad6f9be8822ec5efe74256c82cd62915ab # v1
+      uses: useblacksmith/stickydisk@3f6be1451e3cad893b778bc93495c80452a5da26 # v1.7.2
       with:
         key: ${{ steps.cache-policy.outputs.sticky-secondary-key }}
         path: ${{ steps.cache-policy.outputs.secondary-path }}
+        commit: ${{ steps.cache-policy.outputs.sticky-commit }}
 
     - name: Check which trusted sticky paths were actually mounted
       id: cache-mounts
@@ -124,18 +132,22 @@ runs:
         restore-keys: ${{ steps.cache-policy.outputs.secondary-restore }}
         lookup-only: ${{ steps.cache-mounts.outputs.secondary == 'true' }}
 
+    # Candidates normally read a never-committed clone of the trusted disks; the
+    # Actions seeds only fill paths whose mount failed.
     - name: Restore trusted Cargo registry for an untrusted checkout
       if: ${{ steps.cache-policy.outputs.trusted == 'false' }}
       uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         path: ~/.cargo/registry
         key: ${{ steps.cache-policy.outputs.registry-key }}
+        lookup-only: ${{ steps.cache-mounts.outputs.registry == 'true' }}
     - name: Restore trusted Cargo git for an untrusted checkout
       if: ${{ steps.cache-policy.outputs.trusted == 'false' }}
       uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         path: ~/.cargo/git
         key: ${{ steps.cache-policy.outputs.git-key }}
+        lookup-only: ${{ steps.cache-mounts.outputs.git == 'true' }}
     - name: Restore a Rust target without registering a save
       if: ${{ steps.cache-policy.outputs.target-save == 'false' || ((inputs.key == 'test-scripts' || inputs.key == 'docs-wasm') && steps.cache-mounts.outputs.target == 'true') }}
       uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
@@ -152,3 +164,13 @@ runs:
         key: ${{ inputs.key == 'docs-wasm' && inputs.secondary-key == 'docs-example' && steps.cache-mounts.outputs.secondary == 'true' && steps.cache-policy.outputs.secondary-seed-key || steps.cache-policy.outputs.secondary-key }}
         restore-keys: ${{ steps.cache-policy.outputs.secondary-restore }}
         lookup-only: ${{ steps.cache-mounts.outputs.secondary == 'true' }}
+
+    # Registered after every cache step so its post records the final tree
+    # before Actions seeds are saved and before the sticky disks commit.
+    - name: Reuse the Rust target as a fresh build cache
+      if: ${{ runner.os == 'Linux' && inputs.reuse-target == 'true' }}
+      uses: ./.github/actions/reuse-rust-target
+      with:
+        target-path: ${{ steps.cache-policy.outputs.target-path }}
+        secondary-target-path: ${{ steps.cache-policy.outputs.secondary-path }}
+        record: ${{ steps.cache-policy.outputs.trusted }}

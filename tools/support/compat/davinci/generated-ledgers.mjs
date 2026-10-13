@@ -1,6 +1,6 @@
 // CI and release publish this bundle for the checkout they actually validated.
 // Node builtins only; no Rust compilation or dependency installation is needed.
-import { spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 
@@ -17,7 +17,31 @@ const generators = [
 const usage =
   "usage: node tools/support/compat/davinci/generated-ledgers.mjs --write | --check [--out-dir <dir>]";
 
-function main() {
+// The generators are independent read-only scans; run them together and emit
+// their aggregates in the declared order, stopping at the first failure as before.
+function summarize(generator) {
+  return new Promise((resolve) => {
+    const child = spawn(
+      process.execPath,
+      [path.join(repoRoot, "tools/support/compat/davinci", generator), "--summary"],
+      { cwd: repoRoot },
+    );
+    const stdout = [];
+    const stderr = [];
+    child.stdout.on("data", (chunk) => stdout.push(chunk));
+    child.stderr.on("data", (chunk) => stderr.push(chunk));
+    child.on("error", (error) => resolve({ error, status: null, stdout: "", stderr: "" }));
+    child.on("close", (status) =>
+      resolve({
+        status,
+        stdout: Buffer.concat(stdout).toString("utf8"),
+        stderr: Buffer.concat(stderr).toString("utf8"),
+      }),
+    );
+  });
+}
+
+async function main() {
   let args;
   try {
     args = parseAggregateArgs(process.argv.slice(2), usage);
@@ -36,12 +60,9 @@ function main() {
       }
     }
   }
-  for (const [name, generator] of generators) {
-    const result = spawnSync(
-      process.execPath,
-      [path.join(repoRoot, "tools/support/compat/davinci", generator), "--summary"],
-      { cwd: repoRoot, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 },
-    );
+  const results = await Promise.all(generators.map(([, generator]) => summarize(generator)));
+  for (const [index, [name, generator]] of generators.entries()) {
+    const result = results[index];
     if (result.error || result.status !== 0 || result.stderr) {
       // A summary CLI may print diagnostics while returning success. Treat those
       // as a failed source gate instead of publishing an apparently clean report.
@@ -53,4 +74,4 @@ function main() {
   }
 }
 
-main();
+await main();

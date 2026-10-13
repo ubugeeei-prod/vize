@@ -9,7 +9,7 @@ its 30-minute deadline during evidence and post-job work. Its elapsed time was
 1,808 seconds. Increasing the deadline would leave that serial workload intact.
 
 Build the original full-suite CLI and SFC oracle once, then run the complete
-tooling inventory in four isolated checkouts. Retain the original `ci` recipes,
+tooling inventory in the planner's isolated checkouts. Retain the original `ci` recipes,
 stable compiler, Wild 0.9 linker and default Cargo build parallelism. The PR
 producer's pinned compiler and explicit build-job setting are separate; using
 that producer unchanged would break the existing transport identity checks.
@@ -19,11 +19,11 @@ Optimized native benchmark `ci-opt` binaries remain separate.
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
 | Full events        | Main push, schedule and dispatch, with the original conditions                                                                   |
 | Source CLI         | Complete original archive, binary/oracle hashes, source/tree, run/attempt, compiler/linker/flags and consumer-use receipt checks |
-| Test inventory     | Original glob set equals the full plan; four disjoint workers retain every file, including all 113 T1 files                      |
+| Test inventory     | Original glob set equals the full plan; the planned disjoint workers retain every file, including all T1 files                   |
 | Test harness       | Original NAPI debug build, layout verification, serial Node test execution and mandatory tsgo                                    |
 | Native controls    | Router, native JS setup and all nested reference/handler gates, attribute-value captures and strict judges run on worker 1       |
 | Worker preparation | Fixture hydration, dependencies, plugin runtime and formatter reference browser remain local to every worker                     |
-| Evidence           | Original native artifact names have one owner; differential formatter evidence has four distinct shard names                     |
+| Evidence           | Original native artifact names have one owner; differential formatter evidence has one distinct shard name per worker            |
 | Quorum             | The original full JS report requires the producer, complete worker matrix and every previous dependency                          |
 | Deadlines          | Workers keep 30 minutes; the existing full JS report keeps five minutes                                                          |
 
@@ -62,8 +62,8 @@ old glob order to a global sorted partition, so fresh full Actions must verify
 the complete harness rather than treating set equality as runtime acceptance.
 
 Keep the cache role `test-scripts`. The producer retains the original
-`Linux-X64` suffix; workers use `Linux-X64-shard-1` through `-4`. Registry, Git,
-target and save/seed keys are distinct for all five owners. Main-only trusted
+`Linux-X64` suffix; workers use `Linux-X64-shard-<index>`. Registry, Git,
+target and save/seed keys are distinct for every owner. Main-only trusted
 writes and branch dispatch restore-only behavior remain unchanged, including
 the existing suppression of mounted-target archives for this role.
 
@@ -164,3 +164,14 @@ source body and all refusal laws. The caller remains 391 lines like its parent.
 The source-selection guard checks the exact zero-base refusal and quoted
 full-history comparison fetch. It keeps all original tier, selection, browser
 and producer/quorum assertions. No execution deadline or budget changes.
+
+## Planned matrix and release evidence (successor)
+
+The four fixed workers above predate the timed planner
+([#8836](https://github.com/ubugeeei-prod/vize/pull/8836)), whose selector
+accepts only the planned `index/total`. `full-tooling-plan.yml` now emits
+that matrix for the zero-base merge plan, and every worker regenerates the
+same partition. Release preflight requires exactly one successful job named
+`test-scripts`, so the matrix jobs keep their per-shard names and a
+five-minute `test-scripts` aggregate requires the producer, the plan and
+every worker.

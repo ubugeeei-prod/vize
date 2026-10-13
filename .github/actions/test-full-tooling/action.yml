@@ -1,11 +1,14 @@
 name: Full tooling worker
-description: Run one exhaustive full-suite shard with the original source CLI and native gates.
+description: Run one planned shard of the exhaustive full suite with the original source CLI and native gates.
 inputs:
   producer:
     description: Complete original full-suite CLI producer outputs.
     required: true
   shard:
-    description: Worker index in the fixed four-worker full suite.
+    description: One-based worker index in the planned full-suite matrix.
+    required: true
+  total:
+    description: Worker count of the planned full-suite matrix.
     required: true
 runs:
   using: composite
@@ -52,7 +55,7 @@ runs:
         VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
         VIZE_TOOLING_TEST_TIER: merge
         VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
-        VIZE_TOOLING_TEST_SHARD: ${{ inputs.shard }}/4
+        VIZE_TOOLING_TEST_SHARD: ${{ inputs.shard }}/${{ inputs.total }}
       run: vp run --workspace-root test:scripts:planned
     - uses: ./.github/actions/upload-formatter-api-corpus-evidence
       if: ${{ always() }}

@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { cacheFixture, executeCacheAction } from "./support/rust-cache-fixture.mjs";
+import { allMountFailures, assertNoCandidateCommit } from "./support/rust-cache-candidates.ts";
 
 const action = parse(
   readFileSync(
@@ -142,21 +143,26 @@ await test("eligible ordinary roles still save while every untrusted role remain
         trusted.trace.filter((row) => row.kind === "cache-post" && row.name === "target").length,
         largeRoles.includes(role) || role === "test-scripts" ? 0 : 1,
       );
-      const untrusted = executeCacheAction(fixture, {
-        ...fixture.context("merge_group", "refs/heads/gh-readonly-queue/main/pr-1-a"),
-        role,
-      });
-      assert.equal(untrusted.status, 0);
-      assert.equal(
-        untrusted.trace.filter((row) => row.kind === "sticky" || row.kind === "cache-post").length,
-        0,
-      );
-      assert.ok(
-        untrusted.trace
-          .filter((row) => row.kind === "cache")
-          .every((row) => row.restoreOnly && !row.lookup),
-      );
-      assert.equal(untrusted.trace.filter((row) => row.kind === "workload").length, 1);
+      for (const mountFailures of [[], allMountFailures]) {
+        const untrusted = executeCacheAction(
+          fixture,
+          {
+            ...fixture.context("merge_group", "refs/heads/gh-readonly-queue/main/pr-1-a"),
+            role,
+          },
+          { mountFailures },
+        );
+        assert.equal(untrusted.status, 0);
+        assert.equal(untrusted.trace.filter((row) => row.kind === "cache-post").length, 0);
+        assertNoCandidateCommit(untrusted.trace);
+        // A mounted read-only clone is never overwritten by a download.
+        assert.ok(
+          untrusted.trace
+            .filter((row) => row.kind === "cache")
+            .every((row) => row.restoreOnly && row.lookup === (mountFailures.length === 0)),
+        );
+        assert.equal(untrusted.trace.filter((row) => row.kind === "workload").length, 1);
+      }
     });
   }
 });

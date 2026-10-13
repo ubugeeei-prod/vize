@@ -72,11 +72,6 @@ jobs:
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
         with:
           arch: ${{ matrix.msvc_arch }}
-      # MoonBit's native installer does not support Darwin x64. This matrix
-      # target only builds and smokes the Rust/N-API native package, so keep
-      # darwin-x64 covered without installing MoonBit.
-      - uses: ./.github/actions/setup-moonbit
-        if: github.event_name == 'workflow_dispatch' && inputs.host_only && inputs.target == 'darwin-arm64'
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
@@ -98,8 +93,7 @@ jobs:
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...'
       - name: Test native image token producer
         if: github.event_name == 'workflow_dispatch' && inputs.host_only && inputs.target == 'darwin-arm64'
-        working-directory: tools/moon
-        run: moon test --target native --deny-warn cmd/github/build_napi_package
+        run: node --test tests/tooling/native-build-token.test.ts
       - name: Build CLI
         run: cargo build --profile ci -p vize
       - name: Smoke CLI

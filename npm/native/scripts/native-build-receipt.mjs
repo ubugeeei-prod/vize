@@ -37,9 +37,9 @@ const scriptPaths = [
   "npm/native/index.js",
   "npm/native/index.d.ts",
   "npm/builder/vite/src/plugin/precompile-cache-key.ts",
-  "tools/moon/cmd/github/build_napi_package/main.mbt",
-  "tools/moon/cmd/github/build_napi_package/moon.pkg",
-  "tools/moon/cmd/github/build_napi_package/native_build_token_wbtest.mbt",
+  "tools/support/github/build-napi-package.ts",
+  "tools/support/command-runtime.ts",
+  "tests/tooling/native-build-token.test.ts",
   ".github/workflows/native-smoke.yml",
 ];
 const receipt = {

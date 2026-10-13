@@ -218,7 +218,7 @@ jobs:
       - name: Compare base and head
         if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'
         run: |
-          node head/tools/benchmarks/scripts/compare-pr.mjs \
+          node head/tools/benchmarks/scripts/compare-pr.ts \
             --input "$GITHUB_WORKSPACE/head/tools/benchmarks/scripts/__in__" \
             --base-bin "$GITHUB_WORKSPACE/base/target/ci-opt/vize" \
             --head-bin "$GITHUB_WORKSPACE/head/target/ci-opt/vize" \
@@ -279,6 +279,13 @@ jobs:
           path: head
           ref: ${{ env.BENCHMARK_HEAD_SHA }}
 
+      # enforce-pr-budget.ts relies on Node's type stripping, so pin the
+      # workspace Node instead of the runner image default. Nothing is installed.
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: "head/package.json"
+          package-manager-cache: false
+
       - name: Download benchmark results
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -288,7 +295,7 @@ jobs:
         env:
           PR_LABELS_JSON: ${{ github.event_name == 'pull_request' && toJSON(github.event.pull_request.labels.*.name) || '[]' }}
         run: >-
-          node head/tools/benchmarks/scripts/enforce-pr-budget.mjs
+          node head/tools/benchmarks/scripts/enforce-pr-budget.ts
           --json benchmark-results.json
           --labels-json "$PR_LABELS_JSON"
 

@@ -2,6 +2,7 @@ import {
   defineTasks,
   installVscodeExtensionDependencies,
   moonScript,
+  nodeTool,
   noCacheTask,
   runInPackages,
   rustTool,
@@ -27,7 +28,7 @@ export const releaseTasks = defineTasks({
     },
   ),
   "publish:wasm": noCacheTask(
-    `${moonScript("build_vize_wasm_package")} && ${moonScript("publish_npm_package", "npm/wasm")}`,
+    `${nodeTool("tasks/build-vize-wasm-package")} && ${moonScript("publish_npm_package", "npm/wasm")}`,
   ),
   "publish:native": noCacheTask(
     `${runTask("build:native")} && ${moonScript("publish_npm_package", "npm/native")}`,

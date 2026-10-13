@@ -6,7 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 
 import { generationAndCliTasks } from "../../tools/config/vite-plus/tasks/generation-cli.ts";
-import { repoRoot, runMoonScript } from "./_helpers/moonbit.ts";
+import { repoRoot, runToolCommand } from "./_helpers/tool-commands.ts";
 
 const root = repoRoot;
 
@@ -77,7 +77,7 @@ test("root config generation resolves and reproduces checked-in artifacts", () =
     const json2tsResult = runWorkspaceBinary("json2ts", ["-i", schemaPath, "-o", typesPath]);
     assertCommandSucceeded(json2tsResult, "TypeScript declaration generation failed");
 
-    const postprocessResult = runMoonScript("postprocess_types", [], {
+    const postprocessResult = runToolCommand("tools/support/tasks/postprocess-types.ts", [], {
       env: { VIZE_REPO_ROOT: tempDir },
     });
     assertCommandSucceeded(postprocessResult, "Generated declaration post-processing failed");

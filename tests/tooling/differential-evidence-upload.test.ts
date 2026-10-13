@@ -77,7 +77,7 @@ test("PR and full tooling gates retain failed observations after their tests", (
       }
     ).runs.steps,
   };
-  assert.equal(fullWorker.needs, "full-source-cli");
+  assert.deepEqual(fullWorker.needs, ["full-source-cli", "tooling-plan"]);
   assert.equal(full.jobs["full-source-cli"].uses, "./.github/workflows/full-source-cli.yml");
   const call = full.jobs["test-scripts"].steps.find(
     (step) => step.uses === "./.github/actions/test-full-tooling",
@@ -85,6 +85,7 @@ test("PR and full tooling gates retain failed observations after their tests", (
   assert.deepEqual(call?.with, {
     producer: "${{ toJSON(needs.full-source-cli.outputs) }}",
     shard: "${{ matrix.index }}",
+    total: "${{ matrix.total }}",
   });
   const restore = parse(readRepoFile(".github", "actions", "restore-source-cli", "action.yml")) as {
     runs: { steps: Step[] };

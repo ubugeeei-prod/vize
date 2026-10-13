@@ -83,6 +83,10 @@ export const rustTool = (command: string, ...args: string[]) =>
 export const rustToolFromVscodeExtension = (command: string, ...args: string[]) =>
   rustScript(`../../tools/commands/${command}.rs`, args);
 
+/** Runs a TypeScript command under `tools/support` with Node's type stripping. */
+export const nodeTool = (command: string, ...args: string[]) =>
+  ["node", `tools/support/${command}.ts`, ...args].map(shellQuote).join(" ");
+
 const workspaceMoonHome = ".cache/moonbit";
 const workspaceMoonBin = `${workspaceMoonHome}/bin/moon`;
 const workspaceMoonRegistryIndex = `${workspaceMoonHome}/registry/index/.git`;
@@ -167,4 +171,4 @@ export const moonScriptWithFreshRegistry = (name: string, ...args: string[]) =>
   );
 
 export const devApp = (target?: string) =>
-  target == null ? moonScript("dev_app") : moonScript("dev_app", target);
+  target == null ? nodeTool("tasks/dev-app") : nodeTool("tasks/dev-app", target);

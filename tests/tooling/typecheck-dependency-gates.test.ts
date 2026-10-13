@@ -16,7 +16,7 @@ test("test:scripts requires its typecheck dependencies", () => {
   );
   assert.match(
     workflow,
-    /\n  test-scripts:\n[\s\S]*?needs: full-source-cli[\s\S]*?uses: \.\/\.github\/actions\/test-full-tooling[\s\S]*?\n  editor-extensions:\n/,
+    /\n  test-scripts:\n[\s\S]*?needs: \[full-source-cli, tooling-plan\][\s\S]*?uses: \.\/\.github\/actions\/test-full-tooling[\s\S]*?\n  editor-extensions:\n/,
   );
   assert.match(
     readRepoFile(".github", "actions", "test-full-tooling", "action.yml"),
