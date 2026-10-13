@@ -14,6 +14,13 @@ When a `Check` run is cancelled, it now ends in well under a minute:
   required check skipped, and still fails when a job it needs was cancelled.
 - `test-report-comment` does not run for a cancelled run.
 
+A new `merge-queue-watchdog.yml` workflow does the same for merge-queue
+candidates. Rebuilding or removing a candidate deletes its
+`gh-readonly-queue` ref, but its runs kept going and held runners the live
+candidates needed. The watchdog polls the ref every 30 seconds and, after two
+consecutive 404 responses, cancels the candidate's other runs. Any other
+response keeps them. It exits when those runs finish.
+
 ## Reason
 
 A new push to a PR cancels the previous `Check` run, and the new run cannot
