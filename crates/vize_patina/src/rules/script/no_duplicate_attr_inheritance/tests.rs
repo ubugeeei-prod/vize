@@ -145,3 +145,160 @@ fn test_offset_applied() {
     let true_start = source.find("true").unwrap() as u32 + 40;
     assert_eq!(result.diagnostics[0].start, true_start);
 }
+
+#[test]
+fn no_attrs_in_an_sfc_is_healthy_even_with_explicit_true() {
+    let source = r#"<script setup>defineOptions({ inheritAttrs: true })</script><template><div /></template>"#;
+    assert_eq!(findings(&lint_sfc(source)), none());
+}
+
+#[test]
+fn nested_and_root_forwarding_have_distinct_identifier_ranges() {
+    let source = r#"<script setup></script><template><div v-bind="$attrs"><span v-bind="$attrs" /></div></template>"#;
+    let result = lint_sfc(source);
+    let actual = findings(&result);
+    let starts: Vec<_> = source
+        .match_indices("$attrs")
+        .map(|(start, _)| start as u32)
+        .collect();
+    assert_eq!(
+        actual,
+        starts
+            .into_iter()
+            .map(|start| (
+                "script/no-duplicate-attr-inheritance",
+                Severity::Warning,
+                start,
+                start + 6,
+                "Set \"inheritAttrs\" to false.",
+            ))
+            .collect::<Vec<_>>()
+    );
+}
+
+#[test]
+fn foreign_template_and_expression_bindings_are_not_vm_attrs() {
+    for body in [
+        r#"<div><span v-for="$attrs in rows" v-bind="$attrs" /></div>"#,
+        r#"<div><span v-for="$\u0061ttrs in rows" v-bind="$attrs" /></div>"#,
+        r#"<Comp v-slot="$attrs"><span v-bind="$attrs" /></Comp>"#,
+        r#"<Comp v-slot="$attrs" v-bind="$attrs"><span /></Comp>"#,
+        r#"<Comp v-slot="{ value: $attrs }"><span v-bind="$attrs" /></Comp>"#,
+        r#"<div v-bind="(($attrs) => $attrs)(local)" />"#,
+        r#"<div v-bind="{ '$attrs': local }" />"#,
+    ] {
+        let source = format!("<script setup></script><template>{body}</template>");
+        assert_eq!(findings(&lint_sfc(&source)), none(), "{body}");
+    }
+}
+
+#[test]
+fn renaming_an_attrs_slot_key_does_not_shadow_the_vm_reference() {
+    let source = r#"<script setup></script><template><Comp v-slot="{ $attrs: local }"><div v-bind="$attrs" /></Comp></template>"#;
+    let start = source.rfind("$attrs").unwrap() as u32;
+    assert_eq!(
+        findings(&lint_sfc(source)),
+        vec![(
+            "script/no-duplicate-attr-inheritance",
+            Severity::Warning,
+            start,
+            start + 6,
+            "Set \"inheritAttrs\" to false.",
+        )]
+    );
+}
+
+#[test]
+fn conditional_root_branches_each_keep_their_forwarding_reference() {
+    let source = r#"<script setup></script><template><div v-if="ok" v-bind="$attrs" /><span v-else v-bind="$attrs" /></template>"#;
+    let starts: Vec<_> = source
+        .match_indices("$attrs")
+        .map(|(start, _)| start as u32)
+        .collect();
+    assert_eq!(
+        findings(&lint_sfc(source)),
+        starts
+            .into_iter()
+            .map(|start| (
+                "script/no-duplicate-attr-inheritance",
+                Severity::Warning,
+                start,
+                start + 6,
+                "Set \"inheritAttrs\" to false.",
+            ))
+            .collect::<Vec<_>>()
+    );
+}
+
+#[test]
+fn scriptless_sfc_reports_the_original_gui_forwarding_reference() {
+    let source = "<template>\n  <Select v-bind=\"$attrs\" multiple />\n</template>\n";
+    assert_eq!(
+        findings(&lint_sfc(source)),
+        vec![(
+            "script/no-duplicate-attr-inheritance",
+            Severity::Warning,
+            29,
+            35,
+            "Set \"inheritAttrs\" to false.",
+        )]
+    );
+}
+
+struct ScriptNamesake;
+
+impl crate::rules::script::ScriptRule for ScriptNamesake {
+    fn meta(&self) -> &'static crate::rules::script::ScriptRuleMeta {
+        &super::META
+    }
+    fn uses_ast(&self) -> bool {
+        true
+    }
+    fn uses_template_ast(&self) -> bool {
+        true
+    }
+    fn check_program_with_sfc<'a>(
+        &self,
+        _program: &'a oxc_ast::ast::Program<'a>,
+        _source: &str,
+        offset: usize,
+        _sfc: crate::rules::script::SfcScriptContext<'_>,
+        result: &mut crate::rules::script::ScriptLintResult,
+    ) {
+        result.add_diagnostic(crate::diagnostic::LintDiagnostic::warn(
+            super::META.name,
+            "configured script callback",
+            offset as u32,
+            offset as u32 + 1,
+        ));
+    }
+}
+
+#[test]
+fn script_namesake_has_no_scriptless_capability_and_keeps_ordinary_dispatch() {
+    let mut linter = Linter::new().with_enabled_rules(Some(vec![super::META.name.into()]));
+    linter
+        .script_rule_overrides
+        .insert(super::META.name, Box::new(ScriptNamesake));
+    assert_eq!(
+        findings(&linter.lint_sfc(
+            "<template><div v-bind=\"$attrs\" /></template>",
+            "Probe.vue"
+        )),
+        none()
+    );
+    let result = linter.lint_sfc(
+        "<script setup>const value = 1;</script><template><div /></template>",
+        "Probe.vue",
+    );
+    assert_eq!(
+        findings(&result),
+        vec![(
+            super::META.name,
+            Severity::Warning,
+            14,
+            15,
+            "configured script callback"
+        )]
+    );
+}

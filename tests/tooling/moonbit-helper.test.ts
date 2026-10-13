@@ -104,7 +104,7 @@ test("runMoonScript falls back to the GitHub runner shim when MOON_BIN is unavai
 
     delete process.env.MOON_BIN;
 
-    const result = runMoonScript("github/install_playwright_browsers", [], {
+    const result = runMoonScript("release", [], {
       cwd: tempDir,
       env: {
         MOON_HELPER_LOG: logPath,

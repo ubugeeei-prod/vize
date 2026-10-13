@@ -13,6 +13,8 @@ const primary =
   "https://github.com/fornwall/rust-script/releases/download/0.34.0/rust-script-x86_64-unknown-linux-gnu.tar.gz";
 const alternative = "https://api.github.com/repos/fornwall/rust-script/releases/assets/127872817";
 const pin = "0700ecfe6c768c007f3e5a7919f4fedbf0a6727d275a196791f134a1742d4d13";
+const timeLimits = ["--connect-timeout", "10", "--max-time", "30"];
+const stallLimits = ["--speed-limit", "1", "--speed-time", "5"];
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
 // Real USTAR/gzip bytes; system tar and SHA256 validate the actual extractor.
@@ -207,6 +209,8 @@ function retained(run, count) {
       "--proto",
       "=https",
       "--tlsv1.2",
+      ...timeLimits,
+      ...stallLimits,
       "--header",
       "Accept: application/octet-stream",
       "--header",

@@ -1,4 +1,7 @@
-use super::{active_builtin_script_rule_entries, entry_may_match, resolved_rule};
+use super::{
+    active_builtin_script_rule_entries, entry_may_match, has_scriptless_attrs_inheritance,
+    resolved_rule,
+};
 use crate::Linter;
 use vize_atelier_sfc::SfcDescriptor;
 
@@ -7,11 +10,15 @@ pub(super) fn descriptor_needs_template_ast(
     descriptor: &SfcDescriptor<'_>,
     filename: &str,
 ) -> bool {
-    descriptor.script.as_ref().is_some_and(|block| {
-        block_has_active_template_ast_rule(linter, block.content.as_ref(), filename, true)
-    }) || descriptor.script_setup.as_ref().is_some_and(|block| {
-        block_has_active_template_ast_rule(linter, block.content.as_ref(), filename, false)
-    })
+    (descriptor.script.is_none()
+        && descriptor.script_setup.is_none()
+        && has_scriptless_attrs_inheritance(linter, filename))
+        || descriptor.script.as_ref().is_some_and(|block| {
+            block_has_active_template_ast_rule(linter, block.content.as_ref(), filename, true)
+        })
+        || descriptor.script_setup.as_ref().is_some_and(|block| {
+            block_has_active_template_ast_rule(linter, block.content.as_ref(), filename, false)
+        })
 }
 
 fn block_has_active_template_ast_rule(

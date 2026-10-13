@@ -1,0 +1,161 @@
+[
+  {
+    "id": "native-missing",
+    "source": "<li v-for=\"item in items\">{{ item }}</li>",
+    "require_key": 1,
+    "valid_for": 0
+  },
+  {
+    "id": "component-missing",
+    "source": "<Row v-for=\"item in items\" />",
+    "require_key": 0,
+    "valid_for": 1,
+    "valid_range": "<Row v-for=\"item in items\" />"
+  },
+  {
+    "id": "lowercase-component-missing",
+    "source": "<grid-item v-for=\"item in items\" />",
+    "require_key": 0,
+    "valid_for": 1,
+    "valid_range": "<grid-item v-for=\"item in items\" />"
+  },
+  {
+    "id": "dynamic-native-component-missing",
+    "source": "<div v-for=\"item in items\" :is=\"item.component\" />",
+    "require_key": 0,
+    "valid_for": 1,
+    "valid_range": "<div v-for=\"item in items\" :is=\"item.component\" />"
+  },
+  {
+    "id": "static-native-component-missing",
+    "source": "<div v-for=\"item in items\" is=\"Row\" />",
+    "require_key": 0,
+    "valid_for": 1,
+    "valid_range": "<div v-for=\"item in items\" is=\"Row\" />"
+  },
+  {
+    "id": "template-component-missing",
+    "source": "<template v-for=\"item in items\"><Row :item=\"item\" /></template>",
+    "require_key": 0,
+    "valid_for": 1,
+    "valid_range": "<Row :item=\"item\" />"
+  },
+  {
+    "id": "nested-template-component-missing",
+    "source": "<template v-for=\"item in items\"><template><Row :item=\"item\" /></template></template>",
+    "require_key": 0,
+    "valid_for": 1,
+    "valid_range": "<Row :item=\"item\" />"
+  },
+  {
+    "id": "template-two-components-missing",
+    "source": "<template v-for=\"item in items\"><Row /><grid-item /></template>",
+    "require_key": 0,
+    "valid_for": 2
+  },
+  {
+    "id": "mixed-native-component-missing",
+    "source": "<template v-for=\"item in items\"><li /><Row /></template>",
+    "require_key": 1,
+    "valid_for": 1,
+    "valid_range": "<Row />"
+  },
+  {
+    "id": "component-keyed",
+    "source": "<Row v-for=\"item in items\" :key=\"item.id\" />",
+    "require_key": 0,
+    "valid_for": 0
+  },
+  {
+    "id": "template-parent-keyed",
+    "source": "<template v-for=\"item in items\" :key=\"item.id\"><Row /></template>",
+    "require_key": 0,
+    "valid_for": 0
+  },
+  {
+    "id": "template-child-keyed",
+    "source": "<template v-for=\"item in items\"><Row :key=\"item.id\" /></template>",
+    "require_key": 0,
+    "valid_for": 0
+  },
+  {
+    "id": "component-static-key-invalid",
+    "source": "<Row v-for=\"item in items\" key=\"fixed\" />",
+    "require_key": 0,
+    "valid_for": 1,
+    "valid_range": "<Row v-for=\"item in items\" key=\"fixed\" />"
+  },
+  {
+    "id": "template-unrelated-child-key",
+    "source": "<template v-for=\"item in items\"><Row :key=\"other\" /></template>",
+    "require_key": 0,
+    "valid_for": 1,
+    "valid_range": ":key=\"other\""
+  },
+  {
+    "id": "literal-alias-is-not-a-reference",
+    "source": "<Row v-for=\"item in items\" :key=\"'item'\" />",
+    "require_key": 0,
+    "valid_for": 1,
+    "valid_range": ":key=\"'item'\""
+  },
+  {
+    "id": "property-alias-is-not-a-reference",
+    "source": "<Row v-for=\"item in items\" :key=\"other.item\" />",
+    "require_key": 0,
+    "valid_for": 1,
+    "valid_range": ":key=\"other.item\""
+  },
+  {
+    "id": "nested-dependent-loop",
+    "source": "<template v-for=\"item in items\"><Row v-for=\"child in item.children\" /></template>",
+    "require_key": 0,
+    "valid_for": 1,
+    "valid_range": "<Row v-for=\"child in item.children\" />"
+  },
+  {
+    "id": "nested-independent-loop",
+    "source": "<template v-for=\"item in items\"><Row v-for=\"child in others\" /></template>",
+    "require_key": 0,
+    "valid_for": 2,
+    "valid_range": "<Row v-for=\"child in others\" />"
+  },
+  {
+    "id": "nested-literal-alias-source",
+    "source": "<template v-for=\"item in items\"><Row v-for=\"child in ['item']\" /></template>",
+    "require_key": 0,
+    "valid_for": 2,
+    "valid_range": "<Row v-for=\"child in ['item']\" />"
+  },
+  {
+    "id": "svg-native-missing",
+    "source": "<svg><circle v-for=\"item in items\" /></svg>",
+    "require_key": 1,
+    "valid_for": 0
+  },
+  {
+    "id": "historical-any-child-key-policy",
+    "source": "<template v-for=\"item in items\"><Row :key=\"item.id\" /><li /></template>",
+    "require_key": 0,
+    "valid_for": 0
+  },
+  {
+    "id": "unicode-crlf-start-tag",
+    "source": "<template>\r\n  {{ \"😀\" }}\r\n  <Row\r\n    v-for=\"item in items\"\r\n    :value=\"item.value > 0\"\r\n  />\r\n</template>",
+    "require_key": 0,
+    "valid_for": 1,
+    "valid_range": "<Row\r\n    v-for=\"item in items\"\r\n    :value=\"item.value > 0\"\r\n  />"
+  },
+  {
+    "id": "template-empty-slot-iteration",
+    "source": "<template v-for=\"item in items\"><slot name=\"item\" :item=\"item\"></slot></template>",
+    "require_key": 0,
+    "valid_for": 0
+  },
+  {
+    "id": "template-multiline-empty-slot-iteration",
+    "source": "<template\n  v-for=\"item in items\"\n>\n  <slot\n    name=\"item\"\n    :item=\"item\"\n  ></slot>\n</template>",
+    "require_key": 0,
+    "valid_for": 0
+  }
+]

@@ -30,10 +30,10 @@ export const scriptType1Explanations: readonly ExplanationRecord[] = [
   ],
   [
     "script/no-duplicate-attr-inheritance",
-    "The explicit `inheritAttrs: true` values restate Vue’s default. This rule reports that redundant literal even when no root `$attrs` spread is shown.",
-    "`inheritAttrs: false` expresses a real opt-out, while the empty options object leaves default inheritance implicit. Neither restates the redundant `true` value.",
-    "Vue の既定で有効な属性継承を、`inheritAttrs: true` であらためて指定しています。このルールは、ルート要素に `$attrs` を展開するコードがない場合も、この冗長な指定を報告します。",
-    "`inheritAttrs: false` は継承を無効にする指定であり、空のオプションは既定の継承を暗黙に使います。どちらも冗長な `true` を指定しません。",
+    "The component keeps automatic attribute inheritance and also forwards `$attrs` to its button. The same fallthrough attributes can be applied twice.",
+    "`inheritAttrs: false` disables automatic inheritance, leaving the explicit button binding as the single forwarding path.",
+    "自動の属性継承を有効にしたまま、ボタンにも `$attrs` を転送しています。同じ属性が二重に適用される可能性があります。",
+    "`inheritAttrs: false` で自動の継承を無効にし、ボタンへの明示的な転送だけを残します。",
   ],
   [
     "script/no-export-in-script-setup",

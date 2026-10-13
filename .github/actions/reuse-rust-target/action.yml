@@ -1,0 +1,20 @@
+name: Reuse a Rust target directory
+description: Keep only Cargo's build cache and give unchanged sources their recorded mtimes
+
+inputs:
+  target-path:
+    description: Absolute Rust target directory that holds the manifest
+    required: true
+  secondary-target-path:
+    description: Optional second target directory mounted in the same job
+    required: false
+    default: ""
+  record:
+    description: Whether this trusted run records the manifest for later runs
+    required: true
+
+runs:
+  using: node24
+  main: main.ts
+  post: post.ts
+  post-if: always()

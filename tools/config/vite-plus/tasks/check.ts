@@ -44,6 +44,7 @@ const strictRepoCheckCommand = [
   "node tools/support/typescript/check-project.ts",
   "node tools/support/typescript/check-project.ts tsconfig.public-vapor.json",
   "node tools/support/typescript/check-project.ts tsconfig.benchmark-reports.json",
+  "node tools/support/typescript/check-project.ts tsconfig.benchmark-scripts.json",
   "node tools/support/typescript/check-project.ts tsconfig.ci-gates.json",
   "node tools/support/typescript/check-project.ts tsconfig.source-build-receipt.json",
   "node tools/support/typescript/check-project.ts tsconfig.css-catalog.json",

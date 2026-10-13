@@ -1,7 +1,7 @@
 import { cacheInputs, packedPackages } from "../task-inputs.ts";
 import {
   defineTasks,
-  moonScript,
+  nodeTool,
   noCacheTask,
   runInPackages,
   runInVscodeExtension,
@@ -63,8 +63,8 @@ export const buildTasks = defineTasks({
   // matches the profile that vite-plugin-vize uses for standalone tests.
   // test:js reuses this successful build instead of invoking Cargo again.
   "build:native:test": noCacheTask(runPackageScriptDirectly("build:debug", ["./npm/native"])),
-  "build:wasm": task(moonScript("build_vitrine_wasm", "nodejs", "npm/builder/vite/wasm")),
-  "build:wasm-web": task(moonScript("build_vitrine_wasm", "web", "playground/src/wasm")),
+  "build:wasm": task(nodeTool("tasks/build-vitrine-wasm", "nodejs", "npm/builder/vite/wasm")),
+  "build:wasm-web": task(nodeTool("tasks/build-vitrine-wasm", "web", "playground/src/wasm")),
   "build:vite-plugin": noCacheTask(
     `${runInPackages("build", ["./npm/cli"])} && ${runInPackages("build", ["./npm/builder/vite"])}`,
   ),

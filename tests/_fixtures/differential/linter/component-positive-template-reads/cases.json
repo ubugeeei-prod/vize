@@ -1,0 +1,112 @@
+{
+  "schema": "vize.lint.component-positive-template-reads",
+  "version": 1,
+  "cases": [
+    {
+      "id": "unrelated-if",
+      "source": "unrelated-if.vue.txt",
+      "expectedWarnings": 0
+    },
+    {
+      "id": "unrelated-try",
+      "source": "unrelated-try.vue.txt",
+      "expectedWarnings": 0
+    },
+    {
+      "id": "unrelated-function-throw",
+      "source": "unrelated-function-throw.vue.txt",
+      "expectedWarnings": 0
+    },
+    {
+      "id": "unrelated-class",
+      "source": "unrelated-class.vue.txt",
+      "expectedWarnings": 0
+    },
+    {
+      "id": "unrelated-default-parameter",
+      "source": "unrelated-default-parameter.vue.txt",
+      "expectedWarnings": 0
+    },
+    {
+      "id": "unused-import-after-if",
+      "source": "unused-import-after-if.vue.txt",
+      "expectedWarnings": 1
+    },
+    {
+      "id": "same-spelling-member-after-if",
+      "source": "same-spelling-member-after-if.vue.txt",
+      "expectedWarnings": 1
+    },
+    {
+      "id": "same-spelling-string-after-if",
+      "source": "same-spelling-string-after-if.vue.txt",
+      "expectedWarnings": 1
+    },
+    {
+      "id": "same-spelling-object-key-after-if",
+      "source": "same-spelling-object-key-after-if.vue.txt",
+      "expectedWarnings": 1
+    },
+    {
+      "id": "for-shadow-after-if",
+      "source": "for-shadow-after-if.vue.txt",
+      "expectedWarnings": 1
+    },
+    {
+      "id": "slot-shadow-after-if",
+      "source": "slot-shadow-after-if.vue.txt",
+      "expectedWarnings": 1
+    },
+    {
+      "id": "arrow-shadow-after-if",
+      "source": "arrow-shadow-after-if.vue.txt",
+      "expectedWarnings": 1
+    },
+    {
+      "id": "type-query-after-if",
+      "source": "type-query-after-if.vue.txt",
+      "expectedWarnings": 1
+    },
+    {
+      "id": "write-only-after-if",
+      "source": "write-only-after-if.vue.txt",
+      "expectedWarnings": 1
+    },
+    {
+      "id": "whole-tiny-login",
+      "source": "whole-tiny-login.vue.txt",
+      "expectedWarnings": 0,
+      "origin": {
+        "repository": "https://github.com/tiny-craft/tiny-rdm",
+        "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+        "path": "frontend/src/components/LoginPage.vue",
+        "license": "GPL-3.0-only",
+        "sha256": "910a5932a7a3ffd2fac79255f7398e8841f6d5e3a765dcf658ba9a9577857dc9"
+      }
+    },
+    {
+      "id": "whole-tiny-log-pane",
+      "source": "whole-tiny-log-pane.vue.txt",
+      "expectedWarnings": 0,
+      "origin": {
+        "repository": "https://github.com/tiny-craft/tiny-rdm",
+        "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+        "path": "frontend/src/components/content/ContentLogPane.vue",
+        "license": "GPL-3.0-only",
+        "sha256": "a6962545280a0cb1b0a5c2423162b8b4d21bb6a9227244352a50f40147eb988f"
+      }
+    },
+    {
+      "id": "whole-frappe-font",
+      "source": "whole-frappe-font.vue.txt",
+      "expectedWarnings": 0,
+      "origin": {
+        "repository": "https://github.com/frappe/builder",
+        "revision": "ed705f9dddc9a78867fb672c342ee025368ac6a1",
+        "path": "frontend/src/components/Controls/FontInput.vue",
+        "license": "AGPL-3.0-only",
+        "sha256": "bc48ebfd04cf2fe5062780b750c03a20cf10804748df02515c7eaadab4ffdbc0"
+      }
+    }
+  ]
+}

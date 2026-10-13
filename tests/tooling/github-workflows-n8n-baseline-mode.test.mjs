@@ -18,6 +18,9 @@ const workflow = parse(
     "utf8",
   ),
 );
+const pullRequest = parse(
+  readFileSync(new URL("../../.github/workflows/pr-js-checks.yml", import.meta.url), "utf8"),
+);
 const controller = "node npm/oxlint/scripts/check-project-transport.mjs";
 const selector = new URL("../../npm/oxlint/scripts/n8n-baseline-partitions.mjs", import.meta.url)
   .href;
@@ -42,7 +45,7 @@ function observedMode(...overlays) {
   return child.stdout;
 }
 
-void test("only the existing CI qualification step opts into fixed baseline partitions", () => {
+void test("only the CI qualification steps opt into fixed baseline partitions", () => {
   const selected = action.runs.steps.filter((step) => step.id === "original-project-qualification");
   assert.equal(selected.length, 1);
   const qualification = selected[0];
@@ -56,6 +59,23 @@ void test("only the existing CI qualification step opts into fixed baseline part
     if (step !== qualification) assert.equal(step.env?.VIZE_N8N_BASELINE_MODE, undefined);
   }
   assert.equal(observedMode(qualification.env), "partitioned");
+  // PR CI runs the same qualification step in its own job.
+  assert.equal(pullRequest.env?.VIZE_N8N_BASELINE_MODE, undefined);
+  const pullRequestSteps = Object.values(pullRequest.jobs).flatMap((job) => {
+    assert.equal(job.env?.VIZE_N8N_BASELINE_MODE, undefined);
+    return job.steps;
+  });
+  const pullRequestQualification = pullRequestSteps.filter(
+    (step) => step.id === "original-project-qualification",
+  );
+  assert.equal(pullRequestQualification.length, 1);
+  assert.deepEqual(pullRequestQualification[0].env, qualification.env);
+  assert.equal(pullRequestQualification[0].run, controller);
+  assert.equal(pullRequestQualification[0]["continue-on-error"], undefined);
+  for (const step of pullRequestSteps) {
+    if (step !== pullRequestQualification[0])
+      assert.equal(step.env?.VIZE_N8N_BASELINE_MODE, undefined);
+  }
   assert.equal(parseHostOptions([], {}).mode, "concurrent");
   assert.equal(parseHostOptions([], {}).workers, 2);
   assert.equal(hostVersions.length, 2);

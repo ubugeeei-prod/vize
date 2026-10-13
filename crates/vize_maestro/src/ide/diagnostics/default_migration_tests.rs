@@ -8,7 +8,7 @@ use tower_lsp::lsp_types::Url;
 #[test]
 fn editor_default_migrations_preserve_full_vectors_and_legacy_off_controls() {
     let corpus: Value = serde_json::from_str(include_str!(
-        "../../../../../tests/_fixtures/lint-default-migrations/cases.json"
+        "../../../../../tests/_fixtures/lint-default-migrations/current-range-cases.json"
     ))
     .unwrap();
     let disabled: serde_json::Map<_, _> = corpus["promotedRules"]

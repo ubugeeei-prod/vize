@@ -96,7 +96,7 @@ jobs:
             printf '%s\n' '{"selected":["vize_atelier_vapor"],"reason":"Explicit Davinci Vapor native/retained comparison."}' > "$GITHUB_WORKSPACE/criterion-impact.json"
             echo 'has_suites=true' >> "$GITHUB_OUTPUT"
           else
-            node head/tools/benchmarks/scripts/criterion-impact.mjs \
+            node head/tools/benchmarks/scripts/criterion-impact.ts \
               --repo-dir "$GITHUB_WORKSPACE/head" \
               --base-sha "$PR_BASE_SHA" \
               --head-sha "$PR_HEAD_SHA" \
@@ -133,7 +133,7 @@ jobs:
       # not share one Cargo target graph.
       - name: Run criterion A/B
         run: |
-          node head/tools/benchmarks/scripts/criterion-ab.mjs \
+          node head/tools/benchmarks/scripts/criterion-ab.ts \
             --base-dir "$GITHUB_WORKSPACE/base" \
             --head-dir "$GITHUB_WORKSPACE/head" \
             --target-dir "$GITHUB_WORKSPACE/head/target" \
@@ -149,7 +149,7 @@ jobs:
         env:
           HEAD_SHA: ${{ inputs.head_sha }}
         run: |
-          node head/tools/benchmarks/scripts/vapor-compiler-compare.mjs \
+          node head/tools/benchmarks/scripts/vapor-compiler-compare.ts \
             --head-sha "$HEAD_SHA" \
             --criterion "$GITHUB_WORKSPACE/head/target/criterion-ab-head.json" \
             --out "$GITHUB_WORKSPACE/vapor-compiler-comparison.json" \
@@ -202,7 +202,7 @@ jobs:
         run: node tools/benchmarks/scripts/generate.mjs "$DIALECT_GUARD_FILE_COUNT"
       - name: Compare legacy OFF vs ON
         run: |
-          node tools/benchmarks/scripts/dialect-guard.mjs \
+          node tools/benchmarks/scripts/dialect-guard.ts \
             --input tools/benchmarks/scripts/__in__ \
             --off-bin target/off/ci-opt/vize \
             --on-bin target/on/ci-opt/vize \
@@ -305,7 +305,7 @@ jobs:
           pattern: davinci-production-perf-*
           path: production-perf
       - name: Validate identities and aggregate all independent observations
-        run: vp exec node tools/benchmarks/scripts/davinci-production-summary.mjs production-perf production-perf/summary.md
+        run: vp exec node tools/benchmarks/scripts/davinci-production-summary.ts production-perf production-perf/summary.md
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: davinci-production-summary

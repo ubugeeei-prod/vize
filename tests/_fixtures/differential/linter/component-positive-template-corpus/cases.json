@@ -1,0 +1,358 @@
+{
+  "schema": "vize.lint.component-positive-template-corpus",
+  "version": 1,
+  "sourceBefore": "2817a0aa13518dd46c16bc8bf56ac831f68c24dc",
+  "cases": [
+    {
+      "id": "dho-web-client--src--components--common--token-value",
+      "source": "dho-web-client--src--components--common--token-value.vue.txt",
+      "beforeWarnings": 1,
+      "expectedWarnings": 1,
+      "origin": {
+        "repository": "https://github.com/hypha-dao/dho-web-client",
+        "revision": "94a804ee650cb49990f6fcd4f4c54afa3a925abe",
+        "path": "src/components/common/token-value.vue",
+        "license": "Apache-2.0",
+        "sha256": "2e7c92cff72ed119242a4e4ef20e3120ef4643a32fc450fa85197bd960ef8595"
+      }
+    },
+    {
+      "id": "filebrowser--frontend--src--views--files--FileListing",
+      "source": "filebrowser--frontend--src--views--files--FileListing.vue.txt",
+      "beforeWarnings": 1,
+      "expectedWarnings": 1,
+      "origin": {
+        "repository": "https://github.com/filebrowser/filebrowser",
+        "revision": "833d908884d5c801f30f5c098d7977177eb3a36b",
+        "path": "frontend/src/views/files/FileListing.vue",
+        "license": "Apache-2.0",
+        "sha256": "373bbb931a10f1dedca423717f0bb681231ffcf351cee805f64047765eee6c65"
+      }
+    },
+    {
+      "id": "frappe-builder--frontend--src--components--Controls--FontInput",
+      "source": "frappe-builder--frontend--src--components--Controls--FontInput.vue.txt",
+      "beforeWarnings": 1,
+      "expectedWarnings": 0,
+      "origin": {
+        "repository": "https://github.com/frappe/builder",
+        "revision": "ed705f9dddc9a78867fb672c342ee025368ac6a1",
+        "path": "frontend/src/components/Controls/FontInput.vue",
+        "license": "AGPL-3.0-only",
+        "sha256": "bc48ebfd04cf2fe5062780b750c03a20cf10804748df02515c7eaadab4ffdbc0"
+      }
+    },
+    {
+      "id": "frappe-builder--frontend--src--components--PropsOptions--ArrayOptions",
+      "source": "frappe-builder--frontend--src--components--PropsOptions--ArrayOptions.vue.txt",
+      "beforeWarnings": 1,
+      "expectedWarnings": 1,
+      "origin": {
+        "repository": "https://github.com/frappe/builder",
+        "revision": "ed705f9dddc9a78867fb672c342ee025368ac6a1",
+        "path": "frontend/src/components/PropsOptions/ArrayOptions.vue",
+        "license": "AGPL-3.0-only",
+        "sha256": "94c827319ba0bf05c5a2daa9de28c60c2932dc8f049964b428083c81561b95d2"
+      }
+    },
+    {
+      "id": "tiny-rdm--frontend--src--components--LoginPage",
+      "source": "tiny-rdm--frontend--src--components--LoginPage.vue.txt",
+      "beforeWarnings": 1,
+      "expectedWarnings": 0,
+      "origin": {
+        "repository": "https://github.com/tiny-craft/tiny-rdm",
+        "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+        "path": "frontend/src/components/LoginPage.vue",
+        "license": "GPL-3.0-only",
+        "sha256": "910a5932a7a3ffd2fac79255f7398e8841f6d5e3a765dcf658ba9a9577857dc9"
+      }
+    },
+    {
+      "id": "tiny-rdm--frontend--src--components--content--ContentLogPane",
+      "source": "tiny-rdm--frontend--src--components--content--ContentLogPane.vue.txt",
+      "beforeWarnings": 2,
+      "expectedWarnings": 0,
+      "origin": {
+        "repository": "https://github.com/tiny-craft/tiny-rdm",
+        "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+        "path": "frontend/src/components/content/ContentLogPane.vue",
+        "license": "GPL-3.0-only",
+        "sha256": "a6962545280a0cb1b0a5c2423162b8b4d21bb6a9227244352a50f40147eb988f"
+      }
+    },
+    {
+      "id": "tiny-rdm--frontend--src--components--content--ContentServerPane",
+      "source": "tiny-rdm--frontend--src--components--content--ContentServerPane.vue.txt",
+      "beforeWarnings": 1,
+      "expectedWarnings": 0,
+      "origin": {
+        "repository": "https://github.com/tiny-craft/tiny-rdm",
+        "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+        "path": "frontend/src/components/content/ContentServerPane.vue",
+        "license": "GPL-3.0-only",
+        "sha256": "25745f8b274fc2ffb90a48378f4a3a819c032b3f0f0d61a59b4abaeab4baf7b3"
+      }
+    },
+    {
+      "id": "tiny-rdm--frontend--src--components--content_value--ContentEntryEditor",
+      "source": "tiny-rdm--frontend--src--components--content_value--ContentEntryEditor.vue.txt",
+      "beforeWarnings": 5,
+      "expectedWarnings": 0,
+      "origin": {
+        "repository": "https://github.com/tiny-craft/tiny-rdm",
+        "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+        "path": "frontend/src/components/content_value/ContentEntryEditor.vue",
+        "license": "GPL-3.0-only",
+        "sha256": "8ed9f2a82e9410d47451d802f44a9dc5df9e346c99cef669f676fef58ec060c5"
+      }
+    },
+    {
+      "id": "tiny-rdm--frontend--src--components--content_value--ContentPubsub",
+      "source": "tiny-rdm--frontend--src--components--content_value--ContentPubsub.vue.txt",
+      "beforeWarnings": 6,
+      "expectedWarnings": 0,
+      "origin": {
+        "repository": "https://github.com/tiny-craft/tiny-rdm",
+        "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+        "path": "frontend/src/components/content_value/ContentPubsub.vue",
+        "license": "GPL-3.0-only",
+        "sha256": "ec1bbf751d61d1d7dab72cfc5b634992bfa1e2adf8b7d97f68509c32cf59d405"
+      }
+    },
+    {
+      "id": "tiny-rdm--frontend--src--components--content_value--ContentServerStatus",
+      "source": "tiny-rdm--frontend--src--components--content_value--ContentServerStatus.vue.txt",
+      "beforeWarnings": 1,
+      "expectedWarnings": 0,
+      "origin": {
+        "repository": "https://github.com/tiny-craft/tiny-rdm",
+        "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+        "path": "frontend/src/components/content_value/ContentServerStatus.vue",
+        "license": "GPL-3.0-only",
+        "sha256": "1cb4d3e68a206c96ce6df367066be94117fc27305ece068fef0bfe5c3d6a9ac2"
+      }
+    },
+    {
+      "id": "tiny-rdm--frontend--src--components--content_value--ContentToolbar",
+      "source": "tiny-rdm--frontend--src--components--content_value--ContentToolbar.vue.txt",
+      "beforeWarnings": 4,
+      "expectedWarnings": 0,
+      "origin": {
+        "repository": "https://github.com/tiny-craft/tiny-rdm",
+        "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+        "path": "frontend/src/components/content_value/ContentToolbar.vue",
+        "license": "GPL-3.0-only",
+        "sha256": "f2c61111ddfb25414edbd9733e3d5edf4bbdd03aa7f3bc925d9c81b619bbae4f"
+      }
+    },
+    {
+      "id": "tiny-rdm--frontend--src--components--content_value--ContentValueHash",
+      "source": "tiny-rdm--frontend--src--components--content_value--ContentValueHash.vue.txt",
+      "beforeWarnings": 5,
+      "expectedWarnings": 0,
+      "origin": {
+        "repository": "https://github.com/tiny-craft/tiny-rdm",
+        "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+        "path": "frontend/src/components/content_value/ContentValueHash.vue",
+        "license": "GPL-3.0-only",
+        "sha256": "4d1929bb035f0e7bf3180a84350bd49846f6a9fb959af2ac3c1ec5b5183bbf9c"
+      }
+    },
+    {
+      "id": "tiny-rdm--frontend--src--components--content_value--ContentValueJson",
+      "source": "tiny-rdm--frontend--src--components--content_value--ContentValueJson.vue.txt",
+      "beforeWarnings": 2,
+      "expectedWarnings": 0,
+      "origin": {
+        "repository": "https://github.com/tiny-craft/tiny-rdm",
+        "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+        "path": "frontend/src/components/content_value/ContentValueJson.vue",
+        "license": "GPL-3.0-only",
+        "sha256": "1496e4f66a79b5da641b4f6a6d13e82e5233aa71d517b234b46901c60851adbd"
+      }
+    },
+    {
+      "id": "tiny-rdm--frontend--src--components--content_value--ContentValueList",
+      "source": "tiny-rdm--frontend--src--components--content_value--ContentValueList.vue.txt",
+      "beforeWarnings": 5,
+      "expectedWarnings": 0,
+      "origin": {
+        "repository": "https://github.com/tiny-craft/tiny-rdm",
+        "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+        "path": "frontend/src/components/content_value/ContentValueList.vue",
+        "license": "GPL-3.0-only",
+        "sha256": "802ff396c0460c44f89829d5d00cc0e7d13415494daa272d81223633611b6ed6"
+      }
+    },
+    {
+      "id": "tiny-rdm--frontend--src--components--content_value--ContentValueSet",
+      "source": "tiny-rdm--frontend--src--components--content_value--ContentValueSet.vue.txt",
+      "beforeWarnings": 5,
+      "expectedWarnings": 0,
+      "origin": {
+        "repository": "https://github.com/tiny-craft/tiny-rdm",
+        "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+        "path": "frontend/src/components/content_value/ContentValueSet.vue",
+        "license": "GPL-3.0-only",
+        "sha256": "6b879f9b7657371e2978498a0a3f0edc9081ee6a89e58863b474c05774517d7b"
+      }
+    },
+    {
+      "id": "tiny-rdm--frontend--src--components--content_value--ContentValueStream",
+      "source": "tiny-rdm--frontend--src--components--content_value--ContentValueStream.vue.txt",
+      "beforeWarnings": 3,
+      "expectedWarnings": 0,
+      "origin": {
+        "repository": "https://github.com/tiny-craft/tiny-rdm",
+        "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+        "path": "frontend/src/components/content_value/ContentValueStream.vue",
+        "license": "GPL-3.0-only",
+        "sha256": "9564f59274d7a8dee012fdec445d98026a0714ba8dd301df7a72e3e944f8ad0d"
+      }
+    },
+    {
+      "id": "tiny-rdm--frontend--src--components--content_value--ContentValueString",
+      "source": "tiny-rdm--frontend--src--components--content_value--ContentValueString.vue.txt",
+      "beforeWarnings": 2,
+      "expectedWarnings": 0,
+      "origin": {
+        "repository": "https://github.com/tiny-craft/tiny-rdm",
+        "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+        "path": "frontend/src/components/content_value/ContentValueString.vue",
+        "license": "GPL-3.0-only",
+        "sha256": "74df8c947ad9eb45cb5e4c8e4cdb2038a3d4919e8095554c277d2473a58af0de"
+      }
+    },
+    {
+      "id": "tiny-rdm--frontend--src--components--content_value--ContentValueZSet",
+      "source": "tiny-rdm--frontend--src--components--content_value--ContentValueZSet.vue.txt",
+      "beforeWarnings": 5,
+      "expectedWarnings": 0,
+      "origin": {
+        "repository": "https://github.com/tiny-craft/tiny-rdm",
+        "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+        "path": "frontend/src/components/content_value/ContentValueZSet.vue",
+        "license": "GPL-3.0-only",
+        "sha256": "a96e74b58ce738109b7e0fa08ce7e070039975d22e91115976d57ce86bc7ac5c"
+      }
+    },
+    {
+      "id": "tiny-rdm--frontend--src--components--content_value--FormatSelector",
+      "source": "tiny-rdm--frontend--src--components--content_value--FormatSelector.vue.txt",
+      "beforeWarnings": 2,
+      "expectedWarnings": 0,
+      "origin": {
+        "repository": "https://github.com/tiny-craft/tiny-rdm",
+        "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+        "path": "frontend/src/components/content_value/FormatSelector.vue",
+        "license": "GPL-3.0-only",
+        "sha256": "25b5909dadfa29c72a7b6681ad1e2e10b3a26417ede9fbaea42bdba19fc1bcea"
+      }
+    },
+    {
+      "id": "tiny-rdm--frontend--src--components--dialogs--ConnectionDialog",
+      "source": "tiny-rdm--frontend--src--components--dialogs--ConnectionDialog.vue.txt",
+      "beforeWarnings": 4,
+      "expectedWarnings": 0,
+      "origin": {
+        "repository": "https://github.com/tiny-craft/tiny-rdm",
+        "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+        "path": "frontend/src/components/dialogs/ConnectionDialog.vue",
+        "license": "GPL-3.0-only",
+        "sha256": "031f13069bc2c97499dc9da21651dee80e6c5862da81560206d8337e48f8f8fd"
+      }
+    },
+    {
+      "id": "tiny-rdm--frontend--src--components--dialogs--PreferencesDialog",
+      "source": "tiny-rdm--frontend--src--components--dialogs--PreferencesDialog.vue.txt",
+      "beforeWarnings": 2,
+      "expectedWarnings": 0,
+      "origin": {
+        "repository": "https://github.com/tiny-craft/tiny-rdm",
+        "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+        "path": "frontend/src/components/dialogs/PreferencesDialog.vue",
+        "license": "GPL-3.0-only",
+        "sha256": "a2309300434fbb259505317cfb3eb95a33ba6f488ca2762c90935c5ada0e0ee5"
+      }
+    },
+    {
+      "id": "tiny-rdm--frontend--src--components--new_value--AddZSetValue",
+      "source": "tiny-rdm--frontend--src--components--new_value--AddZSetValue.vue.txt",
+      "beforeWarnings": 2,
+      "expectedWarnings": 0,
+      "origin": {
+        "repository": "https://github.com/tiny-craft/tiny-rdm",
+        "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+        "path": "frontend/src/components/new_value/AddZSetValue.vue",
+        "license": "GPL-3.0-only",
+        "sha256": "2f01bed1e14440f14a42d8d5e2639101fa7edc17d717e4f453c3ba60d9da9347"
+      }
+    },
+    {
+      "id": "tiny-rdm--frontend--src--components--sidebar--BrowserPane",
+      "source": "tiny-rdm--frontend--src--components--sidebar--BrowserPane.vue.txt",
+      "beforeWarnings": 10,
+      "expectedWarnings": 0,
+      "origin": {
+        "repository": "https://github.com/tiny-craft/tiny-rdm",
+        "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+        "path": "frontend/src/components/sidebar/BrowserPane.vue",
+        "license": "GPL-3.0-only",
+        "sha256": "a0a9ad364cc5c52aea6cb7c2b476e2a1f104972ec1b6fc0e3cd970a6e1a5ae6d"
+      }
+    },
+    {
+      "id": "tiny-rdm--frontend--src--components--sidebar--ConnectionPane",
+      "source": "tiny-rdm--frontend--src--components--sidebar--ConnectionPane.vue.txt",
+      "beforeWarnings": 4,
+      "expectedWarnings": 0,
+      "origin": {
+        "repository": "https://github.com/tiny-craft/tiny-rdm",
+        "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+        "path": "frontend/src/components/sidebar/ConnectionPane.vue",
+        "license": "GPL-3.0-only",
+        "sha256": "07b4ce8d6c93301cca5c031d63c86ba8013743f5b199bfe87dd18d6bb386f8c4"
+      }
+    },
+    {
+      "id": "vue-termui--old--packages--playground--src--CenteredDemo",
+      "source": "vue-termui--old--packages--playground--src--CenteredDemo.vue.txt",
+      "beforeWarnings": 1,
+      "expectedWarnings": 1,
+      "origin": {
+        "repository": "https://github.com/vue-terminal/vue-termui",
+        "revision": "26b9b8e402132ca440d7c80e7e8521e1a90175be",
+        "path": "old/packages/playground/src/CenteredDemo.vue",
+        "license": "MIT",
+        "sha256": "0b7bef7be94e1a2d10491d74a939cb38bfe75757dfea4218ff54bd8173f46319"
+      }
+    },
+    {
+      "id": "vue-termui--old--packages--playground--src--Focusables",
+      "source": "vue-termui--old--packages--playground--src--Focusables.vue.txt",
+      "beforeWarnings": 1,
+      "expectedWarnings": 1,
+      "origin": {
+        "repository": "https://github.com/vue-terminal/vue-termui",
+        "revision": "26b9b8e402132ca440d7c80e7e8521e1a90175be",
+        "path": "old/packages/playground/src/Focusables.vue",
+        "license": "MIT",
+        "sha256": "a7421c7a245bb610d5a8069ad09e746c4f060f21fa9e36aa1ac8b4188eef0554"
+      }
+    },
+    {
+      "id": "vue-termui--old--packages--playground--src--bugs--Focusables",
+      "source": "vue-termui--old--packages--playground--src--bugs--Focusables.vue.txt",
+      "beforeWarnings": 1,
+      "expectedWarnings": 1,
+      "origin": {
+        "repository": "https://github.com/vue-terminal/vue-termui",
+        "revision": "26b9b8e402132ca440d7c80e7e8521e1a90175be",
+        "path": "old/packages/playground/src/bugs/Focusables.vue",
+        "license": "MIT",
+        "sha256": "792b7cb98e78427ae3e1b8d50ce434fdcab4bc86b9a42119a3fd9a98aec963d1"
+      }
+    }
+  ]
+}

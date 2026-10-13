@@ -1,50 +1,13 @@
 use serde_json::{Value, json};
 use vize_patina::rules::vue::RequireVForKey;
-use vize_patina::{HelpLevel, LintDiagnostic, LintResult, Linter, RuleRegistry};
+use vize_patina::{HelpLevel, Linter, RuleRegistry};
 
+mod v_for_key_capture;
+use v_for_key_capture::{whole_packet, write_capture};
+
+// The original 21 before packets remain intact in CASES.
 const CASES: &str = include_str!("fixtures/slot-fallback-key/cases.json");
-
-fn diagnostic_packet(diagnostic: &LintDiagnostic) -> Value {
-    let LintDiagnostic {
-        rule_name,
-        severity,
-        message,
-        start,
-        end,
-        help,
-        labels,
-        fix,
-    } = diagnostic;
-    json!({
-        "rule_name": rule_name,
-        "severity": severity,
-        "message": message,
-        "start": start,
-        "end": end,
-        "help": help,
-        "labels": labels.iter().map(|label| json!({
-            "message": label.message,
-            "start": label.start,
-            "end": label.end,
-        })).collect::<Vec<_>>(),
-        "fix": fix,
-    })
-}
-
-fn whole_packet(result: &LintResult) -> Value {
-    let LintResult {
-        filename,
-        diagnostics,
-        error_count,
-        warning_count,
-    } = result;
-    json!({
-        "filename": filename,
-        "diagnostics": diagnostics.iter().map(diagnostic_packet).collect::<Vec<_>>(),
-        "error_count": error_count,
-        "warning_count": warning_count,
-    })
-}
+const AFTER: &str = include_str!("fixtures/v-for-key-ownership/slot-fallback-after.json");
 
 #[test]
 fn slot_fallback_key_owned_source_api_packets() {
@@ -65,22 +28,30 @@ fn slot_fallback_key_owned_source_api_packets() {
         .collect::<Vec<_>>();
 
     // Retain every public API field before assertions, including failing cases.
+    write_capture("v-for-slot-current-packets.json", &packets);
     if let Ok(path) = std::env::var("VIZE_SLOT_KEY_CAPTURE_PATH") {
         std::fs::write(path, serde_json::to_vec_pretty(&packets).unwrap()).unwrap();
     }
 
-    for (case, recorded) in cases.iter().zip(&packets) {
-        let expected = case["expectedNativeDiagnostics"].as_u64().unwrap();
+    let after: Value = serde_json::from_str(AFTER).unwrap();
+    let after = after.as_array().unwrap();
+    assert_eq!(
+        after.len(),
+        cases.len(),
+        "all original cases retain a current oracle"
+    );
+    for ((case, recorded), current) in cases.iter().zip(&packets).zip(after) {
+        assert_eq!(case["id"], current["caseId"]);
+        if case["id"] != "empty-slot-policy-limit" {
+            assert_eq!(current["packet"], case["expectedNativePacket"]);
+        }
+        let expected = current["packet"]["error_count"].as_u64().unwrap();
         assert_eq!(
             recorded["packet"]["error_count"], expected,
             "{}",
             case["id"]
         );
         assert_eq!(recorded["packet"]["warning_count"], 0, "{}", case["id"]);
-        assert_eq!(
-            recorded["packet"], case["expectedNativePacket"],
-            "{}",
-            case["id"]
-        );
+        assert_eq!(recorded["packet"], current["packet"], "{}", case["id"]);
     }
 }

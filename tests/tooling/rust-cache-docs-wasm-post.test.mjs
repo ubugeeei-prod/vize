@@ -5,6 +5,12 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { cacheFixture, executeCacheAction } from "./support/rust-cache-fixture.mjs";
+import {
+  allMountFailures,
+  assertNoCandidateCommit,
+  assertUntrustedStickyRows,
+  isCandidate,
+} from "./support/rust-cache-candidates.ts";
 
 const action = parse(
   readFileSync(
@@ -69,7 +75,7 @@ function workloads(fixture, result) {
 await test("primary docs omission preserves the complete original action except three expressions", () => {
   assert.equal(
     hash(JSON.stringify(original)),
-    "f7076c4494aaf7ad6cbe4038ecb7e6bd7fd2ef83411f3dd35df41a0beb6aca74",
+    "3089a3a88d5b5349f40d84e4ab236380df28abe0ad3890b32681c99636f7cd0e",
   );
 });
 
@@ -148,7 +154,9 @@ await test("PR, merge-group, foreign source and other untrusted events retain or
       const context = { ...fixture.context(event, ref), ...paths };
       if (foreignSource) context.sourceSha = foreignSource;
       context.event.deleted = deleted;
-      const options = { hit: "partial", nestedPost: true, secondaryWorkload: true };
+      // Candidates fall back to these restores only when their read-only mounts fail.
+      const mountFailures = isCandidate(event) ? allMountFailures : [];
+      const options = { hit: "partial", nestedPost: true, secondaryWorkload: true, mountFailures };
       const before = executeCacheAction(fixture, context, {
         ...options,
         steps: original.runs.steps,
@@ -159,12 +167,8 @@ await test("PR, merge-group, foreign source and other untrusted events retain or
       assert.deepEqual(identity(target(after)), identity(target(before)));
       assert.equal(target(after).restoreOnly, true);
       assert.equal(target(after).lookup, false);
-      assert.equal(
-        after.trace.filter(
-          ({ kind }) => kind === "cache-post" || kind === "sticky" || kind === "sticky-post",
-        ).length,
-        0,
-      );
+      assert.equal(after.trace.filter(({ kind }) => kind === "cache-post").length, 0);
+      assertUntrustedStickyRows(after.trace, event);
     });
 });
 
@@ -207,7 +211,7 @@ await test("other roles and a failed secondary preserve independent primary beha
 });
 
 await test("old compatible primary seeds restore without accepting stale source or overwriting mounted clones", () => {
-  for (const mode of ["pull_request", "failed-mount", "mounted"])
+  for (const mode of ["pull_request", "read-only", "failed-mount", "mounted"])
     cacheFixture((fixture) => {
       const options = { nestedPost: true, secondaryWorkload: true, storedCache: true };
       const seeded = executeCacheAction(
@@ -237,19 +241,22 @@ await test("old compatible primary seeds restore without accepting stale source 
         "new source",
       );
       const sha = fixture.git("--no-replace-objects", "rev-parse", "HEAD");
+      const candidate = mode === "pull_request" || mode === "read-only";
       const base = fixture.context(
-        mode === "pull_request" ? "pull_request" : "push",
-        mode === "pull_request" ? "refs/pull/37/merge" : "refs/heads/main",
+        candidate ? "pull_request" : "push",
+        candidate ? "refs/pull/37/merge" : "refs/heads/main",
       );
       const context = { ...base, ...paths, sourceSha: sha, checkoutSha: sha };
       const result = executeCacheAction(fixture, context, {
         ...options,
-        mountFailures: mode === "failed-mount" ? ["target"] : [],
+        mountFailures:
+          mode === "failed-mount" ? ["target"] : mode === "pull_request" ? allMountFailures : [],
       });
       const rows = workloads(fixture, result);
       assert.equal(target(result).matchedKey, saved.key);
       assert.notEqual(`compiled:${rows[0].artifact}`, saved.saved);
-      if (mode === "mounted") {
+      if (candidate) assertNoCandidateCommit(result.trace);
+      if (mode === "mounted" || mode === "read-only") {
         assert.equal(target(result).restoredArtifact, undefined);
         assert.equal(rows[0].before, "sticky clone");
         assert.equal(posts(result, "target").length, 0);

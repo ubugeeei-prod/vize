@@ -5,11 +5,12 @@ use super::registry::RULE_RETURN_IN_EMITS_VALIDATOR;
 use super::template_context;
 use super::{
     LintResult, Linter, active_builtin_script_rule_entries, block_has_active_ast_rule,
-    block_has_active_rule, entry_may_match, has_active_builtin_script_rules, resolved_rule,
-    run_builtin_script_rule,
+    block_has_active_rule, entry_may_match, has_active_builtin_script_rules, merge_script_result,
+    resolved_rule, run_builtin_script_rule,
 };
 use crate::rules::script::{
-    EmitsModuleScript, ReturnInEmitsValidator, SfcScriptContext, script_source_type,
+    EmitsModuleScript, NoDuplicateAttrInheritance, ReturnInEmitsValidator, ScriptLintResult,
+    SfcScriptContext, script_source_type,
 };
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
@@ -28,6 +29,25 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
     if (linter.script_rules.is_empty() || !has_active_builtin_script_rules(linter))
         && !registered_scripts
     {
+        return;
+    }
+    // A template-only SFC has no script callback to carry this native rule.
+    // Reuse the validated template AST before script-only byte prefilters; no
+    // empty program, extra parse or configured namesake is admitted here.
+    if descriptor.script.is_none() && descriptor.script_setup.is_none() {
+        if template_context::descriptor_needs_template_ast(
+            linter,
+            descriptor,
+            result.filename.as_str(),
+        ) && let Some((root, offset)) = template_ast
+        {
+            let mut lint = ScriptLintResult::default();
+            profile!(
+                "patina.script_rule.no_duplicate_attr_inheritance",
+                NoDuplicateAttrInheritance::check_scriptless_template(root, offset, &mut lint)
+            );
+            merge_script_result(linter, result, lint);
+        }
         return;
     }
     if !registered_scripts

@@ -30,7 +30,7 @@ await test("full Rust differential checks and shards independently require the s
   assert.equal(sibling.if, "${{ github.event_name == 'merge_group' && inputs.run-rust }}");
   assert.equal(sibling.uses, "./.github/workflows/pr-rust-differential.yml");
   assert.deepEqual(sibling.with, { "run-rust": "${{ inputs.run-rust }}" });
-  assert.deepEqual(rust.jobs["pr-rust-shard"].needs, ["pr-rust-build", "merge-rust-source"]);
+  assert.deepEqual(rust.jobs["pr-rust-shard"].needs, ["merge-rust-source"]);
   assert(rust.jobs["rust-source-report"].needs.includes("merge-rust-differential"));
   assert(!rust.jobs["merge-rust-source"].steps.some((step) => step.uses === `./${recipePath}`));
   assert.equal(job.if, sibling.if);

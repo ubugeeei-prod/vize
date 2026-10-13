@@ -4,12 +4,12 @@ import { test } from "node:test";
 import {
   createBenchmarkBudget,
   renderMarkdown,
-} from "../../tools/benchmarks/scripts/compare-pr.mjs";
+} from "../../tools/benchmarks/scripts/compare-pr.ts";
 import {
   confirmRegressions,
   summarizeBenchmarkRuns,
-} from "../../tools/benchmarks/scripts/compare-pr-results.mjs";
-import { enforceBenchmarkBudget } from "../../tools/benchmarks/scripts/enforce-pr-budget.mjs";
+} from "../../tools/benchmarks/scripts/compare-pr-results.ts";
+import { enforceBenchmarkBudget } from "../../tools/benchmarks/scripts/enforce-pr-budget.ts";
 
 test("a transient breach is judged over the initial and confirmation pairs together", () => {
   const initial = summarizeBenchmarkRuns({

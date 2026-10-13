@@ -47,7 +47,7 @@
 //! ```
 
 use oxc_ast::ast::{Expression, ObjectExpression, ObjectPropertyKind, Program, PropertyKey};
-use oxc_span::GetSpan;
+use oxc_span::Span;
 
 use vize_l0::CompactString;
 
@@ -103,14 +103,14 @@ fn check_prop(prop: PropDescriptor<'_>, offset: usize, result: &mut ScriptLintRe
             {
                 return;
             }
-            report(prop.name, prop.key, offset, result);
+            report(prop.name, prop.span, offset, result);
         }
         value => {
             // Shorthand `name: <type>`: a Boolean shorthand defaults to false.
             if expression_is_boolean(value) {
                 return;
             }
-            report(prop.name, prop.key, offset, result);
+            report(prop.name, prop.span, offset, result);
         }
     }
 }
@@ -169,8 +169,7 @@ fn descriptor_member<'a>(
     })
 }
 
-fn report(name: &str, key: &PropertyKey<'_>, offset: usize, result: &mut ScriptLintResult) {
-    let span = key.span();
+fn report(name: &str, span: Span, offset: usize, result: &mut ScriptLintResult) {
     let start = offset as u32 + span.start;
     let end = offset as u32 + span.end;
 

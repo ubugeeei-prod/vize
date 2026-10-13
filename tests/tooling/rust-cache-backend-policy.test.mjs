@@ -6,23 +6,6 @@ import { test } from "node:test";
 import { rustCachePolicy } from "../../.github/actions/setup-rust-sticky-cache/cache-policy.mjs";
 import { cacheFixture, executeCacheAction } from "./support/rust-cache-fixture.mjs";
 
-await test("PR numbers, queue SHAs and nondefault dispatches do not create provider keys", () => {
-  cacheFixture((fixture) => {
-    for (let index = 1; index <= 256; index++) {
-      for (const [event, ref] of [
-        ["pull_request", `refs/pull/${index}/merge`],
-        ["merge_group", `refs/heads/gh-readonly-queue/main/pr-${index}-${index.toString(16)}`],
-        ["workflow_dispatch", `refs/heads/private-${index}`],
-        ["push", `refs/heads/private-${index}`],
-      ]) {
-        const context = fixture.context(event, ref);
-        context.sourceSha = index.toString(16).padStart(40, "0");
-        assert.equal(rustCachePolicy(context, { cwd: fixture.cwd }).sticky, "false");
-      }
-    }
-  });
-});
-
 await test("a separate benchmark target follows its own lock and falls back to the root toolchain", () => {
   cacheFixture((fixture) => {
     const base = join(fixture.cwd, "base");
@@ -113,16 +96,25 @@ await test("actual backend children miss safely for many PRs, queues and nondefa
       cacheFixture((fixture) => {
         const result = executeCacheAction(fixture, fixture.context(event, ref));
         assert.equal(result.status, 0);
-        assert.equal(result.trace.filter((row) => row.kind === "sticky").length, 0);
+        const candidate = event === "pull_request" || event === "merge_group";
+        const mounts = result.trace.filter((row) => row.kind === "sticky");
+        assert.equal(mounts.length, candidate ? 3 : 0);
+        // A mounted clone is never committed and never replaced by a download.
+        assert.ok(mounts.every((row) => row.commit === "false"));
+        assert.ok(
+          result.trace
+            .filter((row) => row.kind === "sticky-post")
+            .every((row) => row.commit === "false"),
+        );
         const caches = result.trace.filter((row) => row.kind === "cache");
         assert.equal(caches.length, 3);
         assert.ok(
-          caches.every((row) => row.hit === false && row.lookup === false && row.restoreOnly),
+          caches.every((row) => row.hit === false && row.lookup === candidate && row.restoreOnly),
         );
         assert.equal(result.trace.filter((row) => row.kind === "cache-post").length, 0);
         const workload = result.trace.filter((row) => row.kind === "workload");
         assert.equal(workload.length, 1);
-        assert.equal(workload[0].before, null);
+        assert.equal(workload[0].before, candidate ? "sticky clone" : null);
         assert.equal(readFileSync(join(fixture.cwd, "artifact.txt"), "utf8"), workload[0].artifact);
         assert.equal(
           new Set(result.trace.filter((row) => row.kind === "cache").map((row) => row.pid)).size,
@@ -224,16 +216,22 @@ await test("Actions hits still compile current input instead of accepting the re
   cacheFixture((fixture) => {
     const source = "changed input after cached compilation\n";
     writeFileSync(join(fixture.cwd, "source.txt"), source);
-    const result = executeCacheAction(
-      fixture,
-      fixture.context("pull_request", "refs/pull/9/merge"),
-      { hit: true },
-    );
-    assert.equal(result.status, 0);
-    const workload = result.trace.find((row) => row.kind === "workload");
-    assert.equal(workload.before, "Actions restore");
-    assert.equal(workload.artifact, createHash("sha256").update(source).digest("hex"));
-    assert.equal(readFileSync(join(fixture.cwd, "artifact.txt"), "utf8"), workload.artifact);
+    // A failed read-only mount falls back to the trusted Actions seed.
+    for (const [mountFailures, before] of [
+      [["registry", "git", "target"], "Actions restore"],
+      [[], "sticky clone"],
+    ]) {
+      const result = executeCacheAction(
+        fixture,
+        fixture.context("pull_request", "refs/pull/9/merge"),
+        { hit: true, mountFailures },
+      );
+      assert.equal(result.status, 0);
+      const workload = result.trace.find((row) => row.kind === "workload");
+      assert.equal(workload.before, before);
+      assert.equal(workload.artifact, createHash("sha256").update(source).digest("hex"));
+      assert.equal(readFileSync(join(fixture.cwd, "artifact.txt"), "utf8"), workload.artifact);
+    }
   });
 });
 
