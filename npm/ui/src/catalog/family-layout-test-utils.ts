@@ -87,6 +87,7 @@ export const uiFamilyRoots = new Map<string, string>([
   ["avatar-group", "src/families/layout/avatar-group/"],
   ["badge", "src/families/feedback/badge/"],
   ["bottom-navigation", "src/families/navigation/bottom-navigation/"],
+  ["navigation-rail", "src/families/navigation/navigation-rail/"],
   ["breadcrumb", "src/families/navigation/breadcrumb/"],
   ["blockquote", "src/families/typography/blockquote/"],
   ["block-ui", "src/families/feedback/block-ui/"],

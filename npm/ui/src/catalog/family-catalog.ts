@@ -36,6 +36,7 @@ import { layoutFamilyCatalog } from "./family-catalog-layout.ts";
 import { layoutPatternFamilyCatalog } from "./family-catalog-layout-patterns.ts";
 import { menuFamilyCatalog } from "./family-catalog-menus.ts";
 import { navigationFamilyCatalog } from "./family-catalog-navigation.ts";
+import { navigationRailFamilyCatalog } from "./family-catalog-navigation-rail.ts";
 import { overlayFamilyCatalog } from "./family-catalog-overlays.ts";
 import { ratingFamilyCatalog } from "./family-catalog-rating.ts";
 import { audioPlayerFamilyCatalog } from "./family-catalog-audio-player.ts";
@@ -122,6 +123,7 @@ const allFamilyCatalogEntries = [
   ...layoutPatternFamilyCatalog,
   ...menuFamilyCatalog,
   ...navigationFamilyCatalog,
+  ...navigationRailFamilyCatalog,
   ...overlayFamilyCatalog,
   ...ratingFamilyCatalog,
   ...audioPlayerFamilyCatalog,

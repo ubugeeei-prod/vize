@@ -110,6 +110,11 @@
       "import": "./dist/bottom-navigation.mjs",
       "default": "./dist/bottom-navigation.mjs"
     },
+    "./navigation-rail": {
+      "types": "./dist/navigation-rail.d.mts",
+      "import": "./dist/navigation-rail.mjs",
+      "default": "./dist/navigation-rail.mjs"
+    },
     "./calendar": {
       "types": "./dist/calendar.d.mts",
       "import": "./dist/calendar.mjs",
