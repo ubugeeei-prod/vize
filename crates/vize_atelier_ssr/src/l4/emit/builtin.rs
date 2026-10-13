@@ -98,6 +98,11 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         self.ctx.push(": () => {\n");
         self.ctx.indent_level += 1;
         let saved = core::mem::take(&mut self.ctx.current_template_parts);
+        // Vapor hydration claims each Suspense slot as one fragment.
+        let vapor = self.ctx.options.vapor;
+        if vapor {
+            self.ctx.push_string_part_static("<!--[-->");
+        }
         let result = children.iter().try_for_each(|&start| {
             let end = self.child_end(start)?;
             self.pos = start;
@@ -109,6 +114,9 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             }
             Ok(())
         });
+        if vapor {
+            self.ctx.push_string_part_static("<!--]-->");
+        }
         self.ctx.flush_push();
         self.ctx.current_template_parts = saved;
         self.ctx.indent_level -= 1;
@@ -128,7 +136,10 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         self.ctx.push_indent();
         self.ctx.push("default: () => {\n");
         self.ctx.indent_level += 1;
-        self.children(flags)?;
+        self.children(Flags {
+            as_fragment: flags.as_fragment || self.ctx.options.vapor,
+            ..flags
+        })?;
         self.ctx.flush_push();
         self.ctx.indent_level -= 1;
         self.ctx.push_indent();
