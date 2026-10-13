@@ -1,63 +1,63 @@
 ---
 layout: entry
 title: Vize
-description: Rust の高性能 Vue.js ツールチェーン。 Vue コンポーネントをコンパイル、lint、フォーマット、型チェック、探索します。
+description: Rust 製の高速な Vue.js ツールチェーン。Vue コンポーネントのコンパイル、lint、フォーマット、型チェック、プレビューをまとめて扱えます。
 hero:
   name: Vize
-  text: Rust の高性能 Vue.js ツールチェーン
-  tagline: /viːz/（ヴィーズ）— コードを透視する賢明なツール。 Vue コンポーネントのコンパイル、lint、フォーマット、型チェック、探索はすべて Rust によって行われます。 ⚠️ まだ製品化の準備ができていません。
+  text: Rust 製の高速な Vue.js ツールチェーン
+  tagline: /viːz/（ヴィーズ）— コードを見通す、賢いツール。Vue コンポーネントのコンパイル、lint、フォーマット、型チェック、プレビューを、すべて Rust で。⚠️ まだ本番利用できる段階ではありません。
   image:
     src: /logo.svg
     alt: Vize のロゴ
   actions:
     - theme: brand
-      text: 始めましょう
+      text: はじめる
       link: ja/getting-started.md
     - theme: alt
       text: GitHub
       link: https://github.com/ubugeeei-prod/vize
     - theme: alt
-      text: 遊び場
+      text: プレイグラウンド
       link: https://vizejs.dev/play
 features:
   - title: Vite+ から始める
-    details: 既存アプリに Vue コンパイラとネイティブ検査タスクを追加します。設定は vite.config.ts にまとめます。
+    details: 既存のアプリに Vue コンパイラとネイティブの検査タスクを追加します。設定は vite.config.ts ひとつにまとまります。
     link: ja/getting-started.md
   - title: 既存ツールから移行する
-    details: 変更点と対応オプションを確認し、具体的な差分をコピーして移行します。
+    details: 何が変わるかを確認し、対応するオプションを移して、変更前後の差分をそのままコピーできます。
     link: ja/guide/migration.md
   - title: 検査を設定する
-    details: コンパイラ、lint、フォーマット、型チェックの設定場所を確認します。
+    details: コンパイラ、lint、フォーマット、型チェックの設定をどこに書くかを確認します。
     link: ja/guide/configuration.md
   - title: lint ルールを調べる
-    details: 診断を探し、Vue の悪い例と良い例を比較します。
+    details: 診断の意味を調べ、Vue の悪い例と良い例を見比べます。
     link: ja/rules/all.md
   - title: コンポーネントを探す
-    details: UI の使用例と import を確認し、実際の動作を試します。
+    details: UI の使用例を見て import をコピーし、実際の動作を試します。
     link: ja/guide/ui/index.md
   - title: 自分のコンポーネントをプレビューする
-    details: Musea の art ファイルを作り、アプリと一緒にギャラリーを開きます。
+    details: Musea の art ファイルを書き、アプリと並べてギャラリーを開きます。
     link: ja/guide/musea.md
 ---
 
 ## アプリに Vize を追加する
 
-[Getting Started](./getting-started.md) で導入し、[移行ガイド](./guide/migration.md)で
-Vue コンパイラを置き換えます。検査結果を比較してから CI を変更してください。
-Vite+ の統合設定は `vite.config.ts`、単独 CLI や LSP の設定は `vize.config.ts` に置きます。
+まず[はじめる](./getting-started.md)の手順で導入し、[移行ガイド](./guide/migration.md)に沿って
+Vue コンパイラを置き換えます。CI を切り替える前に、検査結果を見比べてください。
+Vite+ のプロジェクトでは、統合の設定を `vite.config.ts` に書きます。単独の CLI や LSP では `vize.config.ts` も使えます。
 
-Vize は開発中です。[対応状況](./stability.md)で制限を確認し、導入前に自分のプロジェクトで
-診断とビルド出力を比較してください。
+Vize は開発中です。既知の制限は[サポート状況](./stability.md)にまとめています。導入する前に、
+自分のプロジェクトで診断とビルド出力を見比べてください。
 
-## 著者
+## 作者
 
-![ウブゲエイ](https://github.com/ubugeeei.png)
+![ubugeeei](https://github.com/ubugeeei.png)
 
-**[ubugeeei](https://github.com/ubugeeei)** は東京を拠点とするソフトウェア エンジニアで、Vue、Rust、デザイン、言語ツールを担当しています。
+**[ubugeeei](https://github.com/ubugeeei)** は東京を拠点とするソフトウェアエンジニアです。Vue、Rust、デザイン、言語ツールに取り組んでいます。
 
-彼は [Vue.js コア チーム](https://vuejs.org/about/team.html)、[Vue.js 日本ユーザー グループ](https://github.com/vuejs-jp) コア スタッフ、[Vite+](https://github.com/voidzero-dev/vite-plus) コア コントリビューター、[mates-dev](https://github.com/mates-dev) のチーフ エンジニアの一員です。
+[Vue.js コアチーム](https://vuejs.org/about/team.html)のメンバーで、[Vue.js 日本ユーザーグループ](https://github.com/vuejs-jp)のコアスタッフ、[Vite+](https://github.com/voidzero-dev/vite-plus) のコアコントリビューター、[mates-dev](https://github.com/mates-dev) のチーフエンジニアを務めています。
 
-[chibivue](https://github.com/chibivue-land/chibivue)、[Vize](https://github.com/ubugeeei-prod/vize)、[Ox Content](https://github.com/ubugeeei/ox-content)の作者でもあります。
+[chibivue](https://github.com/chibivue-land/chibivue)、[Vize](https://github.com/ubugeeei-prod/vize)、[Ox Content](https://github.com/ubugeeei/ox-content) の作者でもあります。
 
 - GitHub: [github.com/ubugeeei](https://github.com/ubugeeei)
 - X (Twitter): [@ubugeeei](https://x.com/ubugeeei)
@@ -66,11 +66,11 @@ Vize は開発中です。[対応状況](./stability.md)で制限を確認し、
 
 ## スポンサー
 
-Vize は、MIT のもとでライセンス供与された無料のオープンソース プロジェクトです。完全なツールチェーン (コンパイラー、リンター、フォーマッタ、型チェッカー、LSP、コンポーネント ギャラリー、WASM バインディング) の開発と保守は、継続的な集中力と献身が必要な重要な作業です。
+Vize は MIT ライセンスで公開している、無料のオープンソースプロジェクトです。コンパイラ、リンター、フォーマッタ、型チェッカー、LSP、コンポーネントギャラリー、WASM バインディングまでを含むツールチェーン全体を開発し、保守し続けるには、多くの時間と継続的な取り組みが必要です。
 
-Vize によって時間を節約し、開発エクスペリエンスを向上できる場合、または高性能 Vue.js ツールチェーンのビジョンを信じている場合は、プロジェクトのスポンサーになることを検討してください。
+Vize が開発の時間を節約したり、開発体験を良くしたりしているなら、あるいは高速な Vue.js ツールチェーンという目標に共感していただけるなら、スポンサーとしての支援をご検討ください。
 
-- CI/CD ランナー インフラストラクチャは [Blacksmith](https://www.blacksmith.sh/) によってスポンサーされています。
-- [GitHub スポンサー](https://github.com/sponsors/ubugeeei)
+- CI/CD のランナー環境は [Blacksmith](https://www.blacksmith.sh/) の提供を受けています。
+- [GitHub Sponsors](https://github.com/sponsors/ubugeeei)
 
-あなたのサポートは、継続的な開発とインフラストラクチャのコストに資金を提供し、Vize が誰にとっても無料であり続けることを保証します。規模に関係なく、あらゆる貢献が大きな変化をもたらします。
+いただいた支援は、継続的な開発とインフラの費用に充てられ、Vize を誰もが無料で使える状態に保つ助けになります。金額にかかわらず、すべての支援が大きな力になります。
