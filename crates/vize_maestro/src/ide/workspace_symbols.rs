@@ -6,6 +6,7 @@
     reason = "tower-lsp SymbolInformation takes std String names built with format!/to_string"
 )]
 
+mod descriptor;
 #[cfg(feature = "native")]
 mod disk;
 mod rank;
@@ -54,7 +55,7 @@ impl WorkspaceSymbolsService {
         query: &str,
         symbols: &mut Vec<SymbolInformation>,
     ) {
-        let Some(descriptor) = vize_incremental::parse_descriptor(uri.path(), content) else {
+        let Some(descriptor) = descriptor::parse(uri.path(), content) else {
             return;
         };
 
@@ -306,9 +307,7 @@ impl WorkspaceSymbolsService {
         container: Option<&str>,
         symbols: &mut Vec<SymbolInformation>,
     ) {
-        let lines: Vec<&str> = script.lines().collect();
-
-        for (line_idx, line) in lines.iter().enumerate() {
+        for (line_idx, line) in script.lines().enumerate() {
             let line_num = base_line + line_idx as u32;
             let trimmed = line.trim_start();
 
@@ -435,9 +434,7 @@ impl WorkspaceSymbolsService {
         container: Option<&str>,
         symbols: &mut Vec<SymbolInformation>,
     ) {
-        let lines: Vec<&str> = style.lines().collect();
-
-        for (line_idx, line) in lines.iter().enumerate() {
+        for (line_idx, line) in style.lines().enumerate() {
             let line_num = base_line + line_idx as u32;
             let trimmed = line.trim();
 

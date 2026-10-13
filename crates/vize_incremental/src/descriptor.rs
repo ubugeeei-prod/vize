@@ -129,16 +129,35 @@ pub fn parse_descriptor(filename: &str, text: &str) -> Option<SharedDescriptor> 
 /// Parse `text` as an SFC named `filename`, keeping a rejection.
 #[must_use]
 pub fn parse_outcome(filename: &str, text: &str) -> ParsedSfc {
-    let options = SfcParseOptions {
-        filename: String::from(filename),
-        ..Default::default()
-    };
-    match parse_sfc(text, options) {
+    match parse_source(filename, text) {
         Ok(descriptor) => {
             ParsedSfc::Descriptor(SharedDescriptor(Shared::new(descriptor.into_owned())))
         }
         Err(error) => ParsedSfc::Failed(DescriptorParseError::from_sfc(&error)),
     }
+}
+
+/// Parse one synchronously owned source without copying its SFC blocks.
+///
+/// The result borrows `text` and must not outlive it. Resident or asynchronous
+/// readers continue using [`parse_descriptor`] and its owned shared result.
+#[must_use]
+pub fn parse_borrowed_descriptor<'source>(
+    filename: &str,
+    text: &'source str,
+) -> Option<SfcDescriptor<'source>> {
+    parse_source(filename, text).ok()
+}
+
+fn parse_source<'source>(
+    filename: &str,
+    text: &'source str,
+) -> Result<SfcDescriptor<'source>, SfcError> {
+    let options = SfcParseOptions {
+        filename: String::from(filename),
+        ..Default::default()
+    };
+    parse_sfc(text, options)
 }
 
 /// The file's SFC parse, with its path as the filename. A rejection is part

@@ -49,10 +49,14 @@ test("failed source preflights block every source build and cannot pass the sour
   const layout = steps.findIndex(
     (step) => step.run === "node --test tests/tooling/davinci-module-layout.test.ts",
   );
+  const retired = steps.findIndex(
+    (step) => step.run === "node --test tests/tooling/retired-tooling-languages.test.ts",
+  );
   const output = steps.findIndex((step) => step.name === "Plan source checks");
   assert.ok(runtime >= 0 && runtime < base && base < inventory && inventory < layout);
-  assert.ok(layout < output, "preflights must finish before source selection and Rust setup");
-  for (const step of [steps[inventory], steps[layout]]) {
+  assert.ok(layout < retired, "the retired-language ratchet runs with the source preflights");
+  assert.ok(retired < output, "preflights must finish before source selection and Rust setup");
+  for (const step of [steps[inventory], steps[layout], steps[retired]]) {
     assert.equal(step.if, undefined, "source preflights cannot skip");
     assert.equal(step["continue-on-error"], undefined, "source preflight failures are required");
   }
