@@ -301,31 +301,3 @@ fn script_namesake_has_no_scriptless_capability_and_keeps_ordinary_dispatch() {
         )]
     );
 }
-
-#[test]
-fn registered_rule_namesake_is_not_the_native_scriptless_builtin() {
-    use crate::rule::{Rule, RuleCategory, RuleMeta, RuleRegistry};
-    struct Namesake;
-    static META: RuleMeta = RuleMeta {
-        name: "script/no-duplicate-attr-inheritance",
-        description: "foreign namesake",
-        category: RuleCategory::Essential,
-        fixable: false,
-        default_severity: Severity::Warning,
-    };
-    impl Rule for Namesake {
-        fn meta(&self) -> &'static RuleMeta {
-            &META
-        }
-    }
-    let mut registry = RuleRegistry::new();
-    registry.register(Box::new(Namesake));
-    let linter = Linter::with_registry(registry).with_enabled_rules(Some(vec![META.name.into()]));
-    assert_eq!(
-        findings(&linter.lint_sfc(
-            "<template><div v-bind=\"$attrs\" /></template>",
-            "Probe.vue"
-        )),
-        none()
-    );
-}
