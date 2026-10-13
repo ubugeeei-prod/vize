@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import Inner from "./Inner.vue";
+declare const name: "option" | "header";
+</script>
+
+<template>
+  <Inner>
+    <template #[name]="payload">{{ payload.missing }}</template>
+  </Inner>
+</template>

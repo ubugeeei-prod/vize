@@ -10,6 +10,7 @@
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
 use vize_l0::String;
 
+mod forwarded_dynamic_slots;
 mod v_for_any;
 
 /// `<script setup generic>` child whose slot payload is its type parameter.
