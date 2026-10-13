@@ -5,9 +5,7 @@
     "files": 98,
     "beforeParseErrorCount": 1,
     "afterParseErrorCount": 0,
-    "changed": [
-      "frontend/src/components/CustomAction/index.vue"
-    ]
+    "changed": ["frontend/src/components/CustomAction/index.vue"]
   },
   {
     "project": "hoppscotch",
@@ -25,9 +23,7 @@
     "files": 459,
     "beforeParseErrorCount": 1,
     "afterParseErrorCount": 0,
-    "changed": [
-      "packages/vue3/test-app/Pages/Events.vue"
-    ]
+    "changed": ["packages/vue3/test-app/Pages/Events.vue"]
   },
   {
     "project": "uni-app",
