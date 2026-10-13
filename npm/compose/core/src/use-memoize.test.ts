@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { computed, shallowRef } from "vue";
+import { computed } from "vue";
 
 import { useMemoize } from "./use-memoize.ts";
 
@@ -42,11 +42,7 @@ void test("caches undefined results and custom keys", () => {
 void test("the default cache is reactive", () => {
   let version = 0;
   const read = useMemoize(() => ++version);
-  const seen = shallowRef(0);
-  const value = computed(() => {
-    seen.value += 0;
-    return read();
-  });
+  const value = computed(() => read());
   assert.equal(value.value, 1);
   read.load();
   assert.equal(value.value, 2);
