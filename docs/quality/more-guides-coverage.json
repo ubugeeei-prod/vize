@@ -96,8 +96,8 @@
     {
       "route": "/guide/experimentals-reference",
       "locales": ["en", "ja"],
-      "entry": "audited",
-      "note": "Intentionally dense reference; Japanese wording still needs review."
+      "entry": "revised",
+      "note": "Japanese reference reviewed for #8372 against the English entry points, flag contracts and direct API fields; both introductions link to Experimentals and the Vue RFC details."
     },
     {
       "route": "/guide/experimentals-vue-rfcs",
@@ -327,7 +327,7 @@
       "route": "/stability",
       "locales": ["en", "ja"],
       "entry": "audited",
-      "note": "Support tables retained; Japanese body review is handled in #8372."
+      "note": "Japanese body reviewed for #8372: support tables, runtime support and SemVer gates match the English page, and both tier headings use the same term. Kept audited because both introductions link only to external release documents."
     },
     {
       "route": "/guide/vue-configuration",
