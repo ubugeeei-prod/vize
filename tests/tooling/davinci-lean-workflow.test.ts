@@ -169,7 +169,9 @@ test("P3-15 theorems are audited and the lattice differential is wired", () => {
     /"--check-lattice-fixtures"\] => LatticeFixture\.checkFile "fixtures\/reactivity-lattice\.folio"/u,
   );
   // The lattice laws left Lean: Kani verifies the shipped evaluator instead.
-  const lattice = readRepoFile("tests", "formal", "kani", "l3_lattice.rs");
+  const lattice =
+    readRepoFile("tests", "formal", "kani", "l3_lattice.rs") +
+    readRepoFile("tests", "formal", "kani", "l3_lattice_classify.rs");
   for (const name of [
     "join_has_its_units_and_is_monotone",
     "the_effect_floor_is_the_join_of_the_rule_table",
@@ -180,7 +182,7 @@ test("P3-15 theorems are audited and the lattice differential is wired", () => {
     assert.match(
       lattice,
       new RegExp(
-        `^    #\\[kani::proof\\]\\n(?:    #\\[kani::unwind\\(\\d+\\)\\]\\n)?    fn ${name}\\(\\)`,
+        `^ *#\\[kani::proof\\]\\n(?: *#\\[kani::unwind\\(\\d+\\)\\]\\n)? *fn ${name}\\(\\)`,
         "mu",
       ),
       `missing Kani harness ${name}`,
