@@ -5,7 +5,12 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { rustCacheMountState } from "../../.github/actions/setup-rust-sticky-cache/cache-policy.mjs";
-import { cacheFixture, executeCacheAction } from "./support/rust-cache-fixture.mjs";
+import {
+  allMountFailures,
+  assertNoCandidateCommit,
+  cacheFixture,
+  executeCacheAction,
+} from "./support/rust-cache-fixture.mjs";
 
 const action = parse(
   readFileSync(
@@ -83,7 +88,7 @@ function currentWorkloads(fixture, result) {
 await test("docs example omission changes only two conditions and the mounted restore key", () => {
   assert.equal(
     hash(JSON.stringify(original)),
-    "db1d4bb182ecd98180482e00a92f323dabb1ce88c468e534d13e97e738a9365d",
+    "d58a987f2a427e66802374a1e8c1e2af7c37ef0c5560a6b6395b6899c506a592",
   );
   const docs = parse(
     readFileSync(new URL("../../.github/workflows/build-docs.yml", import.meta.url), "utf8"),
@@ -200,19 +205,27 @@ await test("PRs, merge groups and untrusted pushes retain exact restore-only beh
   ])
     cacheFixture((fixture) => {
       const context = { ...fixture.context(event, ref), ...paths };
-      const options = { hit: "partial", nestedPost: true, secondaryWorkload: true };
+      // Candidates fall back to these restores only when their read-only mounts fail.
+      const candidate = event === "pull_request" || event === "merge_group";
+      const options = {
+        hit: "partial",
+        nestedPost: true,
+        secondaryWorkload: true,
+        mountFailures: candidate ? allMountFailures : [],
+      };
       const old = executeCacheAction(fixture, context, { ...options, steps: original.runs.steps });
       const result = executeCacheAction(fixture, context, options);
       currentWorkloads(fixture, result);
       assert.deepEqual(cacheIdentity(secondary(result)), cacheIdentity(secondary(old)));
       assert.equal(secondary(result).restoreOnly, true);
       assert.equal(secondary(result).lookup, false);
-      assert.equal(
-        result.trace.filter(
-          ({ kind }) => kind === "cache-post" || kind === "sticky" || kind === "sticky-post",
-        ).length,
-        0,
-      );
+      assert.equal(result.trace.filter(({ kind }) => kind === "cache-post").length, 0);
+      if (candidate) assertNoCandidateCommit(result.trace);
+      else
+        assert.equal(
+          result.trace.filter(({ kind }) => kind === "sticky" || kind === "sticky-post").length,
+          0,
+        );
     });
 });
 
@@ -231,7 +244,7 @@ await test("a compatible prior example seed still restores and never replaces cu
     const result = executeCacheAction(
       fixture,
       { ...fixture.context("pull_request", "refs/pull/37/merge"), ...paths },
-      options,
+      { ...options, mountFailures: allMountFailures },
     );
     const workloads = currentWorkloads(fixture, result);
     assert.equal(secondary(result).matchedKey, saved.key);
@@ -239,6 +252,7 @@ await test("a compatible prior example seed still restores and never replaces cu
     assert.equal(workloads[1].before, "Actions restore");
     assert.notEqual(`compiled:${workloads[1].artifact}`, saved.saved);
     assert.equal(result.trace.filter(({ kind }) => kind === "cache-post").length, 0);
+    assertNoCandidateCommit(result.trace);
   });
 });
 

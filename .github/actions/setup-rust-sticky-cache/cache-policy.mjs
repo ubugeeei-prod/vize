@@ -18,6 +18,8 @@ const knownEvents = new Set([
   "repository_dispatch",
 ]);
 const trustedEvents = new Set(["push", "schedule", "workflow_dispatch"]);
+// Candidates mount a clone of the trusted disk that the provider never commits.
+const readOnlyEvents = new Set(["pull_request", "merge_group"]);
 // Actual trusted uploads exceeded the backend's 25 GB entry limit.
 const restoreOnlyTargetRoles = new Set(["coverage-source", "clippy-test"]);
 const fullSha = /^[0-9a-f]{40}$/;
@@ -87,12 +89,15 @@ export function rustCachePolicy(context, { cwd = sourceRoot, workspace = cwd } =
     ref === `refs/heads/${branch}` &&
     sourceSha === checkoutSha &&
     event.deleted !== true;
-  const sticky = trusted && runnerEnvironment === "self-hosted";
+  const readOnly = !trusted && readOnlyEvents.has(eventName);
+  const sticky = (trusted || readOnly) && runnerEnvironment === "self-hosted";
   const base = `rust-cache-v1-${repository}-${runnerOs}-${runnerArch}-${suffix}-${fingerprint(cwd)}`;
   const target = `${base}-${role}-target-`;
   const output = {
     trusted: String(trusted),
     sticky: String(sticky),
+    // Only the trusted default-branch checkout may write a stable disk.
+    "sticky-commit": String(trusted),
     "registry-key": `${base}-registry`,
     "git-key": `${base}-git`,
     "target-key": `${target}${checkoutSha}`,

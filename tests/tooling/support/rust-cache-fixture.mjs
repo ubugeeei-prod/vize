@@ -94,11 +94,22 @@ if (request.kind === "sticky") {
     rmSync(mountedMarker,{force:true});
   }
   trace(request);
+} else if (request.kind === "mtimes" || request.kind === "mtimes-post") {
+  trace(request);
 } else if (request.kind === "probe") {
   trace(request);
   process.exit(existsSync(mountedMarker) ? 0 : 1);
 } else throw Error("unrecognized fake backend");
 `;
+
+// Untrusted candidates mount never-committed clones; failing every mount
+// exercises their trusted Actions-seed fallback instead.
+export const allMountFailures = ["registry", "git", "target", "secondary"];
+
+export function assertNoCandidateCommit(trace) {
+  for (const row of trace.filter(({ kind }) => kind === "sticky" || kind === "sticky-post"))
+    assert.equal(row.commit, "false", `untrusted ${row.kind} for ${row.name} may commit`);
+}
 
 function execute(program, args, cwd, env = process.env) {
   const result = spawnSync(program, args, { cwd, env, encoding: "utf8", shell: false });
@@ -287,6 +298,12 @@ export function executeCacheAction(
       const args = Object.fromEntries(
         Object.entries(step.with).map(([key, expr]) => [key, value(expr, inputs, outputs)]),
       );
+      if (step.uses === "./.github/actions/rust-source-mtimes") {
+        child({ kind: "mtimes", ...args });
+        if (args.record === "true")
+          posts.push({ kind: "mtimes-post", target: args["target-path"] });
+        continue;
+      }
       const path = String(args.path);
       const name = path.endsWith("registry")
         ? "registry"
@@ -296,7 +313,13 @@ export function executeCacheAction(
             ? "secondary"
             : "target";
       if (step.uses.startsWith("useblacksmith/stickydisk@")) {
-        const request = { name, key: args.key, path, fail: mountFailures.includes(name) };
+        const request = {
+          name,
+          key: args.key,
+          path,
+          commit: args.commit,
+          fail: mountFailures.includes(name),
+        };
         child({ kind: "sticky", ...request });
         posts.push({ kind: "sticky-post", ...request });
       } else if (

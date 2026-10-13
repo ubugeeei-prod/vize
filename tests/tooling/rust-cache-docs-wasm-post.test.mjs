@@ -4,7 +4,12 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
-import { cacheFixture, executeCacheAction } from "./support/rust-cache-fixture.mjs";
+import {
+  allMountFailures,
+  assertNoCandidateCommit,
+  cacheFixture,
+  executeCacheAction,
+} from "./support/rust-cache-fixture.mjs";
 
 const action = parse(
   readFileSync(
@@ -69,7 +74,7 @@ function workloads(fixture, result) {
 await test("primary docs omission preserves the complete original action except three expressions", () => {
   assert.equal(
     hash(JSON.stringify(original)),
-    "f7076c4494aaf7ad6cbe4038ecb7e6bd7fd2ef83411f3dd35df41a0beb6aca74",
+    "f992020d6836c35f06ac1a08d819f1ef717f998269122e149b8bcbea8d5f942b",
   );
 });
 
@@ -148,7 +153,14 @@ await test("PR, merge-group, foreign source and other untrusted events retain or
       const context = { ...fixture.context(event, ref), ...paths };
       if (foreignSource) context.sourceSha = foreignSource;
       context.event.deleted = deleted;
-      const options = { hit: "partial", nestedPost: true, secondaryWorkload: true };
+      // Candidates fall back to these restores only when their read-only mounts fail.
+      const candidate = event === "pull_request" || event === "merge_group";
+      const options = {
+        hit: "partial",
+        nestedPost: true,
+        secondaryWorkload: true,
+        mountFailures: candidate ? allMountFailures : [],
+      };
       const before = executeCacheAction(fixture, context, {
         ...options,
         steps: original.runs.steps,
@@ -159,12 +171,13 @@ await test("PR, merge-group, foreign source and other untrusted events retain or
       assert.deepEqual(identity(target(after)), identity(target(before)));
       assert.equal(target(after).restoreOnly, true);
       assert.equal(target(after).lookup, false);
-      assert.equal(
-        after.trace.filter(
-          ({ kind }) => kind === "cache-post" || kind === "sticky" || kind === "sticky-post",
-        ).length,
-        0,
-      );
+      assert.equal(after.trace.filter(({ kind }) => kind === "cache-post").length, 0);
+      if (candidate) assertNoCandidateCommit(after.trace);
+      else
+        assert.equal(
+          after.trace.filter(({ kind }) => kind === "sticky" || kind === "sticky-post").length,
+          0,
+        );
     });
 });
 
@@ -207,7 +220,7 @@ await test("other roles and a failed secondary preserve independent primary beha
 });
 
 await test("old compatible primary seeds restore without accepting stale source or overwriting mounted clones", () => {
-  for (const mode of ["pull_request", "failed-mount", "mounted"])
+  for (const mode of ["pull_request", "read-only", "failed-mount", "mounted"])
     cacheFixture((fixture) => {
       const options = { nestedPost: true, secondaryWorkload: true, storedCache: true };
       const seeded = executeCacheAction(
@@ -237,19 +250,22 @@ await test("old compatible primary seeds restore without accepting stale source 
         "new source",
       );
       const sha = fixture.git("--no-replace-objects", "rev-parse", "HEAD");
+      const candidate = mode === "pull_request" || mode === "read-only";
       const base = fixture.context(
-        mode === "pull_request" ? "pull_request" : "push",
-        mode === "pull_request" ? "refs/pull/37/merge" : "refs/heads/main",
+        candidate ? "pull_request" : "push",
+        candidate ? "refs/pull/37/merge" : "refs/heads/main",
       );
       const context = { ...base, ...paths, sourceSha: sha, checkoutSha: sha };
       const result = executeCacheAction(fixture, context, {
         ...options,
-        mountFailures: mode === "failed-mount" ? ["target"] : [],
+        mountFailures:
+          mode === "failed-mount" ? ["target"] : mode === "pull_request" ? allMountFailures : [],
       });
       const rows = workloads(fixture, result);
       assert.equal(target(result).matchedKey, saved.key);
       assert.notEqual(`compiled:${rows[0].artifact}`, saved.saved);
-      if (mode === "mounted") {
+      if (candidate) assertNoCandidateCommit(result.trace);
+      if (mode === "mounted" || mode === "read-only") {
         assert.equal(target(result).restoredArtifact, undefined);
         assert.equal(rows[0].before, "sticky clone");
         assert.equal(posts(result, "target").length, 0);
