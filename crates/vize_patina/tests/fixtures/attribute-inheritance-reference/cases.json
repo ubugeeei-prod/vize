@@ -1,0 +1,1077 @@
+{
+  "referencePackage": "eslint-plugin-vue",
+  "referenceVersion": "10.9.2",
+  "originalMatrix": {
+    "run": 38331707741,
+    "source": "2817a0aa13518dd46c16bc8bf56ac831f68c24dc",
+    "budget": {
+      "falsePositives": 0,
+      "falseNegatives": 0
+    }
+  },
+  "originalObservations": {
+    "schema": "vize-release448-pinned-nodup-source-v1",
+    "headSha": "2817a0aa13518dd46c16bc8bf56ac831f68c24dc",
+    "sourceRegistrySha256": "e1fe55bcfebec4c2b1aed73be23fa3a4d362667b919fc0c35b94fbe0283d9a68",
+    "scope": "Exact public Git source bytes at authenticated H registry/original lint report declared fixture revisions; not independently hashed physical original-run SFC bodies.",
+    "rows": [
+      {
+        "project": "ant-design-vue",
+        "repository": "vueComponent/ant-design-vue",
+        "revision": "7483836f0adac76516e527df893c3d84a7cd4005",
+        "sourcePath": "site/src/layouts/icons/ThemeIcon.vue",
+        "bytes": 1350,
+        "gitBlobSha1": "b6ff7c1c730f3ded5461c83edb31913469eb5116",
+        "sha256": "eb0f821769f5aa61f9819562c9420c411cf755240f2f33564b7483611f38423b",
+        "reportedFindings": [
+          {
+            "column": 9,
+            "endColumn": 24,
+            "endLine": 2,
+            "file": "site/src/layouts/icons/ThemeIcon.vue",
+            "line": 2,
+            "message": "[vize:script/no-duplicate-attr-inheritance] `v-bind=\"$attrs\"` on the root element applies the fallthrough attributes twice, because `inheritAttrs` defaults to true.",
+            "ruleId": "script/no-duplicate-attr-inheritance",
+            "severity": "warning"
+          },
+          {
+            "column": 17,
+            "endColumn": 23,
+            "endLine": 2,
+            "file": "site/src/layouts/icons/ThemeIcon.vue",
+            "line": 2,
+            "message": "Set \"inheritAttrs\" to false.",
+            "ruleId": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "upstreamRuleId": "vue/no-duplicate-attr-inheritance"
+          },
+          {
+            "column": 85,
+            "endColumn": 91,
+            "endLine": 4,
+            "file": "site/src/layouts/icons/ThemeIcon.vue",
+            "line": 4,
+            "message": "Set \"inheritAttrs\" to false.",
+            "ruleId": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "upstreamRuleId": "vue/no-duplicate-attr-inheritance"
+          }
+        ]
+      },
+      {
+        "project": "vue-element-admin",
+        "repository": "PanJiaChen/vue-element-admin",
+        "revision": "6858a9ad67483025f6a9432a926beb9327037be3",
+        "sourcePath": "src/components/DragSelect/index.vue",
+        "bytes": 1382,
+        "gitBlobSha1": "47f42474f1d2661414d974c79a8f1bc10733e6ce",
+        "sha256": "eca0ff530e22c91953969fc5b8ada654e108b02b2f894358c38af8c8eac0a6f4",
+        "reportedFindings": [
+          {
+            "column": 51,
+            "endColumn": 66,
+            "endLine": 2,
+            "file": "src/components/DragSelect/index.vue",
+            "line": 2,
+            "message": "[vize:script/no-duplicate-attr-inheritance] `v-bind=\"$attrs\"` on the root element applies the fallthrough attributes twice, because `inheritAttrs` defaults to true.",
+            "ruleId": "script/no-duplicate-attr-inheritance",
+            "severity": "warning"
+          },
+          {
+            "column": 59,
+            "endColumn": 65,
+            "endLine": 2,
+            "file": "src/components/DragSelect/index.vue",
+            "line": 2,
+            "message": "Set \"inheritAttrs\" to false.",
+            "ruleId": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "upstreamRuleId": "vue/no-duplicate-attr-inheritance"
+          }
+        ]
+      },
+      {
+        "project": "vue-element-admin",
+        "repository": "PanJiaChen/vue-element-admin",
+        "revision": "6858a9ad67483025f6a9432a926beb9327037be3",
+        "sourcePath": "src/components/Kanban/index.vue",
+        "bytes": 1896,
+        "gitBlobSha1": "82f7dd7e05ba30410132789f879b1188586b788c",
+        "sha256": "440817060d592b1fe7bc0d9ba10e5ab72d32d61fa007e039f3ab00f21ed483f5",
+        "reportedFindings": [
+          {
+            "column": 15,
+            "endColumn": 21,
+            "endLine": 8,
+            "file": "src/components/Kanban/index.vue",
+            "line": 8,
+            "message": "Set \"inheritAttrs\" to false.",
+            "ruleId": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "upstreamRuleId": "vue/no-duplicate-attr-inheritance"
+          }
+        ]
+      },
+      {
+        "project": "vue-element-admin",
+        "repository": "PanJiaChen/vue-element-admin",
+        "revision": "6858a9ad67483025f6a9432a926beb9327037be3",
+        "sourcePath": "src/components/Pagination/index.vue",
+        "bytes": 1882,
+        "gitBlobSha1": "c815e132ce2d5ccb63d4a9a9aed80841ec884633",
+        "sha256": "55818de8f3b08cc0b6def2b289f4ca0ef7d797269c95bbc67f60d2ade8e1911c",
+        "reportedFindings": [
+          {
+            "column": 15,
+            "endColumn": 21,
+            "endLine": 10,
+            "file": "src/components/Pagination/index.vue",
+            "line": 10,
+            "message": "Set \"inheritAttrs\" to false.",
+            "ruleId": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "upstreamRuleId": "vue/no-duplicate-attr-inheritance"
+          }
+        ]
+      },
+      {
+        "project": "gui-for-singbox",
+        "repository": "GUI-for-Cores/GUI.for.SingBox",
+        "revision": "1be4816dea1e8793d8e08ae4f8f016c28101672d",
+        "sourcePath": "frontend/src/components/Input/index.vue",
+        "bytes": 6052,
+        "gitBlobSha1": "f3c87b010c1ed2885912306d1b559420f7426d3e",
+        "sha256": "27443dad20da1d6305a21d5f6a8b5f533c53f5a3b8921ab52fcaac4092154b26",
+        "reportedFindings": [
+          {
+            "column": 5,
+            "endColumn": 20,
+            "endLine": 138,
+            "file": "frontend/src/components/Input/index.vue",
+            "line": 138,
+            "message": "[vize:script/no-duplicate-attr-inheritance] `v-bind=\"$attrs\"` on the root element applies the fallthrough attributes twice, because `inheritAttrs` defaults to true.",
+            "ruleId": "script/no-duplicate-attr-inheritance",
+            "severity": "warning"
+          },
+          {
+            "column": 13,
+            "endColumn": 19,
+            "endLine": 138,
+            "file": "frontend/src/components/Input/index.vue",
+            "line": 138,
+            "message": "Set \"inheritAttrs\" to false.",
+            "ruleId": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "upstreamRuleId": "vue/no-duplicate-attr-inheritance"
+          }
+        ]
+      },
+      {
+        "project": "gui-for-singbox",
+        "repository": "GUI-for-Cores/GUI.for.SingBox",
+        "revision": "1be4816dea1e8793d8e08ae4f8f016c28101672d",
+        "sourcePath": "frontend/src/components/InterfaceSelect/index.vue",
+        "bytes": 659,
+        "gitBlobSha1": "ea188aedf0414225204cae6efc297a1a609ef35e",
+        "sha256": "df0a663f7097490a78dc30663d36f8d75436f68ef42a094d9769bcb11c2c2ed5",
+        "reportedFindings": [
+          {
+            "column": 27,
+            "endColumn": 42,
+            "endLine": 36,
+            "file": "frontend/src/components/InterfaceSelect/index.vue",
+            "line": 36,
+            "message": "[vize:script/no-duplicate-attr-inheritance] `v-bind=\"$attrs\"` on the root element applies the fallthrough attributes twice, because `inheritAttrs` defaults to true.",
+            "ruleId": "script/no-duplicate-attr-inheritance",
+            "severity": "warning"
+          },
+          {
+            "column": 35,
+            "endColumn": 41,
+            "endLine": 36,
+            "file": "frontend/src/components/InterfaceSelect/index.vue",
+            "line": 36,
+            "message": "Set \"inheritAttrs\" to false.",
+            "ruleId": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "upstreamRuleId": "vue/no-duplicate-attr-inheritance"
+          }
+        ]
+      },
+      {
+        "project": "gui-for-singbox",
+        "repository": "GUI-for-Cores/GUI.for.SingBox",
+        "revision": "1be4816dea1e8793d8e08ae4f8f016c28101672d",
+        "sourcePath": "frontend/src/components/MultipleSelect/index.vue",
+        "bytes": 61,
+        "gitBlobSha1": "212e4b623030347db98e87927217089660388427",
+        "sha256": "462f01e19f30765423cb0412120976e889f22b81370ea40cc3dc49cb31b14548",
+        "reportedFindings": [
+          {
+            "column": 19,
+            "endColumn": 25,
+            "endLine": 2,
+            "file": "frontend/src/components/MultipleSelect/index.vue",
+            "line": 2,
+            "message": "Set \"inheritAttrs\" to false.",
+            "ruleId": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "upstreamRuleId": "vue/no-duplicate-attr-inheritance"
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "ant-design-vue:site/src/layouts/icons/ThemeIcon.vue",
+      "source": "<template>\n  <Icon v-bind=\"$attrs\">\n    <template #component>\n      <svg width=\"1em\" height=\"1em\" viewBox=\"0 0 21 21\" fill=\"currentColor\" v-bind=\"$attrs\">\n        <g fillRule=\"evenodd\">\n          <g fillRule=\"nonzero\">\n            <path\n              d=\"M7.02 3.635l12.518 12.518a1.863 1.863 0 010 2.635l-1.317 1.318a1.863 1.863 0 01-2.635 0L3.068 7.588A2.795 2.795 0 117.02 3.635zm2.09 14.428a.932.932 0 110 1.864.932.932 0 010-1.864zm-.043-9.747L7.75 9.635l9.154 9.153 1.318-1.317-9.154-9.155zM3.52 12.473c.514 0 .931.417.931.931v.932h.932a.932.932 0 110 1.864h-.932v.931a.932.932 0 01-1.863 0l-.001-.931h-.93a.932.932 0 010-1.864h.93v-.932c0-.514.418-.931.933-.931zm15.374-3.727a1.398 1.398 0 110 2.795 1.398 1.398 0 010-2.795zM4.385 4.953a.932.932 0 000 1.317l2.046 2.047L7.75 7 5.703 4.953a.932.932 0 00-1.318 0zM14.701.36a.932.932 0 01.931.932v.931h.932a.932.932 0 010 1.864h-.933l.001.932a.932.932 0 11-1.863 0l-.001-.932h-.93a.932.932 0 110-1.864h.93v-.931a.932.932 0 01.933-.932z\"\n            />\n          </g>\n        </g>\n      </svg>\n    </template>\n  </Icon>\n</template>\n<script lang=\"ts\">\nimport { defineComponent } from 'vue';\nimport Icon from '@ant-design/icons-vue';\nexport default defineComponent({\n  name: 'ThemeIcon',\n  components: {\n    Icon,\n  },\n  setup() {\n    return {};\n  },\n});\n</script>\n<style lang=\"less\" scoped></style>\n",
+      "filename": "ant-design-vue/site/src/layouts/icons/ThemeIcon.vue",
+      "reference": [
+        {
+          "ruleId": "vue/no-duplicate-attr-inheritance",
+          "severity": 1,
+          "message": "Set \"inheritAttrs\" to false.",
+          "line": 2,
+          "column": 17,
+          "messageId": "noDuplicateAttrInheritance",
+          "endLine": 2,
+          "endColumn": 23
+        },
+        {
+          "ruleId": "vue/no-duplicate-attr-inheritance",
+          "severity": 1,
+          "message": "Set \"inheritAttrs\" to false.",
+          "line": 4,
+          "column": 85,
+          "messageId": "noDuplicateAttrInheritance",
+          "endLine": 4,
+          "endColumn": 91
+        }
+      ],
+      "expected": {
+        "filename": "ant-design-vue/site/src/layouts/icons/ThemeIcon.vue",
+        "error_count": 0,
+        "warning_count": 2,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "message": "Set \"inheritAttrs\" to false.",
+            "start": 27,
+            "end": 33,
+            "help": "Opt out of the automatic inheritance so only this `v-bind` applies them, e.g. `defineOptions({ inheritAttrs: false })` or `inheritAttrs: false` in the component options.",
+            "labels": [
+              {
+                "message": "attributes applied twice",
+                "start": 27,
+                "end": 33
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "message": "Set \"inheritAttrs\" to false.",
+            "start": 146,
+            "end": 152,
+            "help": "Opt out of the automatic inheritance so only this `v-bind` applies them, e.g. `defineOptions({ inheritAttrs: false })` or `inheritAttrs: false` in the component options.",
+            "labels": [
+              {
+                "message": "attributes applied twice",
+                "start": 146,
+                "end": 152
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "vue-element-admin:src/components/DragSelect/index.vue",
+      "source": "<template>\n  <el-select ref=\"dragSelect\" v-model=\"selectVal\" v-bind=\"$attrs\" class=\"drag-select\" multiple v-on=\"$listeners\">\n    <slot />\n  </el-select>\n</template>\n\n<script>\nimport Sortable from 'sortablejs'\n\nexport default {\n  name: 'DragSelect',\n  props: {\n    value: {\n      type: Array,\n      required: true\n    }\n  },\n  computed: {\n    selectVal: {\n      get() {\n        return [...this.value]\n      },\n      set(val) {\n        this.$emit('input', [...val])\n      }\n    }\n  },\n  mounted() {\n    this.setSort()\n  },\n  methods: {\n    setSort() {\n      const el = this.$refs.dragSelect.$el.querySelectorAll('.el-select__tags > span')[0]\n      this.sortable = Sortable.create(el, {\n        ghostClass: 'sortable-ghost', // Class name for the drop placeholder,\n        setData: function(dataTransfer) {\n          dataTransfer.setData('Text', '')\n          // to avoid Firefox bug\n          // Detail see : https://github.com/RubaXa/Sortable/issues/1012\n        },\n        onEnd: evt => {\n          const targetRow = this.value.splice(evt.oldIndex, 1)[0]\n          this.value.splice(evt.newIndex, 0, targetRow)\n        }\n      })\n    }\n  }\n}\n</script>\n\n<style lang=\"scss\" scoped>\n.drag-select {\n  ::v-deep {\n    .sortable-ghost {\n      opacity: .8;\n      color: #fff !important;\n      background: #42b983 !important;\n    }\n\n    .el-tag {\n      cursor: pointer;\n    }\n  }\n}\n</style>\n",
+      "filename": "vue-element-admin/src/components/DragSelect/index.vue",
+      "reference": [
+        {
+          "ruleId": "vue/no-duplicate-attr-inheritance",
+          "severity": 1,
+          "message": "Set \"inheritAttrs\" to false.",
+          "line": 2,
+          "column": 59,
+          "messageId": "noDuplicateAttrInheritance",
+          "endLine": 2,
+          "endColumn": 65
+        }
+      ],
+      "expected": {
+        "filename": "vue-element-admin/src/components/DragSelect/index.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "message": "Set \"inheritAttrs\" to false.",
+            "start": 69,
+            "end": 75,
+            "help": "Opt out of the automatic inheritance so only this `v-bind` applies them, e.g. `defineOptions({ inheritAttrs: false })` or `inheritAttrs: false` in the component options.",
+            "labels": [
+              {
+                "message": "attributes applied twice",
+                "start": 69,
+                "end": 75
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "vue-element-admin:src/components/Kanban/index.vue",
+      "source": "<template>\n  <div class=\"board-column\">\n    <div class=\"board-column-header\">\n      {{ headerText }}\n    </div>\n    <draggable\n      :list=\"list\"\n      v-bind=\"$attrs\"\n      class=\"board-column-content\"\n      :set-data=\"setData\"\n    >\n      <div v-for=\"element in list\" :key=\"element.id\" class=\"board-item\">\n        {{ element.name }} {{ element.id }}\n      </div>\n    </draggable>\n  </div>\n</template>\n\n<script>\nimport draggable from 'vuedraggable'\n\nexport default {\n  name: 'DragKanbanDemo',\n  components: {\n    draggable\n  },\n  props: {\n    headerText: {\n      type: String,\n      default: 'Header'\n    },\n    options: {\n      type: Object,\n      default() {\n        return {}\n      }\n    },\n    list: {\n      type: Array,\n      default() {\n        return []\n      }\n    }\n  },\n  methods: {\n    setData(dataTransfer) {\n      // to avoid Firefox bug\n      // Detail see : https://github.com/RubaXa/Sortable/issues/1012\n      dataTransfer.setData('Text', '')\n    }\n  }\n}\n</script>\n<style lang=\"scss\" scoped>\n.board-column {\n  min-width: 300px;\n  min-height: 100px;\n  height: auto;\n  overflow: hidden;\n  background: #f0f0f0;\n  border-radius: 3px;\n\n  .board-column-header {\n    height: 50px;\n    line-height: 50px;\n    overflow: hidden;\n    padding: 0 20px;\n    text-align: center;\n    background: #333;\n    color: #fff;\n    border-radius: 3px 3px 0 0;\n  }\n\n  .board-column-content {\n    height: auto;\n    overflow: hidden;\n    border: 10px solid transparent;\n    min-height: 60px;\n    display: flex;\n    justify-content: flex-start;\n    flex-direction: column;\n    align-items: center;\n\n    .board-item {\n      cursor: pointer;\n      width: 100%;\n      height: 64px;\n      margin: 5px 0;\n      background-color: #fff;\n      text-align: left;\n      line-height: 54px;\n      padding: 5px 10px;\n      box-sizing: border-box;\n      box-shadow: 0px 1px 3px 0 rgba(0, 0, 0, 0.2);\n    }\n  }\n}\n</style>\n\n",
+      "filename": "vue-element-admin/src/components/Kanban/index.vue",
+      "reference": [
+        {
+          "ruleId": "vue/no-duplicate-attr-inheritance",
+          "severity": 1,
+          "message": "Set \"inheritAttrs\" to false.",
+          "line": 8,
+          "column": 15,
+          "messageId": "noDuplicateAttrInheritance",
+          "endLine": 8,
+          "endColumn": 21
+        }
+      ],
+      "expected": {
+        "filename": "vue-element-admin/src/components/Kanban/index.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "message": "Set \"inheritAttrs\" to false.",
+            "start": 160,
+            "end": 166,
+            "help": "Opt out of the automatic inheritance so only this `v-bind` applies them, e.g. `defineOptions({ inheritAttrs: false })` or `inheritAttrs: false` in the component options.",
+            "labels": [
+              {
+                "message": "attributes applied twice",
+                "start": 160,
+                "end": 166
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "vue-element-admin:src/components/Pagination/index.vue",
+      "source": "<template>\n  <div :class=\"{'hidden':hidden}\" class=\"pagination-container\">\n    <el-pagination\n      :background=\"background\"\n      :current-page.sync=\"currentPage\"\n      :page-size.sync=\"pageSize\"\n      :layout=\"layout\"\n      :page-sizes=\"pageSizes\"\n      :total=\"total\"\n      v-bind=\"$attrs\"\n      @size-change=\"handleSizeChange\"\n      @current-change=\"handleCurrentChange\"\n    />\n  </div>\n</template>\n\n<script>\nimport { scrollTo } from '@/utils/scroll-to'\n\nexport default {\n  name: 'Pagination',\n  props: {\n    total: {\n      required: true,\n      type: Number\n    },\n    page: {\n      type: Number,\n      default: 1\n    },\n    limit: {\n      type: Number,\n      default: 20\n    },\n    pageSizes: {\n      type: Array,\n      default() {\n        return [10, 20, 30, 50]\n      }\n    },\n    layout: {\n      type: String,\n      default: 'total, sizes, prev, pager, next, jumper'\n    },\n    background: {\n      type: Boolean,\n      default: true\n    },\n    autoScroll: {\n      type: Boolean,\n      default: true\n    },\n    hidden: {\n      type: Boolean,\n      default: false\n    }\n  },\n  computed: {\n    currentPage: {\n      get() {\n        return this.page\n      },\n      set(val) {\n        this.$emit('update:page', val)\n      }\n    },\n    pageSize: {\n      get() {\n        return this.limit\n      },\n      set(val) {\n        this.$emit('update:limit', val)\n      }\n    }\n  },\n  methods: {\n    handleSizeChange(val) {\n      this.$emit('pagination', { page: this.currentPage, limit: val })\n      if (this.autoScroll) {\n        scrollTo(0, 800)\n      }\n    },\n    handleCurrentChange(val) {\n      this.$emit('pagination', { page: val, limit: this.pageSize })\n      if (this.autoScroll) {\n        scrollTo(0, 800)\n      }\n    }\n  }\n}\n</script>\n\n<style scoped>\n.pagination-container {\n  background: #fff;\n  padding: 32px 16px;\n}\n.pagination-container.hidden {\n  display: none;\n}\n</style>\n",
+      "filename": "vue-element-admin/src/components/Pagination/index.vue",
+      "reference": [
+        {
+          "ruleId": "vue/no-duplicate-attr-inheritance",
+          "severity": 1,
+          "message": "Set \"inheritAttrs\" to false.",
+          "line": 10,
+          "column": 15,
+          "messageId": "noDuplicateAttrInheritance",
+          "endLine": 10,
+          "endColumn": 21
+        }
+      ],
+      "expected": {
+        "filename": "vue-element-admin/src/components/Pagination/index.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "message": "Set \"inheritAttrs\" to false.",
+            "start": 285,
+            "end": 291,
+            "help": "Opt out of the automatic inheritance so only this `v-bind` applies them, e.g. `defineOptions({ inheritAttrs: false })` or `inheritAttrs: false` in the component options.",
+            "labels": [
+              {
+                "message": "attributes applied twice",
+                "start": 285,
+                "end": 291
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "gui-for-singbox:frontend/src/components/Input/index.vue",
+      "source": "<script setup lang=\"ts\">\nimport { computed, nextTick, onMounted, ref, useTemplateRef } from 'vue'\n\nimport { ClipboardGetText } from '@/bridge'\nimport useI18n from '@/lang'\nimport { debounce } from '@/utils'\n\nexport interface Props {\n  modelValue?: string | number | undefined\n  autoSize?: boolean\n  placeholder?: string\n  type?: 'number' | 'text' | 'code'\n  lang?: 'yaml' | 'json' | 'javascript'\n  size?: 'default' | 'small'\n  editable?: boolean\n  clearable?: boolean\n  allowPaste?: boolean\n  autofocus?: boolean\n  min?: number\n  max?: number\n  maxWidth?: boolean\n  disabled?: boolean\n  border?: boolean\n  delay?: number\n}\n\nconst props = withDefaults(defineProps<Props>(), {\n  modelValue: '',\n  autoSize: false,\n  placeholder: undefined,\n  type: 'text',\n  lang: 'javascript',\n  size: 'default',\n  editable: false,\n  autofocus: false,\n  allowPaste: false,\n  min: undefined,\n  max: undefined,\n  maxWidth: true,\n  clearable: false,\n  disabled: false,\n  border: true,\n  delay: 0,\n})\n\nconst emits = defineEmits(['change', 'update:modelValue', 'submit'])\n\nconst showEdit = ref(false)\nconst isComposing = ref(false)\nconst inputRef = useTemplateRef('inputRef')\nconst innerClearable = computed(\n  () => props.clearable && props.type !== 'code' && props.modelValue && !props.disabled,\n)\nconst innerAllowPaste = computed(() => props.allowPaste && props.type !== 'code' && !props.disabled)\n\nconst { t } = useI18n.global\n\nconst validate = (val: string | number) => {\n  if (props.type === 'number') {\n    val = Number(val)\n    if (Number.isNaN(val)) {\n      throw new Error('Please enter a valid number')\n    }\n    const { min, max } = props\n    if (min !== undefined) {\n      val = val < min ? min : val\n    }\n    if (max !== undefined) {\n      val = val > max ? max : val\n    }\n  }\n  return val\n}\n\nconst emitInput = debounce((e: any) => {\n  const val = validate(e.target.value)\n  e.target.value = val\n  emits('update:modelValue', val)\n  emits('change', val)\n}, props.delay)\n\nconst onInput = (e: any) => {\n  if (isComposing.value || e.isComposing) return\n  emitInput(e)\n}\n\nconst onCompositionStart = () => {\n  isComposing.value = true\n  emitInput.cancel()\n}\n\nconst onCompositionEnd = (e: CompositionEvent) => {\n  isComposing.value = false\n  emitInput(e)\n}\n\nconst onKeydownEnter = (e: KeyboardEvent) => {\n  if (isComposing.value || e.isComposing || e.keyCode === 229) return\n  nextTick(() => inputRef.value?.blur())\n}\n\nconst handleClear = () => {\n  const val = props.type === 'number' ? Math.min(props.min || 0, 0) : ''\n  emits('update:modelValue', val)\n  emits('change', val)\n  !props.editable && nextTick(() => inputRef.value?.focus())\n}\n\nconst handlePaste = async () => {\n  const text = await ClipboardGetText()\n  const val = validate(text)\n  emits('update:modelValue', val)\n  emits('change', val)\n}\n\nconst showInput = () => {\n  if (props.disabled) return\n  showEdit.value = true\n  nextTick(() => inputRef.value?.focus())\n}\n\nconst onSubmit = (e: any) => {\n  const val = validate(e.target.value)\n  e.target.value = val\n  emits('submit', val)\n  props.editable && (showEdit.value = false)\n}\n\nonMounted(() => props.autofocus && !props.editable && inputRef.value?.focus())\n\ndefineExpose({\n  focus: () => inputRef.value?.focus(),\n})\n</script>\n\n<template>\n  <div\n    v-bind=\"$attrs\"\n    :class=\"{\n      border: border && (!editable || showEdit),\n      'auto-size': autoSize,\n      'bg-color': !editable || showEdit,\n      'is-editable': editable && !showEdit,\n      'no-max-width': !maxWidth,\n      [size]: true,\n      disabled,\n    }\"\n    :style=\"{\n      height: type === 'code' ? '' : size === 'small' ? '26px' : '30px',\n    }\"\n    class=\"gui-input inline-flex items-center rounded-4 cursor-pointer px-4\"\n  >\n    <div v-if=\"$slots.prefix\" class=\"flex items-center shrink-0\">\n      <slot name=\"prefix\" v-bind=\"{ showInput }\"></slot>\n    </div>\n    <Icon v-if=\"disabled\" icon=\"forbidden\" class=\"shrink-0\" />\n    <div\n      v-if=\"editable && !showEdit\"\n      class=\"w-full overflow-hidden whitespace-nowrap text-ellipsis\"\n      :class=\"{ 'italic pr-4': !modelValue }\"\n      @click=\"showInput\"\n    >\n      <slot name=\"editable\" v-bind=\"{ value: modelValue }\">\n        {{ modelValue || t(placeholder || 'common.none') }}\n      </slot>\n    </div>\n    <template v-else>\n      <CodeEditor\n        v-if=\"type === 'code'\"\n        :model-value=\"String(modelValue ?? '')\"\n        :lang=\"lang\"\n        :editable=\"!disabled\"\n        :placeholder=\"placeholder\"\n        class=\"code w-full overflow-y-auto\"\n        @change=\"(value: string) => onInput({ target: { value } })\"\n      />\n      <input\n        v-else\n        ref=\"inputRef\"\n        :value=\"modelValue\"\n        :placeholder=\"placeholder\"\n        :type=\"type\"\n        :disabled=\"disabled\"\n        autocomplete=\"off\"\n        class=\"flex-1 inline-block py-6 outline-none border-0 bg-transparent w-0\"\n        @input=\"onInput\"\n        @compositionstart=\"onCompositionStart\"\n        @compositionend=\"onCompositionEnd\"\n        @blur=\"onSubmit\"\n        @keydown.enter=\"onKeydownEnter\"\n        @keydown.esc.stop.prevent=\"inputRef?.blur\"\n      />\n      <Button\n        v-if=\"innerClearable\"\n        icon=\"clear2\"\n        type=\"text\"\n        size=\"small\"\n        @mousedown.prevent\n        @click=\"handleClear\"\n      />\n      <Button v-if=\"innerAllowPaste\" icon=\"paste\" type=\"text\" size=\"small\" @click=\"handlePaste\" />\n    </template>\n    <div v-if=\"$slots.suffix\" class=\"flex items-center shrink-0\">\n      <slot name=\"suffix\" v-bind=\"{ showInput }\"></slot>\n    </div>\n  </div>\n</template>\n\n<style lang=\"less\" scoped>\n.gui-input {\n  min-width: 220px;\n  border: 1px solid transparent;\n  input {\n    color: var(--input-color);\n  }\n  .code {\n    max-height: 300px;\n  }\n}\n\n.bg-color {\n  background: var(--input-bg);\n}\n\n.is-editable {\n  min-width: 0;\n}\n\n.is-editable:not(.no-max-width) {\n  max-width: 220px;\n}\n\n.auto-size {\n  min-width: 0 !important;\n}\n\n.disabled {\n  cursor: not-allowed;\n  input {\n    cursor: not-allowed;\n  }\n}\n\n.border {\n  border: 1px solid var(--primary-color);\n}\n\n.small {\n  input {\n    font-size: 12px;\n  }\n}\n</style>\n",
+      "filename": "gui-for-singbox/frontend/src/components/Input/index.vue",
+      "reference": [
+        {
+          "ruleId": "vue/no-duplicate-attr-inheritance",
+          "severity": 1,
+          "message": "Set \"inheritAttrs\" to false.",
+          "line": 138,
+          "column": 13,
+          "messageId": "noDuplicateAttrInheritance",
+          "endLine": 138,
+          "endColumn": 19
+        }
+      ],
+      "expected": {
+        "filename": "gui-for-singbox/frontend/src/components/Input/index.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "message": "Set \"inheritAttrs\" to false.",
+            "start": 3257,
+            "end": 3263,
+            "help": "Opt out of the automatic inheritance so only this `v-bind` applies them, e.g. `defineOptions({ inheritAttrs: false })` or `inheritAttrs: false` in the component options.",
+            "labels": [
+              {
+                "message": "attributes applied twice",
+                "start": 3257,
+                "end": 3263
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "gui-for-singbox:frontend/src/components/InterfaceSelect/index.vue",
+      "source": "<script lang=\"ts\" setup>\nimport { ref } from 'vue'\n\nimport { GetInterfaces } from '@/bridge'\n\ninterface Props {\n  border?: boolean\n}\n\nconst model = defineModel<string>()\n\nwithDefaults(defineProps<Props>(), {\n  border: true,\n})\n\nconst emits = defineEmits(['change'])\n\nconst options = ref<any>([])\n\nconst onChange = (val: string) => {\n  emits('change', val)\n}\n\nGetInterfaces().then((res) => {\n  options.value = [\n    {\n      label: 'common.auto',\n      value: '',\n    },\n    ...res.map((v) => ({ label: v, value: v })),\n  ]\n})\n</script>\n\n<template>\n  <Select v-model=\"model\" v-bind=\"$attrs\" :options=\"options\" :border=\"border\" @change=\"onChange\" />\n</template>\n",
+      "filename": "gui-for-singbox/frontend/src/components/InterfaceSelect/index.vue",
+      "reference": [
+        {
+          "ruleId": "vue/no-duplicate-attr-inheritance",
+          "severity": 1,
+          "message": "Set \"inheritAttrs\" to false.",
+          "line": 36,
+          "column": 35,
+          "messageId": "noDuplicateAttrInheritance",
+          "endLine": 36,
+          "endColumn": 41
+        }
+      ],
+      "expected": {
+        "filename": "gui-for-singbox/frontend/src/components/InterfaceSelect/index.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "message": "Set \"inheritAttrs\" to false.",
+            "start": 581,
+            "end": 587,
+            "help": "Opt out of the automatic inheritance so only this `v-bind` applies them, e.g. `defineOptions({ inheritAttrs: false })` or `inheritAttrs: false` in the component options.",
+            "labels": [
+              {
+                "message": "attributes applied twice",
+                "start": 581,
+                "end": 587
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "gui-for-singbox:frontend/src/components/MultipleSelect/index.vue",
+      "source": "<template>\n  <Select v-bind=\"$attrs\" multiple />\n</template>\n",
+      "filename": "gui-for-singbox/frontend/src/components/MultipleSelect/index.vue",
+      "reference": [
+        {
+          "ruleId": "vue/no-duplicate-attr-inheritance",
+          "severity": 1,
+          "message": "Set \"inheritAttrs\" to false.",
+          "line": 2,
+          "column": 19,
+          "messageId": "noDuplicateAttrInheritance",
+          "endLine": 2,
+          "endColumn": 25
+        }
+      ],
+      "expected": {
+        "filename": "gui-for-singbox/frontend/src/components/MultipleSelect/index.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "message": "Set \"inheritAttrs\" to false.",
+            "start": 29,
+            "end": 35,
+            "help": "Opt out of the automatic inheritance so only this `v-bind` applies them, e.g. `defineOptions({ inheritAttrs: false })` or `inheritAttrs: false` in the component options.",
+            "labels": [
+              {
+                "message": "attributes applied twice",
+                "start": 29,
+                "end": 35
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "explicittruehealthy",
+      "source": "<script setup>defineOptions({inheritAttrs:true})</script><template><div /></template>",
+      "filename": "explicittruehealthy.vue",
+      "reference": [],
+      "expected": {
+        "filename": "explicittruehealthy.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "explicittruereference",
+      "source": "<script setup>defineOptions({inheritAttrs:true})</script><template><div v-bind=\"$attrs\" /></template>",
+      "filename": "explicittruereference.vue",
+      "reference": [
+        {
+          "ruleId": "vue/no-duplicate-attr-inheritance",
+          "severity": 1,
+          "message": "Set \"inheritAttrs\" to false.",
+          "line": 1,
+          "column": 81,
+          "messageId": "noDuplicateAttrInheritance",
+          "endLine": 1,
+          "endColumn": 87
+        }
+      ],
+      "expected": {
+        "filename": "explicittruereference.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "message": "Set \"inheritAttrs\" to false.",
+            "start": 80,
+            "end": 86,
+            "help": "Opt out of the automatic inheritance so only this `v-bind` applies them, e.g. `defineOptions({ inheritAttrs: false })` or `inheritAttrs: false` in the component options.",
+            "labels": [
+              {
+                "message": "attributes applied twice",
+                "start": 80,
+                "end": 86
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "inheritfalse",
+      "source": "<script setup>defineOptions({inheritAttrs:false})</script><template><div><span v-bind=\"$attrs\" /></div></template>",
+      "filename": "inheritfalse.vue",
+      "reference": [],
+      "expected": {
+        "filename": "inheritfalse.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "nestedandroot",
+      "source": "<script setup></script><template><div v-bind=\"$attrs\"><span v-bind=\"$attrs\" /></div></template>",
+      "filename": "nestedandroot.vue",
+      "reference": [
+        {
+          "ruleId": "vue/no-duplicate-attr-inheritance",
+          "severity": 1,
+          "message": "Set \"inheritAttrs\" to false.",
+          "line": 1,
+          "column": 47,
+          "messageId": "noDuplicateAttrInheritance",
+          "endLine": 1,
+          "endColumn": 53
+        },
+        {
+          "ruleId": "vue/no-duplicate-attr-inheritance",
+          "severity": 1,
+          "message": "Set \"inheritAttrs\" to false.",
+          "line": 1,
+          "column": 69,
+          "messageId": "noDuplicateAttrInheritance",
+          "endLine": 1,
+          "endColumn": 75
+        }
+      ],
+      "expected": {
+        "filename": "nestedandroot.vue",
+        "error_count": 0,
+        "warning_count": 2,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "message": "Set \"inheritAttrs\" to false.",
+            "start": 46,
+            "end": 52,
+            "help": "Opt out of the automatic inheritance so only this `v-bind` applies them, e.g. `defineOptions({ inheritAttrs: false })` or `inheritAttrs: false` in the component options.",
+            "labels": [
+              {
+                "message": "attributes applied twice",
+                "start": 46,
+                "end": 52
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "message": "Set \"inheritAttrs\" to false.",
+            "start": 68,
+            "end": 74,
+            "help": "Opt out of the automatic inheritance so only this `v-bind` applies them, e.g. `defineOptions({ inheritAttrs: false })` or `inheritAttrs: false` in the component options.",
+            "labels": [
+              {
+                "message": "attributes applied twice",
+                "start": 68,
+                "end": 74
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "foreignloop",
+      "source": "<script setup></script><template><div><span v-for=\"$attrs in rows\" v-bind=\"$attrs\" /></div></template>",
+      "filename": "foreignloop.vue",
+      "reference": [],
+      "expected": {
+        "filename": "foreignloop.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "foreignslot",
+      "source": "<script setup></script><template><Comp v-slot=\"$attrs\"><span v-bind=\"$attrs\" /></Comp></template>",
+      "filename": "foreignslot.vue",
+      "reference": [],
+      "expected": {
+        "filename": "foreignslot.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "foreigndestructuredslot",
+      "source": "<script setup></script><template><Comp v-slot=\"{value:$attrs}\"><span v-bind=\"$attrs\" /></Comp></template>",
+      "filename": "foreigndestructuredslot.vue",
+      "reference": [],
+      "expected": {
+        "filename": "foreigndestructuredslot.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "renamedsourcekey",
+      "source": "<script setup></script><template><Comp v-slot=\"{$attrs:local}\"><span v-bind=\"$attrs\" /></Comp></template>",
+      "filename": "renamedsourcekey.vue",
+      "reference": [
+        {
+          "ruleId": "vue/no-duplicate-attr-inheritance",
+          "severity": 1,
+          "message": "Set \"inheritAttrs\" to false.",
+          "line": 1,
+          "column": 78,
+          "messageId": "noDuplicateAttrInheritance",
+          "endLine": 1,
+          "endColumn": 84
+        }
+      ],
+      "expected": {
+        "filename": "renamedsourcekey.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "message": "Set \"inheritAttrs\" to false.",
+            "start": 77,
+            "end": 83,
+            "help": "Opt out of the automatic inheritance so only this `v-bind` applies them, e.g. `defineOptions({ inheritAttrs: false })` or `inheritAttrs: false` in the component options.",
+            "labels": [
+              {
+                "message": "attributes applied twice",
+                "start": 77,
+                "end": 83
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "foreignlexical",
+      "source": "<script setup></script><template><div v-bind=\"(($attrs) => $attrs)(local)\" /></template>",
+      "filename": "foreignlexical.vue",
+      "reference": [],
+      "expected": {
+        "filename": "foreignlexical.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "literalproperty",
+      "source": "<script setup></script><template><div v-bind=\"{ '$attrs': local }\" /></template>",
+      "filename": "literalproperty.vue",
+      "reference": [],
+      "expected": {
+        "filename": "literalproperty.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "objectspread",
+      "source": "<script setup></script><template><div v-bind=\"{...$attrs}\" /></template>",
+      "filename": "objectspread.vue",
+      "reference": [
+        {
+          "ruleId": "vue/no-duplicate-attr-inheritance",
+          "severity": 1,
+          "message": "Set \"inheritAttrs\" to false.",
+          "line": 1,
+          "column": 51,
+          "messageId": "noDuplicateAttrInheritance",
+          "endLine": 1,
+          "endColumn": 57
+        }
+      ],
+      "expected": {
+        "filename": "objectspread.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "message": "Set \"inheritAttrs\" to false.",
+            "start": 50,
+            "end": 56,
+            "help": "Opt out of the automatic inheritance so only this `v-bind` applies them, e.g. `defineOptions({ inheritAttrs: false })` or `inheritAttrs: false` in the component options.",
+            "labels": [
+              {
+                "message": "attributes applied twice",
+                "start": 50,
+                "end": 56
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "firstreferenceonly",
+      "source": "<script setup></script><template><div v-bind=\"{...$attrs,...$attrs}\" /></template>",
+      "filename": "firstreferenceonly.vue",
+      "reference": [
+        {
+          "ruleId": "vue/no-duplicate-attr-inheritance",
+          "severity": 1,
+          "message": "Set \"inheritAttrs\" to false.",
+          "line": 1,
+          "column": 51,
+          "messageId": "noDuplicateAttrInheritance",
+          "endLine": 1,
+          "endColumn": 57
+        }
+      ],
+      "expected": {
+        "filename": "firstreferenceonly.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "message": "Set \"inheritAttrs\" to false.",
+            "start": 50,
+            "end": 56,
+            "help": "Opt out of the automatic inheritance so only this `v-bind` applies them, e.g. `defineOptions({ inheritAttrs: false })` or `inheritAttrs: false` in the component options.",
+            "labels": [
+              {
+                "message": "attributes applied twice",
+                "start": 50,
+                "end": 56
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "ordinaryfragment",
+      "source": "<script setup></script><template><div v-bind=\"$attrs\" /><p /></template>",
+      "filename": "ordinaryfragment.vue",
+      "reference": [],
+      "expected": {
+        "filename": "ordinaryfragment.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "conditionalroots",
+      "source": "<script setup></script><template><div v-if=\"ok\" v-bind=\"$attrs\" /><span v-else v-bind=\"$attrs\" /></template>",
+      "filename": "conditionalroots.vue",
+      "reference": [
+        {
+          "ruleId": "vue/no-duplicate-attr-inheritance",
+          "severity": 1,
+          "message": "Set \"inheritAttrs\" to false.",
+          "line": 1,
+          "column": 57,
+          "messageId": "noDuplicateAttrInheritance",
+          "endLine": 1,
+          "endColumn": 63
+        },
+        {
+          "ruleId": "vue/no-duplicate-attr-inheritance",
+          "severity": 1,
+          "message": "Set \"inheritAttrs\" to false.",
+          "line": 1,
+          "column": 88,
+          "messageId": "noDuplicateAttrInheritance",
+          "endLine": 1,
+          "endColumn": 94
+        }
+      ],
+      "expected": {
+        "filename": "conditionalroots.vue",
+        "error_count": 0,
+        "warning_count": 2,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "message": "Set \"inheritAttrs\" to false.",
+            "start": 56,
+            "end": 62,
+            "help": "Opt out of the automatic inheritance so only this `v-bind` applies them, e.g. `defineOptions({ inheritAttrs: false })` or `inheritAttrs: false` in the component options.",
+            "labels": [
+              {
+                "message": "attributes applied twice",
+                "start": 56,
+                "end": 62
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "message": "Set \"inheritAttrs\" to false.",
+            "start": 87,
+            "end": 93,
+            "help": "Opt out of the automatic inheritance so only this `v-bind` applies them, e.g. `defineOptions({ inheritAttrs: false })` or `inheritAttrs: false` in the component options.",
+            "labels": [
+              {
+                "message": "attributes applied twice",
+                "start": 87,
+                "end": 93
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "conditionalwrapper",
+      "source": "<script setup></script><template><template v-if=\"ok\"><div v-bind=\"$attrs\" /></template></template>",
+      "filename": "conditionalwrapper.vue",
+      "reference": [
+        {
+          "ruleId": "vue/no-duplicate-attr-inheritance",
+          "severity": 1,
+          "message": "Set \"inheritAttrs\" to false.",
+          "line": 1,
+          "column": 67,
+          "messageId": "noDuplicateAttrInheritance",
+          "endLine": 1,
+          "endColumn": 73
+        }
+      ],
+      "expected": {
+        "filename": "conditionalwrapper.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "message": "Set \"inheritAttrs\" to false.",
+            "start": 66,
+            "end": 72,
+            "help": "Opt out of the automatic inheritance so only this `v-bind` applies them, e.g. `defineOptions({ inheritAttrs: false })` or `inheritAttrs: false` in the component options.",
+            "labels": [
+              {
+                "message": "attributes applied twice",
+                "start": 66,
+                "end": 72
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "foreignmember",
+      "source": "<script setup></script><template><div v-bind=\"local.$attrs\" /></template>",
+      "filename": "foreignmember.vue",
+      "reference": [],
+      "expected": {
+        "filename": "foreignmember.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "escapedforeignloop",
+      "source": "<script setup></script><template><div><span v-for=\"$\\u0061ttrs in rows\" v-bind=\"$attrs\" /></div></template>",
+      "filename": "escapedforeignloop.vue",
+      "reference": [],
+      "expected": {
+        "filename": "escapedforeignloop.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "escapedvmidentifier",
+      "source": "<script setup></script><template><div v-bind=\"$\\u0061ttrs\" /></template>",
+      "filename": "escapedvmidentifier.vue",
+      "reference": [
+        {
+          "ruleId": "vue/no-duplicate-attr-inheritance",
+          "severity": 1,
+          "message": "Set \"inheritAttrs\" to false.",
+          "line": 1,
+          "column": 47,
+          "messageId": "noDuplicateAttrInheritance",
+          "endLine": 1,
+          "endColumn": 58
+        }
+      ],
+      "expected": {
+        "filename": "escapedvmidentifier.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "message": "Set \"inheritAttrs\" to false.",
+            "start": 46,
+            "end": 57,
+            "help": "Opt out of the automatic inheritance so only this `v-bind` applies them, e.g. `defineOptions({ inheritAttrs: false })` or `inheritAttrs: false` in the component options.",
+            "labels": [
+              {
+                "message": "attributes applied twice",
+                "start": 46,
+                "end": 57
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "slotownbinding",
+      "source": "<script setup></script><template><Comp v-slot=\"$attrs\" v-bind=\"$attrs\"><span /></Comp></template>",
+      "filename": "slotownbinding.vue",
+      "reference": [],
+      "expected": {
+        "filename": "slotownbinding.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "collectionattrsread",
+      "source": "<script setup></script><template><div><span v-for=\"item in $attrs\" v-bind=\"$attrs\" /></div></template>",
+      "filename": "collectionattrsread.vue",
+      "reference": [
+        {
+          "ruleId": "vue/no-duplicate-attr-inheritance",
+          "severity": 1,
+          "message": "Set \"inheritAttrs\" to false.",
+          "line": 1,
+          "column": 76,
+          "messageId": "noDuplicateAttrInheritance",
+          "endLine": 1,
+          "endColumn": 82
+        }
+      ],
+      "expected": {
+        "filename": "collectionattrsread.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-duplicate-attr-inheritance",
+            "severity": "warning",
+            "message": "Set \"inheritAttrs\" to false.",
+            "start": 75,
+            "end": 81,
+            "help": "Opt out of the automatic inheritance so only this `v-bind` applies them, e.g. `defineOptions({ inheritAttrs: false })` or `inheritAttrs: false` in the component options.",
+            "labels": [
+              {
+                "message": "attributes applied twice",
+                "start": 75,
+                "end": 81
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    }
+  ]
+}

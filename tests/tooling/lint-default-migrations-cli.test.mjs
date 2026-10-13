@@ -11,7 +11,9 @@ import { sha256, wholeJson } from "./lint-default-correctness-reference.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 await test("source CLI presets retain complete Vue 3 migration results and explicit n8n selection", () => {
   const fixture = path.join(root, "tests/_fixtures/lint-default-migrations");
-  const corpus = JSON.parse(fs.readFileSync(path.join(fixture, "cases.json"), "utf8"));
+  const corpus = JSON.parse(
+    fs.readFileSync(path.join(fixture, "current-range-cases.json"), "utf8"),
+  );
   const projection = JSON.parse(
     fs.readFileSync(path.join(root, "tests/_fixtures/n8n-cli-adoption.json"), "utf8"),
   );

@@ -8,7 +8,7 @@ expression: result.diagnostics
         severity: Error,
         message: "Prop 'value' is required but also declares a default",
         start: 33,
-        end: 38,
+        end: 84,
         help: Some(
             "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
         ),

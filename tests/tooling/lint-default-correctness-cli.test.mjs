@@ -6,7 +6,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.ts";
-import { loadCorpus, sha256, wholeJson } from "./lint-default-correctness-reference.mjs";
+import { sha256, wholeJson } from "./lint-default-correctness-reference.mjs";
+import { loadCurrentCorpus as loadCorpus } from "./support/lint-current-correctness-corpus.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 await test("configless CLI defaults retain whole correctness findings and explicit controls", () => {

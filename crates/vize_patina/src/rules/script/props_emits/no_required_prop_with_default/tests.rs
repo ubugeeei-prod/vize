@@ -118,9 +118,10 @@ fn typed_default_diagnostics_keep_utf8_offsets_across_crlf() {
     linter.add_rule(Box::new(NoRequiredPropWithDefault));
     let result = linter.lint(source, 23);
     assert_eq!(result.error_count, 1);
-    let start = source.find("café").unwrap() as u32 + 23;
+    let declaration = "café: number";
+    let start = source.find(declaration).unwrap() as u32 + 23;
     assert_eq!(
         (result.diagnostics[0].start, result.diagnostics[0].end),
-        (start, start + "café".len() as u32)
+        (start, start + declaration.len() as u32)
     );
 }

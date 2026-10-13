@@ -23,19 +23,23 @@ use oxc_ast::ast::{
     ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement, StringLiteral,
 };
 
+use oxc_span::{GetSpan, Span};
+
 use vize_l0::FxHashMap;
 
 /// A single object-form prop entry: its name, the key node (for span
 /// reporting), and its value (a type shorthand or a descriptor object).
 #[derive(Clone, Copy)]
-pub(super) struct PropDescriptor<'a> {
-    pub(super) name: &'a str,
-    pub(super) key: &'a PropertyKey<'a>,
-    pub(super) value: &'a Expression<'a>,
+pub(crate) struct PropDescriptor<'a> {
+    pub(crate) name: &'a str,
+    pub(crate) key: &'a PropertyKey<'a>,
+    pub(crate) value: &'a Expression<'a>,
+    /// Complete written prop entry, matching Vue's declaration diagnostics.
+    pub(crate) span: Span,
 }
 
 /// One resolved runtime props declaration (object or array form).
-pub(super) enum PropsSource<'a> {
+pub(crate) enum PropsSource<'a> {
     /// Object form: `props: { ... }` / `defineProps({ ... })`.
     Object(&'a ObjectExpression<'a>),
     /// Array form: `props: ['a']` / `defineProps(['a'])`.
@@ -45,7 +49,7 @@ pub(super) enum PropsSource<'a> {
 impl<'a> PropsSource<'a> {
     /// The object-form prop entries, or an empty iterator for the array form.
     /// Computed and spread members are skipped.
-    pub(super) fn object_props(&self) -> impl Iterator<Item = PropDescriptor<'a>> + '_ {
+    pub(crate) fn object_props(&self) -> impl Iterator<Item = PropDescriptor<'a>> + '_ {
         let object = match self {
             PropsSource::Object(object) => Some(*object),
             PropsSource::Array(_) => None,
@@ -65,13 +69,14 @@ impl<'a> PropsSource<'a> {
                     name,
                     key: &property.key,
                     value: &property.value,
+                    span: property.span(),
                 })
             })
     }
 
     /// The array-form name string-literals, or an empty iterator for the object
     /// form.
-    pub(super) fn array_names(&self) -> impl Iterator<Item = &'a StringLiteral<'a>> + '_ {
+    pub(crate) fn array_names(&self) -> impl Iterator<Item = &'a StringLiteral<'a>> + '_ {
         let array = match self {
             PropsSource::Array(array) => Some(*array),
             PropsSource::Object(_) => None,
@@ -90,17 +95,20 @@ impl<'a> PropsSource<'a> {
 /// `props` option (if any) and every top-level `defineProps(...)` runtime call.
 pub(super) fn collect_runtime_props<'a>(program: &'a Program<'a>) -> Vec<PropsSource<'a>> {
     let mut sources = Vec::new();
-    let bindings = collect_object_bindings(program);
-
-    if let Some(options) = resolve_options_object(program, &bindings)
-        && let Some(props) = option_props_source(options, &bindings)
-    {
+    if let Some(props) = collect_options_props(program) {
         sources.push(props);
     }
 
     collect_define_props_sources(program, &mut sources);
 
     sources
+}
+
+/// Resolve only component-owned Options API props, excluding setup macros.
+pub(crate) fn collect_options_props<'a>(program: &'a Program<'a>) -> Option<PropsSource<'a>> {
+    let bindings = collect_object_bindings(program);
+    let options = resolve_options_object(program, &bindings)?;
+    option_props_source(options, &bindings)
 }
 
 /// Append the runtime argument of each top-level `defineProps(...)` call.

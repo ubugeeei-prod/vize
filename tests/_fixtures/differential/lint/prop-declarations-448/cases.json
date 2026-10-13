@@ -1,0 +1,238 @@
+{
+  "provider": "eslint-plugin-vue@10.9.2",
+  "cases": [
+    {
+      "id": "options-array-model",
+      "source": "<script>export default { props: [\"count\", \"user\"] }</script>\n<template><input v-model=\"count\"/><input v-model=\"user.name\"/></template>",
+      "diagnostics": [
+        {
+          "rule": "vue/no-mutating-props",
+          "severity": "error",
+          "start": 87,
+          "end": 92
+        },
+        {
+          "rule": "vue/no-mutating-props",
+          "severity": "error",
+          "start": 111,
+          "end": 120
+        }
+      ]
+    },
+    {
+      "id": "options-object-model",
+      "source": "<script>export default { props: { profile: { type: Object, required: true } } }</script>\n<template><input v-model=\"profile.name\"/></template>",
+      "diagnostics": [
+        {
+          "rule": "vue/no-mutating-props",
+          "severity": "error",
+          "start": 115,
+          "end": 127
+        }
+      ]
+    },
+    {
+      "id": "options-array-handler",
+      "source": "<script>export default { props: [\"count\"] }</script>\n<template><button @click=\"count++\"/></template>",
+      "diagnostics": [
+        {
+          "rule": "vue/no-mutating-props",
+          "severity": "error",
+          "start": 79,
+          "end": 86
+        }
+      ]
+    },
+    {
+      "id": "options-shadowed-for",
+      "source": "<script>export default { props: [\"count\"] }</script>\n<template><input v-for=\"count in rows\" v-model=\"count\"/></template>",
+      "diagnostics": []
+    },
+    {
+      "id": "options-shadowed-slot",
+      "source": "<script>export default { props: [\"user\"] }</script>\n<template><Child v-slot=\"{ user }\"><input v-model=\"user.name\"/></Child></template>",
+      "diagnostics": []
+    },
+    {
+      "id": "ordinary-object-is-not-props",
+      "source": "<script>const options = { props: [\"user\"] }; export default { data() { return { user: {} } } }</script>\n<template><input v-model=\"user.name\"/></template>",
+      "diagnostics": []
+    },
+    {
+      "id": "options-casing-object",
+      "source": "<script>export default { props: { \"bg-color\": { type: String, default: \"\" }, _instance: Boolean } }</script>\n<template><div/></template>",
+      "diagnostics": [
+        {
+          "rule": "vue/prop-name-casing",
+          "severity": "warning",
+          "start": 34,
+          "end": 75
+        },
+        {
+          "rule": "vue/prop-name-casing",
+          "severity": "warning",
+          "start": 77,
+          "end": 95
+        }
+      ]
+    },
+    {
+      "id": "options-casing-array",
+      "source": "<script>export default { props: [\"my-prop\", \"goodName\"] }</script>\n<template><div/></template>",
+      "diagnostics": [
+        {
+          "rule": "vue/prop-name-casing",
+          "severity": "warning",
+          "start": 33,
+          "end": 42
+        }
+      ]
+    },
+    {
+      "id": "options-casing-listener",
+      "source": "<script lang=\"ts\">export default defineComponent({ props: { \"onUpdate:modelValue\": defineListenerProp<(value: string) => void>() } })</script>\n<template><div/></template>",
+      "diagnostics": [
+        {
+          "rule": "script/require-default-prop",
+          "severity": "error",
+          "start": 60,
+          "end": 128
+        },
+        {
+          "rule": "vue/prop-name-casing",
+          "severity": "warning",
+          "start": 60,
+          "end": 128
+        }
+      ]
+    },
+    {
+      "id": "options-casing-bound-object",
+      "source": "<script>const props = { \"my-prop\": Boolean }; const options = { props }; export default options;</script>\n<template><div/></template>",
+      "diagnostics": [
+        {
+          "rule": "vue/prop-name-casing",
+          "severity": "warning",
+          "start": 24,
+          "end": 42
+        }
+      ]
+    },
+    {
+      "id": "options-default-complete-entry",
+      "source": "<script>export default { props: { value: { type: Number, required: true, default: 0 } } }</script>\n<template><div/></template>",
+      "diagnostics": [
+        {
+          "rule": "script/no-required-prop-with-default",
+          "severity": "error",
+          "start": 34,
+          "end": 85
+        }
+      ]
+    },
+    {
+      "id": "options-missing-default-complete-entry",
+      "source": "<script>export default { props: { label: { type: String }, enabled: Boolean } }</script>\n<template><div/></template>",
+      "diagnostics": [
+        {
+          "rule": "script/require-default-prop",
+          "severity": "error",
+          "start": 34,
+          "end": 57
+        }
+      ]
+    },
+    {
+      "id": "typed-default-original-declaration",
+      "source": "<script setup lang=\"ts\">const props = withDefaults(defineProps<{ value: number; optional?: string }>(), { value: 1, optional: \"\" })</script>\n<template><div/></template>",
+      "diagnostics": [
+        {
+          "rule": "script/no-required-prop-with-default",
+          "severity": "error",
+          "start": 65,
+          "end": 79
+        }
+      ]
+    },
+    {
+      "id": "typed-destructure-original-declaration",
+      "source": "<script setup lang=\"ts\">const { café = 1 } = defineProps<{ café: number }>()</script>\n<template><div/></template>",
+      "diagnostics": [
+        {
+          "rule": "script/no-required-prop-with-default",
+          "severity": "error",
+          "start": 60,
+          "end": 73
+        }
+      ]
+    },
+    {
+      "id": "typed-default-expression",
+      "source": "<script setup lang=\"ts\">interface Props { items: string[]; optional?: string }\nwithDefaults(defineProps<Props>(), { items: () => [], optional: \"\" })</script>\n<template><div/></template>",
+      "diagnostics": [
+        {
+          "rule": "script/no-required-prop-with-default",
+          "severity": "error",
+          "start": 42,
+          "end": 58
+        }
+      ]
+    },
+    {
+      "id": "typed-default-optional-control",
+      "source": "<script setup lang=\"ts\">const props = withDefaults(defineProps<{ value?: number }>(), { value: 1 })</script>\n<template><div/></template>",
+      "diagnostics": []
+    },
+    {
+      "id": "typed-default-foreign-macro-control",
+      "source": "<script setup lang=\"ts\">import { defineProps, withDefaults } from \"foreign\"; const props = withDefaults(defineProps<{ value: number }>(), { value: 1 })</script>\n<template><div/></template>",
+      "diagnostics": []
+    },
+    {
+      "id": "options-sync-prop",
+      "source": "<script>export default { props: [\"task\"] }</script>\n<template><Child :items.sync=\"task.checklist\"/></template>",
+      "diagnostics": [
+        {
+          "rule": "vue/no-mutating-props",
+          "severity": "error",
+          "start": 82,
+          "end": 96
+        }
+      ]
+    },
+    {
+      "id": "options-one-way-binding-control",
+      "source": "<script>export default { props: [\"task\"] }</script>\n<template><Child :items=\"task.checklist\"/></template>",
+      "diagnostics": []
+    },
+    {
+      "id": "setup-local-shadows-options-prop",
+      "source": "<script>export default { props: { value: { type: String, required: true } } }</script>\n<script setup>let value = \"local\"</script>\n<template><input v-model=\"value\" /></template>",
+      "diagnostics": []
+    },
+    {
+      "id": "jsx-options-prop-casing",
+      "source": "<script lang=\"jsx\">export default { props: { \"bad-name\": { type: String, required: true } }, render() { return <div /> } }</script>\n<template><div /></template>",
+      "diagnostics": [
+        {
+          "rule": "vue/prop-name-casing",
+          "severity": "warning",
+          "start": 45,
+          "end": 89
+        }
+      ]
+    },
+    {
+      "id": "tsx-options-prop-casing",
+      "source": "<script lang=\"tsx\">export default { props: { \"bad-name\": { type: String, required: true } }, render() { return <div /> } }</script>\n<template><div /></template>",
+      "diagnostics": [
+        {
+          "rule": "vue/prop-name-casing",
+          "severity": "warning",
+          "start": 45,
+          "end": 89
+        }
+      ]
+    }
+  ]
+}

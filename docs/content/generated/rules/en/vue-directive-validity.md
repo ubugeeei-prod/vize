@@ -211,7 +211,7 @@ Use `item in items` or `(item, index) of items` with a complete iteration expres
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_for.rs#L31) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_for.rs#L39) · [All rules](all.md)
 
 ### `vue/valid-v-if`
 
