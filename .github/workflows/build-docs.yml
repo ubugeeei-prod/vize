@@ -60,11 +60,10 @@ jobs:
           node-version-file: "package.json"
           cache: true
           run-install: false
-      - uses: ./.github/actions/setup-moonbit
       - uses: ./.github/actions/setup-rust-script
 
       - name: Install JS dependencies
-        run: moon run --target native tools/moon/cmd/github/vp_install -- --filter './docs...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' --filter './npm/ui...' --filter './npm/compose/core...'
+        run: node tools/support/github/vp-install.ts --filter './docs...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' --filter './npm/ui...' --filter './npm/compose/core...'
 
       - name: Build @vizejs/vite-plugin
         run: rust-script tools/commands/ci/github/run-many.rs vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build
@@ -154,7 +153,6 @@ jobs:
         with:
           wild-version: "0.9.0"
 
-      - uses: ./.github/actions/setup-moonbit
       - uses: ./.github/actions/setup-rust-script
 
       - uses: ./.github/actions/setup-rust-sticky-cache
@@ -173,17 +171,13 @@ jobs:
           path: |
             npm/wasm/vize_vitrine*
             playground/src/wasm/vize_vitrine*
-          key: ${{ runner.os }}-docs-wasm-v2-${{ hashFiles('crates/**/*.rs', 'davinci/**/*.rs', 'crates/**/Cargo.toml', 'davinci/**/Cargo.toml', 'Cargo.toml', 'Cargo.lock', 'tools/moon/cmd/github/build_vitrine_wasm/**') }}
+          key: ${{ runner.os }}-docs-wasm-v2-${{ hashFiles('crates/**/*.rs', 'davinci/**/*.rs', 'crates/**/Cargo.toml', 'davinci/**/Cargo.toml', 'Cargo.toml', 'Cargo.lock', 'tools/support/github/build-vitrine-wasm.ts', 'tools/support/tasks/build-vitrine-wasm.ts', 'tools/support/command-runtime.ts') }}
 
       - name: Install wasm-bindgen-cli
         if: steps.cache-wasm.outputs.cache-hit != 'true'
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
           tool: wasm-bindgen-cli@0.2.127
-
-      - name: Build WASM
-        if: steps.cache-wasm.outputs.cache-hit != 'true'
-        run: moon run --target native tools/moon/cmd/github/build_vitrine_wasm -- npm/wasm playground/src/wasm
 
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
@@ -192,8 +186,12 @@ jobs:
           cache: true
           run-install: false
 
+      - name: Build WASM
+        if: steps.cache-wasm.outputs.cache-hit != 'true'
+        run: node tools/support/github/build-vitrine-wasm.ts npm/wasm playground/src/wasm
+
       - name: Install JS dependencies
-        run: moon run --target native tools/moon/cmd/github/vp_install -- --filter './playground...' --filter './examples/vite-musea...' --filter './npm/builder/vite-musea...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...'
+        run: node tools/support/github/vp-install.ts --filter './playground...' --filter './examples/vite-musea...' --filter './npm/builder/vite-musea...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...'
 
       - name: Build npm packages
         run: rust-script tools/commands/ci/github/run-many.rs vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build -- vp run --filter './npm/builder/vite-musea' build

@@ -11,8 +11,8 @@ export { resolveAvailablePort } from "./dev-app/ports.ts";
 const entryFilename = fileURLToPath(import.meta.url);
 
 /**
- * Starts a selected real-world dev application from the MoonBit `dev_app`
- * wrapper.
+ * Starts a selected real-world dev application from the
+ * `tools/support/tasks/dev-app.ts` wrapper.
  *
  * The implementation is intentionally a thin coordinator. Build policy, target
  * launch configuration, Misskey preflight work, and port probing live in smaller

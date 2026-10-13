@@ -63,7 +63,7 @@ test("Tool Benchmark ignores only known non-runtime pull request paths", () => {
     "!editors/**",
     "!tests/**",
     "!tools/commands/ci/github/**",
-    "!tools/moon/cmd/github/**",
+    "!tools/support/github/**",
     "!tools/moon/cmd/publish*/**",
     "!tools/moon/cmd/release/**",
     "!tools/commands/ci/source-coverage.rs",

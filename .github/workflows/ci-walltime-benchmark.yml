@@ -121,11 +121,10 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: package.json, cache: true, run-install: false }
-      - uses: ./.github/actions/setup-moonbit
       - uses: ./.github/actions/setup-rust-script
       - name: Install identical Docs dependencies and rendering fonts
         run: |
-          moon run --target native tools/moon/cmd/github/vp_install -- --filter './docs...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' --filter './npm/ui...' --filter './npm/compose/core...'
+          node tools/support/github/vp-install.ts --filter './docs...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' --filter './npm/ui...' --filter './npm/compose/core...'
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends fonts-noto-cjk
       - name: Build the same native packages and Docs once

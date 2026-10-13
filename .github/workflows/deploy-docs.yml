@@ -77,12 +77,9 @@ jobs:
           github-token: ${{ github.token }}
           path: artifacts
 
-      - if: ${{ steps.main.outputs.eligible == 'true' }}
-        uses: ./.github/actions/setup-moonbit
-
       - name: Create site structure
         if: ${{ steps.main.outputs.eligible == 'true' }}
-        run: moon run --target native tools/moon/cmd/github/create_site_structure --
+        run: node tools/support/github/create-site-structure.ts
 
       - name: Setup Pages
         if: ${{ steps.main.outputs.eligible == 'true' }}

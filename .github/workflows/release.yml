@@ -104,7 +104,8 @@ jobs:
         settings: ${{ fromJSON(needs.plan-release-platforms.outputs.cli_matrix) }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: ./.github/actions/setup-moonbit
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
       - name: Enable long paths (Windows)
         if: runner.os == 'Windows'
         run: git config --system core.longpaths true
@@ -126,7 +127,7 @@ jobs:
         uses: ./.github/actions/setup-ubuntu-archive
       - name: Install cross-compilation tools (Linux ARM64)
         if: matrix.settings.target == 'aarch64-unknown-linux-gnu'
-        run: vize-ci-apt-retry moon run --target native tools/moon/cmd/github/install_cross_compile_tools --
+        run: vize-ci-apt-retry node tools/support/github/install-cross-compile-tools.ts
       - name: Setup Zig (Linux musl CLI)
         if: endsWith(matrix.settings.target, '-musl')
         uses: goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406 # v2
@@ -160,11 +161,11 @@ jobs:
       - name: Create archive (Unix)
         if: runner.os != 'Windows'
         shell: bash
-        run: if [[ "${{ matrix.settings.target }}" == *-musl ]]; then rust-script tools/commands/ci/github/verify-musl-cli-binary.rs "${{ matrix.settings.target }}"; fi; moon run --target native tools/moon/cmd/github/create_cli_archive -- ${{ matrix.settings.target }} ${{ matrix.settings.archive }} vize
+        run: if [[ "${{ matrix.settings.target }}" == *-musl ]]; then rust-script tools/commands/ci/github/verify-musl-cli-binary.rs "${{ matrix.settings.target }}"; fi; node tools/support/github/create-cli-archive.ts ${{ matrix.settings.target }} ${{ matrix.settings.archive }} vize
       - name: Create archive (Windows)
         if: runner.os == 'Windows'
         shell: bash
-        run: moon run --target native tools/moon/cmd/github/create_cli_archive -- ${{ matrix.settings.target }} ${{ matrix.settings.archive }} vize.exe
+        run: node tools/support/github/create-cli-archive.ts ${{ matrix.settings.target }} ${{ matrix.settings.archive }} vize.exe
       - name: Upload artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -259,7 +260,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: ./.github/actions/setup-moonbit
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with:
@@ -275,7 +277,7 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: npm/wasm
-          key: ${{ runner.os }}-release-wasm-${{ hashFiles('crates/**/*.rs', 'davinci/**/*.rs', 'Cargo.lock', 'npm/wasm/package.json', 'npm/wasm/index.js', 'npm/wasm/index.d.ts', 'npm/wasm/lint-format.d.ts', 'tools/moon/cmd/build_vize_wasm_package') }}
+          key: ${{ runner.os }}-release-wasm-${{ hashFiles('crates/**/*.rs', 'davinci/**/*.rs', 'Cargo.lock', 'npm/wasm/package.json', 'npm/wasm/index.js', 'npm/wasm/index.d.ts', 'npm/wasm/lint-format.d.ts', 'tools/support/tasks/build-vize-wasm-package.ts', 'tools/support/tasks/build-vitrine-wasm.ts', 'tools/support/command-runtime.ts') }}
       - name: Install wasm-bindgen-cli
         if: steps.cache-wasm.outputs.cache-hit != 'true'
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
@@ -283,7 +285,7 @@ jobs:
           tool: wasm-bindgen-cli@0.2.127
       - name: Build WASM
         if: steps.cache-wasm.outputs.cache-hit != 'true'
-        run: moon run --target native tools/moon/cmd/build_vize_wasm_package --
+        run: node tools/support/tasks/build-vize-wasm-package.ts
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: "package.json", run-install: true }
       - name: Smoke @vizejs/wasm package
@@ -313,7 +315,6 @@ jobs:
         run: git config --system core.longpaths true
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: "package.json", cache: true, run-install: false }
-      - uses: ./.github/actions/setup-moonbit
       - name: Install dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...' --filter './npm/fresco-native...'
       - name: Setup Rust
@@ -356,10 +357,10 @@ jobs:
         run: rust-script tools/commands/ci/github/clean-node-binaries.rs npm/native npm/fresco-native
       - name: Build vize-native
         shell: bash
-        run: moon run --target native tools/moon/cmd/github/build_napi_package -- npm/native ../../crates/vize_vitrine/Cargo.toml vize_vitrine ${{ matrix.settings.target }} ${{ matrix.settings.cross_compile == true && '--cross-compile' || '' }} && if [[ "$RUNNER_OS" == Linux && "${{ matrix.settings.target }}" == *-gnu ]]; then rust-script tools/commands/ci/github/verify-glibc-symbols.rs --max 2.36 npm/native/*.linux-*-gnu.node; fi
+        run: node tools/support/github/build-napi-package.ts npm/native ../../crates/vize_vitrine/Cargo.toml vize_vitrine ${{ matrix.settings.target }} ${{ matrix.settings.cross_compile == true && '--cross-compile' || '' }} && if [[ "$RUNNER_OS" == Linux && "${{ matrix.settings.target }}" == *-gnu ]]; then rust-script tools/commands/ci/github/verify-glibc-symbols.rs --max 2.36 npm/native/*.linux-*-gnu.node; fi
       - name: Collect vize-native artifact
         shell: bash
-        run: moon run --target native tools/moon/cmd/github/collect_native_artifacts -- npm/native .artifacts/vize-native vize-native
+        run: node tools/support/github/collect-native-artifacts.ts npm/native .artifacts/vize-native vize-native
       - name: Upload vize-native artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -369,10 +370,10 @@ jobs:
           compression-level: 0
       - name: Build fresco-native
         shell: bash
-        run: moon run --target native tools/moon/cmd/github/build_napi_package -- npm/fresco-native ../../crates/vize_fresco/Cargo.toml vize_fresco ${{ matrix.settings.target }} ${{ matrix.settings.cross_compile == true && '--cross-compile' || '' }} && if [[ "$RUNNER_OS" == Linux && "${{ matrix.settings.target }}" == *-gnu ]]; then rust-script tools/commands/ci/github/verify-glibc-symbols.rs --max 2.36 npm/fresco-native/*.linux-*-gnu.node; fi
+        run: node tools/support/github/build-napi-package.ts npm/fresco-native ../../crates/vize_fresco/Cargo.toml vize_fresco ${{ matrix.settings.target }} ${{ matrix.settings.cross_compile == true && '--cross-compile' || '' }} && if [[ "$RUNNER_OS" == Linux && "${{ matrix.settings.target }}" == *-gnu ]]; then rust-script tools/commands/ci/github/verify-glibc-symbols.rs --max 2.36 npm/fresco-native/*.linux-*-gnu.node; fi
       - name: Collect fresco-native artifact
         shell: bash
-        run: moon run --target native tools/moon/cmd/github/collect_native_artifacts -- npm/fresco-native .artifacts/fresco-native fresco-native
+        run: node tools/support/github/collect-native-artifacts.ts npm/fresco-native .artifacts/fresco-native fresco-native
       - name: Upload fresco-native artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -394,7 +395,6 @@ jobs:
         uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
       - uses: ./.github/actions/setup-rust-script
-      - uses: ./.github/actions/setup-moonbit
       - name: Install native package tooling dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...' --filter './npm/fresco-native...'
       - name: Download vize CLI package artifact
@@ -461,7 +461,7 @@ jobs:
       - name: Prepare Fresco native package tarball
         run: |
           rust-script tools/commands/ci/github/clean-node-binaries.rs npm/fresco-native
-          moon run --target native tools/moon/cmd/github/collect_native_artifacts -- npm/fresco-native/artifacts npm/fresco-native fresco-native
+          node tools/support/github/collect-native-artifacts.ts npm/fresco-native/artifacts npm/fresco-native fresco-native
       - name: Smoke install release package tarballs
         run: |
           rust-script --force tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks \
@@ -592,7 +592,7 @@ jobs:
       - name: Clean bundled native binaries
         run: rust-script tools/commands/ci/github/clean-node-binaries.rs npm/fresco-native
       - name: Stage bundled native binaries
-        run: moon run --target native tools/moon/cmd/github/collect_native_artifacts -- npm/fresco-native/artifacts npm/fresco-native fresco-native
+        run: node tools/support/github/collect-native-artifacts.ts npm/fresco-native/artifacts npm/fresco-native fresco-native
       - name: Smoke install Fresco native package tarball
         run: rust-script tools/commands/release/npm/smoke-release-install.rs --prepare-manifests npm/fresco-native
       - name: Publish

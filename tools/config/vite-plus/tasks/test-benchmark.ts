@@ -2,7 +2,7 @@ import { cacheInputs, testedPackages } from "../task-inputs.ts";
 import { testedPackageGroups } from "../tested-package-groups.ts";
 import {
   defineTasks,
-  moonScript,
+  nodeTool,
   noCacheTask,
   runInPackages,
   runInVscodeExtension,
@@ -216,10 +216,10 @@ export const testAndBenchmarkTasks = defineTasks({
   "generate:rule-types": task(rustTool("generate/rule-types"), {
     input: cacheInputs.rust,
   }),
-  "expected:generate": task(moonScript("generate_expected")),
-  "expected:generate:sfc": task(moonScript("generate_expected", "--mode", "sfc")),
-  "expected:generate:vdom": task(moonScript("generate_expected", "--mode", "vdom")),
-  "expected:generate:vapor": task(moonScript("generate_expected", "--mode", "vapor")),
+  "expected:generate": task(nodeTool("tasks/generate-expected")),
+  "expected:generate:sfc": task(nodeTool("tasks/generate-expected", "--mode", "sfc")),
+  "expected:generate:vdom": task(nodeTool("tasks/generate-expected", "--mode", "vdom")),
+  "expected:generate:vapor": task(nodeTool("tasks/generate-expected", "--mode", "vapor")),
   snapshot: noCacheTask(runTasks("snapshot:test", "snapshot:review")),
   "snapshot:test": task("cargo insta test -p vize_atelier_sfc -- snapshot_tests"),
   "snapshot:review": noCacheTask("cargo insta review"),
