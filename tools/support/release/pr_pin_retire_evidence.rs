@@ -36,7 +36,7 @@ pub(super) fn original_failure_jobs(
 pub(super) fn original_operator(run: &Value, source: &Source, id: u64) -> Result<(), String> {
     terminal_failed(run)?;
     if run["id"].as_u64() != Some(id)
-        || run["head_sha"].as_str() != Some(&source.cut)
+        || run["head_sha"].as_str() != Some(super::stable::operator_cut(source))
         || run["head_branch"] != "main"
         || run["event"] != "workflow_dispatch"
         || run["path"] != ".github/workflows/release-operator.yml"

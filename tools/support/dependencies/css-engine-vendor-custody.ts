@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import "./css-engine-finite-custody.ts";
+import { authenticateCssReleaseDriver } from "./css-engine-release-driver-custody.ts";
 
 const root = process.cwd();
 const preserved: Record<string, string> = {
@@ -205,8 +206,20 @@ for (const [filename, checksum] of [
     "tests/_fixtures/differential/css-engine-vendor-exit/moonbit-publish-original.test.ts.txt",
     "7d131acc8a444afc9cabddb6c5995bd8e532d1a65d389721ffa37d9af951496a",
   ],
+  [
+    "tools/support/dependencies/css-engine-release-driver-custody.ts",
+    "7f6a1a1f407dd72f996cc421830116c1707906a73ac7bc7975c5821b9783807a",
+  ],
+  [
+    "tests/_fixtures/differential/css-engine-vendor-exit/release-inheritance/stable-driver/pr-original.rs.txt",
+    "db53a5ec6abf597c01dfb77b27477cfb10d69bdeba7018ab5920278d0a590d2d",
+  ],
+  [
+    "tests/_fixtures/differential/css-engine-vendor-exit/release-inheritance/stable-driver/pr-pin-original.rs.txt",
+    "273b5f7263feb8ddf5bf132ccf329a388f467bf5e1ab586d866ba2ce8eca904d",
+  ],
 ]) {
-  assert.equal(sha256(fs.readFileSync(path.join(root, filename))), checksum, filename);
+  authenticateCssReleaseDriver(filename, fs.readFileSync(path.join(root, filename)), checksum);
 }
 const bundledSource = fs.readFileSync(path.join(root, "vendor/lightningcss/src/bundler.rs"));
 const bundledTests = fs.readFileSync(

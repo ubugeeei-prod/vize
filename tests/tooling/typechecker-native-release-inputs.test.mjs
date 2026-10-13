@@ -39,7 +39,6 @@ const excluded = [
 const hash = (file) => createHash("sha256").update(readFileSync(file)).digest("hex");
 const sorted = (values) =>
   [...values].sort((left, right) => (left < right ? -1 : left > right ? 1 : 0));
-
 function physicalSource(cwd, file) {
   for (let current = join(cwd, file); ; current = dirname(current)) {
     const stat = lstatSync(current);
@@ -195,11 +194,12 @@ void test("the actual full local imports and physical source bytes match one ato
       "reviewed-init-js-manager-composition",
       "reviewed-native-ssr-direct-child-custody",
       "reviewed-init-native-ssr-composition",
+      "reviewed-stable-patch-operator-inventory",
     ].includes(verifyReviewedReleaseInputs()),
   );
-  assert.equal(pins.reviews.length, 7);
+  assert.equal(pins.reviews.length, 8);
   const rootCounts = pins.reviews.map((review) => review.presentRoots.length);
-  assert.deepEqual(rootCounts, [2, 3, 3, 3, 3, 3, 3]);
+  assert.deepEqual(rootCounts, [2, 3, 3, 3, 3, 3, 3, 3]);
 });
 void test("a native command with unchanged imports fails for both roots and transitive helpers", (t) => {
   for (const member of [excluded[0], "tools/support/release/retirement_evidence.ts"]) {

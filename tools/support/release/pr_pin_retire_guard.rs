@@ -191,7 +191,7 @@ pub(super) fn capture(
     }
     github::git(&["fetch", "--no-tags", "origin", integration_head], root)?;
     let parent = github::parent(integration_head, root)?;
-    first_parent(&source.cut, &parent, root)?;
+    super::stable::main_anchor(&source, &parent, root)?;
     metadata::verify_delta(
         &parent,
         integration_head,
@@ -201,7 +201,7 @@ pub(super) fn capture(
     )?;
     pr_budget::check(budget)?;
     let main = github::fetch_main(root)?;
-    first_parent(&source.cut, &main, root)?;
+    super::stable::main_anchor(&source, &main, root)?;
     if github::version_text(&metadata::text(&main, "Cargo.toml", root)?)? != source.base_version {
         return Err(
             "Main has advanced its version; unpublished retirement cannot reserve this cut".into(),
@@ -286,8 +286,9 @@ pub(super) fn capture(
     )?;
     pr_budget::check(budget)?;
     let identity = json!({"repository":repository,"tag":request.tag,"sourcePr":request.source,"head":request.head,"cut":source.cut,"baseVersion":source.base_version,"pin":pin,"integrationPr":source.integration,"integrationHead":integration_head,"releaseRun":request.run,"releaseAttempt":run["run_attempt"],"operatorRun":request.operator,"operatorAttempt":entry["run_attempt"]});
-    Ok((
-        source,
-        json!({"identity":identity,"sourcePr":source_pr,"integrationPr":integration,"releaseRun":run,"operatorRun":entry,"publicationJobs":jobs,"originalFailureJobPages":{"release":release_pages,"operator":operator_pages},"operatorInventory":operators,"mainAtGuard":main,"tagAbsent":true,"githubReleaseAbsent":true,"githubReleaseInventory":releases}),
-    ))
+    let mut guards = json!({"identity":identity,"sourcePr":source_pr,"integrationPr":integration,"releaseRun":run,"operatorRun":entry,"publicationJobs":jobs,"originalFailureJobPages":{"release":release_pages,"operator":operator_pages},"operatorInventory":operators,"mainAtGuard":main,"tagAbsent":true,"githubReleaseAbsent":true,"githubReleaseInventory":releases});
+    if let Some(authority) = super::stable::capture(&source, &main, root)? {
+        guards["stableAuthority"] = authority;
+    }
+    Ok((source, guards))
 }

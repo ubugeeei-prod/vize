@@ -84,6 +84,14 @@ export const catalogueSubgroups: Record<
   },
   "vue-directive-validity": {
     title: "Vue Rules: Directive Validity",
+    jaTitle: "ディレクティブの構文と配置",
+    jaIntroduction: [
+      "このルール群では、v-bind・v-if・v-for・v-model などのディレクティブに必要な値や引数、配置を確認します。",
+      "",
+      "条件分岐や繰り返し、入力との連動、イベント処理、スロットを追加したときに確認してください。v-else の前後関係や、v-for の書式など、各ルールが検査する範囲を掲載しています。",
+      "",
+      "まずは [v-for の繰り返し式と key の例](./reference/vue-valid-v-for.md)と[スロットの宣言の例](./reference/vue-valid-v-slot.md)で、悪い例・良い例の違いを確認してください。採用するルールだけを掲載された設定で有効にし、`vp run lint` を実行します。[Vue の全ルール](./vue.md)では、テンプレートの関連ルールも確認できます。",
+    ],
     rules: [
       "vue/valid-v-bind",
       "vue/valid-v-else",
@@ -134,6 +142,14 @@ export const catalogueSubgroups: Record<
   },
   "vue-sfc": {
     title: "Vue Rules: SFC Blocks",
+    jaTitle: "SFC ブロックの構成",
+    jaIntroduction: [
+      "`<template>`、`<script>`、`<style>` の配置やスタイルの範囲を確認し、SFC の構成をそろえるためのルールをまとめています。ブロックを追加したときや、外部ファイルの `src`、`lang`、カスタムブロックを見直すときに使います。",
+      "",
+      "ブロック順の既定値では script と template のどちらを先にしてもよく、style はその後に置きます。`lang` に関する 3 件は規約の説明で、現在の SFC lint では固有の診断を出しません。各ルールの対応範囲を確認し、プロジェクトに必要なものを選んでください。",
+      "",
+      "まずは [SFC ブロックの並び順の例](./reference/vue-sfc-element-order.md)で違いを確かめてください。[Vue ルール](./vue.md)で設定方針を確認し、採用するルールを設定して `vp run lint` を実行します。",
+    ],
     rules: [
       "vue/no-preprocessor-lang",
       "vue/no-script-non-standard-lang",
@@ -147,6 +163,14 @@ export const catalogueSubgroups: Record<
   },
   "vue-template-safety": {
     title: "Vue Rules: Template Safety",
+    jaTitle: "テンプレートの安全性と HTML の構造",
+    jaIntroduction: [
+      "このルール群では、HTML の挿入や URL の指定、属性と ID の重複、textarea・コンポーネントへのテキストの渡し方、HTML の入れ子を確認します。",
+      "",
+      "外部から受け取った値を表示するときや、リンク・フォームを追加するとき、同じコンポーネントを複数表示するときに確認してください。",
+      "",
+      "たとえば、[HTML を挿入せずテキストとして表示する例](./reference/vue-no-v-html.md)と[フォームの ID を生成して関連付ける例](./reference/vue-use-unique-element-ids.md)では、悪い例と良い例の差を確認できます。採用するルールだけを掲載された設定で有効にし、`vp run lint` を実行してください。[Vue の全ルール](./vue.md)から関連するテンプレートの検査も確認できます。",
+    ],
     rules: [
       "vue/no-v-html",
       "vue/no-duplicate-attributes",

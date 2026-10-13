@@ -55,6 +55,7 @@ fn run() -> Result<(), String> {
         ["verify-producer-metadata", frozen] => pr_pin::verify_producer_metadata(frozen, &root),
         ["start", bump] => pr_start::start(bump, &root),
         ["start", bump, "--pin"] => pr_start::start_pinned(bump, &root),
+        ["start-stable", policy, cut] => pr_pin::start_stable(policy, cut, &root),
         ["retire", number, head, tag, run, operator] => pr_pin::retire(
             number.parse().map_err(|_| "Invalid original source PR number")?, head, tag,
             run.parse().map_err(|_| "Invalid original Release run number")?,

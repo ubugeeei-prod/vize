@@ -1,8 +1,8 @@
 //! Reconcile retained immutable guards offline; never infer authority from a bare archive ref.
 use super::super::{pr_contract, pr_github as github};
 use super::{
-    Candidate, Source, first_parent, marker, metadata, retire_archive as archive,
-    retire_evidence as evidence, retire_guard as guard, retire_ledger as ledger,
+    Candidate, Source, marker, metadata, retire_archive as archive, retire_evidence as evidence,
+    retire_guard as guard, retire_ledger as ledger,
 };
 use ledger::{inventory, own, positive, text};
 use serde_json::Value;
@@ -197,6 +197,15 @@ pub(super) fn validate(receipt: &Value, root: &Path) -> Result<Source, String> {
         base_version: text(identity, "/baseVersion")?.into(),
         integration: positive(identity, "/integrationPr")?,
         closed: source_pr["state"] == "closed",
+        stable: super::stable::from_archive(
+            text(source_pr, "/body")?,
+            cut,
+            tag,
+            repository,
+            text(guards, "/mainAtGuard")?,
+            guards.get("stableAuthority"),
+            root,
+        )?,
     };
     if source.integration == source.candidate.number || source_pr["draft"] != true {
         return Err("Original source must be separate unmerged draft receipt".into());
@@ -247,7 +256,7 @@ pub(super) fn validate(receipt: &Value, root: &Path) -> Result<Source, String> {
     let message = format!(
         "Vize immutable release cut\n\nSource-PR: #{}\nSource-head: {head}\nSource-cut: {cut}\nTag: {tag}\nBase-version: {}\nIntegration-PR: #{}",
         source.candidate.number, source.base_version, source.integration
-    );
+    ) + &super::stable::annotation(source.stable.as_ref());
     if github::parent(pin, root)? != head
         || github::git(&["rev-parse", &format!("{pin}^{{tree}}")], root)?
             != github::git(&["rev-parse", &format!("{head}^{{tree}}")], root)?
@@ -256,9 +265,9 @@ pub(super) fn validate(receipt: &Value, root: &Path) -> Result<Source, String> {
         return Err("Original raw pin parent/tree/message differs".into());
     }
     let parent = github::parent(integration, root)?;
-    first_parent(cut, &parent, root)?;
+    super::stable::main_anchor(&source, &parent, root)?;
     metadata::verify_delta(&parent, integration, &source.base_version, &tag[1..], root)?;
-    first_parent(cut, text(guards, "/mainAtGuard")?, root)?;
+    super::stable::main_anchor(&source, text(guards, "/mainAtGuard")?, root)?;
     let release = positive(identity, "/releaseRun")?;
     super::run_identity(&guards["releaseRun"], &source, release)?;
     evidence::terminal_failed(&guards["releaseRun"])?;
@@ -267,7 +276,11 @@ pub(super) fn validate(receipt: &Value, root: &Path) -> Result<Source, String> {
         &source,
         positive(identity, "/operatorRun")?,
     )?;
-    let operator_workflow = metadata::text(cut, ".github/workflows/release-operator.yml", root)?;
+    let operator_workflow = metadata::text(
+        super::stable::operator_cut(&source),
+        ".github/workflows/release-operator.yml",
+        root,
+    )?;
     let name = operator_workflow
         .lines()
         .find_map(|line| line.strip_prefix("name: "))

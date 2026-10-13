@@ -1,6 +1,6 @@
 //! Read-only, pre-merge qualification of the actual version delivery candidate.
 use super::super::{pr_contract, pr_github as github};
-use super::{Source, first_parent, marker, metadata, source};
+use super::{Source, marker, metadata, source};
 use serde_json::{Value, json};
 use std::{env, fs, path::Path};
 
@@ -93,11 +93,15 @@ fn candidate_parents(
 }
 
 fn projection(source: &Source, candidate: &str, base: &str, root: &Path) -> Result<(), String> {
-    first_parent(&source.cut, base, root)?;
+    super::stable::main_anchor(source, base, root)?;
     let version = source.candidate.tag.trim_start_matches('v');
     metadata::verify_delta(base, candidate, &source.base_version, version, root)?;
     // This is the same complete catalog used after actual signed delivery.
     // Manifest scripts and every other shipping field stay authoritative.
+    if source.stable.is_some() {
+        super::stable::shipping_catalog(source, root)?;
+        return Ok(());
+    }
     if metadata::catalog(&source.candidate.head, version, root)?
         != metadata::catalog(candidate, version, root)?
     {
@@ -273,7 +277,7 @@ fn verify(
         return Err("Source and integration bodies do not bind the same immutable cut.".into());
     }
     let head_parent = github::parent(head, root)?;
-    first_parent(&source.cut, &head_parent, root)?;
+    super::stable::main_anchor(&source, &head_parent, root)?;
     metadata::verify_delta(
         &head_parent,
         head,
@@ -284,7 +288,7 @@ fn verify(
     projection(&source, candidate, base, root)?;
     println!(
         "{}",
-        json!({"integration":number,"source":source_number,"H":source_head,"C":cut,"tag":tag,"candidate":candidate,"base":base,"integrationHead":head,"event":if queue {"merge_group"} else {"pull_request"},"catalogEqual":true,"metadataExact":true})
+        json!({"integration":number,"source":source_number,"H":source_head,"C":cut,"tag":tag,"candidate":candidate,"base":base,"integrationHead":head,"event":if queue {"merge_group"} else {"pull_request"},"catalogEqual":source.stable.is_none(),"catalogAuthority":if source.stable.is_some(){"stable-C-to-H"}else{"main-integration"},"metadataExact":true})
     );
     Ok(())
 }
