@@ -98,6 +98,15 @@ export const catalogueSubgroups: Record<
   },
   "vue-directives": {
     title: "Vue Rules: Directive Conventions",
+    jaTitle: "ディレクティブとイベントの書き方",
+    jaIntroduction: [
+      "このルール群では、v-bind・v-on・v-slot の表記、イベント名、修飾キー付きのイベント処理、カスタムディレクティブの使用方針を確認します。",
+      "チームで表記を揃えたり、クリック操作やスロット、独自のディレクティブを追加したりするときに確認してください。",
+      "",
+      "たとえば、[修飾キーによるクリックの重複を分ける例](./reference/vue-use-v-on-exact.md)では、Ctrl キーを押したときに通常のハンドラーも動く指定と、`.exact` を使って分ける指定を比較できます。",
+      "採用するルールだけを掲載された設定で有効にし、`vp run lint` を実行してください。",
+      "[Vue の全ルール](./vue.md)では、ディレクティブの構文やテンプレートの関連ルールも確認できます。",
+    ],
     rules: [
       "vue/scoped-event-names",
       "vue/use-v-on-exact",
