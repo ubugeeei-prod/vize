@@ -56,6 +56,69 @@ void test("fixed artifacts retain all existing Unix and core Nix pins, exact ins
   }
 });
 
+void test("Nix uses the authenticated tracked core and the existing same-byte compiler mirrors", () => {
+  const nix = fs.readFileSync(new URL("../../tools/nix/moonbit.nix", import.meta.url), "utf8");
+  const version = fs
+    .readFileSync(new URL("../../.moonbit-version", import.meta.url), "utf8")
+    .trim();
+  assert.equal(version, pinnedVersion);
+  const coreFetch = /coreSrc = pkgs\.fetchurl \{([\s\S]*?)\n\s*\};/u.exec(nix)?.[1];
+  assert.ok(coreFetch);
+  assert.ok(coreFetch.includes('name = "core-${moonbitVersion}.tar.gz";'));
+  const coreUrl = /url = "([^"]+)";/u.exec(coreFetch)?.[1];
+  assert.ok(coreUrl);
+  assert.equal(coreUrl, "file://${moonbitCore}");
+  const corePath = /moonbitCore = root \+ "([^"]+)";/u.exec(nix)?.[1];
+  assert.ok(corePath);
+  assert.equal(corePath, "/.github/actions/setup-moonbit/assets/core-${moonbitVersion}.tar.gz");
+  const body = fs.readFileSync(
+    new URL(
+      coreUrl
+        .replace("${moonbitCore}", corePath)
+        .replace("file:///", new URL("../../", import.meta.url).href)
+        .replaceAll("${moonbitVersion}", version),
+    ),
+  );
+  const expected = /hash = "sha256-([^"]+)";/u.exec(coreFetch)?.[1];
+  assert.ok(expected);
+  assert.equal(Buffer.from(expected, "base64").toString("hex"), coreSha256);
+  verifyBytes(body, coreSha256, 1449345);
+  const changed = Buffer.from(body);
+  changed[0] ^= 1;
+  assert.throws(() => verifyBytes(changed, coreSha256, body.length), /hash\/size mismatch/u);
+  const mirror = /moonbitMirror = "([^"]+)";/u.exec(nix)?.[1];
+  assert.ok(mirror);
+  const resolve = (url) =>
+    url
+      .replaceAll("${moonbitMirror}", mirror)
+      .replaceAll("${moonbitUrlVersion}", encodeURIComponent(version));
+  for (const [system, platform, arch, original] of [
+    ["aarch64-darwin", "darwin", "arm64", "moonbit-darwin-aarch64.tar.gz"],
+    ["x86_64-linux", "linux", "x64", "moonbit-linux-x86_64.tar.gz"],
+    ["aarch64-linux", "linux", "arm64", "moonbit-linux-aarch64.tar.gz"],
+  ]) {
+    const entry = new RegExp(`${system} = \\{([\\s\\S]*?)\\n\\s*\\};`, "u").exec(nix)?.[1];
+    assert.ok(entry);
+    const urls = /urls = \[([\s\S]*?)\];/u.exec(entry)?.[1];
+    assert.ok(urls);
+    const actual = [...urls.matchAll(/"([^"]+)"/gu)].map((match) => resolve(match[1]));
+    const archive = selectArchive(version, platform, arch);
+    assert.deepEqual(actual, [
+      `https://cli.moonbitlang.com/binaries/${encodeURIComponent(version)}/${original}`,
+      archive.url,
+    ]);
+    assert.ok(entry.includes(`sha256-${Buffer.from(archive.sha256, "hex").toString("base64")}`));
+  }
+  assert.ok(
+    nix.includes("src = pkgs.fetchurl { inherit (moonbitArtifacts.${system}) urls hash; };"),
+  );
+  const workflow = fs.readFileSync(
+    new URL("../../.github/workflows/check.yml", import.meta.url),
+    "utf8",
+  );
+  assert.match(workflow, /- name: Check flake\n\s+run: nix flake check(?:\n|$)/u);
+});
+
 void test("transport changes exactly two Unix expressions and the two complete Windows download/extract sites", () => {
   const archive = path.resolve(os.tmpdir(), "moon 日本 ' archive.tar.gz");
   const core = path.resolve(os.tmpdir(), "core 日本 ' .tar.gz");
