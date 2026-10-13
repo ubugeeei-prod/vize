@@ -36,3 +36,11 @@ performance improvement. The original failed source will not be rerun.
 After actual merge, #8804 will compose this genuine prerequisite once and
 run fresh checks on its own source. Its retained original `ELOOP` and
 propagated aggregate failures remain separate from successor qualification.
+
+The first source Check on `3efdca55a4` refused the production helper's
+`expect` under the existing `clippy::expect_used` gate. The complete
+140,521-byte original log is retained with SHA256
+`672d0c2abf21df25934d642d222ec179b6182cf22d6bf91cb5b1cea5c1235e38`.
+The successor handles an absent entry name with an explicit refusal; traversal,
+all three controls, and the original lint policy remain unchanged. Fresh
+Actions must qualify that successor; the first failure grants no test credit.

@@ -201,7 +201,9 @@ fn collect_vue_edges(
         .collect();
     children.sort();
     for child in children {
-        let name = child.file_name().expect("directory entry name");
+        let Some(name) = child.file_name() else {
+            panic!("directory entry has no file name: {}", child.display());
+        };
         let selected = logical.join(name);
         if child.is_dir() {
             if name == "node_modules" || name == "_git-worktrees" {
