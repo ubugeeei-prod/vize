@@ -12,7 +12,7 @@ For example, open [form-control-has-label](./reference/a11y-form-control-has-lab
 an input: compare its Bad/Good examples, enable the rule with the shown Vite+ configuration, and
 run `vp run lint`. The [complete accessibility guide](./accessibility.md) explains the broader rule set.
 
-Every rule on this page includes its purpose, prerequisites, configuration, and complete Bad/Good examples. Highlighted lines show the changes; copied code keeps the complete source. Each packet states its current support limits.
+Every rule on this page includes its purpose, prerequisites, configuration, and complete Bad/Good examples. Highlighted lines show what changes; copying an example gives you the complete source. Each rule also states its current support limits.
 
 
 | Rule | Examples | Purpose |
