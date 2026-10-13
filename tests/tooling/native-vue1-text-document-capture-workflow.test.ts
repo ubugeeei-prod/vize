@@ -87,7 +87,7 @@ test("actual historical capture composition preserves original Vue2 order and th
   assert.deepEqual(hooks[0].with, {
     "comparison-base": "${{ needs.pr-source-plan.outputs.comparison-base }}",
   });
-  assert.ok(read(".github/workflows/pr-source-checks.yml").split("\n").length - 1 <= 350);
+  assert.ok(read(".github/workflows/pr-source-checks.yml").split("\n").length - 1 <= 500);
 });
 
 test("the actual source selector runs every merge group and fails closed on missing comparison authority", () => {

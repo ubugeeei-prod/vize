@@ -47,6 +47,14 @@ pub(super) fn option_sets() -> std::vec::Vec<(
             SsrCompilerExperimentalOptions::default()
         ),
         (
+            "vapor",
+            SsrCompilerOptions {
+                vapor: true,
+                ..SsrCompilerOptions::default()
+            },
+            SsrCompilerExperimentalOptions::default(),
+        ),
+        (
             "scoped+css-vars",
             SsrCompilerOptions {
                 scope_id: Some("data-v-7ba5bd90".into()),

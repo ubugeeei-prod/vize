@@ -74,7 +74,7 @@ void test("timed packing uses the fewest runners within the target and bounds th
     );
   }
   for (const tier of ["pr", "merge"]) {
-    const files = planToolingTests(["README.md"], { tier: "merge" }).tests;
+    const files = planToolingTests(["Cargo.toml"], { tier: "merge" }).tests;
     const input = plan(tier === "pr" ? files.slice(0, 900) : files, tier);
     const shards = toolingShards(input);
     const estimates = input.tests.map((file) => estimateToolingTestMs(tier, file));
@@ -115,7 +115,7 @@ void test("runner 1 reserves exactly the captures its matrix entry runs", () => 
     }),
     allLeadSteps.filter((id) => id !== "native-selected-template"),
   );
-  const files = planToolingTests(["README.md"], { tier: "merge" }).tests;
+  const files = planToolingTests(["Cargo.toml"], { tier: "merge" }).tests;
   const plain = toolingShards(plan(files, "merge"));
   const reserved = toolingShards(plan(files, "merge", allLeadSteps));
   assert.equal(reserved.length, plain.length);
@@ -143,7 +143,7 @@ void test("invalid or incomplete shard coordinates fail closed", () => {
 
 void test("real merge shards retain every discovered test, including all deferred runtime files", () => {
   const files = toolingTestFiles();
-  const input = { ...planToolingTests(["README.md"], { tier: "merge" }), leadSteps: allLeadSteps };
+  const input = { ...planToolingTests(["Cargo.toml"], { tier: "merge" }), leadSteps: allLeadSteps };
   const shards = toolingShardMatrix(input).include;
   assert.ok(shards.length > 4 && shards.length <= MAX_TOOLING_SHARDS);
   const selected = shards.flatMap(({ index, total }) =>

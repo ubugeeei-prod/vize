@@ -38,7 +38,7 @@ if [ "$semver_status" -ne 0 ]; then
   if [ "$1" != vize_armature ]; then
     exit "$semver_status"
   fi
-  python3 tools/commands/ci/github/allow-armature-tokenizer-reexports.py "$semver_output"
+  node tools/commands/ci/github/allow-armature-tokenizer-reexports.ts "$semver_output"
 fi
 
 if [ "$1" = vize_armature ]; then

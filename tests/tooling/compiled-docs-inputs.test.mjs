@@ -102,7 +102,12 @@ void test("the actual exempt ledger has no compiled Rust consumer and still sele
     }
   }
   assert.ok(planToolingTests([ledger]).tests.length > 0);
-  assert.equal(planSourceChecks([ledger], "merge_group").rust, true);
+  assert.deepEqual(planSourceChecks([ledger], "merge_group"), {
+    rust: true,
+    js: true,
+    tooling: true,
+    playground: true,
+  });
   assert.equal(planAffectedRust(metadata, [ledger], "merge_group").scope, "workspace");
 });
 

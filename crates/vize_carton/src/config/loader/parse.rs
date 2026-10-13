@@ -9,7 +9,7 @@ use std::path::Path;
 
 use crate::config::ConfigDocument;
 
-use super::{js::parse_js_config, pkl};
+use super::{extends, js::parse_js_config, pkl};
 
 /// Parse a single config file path without discovery fallback.
 pub(super) fn parse_raw_config_file(
@@ -20,9 +20,7 @@ pub(super) fn parse_raw_config_file(
         Some("ts" | "js" | "mjs" | "cjs" | "mts" | "cts") => parse_js_config(path)?,
         Some("json") => {
             let content = std::fs::read_to_string(path)?;
-            // Share the same config deserializer as JS and PKL evaluation.
-            // Keeping a separate str reader instantiates the entire model twice.
-            serde_json::from_slice::<ConfigDocument>(content.as_bytes())?
+            document_from_json(content.as_bytes(), path)?
         }
         _ => return Ok(ConfigDocument::default()),
     };
@@ -34,6 +32,22 @@ pub(super) fn parse_raw_config_file(
         config.clear_project_root();
     }
     Ok(config)
+}
+
+/// Deserialize one evaluated config, composing its `extends` chain first.
+///
+/// Every format shares this deserializer; keeping a separate str reader would
+/// instantiate the entire model twice. Configs without `extends` skip the
+/// intermediate JSON value.
+pub(super) fn document_from_json(
+    json: &[u8],
+    path: &Path,
+) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
+    if !extends::mentions_extends(json) {
+        return Ok(serde_json::from_slice::<ConfigDocument>(json)?);
+    }
+    let composed = extends::compose(serde_json::from_slice(json)?, path)?;
+    Ok(serde_json::from_value::<ConfigDocument>(composed)?)
 }
 
 /// Parse a discovered candidate and map recoverable failures to `None`.

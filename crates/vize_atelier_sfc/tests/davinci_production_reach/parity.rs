@@ -2,7 +2,7 @@
 
 use super::diff::divergence;
 use super::shapes::{Shape, compile};
-use super::tally::{Lane, Tally};
+use super::tally::{EMIT_REFUSED, Lane, Tally};
 use crate::Sweep;
 use vize_atelier_sfc::{SfcCompileResult, SfcDescriptor};
 
@@ -45,6 +45,14 @@ pub fn parity_failures(sweep: &Sweep) -> Vec<String> {
     for (shape, tally) in sweep.tallies.values() {
         failures.extend(tally.violations.iter().cloned());
         failures.extend(tally.divergences.iter().take(10).cloned());
+        let refused = tally.legacy.get(EMIT_REFUSED).copied().unwrap_or(0);
+        if shape.is_dom() && tally.refusals.total() != refused {
+            failures.push(format!(
+                "{}: {refused} emit_refused templates but {} typed refusal attributions",
+                shape.id(),
+                tally.refusals.total()
+            ));
+        }
         if shape.is_dom() && tally.unrecorded != 0 {
             failures.push(format!(
                 "{}: {} DOM template compiles recorded no selection counter: {:?}",

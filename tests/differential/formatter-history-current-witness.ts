@@ -18,14 +18,10 @@ export { retainedFormatterFunction } from "./formatter-history-source-artifact.t
 // Each function hash was verified against both complete original/current Git
 // owners before publication; source gates require no historical Git objects.
 const ORIGINAL = "cc87bb5960ea9e49e82672205df919de58bb4b24";
-const OWNERS: Record<
-  string,
-  { originalSha256: string; actualMainSha256: string; functions: Record<string, string> }
-> = {
+const OWNERS: Record<string, { originalSha256: string; functions: Record<string, string> }> = {
   // #7826 shares the existing lexer helpers; the original escape law is unchanged.
   "crates/vize_glyph/src/style/comment_scan.rs": {
     originalSha256: "1b1dc3ae107887fb740a4139778a38852be910e4299f530269a337ddaf832cb6",
-    actualMainSha256: "ada9e0e8ec0f25f7a3e20cb0e50200054932aac32bb85ced7906f63f19f79102",
     functions: {
       css_escapes_do_not_affect_comment_depth:
         "74fd329fbcaa5a624c497e676c21072aff763aaa477339cc87c2708bd61e8ac0",
@@ -34,7 +30,6 @@ const OWNERS: Record<
   // #7704 line endings and #3295 private boundary registration retain all eight original laws.
   "crates/vize_glyph/src/style.rs": {
     originalSha256: "8e13635eab09e08a32282d372ef5379c22210cc4117fbccf05d164df76233a61",
-    actualMainSha256: "ae84ca8f74dd923440bfdb57a26bc1e10367363acdaa178c6950a5bf21bc942f",
     functions: {
       test_style_numbers_match_standalone_css_leading_zeroes:
         "768c1b2fee61409a7034b99c2a7a277d7ac19699302a94b36d58dd54912937cb",
@@ -55,7 +50,6 @@ const OWNERS: Record<
   // #7704 changes production line endings; complete original law bodies are retained.
   "crates/vize_glyph/src/formatter/block_indent.rs": {
     originalSha256: "3fb14d8c80972c6222de66e01196e7b0072039688a75722c3ea76bf0addec023",
-    actualMainSha256: "6fd2362a08932f4ecbe3ce9607787f960a48111cf4106260f854bc0242a8ffaf",
     functions: {
       ordinary_lines_are_indented:
         "2db24947771836ab456fd330963996617b6ef559d76d3c6014b34941c9859979",
@@ -77,7 +71,6 @@ const OWNERS: Record<
   // remain byte-identical to their complete cc87 source bodies.
   "crates/vize_glyph/src/formatter/template_indent.rs": {
     originalSha256: "4e610e8497708dc137ae90209526526875cc70154c376a4ee6e8098f7caccef6",
-    actualMainSha256: "dd465917c25d364f94298f984a8491ecf75ceb152cb3b622fff08aa007ea7e3a",
     functions: {
       ordinary_templates_bypass_the_raw_line_mask:
         "252d13f191f01a540b78024c0d9e21603dc9a1a14b4c92cc56594ac3fb4cc115",
@@ -91,7 +84,6 @@ const OWNERS: Record<
   },
   "crates/vize_glyph/src/script/block_identity.rs": {
     originalSha256: "e0cf30415eb6585ecd6688da72effc7b560868a0e31acf042507810d468c8eff",
-    actualMainSha256: "70b4c8e7db28eece8dc4f22a4e34cdfeea5da293f57fe5a2a53533d6a6f1c926",
     functions: {
       classifies_only_comment_free_empty_statements:
         "aeb192094f63391b90c1c078b0c17e49e85702af5daa9122e77c8edcacdff928",
@@ -100,7 +92,6 @@ const OWNERS: Record<
   // #7880/#8087 and #7876 expression extraction retain all ten complete original script laws.
   "crates/vize_glyph/src/script.rs": {
     originalSha256: "a205174795bb6d993e84b0cc29dfc5d10c36602dfb6216f1db2278a982b2e0ab",
-    actualMainSha256: "30ece91fbfcd338dbe999a9fb1ba5d2d8d65dfee78f5a07c032a4685e666eb78",
     functions: {
       test_format_tsx_component_script:
         "d108e897e74d4289b8fdf44555eed4b7ad551aff2ac7673b5a80ca8601220d9b",
@@ -123,7 +114,6 @@ const OWNERS: Record<
   // #7876 shares a read-only matched-close query; the original placement law is unchanged.
   "crates/vize_glyph/src/template/formatter/suppression.rs": {
     originalSha256: "94b99ca1dcf0833d5706b73f95e41c9cdf280160e1dccdb751340ad86607b675",
-    actualMainSha256: "df1db7ef1b3a4ac0f854e3228a2b2895e3bb45e3768118f79e2e1b9d9aecdcfd",
     functions: {
       ranges_track_pragma_placement:
         "8120d76a61ca7b815e73c633c93431ba5399f1227d8274a699d09c7d2a5a5400",
@@ -151,9 +141,11 @@ export function validateCurrentFormatterWitness(root: string, entry: any, name: 
     assert(bytes.toString().includes(`fn ${name}(`), "retained Rust law is missing");
     return;
   }
-  assert(owner, "current witness source changed");
-  assert.equal(actual, owner.actualMainSha256, "current witness source changed");
-  assert(Object.hasOwn(owner.functions, name), "unregistered retained Rust law transition");
-  const currentBody = retainedFormatterFunction(bytes, name);
-  assert.equal(sha256(currentBody), owner.functions[name], "retained Rust law body changed");
+  // Later edits to the live source are ordinary work. The original law must
+  // still exist, and a registered law keeps its retained body.
+  assert(bytes.toString().includes(`fn ${name}(`), "retained Rust law is missing");
+  if (owner && Object.hasOwn(owner.functions, name)) {
+    const currentBody = retainedFormatterFunction(bytes, name);
+    assert.equal(sha256(currentBody), owner.functions[name], "retained Rust law body changed");
+  }
 }

@@ -7,7 +7,8 @@ description: Share brand, component theme, locale and other project settings acr
 
 Add project controls to Musea's addon toolbar with `toolbar`. A selection reaches every mounted
 preview, including the variant grid, props panel, accessibility panel, fullscreen view and multiple
-viewports. The Vue apps update in place; changing a global does not reload the iframe.
+viewports. The Vue apps update in place; changing a global does not reload the iframe. Set up the gallery itself with the
+[Musea guide](./musea.md) first.
 
 ## Define controls
 

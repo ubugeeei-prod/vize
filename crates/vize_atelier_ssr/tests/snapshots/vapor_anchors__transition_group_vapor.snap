@@ -1,0 +1,18 @@
+---
+source: crates/vize_atelier_ssr/tests/vapor_anchors.rs
+expression: "compile(TRANSITION_GROUP, true)"
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<ul${_ssrRenderAttrs(_attrs)}>`)
+  if (_ctx.a) {
+    _push(`<li>a</li>`)
+  } else {
+    _push(`<!---->`)
+  }
+  _push(`<!--[-->`)
+  _ssrRenderList(_ctx.l, (i) => {
+    _push(`<li>${_ssrInterpolate(i)}</li>`)
+  })
+  _push(`<!--]-->`)
+  _push(`</ul>`)
+}

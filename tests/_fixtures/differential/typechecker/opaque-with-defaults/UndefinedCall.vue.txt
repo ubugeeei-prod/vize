@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import type { TreeProps } from './defaults';
+import { text, undefinedDefaults } from './defaults';
+
+withDefaults(defineProps<TreeProps>(), undefinedDefaults());
+</script>
+
+<template>
+  <p>{{ text(labelField) }}</p>
+  <p>{{ text(valueField) }}</p>
+</template>

@@ -1,5 +1,4 @@
 import Impeto.Audit
-import Impeto.LatticeLaws
 import Impeto.ScheduleLaws
 import Impeto.IncrementalLaws
 import Impeto.CheckerLaws

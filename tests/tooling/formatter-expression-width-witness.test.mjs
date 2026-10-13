@@ -54,7 +54,10 @@ void test("changed original assets, current law bytes and outside symlinks canno
     const file = path.join(directory, relative);
     const original = fs.readFileSync(file);
     fs.appendFileSync(file, "\n");
-    assert.throws(() => validateExpressionWidthWitness(directory, entry, names[0]));
+    // Edits outside the five original laws in the live owner are ordinary work.
+    if (relative === owner)
+      assert.equal(validateExpressionWidthWitness(directory, entry, names[0]), true);
+    else assert.throws(() => validateExpressionWidthWitness(directory, entry, names[0]));
     fs.writeFileSync(file, original);
     fs.unlinkSync(file);
     fs.symlinkSync(path.join(root, relative), file);

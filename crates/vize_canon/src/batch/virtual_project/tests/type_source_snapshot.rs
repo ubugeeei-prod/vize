@@ -2,7 +2,9 @@ use std::{fs, path::Path, path::PathBuf, sync::Barrier};
 
 use super::{VirtualProject, assert_ts_parses, assert_tsx_parses};
 
-fn uncached_project(root: &Path, paths: &[PathBuf]) -> VirtualProject {
+mod shared_revision;
+
+pub(super) fn uncached_project(root: &Path, paths: &[PathBuf]) -> VirtualProject {
     let mut project = VirtualProject::new(root).unwrap();
     for path in paths {
         project.register_path(path).unwrap();
@@ -10,7 +12,7 @@ fn uncached_project(root: &Path, paths: &[PathBuf]) -> VirtualProject {
     project
 }
 
-fn assert_equivalent_projects(cached: &VirtualProject, uncached: &VirtualProject) {
+pub(super) fn assert_equivalent_projects(cached: &VirtualProject, uncached: &VirtualProject) {
     let mut cached_files = cached.virtual_files_sorted();
     let mut uncached_files = uncached.virtual_files_sorted();
     // A TSX SFC also emits a .ts import shim with the same original path.

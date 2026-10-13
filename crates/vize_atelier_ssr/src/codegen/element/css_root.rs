@@ -50,9 +50,10 @@ impl<'a> SsrCodegenContext<'a> {
         self.indent_level += 1;
 
         let old_parts = std::mem::take(&mut self.current_template_parts);
+        // Vapor hydration claims each Suspense slot as one fragment.
         self.process_children_with_fallthrough_attrs_and_css_vars(
             &el.children,
-            false,
+            self.options.vapor,
             false,
             false,
             false,
@@ -114,7 +115,7 @@ impl<'a> SsrCodegenContext<'a> {
             let old_parts = std::mem::take(&mut self.current_template_parts);
             self.process_children_with_fallthrough_attrs_and_css_vars(
                 &template.children,
-                false,
+                self.options.vapor,
                 false,
                 false,
                 false,

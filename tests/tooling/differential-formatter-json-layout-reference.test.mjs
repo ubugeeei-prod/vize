@@ -69,7 +69,11 @@ void test("JSON witness transition rejects altered source, original asset and ow
   assert.throws(() => check({ ...entry, revisions: [] }));
   assert.throws(() => check(entry, "unregistered_json_law"));
   const current = path.join(scratch, JSON_LAYOUT_SOURCE.owner);
+  // Ordinary edits to the live owner are admitted; removing an original law is not.
   fs.appendFileSync(current, "\n// source mutation\n");
+  assert.equal(check(), true);
+  const live = fs.readFileSync(path.join(root, JSON_LAYOUT_SOURCE.owner), "utf8");
+  fs.writeFileSync(current, live.replace("fn pretty_prints_minified_object(", "fn renamed_law("));
   assert.throws(() => check());
   fs.copyFileSync(path.join(root, JSON_LAYOUT_SOURCE.owner), current);
   fs.appendFileSync(path.join(scratch, JSON_LAYOUT_SOURCE.originalAsset), "\n// asset mutation\n");

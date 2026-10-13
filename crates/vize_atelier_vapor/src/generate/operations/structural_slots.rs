@@ -1,9 +1,6 @@
 //! Runtime slot selection follows compiler-vapor's conditional and createForSlots ABI.
 
-use super::{
-    super::context::{ForScope, GenerateContext},
-    component_slots::generate_slot_fn,
-};
+use super::{super::context::GenerateContext, component_slots::generate_slot_fn};
 use crate::ir::{ComponentKind, CreateComponentIRNode, IRSlot, IRSlotControl, IRSlotLoop};
 use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::{FxHashMap, String, cstr};
@@ -138,12 +135,11 @@ fn looped(
         params.push_str(&cstr!(", _for_index{depth}"));
     }
     ctx.push(&cstr!("), ({params}) =>"));
-    ctx.for_scopes.push(ForScope {
-        value_alias: Some(each.value.content.into()),
-        key_alias: each.key.as_ref().map(|key| key.content.into()),
-        index_alias: each.index.as_ref().map(|index| index.content.into()),
-        depth,
-    });
+    ctx.push_for_scope(
+        Some(each.value.content),
+        each.key.as_ref().map(|key| key.content),
+        each.index.as_ref().map(|index| index.content),
+    );
     generate_slot_fn(ctx, slot, templates, ComponentKind::Regular);
     // Name/key callbacks receive raw values, while the slot body owns reactive refs.
     let aliases = [
