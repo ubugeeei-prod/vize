@@ -297,13 +297,32 @@ fn project_config_routes_and_explicit_modes_do_not_grant_alias_credit() {
         register(
             &mut project,
             "Foreign.vue",
-            "<script>export const Props = 1;</script>",
+            "<script lang=\"ts\">export const Props = 1;</script>",
         );
         let authored = "export * from '@/Panel.vue';\nexport * from 'pkg/Panel.vue';\nexport * from './Panel';\n";
         register(&mut project, "routes.ts", authored);
         let before = owner_packet(&project, "routes.ts");
         project.finalize_module_imports();
         assert_eq!(owner_packet(&project, "routes.ts"), before);
+        register(
+            &mut project,
+            "Foreign.vue",
+            "<script>export const Props = 1;</script>",
+        );
+        project.finalize_module_imports();
+        let mut denied = before.clone();
+        denied["files"][0]["code"] = serde_json::json!(
+            before["files"][0]["code"]
+                .as_str()
+                .unwrap()
+                .replace("@/Panel.vue.ts", "@/Panel.vue")
+        );
+        denied["files"][0]["map"] =
+            serde_json::json!(before["files"][0]["map"].as_str().unwrap().replace(
+                "original_offset: 15, adjustment: 3",
+                "original_offset: 15, adjustment: 0"
+            ));
+        assert_eq!(owner_packet(&project, "routes.ts"), denied);
         for mode in ["import", "require"] {
             let authored: String = format!(
                 "export type * from './Panel.vue' with {{ 'resolution-mode': '{mode}' }};\n"

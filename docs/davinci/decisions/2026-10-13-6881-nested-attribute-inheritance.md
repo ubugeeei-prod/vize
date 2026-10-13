@@ -43,3 +43,24 @@ loop-scope parser: decoded aliases bind, collection expressions remain reads.
 The adjacent `$attrs` collection-read control prevents blanket suppression.
 Executable SFC Bad/Good examples and their bilingual explanations, generated
 pages and three explain snapshots now describe this actual SFC behavior.
+
+Source qualification of `3f5dcc8001dbd4a258aaac3a2a8e8bcaedec190e`
+exposed two historical documentation custody failures. The
+[named whole-body successor](../../../tests/_fixtures/differential/linter/attribute-inheritance-reference/documentation-successor.json.gz)
+preserves the original 317-rule fence inventory and private-import explain
+contract. Two complete bilingual documents and three complete explain bodies
+permit only the authored inheritance Bad/Good replacements, their paragraphs,
+and the implementation line link. The original private-import transformation,
+whole snapshot hashes and lengths still run before that finite successor.
+Mutation, omission, unknown-path and neighboring-rule controls retain strict
+refusals; generated documentation is not a reason to accept arbitrary output.
+
+The same receipt composes main
+`bd5702c0a4d5fb3bb64487794fc45f6f876e6e38` with that exact PR source.
+All 323 current source rows are compared as complete identities: three
+inheritance rows come from the PR and one JSX component row from main. Every
+other row, both complete historical source frames and all previous manifest
+fields remain unchanged. The two helper/law checksum edits each have a
+complete before/after inverse from both parents; every assertion is preserved.
+The receipt grants source custody only. It grants no native, performance,
+merge, release, or complete historical Matrix qualification.

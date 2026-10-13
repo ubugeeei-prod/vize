@@ -1,0 +1,58 @@
+{
+  "schema": "vize.empty-vue-star.javascript-current-source",
+  "version": 1,
+  "sourceOnly": true,
+  "beforeSource": "3a680d0a0b59b720af0d23a70a85cf56c5c4f175",
+  "beforeTree": "577d549f8a9c6b0a51f6bf99bc23fb35eec5942a",
+  "originalSource": "a93e78147b0990c813e965a7868b32dda341eb77",
+  "sharedJavaScriptCapsulesSHA256": "e202062b0362e21f5b7847ab70911b3d3f7c7e5c7ca7c6d51fb88ca35944a56f",
+  "compiledBodies": 281,
+  "starMetadataBodies": 9,
+  "originalAuxiliaryBodies": 9,
+  "javascriptAuxiliaryBodies": 17,
+  "parts": [
+    {
+      "file": "empty-vue-star-javascript-aux-0.json",
+      "mode": "100644",
+      "blob": "945800efed91e99b22272c5a41d5e3507460bbff",
+      "byteLength": 4625,
+      "sha256": "b278eada70e4902eda11186b2101ca3675bf59a690fcdef44cd894ee43ff7eab",
+      "entries": 9
+    },
+    {
+      "file": "empty-vue-star-javascript-aux-1.json",
+      "mode": "100644",
+      "blob": "eab34d64a723a6e282ea45aa46c585dd137fb28e",
+      "byteLength": 5400,
+      "sha256": "ec6ee06b25971ed1fa0d652fadf22def6f1373b781cd3e6c02b8638101a86e9f",
+      "entries": 17
+    }
+  ],
+  "runtimeCredit": false,
+  "performanceCredit": false,
+  "original400Credit": false,
+  "retainedCustodyFrame": {
+    "source": "3a680d0a0b59b720af0d23a70a85cf56c5c4f175",
+    "tree": "577d549f8a9c6b0a51f6bf99bc23fb35eec5942a",
+    "files": 769,
+    "byteLength": 20164487,
+    "orderedModeBlobLengthSHA256": "fbb0bad85e489b371c4227c97848b90473543d2f6bcdad2c5734611d3f33aaa4",
+    "law": {
+      "path": "tests/tooling/warm-type-backed-empty-vue-star-custody.test.ts",
+      "mode": "100644",
+      "blob": "4f956ff0f002252459d66b1b502b3db6a1e5f7ba",
+      "byteLength": 10621,
+      "sha256": "f7bcbc31fc8ba8728e1a2c655ac7a034d2c76b7454dbef1e36d5191fd7f53723"
+    },
+    "tests": [
+      "all actual281 source bodies and nine metadata bodies precede the exact historical hook",
+      "complete current290 Star and current323 NoMutating bodies precede the genuine historical NoUnused source check",
+      "foreign and one-clause hybrid supplied hooks refuse before historical projection",
+      "physical production, supplemental input and preserved original bodies remain mandatory",
+      "missing or changed whole metadata and externally pinned helper bodies refuse",
+      "executable and symlink copies cannot stand in for actual regular source bodies",
+      "replacement refs and missing predecessor objects refuse without fetching private history",
+      "a whole old hook substituted into the current source root is a refused hybrid"
+    ]
+  }
+}

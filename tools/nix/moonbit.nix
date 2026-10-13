@@ -17,20 +17,31 @@ in
         builtins.readFile (root + /.moonbit-version)
       );
       moonbitUrlVersion = builtins.replaceStrings [ "+" ] [ "%2B" ] moonbitVersion;
+      moonbitMirror = "https://github.com/chawyehsu/moonbit-binaries/releases/download/v${moonbitUrlVersion}";
+      moonbitCore = root + "/.github/actions/setup-moonbit/assets/core-${moonbitVersion}.tar.gz";
 
       # Upstream publishes no x86_64-darwin binary, so that system gets a null
       # toolchain and the dev shell says so rather than failing to evaluate.
       moonbitArtifacts = {
         aarch64-darwin = {
-          url = "https://cli.moonbitlang.com/binaries/${moonbitUrlVersion}/moonbit-darwin-aarch64.tar.gz";
+          urls = [
+            "https://cli.moonbitlang.com/binaries/${moonbitUrlVersion}/moonbit-darwin-aarch64.tar.gz"
+            "${moonbitMirror}/moonbit-v${moonbitUrlVersion}-aarch64-apple-darwin.tar.gz"
+          ];
           hash = "sha256-tHgaHjjIANH9ZWk7GXCy0kKfrvMdiTPSZqH24mk6lu8=";
         };
         x86_64-linux = {
-          url = "https://cli.moonbitlang.com/binaries/${moonbitUrlVersion}/moonbit-linux-x86_64.tar.gz";
+          urls = [
+            "https://cli.moonbitlang.com/binaries/${moonbitUrlVersion}/moonbit-linux-x86_64.tar.gz"
+            "${moonbitMirror}/moonbit-v${moonbitUrlVersion}-x86_64-unknown-linux.tar.gz"
+          ];
           hash = "sha256-NvXnzxVFWU4XzT8cC3V/5uhq0CGLyW9Bk2nLuFAuYro=";
         };
         aarch64-linux = {
-          url = "https://cli.moonbitlang.com/binaries/${moonbitUrlVersion}/moonbit-linux-aarch64.tar.gz";
+          urls = [
+            "https://cli.moonbitlang.com/binaries/${moonbitUrlVersion}/moonbit-linux-aarch64.tar.gz"
+            "${moonbitMirror}/moonbit-v${moonbitUrlVersion}-aarch64-unknown-linux.tar.gz"
+          ];
           hash = "sha256-4ZGoimZM9JQ3NoRtuJEIrHajpZK0QnpWYiGAwSoYrcU=";
         };
       };
@@ -40,10 +51,10 @@ in
           pkgs.stdenvNoCC.mkDerivation {
             pname = "moonbit";
             version = moonbitVersion;
-            src = pkgs.fetchurl { inherit (moonbitArtifacts.${system}) url hash; };
+            src = pkgs.fetchurl { inherit (moonbitArtifacts.${system}) urls hash; };
             coreSrc = pkgs.fetchurl {
               name = "core-${moonbitVersion}.tar.gz";
-              url = "https://cli.moonbitlang.com/cores/core-${moonbitUrlVersion}.tar.gz";
+              url = "file://${moonbitCore}";
               hash = "sha256-BpItNd2U3Auup2gilf5ghPDYVO7TtJfNa1J/d9iZp/U=";
             };
             nativeBuildInputs = lib.optionals pkgs.stdenv.hostPlatform.isLinux [ pkgs.patchelf ];

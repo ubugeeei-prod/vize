@@ -1,0 +1,172 @@
+[
+  {
+    "path": "tests/tooling/javascript-sfc-options-source.test.mjs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "fcd8484bb9f231b74ae2358d5b2dcbc411c0077f",
+      "byteLength": 11669,
+      "sha256": "2ee5be08efdaedc69c98d2c78ab12547054033c26891c598c8ab4d29ccc5ec8a"
+    }
+  },
+  {
+    "path": "tests/tooling/javascript-sfc-retained-source-views.test.ts",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "296b201a48830f75d1abd3500a01e82a830a15eb",
+      "byteLength": 11829,
+      "sha256": "d332186fdc794c847d1654ab67ae2194703be9d9c472f0653cc1d77e14b0a6ae"
+    }
+  },
+  {
+    "path": "tests/tooling/javascript-sfc-source-context.test.mjs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "f01604ccab84e2710c1fa2c45767233aab731707",
+      "byteLength": 7033,
+      "sha256": "0694b7facbca16bd2b22c5570a98a0ff41c80d7aa529502ad92336ccc8fee408"
+    }
+  },
+  {
+    "path": "tests/tooling/javascript-sfc-star-source.test.mjs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "066b022644780ce5a7c939cb0017eff898db639f",
+      "byteLength": 6715,
+      "sha256": "e6f4a05080b14b6a457e05dc32f591b843f20a62f20132f4ca74129b2d15ba14"
+    }
+  },
+  {
+    "path": "tools/support/compat/github/javascript-sfc-source-context.mjs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "ae526237ec8d08a7b4b7832f8d09bebc65d564ea",
+      "byteLength": 11845,
+      "sha256": "4cb83689584b232bda8256b8594dd6c155ba9091011cb4dc6950561adf6634ed"
+    }
+  },
+  {
+    "path": "tools/support/compat/github/javascript-sfc-star-source-00.json",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "2a36dd5d27f5cca9ada6a29486bce31aa6a67ce1",
+      "byteLength": 166456,
+      "sha256": "3c617ea589afbf2580166678112f68fc51a7bc44bec3a77fef27dd3b1eecfffa"
+    }
+  },
+  {
+    "path": "tools/support/compat/github/javascript-sfc-star-source-01.json",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "43e0cf3726f78cd2fc01bc2638e7be0d38b0ee83",
+      "byteLength": 71844,
+      "sha256": "a89e6f21b2f12ae7d68ff40b7b61f5ed7aadfe0715e5afb2192915230f37442c"
+    }
+  },
+  {
+    "path": "tools/support/compat/github/javascript-sfc-star-source-02.json",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "ae71b0e0130fa2ea87840931a1ae6c3870525681",
+      "byteLength": 64320,
+      "sha256": "375e5286fe68583b209cef2771ac965884f1cafa12f8890cc9ee832f5b139500"
+    }
+  },
+  {
+    "path": "tools/support/compat/github/javascript-sfc-star-source-03.json",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "5025115e2b2fbef28f8d5d9b300ef5026f4bac7c",
+      "byteLength": 46692,
+      "sha256": "718e8ae960b0b3dbb04a80162da5cd56dff4aa3c6db6e6ac87a301f258421882"
+    }
+  },
+  {
+    "path": "tools/support/compat/github/javascript-sfc-star-source-04.json",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "e5ffd8f0f24079956a73f219a198366ec9a4c56c",
+      "byteLength": 999649,
+      "sha256": "c1cad43bfd30f643a6ce1a9308e5d53449cd3cdc9de70cb19565651ccf8d17c0"
+    }
+  },
+  {
+    "path": "tools/support/compat/github/javascript-sfc-star-source-05.json",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "fafab9f83f20d329045509b1945347664e64a006",
+      "byteLength": 18492,
+      "sha256": "63e681e4f9e8284e165c248e9c55eae7dab24fc9000eb5fb58866cdabf263cf2"
+    }
+  },
+  {
+    "path": "tools/support/compat/github/javascript-sfc-star-source.json",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "420428d5980f99e57bfae5e76b27a7e12b178556",
+      "byteLength": 3710,
+      "sha256": "e202062b0362e21f5b7847ab70911b3d3f7c7e5c7ca7c6d51fb88ca35944a56f"
+    }
+  },
+  {
+    "path": "tools/support/compat/github/javascript-sfc-star-source.mjs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "c873df5f33da69994c05c6ba9b3d2c89d7b0b066",
+      "byteLength": 6992,
+      "sha256": "589c299202e1491fd2127769008783e6b6d061513b8853c2ada92b32dd6c4c34"
+    }
+  },
+  {
+    "path": "tools/support/compat/github/javascript-sfc-options-source.json",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "8b2d8e5f857ca0f477389896e457831c4f4c5f39",
+      "byteLength": 128889,
+      "sha256": "823c3fb00c9fdcedfcead6bc1fa9cf7fb038fedc26b94e957b1069bd4c927f2c"
+    }
+  },
+  {
+    "path": "tools/support/compat/github/javascript-sfc-options-source.mjs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "81560ee3e5c5a07f88a6fffdb799c28b6fe263c8",
+      "byteLength": 5462,
+      "sha256": "126102cfb7a81ef29585f9e31a14a7cc118f4928f8a5cefad8701e4d892bb34f"
+    }
+  },
+  {
+    "path": "tests/performance/support/warm-type-backed-javascript-sfc-host.ts",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "3773f35ae6618b9369ee09c809b5117c615f90e5",
+      "byteLength": 6207,
+      "sha256": "8811f4833e4c2d836171d2bc8de9f91c92dde877ce07fa31a84ecd536afa0bd5"
+    }
+  },
+  {
+    "path": "tools/support/compat/github/javascript-sfc-star-alias-source.json",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "4b50a10891a3cb57ef1052ff2400244a2dcf42cd",
+      "byteLength": 41983,
+      "sha256": "3d765b1da0b37f7d0ffd162e01ca01ec4161eb34d8ff9e8f373b76fc4cb818ca"
+    }
+  }
+]

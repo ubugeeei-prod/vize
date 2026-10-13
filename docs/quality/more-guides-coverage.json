@@ -319,9 +319,9 @@
     },
     {
       "route": "/rules/vue-template-structure",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Authored Japanese explains repetition, conditional branches and template structure, then links complete key and v-if/v-for examples and the Vue guide. All nine references, thirty-six code blocks, defaults, presets, options, current nested-v-for shadowing boundaries and source links remain intact; native and deployed reader acceptance remain pending."
     },
     {
       "route": "/stability",

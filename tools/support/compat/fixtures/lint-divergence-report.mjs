@@ -131,6 +131,9 @@ async function measureProject(context) {
       skippedByPresetCount: context.skippedByPreset.length,
       droppedConfigMessageCount: baselineRun.droppedConfigMessageCount,
       durationMs: baselineDurationMs,
+      parseErrorResults: eslintResults.filter((result) =>
+        result.messages.some((message) => message.ruleId == null),
+      ),
     },
     divergence,
   });

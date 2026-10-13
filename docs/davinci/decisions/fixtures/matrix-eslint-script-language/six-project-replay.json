@@ -1,0 +1,52 @@
+[
+  {
+    "project": "gui-for-singbox",
+    "revision": "1be4816dea1e8793d8e08ae4f8f016c28101672d",
+    "files": 98,
+    "beforeParseErrorCount": 1,
+    "afterParseErrorCount": 0,
+    "changed": ["frontend/src/components/CustomAction/index.vue"]
+  },
+  {
+    "project": "hoppscotch",
+    "revision": "1acb8a3a7581e4db32ba0d529170c4669a2e1053",
+    "files": 365,
+    "beforeParseErrorCount": 1,
+    "afterParseErrorCount": 0,
+    "changed": [
+      "packages/hoppscotch-sh-admin/src/components/settings/OAuthProviderConfigurations.vue"
+    ]
+  },
+  {
+    "project": "inertia",
+    "revision": "59bb8cbff028b9b405cf606588f1f713806f9187",
+    "files": 459,
+    "beforeParseErrorCount": 1,
+    "afterParseErrorCount": 0,
+    "changed": ["packages/vue3/test-app/Pages/Events.vue"]
+  },
+  {
+    "project": "uni-app",
+    "revision": "b6cc3df9c10fb058510cc13d7648d4abb50a4fbb",
+    "files": 58,
+    "beforeParseErrorCount": 3,
+    "afterParseErrorCount": 3,
+    "changed": []
+  },
+  {
+    "project": "vitepress",
+    "revision": "9ee401d7adefc39fd960990cc032be5464e4eb27",
+    "files": 100,
+    "beforeParseErrorCount": 1,
+    "afterParseErrorCount": 1,
+    "changed": []
+  },
+  {
+    "project": "vux",
+    "revision": "881e6803832b535aff3ef90a9aee9fba6aae1a9a",
+    "files": 312,
+    "beforeParseErrorCount": 1,
+    "afterParseErrorCount": 1,
+    "changed": []
+  }
+]

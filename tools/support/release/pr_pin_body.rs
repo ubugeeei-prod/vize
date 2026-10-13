@@ -6,8 +6,12 @@ use std::{fs, path::Path};
 #[path = "pr_pin_body_tests.rs"]
 mod tests;
 
+#[cfg(test)]
+#[path = "pr_pin_body_observed_tests.rs"]
+mod observed_tests;
+
 const CODESMITH: &str = "\n<!-- codesmith:footer -->\n";
-const CODESMITH_END: &str = "\n<!-- /codesmith:footer -->\n";
+const CODESMITH_END: &str = "\n<!-- /codesmith:footer -->";
 const CODERABBIT: &str = "\n<!-- This is an auto-generated comment: release notes by coderabbit.ai -->\n\n## Summary by CodeRabbit\n\n";
 const CODERABBIT_END: &str =
     "\n<!-- end of auto-generated comment: release notes by coderabbit.ai -->";
@@ -47,12 +51,21 @@ fn codesmith(block: &str, repository: &str, number: u64) -> Result<(), String> {
     let prefix = format!(
         "---\n<a href=\"https://app.blacksmith.sh/{owner}/codesmith/{repo}/pr/{number}?autoLogin=true&ref=codesmith_pr_footer\">{view}</a> <a href=\"https://backend.blacksmith.sh/track/enable-autofix?"
     );
-    let suffix = format!(
-        "\">{autofix}</a>\n<sup>Need help on this PR? Tag <code>@codesmith-bot</code> with what you need. Autofix is disabled.</sup>\n\n<!-- codesmith:autofix:disabled -->"
-    );
+    // The bot omits the explanatory sentence in its current footer. The
+    // explicit disabled marker and the repository/PR-bound links remain
+    // mandatory in both observed formats.
+    let suffixes = [" Autofix is disabled.", ""].map(|sentence| {
+        format!(
+            "\">{autofix}</a>\n<sup>Need help on this PR? Tag <code>@codesmith-bot</code> with what you need.{sentence}</sup>\n\n<!-- codesmith:autofix:disabled -->"
+        )
+    });
     let query = block
         .strip_prefix(&prefix)
-        .and_then(|value| value.strip_suffix(&suffix))
+        .and_then(|value| {
+            suffixes
+                .iter()
+                .find_map(|suffix| value.strip_suffix(suffix))
+        })
         .ok_or("Unknown Codesmith decoration structure")?;
     let fields: Vec<_> = query
         .split('&')
@@ -86,6 +99,7 @@ fn coderabbit(block: &str) -> Result<(), String> {
         }
         if let Some(name) = line
             .strip_prefix("* **")
+            .or_else(|| line.strip_prefix("- **"))
             .and_then(|value| value.strip_suffix("**"))
         {
             if name.is_empty()
@@ -96,7 +110,10 @@ fn coderabbit(block: &str) -> Result<(), String> {
                 return Err("Unknown CodeRabbit summary heading".into());
             }
             group = true;
-        } else if let Some(text) = line.strip_prefix("  * ") {
+        } else if let Some(text) = line
+            .strip_prefix("  * ")
+            .or_else(|| line.strip_prefix("  - "))
+        {
             if !group || text.is_empty() || text.contains(['<', '>', '\r']) || text.contains("```")
             {
                 return Err("Unknown CodeRabbit summary item".into());
@@ -133,7 +150,10 @@ pub(super) fn qualify(
                 .ok_or("Unterminated Codesmith decoration")?;
             codesmith(block, repository, number)?;
             seen.push("codesmith");
-            rest = tail;
+            // A complete closing marker may terminate the body. Consume
+            // only its optional line ending, preserving the next envelope
+            // and refusing unknown suffixes just as before.
+            rest = tail.strip_prefix('\n').unwrap_or(tail);
         } else if let Some(value) = rest.strip_prefix(CODERABBIT) {
             if seen.contains(&"coderabbit") {
                 return Err("Repeated CodeRabbit decoration".into());

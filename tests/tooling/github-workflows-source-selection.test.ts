@@ -30,15 +30,17 @@ const rust = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) a
 test("source planning installs the declared Node runtime before TypeScript imports", () => {
   const plan = source.jobs["pr-source-plan"];
   const steps = plan.steps ?? [];
-  const setup = steps.findIndex((step) => step.uses?.startsWith("voidzero-dev/setup-vp@"));
+  const setup = steps.findIndex((step) => step.uses?.startsWith("actions/setup-node@"));
   const sourcePlan = steps.findIndex((step) => step.name === "Plan source checks");
   const tooling = steps.findIndex((step) => step.name === "Plan tooling test inputs");
   const metadata = steps.findIndex((step) => step.name === "Plan affected Rust crates");
   const toolchain = steps.findIndex((step) => step.uses?.startsWith("dtolnay/rust-toolchain@"));
   assert.ok(setup >= 0 && setup < sourcePlan && sourcePlan < tooling);
   assert.equal(steps[setup].with?.["node-version-file"], "package.json");
-  assert.equal(steps[setup].with?.cache, false);
-  assert.equal(steps[setup].with?.["run-install"], false);
+  assert.equal(steps[setup].with?.["package-manager-cache"], false);
+  assert.equal(steps[setup].with?.cache, undefined);
+  assert.ok(steps.every((step) => !step.uses?.includes("setup-vp@")));
+  assert.ok(steps.every((step) => !/\b(?:vp|pnpm|npm)\b/.test(step.run ?? "")));
   assert.ok(sourcePlan < toolchain && toolchain < metadata);
   for (const step of [steps[toolchain], steps[metadata]]) {
     assert.equal(step.if, "${{ steps.plan.outputs.rust == 'true' }}");
