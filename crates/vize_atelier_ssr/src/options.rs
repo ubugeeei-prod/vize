@@ -46,7 +46,10 @@ pub struct SsrCompilerOptions {
     /// anchors the Vapor runtime claims: the empty `v-if` placeholder where
     /// comments are otherwise dropped, a fragment around each Suspense slot,
     /// and nested fragments inside `TransitionGroup`.
-    #[serde(default)]
+    ///
+    /// Left out of the serialized options while it is off, so option
+    /// payloads recorded before it existed still describe the default.
+    #[serde(default, skip_serializing_if = "core::ops::Not::not")]
     pub vapor: bool,
 
     /// CSS variables to inject (from SFC <style> blocks with v-bind)
