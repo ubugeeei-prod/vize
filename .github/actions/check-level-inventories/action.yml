@@ -5,12 +5,8 @@ runs:
   steps:
     - name: Check Davinci source inventories
       shell: bash
-      run: |
-        node tools/support/compat/davinci/croquis-consumers.mjs --check
-        node tools/support/compat/davinci/consumer-migration-surfaces.mjs --check
-        node --test tests/tooling/davinci-storage-policy.test.ts
-        node tools/support/compat/davinci/generated-ledgers.mjs --write
-        node tools/support/compat/davinci/generated-ledgers.mjs --check
+      # The independent lanes run together; see source-inventories.ts.
+      run: node tools/support/compat/davinci/source-inventories.ts
     - name: Upload generated Davinci ledgers
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
