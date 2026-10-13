@@ -9,6 +9,7 @@ use oxc_ast_visit::{Visit, walk::walk_arrow_function_expression};
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
+use vize_l0::cstr;
 use vize_relief::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode,
 };
@@ -43,8 +44,10 @@ fn conditional_group(elements: &[&ElementNode<'_>]) -> bool {
         && elements.last().is_some_and(|element| {
             has_directive(element, "else-if") || has_directive(element, "else")
         })
-        && elements[1..elements.len() - 1]
+        && elements
             .iter()
+            .skip(1)
+            .take(elements.len().saturating_sub(2))
             .all(|element| has_directive(element, "else-if"))
 }
 
@@ -154,7 +157,7 @@ fn binding_shadows_attrs(pattern: &str) -> bool {
         return false;
     }
     let allocator = Allocator::default();
-    let wrapped = format!("({pattern}) => {{}}");
+    let wrapped = cstr!("({pattern}) => {{}}");
     let parsed = Parser::new(&allocator, &wrapped, SourceType::ts()).parse();
     if parsed.panicked || !parsed.diagnostics.is_empty() {
         return true;
@@ -195,7 +198,7 @@ fn first_attrs_reference(source: &str) -> Option<(u32, u32)> {
         return Some((start, start + 6));
     }
     let allocator = Allocator::default();
-    let wrapped = format!("({source})");
+    let wrapped = cstr!("({source})");
     let parsed = Parser::new(&allocator, &wrapped, SourceType::ts()).parse();
     if parsed.panicked || !parsed.diagnostics.is_empty() {
         return None;

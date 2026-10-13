@@ -155,7 +155,8 @@ fn no_attrs_in_an_sfc_is_healthy_even_with_explicit_true() {
 #[test]
 fn nested_and_root_forwarding_have_distinct_identifier_ranges() {
     let source = r#"<script setup></script><template><div v-bind="$attrs"><span v-bind="$attrs" /></div></template>"#;
-    let actual = findings(&lint_sfc(source));
+    let result = lint_sfc(source);
+    let actual = findings(&result);
     let starts: Vec<_> = source
         .match_indices("$attrs")
         .map(|(start, _)| start as u32)
