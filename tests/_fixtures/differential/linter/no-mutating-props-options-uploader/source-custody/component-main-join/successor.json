@@ -605,9 +605,9 @@
     {
       "path": "docs/davinci/plan/consumer-migration-surfaces/linter/vize_patina.tsv",
       "mode": "100644",
-      "bytes": 161345,
-      "sha256": "2e6aea481b67658a0a55f8b8df79bba8b79b73542f8020072f1e0a4b52d82b05",
-      "gitBlob": "25eb6ca6b79ad74890f78072112e4dc153e16f3c"
+      "bytes": 162167,
+      "sha256": "cfe269cedd6cb71c552070ec632955a3ef8b245aeac3f5d5c631c82ec6034cae",
+      "gitBlob": "863ccea45100c9145cf1d9f4d29bbe872e7e59aa"
     },
     {
       "path": "tests/_fixtures/differential/lint/n8n-cli-config/cases.json",
