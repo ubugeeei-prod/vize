@@ -111,30 +111,6 @@ export default defineConfig({
 });
 ```
 
-## Shared Base Configs
-
-`extends` composes a config from one or more base files, so packages in a monorepo can share one
-lint, format and type-check policy:
-
-```json
-{
-  "extends": ["../../vize.base.json", "@acme/vize-config/strict"],
-  "linter": { "rules": { "vue/no-v-html": "off" } }
-}
-```
-
-- A specifier that starts with `./` or `../`, or an absolute path, is resolved from the directory of
-  the config that names it. A directory resolves to its `vize.config.*` file. Any other specifier
-  is resolved as a package with Node, so `@scope/pkg/subpath` follows the package's `exports`.
-- A base can be JSON, JavaScript, TypeScript or PKL, and can itself use `extends`.
-- Bases apply in the order listed and the extending config is applied last. Objects merge key by
-  key (so individual `linter.rules` override a base's rules), `entries` are appended after the
-  bases' entries, and every other value is replaced.
-- An entry can use `extends` too. The base then contributes settings to that entry only, and the
-  entry keeps its own `basePath`, `files` and `ignores`. A base used this way cannot declare
-  `entries`.
-- A cycle, a missing base or a non-string `extends` value is an error.
-
 ## PKL Config
 
 ```pkl
