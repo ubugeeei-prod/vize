@@ -6,7 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { sha256 } from "../typed_defaults/custody.mjs";
 
-export async function installPackageGraph(consumer, output, dependencies) {
+export async function installPackageGraph(consumer, output, dependencies, select = () => true) {
   fs.writeFileSync(
     path.join(consumer, "package.json"),
     JSON.stringify({ private: true, dependencies }, null, 2) + "\n",
@@ -50,12 +50,17 @@ export async function installPackageGraph(consumer, output, dependencies) {
     if (!location) continue;
     assert.equal(entry.link, undefined, "no linked source dependencies");
     const directory = path.join(consumer, location);
+    if (!fs.existsSync(directory)) {
+      assert.equal(entry.optional, true, "missing nonoptional public package");
+      continue;
+    }
     assert(fs.lstatSync(directory).isDirectory() && !fs.lstatSync(directory).isSymbolicLink());
     assert(fs.realpathSync(directory).startsWith(path.join(consumer, "node_modules") + path.sep));
     const manifest = JSON.parse(fs.readFileSync(path.join(directory, "package.json"), "utf8"));
     assert.equal(manifest.name, location.split("node_modules/").at(-1));
     assert.equal(manifest.version, entry.version);
     assert.equal(new URL(entry.resolved).origin, "https://registry.npmjs.org");
+    if (!select(manifest.name) && !Object.hasOwn(dependencies, manifest.name)) continue;
     const metadataResponse = await fetch(
       `https://registry.npmjs.org/${encodeURIComponent(manifest.name)}/${entry.version}`,
       { signal: AbortSignal.timeout(60_000) },
