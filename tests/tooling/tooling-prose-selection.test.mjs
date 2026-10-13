@@ -39,11 +39,8 @@ void test("PRs select prose readers only, while code and the merge tier stay bro
   const prose = planToolingTests(["docs/content/guide/index.md"]);
   assert.equal(prose.reason, "prose read by name");
   assert.ok(prose.tests.length > 0 && prose.tests.length < prose.totalTests / 4);
-  // A prose-only queue candidate selects the same readers, mergeOnly tests included.
-  const queue = planToolingTests(["docs/content/guide/index.md"], { tier: "merge" });
-  assert.ok(prose.tests.every((file) => queue.tests.includes(file)));
-  assert.ok(queue.tests.length < queue.totalTests / 4);
-  const merge = planToolingTests(["docs/content/guide/index.md", "tools/x.mjs"], { tier: "merge" });
+  // The merge runner requires the whole suite, prose-only candidates included.
+  const merge = planToolingTests(["docs/content/guide/index.md"], { tier: "merge" });
   assert.equal(merge.tests.length, merge.totalTests);
   const mixed = planToolingTests(["docs/content/guide/index.md", "tools/support/ci/x.ts"]);
   assert.ok(mixed.tests.length > prose.tests.length);

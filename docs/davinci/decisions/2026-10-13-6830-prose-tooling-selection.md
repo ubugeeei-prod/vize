@@ -25,8 +25,8 @@ starting that optional workflow.
 
 A merge-queue candidate whose own change is only prose (Markdown under `docs/`
 or `.changeset/`, or a Markdown file at the repository root) now gets the plan
-the same PR gets: no Rust, JS package or playground lanes, and the prose
-selection above for tooling tests. The candidate is built on the candidate
+the same PR gets: no Rust, JS package or playground lanes. Its tooling tier stays the whole
+suite, which the merge runner requires. The candidate is built on the candidate
 ahead of it, which ran every lane on the code, so the candidate's tree differs
 from that verified tree by prose alone. Markdown inside crates and packages
 can be compiled in as Rust or package docs and keeps every lane.
