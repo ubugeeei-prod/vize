@@ -18,7 +18,7 @@ Local Node25.8.1 checks: the new runtime contract fails on the unchanged parent
 workflow;22 source-selection/preflight/plan/dependency regressions pass after
 the change. Hosted Node24.14 validation remains required.
 
-The parent measured144s setup out of180s planning. Fresh child exact-head
+The parent measured144s setup out of182s planning. Fresh child exact-head
 Actions must prove the existing inventories/plans still pass and measure the
 new setup and total planner duration; this is an expected improvement, not
 an achieved whole-CI speed claim. Native Stack, exact-head gates and protected
@@ -42,7 +42,7 @@ was independently verified success04:07:57→04:08:21 UTC,24s, against main
 job115117177368 duration301s (setup-vp296s,cancelled). This is evidence for
 the bounded Node-only level gate repair, not whole-PR success. Its source
 planner [job115124107148](https://github.com/ubugeeei-prod/vize/actions/runs/38344961197/job/115124107148)
-ran180s04:07:57→04:10:57, including setup-vp144s04:08:02→04:10:26.
+ran182s04:07:57→04:10:59, including setup-vp144s04:08:02→04:10:26.
 Original remaining commands took33s, including inventory21s.
 
 ## DAG and dominant costs
@@ -60,6 +60,11 @@ Main push `build-js-packages`1151171774261515s: setup-vp245s, actual native/UI26
 Last full scheduled run: source coverage1147725301532037s, source report1976s (critical path); full clippy-and-test1147725301701617s, Clippy138s/allocation212s/Test1202s; scripts1147725300771808s (cancelled), test release scripts1483s; full JS114772530121924s with tests894s. These older timings identify targets, not current-main qualification. Full suite cannot be replaced by queue history.
 
 ## Rust build/cache identity
+
+Official [stable channel metadata](https://static.rust-lang.org/dist/channel-rust-stable.toml)
+was fetched on2026-10-13: channel date2026-10-01, Rust/rustc1.99.0
+(b940084d7,2026-09-28), Cargo0.100.0(5f94df478,2026-08-27). The pinned
+1.99.0 matches current stable; no toolchain install/update was needed.
 
 Committed toolchain is1.99.0; PR/queue logs confirm rustc1.99.0(b940084d7,2026-09-28). PR builder pins1.99.0; several full jobs use stable; semver intentionally1.95.0, branch coverage nightly. Lock/toolchain fingerprint is`1ea6087ed98bd6cc1048efef91faa0112497b52eead3d2bbdbc26fe9effff72a` in these logs. Cache policy fingerprints committed Cargo.lock/rust-toolchain.toml, not the live stable/nightly compiler output; actual toolchain identity needs care when designing alternate seed roles.
 
