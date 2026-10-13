@@ -61,14 +61,47 @@ export function localImportInputs(file, cwd = root, visited = new Set()) {
   return { files, complete };
 }
 
+// Prose never runs as code. A PR that changes only prose selects the tests
+// whose sources name that file, a directory above it or a glob over it. The
+// merge queue still runs every test.
+export const isProse = (path) => /\.mdx?$/.test(path);
+const literal = /(["'`])((?:(?!\1)[^\\\n])*)\1/g;
+const segmentRun = /(?:["'`][\w.@*-]+["'`]\s*,\s*)+["'`][\w.@*-]+["'`]/g;
+export function proseReferences(source) {
+  const references = new Set();
+  for (const [, , text] of source.matchAll(literal)) {
+    const prefix = text.split("${")[0];
+    // A bare wildcard names nothing in particular.
+    if (!/^[*./]*$/.test(prefix) && !/\s/.test(prefix)) references.add(prefix);
+  }
+  // readRepoFile("docs", "content", "guide.md") and path.join segments.
+  for (const [run] of source.matchAll(segmentRun))
+    references.add([...run.matchAll(/["'`]([^"'`]+)["'`]/g)].map(([, part]) => part).join("/"));
+  return [...references];
+}
+export function readsProse(path, sources) {
+  return sources.some((references) =>
+    references.some((reference) => {
+      const directory = reference.replace(/\/+$/, "");
+      return (
+        path === directory ||
+        path.startsWith(`${directory}/`) ||
+        (reference.includes("*") && matchesGlob(path, reference))
+      );
+    }),
+  );
+}
+
 export function planToolingTests(paths, { tier = "pr", cwd = root } = {}) {
   if (!["pr", "merge"].includes(tier)) throw new Error("tier must be pr or merge");
   const files = toolingTestFiles(cwd);
   const mergeOnly = new Set(mergeOnlyToolingTests);
+  const prose = paths.filter(isProse);
+  const code = paths.filter((path) => !isProse(path));
   const unknown =
     paths.length === 0 ||
-    paths.some((path) => !matchesAny(path, [...cacheInputs.tooling, ...globalInputs]));
-  const global = paths.some((path) => matchesAny(path, globalInputs));
+    code.some((path) => !matchesAny(path, [...cacheInputs.tooling, ...globalInputs]));
+  const global = code.some((path) => matchesAny(path, globalInputs));
   const tests = files.filter((file) => {
     if (tier === "merge") return true;
     if (mergeOnly.has(file)) return false;
@@ -76,7 +109,16 @@ export function planToolingTests(paths, { tier = "pr", cwd = root } = {}) {
     const scope = toolingTestScopes.find((entry) => matchesAny(file, entry.tests));
     const imports = localImportInputs(file, cwd);
     const inputs = scope && imports.complete ? cacheInputs[scope.input] : cacheInputs.tooling;
-    return paths.some((path) => matchesAny(path, [...inputs, ...imports.files]));
+    if (code.some((path) => matchesAny(path, [...inputs, ...imports.files]))) return true;
+    if (prose.length === 0) return false;
+    // A declared scope is curated: its inputs, or the broad inputs when its
+    // closure is incomplete, still decide prose.
+    if (scope && prose.some((path) => matchesAny(path, inputs))) return true;
+    // Any other test reads prose only by naming it in a resolvable source.
+    const sources = imports.files.map((member) =>
+      proseReferences(readFileSync(join(cwd, member), "utf8")),
+    );
+    return prose.some((path) => readsProse(path, sources));
   });
   return {
     version: 1,
@@ -91,7 +133,9 @@ export function planToolingTests(paths, { tier = "pr", cwd = root } = {}) {
           ? "unknown inputs: broad PR suite"
           : global
             ? "shared task or dependency inputs"
-            : "declared task and import inputs",
+            : code.length === 0
+              ? "prose read by name"
+              : "declared task and import inputs",
   };
 }
 

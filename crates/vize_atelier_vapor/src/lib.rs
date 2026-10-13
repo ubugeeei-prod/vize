@@ -37,6 +37,8 @@ mod tests_implicit_default_slot;
 #[cfg(test)]
 mod tests_insertion_state;
 #[cfg(test)]
+mod tests_once_components;
+#[cfg(test)]
 mod tests_root_component;
 #[cfg(test)]
 mod tests_same_event_listeners;

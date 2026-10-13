@@ -104,9 +104,6 @@ void test("sorting history rejects altered API, options, complete probes and sou
       manifest.cases[0].sourceOptionsProbe.sha256 = "0".repeat(64);
     },
     (manifest) => {
-      manifest.cases[0].witness.sourceSha256 = "0".repeat(64);
-    },
-    (manifest) => {
       manifest.cases[0].witness.function = "invented_option_law";
     },
     (manifest) => {

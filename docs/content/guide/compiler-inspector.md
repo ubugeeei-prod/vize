@@ -6,7 +6,8 @@ title: Compiler Inspector
 
 The playground inspector collects the compiler and analysis surfaces needed to review a `.vue`
 repro. It shows the official Vue SFC compiler output, Vize compiler output, Virtual TS, VIR, and a
-cross-file graph for local batches.
+cross-file graph for local batches. To turn what you find into a report, follow
+[Testing & Feedback](./testing.md).
 
 Open the inspector from the playground:
 

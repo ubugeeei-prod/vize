@@ -1,6 +1,7 @@
 use vize_l0::{Allocator, Vec};
 
-use super::{BindingFact, BindingId, BindingInput, ReactivityClass};
+use super::axis::classify;
+use super::{BindingFact, BindingId, BindingInput};
 
 /// Reactivity-lattice facts for one L3 artifact.
 #[derive(Debug)]
@@ -45,28 +46,13 @@ pub fn evaluate<'a>(
 /// Naive declarative-rule evaluator for one binding summary.
 #[must_use]
 pub const fn evaluate_binding(input: BindingInput) -> BindingFact {
-    let class = input
-        .origin
-        .class_floor()
-        .join(input.effects.class_floor())
-        .join(input.escape.class_floor());
     BindingFact {
         id: input.id,
-        class: provide_inject_cap(input.origin, class),
+        class: classify(input.origin, input.effects, input.escape),
         verdict: input.verdict,
         origin: input.origin,
         effects: input.effects,
         escape: input.escape,
         span: input.span,
-    }
-}
-
-const fn provide_inject_cap(
-    origin: super::BindingOrigin,
-    class: ReactivityClass,
-) -> ReactivityClass {
-    match origin {
-        super::BindingOrigin::ProvideInject => class.join(ReactivityClass::Reactive),
-        _ => class,
     }
 }

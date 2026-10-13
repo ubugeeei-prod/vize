@@ -155,7 +155,10 @@ test("every isolated tooling runner regenerates its tier and retains the full me
   );
   assert.equal(steps[full].env?.VIZE_LSP_BIN, "${{ github.workspace }}/target/ci/vize");
   assert.equal(steps[full].env?.VIZE_LSP_REQUIRE_SOURCE_BUILD, "1");
-  assert.equal(source.jobs["source-report"].if, "${{ always() }}");
+  assert.equal(
+    source.jobs["source-report"].if,
+    "${{ always() && !contains(needs.*.result, 'cancelled') }}",
+  );
   assert.ok(source.jobs["source-report"].needs?.includes("pr-tooling-scripts"));
   assert.equal(
     source.jobs["source-report"].steps?.at(-1)?.run,
@@ -215,7 +218,10 @@ test("the Rust report waits for the builder and all four independently executing
     "pr-rust-build",
     "pr-rust-shard",
   ]);
-  assert.equal(rust.jobs["rust-source-report"].if, "${{ always() }}");
+  assert.equal(
+    rust.jobs["rust-source-report"].if,
+    "${{ always() && !contains(needs.*.result, 'cancelled') }}",
+  );
   const reportSteps = rust.jobs["rust-source-report"].steps ?? [];
   const gate = reportSteps.findIndex((step) => step.name === "Require the complete Rust tier");
   const gateRuntime = reportSteps.findIndex((step) =>
@@ -276,8 +282,8 @@ test("merge Rust timing receipts remain available after workspace failure", () =
   const steps = rust.jobs["merge-rust-source"].steps ?? [];
   const summary = steps.find((step) => step.name === "Summarize Rust test timing evidence");
   const upload = steps.find((step) => step.name === "Upload Rust test timing evidence");
-  assert.equal(summary?.if, "${{ always() && inputs.run-rust }}");
-  assert.equal(upload?.if, "${{ always() && inputs.run-rust }}");
+  assert.equal(summary?.if, "${{ !cancelled() && inputs.run-rust }}");
+  assert.equal(upload?.if, "${{ !cancelled() && inputs.run-rust }}");
   assert.equal(summary?.env?.BUILD_OUTCOME, "${{ steps.rust-test-build.outcome }}");
   assert.equal(summary?.env?.RUN_OUTCOME, "${{ steps.rust-test-run.outcome }}");
   assert.equal(upload?.with?.["if-no-files-found"], "error");

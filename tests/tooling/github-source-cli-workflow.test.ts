@@ -58,7 +58,10 @@ void test("only tooling depends on the early CLI producer; original independent 
   }
   assert.equal(source.jobs["wit-contracts"].needs, undefined);
   assert.deepEqual(source.jobs["source-report"].needs, [...originalNeeds, "pr-source-cli"]);
-  assert.equal(source.jobs["source-report"].if, "${{ always() }}");
+  assert.equal(
+    source.jobs["source-report"].if,
+    "${{ always() && !contains(needs.*.result, 'cancelled') }}",
+  );
 });
 
 void test("one original CLI/oracle build supplies each digest-strict consumer without receipt restamping", () => {

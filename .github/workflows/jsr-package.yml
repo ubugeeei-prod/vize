@@ -5,6 +5,7 @@ on:
       - "jsr/**"
       - "tools/support/release/jsr/**"
       - "tests/tooling/jsr-package.test.ts"
+      - "tests/tooling/release-jsr-workflow.test.ts"
       - ".github/workflows/jsr-package.yml"
       - ".github/workflows/release-jsr.yml"
   workflow_dispatch:
@@ -25,7 +26,7 @@ jobs:
       - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2
         with: { deno-version: "2.9.7" }
       - name: Test package generation
-        run: node --test tests/tooling/jsr-package.test.ts
+        run: node --test tests/tooling/jsr-package.test.ts tests/tooling/release-jsr-workflow.test.ts
       - name: Generate the package for the checked-out release
         run: node tools/support/release/jsr/package.ts prepare "$RUNNER_TEMP/jsr-package"
       - name: Check the publication graph and public types

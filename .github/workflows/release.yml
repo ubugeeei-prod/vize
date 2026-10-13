@@ -1008,6 +1008,17 @@ jobs:
         env: { CARGO_REGISTRY_TOKEN: "${{ steps.crates-io-auth.outputs.token }}" }
         run: moon run --target native tools/moon/cmd/publish_crates -- --crate vize_atelier_jsx --crate vize_patina
 
+  # Publish the JSR facade once the npm packages it re-exports are public.
+  # Skipped inside the called workflow while jsr/vize/channel.json is off.
+  release-jsr:
+    name: Release @vizejs/vize to JSR
+    needs: [release-npm-cli, release-npm-native, release-npm-vite-plugin]
+    permissions: { contents: read, id-token: write }
+    uses: ./.github/workflows/release-jsr.yml
+    with:
+      version: ${{ inputs.tag_name }}
+      source_sha: ${{ inputs.expected_sha }}
+
   # Create GitHub Release with CLI binaries
   create-github-release:
     name: Create GitHub Release

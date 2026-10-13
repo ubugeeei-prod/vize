@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import type { TreeProps } from './defaults';
+import { flag, partialDefaults } from './defaults';
+
+withDefaults(defineProps<TreeProps>(), partialDefaults());
+</script>
+
+<template>
+  <p>{{ flag(bordered) }}</p>
+</template>

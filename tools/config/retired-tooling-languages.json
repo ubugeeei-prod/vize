@@ -72,7 +72,6 @@
       "tests/formal/impeto/Impeto/IvmMatrix.lean",
       "tests/formal/impeto/Impeto/Lattice.lean",
       "tests/formal/impeto/Impeto/LatticeFixture.lean",
-      "tests/formal/impeto/Impeto/LatticeLaws.lean",
       "tests/formal/impeto/Impeto/LoopBehavior.lean",
       "tests/formal/impeto/Impeto/LoopTests.lean",
       "tests/formal/impeto/Impeto/Model.lean",

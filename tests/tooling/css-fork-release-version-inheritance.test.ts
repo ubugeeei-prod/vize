@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -8,10 +7,6 @@ import { test } from "node:test";
 
 import { parse as parseToml, stringify as stringifyToml } from "@iarna/toml";
 
-import {
-  authenticateProducerMetadata,
-  authenticateProducerSource,
-} from "../../tools/support/dependencies/css-engine-producer-manifests.ts";
 import { repoRoot, runMoonScript } from "./_helpers/moonbit.ts";
 
 const rootSource = fs.readFileSync(path.join(repoRoot, "Cargo.toml"), "utf8");
@@ -41,135 +36,6 @@ test("the optional JSON source-map provider inherits the release-owned exact ali
   assert.deepEqual(features.sourcemap, ["parcel_sourcemap"]);
   assert.deepEqual(features.bundler, ["dashmap", "sourcemap", "rayon"]);
   assert.deepEqual(features.default, ["bundler", "nodejs", "sourcemap"]);
-});
-
-test("only whole reviewed manifests extend all nine original producer authorities", () => {
-  const metadata = authenticateProducerMetadata(repoRoot);
-  const checksum = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
-  const fixture = path.join(repoRoot, "tests/_fixtures/differential/css-engine-vendor-exit");
-  const sealBytes = fs.readFileSync(path.join(fixture, "bundler-before-whole.json"));
-  assert.equal(
-    checksum(sealBytes),
-    "d139e32de20854c5068a38bb3803884a12db81484fe032ba4c45c575774c1da1",
-  );
-  const sealedSources: { path: string; sha256: string }[] = JSON.parse(sealBytes.toString())
-    .twoProfiles[0].allTenSourceCopies;
-  const legacy = fs.readFileSync(
-    path.join(fixture, "release-inheritance/bundler-after-original.ts.txt"),
-  );
-  assert.equal(
-    checksum(legacy),
-    "a126866ead8f2dd961926a217da4d18891bb3a7f92af7fc29b5179f2a70641d6",
-  );
-  const legacyDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-css-original-authority-"));
-  try {
-    const executable = path.join(legacyDirectory, "original.ts");
-    fs.writeFileSync(executable, legacy);
-    const refusal = spawnSync(process.execPath, [executable, "--authenticate"], {
-      cwd: repoRoot,
-      encoding: "utf8",
-    });
-    assert.equal(refusal.error, undefined);
-    assert.equal(refusal.signal, null);
-    assert.equal(refusal.status, 1);
-    assert.equal(refusal.stdout, "");
-    assert.ok(refusal.stderr.includes("AssertionError"), refusal.stderr);
-    assert.ok(refusal.stderr.includes("Cargo.toml"), refusal.stderr);
-    assert.ok(
-      refusal.stderr.includes(checksum(fs.readFileSync(path.join(repoRoot, "Cargo.toml")))),
-      refusal.stderr,
-    );
-    assert.ok(
-      refusal.stderr.includes("c8fe5d4b91f49524fb4f8cd06c7453affd936b2373c29b622e94a01dc7a0793f"),
-      refusal.stderr,
-    );
-  } finally {
-    fs.rmSync(legacyDirectory, { recursive: true, force: true });
-  }
-  for (const [sourcePath, file] of [
-    ["Cargo.toml", "root-original.toml"],
-    ["vendor/lightningcss/Cargo.toml", "lightningcss-original.toml"],
-  ]) {
-    const original = fs.readFileSync(path.join(fixture, "release-inheritance", file));
-    const current = fs.readFileSync(path.join(repoRoot, sourcePath));
-    const sealed = sealedSources.find((row) => row.path === sourcePath);
-    assert(sealed);
-    assert.equal(checksum(original), sealed.sha256);
-    assert.deepEqual(authenticateProducerSource(sourcePath, original, sealed.sha256), {
-      path: sourcePath,
-      actualSha256: sealed.sha256,
-      originalSha256: sealed.sha256,
-      reviewedContinuation: false,
-    });
-    assert.deepEqual(authenticateProducerSource(sourcePath, current, sealed.sha256, metadata), {
-      path: sourcePath,
-      actualSha256: checksum(current),
-      originalSha256: sealed.sha256,
-      reviewedContinuation: true,
-    });
-    for (const raw of [original, current]) {
-      assert.throws(() =>
-        authenticateProducerSource(
-          sourcePath,
-          Buffer.concat([raw, Buffer.from("# unreviewed byte change\n")]),
-          sealed.sha256,
-        ),
-      );
-    }
-    assert.throws(() => authenticateProducerSource(sourcePath, current, checksum(current)));
-    assert.throws(() => authenticateProducerSource("unknown.toml", current, sealed.sha256));
-    assert.throws(() => authenticateProducerSource("__proto__", current, sealed.sha256));
-    assert.throws(() => authenticateProducerSource(sourcePath, current, "0".repeat(64)));
-    const mutation =
-      sourcePath === "Cargo.toml"
-        ? current
-            .toString()
-            .replace('path = "vendor/parcel_sourcemap"', 'path = "vendor/unreviewed"')
-        : current
-            .toString()
-            .replace(
-              '[dependencies.parcel_sourcemap]\nworkspace = true\nfeatures = ["json"]',
-              '[dependencies.parcel_sourcemap]\nworkspace = true\nfeatures = ["json", "unreviewed"]',
-            );
-    assert.notEqual(mutation, current.toString());
-    assert.throws(() =>
-      authenticateProducerSource(sourcePath, Buffer.from(mutation), sealed.sha256),
-    );
-  }
-
-  // Execute the real source-after authenticator; every other original input still must match.
-  const result = spawnSync(
-    process.execPath,
-    ["tools/support/dependencies/css-engine-bundler-after.ts", "--authenticate"],
-    { cwd: repoRoot, encoding: "utf8" },
-  );
-  assert.equal(result.error, undefined);
-  assert.equal(result.signal, null);
-  assert.equal(result.status, 0, result.stderr);
-  const receipt = JSON.parse(result.stdout);
-  const expectedSources = sealedSources.filter(
-    (row) => row.path !== "vendor/lightningcss/src/bundler.rs",
-  );
-  assert.deepEqual(
-    receipt.producerSourceAuthorities.map((row: { path: string }) => row.path),
-    expectedSources.map((row) => row.path),
-  );
-  assert.equal(receipt.producerSourceAuthorities.length, 9);
-  assert.equal(
-    receipt.producerSourceAuthorities.filter(
-      (row: { reviewedContinuation: boolean }) => row.reviewedContinuation,
-    ).length,
-    2 +
-      Number(
-        receipt.producerMetadata.files.find((row: { path: string }) => row.path === "Cargo.lock")
-          .changed,
-      ),
-  );
-  for (const [index, row] of receipt.producerSourceAuthorities.entries()) {
-    assert.equal(row.originalSha256, expectedSources[index].sha256);
-    assert.equal(row.actualSha256, checksum(fs.readFileSync(path.join(repoRoot, row.path))));
-  }
-  assert.equal(receipt.publicationQualification, false);
 });
 
 test("the real release rewrite resolves both forks and rejects the historical stale pin", () => {

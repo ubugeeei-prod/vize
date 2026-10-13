@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import type { TreeProps } from './defaults';
+import { compact, partialDefaults, text, treePropsDefaults } from './defaults';
+
+withDefaults(defineProps<TreeProps>(), compact ? partialDefaults() : treePropsDefaults());
+</script>
+
+<template>
+  <p>{{ text(valueField) }}</p>
+  <p>{{ text(labelField) }}</p>
+</template>

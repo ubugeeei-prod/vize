@@ -169,8 +169,11 @@ impl<'a> SsrCodegenContext<'a> {
             self.indent_level -= 1;
         }
 
-        // If no else branch, emit empty comment
-        if !disable_comment && if_node.branches.iter().all(|b| b.condition.is_some()) {
+        // If no else branch, emit empty comment. Vapor hydration claims it
+        // as the branch anchor even where comments are otherwise dropped.
+        if (!disable_comment || self.options.vapor)
+            && if_node.branches.iter().all(|b| b.condition.is_some())
+        {
             self.push_indent();
             self.push("} else {\n");
             self.indent_level += 1;

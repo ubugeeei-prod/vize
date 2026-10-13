@@ -25,7 +25,7 @@ Adding a record requires no entry in this README or the shared foundation.
    and any material tradeoff. Keep reproductions, evidence, and unfinished
    work discoverable through links to their actual source or issue.
 4. Write readable paragraphs. Each authored Markdown file keeps the existing
-   350-line budget. Split a long new record into named companions and link
+   500-line budget. Split a long new record into named companions and link
    them from its entry point rather than compressing prose into giant rows.
 5. Link any decision that the new record supersedes and explain the exact
    changed scope. A later date alone does not establish precedence.

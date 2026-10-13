@@ -84,7 +84,7 @@ pub(in crate::compile) fn emit_l2_captured<C: CaptureSink>(
         no_slotted,
     } = policy;
     if !C::RECORDING {
-        return super::emit_l2(
+        return super::noting_refusal(super::emit_l2(
             allocator,
             source,
             dialect,
@@ -92,7 +92,7 @@ pub(in crate::compile) fn emit_l2_captured<C: CaptureSink>(
             pre_s2_walks,
             strict_slot_params,
             no_slotted,
-        );
+        ));
     }
     let caps = LegacyCaps::for_version(dialect);
     let profiler = global_profiler();
