@@ -48,8 +48,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `OccurrenceBlock`             |     2 |    11 |
 | `PropContract`                |     2 |     3 |
 | `ReactiveKind`                |     6 |    43 |
-| `SfcDescriptor`               |     9 |    30 |
-| `SfcParseOptions`             |     1 |     1 |
+| `SfcDescriptor`               |     8 |    29 |
 | `SfcScriptBlock`              |     3 |     6 |
 | `SfcStyleBlock`               |     2 |     8 |
 | `SfcTemplateBlock`            |     1 |     1 |
@@ -64,7 +63,6 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `is_kebab_case`               |     1 |     1 |
 | `parse_program_for_analysis`  |     4 |     4 |
 | `parse_script_setup`          |     2 |     4 |
-| `parse_sfc`                   |     1 |     1 |
 | `reactivity_lookup`           |     3 |     3 |
 | `reactivity_sources`          |     3 |     3 |
 | `v_bind_expression_ranges`    |     1 |     1 |

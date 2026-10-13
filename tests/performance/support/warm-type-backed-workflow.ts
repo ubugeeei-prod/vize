@@ -80,6 +80,8 @@ if (process.argv[2] === "prepare") {
     ...aliasHostPaths,
     // Reviewed #3952 workspace-symbol producer and exact helper/test footprint;
     // complete original 400-provider inputs and whole oracles remain unchanged.
+    "crates/vize_incremental/src/descriptor.rs",
+    "crates/vize_incremental/src/lib.rs",
     "crates/vize_maestro/src/ide/workspace_symbols.rs",
     "crates/vize_maestro/src/ide/workspace_symbols/descriptor.rs",
     "crates/vize_maestro/src/ide/workspace_symbols/descriptor/tests.rs",

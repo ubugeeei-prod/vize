@@ -36,17 +36,29 @@ inputs. Existing complete workspace-symbol and file-lifecycle oracles remain
 unchanged. The original 128 MiB server, 384 MiB tree, three-process, cycle,
 diagnostic, latency and timeout assertions retain scale 1.
 
-The existing warm-workflow changed-path admission names the private parser
-and its test explicitly beside the workspace-symbol producer. Its original
+The existing warm-workflow changed-path admission names the private helper
+and its test explicitly beside the workspace-symbol producer. It also names
+the two Incremental descriptor/export paths for their shared borrowed entry. Its original
 400-provider inputs, protocol, recipe, assertions and budgets are unchanged;
 path admission alone grants no benchmark or current native acceptance.
 
 The eliminated copies are established by the implementation. Their exact
-contribution to the original sampled peak and the measured RSS recovery are
-not established by source inspection. Fresh exact-head Actions must run the
-whole original Vue parity/churn workload before this release blocker is
-treated as fixed. Broader LSP correctness, the 40/63 resource targets and
-published-package acceptance remain separate unfinished work.
+contribution to the original peak is not isolated by source inspection.
+The first repair head `eaac656d70827ea305cf8c8d27f2f097a564d262` passed
+[the whole original Vue parity/churn job](https://github.com/ubugeeei-prod/vize/actions/runs/38335415414/job/115094274923).
+Its sampled server peak was 128,168 KiB (125.164 MiB), an observed decrease
+of 4,576 KiB (4.469 MiB), leaving 2.836 MiB beneath the unchanged 128 MiB
+ceiling. The peak remained at `file-lifecycle-0`. Artifact verification
+confirmed the complete fixture, runtime and budget objects match the original:
+40 edit cycles, 20 file lifecycles, 287 publishes and 63 RSS samples. The
+process-tree peak was 353,636 KiB, beneath 384 MiB with three processes.
+The actual CLI source/recipe receipt binds that head and binary SHA-256
+`68fa3e619887e77916e16a30cc8f796e6945c232aae8153ae2769269ec222e10`.
+This is one source-specific measurement, not final-head or public acceptance.
+
+Full qualification after the independent Nix transport repair, protected
+queue and actual merge remain pending. Broader LSP correctness, the 40/63
+resource targets and published-package acceptance remain unfinished.
 
 The first exact-head source checks exposed stale generated consumer ledgers
 and Clippy rejected the test-only `&Cow` argument. Regenerate both named
@@ -54,3 +66,12 @@ Maestro shards with their original Node generators and pass a cloned Cow
 value to the ownership helper. All source-pointer, ownership and whole
 descriptor/rejection assertions remain intact; production parser bytes are
 unchanged by this correction. The initial failed checks remain failed.
+
+The next source run retained the original Maestro direct-parser ceilings:
+request paths zero and crate-wide 15. Its two failures exposed the initial
+direct call in the new helper. Keep those assertions byte-exact. The borrowed
+entry now lives at the existing Incremental descriptor boundary, sharing one
+private parser/options function with the original owned `parse_outcome`. A
+private Maestro alias delegates to that entry. Resident memoization, Arc
+ownership and typed parser errors remain unchanged; no cache, parse pass or
+request-path exemption is added. Revalidate the composed source on Actions.
