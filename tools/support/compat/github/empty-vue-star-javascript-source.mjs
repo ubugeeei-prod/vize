@@ -17,7 +17,7 @@ const object = (kind, body) =>
     .update(kind + " " + body.length + "\0")
     .update(body)
     .digest("hex");
-const ownData = "54c6dcecf89028c3b5af57ddd49fc5799eb005a7582ad6dc600ee1d35815f92a";
+const ownData = "dae4deced4d81a5da1656a5fd89a5110493e889c745ada2c6a72221756f329ca";
 function regular(file) {
   const stat = fs.lstatSync(file);
   assert(stat.isFile() && (stat.mode & 0o777) === 0o644, "regular source: " + file);
@@ -37,7 +37,7 @@ assert.equal(data.version, 1);
 assert.equal(data.sourceOnly, true);
 assert.equal(data.compiledBodies, 281);
 assert.equal(data.starMetadataBodies, 9);
-assert.equal(data.originalAuxiliaryBodies, 8);
+assert.equal(data.originalAuxiliaryBodies, 9);
 assert.equal(data.javascriptAuxiliaryBodies, 13);
 const auxiliary = data.parts.flatMap((part, index) => {
   assert.equal(part.file, "empty-vue-star-javascript-aux-" + index + ".json");
@@ -49,8 +49,8 @@ const auxiliary = data.parts.flatMap((part, index) => {
   assert.equal(rows.length, part.entries);
   return rows;
 });
-assert.equal(auxiliary.length, 21);
-assert.equal(new Set(auxiliary.map(({ path }) => path)).size, 21);
+assert.equal(auxiliary.length, 22);
+assert.equal(new Set(auxiliary.map(({ path }) => path)).size, 22);
 const shared = metadata("javascript-sfc-star-source.json", data.sharedJavaScriptCapsulesSHA256);
 assert.equal(shared.data.beforeSource, "3a680d0a0b59b720af0d23a70a85cf56c5c4f175");
 const beforeCommit = Buffer.from(shared.data.beforeCommit.rawBase64, "base64");
@@ -103,7 +103,11 @@ executing.set(
     new URL("../../../../tests/tooling/empty-vue-star-javascript-source.test.mjs", import.meta.url),
   ),
 );
-assert.equal(executing.size, 5);
+executing.set(
+  "tools/support/compat/github/empty-vue-star-custody-runner.mjs",
+  regular(new URL("empty-vue-star-custody-runner.mjs", import.meta.url)),
+);
+assert.equal(executing.size, 6);
 const pairs = [...emptyVueStarBodyPairs, ...emptyVueStarMetadataPairs];
 assert.equal(pairs.length, 290);
 assert.equal(new Set(pairs.map(([file]) => file)).size, 290);
@@ -112,7 +116,7 @@ const files = [
   ...auxiliary.map(({ path }) => path),
   ...executing.keys(),
 ];
-assert.equal(files.length, 316);
+assert.equal(files.length, 318);
 assert.equal(new Set(files).size, files.length);
 const proofs = new WeakMap();
 const git = (root, args, input) =>
@@ -210,7 +214,7 @@ export function authenticateEmptyVueStarJoinedSource(root, head = currentHead(ro
     assert(actual, "complete current source: " + file);
     assert.deepEqual(physical(root, file), actual.body, "physical equals selected raw: " + file);
   }
-  // Only after full316 current bodies, authenticate every original A93 cell/absence.
+  // Only after full318 current bodies, authenticate every original A93 cell/absence.
   ensureHostedLiteralSource(root, data.originalSource);
   const original = raw(root, data.originalSource);
   for (const [file, expected] of pairs)
@@ -235,9 +239,9 @@ export function authenticateEmptyVueStarJoinedSource(root, head = currentHead(ro
     beforeSource: data.beforeSource,
     compiledBodies: 281,
     starMetadataBodies: 9,
-    nativeAndOriginalCallerBodies: 8,
+    nativeAndOriginalCallerBodies: 9,
     javascriptAuxiliaryBodies: 13,
-    executingAdapterBodies: 5,
+    executingAdapterBodies: 6,
     completeCurrentBodies: files.length,
     changedStarProductionBodies: 3,
     retainedStarQualifier: Object.freeze({ ...retained, files: Object.freeze(retained.files) }),

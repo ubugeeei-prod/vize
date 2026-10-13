@@ -8,16 +8,16 @@
   "sharedJavaScriptCapsulesSHA256": "e202062b0362e21f5b7847ab70911b3d3f7c7e5c7ca7c6d51fb88ca35944a56f",
   "compiledBodies": 281,
   "starMetadataBodies": 9,
-  "originalAuxiliaryBodies": 8,
+  "originalAuxiliaryBodies": 9,
   "javascriptAuxiliaryBodies": 13,
   "parts": [
     {
       "file": "empty-vue-star-javascript-aux-0.json",
       "mode": "100644",
-      "blob": "14f57f0699f1fc0219425ac1b0e6b5a21fbd3469",
-      "byteLength": 4113,
-      "sha256": "4066db3ac0fd89d827c8b0fbdab253f894d13a71e9049642cb1071122fe7eacb",
-      "entries": 8
+      "blob": "f83a2d0f22398dab2adf651df15060669808f1b9",
+      "byteLength": 4625,
+      "sha256": "511475b227274471e6d22635da4ebc254675e15be6a0fd2f178721a9ff0aed01",
+      "entries": 9
     },
     {
       "file": "empty-vue-star-javascript-aux-1.json",
@@ -30,5 +30,29 @@
   ],
   "runtimeCredit": false,
   "performanceCredit": false,
-  "original400Credit": false
+  "original400Credit": false,
+  "retainedCustodyFrame": {
+    "source": "3a680d0a0b59b720af0d23a70a85cf56c5c4f175",
+    "tree": "577d549f8a9c6b0a51f6bf99bc23fb35eec5942a",
+    "files": 769,
+    "byteLength": 20164487,
+    "orderedModeBlobLengthSHA256": "fbb0bad85e489b371c4227c97848b90473543d2f6bcdad2c5734611d3f33aaa4",
+    "law": {
+      "path": "tests/tooling/warm-type-backed-empty-vue-star-custody.test.ts",
+      "mode": "100644",
+      "blob": "4f956ff0f002252459d66b1b502b3db6a1e5f7ba",
+      "byteLength": 10621,
+      "sha256": "f7bcbc31fc8ba8728e1a2c655ac7a034d2c76b7454dbef1e36d5191fd7f53723"
+    },
+    "tests": [
+      "all actual281 source bodies and nine metadata bodies precede the exact historical hook",
+      "complete current290 Star and current323 NoMutating bodies precede the genuine historical NoUnused source check",
+      "foreign and one-clause hybrid supplied hooks refuse before historical projection",
+      "physical production, supplemental input and preserved original bodies remain mandatory",
+      "missing or changed whole metadata and externally pinned helper bodies refuse",
+      "executable and symlink copies cannot stand in for actual regular source bodies",
+      "replacement refs and missing predecessor objects refuse without fetching private history",
+      "a whole old hook substituted into the current source root is a refused hybrid"
+    ]
+  }
 }

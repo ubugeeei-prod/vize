@@ -22,12 +22,16 @@ const owner = fs.realpathSync(
 const capsule = path.resolve(import.meta.dirname, "../../tools/support/compat/github");
 const main = "3a680d0a0b59b720af0d23a70a85cf56c5c4f175";
 const git = (root, args, input) =>
-  execFileSync("git", ["--no-replace-objects", ...args], {
-    cwd: root,
-    input,
-    maxBuffer: 64 * 1024 * 1024,
-    env: { ...process.env, GIT_ALLOW_PROTOCOL: "", GIT_NO_LAZY_FETCH: "1" },
-  });
+  execFileSync(
+    "git",
+    ["--no-replace-objects", "-c", "gc.auto=0", "-c", "maintenance.auto=false", ...args],
+    {
+      cwd: root,
+      input,
+      maxBuffer: 64 * 1024 * 1024,
+      env: { ...process.env, GIT_ALLOW_PROTOCOL: "", GIT_NO_LAZY_FETCH: "1" },
+    },
+  );
 const load = (file) => JSON.parse(fs.readFileSync(path.join(capsule, file)));
 const manifest = load("empty-vue-star-javascript-source.json");
 const auxiliary = manifest.parts.flatMap(({ file }) => load(file));
@@ -38,6 +42,7 @@ const originalFiles = [...emptyVueStarBodyPairs, ...emptyVueStarMetadataPairs].m
 );
 const executingFiles = [
   "tools/support/compat/github/empty-vue-star-javascript-source.mjs",
+  "tools/support/compat/github/empty-vue-star-custody-runner.mjs",
   "tools/support/compat/github/empty-vue-star-javascript-source.json",
   "tools/support/compat/github/empty-vue-star-javascript-aux-0.json",
   "tools/support/compat/github/empty-vue-star-javascript-aux-1.json",
@@ -62,10 +67,14 @@ const authored = indexPath
       ]),
     )
   : new Map(
-      auxiliary.slice(8).map(({ path: file }) => [file, fs.readFileSync(path.join(owner, file))]),
+      auxiliary.slice(9).map(({ path: file }) => [file, fs.readFileSync(path.join(owner, file))]),
     );
 for (const file of executingFiles)
   authored.set(file, fs.readFileSync(new URL("../../" + file, import.meta.url)));
+authored.set(
+  "tests/tooling/warm-type-backed-empty-vue-star-custody.test.ts",
+  fs.readFileSync(new URL("warm-type-backed-empty-vue-star-custody.test.ts", import.meta.url)),
+);
 ensureHostedLiteralSource(owner, main);
 ensureHostedLiteralSource(owner, "a93e78147b0990c813e965a7868b32dda341eb77");
 const bodies = new Map();
@@ -130,11 +139,11 @@ function changed(root, head, file, body, mode = "100644") {
   fs.chmodSync(path.join(root, file), Number.parseInt(mode, 8) & 0o777);
   return commit;
 }
-void test("actual complete316 current bodies precede the unchanged290 Star source model", () => {
+void test("actual complete318 current bodies precede the unchanged290 Star source model", () => {
   if (!indexPath) {
     const actual = authenticateEmptyVueStarJoinedSource(owner);
     assert.equal(actual.head, git(owner, ["rev-parse", "HEAD"]).toString().trim());
-    assert.equal(actual.completeCurrentBodies, 316);
+    assert.equal(actual.completeCurrentBodies, 318);
     assert.equal(actual.runtimeCredit, false);
   }
   console.log(
@@ -148,11 +157,11 @@ void test("actual complete316 current bodies precede the unchanged290 Star sourc
   );
   fixture((root) => {
     const packet = authenticateEmptyVueStarJoinedSource(root);
-    assert.equal(packet.completeCurrentBodies, 316);
-    assert.equal(packet.executingAdapterBodies, 5);
+    assert.equal(packet.completeCurrentBodies, 318);
+    assert.equal(packet.executingAdapterBodies, 6);
     assert.equal(packet.compiledBodies, 281);
     assert.equal(packet.starMetadataBodies, 9);
-    assert.equal(packet.nativeAndOriginalCallerBodies, 8);
+    assert.equal(packet.nativeAndOriginalCallerBodies, 9);
     assert.equal(packet.javascriptAuxiliaryBodies, 13);
     assert.equal(packet.retainedStarQualifier.completeBodyPairs, 44);
     assert.equal(packet.retainedStarQualifier.supplementalBodyPairs, 85);
@@ -254,7 +263,6 @@ void test("the complete original Star qualifier still refuses unknown, partial a
     null,
   );
 });
-
 void test("ancestor symlinks and same-HEAD mutation or replacement refs refuse before an old source loan", () => {
   fixture((root, head) => {
     const file = contexts[1].path,

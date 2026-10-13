@@ -118,5 +118,20 @@
       "byteLength": 187339,
       "sha256": "2087ce6a7d5a742275c377f699a83f41b913a2ed92fce1ed92fd3bb7925cf575"
     }
+  },
+  {
+    "path": "tests/tooling/warm-type-backed-empty-vue-star-custody.test.ts",
+    "before": {
+      "mode": "100644",
+      "blob": "4f956ff0f002252459d66b1b502b3db6a1e5f7ba",
+      "byteLength": 10621,
+      "sha256": "f7bcbc31fc8ba8728e1a2c655ac7a034d2c76b7454dbef1e36d5191fd7f53723"
+    },
+    "after": {
+      "mode": "100644",
+      "blob": "a28e505f0cb974bfba6acc2c6be3c1ef76523162",
+      "byteLength": 734,
+      "sha256": "0a3a98b47421a4951715eb6c45512f1d7d3b92be4614bec877ef7648bc7917c5"
+    }
   }
 ]
