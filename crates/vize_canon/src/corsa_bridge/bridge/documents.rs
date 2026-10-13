@@ -206,7 +206,7 @@ mod invalidation_tests;
 pub(crate) fn normalize_document_uri(name: &str) -> String {
     if name.starts_with("file://") {
         name.into()
-    } else if name.starts_with('/') {
+    } else if name.starts_with('/') || std::path::Path::new(name).is_absolute() {
         crate::file_uri::path_to_file_uri(std::path::Path::new(name))
     } else {
         cstr!("{VIRTUAL_URI_SCHEME}://{name}")
