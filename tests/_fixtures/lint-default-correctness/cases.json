@@ -45,8 +45,8 @@
           "rule_name": "vue/no-deprecated-v-bind-sync",
           "severity": "error",
           "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
-          "start": 18,
-          "end": 37,
+          "start": 25,
+          "end": 29,
           "help": null,
           "labels": [],
           "fix": null
@@ -57,11 +57,11 @@
           "range": {
             "start": {
               "line": 0,
-              "character": 18
+              "character": 25
             },
             "end": {
               "line": 0,
-              "character": 37
+              "character": 29
             }
           },
           "severity": 1,
@@ -128,7 +128,7 @@
           "severity": "error",
           "message": "the `slot-scope` attribute was deprecated in Vue 2.6 and removed in Vue 3",
           "start": 28,
-          "end": 38,
+          "end": 50,
           "help": null,
           "labels": [],
           "fix": null
@@ -143,7 +143,7 @@
             },
             "end": {
               "line": 0,
-              "character": 38
+              "character": 50
             }
           },
           "severity": 1,
@@ -209,8 +209,8 @@
           "rule_name": "vue/no-deprecated-v-bind-sync",
           "severity": "error",
           "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
-          "start": 18,
-          "end": 49,
+          "start": 31,
+          "end": 35,
           "help": null,
           "labels": [],
           "fix": null
@@ -250,11 +250,11 @@
           "range": {
             "start": {
               "line": 0,
-              "character": 18
+              "character": 31
             },
             "end": {
               "line": 0,
-              "character": 49
+              "character": 35
             }
           },
           "severity": 1,
@@ -357,8 +357,8 @@
           "rule_name": "vue/no-deprecated-v-bind-sync",
           "severity": "error",
           "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
-          "start": 40,
-          "end": 59,
+          "start": 47,
+          "end": 51,
           "help": null,
           "labels": [],
           "fix": null
@@ -369,11 +369,11 @@
           "range": {
             "start": {
               "line": 0,
-              "character": 32
+              "character": 39
             },
             "end": {
               "line": 0,
-              "character": 51
+              "character": 43
             }
           },
           "severity": 1,

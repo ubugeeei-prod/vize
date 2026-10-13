@@ -34,3 +34,8 @@ The initial source Actions passed the new complete 18-case native corpus but
 refused old preset and LSP vectors. Their complete packets remain intact; only
 the three affected rule ranges change, including UTF-8 bytes and LSP UTF-16
 positions. The original failed run 38336568495 remains part of the evidence.
+
+Historical preset corpora stay at their original paths and exact bytes. Current
+native and CLI regressions read separate `current-range-cases.json` copies;
+their complete authored vectors differ only at the approved diagnostic ranges.
+Released typed-default and runtime-prop reference authorities are not repinned.
