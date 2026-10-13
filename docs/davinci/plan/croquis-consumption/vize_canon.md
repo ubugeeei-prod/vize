@@ -13,7 +13,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `Analyzer`                     | type  | `analyzer`          |    50 |   178 |
 | `AnalyzerOptions`              | type  | `analyzer`          |    50 |   174 |
 | `ComponentUsage`               | type  | `croquis::template` |    23 |    49 |
-| `Croquis`                      | type  | `croquis`           |    95 |   227 |
+| `Croquis`                      | type  | `croquis`           |    96 |   231 |
 | `EventHandlerScopeData`        | type  | `scope`             |     7 |     9 |
 | `EventListener`                | type  | `croquis::template` |     2 |     3 |
 | `MacroTracker`                 | type  | `macros`            |     1 |     2 |
@@ -36,7 +36,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `VSlotScopeData`               | type  | `scope`             |     1 |     4 |
 | `Croquis.import_statements`    | field | `croquis`           |     4 |     5 |
 | `Croquis.invalid_exports`      | field | `croquis`           |     1 |     1 |
-| `Croquis.macros`               | field | `croquis`           |    30 |    85 |
+| `Croquis.macros`               | field | `croquis`           |    31 |    87 |
 | `Croquis.options_descriptor`   | field | `croquis`           |     2 |     2 |
 | `Croquis.pattern_diagnostics`  | field | `croquis`           |     2 |     4 |
 | `Croquis.re_exports`           | field | `croquis`           |     1 |     1 |
