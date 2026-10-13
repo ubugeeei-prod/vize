@@ -100,7 +100,9 @@ const rustSourceCoverageCommand = [
   "mkdir -p target/llvm-cov",
   [
     // nextest runs the instrumented test binaries in parallel; libtest ran them one by one.
-    "cargo llvm-cov nextest --workspace --json --summary-only",
+    // The full profile's groups apply, and eight threads leave the slower instrumented
+    // real-TSGO tests the headroom that 32 threads did not.
+    "cargo llvm-cov nextest --workspace --profile full --test-threads 8 --json --summary-only",
     `--output-path ${rustSourceCoverageJson}`,
   ].join(" "),
   rustTool("ci/source-coverage", "--json", rustSourceCoverageJson, ...rustSourceCoverageMinimums),
