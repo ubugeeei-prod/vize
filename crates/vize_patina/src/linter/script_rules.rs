@@ -1,6 +1,7 @@
 use super::{LintResult, Linter, severity::append_with_rule_overrides};
 use crate::rules::script::{
-    EmitsModuleScript, ScriptLintResult, ScriptRule, SfcScriptContext, script_source_type,
+    EmitsModuleScript, NoDupeKeysModuleScript, ScriptLintResult, ScriptRule, SfcScriptContext,
+    script_source_type,
 };
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
@@ -18,6 +19,8 @@ mod template_context;
 #[cfg(test)]
 mod deep_props_dispatch_tests;
 #[cfg(test)]
+mod dupe_keys_dispatch_tests;
+#[cfg(test)]
 mod runtime_props_dispatch_tests;
 #[cfg(test)]
 mod setup_emits_dispatch_tests;
@@ -26,7 +29,7 @@ use html_scripts::extract_inline_scripts;
 use prefilter::{script_rule_applies_to_filename, script_rule_may_match};
 pub use registry::BuiltinScriptRuleMeta;
 use registry::{
-    ALL_BUILTIN_SCRIPT_RULE_NAMES, BUILTIN_SCRIPT_RULES, BuiltinScriptRuleEntry,
+    ALL_BUILTIN_SCRIPT_RULE_NAMES, BUILTIN_SCRIPT_RULES, BuiltinScriptRuleEntry, RULE_NO_DUPE_KEYS,
     RULE_NO_DUPLICATE_ATTR_INHERITANCE, RULE_NO_GET_CURRENT_INSTANCE,
     RULE_NO_REQUIRED_PROP_WITH_DEFAULT, RULE_RETURN_IN_EMITS_VALIDATOR,
 };
@@ -187,6 +190,7 @@ fn run_builtin_script_rule(
     parsed: Option<&oxc_parser::ParserReturn<'_>>,
     sfc: SfcScriptContext<'_>,
     emits_module: Option<EmitsModuleScript<'_>>,
+    dupe_module: Option<NoDupeKeysModuleScript<'_>>,
     runtime_props_eligible: bool,
     result: &mut LintResult,
 ) {
@@ -216,6 +220,19 @@ fn run_builtin_script_rule(
                     )
                 );
             }
+        } else if let Some(module) = dupe_module.filter(|_| entry.rule_name == RULE_NO_DUPE_KEYS)
+            && let Some(dupe_rule) = rule.as_setup_dupe_keys()
+        {
+            profile!(
+                entry.profile_name,
+                dupe_rule.check_setup_with_module(
+                    &parsed.program,
+                    source,
+                    offset,
+                    module,
+                    &mut lint
+                )
+            );
         } else if let Some(props_rule) = rule.as_setup_props_destructure()
             && entry.rule_name == props_rule.meta().name
         {
@@ -303,6 +320,7 @@ pub(crate) fn append_builtin_script_rules_for_source(
             offset,
             parsed.as_ref(),
             SfcScriptContext::default(),
+            None,
             None,
             false,
             result,

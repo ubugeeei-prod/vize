@@ -31,26 +31,11 @@ if (phase === "moves") {
     }
   }
 } else {
+  // The Python foundation replay this once patched was removed with the
+  // other replayed one-shot scripts; only the plan record is still integrated.
   const updates = new Map<string, string>();
-  const replay = "tools/support/levels/move-l0-runtime-laws.py";
-  const original = "MOVES = {OLD / 'tests' / name: NEW / 'tests' / name for name in RELATIVE}";
-  const renamed = `DESTINATION_NAMES = {
-    "folio_derive_laws.rs": "dump_derive_laws.rs",
-    "folio_dump.rs": "dump_hash_gate.rs",
-}
-MOVES = {OLD / 'tests' / name: NEW / 'tests' / DESTINATION_NAMES.get(name, name)
-         for name in RELATIVE}`;
-  let source = readFileSync(resolve(root, replay), "utf8");
-  if (source.includes(original)) source = source.replace(original, renamed);
-  else if (!source.includes(renamed)) throw new Error("Unexpected foundation replay move map");
-  const oldUpdate = "update(NEW / 'tests' / name, lambda s:";
-  const newUpdate = "update(MOVES[OLD / 'tests' / name], lambda s:";
-  if (source.includes(oldUpdate)) source = source.replace(oldUpdate, newUpdate);
-  else if (!source.includes(newUpdate)) throw new Error("Unexpected foundation replay integration");
-  updates.set(replay, source);
-
   const records = "docs/davinci/plan/phase-2-records.md";
-  source = readFileSync(resolve(root, records), "utf8");
+  let source = readFileSync(resolve(root, records), "utf8");
   const oldLink = "[`folio_derive_laws`](../../../davinci/vize_l0/tests/folio_derive_laws.rs)";
   const newLink = "[`dump_derive_laws`](../../../davinci/vize_l0/tests/dump_derive_laws.rs)";
   if (source.includes(oldLink)) source = source.replace(oldLink, newLink);

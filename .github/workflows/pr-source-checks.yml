@@ -43,6 +43,9 @@ jobs:
         uses: ./.github/actions/check-level-inventories
       - name: Check ordinary Rust module layout
         run: node --test tests/tooling/davinci-module-layout.test.ts
+      - name: Check retired tooling languages
+        env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
+        run: node --test tests/tooling/retired-tooling-languages.test.ts
       - name: Plan source checks
         id: plan
         env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }

@@ -77,6 +77,7 @@ use oxc_span::SourceType;
 use crate::diagnostic::{LintDiagnostic, Severity};
 
 pub use exports::*;
+pub use no_dupe_keys::NoDupeKeysModuleScript;
 pub use props_emits::EmitsModuleScript;
 pub(crate) use props_emits::collect_options_props;
 pub use sfc_context::SfcScriptContext;
@@ -201,6 +202,11 @@ pub trait ScriptRule: Send + Sync {
 
     /// Actual destructure capability; configured namesakes retain default dispatch.
     fn as_setup_props_destructure(&self) -> Option<&NoDeepDestructureInProps> {
+        None
+    }
+
+    /// Actual duplicate-key capability; configured namesakes retain default dispatch.
+    fn as_setup_dupe_keys(&self) -> Option<&NoDupeKeys> {
         None
     }
 

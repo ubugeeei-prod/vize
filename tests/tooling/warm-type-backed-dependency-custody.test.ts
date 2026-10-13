@@ -98,3 +98,35 @@ test("changed Croquis macros cannot reuse the baseline analysis crate", () => {
     );
   }
 });
+
+test("changed Incremental descriptors refuse the baseline's cached metadata", () => {
+  const dependencies = changedSourceDependencies([
+    "crates/vize_incremental/src/descriptor.rs",
+    "crates/vize_incremental/src/lib.rs",
+    "crates/vize_maestro/src/ide/workspace_symbols/descriptor.rs",
+  ]);
+  assert.deepEqual(dependencies, ["vize_incremental"]);
+  assert.deepEqual(changedSourceDependencies(["crates/vize_incremental_other/src/lib.rs"]), []);
+  for (const side of ["before", "after"]) {
+    assert.doesNotThrow(() =>
+      assertChangedDependenciesBuilt(dependencies, [
+        { target: { name: "vize_incremental" }, fresh: false },
+      ]),
+    );
+    assert.throws(
+      () =>
+        assertChangedDependenciesBuilt(dependencies, [
+          { target: { name: "vize_incremental" }, fresh: true },
+        ]),
+      /changed vize_incremental must actually compile/u,
+      `${side} cannot reuse the previous descriptor API metadata`,
+    );
+    assert.throws(
+      () =>
+        assertChangedDependenciesBuilt(dependencies, [
+          { target: { name: "vize_maestro" }, fresh: false },
+        ]),
+      /changed vize_incremental must supply an actual linked artifact/u,
+    );
+  }
+});

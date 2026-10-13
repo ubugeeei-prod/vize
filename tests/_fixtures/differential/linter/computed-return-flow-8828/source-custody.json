@@ -1,0 +1,35 @@
+{
+  "issue": 8828,
+  "original": [
+    {
+      "upstream": "n8n-io/n8n",
+      "revision": "e882e8a483f433facb47bab9b407d0ec00a81172",
+      "path": "packages/frontend/editor-ui/src/features/ai/evaluation.ee/components/RunDetail/RunStatusPill.vue",
+      "blob": "4f1edb09d7e9d556f05f199b4bdee2042e39f926",
+      "bytes": 2267,
+      "SHA256": "1b65f446f13430a88acdad0dd84dc8d239abf901ea72fd81af0a87a1d2fcb78e",
+      "local": "/tmp/vize-lint-family-448-packets/n8n-computed-sources/RunStatusPill.vue"
+    },
+    {
+      "upstream": "n8n-io/n8n",
+      "revision": "e882e8a483f433facb47bab9b407d0ec00a81172",
+      "path": "packages/frontend/editor-ui/src/features/settings/context/components/PreferenceScopeBadge.vue",
+      "blob": "fef43cfc18bce4c337b5453865960e3dfa51a599",
+      "bytes": 2741,
+      "SHA256": "a071fe80741127f140e3cfaff70efef2e7030cc3fc4fb88a9bc8e76c6d35f86e",
+      "local": "/tmp/vize-lint-family-448-packets/n8n-computed-sources/PreferenceScopeBadge.vue"
+    },
+    {
+      "upstream": "n8n-io/n8n",
+      "revision": "e882e8a483f433facb47bab9b407d0ec00a81172",
+      "path": "packages/frontend/editor-ui/src/features/workflow-reviews/components/activity-entries/WorkflowReviewActivityEventEntry.vue",
+      "blob": "d55a4aca9c50b9f2cdb499626baf5cb50e194cb7",
+      "bytes": 10986,
+      "SHA256": "1d622888091a722a8eeae9418d7133fc8068cb3b79a1d7623f2f8b6c44b4bffd",
+      "local": "/tmp/vize-lint-family-448-packets/n8n-computed-sources/WorkflowReviewActivityEventEntry.vue"
+    }
+  ],
+  "referenceSHA256": "621c338d000e657de9eeede2ed6e12f53af7f8e203cf312a4e4fa9cd01b9bfc0",
+  "flowReferenceSHA256": "b5c95f092c13c22ba45b2d7cb31eebd2bf01de62f224b9f9a7086a8d029d4229",
+  "scope": "Source-only rule fix; no full Matrix or installed-consumer credit."
+}

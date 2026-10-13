@@ -201,3 +201,53 @@ fn test_valid_non_transition_element() {
     let result = linter.lint_template(r#"<div><span>x</span></div>"#, "test.vue");
     assert_eq!(result.error_count, 0);
 }
+
+/// Real-project shapes the reference rule accepts: every tag outside the
+/// well-known HTML/SVG/MathML names is a custom component, even when the parser
+/// could not resolve it to one.
+#[test]
+fn test_valid_unresolved_custom_element_children() {
+    let linter = create_linter();
+    for source in [
+        r#"<transition name="fade"><router-view /></transition>"#,
+        r#"<transition name="fade"><router-view></router-view></transition>"#,
+        r#"<transition><keep-alive><router-view /></keep-alive></transition>"#,
+        r#"<transition name="el-zoom-in-top"><el-card>content</el-card></transition>"#,
+        r#"<transition><my-panel class="panel">content</my-panel></transition>"#,
+        r#"<Transition><KeepAlive><component :is="view" /></KeepAlive></Transition>"#,
+    ] {
+        let result = linter.lint_template(source, "test.vue");
+        assert_eq!(result.error_count, 0, "{source}: {:?}", result.diagnostics);
+    }
+}
+
+#[test]
+fn test_valid_native_tag_retargeted_through_is() {
+    let linter = create_linter();
+    for source in [
+        r#"<transition><div is="vue:my-panel">content</div></transition>"#,
+        r#"<transition><div :is="view">content</div></transition>"#,
+        r#"<transition><div v-is="'my-panel'">content</div></transition>"#,
+    ] {
+        let result = linter.lint_template(source, "test.vue");
+        assert_eq!(result.error_count, 0, "{source}: {:?}", result.diagnostics);
+    }
+}
+
+#[test]
+fn test_invalid_native_html_svg_and_mathml_children() {
+    let linter = create_linter();
+    for source in [
+        r#"<transition name="fade"><section class="panel">content</section></transition>"#,
+        r#"<transition><svg viewBox="0 0 1 1"><path d="M0 0" /></svg></transition>"#,
+        r#"<transition><math><mi>x</mi></math></transition>"#,
+        r#"<transition><template><div>content</div></template></transition>"#,
+    ] {
+        let result = linter.lint_template(source, "test.vue");
+        assert_eq!(result.error_count, 1, "{source}: {:?}", result.diagnostics);
+        assert_eq!(
+            result.diagnostics[0].rule_name,
+            "vue/require-toggle-inside-transition"
+        );
+    }
+}

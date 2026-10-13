@@ -3,8 +3,7 @@
 //! Require a return value in every computed getter. A getter that can finish
 //! without returning a value yields `undefined`, which is almost always a bug (a
 //! forgotten branch, a dropped `return`, or a body run only for side effects).
-//! This rule flags any computed getter whose block body has no value-returning
-//! `return`.
+//! This rule flags computed getters with a reachable fallthrough or bare return.
 //!
 //! Both API styles are covered: the Options API (`computed: { foo() {} }` and
 //! the accessor form `computed: { foo: { get() {} } }`) and the Composition API
@@ -19,14 +18,15 @@ use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
     Argument, ArrowFunctionExpression, CallExpression, Expression, Function, ObjectExpression,
-    ObjectProperty, ObjectPropertyKind, Program, PropertyKey, PropertyKind, ReturnStatement,
-    Statement,
+    ObjectProperty, ObjectPropertyKind, Program, PropertyKey, PropertyKind, Statement,
 };
 use oxc_ast_visit::{
     Visit,
     walk::{walk_call_expression, walk_object_property},
 };
 use oxc_span::Span;
+
+mod flow;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/return-in-computed-property",
@@ -178,35 +178,9 @@ fn check_getter(getter: Getter<'_>, offset: usize, result: &mut ScriptLintResult
     );
 }
 
-/// Whether the statement list contains a `return <expr>` reachable as the
-/// getter's own return (i.e. not inside a nested function scope).
+/// Every reachable normal completion must yield the getter's value.
 fn body_returns_value(statements: &[Statement<'_>]) -> bool {
-    let mut finder = ReturnFinder { found: false };
-    for statement in statements {
-        finder.visit_statement(statement);
-        if finder.found {
-            return true;
-        }
-    }
-    false
-}
-
-/// Walks a getter body looking for a value-returning `return`. Nested function
-/// and arrow scopes are not traversed: their `return` is their own.
-struct ReturnFinder {
-    found: bool,
-}
-
-impl<'a> Visit<'a> for ReturnFinder {
-    fn visit_function(&mut self, _it: &Function<'a>, _flags: oxc_syntax::scope::ScopeFlags) {}
-    fn visit_arrow_function_expression(&mut self, _it: &ArrowFunctionExpression<'a>) {}
-
-    fn visit_return_statement(&mut self, it: &ReturnStatement<'a>) {
-        // `return;` produces no value; only `return <expr>` counts.
-        if it.argument.is_some() {
-            self.found = true;
-        }
-    }
+    flow::returns_value(statements)
 }
 
 /// Strip parentheses and TS-only wrappers so the underlying node is seen.

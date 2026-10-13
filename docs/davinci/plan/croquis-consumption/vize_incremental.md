@@ -14,7 +14,7 @@ _None._
 
 | item              | files | sites |
 | ----------------- | ----: | ----: |
-| `SfcDescriptor`   |     1 |     2 |
-| `SfcError`        |     1 |     1 |
+| `SfcDescriptor`   |     1 |     4 |
+| `SfcError`        |     1 |     2 |
 | `SfcParseOptions` |     2 |     2 |
 | `parse_sfc`       |     2 |     2 |

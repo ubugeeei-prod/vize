@@ -40,7 +40,7 @@ pub use artifact::{
 pub use db::{ResidentDatabase, SourceFile};
 pub use descriptor::{
     DescriptorParseError, DescriptorParseLoc, DescriptorStats, ParsedSfc, ResidentDocuments,
-    SharedDescriptor, parse_descriptor,
+    SharedDescriptor, parse_borrowed_descriptor, parse_descriptor,
 };
 pub use interface::{ComponentSurface, InterfaceStats};
 pub use summary::{

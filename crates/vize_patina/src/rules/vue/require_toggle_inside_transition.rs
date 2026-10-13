@@ -5,9 +5,9 @@
 //! A `<transition>` animates a single child as it enters and leaves the DOM.
 //! That enter/leave only happens when the child is actually toggled. If the
 //! wrapped element is unconditionally present — it has no `v-if`, `v-show`,
-//! `v-else`, `v-else-if`, no `:key` that changes, and is not a dynamic
-//! `<component :is>` — the transition never plays and the `<transition>` is
-//! dead weight.
+//! `v-else`, `v-else-if`, no `:key` that changes, and is a native element
+//! rather than a component — the transition never plays and the `<transition>`
+//! is dead weight.
 //!
 //! This mirrors eslint-plugin-vue's `vue/require-toggle-inside-transition`
 //! (the Vue 3 `essential` preset).
@@ -43,6 +43,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_l0::dom_tag_config::is_native_tag;
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
@@ -120,6 +121,21 @@ impl RequireToggleInsideTransition {
         false
     }
 
+    /// Whether `element` is re-targeted through `is`, `:is` or `v-is`.
+    fn has_is(element: &ElementNode) -> bool {
+        element.props.iter().any(|prop| match prop {
+            PropNode::Attribute(attr) => attr.name == "is",
+            PropNode::Directive(dir) => {
+                dir.name == "is"
+                    || (dir.name == "bind"
+                        && matches!(
+                            dir.arg.as_ref(),
+                            Some(ExpressionNode::Simple(arg)) if arg.content == "is"
+                        ))
+            }
+        })
+    }
+
     /// `<Transition appear>` animates its initial mount without the child being
     /// toggled by `v-if`, `v-show`, or a changing key.
     fn has_appear(element: &ElementNode) -> bool {
@@ -163,9 +179,12 @@ impl Rule for RequireToggleInsideTransition {
             return;
         }
 
-        // `<component :is="...">` is a dynamic component: swapping `is` is itself
-        // an enter/leave, so it always animates.
-        if child.tag == "component" {
+        // The reference rule treats every tag that is not a well-known HTML, SVG
+        // or MathML element as a custom component, whatever its casing and
+        // whether or not the parser resolved it: `<router-view>`,
+        // `<keep-alive>`, `<el-card>`, and the dynamic `<component>`. An `is`
+        // attribute or binding re-targets a native tag the same way.
+        if !is_native_tag(child.tag) || Self::has_is(child) {
             return;
         }
 

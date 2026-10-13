@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { effectScope, nextTick, shallowRef } from "vue";
+import { computed, effectScope, nextTick, shallowRef } from "vue";
 
 import { computedAsync } from "./computed-async.ts";
 
@@ -78,6 +78,32 @@ void test("lazy evaluation starts on first read", async () => {
   await settle();
   assert.equal(runs, 1);
   assert.equal(value.value, 42);
+});
+
+void test("a lazy ref preserves derived consumers and tracked reevaluation", async () => {
+  const input = shallowRef(1);
+  let runs = 0;
+  const value = computedAsync(
+    () => {
+      runs += 1;
+      return input.value * 10;
+    },
+    0,
+    { lazy: true },
+  );
+  const derived = computed(() => value.value * 2);
+  await settle();
+  assert.equal(runs, 0);
+  assert.equal(derived.value, 0);
+  await settle();
+  assert.equal(derived.value, 20);
+  assert.equal(runs, 1);
+  input.value = 2;
+  await settle();
+  assert.equal(derived.value, 40);
+  assert.equal(runs, 2);
+  assert.equal(derived.value, 40);
+  assert.equal(runs, 2);
 });
 
 void test("failures reach onError and keep the previous value", async () => {

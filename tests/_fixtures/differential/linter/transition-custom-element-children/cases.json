@@ -1,0 +1,76 @@
+{
+  "schema": "vize.lint.transition-custom-element-children",
+  "version": 1,
+  "rule": "vue/require-toggle-inside-transition",
+  "upstreamRule": "vue/require-toggle-inside-transition",
+  "upstream": "eslint-plugin-vue 10.9.2",
+  "observed": "Real Project Matrix run 38396999264 (main b197d9de26): 43 false positives across 13 projects, typically a router-view, keep-alive or library component wrapped by <transition>",
+  "cases": [
+    {
+      "id": "router-view",
+      "filename": "router-view.vue",
+      "source": "<template>\n  <div id=\"app\">\n    <transition name=\"router-fade\" mode=\"out-in\">\n      <router-view></router-view>\n    </transition>\n  </div>\n</template>\n",
+      "reported": null
+    },
+    {
+      "id": "keep-alive-router-view",
+      "filename": "keep-alive-router-view.vue",
+      "source": "<template>\n  <transition :name=\"transitionName\">\n    <keep-alive :include=\"cached\">\n      <router-view class=\"view\" />\n    </keep-alive>\n  </transition>\n</template>\n",
+      "reported": null
+    },
+    {
+      "id": "kebab-library-component",
+      "filename": "kebab-library-component.vue",
+      "source": "<template>\n  <transition name=\"el-zoom-in-top\">\n    <el-card shadow=\"never\">content</el-card>\n  </transition>\n</template>\n",
+      "reported": null
+    },
+    {
+      "id": "pascal-builtin-wrapper",
+      "filename": "pascal-builtin-wrapper.vue",
+      "source": "<template>\n  <Transition name=\"fade\">\n    <KeepAlive>\n      <component :is=\"view\" />\n    </KeepAlive>\n  </Transition>\n</template>\n",
+      "reported": null
+    },
+    {
+      "id": "native-retargeted-through-is",
+      "filename": "native-retargeted-through-is.vue",
+      "source": "<template>\n  <transition>\n    <div is=\"vue:side-panel\">content</div>\n  </transition>\n</template>\n",
+      "reported": null
+    },
+    {
+      "id": "native-bound-is",
+      "filename": "native-bound-is.vue",
+      "source": "<template>\n  <transition>\n    <div :is=\"panel\">content</div>\n  </transition>\n</template>\n",
+      "reported": null
+    },
+    {
+      "id": "slot",
+      "filename": "slot.vue",
+      "source": "<template>\n  <transition name=\"fade\">\n    <slot />\n  </transition>\n</template>\n",
+      "reported": null
+    },
+    {
+      "id": "native-html",
+      "filename": "native-html.vue",
+      "source": "<template>\n  <transition name=\"fade\">\n    <section class=\"panel\">content</section>\n  </transition>\n</template>\n",
+      "reported": "<section class=\"panel\">"
+    },
+    {
+      "id": "native-svg",
+      "filename": "native-svg.vue",
+      "source": "<template>\n  <transition>\n    <svg viewBox=\"0 0 1 1\"><path d=\"M0 0\" /></svg>\n  </transition>\n</template>\n",
+      "reported": "<svg viewBox=\"0 0 1 1\">"
+    },
+    {
+      "id": "native-with-unrelated-binding",
+      "filename": "native-with-unrelated-binding.vue",
+      "source": "<template>\n  <transition name=\"fade\">\n    <ul :class=\"classes\"><li>item</li></ul>\n  </transition>\n</template>\n",
+      "reported": "<ul :class=\"classes\">"
+    },
+    {
+      "id": "native-toggled",
+      "filename": "native-toggled.vue",
+      "source": "<template>\n  <transition name=\"fade\">\n    <section v-show=\"open\">content</section>\n  </transition>\n</template>\n",
+      "reported": null
+    }
+  ]
+}

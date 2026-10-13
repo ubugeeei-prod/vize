@@ -101,7 +101,7 @@ const selection = useMultipleCalendarSelection({
 const core = useCalendarCore(props, selection.adapter, root, (date) =>
   emit("update:focusedDate", date),
 );
-const { id, headingId, slotState, direction, state } = core;
+const { id: resolvedId, headingId, slotState, direction, state } = core;
 const isoValues = computed(() => selection.value.value.map((date) => formatIsoDate(date)));
 
 type CalendarMultipleRootSetupExpose = {
@@ -124,7 +124,7 @@ defineExpose(exposed);
 
 <template>
   <div
-    :id
+    :id="resolvedId"
     ref="root"
     role="group"
     :dir="direction"
