@@ -138,18 +138,18 @@ jobs:
           - vize_l1_to_l2
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          fetch-depth: 0
+        with: { fetch-depth: 0 }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: 1.95.0 }
       - uses: ./.github/actions/setup-rust-script
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
       - name: Use candidate version for SemVer classification
         # cargo-semver-checks derives the release type from the bumped version.
         run: |
           : > "$RUNNER_TEMP/semver-change-marker.txt"
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with:
-          wild-version: "0.9.0"
+        with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: semver-checks

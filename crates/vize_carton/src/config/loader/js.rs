@@ -8,7 +8,7 @@
 
 use std::{
     io::{Error as IoError, ErrorKind},
-    path::Path,
+    path::{Path, PathBuf},
     process::Command,
 };
 
@@ -16,6 +16,29 @@ use crate::config::ConfigDocument;
 
 /// Evaluate a JS-like config file through Node and deserialize the result.
 pub(super) fn parse_js_config(path: &Path) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
+    let (config_path, json) = evaluate_js_config(path)?;
+
+    // Public Vite settings permit flat entry arrays. Normalize only that shape
+    // with the same pure Rust projection used by vize/config; ordinary objects
+    // and dedicated config files retain their existing deserialization path.
+    if config_path.file_name().is_some_and(|name| {
+        super::discovery::CONFIG_FILE_NAMES[5..]
+            .iter()
+            .any(|candidate| name == *candidate)
+    }) && json.iter().find(|byte| !byte.is_ascii_whitespace()) == Some(&b'[')
+    {
+        let value = serde_json::from_slice(&json)?;
+        let normalized = crate::config::normalize_public_config_value(value)
+            .map_err(|error| IoError::new(ErrorKind::InvalidData, error))?;
+        return Ok(serde_json::from_value(normalized)?);
+    }
+    super::parse::document_from_json(&json, &config_path)
+}
+
+/// Evaluate a JS-like config file through Node and return its JSON output.
+pub(super) fn evaluate_js_config(
+    path: &Path,
+) -> Result<(PathBuf, Vec<u8>), Box<dyn std::error::Error>> {
     let config_path = if path.is_absolute() {
         path.to_path_buf()
     } else {
@@ -57,23 +80,5 @@ process.stdout.write(JSON.stringify(config ?? {}));
         )));
     }
 
-    // Public Vite settings permit flat entry arrays. Normalize only that shape
-    // with the same pure Rust projection used by vize/config; ordinary objects
-    // and dedicated config files retain their existing deserialization path.
-    if config_path.file_name().is_some_and(|name| {
-        super::discovery::CONFIG_FILE_NAMES[5..]
-            .iter()
-            .any(|candidate| name == *candidate)
-    }) && output
-        .stdout
-        .iter()
-        .find(|byte| !byte.is_ascii_whitespace())
-        == Some(&b'[')
-    {
-        let value = serde_json::from_slice(&output.stdout)?;
-        let normalized = crate::config::normalize_public_config_value(value)
-            .map_err(|error| IoError::new(ErrorKind::InvalidData, error))?;
-        return Ok(serde_json::from_value(normalized)?);
-    }
-    Ok(serde_json::from_slice::<ConfigDocument>(&output.stdout)?)
+    Ok((config_path, output.stdout))
 }

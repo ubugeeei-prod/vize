@@ -152,7 +152,26 @@ impl std::fmt::Display for CorsaNotFoundError {
 impl std::error::Error for CorsaNotFoundError {}
 
 /// Detect the project's package manager.
+///
+/// A workspace package has no lockfile of its own, so the search continues in
+/// the parent directories and the nearest answer wins. It stops at the
+/// repository root: a lockfile above the directory that holds `.git` belongs
+/// to something else. `npm/cli/src/init/detect.ts` mirrors this search.
 pub fn detect_package_manager(project_root: &Path) -> Option<PackageManager> {
+    let absolute = std::path::absolute(project_root);
+    let start = absolute.as_deref().unwrap_or(project_root);
+    for directory in start.ancestors() {
+        if let Some(detected) = detect_package_manager_in(directory) {
+            return Some(detected);
+        }
+        if directory.join(".git").exists() {
+            return None;
+        }
+    }
+    None
+}
+
+fn detect_package_manager_in(project_root: &Path) -> Option<PackageManager> {
     // 1. Detect from lockfile (priority order)
     if project_root.join("pnpm-lock.yaml").exists() {
         return Some(PackageManager::Pnpm);
@@ -196,7 +215,35 @@ pub fn detect_package_manager(project_root: &Path) -> Option<PackageManager> {
 )]
 #[cfg(test)]
 mod tests {
-    use super::{CorsaNotFoundError, PackageManager};
+    use super::{CorsaNotFoundError, PackageManager, detect_package_manager};
+
+    #[test]
+    fn workspace_package_uses_the_workspace_package_manager() {
+        let workspace = tempfile::tempdir().expect("temp workspace");
+        std::fs::create_dir(workspace.path().join(".git")).expect("repository root");
+        std::fs::write(workspace.path().join("pnpm-lock.yaml"), "").expect("lockfile");
+        let package = workspace.path().join("packages").join("app");
+        std::fs::create_dir_all(&package).expect("workspace package");
+        std::fs::write(package.join("package.json"), "{}").expect("package manifest");
+
+        assert_eq!(detect_package_manager(&package), Some(PackageManager::Pnpm));
+
+        std::fs::write(package.join("package-lock.json"), "{}").expect("nearer lockfile");
+        assert_eq!(detect_package_manager(&package), Some(PackageManager::Npm));
+    }
+
+    #[test]
+    fn lockfile_above_the_repository_root_is_ignored() {
+        let outside = tempfile::tempdir().expect("temp directory");
+        std::fs::write(outside.path().join("yarn.lock"), "").expect("unrelated lockfile");
+        let repository = outside.path().join("repository");
+        let package = repository.join("packages").join("app");
+        std::fs::create_dir_all(&package).expect("workspace package");
+        std::fs::create_dir(repository.join(".git")).expect("repository root");
+
+        assert_eq!(detect_package_manager(&repository), None);
+        assert_eq!(detect_package_manager(&package), None);
+    }
 
     #[test]
     fn test_corsa_not_found_error_message() {
