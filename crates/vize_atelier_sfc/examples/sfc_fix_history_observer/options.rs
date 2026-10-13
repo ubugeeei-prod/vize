@@ -77,6 +77,9 @@ pub fn snapshot(
         is_prod,
         is_ts: template_ts,
         custom_renderer,
+        // The recorded workloads predate it and never render Vapor on the
+        // server; `compile_sfc` derives it from the SFC's Vapor request.
+        vapor: _,
         dialect,
         compiler_options,
     } = template;

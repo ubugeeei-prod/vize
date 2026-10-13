@@ -17,6 +17,7 @@ fn published_template_options_literal_preserves_complete_scoped_module() {
         is_prod: false,
         is_ts: false,
         custom_renderer: false,
+        vapor: false,
         dialect: Default::default(),
         compiler_options: None,
     };

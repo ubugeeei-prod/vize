@@ -329,10 +329,10 @@ assert.match(
   /\$setup\.Primitive/,
   "Batch SSR compilation should match single-file binding resolution for lowercase imported components",
 );
-assert.doesNotMatch(
-  batchResult.results[0]?.code ?? "",
-  /__vapor/,
-  "Batch SSR compilation should also drop the Vapor marker when falling back to VDOM",
+assert.equal(
+  (batchResult.results[0]?.code ?? "").match(/__vapor: true/g)?.length,
+  1,
+  "Batch SSR compilation should mark the Vapor component like single-file compilation",
 );
 
 const styleMetadataSource = `<template><div class="root">Styled</div></template>
