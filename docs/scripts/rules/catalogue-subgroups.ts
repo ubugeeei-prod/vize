@@ -155,6 +155,14 @@ export const catalogueSubgroups: Record<
   },
   "vue-template-safety": {
     title: "Vue Rules: Template Safety",
+    jaTitle: "テンプレートの安全性と HTML の構造",
+    jaIntroduction: [
+      "このルール群では、HTML の挿入や URL の指定、属性と ID の重複、textarea・コンポーネントへのテキストの渡し方、HTML の入れ子を確認します。",
+      "",
+      "外部から受け取った値を表示するときや、リンク・フォームを追加するとき、同じコンポーネントを複数表示するときに確認してください。",
+      "",
+      "たとえば、[HTML を挿入せずテキストとして表示する例](./reference/vue-no-v-html.md)と[フォームの ID を生成して関連付ける例](./reference/vue-use-unique-element-ids.md)では、悪い例と良い例の差を確認できます。採用するルールだけを掲載された設定で有効にし、`vp run lint` を実行してください。[Vue の全ルール](./vue.md)から関連するテンプレートの検査も確認できます。",
+    ],
     rules: [
       "vue/no-v-html",
       "vue/no-duplicate-attributes",
