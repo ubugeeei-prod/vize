@@ -1,0 +1,145 @@
+//! Locate the Options API `props` object of a component definition.
+
+use oxc_ast::ast::{
+    Argument, BindingPattern, CallExpression, ExportDefaultDeclarationKind, Expression,
+    ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement,
+};
+use vize_l0::FxHashMap;
+
+pub(super) fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
+    match key {
+        PropertyKey::StaticIdentifier(identifier) => Some(identifier.name.as_str()),
+        PropertyKey::StringLiteral(literal) => Some(literal.value.as_str()),
+        _ => None,
+    }
+}
+
+/// The `props` option object on a resolved component options object, if it is
+/// declared in object form (`props: { ... }`). Array-form `props` carry only
+/// names and are skipped.
+pub(super) fn find_props_object<'a>(
+    options: &'a ObjectExpression<'a>,
+) -> Option<&'a ObjectExpression<'a>> {
+    for property in &options.properties {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            continue;
+        };
+        if property.computed {
+            continue;
+        }
+        if matches!(property_key_name(&property.key), Some("props"))
+            && let Expression::ObjectExpression(object) = &property.value
+        {
+            return Some(object);
+        }
+    }
+    None
+}
+
+// ---------------------------------------------------------------------------
+// Component options resolution (export default / defineComponent).
+//
+// Mirrors the resolution in `no_arrow_functions_in_watch` / `no_dupe_keys`: a
+// plain object, an identifier bound to one, or a `defineComponent(...)` wrapper,
+// optionally through TS expression wrappers.
+// ---------------------------------------------------------------------------
+
+pub(super) fn find_component_options<'a>(
+    program: &'a Program<'a>,
+) -> Option<&'a ObjectExpression<'a>> {
+    let mut bindings: FxHashMap<&'a str, &'a ObjectExpression<'a>> = FxHashMap::default();
+
+    for statement in program.body.iter() {
+        let Statement::VariableDeclaration(declaration) = statement else {
+            continue;
+        };
+        for declarator in &declaration.declarations {
+            let Some(init) = declarator.init.as_ref() else {
+                continue;
+            };
+            if let BindingPattern::BindingIdentifier(id) = &declarator.id
+                && let Some(object) = options_from_expression(init, &bindings)
+            {
+                bindings.insert(id.name.as_str(), object);
+            }
+        }
+    }
+
+    for statement in program.body.iter() {
+        let Statement::ExportDefaultDeclaration(export) = statement else {
+            continue;
+        };
+        if let Some(object) = options_from_export(&export.declaration, &bindings) {
+            return Some(object);
+        }
+    }
+
+    None
+}
+
+fn options_from_export<'a>(
+    declaration: &'a ExportDefaultDeclarationKind<'a>,
+    bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
+) -> Option<&'a ObjectExpression<'a>> {
+    match declaration {
+        ExportDefaultDeclarationKind::ObjectExpression(object) => Some(object),
+        ExportDefaultDeclarationKind::CallExpression(call) => options_from_call(call, bindings),
+        ExportDefaultDeclarationKind::Identifier(identifier) => {
+            bindings.get(identifier.name.as_str()).copied()
+        }
+        ExportDefaultDeclarationKind::ParenthesizedExpression(paren) => {
+            options_from_expression(&paren.expression, bindings)
+        }
+        ExportDefaultDeclarationKind::TSAsExpression(ts_as) => {
+            options_from_expression(&ts_as.expression, bindings)
+        }
+        ExportDefaultDeclarationKind::TSSatisfiesExpression(ts_satisfies) => {
+            options_from_expression(&ts_satisfies.expression, bindings)
+        }
+        ExportDefaultDeclarationKind::TSNonNullExpression(ts_non_null) => {
+            options_from_expression(&ts_non_null.expression, bindings)
+        }
+        _ => None,
+    }
+}
+
+fn options_from_expression<'a>(
+    expression: &'a Expression<'a>,
+    bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
+) -> Option<&'a ObjectExpression<'a>> {
+    match expression {
+        Expression::ObjectExpression(object) => Some(object),
+        Expression::CallExpression(call) => options_from_call(call, bindings),
+        Expression::Identifier(identifier) => bindings.get(identifier.name.as_str()).copied(),
+        Expression::ParenthesizedExpression(paren) => {
+            options_from_expression(&paren.expression, bindings)
+        }
+        Expression::TSAsExpression(ts_as) => options_from_expression(&ts_as.expression, bindings),
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            options_from_expression(&ts_satisfies.expression, bindings)
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            options_from_expression(&ts_non_null.expression, bindings)
+        }
+        _ => None,
+    }
+}
+
+fn options_from_call<'a>(
+    call: &'a CallExpression<'a>,
+    bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
+) -> Option<&'a ObjectExpression<'a>> {
+    let Expression::Identifier(callee) = &call.callee else {
+        return None;
+    };
+    if !matches!(callee.name.as_str(), "defineComponent" | "_defineComponent") {
+        return None;
+    }
+    match call.arguments.first()? {
+        Argument::ObjectExpression(object) => Some(object),
+        Argument::Identifier(identifier) => bindings.get(identifier.name.as_str()).copied(),
+        argument => argument
+            .as_expression()
+            .and_then(|expression| options_from_expression(expression, bindings)),
+    }
+}

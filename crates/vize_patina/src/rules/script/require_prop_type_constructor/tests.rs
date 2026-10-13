@@ -186,3 +186,66 @@ export default {
     let result = create_linter().lint(source, 0);
     assert_eq!(result.error_count, 0);
 }
+
+/// The reference rule's other forbidden node types, in all three positions.
+#[test]
+fn test_invalid_non_string_type_expressions() {
+    for (source, expected) in [
+        (
+            "export default { props: { a: Number | String } }",
+            vec!["Number | String"],
+        ),
+        (
+            "export default { props: { a: { type: String | Object, default: '' } } }",
+            vec!["String | Object"],
+        ),
+        (
+            "export default { props: { a: [1, 2, 3] } }",
+            vec!["1", "2", "3"],
+        ),
+        (
+            "export default { props: { a: 1, b: true } }",
+            vec!["1", "true"],
+        ),
+        (
+            "export default { props: { a: `String`, b: { type: [Number, `Boolean`] } } }",
+            vec!["`String`", "`Boolean`"],
+        ),
+        (
+            "export default { props: { a: { type: count++ } } }",
+            vec!["count++"],
+        ),
+        (
+            "export default defineComponent({ props: { a: Foo + '' } })",
+            vec!["Foo + ''"],
+        ),
+    ] {
+        let result = create_linter().lint(source, 0);
+        let reported: Vec<&str> = result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| &source[diagnostic.start as usize..diagnostic.end as usize])
+            .collect();
+        assert_eq!(reported, expected, "{source}");
+        assert_eq!(result.error_count, expected.len(), "{source}");
+        assert!(result.diagnostics.iter().all(|diagnostic| {
+            diagnostic.rule_name == "script/require-prop-type-constructor"
+                && diagnostic.message.ends_with("should be a constructor.")
+        }));
+    }
+}
+
+#[test]
+fn test_valid_null_logical_and_computed_types() {
+    for source in [
+        "export default { props: { a: null, b: { type: null } } }",
+        "export default { props: { a: [String, null] } }",
+        "export default { props: { a: Foo || String, b: { type: types.Custom } } }",
+        "export default { props: { a: { type: () => String }, b: Object as PropType<Foo> } }",
+        "export default { props: { a: { type: Number, default: 1 }, b: { type: Boolean, default: true } } }",
+        "export default { props: { a: { validator: (value) => value > 1 } } }",
+    ] {
+        let result = create_linter().lint(source, 0);
+        assert_eq!(result.error_count, 0, "{source}: {:?}", result.diagnostics);
+    }
+}
