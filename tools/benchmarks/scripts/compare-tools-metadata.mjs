@@ -9,7 +9,7 @@
 
 import os from "node:os";
 
-import { buildFairnessNotes } from "./benchmark-notes.mjs";
+import { buildFairnessNotes } from "./benchmark-notes.ts";
 import { collectBinaryHashes, collectVersions } from "./benchmark-provenance.mjs";
 
 export const BLACKSMITH_MAX_LABEL = "blacksmith-32vcpu-ubuntu-2404";

@@ -35,7 +35,7 @@ test("Rust inventory retains explicitly registered custom harnesses and ordinary
 
     const inventoryPath = path.join(root, "inventory.json");
     const script = fileURLToPath(
-      new URL("../../tools/benchmarks/scripts/test-inventory.mjs", import.meta.url),
+      new URL("../../tools/benchmarks/scripts/test-inventory.ts", import.meta.url),
     );
     execFileSync(process.execPath, [script, "--json", inventoryPath], { cwd: root });
     const inventory = JSON.parse(fs.readFileSync(inventoryPath, "utf8")) as {

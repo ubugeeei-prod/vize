@@ -5,8 +5,14 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { gunzipSync } from "node:zlib";
 import { sha256 } from "./lint-default-correctness-reference.mjs";
+import {
+  composeInheritanceDocument,
+  decodeInheritanceBody,
+  loadInheritanceDocumentation,
+} from "./support/attribute-inheritance-documentation-custody.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const inheritance = loadInheritanceDocumentation(root);
 await test("private import example changes only its three whole explain snapshots", () => {
   const fixture = path.join(root, "tests/_fixtures/differential/lint/public-vue-imports-8090");
   const primary = JSON.parse(fs.readFileSync(path.join(fixture, "primary-sources.json")));
@@ -39,9 +45,14 @@ await test("private import example changes only its three whole explain snapshot
         marker,
         valid.map((line) => `  ${line}`).join("\n") + "\n=== script/prefer-ref-over-reactive",
       );
+    // Retain the complete original private-import successor before composing
+    // the separately named, whole nested-attribute-inheritance successor.
+    assert.equal(sha256(expected), row.afterSha256);
+    assert.equal(Buffer.byteLength(expected), row.afterBytes);
+    const inherited = inheritance.documents.find((item) => item.path === row.path);
+    assert(inherited);
+    assert.equal(decodeInheritanceBody(inherited.before).toString("utf8"), expected);
     const after = fs.readFileSync(path.join(root, row.path));
-    assert.equal(after.toString("utf8"), expected);
-    assert.equal(sha256(after), row.afterSha256);
-    assert.equal(after.length, row.afterBytes);
+    assert.equal(after.toString("utf8"), composeInheritanceDocument(expected, row.path));
   }
 });

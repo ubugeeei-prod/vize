@@ -10,7 +10,7 @@ import {
   clearPrecompileCache,
   precompileCacheDir,
   readPrecompileCacheEntries,
-} from "../../tools/benchmarks/scripts/vite-precompile-cache.mjs";
+} from "../../tools/benchmarks/scripts/vite-precompile-cache.ts";
 
 function withTempRoot(fn: (root: string) => void): void {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-bench-vite-cache-"));

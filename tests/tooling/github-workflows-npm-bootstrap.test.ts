@@ -81,7 +81,7 @@ test("npm bootstrap validates an exact tag before building with existing release
   const testPackage = steps.find(
     (step) => step.name === "Test and build package at the dispatch SHA",
   );
-  assert.match(install?.run ?? "", /tools\/moon\/cmd\/github\/vp_install/);
+  assert.match(install?.run ?? "", /node tools\/support\/github\/vp-install\.ts /);
   assert.match(testPackage?.run ?? "", /vp run --filter .* test/);
 
   const download = steps.find(

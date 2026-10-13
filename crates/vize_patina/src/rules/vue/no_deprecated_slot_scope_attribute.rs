@@ -57,7 +57,7 @@ impl Rule for NoDeprecatedSlotScopeAttribute {
             {
                 ctx.error_with_help(
                     ctx.t("vue/no-deprecated-slot-scope-attribute.message"),
-                    &attr.loc,
+                    &attr.name_loc,
                     ctx.t("vue/no-deprecated-slot-scope-attribute.help"),
                 );
             }

@@ -287,6 +287,7 @@ export function executeCacheAction(
       const args = Object.fromEntries(
         Object.entries(step.with).map(([key, expr]) => [key, value(expr, inputs, outputs)]),
       );
+      if (step.uses === "./.github/actions/reuse-rust-target") continue; // own test file
       const path = String(args.path);
       const name = path.endsWith("registry")
         ? "registry"
@@ -296,7 +297,8 @@ export function executeCacheAction(
             ? "secondary"
             : "target";
       if (step.uses.startsWith("useblacksmith/stickydisk@")) {
-        const request = { name, key: args.key, path, fail: mountFailures.includes(name) };
+        const fail = mountFailures.includes(name);
+        const request = { name, key: args.key, path, commit: args.commit, fail };
         child({ kind: "sticky", ...request });
         posts.push({ kind: "sticky-post", ...request });
       } else if (

@@ -2,7 +2,7 @@
 //!
 //! Require `v-bind:key` with `v-for` directives.
 //!
-//! This rule reports elements using `v-for` without a `:key` attribute.
+//! This rule reports native elements using `v-for` without a `:key` attribute.
 //! The key attribute is essential for Vue's virtual DOM diffing algorithm
 //! to efficiently update the DOM when the list changes.
 //!
@@ -32,6 +32,14 @@ use oxc_span::{GetSpan, SourceType};
 use vize_l0::ensure_sufficient_stack;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode, TemplateChildNode};
 
+mod components;
+
+pub(super) use components::relief_element_is_custom_component;
+use components::{
+    has_markup_native_child, markup_element_is_custom_component, relief_has_native_child,
+    relief_template_has_slot_directive,
+};
+
 static META: RuleMeta = RuleMeta {
     name: "vue/require-v-for-key",
     description: "Require `v-bind:key` with `v-for` directives",
@@ -49,6 +57,7 @@ impl RequireVForKey {
         ctx: &mut MarkupContext<'_, 'a>,
         element: &MarkupElement<'a>,
         range: ByteRange,
+        template_directive: bool,
     ) {
         // petite-vue does not require a `:key` on `v-for`.
         if ctx.lint().is_petite_vue() {
@@ -59,10 +68,14 @@ impl RequireVForKey {
             return;
         }
         if element.tag() == "template" || (!exact && element.is_tag("template")) {
-            if has_markup_template_v_for_key(element, exact) {
+            if has_markup_template_v_for_key(element, exact)
+                || (template_directive && !has_markup_native_child(element, exact))
+            {
                 return;
             }
-        } else if has_markup_key(element, exact) {
+        } else if has_markup_key(element, exact)
+            || (template_directive && markup_element_is_custom_component(element))
+        {
             return;
         }
 
@@ -242,15 +255,6 @@ fn relief_child_has_bound_key(element: &ElementNode<'_>) -> bool {
     })
 }
 
-fn relief_template_has_slot_directive(element: &ElementNode<'_>) -> bool {
-    element.props.iter().any(|prop| {
-        matches!(
-            prop,
-            PropNode::Directive(directive) if directive.name == "slot"
-        )
-    })
-}
-
 /// Markup-IR entry point for `vue/require-v-for-key`.
 ///
 /// Demonstrates the unified rule IR: the same logic runs over a Vue template
@@ -270,8 +274,9 @@ impl MarkupRule for RequireVForKey {
     }
 
     fn enter_attributes<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        let template_directive = ctx.is_template();
         element.walk_authored_directive_ranges("for", &mut |range| {
-            Self::check_keyed_element(ctx, element, range);
+            Self::check_keyed_element(ctx, element, range, template_directive);
         });
     }
 
@@ -281,7 +286,7 @@ impl MarkupRule for RequireVForKey {
         }
         // Transformed scopes carry no authored directive attribute.
         list.walk_elements(&mut |element| {
-            Self::check_keyed_element(ctx, &element, element.range());
+            Self::check_keyed_element(ctx, &element, element.range(), false);
         });
     }
 }
@@ -320,10 +325,13 @@ impl Rule for RequireVForKey {
         }
 
         if element.tag == "template" {
-            if relief_template_v_for_has_key(element) {
+            if relief_template_v_for_has_key(element) || !relief_has_native_child(element) {
                 return;
             }
-        } else if element.tag == "slot" || relief_element_has_key(element) {
+        } else if element.tag == "slot"
+            || relief_element_has_key(element)
+            || relief_element_is_custom_component(element)
+        {
             return;
         }
 

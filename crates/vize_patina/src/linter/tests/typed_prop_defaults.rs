@@ -19,7 +19,7 @@ fn whole(result: &LintResult) -> Value {
 #[test]
 fn typed_prop_defaults_reach_default_sfc_dispatch_with_complete_controls() {
     let corpus: Value = serde_json::from_str(include_str!(
-        "../../../../../tests/_fixtures/differential/lint/typed-prop-default-prefilter-8564/cases.json"
+        "../../../../../tests/_fixtures/differential/lint/typed-prop-default-prefilter-8564/current-range-cases.json"
     ))
     .unwrap();
     let rule = corpus["rule"].as_str().unwrap();

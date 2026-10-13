@@ -18,6 +18,8 @@ mod require_valid_default_prop;
 mod return_in_emits_validator;
 mod template_emits;
 
+pub(crate) use props_source::collect_options_props;
+
 pub use no_required_prop_with_default::NoRequiredPropWithDefault;
 pub use no_reserved_props::NoReservedProps;
 pub use no_unused_emit_declarations::NoUnusedEmitDeclarations;

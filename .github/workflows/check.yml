@@ -566,7 +566,6 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable, targets: wasm32-unknown-unknown }
-      - uses: ./.github/actions/setup-moonbit
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: playground-test
@@ -576,23 +575,23 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: playground/src/wasm/vize_vitrine* # outputs only; tests/tooling/github-wasm-cache.test.ts
-          key: ${{ runner.os }}-wasm-v2-${{ hashFiles('crates/**/*.rs', 'davinci/**/*.rs', 'crates/**/Cargo.toml', 'davinci/**/Cargo.toml', 'Cargo.toml', 'Cargo.lock', 'tools/moon/cmd/github/build_vitrine_wasm/**') }}
+          key: ${{ runner.os }}-wasm-v2-${{ hashFiles('crates/**/*.rs', 'davinci/**/*.rs', 'crates/**/Cargo.toml', 'davinci/**/Cargo.toml', 'Cargo.toml', 'Cargo.lock', 'tools/support/github/build-vitrine-wasm.ts', 'tools/support/tasks/build-vitrine-wasm.ts', 'tools/support/command-runtime.ts') }}
       - name: Install wasm-bindgen-cli
         if: steps.cache-wasm.outputs.cache-hit != 'true'
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
           tool: wasm-bindgen-cli@0.2.127
-      - name: Build WASM
-        if: steps.cache-wasm.outputs.cache-hit != 'true'
-        run: moon run --target native tools/moon/cmd/github/build_vitrine_wasm -- playground/src/wasm
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: "package.json"
           cache: true
           run-install: false
+      - name: Build WASM
+        if: steps.cache-wasm.outputs.cache-hit != 'true'
+        run: node tools/support/github/build-vitrine-wasm.ts playground/src/wasm
       - name: Install JS dependencies
-        run: moon run --target native tools/moon/cmd/github/vp_install -- --filter './playground...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' --filter './npm/ui...'
+        run: node tools/support/github/vp-install.ts --filter './playground...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' --filter './npm/ui...'
       - name: Download shared JS build artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:

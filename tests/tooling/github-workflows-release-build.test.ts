@@ -217,7 +217,7 @@ test("release workflow bundles fresco-native binaries into the root package inst
   );
   assert.match(
     frescoJob,
-    /Stage bundled native binaries[\s\S]*moon run --target native tools\/moon\/cmd\/github\/collect_native_artifacts --/,
+    /Stage bundled native binaries[\s\S]*node tools\/support\/github\/collect-native-artifacts\.ts /,
   );
   assert.doesNotMatch(frescoJob, /napi create-npm-dirs/);
   assert.doesNotMatch(frescoJob, /tools\/moon\/cmd\/publish_npm_package_dirs/);
@@ -249,7 +249,7 @@ test("release workflow tunes Windows production Rust builds for cold runners", (
   );
   assert.match(
     workflow,
-    /Tune Windows release profile[\s\S]*Build vize-native[\s\S]*moon run --target native tools\/moon\/cmd\/github\/build_napi_package --/,
+    /Tune Windows release profile[\s\S]*Build vize-native[\s\S]*node tools\/support\/github\/build-napi-package\.ts /,
   );
 });
 
@@ -270,7 +270,7 @@ test("release workflow inspects musl CLI binaries while archiving", () => {
   );
   assert.match(
     buildCliJob,
-    /verify-musl-cli-binary\.rs[\s\S]*tools\/moon\/cmd\/github\/create_cli_archive/,
+    /verify-musl-cli-binary\.rs[\s\S]*tools\/support\/github\/create-cli-archive\.ts/,
   );
   assert.match(verifier, /command_output\("readelf", &\["-l", binary_text\]\)/);
   assert.match(verifier, /Requesting program interpreter/);
@@ -284,15 +284,15 @@ test("release workflow runs GitHub helper scripts with the native target on ever
   assert.doesNotMatch(workflow, /MOON_HELPER_TARGET/);
   assert.match(
     workflow,
-    /Install cross-compilation tools \(Linux ARM64\)[\s\S]*moon run --target native tools\/moon\/cmd\/github\/install_cross_compile_tools --/,
+    /Install cross-compilation tools \(Linux ARM64\)[\s\S]*node tools\/support\/github\/install-cross-compile-tools\.ts/,
   );
   assert.match(
     workflow,
-    /Create archive \(Windows\)[\s\S]*moon run --target native tools\/moon\/cmd\/github\/create_cli_archive -- \$\{\{ matrix\.settings\.target \}\} \$\{\{ matrix\.settings\.archive \}\} vize\.exe/,
+    /Create archive \(Windows\)[\s\S]*node tools\/support\/github\/create-cli-archive\.ts \$\{\{ matrix\.settings\.target \}\} \$\{\{ matrix\.settings\.archive \}\} vize\.exe/,
   );
   assert.match(
     workflow,
-    /Build vize-native[\s\S]*moon run --target native tools\/moon\/cmd\/github\/build_napi_package -- npm\/native/,
+    /Build vize-native[\s\S]*node tools\/support\/github\/build-napi-package\.ts npm\/native/,
   );
 });
 

@@ -58,7 +58,7 @@ jobs:
 
       - name: Replay the upstream corpus against current main
         run: |
-          node tools/benchmarks/scripts/vue-benchmarks-replay.mjs \
+          node tools/benchmarks/scripts/vue-benchmarks-replay.ts \
             --vize-bin target/ci/vize \
             --expect tools/benchmarks/scripts/vue-benchmarks-replay-expect-main.json \
             --json replay-main-results.json
@@ -97,7 +97,7 @@ jobs:
 
       - name: Replay the upstream corpus against the latest release
         run: |
-          node tools/benchmarks/scripts/vue-benchmarks-replay.mjs \
+          node tools/benchmarks/scripts/vue-benchmarks-replay.ts \
             --vize-bin "$RUNNER_TEMP/vize-release/node_modules/.bin/vize" \
             --expect tools/benchmarks/scripts/vue-benchmarks-replay-expect-release.json \
             --json replay-release-results.json

@@ -181,7 +181,11 @@ void test("Linux X64 uses the pinned producer tuple and installs the exact benig
     const helperArgs = run.read("helper.log").trim().split("\n");
     assert.equal(helperArgs[0], helper);
     assert.equal(helperArgs.at(-1), pinnedDigest);
-    assert.deepEqual(run.read("curl.log").trim().split("\n"), [
+    const curlArgs = run.read("curl.log").trim().split("\n");
+    const staging = curlArgs[curlArgs.indexOf("--output") + 1];
+    assert.equal(staging.slice(0, helperArgs[1].length), helperArgs[1]);
+    assert.match(staging.slice(helperArgs[1].length), /^\.partial\.[A-Za-z0-9]{6}$/);
+    assert.deepEqual(curlArgs, [
       "--fail",
       "--silent",
       "--show-error",
@@ -189,8 +193,16 @@ void test("Linux X64 uses the pinned producer tuple and installs the exact benig
       "--proto",
       "=https",
       "--tlsv1.2",
+      "--connect-timeout",
+      "10",
+      "--max-time",
+      "30",
+      "--speed-limit",
+      "1",
+      "--speed-time",
+      "5",
       "--output",
-      helperArgs[1],
+      staging,
       "--write-out",
       "%{http_code}",
       "https://github.com/fornwall/rust-script/releases/download/0.34.0/rust-script-x86_64-unknown-linux-gnu.tar.gz",

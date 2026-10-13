@@ -1,0 +1,982 @@
+{
+  "referenceVersion": "10.9.2",
+  "referencePackage": "eslint-plugin-vue",
+  "originalMatrix": {
+    "run": 38331707741,
+    "source": "2817a0aa13518dd46c16bc8bf56ac831f68c24dc",
+    "project": "vue-element-admin",
+    "revision": "6858a9ad67483025f6a9432a926beb9327037be3",
+    "budget": {
+      "falsePositives": 0,
+      "falseNegatives": 0
+    }
+  },
+  "originalObservations": {
+    "headSha": "2817a0aa13518dd46c16bc8bf56ac831f68c24dc",
+    "declaredOriginalFixtureRevision": "6858a9ad67483025f6a9432a926beb9327037be3",
+    "scope": "Whole exact public Git bodies at original authenticated registry/report fixture revision; no runner physical-body hash claim.",
+    "rows": [
+      {
+        "sourcePath": "src/components/ErrorLog/index.vue",
+        "local": "/tmp/vize-release448-H2817-pinned-sfcs/vue-element-admin--src--components--ErrorLog--index.vue",
+        "revision": "6858a9ad67483025f6a9432a926beb9327037be3",
+        "bytes": 2134,
+        "gitBlob": "6119c0374f351b4a8f2286f5ae8cd1dbcf050ed6",
+        "sha256": "87df51df16f392349664047160ecf6b99de27f22d8c9557625ab27acd4ef0dfd",
+        "originalPairs": [
+          {
+            "column": 25,
+            "endColumn": 29,
+            "endLine": 9,
+            "file": "src/components/ErrorLog/index.vue",
+            "line": 9,
+            "message": "[vize:vue/no-deprecated-v-bind-sync] the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+            "ruleId": "vue/no-deprecated-v-bind-sync",
+            "severity": "error"
+          },
+          {
+            "column": 21,
+            "endColumn": 39,
+            "endLine": 16,
+            "file": "src/components/ErrorLog/index.vue",
+            "line": 16,
+            "message": "[vize:vue/no-deprecated-slot-scope-attribute] the `slot-scope` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "ruleId": "vue/no-deprecated-slot-scope-attribute",
+            "severity": "error"
+          },
+          {
+            "column": 21,
+            "endColumn": 39,
+            "endLine": 40,
+            "file": "src/components/ErrorLog/index.vue",
+            "line": 40,
+            "message": "[vize:vue/no-deprecated-slot-scope-attribute] the `slot-scope` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "ruleId": "vue/no-deprecated-slot-scope-attribute",
+            "severity": "error"
+          },
+          {
+            "column": 16,
+            "endColumn": 50,
+            "endLine": 9,
+            "file": "src/components/ErrorLog/index.vue",
+            "line": 9,
+            "message": "'.sync' modifier on 'v-bind' directive is deprecated. Use 'v-model:propName' instead.",
+            "ruleId": "vue/no-deprecated-v-bind-sync",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-v-bind-sync"
+          },
+          {
+            "column": 21,
+            "endColumn": 31,
+            "endLine": 16,
+            "file": "src/components/ErrorLog/index.vue",
+            "line": 16,
+            "message": "`slot-scope` are deprecated.",
+            "ruleId": "vue/no-deprecated-slot-scope-attribute",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-slot-scope-attribute"
+          },
+          {
+            "column": 21,
+            "endColumn": 31,
+            "endLine": 40,
+            "file": "src/components/ErrorLog/index.vue",
+            "line": 40,
+            "message": "`slot-scope` are deprecated.",
+            "ruleId": "vue/no-deprecated-slot-scope-attribute",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-slot-scope-attribute"
+          }
+        ]
+      },
+      {
+        "sourcePath": "src/views/nested/menu1/menu1-2/menu1-2-1/index.vue",
+        "local": "/tmp/vize-release448-H2817-pinned-sfcs/vue-element-admin--src--views--nested--menu1--menu1-2--menu1-2-1--index.vue",
+        "revision": "6858a9ad67483025f6a9432a926beb9327037be3",
+        "bytes": 142,
+        "gitBlob": "f87d88f4908681b45eae1fbb26389b86b5f9cc1d",
+        "sha256": "c10fe506b6bb2737584b1ba87cd0e626964247e03df476b8114a29b18de5c1c3",
+        "originalPairs": [
+          {
+            "column": 1,
+            "endColumn": 22,
+            "endLine": 1,
+            "file": "src/views/nested/menu1/menu1-2/menu1-2-1/index.vue",
+            "line": 1,
+            "message": "[vize:vue/no-deprecated-functional-template] the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+            "ruleId": "vue/no-deprecated-functional-template",
+            "severity": "error"
+          },
+          {
+            "column": 11,
+            "endColumn": 21,
+            "endLine": 1,
+            "file": "src/views/nested/menu1/menu1-2/menu1-2-1/index.vue",
+            "line": 1,
+            "message": "The `functional` template are deprecated.",
+            "ruleId": "vue/no-deprecated-functional-template",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-functional-template"
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "original-error-log",
+      "source": "<template>\n  <div v-if=\"errorLogs.length>0\">\n    <el-badge :is-dot=\"true\" style=\"line-height: 25px;margin-top: -5px;\" @click.native=\"dialogTableVisible=true\">\n      <el-button style=\"padding: 8px 10px;\" size=\"small\" type=\"danger\">\n        <svg-icon icon-class=\"bug\" />\n      </el-button>\n    </el-badge>\n\n    <el-dialog :visible.sync=\"dialogTableVisible\" width=\"80%\" append-to-body>\n      <div slot=\"title\">\n        <span style=\"padding-right: 10px;\">Error Log</span>\n        <el-button size=\"mini\" type=\"primary\" icon=\"el-icon-delete\" @click=\"clearAll\">Clear All</el-button>\n      </div>\n      <el-table :data=\"errorLogs\" border>\n        <el-table-column label=\"Message\">\n          <template slot-scope=\"{row}\">\n            <div>\n              <span class=\"message-title\">Msg:</span>\n              <el-tag type=\"danger\">\n                {{ row.err.message }}\n              </el-tag>\n            </div>\n            <br>\n            <div>\n              <span class=\"message-title\" style=\"padding-right: 10px;\">Info: </span>\n              <el-tag type=\"warning\">\n                {{ row.vm.$vnode.tag }} error in {{ row.info }}\n              </el-tag>\n            </div>\n            <br>\n            <div>\n              <span class=\"message-title\" style=\"padding-right: 16px;\">Url: </span>\n              <el-tag type=\"success\">\n                {{ row.url }}\n              </el-tag>\n            </div>\n          </template>\n        </el-table-column>\n        <el-table-column label=\"Stack\">\n          <template slot-scope=\"scope\">\n            {{ scope.row.err.stack }}\n          </template>\n        </el-table-column>\n      </el-table>\n    </el-dialog>\n  </div>\n</template>\n\n<script>\nexport default {\n  name: 'ErrorLog',\n  data() {\n    return {\n      dialogTableVisible: false\n    }\n  },\n  computed: {\n    errorLogs() {\n      return this.$store.getters.errorLogs\n    }\n  },\n  methods: {\n    clearAll() {\n      this.dialogTableVisible = false\n      this.$store.dispatch('errorLog/clearErrorLog')\n    }\n  }\n}\n</script>\n\n<style scoped>\n.message-title {\n  font-size: 16px;\n  color: #333;\n  font-weight: bold;\n  padding-right: 8px;\n}\n</style>\n",
+      "filename": "original-error-log.vue",
+      "mode": "sfc",
+      "reference": [
+        {
+          "ruleId": "vue/no-deprecated-v-bind-sync",
+          "severity": 2,
+          "message": "'.sync' modifier on 'v-bind' directive is deprecated. Use 'v-model:propName' instead.",
+          "line": 9,
+          "column": 16,
+          "messageId": "syncModifierIsDeprecated",
+          "endLine": 9,
+          "endColumn": 50,
+          "fix": {
+            "range": [
+              320,
+              333
+            ],
+            "text": "v-model:visible"
+          }
+        },
+        {
+          "ruleId": "vue/no-deprecated-slot-scope-attribute",
+          "severity": 2,
+          "message": "`slot-scope` are deprecated.",
+          "line": 16,
+          "column": 21,
+          "messageId": "forbiddenSlotScopeAttribute",
+          "endLine": 16,
+          "endColumn": 31,
+          "fix": {
+            "range": [
+              693,
+              711
+            ],
+            "text": "v-slot=\"{row}\""
+          }
+        },
+        {
+          "ruleId": "vue/no-deprecated-slot-scope-attribute",
+          "severity": 2,
+          "message": "`slot-scope` are deprecated.",
+          "line": 40,
+          "column": 21,
+          "messageId": "forbiddenSlotScopeAttribute",
+          "endLine": 40,
+          "endColumn": 31,
+          "fix": {
+            "range": [
+              1507,
+              1525
+            ],
+            "text": "v-slot=\"scope\""
+          }
+        }
+      ],
+      "expected": {
+        "filename": "original-error-log.vue",
+        "error_count": 3,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-deprecated-v-bind-sync",
+            "severity": "error",
+            "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+            "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+            "start": 320,
+            "end": 354,
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "vue/no-deprecated-slot-scope-attribute",
+            "severity": "error",
+            "message": "the `slot-scope` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "help": "Use `v-slot` instead (e.g. `<template v-slot=\"props\">`).",
+            "start": 693,
+            "end": 703,
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "vue/no-deprecated-slot-scope-attribute",
+            "severity": "error",
+            "message": "the `slot-scope` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "help": "Use `v-slot` instead (e.g. `<template v-slot=\"props\">`).",
+            "start": 1507,
+            "end": 1517,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "original-functional-menu",
+      "source": "<template functional>\n  <div style=\"padding:30px;\">\n    <el-alert :closable=\"false\" title=\"menu 1-2-1\" type=\"warning\" />\n  </div>\n</template>\n",
+      "filename": "original-functional-menu.vue",
+      "mode": "sfc",
+      "reference": [
+        {
+          "ruleId": "vue/no-deprecated-functional-template",
+          "severity": 2,
+          "message": "The `functional` template are deprecated.",
+          "line": 1,
+          "column": 11,
+          "messageId": "unexpected",
+          "endLine": 1,
+          "endColumn": 21
+        }
+      ],
+      "expected": {
+        "filename": "original-functional-menu.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-deprecated-functional-template",
+            "severity": "error",
+            "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+            "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+            "start": 10,
+            "end": 20,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "sync-shorthand",
+      "source": "<template><Widget :title.sync=\"title\" /></template>",
+      "filename": "sync-shorthand.vue",
+      "mode": "sfc",
+      "reference": [
+        {
+          "ruleId": "vue/no-deprecated-v-bind-sync",
+          "severity": 2,
+          "message": "'.sync' modifier on 'v-bind' directive is deprecated. Use 'v-model:propName' instead.",
+          "line": 1,
+          "column": 19,
+          "messageId": "syncModifierIsDeprecated",
+          "endLine": 1,
+          "endColumn": 38,
+          "fix": {
+            "range": [
+              18,
+              29
+            ],
+            "text": "v-model:title"
+          }
+        }
+      ],
+      "expected": {
+        "filename": "sync-shorthand.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-deprecated-v-bind-sync",
+            "severity": "error",
+            "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+            "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+            "start": 18,
+            "end": 37,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "sync-long-multiple-modifiers",
+      "source": "<template><Widget v-bind:title.sync.camel=\"title\" /></template>",
+      "filename": "sync-long-multiple-modifiers.vue",
+      "mode": "sfc",
+      "reference": [
+        {
+          "ruleId": "vue/no-deprecated-v-bind-sync",
+          "severity": 2,
+          "message": "'.sync' modifier on 'v-bind' directive is deprecated. Use 'v-model:propName' instead.",
+          "line": 1,
+          "column": 19,
+          "messageId": "syncModifierIsDeprecated",
+          "endLine": 1,
+          "endColumn": 50
+        }
+      ],
+      "expected": {
+        "filename": "sync-long-multiple-modifiers.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-deprecated-v-bind-sync",
+            "severity": "error",
+            "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+            "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+            "start": 18,
+            "end": 49,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "sync-argumentless",
+      "source": "<template><Widget v-bind.sync=\"attrs\" /></template>",
+      "filename": "sync-argumentless.vue",
+      "mode": "sfc",
+      "reference": [
+        {
+          "ruleId": "vue/no-deprecated-v-bind-sync",
+          "severity": 2,
+          "message": "'.sync' modifier on 'v-bind' directive is deprecated. Use 'v-model:propName' instead.",
+          "line": 1,
+          "column": 19,
+          "messageId": "syncModifierIsDeprecated",
+          "endLine": 1,
+          "endColumn": 38
+        }
+      ],
+      "expected": {
+        "filename": "sync-argumentless.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-deprecated-v-bind-sync",
+            "severity": "error",
+            "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+            "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+            "start": 18,
+            "end": 37,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "sync-dynamic-argument",
+      "source": "<template><Widget v-bind:[name].sync=\"title\" /></template>",
+      "filename": "sync-dynamic-argument.vue",
+      "mode": "sfc",
+      "reference": [
+        {
+          "ruleId": "vue/no-deprecated-v-bind-sync",
+          "severity": 2,
+          "message": "'.sync' modifier on 'v-bind' directive is deprecated. Use 'v-model:propName' instead.",
+          "line": 1,
+          "column": 19,
+          "messageId": "syncModifierIsDeprecated",
+          "endLine": 1,
+          "endColumn": 45,
+          "fix": {
+            "range": [
+              18,
+              36
+            ],
+            "text": "v-model:[name]"
+          }
+        }
+      ],
+      "expected": {
+        "filename": "sync-dynamic-argument.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-deprecated-v-bind-sync",
+            "severity": "error",
+            "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+            "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+            "start": 18,
+            "end": 44,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "sync-multiline-value",
+      "source": "<template>\n<Widget :title.sync=\"\n title\n\" />\n</template>",
+      "filename": "sync-multiline-value.vue",
+      "mode": "sfc",
+      "reference": [
+        {
+          "ruleId": "vue/no-deprecated-v-bind-sync",
+          "severity": 2,
+          "message": "'.sync' modifier on 'v-bind' directive is deprecated. Use 'v-model:propName' instead.",
+          "line": 2,
+          "column": 9,
+          "messageId": "syncModifierIsDeprecated",
+          "endLine": 4,
+          "endColumn": 2,
+          "fix": {
+            "range": [
+              19,
+              30
+            ],
+            "text": "v-model:title"
+          }
+        }
+      ],
+      "expected": {
+        "filename": "sync-multiline-value.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-deprecated-v-bind-sync",
+            "severity": "error",
+            "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+            "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+            "start": 19,
+            "end": 41,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "sync-unicode-prefix-and-value",
+      "source": "<!-- 🌸 -->\n<template><Widget label=\"花\" :title.sync=\"'🌸'\" /></template>",
+      "filename": "sync-unicode-prefix-and-value.vue",
+      "mode": "sfc",
+      "reference": [
+        {
+          "ruleId": "vue/no-deprecated-v-bind-sync",
+          "severity": 2,
+          "message": "'.sync' modifier on 'v-bind' directive is deprecated. Use 'v-model:propName' instead.",
+          "line": 2,
+          "column": 29,
+          "messageId": "syncModifierIsDeprecated",
+          "endLine": 2,
+          "endColumn": 47,
+          "fix": {
+            "range": [
+              40,
+              51
+            ],
+            "text": "v-model:title"
+          }
+        }
+      ],
+      "expected": {
+        "filename": "sync-unicode-prefix-and-value.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-deprecated-v-bind-sync",
+            "severity": "error",
+            "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+            "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+            "start": 44,
+            "end": 64,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "slot-scope-bare",
+      "source": "<template><Widget><template slot-scope><span /></template></Widget></template>",
+      "filename": "slot-scope-bare.vue",
+      "mode": "sfc",
+      "reference": [
+        {
+          "ruleId": "vue/no-deprecated-slot-scope-attribute",
+          "severity": 2,
+          "message": "`slot-scope` are deprecated.",
+          "line": 1,
+          "column": 29,
+          "messageId": "forbiddenSlotScopeAttribute",
+          "endLine": 1,
+          "endColumn": 39,
+          "fix": {
+            "range": [
+              28,
+              38
+            ],
+            "text": "v-slot"
+          }
+        }
+      ],
+      "expected": {
+        "filename": "slot-scope-bare.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-deprecated-slot-scope-attribute",
+            "severity": "error",
+            "message": "the `slot-scope` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "help": "Use `v-slot` instead (e.g. `<template v-slot=\"props\">`).",
+            "start": 28,
+            "end": 38,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "slot-scope-multiline",
+      "source": "<template>\r\n<Widget><template slot-scope=\"{\r\n value\r\n}\">{{ value }}</template></Widget>\r\n</template>",
+      "filename": "slot-scope-multiline.vue",
+      "mode": "sfc",
+      "reference": [
+        {
+          "ruleId": "vue/no-deprecated-slot-scope-attribute",
+          "severity": 2,
+          "message": "`slot-scope` are deprecated.",
+          "line": 2,
+          "column": 19,
+          "messageId": "forbiddenSlotScopeAttribute",
+          "endLine": 2,
+          "endColumn": 29,
+          "fix": {
+            "range": [
+              30,
+              55
+            ],
+            "text": "v-slot=\"{\r\n value\r\n}\""
+          }
+        }
+      ],
+      "expected": {
+        "filename": "slot-scope-multiline.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-deprecated-slot-scope-attribute",
+            "severity": "error",
+            "message": "the `slot-scope` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "help": "Use `v-slot` instead (e.g. `<template v-slot=\"props\">`).",
+            "start": 30,
+            "end": 40,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "functional-decoy-value",
+      "source": "<template data-note=\"functional >\" functional><div /></template>",
+      "filename": "functional-decoy-value.vue",
+      "mode": "sfc",
+      "reference": [
+        {
+          "ruleId": "vue/no-deprecated-functional-template",
+          "severity": 2,
+          "message": "The `functional` template are deprecated.",
+          "line": 1,
+          "column": 36,
+          "messageId": "unexpected",
+          "endLine": 1,
+          "endColumn": 46
+        }
+      ],
+      "expected": {
+        "filename": "functional-decoy-value.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-deprecated-functional-template",
+            "severity": "error",
+            "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+            "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+            "start": 35,
+            "end": 45,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "functional-quoted-value",
+      "source": "<template\n lang=\"html\"\n functional = \"yes\">\n<div />\n</template>",
+      "filename": "functional-quoted-value.vue",
+      "mode": "sfc",
+      "reference": [
+        {
+          "ruleId": "vue/no-deprecated-functional-template",
+          "severity": 2,
+          "message": "The `functional` template are deprecated.",
+          "line": 3,
+          "column": 2,
+          "messageId": "unexpected",
+          "endLine": 3,
+          "endColumn": 20
+        }
+      ],
+      "expected": {
+        "filename": "functional-quoted-value.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-deprecated-functional-template",
+            "severity": "error",
+            "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+            "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+            "start": 24,
+            "end": 42,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "functional-unquoted-value",
+      "source": "<template functional=yes><div /></template>",
+      "filename": "functional-unquoted-value.vue",
+      "mode": "sfc",
+      "reference": [
+        {
+          "ruleId": "vue/no-deprecated-functional-template",
+          "severity": 2,
+          "message": "The `functional` template are deprecated.",
+          "line": 1,
+          "column": 11,
+          "messageId": "unexpected",
+          "endLine": 1,
+          "endColumn": 25
+        }
+      ],
+      "expected": {
+        "filename": "functional-unquoted-value.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-deprecated-functional-template",
+            "severity": "error",
+            "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+            "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+            "start": 10,
+            "end": 24,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "functional-single-quoted-value",
+      "source": "<template data-note='functional' functional='yes'><div /></template>",
+      "filename": "functional-single-quoted-value.vue",
+      "mode": "sfc",
+      "reference": [
+        {
+          "ruleId": "vue/no-deprecated-functional-template",
+          "severity": 2,
+          "message": "The `functional` template are deprecated.",
+          "line": 1,
+          "column": 34,
+          "messageId": "unexpected",
+          "endLine": 1,
+          "endColumn": 50
+        }
+      ],
+      "expected": {
+        "filename": "functional-single-quoted-value.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-deprecated-functional-template",
+            "severity": "error",
+            "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+            "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+            "start": 33,
+            "end": 49,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "functional-first-duplicate",
+      "source": "<template functional functional=\"yes\"><div /></template>",
+      "filename": "functional-first-duplicate.vue",
+      "mode": "sfc",
+      "reference": [
+        {
+          "ruleId": "vue/no-deprecated-functional-template",
+          "severity": 2,
+          "message": "The `functional` template are deprecated.",
+          "line": 1,
+          "column": 11,
+          "messageId": "unexpected",
+          "endLine": 1,
+          "endColumn": 21
+        }
+      ],
+      "expected": {
+        "filename": "functional-first-duplicate.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-deprecated-functional-template",
+            "severity": "error",
+            "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+            "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+            "start": 10,
+            "end": 20,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "healthy-replacements",
+      "source": "<template><Widget v-model:title=\"title\"><template v-slot=\"props\">{{ props }}</template></Widget></template>",
+      "filename": "healthy-replacements.vue",
+      "mode": "sfc",
+      "reference": [],
+      "expected": {
+        "filename": "healthy-replacements.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "healthy-neighbouring-names",
+      "source": "<template data-functional=\"yes\"><Widget :title.synced=\"title\" data-slot-scope=\"text\">functional slot-scope</Widget></template>",
+      "filename": "healthy-neighbouring-names.vue",
+      "mode": "sfc",
+      "reference": [],
+      "expected": {
+        "filename": "healthy-neighbouring-names.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "foreign-petite-vue",
+      "source": "<!DOCTYPE html><html><body><div v-scope=\"{}\"><Widget :title.sync=\"title\"><template slot-scope=\"props\">x</template></Widget></div><script src=\"https://unpkg.com/petite-vue\" init></script></body></html>",
+      "filename": "foreign.html",
+      "mode": "html",
+      "reference": [],
+      "expected": {
+        "filename": "foreign.html",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "functional-header-0",
+      "source": "<template = functional><div /></template>",
+      "filename": "functional-header-0.vue",
+      "mode": "sfc",
+      "reference": [
+        {
+          "ruleId": "vue/no-deprecated-functional-template",
+          "severity": 2,
+          "message": "The `functional` template are deprecated.",
+          "line": 1,
+          "column": 13,
+          "messageId": "unexpected",
+          "endLine": 1,
+          "endColumn": 23
+        }
+      ],
+      "expected": {
+        "filename": "functional-header-0.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-deprecated-functional-template",
+            "severity": "error",
+            "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+            "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+            "start": 12,
+            "end": 22,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "functional-header-1",
+      "source": "<template =\nfunctional><div /></template>",
+      "filename": "functional-header-1.vue",
+      "mode": "sfc",
+      "reference": [
+        {
+          "ruleId": "vue/no-deprecated-functional-template",
+          "severity": 2,
+          "message": "The `functional` template are deprecated.",
+          "line": 2,
+          "column": 1,
+          "messageId": "unexpected",
+          "endLine": 2,
+          "endColumn": 11
+        }
+      ],
+      "expected": {
+        "filename": "functional-header-1.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-deprecated-functional-template",
+            "severity": "error",
+            "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+            "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+            "start": 12,
+            "end": 22,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "functional-header-2",
+      "source": "<template functional\n=\"true\"><div /></template>",
+      "filename": "functional-header-2.vue",
+      "mode": "sfc",
+      "reference": [
+        {
+          "ruleId": "vue/no-deprecated-functional-template",
+          "severity": 2,
+          "message": "The `functional` template are deprecated.",
+          "line": 1,
+          "column": 11,
+          "messageId": "unexpected",
+          "endLine": 2,
+          "endColumn": 8
+        }
+      ],
+      "expected": {
+        "filename": "functional-header-2.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-deprecated-functional-template",
+            "severity": "error",
+            "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+            "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+            "start": 10,
+            "end": 28,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "functional-header-3",
+      "source": "<template functional=\n\"true\"><div /></template>",
+      "filename": "functional-header-3.vue",
+      "mode": "sfc",
+      "reference": [
+        {
+          "ruleId": "vue/no-deprecated-functional-template",
+          "severity": 2,
+          "message": "The `functional` template are deprecated.",
+          "line": 1,
+          "column": 11,
+          "messageId": "unexpected",
+          "endLine": 2,
+          "endColumn": 7
+        }
+      ],
+      "expected": {
+        "filename": "functional-header-3.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-deprecated-functional-template",
+            "severity": "error",
+            "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+            "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+            "start": 10,
+            "end": 28,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "functional-header-4",
+      "source": "<template foo=\nfunctional><div /></template>",
+      "filename": "functional-header-4.vue",
+      "mode": "sfc",
+      "reference": [],
+      "expected": {
+        "filename": "functional-header-4.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "functional-header-5",
+      "source": "<template foo=\"a\nb\" functional><div /></template>",
+      "filename": "functional-header-5.vue",
+      "mode": "sfc",
+      "reference": [
+        {
+          "ruleId": "vue/no-deprecated-functional-template",
+          "severity": 2,
+          "message": "The `functional` template are deprecated.",
+          "line": 2,
+          "column": 4,
+          "messageId": "unexpected",
+          "endLine": 2,
+          "endColumn": 14
+        }
+      ],
+      "expected": {
+        "filename": "functional-header-5.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-deprecated-functional-template",
+            "severity": "error",
+            "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+            "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+            "start": 20,
+            "end": 30,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    }
+  ]
+}

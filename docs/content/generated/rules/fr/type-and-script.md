@@ -1303,11 +1303,9 @@ vp run lint
 
 Les valeurs explicites `inheritAttrs: true` répètent le comportement par défaut de Vue. Cette règle signale ce littéral redondant même si aucun déploiement de `$attrs` sur la racine n’est montré.
 
-```vue annotate="remove:2,3"
-<script lang="ts">
-defineOptions({ inheritAttrs: true })
-export default { inheritAttrs: true }
-</script>
+```vue annotate="remove:1"
+<script setup></script>
+<template><div><button v-bind="$attrs">Save</button></div></template>
 ```
 
 <span id="script-no-duplicate-attr-inheritance-good"></span>
@@ -1316,16 +1314,14 @@ export default { inheritAttrs: true }
 
 `inheritAttrs: false` exprime une véritable désactivation, tandis que l’objet d’options vide laisse l’héritage par défaut implicite. Aucun ne répète la valeur redondante `true`.
 
-```vue annotate="add:2,3"
-<script lang="ts">
-defineOptions({ inheritAttrs: false }) // intentional opt-out
-export default {}                      // default inheritance, unstated
-</script>
+```vue annotate="add:1"
+<script setup>defineOptions({ inheritAttrs: false })</script>
+<template><div><button v-bind="$attrs">Save</button></div></template>
 ```
 
 Le bon exemple évite le diagnostic de cette règle avec la configuration ci-dessus ; d’autres règles peuvent encore signaler des diagnostics.
 
-[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs#L73) · [Toutes les règles](all.md)
+[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs#L35) · [Toutes les règles](all.md)
 
 ### `script/no-export-in-script-setup`
 

@@ -1,0 +1,5 @@
+<script setup lang="ts">
+import Child from "./Child.vue";
+try { console.log(1); } catch {}
+</script>
+<template><Control :component="Child" /></template>

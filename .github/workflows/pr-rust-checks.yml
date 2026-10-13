@@ -138,7 +138,7 @@ jobs:
     with: { run-rust: "${{ inputs.run-rust }}" }
 
   pr-rust-build:
-    name: Build affected Rust tests
+    name: Clippy, doctests and feature lanes
     if: ${{ github.event_name == 'pull_request' && inputs.run-rust }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
@@ -161,20 +161,12 @@ jobs:
           cache-key-prefix: ${{ format('pr-{0}-', github.event.pull_request.number) }}
           key: nextest-ci
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
-        with:
-          tool: cargo-nextest@0.9.146
       - name: Materialize affected Rust plan
         run: node -e 'require("node:fs").writeFileSync(process.env.RUNNER_TEMP + "/rust-plan.json", process.env.RUST_PLAN_JSON)'
       - name: Clippy affected crates
         run: node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/rust-plan.json" cargo clippy @packages@ --profile ci -- -D warnings -D clippy::wildcard_imports
       - name: Skeleton todo ratchet
         run: rustc --edition 2024 tools/commands/ci/check-skeleton-todos.rs -o "$RUNNER_TEMP/check-skeleton-todos" && "$RUNNER_TEMP/check-skeleton-todos" --check
-      - name: Build and archive affected Rust tests once
-        run: |
-          mkdir -p target/rust-test-archive
-          node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/rust-plan.json" cargo nextest archive @packages@ --cargo-profile ci --archive-file target/rust-test-archive/tests.tar.zst
-          node tools/support/compat/github/rust-test-archive.mjs stamp target/rust-test-archive/tests.tar.zst target/rust-test-archive/receipt.json
       - name: Native L1 markup parity
         if: ${{ contains(fromJSON(inputs.rust-plan).packages, 'vize_l1') || contains(fromJSON(inputs.rust-plan).packages, 'vize_armature') }}
         run: cargo test -p vize_armature --features native-lex-parity,legacy --lib --test markup_lex_parity
@@ -186,19 +178,14 @@ jobs:
         uses: ./.github/actions/test-native-navigation
       - name: Run affected Rust doctests
         run: node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/rust-plan.json" cargo test @packages@ --profile ci --doc
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: rust-test-archive-${{ github.run_id }}-${{ github.sha }}
-          path: target/rust-test-archive/
-          overwrite: true
-          if-no-files-found: error
-          compression-level: 0
-          retention-days: 1
 
+  # PR shards build the same affected test binaries from the warm read-only
+  # `nextest-ci` clone and start beside Clippy, instead of moving a multi-GB
+  # archive. The merge queue keeps its archive: its receipts bind the evidence.
   pr-rust-shard:
     name: Rust tests (${{ matrix.shard }}/4)
-    if: ${{ always() && !cancelled() && inputs.run-rust && (github.event_name == 'pull_request' && needs.pr-rust-build.result == 'success' || github.event_name == 'merge_group' && needs.merge-rust-source.result == 'success') }}
-    needs: [pr-rust-build, merge-rust-source]
+    if: ${{ always() && !cancelled() && inputs.run-rust && (github.event_name == 'pull_request' || github.event_name == 'merge_group' && needs.merge-rust-source.result == 'success') }}
+    needs: [merge-rust-source]
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     strategy:
@@ -211,11 +198,22 @@ jobs:
       RUST_TEST_THREADS: "4"
       NEXTEST_PROFILE: ${{ github.event_name == 'merge_group' && 'full' || 'pr' }}
       SHARD: ${{ matrix.shard }}
+      RUST_PLAN_JSON: ${{ inputs.rust-plan }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
         with:
           toolchain: "1.99.0"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        if: ${{ github.event_name == 'pull_request' }}
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        if: ${{ github.event_name == 'pull_request' }}
+        with:
+          cache-key-prefix: ${{ format('pr-{0}-', github.event.pull_request.number) }}
+          key: nextest-ci
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: "package.json"
@@ -234,10 +232,12 @@ jobs:
       - name: Install Pkl CLI
         run: npm install --global @pkl-community/pkl@0.27.2
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        if: ${{ github.event_name == 'merge_group' }}
         with:
           name: rust-test-archive-${{ github.run_id }}-${{ github.sha }}
           path: .artifacts/rust-test-archive
       - name: Verify Rust archive identity
+        if: ${{ github.event_name == 'merge_group' }}
         run: node tools/support/compat/github/rust-test-archive.mjs verify .artifacts/rust-test-archive/tests.tar.zst .artifacts/rust-test-archive/receipt.json
       - name: Hydrate the required ElementPlus projection fixture
         if: ${{ github.event_name == 'merge_group' }}
@@ -247,7 +247,19 @@ jobs:
         run: |
           mkdir -p target/nextest/full/typechecker-fixtures
           printf 'VIZE_TEST_FIX_HISTORY_CAPTURE_DIR=%s\nVIZE_TEST_FIX_HISTORY_ARCHIVE_RECEIPT=%s\n' "$GITHUB_WORKSPACE/target/nextest/full/typechecker-fixtures" "$GITHUB_WORKSPACE/.artifacts/rust-test-archive/receipt.json" >> "$GITHUB_ENV"
+      - name: Build and run the affected Rust test shard
+        if: ${{ github.event_name == 'pull_request' }}
+        # The same affected packages, Cargo profile, nextest profile and hash
+        # partition as the former archive; empty partitions remain valid.
+        run: |
+          node -e 'require("node:fs").writeFileSync(process.env.RUNNER_TEMP + "/rust-plan.json", process.env.RUST_PLAN_JSON)'
+          phase_started=$SECONDS
+          if node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/rust-plan.json" cargo nextest run @packages@ --cargo-profile ci --profile "$NEXTEST_PROFILE" --partition "hash:$SHARD/4" --no-tests=pass; then phase_exit=0; else phase_exit=$?; fi
+          mkdir -p "target/nextest/$NEXTEST_PROFILE"
+          printf '{"phase":"workspace-shard","shard":%s,"elapsed_seconds":%d,"exit_code":%d}\n' "$SHARD" "$((SECONDS - phase_started))" "$phase_exit" > "target/nextest/$NEXTEST_PROFILE/timing.json"
+          exit "$phase_exit"
       - name: Run Rust test shard without rebuilding
+        if: ${{ github.event_name == 'merge_group' }}
         # Baked env! paths still occur in tests. Extract to the original workspace
         # (checked by the receipt), preserving target/ci and CARGO_BIN_EXE paths.
         # Empty partitions are valid for packages with fewer than four tests.

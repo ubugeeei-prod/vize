@@ -117,12 +117,14 @@ impl Rule for NoDeprecatedFunctionalTemplate {
             return;
         }
 
-        // Highlight just the opening `<template ...>` tag: `tag_start` is the `<`
-        // of the opening tag and `loc.start` is the content start (the byte right
-        // after the opening tag's `>`), so this span is the opening tag exactly,
-        // not the whole block.
-        let start = template.loc.tag_start as u32;
-        let end = template.loc.start as u32;
+        // The SFC descriptor keeps the attribute's value but not its location.
+        // Recover the complete attribute within the already parsed opening tag,
+        // matching eslint-plugin-vue's VAttribute diagnostic target.
+        let Some((start, end)) =
+            functional_attribute_span(ctx.source, template.loc.tag_start, template.loc.start)
+        else {
+            return;
+        };
 
         let message = ctx
             .t("vue/no-deprecated-functional-template.message")
@@ -132,6 +134,75 @@ impl Rule for NoDeprecatedFunctionalTemplate {
             .into_owned();
         ctx.report(LintDiagnostic::error(META.name, message, start, end).with_help(help));
     }
+}
+
+fn functional_attribute_span(source: &str, start: usize, end: usize) -> Option<(u32, u32)> {
+    let header = source.get(start..end)?.as_bytes();
+    let mut cursor = 1;
+    // Skip the opening tag's name, then inspect only complete attributes.
+    while header
+        .get(cursor)
+        .is_some_and(|&byte| !byte.is_ascii_whitespace() && !matches!(byte, b'>' | b'/'))
+    {
+        cursor += 1;
+    }
+    while cursor < header.len() {
+        while header.get(cursor).is_some_and(u8::is_ascii_whitespace) {
+            cursor += 1;
+        }
+        if header
+            .get(cursor)
+            .is_none_or(|&byte| matches!(byte, b'>' | b'/'))
+        {
+            break;
+        }
+        let name_start = cursor;
+        while header
+            .get(cursor)
+            .is_some_and(|&byte| !byte.is_ascii_whitespace() && !matches!(byte, b'=' | b'>' | b'/'))
+        {
+            cursor += 1;
+        }
+        let name_end = cursor;
+        if name_start == name_end {
+            cursor += 1;
+            continue;
+        }
+        while header.get(cursor).is_some_and(u8::is_ascii_whitespace) {
+            cursor += 1;
+        }
+        let mut attribute_end = name_end;
+        if header.get(cursor) == Some(&b'=') {
+            cursor += 1;
+            while header.get(cursor).is_some_and(u8::is_ascii_whitespace) {
+                cursor += 1;
+            }
+            if let Some(quote @ (b'\'' | b'"')) = header.get(cursor).copied() {
+                cursor += 1;
+                while header.get(cursor).is_some_and(|byte| *byte != quote) {
+                    cursor += 1;
+                }
+                if header.get(cursor) != Some(&quote) {
+                    return None;
+                }
+                cursor += 1;
+            } else {
+                while header.get(cursor).is_some_and(|&byte| {
+                    !byte.is_ascii_whitespace() && !matches!(byte, b'>' | b'/')
+                }) {
+                    cursor += 1;
+                }
+            }
+            attribute_end = cursor;
+        }
+        if header.get(name_start..name_end) == Some(b"functional") {
+            return Some((
+                u32::try_from(start + name_start).ok()?,
+                u32::try_from(start + attribute_end).ok()?,
+            ));
+        }
+    }
+    None
 }
 
 #[cfg(test)]

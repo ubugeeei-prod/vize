@@ -30,7 +30,7 @@ test("native smoke keeps MoonBit out of the npm fresh install path", () => {
   const freshJob = workflowJobBody(workflow, "fresh-install-smoke");
 
   assert.match(hostJob, /target:\s*darwin-x64/);
-  assert.match(hostJob, /uses:\s*\.\/\.github\/actions\/setup-moonbit/);
+  assert.doesNotMatch(hostJob, /setup-moonbit|moon (?:run|test)/);
   assert.match(freshJob, /target:\s*darwin-x64/);
   assert.doesNotMatch(freshJob, /setup-moonbit/);
   assert.match(freshJob, /vp run --filter '\.\/npm\/cli' build/);
@@ -68,33 +68,44 @@ const evaluate = (
     }),
   );
 
+// #8840 moved the token laws from MoonBit to Node, so the selected producer
+// no longer installs MoonBit. Reverse that and the earlier predicate change.
+const nodeLaws = "        run: node --test tests/tooling/native-build-token.test.ts\n";
+const moonLaws =
+  "        working-directory: tools/moon\n" +
+  "        run: moon test --target native --deny-warn cmd/github/build_napi_package\n";
+const msvcArch = "          arch: ${{ matrix.msvc_arch }}\n";
+const originalSetup =
+  "      # MoonBit's native installer does not support Darwin x64. This matrix\n" +
+  "      # target only builds and smokes the Rust/N-API native package, so keep\n" +
+  "      # darwin-x64 covered without installing MoonBit.\n" +
+  "      - uses: ./.github/actions/setup-moonbit\n" +
+  "        if: matrix.target != 'darwin-x64'\n";
+
 function authenticateWorkflow(source: string) {
-  const changed = `      - uses: ./.github/actions/setup-moonbit\n        if: ${selected}\n`;
-  assert.equal(source.split(changed).length, 2);
-  const reversed = source.replace(
-    changed,
-    "      - uses: ./.github/actions/setup-moonbit\n        if: matrix.target != 'darwin-x64'\n",
-  );
+  for (const anchor of [nodeLaws, msvcArch]) assert.equal(source.split(anchor).length, 2);
+  assert.doesNotMatch(source, /setup-moonbit|moon (?:run|test)/u);
+  const reversed = source.replace(nodeLaws, moonLaws).replace(msvcArch, msvcArch + originalSetup);
   // Authenticated whole d3b2f527 workflow; all inputs, commands, pins, outputs and other conditions stay exact.
   const originalDigest = "25d6dfff5052a85bdbd673af0872ee65ed5f72d5dc3dccb5d792dc78ab138ce5";
   assert.equal(createHash("sha256").update(reversed).digest("hex"), originalDigest);
 }
 
-void test("the complete original workflow changes only the setup predicate", () => {
+void test("the complete original workflow changes only the setup predicate and ported token laws", () => {
   const source = workflowFile();
   authenticateWorkflow(source);
   for (const removed of [
     "cargo build --profile ci -p vize",
     "--max 2.36",
     "--runtime-checks",
-    "moon test --target native --deny-warn cmd/github/build_napi_package",
+    "node --test tests/tooling/native-build-token.test.ts",
   ])
     assert.throws(() => authenticateWorkflow(source.replace(removed, "removed-command")), {
       code: "ERR_ASSERTION",
     });
 });
 
-void test("only the real selected producer enables Moon while default qualification remains eighteen rows", () => {
+void test("only the real selected producer runs the token laws while default qualification remains eighteen rows", () => {
   const { on, jobs } = workflowObject();
   assert.deepEqual(Object.keys(on), ["workflow_dispatch", "schedule"]);
   assert.equal(on.workflow_dispatch.inputs.host_only.default, false);
@@ -108,16 +119,16 @@ void test("only the real selected producer enables Moon while default qualificat
     host.steps,
     "selected producer must retain the actual shared step anchor",
   );
-  const setup = host.steps.find(
-    (step: { uses?: string }) => step.uses === "./.github/actions/setup-moonbit",
+  assert.equal(
+    host.steps.some((step: { uses?: string }) => step.uses === "./.github/actions/setup-moonbit"),
+    false,
   );
-  const moonTest = host.steps.find(
+  const tokenLaws = host.steps.find(
     (step: { name?: string }) => step.name === "Test native image token producer",
   );
-  assert.equal(setup.if, selected);
-  assert.equal(moonTest.if, selected);
-  assert.equal(moonTest.run, "moon test --target native --deny-warn cmd/github/build_napi_package");
-  assert.equal(moonTest["working-directory"], "tools/moon");
+  assert.equal(tokenLaws.if, selected);
+  assert.equal(tokenLaws.run, "node --test tests/tooling/native-build-token.test.ts");
+  assert.equal(tokenLaws["working-directory"], undefined);
   const targets = [
     "linux-x64-gnu",
     "linux-arm64-gnu",
@@ -142,8 +153,7 @@ void test("only the real selected producer enables Moon while default qualificat
       for (const target of [undefined, "all", ...targets]) {
         const expectedSelected =
           event === "workflow_dispatch" && hostOnly === true && target === "darwin-arm64";
-        assert.equal(evaluate(setup.if, event, hostOnly, target), expectedSelected);
-        assert.equal(evaluate(moonTest.if, event, hostOnly, target), expectedSelected);
+        assert.equal(evaluate(tokenLaws.if, event, hostOnly, target), expectedSelected);
         assert.equal(evaluate(producer.if, event, hostOnly, target), expectedSelected);
         assert.equal(evaluate(host.if, event, hostOnly, target), !expectedSelected);
         assert.equal(evaluate(fresh.if, event, hostOnly, target), !expectedSelected);
@@ -240,16 +250,14 @@ void test("the actual default native producer executes only its unchanged NAPI a
   assert.ok(features, "dialect feature declarations must be inspected");
   assert.match(features, /moonc = \["dep:sha2"\]/u);
   assert.doesNotMatch(features, /^default\s*=/mu);
-  const selectedLaws = readRepoFile(
-    "tools/moon/cmd/github/build_napi_package/native_build_token_wbtest.mbt",
-  );
-  assert.equal([...selectedLaws.matchAll(/^test "/gmu)].length, 3);
+  const selectedLaws = readRepoFile("tests/tooling/native-build-token.test.ts");
+  assert.equal([...selectedLaws.matchAll(/^void test\("/gmu)].length, 3);
   for (const law of [
     "native build token preserves every byte including zero-padded nibbles",
     "actual platform entropy yields fresh 128-bit native build tokens",
     "production build environment preserves inheritance and overrides old tokens",
   ])
-    assert.ok(selectedLaws.includes(`test "${law}"`));
+    assert.ok(selectedLaws.includes(`void test("${law}"`));
   const dedicated = readRepoFile(".github", "workflows", "level-moonbit.yml");
   assert.match(dedicated, /uses: \.\/\.github\/actions\/setup-moonbit/u);
   assert.match(dedicated, /cargo test -p vize_dialect_moonbit --features moonc/u);

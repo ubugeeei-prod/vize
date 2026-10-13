@@ -15,8 +15,8 @@
 //! ## Coverage
 //!
 //! Props declared through `defineProps` — runtime array, runtime object and
-//! type-literal spellings alike — are checked. The Options API `props:` option
-//! is not visible to the analysis this reads and is a recorded gap.
+//! type-literal spellings alike — and Options API object/array declarations
+//! are checked at their complete written declaration ranges.
 //!
 //! ## Examples
 //!

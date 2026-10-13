@@ -5,6 +5,7 @@ export {
   localVp,
   moonScript,
   moonScriptWithFreshRegistry,
+  nodeTool,
   runInDirectory,
   runInPackages,
   runInVscodeExtension,

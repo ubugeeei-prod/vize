@@ -14,7 +14,7 @@ import {
   toolingTestScopes,
 } from "../../../config/vite-plus/tooling-test-scopes.ts";
 import { changedPaths } from "./plan-source-checks.ts";
-import { toolingShardMatrix } from "./tooling-test-shards.ts";
+import { toolingLeadSteps, toolingShardMatrix, toolingShards } from "./tooling-test-shards.ts";
 import { nativeSetupCaptureRequired, toolingChecksRequired } from "./native-setup-capture.mjs";
 import { nativeSsrCaptureRequired } from "./native-ssr-capture.mjs";
 import { nativeScopedCaptureRequired } from "./native-scoped-capture.mjs";
@@ -116,7 +116,18 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   }
   const paths = /^0+$/.test(base) ? [] : changedPaths(base, head, root);
   const capturePaths = /^0+$/.test(base) ? [".github/workflows/check.yml"] : paths;
-  const plan = planToolingTests(paths, { tier });
+  // Matrix entry 1 also runs these captures; packing reserves their measured time there.
+  const plan = {
+    ...planToolingTests(paths, { tier }),
+    leadSteps: toolingLeadSteps(tier, {
+      "native-ssr-capture":
+        nativeSsrCaptureRequired(capturePaths) || nativeScopedCaptureRequired(capturePaths),
+      "native-setup-capture": nativeSetupCaptureRequired(paths),
+      "native-vapor-capture": nativeVaporCaptureRequired(capturePaths),
+      "native-attribute-values-7502-capture":
+        nativeAttributeValues7502CaptureRequired(capturePaths),
+    }),
+  };
   writeToolingPlan(plan, output);
   if (githubOutput && process.env.GITHUB_OUTPUT) {
     appendFileSync(
@@ -124,7 +135,8 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       `tooling=${toolingChecksRequired(plan, paths) || nativeSsrCaptureRequired(capturePaths) || nativeVaporCaptureRequired(capturePaths) || nativeScopedCaptureRequired(capturePaths) || nativeAttributeValues7502CaptureRequired(capturePaths)}\nnative-vapor-capture=${nativeVaporCaptureRequired(capturePaths)}\nnative-setup-capture=${nativeSetupCaptureRequired(paths)}\nnative-ssr-capture=${nativeSsrCaptureRequired(capturePaths) || nativeScopedCaptureRequired(capturePaths)}\nnative-attribute-values-7502-capture=${nativeAttributeValues7502CaptureRequired(capturePaths)}\ntooling-matrix=${JSON.stringify(toolingShardMatrix(plan))}\n`,
     );
   }
-  const message = `Tooling tests: ${plan.tests.length}/${plan.totalTests}; ${plan.deferredTests} deferred to T1; ${plan.reason}.\n`;
+  const shards = toolingShards(plan).map(({ testMs }) => Math.round(testMs / 1000));
+  const message = `Tooling tests: ${plan.tests.length}/${plan.totalTests}; ${plan.deferredTests} deferred to T1; ${plan.reason}; ${shards.length} shard(s), estimated test seconds ${shards.join("/")}.\n`;
   process.stdout.write(message);
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, message);
 }

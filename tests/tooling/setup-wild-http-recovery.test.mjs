@@ -90,10 +90,16 @@ void test("Only Playground and canonical SSR-Pug use the new adapter", () => {
   const pr = parse(fs.readFileSync(".github/workflows/pr-source-checks.yml", "utf8"));
   const local = "./.github/actions/setup-wild-http-recovery";
   assert.equal(pr.jobs["pr-playground-test"].steps.filter((s) => s.uses === local).length, 1);
-  const old = Object.values(pr.jobs)
-    .flatMap((j) => j.steps ?? [])
-    .filter((s) => s.uses === upstream);
-  assert.equal(old.length, 2);
+  const uses = (jobs, action) =>
+    Object.entries(jobs).flatMap(([name, job]) =>
+      (job.steps ?? []).filter((s) => s.uses === action).map(() => name),
+    );
+  // Every other Wild user keeps the pinned upstream action, counted per file.
+  assert.deepEqual(uses(pr.jobs, local), ["pr-playground-test"]);
+  assert.deepEqual(uses(pr.jobs, upstream), ["pr-tooling-scripts"]);
+  const js = parse(fs.readFileSync(".github/workflows/pr-js-checks.yml", "utf8"));
+  assert.deepEqual(uses(js.jobs, local), []);
+  assert.deepEqual(uses(js.jobs, upstream), Object.keys(js.jobs));
   const canonical = parse(
     fs.readFileSync(".github/workflows/davinci-canonical-corpus.yml", "utf8"),
   );

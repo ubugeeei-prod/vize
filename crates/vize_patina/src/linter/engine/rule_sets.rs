@@ -157,8 +157,12 @@ pub(super) fn analyze_descriptor_for_component_reads(
         template_ast,
         options,
     );
-    // Only the returned caller-qualified packet is authority; refused captures
-    // must clear the internally retained, unqualified intermediate packet.
+    let component_reads = analysis.croquis.authored_component_reads_are_qualified();
+    // Preserve the complete editor refusal separately from independently
+    // source-witnessed positive reads admitted by the original SFC wrapper.
     analysis.croquis.retain_authored_binding_reads(packet);
+    analysis
+        .croquis
+        .qualify_authored_component_reads(component_reads);
     analysis.croquis
 }

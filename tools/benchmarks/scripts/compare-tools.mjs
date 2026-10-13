@@ -41,8 +41,8 @@ import {
 } from "./compare-tools-typecheck.mjs";
 import { gateTypecheckVariants, recordTypecheckRejection } from "./typecheck-readiness.mjs";
 import { measureVariants } from "./compare-tools-measure.mjs";
-import { createNativeBatchSequenceVariants, measureNativeBatchCompile } from "./native-batch.mjs";
-import { linkColdNodeModules } from "./nuxt-build-cache.mjs";
+import { createNativeBatchSequenceVariants, measureNativeBatchCompile } from "./native-batch.ts";
+import { linkColdNodeModules } from "./nuxt-build-cache.ts";
 
 export { createSurface } from "./compare-tools-report.mjs";
 

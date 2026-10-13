@@ -8,7 +8,7 @@ import { pathToFileURL } from "node:url";
 import { runInNewContext } from "node:vm";
 import { parse, parseAllDocuments, stringify } from "yaml";
 
-import { runMoonScript } from "./_helpers/moonbit.ts";
+import { runToolCommand } from "./_helpers/tool-commands.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
 
 const workspacePaths = ["playground", "npm/builder/vite", "npm/cli", "npm/native", "npm/ui"];
@@ -26,7 +26,7 @@ void test("full playground keeps its installer and browser gates while hydrating
   assert.deepEqual(filters, [...oldFilters, "./npm/ui..."]);
   assert.equal(
     install.run,
-    "moon run --target native tools/moon/cmd/github/vp_install -- " +
+    "node tools/support/github/vp-install.ts " +
       filters.map((filter) => `--filter '${filter}'`).join(" "),
   );
   assert.equal(
@@ -130,14 +130,14 @@ void test("the actual filtered installer reproduces missing UI and resolves the 
   );
   const frozenLock = fs.readFileSync(path.join(directory, "pnpm-lock.yaml"));
   const installWith = (selected: string[]) => {
-    const result = runMoonScript(
-      "github/vp_install",
+    const result = runToolCommand(
+      "tools/support/github/vp-install.ts",
       selected.flatMap((filter) => ["--filter", filter]),
       {
         cwd: directory,
       },
     );
-    assert.equal(result.status, 0, `${result.error ?? ""}\n${result.stdout}\n${result.stderr}`);
+    assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
   };
   installWith(oldFilters);
   assert.equal(fs.existsSync(path.join(directory, "npm/ui/node_modules", alias)), false);

@@ -7,7 +7,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const entry = fileURLToPath(
-  new URL("../../tools/benchmarks/scripts/nuxt-bridge-transform.mjs", import.meta.url),
+  new URL("../../tools/benchmarks/scripts/nuxt-bridge-transform.ts", import.meta.url),
 );
 
 await test("the Nuxt bridge benchmark loads its real provider outside the checkout", () => {

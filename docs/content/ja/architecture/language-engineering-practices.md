@@ -40,7 +40,7 @@ Vue の構文・生成 JavaScript・診断・エディターの動作を変え�
 | 検証の観点   | 対象になる変更                                                                                                                   | 記録する検証結果                                                                                                                                                                                                                                                                                                      |
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | セキュリティ | URL 処理、HTML・SSR 出力、ファイルシステム・設定の読み込み、ネイティブコードの読み込み、パッケージ公開、CI、認証情報。           | `.github/workflows/check.yml` の `security-audit`、`vp exec pnpm audit --prod --audit-level moderate`、`cargo audit --deny warnings`、インストール後の実行時チェック、GitHub Actions の参照が固定されていることの確認、危険な入力や境界に絞った回帰テスト。                                                           |
-| 性能         | パーサー、コンパイラ、リンター、フォーマッタ、型チェッカー、キャッシュ、プロジェクトグラフの探索、生成される出力、CLI の入出力。 | `.github/workflows/benchmark.yml`、`tools/benchmarks/scripts/compare-pr.mjs`、`tools/benchmarks/scripts/enforce-pr-budget.mjs`、`pr-benchmark-budget` の結果、ローカルの `bench:*` タスク。性能低下の原因を特定する場合は、`vize lint --profile`、`vize check --profile`、`vize fmt --profile` の出力も記録すること。 |
+| 性能         | パーサー、コンパイラ、リンター、フォーマッタ、型チェッカー、キャッシュ、プロジェクトグラフの探索、生成される出力、CLI の入出力。 | `.github/workflows/benchmark.yml`、`tools/benchmarks/scripts/compare-pr.ts`、`tools/benchmarks/scripts/enforce-pr-budget.ts`、`pr-benchmark-budget` の結果、ローカルの `bench:*` タスク。性能低下の原因を特定する場合は、`vize lint --profile`、`vize check --profile`、`vize fmt --profile` の出力も記録すること。 |
 | fuzzing      | バイト列の解析、構文エラーからの回復、CSS の解析、JS・TS の式の解析、テンプレートの字句解析、コード生成時のエラーからの回復。    | `.github/workflows/fuzz.yml`、`tests/fuzz/Cargo.toml`、`tools/commands/ci/fuzz/seed_corpus.rs`、`cargo +nightly fuzz run <target>`、アップロードされた `fuzz-reproducers-*`。クラッシュ・タイムアウト・メモリ不足の原因を把握した後に、最小化した再現例を決定論的な回帰テストとして追加すること。                     |
 
 <a id="ベースラインポリシー"></a>
@@ -74,7 +74,7 @@ Vize では、これらの方針を記憶に頼らず実行できるよう、次
 
 - `CONTRIBUTING.md` は、変更の種類に応じた検証を貢献者に案内します。
 - `.github/PULL_REQUEST_TEMPLATE.md` は、動作の根拠、リスク、検証結果の記載を求めます。
-- `tools/benchmarks/scripts/test-inventory.mjs` は、PR の CI で現在のテスト資産を集計します。
+- `tools/benchmarks/scripts/test-inventory.ts` は、PR の CI で現在のテスト資産を集計します。
 - `.github/workflows/benchmark.yml` は、ベースと変更後の CLI の性能を比較し、PR の性能予算を適用します。
 - `.github/workflows/check.yml` の `security-audit` は、本番用 npm・Rust 依存関係の脆弱性情報を確認します。
 - `.github/workflows/fuzz.yml` は、`tests/fuzz` の cargo-fuzz ワークスペースを実行し、パーサー・コンパイラの調査に使うクラッシュ再現例をアップロードします。
