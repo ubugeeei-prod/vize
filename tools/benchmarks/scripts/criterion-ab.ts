@@ -4,7 +4,7 @@
  * two saved baselines with `critcmp`, surfacing the table in the GitHub Actions
  * step summary.
  *
- * Unlike `compare-pr.mjs` (which times the whole CLI on a generated corpus),
+ * Unlike `compare-pr.ts` (which times the whole CLI on a generated corpus),
  * this script drives the in-crate criterion suites under the crate `benches`
  * directories. Each checkout builds in an isolated Cargo target directory, then
  * critcmp compares exported JSON snapshots for each benchmark id in one pass.
@@ -45,14 +45,23 @@ import {
   parseCritcmpExport,
   resetCriterionResults,
   validateComparisonTable,
-} from "./criterion-baselines.mjs";
-import { renderSummary } from "./criterion-summary.mjs";
+  type CargoBench,
+  type CritcmpBaselineExport,
+  type CritcmpExport,
+  type CritcmpPaths,
+  type CriterionCheckout,
+  type CriterionRunOptions,
+  type CriterionSide,
+  type CriterionSuite,
+} from "./criterion-baselines.ts";
+import { isSuiteManifest, renderSummary } from "./criterion-summary.ts";
+import type { CliArgs } from "./script-types.ts";
 
 // Criterion benches that exist in workspace benchmark targets and represent
 // hot compiler, analysis, codegen, and presentation paths. Each entry maps a
 // cargo package to the `[[bench]]` targets it owns; the `bench filter` narrows
 // Criterion to the specific group so a full sweep stays inside the job timeout.
-export const CRITERION_SUITES = [
+export const CRITERION_SUITES: CriterionSuite[] = [
   {
     package: "vize_atelier_sfc",
     benches: ["sfc_parse", "sfc_compile"],
@@ -86,8 +95,8 @@ export const CRITERION_SUITES = [
   },
 ];
 
-function parseArgs(argv) {
-  const args = {};
+function parseArgs(argv: string[]) {
+  const args: CliArgs = {};
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (!arg.startsWith("--")) {
@@ -105,7 +114,7 @@ function parseArgs(argv) {
   return args;
 }
 
-function requireArg(args, key) {
+function requireArg(args: CliArgs, key: string) {
   const value = args[key];
   if (!value) {
     throw new Error(`Missing required argument: --${key}`);
@@ -113,12 +122,12 @@ function requireArg(args, key) {
   return value;
 }
 
-function parsePositiveFloat(value) {
+function parsePositiveFloat(value: string | undefined) {
   const parsed = Number.parseFloat(value ?? "");
   return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
 }
 
-function run(command, commandArgs, options = {}) {
+function run(command: string, commandArgs: string[], options: CriterionRunOptions = {}) {
   const result = spawnSync(command, commandArgs, {
     cwd: options.cwd,
     env: { ...process.env, ...options.env },
@@ -143,7 +152,7 @@ function run(command, commandArgs, options = {}) {
  * metadata while compiling the head checkout; `baseline` is the criterion
  * baseline name (`base` or `head`).
  */
-export function cargoBenchArgs({ pkg, benches, filter, baseline, targetDir }) {
+export function cargoBenchArgs({ pkg, benches, filter, baseline, targetDir }: CargoBench) {
   const args = ["bench", "-p", pkg];
   for (const bench of benches) {
     args.push("--bench", bench);
@@ -158,7 +167,7 @@ export function cargoBenchArgs({ pkg, benches, filter, baseline, targetDir }) {
   return args;
 }
 
-export function criterionBenchRunOptions({ checkoutDir, targetDir }) {
+export function criterionBenchRunOptions({ checkoutDir, targetDir }: CriterionCheckout) {
   return {
     cwd: checkoutDir,
     env: criterionEnvironment(targetDir),
@@ -166,7 +175,7 @@ export function criterionBenchRunOptions({ checkoutDir, targetDir }) {
   };
 }
 
-function benchSide({ side, checkoutDir, baseline, targetDir, suites }) {
+function benchSide({ side, checkoutDir, baseline, targetDir, suites }: CriterionSide) {
   resetCriterionResults(targetDir);
   for (const suite of suites) {
     const args = cargoBenchArgs({
@@ -181,7 +190,7 @@ function benchSide({ side, checkoutDir, baseline, targetDir, suites }) {
   }
 }
 
-function exportBaseline({ targetDir, baseline, outputPath }) {
+function exportBaseline({ targetDir, baseline, outputPath }: CritcmpBaselineExport) {
   const result = run("critcmp", critcmpExportArgs({ targetDir, baseline }), { capture: true });
   const serialized = result.stdout ?? "";
   const parsed = parseCritcmpExport(serialized, baseline);
@@ -189,7 +198,7 @@ function exportBaseline({ targetDir, baseline, outputPath }) {
   return parsed;
 }
 
-function critcmpCompare({ targetDir, baselinePaths }) {
+function critcmpCompare({ targetDir, baselinePaths }: CritcmpPaths) {
   // critcmp 0.1.8 requires a target-dir argument even when explicit exported
   // snapshot paths are supplied. The head target is enough for its scratch data.
   const args = critcmpArgs({ targetDir, baselinePaths });
@@ -197,14 +206,14 @@ function critcmpCompare({ targetDir, baselinePaths }) {
   return `${result.stdout ?? ""}${result.stderr ?? ""}`;
 }
 
-export function criterionSideTargetDirs(targetDir) {
+export function criterionSideTargetDirs(targetDir: string) {
   return {
     baseTargetDir: resolve(targetDir, "base-target"),
     headTargetDir: resolve(targetDir, "head-target"),
   };
 }
 
-export function resolveSuiteSelection(selection) {
+export function resolveSuiteSelection(selection: unknown) {
   const inventory = CRITERION_SUITES.map((suite) => suite.package);
   if (selection == null) {
     return {
@@ -213,7 +222,7 @@ export function resolveSuiteSelection(selection) {
       reason: "Full inventory selected (no impact manifest supplied).",
     };
   }
-  if (!Array.isArray(selection.selected) || typeof selection.reason !== "string") {
+  if (!isSuiteManifest(selection)) {
     throw new Error("Criterion impact manifest must contain selected[] and reason");
   }
   if (new Set(selection.selected).size !== selection.selected.length) {
@@ -230,7 +239,7 @@ export function resolveSuiteSelection(selection) {
   };
 }
 
-export function main(argv = process.argv.slice(2)) {
+export function main(argv: string[] = process.argv.slice(2)) {
   const args = parseArgs(argv);
   const baseDir = resolve(requireArg(args, "base-dir"));
   const headDir = resolve(requireArg(args, "head-dir"));
@@ -251,8 +260,8 @@ export function main(argv = process.argv.slice(2)) {
   const basePath = resolve(targetDir, "criterion-ab-base.json");
   const headPath = resolve(targetDir, "criterion-ab-head.json");
   const { baseTargetDir, headTargetDir } = criterionSideTargetDirs(targetDir);
-  let baseExport;
-  let headExport;
+  let baseExport: CritcmpExport | undefined;
+  let headExport: CritcmpExport | undefined;
   // Export each side from its own target dir, then compare immutable snapshots.
   if (suites.length > 0) {
     benchSide({
@@ -296,7 +305,7 @@ export function main(argv = process.argv.slice(2)) {
       ? evaluateAbsoluteBudgets(headExport, absoluteBudgets)
       : [];
   const vaporPairResults = suites.some((suite) => suite.package === "vize_atelier_vapor")
-    ? compareVaporNativePairs(baseExport, headExport)
+    ? compareVaporNativePairs(baseExport!, headExport!) // Vapor selected: both sides exported
     : [];
   const summary = renderSummary({
     table,

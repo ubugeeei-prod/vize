@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
-import { UPSTREAM } from "../../tools/benchmarks/scripts/vue-benchmarks-replay-core.mjs";
+import { UPSTREAM } from "../../tools/benchmarks/scripts/vue-benchmarks-replay-core.ts";
 import {
   createCompatibilityContext,
   readCompatibilityLedger,
@@ -76,5 +76,5 @@ void test("the existing disposable replay keeps its independent old pin and path
   assert.notEqual(UPSTREAM.commit, manifest.revision);
   const workflow = readFileSync(".github/workflows/vue-benchmarks-replay.yml", "utf8");
   assert.equal(workflow.includes(fixture), false);
-  assert.equal(workflow.includes("vue-benchmarks-replay.mjs"), true);
+  assert.equal(workflow.includes("vue-benchmarks-replay.ts"), true);
 });

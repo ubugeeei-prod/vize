@@ -3,15 +3,68 @@
  * benchmark gate.
  */
 
-export function formatRate(value) {
-  if (!Number.isFinite(value)) {
+export type BenchmarkStatus = "regression" | "faster" | "stable";
+
+/** One lane's paired base/head samples and the budget it is judged against. */
+export type BenchmarkRuns = {
+  id: string;
+  label: string;
+  baseRuns: number[];
+  headRuns: number[];
+  thresholdPercent: number;
+};
+
+export type BenchmarkResult = BenchmarkRuns & {
+  baseMs: number;
+  headMs: number;
+  rate: number;
+  changePercent: number;
+  status: BenchmarkStatus;
+  pairRates: number[];
+  /** The initial and confirmation samples when a breach was re-measured. */
+  attempts?: BenchmarkResult[];
+};
+
+/**
+ * A budget failure as rendered. JSON stores a non-finite rate as `null`, and
+ * artifacts written before per-lane budgets carry no `thresholdPercent`.
+ */
+export type RegressionLine = {
+  label: string;
+  rate: number | null;
+  changePercent: number | null;
+  thresholdPercent?: number | null;
+};
+
+/** A lane result as the budget reads it, in memory or back from JSON. */
+export type BudgetCandidate = RegressionLine & { id: string; status: string };
+export type BudgetRegression = RegressionLine & { id: string };
+export type BenchmarkBudget = {
+  status: "failed" | "passed";
+  regressionCount: number;
+  regressions: BudgetRegression[];
+};
+export type PrBenchmarkReport = {
+  baseLabel: string;
+  headLabel: string;
+  inputDir?: string;
+  fileCount: number;
+  runs: number;
+  warmups: number;
+  thresholdPercent: number;
+  results: BenchmarkResult[];
+  budget?: BenchmarkBudget;
+};
+
+export function formatRate(value: number | null): string {
+  if (value === null || !Number.isFinite(value)) {
     return "n/a";
   }
   return `${value.toFixed(3)}x`;
 }
 
-export function formatPercent(value) {
-  if (!Number.isFinite(value)) {
+export function formatPercent(value: number | null): string {
+  if (value === null || !Number.isFinite(value)) {
     return "n/a";
   }
   const sign = value > 0 ? "+" : "";
@@ -22,13 +75,13 @@ export function formatPercent(value) {
  * One budget failure, naming the budget it broke. Lanes no longer share a
  * single threshold, so a bare rate does not say what the gate compared against.
  */
-export function formatRegressionLine(regression) {
+export function formatRegressionLine(regression: RegressionLine): string {
   const budget =
     regression.thresholdPercent == null ? "" : ` over a ${regression.thresholdPercent}% budget`;
   return `- ${regression.label}: ${formatRate(regression.rate)} (${formatPercent(regression.changePercent)})${budget}`;
 }
 
-function median(values) {
+function median(values: number[]): number {
   const sorted = [...values].sort((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
   if (sorted.length % 2 === 1) {
@@ -37,7 +90,13 @@ function median(values) {
   return (sorted[mid - 1] + sorted[mid]) / 2;
 }
 
-export function summarizeBenchmarkRuns({ id, label, baseRuns, headRuns, thresholdPercent }) {
+export function summarizeBenchmarkRuns({
+  id,
+  label,
+  baseRuns,
+  headRuns,
+  thresholdPercent,
+}: BenchmarkRuns): BenchmarkResult {
   if (baseRuns.length !== headRuns.length || baseRuns.length === 0) {
     throw new Error("Benchmark samples must contain equally sized, non-empty base/head pairs");
   }
@@ -48,7 +107,7 @@ export function summarizeBenchmarkRuns({ id, label, baseRuns, headRuns, threshol
   );
   const rate = pairRates.every(Number.isFinite) ? median(pairRates) : Number.NaN;
   const changePercent = Number.isFinite(rate) ? (rate - 1) * 100 : Number.NaN;
-  const status =
+  const status: BenchmarkStatus =
     changePercent >= thresholdPercent
       ? "regression"
       : changePercent <= -thresholdPercent
@@ -74,7 +133,11 @@ export function summarizeBenchmarkRuns({ id, label, baseRuns, headRuns, threshol
 // 15.11%, then passed when the measurements (not only the budget job) were
 // rerun. A real regression must reproduce in a fresh sample; one runner-noise
 // excursion must not cancel a release after every other exact-SHA gate passes.
-export function confirmRegressions(measurements, remeasure, thresholdPercent) {
+export function confirmRegressions<Task>(
+  measurements: { task: Task; result: BenchmarkResult }[],
+  remeasure: (task: Task) => BenchmarkResult,
+  thresholdPercent: number,
+): BenchmarkResult[] {
   return measurements.map(({ task, result }) => {
     if (result.status !== "regression") {
       return result;

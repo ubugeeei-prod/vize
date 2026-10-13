@@ -7,7 +7,17 @@ import { appendFileSync, writeFileSync } from "node:fs";
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { collectRustTests, customRustTestTargets } from "./rust-test-inventory.mjs";
+import { collectRustTests, customRustTestTargets } from "./rust-test-inventory.ts";
+import type { TestCase, TestGroup } from "./rust-test-inventory.ts";
+import type { CliArgs } from "./script-types.ts";
+
+type AreaSummary = { area: string; files: number; cases: number };
+export type TestInventory = {
+  totalCases: number;
+  totalFiles: number;
+  areas: AreaSummary[];
+  groups: TestGroup[];
+};
 
 const IGNORED_DIRS = new Set([
   ".git",
@@ -26,8 +36,8 @@ const IGNORED_DIRS = new Set([
 
 const JS_EXTENSIONS = new Set([".js", ".mjs", ".cjs", ".ts", ".mts", ".cts", ".tsx", ".jsx"]);
 
-function parseArgs(argv) {
-  const args = {};
+function parseArgs(argv: string[]): CliArgs {
+  const args: CliArgs = {};
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (!arg.startsWith("--")) {
@@ -45,11 +55,11 @@ function parseArgs(argv) {
   return args;
 }
 
-function walkFiles(root) {
-  const files = [];
+function walkFiles(root: string): string[] {
+  const files: string[] = [];
   const stack = [root];
   while (stack.length) {
-    const current = stack.pop();
+    const current = stack.pop()!;
     const entries = fs.readdirSync(current, { withFileTypes: true });
     for (const entry of entries) {
       if (entry.name.startsWith(".") && entry.name !== ".github" && entry.name !== ".cargo") {
@@ -69,11 +79,11 @@ function walkFiles(root) {
   return files.sort((a, b) => a.localeCompare(b));
 }
 
-function normalizePath(root, absolute) {
+function normalizePath(root: string, absolute: string): string {
   return path.relative(root, absolute).split(path.sep).join("/");
 }
 
-function lineNumberForIndex(content, index) {
+function lineNumberForIndex(content: string, index: number): number {
   let line = 1;
   for (let i = 0; i < index; i++) {
     if (content.charCodeAt(i) === 10) {
@@ -83,8 +93,8 @@ function lineNumberForIndex(content, index) {
   return line;
 }
 
-function unescapeName(value) {
-  return value.replace(/\\([\\'"`nrt])/g, (_, escaped) => {
+function unescapeName(value: string): string {
+  return value.replace(/\\([\\'"`nrt])/g, (_: string, escaped: string) => {
     switch (escaped) {
       case "n":
         return "\\n";
@@ -98,7 +108,7 @@ function unescapeName(value) {
   });
 }
 
-function classifyJs(relativePath) {
+function classifyJs(relativePath: string): { area: string; runner: string } {
   if (
     relativePath.includes("/e2e/vrt/") ||
     relativePath.includes("playwright.vrt.") ||
@@ -116,7 +126,7 @@ function classifyJs(relativePath) {
   return { area: "JS / TS", runner: "node:test / vitest" };
 }
 
-function shouldScanJs(relativePath, content) {
+function shouldScanJs(relativePath: string, content: string): boolean {
   const basename = path.posix.basename(relativePath);
   return (
     /\.test\.[cm]?[jt]sx?$/.test(basename) ||
@@ -127,14 +137,14 @@ function shouldScanJs(relativePath, content) {
   );
 }
 
-function collectJsTests(root, absolute) {
+function collectJsTests(root: string, absolute: string): TestGroup | null {
   const relativePath = normalizePath(root, absolute);
   const content = fs.readFileSync(absolute, "utf8");
   if (!shouldScanJs(relativePath, content)) {
     return null;
   }
 
-  const tests = [];
+  const tests: TestCase[] = [];
   const pattern = /(^|[^\w$.])(?:void\s+)?(?:test|it)\s*\(\s*(["'`])((?:\\.|(?!\2)[\s\S])*?)\2/gm;
   for (const match of content.matchAll(pattern)) {
     tests.push({
@@ -156,14 +166,14 @@ function collectJsTests(root, absolute) {
   };
 }
 
-function collectFixtureCases(root, absolute) {
+function collectFixtureCases(root: string, absolute: string): TestGroup | null {
   const relativePath = normalizePath(root, absolute);
   if (!relativePath.startsWith("tests/fixtures/")) {
     return null;
   }
 
   const content = fs.readFileSync(absolute, "utf8");
-  let tests;
+  let tests: TestCase[];
   if (relativePath.endsWith(".toml")) {
     tests = collectTomlFixtureCases(content);
   } else if (relativePath.endsWith(".pkl")) {
@@ -185,8 +195,8 @@ function collectFixtureCases(root, absolute) {
   };
 }
 
-function collectTomlFixtureCases(content) {
-  const tests = [];
+function collectTomlFixtureCases(content: string): TestCase[] {
+  const tests: TestCase[] = [];
   const casePattern = /^\[\[cases\]\]/gm;
   for (const match of content.matchAll(casePattern)) {
     const blockStart = match.index;
@@ -204,8 +214,8 @@ function collectTomlFixtureCases(content) {
 // Typed Pkl fixtures emit each case as `new { name = "..." ... }`. A schema
 // module declares `name: String` (a colon, not `=`), so a `name = <string>`
 // assignment uniquely identifies a case and skips the schema files.
-function collectPklFixtureCases(content) {
-  const tests = [];
+function collectPklFixtureCases(content: string): TestCase[] {
+  const tests: TestCase[] = [];
   const casePattern = /^[ \t]*name\s*=\s*(#*)(["'])(.*?)\2\1/gm;
   for (const match of content.matchAll(casePattern)) {
     tests.push({
@@ -216,15 +226,15 @@ function collectPklFixtureCases(content) {
   return tests;
 }
 
-export function collectInventory(root = process.cwd()) {
+export function collectInventory(root: string = process.cwd()): TestInventory {
   const files = walkFiles(root);
   const customTargets = customRustTestTargets(files);
-  const groups = [];
+  const groups: TestGroup[] = [];
 
   for (const absolute of files) {
     const relativePath = normalizePath(root, absolute);
     const extension = path.extname(relativePath);
-    let group = null;
+    let group: TestGroup | null = null;
 
     if (
       relativePath.startsWith("tests/fixtures/") &&
@@ -244,8 +254,8 @@ export function collectInventory(root = process.cwd()) {
 
   groups.sort((a, b) => a.area.localeCompare(b.area) || a.file.localeCompare(b.file));
 
-  const areas = [];
-  const byArea = new Map();
+  const areas: AreaSummary[] = [];
+  const byArea = new Map<string, AreaSummary>();
   for (const group of groups) {
     const area = byArea.get(group.area) ?? { area: group.area, files: 0, cases: 0 };
     area.files++;
@@ -263,13 +273,13 @@ export function collectInventory(root = process.cwd()) {
   };
 }
 
-function escapeTable(value) {
+function escapeTable(value: string): string {
   return String(value ?? "")
     .replace(/\|/g, "\\|")
     .replace(/\r?\n/g, "<br>");
 }
 
-export function renderInventoryMarkdown(inventory) {
+export function renderInventoryMarkdown(inventory: TestInventory): string {
   const lines = [
     "## Test Inventory",
     "",
@@ -298,7 +308,7 @@ export function renderInventoryMarkdown(inventory) {
   return lines.join("\n");
 }
 
-async function main() {
+async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   const root = path.resolve(args.root ?? process.cwd());
   const inventory = collectInventory(root);

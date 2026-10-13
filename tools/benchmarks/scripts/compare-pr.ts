@@ -12,21 +12,39 @@ import { basename, delimiter, dirname, join, parse, resolve } from "node:path";
 import { performance } from "node:perf_hooks";
 import { pathToFileURL } from "node:url";
 
-import { laneEnvironment, laneThresholdPercent, makeTasks } from "./compare-pr-lanes.mjs";
+import { laneEnvironment, laneThresholdPercent, makeTasks } from "./compare-pr-lanes.ts";
+import type { BenchmarkLane } from "./compare-pr-lanes.ts";
 import {
   confirmRegressions,
   formatPercent,
   formatRate,
   formatRegressionLine,
   summarizeBenchmarkRuns,
-} from "./compare-pr-results.mjs";
+} from "./compare-pr-results.ts";
+import type {
+  BenchmarkBudget,
+  BenchmarkResult,
+  BudgetCandidate,
+  PrBenchmarkReport,
+} from "./compare-pr-results.ts";
+import type { CliArgs } from "./script-types.ts";
 
 const DEFAULT_RUNS = 5;
 const DEFAULT_WARMUPS = 1;
 const DEFAULT_THRESHOLD_PERCENT = 5;
 
-function parseArgs(argv) {
-  const args = {};
+type MeasureOptions = {
+  cwd: string;
+  path: string;
+  runs: number;
+  warmups: number;
+  thresholdPercent: number;
+  allowNonZeroExit: boolean;
+  threads?: number | "max";
+};
+
+function parseArgs(argv: string[]): CliArgs {
+  const args: CliArgs = {};
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (!arg.startsWith("--")) {
@@ -44,7 +62,7 @@ function parseArgs(argv) {
   return args;
 }
 
-function requireArg(args, key) {
+function requireArg(args: CliArgs, key: string): string {
   const value = args[key];
   if (!value) {
     throw new Error(`Missing required argument: --${key}`);
@@ -52,22 +70,22 @@ function requireArg(args, key) {
   return value;
 }
 
-function parsePositiveInt(value, fallback) {
+function parsePositiveInt(value: string | undefined, fallback: number): number {
   const parsed = Number.parseInt(value ?? "", 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
-function parseNonNegativeInt(value, fallback) {
+function parseNonNegativeInt(value: string | undefined, fallback: number): number {
   const parsed = Number.parseInt(value ?? "", 10);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
 }
 
-function parsePositiveFloat(value, fallback) {
+function parsePositiveFloat(value: string | undefined, fallback: number): number {
   const parsed = Number.parseFloat(value ?? "");
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
-function formatMs(ms) {
+function formatMs(ms: number): string {
   if (!Number.isFinite(ms)) {
     return "n/a";
   }
@@ -77,12 +95,12 @@ function formatMs(ms) {
   })}ms`;
 }
 
-function formatRunList(values) {
+function formatRunList(values: number[]): string {
   return values.map(formatMs).join(", ");
 }
 
-function pathWithNodeBins(cwd) {
-  const dirs = [];
+function pathWithNodeBins(cwd: string): string {
+  const dirs: string[] = [];
   let current = cwd;
   const root = parse(current).root;
   while (true) {
@@ -98,7 +116,7 @@ function pathWithNodeBins(cwd) {
   return [...dirs.reverse(), process.env.PATH ?? ""].join(delimiter);
 }
 
-function runCommand(binary, commandArgs, options) {
+function runCommand(binary: string, commandArgs: string[], options: MeasureOptions): number {
   const start = performance.now();
   const result = spawnSync(binary, commandArgs, {
     cwd: options.cwd,
@@ -127,14 +145,19 @@ function runCommand(binary, commandArgs, options) {
   return elapsedMs;
 }
 
-function measureTask(task, baseBin, headBin, options) {
+function measureTask(
+  task: BenchmarkLane,
+  baseBin: string,
+  headBin: string,
+  options: MeasureOptions,
+): BenchmarkResult {
   for (let i = 0; i < options.warmups; i++) {
     runCommand(baseBin, task.args, options);
     runCommand(headBin, task.args, options);
   }
 
-  const baseRuns = [];
-  const headRuns = [];
+  const baseRuns: number[] = [];
+  const headRuns: number[] = [];
   for (let i = 0; i < options.runs; i++) {
     if (i % 2 === 0) {
       baseRuns.push(runCommand(baseBin, task.args, options));
@@ -154,7 +177,7 @@ function measureTask(task, baseBin, headBin, options) {
   });
 }
 
-export function createBenchmarkBudget(results) {
+export function createBenchmarkBudget(results: readonly BudgetCandidate[]): BenchmarkBudget {
   const regressions = results
     .filter((result) => result.status === "regression")
     .map((result) => ({
@@ -177,7 +200,10 @@ export function createBenchmarkBudget(results) {
  * never implies one budget covered every row. Derived from the results rather
  * than restated, so it cannot drift from what actually gated the run.
  */
-export function laneBudgetOverrides(results, defaultThresholdPercent) {
+export function laneBudgetOverrides(
+  results: readonly Pick<BudgetCandidate, "label" | "thresholdPercent">[],
+  defaultThresholdPercent: number,
+): string[] {
   return results
     .filter(
       (result) =>
@@ -186,9 +212,9 @@ export function laneBudgetOverrides(results, defaultThresholdPercent) {
     .map((result) => `${result.label} ${result.thresholdPercent}%`);
 }
 
-export function renderMarkdown(data) {
+export function renderMarkdown(data: PrBenchmarkReport): string {
   const budget = data.budget ?? createBenchmarkBudget(data.results);
-  const lines = [];
+  const lines: string[] = [];
   lines.push("## PR Benchmark");
   lines.push("");
   lines.push(
@@ -239,7 +265,7 @@ export function renderMarkdown(data) {
   return `${lines.join("\n")}\n`;
 }
 
-export function main(argv = process.argv.slice(2)) {
+export function main(argv: string[] = process.argv.slice(2)): void {
   const args = parseArgs(argv);
   const inputDir = resolve(requireArg(args, "input"));
   const baseBin = resolve(requireArg(args, "base-bin"));
@@ -269,7 +295,7 @@ export function main(argv = process.argv.slice(2)) {
     throw new Error(`No benchmark tasks selected. Requested: ${taskFilter || "(default)"}`);
   }
 
-  const options = {
+  const options: MeasureOptions = {
     cwd: inputDir,
     path: pathWithNodeBins(inputDir),
     runs,
@@ -278,7 +304,7 @@ export function main(argv = process.argv.slice(2)) {
     allowNonZeroExit: false,
   };
 
-  const measure = (task) =>
+  const measure = (task: BenchmarkLane): BenchmarkResult =>
     measureTask(task, baseBin, headBin, {
       ...options,
       allowNonZeroExit: task.allowNonZeroExit,
@@ -290,7 +316,7 @@ export function main(argv = process.argv.slice(2)) {
     thresholdPercent,
   );
 
-  const data = {
+  const data: PrBenchmarkReport = {
     baseLabel: args["base-label"] ?? "base",
     headLabel: args["head-label"] ?? "head",
     inputDir,

@@ -1,17 +1,56 @@
 /** Aggregate three independent same-head production comparisons, report only. */
 import { appendFileSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { isRecord } from "./script-types.ts";
+
+type ReportShape = {
+  shape: string;
+  observations: Record<string, unknown>[];
+  cohorts: Record<string, unknown>;
+};
+/** One runner's `samples.json`; fields other than `shapes` are only compared. */
+type ProductionReport = Record<string, unknown> & { shapes: ReportShape[] };
+type TimedSample = Record<string, unknown> & {
+  selected_batch_ns: number[];
+  retained_batch_ns: number[];
+};
+
+const isReportShape = (value: unknown): value is ReportShape =>
+  isRecord(value) &&
+  typeof value.shape === "string" &&
+  Array.isArray(value.observations) &&
+  value.observations.every(isRecord) &&
+  isRecord(value.cohorts);
+const isProductionReport = (value: unknown): value is ProductionReport =>
+  isRecord(value) && Array.isArray(value.shapes) && value.shapes.every(isReportShape);
+// Nine positive finite batch samples per side, as the timing protocol records.
+const isTimedSample = (sample: Record<string, unknown>): sample is TimedSample =>
+  (["selected_batch_ns", "retained_batch_ns"] as const).every((key) => {
+    const values = sample[key];
+    return (
+      Array.isArray(values) &&
+      values.length === 9 &&
+      values.every(
+        (value: unknown) => typeof value === "number" && Number.isFinite(value) && value > 0,
+      )
+    );
+  });
 
 const [root, output] = process.argv.slice(2);
 if (!root || !output)
-  throw new Error("usage: davinci-production-summary.mjs <artifact-root> <output.md>");
+  throw new Error("usage: davinci-production-summary.ts <artifact-root> <output.md>");
 const files = readdirSync(root)
   .filter((name) => /^davinci-production-perf-[123]$/.test(name))
   .sort()
   .map((name) => join(root, name, "samples.json"));
 if (files.length !== 3) throw new Error(`Expected three independent reports, got ${files.length}`);
-const reports = files.map((file) => JSON.parse(readFileSync(file, "utf8")));
-const identity = (report) =>
+const reports = files.map((file) => {
+  const report: unknown = JSON.parse(readFileSync(file, "utf8"));
+  // A report without well-formed shape entries cannot cover every shipping shape.
+  if (!isProductionReport(report)) throw new Error("Expected each shipping shape exactly once");
+  return report;
+});
+const identity = (report: ProductionReport) =>
   JSON.stringify({
     schema: report.schema_version,
     head: report.head_sha,
@@ -24,7 +63,8 @@ const identity = (report) =>
     window: report.window,
     sampling: report.sampling,
   });
-if (!/^[0-9a-f]{40}$/.test(reports[0].head_sha)) throw new Error("Missing exact benchmark head");
+if (!/^[0-9a-f]{40}$/.test(String(reports[0].head_sha)))
+  throw new Error("Missing exact benchmark head");
 const shippingShapes = ["dom_inline", "dom_module", "ssr", "vapor"];
 for (const report of reports) {
   if (identity(report) !== identity(reports[0]))
@@ -37,7 +77,8 @@ for (const report of reports) {
     throw new Error("Expected each shipping shape exactly once");
   }
 }
-const median = (values) => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
+const median = (values: number[]) =>
+  [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
 const lines = [
   "# Davinci production comparison",
   "",
@@ -57,7 +98,7 @@ for (const shape of reports[0].shapes) {
   if (peers.some((peer) => !peer)) throw new Error(`Missing shape ${shape.shape}`);
   if (shape.observations.length !== reports[0].files) throw new Error("Missing input observations");
   for (const peer of peers) {
-    if (JSON.stringify(peer.observations) !== JSON.stringify(shape.observations)) {
+    if (JSON.stringify(peer!.observations) !== JSON.stringify(shape.observations)) {
       throw new Error(`Nondeterministic output/admission observations: ${shape.shape}`);
     }
   }
@@ -66,20 +107,14 @@ for (const shape of reports[0].shapes) {
       name === "all"
         ? shape.observations.length
         : shape.observations.filter((observation) => observation.cohort === name).length;
-    if (cohort.files !== expected) throw new Error(`Cohort count mismatch: ${shape.shape}/${name}`);
+    if (!isRecord(cohort) || typeof cohort.files !== "number" || cohort.files !== expected)
+      throw new Error(`Cohort count mismatch: ${shape.shape}/${name}`);
     if (!cohort.files) continue;
     const ratios = peers.map((peer) => {
-      const sample = peer.cohorts[name];
-      if (sample.files !== cohort.files || sample.passes_per_sample !== 5)
+      const sample = peer!.cohorts[name];
+      if (!isRecord(sample) || sample.files !== cohort.files || sample.passes_per_sample !== 5)
         throw new Error("Different timed workloads");
-      for (const key of ["selected_batch_ns", "retained_batch_ns"]) {
-        if (
-          sample[key].length !== 9 ||
-          sample[key].some((value) => !Number.isFinite(value) || value <= 0)
-        ) {
-          throw new Error("Invalid raw timing samples");
-        }
-      }
+      if (!isTimedSample(sample)) throw new Error("Invalid raw timing samples");
       const selected = median(sample.selected_batch_ns);
       const retained = median(sample.retained_batch_ns);
       if (

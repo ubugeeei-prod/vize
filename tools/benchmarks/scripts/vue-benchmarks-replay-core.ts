@@ -3,6 +3,38 @@ import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } fr
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { isOptional, isRecord, isStringArray } from "./script-types.ts";
+import type { CliArgs } from "./script-types.ts";
+
+export type RunOptions = { cwd?: string; env?: NodeJS.ProcessEnv; timeout?: number };
+export type RunResult = { status: number | null; stdout: string; stderr: string };
+export type ResolvedBinary = { path: string; version: string };
+/** The upstream `meta.json` fields the replay scores against. */
+export type CaseMeta = {
+  expectErrors?: boolean;
+  minErrors?: number;
+  mustMatch?: string[];
+  mustNotMatch?: string[];
+};
+/** The only field of a checker report the replay scores. */
+export type ErrorCountReport = { errorCount: number };
+export type CaseScore = { outcome: "pass" | "fail"; detail: string };
+export type CaseOutcome = { caseId: string; outcome: string; detail: string };
+
+export function isCaseMeta(value: unknown): value is CaseMeta {
+  return (
+    isRecord(value) &&
+    isOptional(value.expectErrors, (flag) => typeof flag === "boolean") &&
+    isOptional(value.minErrors, (count) => typeof count === "number") &&
+    isOptional(value.mustMatch, isStringArray) &&
+    isOptional(value.mustNotMatch, isStringArray)
+  );
+}
+
+export function isErrorCountReport(value: unknown): value is ErrorCountReport {
+  return isRecord(value) && typeof value.errorCount === "number";
+}
+
 export const benchDir = dirname(fileURLToPath(import.meta.url));
 export const rootDir = resolve(benchDir, "..", "..", "..");
 
@@ -20,8 +52,8 @@ export const UPSTREAM = {
  */
 export const DEFAULT_REPLAY_TOOLS = ["vize", "verter-tsc", "golar-typecheck", "golar-default"];
 
-export function parseArgs(argv) {
-  const args = {};
+export function parseArgs(argv: string[]): CliArgs {
+  const args: CliArgs = {};
   for (let i = 0; i < argv.length; i++) {
     if (!argv[i].startsWith("--")) continue;
     const key = argv[i].slice(2);
@@ -36,7 +68,7 @@ export function parseArgs(argv) {
   return args;
 }
 
-export function parseToolList(value) {
+export function parseToolList(value: string | undefined): string[] {
   const requested = (value ?? DEFAULT_REPLAY_TOOLS.join(","))
     .split(",")
     .map((tool) => tool.trim())
@@ -51,7 +83,7 @@ export function parseToolList(value) {
   return [...new Set(requested)];
 }
 
-export function run(command, commandArgs, options = {}) {
+export function run(command: string, commandArgs: string[], options: RunOptions = {}): RunResult {
   const result = spawnSync(command, commandArgs, {
     cwd: options.cwd,
     encoding: "utf8",
@@ -68,7 +100,11 @@ export function run(command, commandArgs, options = {}) {
 }
 
 /** Fail closed: an explicitly pinned binary never falls back to another. */
-export function requireBinary(label, explicitPath, fallbacks) {
+export function requireBinary(
+  label: string,
+  explicitPath: string | undefined,
+  fallbacks: string[],
+): ResolvedBinary {
   const candidates = (explicitPath ? [explicitPath] : fallbacks).map((c) => resolve(c));
   const found = candidates.find((candidate) => existsSync(candidate));
   if (!found) {
@@ -82,7 +118,7 @@ export function requireBinary(label, explicitPath, fallbacks) {
   };
 }
 
-export function workspaceBinCandidates(name) {
+export function workspaceBinCandidates(name: string): string[] {
   const suffixes = process.platform === "win32" ? ["", ".cmd", ".ps1"] : [""];
   const roots = [rootDir, benchDir, join(rootDir, "tests")];
   return roots.flatMap((base) =>
@@ -91,7 +127,7 @@ export function workspaceBinCandidates(name) {
 }
 
 /** Clone (or reuse) the upstream corpus and pin it to the recorded commit. */
-export function ensureUpstream(upstreamDir, workRoot) {
+export function ensureUpstream(upstreamDir: string | undefined, workRoot: string): string {
   const dir = upstreamDir ? resolve(upstreamDir) : join(workRoot, "vue-benchmarks");
   if (!existsSync(join(dir, ".git"))) {
     rmSync(dir, { recursive: true, force: true });
@@ -122,7 +158,7 @@ export function ensureUpstream(upstreamDir, workRoot) {
   return dir;
 }
 
-export function resolveVuePackageDir() {
+export function resolveVuePackageDir(): string {
   const candidates = [
     join(benchDir, "node_modules", "vue"),
     join(rootDir, "node_modules", "vue"),
@@ -138,7 +174,12 @@ export function resolveVuePackageDir() {
  * (shared env.d.ts + tsconfig.base with `paths` pinned at a real vue), with
  * only the minimal config file needed by the Golar CLI row.
  */
-export function prepareCase(upstreamDir, caseId, workRoot, vuePackageDir) {
+export function prepareCase(
+  upstreamDir: string,
+  caseId: string,
+  workRoot: string,
+  vuePackageDir: string,
+): { dest: string; meta: CaseMeta } {
   const source = join(upstreamDir, "tests/confirm/fixtures/typecheck/cases", caseId);
   const shared = join(upstreamDir, "tests/confirm/fixtures/typecheck/_shared");
   const dest = join(workRoot, "cases", caseId);
@@ -147,7 +188,13 @@ export function prepareCase(upstreamDir, caseId, workRoot, vuePackageDir) {
   cpSync(source, dest, { recursive: true });
   cpSync(join(shared, "env.d.ts"), join(dest, "env.d.ts"));
 
-  const tsconfig = JSON.parse(readFileSync(join(shared, "tsconfig.base.json"), "utf8"));
+  const tsconfig: unknown = JSON.parse(readFileSync(join(shared, "tsconfig.base.json"), "utf8"));
+  if (
+    !isRecord(tsconfig) ||
+    (tsconfig.compilerOptions != null && !isRecord(tsconfig.compilerOptions))
+  ) {
+    throw new Error(`replay: ${caseId}: tsconfig.base.json is not a tsconfig object`);
+  }
   const vuePath = vuePackageDir.replaceAll("\\", "/");
   tsconfig.compilerOptions = {
     ...tsconfig.compilerOptions,
@@ -159,11 +206,13 @@ export function prepareCase(upstreamDir, caseId, workRoot, vuePackageDir) {
     join(dest, "package.json"),
     `${JSON.stringify({ name: `replay-${caseId}`, private: true, type: "module" }, null, 2)}\n`,
   );
-  const meta = JSON.parse(readFileSync(join(source, "meta.json"), "utf8"));
+  const meta: unknown = JSON.parse(readFileSync(join(source, "meta.json"), "utf8"));
+  if (!isCaseMeta(meta))
+    throw new Error(`replay: ${caseId}: meta.json does not match the upstream contract`);
   return { dest, meta };
 }
 
-export function reportFromText(status, combined) {
+export function reportFromText(status: number | null, combined: string): ErrorCountReport {
   const diagnosticCodes = combined.match(/\bTS\d{4}\b/g) ?? [];
   return {
     errorCount: diagnosticCodes.length > 0 ? diagnosticCodes.length : status === 0 ? 0 : 1,
@@ -171,7 +220,12 @@ export function reportFromText(status, combined) {
 }
 
 /** Score one vize JSON report against upstream meta expectations. */
-export function scoreCase(meta, status, report, combined) {
+export function scoreCase(
+  meta: CaseMeta,
+  status: number | null,
+  report: ErrorCountReport | null,
+  combined: string,
+): CaseScore {
   if (report == null) {
     return { outcome: "fail", detail: `no JSON report (status=${status})` };
   }
@@ -205,8 +259,11 @@ export function scoreCase(meta, status, report, combined) {
 }
 
 /** Compare replay outcomes with the pinned expectation table. */
-export function diffExpectations(results, expectations) {
-  const problems = [];
+export function diffExpectations(
+  results: CaseOutcome[],
+  expectations: Record<string, string>,
+): string[] {
+  const problems: string[] = [];
   for (const result of results) {
     const expected = expectations[result.caseId];
     if (expected == null) {

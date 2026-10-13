@@ -27,17 +27,23 @@ import {
   rootDir,
   scoreCase,
   workspaceBinCandidates,
-} from "./vue-benchmarks-replay-core.mjs";
-import { createReplayTools } from "./vue-benchmarks-replay-tools.mjs";
+} from "./vue-benchmarks-replay-core.ts";
+import { createReplayTools } from "./vue-benchmarks-replay-tools.ts";
+import { isRecord } from "./script-types.ts";
 
 export {
   DEFAULT_REPLAY_TOOLS,
   UPSTREAM,
   diffExpectations,
   scoreCase,
-} from "./vue-benchmarks-replay-core.mjs";
+} from "./vue-benchmarks-replay-core.ts";
 
-export async function main(argv = process.argv.slice(2)) {
+/** The pinned `--expect` table: case id to expected outcome. */
+function isOutcomeTable(value: unknown): value is Record<string, string> {
+  return isRecord(value) && Object.values(value).every((outcome) => typeof outcome === "string");
+}
+
+export async function main(argv: string[] = process.argv.slice(2)): Promise<void> {
   const args = parseArgs(argv);
   const workRoot = resolve(args["work-root"] ?? join(rootDir, "target", "vue-benchmarks-replay"));
   mkdirSync(workRoot, { recursive: true });
@@ -141,7 +147,10 @@ export async function main(argv = process.argv.slice(2)) {
   }
 
   if (args.expect) {
-    const expectations = JSON.parse(readFileSync(resolve(args.expect), "utf8"));
+    const expectations: unknown = JSON.parse(readFileSync(resolve(args.expect), "utf8"));
+    if (!isOutcomeTable(expectations)) {
+      throw new Error(`replay: ${args.expect} must map case ids to expected outcomes`);
+    }
     const problems = diffExpectations(vizeResults, expectations);
     if (problems.length > 0) {
       throw new Error(`replay: expectation drift:\n- ${problems.join("\n- ")}`);

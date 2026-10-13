@@ -1,7 +1,24 @@
 import { existsSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
-import { benchDir, reportFromText, run } from "./vue-benchmarks-replay-core.mjs";
+import { benchDir, isErrorCountReport, reportFromText, run } from "./vue-benchmarks-replay-core.ts";
+import type { ErrorCountReport, ResolvedBinary, RunResult } from "./vue-benchmarks-replay-core.ts";
+
+export type ToolCheck = RunResult & { report: ErrorCountReport | null };
+export type ReplayTool = {
+  id: string;
+  label: string;
+  version: string;
+  run: (cwd: string) => ToolCheck;
+};
+/** Binaries are resolved only for selected tools, so unselected ones are null. */
+export type ReplayBinaries = {
+  selectedTools: string[];
+  vize: ResolvedBinary | null;
+  tsgo: ResolvedBinary | null;
+  verterTsc: ResolvedBinary | null;
+  golar: ResolvedBinary | null;
+};
 
 const GOLAR_CONFIG = `import { defineConfig } from "golar/unstable";
 import "@golar/vue";
@@ -9,8 +26,14 @@ import "@golar/vue";
 export default defineConfig({});
 `;
 
-export function createReplayTools({ selectedTools, vize, tsgo, verterTsc, golar }) {
-  const linkGolarPackage = (nodeModulesPath, packageName) => {
+export function createReplayTools({
+  selectedTools,
+  vize,
+  tsgo,
+  verterTsc,
+  golar,
+}: ReplayBinaries): ReplayTool[] {
+  const linkGolarPackage = (nodeModulesPath: string, packageName: string): string | null => {
     const linkPath = join(nodeModulesPath, ...packageName.split("/"));
     if (existsSync(linkPath)) {
       return null;
@@ -19,10 +42,10 @@ export function createReplayTools({ selectedTools, vize, tsgo, verterTsc, golar 
     symlinkSync(join(benchDir, "node_modules", ...packageName.split("/")), linkPath, "dir");
     return linkPath;
   };
-  const runGolar = (cwd, args) => {
+  const runGolar = (cwd: string, args: string[]): RunResult => {
     const configPath = join(cwd, "golar.config.ts");
     const nodeModulesPath = join(cwd, "node_modules");
-    const createdLinks = [];
+    const createdLinks: string[] = [];
     writeFileSync(configPath, GOLAR_CONFIG);
     if (!existsSync(nodeModulesPath)) {
       mkdirSync(nodeModulesPath);
@@ -34,7 +57,7 @@ export function createReplayTools({ selectedTools, vize, tsgo, verterTsc, golar 
       }
     }
     try {
-      return run(golar.path, args, { cwd });
+      return run(golar!.path, args, { cwd });
     } finally {
       rmSync(configPath, { force: true });
       for (const linkPath of createdLinks.reverse()) {
@@ -47,10 +70,10 @@ export function createReplayTools({ selectedTools, vize, tsgo, verterTsc, golar 
       return {
         id,
         label: "Vize",
-        version: vize.version,
+        version: vize!.version,
         run: (cwd) => {
           const result = run(
-            vize.path,
+            vize!.path,
             [
               "check",
               ".",
@@ -60,13 +83,14 @@ export function createReplayTools({ selectedTools, vize, tsgo, verterTsc, golar 
               "--tsconfig",
               "tsconfig.json",
               "--corsa-path",
-              tsgo.path,
+              tsgo!.path,
             ],
             { cwd },
           );
-          let report = null;
+          let report: ErrorCountReport | null = null;
           try {
-            report = JSON.parse(result.stdout);
+            const parsed: unknown = JSON.parse(result.stdout);
+            report = isErrorCountReport(parsed) ? parsed : null;
           } catch {
             report = null;
           }
@@ -78,11 +102,11 @@ export function createReplayTools({ selectedTools, vize, tsgo, verterTsc, golar 
       return {
         id,
         label: "verter-tsc",
-        version: verterTsc.version,
+        version: verterTsc!.version,
         run: (cwd) => {
-          const result = run(verterTsc.path, ["--noEmit", "-p", "tsconfig.json"], {
+          const result = run(verterTsc!.path, ["--noEmit", "-p", "tsconfig.json"], {
             cwd,
-            env: { VERTER_TSGO_BIN: tsgo.path },
+            env: { VERTER_TSGO_BIN: tsgo!.path },
           });
           return {
             ...result,
@@ -95,7 +119,7 @@ export function createReplayTools({ selectedTools, vize, tsgo, verterTsc, golar 
       return {
         id,
         label: "Golar typecheck",
-        version: golar.version,
+        version: golar!.version,
         run: (cwd) => {
           const result = runGolar(cwd, ["typecheck"]);
           return {
@@ -108,7 +132,7 @@ export function createReplayTools({ selectedTools, vize, tsgo, verterTsc, golar 
     return {
       id,
       label: "Golar (lint+check)",
-      version: golar.version,
+      version: golar!.version,
       run: (cwd) => {
         const result = runGolar(cwd, []);
         return {

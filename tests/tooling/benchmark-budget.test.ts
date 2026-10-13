@@ -4,15 +4,15 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { laneEnvironment, makeTasks } from "../../tools/benchmarks/scripts/compare-pr-lanes.mjs";
+import { laneEnvironment, makeTasks } from "../../tools/benchmarks/scripts/compare-pr-lanes.ts";
 import {
   createBenchmarkBudget,
   renderMarkdown,
-} from "../../tools/benchmarks/scripts/compare-pr.mjs";
+} from "../../tools/benchmarks/scripts/compare-pr.ts";
 import {
   DEFAULT_SKIP_OVERRIDE_LABEL,
   enforceBenchmarkBudget,
-} from "../../tools/benchmarks/scripts/enforce-pr-budget.mjs";
+} from "../../tools/benchmarks/scripts/enforce-pr-budget.ts";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 const stableResult = {

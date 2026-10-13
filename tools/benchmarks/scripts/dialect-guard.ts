@@ -32,14 +32,19 @@ import { join, resolve } from "node:path";
 import { performance } from "node:perf_hooks";
 import { pathToFileURL } from "node:url";
 import { createHash } from "node:crypto";
+import type { CliArgs } from "./script-types.ts";
 
 const DEFAULT_THRESHOLD_PERCENT = 2;
 const DEFAULT_MIN_REGRESSION_MS = 5;
 const DEFAULT_RUNS = 10;
 const DEFAULT_WARMUPS = 2;
+type OutputHashes = { files: Record<string, string>; digest: string };
+type SpawnOptions = { cwd?: string; env?: Record<string, string> };
+type RunOptions = SpawnOptions & { capture?: boolean; allowFailure?: boolean };
+type PairOptions = { offOut: string; onOut: string; runs: number; warmups: number };
 
-function parseArgs(argv) {
-  const args = {};
+function parseArgs(argv: string[]) {
+  const args: CliArgs = {};
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (!arg.startsWith("--")) {
@@ -57,7 +62,7 @@ function parseArgs(argv) {
   return args;
 }
 
-function requireArg(args, key) {
+function requireArg(args: CliArgs, key: string) {
   const value = args[key];
   if (!value) {
     throw new Error(`Missing required argument: --${key}`);
@@ -65,27 +70,27 @@ function requireArg(args, key) {
   return value;
 }
 
-function parsePositiveInt(value, fallback) {
+function parsePositiveInt(value: string | undefined, fallback: number) {
   const parsed = Number.parseInt(value ?? "", 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
-function parseNonNegativeInt(value, fallback) {
+function parseNonNegativeInt(value: string | undefined, fallback: number) {
   const parsed = Number.parseInt(value ?? "", 10);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
 }
 
-function parsePositiveFloat(value, fallback) {
+function parsePositiveFloat(value: string | undefined, fallback: number) {
   const parsed = Number.parseFloat(value ?? "");
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
-function parseNonNegativeFloat(value, fallback) {
+function parseNonNegativeFloat(value: string | undefined, fallback: number) {
   const parsed = Number.parseFloat(value ?? "");
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
 }
 
-function median(values) {
+function median(values: number[]) {
   const sorted = [...values].sort((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
   if (sorted.length % 2 === 1) {
@@ -99,9 +104,9 @@ function median(values) {
  * compared independent of filesystem walk order. Returns a map of relative
  * path -> sha256, and a combined digest over the sorted entries.
  */
-export function hashOutputDir(dir) {
-  const files = {};
-  const walk = (current, prefix) => {
+export function hashOutputDir(dir: string): OutputHashes {
+  const files: Record<string, string> = {};
+  const walk = (current: string, prefix: string) => {
     for (const entry of readdirSync(current, { withFileTypes: true }).sort((a, b) =>
       a.name.localeCompare(b.name),
     )) {
@@ -128,8 +133,8 @@ export function hashOutputDir(dir) {
  * Diff two output-directory hash maps. Returns the list of paths that are
  * missing on one side or whose contents differ.
  */
-export function diffOutputs(off, on) {
-  const differences = [];
+export function diffOutputs(off: OutputHashes, on: OutputHashes) {
+  const differences: string[] = [];
   const names = new Set([...Object.keys(off.files), ...Object.keys(on.files)]);
   for (const name of [...names].sort()) {
     const offHash = off.files[name];
@@ -145,7 +150,7 @@ export function diffOutputs(off, on) {
   return differences;
 }
 
-function run(command, commandArgs, options = {}) {
+function run(command: string, commandArgs: string[], options: RunOptions = {}) {
   const result = spawnSync(command, commandArgs, {
     cwd: options.cwd,
     env: { ...process.env, ...options.env },
@@ -162,7 +167,7 @@ function run(command, commandArgs, options = {}) {
   return result;
 }
 
-function buildArgs(inputDir, outDir) {
+function buildArgs(inputDir: string, outDir: string) {
   // Deterministic, single-threaded JS emit so the OFF/ON outputs are comparable
   // and the timing lane is stable on shared runners.
   return [
@@ -178,24 +183,29 @@ function buildArgs(inputDir, outDir) {
   ];
 }
 
-function compileCorpus(bin, inputDir, outDir) {
+function compileCorpus(bin: string, inputDir: string, outDir: string) {
   rmSync(outDir, { recursive: true, force: true });
   run(bin, buildArgs(inputDir, outDir), {
     env: { NO_COLOR: "1", RAYON_NUM_THREADS: "1", VIZE_BENCH: "1" },
   });
 }
 
-function timeCompile(bin, inputDir, outDir) {
+function timeCompile(bin: string, inputDir: string, outDir: string) {
   const start = performance.now();
   compileCorpus(bin, inputDir, outDir);
   return performance.now() - start;
 }
 
-function timeCorpusPair(offBin, onBin, inputDir, { offOut, onOut, runs, warmups }) {
-  const offSamples = [];
-  const onSamples = [];
-  const ratios = [];
-  const deltas = [];
+function timeCorpusPair(
+  offBin: string,
+  onBin: string,
+  inputDir: string,
+  { offOut, onOut, runs, warmups }: PairOptions,
+) {
+  const offSamples: number[] = [];
+  const onSamples: number[] = [];
+  const ratios: number[] = [];
+  const deltas: number[] = [];
 
   for (let i = 0; i < warmups; i++) {
     if (i % 2 === 0) {
@@ -233,7 +243,7 @@ function timeCorpusPair(offBin, onBin, inputDir, { offOut, onOut, runs, warmups 
   };
 }
 
-export function main(argv = process.argv.slice(2)) {
+export function main(argv: string[] = process.argv.slice(2)) {
   const args = parseArgs(argv);
   const inputDir = resolve(requireArg(args, "input"));
   const offBin = resolve(requireArg(args, "off-bin"));
@@ -284,7 +294,7 @@ export function main(argv = process.argv.slice(2)) {
     changePercent >= threshold &&
     deltaMs >= minRegressionMs;
 
-  const lines = [];
+  const lines: string[] = [];
   lines.push("## Dialect Guard (legacy feature)");
   lines.push("");
   lines.push(

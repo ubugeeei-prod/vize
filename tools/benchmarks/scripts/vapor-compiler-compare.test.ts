@@ -1,14 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import {
-  compareThreeLanes,
-  renderComparison,
-  validateFixtures,
-} from "./vapor-compiler-compare.mjs";
+import { compareThreeLanes, renderComparison, validateFixtures } from "./vapor-compiler-compare.ts";
 
 const fixtures = validateFixtures();
-const exportFor = (names) => ({
+const exportFor = (names: string[]) => ({
   name: "head",
   benchmarks: Object.fromEntries(
     names.flatMap((name) =>

@@ -5,7 +5,7 @@ on:
     paths:
       - "crates/vize_doctor/src/filter/**"
       - "crates/vize_doctor/examples/filter_patterns_bench/**"
-      - "tools/benchmarks/scripts/doctor-filter-paired.mjs"
+      - "tools/benchmarks/scripts/doctor-filter-paired.ts"
       - ".github/workflows/doctor-filter-bench.yml"
 
 permissions:
@@ -80,7 +80,7 @@ jobs:
           cargo build --locked --manifest-path head/Cargo.toml --profile ci-opt -p vize_doctor --example filter_patterns_bench
       - name: Compare planted verdicts and nine alternating measurement pairs
         run: |
-          node head/tools/benchmarks/scripts/doctor-filter-paired.mjs \
+          node head/tools/benchmarks/scripts/doctor-filter-paired.ts \
             "$GITHUB_WORKSPACE/base/target/ci-opt/examples/filter_patterns_bench" \
             "$GITHUB_WORKSPACE/head/target/ci-opt/examples/filter_patterns_bench" \
             "$GITHUB_WORKSPACE/doctor-filter-bench.json"

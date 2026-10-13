@@ -7,13 +7,19 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { formatRegressionLine } from "./compare-pr-results.mjs";
-import { createBenchmarkBudget } from "./compare-pr.mjs";
+import { formatRegressionLine } from "./compare-pr-results.ts";
+import { createBenchmarkBudget } from "./compare-pr.ts";
+import { isBenchmarkArtifact } from "./pr-benchmark-artifact.ts";
+import type { BenchmarkArtifact } from "./pr-benchmark-artifact.ts";
+import { isStringArray } from "./script-types.ts";
+import type { CliArgs } from "./script-types.ts";
 
 export const DEFAULT_SKIP_OVERRIDE_LABEL = "ci:allow-skipped-benchmark";
 
-function parseArgs(argv) {
-  const args = {};
+export type EnforceOptions = { labels?: string[]; skipOverrideLabel?: string };
+
+function parseArgs(argv: string[]): CliArgs {
+  const args: CliArgs = {};
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (!arg.startsWith("--")) {
@@ -31,7 +37,7 @@ function parseArgs(argv) {
   return args;
 }
 
-function requireArg(args, key) {
+function requireArg(args: CliArgs, key: string): string {
   const value = args[key];
   if (!value) {
     throw new Error(`Missing required argument: --${key}`);
@@ -39,19 +45,22 @@ function requireArg(args, key) {
   return value;
 }
 
-function parseLabelsJson(value) {
+function parseLabelsJson(value: string | undefined): string[] {
   if (!value) {
     return [];
   }
 
-  const labels = JSON.parse(value);
-  if (!Array.isArray(labels) || labels.some((label) => typeof label !== "string")) {
+  const labels: unknown = JSON.parse(value);
+  if (!isStringArray(labels)) {
     throw new Error("--labels-json must be a JSON array of label names");
   }
   return labels;
 }
 
-export function enforceBenchmarkBudget(data, options = {}) {
+export function enforceBenchmarkBudget(
+  data: BenchmarkArtifact,
+  options: EnforceOptions = {},
+): { ok: boolean; message: string } {
   if (data.skipped) {
     const skipOverrideLabel = options.skipOverrideLabel ?? DEFAULT_SKIP_OVERRIDE_LABEL;
     const labels = options.labels ?? data.labels ?? [];
@@ -88,10 +97,13 @@ export function enforceBenchmarkBudget(data, options = {}) {
   };
 }
 
-export function main(argv = process.argv.slice(2)) {
+export function main(argv: string[] = process.argv.slice(2)): void {
   const args = parseArgs(argv);
   const jsonPath = resolve(requireArg(args, "json"));
-  const data = JSON.parse(readFileSync(jsonPath, "utf8"));
+  const data: unknown = JSON.parse(readFileSync(jsonPath, "utf8"));
+  if (!isBenchmarkArtifact(data)) {
+    throw new Error(`${jsonPath} is not a PR benchmark artifact`);
+  }
   const result = enforceBenchmarkBudget(data, {
     labels: parseLabelsJson(args["labels-json"]),
     skipOverrideLabel: args["skip-override-label"],

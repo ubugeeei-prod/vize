@@ -5,29 +5,47 @@ import { dirname, relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 import { appendFileSync, writeFileSync } from "node:fs";
 
-import { CRITERION_SUITES } from "./criterion-ab.mjs";
+import { CRITERION_SUITES } from "./criterion-ab.ts";
+import type { SuiteSelection } from "./criterion-summary.ts";
+import { isRecord, isStringArray } from "./script-types.ts";
+
+type ImpactArgs = Record<string, string | true | undefined>;
+type WorkspacePackage = { id: string; name: string; root: string };
+type CargoPackage = { id: string; name: string; manifest_path: string };
+type ResolveNode = { id: string; dependencies?: string[] | null };
+export type CriterionImpact = SuiteSelection & { mode: "hosted-smoke" | "full" | "scoped" };
+
+const isCargoPackage = (value: unknown): value is CargoPackage =>
+  isRecord(value) &&
+  typeof value.id === "string" &&
+  typeof value.name === "string" &&
+  typeof value.manifest_path === "string";
+const isResolveNode = (value: unknown): value is ResolveNode =>
+  isRecord(value) &&
+  typeof value.id === "string" &&
+  (value.dependencies == null || isStringArray(value.dependencies));
 
 const FULL_SWEEP_PATHS = new Set([
   ".github/workflows/criterion-bench.yml",
   "Cargo.lock",
   "Cargo.toml",
-  "tools/benchmarks/scripts/criterion-ab.mjs",
-  "tools/benchmarks/scripts/criterion-baselines.mjs",
-  "tools/benchmarks/scripts/criterion-impact.mjs",
-  "tools/benchmarks/scripts/criterion-summary.mjs",
-  "tools/benchmarks/scripts/dialect-guard.mjs",
+  "tools/benchmarks/scripts/criterion-ab.ts",
+  "tools/benchmarks/scripts/criterion-baselines.ts",
+  "tools/benchmarks/scripts/criterion-impact.ts",
+  "tools/benchmarks/scripts/criterion-summary.ts",
+  "tools/benchmarks/scripts/dialect-guard.ts",
   "tools/benchmarks/scripts/generate.mjs",
   "rust-toolchain.toml",
 ]);
 const HOSTED_FALLBACK_SMOKE_SUITES = ["vize_glyph"];
 const RUST_BENCHMARK_SUBJECT_PATHS = new Set(["Cargo.lock", "Cargo.toml", "rust-toolchain.toml"]);
 const VAPOR_COMPARISON_PATHS = new Set([
-  "tools/benchmarks/scripts/vapor-compiler-compare.mjs",
+  "tools/benchmarks/scripts/vapor-compiler-compare.ts",
   "tools/benchmarks/scripts/vapor-compiler-fixtures.json",
 ]);
 
-function parseArgs(argv) {
-  const args = {};
+function parseArgs(argv: string[]): ImpactArgs {
+  const args: ImpactArgs = {};
   for (let index = 0; index < argv.length; index++) {
     const arg = argv[index];
     if (!arg.startsWith("--")) continue;
@@ -43,7 +61,7 @@ function parseArgs(argv) {
   return args;
 }
 
-function requireArg(args, key) {
+function requireArg(args: ImpactArgs, key: string): string {
   const value = args[key];
   if (typeof value !== "string" || value.length === 0) {
     throw new Error(`Missing required argument: --${key}`);
@@ -51,7 +69,7 @@ function requireArg(args, key) {
   return value;
 }
 
-function run(command, args, cwd) {
+function run(command: string, args: string[], cwd: string): string {
   const result = spawnSync(command, args, {
     cwd,
     encoding: "utf8",
@@ -66,14 +84,14 @@ function run(command, args, cwd) {
   return result.stdout;
 }
 
-function normalizeRepoPath(path) {
+function normalizeRepoPath(path: string): string {
   return path.split(sep).join("/").replace(/^\.\//, "");
 }
 
-export function parseNameStatusZ(output) {
+export function parseNameStatusZ(output: string): string[] {
   const fields = output.split("\0");
   if (fields.at(-1) === "") fields.pop();
-  const paths = [];
+  const paths: string[] = [];
   for (let index = 0; index < fields.length;) {
     const status = fields[index++];
     if (!/^(?:[ACDMRTUXB]|R\d+|C\d+)$/.test(status ?? "")) {
@@ -91,8 +109,13 @@ export function parseNameStatusZ(output) {
   return [...new Set(paths)];
 }
 
-function workspacePackages(metadata, repoDir) {
-  if (!Array.isArray(metadata.workspace_members) || !Array.isArray(metadata.packages)) {
+function workspacePackages(metadata: unknown, repoDir: string): WorkspacePackage[] {
+  if (
+    !isRecord(metadata) ||
+    !isStringArray(metadata.workspace_members) ||
+    !Array.isArray(metadata.packages) ||
+    !metadata.packages.every(isCargoPackage)
+  ) {
     throw new Error("cargo metadata is missing workspace package data");
   }
   const members = new Set(metadata.workspace_members);
@@ -106,22 +129,28 @@ function workspacePackages(metadata, repoDir) {
     .sort((left, right) => right.root.length - left.root.length);
 }
 
-function dependencyGraph(metadata) {
-  if (!Array.isArray(metadata.resolve?.nodes)) {
+function dependencyGraph(metadata: unknown): Map<string, Set<string>> {
+  // workspacePackages() has already rejected non-object metadata.
+  const resolved = isRecord(metadata) ? metadata.resolve : undefined;
+  if (
+    !isRecord(resolved) ||
+    !Array.isArray(resolved.nodes) ||
+    !resolved.nodes.every(isResolveNode)
+  ) {
     throw new Error("cargo metadata is missing the resolved dependency graph");
   }
-  return new Map(metadata.resolve.nodes.map((node) => [node.id, new Set(node.dependencies ?? [])]));
+  return new Map(resolved.nodes.map((node) => [node.id, new Set(node.dependencies ?? [])]));
 }
 
-function ownerForPath(path, packages) {
+function ownerForPath(path: string, packages: WorkspacePackage[]) {
   return packages.find((pkg) => path === pkg.root || path.startsWith(`${pkg.root}/`));
 }
 
-function dependsOnAny(packageId, changedIds, graph) {
+function dependsOnAny(packageId: string, changedIds: Set<string>, graph: Map<string, Set<string>>) {
   const pending = [packageId];
-  const visited = new Set();
+  const visited = new Set<string>();
   while (pending.length > 0) {
-    const current = pending.pop();
+    const current = pending.pop()!;
     if (changedIds.has(current)) return true;
     if (visited.has(current)) continue;
     visited.add(current);
@@ -130,7 +159,7 @@ function dependsOnAny(packageId, changedIds, graph) {
   return false;
 }
 
-function isCrateBenchmarkSubjectPath(path) {
+function isCrateBenchmarkSubjectPath(path: string): boolean {
   const parts = path.split("/");
   if (parts[0] !== "crates" || parts.length < 3) return false;
   const cratePath = parts.slice(2).join("/");
@@ -142,7 +171,7 @@ function isCrateBenchmarkSubjectPath(path) {
   );
 }
 
-function isRustBenchmarkSubjectPath(path) {
+function isRustBenchmarkSubjectPath(path: string): boolean {
   return (
     RUST_BENCHMARK_SUBJECT_PATHS.has(path) ||
     path.startsWith(".cargo/") ||
@@ -151,7 +180,18 @@ function isRustBenchmarkSubjectPath(path) {
   );
 }
 
-export function selectCriterionSuites({ changedPaths, metadata, repoDir, hostedFallback = false }) {
+export function selectCriterionSuites({
+  changedPaths,
+  metadata,
+  repoDir,
+  hostedFallback = false,
+}: {
+  changedPaths: string[];
+  /** Raw `cargo metadata --format-version 1` output; validated where it is read. */
+  metadata: unknown;
+  repoDir: string;
+  hostedFallback?: boolean;
+}): CriterionImpact {
   const inventory = CRITERION_SUITES.map((suite) => suite.package);
   const normalizedPaths = [...new Set(changedPaths.map(normalizeRepoPath))].sort((left, right) =>
     left.localeCompare(right),
@@ -201,7 +241,7 @@ export function selectCriterionSuites({ changedPaths, metadata, repoDir, hostedF
   }
 
   const changedPackages = [...new Set(rustPaths.map((path) => ownerForPath(path, packages)?.id))]
-    .filter(Boolean)
+    .filter((id): id is string => Boolean(id))
     .sort((left, right) => left.localeCompare(right));
   const changedIds = new Set(changedPackages);
   const graph = dependencyGraph(metadata);
@@ -209,7 +249,7 @@ export function selectCriterionSuites({ changedPaths, metadata, repoDir, hostedF
   const selected = inventory.filter(
     (name) =>
       (name === "vize_atelier_vapor" && vaporComparisonChanged) ||
-      dependsOnAny(packageByName.get(name).id, changedIds, graph),
+      dependsOnAny(packageByName.get(name)!.id, changedIds, graph),
   );
   const skipped = inventory.filter((name) => !selected.includes(name));
   const changedNames = packages
@@ -227,7 +267,7 @@ export function selectCriterionSuites({ changedPaths, metadata, repoDir, hostedF
   };
 }
 
-export function changedPathsBetween(repoDir, baseSha, headSha) {
+export function changedPathsBetween(repoDir: string, baseSha: string, headSha: string): string[] {
   const mergeBase = run("git", ["merge-base", baseSha, headSha], repoDir).trim();
   if (!/^[0-9a-f]{40}$/.test(mergeBase)) {
     throw new Error("git merge-base did not return a full lowercase commit SHA");
@@ -240,7 +280,7 @@ export function changedPathsBetween(repoDir, baseSha, headSha) {
   return parseNameStatusZ(diff);
 }
 
-export function main(argv = process.argv.slice(2)) {
+export function main(argv: string[] = process.argv.slice(2)): void {
   const args = parseArgs(argv);
   const repoDir = resolve(requireArg(args, "repo-dir"));
   const baseSha = requireArg(args, "base-sha");
@@ -254,7 +294,7 @@ export function main(argv = process.argv.slice(2)) {
       throw new Error(`${label} SHA must be a full lowercase commit SHA`);
   }
 
-  const metadata = JSON.parse(
+  const metadata: unknown = JSON.parse(
     run("cargo", ["metadata", "--format-version", "1", "--locked"], repoDir),
   );
   const selection = selectCriterionSuites({

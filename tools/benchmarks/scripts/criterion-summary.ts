@@ -4,6 +4,23 @@
  * absolute median budgets that stay hard gates on the reference runner.
  */
 
+import type {
+  AbsoluteBudgetResult,
+  CriterionRegression,
+  VaporPairResult,
+} from "./criterion-baselines.ts";
+import { isRecord, isStringArray } from "./script-types.ts";
+
+/** Which configured suites ran, which were skipped, and why. */
+export type SuiteSelection = { selected: string[]; skipped: string[]; reason: string };
+
+/** An impact manifest from `criterion-impact.ts`: the suites to run and why. */
+export function isSuiteManifest(
+  value: unknown,
+): value is Pick<SuiteSelection, "selected" | "reason"> {
+  return isRecord(value) && isStringArray(value.selected) && typeof value.reason === "string";
+}
+
 export function renderSummary({
   table,
   threshold,
@@ -11,8 +28,15 @@ export function renderSummary({
   selection,
   absoluteBudgetResults = [],
   vaporPairResults = [],
-}) {
-  const lines = [];
+}: {
+  table: string;
+  threshold: number | undefined;
+  regressions: CriterionRegression[];
+  selection: SuiteSelection;
+  absoluteBudgetResults?: AbsoluteBudgetResult[];
+  vaporPairResults?: VaporPairResult[];
+}): string {
+  const lines: string[] = [];
   lines.push("## Criterion A/B");
   lines.push("");
   lines.push(`Selection: ${selection.reason}`);
@@ -79,7 +103,7 @@ export function renderSummary({
   return `${lines.join("\n")}\n`;
 }
 
-function formatDuration(nanoseconds) {
+function formatDuration(nanoseconds: number): string {
   if (nanoseconds >= 1_000_000) {
     return `${(nanoseconds / 1_000_000).toFixed(2)} ms`;
   }

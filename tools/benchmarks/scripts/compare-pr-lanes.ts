@@ -1,7 +1,7 @@
 /**
  * Lane catalogue for the PR and long-baseline benchmark gates.
  *
- * `tools/benchmarks/scripts/compare-pr.mjs` times each lane defined here for a base and a head
+ * `tools/benchmarks/scripts/compare-pr.ts` times each lane defined here for a base and a head
  * `vize` binary. `.github/workflows/benchmark.yml` runs that comparison twice:
  * per pull request against the PR base, and weekly against one fixed
  * historical SHA (#3586). Both runs read this list, so a surface is only
@@ -10,6 +10,18 @@
 
 import { existsSync } from "node:fs";
 import { join } from "node:path";
+
+/** One timed `vize` invocation shared by the PR and long-baseline gates. */
+export type BenchmarkLane = {
+  id: string;
+  label: string;
+  args: string[];
+  allowNonZeroExit: boolean;
+  /** `"max"` leaves Rayon unpinned; otherwise the pinned worker count. */
+  threads?: number | "max";
+  thresholdPercent?: number;
+  enabled?: boolean;
+};
 
 /**
  * Build the child environment for one lane.
@@ -21,7 +33,10 @@ import { join } from "node:path";
  * `vize-lint-max` / `vize-fmt-max` variants with no `RAYON_NUM_THREADS` set at
  * all, so Rayon sizes its own pool from the machine.
  */
-export function laneEnvironment(threads, base) {
+export function laneEnvironment(
+  threads: number | "max",
+  base: NodeJS.ProcessEnv,
+): NodeJS.ProcessEnv {
   const env = { ...base };
   if (threads === "max") {
     delete env.RAYON_NUM_THREADS;
@@ -71,14 +86,17 @@ export function laneEnvironment(threads, base) {
 export const UNPINNED_FAST_LANE_THRESHOLD_PERCENT = 10;
 
 /** The regression budget one lane is judged against. */
-export function laneThresholdPercent(task, defaultThresholdPercent) {
+export function laneThresholdPercent(
+  task: Pick<BenchmarkLane, "thresholdPercent">,
+  defaultThresholdPercent: number,
+): number {
   return task.thresholdPercent ?? defaultThresholdPercent;
 }
 
-export function makeTasks(inputDir, taskFilter) {
+export function makeTasks(inputDir: string, taskFilter: string): BenchmarkLane[] {
   const tsconfig = join(inputDir, "tsconfig.json");
   const pattern = ".";
-  const allTasks = [
+  const allTasks: BenchmarkLane[] = [
     {
       id: "compile",
       label: "Compile SFC",
