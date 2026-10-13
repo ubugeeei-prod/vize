@@ -236,17 +236,17 @@
         "control-flow:pending@3:18": "exact",
         "control-flow:visible@2:13": "exact",
         "events-and-expressions:count@3:12": "exact",
-        "events-and-expressions:increment@2:19": "exact",
+        "events-and-expressions:increment@2:19": "unmapped",
         "events-and-expressions:offset@3:20": "exact",
         "events-and-expressions:user@4:10": "exact",
         "named-slots:body@3:25": "exact",
         "native-direct-bindings:hint@1:70": "exact",
-        "native-direct-bindings:save@1:37": "exact",
+        "native-direct-bindings:save@1:37": "unmapped",
         "native-direct-bindings:status@1:79": "exact"
       },
       "authored": 13,
-      "covered": 13,
-      "exact": 13
+      "covered": 11,
+      "exact": 11
     },
     "vapor/section-boundary": {
       "anchors": {

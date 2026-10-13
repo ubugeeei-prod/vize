@@ -2,10 +2,9 @@
 source: crates/vize_atelier_vapor/src/tests_source_map/transition.rs
 expression: code
 ---
-import { createComponent as _createComponent, extend as _extend, child as _child, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, createInvoker as _createInvoker, delegateEvents as _delegateEvents, VaporTransition as _VaporTransition, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';
+import { createComponent as _createComponent, extend as _extend, child as _child, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, on as _on, VaporTransition as _VaporTransition, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';
 const t0 = _template("<button> </button>")
 const t1 = _template("<main><!----><i>tail</i></main>", true)
-_delegateEvents("click")
 
 export function render(_ctx) {
   const n1 = t1()
@@ -19,7 +18,7 @@ export function render(_ctx) {
       const n3 = _createIf(() => (_ctx.show), () => {
         const n5 = t0()
         const x5 = _txt(n5)
-        n5.$evtclick = _createInvoker(e => _ctx.send(e))
+        _on(n5, "click", e => _ctx.send(e))
         _renderEffect(() => _setText(x5, _toDisplayString(_ctx.label)))
         return n5
       }, null, 129)

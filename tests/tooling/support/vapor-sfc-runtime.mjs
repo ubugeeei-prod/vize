@@ -152,9 +152,10 @@ try {
   const settledEvents = [...events];
   const settledState = JSON.stringify(state);
   // Vue's VDOM renderer leaves native listeners on detached nodes for garbage
-  // collection. Vapor owns their scope disposal; retaining those nodes must
-  // not keep its handlers live after unmount.
-  if (input.backend === "vapor") {
+  // collection, and so does Vapor for a listener it attaches directly (`on`,
+  // the default since 3.6.0-rc.6). Delegated listeners live on the document,
+  // so retaining detached nodes must not keep those handlers live.
+  if (input.backend === "vapor" && !/\b_on\(/u.test(input.child)) {
     for (const button of detachedButtons) button.click();
     await vue.nextTick();
     assert.deepEqual(events, settledEvents, "unmounted component still emitted events");

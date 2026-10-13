@@ -10,7 +10,9 @@ use super::super::{context::GenerateContext, expression::is_simple_path_expressi
 
 /// Generate SetEvent
 pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEventIRNode<'_>) {
-    if !set_event.effect {
+    // The runtime's `on` and `onBinding` wrap the handler themselves; only a
+    // delegated listener stores an invoker.
+    if set_event.delegate {
         ctx.use_helper("createInvoker");
     }
 
@@ -110,7 +112,7 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
         ctx.deindent();
         ctx.push_line("})");
     } else {
-        // Use _on() for non-delegatable events or events with once/capture/passive
+        // A listener that is not delegated attaches directly.
         ctx.use_helper("on");
 
         let has_options = set_event.modifiers.options.once
@@ -129,7 +131,7 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
                 opts.push("passive: true");
             }
             ctx.push_line_fmt(format_args!(
-                "_on({}, \"{}\", _createInvoker({}), {{",
+                "_on({}, \"{}\", {}, {{",
                 element,
                 event_name,
                 wrapped_handler.as_str()
@@ -143,7 +145,7 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
             ctx.push_line("})");
         } else {
             ctx.push_line_fmt(format_args!(
-                "_on({}, \"{}\", _createInvoker({}))",
+                "_on({}, \"{}\", {})",
                 element,
                 event_name,
                 wrapped_handler.as_str()

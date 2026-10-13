@@ -10,7 +10,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 
 | product            | kind  | module    | files | sites |
 | ------------------ | ----- | --------- | ----: | ----: |
-| `Croquis.bindings` | field | `croquis` |     6 |    11 |
+| `Croquis.bindings` | field | `croquis` |     6 |    12 |
 
 ## Non-product `vize_croquis` imports
 

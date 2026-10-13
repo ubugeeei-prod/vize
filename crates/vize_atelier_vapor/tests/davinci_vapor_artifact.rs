@@ -270,13 +270,12 @@ fn accepted_artifacts_bypass_legacy_walks_and_unsupported_inputs_keep_them() {
                 },
             );
             let expected = vize_carton::cstr!(
-                r#"import {{ createInvoker as _createInvoker, delegateEvents as _delegateEvents, template as _template }} from 'vue';
+                r#"import {{ on as _on, template as _template }} from 'vue';
 const t0 = _template("<button>Click</button>", true)
-_delegateEvents("click")
 
 export function render(_ctx) {{
   const n0 = t0()
-  n0.$evtclick = _createInvoker(e => _ctx.{handler}(e))
+  _on(n0, "click", e => _ctx.{handler}(e))
   return n0
 }}
 "#
