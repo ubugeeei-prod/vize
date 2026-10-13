@@ -35,7 +35,7 @@ const parts = [
 ];
 const cells = [
   "empty-vue-star-component-read-cells.json",
-  "0f4ea7f4215e4cea563c577ad98023ead90a752c863646e4e50e90c28c5d275a",
+  "05778895222cd80b8cb2c0f6b93ee385aca1f8afe50895025c7f952dd7e3ee1d",
 ];
 const loaded = new Map();
 function metadata(name, checksum) {
@@ -157,7 +157,7 @@ export function authenticateStarComponentReadSource(root) {
   });
 }
 export async function runRetainedComponentReadStarCustody(root) {
-  const current = authenticateStarComponentReadSource(root);
+  const current = prepareRootComponentReadHistory(root);
   const names = listStarCounterpartFiles(root, source, componentReadSourcePaths);
   const snapshot = provisionStarSourceCounterpart(root, source, names);
   let registered = false;
@@ -182,7 +182,7 @@ export async function runRetainedComponentReadStarCustody(root) {
   }
 }
 export async function runRetainedComponentReadStarLaws(root) {
-  const current = authenticateStarComponentReadSource(root);
+  const current = prepareRootComponentReadHistory(root);
   const names = listStarCounterpartFiles(root, source, componentReadSourcePaths);
   const snapshot = provisionStarSourceCounterpart(root, source, names);
   let registered = false;
@@ -204,4 +204,14 @@ export async function runRetainedComponentReadStarLaws(root) {
   } finally {
     if (!registered) snapshot.cleanup();
   }
+}
+
+/** Literal history is prepared only through the original owned-Actions refusal boundary. */
+export function prepareRootComponentReadHistory(root) {
+  const current = authenticateStarComponentReadSource(root);
+  assert.equal(data.history.length, 14);
+  assert.equal(new Set(data.history).size, 14);
+  for (const historical of data.history) ensureHostedLiteralSource(root, historical);
+  assert.equal(joinGit(root, ["rev-parse", "HEAD"]).toString().trim(), current.head);
+  return current;
 }

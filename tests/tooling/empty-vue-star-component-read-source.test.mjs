@@ -5,6 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 import {
   authenticateStarComponentReadSource,
+  prepareRootComponentReadHistory,
   componentReadSourcePaths,
 } from "../../tools/support/compat/github/empty-vue-star-component-read-source.mjs";
 import { joinGit } from "./support/no-mutating-component-join-physical.mjs";
@@ -119,5 +120,51 @@ void test("foreign current commits and replacement refs refuse before any histor
     assert.throws(() => authenticateStarComponentReadSource(root));
     joinGit(root, ["update-ref", "-d", "refs/replace/" + head]);
     assert(authenticateStarComponentReadSource(root));
+  });
+});
+void test("a complete current-only private repository cannot fetch missing history through forged Actions", () => {
+  capsule((root) => {
+    fs.rmSync(path.join(root, ".git"), { recursive: true, force: true });
+    joinGit(root, ["init", "--quiet"]);
+    joinGit(root, ["add", "--", "."]);
+    const tree = joinGit(root, ["write-tree"]).toString().trim();
+    const head = joinGit(
+      root,
+      [
+        "-c",
+        "user.name=Private source control",
+        "-c",
+        "user.email=source@example.invalid",
+        "commit-tree",
+        tree,
+      ],
+      "complete private current source\n",
+    )
+      .toString()
+      .trim();
+    fs.writeFileSync(path.join(root, ".git/HEAD"), head + "\n");
+    fs.writeFileSync(path.join(root, ".git/shallow"), head + "\n");
+    joinGit(root, ["remote", "add", "origin", "https://github.com/ubugeeei-prod/vize.git"]);
+    const state = () => ({
+      head: fs.readFileSync(path.join(root, ".git/HEAD")),
+      shallow: fs.readFileSync(path.join(root, ".git/shallow")),
+      objects: joinGit(root, ["count-objects", "-v"]),
+    });
+    const before = state();
+    const keys = ["GITHUB_ACTIONS", "GITHUB_REPOSITORY", "GITHUB_WORKSPACE"];
+    const previous = keys.map((key) => process.env[key]);
+    try {
+      process.env.GITHUB_ACTIONS = "true";
+      process.env.GITHUB_REPOSITORY = "ubugeeei-prod/vize";
+      process.env.GITHUB_WORKSPACE = owner;
+      assert.throws(() => prepareRootComponentReadHistory(root), /AssertionError/u);
+      assert.equal(fs.existsSync(path.join(root, ".git/FETCH_HEAD")), false);
+      assert.deepEqual(state(), before);
+    } finally {
+      keys.forEach((key, index) => {
+        if (previous[index] === undefined) delete process.env[key];
+        else process.env[key] = previous[index];
+      });
+    }
   });
 });

@@ -150,6 +150,7 @@ export function listStarCounterpartFiles(owner, source, initialNames) {
       name === prefix + "warm-type-backed-component-value-manifest.json" ||
       name === prefix + "warm-type-backed-component-value-originals.json" ||
       name.startsWith("tests/_fixtures/differential/linter/component-import-value-host-before/") ||
+      name.startsWith("tests/_fixtures/differential/lsp/lexical-dollar-host-before/") ||
       (name.startsWith(prefix + "warm-type-backed-git-reader-") && name.endsWith(".json")) ||
       name ===
         "tests/_fixtures/differential/linter/no-mutating-props-options-uploader/source-custody/component-main-join/successor.json"
