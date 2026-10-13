@@ -96,3 +96,20 @@ reinterpret old minor reservations or reuse a failed version. Then root alone
 starts one official patch. After genuine public H/R/tag/npm
 custody, replay the original typed-handler physical consumer law using published
 bytes; keep every other external issue's acceptance scope separate and pending.
+
+## First hosted source refusals
+
+The original #8778 source97bc tooling1 packet is retained whole (716,905 bytes,
+SHA25665424e941282bfa1a6529585f7d53cff3b2622bbaccd6d8744647249f5524058).
+It refused two legitimate source additions: the old CSS driver authority and
+release-contract inventory51. The successor keeps both entire old driver hashes
+and authenticates only the reviewed complete current bodies with exact literal
+inverses; all nine producer inputs,130 upstream and20 original consumer
+authorities remain. The new stable shell contract stays explicitly broad; all32
+scoped contracts and both original unscoped vectors remain exact.
+
+The new private driver/inventory controls and zero-warning lint qualify source
+only. A broader local Moon rewrite attempt failed because the host's0.10.11
+installation lacked its prelude; its raw failure remains and grants no green.
+The unchanged pinned rewrite law still requires fresh Actions. This protocol
+work does not delay the separately owned official normal-minor operator.
