@@ -126,6 +126,14 @@ export const catalogueSubgroups: Record<
   },
   "vue-formatting": {
     title: "Vue Rules: Template Formatting",
+    jaTitle: "テンプレートの属性と表記を揃える",
+    jaIntroduction: [
+      "このルール群では、属性名と並び順、引用符、空白、空の要素の書き方など、テンプレートの表記を確認します。チームで記述を揃えるときや、既存のテンプレートを整理するときに使ってください。",
+      "",
+      "まずは [属性を並べる例](./reference/vue-attribute-order.md)と[同名の props を省略して渡す例](./reference/vue-prefer-props-shorthand.md)で、変更前後の違いを確認してください。同名の prop バインディングを省略する構文は Vue 3.4 以降が対象です。",
+      "",
+      "採用するルールだけを掲載された設定で有効にし、`vp run lint` を実行してください。要素の種類ごとの自己終了タグの方針は[ルールのオプション](./options-vue.md)で指定できます。[Vue の全ルール](./vue.md)では、ディレクティブの構文やテンプレートの構造に関する検査も確認できます。",
+    ],
     rules: [
       "vue/attribute-hyphenation",
       "vue/attribute-order",
