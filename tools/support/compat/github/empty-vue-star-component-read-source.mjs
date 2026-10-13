@@ -24,18 +24,18 @@ const source = "bd5702c0a4d5fb3bb64487794fc45f6f876e6e38";
 const parts = [
   [
     "empty-vue-star-component-read-source-0.json",
-    "db2f6c3c612c77aec5e5d6d0285e41624ec175c5338f533623e13d5c441b8ef3",
+    "822173f849de2447e790f609c3674905d3985b56a71355983732abb38880bd3a",
     250,
   ],
   [
     "empty-vue-star-component-read-source-1.json",
-    "ec5b90ddef5a94e49443a084ccc46d9db91389e0ab5b416a99b11fe7c7a74cc6",
+    "8ef0298a834635139070df7516a24254eaef31eb91a6f3746ff4fbec870bcb31",
     165,
   ],
 ];
 const cells = [
   "empty-vue-star-component-read-cells.json",
-  "05778895222cd80b8cb2c0f6b93ee385aca1f8afe50895025c7f952dd7e3ee1d",
+  "0c7474246e58214814708a10f2a3456e15445a200d9fa7a95a35f866fe2e496a",
 ];
 const loaded = new Map();
 function metadata(name, checksum) {
@@ -73,7 +73,16 @@ function decode(cell) {
   assert.equal(cell.mode, "100644");
   return body;
 }
-for (const row of data.changes) {
+assert.equal(data.sdkSource, "2da71113a3f8ab528b1a9cda20fc6a4c2bd273f6");
+assert.deepEqual(
+  data.sdkCollisions.map((row) => row.path),
+  [
+    "tests/_fixtures/vue-ecosystem-fixtures.json",
+    "tests/tooling/empty-vue-star-javascript-source.test.mjs",
+    "tests/tooling/warm-type-backed-empty-vue-star-custody.test.ts",
+  ],
+);
+for (const row of [...data.changes, ...data.sdkCollisions]) {
   const old = decode(row.before),
     next = decode(row.after);
   let forward = Buffer.from(old),
@@ -96,13 +105,14 @@ for (const row of data.changes) {
     [2, row.after],
   ]) {
     const { body: _body, ...identity } = cell;
-    assert.deepEqual(declared[index], identity);
+    if (index === 2 || data.changes.includes(row)) assert.deepEqual(declared[index], identity);
   }
 }
 const executing = [
   directory + "empty-vue-star-component-read-source.mjs",
   directory + "source-counterpart-snapshot.mjs",
   "tests/tooling/empty-vue-star-component-read-source.test.mjs",
+  "tests/tooling/misskey-registry-source.test.mjs",
   "tests/tooling/warm-type-backed-empty-vue-star-custody.test.ts",
 ];
 for (const file of executing)
@@ -132,6 +142,20 @@ export function authenticateStarComponentReadSource(root) {
   assert.equal(joinGit(root, ["for-each-ref", "--format=%(refname)", "refs/replace"]).length, 0);
   for (const row of declared("after")) joinPhysical(root, row);
   ensureHostedLiteralSource(root, source);
+  ensureHostedLiteralSource(root, data.sdkSource);
+  const sdkBefore = joinRawBodies(
+    root,
+    data.sdkSource,
+    data.sdkCollisions.map((row) => ({
+      path: row.path,
+      mode: row.before.mode,
+      bytes: row.before.byteLength,
+      sha256: row.before.sha256,
+      gitBlob: row.before.blob,
+    })),
+  );
+  for (const row of data.sdkCollisions)
+    assert.deepEqual(sdkBefore.get(row.path), decode(row.before));
   const before = joinRawBodies(root, source, declared("before"));
   const current = joinRawBodies(root, head, declared("after"));
   for (const row of data.changes) {
@@ -209,9 +233,37 @@ export async function runRetainedComponentReadStarLaws(root) {
 /** Literal history is prepared only through the original owned-Actions refusal boundary. */
 export function prepareRootComponentReadHistory(root) {
   const current = authenticateStarComponentReadSource(root);
-  assert.equal(data.history.length, 14);
-  assert.equal(new Set(data.history).size, 14);
+  assert.equal(data.history.length, 15);
+  assert.equal(new Set(data.history).size, 15);
   for (const historical of data.history) ensureHostedLiteralSource(root, historical);
   assert.equal(joinGit(root, ["rev-parse", "HEAD"]).toString().trim(), current.head);
   return current;
+}
+
+/** The current complete union precedes the unchanged literal Misskey/SDK427 laws. */
+export async function runRetainedComponentReadMisskeySource(root) {
+  const current = prepareRootComponentReadHistory(root);
+  const names = listStarCounterpartFiles(root, data.sdkSource, [
+    ...componentReadSourcePaths,
+    "tests/tooling/misskey-registry-source.test.mjs",
+    "tools/support/compat/github/misskey-registry-source.json",
+  ]);
+  const snapshot = provisionStarSourceCounterpart(root, data.sdkSource, names);
+  let retained = false;
+  try {
+    await import(
+      pathToFileURL(path.join(snapshot.root, "tests/tooling/misskey-registry-source.test.mjs")).href
+    );
+    after(() => {
+      try {
+        assert.equal(authenticateStarComponentReadSource(root).head, current.head);
+      } finally {
+        snapshot.cleanup();
+      }
+    });
+    retained = true;
+    return current;
+  } finally {
+    if (!retained) snapshot.cleanup();
+  }
 }

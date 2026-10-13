@@ -82,3 +82,16 @@ history without changing HEAD, shallow state, object counts or FETCH_HEAD.
 Private snapshots never obtain independent fetch authority. The shared
 snapshot utility is pinned by actual committed bytes; no lock or generic
 history-admission extension is required for this lane.
+
+The actual main integration retains all 323 owned physical source rows and
+NoMutating helper/test/manifest bytes exactly. The current 415-body counterpart
+adds only the reviewed Misskey registry change and preserves its two existing
+entrypoint wrappers. Three complete incoming SDK bodies from literal
+`2da71113a3f8ab528b1a9cda20fc6a4c2bd273f6` have exact forward/inverse witnesses.
+After current whole-source authentication, the existing snapshot primitive
+executes every unchanged original Misskey/SDK427 law in that literal context.
+Its table, module and original test bytes remain unchanged; foreign history,
+source mutation and private snapshot fetch refusals still apply. The only
+snapshot admission change is that one named literal source, with no new helper.
+Fifteen exact historical commits and all prior Star322/JS93 laws remain required;
+source-only evidence does not grant native, original-400 or release credit.

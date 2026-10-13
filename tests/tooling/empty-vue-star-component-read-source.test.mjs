@@ -20,6 +20,7 @@ const authored = [
   metadataDirectory + "empty-vue-star-component-read-cells.json",
   directory + "source-counterpart-snapshot.mjs",
   "tests/tooling/empty-vue-star-component-read-source.test.mjs",
+  "tests/tooling/misskey-registry-source.test.mjs",
   "tests/tooling/warm-type-backed-empty-vue-star-custody.test.ts",
 ];
 function capsule(run) {
@@ -47,7 +48,7 @@ function capsule(run) {
 void test("actual complete current source authenticates six production changes and the exact retained-law wrapper", () => {
   const result = authenticateStarComponentReadSource(owner);
   assert.equal(result.closureBodies, 415);
-  assert.equal(result.changedBodies, 8);
+  assert.equal(result.changedBodies, 9);
   assert.equal(result.originalStarBodies, 322);
   assert.equal(result.originalJavaScriptBodies, 93);
   assert.equal(result.sourceOnly, true);

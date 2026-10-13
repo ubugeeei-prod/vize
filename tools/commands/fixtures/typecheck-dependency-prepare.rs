@@ -13,7 +13,7 @@
 #[path = "../../support/common.rs"]
 mod common;
 
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
     env, fs,
@@ -356,6 +356,18 @@ fn run_baseline_prepare(
             "baseline prepare exited with status {}",
             result.status
         ));
+    }
+    if project.get("id").and_then(Value::as_str) == Some("misskey") {
+        let declaration = fixture_root.join("packages/misskey-js/built/index.d.ts");
+        let bytes = fs::read(&declaration)
+            .map_err(|error| format!("misskey-js declaration output is missing: {error}"))?;
+        let metadata = fs::symlink_metadata(&declaration)
+            .map_err(|error| format!("cannot inspect misskey-js declaration output: {error}"))?;
+        if bytes.is_empty() || !metadata.file_type().is_file() {
+            return Err(
+                "misskey-js declaration output must be a nonempty regular file".to_string(),
+            );
+        }
     }
     Ok(json!({
         "command": command,

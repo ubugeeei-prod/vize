@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import path from "node:path";
 import { test } from "node:test";
 
 import {
@@ -97,5 +98,78 @@ test("dependency prepare bounds a baseline prepare process that ignores SIGTERM"
     assert.equal(fs.existsSync(artifactPath(fixture)), false);
   } finally {
     cleanup(fixture);
+  }
+});
+
+test("Misskey declaration preparation rejects failed, missing and empty emitter output", () => {
+  const prepare = [
+    "pnpm",
+    "--filter",
+    "misskey-js",
+    "exec",
+    "tsgo",
+    "--project",
+    "tsconfig.json",
+    "--outDir",
+    "built",
+    "--declaration",
+    "true",
+    "--emitDeclarationOnly",
+    "true",
+  ];
+  for (const [emitted, exitCode, message] of [
+    ["export {};", 9, /baseline prepare exited with status 9/],
+    [null, 0, /misskey-js declaration output is missing/],
+    ["", 0, /declaration output must be a nonempty regular file/],
+    ["export {};", 0, null],
+  ] as const) {
+    const fixture = setup();
+    try {
+      writeJson(fixture.registryPath, {
+        projects: [
+          {
+            ...fixture.project,
+            id: "misskey",
+            typecheckPerformance: {
+              ...fixture.project.typecheckPerformance,
+              baseline: { tsconfig: fixture.project.tsconfig, prepare },
+            },
+          },
+        ],
+      });
+      git(fixture.fixtureRoot, ["add", "registry.json"]);
+      commit(fixture.fixtureRoot, "configure Misskey declaration preparation");
+      writeManager(
+        fixture.runner,
+        fixture.invocationPath,
+        "10.0.0",
+        `if (managerArgs[0] === "install") { ${successBody} } else {
+          const emitted = ${JSON.stringify(emitted)};
+          if (emitted !== null) {
+            fs.mkdirSync("packages/misskey-js/built", { recursive: true });
+            fs.writeFileSync("packages/misskey-js/built/index.d.ts", emitted);
+          }
+          process.exit(${exitCode});
+        }`,
+        { spec: "pnpm@10.0.0" },
+      );
+      const result = run(fixture);
+      const artifact = path.join(fixture.outputDir, "misskey-typecheck-dependencies.json");
+      const invocation = JSON.parse(fs.readFileSync(fixture.invocationPath, "utf8"));
+      assert.equal(invocation.cwd, fixture.fixtureRoot);
+      assert.deepEqual(invocation.managerArgs, prepare.slice(1));
+      if (message !== null) {
+        assert.equal(result.status, 1);
+        assert.match(result.stderr, message);
+        assert.equal(fs.existsSync(artifact), false);
+      } else {
+        assert.equal(result.status, 0, result.stderr);
+        const receipt = JSON.parse(fs.readFileSync(artifact, "utf8"));
+        assert.deepEqual(receipt.baselinePrepare.command, prepare);
+        assert.equal(receipt.baselinePrepare.exitCode, 0);
+      }
+    } finally {
+      cleanup(fixture);
+    }
   }
 });
