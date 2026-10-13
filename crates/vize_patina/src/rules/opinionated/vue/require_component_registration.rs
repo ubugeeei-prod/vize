@@ -13,7 +13,7 @@
 //!
 //! This rule can be configured to ignore certain global components:
 //! - Built-in components: component, transition, keep-alive, etc.
-//! - Common global components from frameworks like Nuxt
+//! - Explicit project globals, or auto-imports in the selected Nuxt mode
 //!
 //! ## Examples
 //!
@@ -45,6 +45,7 @@ use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_croquis::builtins::is_builtin_component;
+use vize_croquis::is_native_tag;
 use vize_croquis::naming::{names_match, to_pascal_case};
 use vize_croquis::script_parser::parse_script_setup;
 use vize_croquis::{Croquis, Scope, ScopeData, ScopeKind};
@@ -60,22 +61,6 @@ static META: RuleMeta = RuleMeta {
     fixable: false,
     default_severity: Severity::Warning,
 };
-
-/// Components commonly provided by frameworks (Nuxt, etc.)
-const FRAMEWORK_GLOBALS: &[&str] = &[
-    // Nuxt components
-    "nuxt-link",
-    "nuxt",
-    "nuxt-child",
-    "nuxt-page",
-    "client-only",
-    "nuxt-loading-indicator",
-    "nuxt-layout",
-    "nuxt-error-boundary",
-    // Vue Router
-    "router-link",
-    "router-view",
-];
 
 /// Require component registration rule
 #[derive(Default)]
@@ -97,30 +82,7 @@ impl RequireComponentRegistration {
 
     /// Check if a tag name is a custom component
     fn is_custom_component(&self, tag: &str) -> bool {
-        // HTML elements are lowercase only
-        // Custom components have uppercase or contain dash
-        let first_char = tag.chars().next().unwrap_or('a');
-
-        // PascalCase component
-        if first_char.is_uppercase() {
-            return true;
-        }
-
-        // kebab-case component with dash (but not HTML like <my-element>)
-        // Actually, kebab-case with dash could be custom element or component
-        // We'll be conservative and check if it looks like a component
-        if tag.contains('-') {
-            // Check against known HTML custom elements patterns
-            // Most custom elements start with known prefixes
-            let is_web_component = tag.starts_with("x-")
-                || tag.starts_with("ion-")
-                || tag.starts_with("md-")
-                || tag.starts_with("mwc-");
-
-            return !is_web_component;
-        }
-
-        false
+        !is_native_tag(tag)
     }
 
     /// Check if a component is a Vue built-in
@@ -135,19 +97,14 @@ impl RequireComponentRegistration {
         is_builtin_component(&lower)
     }
 
-    /// Check if a component is a framework global
-    fn is_framework_global(&self, tag: &str) -> bool {
-        let lower = tag.to_lowercase();
-        // Convert PascalCase to kebab-case for comparison
+    /// Check only globals explicitly selected by project configuration.
+    fn is_configured_global(&self, tag: &str) -> bool {
         let kebab = pascal_to_kebab(tag);
-
-        FRAMEWORK_GLOBALS.contains(&lower.as_str())
-            || FRAMEWORK_GLOBALS.contains(&kebab.as_str())
-            || self.ignore_globals.iter().any(|g| {
-                g.eq_ignore_ascii_case(tag)
-                    || g.eq_ignore_ascii_case(&kebab)
-                    || component_name_matches(tag, g)
-            })
+        self.ignore_globals.iter().any(|g| {
+            g.eq_ignore_ascii_case(tag)
+                || g.eq_ignore_ascii_case(&kebab)
+                || component_name_matches(tag, g)
+        })
     }
 
     /// Whether `tag` refers to the component itself.
@@ -249,11 +206,12 @@ impl Rule for RequireComponentRegistration {
                 .unwrap_or_default()
         });
 
-        // For now, we warn on all custom components that aren't built-in or framework globals
+        // Registration is project context, never a guess based on a tag prefix.
         for (tag, start, end) in used_components {
             if self.is_custom_component(&tag)
                 && !self.is_builtin(&tag)
-                && !self.is_framework_global(&tag)
+                && !ctx.is_custom_element(&tag)
+                && !self.is_configured_global(&tag)
             {
                 // Recursive self-reference needs no registration (#4953).
                 if (!art::is_context(ctx) && self.is_self_reference(ctx, &tag))

@@ -67,4 +67,4 @@ vp run lint
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs#L56) · [全ルール](../all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs#L57) · [全ルール](../all.md)

@@ -45,7 +45,13 @@ pub fn run(mut args: LintArgs) {
     let locale = rich::parse_locale(args.locale.as_str());
     let render_details = aggregate::should_render_details(format, args.quiet);
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-    let (loaded_config, linter_plan, linter_features, project_root) = config_load::load(&mut args);
+    let config_load::LoadedLintConfig {
+        config: loaded_config,
+        plan: linter_plan,
+        features: linter_features,
+        project_root,
+        custom_elements,
+    } = config_load::load(&mut args);
     crate::config::write_schema_for_config(loaded_config.source_path.as_deref());
     let linter_enabled = linter_plan.plan.base.enabled;
     let config_dir = loaded_config
@@ -119,6 +125,7 @@ pub fn run(mut args: LintArgs) {
         &args,
         linter_features,
         configured_corsa_path,
+        &custom_elements,
     );
     let write_failures = AtomicUsize::new(0);
     let profile_rows = args.profile.then(|| Mutex::new(Vec::new()));

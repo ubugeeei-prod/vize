@@ -67,4 +67,4 @@ vp run lint
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs#L56) · [All rules](../all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs#L57) · [All rules](../all.md)

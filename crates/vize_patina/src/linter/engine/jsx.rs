@@ -161,7 +161,7 @@ impl Linter {
     }
 
     fn jsx_context<'a>(
-        &self,
+        &'a self,
         allocator: &'a Allocator,
         source: &'a str,
         filename: &'a str,
@@ -171,6 +171,7 @@ impl Linter {
         ctx.set_config_disabled_rules(self.disabled_rules.clone());
         ctx.set_config_rule_severities(self.severity_overrides.clone());
         ctx.set_help_level(self.help_level);
+        ctx.set_custom_elements(&self.custom_elements);
         ctx
     }
 

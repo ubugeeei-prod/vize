@@ -40,6 +40,7 @@ impl ResolvedLinterRuleGroups {
         args: &LintArgs,
         features: LinterFeatureFlags,
         configured_corsa_path: Option<PathBuf>,
+        custom_elements: &vize_relief::options::CustomElementMatcher,
     ) -> Vec<Linter> {
         self.configs
             .iter()
@@ -88,6 +89,7 @@ impl ResolvedLinterRuleGroups {
                     .with_type_aware_lint(type_aware)
                     .with_vue_version(features.vue_version)
                     .with_vapor_mode(features.vapor)
+                    .with_custom_elements(custom_elements.clone())
                     .with_restricted_globals(restricted_globals)
                     .with_restricted_members(restricted_members)
                     .with_musea_design_tokens(musea_design_tokens);
