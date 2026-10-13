@@ -10,7 +10,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 
 | product                     | kind  | module    | files | sites |
 | --------------------------- | ----- | --------- | ----: | ----: |
-| `BindingMetadata`           | type  | `croquis` |    13 |    34 |
+| `BindingMetadata`           | type  | `croquis` |    14 |    35 |
 | `Croquis`                   | type  | `croquis` |    12 |    39 |
 | `Drawer`                    | type  | `drawer`  |     3 |    21 |
 | `DrawerOptions`             | type  | `drawer`  |     1 |     5 |
@@ -29,7 +29,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | ------------------------------------------- | ----: | ----: |
 | `BindingIdentity`                           |     1 |     1 |
 | `BindingOccurrences`                        |     6 |     7 |
-| `BindingType`                               |    19 |   142 |
+| `BindingType`                               |    20 |   143 |
 | `BlockLocation`                             |     5 |     7 |
 | `DEFINE_EMITS`                              |     1 |     2 |
 | `DEFINE_EXPOSE`                             |     1 |     1 |
@@ -47,8 +47,8 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `ScriptParserOptions`                       |     1 |     1 |
 | `SfcCustomBlock`                            |     2 |     2 |
 | `SfcDescriptor`                             |    21 |    52 |
-| `SfcError`                                  |    22 |    65 |
-| `SfcParseOptions`                           |    28 |   141 |
+| `SfcError`                                  |    23 |    67 |
+| `SfcParseOptions`                           |    29 |   143 |
 | `SfcScriptBlock`                            |     2 |     2 |
 | `SfcStyleBlock`                             |     5 |     8 |
 | `SfcTemplateBlock`                          |     7 |     9 |

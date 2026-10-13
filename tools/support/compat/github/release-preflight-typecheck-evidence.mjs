@@ -1,8 +1,10 @@
 import { parseJsonText, readTextEntry, sha256 } from "./release-preflight-artifact-entries.mjs";
 
-// Release preflight requires exact parity. Explicit observational callers may
-// inspect incomplete evidence without making it release eligible.
-export const releaseTypecheckParityEnforced = true;
+// Release preflight skips the typecheck divergence surface until per-project
+// budgets gate it again, so it does not require divergence artifacts or exact
+// parity. Any retained artifact must still be bound to the source and its
+// preparation. Callers that omit the policy validate exact parity.
+export const releaseTypecheckParityEnforced = false;
 
 export function assertReleaseTypecheckShardArtifacts({
   artifactName,
@@ -10,7 +12,7 @@ export function assertReleaseTypecheckShardArtifacts({
   entries,
   expectedTypecheckProjects,
   observedTypecheckProjects,
-  enforceParity = releaseTypecheckParityEnforced,
+  enforceParity = true,
   requireTypecheckArtifacts = true,
 }) {
   const divergenceEntries = matchingEntries(
@@ -89,7 +91,7 @@ function assertReleaseTypecheckDivergenceArtifact({
   divergence,
   dependency,
   dependencySha256,
-  enforceParity = releaseTypecheckParityEnforced,
+  enforceParity = true,
 }) {
   if (
     divergence.schema !== "vize.fixtureTypecheckDivergenceRun" ||

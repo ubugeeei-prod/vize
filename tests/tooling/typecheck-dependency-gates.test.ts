@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-
 import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
 import {
   requireTypecheckDependency,
@@ -8,7 +7,6 @@ import {
   typecheckDependencySkip,
 } from "./support/typecheck-dependency.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
-
 test("test:scripts requires its typecheck dependencies", () => {
   const command = (testAndBenchmarkTasks["test:scripts"] as { command: string }).command;
   const workflow = readRepoFile(".github", "workflows", "check.yml");
@@ -18,10 +16,13 @@ test("test:scripts requires its typecheck dependencies", () => {
   );
   assert.match(
     workflow,
-    /\n  test-scripts:\n[\s\S]*?git submodule update --init --force --depth 1 -- tests\/_fixtures\/_git\/ant-design-vue tests\/_fixtures\/_git\/create-vue tests\/_fixtures\/_git\/vue-select tests\/_fixtures\/_git\/vue-router && vp install --frozen-lockfile --prefer-offline[\s\S]*?\n  editor-extensions:\n/,
+    /\n  test-scripts:\n[\s\S]*?needs: \[full-source-cli, tooling-plan\][\s\S]*?uses: \.\/\.github\/actions\/test-full-tooling[\s\S]*?\n  editor-extensions:\n/,
+  );
+  assert.match(
+    readRepoFile(".github", "actions", "test-full-tooling", "action.yml"),
+    /git submodule update --init --force --depth 1 -- tests\/_fixtures\/_git\/ant-design-vue tests\/_fixtures\/_git\/create-vue tests\/_fixtures\/_git\/vue-select tests\/_fixtures\/_git\/vue-router && vp install --frozen-lockfile --prefer-offline/,
   );
 });
-
 test("typecheck and LSP gates do not carry raw dependency skips", () => {
   const files = [
     "check-bench-gate.test.ts",
@@ -38,7 +39,6 @@ test("typecheck and LSP gates do not carry raw dependency skips", () => {
     "lsp-watcher-revalidation.test.ts",
     "typecheck-baseline-project.test.ts",
   ];
-
   for (const file of files) {
     const source = readRepoFile("tests", "tooling", file);
     assert.doesNotMatch(source, /t\.skip\(["'](?:Corsa|tsgo)/);

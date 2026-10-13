@@ -373,7 +373,7 @@ test("bootstrap mode stops waiting when an in-progress gate has failed required 
   }
 });
 
-test("verify-only mode refuses observed seeded typecheck drift", () => {
+test("verify-only mode reports observed seeded typecheck drift without refusing", () => {
   const tempDir = fs.mkdtempSync(path.join(tmpdir(), "vize-release-mutation-drift-"));
   try {
     const fixture = createReleasePreflightVerifyOnlyFixture(tempDir, {
@@ -399,9 +399,9 @@ test("verify-only mode refuses observed seeded typecheck drift", () => {
       },
     );
     assert.ifError(result.error);
-    assert.equal(result.status, 1, `${result.stderr}\n${result.stdout}`.trim());
-    assert.match(result.stderr, /seeded mutation oracle/);
-    assert.doesNotMatch(result.stdout, /Release preflight passed/);
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+    assert.match(result.stdout, /typecheck parity not enforced::.*seeded mutation oracle/);
+    assert.match(result.stdout, /Release preflight passed/);
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });
   }

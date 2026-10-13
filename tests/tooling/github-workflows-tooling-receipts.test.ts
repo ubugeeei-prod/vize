@@ -23,17 +23,18 @@ const callers = [
 for (const { file, job } of callers) {
   test(`${file} ${job} requires a genuine current-source CLI receipt before full tooling tests`, () => {
     const workflow = parse(readRepoFile(".github", "workflows", file)) as Workflow;
-    const steps = workflow.jobs[job].steps ?? [];
-    const shared = file === "pr-source-checks.yml";
-    const build = steps.findIndex((step) =>
-      shared
-        ? step.uses === "./.github/actions/restore-source-cli"
-        : /cargo build --profile ci -p vize/.test(step.run ?? ""),
-    );
-    const producer = shared
-      ? ((parse(readRepoFile(".github", "workflows", "pr-source-cli.yml")) as Workflow).jobs.cli
-          .steps ?? [])
-      : steps;
+    const full = file === "check.yml";
+    const steps = full
+      ? (
+          parse(readRepoFile(".github", "actions", "test-full-tooling", "action.yml")) as {
+            runs: { steps: Step[] };
+          }
+        ).runs.steps
+      : (workflow.jobs[job].steps ?? []);
+    const build = steps.findIndex((step) => step.uses === "./.github/actions/restore-source-cli");
+    const producerFile = full ? "full-source-cli.yml" : "pr-source-cli.yml";
+    const producer =
+      (parse(readRepoFile(".github", "workflows", producerFile)) as Workflow).jobs.cli.steps ?? [];
     const originalBuild = producer.find((step) =>
       /cargo build --profile ci -p vize/.test(step.run ?? ""),
     );
@@ -54,7 +55,13 @@ for (const { file, job } of callers) {
     assert.notEqual(originalBuild["continue-on-error"], true);
     assert.notEqual(steps[tests]["continue-on-error"], true);
     if (file === "check.yml") {
-      assert.equal(steps[tests].run, "vp run --workspace-root test:scripts");
+      assert.equal(steps[tests].run, "vp run --workspace-root test:scripts:planned");
+      assert.equal(
+        workflow.jobs["full-source-cli"].uses,
+        "./.github/workflows/full-source-cli.yml",
+      );
+      assert.deepEqual(workflow.jobs[job].needs, ["full-source-cli", "tooling-plan"]);
+      assert.deepEqual(steps[build].with, { producer: "${{ inputs.producer }}" });
       for (const step of steps.slice(0, tests)) {
         assert.equal(step.env?.VIZE_LSP_BIN, undefined);
         assert.equal(step.env?.VIZE_LSP_REQUIRE_SOURCE_BUILD, undefined);
@@ -62,18 +69,18 @@ for (const { file, job } of callers) {
     }
     assert.equal(steps[tests].env?.VIZE_LSP_BIN, "${{ github.workspace }}/target/ci/vize");
     assert.equal(steps[tests].env?.VIZE_LSP_REQUIRE_SOURCE_BUILD, "1");
-    if (file === "pr-source-checks.yml") {
+    const restore = parse(
+      readRepoFile(".github", "actions", "restore-source-cli", "action.yml"),
+    ) as { runs: { steps: Step[] } };
+    const command = restore.runs.steps.at(-1)?.run ?? "";
+    assert.match(command, /cat target\/ci\/vize\.differential-build\.json/);
+    assert.doesNotMatch(command, /build-receipt\.ts/);
+    if (!full) {
       assert.equal(workflow.jobs["pr-source-cli"].uses, "./.github/workflows/pr-source-cli.yml");
       assert.deepEqual(workflow.jobs[job].needs, ["pr-source-plan", "pr-source-cli"]);
       assert.deepEqual(steps[build].with, {
         producer: "${{ toJSON(needs.pr-source-cli.outputs) }}",
       });
-      const restore = parse(
-        readRepoFile(".github", "actions", "restore-source-cli", "action.yml"),
-      ) as { runs: { steps: Step[] } };
-      const command = restore.runs.steps.at(-1)?.run ?? "";
-      assert.match(command, /cat target\/ci\/vize\.differential-build\.json/);
-      assert.doesNotMatch(command, /build-receipt\.ts/);
       const selected = steps.findIndex((step) =>
         /vp run --workspace-root test:scripts:pr/.test(step.run ?? ""),
       );
