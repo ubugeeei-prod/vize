@@ -21,11 +21,7 @@ const action = parse(readRepoFile(actionPath.slice(2), "action.yml")) as {
 
 test("shared evidence uploader retains every product raw tree and the selected CLI receipt", () => {
   assert.equal(action.runs.using, "composite");
-  assert.equal(action.runs.steps.length, 2, "only the existing corpus and raw diagnostic uploads");
-  for (const step of action.runs.steps) {
-    assert.match(step.uses ?? "", /^actions\/upload-artifact@[0-9a-f]{40}$/);
-    assert.equal(step.run, undefined, "retention must not introduce another build");
-  }
+  assert.equal(action.runs.steps.length, 1, "retention must not introduce another build");
   const upload = action.runs.steps[0];
   assert.match(upload.uses ?? "", /^actions\/upload-artifact@[0-9a-f]{40}$/);
   assert.deepEqual(upload.with?.path.trim().split("\n"), [

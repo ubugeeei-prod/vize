@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -28,45 +28,6 @@ export function toolingTestCommand(plan, available = toolingTestFiles(), shard =
   return ["--test", "--test-concurrency=1", ...selectToolingShard(plan, shard)];
 }
 
-export function toolingTestObservation(args, env = process.env) {
-  if (
-    env.GITHUB_ACTIONS !== "true" ||
-    !env.RUNNER_TEMP ||
-    !args.includes("tests/tooling/empty-vue-star-listing-source.test.mjs")
-  )
-    return null;
-  const directory = join(env.RUNNER_TEMP, "tooling-listing-diagnostics");
-  return {
-    directory,
-    args: [
-      ...args.slice(0, 2),
-      "--test-reporter=spec",
-      "--test-reporter-destination=stdout",
-      "--test-reporter=tap",
-      `--test-reporter-destination=${join(directory, "tests.tap")}`,
-      ...args.slice(2),
-    ],
-  };
-}
-
-export function toolingMemoryObservation(read = (file) => readFileSync(file, "utf8")) {
-  return Object.fromEntries(
-    [
-      "/proc/self/cgroup",
-      "/sys/fs/cgroup/memory.events",
-      "/sys/fs/cgroup/memory.events.local",
-      "/sys/fs/cgroup/memory.current",
-      "/sys/fs/cgroup/memory.max",
-    ].map((file) => {
-      try {
-        return [file, { wholeUtf8: read(file) }];
-      } catch (error) {
-        return [file, { error: { code: error.code, message: error.message } }];
-      }
-    }),
-  );
-}
-
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const planPath =
     process.argv[2] ?? process.env.VIZE_TOOLING_TEST_PLAN ?? "target/tooling-test-plan.json";
@@ -82,64 +43,20 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const env = { ...process.env, VIZE_TEST_REQUIRE_TSGO: "1" };
     // The spec reporter output is unchanged. A second reporter records each file's wall time,
     // which update-tooling-test-timings.ts reads back from the job log.
-    const observation = toolingTestObservation(args, env);
-    if (observation) {
-      mkdirSync(observation.directory, { recursive: true });
-      env.VIZE_TOOLING_LISTING_OBSERVATION_DIR = observation.directory;
-    }
-    const startedAt = new Date().toISOString();
-    const memoryBefore = observation ? toolingMemoryObservation() : null;
     const timings = mkdtempSync(join(tmpdir(), "vize-tooling-timings-"));
     const destination = join(timings, "files.json");
     try {
-      const timingReporter = [
+      const reporters = [
+        "--test-reporter=spec",
+        "--test-reporter-destination=stdout",
         `--test-reporter=${fileURLToPath(new URL("./tooling-test-timing-reporter.ts", import.meta.url))}`,
         `--test-reporter-destination=${destination}`,
       ];
-      // An observed command already carries the spec reporter beside its TAP copy.
-      const command = observation
-        ? [...timingReporter, ...observation.args]
-        : [
-            "--test-reporter=spec",
-            "--test-reporter-destination=stdout",
-            ...timingReporter,
-            ...args,
-          ];
-      const result = spawnSync(process.execPath, command, { cwd: root, env, stdio: "inherit" });
-      if (observation)
-        writeFileSync(
-          join(observation.directory, "outer-result.json"),
-          JSON.stringify(
-            {
-              source: env.GITHUB_SHA,
-              run: env.GITHUB_RUN_ID,
-              attempt: env.GITHUB_RUN_ATTEMPT,
-              job: env.GITHUB_JOB,
-              shard: env.VIZE_TOOLING_TEST_SHARD,
-              node: process.execPath,
-              version: process.version,
-              nodeTestContext: env.NODE_TEST_CONTEXT ?? null,
-              args: observation.args,
-              originalArgs: args,
-              cwd: root,
-              startedAt,
-              completedAt: new Date().toISOString(),
-              memoryBefore,
-              memoryAfter: toolingMemoryObservation(),
-              status: result.status,
-              signal: result.signal,
-              error: result.error
-                ? {
-                    name: result.error.name,
-                    message: result.error.message,
-                    code: result.error.code,
-                  }
-                : null,
-            },
-            null,
-            2,
-          ) + "\n",
-        );
+      const result = spawnSync(process.execPath, [...reporters, ...args], {
+        cwd: root,
+        env,
+        stdio: "inherit",
+      });
       if (result.error) throw result.error;
       process.exitCode = result.status ?? 1;
       try {
