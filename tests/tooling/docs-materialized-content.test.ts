@@ -22,8 +22,8 @@ await test("native renderer input preserves route/source bytes and replaces only
     for (const [path, bytes] of Object.entries(originals)) put(`content/${path}`, bytes);
     assert.equal(
       CATALOGUE_SOURCES.length,
-      74,
-      "five complete catalogue locales, eleven retained English subgroups, four Japanese accessibility groups, Japanese components, directive conventions, SFC blocks and template safety",
+      75,
+      "five complete catalogue locales, eleven retained English subgroups, four Japanese accessibility groups, Japanese components, directive conventions, directive validity, SFC blocks and template safety",
     );
     assert.ok(CATALOGUE_SOURCES.includes("generated/rules/ja/accessibility-core.md"));
     assert.ok(CATALOGUE_SOURCES.includes("generated/rules/ja/accessibility-integrity.md"));
@@ -31,6 +31,7 @@ await test("native renderer input preserves route/source bytes and replaces only
     assert.ok(CATALOGUE_SOURCES.includes("generated/rules/ja/accessibility-structure.md"));
     assert.ok(CATALOGUE_SOURCES.includes("generated/rules/ja/vue-components.md"));
     assert.ok(CATALOGUE_SOURCES.includes("generated/rules/ja/vue-directives.md"));
+    assert.ok(CATALOGUE_SOURCES.includes("generated/rules/ja/vue-directive-validity.md"));
     assert.equal(
       CATALOGUE_SOURCES.filter((source) => source === "generated/rules/ja/vue-sfc.md").length,
       1,

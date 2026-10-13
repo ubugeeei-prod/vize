@@ -289,9 +289,9 @@
     },
     {
       "route": "/rules/vue-directive-validity",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Authored Japanese explains directive syntax and placement, then links complete v-for and slot examples and the Vue guide. All nine original references, thirty-six code blocks, defaults, presets, option boundaries and source links remain intact; native and deployed reader acceptance remain pending."
     },
     {
       "route": "/rules/vue-directives",

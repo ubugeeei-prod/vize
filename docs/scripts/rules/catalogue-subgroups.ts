@@ -84,6 +84,14 @@ export const catalogueSubgroups: Record<
   },
   "vue-directive-validity": {
     title: "Vue Rules: Directive Validity",
+    jaTitle: "ディレクティブの構文と配置",
+    jaIntroduction: [
+      "このルール群では、v-bind・v-if・v-for・v-model などのディレクティブに必要な値や引数、配置を確認します。",
+      "",
+      "条件分岐や繰り返し、入力との連動、イベント処理、スロットを追加したときに確認してください。v-else の前後関係や、v-for の書式など、各ルールが検査する範囲を掲載しています。",
+      "",
+      "まずは [v-for の繰り返し式と key の例](./reference/vue-valid-v-for.md)と[スロットの宣言の例](./reference/vue-valid-v-slot.md)で、悪い例・良い例の違いを確認してください。採用するルールだけを掲載された設定で有効にし、`vp run lint` を実行します。[Vue の全ルール](./vue.md)では、テンプレートの関連ルールも確認できます。",
+    ],
     rules: [
       "vue/valid-v-bind",
       "vue/valid-v-else",
