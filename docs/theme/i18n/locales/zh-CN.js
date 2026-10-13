@@ -47,6 +47,7 @@
       "/guide/check-performance": "类型检查性能",
       "/guide/oxlint": "Oxlint 插件",
       "/guide/comment-annotations": "注释标注",
+      "/guide/formatter": "格式化",
       "/guide/formatter-import-sorting": "导入排序",
       "/guide/formatter-indent-width": "缩进宽度",
       "/guide/formatter-jsx-quotes": "JSX 引号",

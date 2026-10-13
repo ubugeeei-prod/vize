@@ -47,6 +47,7 @@
       "/guide/check-performance": "Desempenho da verificação de tipos",
       "/guide/oxlint": "Plugin do Oxlint",
       "/guide/comment-annotations": "Anotações em comentários",
+      "/guide/formatter": "Formatação",
       "/guide/formatter-import-sorting": "Ordenação de imports",
       "/guide/formatter-indent-width": "Largura da indentação",
       "/guide/formatter-jsx-quotes": "Aspas em JSX",

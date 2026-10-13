@@ -87,6 +87,7 @@
     "/integrations/vscode",
   ];
   const formatterPaths = [
+    "/guide/formatter",
     "/guide/formatter-import-sorting",
     "/guide/formatter-indent-width",
     "/guide/formatter-line-endings",

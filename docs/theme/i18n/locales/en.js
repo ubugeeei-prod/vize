@@ -48,6 +48,7 @@
       "/guide/check-performance": "Type-check Performance",
       "/guide/oxlint": "Oxlint Plugin",
       "/guide/comment-annotations": "Comment Annotations",
+      "/guide/formatter": "Formatting",
       "/guide/formatter-import-sorting": "Import Sorting",
       "/guide/formatter-indent-width": "Indent Width",
       "/guide/formatter-jsx-quotes": "JSX Quotes",

@@ -47,6 +47,7 @@
       "/guide/check-performance": "型チェックのパフォーマンス",
       "/guide/oxlint": "Oxlint プラグイン",
       "/guide/comment-annotations": "コメント注釈",
+      "/guide/formatter": "フォーマット",
       "/guide/formatter-import-sorting": "import の並べ替え",
       "/guide/formatter-indent-width": "インデント幅",
       "/guide/formatter-jsx-quotes": "JSX の引用符",
