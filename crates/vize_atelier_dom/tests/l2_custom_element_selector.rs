@@ -47,7 +47,7 @@ fn declarative_custom_element_matcher_uses_l2_for_template_sections() {
     assert_eq!(selected.code, compat.code);
     assert_eq!(selected.sections, compat.sections);
     assert_eq!(
-        counter_total(&counters, "davinci.s2_dom.files"),
+        counter_total(&counters, "l2.dom.files"),
         Some(1),
         "declarative custom-element matchers should enter the L2 production selector"
     );
@@ -80,7 +80,7 @@ fn declarative_custom_element_matcher_uses_l2_for_sfc_sections() {
     assert_eq!(selected.code, compat.code);
     assert_eq!(selected.sections, compat.sections);
     assert_eq!(
-        counter_total(&counters, "davinci.s2_dom.files"),
+        counter_total(&counters, "l2.dom.files"),
         Some(1),
         "declarative custom-element matchers should enter the L2 SFC sections fast path"
     );
@@ -117,7 +117,7 @@ fn static_predicate_custom_element_matcher_uses_l2_for_template_sections() {
     assert_eq!(selected.code, compat.code);
     assert_eq!(selected.sections, compat.sections);
     assert_eq!(
-        counter_total(&counters, "davinci.s2_dom.files"),
+        counter_total(&counters, "l2.dom.files"),
         Some(1),
         "opaque custom-element predicates should enter the L2 production selector"
     );
@@ -154,7 +154,7 @@ fn static_predicate_custom_element_matcher_uses_l2_for_sfc_sections() {
     assert_eq!(selected.code, compat.code);
     assert_eq!(selected.sections, compat.sections);
     assert_eq!(
-        counter_total(&counters, "davinci.s2_dom.files"),
+        counter_total(&counters, "l2.dom.files"),
         Some(1),
         "opaque custom-element predicates should enter the L2 SFC sections selector"
     );

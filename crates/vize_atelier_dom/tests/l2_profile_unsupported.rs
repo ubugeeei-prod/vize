@@ -42,7 +42,7 @@ fn profiled_unsupported_options_stay_on_compatibility_codegen() {
         assert!(errors.is_empty(), "{label} compile errors: {errors:?}");
         assert!(!result.code.is_empty(), "{label} must still emit code");
         assert_eq!(
-            counter_total(&counters, "davinci.s2_dom.files"),
+            counter_total(&counters, "l2.dom.files"),
             None,
             "{label} must stay on compatibility even when profiling is enabled"
         );

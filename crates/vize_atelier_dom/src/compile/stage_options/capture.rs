@@ -111,29 +111,23 @@ pub(in crate::compile) fn emit_l2_captured<C: CaptureSink>(
         // P2-12b observes the compiler path that actually produced this DOM
         // module. The regular entry point keeps the observer uninstantiated,
         // preserving the no-observer cost law outside explicit profiling.
-        profiler.record_counter_enabled("davinci.s2_dom.files", 1);
+        profiler.record_counter_enabled("l2.dom.files", 1);
+        profiler
+            .record_counter_enabled("l2.dom.transform.walks", u64::from(budget.transform.walks));
         profiler.record_counter_enabled(
-            "davinci.s2_dom.transform.walks",
-            u64::from(budget.transform.walks),
-        );
-        profiler.record_counter_enabled(
-            "davinci.s2_dom.transform.passes",
+            "l2.dom.transform.passes",
             u64::from(budget.transform.passes),
         );
-        profiler.record_counter_enabled("davinci.s2_dom.emit.walks", u64::from(budget.emit_walks));
-        profiler
-            .record_counter_enabled("davinci.s2_dom.emit.visits", u64::from(budget.emit_visits));
-        profiler.record_counter_enabled(
-            "davinci.s2_dom.total.walks",
-            u64::from(budget.total_walks()),
-        );
+        profiler.record_counter_enabled("l2.dom.emit.walks", u64::from(budget.emit_walks));
+        profiler.record_counter_enabled("l2.dom.emit.visits", u64::from(budget.emit_visits));
+        profiler.record_counter_enabled("l2.dom.total.walks", u64::from(budget.total_walks()));
         let (pre_s2_walks, pre_s2_visits) = pre_s2_walks.map_or((0, 0), |counts| {
             (counts.total_walks(), counts.total_visits())
         });
-        profiler.record_counter_enabled("davinci.s2_dom.pre_s2.walks", pre_s2_walks);
-        profiler.record_counter_enabled("davinci.s2_dom.pre_s2.visits", pre_s2_visits);
+        profiler.record_counter_enabled("l2.dom.pre_s2.walks", pre_s2_walks);
+        profiler.record_counter_enabled("l2.dom.pre_s2.visits", pre_s2_visits);
         profiler.record_counter_enabled(
-            "davinci.s2_dom.build.walks",
+            "l2.dom.build.walks",
             pre_s2_walks + u64::from(budget.total_walks()),
         );
         observed.emit

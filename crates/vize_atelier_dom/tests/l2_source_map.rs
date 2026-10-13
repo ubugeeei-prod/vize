@@ -119,7 +119,7 @@ fn assert_selected_source_map_matches_compat(
         "source-map requests must remain additive"
     );
     assert_eq!(
-        counter_total(&counters, "davinci.s2_dom.files"),
+        counter_total(&counters, "l2.dom.files"),
         Some(1),
         "source-map requests must enter the L2 DOM production selector"
     );

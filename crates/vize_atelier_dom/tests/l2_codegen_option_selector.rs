@@ -41,7 +41,7 @@ fn optimize_imports_uses_l2_after_legacy_noop_audit() {
     assert_eq!(selected_optimized.code, selected_default.code);
     assert_eq!(selected_optimized.sections, selected_default.sections);
     assert_eq!(
-        counter_total(&counters, "davinci.s2_dom.files"),
+        counter_total(&counters, "l2.dom.files"),
         Some(1),
         "DOM-irrelevant optimize_imports must not disarm the L2 production selector"
     );

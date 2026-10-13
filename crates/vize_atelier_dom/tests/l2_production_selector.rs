@@ -43,7 +43,7 @@ fn source_map_free_dom_compile_uses_l2_without_profiler() {
     assert_eq!(selected.code, compat.code);
     assert_eq!(selected.sections, compat.sections);
     assert_eq!(
-        counter_total(&counters, "davinci.s2_dom.files"),
+        counter_total(&counters, "l2.dom.files"),
         None,
         "the production selector must not instantiate the profiling observer"
     );
@@ -78,7 +78,7 @@ fn source_map_compiles_use_l2_with_the_compatibility_map_when_profiled() {
         "source-map compiles must keep producing a map"
     );
     assert_eq!(
-        counter_total(&counters, "davinci.s2_dom.files"),
+        counter_total(&counters, "l2.dom.files"),
         Some(1),
         "source-map compiles must use L2 once the map is verified against compatibility codegen"
     );
@@ -125,7 +125,7 @@ fn unsupported_options_stay_on_compatibility_without_profiler() {
             "{label} must stay on the compatibility path until L2 supports it"
         );
         assert_eq!(
-            counter_total(&counters, "davinci.s2_dom.files"),
+            counter_total(&counters, "l2.dom.files"),
             None,
             "{label} compatibility compiles must not instantiate the profiling observer"
         );
@@ -152,7 +152,7 @@ fn in_tag_comment_compiles_use_l2_codegen() {
     profiler.clear();
 
     assert!(selected.sections.is_some());
-    assert_eq!(counter_total(&counters, "davinci.s2_dom.files"), Some(1));
+    assert_eq!(counter_total(&counters, "l2.dom.files"), Some(1));
 }
 
 #[test]
@@ -177,7 +177,7 @@ fn sfc_sections_entry_uses_l2_once_sections_land() {
     assert_eq!(selected.code, compat.code);
     assert_eq!(selected.sections, compat.sections);
     assert_eq!(
-        counter_total(&counters, "davinci.s2_dom.files"),
+        counter_total(&counters, "l2.dom.files"),
         None,
         "the SFC sections entry must not instantiate the profiling observer"
     );
@@ -215,7 +215,7 @@ fn sfc_sections_entry_uses_l2_for_foreign_namespace_templates() {
         assert_eq!(selected.code, compat.code, "{label} code");
         assert_eq!(selected.sections, compat.sections, "{label} sections");
         assert_eq!(
-            counter_total(&counters, "davinci.s2_dom.files"),
+            counter_total(&counters, "l2.dom.files"),
             Some(1),
             "{label} must use the L2 SFC sections fast path"
         );

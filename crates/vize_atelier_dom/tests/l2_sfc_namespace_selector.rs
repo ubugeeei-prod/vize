@@ -50,7 +50,7 @@ fn sfc_sections_entry_keeps_custom_foreign_descendants_on_l2() {
         assert_eq!(selected.code, compat.code, "{label} code");
         assert_eq!(selected.sections, compat.sections, "{label} sections");
         assert_eq!(
-            counter_total(&counters, "davinci.s2_dom.files"),
+            counter_total(&counters, "l2.dom.files"),
             Some(1),
             "{label} must keep the L2 SFC sections fast path"
         );
@@ -92,7 +92,7 @@ fn sfc_sections_entry_ignores_lt_inside_foreign_attributes() {
         assert_eq!(selected.code, compat.code, "{label} code");
         assert_eq!(selected.sections, compat.sections, "{label} sections");
         assert_eq!(
-            counter_total(&counters, "davinci.s2_dom.files"),
+            counter_total(&counters, "l2.dom.files"),
             Some(1),
             "{label} must use the L2 SFC sections fast path"
         );
@@ -134,7 +134,7 @@ fn sfc_sections_entry_ignores_native_raw_text_bodies() {
         assert_eq!(selected.code, compat.code, "{label} code");
         assert_eq!(selected.sections, compat.sections, "{label} sections");
         assert_eq!(
-            counter_total(&counters, "davinci.s2_dom.files"),
+            counter_total(&counters, "l2.dom.files"),
             Some(1),
             "{label} must keep the L2 SFC sections fast path"
         );
@@ -167,7 +167,7 @@ fn sfc_sections_entry_pops_html_reentry_closes_case_insensitively() {
     assert_eq!(selected.code, compat.code);
     assert_eq!(selected.sections, compat.sections);
     assert_eq!(
-        counter_total(&counters, "davinci.s2_dom.files"),
+        counter_total(&counters, "l2.dom.files"),
         Some(1),
         "case-insensitive HTML closes inside foreign re-entry must not poison the L2 selector"
     );
@@ -191,7 +191,7 @@ fn sfc_sections_entry_uses_parser_backed_l2_for_root_html_title() {
         "root HTML title must keep compatibility sections"
     );
     assert_eq!(
-        counter_total(&counters, "davinci.s2_dom.files"),
+        counter_total(&counters, "l2.dom.files"),
         Some(1),
         "root HTML title must use L2 after parser recovery, not the direct foreign fast path"
     );
