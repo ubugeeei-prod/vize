@@ -1,9 +1,10 @@
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { toolingTestFiles } from "./plan-tooling-tests.mjs";
-import { selectToolingShard } from "./tooling-test-shards.ts";
+import { TOOLING_TIMINGS_LOG_MARKER, selectToolingShard } from "./tooling-test-shards.ts";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 
@@ -40,9 +41,36 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     // Selection defers known scenarios. An unclassified new requirement must
     // still fail closed; disabling the requirement would hide missing coverage.
     const env = { ...process.env, VIZE_TEST_REQUIRE_TSGO: "1" };
-    const result = spawnSync(process.execPath, args, { cwd: root, env, stdio: "inherit" });
-    if (result.error) throw result.error;
-    process.exitCode = result.status ?? 1;
+    // The spec reporter output is unchanged. A second reporter records each file's wall time,
+    // which update-tooling-test-timings.ts reads back from the job log.
+    const timings = mkdtempSync(join(tmpdir(), "vize-tooling-timings-"));
+    const destination = join(timings, "files.json");
+    try {
+      const reporters = [
+        "--test-reporter=spec",
+        "--test-reporter-destination=stdout",
+        `--test-reporter=${fileURLToPath(new URL("./tooling-test-timing-reporter.ts", import.meta.url))}`,
+        `--test-reporter-destination=${destination}`,
+      ];
+      const result = spawnSync(process.execPath, [...reporters, ...args], {
+        cwd: root,
+        env,
+        stdio: "inherit",
+      });
+      if (result.error) throw result.error;
+      process.exitCode = result.status ?? 1;
+      try {
+        const files = JSON.parse(readFileSync(destination, "utf8"));
+        const shard = process.env.VIZE_TOOLING_TEST_SHARD ?? "";
+        const record = JSON.stringify({ tier: plan.tier, shard, files });
+        process.stdout.write(`\n${TOOLING_TIMINGS_LOG_MARKER} ${record}\n`);
+      } catch (error) {
+        // Timing evidence is advisory; it never changes the test result.
+        process.stdout.write(`\nTooling test timings unavailable: ${error.message}\n`);
+      }
+    } finally {
+      rmSync(timings, { recursive: true, force: true });
+    }
   } else {
     process.stdout.write("No tooling tests selected by the declared inputs.\n");
   }

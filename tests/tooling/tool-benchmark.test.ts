@@ -4,13 +4,13 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { buildFairnessNotes } from "../../tools/benchmarks/scripts/benchmark-notes.mjs";
+import { buildFairnessNotes } from "../../tools/benchmarks/scripts/benchmark-notes.ts";
 import {
   createSurface,
   renderDocument,
   renderMarkdown,
 } from "../../tools/benchmarks/scripts/compare-tools.mjs";
-import { createNativeBatchSequenceVariants } from "../../tools/benchmarks/scripts/native-batch.mjs";
+import { createNativeBatchSequenceVariants } from "../../tools/benchmarks/scripts/native-batch.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 

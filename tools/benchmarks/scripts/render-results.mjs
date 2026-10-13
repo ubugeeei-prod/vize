@@ -19,7 +19,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { buildFairnessNotes } from "./benchmark-notes.mjs";
+import { buildFairnessNotes } from "./benchmark-notes.ts";
 import { createSurface, ENGINE_CLASSES_BY_SURFACE } from "./compare-tools-report.mjs";
 import { renderDocument, renderMarkdown } from "./compare-tools.mjs";
 

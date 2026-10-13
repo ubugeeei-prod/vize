@@ -26,12 +26,17 @@ const dynamicPrefixes = new Set([
 ]);
 
 // Complete command/metadata producers reviewed at edc003416dafd322aa6cd100dde488fb112a2abb.
+// The WASM command was re-reviewed as its TypeScript port and imports (#8840).
 // A changed producer requires review, rather than accepting a new dynamic role.
 const producerHashes = {
   "tools/commands/ci/github/app-e2e-plan.rs":
     "46983c8019bfb809f418eccdab5afeb73b3cea5dcc7c4aa8354d2726bf9c617b",
-  "tools/moon/cmd/github/build_vitrine_wasm/main.mbt":
-    "092afb87605b4ed90b1de136fc6111f7f416318f7597079266afdf2f3de9979e",
+  "tools/support/github/build-vitrine-wasm.ts":
+    "1cdcb19eb0e60ad688a965fbdaa2dc7de90f306c910461c25a11f2ad651c61f7",
+  "tools/support/tasks/build-vitrine-wasm.ts":
+    "550f407144f1600c59d5dc849de0423e07966afbbac910fc5211bc026454492c",
+  "tools/support/command-runtime.ts":
+    "256b427af28975329f8c51b7043407801a78b12e4b75e4c6178d92c5a7938f54",
   "npm/native/scripts/build-ci.mjs":
     "5e9bf50544adbd1e225f7864bb76ebf73f477eeae19000c74de15edcf3e0ada4",
 };
@@ -146,7 +151,7 @@ function verifyRecipes(root, docs, e2e) {
   // generated-WASM cache. Do not freeze the other Docs job or product libraries.
   assert.equal(
     hash(JSON.stringify(docs.jobs["build-playground"])),
-    "61864526957468caba00d9deb5fd038def840f84a6ad69009a39b26987ccb394",
+    "1749dbfb5e3c4a8d5d73d664bb9b63c14520017dd0ba253ee0b8f61ecba68b55",
     "reviewed whole Docs WASM producer changed",
   );
   for (const [file, expected] of Object.entries(producerHashes))

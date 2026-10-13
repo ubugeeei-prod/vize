@@ -126,6 +126,14 @@ export const catalogueSubgroups: Record<
   },
   "vue-formatting": {
     title: "Vue Rules: Template Formatting",
+    jaTitle: "テンプレートの属性と表記を揃える",
+    jaIntroduction: [
+      "このルール群では、属性名と並び順、引用符、空白、空の要素の書き方など、テンプレートの表記を確認します。チームで記述を揃えるときや、既存のテンプレートを整理するときに使ってください。",
+      "",
+      "まずは [属性を並べる例](./reference/vue-attribute-order.md)と[同名の props を省略して渡す例](./reference/vue-prefer-props-shorthand.md)で、変更前後の違いを確認してください。同名の prop バインディングを省略する構文は Vue 3.4 以降が対象です。",
+      "",
+      "採用するルールだけを掲載された設定で有効にし、`vp run lint` を実行してください。要素の種類ごとの自己終了タグの方針は[ルールのオプション](./options-vue.md)で指定できます。[Vue の全ルール](./vue.md)では、ディレクティブの構文やテンプレートの構造に関する検査も確認できます。",
+    ],
     rules: [
       "vue/attribute-hyphenation",
       "vue/attribute-order",
@@ -183,6 +191,14 @@ export const catalogueSubgroups: Record<
   },
   "vue-template-structure": {
     title: "Vue Rules: Template Structure",
+    jaTitle: "繰り返し・条件分岐とテンプレートの構造",
+    jaIntroduction: [
+      "繰り返しや条件分岐、スロットの変数と、template 要素の使い方を確認するルールをまとめています。リストの表示や分岐を変更したとき、テンプレートの構造を整理したときに使います。",
+      "",
+      "リストでは項目を識別する key、条件分岐では重複する条件、入れ子のループやスロットでは変数の参照を確認します。no-template-shadow が比較するのは入れ子の v-for の変数で、script 側と同じ名前であるだけでは診断しません。各ルールの現在の検査範囲を確認してください。",
+      "",
+      "まずは [繰り返す要素に key を指定する例](./reference/vue-require-v-for-key.md)と[v-if と v-for を分ける例](./reference/vue-no-use-v-if-with-v-for.md)で、悪い例と良い例の差を確認してください。採用するルールだけを掲載された設定で有効にし、`vp run lint` を実行します。[Vue の全ルール](./vue.md)から、構文や属性の関連ルールも確認できます。",
+    ],
     rules: [
       "vue/require-v-for-key",
       "vue/no-use-v-if-with-v-for",

@@ -18,7 +18,7 @@ on:
       - "tests/_fixtures/differential/typecheck/selected-alias-collector-3984/**"
       - "tools/benchmarks/scripts/canon-alias-*.mjs"
       - "crates/vize_atelier_sfc/examples/type_snapshot_bench.rs"
-      - "tools/benchmarks/scripts/type-snapshot-paired.mjs"
+      - "tools/benchmarks/scripts/type-snapshot-paired.ts"
       - "tools/benchmarks/scripts/type-snapshot-cli-*.mjs"
       - "tools/benchmarks/scripts/typecheck-command.mjs"
       - "tools/benchmarks/scripts/benchmark-binary.mjs"
@@ -100,7 +100,7 @@ jobs:
           cargo build --locked --manifest-path head/Cargo.toml --profile ci-opt -p vize_atelier_sfc --example type_snapshot_bench
       - name: Compare complete module facts and nine alternating measurement pairs
         run: |
-          node head/tools/benchmarks/scripts/type-snapshot-paired.mjs \
+          node head/tools/benchmarks/scripts/type-snapshot-paired.ts \
             "$GITHUB_WORKSPACE/base/target/ci-opt/examples/type_snapshot_bench" \
             "$GITHUB_WORKSPACE/head/target/ci-opt/examples/type_snapshot_bench" \
             "$GITHUB_WORKSPACE/type-snapshot-bench.json"

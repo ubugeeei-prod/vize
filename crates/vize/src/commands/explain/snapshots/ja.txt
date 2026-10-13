@@ -2206,12 +2206,12 @@ script/no-duplicate-attr-inheritance · lint ルール
 ドキュメント: docs/content/rules/type-and-script.md
 
 不正な例:
-  defineOptions({ inheritAttrs: true })
-  export default { inheritAttrs: true }
+  <script setup></script>
+  <template><div><button v-bind="$attrs">Save</button></div></template>
 
 正しい例:
-  defineOptions({ inheritAttrs: false }) // intentional opt-out
-  export default {}                      // default inheritance, unstated
+  <script setup>defineOptions({ inheritAttrs: false })</script>
+  <template><div><button v-bind="$attrs">Save</button></div></template>
 === script/no-export-in-script-setup
 script/no-export-in-script-setup · lint ルール
 <script setup> 内の export 文を禁止する

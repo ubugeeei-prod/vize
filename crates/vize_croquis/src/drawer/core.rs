@@ -112,7 +112,7 @@ impl Drawer {
         };
         match packet {
             Some(packet) => drawer.with_binding_occurrence_packet(packet),
-            None => drawer,
+            None => drawer.with_runtime_template_read_capture(),
         }
     }
 

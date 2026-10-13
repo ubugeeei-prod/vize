@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { delimiter, join, resolve } from "node:path";
 import { test, type TestContext } from "node:test";
 
-const driver = resolve(import.meta.dirname, "../../tools/benchmarks/scripts/criterion-ab.mjs");
+const driver = resolve(import.meta.dirname, "../../tools/benchmarks/scripts/criterion-ab.ts");
 
 function fixture(t: TestContext) {
   const root = mkdtempSync(join(tmpdir(), "vize-criterion-current-run-"));

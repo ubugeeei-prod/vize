@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { buildFairnessNotes } from "../../tools/benchmarks/scripts/benchmark-notes.mjs";
+import { buildFairnessNotes } from "../../tools/benchmarks/scripts/benchmark-notes.ts";
 import { createSurface } from "../../tools/benchmarks/scripts/compare-tools-report.mjs";
 import { renderMarkdown } from "../../tools/benchmarks/scripts/compare-tools.mjs";
 import { checkSurfaceInput } from "./support/benchmark/check-surface.ts";

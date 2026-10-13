@@ -27,7 +27,7 @@ import {
   assertPrecompileCacheCold,
   clearPrecompileCache,
   readPrecompileCacheEntries,
-} from "./vite-precompile-cache.mjs";
+} from "./vite-precompile-cache.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "..", "..", "..");

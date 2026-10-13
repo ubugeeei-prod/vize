@@ -5,13 +5,12 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 
-// @ts-expect-error plain-JS bench module without type declarations
 import {
   DEFAULT_REPLAY_TOOLS,
   diffExpectations,
   scoreCase,
   UPSTREAM,
-} from "../../tools/benchmarks/scripts/vue-benchmarks-replay.mjs";
+} from "../../tools/benchmarks/scripts/vue-benchmarks-replay.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");

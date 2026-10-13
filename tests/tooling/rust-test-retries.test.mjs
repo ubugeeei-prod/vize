@@ -11,7 +11,8 @@ import {
   verifyArchiveReceipt,
 } from "../../tools/support/compat/github/rust-test-archive.mjs";
 
-for (const job of ["pr-rust-build", "merge-rust-source"]) {
+// Only the merge queue still transfers a receipt-bound archive to its shards.
+for (const job of ["merge-rust-source"]) {
   void test(`${job} failed-only retry selects its completed producer's exact archive`, async () => {
     const workflow = parse(
       readFileSync(new URL("../../.github/workflows/pr-rust-checks.yml", import.meta.url), "utf8"),

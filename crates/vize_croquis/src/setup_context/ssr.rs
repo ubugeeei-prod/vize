@@ -1,7 +1,7 @@
 //! Diagnostic-only execution facts, owned by the existing AST walks.
 
 use super::SetupContextTracker;
-use crate::binding_occurrences::{BindingOccurrence, BindingOccurrences};
+use crate::binding_occurrences::BindingOccurrences;
 
 mod resolve;
 
@@ -16,7 +16,8 @@ pub(super) struct SsrFacts {
     vue_callbacks: Vec<(Range, Range, bool)>,
     opaque_functions: bool,
     occurrences: Option<BindingOccurrences>,
-    runtime_template_reads: Option<Vec<BindingOccurrence>>,
+    runtime_template_reads: Option<BindingOccurrences>,
+    component_reads_qualified: bool,
 }
 
 impl std::fmt::Debug for SetupContextTracker {
@@ -83,22 +84,34 @@ impl SetupContextTracker {
 
     pub(crate) fn set_ssr_occurrences(&mut self, packet: Option<BindingOccurrences>) {
         let facts = self.ssr_mut();
-        if packet.is_none() {
-            facts.runtime_template_reads = None;
-        }
+        facts.component_reads_qualified = false;
         facts.occurrences = packet;
     }
 
-    pub(crate) fn set_runtime_template_reads(&mut self, reads: Option<Vec<BindingOccurrence>>) {
+    pub(crate) fn set_runtime_template_reads(&mut self, reads: Option<BindingOccurrences>) {
         self.ssr_mut().runtime_template_reads = reads;
     }
 
-    pub(crate) fn authored_runtime_template_reads(&self) -> Option<&[BindingOccurrence]> {
-        self.ssr.as_ref()?.runtime_template_reads.as_deref()
+    pub(crate) fn qualify_component_reads(&mut self, qualified: bool) {
+        self.ssr_mut().component_reads_qualified = qualified;
     }
 
-    pub(crate) fn authored_binding_occurrences(&self) -> Option<&BindingOccurrences> {
-        self.ssr.as_ref()?.occurrences.as_ref()
+    pub(crate) fn component_reads_are_qualified(&self) -> bool {
+        self.ssr
+            .as_ref()
+            .is_some_and(|facts| facts.component_reads_qualified)
+    }
+
+    pub(crate) fn authored_runtime_template_reads(&self) -> Option<&BindingOccurrences> {
+        let facts = self.ssr.as_ref()?;
+        facts.component_reads_qualified.then_some(())?;
+        facts.runtime_template_reads.as_ref()
+    }
+
+    pub(crate) fn take_runtime_template_reads(&mut self) -> Option<BindingOccurrences> {
+        let facts = self.ssr.as_mut()?;
+        facts.component_reads_qualified = false;
+        facts.runtime_template_reads.take()
     }
 
     pub(crate) fn take_ssr_occurrences(&mut self) -> Option<BindingOccurrences> {
@@ -140,6 +153,14 @@ impl SetupContextTracker {
         {
             facts.occurrences = None;
         }
+        if facts
+            .runtime_template_reads
+            .as_mut()
+            .is_some_and(|packet| packet.shift_script_offsets(delta).is_none())
+        {
+            facts.runtime_template_reads = None;
+        }
+        facts.component_reads_qualified = false;
     }
 
     pub(super) fn extend_ssr(&mut self, other: Option<Box<SsrFacts>>) {
@@ -158,5 +179,16 @@ impl SetupContextTracker {
             packet.merge(other.occurrences?);
             Some(packet)
         });
+        facts.runtime_template_reads = match (
+            facts.runtime_template_reads.take(),
+            other.runtime_template_reads,
+        ) {
+            (Some(mut packet), Some(other)) => {
+                packet.merge(other);
+                Some(packet)
+            }
+            (packet, other) => packet.or(other),
+        };
+        facts.component_reads_qualified = false;
     }
 }

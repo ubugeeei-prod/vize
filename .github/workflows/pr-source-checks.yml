@@ -29,8 +29,8 @@ jobs:
       playground: ${{ steps.plan.outputs.playground }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", cache: false, run-install: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
       - name: Resolve and fetch comparison base
         id: comparison
         env:
@@ -89,49 +89,11 @@ jobs:
       run-rust: ${{ needs.pr-source-plan.outputs.rust == 'true' }}
       rust-plan: ${{ needs.pr-source-plan.outputs.rust-plan }}
   pr-js-packages:
-    name: PR JS package build and tests
+    name: PR JS packages
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
     needs: pr-source-plan
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 35
-    env:
-      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
-      CARGO_BUILD_JOBS: "12"
-    steps:
-      - name: Explain documentation-only skip
-        if: ${{ needs.pr-source-plan.outputs.js != 'true' }}
-        run: echo 'JS package checks skipped because this PR changes no package, compiler, or unknown source paths.' >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
-        with: { node-version-file: "package.json", cache: true, run-install: false }
-      - uses: ./.github/actions/setup-moonbit
-        if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
-      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: stable }
-        if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
-        with: { wild-version: "0.9.0" }
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
-        with:
-          cache-key-prefix: ${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}
-          key: test-js-packages
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - name: Install JS dependencies
-        if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
-        run: vp install --frozen-lockfile --prefer-offline
-      - name: Test JS packages
-        if: ${{ always() && needs.pr-source-plan.outputs.js == 'true' }}
-        uses: ./.github/actions/test-js-packages-with-history
-      - name: Check Fresco native declarations and consumer types
-        if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
-        run: vp run --filter './npm/fresco-native' check:generated && vp run --filter './npm/fresco-native' check:types
-      - name: Check UI package conformance
-        if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
-        run: vp run --filter './npm/native' build:ci && vp run --filter './npm/ui' check
+    uses: ./.github/workflows/pr-js-checks.yml
+    with: { run-js: "${{ needs.pr-source-plan.outputs.js == 'true' }}" }
   pr-source-cli:
     needs: pr-source-plan
     uses: ./.github/workflows/pr-source-cli.yml
@@ -266,13 +228,11 @@ jobs:
       - uses: ./.github/actions/setup-wild-http-recovery # v0.9.0
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
         with: { wild-version: 0.9.0 }
-      - uses: ./.github/actions/setup-moonbit
-        if: ${{ env.RUN_PLAYGROUND == 'true' }}
       - uses: ./.github/actions/setup-rust-sticky-cache
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
         with:
           cache-key-prefix: ${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}
-          key: playground-test
+          key: build-js-packages
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/setup-rust-script
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
@@ -282,18 +242,18 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: playground/src/wasm/vize_vitrine*
-          key: ${{ runner.os }}-wasm-v2-${{ hashFiles('crates/**/*.rs', 'davinci/**/*.rs', 'crates/**/Cargo.toml', 'davinci/**/Cargo.toml', 'Cargo.toml', 'Cargo.lock', 'tools/moon/cmd/github/build_vitrine_wasm/**') }}
+          key: ${{ runner.os }}-wasm-v2-${{ hashFiles('crates/**/*.rs', 'davinci/**/*.rs', 'crates/**/Cargo.toml', 'davinci/**/Cargo.toml', 'Cargo.toml', 'Cargo.lock', 'tools/support/github/build-vitrine-wasm.ts', 'tools/support/tasks/build-vitrine-wasm.ts', 'tools/support/command-runtime.ts') }}
       - name: Install wasm-bindgen-cli
         if: ${{ env.RUN_PLAYGROUND == 'true' && steps.cache-wasm.outputs.cache-hit != 'true' }}
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
           tool: wasm-bindgen-cli@0.2.127
-      - name: Build WASM
-        if: ${{ env.RUN_PLAYGROUND == 'true' && steps.cache-wasm.outputs.cache-hit != 'true' }}
-        run: moon run --target native tools/moon/cmd/github/build_vitrine_wasm -- playground/src/wasm
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
         with: { node-version-file: "package.json", cache: true, run-install: false }
+      - name: Build WASM
+        if: ${{ env.RUN_PLAYGROUND == 'true' && steps.cache-wasm.outputs.cache-hit != 'true' }}
+        run: node tools/support/github/build-vitrine-wasm.ts playground/src/wasm
       - name: Install JS dependencies
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
         run: vp install --frozen-lockfile --prefer-offline

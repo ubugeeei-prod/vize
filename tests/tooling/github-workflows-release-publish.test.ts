@@ -222,7 +222,7 @@ test("release workflow smokes the wasm package wrapper before publishing", () =>
   assert.match(buildJob, new RegExp(`runs-on:\\s*${hostedOrBlacksmith("ubuntu-24.04")}`));
   assert.match(buildJob, /npm\/wasm\/index\.js/);
   assert.match(buildJob, /npm\/wasm\/index\.d\.ts/);
-  assert.match(buildJob, /moon run --target native tools\/moon\/cmd\/build_vize_wasm_package --/);
+  assert.match(buildJob, /node tools\/support\/tasks\/build-vize-wasm-package\.ts/);
   assert.match(buildJob, /name:\s*release-package-vize-wasm/);
   const publishWorkflow = parse(workflow) as { jobs?: Record<string, ReleaseJob> };
   const publishWasm = publishWorkflow.jobs?.["release-npm-wasm"];

@@ -190,7 +190,7 @@ fn emit_slot_references(
             );
             append!(
                 *ts,
-                "  const {slots_ref} = undefined as unknown as __VizeStructuralSlots<typeof {component_ref}>;\n"
+                "  const {slots_ref} = undefined as unknown as __VizeNavigationSlots<typeof {component_ref}>;\n"
             );
             emitted_slots_ref = true;
         }

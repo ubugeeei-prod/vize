@@ -2287,12 +2287,12 @@ script/no-duplicate-attr-inheritance · lint 规则
 文档: docs/content/rules/type-and-script.md
 
 错误示例:
-  defineOptions({ inheritAttrs: true })
-  export default { inheritAttrs: true }
+  <script setup></script>
+  <template><div><button v-bind="$attrs">Save</button></div></template>
 
 正确示例:
-  defineOptions({ inheritAttrs: false }) // intentional opt-out
-  export default {}                      // default inheritance, unstated
+  <script setup>defineOptions({ inheritAttrs: false })</script>
+  <template><div><button v-bind="$attrs">Save</button></div></template>
 === script/no-export-in-script-setup
 script/no-export-in-script-setup · lint 规则
 禁止在 <script setup> 中使用 export 语句

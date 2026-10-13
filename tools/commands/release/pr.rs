@@ -7,7 +7,7 @@
 //! [package]
 //! edition = "2024"
 //! ```
-//! Driver source pin: decorated-integration-body-custody-v15.
+//! Driver source pin: release-bot-envelope-variants-v16.
 
 #[path = "../../support/release/pr_budget.rs"]
 mod pr_budget;

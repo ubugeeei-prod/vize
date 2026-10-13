@@ -201,3 +201,18 @@ Its current closure is 44 producer/test-target, 85 supplemental and 152 preserve
 bodies plus nine metadata bodies. Source-only refusal controls and inventory
 generation must pass before publication; fresh native and original400 results
 remain required for this exact source.
+
+The JS/Star source join keeps the complete actual JS93 and Star318 body gates
+before the original Star custody law. Its eight original tests run unchanged
+from the genuine signed `3a680d0a` source in a private 769-file selected closure
+(20,164,487 bytes), with mode/blob/length/SHA custody and its real commit/tree.
+The new current wrapper is counted separately. Both current guards and every
+selected historical file are checked again after the original tests. This is
+source qualification; it supplies no native, original400 or performance result.
+
+The first genuine current-branch source run retained 26 passing tests and one
+cold-fixture cleanup ENOTEMPTY failure. Only empty `.git/objects/pack` directories
+remained; no live maintenance process or marker established its cause. Private
+Git commands now disable automatic gc and maintenance before object writes and
+commits. The historical fixture likewise carries those private settings. Cleanup
+has no retry or ignored error, and shared Git configuration remains untouched.

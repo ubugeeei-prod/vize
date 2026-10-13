@@ -22,6 +22,11 @@ import {
   compareStrings,
 } from "./type-snapshot-cli-protocol.mjs";
 import { diagnosticFingerprint } from "./typecheck-command.mjs";
+import {
+  assertSavedNativeProjection,
+  nativeVueCheckName,
+  nativeVueSources,
+} from "./typechecker-native-phase-membership.mjs";
 const command = (binary, args, cwd, env = process.env) =>
   spawnSync(binary, args, {
     cwd,
@@ -143,26 +148,9 @@ export function createPhaseRunner({ root, directory, binaries, wrapper }) {
           .sort((a, b) => a.config.localeCompare(b.config, "en"));
         assert(record.nativeShards.length > 0, "no native shard receipt");
         if (captureVirtual)
-          for (const file of record.virtualFiles) {
-            const nativeName = file.file.replace(/\.virtual\.ts$/u, ".ts");
-            const matches = record.nativeShards.flatMap((shard) =>
-              shard.members.filter((member) => relative(shard.cwd, member.path) === nativeName),
-            );
-            assert(matches.length > 0, `saved output absent from native program: ${file.file}`);
-            assert(
-              matches.every(
-                (member) => member.sha256 === file.sha256 && member.bytes === file.bytes,
-              ),
-              `saved output differs from native program bytes: ${file.file}`,
-            );
-          }
-        const covered = new Set(
-          record.nativeShards.flatMap((shard) =>
-            shard.members
-              .filter((file) => file.path.endsWith(".vue.ts"))
-              .map((file) => relative(shard.cwd, file.path).replace(/\.ts$/u, "")),
-          ),
-        );
+          for (const file of record.virtualFiles)
+            assertSavedNativeProjection(file, record.nativeShards);
+        const covered = nativeVueSources(record.nativeShards);
         assert.deepEqual(
           [...covered].sort(compareStrings),
           [...expected].sort(compareStrings),
@@ -171,7 +159,9 @@ export function createPhaseRunner({ root, directory, binaries, wrapper }) {
         const programSources = new Set(normalized.programs.flatMap((program) => program.files));
         for (const file of authoredInputs) {
           assert(programSources.has(file), `frontend program omitted authored input: ${file}`);
-          const nativeName = file.endsWith(".vue") ? `${file}.ts` : file;
+          const nativeName = file.endsWith(".vue")
+            ? nativeVueCheckName(file, record.nativeShards)
+            : file;
           assert(
             record.nativeShards.some((shard) =>
               shard.members.some((member) => relative(shard.cwd, member.path) === nativeName),

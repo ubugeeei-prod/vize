@@ -1,0 +1,6 @@
+<script>
+export default {
+  props: { count: Number },
+}
+</script>
+<template><span>{{ count }}</span></template>

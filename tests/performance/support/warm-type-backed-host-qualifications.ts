@@ -8,6 +8,7 @@ import { qualifyPathHostMove } from "./warm-type-backed-path-host.ts";
 import { qualifyTimingHostMove } from "./warm-type-backed-timing-host.ts";
 import { qualifyDefaultMigrationHost } from "./warm-type-backed-default-migration-host.ts";
 import { qualifyAsciiSymbolHost } from "./warm-type-backed-ascii-symbol-host.ts";
+import { qualifyJavaScriptSfcHost } from "./warm-type-backed-javascript-sfc-host.ts";
 
 import { qualifyEmptyVueStarHost } from "./warm-type-backed-empty-vue-star-host.ts";
 
@@ -18,6 +19,9 @@ export function qualifyHostMoves(
   enabled: boolean,
   digest: (side: "before" | "after", file: string) => string | null,
 ) {
+  const javascriptSfcHost = enabled
+    ? qualifyJavaScriptSfcHost(production, alreadyQualified, digest)
+    : null;
   const lexicalDollarHost = enabled
     ? qualifyLexicalDollarHost(production, alreadyQualified, digest)
     : null;
@@ -58,6 +62,7 @@ export function qualifyHostMoves(
       ? qualifyDefaultMigrationHost(production, alreadyQualified, digest)
       : null,
     ...(lexicalDollarHost ? { lexicalDollarHost } : {}),
+    ...(javascriptSfcHost ? { javascriptSfcHost } : {}),
     ...(asciiSymbolHost ? { asciiSymbolHost } : {}),
     ...(componentValueHost ? { componentValueHost } : {}),
     ...(emptyVueStarHost ? { emptyVueStarHost } : {}),

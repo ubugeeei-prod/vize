@@ -27,8 +27,8 @@ use prefilter::{script_rule_applies_to_filename, script_rule_may_match};
 pub use registry::BuiltinScriptRuleMeta;
 use registry::{
     ALL_BUILTIN_SCRIPT_RULE_NAMES, BUILTIN_SCRIPT_RULES, BuiltinScriptRuleEntry,
-    RULE_NO_GET_CURRENT_INSTANCE, RULE_NO_REQUIRED_PROP_WITH_DEFAULT,
-    RULE_RETURN_IN_EMITS_VALIDATOR,
+    RULE_NO_DUPLICATE_ATTR_INHERITANCE, RULE_NO_GET_CURRENT_INSTANCE,
+    RULE_NO_REQUIRED_PROP_WITH_DEFAULT, RULE_RETURN_IN_EMITS_VALIDATOR,
 };
 
 #[cfg(test)]
@@ -82,6 +82,18 @@ fn active_builtin_script_rule_entries(
                 || linter.explicit_no_get_current_instance
         })
         .filter_map(builtin_script_rule_entry)
+}
+
+/// Only the static native builtin can gain scriptless template execution.
+/// Configured script overrides and registered namesakes retain their existing callbacks.
+fn has_scriptless_attrs_inheritance(linter: &Linter, filename: &str) -> bool {
+    !linter
+        .script_rule_overrides
+        .contains_key(RULE_NO_DUPLICATE_ATTR_INHERITANCE)
+        && !linter.registry.has_rule(RULE_NO_DUPLICATE_ATTR_INHERITANCE)
+        && script_rule_applies_to_filename(RULE_NO_DUPLICATE_ATTR_INHERITANCE, filename)
+        && active_builtin_script_rule_entries(linter, true)
+            .any(|entry| entry.rule_name == RULE_NO_DUPLICATE_ATTR_INHERITANCE)
 }
 
 fn builtin_script_rule_entry(rule_name: &str) -> Option<&'static BuiltinScriptRuleEntry> {

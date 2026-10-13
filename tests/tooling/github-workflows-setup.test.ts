@@ -50,25 +50,24 @@ test("apt-based CI setup pins Blacksmith to the canonical Ubuntu archive", () =>
     "action.yml",
   );
   const playgroundSetup = playground.indexOf("uses: ./.github/actions/setup-ubuntu-archive");
-  const playgroundInstall = playground.indexOf("install_playwright_browsers --");
+  const playgroundInstall = playground.indexOf("install-playwright-browsers.ts");
   assert.ok(playgroundSetup >= 0 && playgroundSetup < playgroundInstall);
   assert.match(
     playground,
-    /vize-ci-apt-retry moon run --target native tools\/moon\/cmd\/github\/install_playwright_browsers --/,
+    /vize-ci-apt-retry node tools\/support\/github\/install-playwright-browsers\.ts$/m,
   );
 });
 
-test("deploy-docs deploy job installs MoonBit before running command packages", () => {
+test("deploy-docs deploy job sets up Node before running the site assembler", () => {
   const workflow = readRepoFile(".github", "workflows", "deploy-docs.yml");
   const deployJob = workflow.slice(workflow.indexOf("\n  deploy:\n"));
-  const setupIndex = deployJob.indexOf("uses: ./.github/actions/setup-moonbit");
-  const moonRunIndex = deployJob.indexOf(
-    "run: moon run --target native tools/moon/cmd/github/create_site_structure --",
-  );
+  const setupIndex = deployJob.indexOf("uses: voidzero-dev/setup-vp@");
+  const runIndex = deployJob.indexOf("run: node tools/support/github/create-site-structure.ts\n");
 
   assert.notEqual(setupIndex, -1);
-  assert.notEqual(moonRunIndex, -1);
-  assert.ok(setupIndex < moonRunIndex);
+  assert.notEqual(runIndex, -1);
+  assert.ok(setupIndex < runIndex);
+  assert.doesNotMatch(deployJob, /setup-moonbit|moon run/);
 });
 
 test("deploy-docs deploy job keeps a full checkout so local actions and scripts remain available", () => {
@@ -99,42 +98,47 @@ test("docs build isolates musea example cargo checks in a dedicated sticky disk"
   assert.doesNotMatch(job, /cargo clean --target-dir/);
 });
 
-test("WASM build jobs install MoonBit before invoking moon run", () => {
+test("WASM build jobs set up Node before invoking the TypeScript builders", () => {
   const cases = [
     {
       workflowName: "check.yml",
       jobName: "playground-test",
-      moonRun:
-        "run: moon run --target native tools/moon/cmd/github/build_vitrine_wasm -- playground/src/wasm",
+      setup: "- name: Setup Vite+ and Node.js",
+      command: "run: node tools/support/github/build-vitrine-wasm.ts playground/src/wasm",
+    },
+    {
+      workflowName: "pr-source-checks.yml",
+      jobName: "pr-playground-test",
+      setup: "- uses: voidzero-dev/setup-vp@",
+      command: "run: node tools/support/github/build-vitrine-wasm.ts playground/src/wasm",
     },
     {
       workflowName: "build-docs.yml",
       jobName: "build-playground",
-      moonRun:
-        "run: moon run --target native tools/moon/cmd/github/build_vitrine_wasm -- npm/wasm playground/src/wasm",
+      setup: "- name: Setup Vite+ and Node.js",
+      command: "run: node tools/support/github/build-vitrine-wasm.ts npm/wasm playground/src/wasm",
     },
     {
       workflowName: "release.yml",
       jobName: "build-wasm-package",
-      moonRun: "run: moon run --target native tools/moon/cmd/build_vize_wasm_package --",
+      setup: "- uses: actions/setup-node@",
+      command: "run: node tools/support/tasks/build-vize-wasm-package.ts",
     },
   ] as const;
 
-  for (const { workflowName, jobName, moonRun } of cases) {
+  for (const { workflowName, jobName, setup, command } of cases) {
     const workflow = readRepoFile(".github", "workflows", workflowName);
     const jobStart = workflow.indexOf(`\n  ${jobName}:\n`);
     const remaining = workflow.slice(jobStart + 1);
     const nextJobMatch = /\n  [a-z0-9-]+:\n/g.exec(remaining.slice(1));
     const jobBody = remaining.slice(0, nextJobMatch ? nextJobMatch.index + 1 : undefined);
-    const setupIndex = jobBody.indexOf("- uses: ./.github/actions/setup-moonbit");
-    const moonRunIndex = jobBody.indexOf(moonRun);
+    const setupIndex = jobBody.indexOf(setup);
+    const commandIndex = jobBody.indexOf(command);
 
-    assert.notEqual(setupIndex, -1, `${workflowName}:${jobName} is missing setup-moonbit`);
-    assert.notEqual(moonRunIndex, -1, `${workflowName}:${jobName} is missing the wasm build step`);
-    assert.ok(
-      setupIndex < moonRunIndex,
-      `${workflowName}:${jobName} runs moon before setup-moonbit`,
-    );
+    assert.notEqual(setupIndex, -1, `${workflowName}:${jobName} is missing its Node setup`);
+    assert.notEqual(commandIndex, -1, `${workflowName}:${jobName} is missing the wasm build step`);
+    assert.ok(setupIndex < commandIndex, `${workflowName}:${jobName} runs Node before its setup`);
+    assert.doesNotMatch(jobBody, /setup-moonbit|moon run/, `${workflowName}:${jobName}`);
   }
 });
 

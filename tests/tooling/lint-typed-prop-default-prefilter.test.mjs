@@ -14,7 +14,9 @@ await test("typed prop defaults reach the whole default CLI packet without polic
     root,
     "tests/_fixtures/differential/lint/typed-prop-default-prefilter-8564",
   );
-  const corpus = JSON.parse(fs.readFileSync(path.join(fixture, "cases.json"), "utf8"));
+  const corpus = JSON.parse(
+    fs.readFileSync(path.join(fixture, "current-range-cases.json"), "utf8"),
+  );
   const projection = JSON.parse(
     fs.readFileSync(path.join(root, "tests/_fixtures/n8n-cli-adoption.json"), "utf8"),
   );

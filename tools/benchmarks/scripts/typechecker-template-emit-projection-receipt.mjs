@@ -13,6 +13,26 @@ const baseline = JSON.parse(
   ),
 );
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
+
+const navigationDeclaration =
+  "  type __VizeEmptyVueNavigationSlots<C> = ('__isFragment' | '__isTeleport' | '__isSuspense' | 'slots') extends keyof C ? __VizeIsAny<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]> extends true ? any : [NonNullable<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]>] extends [never] ? C extends { slots?: infer __S } ? __VizeIsAny<__S> extends true ? any : unknown extends __S ? any : [keyof NonNullable<__S>] extends [never] ? {} : any : any : any : any;\n  type __VizeNativeNavigationSlots<C> = C extends new (...args: any[]) => { $slots: any } ? __VizeIsAny<InstanceType<C>> extends true ? __VizeEmptyVueNavigationSlots<C> : __VizeIsAny<InstanceType<C>['$slots']> extends true ? any : unknown extends InstanceType<C>['$slots'] ? any : InstanceType<C>['$slots'] : any;\n  type __VizeNavigationSlots<C> = __VizeIsAny<C> extends true ? any : C extends { readonly __vizeSlots?: infer __S } ? __VizeIsAny<__S> extends true ? __S : unknown extends __S ? [keyof NonNullable<__S>] extends [never] ? __VizeNativeNavigationSlots<C> : NonNullable<__S> : NonNullable<__S> : __VizeNativeNavigationSlots<C>;\n";
+const navigationNames = [
+  "__VizeEmptyVueNavigationSlots",
+  "__VizeNativeNavigationSlots",
+  "__VizeNavigationSlots",
+];
+assert.equal(
+  hash(readFileSync("crates/vize_canon/src/virtual_ts/scope/component_slots.rs")),
+  "014eefc93fdc57da48a4d7ef803f8b1cbbdbeb21812f3991e1ece24e735c0cd1",
+);
+const baselineBytes = readFileSync(
+  "tests/_fixtures/differential/typechecker/template-dollar-emit/projection-baseline.json",
+);
+assert.equal(
+  hash(baselineBytes),
+  "e7fcc4e2239ce80fb0081b8fd075aa7bcf52339de5787e439b821dcdbb61e1b9",
+);
+assert.deepEqual(baseline, JSON.parse(baselineBytes));
 const read = (...parts) => readFileSync(join(root, ...parts), "utf8");
 const byteLength = (text) => Buffer.byteLength(text);
 const oldDeclaration = "const $emit = __ctx.$emit;";
@@ -38,7 +58,7 @@ function spanDigest(text) {
   return `${count}:${hash(text)}`;
 }
 
-function rewind(text, declaration, allowAbsent = false) {
+function rewindInitializer(text, declaration, allowAbsent = false) {
   const index = text.indexOf(declaration);
   if (allowAbsent && index === -1) {
     assert(!text.includes("const $emit = "));
@@ -55,7 +75,7 @@ function rewind(text, declaration, allowAbsent = false) {
   };
 }
 
-function offset(value, edit) {
+function initializerOffset(value, edit) {
   const number = Number(value);
   if (number <= edit.cut) return number;
   assert(number >= edit.end, "an authored mapping endpoint entered the synthetic initializer");
@@ -83,6 +103,38 @@ function intervals(text, edit) {
     const previous = offset(start, edit);
     return `${previous}:${offset(Number(start) + Number(length), edit) - previous}>${source}:${sourceLength}`;
   });
+}
+
+function rewind(text, declaration, allowAbsent = false) {
+  assert(
+    declaration === declarations["define-model"] ||
+      declaration === declarations["dual-scripts-emits"],
+    "unknown initializer family",
+  );
+  let navigation = { text, cut: Infinity, end: Infinity, delta: 0 };
+  const isModel = declaration === declarations["define-model"];
+  if (isModel && !(allowAbsent && !text.includes(declaration))) {
+    const index = text.indexOf(navigationDeclaration);
+    assert(index >= 0, "the complete current navigation declaration is absent");
+    assert.equal(text.indexOf(navigationDeclaration, index + navigationDeclaration.length), -1);
+    const restored = text.slice(0, index) + text.slice(index + navigationDeclaration.length);
+    assert(navigationNames.every((name) => !restored.includes(name)));
+    const cut = byteLength(text.slice(0, index));
+    navigation = { text: restored, cut, end: cut + 1138, delta: 1138 };
+  } else {
+    assert(navigationNames.every((name) => !text.includes(name)));
+  }
+  return { ...rewindInitializer(navigation.text, declaration, allowAbsent), navigation };
+}
+
+function offset(value, edit) {
+  const number = Number(value);
+  assert(Number.isSafeInteger(number) && number >= 0);
+  assert(
+    number < edit.navigation.cut || number >= edit.navigation.end,
+    "an authored endpoint entered the current navigation declaration",
+  );
+  return initializerOffset(initializerOffset(value, edit.navigation), edit);
 }
 
 const proofs = [];

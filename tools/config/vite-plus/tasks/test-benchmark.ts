@@ -1,10 +1,12 @@
 import { cacheInputs, testedPackages } from "../task-inputs.ts";
+import { testedPackageGroups } from "../tested-package-groups.ts";
 import {
   defineTasks,
-  moonScript,
+  nodeTool,
   noCacheTask,
   runInPackages,
   runInVscodeExtension,
+  runPackageScriptDirectly,
   rustTool,
   rustToolFromVscodeExtension,
   runTask,
@@ -12,6 +14,7 @@ import {
   task,
   vscodeExtensionPackageBin,
 } from "../task-helpers.ts";
+import type { PackagePath } from "../task-helpers.ts";
 import { inTestbox } from "./testbox.ts";
 
 const stageVscodeTypeScriptPlugin = rustToolFromVscodeExtension(
@@ -46,9 +49,31 @@ const toolingTestFiles = [
   "tests/tooling/release/*.test.ts",
 ].join(" ");
 
-const jsPackageTestCommand = runInPackages("test", testedPackages, {
-  concurrencyLimit: 1,
-});
+// The Vite package reuses the successful native preparation. Keep the same
+// package selection, dependency ordering, concurrency, and inherited env.
+const preparedPackageTests = (packages: readonly PackagePath[]) =>
+  runInPackages("test", packages, { concurrencyLimit: 1 }).replace(
+    "vp run",
+    "node npm/native/scripts/test-preparation.mjs vp run",
+  );
+const nativePreparedPackageTests = (packages: readonly PackagePath[]) =>
+  `${runTask("build:native:test")} && ${preparedPackageTests(packages)}`;
+
+// Pull-request CI runs one group per job. A group keeps the full set's package
+// order and builds its out-of-group dependencies' bundles before testing.
+const jsPackageGroupTasks = Object.fromEntries(
+  testedPackageGroups.map(({ name, packages, prebuilt }) => {
+    const selected = testedPackages.filter((pkg) =>
+      (packages as readonly PackagePath[]).includes(pkg),
+    );
+    const steps = [
+      runTask("build:native:test"),
+      ...(prebuilt.length > 0 ? [runPackageScriptDirectly("build", prebuilt)] : []),
+      preparedPackageTests(selected),
+    ];
+    return [`test:js:${name}`, noCacheTask(steps.join(" && "))];
+  }),
+);
 
 const rustSourceCoverageJson = "target/llvm-cov/source-summary.json";
 const rustBranchCoverageJson = "target/llvm-cov/source-branch-summary.json";
@@ -105,10 +130,12 @@ export const testAndBenchmarkTasks = defineTasks({
   test: noCacheTask(localTestCommand),
   "test:testbox": noCacheTask(inTestbox(localTestCommand)),
   "test:rust": task("cargo test --workspace", { input: cacheInputs.rust }),
-  // The Vite package reuses this successful native preparation. Keep the same
-  // package selection, dependency ordering, concurrency, and inherited env.
-  "test:js": noCacheTask(
-    `${runTask("build:native:test")} && ${jsPackageTestCommand.replace("vp run", "node npm/native/scripts/test-preparation.mjs vp run")}`,
+  "test:js": noCacheTask(nativePreparedPackageTests(testedPackages)),
+  ...jsPackageGroupTasks,
+  // The PR Oxlint qualification job builds the same source addon and the
+  // bundles the oxlint package test packs, without the package tests.
+  "build:oxlint-qualification": noCacheTask(
+    `${runTask("build:native:test")} && ${runPackageScriptDirectly("build", ["./npm/oxlint"])}`,
   ),
   "test:scripts": noCacheTask(
     `${runTask("build:native:test")} && rust-script tools/commands/ci/verify-tool-layout.rs && VIZE_TEST_REQUIRE_TSGO=1 node --test --test-concurrency=1 ${toolingTestFiles}`,
@@ -189,10 +216,10 @@ export const testAndBenchmarkTasks = defineTasks({
   "generate:rule-types": task(rustTool("generate/rule-types"), {
     input: cacheInputs.rust,
   }),
-  "expected:generate": task(moonScript("generate_expected")),
-  "expected:generate:sfc": task(moonScript("generate_expected", "--mode", "sfc")),
-  "expected:generate:vdom": task(moonScript("generate_expected", "--mode", "vdom")),
-  "expected:generate:vapor": task(moonScript("generate_expected", "--mode", "vapor")),
+  "expected:generate": task(nodeTool("tasks/generate-expected")),
+  "expected:generate:sfc": task(nodeTool("tasks/generate-expected", "--mode", "sfc")),
+  "expected:generate:vdom": task(nodeTool("tasks/generate-expected", "--mode", "vdom")),
+  "expected:generate:vapor": task(nodeTool("tasks/generate-expected", "--mode", "vapor")),
   snapshot: noCacheTask(runTasks("snapshot:test", "snapshot:review")),
   "snapshot:test": task("cargo insta test -p vize_atelier_sfc -- snapshot_tests"),
   "snapshot:review": noCacheTask("cargo insta review"),

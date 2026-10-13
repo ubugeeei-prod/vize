@@ -212,7 +212,8 @@ impl Project {
             self.record("receipt", json!({ "mirrorWitnessCaptured": true }));
         });
         if lf {
-            assert_eq!(observed.query_position, 20_908);
+            assert_eq!(observed.query_position, 22_046);
+            assert_eq!(observed.historical_query_position, 20_908);
         }
         let mut data: Value = serde_json::from_str(include_str!(
             "../../../../tests/_fixtures/differential/lsp/component-native-events/checked-native.expected.json"

@@ -1,0 +1,5 @@
+<script setup lang="tsx">
+import Child from './Child.vue';
+const render = () => <Child />;
+</script>
+<template><div /></template>

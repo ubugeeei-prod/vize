@@ -6,7 +6,7 @@ It reports native adoption separately from admitted and fallback timings.
 
 The manual `Criterion Bench` workflow measures the seven `vapor_native_pair`
 fixtures shared by `crates/vize_atelier_vapor/benches/davinci.rs` and
-`tools/benchmarks/scripts/vapor-compiler-compare.mjs`. Each fixture compiles
+`tools/benchmarks/scripts/vapor-compiler-compare.ts`. Each fixture compiles
 identical source through admitted S3, an explicitly selected retained route,
 and pinned `@vue/compiler-vapor@3.6.0-beta.10`, all with identifier prefixing.
 The workflow uses one Blacksmith runner for both Rust revisions and the

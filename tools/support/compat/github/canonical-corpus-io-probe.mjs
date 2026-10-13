@@ -18,6 +18,7 @@ import { pathToFileURL } from "node:url";
 import { checkoutIdentity, parseGitlinks } from "./canonical-corpus-identity.mjs";
 import { gitObjectId } from "./canonical-corpus-inventory.mjs";
 import { cycleOwner } from "./canonical-corpus-logical-walk.mjs";
+import { qualifyProbeVectors } from "./canonical-corpus-finite-walk.mjs";
 import { collectorHarness, parseNativeVector } from "./canonical-corpus-native-walk.mjs";
 
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
@@ -289,8 +290,9 @@ export function diagnosticReceipt(identity, summaries) {
     ...identity,
     schema: "vize.canonical-corpus-io-diagnostic",
     version: 1,
-    files: 44367,
-    jellyfinFiles: 5576,
+    files: identity.files,
+    originalKernelFiles: 44367,
+    originalKernelJellyfinFiles: 5576,
     gitlinks: 148,
     summaries,
     success: summaries.every((summary) => summary.success),
@@ -321,17 +323,8 @@ export function runCanonicalProbe(cwd, output, env = process.env) {
     ),
     "Foreign Jellyfin pin",
   );
-  const vector = readFileSync(join(artifact, "native-vector.nul"));
-  const paths = parseNativeVector(vector);
   const expected = json(join(artifact, "files.json"));
-  assert.equal(identity.filesSha256, sha256(JSON.stringify(expected)));
-  assert.equal(paths.length, 44367);
-  assert.equal(paths.filter((path) => path.startsWith("jellyfin-vue/")).length, 5576);
-  assert.deepEqual(
-    paths,
-    expected.map(([path]) => path),
-  );
-  assert.equal(sha256(vector), identity.nativeWalk.vectorSha256);
+  const { vector } = qualifyProbeVectors(artifact, identity, expected, parseNativeVector);
   const source = readFileSync(join(artifact, "native-collector-source.rs"));
   assert.equal(sha256(source), identity.nativeWalk.sourceSha256);
   assert.deepEqual(source, readFileSync(join(cwd, "tests/davinci_test_support/src/corpus.rs")));

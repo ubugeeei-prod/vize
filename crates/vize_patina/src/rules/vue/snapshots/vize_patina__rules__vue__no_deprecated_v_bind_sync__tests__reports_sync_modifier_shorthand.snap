@@ -7,8 +7,8 @@ expression: result.diagnostics
         rule_name: "vue/no-deprecated-v-bind-sync",
         severity: Error,
         message: "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
-        start: 20,
-        end: 24,
+        start: 13,
+        end: 32,
         help: Some(
             "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
         ),

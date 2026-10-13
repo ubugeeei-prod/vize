@@ -122,3 +122,36 @@ export function walkCommittedGraph(nodes, children, boundary) {
   assert(files.length > 0, "Committed canonical Vue inventory is empty");
   return { files, rejected };
 }
+
+// The kernel-limited original walk remains a separate, complete observation.
+// Qualify the successor using committed identities, never physical path metadata.
+export function finiteCommittedInventory(nodes, children, boundary) {
+  const original = walkCommittedGraph(nodes, children, boundary).files;
+  const files = [];
+  const cut = [];
+  const visit = (logical, node, edges) => {
+    for (const name of [...children.get(node.path)].sort(pathOrder)) {
+      if (["node_modules", "_git-worktrees"].includes(name)) continue;
+      const path = logical ? `${logical}/${name}` : name;
+      const child = resolveLogical(nodes, path);
+      if (directory(child)) {
+        const edge = JSON.stringify([node.path, child.path]);
+        if (edges.has(edge)) {
+          assert(child.allowed, "Foreign finite directory edge repetition");
+          cut.push(path);
+        } else visit(path, child, new Set([...edges, edge]));
+      } else if (posix.extname(name) === ".vue") files.push([path, child.id]);
+    }
+  };
+  visit("", nodes.get(""), new Set());
+  const kept = original.filter(([path]) => !cut.some((prefix) => path.startsWith(`${prefix}/`)));
+  assert.deepEqual(files, kept, "Finite walk changed paths beyond ancestor-loop repetitions");
+  const sources = (rows) =>
+    new Set(rows.map(([path, blob]) => JSON.stringify([resolveLogical(nodes, path).path, blob])));
+  assert.deepEqual(
+    sources(files),
+    sources(original),
+    "Finite walk omitted an original source or blob",
+  );
+  return { files, original, cut };
+}

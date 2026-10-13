@@ -150,7 +150,7 @@ python3 -I tests/tooling/support/public-install/controls.py
 python3 -I tests/tooling/support/public-install/source_controls.py
 rust-script tools/commands/ci/verify-tool-layout.rs
 rust-script tools/commands/ci/source-file-lengths.rs --check --base-ref origin/main
-node tools/benchmarks/scripts/test-inventory.mjs --json /tmp/public-install-test-inventory.json
+node tools/benchmarks/scripts/test-inventory.ts --json /tmp/public-install-test-inventory.json
 ```
 
 The tests use inert archive files and parser packets, synthetic failed journal

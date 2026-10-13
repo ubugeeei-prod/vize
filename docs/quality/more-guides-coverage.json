@@ -145,7 +145,7 @@
       "route": "/guide/lib-pull",
       "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+      "note": "English and Japanese first-copy steps inspect the registry, preview the copy and display the existing Rating example from App.vue, with Vue, TypeScript, peer-report and custom-directory boundaries explicit. All original eight complete code blocks and whole prior guide bytes remain; complete body review and deployed desktop/mobile reading remain pending."
     },
     {
       "route": "/guide/lint-execution",
@@ -301,9 +301,9 @@
     },
     {
       "route": "/rules/vue-formatting",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Authored Japanese explains attribute naming/order, quotes, whitespace and empty-element conventions, then links complete attribute-order and Vue 3.4 shorthand examples and typed options. All eleven original references, forty-four code blocks, defaults, presets and bookmarks remain intact; native and deployed reader acceptance remain pending."
     },
     {
       "route": "/rules/vue-sfc",
@@ -319,9 +319,9 @@
     },
     {
       "route": "/rules/vue-template-structure",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Authored Japanese explains repetition, conditional branches and template structure, then links complete key and v-if/v-for examples and the Vue guide. All nine references, thirty-six code blocks, defaults, presets, options, current nested-v-for shadowing boundaries and source links remain intact; native and deployed reader acceptance remain pending."
     },
     {
       "route": "/stability",

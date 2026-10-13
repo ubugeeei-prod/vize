@@ -109,6 +109,20 @@ pub(super) fn descriptor_uses_jsx_script(descriptor: &SfcDescriptor) -> bool {
             .is_some_and(is_jsx_like_lang)
 }
 
+/// Whether the source belongs to JavaScript module membership. A checking
+/// pragma affects diagnostics; it cannot override an explicit `allowJs: false`.
+pub(super) fn descriptor_is_javascript(descriptor: &SfcDescriptor) -> bool {
+    let blocks = [descriptor.script.as_ref(), descriptor.script_setup.as_ref()];
+    let mut has_script = false;
+    for block in blocks.into_iter().flatten() {
+        has_script = true;
+        if block.lang.as_deref().is_some_and(is_typescript_lang) {
+            return false;
+        }
+    }
+    has_script
+}
+
 /// Whether this SFC's TypeScript diagnostics must be suppressed when the
 /// project does not enable `checkJs`.
 ///

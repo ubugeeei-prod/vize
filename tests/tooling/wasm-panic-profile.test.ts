@@ -3,12 +3,12 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { runMoonScript } from "./_helpers/moonbit.ts";
+import { runToolCommand } from "./_helpers/tool-commands.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 
 for (const [script, args, status] of [
-  ["build_vize_wasm_package", [], 1],
-  ["build_vitrine_wasm", ["web", "out"], 17],
+  ["tools/support/tasks/build-vize-wasm-package.ts", [], 1],
+  ["tools/support/tasks/build-vitrine-wasm.ts", ["web", "out"], 17],
 ] as const) {
   test(`${script} keeps browser WASM on abort while native releases unwind`, () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-wasm-panic-"));
@@ -31,9 +31,8 @@ for (const [script, args, status] of [
           args: process.argv.slice(2),
         })); process.exit(17);`,
       );
-      const result = runMoonScript(script, [...args], {
+      const result = runToolCommand(script, [...args], {
         cwd: root,
-        denyWarn: true,
         env: {
           PATH: `${bin}${path.delimiter}${process.env.PATH ?? ""}`,
           CARGO_PROFILE_RELEASE_PANIC: "unwind",

@@ -30,15 +30,17 @@ const rust = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) a
 test("source planning installs the declared Node runtime before TypeScript imports", () => {
   const plan = source.jobs["pr-source-plan"];
   const steps = plan.steps ?? [];
-  const setup = steps.findIndex((step) => step.uses?.startsWith("voidzero-dev/setup-vp@"));
+  const setup = steps.findIndex((step) => step.uses?.startsWith("actions/setup-node@"));
   const sourcePlan = steps.findIndex((step) => step.name === "Plan source checks");
   const tooling = steps.findIndex((step) => step.name === "Plan tooling test inputs");
   const metadata = steps.findIndex((step) => step.name === "Plan affected Rust crates");
   const toolchain = steps.findIndex((step) => step.uses?.startsWith("dtolnay/rust-toolchain@"));
   assert.ok(setup >= 0 && setup < sourcePlan && sourcePlan < tooling);
   assert.equal(steps[setup].with?.["node-version-file"], "package.json");
-  assert.equal(steps[setup].with?.cache, false);
-  assert.equal(steps[setup].with?.["run-install"], false);
+  assert.equal(steps[setup].with?.["package-manager-cache"], false);
+  assert.equal(steps[setup].with?.cache, undefined);
+  assert.ok(steps.every((step) => !step.uses?.includes("setup-vp@")));
+  assert.ok(steps.every((step) => !/\b(?:vp|pnpm|npm)\b/.test(step.run ?? "")));
   assert.ok(sourcePlan < toolchain && toolchain < metadata);
   for (const step of [steps[toolchain], steps[metadata]]) {
     assert.equal(step.if, "${{ steps.plan.outputs.rust == 'true' }}");
@@ -192,7 +194,8 @@ test("PR browser validation retains tests while every VRT outcome is deferred to
 
 test("the Rust report waits for the builder and all four independently executing shards", () => {
   const shard = rust.jobs["pr-rust-shard"];
-  assert.deepEqual(shard.needs, ["pr-rust-build", "merge-rust-source"]);
+  // PR shards build in place beside the lanes; only the merge queue waits for its archive.
+  assert.deepEqual(shard.needs, ["merge-rust-source"]);
   assert.equal(shard.strategy?.["fail-fast"], false);
   assert.deepEqual(
     typeof shard.strategy?.matrix === "object" ? shard.strategy.matrix.shard : undefined,

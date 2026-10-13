@@ -44,11 +44,10 @@ jobs:
           cache: true
           node-version-file: "package.json"
           run-install: false
-      - uses: ./.github/actions/setup-moonbit
       - name: Install package build dependencies
         env:
           BOOTSTRAP_PACKAGE_PATH: ${{ steps.preflight.outputs.package_path }}
-        run: moon run --target native tools/moon/cmd/github/vp_install -- --filter "./${BOOTSTRAP_PACKAGE_PATH}..."
+        run: node tools/support/github/vp-install.ts --filter "./${BOOTSTRAP_PACKAGE_PATH}..."
       - name: Test and build package at the dispatch SHA
         if: steps.preflight.outputs.package_path != 'npm/plugin-sdk'
         env:

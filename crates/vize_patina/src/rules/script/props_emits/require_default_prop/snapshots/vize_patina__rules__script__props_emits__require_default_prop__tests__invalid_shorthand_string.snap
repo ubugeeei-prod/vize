@@ -8,7 +8,7 @@ expression: result.diagnostics
         severity: Error,
         message: "Prop 'name' requires a default value.",
         start: 33,
-        end: 37,
+        end: 45,
         help: Some(
             "Add a `default` to this prop (e.g. `{ type: String, default: '' }`), or mark it `required: true`. Boolean props are exempt because they default to false.",
         ),
@@ -16,7 +16,7 @@ expression: result.diagnostics
             Label {
                 message: "optional prop without a default",
                 start: 33,
-                end: 37,
+                end: 45,
             },
         ],
         fix: None,
