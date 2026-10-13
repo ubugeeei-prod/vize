@@ -33,8 +33,8 @@ pub fn bucket(refusal: Option<EmitError>) -> (&'static str, Option<u32>) {
 /// `emit_refused` templates of one DOM shape, per typed bucket.
 #[derive(Debug)]
 pub struct RefusalCensus {
-    counts: BTreeMap<&'static str, u64>,
-    samples: BTreeMap<&'static str, Vec<String>>,
+    counts: BTreeMap<String, u64>,
+    samples: BTreeMap<String, Vec<String>>,
     sample_limit: usize,
 }
 
@@ -62,7 +62,12 @@ impl RefusalCensus {
     /// Attribute one `emit_refused` template to its bucket.
     pub fn note(&mut self, name: &str, refusal: Option<EmitError>) {
         let (code, offset) = bucket(refusal);
-        *self.counts.entry(code).or_default() += 1;
+        self.note_code(name, code.to_owned(), offset);
+    }
+
+    /// Attribute one refused template to a named bucket.
+    pub fn note_code(&mut self, name: &str, code: String, offset: Option<u32>) {
+        *self.counts.entry(code.clone()).or_default() += 1;
         let samples = self.samples.entry(code).or_default();
         if samples.len() < self.sample_limit {
             samples.push(match offset {
@@ -87,10 +92,10 @@ impl RefusalCensus {
         if self.counts.is_empty() {
             return Vec::new();
         }
-        let mut buckets: Vec<(&'static str, u64)> = self
+        let mut buckets: Vec<(&str, u64)> = self
             .counts
             .iter()
-            .map(|(code, count)| (*code, *count))
+            .map(|(code, count)| (code.as_str(), *count))
             .collect();
         buckets.sort_by(|left, right| right.1.cmp(&left.1).then(left.0.cmp(right.0)));
         let mut lines = vec![format!(

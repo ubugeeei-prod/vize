@@ -54,6 +54,9 @@ mod davinci_production_reach {
     #[cfg(test)]
     mod source_io_tests;
     pub mod tally;
+    pub mod vapor_surface;
+    #[cfg(test)]
+    mod vapor_surface_tests;
 }
 
 use std::collections::BTreeMap;
@@ -478,6 +481,7 @@ fn measure(
     let accepted = lane == Lane::Accepted;
     let croquis = lane == Lane::Legacy("croquis".to_owned());
     tally.note_refusal(shape, name, &lane, refusal);
+    tally.note_vapor_surface(shape, name, &lane, descriptor);
     tally.note(name, lane);
     if accepted && shape.is_dom() {
         compare_with_legacy(descriptor, name, shape, &selected, tally);
