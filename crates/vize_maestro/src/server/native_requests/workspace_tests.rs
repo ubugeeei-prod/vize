@@ -32,7 +32,9 @@ async fn workspace_query(
                 let _ = prepared.await;
             }))
             .await;
-        unreachable!("the owner abandons its attempt instead of resuming it");
+        // The owner abandons this attempt instead of resuming it, so a
+        // resumed attempt would surface this value and fail the comparison.
+        return Ok(json!("resumed an abandoned attempt"));
     }
     assert!(!preparation.is_armed(), "the second attempt never defers");
     Ok(reply())
