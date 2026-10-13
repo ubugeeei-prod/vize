@@ -14,12 +14,12 @@
  *   from the pair. A cost per module that climbs with N is the signal.
  * - Identical minimal production config for every tool: minification on,
  *   sourcemaps on, gzip size reporting off (`reportCompressedSize: false`).
- *   See `tools/benchmarks/scripts/scale/configs.mjs` — the two configs differ only in the plugin.
+ *   See `tools/benchmarks/scripts/scale/configs.ts` — the two configs differ only in the plugin.
  * - Output size reported as JS / CSS / sourcemap buckets, walked out of the
  *   dist directory, so a tool that is fast because it emitted less is caught in
  *   the same table as the timing.
  * - Warmup then repeated runs, reported with spread. `hyperfine` is not in the
- *   nix devshell, so `tools/benchmarks/scripts/scale/measure.mjs` implements warmup + N runs +
+ *   nix devshell, so `tools/benchmarks/scripts/scale/measure.ts` implements warmup + N runs +
  *   median/min/max itself, each run in a fresh process.
  *
  * NOT ADOPTED
@@ -27,7 +27,7 @@
  *   scoped styles, CSS Modules, real directives). Vize compiles SFCs.
  * - Real npm dependencies for the third-party half of the graph: replaced by a
  *   generated local `node_modules/@tools/ui` package. Reasoning in
- *   `tools/benchmarks/scripts/scale/corpus.mjs`.
+ *   `tools/benchmarks/scripts/scale/corpus.ts`.
  * - The seven-bundler matrix: the comparison that matters here is Vize's plugin
  *   against the official Vue plugin on the same Vite, since that isolates the
  *   plugin. Bundler-vs-bundler is the reference's own question.
@@ -39,11 +39,11 @@
  * a divergence into a non-zero exit.
  *
  * Usage:
- *   node tools/benchmarks/scripts/scale.mjs                       # 1000,3000,5000,10000, 3 runs
- *   node tools/benchmarks/scripts/scale.mjs --scales 1000 --runs 5
- *   node tools/benchmarks/scripts/scale.mjs --scales 10000 --cold
- *   node tools/benchmarks/scripts/scale.mjs --generate-only --scales 10000
- *   node tools/benchmarks/scripts/scale.mjs --json tools/benchmarks/results/scale.json
+ *   node tools/benchmarks/scripts/scale.ts                       # 1000,3000,5000,10000, 3 runs
+ *   node tools/benchmarks/scripts/scale.ts --scales 1000 --runs 5
+ *   node tools/benchmarks/scripts/scale.ts --scales 10000 --cold
+ *   node tools/benchmarks/scripts/scale.ts --generate-only --scales 10000
+ *   node tools/benchmarks/scripts/scale.ts --json tools/benchmarks/results/scale.json
  */
 
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
@@ -51,17 +51,18 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
-import { generateApp } from "./scale/corpus.mjs";
-import { TOOLS, configPath, writeConfigs } from "./scale/configs.mjs";
-import { collectOutput, measureTool } from "./scale/measure.mjs";
+import { generateApp } from "./scale/corpus.ts";
+import { TOOLS, configPath, writeConfigs } from "./scale/configs.ts";
+import { collectOutput, measureTool } from "./scale/measure.ts";
 import {
   formatBytes,
   formatMs,
   printScaleTable,
   printVerification,
   reportDivergence,
-} from "./scale/report.mjs";
-import { sampleTokens, verifyScopedStyles, verifySourcemaps } from "./scale/verify.mjs";
+} from "./scale/report.ts";
+import type { ScaleResult, ToolResult } from "./scale/report.ts";
+import { sampleTokens, verifyScopedStyles, verifySourcemaps } from "./scale/verify.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "..", "..", "..");
@@ -84,7 +85,7 @@ const { values } = parseArgs({
 if (values.help) {
   console.log(
     [
-      "node tools/benchmarks/scripts/scale.mjs [options]",
+      "node tools/benchmarks/scripts/scale.ts [options]",
       "",
       "  --scales 1000,3000,5000,10000  component counts to generate and build",
       "  --runs 3                       timed runs per tool (after one warmup)",
@@ -124,7 +125,7 @@ if (!values["generate-only"] && tools.includes("vize") && !existsSync(VIZE_PLUGI
 
 mkdirSync(APPS_ROOT, { recursive: true });
 
-const results = [];
+const results: ScaleResult[] = [];
 
 for (const componentCount of scales) {
   const appDir = join(APPS_ROOT, String(componentCount));
@@ -137,7 +138,7 @@ for (const componentCount of scales) {
     continue;
   }
 
-  const perTool = {};
+  const perTool: Record<string, ToolResult> = {};
   for (const tool of tools) {
     process.stderr.write(
       `  building with ${tool} (${runs} runs${values.cold ? ", cold" : ""}) ...\n`,

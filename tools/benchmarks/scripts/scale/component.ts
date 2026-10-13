@@ -17,20 +17,24 @@
  * same constraint for the flat corpus.
  */
 
+/** One child component import: its local binding and module specifier. */
+export type ComponentChild = { name: string; specifier: string };
+type Variant = (id: string, children: ComponentChild[], iconSpecifier: string) => string;
+
 const VARIANT_COUNT = 4;
 
-function childBlock(childNames) {
+function childBlock(childNames: string[]): string {
   if (childNames.length === 0) {
     return "";
   }
   return `\n${childNames.map((name) => `      <${name} />`).join("\n")}`;
 }
 
-function childImports(children) {
+function childImports(children: ComponentChild[]): string {
   return children.map(({ name, specifier }) => `import ${name} from '${specifier}'`).join("\n");
 }
 
-function variant0(id, children, iconSpecifier) {
+function variant0(id: string, children: ComponentChild[], iconSpecifier: string): string {
   const names = children.map((child) => child.name);
   return `<template>
   <section :class="['panel', { 'panel--active': active }]" :data-node="nodeId">
@@ -94,7 +98,7 @@ function toggle(): void {
 `;
 }
 
-function variant1(id, children, iconSpecifier) {
+function variant1(id: string, children: ComponentChild[], iconSpecifier: string): string {
   const names = children.map((child) => child.name);
   return `<template>
   <article class="card" :style="{ '--card-weight': weight }">
@@ -137,7 +141,7 @@ function bump(): void {
 `;
 }
 
-function variant2(id, children, iconSpecifier) {
+function variant2(id: string, children: ComponentChild[], iconSpecifier: string): string {
   const names = children.map((child) => child.name);
   return `<template>
   <div :class="$style.shell">
@@ -174,7 +178,7 @@ provide('bench-shell-${id}', { expanded, entries })
 `;
 }
 
-function variant3(id, children, iconSpecifier) {
+function variant3(id: string, children: ComponentChild[], iconSpecifier: string): string {
   const names = children.map((child) => child.name);
   return `<template>
   <fieldset class="group">
@@ -212,7 +216,7 @@ const markup = computed(() => escapeMarkup('<b>group-${id}</b>'))
 `;
 }
 
-const VARIANTS = [variant0, variant1, variant2, variant3];
+const VARIANTS: Variant[] = [variant0, variant1, variant2, variant3];
 
 /**
  * Render one SFC.
@@ -222,7 +226,12 @@ const VARIANTS = [variant0, variant1, variant2, variant3];
  * @param children `{ name, specifier }` for each child component import
  * @param iconSpecifier bare specifier of the per-component vendor icon module
  */
-export function renderComponent(index, id, children, iconSpecifier) {
+export function renderComponent(
+  index: number,
+  id: string,
+  children: ComponentChild[],
+  iconSpecifier: string,
+): string {
   return VARIANTS[index % VARIANT_COUNT](id, children, iconSpecifier);
 }
 

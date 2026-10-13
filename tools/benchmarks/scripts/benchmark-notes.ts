@@ -1,4 +1,4 @@
-export function buildFairnessNotes(fileCount) {
+export function buildFairnessNotes(fileCount: number): string[] {
   const formattedFileCount = fileCount.toLocaleString("en-US");
   return [
     "All tools run on the same generated Vue SFC corpus from the same checkout and lockfile.",

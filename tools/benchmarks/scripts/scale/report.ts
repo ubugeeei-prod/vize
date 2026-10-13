@@ -12,26 +12,43 @@
  *    sourcemap volume; when they do not, the faster one is suspect.
  */
 
-export function formatBytes(bytes) {
+import type { BuildOutput, ToolTiming } from "./measure.ts";
+import type { ScopedStyleCheck, SourcemapCheck } from "./verify.ts";
+
+/** Everything measured for one tool at one scale. */
+export type ToolResult = {
+  timing: ToolTiming;
+  output: BuildOutput;
+  sourcemaps: SourcemapCheck;
+  scopedStyles: ScopedStyleCheck;
+};
+export type ScaleResult = {
+  componentCount: number;
+  vendorModuleCount: number;
+  tools: Record<string, ToolResult>;
+};
+export type Divergence = { componentCount: number; kind: string; detail: string };
+
+export function formatBytes(bytes: number): string {
   if (bytes === 0) return "0 B";
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 }
 
-export function formatMs(ms) {
+export function formatMs(ms: number): string {
   return ms >= 1000 ? `${(ms / 1000).toFixed(2)} s` : `${ms.toFixed(0)} ms`;
 }
 
-function row(cells) {
+function row(cells: string[]): string {
   return `| ${cells.join(" | ")} |`;
 }
 
-function divider(count) {
+function divider(count: number): string {
   return `|${" --- |".repeat(count)}`;
 }
 
-export function printScaleTable(results, tools) {
+export function printScaleTable(results: ScaleResult[], tools: string[]): void {
   console.log("");
   console.log("## Build time and output");
   console.log("");
@@ -76,18 +93,23 @@ export function printScaleTable(results, tools) {
   console.log("");
 }
 
-function pushDivergence(list, componentCount, kind, detail) {
+function pushDivergence(
+  list: Divergence[],
+  componentCount: number,
+  kind: string,
+  detail: string,
+): void {
   list.push({ componentCount, kind, detail });
 }
 
 /**
- * Print the post-build correctness checks from `tools/benchmarks/scripts/scale/verify.mjs`.
+ * Print the post-build correctness checks from `tools/benchmarks/scripts/scale/verify.ts`.
  *
  * These are per-tool, not comparative: a wrong sourcemap or a dropped scope id
  * is a defect whether or not the other plugin has the same one.
  */
-export function printVerification(results, tools) {
-  const failures = [];
+export function printVerification(results: ScaleResult[], tools: string[]): Divergence[] {
+  const failures: Divergence[] = [];
 
   console.log("## Sourcemap and scoped-style verification");
   console.log("");
@@ -167,7 +189,7 @@ export function printVerification(results, tools) {
  * Returns `null` for plugin-internal virtual helpers (`plugin-vue:export-helper`,
  * ` vite/modulepreload-polyfill.js`), which are legitimately plugin-specific.
  */
-export function normalizeModuleId(id) {
+export function normalizeModuleId(id: string): string | null {
   const withoutNullByte = id.startsWith("\0") ? id.slice(1) : id;
   const withoutQuery = withoutNullByte.replace(/\?.*$/, "");
   if (!withoutQuery.startsWith("/")) {
@@ -176,10 +198,14 @@ export function normalizeModuleId(id) {
   return withoutQuery.endsWith(".vue.ts") ? withoutQuery.slice(0, -3) : withoutQuery;
 }
 
-function partitionModules(modules) {
-  const vueSources = new Set();
-  const fileModules = new Set();
-  const virtualModules = new Set();
+function partitionModules(modules: string[]): {
+  vueSources: Set<string>;
+  fileModules: Set<string>;
+  virtualModules: Set<string>;
+} {
+  const vueSources = new Set<string>();
+  const fileModules = new Set<string>();
+  const virtualModules = new Set<string>();
 
   for (const id of modules) {
     const normalized = normalizeModuleId(id);
@@ -195,7 +221,7 @@ function partitionModules(modules) {
   return { vueSources, fileModules, virtualModules };
 }
 
-function missingFrom(expected, actual) {
+function missingFrom(expected: Set<string>, actual: Set<string>): string[] {
   return [...expected].filter((value) => !actual.has(value));
 }
 
@@ -206,8 +232,8 @@ function missingFrom(expected, actual) {
  * CSS through different paths (Vize can extract component CSS into one asset)
  * and byte-identical output is not expected; an order-of-magnitude gap is.
  */
-export function reportDivergence(results) {
-  const divergences = [];
+export function reportDivergence(results: ScaleResult[]): Divergence[] {
+  const divergences: Divergence[] = [];
 
   for (const result of results) {
     const vize = result.tools.vize;

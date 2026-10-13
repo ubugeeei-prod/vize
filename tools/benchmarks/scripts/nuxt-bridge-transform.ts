@@ -13,8 +13,8 @@
  * need them. The composable auto-import stage (`unimportCtx.injectImports`,
  * `npm/framework/nuxt/src/index.ts`) is **not** gated and runs on every module.
  *
- *   node tools/benchmarks/scripts/nuxt-bridge-transform.mjs
- *   node tools/benchmarks/scripts/nuxt-bridge-transform.mjs --modules 2000 --runs 5
+ *   node tools/benchmarks/scripts/nuxt-bridge-transform.ts
+ *   node tools/benchmarks/scripts/nuxt-bridge-transform.ts --modules 2000 --runs 5
  *
  * `injectImports` is only timed when `unimport` resolves from this checkout. It
  * is Nuxt's dependency, not the Vize module's, so a bare workspace cannot
@@ -29,8 +29,21 @@ import {
   hasI18nBridgeInput,
   hasStableKeyBridgeInput,
 } from "../../../npm/framework/nuxt/src/bridge-fast-path.ts";
+import { isRecord } from "./script-types.ts";
 
-function parseArgs(argv) {
+/** The slice of Nuxt's `unimport` timed here; it may not resolve, so it is checked. */
+type UnimportContext = {
+  init: () => Promise<unknown>;
+  injectImports: (code: string, id: string) => Promise<unknown>;
+};
+type UnimportModule = { createUnimport: (options: Record<string, unknown>) => unknown };
+
+const isUnimportModule = (value: unknown): value is UnimportModule =>
+  isRecord(value) && typeof value.createUnimport === "function";
+const isUnimportContext = (value: unknown): value is UnimportContext =>
+  isRecord(value) && typeof value.init === "function" && typeof value.injectImports === "function";
+
+function parseArgs(argv: string[]): { modules: number; runs: number } {
   const options = { modules: 1000, runs: 3 };
   for (let i = 0; i < argv.length; i += 1) {
     if (argv[i] === "--modules") options.modules = Number(argv[++i]);
@@ -46,7 +59,7 @@ function parseArgs(argv) {
  * ten calls an i18n helper, and one in ten uses `useFetch`, which is roughly how
  * often those appear in the 500-file synthetic Nuxt app the published row uses.
  */
-function makeModule(index) {
+function makeModule(index: number): string {
   const componentBridge = index % 10 === 0 ? '  const _c = _resolveComponent("NuxtLink")\n' : "";
   const i18nBridge = index % 10 === 1 ? "  const label = $t('nav.title')\n" : "";
   const stableKey = index % 10 === 2 ? "  const { data } = useFetch('/api/items')\n" : "";
@@ -66,7 +79,7 @@ ${componentBridge}${i18nBridge}${stableKey}    return (_ctx, _cache) => {
 }
 
 /** Resolve Nuxt's `unimport` if this checkout happens to have it. */
-async function loadUnimport() {
+async function loadUnimport(): Promise<unknown> {
   const require = createRequire(pathToFileURL(`${process.cwd()}/`).href);
   try {
     return await import(pathToFileURL(require.resolve("unimport")).href);
@@ -75,7 +88,7 @@ async function loadUnimport() {
   }
 }
 
-function timed(fn, runs) {
+function timed(fn: () => number, runs: number): { elapsedMs: number; matched: number } {
   let matched = 0;
   const started = process.hrtime.bigint();
   for (let run = 0; run < runs; run += 1) matched = fn();
@@ -119,10 +132,13 @@ if (!unimport) {
     "stage 3 has no fast-path gate, so it reaches every module while its three siblings skip most.",
   );
 } else {
+  // The original called these directly; a module without them threw the same TypeError.
+  if (!isUnimportModule(unimport)) throw new TypeError("unimport.createUnimport is not a function");
   const ctx = unimport.createUnimport({
     presets: [{ from: "vue", imports: ["ref", "computed", "watch"] }],
     imports: [{ name: "useRoute", from: "#app" }],
   });
+  if (!isUnimportContext(ctx)) throw new TypeError("ctx.init is not a function");
   await ctx.init();
   const started = process.hrtime.bigint();
   for (let run = 0; run < runs; run += 1) {

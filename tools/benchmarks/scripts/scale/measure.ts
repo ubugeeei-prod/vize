@@ -17,9 +17,30 @@ import { existsSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 
-const BUILD_ONE = fileURLToPath(new URL("./build-one.mjs", import.meta.url));
+import { isRecord, isStringArray } from "../script-types.ts";
 
-function runOnce(appDir, configPath) {
+/** Dist sizes by bucket plus the module list the generated metrics plugin wrote. */
+export type BuildOutput = {
+  jsBytes: number;
+  cssBytes: number;
+  mapBytes: number;
+  otherBytes: number;
+  fileCount: number;
+  moduleCount: number;
+  modules: string[];
+};
+export type ToolTiming = {
+  runs: number;
+  wallMedianMs: number;
+  wallMinMs: number;
+  wallMaxMs: number;
+  buildMedianMs: number;
+  samplesMs: number[];
+};
+
+const BUILD_ONE = fileURLToPath(new URL("./build-one.ts", import.meta.url));
+
+function runOnce(appDir: string, configPath: string): Promise<{ wallMs: number; buildMs: number }> {
   return new Promise((resolve, reject) => {
     const start = process.hrtime.bigint();
     const child = spawn(process.execPath, [BUILD_ONE, appDir, configPath], {
@@ -29,10 +50,10 @@ function runOnce(appDir, configPath) {
 
     let stdout = "";
     let stderr = "";
-    child.stdout.on("data", (chunk) => {
+    child.stdout.on("data", (chunk: Buffer) => {
       stdout += chunk;
     });
-    child.stderr.on("data", (chunk) => {
+    child.stderr.on("data", (chunk: Buffer) => {
       stderr += chunk;
     });
 
@@ -50,7 +71,9 @@ function runOnce(appDir, configPath) {
       let buildMs = Number.NaN;
       const lastLine = stdout.trim().split("\n").at(-1) ?? "";
       try {
-        buildMs = JSON.parse(lastLine).buildMs;
+        const parsed: unknown = JSON.parse(lastLine);
+        // build-one.ts prints `{"buildMs":<number>}`; anything else stays NaN.
+        if (isRecord(parsed) && typeof parsed.buildMs === "number") buildMs = parsed.buildMs;
       } catch {
         // keep NaN; wall clock is the primary number
       }
@@ -59,14 +82,14 @@ function runOnce(appDir, configPath) {
   });
 }
 
-function median(values) {
+function median(values: number[]): number {
   const sorted = [...values].sort((a, b) => a - b);
   const middle = Math.floor(sorted.length / 2);
   return sorted.length % 2 === 1 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
 }
 
-function walk(dir) {
-  const files = [];
+function walk(dir: string): string[] {
+  const files: string[] = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) {
@@ -78,7 +101,7 @@ function walk(dir) {
   return files;
 }
 
-export function collectOutput(appDir, tool) {
+export function collectOutput(appDir: string, tool: string): BuildOutput {
   const distDir = join(appDir, `dist-${tool}`);
   const sizes = { jsBytes: 0, cssBytes: 0, mapBytes: 0, otherBytes: 0, fileCount: 0 };
   if (existsSync(distDir)) {
@@ -94,9 +117,17 @@ export function collectOutput(appDir, tool) {
 
   const metricsPath = join(appDir, `.metrics-${tool}.json`);
   let moduleCount = 0;
-  let modules = [];
+  let modules: string[] = [];
   if (existsSync(metricsPath)) {
-    const parsed = JSON.parse(readFileSync(metricsPath, "utf8"));
+    const parsed: unknown = JSON.parse(readFileSync(metricsPath, "utf8"));
+    // Written by the generated `bench-metrics` plugin in configs.ts.
+    if (
+      !isRecord(parsed) ||
+      typeof parsed.moduleCount !== "number" ||
+      !(parsed.modules == null || isStringArray(parsed.modules))
+    ) {
+      throw new Error(`invalid build metrics: ${metricsPath}`);
+    }
     moduleCount = parsed.moduleCount;
     modules = parsed.modules ?? [];
   }
@@ -110,7 +141,19 @@ export function collectOutput(appDir, tool) {
  * `cold` drops the plugin's persistent caches before every run (including the
  * warmup) so cold and warm numbers are both reportable.
  */
-export async function measureTool({ appDir, configPath, runs, cold, cacheDirs }) {
+export async function measureTool({
+  appDir,
+  configPath,
+  runs,
+  cold,
+  cacheDirs,
+}: {
+  appDir: string;
+  configPath: string;
+  runs: number;
+  cold: boolean;
+  cacheDirs: string[];
+}): Promise<ToolTiming> {
   const dropCaches = () => {
     if (!cold) return;
     for (const dir of cacheDirs) {
@@ -121,8 +164,8 @@ export async function measureTool({ appDir, configPath, runs, cold, cacheDirs })
   dropCaches();
   await runOnce(appDir, configPath);
 
-  const wall = [];
-  const build = [];
+  const wall: number[] = [];
+  const build: number[] = [];
   for (let index = 0; index < runs; index++) {
     dropCaches();
     const result = await runOnce(appDir, configPath);

@@ -8,16 +8,24 @@
  * covering a generated position.
  */
 
+/** One decoded mapping; `sourceIndex` is null for a segment that carries no source. */
+export type MappingSegment = {
+  generatedColumn: number;
+  sourceIndex: number | null;
+  sourceLine: number;
+  sourceColumn: number;
+};
+
 const BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 // The alphabet is ASCII by definition, so indexing by code unit is exact and
 // avoids iterating the string as grapheme clusters.
-const BASE64_LOOKUP = new Map();
+const BASE64_LOOKUP = new Map<string, number>();
 for (let index = 0; index < BASE64_CHARS.length; index++) {
   BASE64_LOOKUP.set(BASE64_CHARS[index], index);
 }
 
-function decodeVlqs(segment) {
-  const values = [];
+function decodeVlqs(segment: string): number[] {
+  const values: number[] = [];
   let shift = 0;
   let value = 0;
 
@@ -50,14 +58,14 @@ function decodeVlqs(segment) {
  * fewer than four fields carry no source and are kept as gaps so a lookup
  * landing on one reports "unmapped" instead of silently borrowing a neighbour.
  */
-export function decodeMappings(mappings) {
-  const lines = [];
+export function decodeMappings(mappings: string): MappingSegment[][] {
+  const lines: MappingSegment[][] = [];
   let sourceIndex = 0;
   let sourceLine = 0;
   let sourceColumn = 0;
 
   for (const lineText of mappings.split(";")) {
-    const segments = [];
+    const segments: MappingSegment[] = [];
     let generatedColumn = 0;
 
     for (const segmentText of lineText.split(",")) {
@@ -81,13 +89,17 @@ export function decodeMappings(mappings) {
 }
 
 /** Last segment at or before `column` on `line`, or `null`. */
-export function lookupSegment(decodedLines, line, column) {
+export function lookupSegment(
+  decodedLines: MappingSegment[][],
+  line: number,
+  column: number,
+): MappingSegment | null {
   const segments = decodedLines[line];
   if (!segments || segments.length === 0) {
     return null;
   }
 
-  let found = null;
+  let found: MappingSegment | null = null;
   for (const segment of segments) {
     if (segment.generatedColumn > column) break;
     found = segment;
@@ -96,7 +108,7 @@ export function lookupSegment(decodedLines, line, column) {
 }
 
 /** Generated `{ line, column }` (0-based) of `index` in `text`. */
-export function positionOf(text, index) {
+export function positionOf(text: string, index: number): { line: number; column: number } {
   let line = 0;
   let lastNewline = -1;
   for (let cursor = 0; cursor < index; cursor++) {

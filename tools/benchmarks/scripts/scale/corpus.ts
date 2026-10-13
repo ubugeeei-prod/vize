@@ -25,7 +25,8 @@
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
-import { renderComponent } from "./component.mjs";
+import { renderComponent } from "./component.ts";
+import type { ComponentChild } from "./component.ts";
 
 const FILES_PER_DIR = 9;
 
@@ -35,13 +36,13 @@ const FILES_PER_DIR = 9;
  * Returns a map of directory (posix, relative to `src`) to the number of files
  * in it. `""` is `src` itself.
  */
-export function planTree(total) {
-  const dirFileCounts = new Map();
+export function planTree(total: number): Map<string, number> {
+  const dirFileCounts = new Map<string, number>();
   const queue = [""];
   let created = 0;
 
   while (created < total && queue.length > 0) {
-    const dir = queue.shift();
+    const dir = queue.shift()!; // the loop condition guarantees an entry
     const count = Math.min(FILES_PER_DIR, total - created);
     dirFileCounts.set(dir, count);
     created += count;
@@ -53,8 +54,8 @@ export function planTree(total) {
   return dirFileCounts;
 }
 
-function componentPaths(dirFileCounts) {
-  const paths = [];
+function componentPaths(dirFileCounts: Map<string, number>): { dir: string; file: string }[] {
+  const paths: { dir: string; file: string }[] = [];
   for (const [dir, count] of dirFileCounts) {
     for (let index = 0; index < count; index++) {
       paths.push({ dir, file: `f${index}.vue` });
@@ -63,7 +64,7 @@ function componentPaths(dirFileCounts) {
   return paths;
 }
 
-function writeVendorPackage(appDir, iconCount) {
+function writeVendorPackage(appDir: string, iconCount: number): number {
   const pkgDir = join(appDir, "node_modules", "@bench", "ui");
   mkdirSync(join(pkgDir, "icons"), { recursive: true });
   mkdirSync(join(pkgDir, "internal"), { recursive: true });
@@ -144,10 +145,10 @@ export function escapeMarkup(markup) {
  * inlined asset would not exercise asset-URL rewriting in templates at all,
  * which is one of the things minification is most likely to break.
  */
-function writeAssets(appDir) {
+function writeAssets(appDir: string): void {
   const assetsDir = join(appDir, "assets");
   mkdirSync(assetsDir, { recursive: true });
-  const rings = [];
+  const rings: string[] = [];
   for (let index = 0; index < 220; index++) {
     rings.push(
       `<circle cx="12" cy="12" r="${(index % 10) + 1}" fill="none" stroke="#42b883" stroke-width="0.1" opacity="0.${index % 10}" />`,
@@ -159,10 +160,10 @@ function writeAssets(appDir) {
   );
 }
 
-function writeEntry(appDir, rootCount) {
+function writeEntry(appDir: string, rootCount: number): void {
   const srcDir = join(appDir, "src");
-  const imports = [];
-  const names = [];
+  const imports: string[] = [];
+  const names: string[] = [];
   for (let index = 0; index < rootCount; index++) {
     const name = `Root${index}`;
     imports.push(`import ${name} from './f${index}.vue'`);
@@ -234,7 +235,15 @@ declare module '*.svg' {
  *
  * @returns `{ dir, componentCount, vendorModuleCount }`
  */
-export function generateApp({ appDir, componentCount, clean = true }) {
+export function generateApp({
+  appDir,
+  componentCount,
+  clean = true,
+}: {
+  appDir: string;
+  componentCount: number;
+  clean?: boolean;
+}): { dir: string; componentCount: number; vendorModuleCount: number } {
   if (clean) {
     rmSync(appDir, { recursive: true, force: true });
   }
@@ -248,7 +257,7 @@ export function generateApp({ appDir, componentCount, clean = true }) {
     const fileIndex = Number.parseInt(file.slice(1), 10);
     const childDir = dir === "" ? `d${fileIndex}` : `${dir}/d${fileIndex}`;
     const childCount = dirFileCounts.get(childDir) ?? 0;
-    const children = [];
+    const children: ComponentChild[] = [];
     for (let childIndex = 0; childIndex < childCount; childIndex++) {
       children.push({
         name: `C${childIndex}`,

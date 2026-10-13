@@ -21,7 +21,7 @@ import { join } from "node:path";
 export const PRECOMPILE_CACHE_RELATIVE_DIR = join("node_modules", ".vize", "vite-precompile");
 
 /** Absolute manifest directory for a Vite root. */
-export function precompileCacheDir(root) {
+export function precompileCacheDir(root: string): string {
   return join(root, PRECOMPILE_CACHE_RELATIVE_DIR);
 }
 
@@ -31,7 +31,7 @@ export function precompileCacheDir(root) {
  * Empty when the directory does not exist, which is the state a build that has
  * never run in `root` sees.
  */
-export function readPrecompileCacheEntries(root) {
+export function readPrecompileCacheEntries(root: string): string[] {
   const dir = precompileCacheDir(root);
   if (!existsSync(dir)) {
     return [];
@@ -40,7 +40,7 @@ export function readPrecompileCacheEntries(root) {
 }
 
 /** Remove every persisted manifest for `root`. Returns the names removed. */
-export function clearPrecompileCache(root) {
+export function clearPrecompileCache(root: string): string[] {
   const removed = readPrecompileCacheEntries(root);
   rmSync(precompileCacheDir(root), { recursive: true, force: true });
   return removed;
@@ -53,7 +53,7 @@ export function clearPrecompileCache(root) {
  * silently report a warm-cache time as if it were comparable to
  * `@vitejs/plugin-vue`.
  */
-export function assertPrecompileCacheCold(root, label) {
+export function assertPrecompileCacheCold(root: string, label: string): void {
   const entries = readPrecompileCacheEntries(root);
   if (entries.length === 0) {
     return;

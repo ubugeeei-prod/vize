@@ -13,7 +13,7 @@
  * pairs. Rollup names chunks by content hash, so an identical name set is
  * already strong; the digests make it exact.
  *
- * Usage: node tools/benchmarks/scripts/scale/cache-equivalence.mjs <appDir> [tool=vize]
+ * Usage: node tools/benchmarks/scripts/scale/cache-equivalence.ts <appDir> [tool=vize]
  * Exit 0 when cold and warm agree, 1 when they do not.
  */
 
@@ -23,10 +23,15 @@ import { existsSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join, relative } from "node:path";
 
-const BUILD_ONE = fileURLToPath(new URL("./build-one.mjs", import.meta.url));
+const BUILD_ONE = fileURLToPath(new URL("./build-one.ts", import.meta.url));
 
-function walk(dir, base = dir) {
-  const files = [];
+type Difference = {
+  name: string;
+  kind: "missing-when-warm" | "content-differs" | "extra-when-warm";
+};
+
+function walk(dir: string, base: string = dir): string[] {
+  const files: string[] = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) files.push(...walk(full, base));
@@ -35,11 +40,11 @@ function walk(dir, base = dir) {
   return files;
 }
 
-function fingerprint(distDir) {
+function fingerprint(distDir: string): Map<string, string> {
   if (!existsSync(distDir)) {
     return new Map();
   }
-  const digests = new Map();
+  const digests = new Map<string, string>();
   for (const name of walk(distDir).sort()) {
     digests.set(
       name,
@@ -51,7 +56,7 @@ function fingerprint(distDir) {
   return digests;
 }
 
-function build(appDir, configPath) {
+function build(appDir: string, configPath: string): void {
   const result = spawnSync(process.execPath, [BUILD_ONE, appDir, configPath], {
     cwd: appDir,
     stdio: ["ignore", "pipe", "pipe"],
@@ -62,7 +67,15 @@ function build(appDir, configPath) {
   }
 }
 
-export function compareColdAndWarm(appDir, tool = "vize") {
+export function compareColdAndWarm(
+  appDir: string,
+  tool = "vize",
+): {
+  coldFileCount: number;
+  warmFileCount: number;
+  cacheWritten: boolean;
+  differences: Difference[];
+} {
   const configPath = join(appDir, `vite.${tool}.config.mjs`);
   const distDir = join(appDir, `dist-${tool}`);
   const cacheDir = join(appDir, "node_modules", ".vize");
@@ -75,7 +88,7 @@ export function compareColdAndWarm(appDir, tool = "vize") {
   build(appDir, configPath);
   const warm = fingerprint(distDir);
 
-  const differences = [];
+  const differences: Difference[] = [];
   for (const [name, digest] of cold) {
     if (!warm.has(name)) differences.push({ name, kind: "missing-when-warm" });
     else if (warm.get(name) !== digest) differences.push({ name, kind: "content-differs" });
@@ -91,7 +104,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const [appDir, tool = "vize"] = process.argv.slice(2);
   if (!appDir) {
     console.error(
-      "usage: node tools/benchmarks/scripts/scale/cache-equivalence.mjs <appDir> [tool]",
+      "usage: node tools/benchmarks/scripts/scale/cache-equivalence.ts <appDir> [tool]",
     );
     process.exit(2);
   }

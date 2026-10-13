@@ -44,7 +44,7 @@ export const NUXT_SHARED_CACHE_DIRS = [".vize", ".cache", ".vite"];
  * symlink: reporting the link path would hide that separate app directories
  * share one cache.
  */
-export function resolveNodeModulesDir(root) {
+export function resolveNodeModulesDir(root: string): string | null {
   const link = join(root, "node_modules");
   if (!existsSync(link)) {
     return null;
@@ -53,7 +53,7 @@ export function resolveNodeModulesDir(root) {
 }
 
 /** Cache directories currently present under `<root>/node_modules`, sorted. */
-export function readNuxtBuildCaches(root) {
+export function readNuxtBuildCaches(root: string): string[] {
   const nodeModules = resolveNodeModulesDir(root);
   if (nodeModules === null) {
     return [];
@@ -68,7 +68,7 @@ export function readNuxtBuildCaches(root) {
  * Only the known cache directories are touched; the installed packages beside
  * them are what makes the app buildable at all.
  */
-export function clearNuxtBuildCaches(root) {
+export function clearNuxtBuildCaches(root: string): string[] {
   const nodeModules = resolveNodeModulesDir(root);
   if (nodeModules === null) {
     return [];
@@ -87,15 +87,16 @@ export function clearNuxtBuildCaches(root) {
  * Linking and clearing belong together: the link is what makes the caches
  * shared in the first place, so every caller that creates one owes the clear.
  */
-export function linkColdNodeModules(appDir, candidates, label) {
-  const target = candidates.find((candidate) => existsSync(candidate)) ?? candidates.at(-1);
+export function linkColdNodeModules(appDir: string, candidates: string[], label: string): void {
+  // Callers always pass at least one candidate; the last one is the fallback.
+  const target = candidates.find((candidate) => existsSync(candidate)) ?? candidates.at(-1)!;
   symlinkSync(target, join(appDir, "node_modules"), "dir");
   clearNuxtBuildCaches(appDir);
   assertNuxtBuildCachesCold(appDir, label);
 }
 
 /** Throw unless every shared build cache for `root` is gone. */
-export function assertNuxtBuildCachesCold(root, label) {
+export function assertNuxtBuildCachesCold(root: string, label: string): void {
   const remaining = readNuxtBuildCaches(root);
   if (remaining.length === 0) {
     return;

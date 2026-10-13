@@ -11,7 +11,7 @@ import {
   linkColdNodeModules,
   readNuxtBuildCaches,
   resolveNodeModulesDir,
-} from "../../tools/benchmarks/scripts/nuxt-build-cache.mjs";
+} from "../../tools/benchmarks/scripts/nuxt-build-cache.ts";
 
 /**
  * Mirrors the benchmark's own layout: several app directories whose
