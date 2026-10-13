@@ -21,6 +21,15 @@ import {
   walkCommittedGraph,
 } from "./canonical-corpus-logical-walk.mjs";
 
+import {
+  captureFiniteObservation,
+  nativeWalkIdentity,
+  validateOriginalArchive,
+  qualifyFiniteSources,
+  validateFinitePaths,
+} from "./canonical-corpus-finite-walk.mjs";
+export { collectFinitePhysical } from "./canonical-corpus-finite-walk.mjs";
+
 export const collectorSource = "tests/davinci_test_support/src/corpus.rs";
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const gitSource = (cwd, sha, path) => execFileSync("git", ["show", `${sha}:${path}`], { cwd });
@@ -33,7 +42,7 @@ export function collectorHarness(bytes) {
   );
   assert.equal(bodies?.length, 1, "Missing unique original Rust collector body");
   const body = bodies[0];
-  const names = ["fail_corpus_io", "corpus_entry_path"];
+  const names = ["fail_corpus_io", "corpus_entry_path", "collect_vue_edges"];
   const helpers = names.flatMap((name) => {
     const matches = source.match(new RegExp(`^fn ${name}\\([\\s\\S]*?\\n\\}\\n`, "gm")) ?? [];
     assert(matches.length <= 1, `Missing unique original Rust helper ${name}`);
@@ -145,6 +154,10 @@ export function collectNativePhysical(root, nodes, children) {
   return { files, boundary, committed };
 }
 
+export function validateFiniteNativeVector(vector, nodes, children, boundary) {
+  return validateFinitePaths(parseNativeVector(vector), nodes, children, boundary);
+}
+
 export function captureNativeWalk(cwd, identity, proof, directory) {
   const { nodes, children } = committedGraph(proof, identity.gitlinks);
   validateLogicalGraph(nodes, children);
@@ -181,17 +194,24 @@ export function captureNativeWalk(cwd, identity, proof, directory) {
     cwd,
     maxBuffer: 64 * 1024 * 1024,
   });
-  const physical = collectNativePhysical(root, nodes, children);
-  proof.kernelBoundary = physical.boundary;
-  const committed = physical.committed;
-  const nativePaths = parseNativeVector(vector);
+  const original = collectNativePhysical(root, nodes, children);
+  proof.kernelBoundary = original.boundary;
+  proof.traversal = "finite-physical-edges";
+  const { files, committed, originalVector } = captureFiniteObservation(
+    root,
+    nodes,
+    children,
+    original,
+    directory,
+  );
+  const nativePaths = validateFiniteNativeVector(vector, nodes, children, original.boundary);
   assert.deepEqual(
     nativePaths,
-    physical.files.map(([path]) => path),
-    "Physical inventory differs from complete ordered original Rust vector",
+    files.map(([path]) => path),
+    "Physical inventory differs from complete ordered successor Rust vector",
   );
   assert.deepEqual(
-    physical.files.map(([path, , , blob]) => [path, blob]),
+    files.map(([path, , , blob]) => [path, blob]),
     committed,
     "Git inventory differs from complete ordered original Rust vector/bytes",
   );
@@ -214,17 +234,15 @@ export function captureNativeWalk(cwd, identity, proof, directory) {
     vectorSha256: digest(vector),
     files: nativePaths.length,
     boundary: proof.kernelBoundary,
+    traversal: proof.traversal,
+    originalVectorSha256: digest(originalVector),
+    originalFilesSha256: digest(JSON.stringify(original.files)),
   };
   writeFileSync(join(directory, "native-walk.json"), JSON.stringify(receipt) + "\n");
-  validateNativeWalk(directory, identity, proof, physical.files, cwd);
+  validateNativeWalk(directory, identity, proof, files, cwd);
   return {
-    files: physical.files,
-    nativeWalk: {
-      sourceSha256: receipt.sourceSha256,
-      bodySha256: receipt.bodySha256,
-      vectorSha256: receipt.vectorSha256,
-      boundarySha256: digest(JSON.stringify(receipt.boundary)),
-    },
+    files,
+    nativeWalk: nativeWalkIdentity(receipt),
   };
 }
 
@@ -252,6 +270,11 @@ export function validateNativeSource(directory, identity, cwd = process.cwd()) {
     assert.equal(receipt[key], identity[key], `Native walk ${key} changed`);
   const source = gitSource(cwd, identity.sha, collectorSource);
   const { body, harness } = collectorHarness(source);
+  assert.equal(
+    receipt.traversal,
+    /\bcollect_vue_edges\(/.test(body) ? "finite-physical-edges" : undefined,
+    "Native traversal does not match exact Rust source",
+  );
   assert.deepEqual(
     readFileSync(join(directory, "native-collector-source.rs")),
     source,
@@ -285,12 +308,16 @@ export function validateNativeSource(directory, identity, cwd = process.cwd()) {
   );
   const paths = parseNativeVector(readFileSync(join(directory, "native-vector.nul")));
   assert.equal(receipt.files, paths.length, "Native vector census changed");
-  return { receipt, paths };
+  const original =
+    receipt.traversal === "finite-physical-edges"
+      ? validateOriginalArchive(directory, receipt, parseNativeVector)
+      : undefined;
+  return { receipt, paths, ...(original ? { original } : {}) };
 }
 
 export function validateNativeWalk(directory, identity, proof, files, cwd = process.cwd()) {
   if (!needsNativeWalk(identity.gitlinks) && identity.nativeWalk === undefined) return;
-  const { receipt, paths } = validateNativeSource(directory, identity, cwd);
+  const { receipt, paths, original } = validateNativeSource(directory, identity, cwd);
   assert.deepEqual(
     receipt.boundary,
     proof.kernelBoundary,
@@ -302,20 +329,20 @@ export function validateNativeWalk(directory, identity, proof, files, cwd = proc
     "Native ordered path vector changed",
   );
   const { nodes, children } = committedGraph(proof, identity.gitlinks);
+  assert.equal(receipt.traversal, proof.traversal, "Native traversal identity changed");
+  let committed = walkCommittedGraph(nodes, children, receipt.boundary).files;
+  if (proof.traversal === "finite-physical-edges") {
+    committed = qualifyFiniteSources(original, files, nodes, children, receipt.boundary);
+  } else assert(proof.traversal === undefined, "Unknown native corpus traversal");
   assert.deepEqual(
     files.map(([path, , , blob]) => [path, blob]),
-    walkCommittedGraph(nodes, children, receipt.boundary).files,
+    committed,
     "Native whole-vector Git bytes changed",
   );
   if (identity.nativeWalk !== undefined)
     assert.deepEqual(
       identity.nativeWalk,
-      {
-        sourceSha256: receipt.sourceSha256,
-        bodySha256: receipt.bodySha256,
-        vectorSha256: receipt.vectorSha256,
-        boundarySha256: digest(JSON.stringify(receipt.boundary)),
-      },
+      nativeWalkIdentity(receipt),
       "Native walk identity changed",
     );
 }
