@@ -31,8 +31,9 @@ function applied(result: RestoreResult) {
   return result;
 }
 
-// Successive jobs are minutes apart; whole-second records need at least one.
-const nextSecond = () => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1100);
+// Successive CI jobs are minutes apart. The conservative floor may sit up to
+// two whole seconds after the previous run's post step, so leave more than that.
+const nextSecond = () => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 2100);
 
 function repository(files: Record<string, string>) {
   const root = mkdtempSync(join(tmpdir(), "vize-reuse-rust-target-"));
