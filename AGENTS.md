@@ -47,34 +47,11 @@ product fix-history gates still apply; use the [order record](./docs/davinci/dec
   to the shared foundation or index.
 - **Keep PRs small** and give them conventional titles, e.g.
   `refactor(l1): …`.
-- **Finish PRs.** Drive every PR you open to an actual merge, or close it with
-  a one-line reason. Do not leave PRs waiting, and do not block other work
-  while CI runs. Merge iteration speed is the bottleneck, so slice work to
-  avoid conflicts.
 - **Use `wt` for isolated worktrees** and assign independent slices to
   sub-agents. Recheck remote heads before writing to an existing PR branch.
-- **Clean up as you go.** When a slice lands, remove its worktree, its local
-  branch and its cargo target directory. Local disk is a shared, limited
-  resource.
-- **Prioritize third-party reports.** They are urgent. Include the issue
-  reporter in a `Co-authored-by` trailer with a verified public identity.
-  Carry the fix through actual merge and a published release, then close the
-  issue with the released version.
-- **Release often.** Cut a release for each user-facing fix instead of
-  batching. Release gates exist to stop regressions; a gate that requires
-  perfection on every surface stops fixes from reaching users.
-- **Keep third-party issue comments rare and short.** Comment only when the
-  reporter needs the information, in one or two sentences.
-- **Upstream repositories are read-only.** Never comment on, open issues or
-  pull requests against, or push to a project that is evaluating or consuming
-  Vize (for example n8n). Track the work in a Vize issue instead.
-- **Tooling languages:** write tools, scripts and fixture helpers in
-  TypeScript or Rust. Python and MoonBit are not accepted, and new `.mjs`
-  files are not added
-  ([#8840](https://github.com/ubugeeei-prod/vize/issues/8840)). Formal
-  verification uses Kani, not Lean.
-- **Keep output small.** Use `rtk` for git, gh, grep and test output so that
-  agent context is spent on the work.
+- **Prioritize third-party reports.** Include the issue reporter in a
+  `Co-authored-by` trailer with a verified public identity. Carry fixes through
+  actual merge and frequent releases of the existing products.
 - **Put moves in move-only commits.** Git rename detection then keeps
   in-flight fixes rebasable.
 - **Script renames.** On a conflict, re-run the script on `main`.
