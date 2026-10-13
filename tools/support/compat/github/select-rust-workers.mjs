@@ -19,11 +19,15 @@ import {
   verifyRustWorkerDirectories,
 } from "./rust-worker-selection.mjs";
 
+// Short waits cover ordinary metadata lag; the longer ones ride out Actions
+// incidents in which finished jobs keep reporting pending steps for minutes.
+const metadataWaits = [...Array(5).fill(2000), ...Array(18).fill(10000)];
+
 export async function readRustWorkerSelection(context, options = {}) {
   const resource = `actions/runs/${context.runId}`;
   const readRun = async () => JSON.parse((await githubApiRequest({ ...options, resource })).body);
   let identity;
-  for (let read = 0; read < 6; read++) {
+  for (let read = 0; read <= metadataWaits.length; read++) {
     const before = await readRun();
     const [jobs, artifacts] = await Promise.all([
       githubApiPages({
@@ -64,8 +68,8 @@ export async function readRustWorkerSelection(context, options = {}) {
       assert.deepEqual(strict, after.selection, "Pending assessment changed strict Rust selection");
       return strict;
     }
-    if (read === 5) throw after.pending;
-    await (options.waitImpl ?? delay)(2000);
+    if (read === metadataWaits.length) throw after.pending;
+    await (options.waitImpl ?? delay)(metadataWaits[read]);
   }
 }
 

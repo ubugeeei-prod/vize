@@ -85,13 +85,16 @@ function requireCompletedWorker(job, pending = null) {
     assert.equal(matches.length, 1, `Worker must execute ${name} exactly once`);
     const step = matches[0];
     assert(step.number > previous, "Required worker steps are out of order");
-    if (pending && ["queued", "in_progress"].includes(step.status)) {
+    // GitHub can report a finished job's steps as `pending` for minutes after
+    // an Actions metadata incident; treat it like queued/in_progress so the
+    // reader re-observes instead of refusing a completed worker.
+    if (pending && ["queued", "in_progress", "pending"].includes(step.status)) {
       assert.equal(step.conclusion, null, `${name} has a terminal pending outcome`);
       assert.equal(step.completed_at, null, `${name} has a pending completion timestamp`);
       if (step.started_at != null) {
         const from = timestamp(step.started_at, `${name} start`);
         assert(from >= start && from <= end, `${name} is outside the worker execution`);
-      } else assert.equal(step.status, "queued", `${name} has no execution start`);
+      } else assert(["queued", "pending"].includes(step.status), `${name} has no execution start`);
       pending.set(`${job.id}:${name}`, `${job.id}:${name}`);
       previous = step.number;
       continue;
@@ -179,7 +182,7 @@ export function selectRustWorkers(
       "Foreign artifact head repository",
     );
     const created = timestamp(artifact.created_at, "Artifact creation");
-    const pendingUpload = pending && ["queued", "in_progress"].includes(upload.status);
+    const pendingUpload = pending && ["queued", "in_progress", "pending"].includes(upload.status);
     assert(
       created >=
         timestamp(
