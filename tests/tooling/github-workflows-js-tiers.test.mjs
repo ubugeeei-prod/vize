@@ -25,6 +25,8 @@ const jsChecksPath = "./.github/workflows/pr-js-checks.yml";
 const jsChecks = parse(readFileSync(join(root, jsChecksPath), "utf8"));
 const selectedJs = "${{ needs.pr-source-plan.outputs.js == 'true' }}";
 const inputJs = "${{ inputs.run-js }}";
+const selectedHeavy = "${{ needs.pr-source-plan.outputs.heavy == 'true' }}";
+const boolean = { required: true, type: "boolean" };
 const evidenceJs = "${{ always() && inputs.run-js }}";
 const groupCommand =
   'python3 .github/actions/test-js-packages-with-history/native-fault-evidence.py -- vp run --workspace-root "test:js:$VIZE_JS_PACKAGE_GROUP"';
@@ -52,18 +54,10 @@ void test("PR and merge queue preserve package tests, native declaration, type a
     if: "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}",
     needs: "pr-source-plan",
     uses: jsChecksPath,
-    with: {
-      "run-js": selectedJs,
-      "run-original-project": "${{ needs.pr-source-plan.outputs.heavy == 'true' }}",
-    },
+    with: { "run-js": selectedJs, "run-original-project": selectedHeavy },
   });
   assert.deepEqual(jsChecks.on, {
-    workflow_call: {
-      inputs: {
-        "run-js": { required: true, type: "boolean" },
-        "run-original-project": { required: true, type: "boolean" },
-      },
-    },
+    workflow_call: { inputs: { "run-js": boolean, "run-original-project": boolean } },
   });
   assert.deepEqual(Object.keys(jsChecks.jobs), [
     "pr-js-package-tests",
@@ -71,14 +65,10 @@ void test("PR and merge queue preserve package tests, native declaration, type a
     "pr-js-package-conformance",
   ]);
   for (const [name, job] of Object.entries(jsChecks.jobs)) {
-    // The caller holds the event guard and every expensive step holds the plan
-    // guard. Only the original project qualification follows the PR tier: the
-    // merge queue always runs it.
-    assert.equal(
-      job.if,
-      name === "pr-oxlint-project-qualification" ? "${{ inputs.run-original-project }}" : undefined,
-      name,
-    );
+    // The caller guards the event and each costly step the plan; the Oxlint
+    // project qualification also follows the PR tier (the queue always runs it).
+    const tier = name === "pr-oxlint-project-qualification";
+    assert.equal(job.if, tier ? "${{ inputs.run-original-project }}" : undefined, name);
     assert.equal(job.needs, undefined, name);
     assert.equal(job.steps[0].if, "${{ !inputs.run-js }}", name);
     assert.match(job.steps[0].run, /skipped because this PR changes no package/, name);
