@@ -44,6 +44,15 @@ jobs:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: { key: davinci-dom-corpus, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - name: Setup Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      # The test binaries do not read the fixtures; compile them while the
+      # corpus hydrates. The observer command's own cargo invocation waits on
+      # the build lock and then finds them fresh.
+      - name: Start observer test build
+        env: { OBSERVER: "${{ matrix.observer }}" }
+        run: nohup node tools/support/compat/github/canonical-corpus-shards.ts prebuild "$OBSERVER" > "$RUNNER_TEMP/canonical-prebuild.log" 2>&1 &
       - name: Plan canonical corpus identity
         id: corpus-plan
         run: node tools/support/compat/github/canonical-corpus-observer.mjs plan
@@ -53,12 +62,14 @@ jobs:
         with:
           path: .git/modules/tests/_fixtures/_git
           key: ${{ steps.corpus-plan.outputs.cache-key }}
+          restore-keys: ${{ steps.corpus-plan.outputs.cache-restore-key }}
       - name: Cache immutable trusted fixture objects
         if: ${{ steps.corpus-plan.outputs.cache-trusted == 'true' }}
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: .git/modules/tests/_fixtures/_git
           key: ${{ steps.corpus-plan.outputs.cache-key }}
+          restore-keys: ${{ steps.corpus-plan.outputs.cache-restore-key }}
       - name: Select and hydrate full fixture corpus
         run: |
           set -o pipefail
@@ -72,12 +83,14 @@ jobs:
         id: davinci_dom_corpus
         continue-on-error: true
         run: rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs run
+      # One build, then concurrent processes of the same binaries: a base
+      # process for the non-sweep tests, process shards of the canonical SSR
+      # sweep and the complete pug sweep. The recorder proves the shard
+      # vectors exactly cover files.json and sums their counters.
       - name: Run L4 SSR and pug L1 differential corpora
         id: ssr_pug
         if: ${{ matrix.observer == 'ssr-pug' }}
-        run: |
-          set -o pipefail
-          (VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_atelier_ssr --features legacy-differential --test davinci_ssr_corpus -- --nocapture && VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_pug_corpus -- --nocapture) 2>&1 | tee real-project-davinci-dom-corpus/ssr-pug.log
+        run: node tools/support/compat/github/canonical-corpus-shards.ts run ssr-pug ssr-pug.log
       - name: Diagnose complete original corpus source IO
         id: corpus_io
         if: ${{ always() && matrix.observer == 'ssr-pug' && steps.corpus_snapshot.outcome == 'success' }}
@@ -86,9 +99,7 @@ jobs:
       - name: Measure Davinci production reach on the hydrated corpus
         id: production_reach
         if: ${{ matrix.observer == 'reach' }}
-        run: |
-          set -o pipefail
-          VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_atelier_sfc --features legacy-dom-differential --test davinci_production_reach -- --nocapture 2>&1 | tee real-project-davinci-dom-corpus/reach.log
+        run: node tools/support/compat/github/canonical-corpus-shards.ts run reach reach.log
       - name: Require complete source IO diagnostic success
         if: ${{ always() && matrix.observer == 'ssr-pug' && steps.corpus_io.outcome != 'success' }}
         run: echo 'Complete source IO diagnostic failed; retained raw evidence grants no gate waiver.' >&2; exit 1
@@ -125,6 +136,9 @@ jobs:
       - uses: ./.github/actions/setup-rust-script
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: { key: davinci-dom-corpus, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - name: Setup Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
       - name: Select complete canonical workers
         id: canonical_workers
         env: { GH_TOKEN: "${{ github.token }}", NEEDS_JSON: "${{ toJSON(needs) }}" }

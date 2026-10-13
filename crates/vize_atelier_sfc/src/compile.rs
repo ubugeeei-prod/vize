@@ -10,6 +10,7 @@ mod helpers;
 mod module_trace;
 mod normal_script;
 pub(crate) mod output_module;
+mod props_rest;
 mod stage_capture;
 #[cfg(test)]
 mod stage_capture_tests;
@@ -464,19 +465,7 @@ fn compile_sfc_inner(
     );
     validate_macro_scope_for_descriptor(&ctx, setup_program.as_ref(), descriptor)?;
 
-    // 3. Merge Props bindings from ScriptCompileContext (type resolution fallback)
-    //    Croquis can't resolve interface references, so we take Props from the legacy analyzer
-    for (name, bt) in &ctx.bindings.bindings {
-        if matches!(bt, BindingType::Props | BindingType::PropsAliased) {
-            script_bindings.bindings.entry(name.clone()).or_insert(*bt);
-        }
-    }
-    for (local, key) in &ctx.bindings.props_aliases {
-        script_bindings
-            .props_aliases
-            .entry(local.clone())
-            .or_insert_with(|| key.clone());
-    }
+    props_rest::merge_props_bindings(&mut script_bindings, &ctx);
 
     // Register defineEmits bindings visible to the template's render scope.
     if let Some(ref emits_macro) = ctx.macros.define_emits {

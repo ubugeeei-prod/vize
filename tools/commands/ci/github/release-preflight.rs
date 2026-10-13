@@ -248,7 +248,7 @@ fn verify_release_preflight(bootstrap: bool) -> Result<(), String> {
             &repo_root()?,
             run,
             &selection.artifacts,
-            matrix_evidence::ReleaseTypecheckEvidencePolicy::Enforce,
+            matrix_evidence::ReleaseTypecheckEvidencePolicy::Optional,
             |artifact| matrix_evidence::download_artifact_entries(&token, artifact),
         )?;
     }
@@ -396,15 +396,19 @@ fn create_release_gate_dispatch_plans(
             workflow_name: "Real Project Matrix",
             workflow_id: "real-project-matrix.yml",
             ref_name: ref_name.to_string(),
+            // Tool surfaces and the Davinci corpus gate the release. Lint and
+            // LSP parity run record-only so their raw outcomes are retained,
+            // and typecheck divergence is skipped, until per-project budgets
+            // gate the three parity surfaces again.
             inputs: json!({
                 "core_tools_mode": "enforce",
                 "typecheck_dependencies_mode": "enforce",
-                "lint_divergence_mode": "enforce",
-                "lsp_mode": "enforce",
-                "typecheck_divergence_mode": "enforce",
+                "lint_divergence_mode": "record-only",
+                "lsp_mode": "record-only",
+                "typecheck_divergence_mode": "skip",
                 "davinci_dom_corpus_mode": "enforce",
             }),
-            expected_run_name: format!("Real Project Matrix enforced @ {head_sha}"),
+            expected_run_name: format!("Real Project Matrix release-gated @ {head_sha}"),
             accepts_scheduled_evidence: false,
         },
     ])

@@ -1,0 +1,43 @@
+name: Full source CLI producer
+on:
+  workflow_call:
+    outputs:
+      sha256: { value: "${{ jobs.cli.outputs.sha256 }}" }
+      receipt-sha256: { value: "${{ jobs.cli.outputs.receipt-sha256 }}" }
+      producer-attempt: { value: "${{ jobs.cli.outputs.producer-attempt }}" }
+permissions: { contents: read }
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+jobs:
+  cli:
+    name: Build original full-suite CLI and SFC oracle
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    outputs:
+      sha256: ${{ steps.pack.outputs.sha256 }}
+      receipt-sha256: ${{ steps.pack.outputs.receipt-sha256 }}
+      producer-attempt: ${{ steps.pack.outputs.producer-attempt }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - name: Build vize CLI and SFC oracle with original receipts
+        run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.ts && cat target/ci/vize.differential-build.json && cargo build --profile ci -p vize_atelier_sfc --example cli_build_result_oracle
+      - name: Pack original source binaries and receipt
+        id: pack
+        run: node tools/support/compat/github/source-cli-artifact.ts pack "$RUNNER_TEMP/source-cli.tar.gz"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: source-cli-${{ github.run_id }}-${{ steps.pack.outputs.producer-attempt }}
+          path: ${{ runner.temp }}/source-cli.tar.gz
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7

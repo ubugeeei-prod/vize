@@ -8,6 +8,9 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Hydrate pinned Element Plus fixture
+      shell: bash
+      run: git submodule update --init --depth 1 -- tests/_fixtures/_git/element-plus
     - name: Test native Program comment projection
       shell: bash
       env: { VIZE_TEST_REQUIRE_TSGO: "1" }

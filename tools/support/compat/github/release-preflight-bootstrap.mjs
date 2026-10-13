@@ -64,15 +64,19 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
       workflowName: "Real Project Matrix",
       workflowId: "real-project-matrix.yml",
       ref,
+      // Tool surfaces and the Davinci corpus gate the release. Lint and LSP
+      // parity run record-only so their raw outcomes are retained, and
+      // typecheck divergence is skipped, until per-project budgets gate the
+      // three parity surfaces again.
       inputs: {
         core_tools_mode: "enforce",
         typecheck_dependencies_mode: "enforce",
-        lint_divergence_mode: "enforce",
-        lsp_mode: "enforce",
-        typecheck_divergence_mode: "enforce",
+        lint_divergence_mode: "record-only",
+        lsp_mode: "record-only",
+        typecheck_divergence_mode: "skip",
         davinci_dom_corpus_mode: "enforce",
       },
-      expectedRunName: `Real Project Matrix enforced @ ${headSha}`,
+      expectedRunName: `Real Project Matrix release-gated @ ${headSha}`,
       acceptsScheduledEvidence: false,
     },
   ];

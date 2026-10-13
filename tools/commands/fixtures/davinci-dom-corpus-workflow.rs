@@ -81,7 +81,7 @@ fn hydrate_corpus(artifact: &str) -> Result<u8, String> {
         "--depth",
         "1",
         "--jobs",
-        "8",
+        "32",
         "--",
     ]
     .into_iter()
