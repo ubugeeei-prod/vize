@@ -12,7 +12,7 @@ const inputs = [
   /^\.gitmodules$/,
   // The workflows on the PR/queue call path and the local actions they use.
   /^\.github\/workflows\/(?:check|pr-source-checks|davinci-canonical-corpus)\.yml$/,
-  /^\.github\/actions\/(?:setup-rust-script|setup-wild-http-recovery|setup-rust-sticky-cache|rust-source-mtimes)\//,
+  /^\.github\/actions\/(?:setup-rust-script|setup-wild-http-recovery|setup-rust-sticky-cache|reuse-rust-target)\//,
   // setup-node reads the pinned runtime from package.json.
   /^package\.json$/,
   /^(?:Cargo\.(?:toml|lock)|rust-toolchain\.toml)$/,
