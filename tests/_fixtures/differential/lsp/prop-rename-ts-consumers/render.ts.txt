@@ -1,0 +1,3 @@
+import { h } from 'vue';
+import Child from './Child.vue';
+export const node = h(Child, { code: 'x' });
