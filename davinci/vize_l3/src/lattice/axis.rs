@@ -1,4 +1,4 @@
-use super::ReactivityClass;
+use super::{EffectSet, ReactivityClass};
 
 /// Where the binding value enters the component.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -86,5 +86,27 @@ impl EscapeKind {
             Self::Stored => ReactivityClass::Reactive,
             Self::Global => ReactivityClass::Unstable,
         }
+    }
+}
+
+/// The naive declarative-rule evaluator on the value axis: join the floor
+/// every premise demands, then apply the provide/inject cap.
+///
+/// It reads nothing but the three axes, so the Kani harness in
+/// `tests/formal/kani/l3_lattice.rs` verifies this exact source against the
+/// rule table.
+#[must_use]
+pub const fn classify(
+    origin: BindingOrigin,
+    effects: EffectSet,
+    escape: EscapeKind,
+) -> ReactivityClass {
+    let class = origin
+        .class_floor()
+        .join(effects.class_floor())
+        .join(escape.class_floor());
+    match origin {
+        BindingOrigin::ProvideInject => class.join(ReactivityClass::Reactive),
+        _ => class,
     }
 }
