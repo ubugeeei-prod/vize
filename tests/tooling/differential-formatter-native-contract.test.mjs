@@ -13,6 +13,7 @@ import {
   loadPublicNativeManifest,
   NATIVE_FORMATTER_MANIFEST,
 } from "../differential/formatter-native-manifest.mjs";
+import { originalViteArchives } from "../differential/formatter-vite-source-family.mjs";
 import { validatePublicNativeReport } from "../differential/formatter-native.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -33,6 +34,7 @@ function isolated(t) {
     for (const child of Object.values(value)) copy(child);
   }
   copy(manifest);
+  for (const archive of Object.values(originalViteArchives)) copy({ path: archive });
   copy(JSON.parse(fs.readFileSync(path.join(root, manifest.apiManifest.path))));
   const save = () => {
     const destination = path.join(directory, NATIVE_FORMATTER_MANIFEST);
@@ -153,14 +155,20 @@ void test("public native history binds all original controls and distinct full c
   );
 });
 
+void test("edits to the shipped NAPI source and the live Vite test keep the recorded inputs", (t) => {
+  const fixture = isolated(t);
+  fs.appendFileSync(path.join(fixture.directory, fixture.manifest.napiWitness.path), "\n// edit\n");
+  fs.appendFileSync(path.join(fixture.directory, fixture.manifest.viteWitness.path), "\n// edit\n");
+  assert.deepEqual(
+    loadPublicNativeManifest(fixture.directory).cases.map(({ id }) => id),
+    loaded.cases.map(({ id }) => id),
+  );
+});
+
 void test("native source admission rejects omitted authority and coherent sibling/options substitutions", (t) => {
   for (const change of [
     ({ manifest }) => {
       delete manifest.napiWitness.functions;
-    },
-    ({ manifest, directory }) => {
-      const file = path.join(directory, manifest.napiWitness.path);
-      fs.appendFileSync(file, "\n// unregistered current owner\n");
     },
     ({ manifest, directory }) => {
       manifest.napiWitness.sourceSha256 = hash(
