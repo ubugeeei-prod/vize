@@ -116,10 +116,9 @@ fn compile_sfc_inner(
     }
     let vapor_requested = vapor_requested(descriptor, &options);
 
-    // A Vapor component renders on the server through the SSR compiler, as
-    // Vue's does: the markup keeps the anchors Vapor hydration claims and the
-    // server component carries `__vapor`.
-    let hydrates_as_vapor = options.template.ssr && vapor_requested;
+    // A Vapor component renders on the server through the SSR compiler and is
+    // marked `__vapor` (keeping Vapor's hydration anchors), as Vue's does.
+    options.template.vapor = options.template.ssr && vapor_requested;
     let is_vapor = !options.template.ssr && vapor_requested;
     // The production Vapor runtime does not expose script-setup bindings
     // through the component proxy. Every adapter must inline that template,
@@ -168,7 +167,6 @@ fn compile_sfc_inner(
                 has_scoped,
                 slotted,
                 is_vapor,
-                hydrates_as_vapor,
                 template_is_ts,
                 experimental_self_component: experimental_options.self_component,
                 capture: capture.as_deref_mut(),
@@ -237,7 +235,6 @@ fn compile_sfc_inner(
                             experimental_self_component: experimental_options.self_component,
                             bindings: options_api_bindings.as_ref(),
                             croquis: None,
-                            hydrates_as_vapor,
                         },
                         template_syntax,
                         &codegen_options,
@@ -277,7 +274,6 @@ fn compile_sfc_inner(
                             experimental_self_component: experimental_options.self_component,
                             bindings: options_api_bindings.as_ref(),
                             croquis: None,
-                            hydrates_as_vapor,
                         },
                         template_syntax,
                         &codegen_options,
@@ -316,7 +312,7 @@ fn compile_sfc_inner(
                     }
 
                     // Export the component with render attached
-                    if is_vapor || hydrates_as_vapor {
+                    if is_vapor || options.template.vapor {
                         code.push_str("_sfc_main.__vapor = true\n");
                     }
                     let render = if options.template.ssr {
@@ -345,7 +341,7 @@ fn compile_sfc_inner(
             // Without generated metadata the original script already exports
             // its component; only metadata-bearing scripts need `_sfc_main`.
             code.push_str(&final_script);
-            if is_vapor || hydrates_as_vapor {
+            if is_vapor || options.template.vapor {
                 code.push_str("\n_sfc_main.__vapor = true");
             }
             if !compiled_styles.css_modules.is_empty() {
@@ -570,7 +566,6 @@ fn compile_sfc_inner(
                         experimental_self_component: experimental_options.self_component,
                         bindings: Some(&bindings::for_vapor(&script_bindings, &setup_program)),
                         croquis: None,
-                        hydrates_as_vapor,
                     },
                     template_syntax,
                     &codegen_options,
@@ -609,7 +604,6 @@ fn compile_sfc_inner(
                         experimental_self_component: experimental_options.self_component,
                         bindings: Some(&script_bindings),
                         croquis: Some(croquis),
-                        hydrates_as_vapor,
                     },
                     template_syntax,
                     &codegen_options,
@@ -737,7 +731,7 @@ fn compile_sfc_inner(
                 preamble: &template_preamble,
                 render_body: &render_body,
                 render_is_block: is_vapor,
-                hydrates_as_vapor,
+                hydrates_as_vapor: options.template.vapor,
             },
             normal_script_content.as_deref(),
             &descriptor.css_vars,

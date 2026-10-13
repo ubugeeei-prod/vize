@@ -18,8 +18,7 @@ fn compile(source: &str) -> vize_carton::String {
             render_fn_name: "",
             preamble: "",
             render_body: "null",
-            render_is_block: false,
-            hydrates_as_vapor: false,
+            ..Default::default()
         },
         None,
         &[],

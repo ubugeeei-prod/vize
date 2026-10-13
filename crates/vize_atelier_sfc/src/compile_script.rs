@@ -45,6 +45,7 @@ pub struct ScriptCompileResult {
 }
 
 /// Template parts for inline compilation
+#[derive(Default)]
 pub struct TemplateParts<'a> {
     pub imports: &'a str,
     pub hoisted: &'a str,

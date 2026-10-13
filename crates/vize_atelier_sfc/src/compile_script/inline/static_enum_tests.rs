@@ -20,8 +20,7 @@ fn compile(source: &str, preserve_typescript: bool) -> Result<vize_carton::Strin
             render_fn_name: "",
             preamble: "",
             render_body: "null",
-            render_is_block: false,
-            hydrates_as_vapor: false,
+            ..Default::default()
         },
         None,
         &[],

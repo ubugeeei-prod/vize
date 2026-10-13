@@ -136,6 +136,10 @@ pub enum PropsDestructure {
 /// Template compile options
 #[derive(Debug, Clone, Default)]
 pub struct TemplateCompileOptions {
+    /// With `ssr`, render for a component that hydrates as Vapor, keeping the
+    /// anchors the Vapor runtime claims (`@vue/compiler-sfc`'s `vapor`).
+    pub vapor: bool,
+
     /// ID for scoped CSS
     pub id: Option<String>,
 

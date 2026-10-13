@@ -296,10 +296,10 @@ assert.match(
   /ssrRender/,
   "SSR builds should still emit server-renderer code paths when Vapor is enabled for the client",
 );
-assert.doesNotMatch(
-  ssrCompiled.code,
-  /__vapor/,
-  "SSR builds should not keep the Vapor component marker when the compiler falls back to VDOM",
+assert.equal(
+  ssrCompiled.code.match(/__vapor: true/g)?.length,
+  1,
+  "SSR builds mark a Vapor component so the client hydrates it as Vapor",
 );
 
 const batchResult = compileBatch(

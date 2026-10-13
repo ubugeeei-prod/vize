@@ -71,8 +71,6 @@ pub(crate) struct TemplateBlockCompileContext<'a> {
     pub(crate) experimental_self_component: bool,
     pub(crate) bindings: Option<&'a BindingMetadata>,
     pub(crate) croquis: Option<vize_croquis::croquis::Croquis>,
-    /// A server render whose markup a Vapor component hydrates.
-    pub(crate) hydrates_as_vapor: bool,
 }
 
 /// Compile template block
@@ -122,7 +120,6 @@ pub(crate) fn compile_template_block_with_capture(
         experimental_self_component,
         bindings,
         croquis,
-        hydrates_as_vapor,
     } = ctx;
     let compiler_options = options.compiler_options.as_ref();
     let scope_attr = if apply_scope_id {
@@ -146,7 +143,7 @@ pub(crate) fn compile_template_block_with_capture(
             inline: false,
             is_ts,
             custom_renderer: options.custom_renderer,
-            vapor: hydrates_as_vapor,
+            vapor: options.vapor,
             ssr_css_vars: options.ssr_css_vars.clone(),
             dialect: options.dialect,
             binding_metadata: bindings.cloned(),
