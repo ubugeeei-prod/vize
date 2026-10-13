@@ -9,17 +9,51 @@ use std::{
     sync::atomic::{AtomicU64, Ordering},
 };
 
-const PUBLICATION_AUTHORITIES: [&str; 4] = [
-    ".github/workflows/release.yml",
-    "tools/commands/ci/github/release-platforms.rs",
-    "tools/moon/cmd/publish_npm_package_dirs/main.mbt",
-    "tools/moon/cmd/publish_npm_package/main.mbt",
+/// Publication authorities as (current, pre-TypeScript-port) source paths.
+const PUBLICATION_AUTHORITIES: [(&str, &str); 4] = [
+    (
+        ".github/workflows/release.yml",
+        ".github/workflows/release.yml",
+    ),
+    (
+        "tools/commands/ci/github/release-platforms.rs",
+        "tools/commands/ci/github/release-platforms.rs",
+    ),
+    (
+        "tools/support/release/publish_npm_package_dirs/main.ts",
+        "tools/moon/cmd/publish_npm_package_dirs/main.mbt",
+    ),
+    (
+        "tools/support/release/publish_npm_package/main.ts",
+        "tools/moon/cmd/publish_npm_package/main.mbt",
+    ),
 ];
+const CRATE_PUBLISHER: (&str, &str) = (
+    "tools/support/release/publish_crates/main.ts",
+    "tools/moon/cmd/publish_crates/main.mbt",
+);
+
+/// Reads the current publisher source, or the MoonBit source at revisions that
+/// predate the TypeScript port.
+fn authority(
+    revision: &str,
+    files: &[String],
+    (current, legacy): (&'static str, &'static str),
+    root: &Path,
+) -> Result<(&'static str, String), String> {
+    let path = if files.iter().any(|file| file == current) {
+        current
+    } else {
+        legacy
+    };
+    Ok((path, text(revision, path, root)?))
+}
 
 pub(super) fn catalog(revision: &str, version: &str, root: &Path) -> Result<Value, String> {
     let mut npm = BTreeMap::new();
     let mut editors = BTreeMap::new();
-    for path in paths(revision, root)?.into_iter().filter(|p| {
+    let files = paths(revision, root)?;
+    for path in files.iter().cloned().filter(|p| {
         (p.starts_with("npm/") || p.starts_with("editors/")) && p.ends_with("/package.json")
     }) {
         let manifest: Value =
@@ -158,10 +192,11 @@ pub(super) fn catalog(revision: &str, version: &str, root: &Path) -> Result<Valu
         }
         let publication_authorities = PUBLICATION_AUTHORITIES
             .into_iter()
-            .map(|path| Ok((path, text(revision, path, root)?)))
+            .map(|paths| authority(revision, &files, paths, root))
             .collect::<Result<BTreeMap<_, _>, String>>()?;
+        let crate_publisher = authority(revision, &files, CRATE_PUBLISHER, root)?.1;
         Ok(
-            json!({"npm":npm,"editors":editors,"crates":crates,"cratePublisher":text(revision,"tools/moon/cmd/publish_crates/main.mbt",root)?,"nativeCatalog": native_catalog(&text(revision,"pnpm-workspace.yaml",root)?,version),"publicationAuthorities":publication_authorities}),
+            json!({"npm":npm,"editors":editors,"crates":crates,"cratePublisher":crate_publisher,"nativeCatalog": native_catalog(&text(revision,"pnpm-workspace.yaml",root)?,version),"publicationAuthorities":publication_authorities}),
         )
     })();
     // This path was allocated by this invocation; no shared checkout is touched.

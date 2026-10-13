@@ -3,19 +3,19 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 
-import { runMoonScript } from "./_helpers/moonbit.ts";
+import { runReleaseCommand } from "./support/release-command.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 import {
   controlledPublishFixture,
   maxActivePublishers,
-} from "./support/moonbit-publish-concurrency-fixture.ts";
+} from "./support/publish-npm-package-dirs-fixture.ts";
 
 test("platform publisher limits concurrency and records every result in package order", () => {
   const fixture = controlledPublishFixture();
   try {
-    const result = runMoonScript(
+    const result = runReleaseCommand(
       "publish_npm_package_dirs",
       [
         fixture.baseDir,
@@ -57,7 +57,7 @@ test("platform publisher keeps the default serial mode and supports explicit con
   for (const args of [[], ["--concurrency", "1"]]) {
     const fixture = controlledPublishFixture(3);
     try {
-      const result = runMoonScript(
+      const result = runReleaseCommand(
         "publish_npm_package_dirs",
         [fixture.baseDir, ...args, "--receipt", fixture.receiptPath],
         { env: fixture.env },
@@ -74,7 +74,7 @@ test("platform publisher keeps the default serial mode and supports explicit con
 test("a failed publisher preserves child diagnostics and waits for all launched publishers", () => {
   const fixture = controlledPublishFixture();
   try {
-    const result = runMoonScript(
+    const result = runReleaseCommand(
       "publish_npm_package_dirs",
       [fixture.baseDir, "--concurrency", "4", "--receipt", fixture.receiptPath],
       { env: { ...fixture.env, MOCK_PUBLISH_FAIL_PACKAGE: "pkg-1" } },
@@ -85,12 +85,12 @@ test("a failed publisher preserves child diagnostics and waits for all launched 
     const launched = events
       .filter((event) => event.phase === "start")
       .map((event) => event.package)
-      .toSorted((a, b) => a.localeCompare(b));
+      .sort((a, b) => a.localeCompare(b));
     assert.deepEqual(
       events
         .filter((event) => event.phase === "end")
         .map((event) => event.package)
-        .toSorted((a, b) => a.localeCompare(b)),
+        .sort((a, b) => a.localeCompare(b)),
       launched,
       "all launched publishers retain complete results and diagnostics",
     );
@@ -126,7 +126,7 @@ test("platform concurrency rejects invalid or missing values before starting a p
     const fixture = controlledPublishFixture(1);
     try {
       const args = [fixture.baseDir, "--concurrency", ...(value === undefined ? [] : [value])];
-      const result = runMoonScript("publish_npm_package_dirs", args, { env: fixture.env });
+      const result = runReleaseCommand("publish_npm_package_dirs", args, { env: fixture.env });
       assert.notEqual(result.status, 0);
       assert.match(result.stderr, /--concurrency requires an integer from 1 to 4/);
       assert.equal(
@@ -142,10 +142,10 @@ test("platform concurrency rejects invalid or missing values before starting a p
 test("publisher spawn errors become failed results without aborting the result collection", () => {
   const fixture = controlledPublishFixture(3);
   try {
-    const result = runMoonScript(
+    const result = runReleaseCommand(
       "publish_npm_package_dirs",
       [fixture.baseDir, "--concurrency", "3", "--receipt", fixture.receiptPath],
-      { env: { ...fixture.env, MOCK_CHILD_MOON_BIN: path.join(fixture.binDir, "missing-moon") } },
+      { env: { ...fixture.env, NODE_BIN: path.join(fixture.binDir, "missing-node") } },
     );
     assert.equal(result.status, 1);
     assert.match(result.stderr, /Failed to run publisher/);
@@ -160,7 +160,7 @@ test("receipt write failures occur after all launched publishers finish", () => 
   const fixture = controlledPublishFixture(3);
   try {
     const missingParent = path.join(path.dirname(fixture.receiptPath), "missing", "receipt.json");
-    const result = runMoonScript(
+    const result = runReleaseCommand(
       "publish_npm_package_dirs",
       [fixture.baseDir, "--concurrency", "3", "--receipt", missingParent],
       { env: fixture.env },
@@ -218,7 +218,7 @@ test("concurrent real package publishers retain provenance, retry, tag visibilit
     );
     const env = {
       ...fixture.env,
-      MOON_BIN: fixture.env.REAL_MOON_BIN,
+      NODE_BIN: fixture.env.REAL_NODE_BIN,
       PATH: `${fixture.binDir}${path.delimiter}${process.env.PATH ?? ""}`,
       VP_BIN: path.join(fixture.binDir, "vp"),
       MOCK_REGISTRY_DIR: stateDir,
@@ -237,7 +237,7 @@ test("concurrent real package publishers retain provenance, retry, tag visibilit
       "--delay",
       "1",
     ];
-    const first = runMoonScript("publish_npm_package_dirs", args, { env });
+    const first = runReleaseCommand("publish_npm_package_dirs", args, { env });
     assert.equal(first.status, 0, `${first.stderr}\n${first.stdout}`);
     assert.match(first.stdout, /Waiting for .*dist-tag latest/);
     assert.match(first.stderr, /temporary publish failure/);
@@ -265,7 +265,7 @@ test("concurrent real package publishers retain provenance, retry, tag visibilit
     assert.ok(
       fixture.receipt().results.every((item) => item.exit_code === 0 && item.walltime_ms >= 2000),
     );
-    const second = runMoonScript("publish_npm_package_dirs", args, { env });
+    const second = runReleaseCommand("publish_npm_package_dirs", args, { env });
     assert.equal(second.status, 0, `${second.stderr}\n${second.stdout}`);
     assert.equal(second.stdout.match(/already published/g)?.length, 3);
     for (let i = 0; i < 3; i++) {
@@ -287,7 +287,10 @@ test("release platform packages use bounded concurrency before the native wrappe
     readRepoFile(".github", "workflows", "release.yml"),
     "release-npm-native",
   );
-  assert.match(source, /publish_npm_package_dirs -- npm\/native\/npm --concurrency 4 --provenance/);
+  assert.match(
+    source,
+    /node tools\/support\/release\/publish_npm_package_dirs\/main\.ts npm\/native\/npm --concurrency 4 --provenance/,
+  );
   assert.match(source, /--receipt "\$RUNNER_TEMP\/native-platform-publish\.json"/);
   assert.match(
     source,
@@ -297,8 +300,8 @@ test("release platform packages use bounded concurrency before the native wrappe
     source,
     /name: native-platform-publish-receipt\s+path: \$\{\{ runner\.temp \}\}\/native-platform-publish\.json/,
   );
-  const platforms = source.indexOf("publish_npm_package_dirs --");
-  const wrapper = source.indexOf("publish_npm_package -- npm/native --provenance");
+  const platforms = source.indexOf("publish_npm_package_dirs/main.ts ");
+  const wrapper = source.indexOf("publish_npm_package/main.ts npm/native --provenance");
   assert.ok(platforms >= 0 && wrapper > platforms);
   assert.doesNotMatch(source, /continue-on-error|--ignore-failure/);
 });

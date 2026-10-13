@@ -87,7 +87,7 @@ test("raw authority refuses commit/blob replacements, symlinks and unsupported c
   s.git("reset", "--hard", s.head);
   s.write(
     ".github/workflows/release.yml",
-    "run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/native --unknown\n",
+    "run: node tools/support/release/publish_npm_package/main.ts npm/native --unknown\n",
   );
   s.git("add", ".");
   s.git("commit", "-qm", "unsupported publish fixture");

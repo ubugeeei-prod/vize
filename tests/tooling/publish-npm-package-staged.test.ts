@@ -5,12 +5,12 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { test } from "node:test";
 
-import { runMoonScript } from "./_helpers/moonbit.ts";
+import { runReleaseCommand } from "./support/release-command.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 import { writeFakeNpmRegistry } from "./support/fake-npm-registry.ts";
 
 test("publish_npm_package waits instead of retrying a hidden staged npm publish", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-publish-staged-"));
+  const tempDir = mkdtempSync(path.join(tmpdir(), "release-publish-staged-"));
   const packageDir = path.join(tempDir, "pkg");
   const binDir = path.join(tempDir, "bin");
   const statePath = path.join(tempDir, "vp-state.json");
@@ -66,7 +66,7 @@ test("publish_npm_package waits instead of retrying a hidden staged npm publish"
       ].join("\n"),
     );
 
-    const result = runMoonScript("publish_npm_package", [packageDir], {
+    const result = runReleaseCommand("publish_npm_package", [packageDir], {
       env: {
         PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
         VP_STATE_PATH: statePath,

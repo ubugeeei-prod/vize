@@ -25,7 +25,7 @@
 //! # Why this lives in test space (the dependency direction)
 //!
 //! `vize_atelier_core` is published; the Davinci crates are not, and
-//! the release gate (`tests/tooling/moonbit-publish-crates.test.ts`)
+//! the release gate (`tests/tooling/publish-crates-plan.test.ts`)
 //! rejects a published crate whose release graph names an unpublished
 //! one. Dev-dependencies are stripped on publish, so the L2 lane and
 //! this comparator ride dev-deps, never the compile path. The P1-7

@@ -43,7 +43,7 @@ export function sourceFixture(context: { after: (callback: () => void) => void }
   );
   write(
     ".github/workflows/release.yml",
-    "jobs:\n  publish:\n    steps:\n      - run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/native --provenance\n      - run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/mcp-musea --provenance\n      - run: moon run --target native tools/moon/cmd/publish_npm_package_dirs -- npm/native/npm --provenance\n    path: |\n      zed-vize-extension.tar.gz\n",
+    "jobs:\n  publish:\n    steps:\n      - run: node tools/support/release/publish_npm_package/main.ts npm/native --provenance\n      - run: node tools/support/release/publish_npm_package/main.ts npm/mcp-musea --provenance\n      - run: node tools/support/release/publish_npm_package_dirs/main.ts npm/native/npm --provenance\n    path: |\n      zed-vize-extension.tar.gz\n",
   );
   write(
     "npm/native/package.json",
@@ -60,8 +60,8 @@ export function sourceFixture(context: { after: (callback: () => void) => void }
     `catalogs:\n  native-binaries:\n    "@vizejs/native-darwin-arm64": "${version}"\n    "@vizejs/native-linux-x64-gnu": "${version}"\n`,
   );
   write(
-    "tools/moon/cmd/publish_crates/main.mbt",
-    'let published_crates : Array[String] = [\n  "vize_l0",\n  "vize_musea",\n]\n',
+    "tools/support/release/publish_crates/main.ts",
+    'export const publishedCrates: readonly string[] = [\n  "vize_l0",\n  "vize_musea",\n];\n',
   );
   write("editors/vscode/package.json", manifest("vize", { publisher: "ubugeeei" }));
   git("add", ".");

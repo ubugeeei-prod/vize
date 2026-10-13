@@ -54,23 +54,17 @@ test("task shell commands apply locale before sh starts", () => {
 
 test("task shell commands can forward Vite+ task arguments", () => {
   assert.equal(
-    shellCommandForwardingArguments(
-      'moon run -q --target native tools/moon/cmd/release -- "$@"',
-      [],
-    ),
-    "sh -c 'moon run -q --target native tools/moon/cmd/release -- \"$@\"' --",
+    shellCommandForwardingArguments('node tools/support/release/release/main.ts "$@"', []),
+    "sh -c 'node tools/support/release/release/main.ts \"$@\"' --",
   );
 });
 
 test("Rust task environments preserve forwarded arguments", () => {
-  const command = withRustTaskEnvironment(
-    'moon run -q --target native tools/moon/cmd/release -- "$@"',
-    {
-      forwardArguments: true,
-    },
-  );
+  const command = withRustTaskEnvironment('node tools/support/release/release/main.ts "$@"', {
+    forwardArguments: true,
+  });
 
-  assert.match(command, /sh -c .*moon run -q --target native tools\/moon\/cmd\/release -- "\$@"/);
+  assert.match(command, /sh -c .*node tools\/support\/release\/release\/main\.ts "\$@"/);
   assert.match(command, / --$/);
 });
 
@@ -118,13 +112,11 @@ test("release registry refreshes use an explicit MoonBit shim", () => {
   );
 });
 
-test("release task requests native freshness and forwards vp run arguments", () => {
+test("release task runs the TypeScript release command and forwards vp run arguments", () => {
   const command = (releaseTasks.release as { command: string }).command;
 
-  assert.match(command, /export VIZE_RELEASE_REGISTRY_REFRESH=1 && /);
-  assert.doesNotMatch(command, /moon-registry-update\.mjs/);
-  assert.match(command, /moon run -q --target native tools\/moon\/cmd\/release -- "\$@"/);
-  assert.doesNotMatch(command, /env -u MOON_HOME/);
+  assert.match(command, /node tools\/support\/release\/release\/main\.ts "\$@"/);
+  assert.doesNotMatch(command, /VIZE_RELEASE_REGISTRY_REFRESH|moon/);
   assert.match(command, / --$/);
 });
 

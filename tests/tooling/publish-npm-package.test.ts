@@ -5,12 +5,12 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { runMoonScript } from "./_helpers/moonbit.ts";
+import { runReleaseCommand } from "./support/release-command.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 import { writeFakeNpmRegistry } from "./support/fake-npm-registry.ts";
 
 test("publish_npm_package normalizes workspace and catalog dependency specs before publishing", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-publish-normalize-"));
+  const tempDir = mkdtempSync(path.join(tmpdir(), "release-publish-normalize-"));
   const repoDir = path.join(tempDir, "repo");
   const packageDir = path.join(repoDir, "npm", "builder/vite");
   const binDir = path.join(tempDir, "bin");
@@ -100,7 +100,7 @@ test("publish_npm_package normalizes workspace and catalog dependency specs befo
       ].join("\n"),
     );
 
-    const result = runMoonScript("publish_npm_package", [packageDir], {
+    const result = runReleaseCommand("publish_npm_package", [packageDir], {
       env: {
         PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
         VP_STATE_PATH: statePath,
@@ -131,7 +131,7 @@ test("publish_npm_package normalizes workspace and catalog dependency specs befo
 });
 
 test("prepare_npm_publish_manifest pins native binary catalog deps to the release version", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-prepare-native-"));
+  const tempDir = mkdtempSync(path.join(tmpdir(), "release-prepare-native-"));
   const repoDir = path.join(tempDir, "repo");
   const nativeDir = path.join(repoDir, "npm", "native");
 
@@ -166,7 +166,7 @@ test("prepare_npm_publish_manifest pins native binary catalog deps to the releas
       )}\n`,
     );
 
-    const result = runMoonScript("prepare_npm_publish_manifest", [nativeDir]);
+    const result = runReleaseCommand("prepare_npm_publish_manifest", [nativeDir]);
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
 
     const manifest = JSON.parse(fs.readFileSync(path.join(nativeDir, "package.json"), "utf8")) as {
@@ -182,7 +182,7 @@ test("prepare_npm_publish_manifest pins native binary catalog deps to the releas
 });
 
 test("publish_npm_package skips publish when the version is already visible in npm", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-publish-skip-"));
+  const tempDir = mkdtempSync(path.join(tmpdir(), "release-publish-skip-"));
   const packageDir = path.join(tempDir, "pkg");
   const binDir = path.join(tempDir, "bin");
   const argsLogPath = path.join(tempDir, "vp-args.log");
@@ -215,7 +215,7 @@ test("publish_npm_package skips publish when the version is already visible in n
       ].join("\n"),
     );
 
-    const result = runMoonScript("publish_npm_package", [packageDir, "--provenance"], {
+    const result = runReleaseCommand("publish_npm_package", [packageDir, "--provenance"], {
       env: {
         PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
         VP_ARGS_LOG: argsLogPath,
@@ -235,7 +235,7 @@ test("publish_npm_package skips publish when the version is already visible in n
 });
 
 test("publish_npm_package treats a non-zero publish exit as success when npm already has the version", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-publish-recover-"));
+  const tempDir = mkdtempSync(path.join(tmpdir(), "release-publish-recover-"));
   const packageDir = path.join(tempDir, "pkg");
   const binDir = path.join(tempDir, "bin");
   const statePath = path.join(tempDir, "vp-state.json");
@@ -281,7 +281,7 @@ test("publish_npm_package treats a non-zero publish exit as success when npm alr
       ].join("\n"),
     );
 
-    const result = runMoonScript("publish_npm_package", [packageDir], {
+    const result = runReleaseCommand("publish_npm_package", [packageDir], {
       env: {
         PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
         VP_STATE_PATH: statePath,
@@ -308,7 +308,7 @@ test("publish_npm_package treats a non-zero publish exit as success when npm alr
 });
 
 test("publish_npm_package_dirs publishes only subdirectories that contain package.json", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-publish-dirs-"));
+  const tempDir = mkdtempSync(path.join(tmpdir(), "release-publish-dirs-"));
   const baseDir = path.join(tempDir, "packages");
   const binDir = path.join(tempDir, "bin");
   const statePath = path.join(tempDir, "vp-state.json");
@@ -369,7 +369,7 @@ test("publish_npm_package_dirs publishes only subdirectories that contain packag
       ].join("\n"),
     );
 
-    const result = runMoonScript("publish_npm_package_dirs", [baseDir], {
+    const result = runReleaseCommand("publish_npm_package_dirs", [baseDir], {
       env: {
         PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
         VP_STATE_PATH: statePath,
@@ -395,7 +395,7 @@ test("publish_npm_package_dirs publishes only subdirectories that contain packag
 });
 
 test("publish_vscode_extension adds pre-release when NPM_TAG is not latest", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-publish-vsix-"));
+  const tempDir = mkdtempSync(path.join(tmpdir(), "release-publish-vsix-"));
   const binDir = path.join(tempDir, "bin");
   const argsLogPath = path.join(tempDir, "vp-args.log");
   const vsixPath = path.join(tempDir, "vize.vsix");
@@ -420,7 +420,7 @@ test("publish_vscode_extension adds pre-release when NPM_TAG is not latest", () 
       ].join("\n"),
     );
 
-    const result = runMoonScript("publish_vscode_extension", [vsixPath, packageJsonPath], {
+    const result = runReleaseCommand("publish_vscode_extension", [vsixPath, packageJsonPath], {
       env: {
         NPM_TAG: "rc",
         PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
@@ -445,7 +445,7 @@ test("publish_vscode_extension adds pre-release when NPM_TAG is not latest", () 
 });
 
 test("publish_vscode_extension skips publish when the Marketplace already has the version", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-publish-vsix-skip-"));
+  const tempDir = mkdtempSync(path.join(tmpdir(), "release-publish-vsix-skip-"));
   const binDir = path.join(tempDir, "bin");
   const argsLogPath = path.join(tempDir, "vp-args.log");
   const vsixPath = path.join(tempDir, "vize.vsix");
@@ -474,7 +474,7 @@ test("publish_vscode_extension skips publish when the Marketplace already has th
       ].join("\n"),
     );
 
-    const result = runMoonScript("publish_vscode_extension", [vsixPath, packageJsonPath], {
+    const result = runReleaseCommand("publish_vscode_extension", [vsixPath, packageJsonPath], {
       env: {
         PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
         VP_ARGS_LOG: argsLogPath,
@@ -494,7 +494,7 @@ test("publish_vscode_extension skips publish when the Marketplace already has th
 });
 
 test("publish_vscode_extension waits for delayed Marketplace visibility after publish failure", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-publish-vsix-delayed-"));
+  const tempDir = mkdtempSync(path.join(tmpdir(), "release-publish-vsix-delayed-"));
   const binDir = path.join(tempDir, "bin");
   const statePath = path.join(tempDir, "vp-state.json");
   const vsixPath = path.join(tempDir, "vize.vsix");
@@ -534,7 +534,7 @@ test("publish_vscode_extension waits for delayed Marketplace visibility after pu
       ].join("\n"),
     );
 
-    const result = runMoonScript("publish_vscode_extension", [vsixPath, packageJsonPath], {
+    const result = runReleaseCommand("publish_vscode_extension", [vsixPath, packageJsonPath], {
       env: {
         PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
         VP_STATE_PATH: statePath,

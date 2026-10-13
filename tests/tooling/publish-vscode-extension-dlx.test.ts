@@ -5,11 +5,11 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { runMoonScript } from "./_helpers/moonbit.ts";
+import { runReleaseCommand } from "./support/release-command.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 
 test("publish_vscode_extension allows corepack pnpm dlx builds for vsce signing dependencies", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-publish-vsix-corepack-"));
+  const tempDir = mkdtempSync(path.join(tmpdir(), "release-publish-vsix-corepack-"));
   const binDir = path.join(tempDir, "bin");
   const argsLogPath = path.join(tempDir, "corepack-args.log");
   const vsixPath = path.join(tempDir, "vize.vsix");
@@ -40,7 +40,7 @@ test("publish_vscode_extension allows corepack pnpm dlx builds for vsce signing 
       ].join("\n"),
     );
 
-    const result = runMoonScript("publish_vscode_extension", [vsixPath, packageJsonPath], {
+    const result = runReleaseCommand("publish_vscode_extension", [vsixPath, packageJsonPath], {
       env: {
         NPM_TAG: "rc",
         PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
@@ -72,7 +72,7 @@ test("publish_vscode_extension allows corepack pnpm dlx builds for vsce signing 
 });
 
 test("publish_vscode_extension can publish with npx without pnpm hydration", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-publish-vsix-npx-"));
+  const tempDir = mkdtempSync(path.join(tmpdir(), "release-publish-vsix-npx-"));
   const binDir = path.join(tempDir, "bin");
   const argsLogPath = path.join(tempDir, "npx-args.log");
   const vsixPath = path.join(tempDir, "vize.vsix");
@@ -103,7 +103,7 @@ test("publish_vscode_extension can publish with npx without pnpm hydration", () 
       ].join("\n"),
     );
 
-    const result = runMoonScript("publish_vscode_extension", [vsixPath, packageJsonPath], {
+    const result = runReleaseCommand("publish_vscode_extension", [vsixPath, packageJsonPath], {
       env: {
         NPM_TAG: "rc",
         PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,

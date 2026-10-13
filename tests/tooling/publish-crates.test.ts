@@ -4,13 +4,13 @@ import path from "node:path";
 import { tmpdir } from "node:os";
 import { test } from "node:test";
 
-import { repoRoot, runMoonScript } from "./_helpers/moonbit.ts";
+import { repoRoot, runReleaseCommand } from "./support/release-command.ts";
 import { assertPublishManifestIsSanitized } from "./support/fake-cargo-publish.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 import { getMetadata, getPublishedCrates } from "./support/publish-crates-plan.ts";
 
 test("publish_crates native script covers publish and idempotent dry-run modes", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-publish-crates-"));
+  const tempDir = mkdtempSync(path.join(tmpdir(), "release-publish-crates-"));
   const binDir = path.join(tempDir, "bin");
   const cargoLogPath = path.join(tempDir, "cargo.log");
   const curlLogPath = path.join(tempDir, "curl.log");
@@ -69,7 +69,7 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
       ].join("\n"),
     );
 
-    const result = runMoonScript("publish_crates", [], {
+    const result = runReleaseCommand("publish_crates", [], {
       cwd: repoRoot,
       env: {
         PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
@@ -92,7 +92,7 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
     const runDryRun = (alreadyPublished: string[], extraEnv: Record<string, string> = {}) => {
       fs.writeFileSync(cargoLogPath, "");
       fs.writeFileSync(curlLogPath, "");
-      return runMoonScript("publish_crates", ["--dry-run"], {
+      return runReleaseCommand("publish_crates", ["--dry-run"], {
         cwd: repoRoot,
         env: {
           PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
@@ -235,7 +235,7 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
     for (const invalidArgs of [["--unknown"], ["--dry-run", "extra"]]) {
       fs.writeFileSync(cargoLogPath, "");
       fs.writeFileSync(curlLogPath, "");
-      const invalid = runMoonScript("publish_crates", invalidArgs, {
+      const invalid = runReleaseCommand("publish_crates", invalidArgs, {
         cwd: repoRoot,
         env: {
           PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
@@ -258,7 +258,7 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
 });
 
 test("publish_crates treats a non-zero cargo publish exit as success when the crate is already resolvable", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-publish-crates-resolvable-"));
+  const tempDir = mkdtempSync(path.join(tmpdir(), "release-publish-crates-resolvable-"));
   const binDir = path.join(tempDir, "bin");
   const cargoLogPath = path.join(tempDir, "cargo.log");
 
@@ -287,7 +287,7 @@ test("publish_crates treats a non-zero cargo publish exit as success when the cr
       ].join("\n"),
     );
 
-    const result = runMoonScript("publish_crates", [], {
+    const result = runReleaseCommand("publish_crates", [], {
       cwd: repoRoot,
       env: {
         PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,

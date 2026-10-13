@@ -5,7 +5,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { test } from "node:test";
 
-import { runMoonScript } from "./_helpers/moonbit.ts";
+import { runReleaseCommand } from "./support/release-command.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 
 const scenarios = [
@@ -66,7 +66,7 @@ for (const scenario of scenarios) {
           ].join("\n"),
         );
 
-        const result = runMoonScript(scenario.script, [vsixPath, manifestPath], {
+        const result = runReleaseCommand(scenario.script, [vsixPath, manifestPath], {
           env: {
             PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
             CALLS_PATH: callsPath,

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import path from "node:path";
 import { test } from "node:test";
 
-import { repoRoot } from "./_helpers/moonbit.ts";
+import { repoRoot } from "./support/release-command.ts";
 import {
   getBlockedByManualPublishCrates,
   getManualPublishCrates,
@@ -53,7 +53,7 @@ test("publish_crates exactly partitions every publishable workspace crate", () =
     .map((pkg) => pkg.name);
 
   assert.equal(new Set(releaseCrates).size, releaseCrates.length, "release crate lists overlap");
-  assert.deepEqual(releaseCrates.toSorted(), publishableCrates.toSorted());
+  assert.deepEqual(releaseCrates.sort(), publishableCrates.sort());
 });
 
 test("the release plan no longer defers existing publishable crates", () => {

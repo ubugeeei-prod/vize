@@ -238,7 +238,6 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: "package.json", run-install: false }
-      - uses: ./.github/actions/setup-moonbit
       - name: Download editor extension artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: editor-extensions, path: editor-extension-artifacts }
@@ -249,7 +248,7 @@ jobs:
             exit 1
           fi
       - name: Publish VS Code extension
-        run: moon run --target native tools/moon/cmd/publish_vscode_extension -- editor-extension-artifacts/editors/vscode/dist/vize.vsix
+        run: node tools/support/release/publish_vscode_extension/main.ts editor-extension-artifacts/editors/vscode/dist/vize.vsix
   build-release-packages:
     if: inputs.release_pr != ''
     needs: candidate
@@ -541,7 +540,6 @@ jobs:
         uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
       - uses: ./.github/actions/setup-rust-script
-      - uses: ./.github/actions/setup-moonbit
       - name: Install dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...'
       - name: Download all artifacts
@@ -567,9 +565,9 @@ jobs:
       - name: Smoke install native package tarballs
         run: rust-script --force tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks npm/native npm/native/npm/*
       - name: Publish platform packages
-        run: moon run --target native tools/moon/cmd/publish_npm_package_dirs -- npm/native/npm --concurrency 4 --provenance --receipt "$RUNNER_TEMP/native-platform-publish.json"
+        run: node tools/support/release/publish_npm_package_dirs/main.ts npm/native/npm --concurrency 4 --provenance --receipt "$RUNNER_TEMP/native-platform-publish.json"
       - name: Publish
-        run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/native --provenance
+        run: node tools/support/release/publish_npm_package/main.ts npm/native --provenance
       - name: Upload native platform publish receipt
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -607,7 +605,7 @@ jobs:
       - name: Smoke install Fresco native package tarball
         run: rust-script tools/commands/release/npm/smoke-release-install.rs --prepare-manifests npm/fresco-native
       - name: Publish
-        run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/fresco-native --provenance
+        run: node tools/support/release/publish_npm_package/main.ts npm/fresco-native --provenance
 
   # Publish WASM package (using Trusted Publishing / OIDC)
   release-npm-wasm:
@@ -619,7 +617,6 @@ jobs:
     permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: ./.github/actions/setup-moonbit
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: "package.json", run-install: true }
@@ -635,7 +632,7 @@ jobs:
       - name: Smoke install WASM package tarball
         run: rust-script tools/commands/release/npm/smoke-release-install.rs npm/wasm
       - name: Publish @vizejs/wasm
-        run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/wasm --provenance
+        run: node tools/support/release/publish_npm_package/main.ts npm/wasm --provenance
   release-npm-vite-plugin:
     name: Release @vizejs/vite-plugin to npm
     runs-on: ubuntu-24.04
@@ -659,12 +656,11 @@ jobs:
         uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
       - uses: ./.github/actions/setup-rust-script
-      - uses: ./.github/actions/setup-moonbit
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-vite-plugin-vize, path: npm/builder/vite }
       - name: Publish @vizejs/vite-plugin
-        run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/builder/vite --provenance
+        run: node tools/support/release/publish_npm_package/main.ts npm/builder/vite --provenance
   release-npm-oxlint-plugin:
     name: Release oxlint-plugin-vize to npm
     runs-on: ubuntu-24.04
@@ -688,7 +684,6 @@ jobs:
         uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
       - uses: ./.github/actions/setup-rust-script
-      - uses: ./.github/actions/setup-moonbit
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-oxlint-plugin-vize, path: npm/oxlint }
@@ -699,7 +694,7 @@ jobs:
           RELEASE_REF_NAME: ${{ inputs.tag_name }}
         run: rust-script tools/commands/ci/github/release-platforms.rs apply-cadence "$RELEASE_REF_NAME" npm/oxlint/package.json
       - name: Publish oxlint-plugin-vize
-        run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/oxlint --provenance
+        run: node tools/support/release/publish_npm_package/main.ts npm/oxlint --provenance
 
   release-npm-marquette:
     name: Release @vizejs/marquette to npm
@@ -713,12 +708,11 @@ jobs:
         with: { persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: "package.json", run-install: false }
-      - uses: ./.github/actions/setup-moonbit
       - name: Download prebuilt package
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-marquette, path: npm/marquette }
       - name: Publish @vizejs/marquette
-        run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/marquette --provenance
+        run: node tools/support/release/publish_npm_package/main.ts npm/marquette --provenance
 
   release-npm-composable:
     name: Release @vizejs/composable to npm
@@ -732,12 +726,11 @@ jobs:
         with: { persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: "package.json", run-install: false }
-      - uses: ./.github/actions/setup-moonbit
       - name: Download prebuilt package
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-composable, path: npm/compose/core }
       - name: Publish @vizejs/composable
-        run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/compose/core --provenance
+        run: node tools/support/release/publish_npm_package/main.ts npm/compose/core --provenance
 
   release-npm-ui:
     name: Release @vizejs/ui to npm
@@ -751,12 +744,11 @@ jobs:
         with: { persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: "package.json", run-install: false }
-      - uses: ./.github/actions/setup-moonbit
       - name: Download prebuilt package
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-ui, path: npm/ui }
       - name: Publish @vizejs/ui
-        run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/ui --provenance
+        run: node tools/support/release/publish_npm_package/main.ts npm/ui --provenance
 
   release-npm-plugin-sdk:
     name: Release @vizejs/plugin-sdk to npm
@@ -770,12 +762,11 @@ jobs:
         with: { persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: "package.json", run-install: false }
-      - uses: ./.github/actions/setup-moonbit
       - name: Download prebuilt package
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-plugin-sdk, path: npm/plugin-sdk }
       - name: Publish @vizejs/plugin-sdk
-        run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/plugin-sdk --provenance
+        run: node tools/support/release/publish_npm_package/main.ts npm/plugin-sdk --provenance
 
   release-npm-unplugin:
     name: Release @vizejs/unplugin to npm
@@ -789,12 +780,11 @@ jobs:
         with: { persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: "package.json", run-install: false }
-      - uses: ./.github/actions/setup-moonbit
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-unplugin-vize, path: npm/builder/unplugin }
       - name: Publish @vizejs/unplugin
-        run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/builder/unplugin --provenance
+        run: node tools/support/release/publish_npm_package/main.ts npm/builder/unplugin --provenance
 
   release-npm-fresco:
     name: Release @vizejs/fresco to npm
@@ -809,12 +799,11 @@ jobs:
         with: { persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: "package.json", run-install: false }
-      - uses: ./.github/actions/setup-moonbit
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-fresco, path: npm/fresco }
       - name: Publish @vizejs/fresco
-        run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/fresco --provenance
+        run: node tools/support/release/publish_npm_package/main.ts npm/fresco --provenance
 
   release-npm-musea-mcp-server:
     name: Release @vizejs/musea-mcp-server to npm
@@ -828,12 +817,11 @@ jobs:
         with: { persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: "package.json", run-install: false }
-      - uses: ./.github/actions/setup-moonbit
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-musea-mcp-server, path: npm/mcp-musea }
       - name: Publish @vizejs/musea-mcp-server
-        run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/mcp-musea --provenance
+        run: node tools/support/release/publish_npm_package/main.ts npm/mcp-musea --provenance
 
   release-npm-vite-plugin-musea:
     name: Release @vizejs/vite-plugin-musea to npm
@@ -847,12 +835,11 @@ jobs:
         with: { persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: "package.json", run-install: false }
-      - uses: ./.github/actions/setup-moonbit
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-vite-plugin-musea, path: npm/builder/vite-musea }
       - name: Publish @vizejs/vite-plugin-musea
-        run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/builder/vite-musea --provenance
+        run: node tools/support/release/publish_npm_package/main.ts npm/builder/vite-musea --provenance
 
   release-npm-rspack-plugin:
     name: Release @vizejs/rspack-plugin to npm
@@ -866,12 +853,11 @@ jobs:
         with: { persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: "package.json", run-install: false }
-      - uses: ./.github/actions/setup-moonbit
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-rspack-vize-plugin, path: npm/builder/rspack }
       - name: Publish @vizejs/rspack-plugin
-        run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/builder/rspack --provenance
+        run: node tools/support/release/publish_npm_package/main.ts npm/builder/rspack --provenance
 
   release-npm-musea-nuxt:
     name: Release @vizejs/musea-nuxt to npm
@@ -885,12 +871,11 @@ jobs:
         with: { persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: "package.json", run-install: false }
-      - uses: ./.github/actions/setup-moonbit
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-musea-nuxt, path: npm/framework/musea-nuxt }
       - name: Publish @vizejs/musea-nuxt
-        run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/framework/musea-nuxt --provenance
+        run: node tools/support/release/publish_npm_package/main.ts npm/framework/musea-nuxt --provenance
 
   # Build and publish @vizejs/nuxt-lint-config (using Trusted Publishing / OIDC)
   release-npm-nuxt-lint-config:
@@ -905,12 +890,11 @@ jobs:
         with: { persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: "package.json", run-install: false }
-      - uses: ./.github/actions/setup-moonbit
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-nuxt-lint-config, path: npm/framework/nuxt-lint-config }
       - name: Publish @vizejs/nuxt-lint-config
-        run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/framework/nuxt-lint-config --provenance
+        run: node tools/support/release/publish_npm_package/main.ts npm/framework/nuxt-lint-config --provenance
 
   # Build and publish @vizejs/nuxt (using Trusted Publishing / OIDC)
   release-npm-nuxt:
@@ -936,12 +920,11 @@ jobs:
         with: { persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: "package.json", run-install: false }
-      - uses: ./.github/actions/setup-moonbit
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-nuxt, path: npm/framework/nuxt }
       - name: Publish @vizejs/nuxt
-        run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/framework/nuxt --provenance
+        run: node tools/support/release/publish_npm_package/main.ts npm/framework/nuxt --provenance
 
   # Publish crates to crates.io (using Trusted Publishing)
   release-crates:
@@ -953,7 +936,8 @@ jobs:
     permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: ./.github/actions/setup-moonbit
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: "package.json", cache: false, run-install: false }
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
@@ -969,7 +953,7 @@ jobs:
       - name: Publish to crates.io
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.crates-io-auth.outputs.token }}
-        run: moon run --target native tools/moon/cmd/publish_crates --
+        run: node tools/support/release/publish_crates/main.ts
 
   release-crates-handoff:
     if: inputs.release_pr == ''
@@ -989,7 +973,11 @@ jobs:
           printf 'tag_name=%s\n' "$resolved_tag" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ steps.release.outputs.tag_name }}", persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: "package.json", cache: false, run-install: false }
+      # Tags published before the TypeScript port keep their MoonBit publisher.
       - uses: ./.github/actions/setup-moonbit
+        if: ${{ hashFiles('tools/support/release/publish_crates/main.ts') == '' }}
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
@@ -1006,7 +994,12 @@ jobs:
       - name: Publish JSX and Patina handoff crates
         if: ${{ inputs.crate_set == 'jsx-patina' }}
         env: { CARGO_REGISTRY_TOKEN: "${{ steps.crates-io-auth.outputs.token }}" }
-        run: moon run --target native tools/moon/cmd/publish_crates -- --crate vize_atelier_jsx --crate vize_patina
+        run: |
+          if [ -f tools/support/release/publish_crates/main.ts ]; then
+            node tools/support/release/publish_crates/main.ts --crate vize_atelier_jsx --crate vize_patina
+          else
+            moon run --target native tools/moon/cmd/publish_crates -- --crate vize_atelier_jsx --crate vize_patina
+          fi
 
   # Publish the JSR facade once the npm packages it re-exports are public.
   # Skipped inside the called workflow while jsr/vize/channel.json is off.
@@ -1166,11 +1159,10 @@ jobs:
         uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
       - uses: ./.github/actions/setup-rust-script
-      - uses: ./.github/actions/setup-moonbit
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-vize, path: npm/cli }
       - name: Inject native binding package versions
         run: rust-script tools/commands/release/npm/inject-native-optional-deps.rs npm/cli/package.json --print
       - name: Publish vize CLI package
-        run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/cli --provenance
+        run: node tools/support/release/publish_npm_package/main.ts npm/cli --provenance

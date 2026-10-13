@@ -5,12 +5,12 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { runMoonScript } from "./_helpers/moonbit.ts";
+import { runReleaseCommand } from "./support/release-command.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 import { writeFakeNpmRegistry } from "./support/fake-npm-registry.ts";
 
 test("publish_npm_package computes the tag and forwards provenance to vp", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-publish-npm-"));
+  const tempDir = mkdtempSync(path.join(tmpdir(), "release-publish-npm-"));
   const packageDir = path.join(tempDir, "pkg");
   const binDir = path.join(tempDir, "bin");
   const argsLogPath = path.join(tempDir, "vp-args.log");
@@ -60,7 +60,7 @@ test("publish_npm_package computes the tag and forwards provenance to vp", () =>
       ].join("\n"),
     );
 
-    const result = runMoonScript("publish_npm_package", [packageDir, "--provenance"], {
+    const result = runReleaseCommand("publish_npm_package", [packageDir, "--provenance"], {
       env: {
         PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
         VP_ARGS_LOG: argsLogPath,

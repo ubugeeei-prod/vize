@@ -5,7 +5,7 @@ import path from "node:path";
 import { tmpdir } from "node:os";
 import { test } from "node:test";
 
-import { repoRoot, runMoonScript } from "./_helpers/moonbit.ts";
+import { repoRoot, runReleaseCommand } from "./support/release-command.ts";
 import { assertPublishManifestIsSanitized } from "./support/fake-cargo-publish.ts";
 import { getMetadata } from "./support/publish-crates-plan.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
@@ -21,7 +21,7 @@ function workspaceVersion(): string {
 }
 
 test("publish_crates can target the JSX and Patina handoff set", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-publish-crates-selected-"));
+  const tempDir = mkdtempSync(path.join(tmpdir(), "release-publish-crates-selected-"));
   const binDir = path.join(tempDir, "bin");
   const cargoLogPath = path.join(tempDir, "cargo.log");
   const curlLogPath = path.join(tempDir, "curl.log");
@@ -75,7 +75,7 @@ test("publish_crates can target the JSX and Patina handoff set", () => {
       PUBLISH_RETRY_LIMIT: "1",
       PUBLISH_RETRY_DELAY: "1",
     };
-    const selectedPublish = runMoonScript(
+    const selectedPublish = runReleaseCommand(
       "publish_crates",
       ["--crate", "vize_atelier_jsx", "--crate", "vize_patina"],
       { cwd: repoRoot, env },
@@ -94,7 +94,7 @@ test("publish_crates can target the JSX and Patina handoff set", () => {
 
     fs.writeFileSync(cargoLogPath, "");
     fs.writeFileSync(curlLogPath, "");
-    const selectedDryRun = runMoonScript(
+    const selectedDryRun = runReleaseCommand(
       "publish_crates",
       ["--dry-run", "--crate", "vize_atelier_jsx", "--crate", "vize_patina"],
       {
@@ -122,7 +122,7 @@ test("publish_crates can target the JSX and Patina handoff set", () => {
       ["--crate", "vize_patina", "--crate", "vize_patina"],
     ]) {
       fs.writeFileSync(cargoLogPath, "");
-      const invalid = runMoonScript("publish_crates", invalidArgs, {
+      const invalid = runReleaseCommand("publish_crates", invalidArgs, {
         cwd: repoRoot,
         env,
       });

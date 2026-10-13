@@ -82,7 +82,7 @@ test("reusable release preflight verifies evidence and crate plans without regis
   assert.equal(wildLinker.with?.["wild-version"], "0.9.0");
   assert.ok(
     crateValidation.steps?.some(
-      (step) => step.run === "moon run --target native tools/moon/cmd/publish_crates -- --dry-run",
+      (step) => step.run === "node tools/support/release/publish_crates/main.ts --dry-run",
     ),
   );
   const stickyCache = crateValidation.steps?.find(

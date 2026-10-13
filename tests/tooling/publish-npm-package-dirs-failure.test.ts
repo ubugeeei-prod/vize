@@ -1,10 +1,14 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 
-import { runMoonScript } from "./_helpers/moonbit.ts";
-import { maxActivePublishers } from "./support/moonbit-publish-concurrency-fixture.ts";
-import { failedPublishFixture } from "./support/moonbit-publish-failure-fixture.ts";
+import {
+  controlledPublishFixture,
+  maxActivePublishers,
+} from "./support/publish-npm-package-dirs-fixture.ts";
+import { failedPublishFixture } from "./support/publish-npm-package-dirs-failure-fixture.ts";
+import { runReleaseCommand } from "./support/release-command.ts";
 
 // Expected launch/skip sets come from the authored barrier and original sorted
 // eight packages, independently of the implementation's receipt or output.
@@ -16,11 +20,13 @@ for (const [label, workers, args] of [
   void test(`failed platform publisher stops queued launches in ${label}`, () => {
     const fixture = failedPublishFixture(workers);
     try {
-      const result = runMoonScript(
-        "publish_npm_package_dirs",
-        [fixture.baseDir, ...args, "--receipt", fixture.receiptPath, "--provenance"],
-        { env: fixture.env },
-      );
+      const result = fixture.runParent([
+        fixture.baseDir,
+        ...args,
+        "--receipt",
+        fixture.receiptPath,
+        "--provenance",
+      ]);
       assert.equal(result.status, 7, `${result.stderr}\n${result.stdout}`);
       assert.equal(fixture.failureObserved(), true, "the actual parent must observe the failure");
       const events = fixture.events();
@@ -30,14 +36,14 @@ for (const [label, workers, args] of [
         events
           .filter((event) => event.phase === "start")
           .map((event) => event.package)
-          .toSorted((a, b) => a.localeCompare(b)),
+          .sort((a, b) => a.localeCompare(b)),
         launched,
       );
       assert.deepEqual(
         events
           .filter((event) => event.phase === "end")
           .map((event) => event.package)
-          .toSorted((a, b) => a.localeCompare(b)),
+          .sort((a, b) => a.localeCompare(b)),
         launched,
         "every active child must be reaped before the failed aggregate exits",
       );
@@ -82,3 +88,29 @@ for (const [label, workers, args] of [
     }
   });
 }
+
+void test("the publish receipt keeps the original compact field order and escapes", () => {
+  const fixture = controlledPublishFixture(2);
+  try {
+    const result = runReleaseCommand(
+      "publish_npm_package_dirs",
+      [fixture.baseDir, "--receipt", fixture.receiptPath],
+      { env: fixture.env },
+    );
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`);
+    const dirs = ["pkg-0", "pkg-1"].map((name) => JSON.stringify(path.join(fixture.baseDir, name)));
+    const raw = fs
+      .readFileSync(fixture.receiptPath, "utf8")
+      .replace(/"walltime_ms":\d+/g, '"walltime_ms":0');
+    assert.equal(
+      raw,
+      `{"schema_version":1,"concurrency":1,"package_count":2,"walltime_ms":0,"exit_code":0,` +
+        `"results":[{"package_dir":${dirs[0]},"exit_code":0,"walltime_ms":0},{"package_dir":${dirs[1]},"exit_code":0,"walltime_ms":0}],` +
+        `"skipped":[],"diagnostics":[` +
+        `{"package_dir":${dirs[0]},"stdout":"publisher stdout pkg-0\\n","stderr":"publisher stderr pkg-0\\n"},` +
+        `{"package_dir":${dirs[1]},"stdout":"publisher stdout pkg-1\\n","stderr":"publisher stderr pkg-1\\n"}]}\n`,
+    );
+  } finally {
+    fixture.cleanup();
+  }
+});

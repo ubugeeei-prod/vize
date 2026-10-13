@@ -5,7 +5,7 @@ import path from "node:path";
 import { tmpdir } from "node:os";
 import { test } from "node:test";
 
-import { repoRoot, runMoonScript } from "./_helpers/moonbit.ts";
+import { repoRoot, runReleaseCommand } from "./support/release-command.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 
 const fixturePath = path.join(
@@ -67,7 +67,7 @@ const cases: Case[] = [
 
 for (const row of cases) {
   test(`publish_npm_package: ${row.name}`, () => {
-    const directory = fs.mkdtempSync(path.join(tmpdir(), "moonbit-staged-wrap-"));
+    const directory = fs.mkdtempSync(path.join(tmpdir(), "release-staged-wrap-"));
     const packageDir = path.join(directory, "pkg");
     const binDir = path.join(directory, "bin");
     const statePath = path.join(directory, "state.json");
@@ -118,7 +118,7 @@ for (const row of cases) {
           "process.stdout.write(JSON.stringify(body) + 'VIZE_HTTP_STATUS:200');",
         ].join("\n"),
       );
-      const result = runMoonScript("publish_npm_package", [packageDir, "--provenance"], {
+      const result = runReleaseCommand("publish_npm_package", [packageDir, "--provenance"], {
         env: {
           PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
           VP_BIN: path.join(binDir, "vp"),

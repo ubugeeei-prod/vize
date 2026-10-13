@@ -70,6 +70,20 @@ function sourceBlob(root: string, head: string, path: string) {
   return { oid, bytes: rawGit(root, "cat-file", "blob", oid) };
 }
 
+function hasSourceBlob(root: string, head: string, path: string) {
+  return rawGit(root, "ls-tree", "-z", head, "--", path).length > 0;
+}
+
+// Release workflow commands, either as the TypeScript publishers or as the
+// MoonBit packages that sources from before the TypeScript port invoked.
+const PUBLISH_NPM_PACKAGE_COMMAND = String.raw`(?:node tools\/support\/release\/publish_npm_package\/main\.ts|moon run --target native tools\/moon\/cmd\/publish_npm_package --)`;
+const PUBLISH_NPM_PACKAGE_DIRS_COMMAND = String.raw`(?:node tools\/support\/release\/publish_npm_package_dirs\/main\.ts|moon run --target native tools\/moon\/cmd\/publish_npm_package_dirs --)`;
+const PUBLISH_NPM_PACKAGE =
+  /tools\/support\/release\/publish_npm_package\/main\.ts\s|tools\/moon\/cmd\/publish_npm_package\s/;
+const PUBLISH_NPM_PACKAGE_DIRS =
+  /tools\/support\/release\/publish_npm_package_dirs\/main\.ts\s|tools\/moon\/cmd\/publish_npm_package_dirs\s/;
+const CRATE_PUBLISHER = "tools/support/release/publish_crates/main.ts";
+
 /** Copy exact H source bytes without following working-tree symlinks or replacements. */
 export function readRawBlob(root: string, head: string, path: string): Buffer {
   requireHead(root, head);
@@ -108,16 +122,12 @@ export function derivePublicationPlan(root: string, head: string): PublicationPl
   const workflow = read(".github/workflows/release.yml");
   const commands = workflow
     .split("\n")
-    .filter(
-      (line) =>
-        !line.trimStart().startsWith("#") && /tools\/moon\/cmd\/publish_npm_package\s/.test(line),
-    );
+    .filter((line) => !line.trimStart().startsWith("#") && PUBLISH_NPM_PACKAGE.test(line));
   const paths = unique(
     commands.map((line) => {
-      const match =
-        /^\s*(?:-\s+)?run: moon run --target native tools\/moon\/cmd\/publish_npm_package -- (npm\/[a-zA-Z0-9_/-]+) --provenance\s*$/.exec(
-          line,
-        );
+      const match = new RegExp(
+        `^\\s*(?:-\\s+)?run: ${PUBLISH_NPM_PACKAGE_COMMAND} (npm\\/[a-zA-Z0-9_/-]+) --provenance\\s*$`,
+      ).exec(line);
       requireValue(match, "unsupported npm publish command in H release workflow");
       return match[1];
     }),
@@ -163,16 +173,12 @@ export function derivePublicationPlan(root: string, head: string): PublicationPl
   );
   const nativeCommands = workflow
     .split("\n")
-    .filter(
-      (line) =>
-        !line.trimStart().startsWith("#") &&
-        /tools\/moon\/cmd\/publish_npm_package_dirs\s/.test(line),
-    );
+    .filter((line) => !line.trimStart().startsWith("#") && PUBLISH_NPM_PACKAGE_DIRS.test(line));
   requireValue(nativeCommands.length === 1, "one native target publication required");
   requireValue(
-    /^\s*(?:-\s+)?run: moon run --target native tools\/moon\/cmd\/publish_npm_package_dirs -- npm\/native\/npm (?:--provenance|--concurrency 4 --provenance --receipt "\$RUNNER_TEMP\/native-platform-publish\.json")\s*$/.test(
-      nativeCommands[0],
-    ),
+    new RegExp(
+      `^\\s*(?:-\\s+)?run: ${PUBLISH_NPM_PACKAGE_DIRS_COMMAND} npm\\/native\\/npm (?:--provenance|--concurrency 4 --provenance --receipt "\\$RUNNER_TEMP\\/native-platform-publish\\.json")\\s*$`,
+    ).test(nativeCommands[0]),
     "unsupported native target publication command in H release workflow",
   );
   npm.push(...nativeNames.map((name) => ({ name, version })));
@@ -181,9 +187,15 @@ export function derivePublicationPlan(root: string, head: string): PublicationPl
     "npm names",
   );
 
-  const publisher = read("tools/moon/cmd/publish_crates/main.mbt");
+  // Sources from before the TypeScript port keep their MoonBit crate publisher.
+  const ported = hasSourceBlob(root, head, CRATE_PUBLISHER);
+  const publisher = read(ported ? CRATE_PUBLISHER : "tools/moon/cmd/publish_crates/main.mbt");
   const lists = [
-    ...publisher.matchAll(/^let published_crates : Array\[String\] = \[\n([\s\S]*?)^\]/gm),
+    ...publisher.matchAll(
+      ported
+        ? /^export const publishedCrates: readonly string\[\] = \[\n([\s\S]*?)^\];/gm
+        : /^let published_crates : Array\[String\] = \[\n([\s\S]*?)^\]/gm,
+    ),
   ];
   requireValue(lists.length === 1, "one published_crates source array required");
   const crateNames = unique(

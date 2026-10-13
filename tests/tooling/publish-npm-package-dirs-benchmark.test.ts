@@ -4,20 +4,20 @@ import path from "node:path";
 import { performance } from "node:perf_hooks";
 import { test } from "node:test";
 
-import { runMoonScript } from "./_helpers/moonbit.ts";
+import { runReleaseCommand } from "./support/release-command.ts";
 import {
   controlledPublishFixture,
   maxActivePublishers,
-} from "./support/moonbit-publish-concurrency-fixture.ts";
+} from "./support/publish-npm-package-dirs-fixture.ts";
 
 const receiptPath = process.env.VIZE_PUBLISH_BENCHMARK_RECEIPT;
 
-// Credential-free controlled measurement of the actual native MoonBit
+// Credential-free controlled measurement of the actual platform publisher
 // scheduler. This never invokes npm or the real single-package publisher.
 // Example:
 // VIZE_PUBLISH_BENCHMARK_RECEIPT=/tmp/native-publish.json node --test \
 //   --test-name-pattern='controlled platform publish benchmark' \
-//   tests/tooling/moonbit-publish-concurrency-benchmark.test.ts
+//   tests/tooling/publish-npm-package-dirs-benchmark.test.ts
 test("controlled platform publish benchmark", { skip: !receiptPath }, () => {
   const fixture = controlledPublishFixture();
   const samples: Array<{
@@ -28,12 +28,6 @@ test("controlled platform publish benchmark", { skip: !receiptPath }, () => {
     publish_receipt: ReturnType<typeof fixture.receipt>;
   }> = [];
   try {
-    // Compilation and dependency downloads are outside the measured workload.
-    const warmup = runMoonScript("publish_npm_package_dirs", [], {
-      buildOnly: true,
-      env: fixture.env,
-    });
-    assert.equal(warmup.status, 0, `${warmup.stderr}\n${warmup.stdout}`);
     for (let repetition = 1; repetition <= 3; repetition++) {
       // Alternate the order to reduce systematic warm-cache or load bias.
       for (const concurrency of repetition % 2 === 1 ? [1, 4] : [4, 1]) {
@@ -43,7 +37,7 @@ test("controlled platform publish benchmark", { skip: !receiptPath }, () => {
           ? fixture.events().length
           : 0;
         const started = performance.now();
-        const result = runMoonScript(
+        const result = runReleaseCommand(
           "publish_npm_package_dirs",
           [
             fixture.baseDir,

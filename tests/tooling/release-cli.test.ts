@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { repoRoot, runMoonScript } from "./_helpers/moonbit.ts";
+import { repoRoot, runReleaseCommand } from "./support/release-command.ts";
 import { runRepositoryGuardFixture } from "./support/release-guard-fixture.ts";
 
 function writeTempFile(contents: string): string {
@@ -21,7 +21,7 @@ const currentVersion = cargoToml.match(/^version = "(.+)"$/m)?.[1];
 assert.ok(currentVersion, "Failed to read current version from Cargo.toml");
 
 test("release script fails clearly when stdin is not interactive", () => {
-  const result = runMoonScript("release", ["minor"]);
+  const result = runReleaseCommand("release", ["minor"]);
 
   assert.equal(result.status, 1);
   assert.match(
@@ -46,7 +46,7 @@ test("release script clears prerelease suffixes for stable bumps", () => {
   ] as const;
 
   for (const [current, bump, expected] of cases) {
-    const result = runMoonScript("release", ["--print-bump", current, bump]);
+    const result = runReleaseCommand("release", ["--print-bump", current, bump]);
 
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
     assert.equal(result.stdout.trim(), expected);
@@ -79,7 +79,7 @@ test("release script rewrites native workspace pins and minimum release age excl
   ].join("\n");
   const inputPath = writeTempFile(workspaceYaml);
 
-  const result = runMoonScript("release", [
+  const result = runReleaseCommand("release", [
     "--print-workspace-catalog-update",
     inputPath,
     "0.106.0",
@@ -156,7 +156,7 @@ test("release script rewrites only the native-binaries catalog block in pnpm-loc
   ].join("\n");
   const inputPath = writeTempFile(lockfile);
 
-  const result = runMoonScript("release", [
+  const result = runReleaseCommand("release", [
     "--print-lockfile-catalog-update",
     inputPath,
     "0.106.0",
@@ -189,7 +189,7 @@ test("release script rewrites only the native-binaries catalog block in pnpm-loc
 });
 
 test("release version sweep covers every manifest the preflight verifies", () => {
-  const result = runMoonScript("release", ["--print-extra-package-json-paths"]);
+  const result = runReleaseCommand("release", ["--print-extra-package-json-paths"]);
 
   assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`);
   const extraPaths = new Set(result.stdout.split("\n").filter(Boolean));
@@ -262,7 +262,7 @@ test("release script accepts an exact merge commit at the main tip", () => {
 });
 
 test("release script rejects the removed force-tag escape hatch", () => {
-  const result = runMoonScript("release", ["patch", "-y", "--force-tag"]);
+  const result = runReleaseCommand("release", ["patch", "-y", "--force-tag"]);
 
   assert.equal(result.status, 1);
   assert.match(result.stderr, /--force-tag is not supported; published release tags are immutable/);
@@ -330,7 +330,7 @@ test("release script stops before mutation when the local guard fails", () => {
 test("release rewrites aliased fork pins while preserving upstream versions", () => {
   const input =
     '[workspace.package]\nversion = "0.430.0"\n[workspace.dependencies]\noxc_parser = { package = "vize_oxc_parser", version = "=0.430.0", path = "vendor/oxc_parser" }\noxc_ast = { version = "=0.142.0" }\n';
-  const result = runMoonScript("release", [
+  const result = runReleaseCommand("release", [
     "--print-workspace-manifest-update",
     writeTempFile(input),
     "0.430.0",

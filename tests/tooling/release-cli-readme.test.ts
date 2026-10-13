@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { runMoonScript } from "./_helpers/moonbit.ts";
+import { runReleaseCommand } from "./support/release-command.ts";
 
 for (const newline of ["\n", "\r\n"]) {
   test(`release preserves measured versions while updating install examples (${JSON.stringify(newline)})`, () => {
@@ -18,7 +18,7 @@ for (const newline of ["\n", "\r\n"]) {
     const before = `Install vize@0.425.0${newline}${snapshot}${newline}npx vize@0.425.0 --version${newline}`;
     fs.writeFileSync(file, before);
     try {
-      const result = runMoonScript("release", [
+      const result = runReleaseCommand("release", [
         "--print-readme-version-update",
         file,
         "0.425.0",
@@ -30,7 +30,7 @@ for (const newline of ["\n", "\r\n"]) {
         `Install vize@0.425.1${newline}${snapshot}${newline}npx vize@0.425.1 --version${newline}`,
       );
       fs.writeFileSync(file, result.stdout);
-      const repeated = runMoonScript("release", [
+      const repeated = runReleaseCommand("release", [
         "--print-readme-version-update",
         file,
         "0.425.0",
@@ -39,7 +39,7 @@ for (const newline of ["\n", "\r\n"]) {
       assert.equal(repeated.status, 0, repeated.stderr);
       assert.equal(repeated.stdout, result.stdout);
       fs.writeFileSync(file, "Install vize@0.425.0");
-      const plain = runMoonScript("release", [
+      const plain = runReleaseCommand("release", [
         "--print-readme-version-update",
         file,
         "0.425.0",

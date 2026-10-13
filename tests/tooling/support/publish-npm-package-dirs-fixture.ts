@@ -3,7 +3,6 @@ import fs, { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-import { repoRoot } from "../_helpers/moonbit.ts";
 import { writeFakeCommand } from "./fake-command.ts";
 
 type PublishResult = { package_dir: string; exit_code: number; walltime_ms: number };
@@ -17,10 +16,10 @@ type PublishReceipt = {
 };
 type Event = { phase: "start" | "end"; package: string; time: number; args: string[] };
 
-// The parent is the actual native MoonBit command. Only its single-package
+// The parent is the actual platform publisher command. Only its single-package
 // publisher subprocess is mocked, with a deterministic registry-wait-like delay.
 export function controlledPublishFixture(packageCount = 8) {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-publish-concurrency-"));
+  const tempDir = mkdtempSync(path.join(tmpdir(), "release-publish-concurrency-"));
   const baseDir = path.join(tempDir, "packages with ' spaces");
   const binDir = path.join(tempDir, "bin");
   const eventLog = path.join(tempDir, "events.jsonl");
@@ -36,19 +35,19 @@ export function controlledPublishFixture(packageCount = 8) {
   }
   fs.mkdirSync(path.join(baseDir, "skip-helper"));
   writeFileSync(path.join(baseDir, "skip-file"), "not a directory");
-  const realMoon = process.env.MOON_BIN ?? path.join(repoRoot, ".cache", "moonbit", "bin", "moon");
+  // The fake runtime is not named `node`: fake commands start through
+  // `/usr/bin/env node`, and the bin directory can lead PATH.
   writeFakeCommand(
     binDir,
-    "moon",
+    "fake-node",
     [
       "const fs = require('node:fs');",
       "const path = require('node:path');",
       "const { spawnSync } = require('node:child_process');",
       "const args = process.argv.slice(2);",
-      "const separator = args.indexOf('--');",
-      "if (args[separator - 1]?.replaceAll('\\\\', '/').endsWith('/publish_npm_package')) {",
-      "  const packageName = path.basename(args[separator + 1]);",
-      "  const record = phase => fs.appendFileSync(process.env.MOCK_PUBLISH_EVENTS, JSON.stringify({ phase, package: packageName, time: Date.now(), args: args.slice(separator + 2) }) + '\\n');",
+      "if (args[0]?.replaceAll('\\\\', '/').endsWith('/publish_npm_package/main.ts')) {",
+      "  const packageName = path.basename(args[1]);",
+      "  const record = phase => fs.appendFileSync(process.env.MOCK_PUBLISH_EVENTS, JSON.stringify({ phase, package: packageName, time: Date.now(), args: args.slice(2) }) + '\\n');",
       "  record('start');",
       "  setTimeout(() => {",
       "    console.log('publisher stdout ' + packageName);",
@@ -57,17 +56,16 @@ export function controlledPublishFixture(packageCount = 8) {
       "    process.exit(packageName === process.env.MOCK_PUBLISH_FAIL_PACKAGE ? 7 : 0);",
       "  }, Number(process.env.MOCK_PUBLISH_DELAY_MS ?? '150'));",
       "} else {",
-      "  const result = spawnSync(process.env.REAL_MOON_BIN, args, { stdio: 'inherit', env: { ...process.env, MOON_BIN: process.env.MOCK_CHILD_MOON_BIN ?? process.env.MOON_BIN } });",
+      "  const result = spawnSync(process.env.REAL_NODE_BIN, args, { stdio: 'inherit' });",
       "  if (result.error) console.error(result.error);",
       "  process.exit(result.status ?? 1);",
       "}",
     ].join("\n"),
   );
   const env = {
-    MOON_BIN: path.join(binDir, "moon"),
-    REAL_MOON_BIN: realMoon,
+    NODE_BIN: path.join(binDir, "fake-node"),
+    REAL_NODE_BIN: process.execPath,
     MOCK_PUBLISH_EVENTS: eventLog,
-    MOON_HOME: process.env.MOON_HOME ?? path.join(repoRoot, ".cache", "moonbit"),
   };
   return {
     baseDir,

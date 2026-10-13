@@ -21,13 +21,13 @@ fn complete_shipment_catalog_rejects_exports_bins_and_feature_changes() {
             "catalogs:\n  native-binaries:\n    \"@vizejs/native-test\": \"1.2.3\"\n",
         ),
         (
-            "tools/moon/cmd/publish_crates/main.mbt",
+            "tools/support/release/publish_crates/main.ts",
             "let published_crates = [\"vize_law\"]\n",
         ),
         (".github/workflows/release.yml", "publish npm/law\n"),
         ("tools/commands/ci/github/release-platforms.rs", "native-test\n"),
-        ("tools/moon/cmd/publish_npm_package_dirs/main.mbt", "all native directories\n"),
-        ("tools/moon/cmd/publish_npm_package/main.mbt", "publish exact package version\n"),
+        ("tools/support/release/publish_npm_package_dirs/main.ts", "all native directories\n"),
+        ("tools/support/release/publish_npm_package/main.ts", "publish exact package version\n"),
     ]);
     github::output("cargo", &["generate-lockfile", "--offline"], &repo.work).unwrap();
     let head = repo.commit(&[]);
@@ -129,11 +129,11 @@ fn unchanged_manifests_cannot_borrow_a_changed_publication_selection() {
         ("pkg/src/lib.rs", "pub fn law() {}\n"),
         ("npm/law/package.json", "{\"name\":\"vize-law\",\"version\":\"1.2.3\"}\n"),
         ("pnpm-workspace.yaml", "catalogs:\n  native-binaries:\n    \"@vizejs/native-test\": \"1.2.3\"\n"),
-        ("tools/moon/cmd/publish_crates/main.mbt", "let published_crates = [\"vize_law\"]\n"),
+        ("tools/support/release/publish_crates/main.ts", "let published_crates = [\"vize_law\"]\n"),
         (".github/workflows/release.yml", "publish npm/law\n"),
         ("tools/commands/ci/github/release-platforms.rs", "native-test\n"),
-        ("tools/moon/cmd/publish_npm_package_dirs/main.mbt", "all native directories\n"),
-        ("tools/moon/cmd/publish_npm_package/main.mbt", "publish exact package version\n"),
+        ("tools/support/release/publish_npm_package_dirs/main.ts", "all native directories\n"),
+        ("tools/support/release/publish_npm_package/main.ts", "publish exact package version\n"),
     ]);
     github::output("cargo", &["generate-lockfile", "--offline"], &repo.work).unwrap();
     let head = repo.commit(&[]);
@@ -145,11 +145,11 @@ fn unchanged_manifests_cannot_borrow_a_changed_publication_selection() {
             "omit native-test\n",
         ),
         (
-            "tools/moon/cmd/publish_npm_package_dirs/main.mbt",
+            "tools/support/release/publish_npm_package_dirs/main.ts",
             "skip one native directory\n",
         ),
         (
-            "tools/moon/cmd/publish_npm_package/main.mbt",
+            "tools/support/release/publish_npm_package/main.ts",
             "publish another version\n",
         ),
     ] {
@@ -277,4 +277,58 @@ fn annotated_tag_receipt_binds_original_run_and_integration_and_rejects_lightwei
             .unwrap()
             .is_file()
     );
+}
+
+#[test]
+fn revisions_before_the_typescript_port_keep_their_moonbit_publishers() {
+    let repo = Repo::new();
+    let legacy = [
+        ("tools/moon/cmd/publish_crates/main.mbt", "legacy crates\n"),
+        (
+            "tools/moon/cmd/publish_npm_package_dirs/main.mbt",
+            "legacy dirs\n",
+        ),
+        (
+            "tools/moon/cmd/publish_npm_package/main.mbt",
+            "legacy package\n",
+        ),
+    ];
+    repo.commit(&[
+        ("Cargo.toml", "[workspace]\nmembers = [\"pkg\"]\nresolver = \"2\"\n[workspace.package]\nversion = \"1.2.3\"\nedition = \"2024\"\n"),
+        ("pkg/Cargo.toml", "[package]\nname = \"vize_law\"\nversion.workspace = true\nedition.workspace = true\n"),
+        ("pkg/src/lib.rs", "pub fn law() {}\n"),
+        ("pnpm-workspace.yaml", "catalogs:\n  native-binaries:\n    \"@vizejs/native-test\": \"1.2.3\"\n"),
+        (".github/workflows/release.yml", "publish\n"),
+        ("tools/commands/ci/github/release-platforms.rs", "native-test\n"),
+        legacy[0],
+        legacy[1],
+        legacy[2],
+    ]);
+    github::output("cargo", &["generate-lockfile", "--offline"], &repo.work).unwrap();
+    let before = metadata::catalog(&repo.commit(&[]), "1.2.3", &repo.work).unwrap();
+    assert_eq!(before["cratePublisher"], "legacy crates\n");
+    for (path, text) in &legacy[1..] {
+        assert_eq!(before["publicationAuthorities"][path], *text);
+    }
+    let ported = repo.commit(&[
+        (
+            "tools/support/release/publish_crates/main.ts",
+            "ported crates\n",
+        ),
+        (
+            "tools/support/release/publish_npm_package_dirs/main.ts",
+            "ported dirs\n",
+        ),
+        (
+            "tools/support/release/publish_npm_package/main.ts",
+            "ported package\n",
+        ),
+    ]);
+    let after = metadata::catalog(&ported, "1.2.3", &repo.work).unwrap();
+    assert_eq!(after["cratePublisher"], "ported crates\n");
+    assert_eq!(
+        after["publicationAuthorities"]["tools/support/release/publish_npm_package/main.ts"],
+        "ported package\n"
+    );
+    assert_ne!(before, after);
 }

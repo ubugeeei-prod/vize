@@ -85,8 +85,8 @@ npm view @vizejs/vite-plugin-musea dist-tags --json
 npm view @vizejs/wasm dist-tags --json
 ```
 
-- [ ] Rust owner verifies the exact version of every crate in `published_crates` in
-      `tools/moon/cmd/publish_crates/main.mbt`, including Canon and Patina. For example: ([PU-4 evidence](./davinci-v1-evidence.md#publish-gate))
+- [ ] Rust owner verifies the exact version of every crate in `publishedCrates` in
+      `tools/support/release/publish_crates/main.ts`, including Canon and Patina. For example: ([PU-4 evidence](./davinci-v1-evidence.md#publish-gate))
 
 ```bash
 curl --fail-with-body https://crates.io/api/v1/crates/vize_canon/VERSION

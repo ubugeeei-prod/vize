@@ -5,11 +5,11 @@ import { tmpdir } from "node:os";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { test } from "node:test";
 
-import { runMoonScript } from "./_helpers/moonbit.ts";
+import { runReleaseCommand } from "./support/release-command.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 
 test("publish_open_vsx_extension publishes a packaged VSIX with ovsx", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-open-vsx-publish-"));
+  const tempDir = mkdtempSync(path.join(tmpdir(), "release-open-vsx-publish-"));
   const binDir = path.join(tempDir, "bin");
   const manifestPath = path.join(tempDir, "package.json");
   const vsixPath = path.join(tempDir, "vize.vsix");
@@ -71,7 +71,7 @@ test("publish_open_vsx_extension publishes a packaged VSIX with ovsx", () => {
     );
 
     const runPublish = (namespaceError?: string) =>
-      runMoonScript("publish_open_vsx_extension", [vsixPath, manifestPath], {
+      runReleaseCommand("publish_open_vsx_extension", [vsixPath, manifestPath], {
         env: {
           PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
           CALLS_PATH: callsPath,
@@ -124,7 +124,7 @@ test("publish_open_vsx_extension publishes a packaged VSIX with ovsx", () => {
 });
 
 test("publish_open_vsx_extension skips an already visible Open VSX version", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-open-vsx-skip-"));
+  const tempDir = mkdtempSync(path.join(tmpdir(), "release-open-vsx-skip-"));
   const binDir = path.join(tempDir, "bin");
   const manifestPath = path.join(tempDir, "package.json");
   const vsixPath = path.join(tempDir, "vize.vsix");
@@ -164,7 +164,7 @@ test("publish_open_vsx_extension skips an already visible Open VSX version", () 
       ].join("\n"),
     );
 
-    const result = runMoonScript("publish_open_vsx_extension", [vsixPath, manifestPath], {
+    const result = runReleaseCommand("publish_open_vsx_extension", [vsixPath, manifestPath], {
       env: {
         PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
         CALLS_PATH: callsPath,

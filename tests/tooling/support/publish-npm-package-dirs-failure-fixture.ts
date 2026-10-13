@@ -1,8 +1,10 @@
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
 import { writeFakeCommand } from "./fake-command.ts";
-import { controlledPublishFixture } from "./moonbit-publish-concurrency-fixture.ts";
+import { controlledPublishFixture } from "./publish-npm-package-dirs-fixture.ts";
+import { releaseCommandPath } from "./release-command.ts";
 
 // Hold successful active children until the actual parent reports its failure
 // stop. The failing child waits for the entire initial wave to start. No timing
@@ -12,16 +14,15 @@ export function failedPublishFixture(workers: number) {
   const observed = path.join(path.dirname(fixture.receiptPath), "parent-observed-failure");
   writeFakeCommand(
     fixture.binDir,
-    "moon",
+    "fake-node",
     [
       "const fs = require('node:fs');",
       "const path = require('node:path');",
       "const { spawn } = require('node:child_process');",
       "const args = process.argv.slice(2);",
-      "const separator = args.indexOf('--');",
-      "if (args[separator - 1]?.replaceAll('\\\\', '/').endsWith('/publish_npm_package')) {",
-      "  const packageName = path.basename(args[separator + 1]);",
-      "  const record = phase => fs.appendFileSync(process.env.MOCK_PUBLISH_EVENTS, JSON.stringify({ phase, package: packageName, time: Date.now(), args: args.slice(separator + 2) }) + '\\n');",
+      "if (args[0]?.replaceAll('\\\\', '/').endsWith('/publish_npm_package/main.ts')) {",
+      "  const packageName = path.basename(args[1]);",
+      "  const record = phase => fs.appendFileSync(process.env.MOCK_PUBLISH_EVENTS, JSON.stringify({ phase, package: packageName, time: Date.now(), args: args.slice(2) }) + '\\n');",
       "  const started = () => fs.readFileSync(process.env.MOCK_PUBLISH_EVENTS, 'utf8').trim().split('\\n').map(JSON.parse).filter(event => event.phase === 'start').length;",
       "  record('start');",
       "  const deadline = Date.now() + 10000;",
@@ -36,7 +37,7 @@ export function failedPublishFixture(workers: number) {
       "  }",
       "  poll();",
       "} else {",
-      "  const child = spawn(process.env.REAL_MOON_BIN, args, { stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, MOON_BIN: process.env.MOCK_CHILD_MOON_BIN ?? process.env.MOON_BIN } });",
+      "  const child = spawn(process.env.REAL_NODE_BIN, args, { stdio: ['ignore', 'pipe', 'pipe'] });",
       "  let stderr = '';",
       "  child.stdout.on('data', bytes => process.stdout.write(bytes));",
       "  child.stderr.on('data', bytes => {",
@@ -49,13 +50,24 @@ export function failedPublishFixture(workers: number) {
       "}",
     ].join("\n"),
   );
+  const env = {
+    ...fixture.env,
+    MOCK_PUBLISH_BARRIER_COUNT: String(workers),
+    MOCK_PUBLISH_PARENT_OBSERVED: observed,
+  };
   return {
     ...fixture,
-    env: {
-      ...fixture.env,
-      MOCK_PUBLISH_BARRIER_COUNT: String(workers),
-      MOCK_PUBLISH_PARENT_OBSERVED: observed,
-    },
+    env,
     failureObserved: () => fs.existsSync(observed),
+    // Run the actual parent through the observing runtime so successful
+    // children can wait until the parent reports its failure stop.
+    runParent: (args: readonly string[]) => {
+      const childEnv: NodeJS.ProcessEnv = { ...process.env, ...env };
+      delete childEnv.NODE_TEST_CONTEXT;
+      return spawnSync(env.NODE_BIN, [releaseCommandPath("publish_npm_package_dirs"), ...args], {
+        env: childEnv,
+        encoding: "utf8",
+      });
+    },
   };
 }
