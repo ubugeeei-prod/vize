@@ -15,10 +15,11 @@ Markdown no longer counts as an unknown input, and an undeclared test with an
 unresolved import no longer runs for prose it never names. Code changes and the
 merge tier are unchanged: the merge queue still runs every tooling test.
 
-The `typechecker-native-release-inputs` ledger is retired with its guard and
-the three path exclusions it guarded in `typechecker-native-phases.yml`. It
+The `typechecker-native-release-inputs` ledger is retired with its guard. It
 pinned the bytes of the planner and its configuration, so every planner change
-had to re-pin it.
+had to re-pin it. The three path exclusions it guarded in
+`typechecker-native-phases.yml` stay: they only keep three release tests from
+starting that optional workflow.
 
 ## Merge queue
 
