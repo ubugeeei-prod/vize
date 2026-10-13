@@ -130,3 +130,78 @@ void test("whole composition refuses extra, omitted, reordered and mutated close
     assert.throws(() => validate(changed));
   }
 });
+const vectors = [
+  [
+    "lint-default-correctness",
+    "7fa33faea83c868ad5bb01cacd624240486ecea35177a637f09e56ec5f73e9fc",
+    [
+      [0, "sync", 18, 37, 18, 37],
+      [2, "slot-scope", 28, 38, 28, 38],
+      [4, "full-modifiers", 18, 49, 18, 49],
+      [5, "utf8-crlf", 40, 59, 32, 51],
+    ],
+  ],
+  [
+    "lint-default-migrations",
+    "30f05bb221d3e33149b40046df704906bfb8bdbe0107a0d043af1f32965eb0bd",
+    [
+      [3, "functional", 10, 20, 10, 20],
+      [4, "combined", 10, 20, 10, 20],
+      [10, "unicode-crlf", 30, 40, 10, 20],
+    ],
+  ],
+];
+function validateRanges(original, current, changes) {
+  const inverse = structuredClone(current);
+  for (const [index, id, start, end, lspStart, lspEnd] of changes) {
+    const row = inverse.cases[index];
+    const old = original.cases[index];
+    assert.equal(row.id, id);
+    assert.deepEqual([row.diagnostics[0].start, row.diagnostics[0].end], [start, end]);
+    for (const field of ["diagnostics", "essentialDiagnostics"]) {
+      if (row[field]) {
+        assert.deepEqual([row[field][0].start, row[field][0].end], [start, end]);
+        row[field][0].start = old[field][0].start;
+        row[field][0].end = old[field][0].end;
+      }
+    }
+    assert.deepEqual(
+      [row.lspDiagnostics[0].range.start.character, row.lspDiagnostics[0].range.end.character],
+      [lspStart, lspEnd],
+    );
+    row.lspDiagnostics[0].range.start.character = old.lspDiagnostics[0].range.start.character;
+    row.lspDiagnostics[0].range.end.character = old.lspDiagnostics[0].range.end.character;
+  }
+  assert.deepEqual(inverse, original);
+}
+void test("current whole preset packets differ only at seven approved byte and UTF-16 range witnesses", () => {
+  for (const [directory, hash, changes] of vectors) {
+    const fixture = path.join(root, "tests/_fixtures", directory);
+    const old = fs.readFileSync(path.join(fixture, "cases.json"));
+    assert.equal(digest(old), hash);
+    const original = JSON.parse(old);
+    const current = JSON.parse(fs.readFileSync(path.join(fixture, "current-range-cases.json")));
+    validateRanges(original, current, changes);
+    const mutations = [
+      (packet) => {
+        packet.cases[0].source += "foreign";
+      },
+      (packet) => {
+        packet.cases[0].diagnostics[0].message += "foreign";
+      },
+      (packet) => {
+        packet.cases[changes[0][0]].diagnostics[0].start++;
+      },
+      (packet) => {
+        packet.cases[changes[0][0]].lspDiagnostics[0].range.start.line++;
+      },
+      (packet) => packet.cases.pop(),
+      (packet) => packet.cases.reverse(),
+    ];
+    for (const mutate of mutations) {
+      const changed = structuredClone(current);
+      mutate(changed);
+      assert.throws(() => validateRanges(original, changed, changes));
+    }
+  }
+});
