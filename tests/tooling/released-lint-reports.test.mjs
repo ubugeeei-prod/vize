@@ -180,6 +180,9 @@ await test("registry archive members require the actual unchanged installed byte
     assert.equal(spawnSync("python3", argv).status, 0);
     fs.writeFileSync(path.join(directory, "installed/package.json"), "changed!");
     assert.notEqual(spawnSync("python3", argv).status, 0);
+    fs.writeFileSync(path.join(directory, "installed/package.json"), "original");
+    fs.writeFileSync(path.join(directory, "installed/injected.js"), "injected");
+    assert.notEqual(spawnSync("python3", argv).status, 0);
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
   }

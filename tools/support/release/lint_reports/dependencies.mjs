@@ -56,7 +56,10 @@ export async function installDependencies(consumer, output, source) {
     if (!location) continue;
     assert.equal(entry.link, undefined, "no linked source dependencies");
     const directory = path.join(consumer, location);
+    assert(fs.lstatSync(directory).isDirectory() && !fs.lstatSync(directory).isSymbolicLink());
+    assert(fs.realpathSync(directory).startsWith(path.join(consumer, "node_modules") + path.sep));
     const manifest = JSON.parse(fs.readFileSync(path.join(directory, "package.json"), "utf8"));
+    assert.equal(manifest.name, location.split("node_modules/").at(-1));
     assert.equal(manifest.version, entry.version);
     assert.equal(new URL(entry.resolved).origin, "https://registry.npmjs.org");
     const metadataResponse = await fetch(
@@ -120,6 +123,11 @@ export async function installDependencies(consumer, output, source) {
   const assertDependencies = () => {
     for (const record of records)
       for (const member of record.members) {
+        assert(
+          fs
+            .realpathSync(record.directory)
+            .startsWith(path.join(consumer, "node_modules") + path.sep),
+        );
         const filename = path.join(record.directory, member.path);
         assert(fs.lstatSync(filename).isFile() && !fs.lstatSync(filename).isSymbolicLink());
         assert.equal(fs.statSync(filename).size, member.bytes);
