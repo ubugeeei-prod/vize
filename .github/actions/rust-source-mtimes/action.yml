@@ -15,6 +15,6 @@ inputs:
 
 runs:
   using: node24
-  main: main.mjs
-  post: post.mjs
+  main: main.ts
+  post: post.ts
   post-if: always()

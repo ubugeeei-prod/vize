@@ -18,6 +18,7 @@ import {
   utimesSync,
   writeFileSync,
 } from "node:fs";
+import type { BigIntStats, Dirent } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 
 export const manifestName = ".vize-source-mtimes.json";
@@ -28,7 +29,35 @@ const blob = /^[0-9a-f]{40}(?:[0-9a-f]{24})?$/;
 // lives only in `.fingerprint`.
 const skippedTargetDirectories = new Set(["build", "deps", "examples", "incremental", "doc"]);
 
-const git = (root, args, input) =>
+/** A tracked file's content (Git blob ID) and the whole-second mtime it was given. */
+type FileRecord = [blob: string, mtime: number];
+
+export interface SourceMtimesManifest {
+  schema: typeof schema;
+  version: typeof version;
+  root: string;
+  state: "pending" | "complete";
+  updatedAt: number;
+  files: Record<string, FileRecord>;
+}
+
+export type RestoreResult =
+  | { applied: false; reason: string }
+  | {
+      applied: true;
+      reason: string;
+      root: string;
+      floor: number;
+      restored: number;
+      changed: number;
+      manifest: string;
+    };
+
+export type RecordResult =
+  | { recorded: false; reason: string }
+  | { recorded: true; rewritten: number; files: number };
+
+const git = (root: string, args: string[], input?: string): string =>
   execFileSync("git", ["-C", root, ...args], {
     encoding: "utf8",
     input,
@@ -36,7 +65,7 @@ const git = (root, args, input) =>
     stdio: ["pipe", "pipe", "pipe"],
   });
 
-export function workTree(path) {
+export function workTree(path: string): string | null {
   let directory = resolve(path);
   while (!existsSync(directory)) directory = dirname(directory);
   try {
@@ -46,14 +75,15 @@ export function workTree(path) {
   }
 }
 
-const exactSeconds = (stat, value) => stat.mtimeNs === BigInt(value) * 1_000_000_000n;
-const ceilSeconds = (stat) => Number((stat.mtimeNs + 999_999_999n) / 1_000_000_000n);
+const exactSeconds = (stat: BigIntStats, value: number) =>
+  stat.mtimeNs === BigInt(value) * 1_000_000_000n;
+const ceilSeconds = (stat: BigIntStats) => Number((stat.mtimeNs + 999_999_999n) / 1_000_000_000n);
 
 /** The newest fingerprint written into a target directory, in whole seconds. */
-export function newestFingerprint(target) {
+export function newestFingerprint(target: string): number {
   let newest = 0;
-  const visit = (directory, depth) => {
-    let entries;
+  const visit = (directory: string, depth: number) => {
+    let entries: Dirent[];
     try {
       entries = readdirSync(directory, { withFileTypes: true });
     } catch {
@@ -63,9 +93,8 @@ export function newestFingerprint(target) {
       if (!entry.isDirectory()) continue;
       const path = join(directory, entry.name);
       if (entry.name === ".fingerprint") {
-        for (const unit of readdirSync(path, { withFileTypes: true })) {
-          const stat = lstatSync(join(path, unit.name), { bigint: true });
-          newest = Math.max(newest, ceilSeconds(stat));
+        for (const unit of readdirSync(path)) {
+          newest = Math.max(newest, ceilSeconds(lstatSync(join(path, unit), { bigint: true })));
         }
       } else if (depth < 4 && !skippedTargetDirectories.has(entry.name)) {
         visit(path, depth + 1);
@@ -76,27 +105,36 @@ export function newestFingerprint(target) {
   return newest;
 }
 
-function readManifest(file, root) {
-  try {
-    const manifest = JSON.parse(readFileSync(file, "utf8"));
-    if (
-      manifest?.schema !== schema ||
-      manifest.version !== version ||
-      manifest.root !== root ||
-      !Number.isSafeInteger(manifest.updatedAt) ||
-      manifest.files === null ||
-      typeof manifest.files !== "object"
-    )
-      return { manifest: null, reason: "incompatible manifest" };
-    // A run that never finished may have changed files after recording them.
-    if (manifest.state !== "complete") return { manifest: null, reason: "unfinished manifest" };
-    return { manifest, reason: "complete manifest" };
-  } catch (error) {
-    return { manifest: null, reason: error?.code === "ENOENT" ? "no manifest" : "unreadable" };
-  }
+function isObject(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
-function writeManifest(file, manifest) {
+function readManifest(
+  file: string,
+  root: string,
+): { manifest: SourceMtimesManifest | null; reason: string } {
+  let value: unknown;
+  try {
+    value = JSON.parse(readFileSync(file, "utf8"));
+  } catch (error) {
+    const code = isObject(error) ? error.code : undefined;
+    return { manifest: null, reason: code === "ENOENT" ? "no manifest" : "unreadable" };
+  }
+  if (
+    !isObject(value) ||
+    value.schema !== schema ||
+    value.version !== version ||
+    value.root !== root ||
+    !Number.isSafeInteger(value.updatedAt) ||
+    !isObject(value.files)
+  )
+    return { manifest: null, reason: "incompatible manifest" };
+  // A run that never finished may have changed files after recording them.
+  if (value.state !== "complete") return { manifest: null, reason: "unfinished manifest" };
+  return { manifest: value as unknown as SourceMtimesManifest, reason: "complete manifest" };
+}
+
+function writeManifest(file: string, manifest: SourceMtimesManifest) {
   mkdirSync(dirname(file), { recursive: true });
   const temporary = `${file}.${process.pid}.tmp`;
   writeFileSync(temporary, JSON.stringify(manifest));
@@ -104,19 +142,20 @@ function writeManifest(file, manifest) {
 }
 
 /** Tracked regular files at stage 0 with their index blob. */
-function trackedFiles(root) {
-  const files = [];
+function trackedFiles(root: string): Array<[path: string, blob: string]> {
+  const files: Array<[string, string]> = [];
   for (const record of git(root, ["ls-files", "-s", "-z"]).split("\0")) {
     if (!record) continue;
     const tab = record.indexOf("\t");
     const [mode, object, stage] = record.slice(0, tab).split(" ");
-    if ((mode !== "100644" && mode !== "100755") || stage !== "0" || !blob.test(object)) continue;
-    files.push([record.slice(tab + 1), object]);
+    if ((mode !== "100644" && mode !== "100755") || stage !== "0" || !blob.test(object ?? ""))
+      continue;
+    files.push([record.slice(tab + 1), object as string]);
   }
   return files;
 }
 
-function hashObjects(root, paths) {
+function hashObjects(root: string, paths: string[]): string[] {
   if (paths.length === 0) return [];
   const hashes = git(root, ["hash-object", "--stdin-paths"], `${paths.join("\n")}\n`)
     .trim()
@@ -127,15 +166,24 @@ function hashObjects(root, paths) {
 }
 
 /**
- * Restores recorded mtimes before Cargo runs. Returns a summary; never throws
- * for a missing or stale manifest because the conservative result is simply a
- * newer mtime.
+ * Restores recorded mtimes before Cargo runs. A missing or stale manifest is
+ * not an error, because the conservative result is simply a newer mtime.
  */
-export function restoreSourceMtimes({ target, secondary = "", record, now = Date.now() }) {
+export function restoreSourceMtimes({
+  target,
+  secondary = "",
+  record,
+  now = Date.now(),
+}: {
+  target: string;
+  secondary?: string;
+  record: boolean;
+  now?: number;
+}): RestoreResult {
   const targetPath = resolve(target);
   const file = join(targetPath, manifestName);
   const root = workTree(dirname(targetPath));
-  const skip = (reason) => {
+  const skip = (reason: string): RestoreResult => {
     // A committed disk must never keep records that this run's builds invalidate.
     if (record) rmSync(file, { force: true });
     return { applied: false, reason };
@@ -161,30 +209,30 @@ export function restoreSourceMtimes({ target, secondary = "", record, now = Date
   const modifiedBlobs = new Map(
     hashObjects(root, modifiedPaths).map((hash, index) => [modifiedPaths[index], hash]),
   );
-  const next = {};
+  const next: Record<string, FileRecord> = {};
   let restored = 0;
   let changed = 0;
   for (const [path, indexBlob] of trackedFiles(root)) {
     const absolute = join(root, path);
-    let stat;
     try {
-      stat = lstatSync(absolute);
+      if (!lstatSync(absolute).isFile()) continue;
     } catch {
       continue;
     }
-    if (!stat.isFile()) continue;
     const content = modifiedBlobs.get(path) ?? (modified.has(path) ? null : indexBlob);
-    const previous = recorded[path];
-    const keep =
+    const previous: unknown = recorded[path];
+    const kept =
       content !== null &&
       Array.isArray(previous) &&
       previous[0] === content &&
       Number.isSafeInteger(previous[1]) &&
-      previous[1] < floor;
-    const mtime = keep ? previous[1] : floor;
+      (previous[1] as number) < floor
+        ? (previous[1] as number)
+        : null;
+    const mtime = kept ?? floor;
     utimesSync(absolute, mtime, mtime);
-    if (keep) restored++;
-    else changed++;
+    if (kept === null) changed++;
+    else restored++;
     if (content !== null) next[path] = [content, mtime];
   }
   // Refresh the index stat cache once so later Git commands do not rehash.
@@ -194,14 +242,7 @@ export function restoreSourceMtimes({ target, secondary = "", record, now = Date
     // Unmerged or modified entries are expected to remain dirty.
   }
   if (record)
-    writeManifest(file, {
-      schema,
-      version,
-      root,
-      state: "pending",
-      updatedAt: floor,
-      files: next,
-    });
+    writeManifest(file, { schema, version, root, state: "pending", updatedAt: floor, files: next });
   return { applied: true, reason, root, floor, restored, changed, manifest: file };
 }
 
@@ -210,22 +251,37 @@ export function restoreSourceMtimes({ target, secondary = "", record, now = Date
  * disk is committed. Files whose mtime moved were rewritten during the run, so
  * their current content and mtime replace the earlier record.
  */
-export function recordSourceMtimes({ target, now = Date.now() }) {
+export function recordSourceMtimes({
+  target,
+  now = Date.now(),
+}: {
+  target: string;
+  now?: number;
+}): RecordResult {
   const file = join(resolve(target), manifestName);
-  let manifest;
+  let value: unknown;
   try {
-    manifest = JSON.parse(readFileSync(file, "utf8"));
+    value = JSON.parse(readFileSync(file, "utf8"));
   } catch {
     return { recorded: false, reason: "no manifest" };
   }
-  if (manifest?.schema !== schema || manifest.version !== version || manifest.state !== "pending") {
+  if (
+    !isObject(value) ||
+    value.schema !== schema ||
+    value.version !== version ||
+    value.state !== "pending" ||
+    typeof value.root !== "string" ||
+    !Number.isSafeInteger(value.updatedAt) ||
+    !isObject(value.files)
+  ) {
     rmSync(file, { force: true });
     return { recorded: false, reason: "unexpected manifest" };
   }
+  const manifest = value as unknown as SourceMtimesManifest;
   const { root, files } = manifest;
-  const rewritten = [];
+  const rewritten: Array<[string, BigIntStats]> = [];
   for (const [path, [, mtime]] of Object.entries(files)) {
-    let stat;
+    let stat: BigIntStats;
     try {
       stat = lstatSync(join(root, path), { bigint: true });
     } catch {
@@ -242,7 +298,7 @@ export function recordSourceMtimes({ target, now = Date.now() }) {
   let updatedAt = Math.max(Math.ceil(now / 1000), manifest.updatedAt);
   rewritten.forEach(([path, stat], index) => {
     const mtime = ceilSeconds(stat);
-    files[path] = [hashes[index], mtime];
+    files[path] = [hashes[index] as string, mtime];
     updatedAt = Math.max(updatedAt, mtime);
   });
   writeManifest(file, { ...manifest, state: "complete", updatedAt, files });

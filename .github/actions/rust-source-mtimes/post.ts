@@ -1,6 +1,6 @@
 import { rmSync } from "node:fs";
 import { join } from "node:path";
-import { manifestName, recordSourceMtimes } from "./source-mtimes.mjs";
+import { manifestName, recordSourceMtimes } from "./source-mtimes.ts";
 
 const target = process.env.STATE_target;
 if (target) {
@@ -13,6 +13,6 @@ if (target) {
     );
   } catch (error) {
     rmSync(join(target, manifestName), { force: true });
-    console.log(`::warning::Rust source mtimes not recorded: ${error?.message ?? error}`);
+    console.log(`::warning::Rust source mtimes not recorded: ${String(error)}`);
   }
 }

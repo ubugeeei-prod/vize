@@ -50,7 +50,8 @@ that dominate this workspace's build.
 
 The new `rust-source-mtimes` action, registered last in
 `setup-rust-sticky-cache`, emulates the persistent working tree that Cargo
-assumes:
+assumes. It is TypeScript that the runner's Node 24 executes through native
+type stripping, with no build step:
 
 - Trusted runs record each tracked file's content (blob ID) and the whole
   second it was given, as `.vize-source-mtimes.json` inside the target
@@ -71,7 +72,7 @@ assumes:
   keep rebuilding every workspace crate from their fresh checkout.
 
 Cargo therefore rebuilds exactly what a persistent checkout would rebuild.
-`tests/tooling/rust-source-mtimes.test.mjs` drives real Cargo through fresh
+`tests/tooling/rust-source-mtimes.test.ts` drives real Cargo through fresh
 clones that share one target directory. It checks that:
 
 - nothing rebuilds when the source is unchanged;

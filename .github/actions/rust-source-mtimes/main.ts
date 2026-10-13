@@ -1,8 +1,8 @@
 import { appendFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
-import { manifestName, restoreSourceMtimes } from "./source-mtimes.mjs";
+import { manifestName, restoreSourceMtimes } from "./source-mtimes.ts";
 
-const input = (name) => process.env[`INPUT_${name.toUpperCase()}`] ?? "";
+const input = (name: string) => process.env[`INPUT_${name.toUpperCase()}`] ?? "";
 const record = input("record") === "true";
 const target = input("target-path");
 const started = performance.now();
@@ -14,7 +14,8 @@ try {
     record,
   });
   // The post step records the final tree only for the run that may commit it.
-  if (record && result.applied) appendFileSync(process.env.GITHUB_STATE, `target=${target}\n`);
+  if (record && result.applied && process.env.GITHUB_STATE)
+    appendFileSync(process.env.GITHUB_STATE, `target=${target}\n`);
   const elapsed = Math.round(performance.now() - started);
   console.log(
     result.applied
@@ -24,5 +25,5 @@ try {
 } catch (error) {
   // Checked-out mtimes are always safe; only a stale record could be harmful.
   if (record && target) rmSync(join(target, manifestName), { force: true });
-  console.log(`::warning::Rust source mtimes left as checked out: ${error?.message ?? error}`);
+  console.log(`::warning::Rust source mtimes left as checked out: ${String(error)}`);
 }
