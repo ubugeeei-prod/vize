@@ -198,7 +198,6 @@ void test("the actual full local imports and physical source bytes match one ato
       "reviewed-timed-tooling-shards",
     ].includes(verifyReviewedReleaseInputs()),
   );
-  assert.equal(pins.reviews.length, 9);
   const rootCounts = pins.reviews.map((review) => review.presentRoots.length);
   assert.deepEqual(rootCounts, [2, 3, 3, 3, 3, 3, 3, 3, 3]);
 });
