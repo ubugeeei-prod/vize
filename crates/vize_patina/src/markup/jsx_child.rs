@@ -7,13 +7,13 @@ use oxc_ast::ast::{
 impl<'a> MarkupNode<'a> {
     pub(super) fn from_jsx_child(child: &'a JSXChild<'a>, offset: u32) -> Self {
         match child {
-            JSXChild::Text(text) => Self::Text(MarkupText::from_jsx(&**text as *const _, offset)),
+            JSXChild::Text(text) => Self::Text(MarkupText::from_jsx(&raw const **text, offset)),
             JSXChild::Element(element) => Self::Element(MarkupElement::from_jsx_element(
-                &**element as *const _,
+                &raw const **element,
                 offset,
             )),
             JSXChild::Fragment(fragment) => Self::Element(MarkupElement::from_jsx_fragment(
-                &**fragment as *const _,
+                &raw const **fragment,
                 offset,
             )),
             JSXChild::ExpressionContainer(container) => match &container.expression {

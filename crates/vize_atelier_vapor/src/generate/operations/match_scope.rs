@@ -6,13 +6,10 @@
 //! the rendered nodes line up with the VDOM and server output.
 
 use crate::ir::ForIRNode;
-use vize_carton::{FxHashMap, String, ToCompactString, cstr};
+use vize_carton::{FxHashMap, ToCompactString, cstr};
 
 use super::{
-    super::{
-        context::{ForScope, GenerateContext},
-        generate_block,
-    },
+    super::{context::GenerateContext, generate_block},
     insertion::emit_insertion_state,
 };
 
@@ -28,15 +25,11 @@ pub(super) fn generate_match_scope(
     let source = ctx.resolve_expression_node(&for_node.source);
     // Aliases resolve through the scope exactly like loop aliases do: the
     // selector result as `_for_itemN.value`, a binding as a path into it.
-    ctx.for_scopes.push(ForScope {
-        value_alias: for_node
-            .value
-            .as_ref()
-            .map(|value| String::new(value.content)),
-        key_alias: None,
-        index_alias: None,
-        depth,
-    });
+    ctx.push_for_scope(
+        for_node.value.as_ref().map(|value| value.content),
+        None,
+        None,
+    );
 
     let scope_item = cstr!("_for_item{depth}");
     let id = for_node.id.to_compact_string();

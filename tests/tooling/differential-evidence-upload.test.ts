@@ -90,7 +90,7 @@ test("PR and full tooling gates retain failed observations after their tests", (
     [fullWorker, "${{ always() }}", "${{ inputs.shard }}"],
     [
       pr.jobs["pr-tooling-scripts"],
-      "${{ always() && needs.pr-source-plan.outputs.tooling == 'true' }}",
+      "${{ !cancelled() && needs.pr-source-plan.outputs.tooling == 'true' }}",
       "${{ matrix.index }}",
     ],
   ] as const) {

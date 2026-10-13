@@ -60,10 +60,11 @@ impl<'a> SsrCodegenContext<'a> {
 
         // Vue's TransitionGroup flattens nested list/conditional ranges and
         // filters comment children, including the empty false-v-if placeholder.
+        // Vapor hydration walks the nested ranges, so they keep their fragments.
         self.process_children_with_fallthrough_attrs(
             &el.children,
             tag.is_none(),
-            true,
+            !self.options.vapor,
             true,
             false,
         );

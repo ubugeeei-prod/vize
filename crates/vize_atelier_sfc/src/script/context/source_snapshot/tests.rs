@@ -38,10 +38,13 @@ fn overlay_text_is_shared_and_a_snapshot_freezes_disk_reads_and_misses() {
 #[test]
 fn new_unsaved_modules_follow_disk_extension_precedence_and_js_substitution() {
     let dir = tempfile::tempdir().unwrap();
-    let root = dir.path().join("App.vue");
-    let existing = dir.path().join("api.ts");
-    let unsaved_lower = dir.path().join("api.tsx");
-    let unsaved_new = dir.path().join("new.ts");
+    // An unsaved module keeps its canonical parent identity, so compare from
+    // the physical temp root (macOS reaches it through the `/var` symlink).
+    let base = dir.path().canonicalize().unwrap();
+    let root = base.join("App.vue");
+    let existing = base.join("api.ts");
+    let unsaved_lower = base.join("api.tsx");
+    let unsaved_new = base.join("new.ts");
     std::fs::write(&existing, "export type Existing = number").unwrap();
     let sources = TypeSourceSnapshot::new([
         (

@@ -17,6 +17,20 @@ pub(super) fn parse_destructure_bindings(pattern: &str) -> std::vec::Vec<Destruc
     bindings
 }
 
+/// Whether `pattern` holds something the textual scanner cannot follow: a
+/// default, a rest element, a computed key or a type annotation. Plain keys,
+/// renames and positions stay on the scanner, which needs no parse.
+pub(super) fn needs_parsed_reads(pattern: &str) -> bool {
+    let pattern = pattern.trim();
+    pattern.contains('=')
+        || pattern.contains("...")
+        || match pattern.as_bytes().first() {
+            Some(b'{') => pattern.contains('[') || !matching_outer_pair(pattern, '{', '}'),
+            Some(b'[') => !matching_outer_pair(pattern, '[', ']'),
+            _ => pattern.contains(':'),
+        }
+}
+
 /// Resolve a Vapor template reference that names a destructured prop to a read
 /// through the render signature's `$props`.
 ///
@@ -126,7 +140,7 @@ fn strip_string_literal(value: &str) -> Option<&str> {
     value.strip_prefix(quote)?.strip_suffix(quote)
 }
 
-fn escape_js_string_literal(value: &str) -> String {
+pub(super) fn escape_js_string_literal(value: &str) -> String {
     let mut escaped = String::with_capacity(value.len());
     for ch in value.chars() {
         match ch {

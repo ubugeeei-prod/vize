@@ -1,0 +1,12 @@
+{
+  "name": "@vizejs/vize",
+  "exports": {
+    ".": "./mod.ts",
+    "./config": "./config.ts",
+    "./native": "./native.ts",
+    "./vite": "./vite.ts"
+  },
+  "publish": {
+    "include": ["*.ts", "README.md", "LICENSE"]
+  }
+}
