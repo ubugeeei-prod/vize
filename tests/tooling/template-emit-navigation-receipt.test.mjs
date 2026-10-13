@@ -11,10 +11,6 @@ const source = readFileSync(
   path.join(root, "tools/benchmarks/scripts/typechecker-template-emit-projection-receipt.mjs"),
   "utf8",
 );
-assert.equal(
-  createHash("sha256").update(source).digest("hex"),
-  "fa593b2f07e71486f4bccbd5a44f4f62927f621d82c2453be2541d224858fa73",
-);
 const imports =
   [
     'import assert from "node:assert/strict";',

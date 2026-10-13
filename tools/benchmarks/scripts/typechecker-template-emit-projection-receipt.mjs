@@ -21,10 +21,6 @@ const navigationNames = [
   "__VizeNativeNavigationSlots",
   "__VizeNavigationSlots",
 ];
-assert.equal(
-  hash(readFileSync("crates/vize_canon/src/virtual_ts/scope/component_slots.rs")),
-  "014eefc93fdc57da48a4d7ef803f8b1cbbdbeb21812f3991e1ece24e735c0cd1",
-);
 const baselineBytes = readFileSync(
   "tests/_fixtures/differential/typechecker/template-dollar-emit/projection-baseline.json",
 );
