@@ -63,8 +63,10 @@ void test("the throttled preview appends one public example and retains original
     "use-plural-rules",
     "use-machine",
     "use-previous",
+    "use-countdown",
+    "use-relative-time-format",
   ]);
-  assert.equal(new Set(names).size, 42);
+  assert.equal(new Set(names).size, 44);
   const entry = COMPOSABLE_CATALOG.entries.find(({ subpath }) => subpath === "./use-throttled");
   assert.ok(entry);
   assert.deepEqual(entry.runtimeExports, ["useThrottled"]);

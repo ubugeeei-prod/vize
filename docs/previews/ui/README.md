@@ -39,7 +39,7 @@ browser checks with its normal OG-image configuration.
 
 ## Composable examples
 
-Forty-two complete SFCs in `npm/compose/core/examples/` demonstrate disclosure,
+Forty-four complete SFCs in `npm/compose/core/examples/` demonstrate disclosure,
 bounded quantities, debounced local search, blur validation, undo/redo, and
 pagination, plus async results, interval/timeout controls, browser storage,
 media queries, document focus, form submission, multistep navigation, bounded
@@ -52,7 +52,8 @@ actual pointer snapshots, element-relative mouse geometry, bounded note dragging
 and native document selection in an editable excerpt, plus a throttled release-title
 preview with explicit pending, native flush/cancel and retained draft states, and
 locale-aware currency totals, speaker lists and unread-message counts, a guarded
-checkout state machine, and a price change compared with its previous value.
+checkout state machine, a price change compared with its previous value, a sign-in code
+resend cooldown, and relative meetup dates.
 Their displayed source and compiled preview share the same complete SFC packet,
 with a SHA-256 identity exposed by each iframe. They use public composable
 imports and can be copied into a Vue 3.5+ project. The preview shell's CSS is
