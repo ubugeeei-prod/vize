@@ -19,6 +19,10 @@ const temporary = mkdtempSync(join(tmpdir(), "canonical-io-control-"));
 after(() => rmSync(temporary, { recursive: true, force: true }));
 const source = readFileSync("tests/davinci_test_support/src/corpus.rs");
 const tools = compileProbe(source, join(temporary, "harness"));
+const originalTools = compileProbe(
+  readFileSync("tests/tooling/fixtures/canonical_corpus_collector_original.rs"),
+  join(temporary, "original-harness"),
+);
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const expected = (logical, bytes) => [
   logical,
@@ -64,7 +68,7 @@ void test("literal manifest spelling survives every source operation and prefix 
   const bytes = Buffer.from("<template>whole 日本語 𐀀\r\n</template>\r\n");
   writeFileSync(`${root}/jellyfin-vue/src/Whole.vue`, bytes);
   symlinkSync("../..", `${root}/jellyfin-vue/packaging/deb/root`);
-  const vector = execFileSync(tools.collector, [root]);
+  const vector = execFileSync(originalTools.collector, [root]);
   const paths = parseNativeVector(vector);
   assert(paths.length > 20, "Keep aliases through the observed native boundary");
   assert.equal(new Set(paths).size, paths.length);
@@ -77,7 +81,7 @@ void test("literal manifest spelling survives every source operation and prefix 
   );
   const summaries = [root, longRoot].map((spelling, index) =>
     probeVariant({
-      binary: tools.binary,
+      binary: originalTools.binary,
       root: spelling,
       vector,
       expected: paths.map((path) => expected(path, bytes)),
@@ -92,6 +96,23 @@ void test("literal manifest spelling survives every source operation and prefix 
     assert.equal(summary.nodeSequenceSha256, summary.rustSequenceSha256.read_to_string);
   }
   assert.equal(summaries[0].nodeSequenceSha256, summaries[1].nodeSequenceSha256);
+  const finiteVector = execFileSync(tools.collector, [root]);
+  assert.deepEqual(parseNativeVector(finiteVector), [
+    "jellyfin-vue/packaging/deb/root/src/Whole.vue",
+    "jellyfin-vue/src/Whole.vue",
+  ]);
+  for (const [index, spelling] of [root, longRoot].entries()) {
+    const successor = probeVariant({
+      binary: tools.binary,
+      root: spelling,
+      vector: finiteVector,
+      expected: parseNativeVector(finiteVector).map((path) => expected(path, bytes)),
+      directory: join(workspace, `successor-proof-${index}`),
+    });
+    assert.equal(successor.success, true);
+    assert.equal(successor.selected, 2);
+    assert.equal(successor.frameCount, 8);
+  }
   const longRows = rows(join(workspace, "proof-1"));
   assert(
     longRows.every(

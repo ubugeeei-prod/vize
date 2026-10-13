@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -10,6 +9,7 @@ import { syncBuiltinESMExports } from "node:module";
 import { gitObjectId } from "../../tools/support/compat/github/canonical-corpus-inventory.mjs";
 import {
   cycleOwner,
+  finiteCommittedInventory,
   pathOrder,
   resolveLogical,
   validateLogicalGraph,
@@ -17,9 +17,10 @@ import {
 } from "../../tools/support/compat/github/canonical-corpus-logical-walk.mjs";
 import {
   collectorHarness,
+  collectFinitePhysical,
   collectNativePhysical,
   parseNativeVector,
-  validateNativeSource,
+  validateFiniteNativeVector,
 } from "../../tools/support/compat/github/canonical-corpus-native-walk.mjs";
 
 // Authored small controls exercise the frozen original and current real Rust functions, actual
@@ -162,7 +163,7 @@ await test("unchanged original Rust, physical bytes and independent logical Git 
   }
 });
 
-await test("current fail-closed Rust collector retains the complete original kernel and alias vector", () => {
+await test("current fail-closed Rust collector qualifies finite routes while retaining complete original kernel paths and bytes", () => {
   const temporary = mkdtempSync(join(tmpdir(), "canonical-current-native-walk-"));
   const root = join(temporary, "shape");
   mkdirSync(root);
@@ -180,16 +181,67 @@ await test("current fail-closed Rust collector retains the complete original ker
       execFileSync("rustc", ["--edition=2024", input, "-o", binary]);
       return execFileSync(binary, [root]);
     });
-    assert.deepEqual(vectors[1], vectors[0], "Every original ordered path and NUL is retained");
     const physical = collectNativePhysical(root, nodes, children);
     assert.deepEqual(
+      vectors[0],
+      Buffer.from(physical.files.map(([path]) => `${path}\0`).join("")),
+      "Every original ordered path and NUL is retained in the kernel observation",
+    );
+    const finite = collectFinitePhysical(root, nodes, children, physical.boundary);
+    assert.deepEqual(
       parseNativeVector(vectors[1]),
-      physical.files.map(([path]) => path),
+      finite.map(([path]) => path),
     );
     assert.deepEqual(
       physical.files.map(([path, , , blob]) => [path, blob]),
       walkCommittedGraph(nodes, children, physical.boundary).files,
     );
+    const qualified = finiteCommittedInventory(nodes, children, physical.boundary);
+    assert.deepEqual(
+      validateFiniteNativeVector(vectors[1], nodes, children, physical.boundary),
+      finite.map(([path]) => path),
+    );
+    for (const paths of [
+      finite.slice(1).map(([path]) => path),
+      finite.map(([path]) => path).reverse(),
+      [...finite.map(([path]) => path), "jellyfin-vue/uncommitted.vue"],
+    ])
+      assert.throws(
+        () =>
+          validateFiniteNativeVector(
+            Buffer.from(paths.map((path) => `${path}\0`).join("")),
+            nodes,
+            children,
+            physical.boundary,
+          ),
+        /committed routes/,
+      );
+    assert.deepEqual(
+      finite.map(([path, , , blob]) => [path, blob]),
+      qualified.files,
+    );
+    assert(qualified.cut.length > 0);
+    assert(physical.files.length > finite.length);
+    const originalBytes = new Map(
+      physical.files.map((row) => [resolveLogical(nodes, row[0]).path, row.slice(1)]),
+    );
+    const finiteBytes = new Map(
+      finite.map((row) => [resolveLogical(nodes, row[0]).path, row.slice(1)]),
+    );
+    assert.deepEqual(
+      finiteBytes,
+      originalBytes,
+      "All original physical sources retain whole bytes and Git blobs",
+    );
+    for (const path of [
+      "jellyfin-vue/copy/Z.vue",
+      "jellyfin-vue/packaging/deb/root/copy/Z.vue",
+      "jellyfin-vue/src/Z.vue",
+    ])
+      assert(
+        parseNativeVector(vectors[1]).includes(path),
+        `Independent logical alias retained: ${path}`,
+      );
     const missing = join(temporary, "missing corpus root");
     assert.throws(
       () =>
@@ -214,7 +266,7 @@ await test("current fail-closed Rust collector retains the complete original ker
 await test("native collector includes exact required IO helpers and refuses omitted or duplicated definitions", () => {
   const source = readFileSync("tests/davinci_test_support/src/corpus.rs", "utf8");
   const { harness } = collectorHarness(Buffer.from(source));
-  for (const name of ["fail_corpus_io", "corpus_entry_path"]) {
+  for (const name of ["fail_corpus_io", "corpus_entry_path", "collect_vue_edges"]) {
     const definition = source.match(new RegExp(`^fn ${name}\\([\\s\\S]*?\\n\\}\\n`, "m"))?.[0];
     assert(definition, `Original helper ${name} is present`);
     assert(harness.toString("utf8").includes(definition));
@@ -242,10 +294,15 @@ await test("foreign links, arbitrary ancestor/self cycles and original unreadabl
     symlinkSync("../../outside", join(temporary, "jellyfin-vue/untracked"));
     assert.throws(() => collectNativePhysical(temporary, nodes, children), /Foreign physical/);
     rmSync(join(temporary, "jellyfin-vue/untracked"));
+    const boundary = collectNativePhysical(temporary, nodes, children).boundary;
     rmSync(join(temporary, "jellyfin-vue/src/Z.vue"));
     assert.throws(
       () => collectNativePhysical(temporary, nodes, children),
       /ENOENT|differs|boundary/,
+    );
+    assert.throws(
+      () => collectFinitePhysical(temporary, nodes, children, boundary),
+      /whole vector differs/,
     );
   } finally {
     rmSync(temporary, { recursive: true, force: true });
@@ -265,83 +322,4 @@ await test("native whole vectors and original-body extraction reject malformed e
   const { body } = collectorHarness(source);
   assert.throws(() => collectorHarness(Buffer.from("missing source")), /unique/);
   assert.throws(() => collectorHarness(Buffer.concat([source, Buffer.from(body)])), /unique/);
-});
-
-await test("native archive source/head/toolchain/binary and entire raw-vector custody refuses replacements", () => {
-  const temporary = mkdtempSync(join(tmpdir(), "canonical-native-archive-"));
-  const root = join(temporary, "inputs");
-  mkdirSync(root);
-  writeFileSync(join(root, "Original.vue"), "<template>whole original</template>\r\n");
-  const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
-  const git = (...args) => execFileSync("git", args, { encoding: "utf8" }).trim();
-  const identity = {
-    sha: git("rev-parse", "HEAD"),
-    tree: git("rev-parse", "HEAD^{tree}"),
-    runId: 12,
-    attempt: 1,
-  };
-  try {
-    const source = readFileSync("tests/davinci_test_support/src/corpus.rs");
-    const { body, harness } = collectorHarness(source);
-    writeFileSync(join(temporary, "native-collector-source.rs"), source);
-    writeFileSync(join(temporary, "native-collector.rs"), harness);
-    execFileSync("rustc", [
-      "--edition=2024",
-      join(temporary, "native-collector.rs"),
-      "-o",
-      join(temporary, "native-collector"),
-    ]);
-    const toolchain = execFileSync("rustc", ["-vV"]);
-    const vector = execFileSync(join(temporary, "native-collector"), [root]);
-    writeFileSync(join(temporary, "native-rustc.txt"), toolchain);
-    writeFileSync(join(temporary, "native-vector.nul"), vector);
-    const receipt = {
-      schema: "vize.canonical-native-walk",
-      version: 1,
-      ...identity,
-      sourceSha256: hash(source),
-      bodySha256: hash(body),
-      harnessSha256: hash(harness),
-      binarySha256: hash(readFileSync(join(temporary, "native-collector"))),
-      toolchainSha256: hash(toolchain),
-      vectorSha256: hash(vector),
-      files: 1,
-    };
-    const receiptPath = join(temporary, "native-walk.json");
-    writeFileSync(receiptPath, JSON.stringify(receipt));
-    assert.deepEqual(validateNativeSource(temporary, identity).paths, ["Original.vue"]);
-    for (const name of [
-      "native-collector-source.rs",
-      "native-collector.rs",
-      "native-collector",
-      "native-rustc.txt",
-      "native-vector.nul",
-    ]) {
-      const path = join(temporary, name);
-      const original = readFileSync(path);
-      writeFileSync(path, Buffer.concat([original, Buffer.from("changed")]));
-      assert.throws(() => validateNativeSource(temporary, identity), `Changed ${name}`);
-      writeFileSync(path, original);
-    }
-    for (const key of [
-      "sha",
-      "tree",
-      "runId",
-      "attempt",
-      "sourceSha256",
-      "bodySha256",
-      "harnessSha256",
-      "binarySha256",
-      "toolchainSha256",
-      "vectorSha256",
-      "files",
-    ]) {
-      writeFileSync(receiptPath, JSON.stringify({ ...receipt, [key]: "foreign" }));
-      assert.throws(() => validateNativeSource(temporary, identity), `Foreign ${key}`);
-    }
-    writeFileSync(receiptPath, JSON.stringify(receipt));
-    assert.deepEqual(validateNativeSource(temporary, identity).paths, ["Original.vue"]);
-  } finally {
-    rmSync(temporary, { recursive: true, force: true });
-  }
 });

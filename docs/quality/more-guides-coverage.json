@@ -301,9 +301,9 @@
     },
     {
       "route": "/rules/vue-formatting",
-      "locales": ["en"],
-      "entry": "audited",
-      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Authored Japanese explains attribute naming/order, quotes, whitespace and empty-element conventions, then links complete attribute-order and Vue 3.4 shorthand examples and typed options. All eleven original references, forty-four code blocks, defaults, presets and bookmarks remain intact; native and deployed reader acceptance remain pending."
     },
     {
       "route": "/rules/vue-sfc",
