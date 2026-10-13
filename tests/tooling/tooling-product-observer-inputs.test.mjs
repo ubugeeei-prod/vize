@@ -29,8 +29,8 @@ void test("release prose and decision changes skip only the audited native produ
   ]) {
     const plan = planToolingTests([file]);
     for (const observer of observers) assert.ok(!plan.tests.includes(observer), file);
-    // An unaudited native observer retains conservative documentation inputs.
-    assert.ok(plan.tests.includes("tests/tooling/lsp-bind-style-code-actions.test.ts"));
+    // An undeclared test that never names the prose leaves it to the merge queue.
+    assert.ok(!plan.tests.includes("tests/tooling/lsp-bind-style-code-actions.test.ts"));
     assert.ok(plan.tests.includes("tests/tooling/release/release-readiness.test.ts"));
   }
 });
