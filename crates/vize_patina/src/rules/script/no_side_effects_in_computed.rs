@@ -1,6 +1,6 @@
 //! script/no-side-effects-in-computed-properties
 //!
-//! Disallow side effects in Options API `computed` getters.
+//! Disallow side effects in Options and Composition API `computed` getters.
 //!
 //! A computed getter must be a pure function of reactive state: it derives a
 //! value and returns it. Mutating component state from inside a getter
@@ -12,7 +12,7 @@
 //!
 //! This is a port of
 //! [`vue/no-side-effects-in-computed-properties`](https://eslint.vuejs.org/rules/no-side-effects-in-computed-properties.html)
-//! from eslint-plugin-vue, scoped to the Options API `computed` option. Nested
+//! from eslint-plugin-vue, covering Options getters and imported Vue `computed` calls. Nested
 //! functions inside a getter are not traversed: they rebind `this`, so writes
 //! there do not mutate the component instance.
 //!
@@ -67,9 +67,11 @@ use oxc_ast_visit::{
 use oxc_span::Span;
 use vize_l0::{CompactString, FxHashMap};
 
+mod composition;
+
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-side-effects-in-computed-properties",
-    description: "Disallow side effects in Options API computed getters",
+    description: "Disallow side effects in computed getters",
     default_severity: Severity::Error,
 };
 
@@ -86,7 +88,7 @@ const MUTATING_ARRAY_METHODS: &[&str] = &[
     "copyWithin",
 ];
 
-/// Disallow side effects in Options API computed getters.
+/// Disallow side effects in Options and Composition API computed getters.
 pub struct NoSideEffectsInComputed;
 
 impl ScriptRule for NoSideEffectsInComputed {
@@ -107,13 +109,12 @@ impl ScriptRule for NoSideEffectsInComputed {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        let Some(options) = find_component_options(program) else {
-            return;
-        };
-        let Some(computed) = find_computed_object(options) else {
-            return;
-        };
-        check_computed_object(computed, offset, result);
+        if let Some(options) = find_component_options(program)
+            && let Some(computed) = find_computed_object(options)
+        {
+            check_computed_object(computed, offset, result);
+        }
+        composition::check_program(program, offset, result);
     }
 }
 
@@ -142,9 +143,7 @@ fn check_computed_object(
 fn computed_getter_body<'a>(property: &'a ObjectProperty<'a>) -> Option<GetterBody<'a>> {
     match &property.value {
         Expression::FunctionExpression(function) => Some(GetterBody::Function(function)),
-        Expression::ArrowFunctionExpression(arrow) => {
-            Some(GetterBody::ArrowBody(&arrow.body.statements))
-        }
+        Expression::ArrowFunctionExpression(arrow) => Some(GetterBody::Arrow(arrow)),
         Expression::ObjectExpression(object) => accessor_object_getter(object),
         _ => None,
     }
@@ -169,7 +168,7 @@ fn accessor_object_getter<'a>(object: &'a ObjectExpression<'a>) -> Option<Getter
                 return Some(GetterBody::Function(function));
             }
             Expression::ArrowFunctionExpression(arrow) => {
-                return Some(GetterBody::ArrowBody(&arrow.body.statements));
+                return Some(GetterBody::Arrow(arrow));
             }
             _ => {}
         }
@@ -179,19 +178,24 @@ fn accessor_object_getter<'a>(object: &'a ObjectExpression<'a>) -> Option<Getter
 
 enum GetterBody<'a> {
     Function(&'a Function<'a>),
-    ArrowBody(&'a [Statement<'a>]),
+    Arrow(&'a oxc_ast::ast::ArrowFunctionExpression<'a>),
 }
 
 fn check_getter(getter: GetterBody<'_>, offset: usize, result: &mut ScriptLintResult) {
-    let mut visitor = SideEffectVisitor { offset, result };
+    let mut visitor = SideEffectVisitor {
+        offset,
+        result,
+        scoping: None,
+        getter_span: Span::default(),
+    };
     match getter {
         GetterBody::Function(function) => {
             if let Some(body) = function.body.as_ref() {
                 visitor.visit_function_body(body);
             }
         }
-        GetterBody::ArrowBody(statements) => {
-            for statement in statements {
+        GetterBody::Arrow(arrow) => {
+            for statement in &arrow.body.statements {
                 visitor.visit_statement(statement);
             }
         }
@@ -207,6 +211,8 @@ fn check_getter(getter: GetterBody<'_>, offset: usize, result: &mut ScriptLintRe
 struct SideEffectVisitor<'rule> {
     offset: usize,
     result: &'rule mut ScriptLintResult,
+    scoping: Option<&'rule oxc_semantic::Scoping>,
+    getter_span: Span,
 }
 
 impl<'a> Visit<'a> for SideEffectVisitor<'_> {
@@ -216,15 +222,33 @@ impl<'a> Visit<'a> for SideEffectVisitor<'_> {
     }
 
     fn visit_assignment_expression(&mut self, it: &oxc_ast::ast::AssignmentExpression<'a>) {
-        if assignment_target_is_this_member(&it.left) {
-            self.report(it.span, "an assignment to `this`");
+        if assignment_target_is_this_member(&it.left)
+            || composition::assignment_is_external(&it.left, self.scoping, self.getter_span)
+        {
+            self.report(
+                it.span,
+                if assignment_target_is_this_member(&it.left) {
+                    "an assignment to `this`"
+                } else {
+                    "an assignment to external state"
+                },
+            );
         }
         walk_assignment_expression(self, it);
     }
 
     fn visit_update_expression(&mut self, it: &oxc_ast::ast::UpdateExpression<'a>) {
-        if simple_target_is_this_member(&it.argument) {
-            self.report(it.span, "an update of `this`");
+        if simple_target_is_this_member(&it.argument)
+            || composition::simple_target_is_external(&it.argument, self.scoping, self.getter_span)
+        {
+            self.report(
+                it.span,
+                if simple_target_is_this_member(&it.argument) {
+                    "an update of `this`"
+                } else {
+                    "an update of external state"
+                },
+            );
         }
         walk_update_expression(self, it);
     }
@@ -232,9 +256,17 @@ impl<'a> Visit<'a> for SideEffectVisitor<'_> {
     fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
         if let Expression::StaticMemberExpression(member) = &it.callee
             && MUTATING_ARRAY_METHODS.contains(&member.property.name.as_str())
-            && expression_root_is_this(&member.object)
+            && (expression_root_is_this(&member.object)
+                || composition::root_is_external(&member.object, self.scoping, self.getter_span))
         {
-            self.report(it.span, "a mutating method call on `this`");
+            self.report(
+                it.span,
+                if expression_root_is_this(&member.object) {
+                    "a mutating method call on `this`"
+                } else {
+                    "a mutating method call on external state"
+                },
+            );
         }
         walk_call_expression(self, it);
     }
