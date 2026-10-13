@@ -56,6 +56,6 @@ The cumulative Stack composition keeps the original reference reader byte-exact
 after Actions refused its changed identity. A separate current CLI reader proves
 the complete range inverse; Maestro migration regressions use the matching current
 fixture. Both prior receipts remain historical source-only evidence. The new
-sealed 323-row parent composition changes two owned rows, preserves all 321 other
+sealed 323-row parent composition changes three owned rows, preserves all 320 other
 rows and both frames, and reverses only the coupled helper/law checksums. Later
 physical sources are qualified by the unchanged original refusal family.

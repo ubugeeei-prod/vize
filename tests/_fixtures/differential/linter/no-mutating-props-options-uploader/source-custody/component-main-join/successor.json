@@ -332,9 +332,9 @@
     {
       "path": "crates/vize_maestro/src/ide/diagnostics/default_migration_tests.rs",
       "mode": "100644",
-      "bytes": 2435,
-      "sha256": "bca60b1f7a8dc6824da8a8c1bb380a0e1601ad71847c8187cb919909eb57669e",
-      "gitBlob": "0d49e3de2462cafac5360e3591c33f6965afaa2f"
+      "bytes": 2449,
+      "sha256": "f7afca3c14e86e571943f8c581fc23800536c60be658ef787fc194b7a2fed7a4",
+      "gitBlob": "d4e492695e39e5f68a86fb260ce3ee4fe682aba8"
     },
     {
       "path": "crates/vize_patina/src/linter/compatibility.rs",

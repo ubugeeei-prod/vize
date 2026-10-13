@@ -11,7 +11,7 @@ const sha = (body) => createHash("sha256").update(body).digest("hex");
 const bytes = fs.readFileSync(
   path.join(root, "tests/_fixtures/lint-deprecation-stack-source-composition.json.gz"),
 );
-assert.equal(sha(bytes), "f8ba27f524c351a31b7351199b4f475062b0e581dfcac5a6963c1a87d14a1973");
+assert.equal(sha(bytes), "6cc05cd6a209110a6f25aa8955faeb4952a78f6d8e56553d0ab12ddeb1177079");
 const packet = JSON.parse(gunzipSync(bytes));
 function decode(row) {
   const body = Buffer.from(row.base64, "base64");
@@ -42,6 +42,7 @@ function validate(value) {
   assert.deepEqual(
     value.changes.map((row) => row.path),
     [
+      "crates/vize_maestro/src/ide/diagnostics/default_migration_tests.rs",
       "crates/vize_patina/src/preset/default_migration_tests.rs",
       "crates/vize_patina/src/rules/vue/no_deprecated_functional_template.rs",
     ],
@@ -61,10 +62,19 @@ function validate(value) {
         const { base64: _base64, ...sealed } = change[side];
         assert.deepEqual(identity, { ...sealed, mode: "100644" });
       }
-      assert.deepEqual(
-        value.ownManifest.current.find((row) => row.path === current.path),
-        current,
-      );
+      if (current.path.startsWith("crates/vize_maestro/")) {
+        const beforeBody = decode(change.before).toString();
+        const marker = "lint-default-migrations/cases.json";
+        assert.equal(beforeBody.split(marker).length, 2);
+        assert.equal(
+          decode(change.after).toString(),
+          beforeBody.replace(marker, "lint-default-migrations/current-range-cases.json"),
+        );
+      } else
+        assert.deepEqual(
+          value.ownManifest.current.find((row) => row.path === current.path),
+          current,
+        );
     }
   }
   assert.deepEqual(
