@@ -5,14 +5,13 @@ options: vapor
 <input v-model="msg">
 --- OUTPUT ---
 import { applyTextModel as _applyTextModel, template as _template } from 'vue';
-const t0 = _template("<input>", true)
+const t0 = _template("<input>", 1)
 
 export function render(_ctx) {
   const n0 = t0()
-  _applyTextModel(n0, () => (_ctx.msg), _value => (_ctx.msg = _value))
+  _applyTextModel(n0, () => (msg), _value => (msg = _value))
   return n0
 }
-
 ===
 name: input number
 options: vapor
@@ -20,14 +19,13 @@ options: vapor
 <input type="number" v-model="count">
 --- OUTPUT ---
 import { applyTextModel as _applyTextModel, template as _template } from 'vue';
-const t0 = _template("<input type=\"number\">", true)
+const t0 = _template("<input type=number>", 1)
 
 export function render(_ctx) {
   const n0 = t0()
-  _applyTextModel(n0, () => (_ctx.count), _value => (_ctx.count = _value))
+  _applyTextModel(n0, () => (count), _value => (count = _value))
   return n0
 }
-
 ===
 name: input checkbox
 options: vapor
@@ -35,14 +33,13 @@ options: vapor
 <input type="checkbox" v-model="checked">
 --- OUTPUT ---
 import { applyCheckboxModel as _applyCheckboxModel, template as _template } from 'vue';
-const t0 = _template("<input type=\"checkbox\">", true)
+const t0 = _template("<input type=checkbox>", 1)
 
 export function render(_ctx) {
   const n0 = t0()
-  _applyCheckboxModel(n0, () => (_ctx.checked), _value => (_ctx.checked = _value))
+  _applyCheckboxModel(n0, () => (checked), _value => (checked = _value))
   return n0
 }
-
 ===
 name: input radio
 options: vapor
@@ -50,14 +47,13 @@ options: vapor
 <input type="radio" v-model="picked" value="a">
 --- OUTPUT ---
 import { applyRadioModel as _applyRadioModel, template as _template } from 'vue';
-const t0 = _template("<input type=\"radio\" value=\"a\">", true)
+const t0 = _template("<input type=radio value=a>", 1)
 
 export function render(_ctx) {
   const n0 = t0()
-  _applyRadioModel(n0, () => (_ctx.picked), _value => (_ctx.picked = _value))
+  _applyRadioModel(n0, () => (picked), _value => (picked = _value))
   return n0
 }
-
 ===
 name: textarea
 options: vapor
@@ -65,14 +61,13 @@ options: vapor
 <textarea v-model="content"></textarea>
 --- OUTPUT ---
 import { applyTextModel as _applyTextModel, template as _template } from 'vue';
-const t0 = _template("<textarea></textarea>", true)
+const t0 = _template("<textarea>", 1)
 
 export function render(_ctx) {
   const n0 = t0()
-  _applyTextModel(n0, () => (_ctx.content), _value => (_ctx.content = _value))
+  _applyTextModel(n0, () => (content), _value => (content = _value))
   return n0
 }
-
 ===
 name: select
 options: vapor
@@ -80,14 +75,13 @@ options: vapor
 <select v-model="selected"><option>A</option><option>B</option></select>
 --- OUTPUT ---
 import { applySelectModel as _applySelectModel, template as _template } from 'vue';
-const t0 = _template("<select><option>A</option><option>B</option></select>", true)
+const t0 = _template("<select><option>A</option><option>B", 1)
 
 export function render(_ctx) {
   const n0 = t0()
-  _applySelectModel(n0, () => (_ctx.selected), _value => (_ctx.selected = _value))
+  _applySelectModel(n0, () => (selected), _value => (selected = _value))
   return n0
 }
-
 ===
 name: v-model.lazy
 options: vapor
@@ -95,14 +89,13 @@ options: vapor
 <input v-model.lazy="msg">
 --- OUTPUT ---
 import { applyTextModel as _applyTextModel, template as _template } from 'vue';
-const t0 = _template("<input>", true)
+const t0 = _template("<input>", 1)
 
 export function render(_ctx) {
   const n0 = t0()
-  _applyTextModel(n0, () => (_ctx.msg), _value => (_ctx.msg = _value), { lazy: true })
+  _applyTextModel(n0, () => (msg), _value => (msg = _value), { lazy: true })
   return n0
 }
-
 ===
 name: v-model.number
 options: vapor
@@ -110,14 +103,13 @@ options: vapor
 <input v-model.number="age">
 --- OUTPUT ---
 import { applyTextModel as _applyTextModel, template as _template } from 'vue';
-const t0 = _template("<input>", true)
+const t0 = _template("<input>", 1)
 
 export function render(_ctx) {
   const n0 = t0()
-  _applyTextModel(n0, () => (_ctx.age), _value => (_ctx.age = _value), { number: true })
+  _applyTextModel(n0, () => (age), _value => (age = _value), { number: true })
   return n0
 }
-
 ===
 name: v-model.trim
 options: vapor
@@ -125,14 +117,13 @@ options: vapor
 <input v-model.trim="msg">
 --- OUTPUT ---
 import { applyTextModel as _applyTextModel, template as _template } from 'vue';
-const t0 = _template("<input>", true)
+const t0 = _template("<input>", 1)
 
 export function render(_ctx) {
   const n0 = t0()
-  _applyTextModel(n0, () => (_ctx.msg), _value => (_ctx.msg = _value), { trim: true })
+  _applyTextModel(n0, () => (msg), _value => (msg = _value), { trim: true })
   return n0
 }
-
 ===
 name: multiple modifiers
 options: vapor
@@ -140,62 +131,56 @@ options: vapor
 <input v-model.trim.lazy="msg">
 --- OUTPUT ---
 import { applyTextModel as _applyTextModel, template as _template } from 'vue';
-const t0 = _template("<input>", true)
+const t0 = _template("<input>", 1)
 
 export function render(_ctx) {
   const n0 = t0()
-  _applyTextModel(n0, () => (_ctx.msg), _value => (_ctx.msg = _value), { trim: true,lazy: true })
+  _applyTextModel(n0, () => (msg), _value => (msg = _value), { trim: true, lazy: true })
   return n0
 }
-
 ===
 name: component v-model
 options: vapor
 --- INPUT ---
 <MyComponent v-model="value" />
 --- OUTPUT ---
-import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback } from 'vue';
+import { createAssetComponent as _createAssetComponent } from 'vue';
 
 export function render(_ctx) {
-  const _component_MyComponent = _resolveComponent("MyComponent")
-  const n0 = _createComponentWithFallback(_component_MyComponent, {
-    modelValue: () => (_ctx.value),
-    "onUpdate:modelValue": () => ($event => ((_ctx.value) = $event))
+  const n0 = _createAssetComponent("MyComponent", {
+    modelValue: () => (value),
+    "onUpdate:modelValue": () => _value => (value = _value)
   }, null, true)
   return n0
 }
-
 ===
 name: named v-model
 options: vapor
 --- INPUT ---
 <MyComponent v-model:title="pageTitle" />
 --- OUTPUT ---
-import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback } from 'vue';
+import { createAssetComponent as _createAssetComponent } from 'vue';
 
 export function render(_ctx) {
-  const _component_MyComponent = _resolveComponent("MyComponent")
-  const n0 = _createComponentWithFallback(_component_MyComponent, {
-    title: () => (_ctx.pageTitle),
-    "onUpdate:title": () => ($event => ((_ctx.pageTitle) = $event))
+  const n0 = _createAssetComponent("MyComponent", {
+    title: () => (pageTitle),
+    "onUpdate:title": () => _value => (pageTitle = _value)
   }, null, true)
   return n0
 }
-
 ===
 name: v-model with modifier
 options: vapor
 --- INPUT ---
 <MyComponent v-model.trim="value" />
 --- OUTPUT ---
-import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback } from 'vue';
+import { createAssetComponent as _createAssetComponent } from 'vue';
 
 export function render(_ctx) {
-  const _component_MyComponent = _resolveComponent("MyComponent")
-  const n0 = _createComponentWithFallback(_component_MyComponent, {
-    modelValue: () => (_ctx.value),
-    "onUpdate:modelValue": () => ($event => ((_ctx.value) = $event)),
-    modelModifiers: () => ({ "trim": true })
+  const n0 = _createAssetComponent("MyComponent", {
+    modelValue: () => (value),
+    "onUpdate:modelValue": () => _value => (value = _value),
+    modelModifiers: { trim: true }
   }, null, true)
   return n0
 }

@@ -8,8 +8,15 @@
  *   node tests/tooling/support/generate-expected.ts --mode vdom  # All vdom fixtures
  *   node tests/tooling/support/generate-expected.ts --mode vapor # All vapor fixtures
  *   node tests/tooling/support/generate-expected.ts --mode sfc   # All sfc fixtures
+ *
+ * Fixtures are Pkl modules (`*.pkl`, evaluated with the `pkl` CLI the fixture
+ * runner also uses); a legacy `*.toml` fixture is read only when no Pkl
+ * sibling exists. Vapor outputs come from the newest supported Vue release
+ * (`vue-vapor-runtime-supported`), so a runtime protocol change shows up as
+ * an expected-output diff.
  */
 
+import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { parse as parseTOML } from "@iarna/toml";
@@ -29,9 +36,31 @@ interface TestFixture {
 const fixturesDir = path.join(import.meta.dirname!, "..", "..", "fixtures");
 const expectedDir = path.join(import.meta.dirname!, "..", "..", "expected");
 
+function pklCommand(): string {
+  for (let dir = import.meta.dirname!; ; dir = path.dirname(dir)) {
+    for (const candidate of ["node_modules/.bin/pkl", "node_modules/@pkl-community/pkl/pkl"]) {
+      const resolved = path.join(dir, candidate);
+      if (fs.existsSync(resolved)) return resolved;
+    }
+    if (path.dirname(dir) === dir) return process.env.PKL ?? "pkl";
+  }
+}
+
 function loadFixture(filePath: string): TestFixture {
+  if (filePath.endsWith(".pkl")) {
+    const json = execFileSync(pklCommand(), ["eval", "--format", "json", filePath], {
+      encoding: "utf8",
+      maxBuffer: 64 * 1024 * 1024,
+    });
+    return JSON.parse(json) as TestFixture;
+  }
   const content = fs.readFileSync(filePath, "utf-8");
   return parseTOML(content) as any;
+}
+
+/** The fixture file for `base` (a path without extension): Pkl first. */
+function fixtureFile(base: string): string | undefined {
+  return [".pkl", ".toml"].map((ext) => base + ext).find((file) => fs.existsSync(file));
 }
 
 function compileVdom(source: string, options?: Record<string, any>): string {
@@ -56,8 +85,9 @@ function compileVdom(source: string, options?: Record<string, any>): string {
 let _compileVaporFn: any = null;
 async function loadVaporCompiler() {
   if (!_compileVaporFn) {
-    const mod = await import("@vue/compiler-vapor");
-    _compileVaporFn = mod.compile;
+    const release = await import("./vue-vapor-release.mjs");
+    _compileVaporFn = release.supportedCompilerVapor.compile;
+    console.log(`Vapor expectations: @vue/compiler-vapor ${release.vueVaporSupportedVersion}`);
   }
   return _compileVaporFn;
 }
@@ -229,10 +259,15 @@ function processFixture(fixturePath: string, outputPath: string) {
 function processDir(dirName: string) {
   const dir = path.join(fixturesDir, dirName);
   if (!fs.existsSync(dir)) return;
-  const files = fs.readdirSync(dir).filter((f) => f.endsWith(".toml"));
-  for (const file of files) {
-    const fixturePath = path.join(dir, file);
-    const outputPath = path.join(expectedDir, dirName, file.replace(".toml", ".snap"));
+  const names = new Set(
+    fs
+      .readdirSync(dir)
+      .filter((f) => /\.(pkl|toml)$/u.test(f) && f !== "CompilerFixture.pkl")
+      .map((f) => f.replace(/\.(pkl|toml)$/u, "")),
+  );
+  for (const name of [...names].sort()) {
+    const fixturePath = fixtureFile(path.join(dir, name))!;
+    const outputPath = path.join(expectedDir, dirName, `${name}.snap`);
     processFixture(fixturePath, outputPath);
   }
 }
@@ -255,11 +290,11 @@ async function main() {
   // If specific fixture is provided
   if (args.length > 0 && !args[0].startsWith("--")) {
     for (const arg of args) {
-      const fixturePath = path.join(fixturesDir, `${arg}.toml`);
+      const fixturePath = fixtureFile(path.join(fixturesDir, arg));
       const outputPath = path.join(expectedDir, `${arg}.snap`);
 
-      if (!fs.existsSync(fixturePath)) {
-        console.error(`Fixture not found: ${fixturePath}`);
+      if (!fixturePath) {
+        console.error(`Fixture not found: ${path.join(fixturesDir, arg)}.pkl`);
         continue;
       }
 

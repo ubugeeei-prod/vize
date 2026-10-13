@@ -5,16 +5,15 @@ options: vapor
 <div v-if="show"></div>
 --- OUTPUT ---
 import { createIf as _createIf, template as _template } from 'vue';
-const t0 = _template("<div></div>", true)
+const t0 = _template("<div>", 3)
 
 export function render(_ctx) {
-  const n0 = _createIf(() => (_ctx.show), () => {
+  const n0 = _createIf(() => (show), () => {
     const n2 = t0()
     return n2
-  })
+  }, null, 33 /* TRUE_SINGLE_ROOT, TRUE_NO_SCOPE */)
   return n0
 }
-
 ===
 name: v-if with content
 options: vapor
@@ -22,16 +21,15 @@ options: vapor
 <div v-if="show">content</div>
 --- OUTPUT ---
 import { createIf as _createIf, template as _template } from 'vue';
-const t0 = _template("<div>content</div>", true)
+const t0 = _template("<div>content", 3)
 
 export function render(_ctx) {
-  const n0 = _createIf(() => (_ctx.show), () => {
+  const n0 = _createIf(() => (show), () => {
     const n2 = t0()
     return n2
-  })
+  }, null, 33 /* TRUE_SINGLE_ROOT, TRUE_NO_SCOPE */)
   return n0
 }
-
 ===
 name: v-if with interpolation
 options: vapor
@@ -39,18 +37,17 @@ options: vapor
 <div v-if="show">{{ msg }}</div>
 --- OUTPUT ---
 import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';
-const t0 = _template("<div> </div>", true)
+const t0 = _template("<div> ", 1)
 
 export function render(_ctx) {
-  const n0 = _createIf(() => (_ctx.show), () => {
+  const n0 = _createIf(() => (show), () => {
     const n2 = t0()
     const x2 = _txt(n2)
-    _renderEffect(() => _setText(x2, _toDisplayString(_ctx.msg)))
+    _renderEffect(() => _setText(x2, _toDisplayString(msg)))
     return n2
   })
   return n0
 }
-
 ===
 name: v-if with v-else
 options: vapor
@@ -58,20 +55,19 @@ options: vapor
 <div v-if="show">yes</div><div v-else>no</div>
 --- OUTPUT ---
 import { createIf as _createIf, template as _template } from 'vue';
-const t0 = _template("<div>yes</div>", true)
-const t1 = _template("<div>no</div>", true)
+const t0 = _template("<div>yes", 3)
+const t1 = _template("<div>no", 3)
 
 export function render(_ctx) {
-  const n0 = _createIf(() => (_ctx.show), () => {
+  const n0 = _createIf(() => (show), () => {
     const n2 = t0()
     return n2
   }, () => {
     const n4 = t1()
     return n4
-  })
+  }, 357 /* TRUE_SINGLE_ROOT, FALSE_SINGLE_ROOT, TRUE_NO_SCOPE, FALSE_NO_SCOPE, KEYED_INDEX_0 */)
   return n0
 }
-
 ===
 name: v-if/v-else-if/v-else
 options: vapor
@@ -79,24 +75,23 @@ options: vapor
 <div v-if="a">A</div><div v-else-if="b">B</div><div v-else>C</div>
 --- OUTPUT ---
 import { createIf as _createIf, template as _template } from 'vue';
-const t0 = _template("<div>A</div>", true)
-const t1 = _template("<div>B</div>", true)
-const t2 = _template("<div>C</div>", true)
+const t0 = _template("<div>A", 3)
+const t1 = _template("<div>B", 3)
+const t2 = _template("<div>C", 3)
 
 export function render(_ctx) {
-  const n0 = _createIf(() => (_ctx.a), () => {
+  const n0 = _createIf(() => (a), () => {
     const n2 = t0()
     return n2
-  }, () => _createIf(() => (_ctx.b), () => {
+  }, () => _createIf(() => (b), () => {
     const n4 = t1()
     return n4
   }, () => {
     const n7 = t2()
     return n7
-  }))
+  }, 613 /* TRUE_SINGLE_ROOT, FALSE_SINGLE_ROOT, TRUE_NO_SCOPE, FALSE_NO_SCOPE, KEYED_INDEX_1 */), 293 /* TRUE_SINGLE_ROOT, FALSE_SINGLE_ROOT, TRUE_NO_SCOPE, KEYED_INDEX_0 */)
   return n0
 }
-
 ===
 name: v-if on template
 options: vapor
@@ -104,18 +99,17 @@ options: vapor
 <template v-if="show"><div>A</div><div>B</div></template>
 --- OUTPUT ---
 import { createIf as _createIf, template as _template } from 'vue';
-const t0 = _template("<div>A</div>")
-const t1 = _template("<div>B</div>")
+const t0 = _template("<div>A", 2)
+const t1 = _template("<div>B", 2)
 
 export function render(_ctx) {
-  const n0 = _createIf(() => (_ctx.show), () => {
+  const n0 = _createIf(() => (show), () => {
     const n2 = t0()
     const n3 = t1()
     return [n2, n3]
-  })
+  }, null, 34 /* TRUE_MULTI_ROOT, TRUE_NO_SCOPE */)
   return n0
 }
-
 ===
 name: nested v-if
 options: vapor
@@ -123,18 +117,18 @@ options: vapor
 <div v-if="a"><span v-if="b">nested</span></div>
 --- OUTPUT ---
 import { setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
-const t0 = _template("<span>nested</span>")
-const t1 = _template("<div></div>", true)
+const t0 = _template("<span>nested", 2)
+const t1 = _template("<div>", 1)
 
 export function render(_ctx) {
-  const n0 = _createIf(() => (_ctx.a), () => {
-    const n2 = t1()
-    _setInsertionState(n2)
-    const n3 = _createIf(() => (_ctx.b), () => {
-      const n5 = t0()
-      return n5
+  const n0 = _createIf(() => (a), () => {
+    const n5 = t1()
+    _setInsertionState(n5)
+    const n2 = _createIf(() => (b), () => {
+      const n4 = t0()
+      return n4
     })
-    return n2
+    return n5
   })
   return n0
 }

@@ -31,3 +31,19 @@ export const vueVaporBrowserRuntime = fromUi.resolve(
 export const officialCompilerVapor = fromSfc("@vue/compiler-vapor");
 
 assert.equal(fromSfc("@vue/compiler-vapor/package.json").version, vueVaporVersion);
+
+// The newest release Vize supports (`vue-vapor-runtime-supported`). Vapor
+// expected outputs follow it, so a protocol change is visible as a diff.
+const fromSupported = createRequire(fromUi.resolve("vue-vapor-runtime-supported/package.json"));
+const fromSupportedSfc = createRequire(fromSupported.resolve("@vue/compiler-sfc"));
+
+/** Version of the newest supported Vue release. */
+export const vueVaporSupportedVersion = fromSupported("./package.json").version;
+
+/** The official `@vue/compiler-vapor` of the newest supported release. */
+export const supportedCompilerVapor = fromSupportedSfc("@vue/compiler-vapor");
+
+assert.equal(
+  fromSupportedSfc("@vue/compiler-vapor/package.json").version,
+  vueVaporSupportedVersion,
+);

@@ -5,14 +5,13 @@ options: vapor
 <div :id="id"></div>
 --- OUTPUT ---
 import { setProp as _setProp, renderEffect as _renderEffect, template as _template } from 'vue';
-const t0 = _template("<div></div>", true)
+const t0 = _template("<div>", 1)
 
 export function render(_ctx) {
   const n0 = t0()
-  _renderEffect(() => _setProp(n0, "id", _ctx.id))
+  _renderEffect(() => _setProp(n0, "id", id))
   return n0
 }
-
 ===
 name: v-bind class
 options: vapor
@@ -20,14 +19,13 @@ options: vapor
 <div :class="cls"></div>
 --- OUTPUT ---
 import { setClass as _setClass, renderEffect as _renderEffect, template as _template } from 'vue';
-const t0 = _template("<div></div>", true)
+const t0 = _template("<div>", 1)
 
 export function render(_ctx) {
   const n0 = t0()
-  _renderEffect(() => _setClass(n0, _ctx.cls))
+  _renderEffect(() => _setClass(n0, cls))
   return n0
 }
-
 ===
 name: v-bind style
 options: vapor
@@ -35,14 +33,13 @@ options: vapor
 <div :style="styles"></div>
 --- OUTPUT ---
 import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';
-const t0 = _template("<div></div>", true)
+const t0 = _template("<div>", 1)
 
 export function render(_ctx) {
   const n0 = t0()
-  _renderEffect(() => _setStyle(n0, _ctx.styles))
+  _renderEffect(() => _setStyle(n0, styles))
   return n0
 }
-
 ===
 name: class object
 options: vapor
@@ -50,14 +47,13 @@ options: vapor
 <div :class="{ active: isActive }"></div>
 --- OUTPUT ---
 import { setClass as _setClass, renderEffect as _renderEffect, template as _template } from 'vue';
-const t0 = _template("<div></div>", true)
+const t0 = _template("<div>", 1)
 
 export function render(_ctx) {
   const n0 = t0()
-  _renderEffect(() => _setClass(n0, { active: _ctx.isActive }))
+  _renderEffect(() => _setClass(n0, { active: isActive }))
   return n0
 }
-
 ===
 name: class array
 options: vapor
@@ -65,14 +61,13 @@ options: vapor
 <div :class="[a, b]"></div>
 --- OUTPUT ---
 import { setClass as _setClass, renderEffect as _renderEffect, template as _template } from 'vue';
-const t0 = _template("<div></div>", true)
+const t0 = _template("<div>", 1)
 
 export function render(_ctx) {
   const n0 = t0()
-  _renderEffect(() => _setClass(n0, [_ctx.a, _ctx.b]))
+  _renderEffect(() => _setClass(n0, [a, b]))
   return n0
 }
-
 ===
 name: class with static
 options: vapor
@@ -80,14 +75,13 @@ options: vapor
 <div class="static" :class="dynamic"></div>
 --- OUTPUT ---
 import { setClass as _setClass, renderEffect as _renderEffect, template as _template } from 'vue';
-const t0 = _template("<div></div>", true)
+const t0 = _template("<div>", 1)
 
 export function render(_ctx) {
   const n0 = t0()
-  _renderEffect(() => _setClass(n0, ["static", _ctx.dynamic]))
+  _renderEffect(() => _setClass(n0, ["static", dynamic]))
   return n0
 }
-
 ===
 name: style object
 options: vapor
@@ -95,14 +89,13 @@ options: vapor
 <div :style="{ color: textColor }"></div>
 --- OUTPUT ---
 import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';
-const t0 = _template("<div></div>", true)
+const t0 = _template("<div>", 1)
 
 export function render(_ctx) {
   const n0 = t0()
-  _renderEffect(() => _setStyle(n0, { color: _ctx.textColor }))
+  _renderEffect(() => _setStyle(n0, { color: textColor }))
   return n0
 }
-
 ===
 name: style array
 options: vapor
@@ -110,14 +103,13 @@ options: vapor
 <div :style="[a, b]"></div>
 --- OUTPUT ---
 import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';
-const t0 = _template("<div></div>", true)
+const t0 = _template("<div>", 1)
 
 export function render(_ctx) {
   const n0 = t0()
-  _renderEffect(() => _setStyle(n0, [_ctx.a, _ctx.b]))
+  _renderEffect(() => _setStyle(n0, [a, b]))
   return n0
 }
-
 ===
 name: v-bind object
 options: vapor
@@ -125,14 +117,13 @@ options: vapor
 <div v-bind="attrs"></div>
 --- OUTPUT ---
 import { setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue';
-const t0 = _template("<div></div>", true)
+const t0 = _template("<div>", 1)
 
 export function render(_ctx) {
   const n0 = t0()
-  _renderEffect(() => _setDynamicProps(n0, [_ctx.attrs]))
+  _renderEffect(() => _setDynamicProps(n0, [attrs]))
   return n0
 }
-
 ===
 name: dynamic attribute
 options: vapor
@@ -140,14 +131,13 @@ options: vapor
 <div :[attr]="value"></div>
 --- OUTPUT ---
 import { setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue';
-const t0 = _template("<div></div>", true)
+const t0 = _template("<div>", 1)
 
 export function render(_ctx) {
   const n0 = t0()
-  _renderEffect(() => _setDynamicProps(n0, [{ [_ctx.attr]: _ctx.value }]))
+  _renderEffect(() => _setDynamicProps(n0, [{ [(attr) || ""]: value }]))
   return n0
 }
-
 ===
 name: v-bind.camel
 options: vapor
@@ -155,14 +145,13 @@ options: vapor
 <svg :view-box.camel="viewBox"></svg>
 --- OUTPUT ---
 import { setAttr as _setAttr, renderEffect as _renderEffect, template as _template } from 'vue';
-const t0 = _template("<svg></svg>", true, 1)
+const t0 = _template("<svg>", 1, 1)
 
 export function render(_ctx) {
   const n0 = t0()
-  _renderEffect(() => _setAttr(n0, "viewBox", _ctx.viewBox, true))
+  _renderEffect(() => _setAttr(n0, "viewBox", viewBox, true))
   return n0
 }
-
 ===
 name: v-bind.prop
 options: vapor
@@ -170,10 +159,10 @@ options: vapor
 <div :text-content.prop="text"></div>
 --- OUTPUT ---
 import { setDOMProp as _setDOMProp, renderEffect as _renderEffect, template as _template } from 'vue';
-const t0 = _template("<div></div>", true)
+const t0 = _template("<div>", 1)
 
 export function render(_ctx) {
   const n0 = t0()
-  _renderEffect(() => _setDOMProp(n0, "text-content", _ctx.text))
+  _renderEffect(() => _setDOMProp(n0, "text-content", text))
   return n0
 }
