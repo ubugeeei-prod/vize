@@ -371,31 +371,61 @@
       "status": "unimplemented"
     },
     "vue/no-deprecated-destroyed-lifecycle": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "script/no-deprecated-destroyed-lifecycle",
       "patinaSeverity": "error",
       "status": "mapped"
     },
     "vue/no-deprecated-dollar-listeners-api": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "script/no-deprecated-dollar-listeners-api",
       "patinaSeverity": "error",
       "status": "mapped"
     },
     "vue/no-deprecated-dollar-scopedslots-api": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "script/no-deprecated-dollar-scopedslots-api",
       "patinaSeverity": "error",
       "status": "mapped"
     },
     "vue/no-deprecated-events-api": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "script/no-deprecated-events-api",
       "patinaSeverity": "error",
       "status": "mapped"
     },
     "vue/no-deprecated-filter": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "vue/no-deprecated-filter",
       "patinaSeverity": "error",
       "status": "mapped"
@@ -413,13 +443,25 @@
       "status": "mapped"
     },
     "vue/no-deprecated-html-element-is": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "vue/no-deprecated-html-element-is",
       "patinaSeverity": "error",
       "status": "mapped"
     },
     "vue/no-deprecated-inline-template": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "vue/no-deprecated-inline-template",
       "patinaSeverity": "error",
       "status": "mapped"
@@ -429,13 +471,25 @@
       "status": "unimplemented"
     },
     "vue/no-deprecated-props-default-this": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "script/no-deprecated-props-default-this",
       "patinaSeverity": "error",
       "status": "mapped"
     },
     "vue/no-deprecated-router-link-tag-prop": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "vue/no-deprecated-router-link-tag-prop",
       "patinaSeverity": "error",
       "status": "mapped"

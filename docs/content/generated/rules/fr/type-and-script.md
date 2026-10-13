@@ -838,7 +838,7 @@ Interdire les hooks de cycle de vie dépréciés destroyed et beforeDestroy
 [Mauvais](#script-no-deprecated-destroyed-lifecycle-bad) · [Bon](#script-no-deprecated-destroyed-lifecycle-good)
 
 Gravité par défaut: `error`  
-Préréglages: _none_  
+Préréglages: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Correction automatique: Disponible pour les diagnostics pris en charge  
 Champ d’application: Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -899,7 +899,7 @@ Interdire la propriété d’instance $listeners supprimée dans Vue 3 (fusionn�
 [Mauvais](#script-no-deprecated-dollar-listeners-api-bad) · [Bon](#script-no-deprecated-dollar-listeners-api-good)
 
 Gravité par défaut: `error`  
-Préréglages: _none_  
+Préréglages: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -963,7 +963,7 @@ Interdire la propriété d’instance $scopedSlots supprimée dans Vue 3 (utilis
 [Mauvais](#script-no-deprecated-dollar-scopedslots-api-bad) · [Bon](#script-no-deprecated-dollar-scopedslots-api-good)
 
 Gravité par défaut: `error`  
-Préréglages: _none_  
+Préréglages: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -1028,7 +1028,7 @@ Interdire l’API d’événements de Vue 2 supprimée ($on / $off / $once)
 [Mauvais](#script-no-deprecated-events-api-bad) · [Bon](#script-no-deprecated-events-api-good)
 
 Gravité par défaut: `error`  
-Préréglages: _none_  
+Préréglages: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -1098,7 +1098,7 @@ Interdire `this` dans une fonction de valeur par défaut ou de validation de pro
 [Mauvais](#script-no-deprecated-props-default-this-bad) · [Bon](#script-no-deprecated-props-default-this-good)
 
 Gravité par défaut: `error`  
-Préréglages: _none_  
+Préréglages: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.

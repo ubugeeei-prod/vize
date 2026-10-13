@@ -56,7 +56,16 @@ fn metadata_and_registry_match_the_upstream_contract() {
         .find(|rule| rule.name == META.name)
         .unwrap();
     assert!(registered.fixable);
-    assert!(registered.presets.is_empty());
+    assert_eq!(
+        registered.presets,
+        [
+            "essential",
+            "happy-path",
+            "ecosystem",
+            "nuxt",
+            "opinionated"
+        ]
+    );
 }
 
 #[test]

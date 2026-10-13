@@ -25,6 +25,24 @@ impl Linter {
                 .insert(String::from("vue/no-deprecated-v-on-number-modifiers"));
             self.disabled_rules
                 .insert(String::from("vue/no-deprecated-functional-template"));
+            self.disabled_rules
+                .insert(String::from("vue/no-deprecated-filter"));
+            self.disabled_rules
+                .insert(String::from("vue/no-deprecated-html-element-is"));
+            self.disabled_rules
+                .insert(String::from("vue/no-deprecated-inline-template"));
+            self.disabled_rules
+                .insert(String::from("vue/no-deprecated-router-link-tag-prop"));
+            self.disabled_rules
+                .insert(String::from("script/no-deprecated-destroyed-lifecycle"));
+            self.disabled_rules
+                .insert(String::from("script/no-deprecated-dollar-listeners-api"));
+            self.disabled_rules
+                .insert(String::from("script/no-deprecated-dollar-scopedslots-api"));
+            self.disabled_rules
+                .insert(String::from("script/no-deprecated-events-api"));
+            self.disabled_rules
+                .insert(String::from("script/no-deprecated-props-default-this"));
         }
         self
     }

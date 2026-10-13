@@ -148,3 +148,5 @@ mod eslint_vue_rule_map_tests;
 mod no_with_defaults_tests;
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod vue3_removal_defaults_tests;

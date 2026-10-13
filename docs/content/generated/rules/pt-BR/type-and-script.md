@@ -838,7 +838,7 @@ Proibir os hooks de ciclo de vida obsoletos destroyed e beforeDestroy
 [Incorreto](#script-no-deprecated-destroyed-lifecycle-bad) · [Correto](#script-no-deprecated-destroyed-lifecycle-good)
 
 Severidade padrão: `error`  
-Predefinições: _none_  
+Predefinições: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Correção automática: Disponível para os diagnósticos compatíveis  
 Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
@@ -899,7 +899,7 @@ Proibir a propriedade de instância $listeners removida no Vue 3 (incorporada a 
 [Incorreto](#script-no-deprecated-dollar-listeners-api-bad) · [Correto](#script-no-deprecated-dollar-listeners-api-good)
 
 Severidade padrão: `error`  
-Predefinições: _none_  
+Predefinições: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
@@ -963,7 +963,7 @@ Proibir a propriedade de instância $scopedSlots removida no Vue 3 (usar $slots)
 [Incorreto](#script-no-deprecated-dollar-scopedslots-api-bad) · [Correto](#script-no-deprecated-dollar-scopedslots-api-good)
 
 Severidade padrão: `error`  
-Predefinições: _none_  
+Predefinições: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
@@ -1028,7 +1028,7 @@ Proibir a API de eventos do Vue 2 removida ($on / $off / $once)
 [Incorreto](#script-no-deprecated-events-api-bad) · [Correto](#script-no-deprecated-events-api-good)
 
 Severidade padrão: `error`  
-Predefinições: _none_  
+Predefinições: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
@@ -1098,7 +1098,7 @@ Proibir `this` dentro de uma função de valor padrão ou validação de prop (r
 [Incorreto](#script-no-deprecated-props-default-this-bad) · [Correto](#script-no-deprecated-props-default-this-good)
 
 Severidade padrão: `error`  
-Predefinições: _none_  
+Predefinições: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.

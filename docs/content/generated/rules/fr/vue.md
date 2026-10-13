@@ -1110,7 +1110,7 @@ Interdire la syntaxe obsolète des filtres de Vue 2 utilisant l’opérateur pip
 [Mauvais](#vue-no-deprecated-filter-bad) · [Bon](#vue-no-deprecated-filter-good)
 
 Gravité par défaut: `error`  
-Préréglages: _none_  
+Préréglages: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -1232,7 +1232,7 @@ Interdire l’attribut `is` sur les éléments HTML natifs
 [Mauvais](#vue-no-deprecated-html-element-is-bad) · [Bon](#vue-no-deprecated-html-element-is-good)
 
 Gravité par défaut: `error`  
-Préréglages: _none_  
+Préréglages: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -1294,7 +1294,7 @@ Interdire l’attribut obsolète `inline-template`
 [Mauvais](#vue-no-deprecated-inline-template-bad) · [Bon](#vue-no-deprecated-inline-template-good)
 
 Gravité par défaut: `error`  
-Préréglages: _none_  
+Préréglages: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -1355,7 +1355,7 @@ Interdire la prop `tag` sur &lt;router-link&gt;
 [Mauvais](#vue-no-deprecated-router-link-tag-prop-bad) · [Bon](#vue-no-deprecated-router-link-tag-prop-good)
 
 Gravité par défaut: `error`  
-Préréglages: _none_  
+Préréglages: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.

@@ -55,6 +55,10 @@ impl RuleRegistry {
         registry.register(Box::new(crate::rules::vue::NoDeprecatedScopeAttribute));
         registry.register(Box::new(crate::rules::vue::NoDeprecatedVOnNumberModifiers));
         registry.register(Box::new(crate::rules::vue::NoDeprecatedFunctionalTemplate));
+        registry.register(Box::new(crate::rules::vue::NoDeprecatedFilter));
+        registry.register(Box::new(crate::rules::vue::NoDeprecatedHtmlElementIs));
+        registry.register(Box::new(crate::rules::vue::NoDeprecatedInlineTemplate));
+        registry.register(Box::new(crate::rules::vue::NoDeprecatedRouterLinkTagProp));
         crate::rules::vue::register_valid_directives(&mut registry);
         registry.register(Box::new(crate::rules::vapor::NoVueLifecycleEvents));
         crate::rules::vue::register_security(&mut registry);

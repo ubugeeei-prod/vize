@@ -9,7 +9,7 @@ title: "vue/no-deprecated-inline-template"
 [悪い例](#悪い) · [良い例](#良い)
 
 既定の重大度: `error`  
-プリセット: _none_  
+プリセット: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。

@@ -1109,7 +1109,7 @@ Disallow deprecated Vue 2 filter syntax using the pipe operator
 [Bad](#vue-no-deprecated-filter-bad) · [Good](#vue-no-deprecated-filter-good)
 
 Default severity: `error`  
-Presets: _none_  
+Presets: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
@@ -1231,7 +1231,7 @@ Disallow the `is` attribute on native HTML elements
 [Bad](#vue-no-deprecated-html-element-is-bad) · [Good](#vue-no-deprecated-html-element-is-good)
 
 Default severity: `error`  
-Presets: _none_  
+Presets: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
@@ -1293,7 +1293,7 @@ Disallow the deprecated `inline-template` attribute
 [Bad](#vue-no-deprecated-inline-template-bad) · [Good](#vue-no-deprecated-inline-template-good)
 
 Default severity: `error`  
-Presets: _none_  
+Presets: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
@@ -1354,7 +1354,7 @@ Disallow the `tag` prop on &lt;router-link&gt;
 [Bad](#vue-no-deprecated-router-link-tag-prop-bad) · [Good](#vue-no-deprecated-router-link-tag-prop-good)
 
 Default severity: `error`  
-Presets: _none_  
+Presets: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.

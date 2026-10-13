@@ -1109,7 +1109,7 @@ Vue 2 のパイプによるフィルター構文を検出します。
 [悪い例](#vue-no-deprecated-filter-bad) · [良い例](#vue-no-deprecated-filter-good)
 
 既定の重大度: `error`  
-プリセット: _none_  
+プリセット: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
@@ -1231,7 +1231,7 @@ functional を取り除き、コンポーネントの msg を直接参照しま�
 [悪い例](#vue-no-deprecated-html-element-is-bad) · [良い例](#vue-no-deprecated-html-element-is-good)
 
 既定の重大度: `error`  
-プリセット: _none_  
+プリセット: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
@@ -1293,7 +1293,7 @@ vp run lint
 [悪い例](#vue-no-deprecated-inline-template-bad) · [良い例](#vue-no-deprecated-inline-template-good)
 
 既定の重大度: `error`  
-プリセット: _none_  
+プリセット: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
@@ -1354,7 +1354,7 @@ router-link の削除済み tag prop を検出します。
 [悪い例](#vue-no-deprecated-router-link-tag-prop-bad) · [良い例](#vue-no-deprecated-router-link-tag-prop-good)
 
 既定の重大度: `error`  
-プリセット: _none_  
+プリセット: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
