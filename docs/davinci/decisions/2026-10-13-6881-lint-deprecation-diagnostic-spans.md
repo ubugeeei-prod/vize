@@ -29,3 +29,8 @@ preset, rule map, documented divergence or zero ceiling changes. Actions must
 qualify the new native implementation; a new Matrix is owned by the release
 coordinator after actual merge. Other inheritance, props, slot, component and
 baseline-parser failures remain separate work.
+
+The initial source Actions passed the new complete 18-case native corpus but
+refused old preset and LSP vectors. Their complete packets remain intact; only
+the three affected rule ranges change, including UTF-8 bytes and LSP UTF-16
+positions. The original failed run 38336568495 remains part of the evidence.

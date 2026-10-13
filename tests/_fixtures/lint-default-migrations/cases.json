@@ -296,8 +296,8 @@
           "rule_name": "vue/no-deprecated-functional-template",
           "severity": "error",
           "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
-          "start": 0,
-          "end": 21,
+          "start": 10,
+          "end": 20,
           "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
           "labels": [],
           "fix": null
@@ -309,8 +309,8 @@
           "rule_name": "vue/no-deprecated-functional-template",
           "severity": "error",
           "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
-          "start": 0,
-          "end": 21,
+          "start": 10,
+          "end": 20,
           "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
           "labels": [],
           "fix": null
@@ -322,11 +322,11 @@
           "range": {
             "start": {
               "line": 0,
-              "character": 0
+              "character": 10
             },
             "end": {
               "line": 0,
-              "character": 21
+              "character": 20
             }
           },
           "severity": 1,
@@ -350,8 +350,8 @@
           "rule_name": "vue/no-deprecated-functional-template",
           "severity": "error",
           "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
-          "start": 0,
-          "end": 21,
+          "start": 10,
+          "end": 20,
           "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
           "labels": [],
           "fix": null
@@ -373,8 +373,8 @@
           "rule_name": "vue/no-deprecated-functional-template",
           "severity": "error",
           "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
-          "start": 0,
-          "end": 21,
+          "start": 10,
+          "end": 20,
           "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
           "labels": [],
           "fix": null
@@ -396,11 +396,11 @@
           "range": {
             "start": {
               "line": 0,
-              "character": 0
+              "character": 10
             },
             "end": {
               "line": 0,
-              "character": 21
+              "character": 20
             }
           },
           "severity": 1,
@@ -503,8 +503,8 @@
           "rule_name": "vue/no-deprecated-functional-template",
           "severity": "error",
           "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
-          "start": 20,
-          "end": 41,
+          "start": 30,
+          "end": 40,
           "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
           "labels": [],
           "fix": null
@@ -526,8 +526,8 @@
           "rule_name": "vue/no-deprecated-functional-template",
           "severity": "error",
           "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
-          "start": 20,
-          "end": 41,
+          "start": 30,
+          "end": 40,
           "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
           "labels": [],
           "fix": null
@@ -549,11 +549,11 @@
           "range": {
             "start": {
               "line": 1,
-              "character": 0
+              "character": 10
             },
             "end": {
               "line": 1,
-              "character": 21
+              "character": 20
             }
           },
           "severity": 1,
