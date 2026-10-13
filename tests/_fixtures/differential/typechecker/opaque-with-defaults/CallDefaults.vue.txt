@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import type { TreeProps } from './defaults';
+import { text, treePropsDefaults } from './defaults';
+
+const props = withDefaults(defineProps<TreeProps>(), treePropsDefaults());
+const first: string = props.valueField;
+void first;
+</script>
+
+<template>
+  <ul>
+    <li v-for="item in treeData" :key="text(valueField)" :title="String(item[childrenField])">
+      {{ text(labelField) }}{{ text(props.labelField) }}{{ text($props.labelField) }}
+    </li>
+  </ul>
+</template>
