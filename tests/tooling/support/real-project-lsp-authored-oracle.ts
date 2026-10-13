@@ -133,14 +133,17 @@ export async function exerciseAuthoredLspOracle(
       `references must resolve the authored ${binding.symbol} binding`,
     );
     assert.deepEqual(definition, [{ range: declarationRange, uri: bindingDocument.uri }]);
+    // A declared prop contract adds its authored component consumers; every
+    // other binding keeps exactly the local template use and declaration.
+    const authoredReferences = sortLocations(
+      authoredPropReferenceLocations(workspaceDir, oracle, [
+        { range: usageRange, uri: bindingDocument.uri },
+        { range: declarationRange, uri: bindingDocument.uri },
+      ]),
+    );
     assert.deepEqual(
       sortLocations(references),
-      sortLocations(
-        authoredPropReferenceLocations(workspaceDir, oracle, [
-          { range: usageRange, uri: bindingDocument.uri },
-          { range: declarationRange, uri: bindingDocument.uri },
-        ]),
-      ),
+      authoredReferences,
       "references must cover exactly the authored template use and declaration",
     );
 
@@ -172,7 +175,19 @@ export async function exerciseAuthoredLspOracle(
       ]),
       "rename must edit exactly the authored template use and declaration",
     );
-    assert.deepEqual(Object.keys(rename?.changes ?? {}), [bindingDocument.uri]);
+    // Rename must edit the same authored set that references report, so a
+    // declared prop also updates its component consumers in other documents.
+    const renameLocations = Object.entries(rename?.changes ?? {}).flatMap(([uri, edits]) =>
+      edits.map((edit) => {
+        assert.equal(edit.newText, binding.renameTo, `rename text in ${uri}`);
+        return { range: edit.range, uri };
+      }),
+    );
+    assert.deepEqual(
+      sortLocations(renameLocations),
+      authoredReferences,
+      "rename must edit exactly the authored references",
+    );
 
     open(session, childDocument.uri, childDocument.source, 1, openUris);
     const fixedChildDiagnostics = await waitForDiagnostics(

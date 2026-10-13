@@ -593,7 +593,7 @@
           "symbol": "dataP",
           "usageAnchor": ":data-p=\"dataP\"",
           "declarationAnchor": "dataP() {",
-          "hoverContains": ["_Template expression_"],
+          "hoverContains": ["const dataP: string | undefined"],
           "sharesComponentImporter": true,
           "renameTo": "__vizeRenamedDataP"
         },
@@ -1118,7 +1118,7 @@
           "symbol": "formattedProgress",
           "usageAnchor": "{{ formattedProgress }}",
           "declarationAnchor": "const formattedProgress = computed(() =>",
-          "hoverContains": ["**formattedProgress**", "Template binding"],
+          "hoverContains": ["const formattedProgress: string"],
           "renameTo": "__vizeRenamedFormattedProgress"
         },
         "componentBoundary": {
@@ -1499,7 +1499,7 @@
           "symbol": "charsRemaining",
           "usageAnchor": "{{ charsRemaining }}",
           "declarationAnchor": "const charsRemaining = computed(() => {",
-          "hoverContains": ["**charsRemaining**", "Binding from `<script setup>`."],
+          "hoverContains": ["const charsRemaining: number | null"],
           "renameTo": "__vizeRenamedCharsRemaining"
         },
         "componentBoundary": {
@@ -3083,7 +3083,7 @@
           "symbol": "startSpacerStyle",
           "usageAnchor": "        :style=\"startSpacerStyle\"",
           "declarationAnchor": "const startSpacerStyle = computed(() =>",
-          "hoverContains": ["Template binding"],
+          "hoverContains": ["const startSpacerStyle: {", "height: string;"],
           "sharesComponentImporter": true,
           "renameTo": "__vizeRenamedStartSpacerStyle"
         },
@@ -3287,7 +3287,11 @@
           "symbol": "figureClasses",
           "usageAnchor": "        <figure class=\"highlight\" :class=\"figureClasses\">",
           "declarationAnchor": "        figureClasses() {",
-          "hoverContains": ["const figureClasses: any"],
+          "hoverContains": [
+            "const figureClasses: {",
+            "'is-collapsed': boolean;",
+            "'is-expanded': boolean;"
+          ],
           "renameTo": "__vizeRenamedFigureClasses"
         },
         "componentBoundary": {
@@ -5059,7 +5063,7 @@
           "symbol": "show",
           "usageAnchor": "    <portal to=\"scoped-styles-destination\" :disabled=\"show\">",
           "declarationAnchor": "    show: {\n      type: Boolean,\n    },",
-          "hoverContains": ["const show: any"],
+          "hoverContains": ["const show: boolean"],
           "renameTo": "__vizeRenamedShow"
         },
         "componentBoundary": {
