@@ -8,13 +8,22 @@ import { assertSnapshot } from "../../_helpers/snapshot.ts";
 import { stringifyDiagnosticSnapshot } from "../../_helpers/vize-check.ts";
 import { normalizeTargetParameterLabels } from "../_helpers/diagnostics.ts";
 import { retainAppCheckPacket } from "../../_helpers/app-check-packet.ts";
+import { prepareNuxtCheckFixture } from "../../_helpers/nuxt-check-prepare.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SNAPSHOT_DIR = path.join(__dirname, "__snapshots__");
 const app = nuxtUiApp;
 
 describe(`${app.name} check (type checker)`, () => {
-  before(requireVizeAndCorsaBins);
+  before(() => {
+    requireVizeAndCorsaBins();
+    prepareNuxtCheckFixture({
+      name: app.name,
+      sourceDir: app.check!.cwd,
+      prepareArgs: ["-y", "pnpm@10", "dev:prepare"],
+      prepareTimeoutMs: 900_000,
+    });
+  });
 
   it("vize check does not crash and snapshot matches", () => {
     const checkConfig = app.check!;

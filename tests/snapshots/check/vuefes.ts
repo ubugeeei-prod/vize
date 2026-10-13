@@ -6,13 +6,22 @@ import { fileURLToPath } from "node:url";
 import { vuefesApp, CORSA_BIN, VIZE_BIN, requireVizeAndCorsaBins } from "../../_helpers/apps.ts";
 import { assertSnapshot } from "../../_helpers/snapshot.ts";
 import { retainAppCheckPacket } from "../../_helpers/app-check-packet.ts";
+import { prepareNuxtCheckFixture } from "../../_helpers/nuxt-check-prepare.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SNAPSHOT_DIR = path.join(__dirname, "__snapshots__");
 const app = vuefesApp;
 
 describe(`${app.name} check (type checker)`, () => {
-  before(requireVizeAndCorsaBins);
+  before(() => {
+    requireVizeAndCorsaBins();
+    prepareNuxtCheckFixture({
+      name: app.name,
+      sourceDir: app.check!.cwd,
+      env: app.env,
+      installTimeoutMs: 300_000,
+    });
+  });
 
   it("vize check does not crash and snapshot matches", () => {
     const checkConfig = app.check!;
