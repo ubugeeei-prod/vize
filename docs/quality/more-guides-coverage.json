@@ -145,7 +145,7 @@
       "route": "/guide/lib-pull",
       "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+      "note": "English and Japanese first-copy steps inspect the registry, preview the copy and display the existing Rating example from App.vue, with Vue, TypeScript, peer-report and custom-directory boundaries explicit. All original eight complete code blocks and whole prior guide bytes remain; complete body review and deployed desktop/mobile reading remain pending."
     },
     {
       "route": "/guide/lint-execution",

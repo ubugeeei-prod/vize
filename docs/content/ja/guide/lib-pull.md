@@ -21,6 +21,38 @@ vpx vize lib pull rating
 `rating` ファミリーと、それが import するもの (`controllable-state`、`id` など) がすべて
 `src/components/vize/` に書き込まれ、`vize-lib.lock.json` に記録されます。
 
+<!-- First-copy reader example: start -->
+
+## 取得したコンポーネントを表示する
+
+この例は Vue 3.5 以降を使う Vue 3 アプリで、既定の `src/components/vize` にソースを置く手順です。まず、取得元のバージョンと必要な npm パッケージを確認し、同梱された使用例も取得します。
+
+```bash
+vpx vize lib info rating
+vpx vize lib pull rating --with-examples --dry-run
+vpx vize lib pull rating --with-examples
+```
+
+最後のコマンドを実行する前に、dry-run のファイル一覧を確認してください。`pull` は宣言されていないパッケージを報告しますが、依存のインストールやバージョンの互換性の確認は行いません。アプリを起動する前に、必要なパッケージをパッケージマネージャーで追加してください。取得したソースは `.ts` ファイルを直接 import するため、アプリの TypeScript 設定で `allowImportingTsExtensions` を有効にします。[init の手順](#はじめに-init)で、この設定を確認する方法を説明しています。
+
+使用例は `src/components/vize/families/form/rating/examples/rating-basic.vue` に保存されます。新しいアプリでは、`src/App.vue` から次のように表示できます。
+
+```vue
+<script setup lang="ts">
+import RatingExample from "./components/vize/families/form/rating/examples/rating-basic.vue";
+</script>
+
+<template>
+  <RatingExample />
+</template>
+```
+
+初期値は星 3 個です。別の星を選ぶと値と表示が変わり、選択中の星をもう一度選ぶと値が空になって `Not rated` と表示されます。操作には標準のラジオボタンを使い、ラベルも関連付けています。コンポーネント自体に見た目のスタイルは付いていないため、アプリ側の CSS で調整してください。
+
+使用例は隣にある取得済みの `rating.ts` を import するので、コンポーネントを編集するとアプリにも反映されます。[配置先ディレクトリ](#配置先ディレクトリ)を変更した場合は、`App.vue` の import も合わせて変更してください。`vize-lib.lock.json` をバージョン管理に含め、取得したファイルの変更後はこのページの更新手順で差分を確認できます。
+
+<!-- First-copy reader example: end -->
+
 ## ソースの取得元
 
 公開されている `@vizejs/ui` と `@vizejs/composable` の tarball には、バージョン付きのレジストリが含まれています。

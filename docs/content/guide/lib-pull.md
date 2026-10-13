@@ -19,6 +19,38 @@ vpx vize lib pull rating
 That writes the `rating` family plus everything it imports (`controllable-state`, `id`, ...) under
 `src/components/vize/`, and records the pull in `vize-lib.lock.json`.
 
+<!-- First-copy reader example: start -->
+
+## Show your first copied component
+
+Use a Vue 3 app with Vue 3.5 or later and the default `src/components/vize` target directory for this example. Check the package version and npm requirements before copying the bundled usage example:
+
+```bash
+vpx vize lib info rating
+vpx vize lib pull rating --with-examples --dry-run
+vpx vize lib pull rating --with-examples
+```
+
+Review the dry-run file list before running the last command. `pull` reports missing package declarations but does not install dependencies or check their version compatibility. Install the required packages with your package manager before running the app. Copied sources import `.ts` files directly; enable `allowImportingTsExtensions` in the app's TypeScript configuration. [The init guide](#getting-started-init) explains how to check that setting.
+
+The example is copied to `src/components/vize/families/form/rating/examples/rating-basic.vue`. In a new app, display it from `src/App.vue`:
+
+```vue
+<script setup lang="ts">
+import RatingExample from "./components/vize/families/form/rating/examples/rating-basic.vue";
+</script>
+
+<template>
+  <RatingExample />
+</template>
+```
+
+The example starts at three stars. Select a different star to change the value and the displayed score; select the current star again to clear it and show `Not rated`. The controls use native radio inputs and an accessible label. These are unstyled components, so their appearance follows your app's CSS.
+
+The example imports the copied `rating.ts` beside it, so local component edits are reflected in your app. If you chose a different [target directory](#target-directories), adjust the import in `App.vue` to match it. Keep `vize-lib.lock.json` in version control and use the update workflow below when you change the copied files.
+
+<!-- First-copy reader example: end -->
+
 ## Where the sources come from
 
 Every published `@vizejs/ui` and `@vizejs/composable` tarball contains a versioned registry:
