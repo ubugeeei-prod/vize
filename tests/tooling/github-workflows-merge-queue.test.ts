@@ -131,7 +131,7 @@ test("queue Rust retains full doctests and the unchanged feature tail beside req
   const coverage = sibling.findIndex((step) => step.name === "Check fixture coverage");
   assert.ok(pkl >= 0 && pkl < workspace && tail >= 0 && tail < coverage);
   assert.equal(steps[workspace].env?.VIZE_TEST_REQUIRE_TSGO, "1");
-  assert.equal(rust.jobs["merge-rust-differential"].needs, "merge-rust-source");
+  assert.equal(rust.jobs["merge-rust-differential"].needs, undefined);
   assert.equal(
     rust.jobs["merge-rust-differential"].uses,
     "./.github/workflows/pr-rust-differential.yml",

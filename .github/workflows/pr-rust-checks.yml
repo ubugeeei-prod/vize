@@ -130,10 +130,12 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  # The feature tail compiles its own dev/test-profile binaries and never runs
+  # the producer's ci archive, so it starts beside the producer instead of
+  # after it. The Rust source report still requires both.
   merge-rust-differential:
     name: Required Rust differential corpora
     if: ${{ github.event_name == 'merge_group' && inputs.run-rust }}
-    needs: merge-rust-source
     uses: ./.github/workflows/pr-rust-differential.yml
     with: { run-rust: "${{ inputs.run-rust }}" }
 
