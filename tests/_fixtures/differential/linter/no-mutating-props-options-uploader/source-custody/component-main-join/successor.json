@@ -507,9 +507,9 @@
     {
       "path": "crates/vize_patina/src/rules/vue/no_deprecated_functional_template.rs",
       "mode": "100644",
-      "bytes": 11084,
-      "sha256": "2b1f5e5564b292e768fa4779deb1af5ec2a87b05ac8654bf1774b56a811193d9",
-      "gitBlob": "3572382d68c036b88d686bfc0118dc821cafc81c"
+      "bytes": 11106,
+      "sha256": "72f35309a91d49a911d1fbeb4145cd36121603b5c1c6c601a88c9ba8d9741a9c",
+      "gitBlob": "f0afa3654ffaab76b85a87e48c7547b8d374b716"
     },
     {
       "path": "crates/vize_patina/src/rules/vue/no_mutating_props.rs",
