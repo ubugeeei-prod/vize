@@ -5,6 +5,7 @@ import vue from "@vitejs/plugin-vue";
 import type { Plugin } from "vite";
 import { defineConfig } from "vite-plus";
 
+import { uiStoryVariants } from "./scripts/story-variants.ts";
 import { uiFamilyCatalog } from "./src/catalog/family-catalog.ts";
 
 /**
@@ -178,7 +179,7 @@ function cssAssetEntrypointPlugin(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [uiStoryVariants(), vue()],
   test: {
     environment: "happy-dom",
     include: ["src/**/*.test.ts"],

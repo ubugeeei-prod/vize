@@ -69,7 +69,10 @@ export async function auditComponentAuthoring(
   const files = await collectFiles(root);
   const read = (filename: string) => readFile(filename, "utf8");
 
-  const sfcFiles = files.filter((filename) => filename.endsWith(".vue"));
+  // Musea stories (`*.art.vue`) document a component; they are not public SFCs.
+  const sfcFiles = files.filter(
+    (filename) => filename.endsWith(".vue") && !filename.endsWith(".art.vue"),
+  );
   const testFiles = files.filter((filename) => filename.endsWith(".test.ts"));
   const behaviorFiles = files.filter((filename) => filename.endsWith(".behavior.md"));
 
