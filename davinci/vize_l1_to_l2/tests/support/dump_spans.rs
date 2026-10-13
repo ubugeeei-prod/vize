@@ -219,6 +219,8 @@ fn assert_expr_source(source: &str, span: Span, expr_source: &str, context: &str
     let slice = exact_slice(source, span);
     if slice == expr_source
         || is_normalized_same_name_expr(slice, expr_source)
+        // Admission decodes character references, as the shipped parser does.
+        || vize_l1_to_l2::decode_template_entities(slice).as_str() == expr_source
         || is_legacy_synthetic_expr(slice, expr_source)
     {
         return;

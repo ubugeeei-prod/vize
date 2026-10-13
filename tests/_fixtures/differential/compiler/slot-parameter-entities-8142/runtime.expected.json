@@ -61,14 +61,14 @@
       "lane": "selected",
       "prefixIdentifiers": false,
       "beforeExpected": "syntaxFailure",
-      "currentExpected": "syntaxFailure"
+      "currentExpected": "success"
     },
     {
       "id": "entity-space",
       "lane": "selected",
       "prefixIdentifiers": true,
       "beforeExpected": "syntaxFailure",
-      "currentExpected": "syntaxFailure"
+      "currentExpected": "success"
     },
     {
       "id": "entity-space",

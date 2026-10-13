@@ -70,7 +70,7 @@
           "lane": "selected",
           "prefixIdentifiers": false,
           "codegen": {
-            "code": "function render(_ctx, _cache, $props, $setup, $data, $options) {\n  const _component_Panel = _resolveComponent(\"Panel\")\n  \n  return (_openBlock(), _createBlock(_component_Panel, null, {\n    default: _withCtx((&#32;{ item }) => [\n      _createTextVNode(_toDisplayString(item), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+            "code": "function render(_ctx, _cache, $props, $setup, $data, $options) {\n  const _component_Panel = _resolveComponent(\"Panel\")\n  \n  return (_openBlock(), _createBlock(_component_Panel, null, {\n    default: _withCtx(( { item }) => [\n      _createTextVNode(_toDisplayString(item), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
             "map": null,
             "preamble": "const { resolveComponent: _resolveComponent, toDisplayString: _toDisplayString, openBlock: _openBlock, createBlock: _createBlock, createTextVNode: _createTextVNode, withCtx: _withCtx } = Vue\n"
           },
@@ -90,7 +90,7 @@
           "lane": "selected",
           "prefixIdentifiers": true,
           "codegen": {
-            "code": "export function render(_ctx, _cache) {\n  const _component_Panel = _resolveComponent(\"Panel\")\n  \n  return (_openBlock(), _createBlock(_component_Panel, null, {\n    default: _withCtx((&#32;{ item }) => [\n      _createTextVNode(_toDisplayString(_ctx.item), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+            "code": "export function render(_ctx, _cache) {\n  const _component_Panel = _resolveComponent(\"Panel\")\n  \n  return (_openBlock(), _createBlock(_component_Panel, null, {\n    default: _withCtx(( { item }) => [\n      _createTextVNode(_toDisplayString(item), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
             "map": null,
             "preamble": "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n"
           },

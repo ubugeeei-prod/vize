@@ -33,7 +33,7 @@ mod wrapper;
 
 pub use wrapper::{ForWrapper, WrapperAttr, WrapperClass, WrapperKey, WrapperKeys};
 pub(crate) use wrapper::{
-    capture_wrapper_attrs, capture_wrapper_key, record_template_drops_except,
+    capture_wrapper_attrs, capture_wrapper_key, record_template_drops_except, runtime_directive,
 };
 use wrapper::{chain_once_attr, record_wrapper_key};
 

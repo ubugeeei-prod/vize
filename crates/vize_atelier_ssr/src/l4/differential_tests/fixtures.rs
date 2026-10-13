@@ -3,6 +3,11 @@
 /// Templates the string plan must own.
 pub(super) const ADMITTED: &[(&str, &str)] = &[
     ("title-text", "<title>Hello world</title>"),
+    // L2 admits expressions with their character references decoded.
+    (
+        "decoded-expression-references",
+        "<div>{{ a &amp;&amp; b }}</div>",
+    ),
     (
         "title-interpolation",
         "<div><title>{{ title }} — {{ count }}</title></div>",
@@ -234,7 +239,6 @@ pub(super) const REFUSED: &[(&str, &str)] = &[
         "outlet-v-pre",
         "<slot v-pre>{{ not }} an interpolation</slot>",
     ),
-    ("invalid-expression", "<div>{{ a &amp;&amp; b }}</div>"),
     ("invalid-bind", r#"<div :title="a +"></div>"#),
     ("script", "<div><script>var a = 1 < 2</script></div>"),
     ("style", "<div><style>.a > b { }</style></div>"),

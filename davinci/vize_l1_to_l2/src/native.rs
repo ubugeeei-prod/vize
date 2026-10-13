@@ -29,7 +29,7 @@ pub use block::{NativeComponent, NativeProduced, RejectedNativeComponent};
 mod element;
 mod expression;
 mod pattern;
-mod text;
+pub(crate) mod text;
 pub use expression::{NativeExpressionError, retain_expression_in};
 
 /// An unsupported or recovered source construct, never a legacy fallback.

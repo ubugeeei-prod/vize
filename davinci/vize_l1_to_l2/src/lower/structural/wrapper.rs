@@ -71,6 +71,10 @@ pub struct ForWrapper {
     pub attributes: StdVec<WrapperAttr>,
     /// Static and dynamic `class` authored on the wrapper.
     pub class: Option<WrapperClass>,
+    /// A runtime directive (`v-show`, a custom directive) authored on the
+    /// wrapper. The shipped lane applies it to the fragment vnode; L2 has no
+    /// home for it, so emission refuses the loop.
+    pub runtime_directive: Option<Span>,
 }
 
 /// One static attribute authored on a lowered `<template v-for>`.
@@ -110,7 +114,7 @@ const _: () = {
 const _: () = {
     assert!(core::mem::size_of::<WrapperKey>() == 40);
     assert!(core::mem::size_of::<WrapperKeys>() == 56);
-    assert!(core::mem::size_of::<ForWrapper>() == 120);
+    assert!(core::mem::size_of::<ForWrapper>() == 136);
 };
 
 /// The first key-ish attribute of a `<template v-if>` wrapper: a static
@@ -224,6 +228,24 @@ pub(crate) fn capture_wrapper_attrs<'a>(
         }
     }
     (indexes, attributes, class)
+}
+
+/// The first runtime directive (`v-show` or a custom directive) on a
+/// `<template v-for>` wrapper; the shipped lane keeps it on the fragment.
+pub(crate) fn runtime_directive(
+    cx: &Cx<'_>,
+    element: &Element<'_>,
+    analyzed: &Analyzed<'_>,
+) -> Option<Span> {
+    element
+        .open
+        .attrs
+        .iter()
+        .zip(&analyzed.forms)
+        .find(|(_, form)| {
+            matches!(form, AttrForm::Directive(directive) if matches!(directive.head, Head::Show | Head::Custom))
+        })
+        .map(|(attr, _)| attr_span(cx, attr))
 }
 
 /// The `v-once` on the `<template v-if>` that carries a chain. It caches the

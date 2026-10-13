@@ -62,6 +62,9 @@ fn emit_for_scoped(
     index_alias: Option<&str>,
 ) -> Result<(), EmitError> {
     let wrapper = id.and_then(|id| cx.for_wrappers.get(id));
+    if let Some(span) = wrapper.and_then(|wrapper| wrapper.runtime_directive) {
+        return Err(EmitError::unsupported_at(Reason::TemplateUnwrapShape, span));
+    }
     let wrapper_key = match wrapper.and_then(|wrapper| wrapper.key.as_ref()) {
         Some(key) => Some(super::tpl::wrapper_key_js(cx, key)?),
         None => None,

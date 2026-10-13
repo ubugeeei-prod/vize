@@ -89,8 +89,8 @@ fn dom_compile_notes_l2_errors_only_when_l2_refuses() {
 
 /// The SFC selector used to keep these on the compatibility lane without
 /// running L2: any `&` in a template expression, and scoped styles without
-/// `:slotted` on a source the fast path cannot take. Only a possible
-/// character reference still needs the shipped lane, which decodes it.
+/// `:slotted` on a source the fast path cannot take. The shared pipeline
+/// runs L2 for both; L2 decodes character references in expressions.
 
 #[test]
 fn shared_pipeline_runs_l2_for_expression_ampersands_and_scoped_slot_outlets() {
@@ -110,21 +110,27 @@ fn shared_pipeline_runs_l2_for_expression_ampersands_and_scoped_slot_outlets() {
         ),
         (
             "<script setup>const a = 1, b = 2</script><template><p :title=\"a &amp;&amp; b\">{{ a }}</p></template>",
-            Some(None),
+            None,
         ),
         (
             "<script setup>const a = 1</script><template><span :title=\"'&lt;b&gt;'\">{{ a &#x26;&#x26; a }}</span></template>",
-            Some(None),
+            None,
         ),
         (
             "<script setup>const a = 1, b = 2</script><template><p :title=\"a&&b\" @click=\"a & b\">{{ a &&b }}</p></template>",
-            Some(None),
+            None,
         ),
         // L2 runs before the shipped transform reports malformed slot
         // parameters, so the shared pipeline must refuse them itself.
         (
             "<script setup>const a = 1, b = 2</script><template><Widget v-if=\"a && b\"><template #actions=\"v-slot:actions\"><button>Run</button></template></Widget></template>",
             Some(Some(UnsupportedReason::PrefixExpressionRejected)),
+        ),
+        // The shipped lane applies a runtime directive on a `<template v-for>`
+        // to the fragment; L2 has no home for it.
+        (
+            "<script setup>const a = 1, items = [1]</script><template><template v-for=\"i in items\" v-show=\"a\"><p>{{ i }}</p></template></template>",
+            Some(Some(UnsupportedReason::TemplateUnwrapShape)),
         ),
     ];
     // `None`: L2 emits. `Some(None)`: the selector keeps the shipped lane.

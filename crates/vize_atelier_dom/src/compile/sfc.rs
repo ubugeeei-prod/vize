@@ -111,10 +111,9 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
         }
         true
     } else {
-        // L2 emits expressions from source text, so a possible character
-        // reference must stay on the shipped lane, which decodes it. The
-        // shared pipeline hands L2 the same slot-outlet flag as the fast path.
-        selector::source_contains_expression_ampersand(source)
+        // The shared pipeline hands L2 the same slot-outlet flag as the fast
+        // path; L2 decodes character references in expressions itself.
+        false
     };
 
     let mut pipeline_options = if force_compat_sections {

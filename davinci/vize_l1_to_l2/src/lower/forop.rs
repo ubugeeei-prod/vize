@@ -17,7 +17,7 @@ use super::element::{Analyzed, attr_text, element_core};
 use super::expr::{desc, expr_at, opaque_at, trimmed};
 use super::structural::{
     ForWrapper, capture_wrapper_attrs, capture_wrapper_key, lower_children,
-    record_template_drops_except,
+    record_template_drops_except, runtime_directive,
 };
 use super::vfor::{split_aliases, split_for};
 
@@ -194,6 +194,7 @@ pub(crate) fn lower_for<'a>(
                     key,
                     attributes,
                     class,
+                    runtime_directive: runtime_directive(cx, element, analyzed),
                 },
             );
             lower_children(cx, &element.children, ns)

@@ -110,6 +110,9 @@ impl Content<'_> {
 /// attribute quotes when the span is quote-delimited, else the source.
 pub(super) fn node_content<'a>(file: &'a str, source: &'a str, span: Span) -> Content<'a> {
     let Some(padded) = quote_padded(file, source, span) else {
+        if let Some(content) = decoded_padding(file, source, span) {
+            return content;
+        }
         return Content {
             text: RawJs::Borrowed(source),
             offset: Some(0),
@@ -138,6 +141,18 @@ fn decoded<'a>(content: Content<'a>, source: &str) -> Content<'a> {
         text: RawJs::Owned(text),
         offset,
     }
+}
+
+/// A lowering-decoded expression keeps the padding of its authored value:
+/// the shipped node holds the whole quoted value, entity-decoded.
+fn decoded_padding<'a>(file: &'a str, source: &str, span: Span) -> Option<Content<'a>> {
+    let authored = file.get(usize::try_from(span.start).ok()?..usize::try_from(span.end).ok()?)?;
+    let padded = quote_padded(file, authored, span)?;
+    let text = super::entity::decode_html_entities(padded);
+    (text.trim() == source).then(|| Content {
+        offset: Some(text.len() - text.trim_start().len()),
+        text: RawJs::Owned(text),
+    })
 }
 
 fn quote_padded<'a>(file: &'a str, source: &str, span: Span) -> Option<&'a str> {

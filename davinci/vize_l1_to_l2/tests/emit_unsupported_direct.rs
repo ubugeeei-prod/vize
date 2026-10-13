@@ -170,6 +170,7 @@ fn template_dynamic_key_empty<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Facts) {
             }),
             attributes: StdVec::new(),
             class: None,
+            runtime_directive: None,
         },
     );
     (lowered, L2Facts::default())

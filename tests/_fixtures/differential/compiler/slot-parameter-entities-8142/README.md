@@ -16,8 +16,9 @@ legacy fix, not universal compiler byte preservation.
 `runtime.expected.json` is independently authored from a real Vue custom renderer
 and a Panel default slot supplying a reactive `item`: `entity-slot-value`, then
 `updated-slot-value`. Parent entity output fails with SyntaxError in all four
-conditions; producer legacy output renders/updates in both conditions, while
-producer selected output still fails. Full observed trees, host calls, exceptions,
+conditions; producer legacy output renders/updates in both conditions. Selected (L2)
+output failed until L2 admission decoded character references; it now
+matches the legacy packets and renders/updates too. Full observed trees, host calls, exceptions,
 evaluation sources, native/compiler hashes, Rust/Cargo/Node and pinned Vue 3.5.26
 provider custody are retained in the bounded source comparison:
 

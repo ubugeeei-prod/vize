@@ -7,7 +7,7 @@ use vize_l1::markup::entity::{EntityContext, decode_one, needs_decoding};
 impl<'a> Context<'_, 'a> {
     pub(super) fn text<R: ConstructionFactory<'a>>(&mut self, region: &mut R, token: &Token<'a>) {
         let span = self.token_span(token);
-        let text = decode_text(self.allocator, token.text);
+        let text = decode_references(self.allocator, token.text, EntityContext::Text);
         let result = region.text(text, span);
         self.produced(region, result, "native.text", span, "ui.text");
     }
@@ -31,7 +31,13 @@ impl<'a> Context<'_, 'a> {
     }
 }
 
-pub(super) fn decode_text<'a>(allocator: &'a vize_l0::Allocator, raw: &'a str) -> &'a str {
+/// `raw` with its character references decoded in `context`; the authored
+/// slice when it holds none.
+pub(crate) fn decode_references<'a>(
+    allocator: &'a vize_l0::Allocator,
+    raw: &'a str,
+    context: EntityContext,
+) -> &'a str {
     if !needs_decoding(raw.as_bytes()) {
         return raw;
     }
@@ -44,7 +50,7 @@ pub(super) fn decode_text<'a>(allocator: &'a vize_l0::Allocator, raw: &'a str) -
         let Some((value, consumed)) = raw
             .as_bytes()
             .get(at..)
-            .and_then(|bytes| decode_one(bytes, EntityContext::Text))
+            .and_then(|bytes| decode_one(bytes, context))
         else {
             continue;
         };

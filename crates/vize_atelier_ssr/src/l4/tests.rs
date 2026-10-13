@@ -199,7 +199,7 @@ fn unowned_shapes_name_their_legacy_reason() {
             LegacyReason::SurfaceSemantics,
         ),
         (
-            r#"<div>{{ a &amp;&amp; b }}</div>"#,
+            r#"<div :title="a +"></div>"#,
             LegacyReason::ExpressionOrEncoding,
         ),
     ];
