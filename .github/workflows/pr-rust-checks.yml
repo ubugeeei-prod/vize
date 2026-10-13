@@ -50,13 +50,14 @@ jobs:
         if: ${{ inputs.run-rust }}
         with:
           cache-key-prefix: ${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}
-          key: clippy-test
+          # The disk every main push seeds with these exact ci-profile commands.
+          key: nextest-ci
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/setup-rust-script
         if: ${{ inputs.run-rust }}
       - name: Clippy
         if: ${{ inputs.run-rust }}
-        run: cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports
+        run: cargo clippy --workspace --profile ci -- -D warnings -D clippy::wildcard_imports
       - name: Skeleton todo ratchet
         if: ${{ inputs.run-rust }}
         run: rustc --edition 2024 tools/commands/ci/check-skeleton-todos.rs -o "$RUNNER_TEMP/check-skeleton-todos" && "$RUNNER_TEMP/check-skeleton-todos" --check
