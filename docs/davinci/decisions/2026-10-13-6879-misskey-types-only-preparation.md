@@ -91,3 +91,15 @@ packets, replacement refs and ambient source overrides. This relation is source
 custody only; it adds no emitter, diagnostic, native runtime, original400 or
 performance acceptance. The actual emitter and complete declaration-load and
 diagnostic comparisons remain unfinished as described above.
+
+Source Check `38361840157` at `c8845090` retained the successful source laws but
+failed the zero-warning budget because the counterpart selector and source test
+used default `.sort()`. Their explicit comparators use only UTF-16 relational
+ordering (`a < b`, `a > b`), preserving every selected name and table comparison.
+Removing the three comparator arguments reconstructs both entire prior files.
+The utility successor is 9654 bytes, SHA256
+`850682aade0e9dc3e37ca7629ca0ba18e966aa9bb6cb2d290a96d8e6ed67a3c8`;
+its only change is that comparator. All 412 original source pairs and the 427-body
+custody scope remain unchanged; the loaded-helper checks authenticate the whole
+new committed utility and test bytes before any original-law replay. No warning
+budget, source refusal, corpus, registry, emitter or acceptance assertion changes.

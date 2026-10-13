@@ -91,8 +91,8 @@ await test("complete actual registry source precedes unchanged literal Star322/2
     rows
       .filter((row) => row[1] !== row[4])
       .map(([file]) => file)
-      .sort(),
-    [...metadata.changed].sort(),
+      .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
+    [...metadata.changed].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
   );
   const counterpart = misskeyRegistryCounterpart(packet, law);
   try {
