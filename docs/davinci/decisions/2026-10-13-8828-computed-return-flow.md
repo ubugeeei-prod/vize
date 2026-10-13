@@ -1,0 +1,11 @@
+# Computed getter return flow (#8828)
+
+Three complete original n8n SFCs at `e882e8a483f433facb47bab9b407d0ec00a81172` switch over values without a default or trailing return. Original full Matrix findings identify RunStatusPill 36:27–47:2, PreferenceScopeBadge 33:24–54:2 and WorkflowReviewActivityEventEntry 112:11–191:2. The previous `ReturnFinder` accepted a return anywhere in a getter, so it missed each reachable no-match edge.
+
+Replace that existence check with statement completion analysis on the existing AST. Compose sequential statements only through reachable normal exits; merge both conditional branches; compose switch suffixes to account for fallthrough and convert only their own breaks to normal exits. Loops preserve possible zero iterations, consume only their own break/continue targets and retain labeled jumps for outer loops. A catch participates only when an evaluated reference/call or explicit throw can reach it; finally abrupt completions override earlier completions. Nested functions never contribute an outer getter return. No parser, serialized stage or dependency is added.
+
+The stated rule contract requires a value on every reachable normal completion and rejects reachable bare returns. The complete independent 10.9.2 edge packet is retained unchanged: its `if(ok)return;else return 1` result is clean because its bookkeeping records the last visited return rather than every completion. Vize's explicit all-path control rejects that bare return; this difference is recorded rather than rewriting the reference. Other independently observed if/switch, exception, finally and loop controls remain literal.
+
+The legacy differential fixture retains all three full SFCs, exact original source identities and complete official packets. Public Rust regressions compare each entire original diagnostic including source range, labels and help. Thirty-two completion controls and five Options/writable/concise controls execute without modifying default rule severity, Matrix oracles or acceptance budgets.
+
+Exact-head Actions Rust/native qualification is required. Full Matrix and installed release acceptance remain separate; no current success is claimed before terminal evidence. This is independent of #8826's Composition side-effect rule and makes no upstream n8n writes or comments.

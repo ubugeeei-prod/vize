@@ -1,0 +1,4347 @@
+{
+  "scope": "Whole original 51 pinned sources and exact wanted-rule vectors; source-authored native expectations, no after execution yet",
+  "run": 38205026873,
+  "attempt": 1,
+  "source": "ef34d1a0409fc711a6c5cefcf0708b0cce78f502",
+  "originalFN": 88,
+  "originalFP": 0,
+  "rule": "script/no-dupe-keys",
+  "upstreamRule": "vue/no-dupe-keys",
+  "cases": [
+    {
+      "id": "dbx/apps/desktop/src/components/grid/DataGrid.vue",
+      "filename": "apps/desktop/src/components/grid/DataGrid.vue",
+      "sourcePath": "original-sources/dbx/apps/desktop/src/components/grid/DataGrid.vue.txt",
+      "sourceSHA256": "69ba95ae965d22edab63f807472a86c388a72a0a22a4d2fea8762acfc7b8420a",
+      "project": "dbx",
+      "revision": "5173bbafd1e2dcb67a3be557c569adcc15021193",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'sortMode'. May cause name collision in script or template tag.",
+          "line": 732,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 732,
+          "endColumn": 135
+        }
+      ],
+      "service": {
+        "filename": "apps/desktop/src/components/grid/DataGrid.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'sortMode'",
+            "start": 38187,
+            "end": 38315,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 38187,
+                "end": 38315
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "dbx/apps/desktop/src/components/mq/ProducerConsumerPanel.vue",
+      "filename": "apps/desktop/src/components/mq/ProducerConsumerPanel.vue",
+      "sourcePath": "original-sources/dbx/apps/desktop/src/components/mq/ProducerConsumerPanel.vue.txt",
+      "sourceSHA256": "1aa9ef1775faea2133abd09ec5089ae31f6c6b2a7a1e1d0fc034180edcf39c50",
+      "project": "dbx",
+      "revision": "5173bbafd1e2dcb67a3be557c569adcc15021193",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'selectedSubscription'. May cause name collision in script or template tag.",
+          "line": 57,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 57,
+          "endColumn": 37
+        }
+      ],
+      "service": {
+        "filename": "apps/desktop/src/components/mq/ProducerConsumerPanel.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'selectedSubscription'",
+            "start": 1710,
+            "end": 1740,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 1710,
+                "end": 1740
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "lew-ui/lib/_components/CommonInput.vue",
+      "filename": "lib/_components/CommonInput.vue",
+      "sourcePath": "original-sources/lew-ui/lib/_components/CommonInput.vue.txt",
+      "sourceSHA256": "27774295b18c0955bb8f57887ecc12604b67e3334a87dce831a584551f5927d6",
+      "project": "lew-ui",
+      "revision": "abdcecdcdf611211b0502383a6dbfacded2c9608",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'focus'. May cause name collision in script or template tag.",
+          "line": 240,
+          "column": 1,
+          "messageId": "duplicateKey",
+          "endLine": 249,
+          "endColumn": 2
+        }
+      ],
+      "service": {
+        "filename": "lib/_components/CommonInput.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'focus'",
+            "start": 4688,
+            "end": 4848,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 4688,
+                "end": 4848
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "inspira-ui/app/components/inspira/examples/gradient-button/GradientButtonDemo.vue",
+      "filename": "app/components/inspira/examples/gradient-button/GradientButtonDemo.vue",
+      "sourcePath": "original-sources/inspira-ui/app/components/inspira/examples/gradient-button/GradientButtonDemo.vue.txt",
+      "sourceSHA256": "63c1a993f7da8e0aa3be281c8bc85c39465c736807e8bb5093a52d146518f057",
+      "project": "inspira-ui",
+      "revision": "5650bfd050743ffaee02a471a1406b58c98b2ef5",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'bgColor'. May cause name collision in script or template tag.",
+          "line": 16,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 16,
+          "endColumn": 65
+        }
+      ],
+      "service": {
+        "filename": "app/components/inspira/examples/gradient-button/GradientButtonDemo.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'bgColor'",
+            "start": 338,
+            "end": 396,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 338,
+                "end": 396
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "inspira-ui/app/components/inspira/examples/line-shadow-text/LineShadowTextDemo.vue",
+      "filename": "app/components/inspira/examples/line-shadow-text/LineShadowTextDemo.vue",
+      "sourcePath": "original-sources/inspira-ui/app/components/inspira/examples/line-shadow-text/LineShadowTextDemo.vue.txt",
+      "sourceSHA256": "30bae898dc1218cb00548970c11e260060157d3bd377d4b21f3e49e5c0489a97",
+      "project": "inspira-ui",
+      "revision": "5650bfd050743ffaee02a471a1406b58c98b2ef5",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'shadowColor'. May cause name collision in script or template tag.",
+          "line": 15,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 15,
+          "endColumn": 71
+        }
+      ],
+      "service": {
+        "filename": "app/components/inspira/examples/line-shadow-text/LineShadowTextDemo.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'shadowColor'",
+            "start": 307,
+            "end": 371,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 307,
+                "end": 371
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "nativescript-vue/demo/src/components/Home.vue",
+      "filename": "demo/src/components/Home.vue",
+      "sourcePath": "original-sources/nativescript-vue/demo/src/components/Home.vue.txt",
+      "sourceSHA256": "8cf655ae9d6e6a1568bcb7d9d24c7a5ffd64a4ea3a34d335d2ed22732aa6a55a",
+      "project": "nativescript-vue",
+      "revision": "7cba9651cfff27d9819cafe76f67e09bfd19fdbe",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'items'. May cause name collision in script or template tag.",
+          "line": 25,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 27,
+          "endColumn": 62
+        }
+      ],
+      "service": {
+        "filename": "demo/src/components/Home.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'items'",
+            "start": 484,
+            "end": 584,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 484,
+                "end": 584
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "frappe-builder/frontend/src/components/PropsOptions/SelectOptions.vue",
+      "filename": "frontend/src/components/PropsOptions/SelectOptions.vue",
+      "sourcePath": "original-sources/frappe-builder/frontend/src/components/PropsOptions/SelectOptions.vue.txt",
+      "sourceSHA256": "942a24c3aca363ce1805a62a15671617e085701a6c6a2fb69ec8cdf92393f35b",
+      "project": "frappe-builder",
+      "revision": "ed705f9dddc9a78867fb672c342ee025368ac6a1",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'options'. May cause name collision in script or template tag.",
+          "line": 88,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 92,
+          "endColumn": 49
+        }
+      ],
+      "service": {
+        "filename": "frontend/src/components/PropsOptions/SelectOptions.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'options'",
+            "start": 2428,
+            "end": 2553,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 2428,
+                "end": 2553
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/Autocomplete/AutocompleteRoot.vue",
+      "filename": "packages/core/src/Autocomplete/AutocompleteRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/Autocomplete/AutocompleteRoot.vue.txt",
+      "sourceSHA256": "7bb346099f600f230e07195927d02fef10f1b8e77346b90e58a41542134e0260",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 93,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 93,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/Autocomplete/AutocompleteRoot.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 3448,
+            "end": 3475,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 3448,
+                "end": 3475
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/Calendar/CalendarRoot.vue",
+      "filename": "packages/core/src/Calendar/CalendarRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/Calendar/CalendarRoot.vue.txt",
+      "sourceSHA256": "fc5377e7f16d5777a8654dca0af8428772959e3f736434ba2d3f2457dc5a7608",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'locale'. May cause name collision in script or template tag.",
+          "line": 186,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 186,
+          "endColumn": 37
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 187,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 187,
+          "endColumn": 34
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'isDateDisabled'. May cause name collision in script or template tag.",
+          "line": 210,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 241,
+          "endColumn": 3
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'isDateUnavailable'. May cause name collision in script or template tag.",
+          "line": 210,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 241,
+          "endColumn": 3
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'nextPage'. May cause name collision in script or template tag.",
+          "line": 210,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 241,
+          "endColumn": 3
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'prevPage'. May cause name collision in script or template tag.",
+          "line": 210,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 241,
+          "endColumn": 3
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/Calendar/CalendarRoot.vue",
+        "error_count": 6,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'locale'",
+            "start": 6887,
+            "end": 6917,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 6887,
+                "end": 6917
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 6924,
+            "end": 6951,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 6924,
+                "end": 6951
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'isDateDisabled'",
+            "start": 7674,
+            "end": 8261,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 7674,
+                "end": 8261
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'isDateUnavailable'",
+            "start": 7674,
+            "end": 8261,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 7674,
+                "end": 8261
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'nextPage'",
+            "start": 7674,
+            "end": 8261,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 7674,
+                "end": 8261
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'prevPage'",
+            "start": 7674,
+            "end": 8261,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 7674,
+                "end": 8261
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/ColorField/ColorFieldRoot.vue",
+      "filename": "packages/core/src/ColorField/ColorFieldRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/ColorField/ColorFieldRoot.vue.txt",
+      "sourceSHA256": "ddde43869cac86be1fadc886dae43fd35b1288bd7e02dc93cc92c25e23738d8a",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'locale'. May cause name collision in script or template tag.",
+          "line": 90,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 90,
+          "endColumn": 37
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/ColorField/ColorFieldRoot.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'locale'",
+            "start": 2971,
+            "end": 3001,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 2971,
+                "end": 3001
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/ColorSlider/ColorSliderRoot.vue",
+      "filename": "packages/core/src/ColorSlider/ColorSliderRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/ColorSlider/ColorSliderRoot.vue.txt",
+      "sourceSHA256": "03808cc496bc6341bd958428c745f3f2d1599b946a385261deefc1a73654ca3f",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 76,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 76,
+          "endColumn": 34
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'step'. May cause name collision in script or template tag.",
+          "line": 163,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 163,
+          "endColumn": 71
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/ColorSlider/ColorSliderRoot.vue",
+        "error_count": 2,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 2643,
+            "end": 2670,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 2643,
+                "end": 2670
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'step'",
+            "start": 5961,
+            "end": 6025,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 5961,
+                "end": 6025
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/Combobox/ComboboxViewport.vue",
+      "filename": "packages/core/src/Combobox/ComboboxViewport.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/Combobox/ComboboxViewport.vue.txt",
+      "sourceSHA256": "4a3a9b9229a230b3bd0e50e29d3a935b225ae718ede1951f18fcc32f3a22b178",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'nonce'. May cause name collision in script or template tag.",
+          "line": 23,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 23,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/Combobox/ComboboxViewport.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'nonce'",
+            "start": 719,
+            "end": 746,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 719,
+                "end": 746
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/DateField/DateFieldRoot.vue",
+      "filename": "packages/core/src/DateField/DateFieldRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/DateField/DateFieldRoot.vue.txt",
+      "sourceSHA256": "bc9617435fb0425b69c97b438dc3fdfe634b49a4cc6e869eafc9f59bc16e0863",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'locale'. May cause name collision in script or template tag.",
+          "line": 122,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 122,
+          "endColumn": 37
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 123,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 123,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/DateField/DateFieldRoot.vue",
+        "error_count": 2,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'locale'",
+            "start": 4682,
+            "end": 4712,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 4682,
+                "end": 4712
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 4719,
+            "end": 4746,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 4719,
+                "end": 4746
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/DateRangeField/DateRangeFieldRoot.vue",
+      "filename": "packages/core/src/DateRangeField/DateRangeFieldRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/DateRangeField/DateRangeFieldRoot.vue.txt",
+      "sourceSHA256": "6c797b520435de42f8c6ae258bffc387d09be5c1aee154a984395a901b25c898",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'locale'. May cause name collision in script or template tag.",
+          "line": 125,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 125,
+          "endColumn": 37
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 126,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 126,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/DateRangeField/DateRangeFieldRoot.vue",
+        "error_count": 2,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'locale'",
+            "start": 4712,
+            "end": 4742,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 4712,
+                "end": 4742
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 4749,
+            "end": 4776,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 4749,
+                "end": 4776
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/Editable/EditableRoot.vue",
+      "filename": "packages/core/src/Editable/EditableRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/Editable/EditableRoot.vue.txt",
+      "sourceSHA256": "5e2cf3110986545095c68086f8a7c5276083a3fde8121bf70d49af2da194d7a6",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 132,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 132,
+          "endColumn": 34
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'placeholder'. May cause name collision in script or template tag.",
+          "line": 144,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 146,
+          "endColumn": 3
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/Editable/EditableRoot.vue",
+        "error_count": 2,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 4120,
+            "end": 4147,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 4120,
+                "end": 4147
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'placeholder'",
+            "start": 4492,
+            "end": 4666,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 4492,
+                "end": 4666
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/Listbox/ListboxRoot.vue",
+      "filename": "packages/core/src/Listbox/ListboxRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/Listbox/ListboxRoot.vue.txt",
+      "sourceSHA256": "2ac683d36494c2527bd0cd7cace3015167494dbd1186a515a9a97fe2fb8042be",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 106,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 106,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/Listbox/ListboxRoot.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 4425,
+            "end": 4452,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 4425,
+                "end": 4452
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/Menu/MenuRoot.vue",
+      "filename": "packages/core/src/Menu/MenuRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/Menu/MenuRoot.vue.txt",
+      "sourceSHA256": "092e5c96ceb5f215c8fa298cba0a524e2569ee6766bca6ebd39f4e24304a5e26",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 63,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 63,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/Menu/MenuRoot.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 1713,
+            "end": 1740,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 1713,
+                "end": 1740
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/Menubar/MenubarRoot.vue",
+      "filename": "packages/core/src/Menubar/MenubarRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/Menubar/MenubarRoot.vue.txt",
+      "sourceSHA256": "f40c90cd8e8089c73286de6925402ad4f6be3a1086a8cd623f0dcc989a246065",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 68,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 68,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/Menubar/MenubarRoot.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 2130,
+            "end": 2157,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 2130,
+                "end": 2157
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/MonthPicker/MonthPickerRoot.vue",
+      "filename": "packages/core/src/MonthPicker/MonthPickerRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/MonthPicker/MonthPickerRoot.vue.txt",
+      "sourceSHA256": "c311897718d4dc3baa1cd608ea6b8c37d01a159874d91b89851469430a0a33da",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'locale'. May cause name collision in script or template tag.",
+          "line": 143,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 143,
+          "endColumn": 37
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 144,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 144,
+          "endColumn": 34
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'isMonthDisabled'. May cause name collision in script or template tag.",
+          "line": 167,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 189,
+          "endColumn": 3
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'isMonthUnavailable'. May cause name collision in script or template tag.",
+          "line": 167,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 189,
+          "endColumn": 3
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'nextPage'. May cause name collision in script or template tag.",
+          "line": 167,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 189,
+          "endColumn": 3
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'prevPage'. May cause name collision in script or template tag.",
+          "line": 167,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 189,
+          "endColumn": 3
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/MonthPicker/MonthPickerRoot.vue",
+        "error_count": 6,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'locale'",
+            "start": 5241,
+            "end": 5271,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 5241,
+                "end": 5271
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 5278,
+            "end": 5305,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 5278,
+                "end": 5305
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'isMonthDisabled'",
+            "start": 6003,
+            "end": 6419,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 6003,
+                "end": 6419
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'isMonthUnavailable'",
+            "start": 6003,
+            "end": 6419,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 6003,
+                "end": 6419
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'nextPage'",
+            "start": 6003,
+            "end": 6419,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 6003,
+                "end": 6419
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'prevPage'",
+            "start": 6003,
+            "end": 6419,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 6003,
+                "end": 6419
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/MonthRangePicker/MonthRangePickerRoot.vue",
+      "filename": "packages/core/src/MonthRangePicker/MonthRangePickerRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/MonthRangePicker/MonthRangePickerRoot.vue.txt",
+      "sourceSHA256": "6157c89bf66d741a15d2e08e74dd4d141dbf023b2b423e5cba0447bd914d723b",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 164,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 164,
+          "endColumn": 34
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'locale'. May cause name collision in script or template tag.",
+          "line": 165,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 165,
+          "endColumn": 37
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'isMonthDisabled'. May cause name collision in script or template tag.",
+          "line": 200,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 222,
+          "endColumn": 3
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'isMonthUnavailable'. May cause name collision in script or template tag.",
+          "line": 200,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 222,
+          "endColumn": 3
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'nextPage'. May cause name collision in script or template tag.",
+          "line": 200,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 222,
+          "endColumn": 3
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'prevPage'. May cause name collision in script or template tag.",
+          "line": 200,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 222,
+          "endColumn": 3
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/MonthRangePicker/MonthRangePickerRoot.vue",
+        "error_count": 6,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 6126,
+            "end": 6153,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 6126,
+                "end": 6153
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'locale'",
+            "start": 6160,
+            "end": 6190,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 6160,
+                "end": 6190
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'isMonthDisabled'",
+            "start": 7542,
+            "end": 7958,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 7542,
+                "end": 7958
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'isMonthUnavailable'",
+            "start": 7542,
+            "end": 7958,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 7542,
+                "end": 7958
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'nextPage'",
+            "start": 7542,
+            "end": 7958,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 7542,
+                "end": 7958
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'prevPage'",
+            "start": 7542,
+            "end": 7958,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 7542,
+                "end": 7958
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/NavigationMenu/NavigationMenuRoot.vue",
+      "filename": "packages/core/src/NavigationMenu/NavigationMenuRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/NavigationMenu/NavigationMenuRoot.vue.txt",
+      "sourceSHA256": "51daed58de75c6063d825e92a4482b6b4ab5c72f33d4ede245cf5b6d6f7e6bfc",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 140,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 140,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/NavigationMenu/NavigationMenuRoot.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 4253,
+            "end": 4280,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 4253,
+                "end": 4280
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/NumberField/NumberFieldRoot.vue",
+      "filename": "packages/core/src/NumberField/NumberFieldRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/NumberField/NumberFieldRoot.vue.txt",
+      "sourceSHA256": "97465568ef99b133c58779bd57d6e6ffeb96181f13e373325007ab14d8ebafc6",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'locale'. May cause name collision in script or template tag.",
+          "line": 93,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 93,
+          "endColumn": 37
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/NumberField/NumberFieldRoot.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'locale'",
+            "start": 3491,
+            "end": 3521,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 3491,
+                "end": 3521
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/PinInput/PinInputRoot.vue",
+      "filename": "packages/core/src/PinInput/PinInputRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/PinInput/PinInputRoot.vue.txt",
+      "sourceSHA256": "c1115c31eb8c79f911fc7f20eb2106c755b7a1226f4760d71830b88017d8709f",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 91,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 91,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/PinInput/PinInputRoot.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 3440,
+            "end": 3467,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 3440,
+                "end": 3467
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/RadioGroup/RadioGroupRoot.vue",
+      "filename": "packages/core/src/RadioGroup/RadioGroupRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/RadioGroup/RadioGroupRoot.vue.txt",
+      "sourceSHA256": "846ddffdf680acb2a6913f0977d98a8e686140fc160acf7c1cd36d567a3b92db",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 74,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 74,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/RadioGroup/RadioGroupRoot.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 2597,
+            "end": 2624,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 2597,
+                "end": 2624
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/RangeCalendar/RangeCalendarRoot.vue",
+      "filename": "packages/core/src/RangeCalendar/RangeCalendarRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/RangeCalendar/RangeCalendarRoot.vue.txt",
+      "sourceSHA256": "677ba85971ead6b7853687ecfbfad4289f86d152798be2bb77c9de7cc3767ecb",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 224,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 224,
+          "endColumn": 34
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'locale'. May cause name collision in script or template tag.",
+          "line": 225,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 225,
+          "endColumn": 37
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'isDateDisabled'. May cause name collision in script or template tag.",
+          "line": 266,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 297,
+          "endColumn": 3
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'isDateUnavailable'. May cause name collision in script or template tag.",
+          "line": 266,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 297,
+          "endColumn": 3
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'nextPage'. May cause name collision in script or template tag.",
+          "line": 266,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 297,
+          "endColumn": 3
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'prevPage'. May cause name collision in script or template tag.",
+          "line": 266,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 297,
+          "endColumn": 3
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'isDateHighlightable'. May cause name collision in script or template tag.",
+          "line": 299,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 322,
+          "endColumn": 3
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/RangeCalendar/RangeCalendarRoot.vue",
+        "error_count": 7,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 8522,
+            "end": 8549,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 8522,
+                "end": 8549
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'locale'",
+            "start": 8556,
+            "end": 8586,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 8556,
+                "end": 8586
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'isDateDisabled'",
+            "start": 10042,
+            "end": 10629,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 10042,
+                "end": 10629
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'isDateUnavailable'",
+            "start": 10042,
+            "end": 10629,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 10042,
+                "end": 10629
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'nextPage'",
+            "start": 10042,
+            "end": 10629,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 10042,
+                "end": 10629
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'prevPage'",
+            "start": 10042,
+            "end": 10629,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 10042,
+                "end": 10629
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'isDateHighlightable'",
+            "start": 10637,
+            "end": 11128,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 10637,
+                "end": 11128
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/RovingFocus/RovingFocusGroup.vue",
+      "filename": "packages/core/src/RovingFocus/RovingFocusGroup.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/RovingFocus/RovingFocusGroup.vue.txt",
+      "sourceSHA256": "c489af089deb1d7e9d587277117492d586982263a06c9084847f36f53210f477",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 74,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 74,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/RovingFocus/RovingFocusGroup.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 2125,
+            "end": 2152,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 2125,
+                "end": 2152
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/ScrollArea/ScrollAreaRoot.vue",
+      "filename": "packages/core/src/ScrollArea/ScrollAreaRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/ScrollArea/ScrollAreaRoot.vue.txt",
+      "sourceSHA256": "d37c1f035711ffed4d8cea75c760c78da9f246fe13f477b86b9688bc22bac3c9",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 68,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 68,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/ScrollArea/ScrollAreaRoot.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 3047,
+            "end": 3074,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 3047,
+                "end": 3074
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/ScrollArea/ScrollAreaViewport.vue",
+      "filename": "packages/core/src/ScrollArea/ScrollAreaViewport.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/ScrollArea/ScrollAreaViewport.vue.txt",
+      "sourceSHA256": "d4c06b19799794a489f0e94da9bbe5c436258feb46689bcfb5848b74d1e3ebb1",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'nonce'. May cause name collision in script or template tag.",
+          "line": 26,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 26,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/ScrollArea/ScrollAreaViewport.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'nonce'",
+            "start": 744,
+            "end": 771,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 744,
+                "end": 771
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/Select/SelectRoot.vue",
+      "filename": "packages/core/src/Select/SelectRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/Select/SelectRoot.vue.txt",
+      "sourceSHA256": "e54ff0f801d2a684775b4093b005c2c7cf050d9dc8a1a649b7762c6a13f1eded",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 122,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 122,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/Select/SelectRoot.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 4416,
+            "end": 4443,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 4416,
+                "end": 4443
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/Select/SelectViewport.vue",
+      "filename": "packages/core/src/Select/SelectViewport.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/Select/SelectViewport.vue.txt",
+      "sourceSHA256": "7b9d5d43a35ee112834900451fba66bf116af8cba23405e428ba2b6991512297",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'nonce'. May cause name collision in script or template tag.",
+          "line": 25,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 25,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/Select/SelectViewport.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'nonce'",
+            "start": 827,
+            "end": 854,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 827,
+                "end": 854
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/Slider/SliderRoot.vue",
+      "filename": "packages/core/src/Slider/SliderRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/Slider/SliderRoot.vue.txt",
+      "sourceSHA256": "e5e92f05bf98e12eaaa94401a9ec9178b2d53c0bd6237603a329ef3eb9fe3ced",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 103,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 103,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/Slider/SliderRoot.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 3548,
+            "end": 3575,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 3548,
+                "end": 3575
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/Splitter/SplitterResizeHandle.vue",
+      "filename": "packages/core/src/Splitter/SplitterResizeHandle.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/Splitter/SplitterResizeHandle.vue.txt",
+      "sourceSHA256": "a1eb1f9a6da0cd61dc4863d62402a0cb70cec0ac85f432c164412b9076e3a63f",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'nonce'. May cause name collision in script or template tag.",
+          "line": 69,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 69,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/Splitter/SplitterResizeHandle.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'nonce'",
+            "start": 2423,
+            "end": 2450,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 2423,
+                "end": 2450
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/Stepper/StepperRoot.vue",
+      "filename": "packages/core/src/Stepper/StepperRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/Stepper/StepperRoot.vue.txt",
+      "sourceSHA256": "1900b8580a0ace1a489ad5659abd7f87fdd9594e8ef0922aba3d7a60bf346014",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 84,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 84,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/Stepper/StepperRoot.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 2816,
+            "end": 2843,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 2816,
+                "end": 2843
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/Tabs/TabsRoot.vue",
+      "filename": "packages/core/src/Tabs/TabsRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/Tabs/TabsRoot.vue.txt",
+      "sourceSHA256": "cb818ff3a6d7352652ccd47f2d8549502e83917b0c3de20b19261c842e770e2c",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 79,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 79,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/Tabs/TabsRoot.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 2661,
+            "end": 2688,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 2661,
+                "end": 2688
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/TagsInput/TagsInputRoot.vue",
+      "filename": "packages/core/src/TagsInput/TagsInputRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/TagsInput/TagsInputRoot.vue.txt",
+      "sourceSHA256": "d550ffe0fdd0eadbbb2a86dea678bf11dce33799306e9c8b30fa39f8a875c507",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 94,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 94,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/TagsInput/TagsInputRoot.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 3790,
+            "end": 3817,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 3790,
+                "end": 3817
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/TimeField/TimeFieldRoot.vue",
+      "filename": "packages/core/src/TimeField/TimeFieldRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/TimeField/TimeFieldRoot.vue.txt",
+      "sourceSHA256": "be0bd336d3f833ec8e3994522115a46fc181cfc4c3996cb50fd30a025fa7bae3",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'locale'. May cause name collision in script or template tag.",
+          "line": 125,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 125,
+          "endColumn": 37
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 126,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 126,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/TimeField/TimeFieldRoot.vue",
+        "error_count": 2,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'locale'",
+            "start": 4697,
+            "end": 4727,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 4697,
+                "end": 4727
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 4734,
+            "end": 4761,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 4734,
+                "end": 4761
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/TimeRangeField/TimeRangeFieldRoot.vue",
+      "filename": "packages/core/src/TimeRangeField/TimeRangeFieldRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/TimeRangeField/TimeRangeFieldRoot.vue.txt",
+      "sourceSHA256": "686f83cc9bc6af3c3ad98d0f30d26c2e3d5c43c5d52c8d5b83d180b7f1a07a9b",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'locale'. May cause name collision in script or template tag.",
+          "line": 131,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 131,
+          "endColumn": 37
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 132,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 132,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/TimeRangeField/TimeRangeFieldRoot.vue",
+        "error_count": 2,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'locale'",
+            "start": 5010,
+            "end": 5040,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 5010,
+                "end": 5040
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 5047,
+            "end": 5074,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 5047,
+                "end": 5074
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/ToggleGroup/ToggleGroupRoot.vue",
+      "filename": "packages/core/src/ToggleGroup/ToggleGroupRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/ToggleGroup/ToggleGroupRoot.vue.txt",
+      "sourceSHA256": "df05fb3b1eb25bf23371cf994ab1e1e815d766ff7f004499ddeb5beab84060b9",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 62,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 62,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/ToggleGroup/ToggleGroupRoot.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 2509,
+            "end": 2536,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 2509,
+                "end": 2536
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/Toolbar/ToolbarRoot.vue",
+      "filename": "packages/core/src/Toolbar/ToolbarRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/Toolbar/ToolbarRoot.vue.txt",
+      "sourceSHA256": "4923deea2221a4e1442702e64811e50e9e23c65ec3b15a0d93ac9133aa108c6c",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 34,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 34,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/Toolbar/ToolbarRoot.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 1192,
+            "end": 1219,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 1192,
+                "end": 1219
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/Tree/TreeRoot.vue",
+      "filename": "packages/core/src/Tree/TreeRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/Tree/TreeRoot.vue.txt",
+      "sourceSHA256": "cd45b4ad003c59ef0d8a9801741546a0f5cf75013716ef6ddcb65528e3c72a05",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 105,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 105,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/Tree/TreeRoot.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 4100,
+            "end": 4127,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 4100,
+                "end": 4127
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/Viewport/Viewport.vue",
+      "filename": "packages/core/src/Viewport/Viewport.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/Viewport/Viewport.vue.txt",
+      "sourceSHA256": "04beb5d70204f4a7fceae332406dffad58a22c9d9caa93b6682667bd0eda4658",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'nonce'. May cause name collision in script or template tag.",
+          "line": 22,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 22,
+          "endColumn": 34
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/Viewport/Viewport.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'nonce'",
+            "start": 640,
+            "end": 667,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 640,
+                "end": 667
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/YearPicker/YearPickerRoot.vue",
+      "filename": "packages/core/src/YearPicker/YearPickerRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/YearPicker/YearPickerRoot.vue.txt",
+      "sourceSHA256": "2eac038964a24deb94e22ec8180b401d9582883c4b842a8f90e1d404d4d24089",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'locale'. May cause name collision in script or template tag.",
+          "line": 148,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 148,
+          "endColumn": 37
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 149,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 149,
+          "endColumn": 34
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'isYearDisabled'. May cause name collision in script or template tag.",
+          "line": 172,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 195,
+          "endColumn": 3
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'isYearUnavailable'. May cause name collision in script or template tag.",
+          "line": 172,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 195,
+          "endColumn": 3
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'nextPage'. May cause name collision in script or template tag.",
+          "line": 172,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 195,
+          "endColumn": 3
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'prevPage'. May cause name collision in script or template tag.",
+          "line": 172,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 195,
+          "endColumn": 3
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/YearPicker/YearPickerRoot.vue",
+        "error_count": 6,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'locale'",
+            "start": 5336,
+            "end": 5366,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 5336,
+                "end": 5366
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 5373,
+            "end": 5400,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 5373,
+                "end": 5400
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'isYearDisabled'",
+            "start": 6097,
+            "end": 6522,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 6097,
+                "end": 6522
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'isYearUnavailable'",
+            "start": 6097,
+            "end": 6522,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 6097,
+                "end": 6522
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'nextPage'",
+            "start": 6097,
+            "end": 6522,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 6097,
+                "end": 6522
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'prevPage'",
+            "start": 6097,
+            "end": 6522,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 6097,
+                "end": 6522
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reka-ui/packages/core/src/YearRangePicker/YearRangePickerRoot.vue",
+      "filename": "packages/core/src/YearRangePicker/YearRangePickerRoot.vue",
+      "sourcePath": "original-sources/reka-ui/packages/core/src/YearRangePicker/YearRangePickerRoot.vue.txt",
+      "sourceSHA256": "35f0fbab072e81d5704795a26d1e6032a0ba7448560d98cb2f32ae69809c9953",
+      "project": "reka-ui",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'dir'. May cause name collision in script or template tag.",
+          "line": 169,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 169,
+          "endColumn": 34
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'locale'. May cause name collision in script or template tag.",
+          "line": 170,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 170,
+          "endColumn": 37
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'isYearDisabled'. May cause name collision in script or template tag.",
+          "line": 205,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 228,
+          "endColumn": 3
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'isYearUnavailable'. May cause name collision in script or template tag.",
+          "line": 205,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 228,
+          "endColumn": 3
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'nextPage'. May cause name collision in script or template tag.",
+          "line": 205,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 228,
+          "endColumn": 3
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'prevPage'. May cause name collision in script or template tag.",
+          "line": 205,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 228,
+          "endColumn": 3
+        }
+      ],
+      "service": {
+        "filename": "packages/core/src/YearRangePicker/YearRangePickerRoot.vue",
+        "error_count": 6,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'dir'",
+            "start": 6206,
+            "end": 6233,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 6206,
+                "end": 6233
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'locale'",
+            "start": 6240,
+            "end": 6270,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 6240,
+                "end": 6270
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'isYearDisabled'",
+            "start": 7621,
+            "end": 8046,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 7621,
+                "end": 8046
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'isYearUnavailable'",
+            "start": 7621,
+            "end": 8046,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 7621,
+                "end": 8046
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'nextPage'",
+            "start": 7621,
+            "end": 8046,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 7621,
+                "end": 8046
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'prevPage'",
+            "start": 7621,
+            "end": 8046,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 7621,
+                "end": 8046
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "tiny-rdm/frontend/src/components/common/TtlInput.vue",
+      "filename": "frontend/src/components/common/TtlInput.vue",
+      "sourcePath": "original-sources/tiny-rdm/frontend/src/components/common/TtlInput.vue.txt",
+      "sourceSHA256": "2f36fb15d6c943481fcd927a4ab14370433c14f36407b84d7c713cca63169949",
+      "project": "tiny-rdm",
+      "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'unit'. May cause name collision in script or template tag.",
+          "line": 17,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 34,
+          "endColumn": 2
+        }
+      ],
+      "service": {
+        "filename": "frontend/src/components/common/TtlInput.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'unit'",
+            "start": 268,
+            "end": 533,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 268,
+                "end": 533
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "tiny-rdm/frontend/src/components/content_value/ContentToolbar.vue",
+      "filename": "frontend/src/components/content_value/ContentToolbar.vue",
+      "sourcePath": "original-sources/tiny-rdm/frontend/src/components/content_value/ContentToolbar.vue.txt",
+      "sourceSHA256": "f2c61111ddfb25414edbd9733e3d5edf4bbdd03aa7f3bc925d9c81b619bbae4f",
+      "project": "tiny-rdm",
+      "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'ttl'. May cause name collision in script or template tag.",
+          "line": 48,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 52,
+          "endColumn": 3
+        }
+      ],
+      "service": {
+        "filename": "frontend/src/components/content_value/ContentToolbar.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'ttl'",
+            "start": 1382,
+            "end": 1449,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 1382,
+                "end": 1449
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "tiny-rdm/frontend/src/components/content_value/ContentValueHash.vue",
+      "filename": "frontend/src/components/content_value/ContentValueHash.vue",
+      "sourcePath": "original-sources/tiny-rdm/frontend/src/components/content_value/ContentValueHash.vue.txt",
+      "sourceSHA256": "4d1929bb035f0e7bf3180a84350bd49846f6a9fb959af2ac3c1ec5b5183bbf9c",
+      "project": "tiny-rdm",
+      "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'size'. May cause name collision in script or template tag.",
+          "line": 9,
+          "column": 19,
+          "messageId": "duplicateKey",
+          "endLine": 9,
+          "endColumn": 23
+        }
+      ],
+      "service": {
+        "filename": "frontend/src/components/content_value/ContentValueHash.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'size'",
+            "start": 426,
+            "end": 430,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 426,
+                "end": 430
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "tiny-rdm/frontend/src/components/content_value/ContentValueList.vue",
+      "filename": "frontend/src/components/content_value/ContentValueList.vue",
+      "sourcePath": "original-sources/tiny-rdm/frontend/src/components/content_value/ContentValueList.vue.txt",
+      "sourceSHA256": "802ff396c0460c44f89829d5d00cc0e7d13415494daa272d81223633611b6ed6",
+      "project": "tiny-rdm",
+      "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'size'. May cause name collision in script or template tag.",
+          "line": 6,
+          "column": 19,
+          "messageId": "duplicateKey",
+          "endLine": 6,
+          "endColumn": 23
+        }
+      ],
+      "service": {
+        "filename": "frontend/src/components/content_value/ContentValueList.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'size'",
+            "start": 226,
+            "end": 230,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 226,
+                "end": 230
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "tiny-rdm/frontend/src/components/content_value/ContentValueSet.vue",
+      "filename": "frontend/src/components/content_value/ContentValueSet.vue",
+      "sourcePath": "original-sources/tiny-rdm/frontend/src/components/content_value/ContentValueSet.vue.txt",
+      "sourceSHA256": "6b879f9b7657371e2978498a0a3f0edc9081ee6a89e58863b474c05774517d7b",
+      "project": "tiny-rdm",
+      "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'size'. May cause name collision in script or template tag.",
+          "line": 6,
+          "column": 19,
+          "messageId": "duplicateKey",
+          "endLine": 6,
+          "endColumn": 23
+        }
+      ],
+      "service": {
+        "filename": "frontend/src/components/content_value/ContentValueSet.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'size'",
+            "start": 226,
+            "end": 230,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 226,
+                "end": 230
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "tiny-rdm/frontend/src/components/content_value/ContentValueStream.vue",
+      "filename": "frontend/src/components/content_value/ContentValueStream.vue",
+      "sourcePath": "original-sources/tiny-rdm/frontend/src/components/content_value/ContentValueStream.vue.txt",
+      "sourceSHA256": "9564f59274d7a8dee012fdec445d98026a0714ba8dd301df7a72e3e944f8ad0d",
+      "project": "tiny-rdm",
+      "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'size'. May cause name collision in script or template tag.",
+          "line": 9,
+          "column": 29,
+          "messageId": "duplicateKey",
+          "endLine": 9,
+          "endColumn": 33
+        }
+      ],
+      "service": {
+        "filename": "frontend/src/components/content_value/ContentValueStream.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'size'",
+            "start": 426,
+            "end": 430,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 426,
+                "end": 430
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "tiny-rdm/frontend/src/components/content_value/ContentValueZSet.vue",
+      "filename": "frontend/src/components/content_value/ContentValueZSet.vue",
+      "sourcePath": "original-sources/tiny-rdm/frontend/src/components/content_value/ContentValueZSet.vue.txt",
+      "sourceSHA256": "a96e74b58ce738109b7e0fa08ce7e070039975d22e91115976d57ce86bc7ac5c",
+      "project": "tiny-rdm",
+      "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'size'. May cause name collision in script or template tag.",
+          "line": 8,
+          "column": 19,
+          "messageId": "duplicateKey",
+          "endLine": 8,
+          "endColumn": 23
+        }
+      ],
+      "service": {
+        "filename": "frontend/src/components/content_value/ContentValueZSet.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'size'",
+            "start": 380,
+            "end": 384,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 380,
+                "end": 384
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "vue-netcore/vol.web/src/components/basic/VolBox.vue",
+      "filename": "vol.web/src/components/basic/VolBox.vue",
+      "sourcePath": "original-sources/vue-netcore/vol.web/src/components/basic/VolBox.vue.txt",
+      "sourceSHA256": "f90b633e7804b5814c2d9ad6099c7c3963c198c44770cae4b882b21b99b58cb1",
+      "project": "vue-netcore",
+      "revision": "a5512b75501bcc5f98c2b52aa498c4c07877f9ec",
+      "rawPinnedReferenceMessages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'footer'. May cause name collision in script or template tag.",
+          "line": 132,
+          "column": 7,
+          "messageId": "duplicateKey",
+          "endLine": 132,
+          "endColumn": 26
+        }
+      ],
+      "service": {
+        "filename": "vol.web/src/components/basic/VolBox.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'footer'",
+            "start": 3568,
+            "end": 3587,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 3568,
+                "end": 3587
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    }
+  ],
+  "controls": [
+    {
+      "id": "runtime-object",
+      "filename": "runtime-object.vue",
+      "source": "<script setup lang=\"ts\">const props = defineProps({ foo: String }); const foo = 1;</script>\n<template><div /></template>",
+      "expectedNativeCount": 1,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'foo'. May cause name collision in script or template tag.",
+          "line": 1,
+          "column": 75,
+          "messageId": "duplicateKey",
+          "endLine": 1,
+          "endColumn": 82
+        }
+      ],
+      "service": {
+        "filename": "runtime-object.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'foo'",
+            "start": 74,
+            "end": 81,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 74,
+                "end": 81
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "runtime-array",
+      "filename": "runtime-array.vue",
+      "source": "<script setup lang=\"ts\">const props = defineProps([\"foo\"]); const foo = 1;</script>\n<template><div /></template>",
+      "expectedNativeCount": 1,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'foo'. May cause name collision in script or template tag.",
+          "line": 1,
+          "column": 67,
+          "messageId": "duplicateKey",
+          "endLine": 1,
+          "endColumn": 74
+        }
+      ],
+      "service": {
+        "filename": "runtime-array.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'foo'",
+            "start": 66,
+            "end": 73,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 66,
+                "end": 73
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "type-literal",
+      "filename": "type-literal.vue",
+      "source": "<script setup lang=\"ts\">const props = defineProps<{ foo: string }>(); const foo = 1;</script>\n<template><div /></template>",
+      "expectedNativeCount": 1,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'foo'. May cause name collision in script or template tag.",
+          "line": 1,
+          "column": 77,
+          "messageId": "duplicateKey",
+          "endLine": 1,
+          "endColumn": 84
+        }
+      ],
+      "service": {
+        "filename": "type-literal.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'foo'",
+            "start": 76,
+            "end": 83,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 76,
+                "end": 83
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "local-interface",
+      "filename": "local-interface.vue",
+      "source": "<script setup lang=\"ts\">interface Props { foo: string }; const props = defineProps<Props>(); const foo = 1;</script>\n<template><div /></template>",
+      "expectedNativeCount": 1,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'foo'. May cause name collision in script or template tag.",
+          "line": 1,
+          "column": 100,
+          "messageId": "duplicateKey",
+          "endLine": 1,
+          "endColumn": 107
+        }
+      ],
+      "service": {
+        "filename": "local-interface.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'foo'",
+            "start": 99,
+            "end": 106,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 99,
+                "end": 106
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "local-type-alias",
+      "filename": "local-type-alias.vue",
+      "source": "<script setup lang=\"ts\">type Props = { foo: string }; const props = defineProps<Props>(); const foo = 1;</script>\n<template><div /></template>",
+      "expectedNativeCount": 1,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'foo'. May cause name collision in script or template tag.",
+          "line": 1,
+          "column": 97,
+          "messageId": "duplicateKey",
+          "endLine": 1,
+          "endColumn": 104
+        }
+      ],
+      "service": {
+        "filename": "local-type-alias.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'foo'",
+            "start": 96,
+            "end": 103,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 96,
+                "end": 103
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "sibling-interface",
+      "filename": "sibling-interface.vue",
+      "source": "<script lang=\"ts\">export interface Props { foo: string }</script>\n<script setup lang=\"ts\">const props = defineProps<Props>(); const foo = 1;</script>\n<template><div /></template>",
+      "expectedNativeCount": 1,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'foo'. May cause name collision in script or template tag.",
+          "line": 2,
+          "column": 67,
+          "messageId": "duplicateKey",
+          "endLine": 2,
+          "endColumn": 74
+        }
+      ],
+      "service": {
+        "filename": "sibling-interface.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'foo'",
+            "start": 132,
+            "end": 139,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 132,
+                "end": 139
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "sibling-type-alias",
+      "filename": "sibling-type-alias.vue",
+      "source": "<script lang=\"ts\">export type Props = { foo: string }</script>\n<script setup lang=\"ts\">const props = defineProps<Props>(); const foo = 1;</script>\n<template><div /></template>",
+      "expectedNativeCount": 1,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'foo'. May cause name collision in script or template tag.",
+          "line": 2,
+          "column": 67,
+          "messageId": "duplicateKey",
+          "endLine": 2,
+          "endColumn": 74
+        }
+      ],
+      "service": {
+        "filename": "sibling-type-alias.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'foo'",
+            "start": 129,
+            "end": 136,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 129,
+                "end": 136
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "sibling-value",
+      "filename": "sibling-value.vue",
+      "source": "<script lang=\"ts\">export const foo = 1;</script>\n<script setup lang=\"ts\">const props = defineProps<{ foo: string }>();</script>\n<template><div /></template>",
+      "expectedNativeCount": 1,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'foo'. May cause name collision in script or template tag.",
+          "line": 1,
+          "column": 32,
+          "messageId": "duplicateKey",
+          "endLine": 1,
+          "endColumn": 39
+        }
+      ],
+      "service": {
+        "filename": "sibling-value.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'foo'",
+            "start": 31,
+            "end": 38,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 31,
+                "end": 38
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "with-defaults",
+      "filename": "with-defaults.vue",
+      "source": "<script setup lang=\"ts\">const props = withDefaults(defineProps<{ foo?: string }>(), { foo: \"x\" }); const foo = 1;</script>\n<template><div /></template>",
+      "expectedNativeCount": 1,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'foo'. May cause name collision in script or template tag.",
+          "line": 1,
+          "column": 106,
+          "messageId": "duplicateKey",
+          "endLine": 1,
+          "endColumn": 113
+        }
+      ],
+      "service": {
+        "filename": "with-defaults.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'foo'",
+            "start": 105,
+            "end": 112,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 105,
+                "end": 112
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "unassigned-props",
+      "filename": "unassigned-props.vue",
+      "source": "<script setup lang=\"ts\">defineProps<{ foo: string }>(); const foo = 1;</script>\n<template><div /></template>",
+      "expectedNativeCount": 1,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'foo'. May cause name collision in script or template tag.",
+          "line": 1,
+          "column": 63,
+          "messageId": "duplicateKey",
+          "endLine": 1,
+          "endColumn": 70
+        }
+      ],
+      "service": {
+        "filename": "unassigned-props.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'foo'",
+            "start": 62,
+            "end": 69,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 62,
+                "end": 69
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "unassigned-defaults",
+      "filename": "unassigned-defaults.vue",
+      "source": "<script setup lang=\"ts\">withDefaults(defineProps<{ foo: string }>(), {foo: \"x\"}); const foo = 1;</script>\n<template><div /></template>",
+      "expectedNativeCount": 1,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'foo'. May cause name collision in script or template tag.",
+          "line": 1,
+          "column": 89,
+          "messageId": "duplicateKey",
+          "endLine": 1,
+          "endColumn": 96
+        }
+      ],
+      "service": {
+        "filename": "unassigned-defaults.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'foo'",
+            "start": 88,
+            "end": 95,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 88,
+                "end": 95
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "function-collision",
+      "filename": "function-collision.vue",
+      "source": "<script setup lang=\"ts\">defineProps<{ foo: string }>(); function foo() { return 1 }</script>\n<template><div /></template>",
+      "expectedNativeCount": 1,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'foo'. May cause name collision in script or template tag.",
+          "line": 1,
+          "column": 57,
+          "messageId": "duplicateKey",
+          "endLine": 1,
+          "endColumn": 84
+        }
+      ],
+      "service": {
+        "filename": "function-collision.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'foo'",
+            "start": 56,
+            "end": 83,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 56,
+                "end": 83
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "import-collision",
+      "filename": "import-collision.vue",
+      "source": "<script setup lang=\"ts\">import { ref as foo } from \"vue\"; defineProps<{ foo: string }>();</script>\n<template><div /></template>",
+      "expectedNativeCount": 1,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'foo'. May cause name collision in script or template tag.",
+          "line": 1,
+          "column": 34,
+          "messageId": "duplicateKey",
+          "endLine": 1,
+          "endColumn": 44
+        }
+      ],
+      "service": {
+        "filename": "import-collision.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'foo'",
+            "start": 33,
+            "end": 43,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 33,
+                "end": 43
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "destructure-collision",
+      "filename": "destructure-collision.vue",
+      "source": "<script setup lang=\"ts\">defineProps<{ foo: string; bar: string }>(); const { foo, bar } = source;</script>\n<template><div /></template>",
+      "expectedNativeCount": 2,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'foo'. May cause name collision in script or template tag.",
+          "line": 1,
+          "column": 76,
+          "messageId": "duplicateKey",
+          "endLine": 1,
+          "endColumn": 97
+        },
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'bar'. May cause name collision in script or template tag.",
+          "line": 1,
+          "column": 76,
+          "messageId": "duplicateKey",
+          "endLine": 1,
+          "endColumn": 97
+        }
+      ],
+      "service": {
+        "filename": "destructure-collision.vue",
+        "error_count": 2,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'foo'",
+            "start": 75,
+            "end": 96,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 75,
+                "end": 96
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'bar'",
+            "start": 75,
+            "end": 96,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 75,
+                "end": 96
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "array-pattern-collision",
+      "filename": "array-pattern-collision.vue",
+      "source": "<script setup lang=\"ts\">defineProps<{ foo: string }>(); const [foo] = source;</script>\n<template><div /></template>",
+      "expectedNativeCount": 1,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'foo'. May cause name collision in script or template tag.",
+          "line": 1,
+          "column": 63,
+          "messageId": "duplicateKey",
+          "endLine": 1,
+          "endColumn": 77
+        }
+      ],
+      "service": {
+        "filename": "array-pattern-collision.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'foo'",
+            "start": 62,
+            "end": 76,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 62,
+                "end": 76
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "multi-declarator-collision",
+      "filename": "multi-declarator-collision.vue",
+      "source": "<script setup lang=\"ts\">defineProps<{ foo: string }>(); const unrelated = 1, foo = 2;</script>\n<template><div /></template>",
+      "expectedNativeCount": 1,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'foo'. May cause name collision in script or template tag.",
+          "line": 1,
+          "column": 78,
+          "messageId": "duplicateKey",
+          "endLine": 1,
+          "endColumn": 85
+        }
+      ],
+      "service": {
+        "filename": "multi-declarator-collision.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'foo'",
+            "start": 77,
+            "end": 84,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 77,
+                "end": 84
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "direct-prop-derived",
+      "filename": "direct-prop-derived.vue",
+      "source": "<script setup lang=\"ts\">const props = defineProps<{ foo: string }>(); const foo = props.foo;</script>\n<template><div /></template>",
+      "expectedNativeCount": 0,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [],
+      "service": {
+        "filename": "direct-prop-derived.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "computed-prop-derived",
+      "filename": "computed-prop-derived.vue",
+      "source": "<script setup lang=\"ts\">const props = defineProps<{ foo: string }>(); const foo = computed(() => props.foo);</script>\n<template><div /></template>",
+      "expectedNativeCount": 0,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [],
+      "service": {
+        "filename": "computed-prop-derived.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "to-refs-prop-derived",
+      "filename": "to-refs-prop-derived.vue",
+      "source": "<script setup lang=\"ts\">const props = defineProps<{ foo: string }>(); const { foo } = toRefs(props);</script>\n<template><div /></template>",
+      "expectedNativeCount": 0,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [],
+      "service": {
+        "filename": "to-refs-prop-derived.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "use-v-model-prop-derived",
+      "filename": "use-v-model-prop-derived.vue",
+      "source": "<script setup lang=\"ts\">const props = defineProps<{ foo: string }>(); const foo = useVModel(props, \"foo\", emit);</script>\n<template><div /></template>",
+      "expectedNativeCount": 0,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [],
+      "service": {
+        "filename": "use-v-model-prop-derived.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "shadowed-initializer-reference",
+      "filename": "shadowed-initializer-reference.vue",
+      "source": "<script setup lang=\"ts\">const props = defineProps<{ foo: string }>(); const foo = ((props) => props.foo)({foo: 1});</script>\n<template><div /></template>",
+      "expectedNativeCount": 1,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'foo'. May cause name collision in script or template tag.",
+          "line": 1,
+          "column": 77,
+          "messageId": "duplicateKey",
+          "endLine": 1,
+          "endColumn": 115
+        }
+      ],
+      "service": {
+        "filename": "shadowed-initializer-reference.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'foo'",
+            "start": 76,
+            "end": 114,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 76,
+                "end": 114
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "props-direct-destructure",
+      "filename": "props-direct-destructure.vue",
+      "source": "<script setup lang=\"ts\">const { foo } = defineProps<{ foo: string }>();</script>\n<template><div /></template>",
+      "expectedNativeCount": 0,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [],
+      "service": {
+        "filename": "props-direct-destructure.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "props-destructure-default",
+      "filename": "props-destructure-default.vue",
+      "source": "<script setup lang=\"ts\">const { foo = \"x\" } = defineProps<{ foo?: string }>();</script>\n<template><div /></template>",
+      "expectedNativeCount": 0,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [],
+      "service": {
+        "filename": "props-destructure-default.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "renamed-prop",
+      "filename": "renamed-prop.vue",
+      "source": "<script setup lang=\"ts\">const { foo: propFoo } = defineProps<{ foo: string }>(); const foo = 1;</script>\n<template><div /></template>",
+      "expectedNativeCount": 0,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [],
+      "service": {
+        "filename": "renamed-prop.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "renamed-derived-prop",
+      "filename": "renamed-derived-prop.vue",
+      "source": "<script setup lang=\"ts\">const { foo: propFoo } = defineProps<{ foo: string }>(); const foo = computed(() => propFoo);</script>\n<template><div /></template>",
+      "expectedNativeCount": 0,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [],
+      "service": {
+        "filename": "renamed-derived-prop.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "props-own-binding",
+      "filename": "props-own-binding.vue",
+      "source": "<script setup lang=\"ts\">const foo = defineProps<{ foo: string }>();</script>\n<template><div /></template>",
+      "expectedNativeCount": 0,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [],
+      "service": {
+        "filename": "props-own-binding.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "nested-value-only",
+      "filename": "nested-value-only.vue",
+      "source": "<script setup lang=\"ts\">const props = defineProps<{ foo: string }>(); function nested() { const foo = 1; return foo }</script>\n<template><div /></template>",
+      "expectedNativeCount": 0,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [],
+      "service": {
+        "filename": "nested-value-only.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "block-value-only",
+      "filename": "block-value-only.vue",
+      "source": "<script setup lang=\"ts\">defineProps<{ foo: string }>(); { let foo = 1; }</script>\n<template><div /></template>",
+      "expectedNativeCount": 0,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [],
+      "service": {
+        "filename": "block-value-only.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "nested-macro-call",
+      "filename": "nested-macro-call.vue",
+      "source": "<script setup lang=\"ts\">function nested() { const props = defineProps<{ foo: string }>(); const foo = 1; }</script>\n<template><div /></template>",
+      "expectedNativeCount": 0,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [],
+      "service": {
+        "filename": "nested-macro-call.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "plain-script-macro",
+      "filename": "plain-script-macro.ts",
+      "source": "const props = defineProps<{ foo: string }>(); const foo = 1;",
+      "expectedNativeCount": 0,
+      "mode": "plain",
+      "referenceStatus": "Non-SFC control; pinned ESLint .vue configuration returns raw no-matching-config message",
+      "messages": [
+        {
+          "ruleId": null,
+          "severity": 1,
+          "message": "No matching configuration found for plain-script-macro.ts.",
+          "line": 0,
+          "column": 0
+        }
+      ],
+      "service": {
+        "filename": "plain-script-macro.ts",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "normal-script-macro",
+      "filename": "normal-script-macro.vue",
+      "source": "<script lang=\"ts\">const props = defineProps<{ foo: string }>(); const foo = 1;</script>\n<template><div /></template>",
+      "expectedNativeCount": 0,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [],
+      "service": {
+        "filename": "normal-script-macro.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "foreign-macro-function",
+      "filename": "foreign-macro-function.vue",
+      "source": "<script setup lang=\"ts\">function defineProps() { return {} }; const props = defineProps<{ foo: string }>(); const foo = 1;</script>\n<template><div /></template>",
+      "expectedNativeCount": 0,
+      "mode": "sfc",
+      "referenceStatus": "unsupported macro ownership or erased type",
+      "messages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'foo'. May cause name collision in script or template tag.",
+          "line": 1,
+          "column": 115,
+          "messageId": "duplicateKey",
+          "endLine": 1,
+          "endColumn": 122
+        }
+      ],
+      "service": {
+        "filename": "foreign-macro-function.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "foreign-macro-import",
+      "filename": "foreign-macro-import.vue",
+      "source": "<script setup lang=\"ts\">import { defineProps } from \"other\"; const props = defineProps<{ foo: string }>(); const foo = 1;</script>\n<template><div /></template>",
+      "expectedNativeCount": 0,
+      "mode": "sfc",
+      "referenceStatus": "unsupported macro ownership or erased type",
+      "messages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'foo'. May cause name collision in script or template tag.",
+          "line": 1,
+          "column": 114,
+          "messageId": "duplicateKey",
+          "endLine": 1,
+          "endColumn": 121
+        }
+      ],
+      "service": {
+        "filename": "foreign-macro-import.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "sibling-foreign-macro",
+      "filename": "sibling-foreign-macro.vue",
+      "source": "<script lang=\"ts\">export function defineProps() { return {} }</script>\n<script setup lang=\"ts\">const props = defineProps<{ foo: string }>(); const foo = 1;</script>\n<template><div /></template>",
+      "expectedNativeCount": 0,
+      "mode": "sfc",
+      "referenceStatus": "unsupported macro ownership or erased type",
+      "messages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'foo'. May cause name collision in script or template tag.",
+          "line": 2,
+          "column": 77,
+          "messageId": "duplicateKey",
+          "endLine": 2,
+          "endColumn": 84
+        }
+      ],
+      "service": {
+        "filename": "sibling-foreign-macro.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "foreign-defaults",
+      "filename": "foreign-defaults.vue",
+      "source": "<script setup lang=\"ts\">function withDefaults() { return {} }; const props = withDefaults(defineProps<{ foo: string }>(), {}); const foo = 1;</script>\n<template><div /></template>",
+      "expectedNativeCount": 0,
+      "mode": "sfc",
+      "referenceStatus": "unsupported macro ownership or erased type",
+      "messages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'foo'. May cause name collision in script or template tag.",
+          "line": 1,
+          "column": 134,
+          "messageId": "duplicateKey",
+          "endLine": 1,
+          "endColumn": 141
+        }
+      ],
+      "service": {
+        "filename": "foreign-defaults.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "erased-type-name",
+      "filename": "erased-type-name.vue",
+      "source": "<script setup lang=\"ts\">type foo = string; defineProps<{ foo: string }>();</script>\n<template><div /></template>",
+      "expectedNativeCount": 0,
+      "mode": "sfc",
+      "referenceStatus": "unsupported macro ownership or erased type",
+      "messages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'foo'. May cause name collision in script or template tag.",
+          "line": 1,
+          "column": 25,
+          "messageId": "duplicateKey",
+          "endLine": 1,
+          "endColumn": 43
+        }
+      ],
+      "service": {
+        "filename": "erased-type-name.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "unrelated-imported-props-type",
+      "filename": "unrelated-imported-props-type.vue",
+      "source": "<script lang=\"ts\">export interface Props { foo: string }</script>\n<script setup lang=\"ts\">import type { Props } from \"other\"; defineProps<Props>(); const foo = 1;</script>\n<template><div /></template>",
+      "expectedNativeCount": 0,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [],
+      "service": {
+        "filename": "unrelated-imported-props-type.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "local-type-precedence",
+      "filename": "local-type-precedence.vue",
+      "source": "<script lang=\"ts\">export interface Props { foo: string }</script>\n<script setup lang=\"ts\">interface Props { bar: string }; defineProps<Props>(); const foo = 1;</script>\n<template><div /></template>",
+      "expectedNativeCount": 0,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [],
+      "service": {
+        "filename": "local-type-precedence.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "unicode-prefix",
+      "filename": "unicode-prefix.vue",
+      "source": "<script setup lang=\"ts\">// 日本語 🦉\nconst props = defineProps<{ foo: string }>(); const foo = 1;</script>\n<template><div /></template>",
+      "expectedNativeCount": 1,
+      "mode": "sfc",
+      "referenceStatus": "pinned oracle comparable",
+      "messages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'foo'. May cause name collision in script or template tag.",
+          "line": 2,
+          "column": 53,
+          "messageId": "duplicateKey",
+          "endLine": 2,
+          "endColumn": 60
+        }
+      ],
+      "service": {
+        "filename": "unicode-prefix.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'foo'",
+            "start": 94,
+            "end": 101,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 94,
+                "end": 101
+              }
+            ],
+            "fix": null
+          }
+        ]
+      }
+    }
+  ]
+}

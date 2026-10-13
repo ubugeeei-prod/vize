@@ -367,9 +367,9 @@
     {
       "path": "crates/vize_patina/src/linter/script_rules.rs",
       "mode": "100644",
-      "bytes": 10420,
-      "sha256": "7f66cc2be7164e940ada709020311b1e9f19917a72cdfad194a4ba27aa59079b",
-      "gitBlob": "d875e6d54e40f09648a943c61e7ff00b7c63618b"
+      "bytes": 11045,
+      "sha256": "4fcb58e26ba3b67ae24c470f8b5f5eb2bc840830e63959916aeaa5ff1bcb47e1",
+      "gitBlob": "5897cd8f1f446814ad14c90cc453cb3e528acf15"
     },
     {
       "path": "crates/vize_patina/src/linter/script_rules/registry/rules.rs",
@@ -381,9 +381,9 @@
     {
       "path": "crates/vize_patina/src/linter/script_rules/sfc.rs",
       "mode": "100644",
-      "bytes": 8917,
-      "sha256": "0a6b3092ee6aa301af5807a74e56edc206deb009b77677f949a68cc769e4b550",
-      "gitBlob": "a91ed6995bd9276260087eced38a67487c7f1c0c"
+      "bytes": 10321,
+      "sha256": "c8d0e0656b3d46ae272ed526ab76513b2af5cd6a6efdd0bae917a9e6b800187c",
+      "gitBlob": "60876cc2ba398f49392ae529aa94d56393d2d605"
     },
     {
       "path": "crates/vize_patina/src/linter/script_rules/sfc/registered_sfc.rs",
@@ -451,9 +451,9 @@
     {
       "path": "crates/vize_patina/src/rules/script.rs",
       "mode": "100644",
-      "bytes": 7748,
-      "sha256": "b0bdc54f7062f98869baf5268204a78089c58ae5cbbdcd1d3f12cdb3e237e963",
-      "gitBlob": "abdc394d10dd01bcaa49f3e240383ff5d8479fec"
+      "bytes": 7959,
+      "sha256": "01810af1e9550b836b4ff5b6c80a36da20d83d71b2b73a6efd67ab955c0a8b8a",
+      "gitBlob": "d5cbe39bee6a01cc7cd67c7eb7b00ba2a6be2b91"
     },
     {
       "path": "crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs",
@@ -605,9 +605,9 @@
     {
       "path": "docs/davinci/plan/consumer-migration-surfaces/linter/vize_patina.tsv",
       "mode": "100644",
-      "bytes": 164281,
-      "sha256": "273774f41c602278a677196d6b761a15d3bb564719454103ea2bc1de1636e7a1",
-      "gitBlob": "54ee12a42bbde2e5c9f39464611aa2c4cbcbf7aa"
+      "bytes": 166847,
+      "sha256": "4cf934559b79a10a163fed5208ab8c7b57ceaaa0f2897e4c87ac1cb0ad5fb6c5",
+      "gitBlob": "df41c96ab933de68863c8f651527f5191f5583c8"
     },
     {
       "path": "tests/_fixtures/differential/lint/n8n-cli-config/cases.json",
