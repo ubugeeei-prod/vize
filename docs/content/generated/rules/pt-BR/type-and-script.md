@@ -2448,7 +2448,7 @@ export default {
 
 O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
-[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_side_effects_in_computed.rs#L70) · [Todas as regras](all.md)
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_side_effects_in_computed.rs#L77) · [Todas as regras](all.md)
 
 ### `script/no-top-level-ref-in-script`
 

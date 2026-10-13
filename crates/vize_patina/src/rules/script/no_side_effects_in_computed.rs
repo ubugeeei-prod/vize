@@ -56,9 +56,9 @@
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
-    Argument, AssignmentTarget, BindingPattern, CallExpression, ExportDefaultDeclarationKind,
-    Expression, Function, ObjectExpression, ObjectProperty, ObjectPropertyKind, Program,
-    PropertyKey, PropertyKind, SimpleAssignmentTarget, Statement,
+    Argument, BindingPattern, CallExpression, ExportDefaultDeclarationKind, Expression, Function,
+    ObjectExpression, ObjectProperty, ObjectPropertyKind, Program, PropertyKey, PropertyKind,
+    Statement,
 };
 use oxc_ast_visit::{
     Visit,
@@ -68,6 +68,11 @@ use oxc_span::Span;
 use vize_l0::{CompactString, FxHashMap};
 
 mod composition;
+mod this_receiver;
+
+use this_receiver::{
+    assignment_target_is_this_member, expression_root_is_this, simple_target_is_this_member,
+};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-side-effects-in-computed-properties",
@@ -287,48 +292,6 @@ impl SideEffectVisitor<'_> {
                  component state. Move the mutation to a method or a watch handler.",
             );
         self.result.add_diagnostic(diagnostic);
-    }
-}
-
-/// Whether an assignment target is a member access rooted at `this`
-/// (e.g. `this.foo`, `this.foo.bar`, `this['foo']`).
-fn assignment_target_is_this_member(target: &AssignmentTarget<'_>) -> bool {
-    match target {
-        AssignmentTarget::StaticMemberExpression(member) => expression_root_is_this(&member.object),
-        AssignmentTarget::ComputedMemberExpression(member) => {
-            expression_root_is_this(&member.object)
-        }
-        _ => false,
-    }
-}
-
-fn simple_target_is_this_member(target: &SimpleAssignmentTarget<'_>) -> bool {
-    match target {
-        SimpleAssignmentTarget::StaticMemberExpression(member) => {
-            expression_root_is_this(&member.object)
-        }
-        SimpleAssignmentTarget::ComputedMemberExpression(member) => {
-            expression_root_is_this(&member.object)
-        }
-        _ => false,
-    }
-}
-
-/// Whether a member-access chain bottoms out at `this`
-/// (`this`, `this.a`, `this.a.b`, `this.a[i]`, `this!.a`, `(this).a`, ...).
-fn expression_root_is_this(expression: &Expression<'_>) -> bool {
-    match expression {
-        Expression::ThisExpression(_) => true,
-        Expression::StaticMemberExpression(member) => expression_root_is_this(&member.object),
-        Expression::ComputedMemberExpression(member) => expression_root_is_this(&member.object),
-        Expression::PrivateFieldExpression(member) => expression_root_is_this(&member.object),
-        Expression::ParenthesizedExpression(paren) => expression_root_is_this(&paren.expression),
-        Expression::TSNonNullExpression(non_null) => expression_root_is_this(&non_null.expression),
-        Expression::TSAsExpression(ts_as) => expression_root_is_this(&ts_as.expression),
-        Expression::TSSatisfiesExpression(satisfies) => {
-            expression_root_is_this(&satisfies.expression)
-        }
-        _ => false,
     }
 }
 

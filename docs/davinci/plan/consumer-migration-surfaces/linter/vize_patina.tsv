@@ -793,6 +793,7 @@ linter	Linter	source	crates/vize_patina/src/rules/script/no_side_effects_in_comp
 linter	Linter	source	crates/vize_patina/src/rules/script/no_side_effects_in_computed/composition.rs	4	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/no_side_effects_in_computed/composition.rs	4	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/no_side_effects_in_computed/composition.rs	4	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
+linter	Linter	source	crates/vize_patina/src/rules/script/no_side_effects_in_computed/this_receiver.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/no_top_level_ref_in_script.rs	53	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/no_top_level_ref_in_script.rs	53	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/no_top_level_ref_in_script.rs	53	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
