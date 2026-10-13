@@ -95,6 +95,7 @@ export function composeInheritanceDocument(before, filename) {
 
 export function decodeInheritanceBody(row) {
   const body = Buffer.from(row.base64, "base64");
+  assert.equal(body.toString("base64"), row.base64);
   assert.equal(body.length, row.bytes);
   assert.equal(digest(body), row.sha256);
   assert.equal(blob(body), row.gitBlob);
