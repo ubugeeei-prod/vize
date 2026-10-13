@@ -14,7 +14,7 @@ export function forcedCheckoutArgs(gitlinks) {
     "--depth",
     "1",
     "--jobs",
-    "8",
+    "32",
     "--",
     ...gitlinks.map((row) => row.path),
   ];

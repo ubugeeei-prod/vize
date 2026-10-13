@@ -300,7 +300,7 @@ fn ssr_lanes_agree_on_sfc_templates_body() {
     );
     production::assert_clean("battery", &battery_production);
 
-    let Some(sweep) = davinci_test_support::corpus::resolve_env_sweep() else {
+    let Some(sweep) = davinci_test_support::corpus::resolve_env_shard() else {
         eprintln!("VIZE_DAVINCI_DIFFERENTIAL_CORPUS unset: committed battery only");
         return;
     };

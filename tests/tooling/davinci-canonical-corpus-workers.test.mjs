@@ -19,8 +19,10 @@ import {
 import {
   requireCanonicalObservers,
   selectCanonicalWorkers,
+  validateArtifactsConcurrently,
   verifyCanonicalArtifacts,
 } from "../../tools/support/compat/github/canonical-corpus-workers.mjs";
+import { shardedObserverEvidence } from "./support/canonical-corpus-shard-logs.ts";
 
 const sha = "a".repeat(40);
 const context = {
@@ -334,6 +336,117 @@ await test("finalization rejects replaced full bytes, fixture identity and incom
       () => verifyCanonicalArtifacts(selected, root, identity),
       /Incomplete canonical artifacts/,
     );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+await test("finalization re-proves process-sharded observers and their exact shard vectors", () => {
+  const root = mkdtempSync(join(tmpdir(), "canonical-sharded-artifacts-"));
+  const selected = select();
+  const { gitlinks, files, proof } = canonicalWorkerInventory(3001, 148);
+  const identity = {
+    schema: "vize.canonical-corpus-identity",
+    version: 1,
+    ...context,
+    tree: "f".repeat(40),
+    gitlinks,
+    gitlinksSha256: sha256(JSON.stringify(gitlinks)),
+    modulesSha256: "c".repeat(64),
+    files: files.length,
+    filesSha256: sha256(JSON.stringify(files)),
+    committedSha256: sha256(JSON.stringify(proof)),
+  };
+  const selectedText = gitlinks.map((row) => row.path).join("\n") + "\n";
+  const statusText = gitlinks.map((row) => ` ${row.sha} ${row.path}`).join("\n") + "\n";
+  const write = (path, value) => writeFileSync(path, JSON.stringify(value) + "\n");
+  try {
+    for (const worker of selected.workers) {
+      const path = join(root, worker.artifactName);
+      mkdirSync(path);
+      const sharded =
+        worker.observer === "dom"
+          ? null
+          : shardedObserverEvidence(
+              worker.observer,
+              files.map(([name]) => name),
+              gitlinks.length,
+            );
+      const bytes =
+        sharded?.log ?? canonicalWorkerLog(worker.observer, files.length, gitlinks.length);
+      write(join(path, "identity.json"), identity);
+      write(join(path, "files.json"), files);
+      write(join(path, "committed-corpus.json"), proof);
+      writeFileSync(join(path, "selected-gitlinks.txt"), selectedText);
+      writeFileSync(join(path, "submodule-status.txt"), statusText);
+      write(join(path, "hydration.json"), {
+        ...identity,
+        schema: "vize.canonical-corpus-hydration",
+        args: forcedCheckoutArgs(gitlinks),
+        status: 0,
+        statusStatus: 0,
+        stdoutSha256: sha256(""),
+        stderrSha256: sha256(""),
+        statusStderrSha256: sha256(""),
+      });
+      for (const name of [
+        "hydration-stdout.log",
+        "hydration-stderr.log",
+        "hydration-status-stderr.log",
+      ])
+        writeFileSync(join(path, name), "");
+      writeFileSync(join(path, observerLogs[worker.observer]), bytes);
+      for (const [name, vector] of sharded?.vectors ?? []) writeFileSync(join(path, name), vector);
+      const vectors = sharded
+        ? Object.fromEntries([...sharded.vectors].map(([name, vector]) => [name, sha256(vector)]))
+        : undefined;
+      write(join(path, "observer.json"), {
+        schema: "vize.canonical-corpus-observer",
+        version: 1,
+        identity,
+        hydrationSha256: validateHydration(path, identity),
+        observer: worker.observer,
+        outcome: "success",
+        logSha256: sha256(bytes),
+        selectedSha256: sha256(selectedText),
+        statusSha256: sha256(statusText),
+        counters: validateObserverLog(worker.observer, bytes, identity, {
+          files,
+          readVector: (name) => readFileSync(join(path, name)),
+        }),
+        ...(vectors ? { vectorSha256: vectors } : {}),
+      });
+    }
+    assert.deepEqual(verifyCanonicalArtifacts(selected, root, identity), identity);
+    assert.deepEqual(
+      verifyCanonicalArtifacts(selected, root, identity, validateArtifactsConcurrently),
+      identity,
+    );
+    const reach = join(root, selected.workers[2].artifactName);
+    const vector = join(reach, "reach-davinci_production_reach-shard-05-of-16.nul");
+    const original = readFileSync(vector);
+    const paths = original.toString("utf8").split("\0").filter(Boolean);
+    writeFileSync(vector, `${[...paths].reverse().join("\0")}\0`);
+    assert.throws(
+      () => verifyCanonicalArtifacts(selected, root, identity),
+      /shard vectors were replaced/,
+    );
+    assert.throws(
+      () => verifyCanonicalArtifacts(selected, root, identity, validateArtifactsConcurrently),
+      /shard vectors were replaced/,
+    );
+    writeFileSync(vector, original);
+    const receiptPath = join(reach, "observer.json");
+    const receipt = readFileSync(receiptPath);
+    const { vectorSha256: _, ...unpinned } = JSON.parse(receipt);
+    write(receiptPath, unpinned);
+    assert.throws(
+      () => verifyCanonicalArtifacts(selected, root, identity),
+      /shard vectors were replaced/,
+    );
+    writeFileSync(receiptPath, receipt);
+    rmSync(vector);
+    assert.throws(() => verifyCanonicalArtifacts(selected, root, identity), /ENOENT/);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
