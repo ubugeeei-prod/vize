@@ -113,3 +113,12 @@ only. A broader local Moon rewrite attempt failed because the host's0.10.11
 installation lacked its prelude; its raw failure remains and grants no green.
 The unchanged pinned rewrite law still requires fresh Actions. This protocol
 work does not delay the separately owned official normal-minor operator.
+
+The final genuine bd8755 source replay is de64a79a84f386ee2e5eb3c6ee41ccc8409d6eac.
+Its complete36-member source cohort was independently authenticated after the
+original atomic refusal; the eighth review appends that exact source object. All
+seven prior complete reviews, guards, exclusions and native/unknown-command
+refusals remain. This source admission grants no native or release acceptance.
+All20 driver, inventory, selector and complete-cohort controls pass without skips;
+the exact eighth append preserves all seven raw review objects and all guard
+predicates. Fresh exact-head Actions and protected integration remain required.
