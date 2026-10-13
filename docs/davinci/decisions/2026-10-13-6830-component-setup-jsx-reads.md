@@ -20,3 +20,9 @@ import ranges. Actions validates the native fix before protected merge.
 
 This change addresses JSX script reads. Template value reads and baseline
 scope differences remain separate work and do not count as resolved here.
+
+The finite current-source inventory updates only this changed reference module
+and its whole-manifest checksum. All 323 current paths, the 206-path union,
+immutable original rows, historical laws and frames remain present. Its
+physical verification provides source identity only; the native Rust Actions
+and every protected check still qualify the current PR independently.
