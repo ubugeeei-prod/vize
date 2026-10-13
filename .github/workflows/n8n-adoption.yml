@@ -15,6 +15,8 @@ on:
       - tests/tooling/support/n8n-cli-config-*.mjs
       - tests/tooling/support/n8n-slot-options-acceptance.ts
       - tests/tooling/support/n8n-slot-parameters-acceptance.ts
+      - tests/tooling/support/n8n-lint-parity.ts
+      - tools/benchmarks/scripts/package.json
       - tests/tooling/patina-slot-dynamic-modifiers-oracle.test.ts
       - tests/tooling/patina-slot-parameter-bindings-oracle.test.ts
       - tests/_fixtures/differential/lint/n8n-cli-config/**
@@ -316,6 +318,8 @@ jobs:
           cargo test --locked --profile ci -p vize_patina --test valid_v_slot_regression --test valid_v_slot_parameter_bindings
           vp node --test tests/tooling/patina-slot-parameter-bindings-oracle.test.ts
           vp node tests/tooling/support/n8n-slot-parameters-acceptance.ts "target/n8n-cli-config/${{ github.run_id }}-${{ github.run_attempt }}/slot-parameters"
+      - name: Compare whole-corpus lint findings with eslint-plugin-vue
+        run: vp node tests/tooling/support/n8n-lint-parity.ts target/ci/vize "target/n8n-cli-config/${{ github.run_id }}-${{ github.run_attempt }}/lint-parity"
       - name: Upload whole CLI and independent oracle packets
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

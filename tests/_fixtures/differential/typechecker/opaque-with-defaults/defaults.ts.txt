@@ -1,0 +1,29 @@
+export interface TreeProps {
+  valueField?: string;
+  childrenField?: string;
+  labelField?: string;
+  treeData: Record<string, unknown>[];
+  bordered?: boolean;
+}
+
+export function treePropsDefaults() {
+  return { valueField: 'id', childrenField: 'children', labelField: 'label' };
+}
+
+export function partialDefaults() {
+  return { valueField: 'id' };
+}
+
+export function undefinedDefaults() {
+  return { valueField: undefined, labelField: 'label' };
+}
+
+export declare const compact: boolean;
+
+export function text(value: string): string {
+  return value;
+}
+
+export function flag(value: boolean): boolean {
+  return value;
+}

@@ -30,7 +30,7 @@ impl<'a> MarkupElement<'a> {
             MarkupElementInner::JsxElement { node, offset } => {
                 for attribute in &jsx_element_ref(node).opening_element.attributes {
                     if let JSXAttributeItem::Attribute(attr) = attribute {
-                        visitor(MarkupAttribute::from_jsx(&**attr as *const _, offset));
+                        visitor(MarkupAttribute::from_jsx(&raw const **attr, offset));
                     }
                 }
             }
@@ -87,7 +87,7 @@ impl<'a> MarkupElement<'a> {
                     if let JSXAttributeItem::Attribute(attr) = attribute
                         && jsx_attribute_directive_kind(attr).is_some()
                     {
-                        visitor(MarkupDirective::from_jsx(&**attr as *const _, offset));
+                        visitor(MarkupDirective::from_jsx(&raw const **attr, offset));
                     }
                 }
             }
@@ -145,7 +145,7 @@ impl<'a> MarkupElement<'a> {
             MarkupElementInner::JsxElement { node, offset } => {
                 for attribute in &jsx_element_ref(node).opening_element.attributes {
                     if let JSXAttributeItem::Attribute(attr) = attribute {
-                        visitor(MarkupBinding::from_jsx(&**attr as *const _, offset));
+                        visitor(MarkupBinding::from_jsx(&raw const **attr, offset));
                     }
                 }
             }

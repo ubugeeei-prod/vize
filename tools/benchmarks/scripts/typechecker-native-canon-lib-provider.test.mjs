@@ -26,11 +26,38 @@ await test("locked derive providers and their transitive patch identities remain
       qualifyCanonLibScope(
         source(
           manifestChange("Cargo.lock", (m) => {
-            m.package.find((p) => p.name === "serde_derive").checksum = "0".repeat(64);
+            m.package.find((p) => p.name === "serde_derive").source =
+              "git+https://example.invalid/serde?rev=0#0";
+          }),
+        ),
+      ),
+    /derive source/u,
+  );
+  assert.throws(
+    () =>
+      qualifyCanonLibScope(
+        source(
+          manifestChange("Cargo.lock", (m) => {
+            delete m.package.find((p) => p.name === "quote").checksum;
           }),
         ),
       ),
     /derive checksum/u,
+  );
+  // A crates.io update of the derive closure is an ordinary dependency change.
+  assert.doesNotThrow(() =>
+    qualifyCanonLibScope(
+      source({
+        ...manifestChange("Cargo.lock", (m) => {
+          const derive = m.package.find((p) => p.name === "serde_derive");
+          derive.version = "1.0.999";
+          derive.checksum = "f".repeat(64);
+        }),
+        ...manifestChange("Cargo.toml", (m) => {
+          m.workspace.dependencies.serde = { version: "=1.0.999", features: ["derive"] };
+        }),
+      }),
+    ),
   );
   assert.throws(
     () =>

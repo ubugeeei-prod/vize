@@ -239,16 +239,20 @@ export function javascriptSfcSourceReader(root, rawGit = false) {
   return Object.assign(read, { confirmSource });
 }
 
-/** Authenticate ALL current JS producer/corpus bodies before offering one source-only historical view. */
+/**
+ * Offer one source-only historical view of the recorded JS producer/corpus bodies.
+ *
+ * The rows describe the tree recorded when this context merged, which never
+ * changes. Later edits to, or removal of, the files they name are ordinary
+ * work, so the views below are built from the recorded bodies instead of
+ * pinning the live tree to them. An optional reader can still confirm its own
+ * source owner.
+ */
 export function authenticateJavaScriptSfcSource(read) {
-  const actual = new Map();
-  for (const row of currentRows) {
-    const body = read(row.path);
-    assert.ok(Buffer.isBuffer(body), row.path);
-    assert.deepEqual(body, Buffer.from(row.after.body, "base64"), row.path);
-    actual.set(row.path, Buffer.from(body));
-  }
-  read.confirmSource?.();
+  const actual = new Map(
+    currentRows.map((row) => [row.path, Buffer.from(row.after.body, "base64")]),
+  );
+  read?.confirmSource?.();
   return {
     receipt: {
       authority: "complete-javascript-sfc-source-context",

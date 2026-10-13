@@ -247,7 +247,7 @@ await test("a compatible prior example seed still restores and never replaces cu
   });
 });
 
-await test("other role pairs and an independently failed primary retain their original behavior", () => {
+await test("all mounted secondary roles omit their post independently of a failed primary", () => {
   for (const [role, secondaryRole, failures] of [
     ["docs-wasm-extra", "docs-example", []],
     ["docs-wasm", "docs-example-extra", []],
@@ -259,16 +259,15 @@ await test("other role pairs and an independently failed primary retain their or
       const options = { nestedPost: true, secondaryWorkload: true, mountFailures: failures };
       const result = executeCacheAction(fixture, context, options);
       currentWorkloads(fixture, result);
-      const omitted = failures.length !== 0;
-      assert.equal(secondary(result).restoreOnly, omitted);
+      assert.equal(secondary(result).restoreOnly, true);
       assert.equal(
         result.trace.filter(({ kind, name }) => kind === "cache-post" && name === "secondary")
           .length,
-        omitted ? 0 : 1,
+        0,
       );
       assert.equal(
         result.trace.filter(({ kind, name }) => kind === "cache-post" && name === "target").length,
-        role === "docs-wasm" && !failures.includes("target") ? 0 : 1,
+        failures.includes("target") ? 1 : 0,
       );
     });
 });

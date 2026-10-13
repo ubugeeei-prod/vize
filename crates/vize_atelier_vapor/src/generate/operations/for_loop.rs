@@ -4,8 +4,8 @@ use vize_carton::{FxHashMap, String, ToCompactString, cstr};
 
 use super::{
     super::{
-        context::{ForScope, GenerateContext},
-        destructure::parse_destructure_bindings,
+        context::GenerateContext,
+        destructure::{needs_parsed_reads, parse_destructure_bindings},
         generate_block,
     },
     insertion::emit_insertion_state,
@@ -53,13 +53,7 @@ pub(super) fn generate_for(
     }
 
     // Push for scope before generating body
-    let scope = ForScope {
-        value_alias: value_alias.map(String::new),
-        key_alias: key_alias.map(String::new),
-        index_alias: index_alias.map(String::new),
-        depth,
-    };
-    ctx.for_scopes.push(scope);
+    ctx.push_for_scope(value_alias, key_alias, index_alias);
 
     let slot_root = ctx.transition_slot
         && for_node.parent.is_none()
@@ -121,21 +115,25 @@ pub(super) fn generate_for(
 
 /// Generate key function for v-for
 fn generate_for_key_function(
-    ctx: &GenerateContext<'_>,
+    ctx: &mut GenerateContext<'_>,
     for_node: &ForIRNode<'_>,
 ) -> Option<String> {
     if let Some(ref key_prop) = for_node.key_prop {
         let key_expr = resolve_key_expression(ctx, for_node, key_prop);
         // Build params: (value_alias) or (value_alias, key_alias)
-        let value_name = for_node
-            .value
-            .as_ref()
-            .map(|v| v.content)
-            .unwrap_or("_item");
+        let value_name = match for_node.value.as_ref().map(|v| v.content) {
+            Some(pattern)
+                if pattern.trim_start().starts_with(['{', '[']) && needs_parsed_reads(pattern) =>
+            {
+                ctx.resolve_pattern_parameter(pattern)
+            }
+            Some(alias) => alias.to_compact_string(),
+            None => "_item".to_compact_string(),
+        };
         let key_name = for_node.key.as_ref().map(|k| k.content);
         let index_name = for_node.index.as_ref().map(|i| i.content);
 
-        let mut params = value_name.to_compact_string();
+        let mut params = value_name;
         if key_name.is_some() || index_name.is_some() {
             params.push_str(", ");
             params.push_str(key_name.unwrap_or("_key"));
@@ -163,6 +161,20 @@ fn resolve_key_expression(
     };
 
     if let Some(value) = for_node.value.as_ref() {
+        // The key callback destructures the raw item itself, so a parsed
+        // read goes back to the local it stands for, longest read first.
+        let mut reads = current_scope
+            .read_overrides
+            .iter()
+            .collect::<std::vec::Vec<_>>();
+        reads.sort_by_key(|binding| std::cmp::Reverse(binding.path.len()));
+        for binding in reads {
+            if resolved.contains(binding.path.as_str()) {
+                resolved = resolved
+                    .replace(binding.path.as_str(), binding.local.as_str())
+                    .into();
+            }
+        }
         restore_current_alias_reference(
             &mut resolved,
             &cstr!("_for_item{}.value", current_scope.depth),

@@ -22,6 +22,7 @@ import path from "node:path";
 import { renderOutput, run } from "./smoke-process.mjs";
 import { PACKAGE_MANAGERS } from "./smoke-release-init-managers.mjs";
 import { withPoisonedVizePath } from "./smoke-release-path-poison.mjs";
+import { runProjectLspSession, runWorkspacePackageCheck } from "./smoke-release-init-workspace.ts";
 import { FRESH_INIT_MATRIX } from "./smoke-release-init-shapes.mjs";
 import { CONFIG_FREE_PROJECT_SHAPES as PROJECT_SHAPES } from "./smoke-release-init-config-free.mjs";
 import {
@@ -197,6 +198,7 @@ function runFreshProjectCell(context, cell) {
   assert.deepEqual(reportedDiagnostics(repaired.report, projectRoot), []);
 
   assertMissingCorsaGuidance(projectRoot, manager);
+  if (authored["src/App.vue"]?.includes(':msg="title"')) runProjectLspSession(projectRoot);
   console.log(`runtime: fresh ${shape.id} project via ${manager.id} (init, install, check triple)`);
 }
 
@@ -218,4 +220,5 @@ export function runFreshProjectInitChecks(context) {
     ran += 1;
   }
   if (ran === 0) console.log("runtime: fresh-project init matrix skipped (packages not packed)");
+  else runWorkspacePackageCheck({ ...context, freshRoot });
 }

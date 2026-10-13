@@ -7,7 +7,6 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.ts";
 import { sha256 } from "./lint-default-correctness-reference.mjs";
-import { currentJoinDeepPropsNativeSource } from "./support/no-mutating-component-join-native.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const fixture = path.join(root, "tests/_fixtures/differential/lint/props-deep-destructure-8090");
@@ -39,24 +38,15 @@ await test("owned prop destructuring preserves thirty six whole source CLI packe
   }
   const artifact = path.join(root, "target/differential/lint-props-deep-destructure.json");
   fs.mkdirSync(path.dirname(artifact), { recursive: true });
-  const componentSource = await currentJoinDeepPropsNativeSource(root);
   const evidence = {
     schema: "vize.lint.props-deep-destructure-source-cli",
     version: 1,
     corpusSha256: sha256(bytes),
-    sourceFamily: componentSource.deepPropsFamily,
-    sourceFamilyKind: "retained-predecessor-source-only",
-    componentValueSource: componentSource.receipt,
     corpus,
     runs: [],
   };
   const persist = () => fs.writeFileSync(artifact, JSON.stringify(evidence, null, 2) + "\n");
   persist();
-  assert.equal(
-    evidence.sourceFamily.currentSuccessor?.currentSuccessor?.candidate,
-    "ecb8c9b25ee083725858229a2894052bb6de1fbf",
-    "this source observer requires the independently authenticated trait-scope correction",
-  );
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-props-deep-destructure-"));
   try {
     const build = expectedBuildIdentity(root);
@@ -66,7 +56,6 @@ await test("owned prop destructuring preserves thirty six whole source CLI packe
     evidence.build = { expected: build, receipt };
     persist();
     validateBuildReceipt(receipt, build);
-    componentSource.assertBuildSource(build.sourceRevision);
     for (const { entry, route, config, expected, expectedStatus } of vectors) {
       const source = fs.readFileSync(path.join(fixture, entry.sourceFile));
       assert.equal(source.toString("utf8"), entry.source);

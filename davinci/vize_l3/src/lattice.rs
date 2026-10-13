@@ -5,6 +5,7 @@
 //! compact effect/escape summary per binding, and the naive evaluator publishes
 //! a typed fact group plus a folio page.
 
+mod axis;
 mod class;
 pub mod dump;
 mod effect;
@@ -14,12 +15,13 @@ mod id;
 mod input;
 
 pub use crate::lattice::dump::{Binding as DumpBinding, Page as ReactivityPage};
+pub use axis::{BindingOrigin, EscapeKind};
 pub use class::ReactivityClass;
 pub use effect::{EffectKind, EffectSet};
 pub use evaluate::{LatticeFacts, evaluate, evaluate_binding};
 pub use from_kind::SourceKind;
 pub use id::BindingId;
-pub use input::{BindingFact, BindingInput, BindingOrigin, EscapeKind, Verdict};
+pub use input::{BindingFact, BindingInput, Verdict};
 
 const _: () = assert!(!core::mem::needs_drop::<BindingFact>());
 const _: () = assert!(!core::mem::needs_drop::<BindingInput>());

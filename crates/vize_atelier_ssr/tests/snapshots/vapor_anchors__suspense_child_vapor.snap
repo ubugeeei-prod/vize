@@ -1,0 +1,14 @@
+---
+source: crates/vize_atelier_ssr/tests/vapor_anchors.rs
+expression: "compile(SUSPENSE_CHILD, true)"
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _ssrRenderSuspense(_push, {
+    default: () => {
+      _push(`<!--[-->`)
+      _push(_ssrRenderComponent(_resolveComponent("Comp"), null, null, _parent))
+      _push(`<!--]-->`)
+    },
+    _: 1
+  })
+}
