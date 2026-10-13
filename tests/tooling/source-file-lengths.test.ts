@@ -26,7 +26,7 @@ function runSourceLengthScript(args: string[] = [], cwd = repoRoot) {
 }
 
 test("source length script checks the current checkout", () => {
-  const args = ["--check", "--max-lines", "350", "--limit", "5"];
+  const args = ["--check", "--limit", "5"];
   const baseRef = resolveBaseRef(repoRoot);
   if (baseRef != null) {
     args.push("--base-ref", baseRef);
@@ -36,7 +36,47 @@ test("source length script checks the current checkout", () => {
 
   assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
   assert.match(result.stdout, /Source files scanned: \d+/);
-  assert.match(result.stdout, /Files over 350 lines: \d+/);
+  assert.match(result.stdout, /Files over 500 lines: \d+/);
+});
+
+test("the default limit accepts 500 lines and rejects the 501st line", () => {
+  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-source-length-boundary-"));
+  const filePath = path.join(cwd, "module.rs");
+  try {
+    runGit(cwd, ["init", "-q"]);
+    writeLines(filePath, 350);
+    runGit(cwd, ["add", "module.rs"]);
+    runGit(cwd, [
+      "-c",
+      "user.name=Vize",
+      "-c",
+      "user.email=vize@example.com",
+      "commit",
+      "-qm",
+      "base",
+    ]);
+    const baseRef = runGit(cwd, ["rev-parse", "HEAD"]);
+    writeLines(filePath, 500);
+    const accepted = runSourceLengthScript(["--check", "--base-ref", baseRef], cwd);
+    assert.equal(accepted.status, 0, accepted.stdout);
+    const custom = runSourceLengthScript(
+      ["--check", "--base-ref", baseRef, "--max-lines", "450"],
+      cwd,
+    );
+    assert.equal(custom.status, 1, custom.stdout);
+    writeLines(filePath, 501);
+    const crossed = runSourceLengthScript(["--check", "--base-ref", baseRef], cwd);
+    assert.equal(crossed.status, 1, crossed.stdout);
+    assert.match(crossed.stdout, /crossed limit/);
+    const newFile = path.join(cwd, "new.rs");
+    writeLines(newFile, 501);
+    runGit(cwd, ["add", "new.rs"]);
+    const added = runSourceLengthScript(["--check", "--base-ref", baseRef], cwd);
+    assert.equal(added.status, 1, added.stdout);
+    assert.match(added.stdout, /new file exceeds limit/);
+  } finally {
+    fs.rmSync(cwd, { recursive: true, force: true });
+  }
 });
 
 test("source length comparison keeps the event base when the branch advances", () => {
@@ -50,7 +90,7 @@ test("source length comparison keeps the event base when the branch advances", (
   fs.mkdirSync(checkout);
   runGit(remote, ["init", "--bare", "-q"]);
   runGit(publisher, ["init", "-q", "--initial-branch=main"]);
-  writeLines(path.join(publisher, "large.ts"), 346);
+  writeLines(path.join(publisher, "large.ts"), 496);
   runGit(publisher, ["add", "large.ts"]);
   runGit(publisher, [
     "-c",
@@ -65,7 +105,7 @@ test("source length comparison keeps the event base when the branch advances", (
   runGit(publisher, ["remote", "add", "origin", remote]);
   runGit(publisher, ["push", "-q", "-u", "origin", "main"]);
 
-  writeLines(path.join(publisher, "large.ts"), 353);
+  writeLines(path.join(publisher, "large.ts"), 503);
   runGit(publisher, ["add", "large.ts"]);
   runGit(publisher, [
     "-c",
@@ -185,7 +225,7 @@ test("source length script rejects grown over-limit files", () => {
   const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-source-lengths-"));
   const filePath = path.join(cwd, "large.ts");
   runGit(cwd, ["init", "-q"]);
-  writeLines(filePath, 351);
+  writeLines(filePath, 501);
   runGit(cwd, ["add", "large.ts"]);
   runGit(cwd, [
     "-c",
@@ -198,9 +238,9 @@ test("source length script rejects grown over-limit files", () => {
   ]);
   const baseRef = runGit(cwd, ["rev-parse", "HEAD"]);
 
-  writeLines(filePath, 352);
+  writeLines(filePath, 502);
   const result = runSourceLengthScript(
-    ["--check", "--base-ref", baseRef, "--max-lines", "350", "--limit", "5"],
+    ["--check", "--base-ref", baseRef, "--max-lines", "500", "--limit", "5"],
     cwd,
   );
 
@@ -213,7 +253,7 @@ test("source length script accepts unchanged over-limit files", () => {
   const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-source-lengths-unchanged-"));
   const filePath = path.join(cwd, "large.ts");
   runGit(cwd, ["init", "-q"]);
-  writeLines(filePath, 351);
+  writeLines(filePath, 501);
   runGit(cwd, ["add", "large.ts"]);
   runGit(cwd, [
     "-c",
@@ -227,12 +267,12 @@ test("source length script accepts unchanged over-limit files", () => {
   const baseRef = runGit(cwd, ["rev-parse", "HEAD"]);
 
   const result = runSourceLengthScript(
-    ["--check", "--base-ref", baseRef, "--max-lines", "350", "--limit", "5"],
+    ["--check", "--base-ref", baseRef, "--max-lines", "500", "--limit", "5"],
     cwd,
   );
 
   assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
-  assert.match(result.stdout, /No new or grown files exceed 350 lines/);
+  assert.match(result.stdout, /No new or grown files exceed 500 lines/);
 });
 
 test("source length script ignores package manifests", () => {
@@ -241,8 +281,8 @@ test("source length script ignores package manifests", () => {
   const nestedPackagePath = path.join(cwd, "packages", "ui", "package.json");
   fs.mkdirSync(path.dirname(nestedPackagePath), { recursive: true });
   runGit(cwd, ["init", "-q"]);
-  writeLines(packagePath, 351);
-  writeLines(nestedPackagePath, 351);
+  writeLines(packagePath, 501);
+  writeLines(nestedPackagePath, 501);
   runGit(cwd, ["add", "package.json", "packages/ui/package.json"]);
   runGit(cwd, [
     "-c",
@@ -255,15 +295,15 @@ test("source length script ignores package manifests", () => {
   ]);
   const baseRef = runGit(cwd, ["rev-parse", "HEAD"]);
 
-  writeLines(packagePath, 352);
-  writeLines(nestedPackagePath, 352);
+  writeLines(packagePath, 502);
+  writeLines(nestedPackagePath, 502);
   const result = runSourceLengthScript(
-    ["--check", "--base-ref", baseRef, "--max-lines", "350", "--limit", "5"],
+    ["--check", "--base-ref", baseRef, "--max-lines", "500", "--limit", "5"],
     cwd,
   );
 
   assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
-  assert.match(result.stdout, /No new or grown files exceed 350 lines/);
+  assert.match(result.stdout, /No new or grown files exceed 500 lines/);
 });
 
 test(
@@ -287,16 +327,16 @@ test(
     ]);
     const baseRef = runGit(cwd, ["rev-parse", "HEAD"]);
 
-    writeLines(targetPath, 351);
+    writeLines(targetPath, 501);
     fs.symlinkSync(targetPath, linkPath);
     runGit(cwd, ["add", "link.ts"]);
     const result = runSourceLengthScript(
-      ["--check", "--base-ref", baseRef, "--max-lines", "350", "--limit", "5"],
+      ["--check", "--base-ref", baseRef, "--max-lines", "500", "--limit", "5"],
       cwd,
     );
 
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
-    assert.match(result.stdout, /No new or grown files exceed 350 lines/);
+    assert.match(result.stdout, /No new or grown files exceed 500 lines/);
   },
 );
 
@@ -305,7 +345,7 @@ test("source length script compares renamed over-limit files to their base path"
   const filePath = path.join(cwd, "large.ts");
   const renamedPath = path.join(cwd, "renamed.ts");
   runGit(cwd, ["init", "-q"]);
-  writeLines(filePath, 351);
+  writeLines(filePath, 501);
   runGit(cwd, ["add", "large.ts"]);
   runGit(cwd, [
     "-c",
@@ -321,7 +361,7 @@ test("source length script compares renamed over-limit files to their base path"
   fs.renameSync(filePath, renamedPath);
   runGit(cwd, ["add", "-A"]);
   const result = runSourceLengthScript(
-    ["--check", "--base-ref", baseRef, "--max-lines", "350", "--limit", "5"],
+    ["--check", "--base-ref", baseRef, "--max-lines", "500", "--limit", "5"],
     cwd,
   );
 

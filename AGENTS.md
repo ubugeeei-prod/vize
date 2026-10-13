@@ -75,6 +75,11 @@ product fix-history gates still apply; use the [order record](./docs/davinci/dec
   verification uses Kani, not Lean.
 - **Keep output small.** Use `rtk` for git, gh, grep and test output so that
   agent context is spent on the work.
+- **Source layout:** authored files may contain up to 500 lines; existing larger
+  files must not grow. Keep small Rust tests inline, or use a sibling
+  `<module>_tests.rs` with `#[cfg(test)]` and `#[path]`. Do not create a
+  directory solely to house `test.rs` or `tests.rs`. Production modules use
+  ordinary module discovery.
 - **Put moves in move-only commits.** Git rename detection then keeps
   in-flight fixes rebasable.
 - **Script renames.** On a conflict, re-run the script on `main`.
