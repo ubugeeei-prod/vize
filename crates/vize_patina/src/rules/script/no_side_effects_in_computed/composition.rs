@@ -93,10 +93,9 @@ impl<'a> Visit<'a> for Bindings<'_> {
                 if let BindingPattern::BindingIdentifier(id) = &declarator.id
                     && let Some(symbol) = id.symbol_id.get()
                     && let Some(init) = &declarator.init
+                    && let Some(identity) = self.identity(init)
                 {
-                    if let Some(identity) = self.identity(init) {
-                        self.identities.insert(symbol, identity);
-                    }
+                    self.identities.insert(symbol, identity);
                 }
             }
         }
