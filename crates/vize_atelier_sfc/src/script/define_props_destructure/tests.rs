@@ -605,7 +605,7 @@ do {
         #[test]
         fn test_rest_spread_member_access() {
             // const { actions, ...props } = defineProps<{...}>()
-            // props.status should become __props.status
+            // The live rest proxy keeps member accesses on props.
             let mut bindings = PropsDestructuredBindings::default();
             bindings.bindings.insert(
                 "actions".to_compact_string(),
@@ -630,7 +630,7 @@ console.log(actions)"#;
         #[test]
         fn test_rest_spread_bare_identifier() {
             // const { a, ...rest } = defineProps<{...}>()
-            // bare `rest` should become `__props`
+            // Bare rest references keep the live rest proxy.
             let mut bindings = PropsDestructuredBindings::default();
             bindings.bindings.insert(
                 "a".to_compact_string(),
