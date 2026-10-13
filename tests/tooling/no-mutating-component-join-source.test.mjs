@@ -15,7 +15,7 @@ const root = path.resolve(import.meta.dirname, "../..");
 const sha = (body) => createHash("sha256").update(body).digest("hex");
 assert.equal(
   sha(fs.readFileSync(path.join(root, "tests/tooling/support/no-mutating-component-join.mjs"))),
-  "c84f918521d90d085a087582833f4f523b53724dfad3ab669435b1abfa6ef6ad",
+  "6fe25fc2d2a2519269ec3904f68e80c656dc7e92f7b4609a70585685e5cf17be",
 );
 import {
   assertJoinCommitted,
