@@ -38,6 +38,13 @@ export function isSharedRustInput(path: string) {
   );
 }
 
+// A merge-queue candidate is built on the candidate ahead of it, which runs
+// every lane itself. When the candidate's own change is only documentation
+// prose, its tree differs from that verified tree by prose alone.
+export function isQueueProse(path: string) {
+  return /^(?:docs|\.changeset)\/.*\.mdx?$/.test(path) || /^[^/]+\.md$/.test(path);
+}
+
 export function planSourceChecks(
   paths: readonly string[],
   eventName: string | null = "pull_request",
@@ -45,7 +52,7 @@ export function planSourceChecks(
   if (!["pull_request", "merge_group"].includes(eventName as string)) {
     throw new Error("expected pull_request or merge_group source planning context");
   }
-  if (eventName === "merge_group") {
+  if (eventName === "merge_group" && !(paths.length > 0 && paths.every(isQueueProse))) {
     return { rust: true, js: true, tooling: true, playground: true };
   }
   // A new source directory must be validated until its dependencies are known.

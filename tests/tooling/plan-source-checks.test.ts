@@ -65,7 +65,8 @@ void test("the project config projection embedded by Rust runs all consuming sou
 void test("merge groups run every source suite regardless of the changed paths", () => {
   for (const paths of [
     [],
-    ["docs/guide/example.md"],
+    ["docs/guide/example.md", "npm/ui/src/index.ts"],
+    ["crates/vize/README.md"],
     ["npm/ui/src/index.ts"],
     ["davinci/vize_l1/src/lib.rs"],
   ]) {
@@ -76,6 +77,9 @@ void test("merge groups run every source suite regardless of the changed paths",
       playground: true,
     });
   }
+  // A prose-only candidate runs what the same PR runs.
+  for (const paths of [["docs/guide/example.md"], ["AGENTS.md", "docs/content/ja/index.md"]])
+    assert.deepEqual(planSourceChecks(paths, "merge_group"), planSourceChecks(paths));
   assert.deepEqual(planSourceChecks(["README.md"], "pull_request"), {
     rust: false,
     js: false,
@@ -90,7 +94,7 @@ void test("unknown planning contexts fail rather than selecting a partial suite"
   }
 });
 
-void test("the CLI applies merge-group scope to a real docs-only comparison", () => {
+void test("the CLI applies merge-group scope to a real crate prose comparison", () => {
   const cwd = mkdtempSync(join(tmpdir(), "vize-queue-plan-"));
   const git = (...args: string[]) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
   const script = fileURLToPath(
@@ -100,11 +104,12 @@ void test("the CLI applies merge-group scope to a real docs-only comparison", ()
     git("init", "-q");
     git("config", "user.name", "CI Test");
     git("config", "user.email", "ci@example.invalid");
-    writeFileSync(join(cwd, "README.md"), "before\n");
+    mkdirSync(join(cwd, "crates/vize"), { recursive: true });
+    writeFileSync(join(cwd, "crates/vize/README.md"), "before\n");
     git("add", ".");
     git("commit", "-qm", "add docs");
     const base = git("rev-parse", "HEAD");
-    writeFileSync(join(cwd, "README.md"), "after\n");
+    writeFileSync(join(cwd, "crates/vize/README.md"), "after\n");
     git("commit", "-qam", "update docs");
     const head = git("rev-parse", "HEAD");
     for (const [context, expected] of [

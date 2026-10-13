@@ -34,7 +34,10 @@ const selected = (path) => new Set(planToolingTests([path], { cwd: scopeFixture 
 
 void test("unrelated guide docs omit audited heavy subprocesses while full merge retains them", () => {
   const pr = selected("docs/content/guide.md");
-  const merge = planToolingTests(["docs/content/guide.md"], { tier: "merge", cwd: scopeFixture });
+  const merge = planToolingTests(["tools/support/compat/github/new-helper.mjs"], {
+    tier: "merge",
+    cwd: scopeFixture,
+  });
   for (const file of heavy) {
     assert.equal(pr.has(file), false, file);
     assert.ok(merge.tests.includes(file), file);
@@ -114,7 +117,7 @@ void test("real test import closures permit the five scopes while package genera
   // left to the merge queue.
   assert.ok(!guide.has(pack));
   assert.ok(planToolingTests(["tools/support/compat/github/new-helper.mjs"]).tests.includes(pack));
-  const merge = planToolingTests(["docs/content/guide.md"], { tier: "merge" });
+  const merge = planToolingTests(["tools/support/compat/github/new-helper.mjs"], { tier: "merge" });
   assert.deepEqual(merge.tests, toolingTestFiles());
 });
 

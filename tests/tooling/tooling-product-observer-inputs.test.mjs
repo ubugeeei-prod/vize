@@ -101,7 +101,11 @@ void test("incomplete or nonliteral observer imports retain conservative docs qu
 });
 
 void test("full merge qualification always retains both original product observers", () => {
-  for (const paths of [[], ["docs/release/pr-workflow.md"], ["unclassified-input"]]) {
+  for (const paths of [
+    [],
+    ["docs/release/pr-workflow.md", "tools/x.mjs"],
+    ["unclassified-input"],
+  ]) {
     const plan = planToolingTests(paths, { tier: "merge" });
     assert.equal(plan.tests.length, plan.totalTests);
     assert.equal(plan.deferredTests, 0);

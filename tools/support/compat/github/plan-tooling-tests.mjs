@@ -13,7 +13,7 @@ import {
   mergeOnlyToolingTests,
   toolingTestScopes,
 } from "../../../config/vite-plus/tooling-test-scopes.ts";
-import { changedPaths } from "./plan-source-checks.ts";
+import { changedPaths, isQueueProse } from "./plan-source-checks.ts";
 import { toolingLeadSteps, toolingShardMatrix, toolingShards } from "./tooling-test-shards.ts";
 import { nativeSetupCaptureRequired, toolingChecksRequired } from "./native-setup-capture.mjs";
 import { nativeSsrCaptureRequired } from "./native-ssr-capture.mjs";
@@ -102,9 +102,11 @@ export function planToolingTests(paths, { tier = "pr", cwd = root } = {}) {
     paths.length === 0 ||
     code.some((path) => !matchesAny(path, [...cacheInputs.tooling, ...globalInputs]));
   const global = code.some((path) => matchesAny(path, globalInputs));
+  // The candidate ahead of a prose-only candidate ran the full suite on the code.
+  const full = tier === "merge" && !(paths.length > 0 && paths.every(isQueueProse));
   const tests = files.filter((file) => {
-    if (tier === "merge") return true;
-    if (mergeOnly.has(file)) return false;
+    if (full) return true;
+    if (tier !== "merge" && mergeOnly.has(file)) return false;
     if (unknown || global || paths.includes(file)) return true;
     const scope = toolingTestScopes.find((entry) => matchesAny(file, entry.tests));
     const imports = localImportInputs(file, cwd);
@@ -126,16 +128,15 @@ export function planToolingTests(paths, { tier = "pr", cwd = root } = {}) {
     tests,
     totalTests: files.length,
     deferredTests: tier === "merge" ? 0 : files.filter((file) => mergeOnly.has(file)).length,
-    reason:
-      tier === "merge"
-        ? "full merge suite"
-        : unknown
-          ? "unknown inputs: broad PR suite"
-          : global
-            ? "shared task or dependency inputs"
-            : code.length === 0
-              ? "prose read by name"
-              : "declared task and import inputs",
+    reason: full
+      ? "full merge suite"
+      : unknown
+        ? "unknown inputs: broad PR suite"
+        : global
+          ? "shared task or dependency inputs"
+          : code.length === 0
+            ? "prose read by name"
+            : "declared task and import inputs",
   };
 }
 
