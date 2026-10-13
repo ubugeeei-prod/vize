@@ -51,3 +51,11 @@ frames. A sealed whole-body receipt reconstructs and reverses the three approved
 current-body edits; the other 320 rows and every non-current manifest field stay
 byte-identical to main. Mutation, omission, reorder, extra-row, mode and source
 refusals remain required. This source evidence grants no native or release credit.
+
+The cumulative Stack composition keeps the original reference reader byte-exact
+after Actions refused its changed identity. A separate current CLI reader proves
+the complete range inverse; Maestro migration regressions use the matching current
+fixture. Both prior receipts remain historical source-only evidence. The new
+sealed 323-row parent composition changes two owned rows, preserves all 321 other
+rows and both frames, and reverses only the coupled helper/law checksums. Later
+physical sources are qualified by the unchanged original refusal family.

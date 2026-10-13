@@ -6,9 +6,7 @@ import path from "node:path";
 export const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 export function loadCorpus(root) {
   const directory = path.join(root, "tests/_fixtures/lint-default-correctness");
-  const corpus = JSON.parse(
-    fs.readFileSync(path.join(directory, "current-range-cases.json"), "utf8"),
-  );
+  const corpus = JSON.parse(fs.readFileSync(path.join(directory, "cases.json"), "utf8"));
   assert.equal(corpus.schema, "vize.lint.default-correctness");
   assert.equal(corpus.version, 1);
   assert.equal(corpus.cases.length, 15);

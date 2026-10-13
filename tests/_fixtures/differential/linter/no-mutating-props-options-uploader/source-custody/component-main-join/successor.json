@@ -451,9 +451,9 @@
     {
       "path": "crates/vize_patina/src/rules/script.rs",
       "mode": "100644",
-      "bytes": 7697,
-      "sha256": "2fcda85b4dba45248c782f475c648b4344b0cb2b008b55d241cd282efa9cf7dd",
-      "gitBlob": "7b54949f6b48abe4c69b27865bf6b0165694a936"
+      "bytes": 7748,
+      "sha256": "b0bdc54f7062f98869baf5268204a78089c58ae5cbbdcd1d3f12cdb3e237e963",
+      "gitBlob": "abdc394d10dd01bcaa49f3e240383ff5d8479fec"
     },
     {
       "path": "crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs",
@@ -465,9 +465,9 @@
     {
       "path": "crates/vize_patina/src/rules/script/props_emits.rs",
       "mode": "100644",
-      "bytes": 1368,
-      "sha256": "8974083b1d8e5c864f31d3f872d54d6061a84f4a8f7a181c2daa0d3f27ede6ff",
-      "gitBlob": "4a756a4d427286eb83d65e540713051736002831"
+      "bytes": 1421,
+      "sha256": "64dfb2fab98a5fec253932a8a95d3ee2f726f22a7b59a45073afb838d4c26989",
+      "gitBlob": "d175297bf98241e618a25e0281f5806c4e99f25b"
     },
     {
       "path": "crates/vize_patina/src/rules/script/props_emits/compiler_macro_bindings.rs",
@@ -479,9 +479,9 @@
     {
       "path": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs",
       "mode": "100644",
-      "bytes": 11471,
-      "sha256": "1e3e58cab0ab268e3c9e3ba5eb3e74d54283d47249d10189fe65c608cca504f1",
-      "gitBlob": "85243a519428825cd278e0a5f418bb71b30ff53d"
+      "bytes": 11470,
+      "sha256": "9e05d2c59b044a53f04c4b6b2f96c24168672e3fe8458f273f8df62938f53149",
+      "gitBlob": "f84fae6595c6c0f4b620eb88812a8f4659a8910f"
     },
     {
       "path": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default/runtime.rs",
@@ -493,9 +493,9 @@
     {
       "path": "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default/typed.rs",
       "mode": "100644",
-      "bytes": 8807,
-      "sha256": "0749c7e672b42572d4c509404af7c82ba415590de5ef04988d577cdc23806c83",
-      "gitBlob": "897c711329161538d8fefe536e46815aea76a043"
+      "bytes": 9020,
+      "sha256": "d131366db45826092457278f8896421dfd23e9fd0f4f016776175702d5a69264",
+      "gitBlob": "e900e925361d1a5b9627fd375f59a0aba747392d"
     },
     {
       "path": "crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator/setup.rs",
@@ -514,9 +514,9 @@
     {
       "path": "crates/vize_patina/src/rules/vue/no_mutating_props.rs",
       "mode": "100644",
-      "bytes": 11795,
-      "sha256": "06002fab66c451069ada1b21b1a15bf7966dd82d8766562270ef4d620788230c",
-      "gitBlob": "c3396f48f8657921a8fd8d6806b9e6b789d0fe7b"
+      "bytes": 10771,
+      "sha256": "c5fa0ee92a423a220853a2a1a37cd60c15764953f69c26e084f9ba2f75dffb45",
+      "gitBlob": "b9b9626e94106eb6e39b016dfd24a1c0b0909d07"
     },
     {
       "path": "crates/vize_patina/src/rules/vue/no_mutating_props/options_api.rs",
@@ -605,9 +605,9 @@
     {
       "path": "docs/davinci/plan/consumer-migration-surfaces/linter/vize_patina.tsv",
       "mode": "100644",
-      "bytes": 161345,
-      "sha256": "2e6aea481b67658a0a55f8b8df79bba8b79b73542f8020072f1e0a4b52d82b05",
-      "gitBlob": "25eb6ca6b79ad74890f78072112e4dc153e16f3c"
+      "bytes": 162640,
+      "sha256": "e3cc62196336deb387fc75d6ba699498923c30ccb3d481e2c8c240a87dd50df3",
+      "gitBlob": "85adc1f8e29349b96d58a3ec6d25a70bb2d21b3e"
     },
     {
       "path": "tests/_fixtures/differential/lint/n8n-cli-config/cases.json",
@@ -2131,9 +2131,9 @@
     {
       "path": "tests/tooling/lint-default-correctness-reference.mjs",
       "mode": "100644",
-      "bytes": 3071,
-      "sha256": "d1a28bf156a624e101c58fcf7a9c122a7420a51a2366e2cf2d0efce4a85f8009",
-      "gitBlob": "b8076270e0035e4e99d55d791f17f8f8a1485b76"
+      "bytes": 3048,
+      "sha256": "d0fe46840f15d3aee0cad8b0394b4c67dd1f738a9ddaba39f55073fefd9df6b7",
+      "gitBlob": "6395d65599a8c40343cb12d64a1bf735dd77acb7"
     },
     {
       "path": "tests/tooling/lint-props-deep-destructure.test.mjs",
