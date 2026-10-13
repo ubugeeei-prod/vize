@@ -272,7 +272,7 @@ jobs:
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
         with:
           cache-key-prefix: ${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}
-          key: playground-test
+          key: build-js-packages
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/setup-rust-script
         if: ${{ env.RUN_PLAYGROUND == 'true' }}

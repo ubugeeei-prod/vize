@@ -108,6 +108,15 @@ clones that share one target directory. It checks that:
 Its git-only cases cover pre-step edits, unfinished records, shared work trees
 and foreign roots.
 
+## Matching trusted writers
+
+A clone only helps when a trusted job builds the same units. The PR
+playground job previously read the `playground-test` role, which only a daily
+job wrote, without building the native addon or packages. It now reads
+`build-js-packages`, whose trusted `main` job runs the same
+`npm/native build:ci` and `build:packages` commands with the same Wild linker
+flags.
+
 ## Unfinished
 
 The trusted disks gain their first manifest on the first `main` push after
