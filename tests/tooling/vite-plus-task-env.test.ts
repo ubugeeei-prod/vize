@@ -6,6 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { task } from "../../tools/config/vite-plus/task-helpers.ts";
 import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -17,10 +18,10 @@ type TaskShape = {
 test("source coverage tracks the Nuxt stress iteration environment", () => {
   const coverage = testAndBenchmarkTasks["coverage:source"] as TaskShape;
 
-  assert.deepEqual(coverage.env, ["VIZE_NUXT_CONFIG_ITERATIONS"]);
+  assert.deepEqual(coverage.env, ["VIZE_NUXT_CONFIG_ITERATIONS", "VIZE_NATIVE_SYNTAX_CAPTURE_DIR"]);
 });
 
-test("Vite Plus forwards tracked task environment without leaking an undeclared probe", () => {
+function probeEnvironment(names: string[], variables: Record<string, string>) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-vp-task-env-"));
   const output = path.join(root, "env.json");
   const vp = process.env.VIZE_VP_BIN ?? path.join(repoRoot, "node_modules", ".bin", "vp");
@@ -29,29 +30,57 @@ test("Vite Plus forwards tracked task environment without leaking an undeclared 
     fs.writeFileSync(path.join(root, "package.json"), '{"name":"vize-task-env-probe"}\n');
     fs.writeFileSync(
       path.join(root, "probe.mjs"),
-      `import fs from "node:fs";\nfs.writeFileSync(${JSON.stringify(output)}, JSON.stringify({ tracked: process.env.VIZE_TRACKED_ENV ?? null, hidden: process.env.VIZE_HIDDEN_ENV ?? null }));\n`,
+      `import fs from "node:fs";\nfs.writeFileSync(${JSON.stringify(output)}, JSON.stringify(Object.fromEntries(${JSON.stringify(Object.keys(variables))}.map(name => [name, process.env[name] ?? null]))));\n`,
     );
     fs.writeFileSync(
       path.join(root, "vite.config.mjs"),
-      'export default { run: { tasks: { probe: { command: "node probe.mjs", env: ["VIZE_TRACKED_ENV"] } } } };\n',
+      `export default ${JSON.stringify({ run: { tasks: { probe: task("node probe.mjs", { env: names }) } } })};\n`,
     );
 
     const result = spawnSync(vp, ["run", "--workspace-root", "probe"], {
       cwd: root,
       encoding: "utf8",
+      timeout: 30_000,
       env: {
         ...process.env,
-        VIZE_TRACKED_ENV: "forwarded",
-        VIZE_HIDDEN_ENV: "must-not-leak",
+        ...variables,
       },
     });
 
     assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-    assert.deepEqual(JSON.parse(fs.readFileSync(output, "utf8")), {
-      tracked: "forwarded",
-      hidden: null,
-    });
+    return JSON.parse(fs.readFileSync(output, "utf8"));
   } finally {
     fs.rmSync(root, { force: true, recursive: true });
   }
+}
+
+test("Vite Plus forwards tracked task environment without leaking an undeclared probe", () => {
+  assert.deepEqual(
+    probeEnvironment(["VIZE_TRACKED_ENV"], {
+      VIZE_TRACKED_ENV: "forwarded",
+      VIZE_HIDDEN_ENV: "must-not-leak",
+    }),
+    { VIZE_TRACKED_ENV: "forwarded", VIZE_HIDDEN_ENV: null },
+  );
+});
+
+test("source coverage transports whole-packet capture through the real cacheable Vite Plus boundary", () => {
+  const coverage = testAndBenchmarkTasks["coverage:source"] as TaskShape;
+  const names = coverage.env ?? [];
+  const variables = {
+    VIZE_NATIVE_SYNTAX_CAPTURE_DIR: "whole-packet-target",
+    VIZE_NUXT_CONFIG_ITERATIONS: "100",
+    VIZE_HIDDEN_ENV: "must-not-leak",
+  };
+  const before = names.filter((name) => name !== "VIZE_NATIVE_SYNTAX_CAPTURE_DIR");
+  assert.deepEqual(probeEnvironment(before, variables), {
+    VIZE_NATIVE_SYNTAX_CAPTURE_DIR: null,
+    VIZE_NUXT_CONFIG_ITERATIONS: "100",
+    VIZE_HIDDEN_ENV: null,
+  });
+  assert.deepEqual(probeEnvironment(names, variables), {
+    VIZE_NATIVE_SYNTAX_CAPTURE_DIR: "whole-packet-target",
+    VIZE_NUXT_CONFIG_ITERATIONS: "100",
+    VIZE_HIDDEN_ENV: null,
+  });
 });

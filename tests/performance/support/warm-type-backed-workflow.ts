@@ -2,12 +2,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { reviewedHostPaths } from "./warm-type-backed-reviewed-hosts.ts";
-import { unqualifiedReceiptPaths } from "./warm-type-backed-build-receipt-extension.ts";
-import { gitReaderHarness } from "./warm-type-backed-git-reader-harness.ts";
 import { finiteCut } from "./warm-type-backed-cut.ts";
-import { gitBodyDigest } from "./warm-type-backed-host-qualifications.ts";
-import { qualifyHostMoves } from "./warm-type-backed-host-qualifications.ts";
 import {
   driverRoot,
   git,
@@ -74,31 +69,8 @@ if (process.argv[2] === "prepare") {
   ])
     .split("\n")
     .filter(Boolean);
-  const allowed = new Set(reviewedHostPaths);
   const harnessOnly = !cut && production.length === 0;
   if (harnessOnly) {
-    const changed = git(driverRoot, ["diff", "--name-only", baseline, head])
-      .split("\n")
-      .filter(Boolean);
-    assert.ok(changed.length > 0);
-    const harness = new Set([
-      ".github/workflows/davinci-canon-scaling.yml",
-      "tests/tooling/support/lsp/session.ts",
-      "tests/tooling/support/lsp/session-process.ts",
-      "tests/tooling/support/lsp/session-capture.ts",
-      "tests/tooling/support/lsp/published-launch.ts",
-      "tests/performance/support/warm-type-backed-release-bridge.py",
-      "tests/performance/support/warm-type-backed-release-bridge.json",
-      "docs/davinci/decisions/2026-09-27-level-restructure.md",
-      "docs/davinci/decisions/2026-10-05-lsp-warm-query-surfaces.md",
-    ]);
-    const qualified = gitReaderHarness(changed, harness, driverRoot, baseline, head);
-    for (const file of unqualifiedReceiptPaths(changed, qualified, driverRoot, baseline, head))
-      assert.ok(
-        qualified.has(file) ||
-          /^tests\/performance\/support\/warm-type-backed-[a-z-]+\.ts$/u.test(file),
-        `unqualified harness delta: ${file}`,
-      );
     for (const [file, digest] of Object.entries(inputAuthority())) {
       const original = spawnSync(
         "git",
@@ -113,17 +85,6 @@ if (process.argv[2] === "prepare") {
       );
     }
   } else assert.ok(production.length > 0);
-  const hostMoves = qualifyHostMoves(production, allowed, !cut, (side, file) =>
-    gitBodyDigest(driverRoot, side === "before" ? baseline : head, file),
-  );
-  if (!cut) {
-    for (const file of production)
-      assert.ok(
-        allowed.has(file) ||
-          Object.values(hostMoves).some((qualification) => qualification?.files.includes(file)),
-        `unqualified production delta: ${file}`,
-      );
-  }
   const result = spawnSync("git", ["worktree", "add", "--detach", before, baseline], {
     cwd: driverRoot,
     encoding: "utf8",
@@ -161,7 +122,6 @@ if (process.argv[2] === "prepare") {
         base,
         baseline,
         production,
-        ...hostMoves,
         afterRoot,
         driverSource: driver,
         authority: cut

@@ -13,7 +13,8 @@ mod process;
 mod tests;
 mod transform;
 
-use vize_carton::{FxHashMap, String};
+use crate::types::SfcError;
+use vize_carton::{FxHashMap, String, ToCompactString};
 
 /// Props destructure binding info
 #[derive(Debug, Clone, Default)]
@@ -45,6 +46,25 @@ pub struct PropsDestructuredBindings {
 }
 
 impl PropsDestructuredBindings {
+    /// Create Vue's live rest proxy, excluding the original destructured keys.
+    pub(crate) fn rest_proxy_declaration(&self) -> Result<Option<String>, SfcError> {
+        let Some(name) = &self.rest_id else {
+            return Ok(None);
+        };
+        let keys = serde_json::to_string(&self.keys).map_err(|error| SfcError {
+            message: error.to_compact_string(),
+            code: Some(String::from("DEFINE_PROPS_REST_KEYS")),
+            loc: None,
+        })?;
+        let mut code = String::from("const ");
+        code.push_str(name);
+        code.push_str(" = _createPropsRestProxy(__props, ");
+        code.push_str(&keys);
+        // Terminate the statement: the next setup statement may start with `(` or `[`.
+        code.push_str(");");
+        Ok(Some(code))
+    }
+
     pub fn is_empty(&self) -> bool {
         self.bindings.is_empty() && self.rest_id.is_none()
     }

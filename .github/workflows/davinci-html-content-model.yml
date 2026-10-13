@@ -4,8 +4,9 @@ name: Davinci HTML content model
 # (crates/vize_patina/tests/html_content_model/checker-verdicts.tsv, kept
 # current by `cargo test -p vize_patina --test html_content_model_differential`
 # in the Check workflow) must agree exactly with Chromium's HTML parser.
-# Charter #36: the checker's walk and verdict rule are total, decidable and
-# sound for every context a truncated chain describes (tests/formal/html-content-model).
+# Charter #36: the checker's walk and verdict rule are sound for every context
+# a truncated chain describes. Kani verifies the shipped kernel in the Davinci
+# Kani workflow (tests/formal/kani/html_content_model.rs).
 
 on:
   push:
@@ -14,7 +15,6 @@ on:
       - "crates/vize_patina/src/html_content_model/**"
       - "crates/vize_patina/tests/html_content_model/**"
       - "tools/support/compat/davinci/html-content-model-oracle.mjs"
-      - "tests/formal/html-content-model/**"
       - ".github/workflows/davinci-html-content-model.yml"
   workflow_dispatch:
 
@@ -49,26 +49,3 @@ jobs:
         run: vize-ci-apt-retry vp exec playwright install --with-deps chromium
       - name: Compare checker verdicts with Chromium's parser
         run: node tools/support/compat/davinci/html-content-model-oracle.mjs --engine chromium
-
-  lean:
-    name: HTML content-model Lean proofs (charter #36)
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          persist-credentials: false
-      - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1.6.0
-        with:
-          lake-package-directory: tests/formal/html-content-model
-          build: "true"
-          test: "false"
-          lint: "false"
-          use-mathlib-cache: "false"
-          use-github-cache: "true"
-      - name: Reject proof escapes in the Lean package
-        working-directory: tests/formal/html-content-model
-        run: |
-          status=0
-          grep -rnwE --include='*.lean' --exclude-dir=.lake 'sorry|admit|axiom|native_decide' . || status=$?
-          test "$status" -eq 1

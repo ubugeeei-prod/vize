@@ -121,7 +121,7 @@ script. The old `theme.css`, `theme-preset-*.css`, and `style.css` imports
 continue to work; avoid importing `style.css` alongside `base.css` because it
 already contains the base and every legacy preset.
 
-Button has short hover, press, and focus feedback. With `dialog.css`, Dialog
+Button has short hover, press, and focus feedback. With `component-dialog.css`, Dialog
 animates its arrival and a 200ms exit. Closing releases focus containment,
 outside inert, and scroll lock immediately; the exiting sheet stays inert and
 hidden from assistive technology until its animation ends. Headless Dialog

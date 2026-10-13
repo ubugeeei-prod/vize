@@ -54,6 +54,18 @@ pub(super) fn compile_script_setup_inline_body(
     trace: Option<&mut SetupTrace>,
 ) -> Result<ScriptCompileResult, SfcError> {
     let mut tracer = Tracer(trace);
+    let rest_proxy = ctx
+        .macros
+        .props_destructure
+        .as_ref()
+        .map(|destructure| destructure.rest_proxy_declaration())
+        .transpose()?
+        .flatten();
+    if rest_proxy.is_some() {
+        output.extend_from_slice(
+            b"import { createPropsRestProxy as _createPropsRestProxy } from 'vue'\n",
+        );
+    }
     let has_css_vars = !css_vars.is_empty();
     let has_css_modules = !setup_css_module_names.is_empty();
     let needs_prop_type = false;
@@ -163,6 +175,11 @@ pub(super) fn compile_script_setup_inline_body(
         vapor_render_alias.as_deref(),
         css_modules,
     );
+
+    if let Some(declaration) = rest_proxy {
+        output.extend_from_slice(declaration.as_bytes());
+        output.push(b'\n');
+    }
 
     emit_setup_body(
         &mut output,

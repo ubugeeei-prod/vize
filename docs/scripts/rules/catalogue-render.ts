@@ -46,11 +46,11 @@ interface Reference {
   project: boolean;
 }
 const intro = {
-  en: "Every rule on this page includes its purpose, prerequisites, configuration, and complete Bad/Good examples. Highlighted lines show the changes; copied code keeps the complete source. Each packet states its current support limits.",
+  en: "Every rule on this page includes its purpose, prerequisites, configuration, and complete Bad/Good examples. Highlighted lines show what changes; copying an example gives you the complete source. Each rule also states its current support limits.",
   ja: "このページに、各ルールの目的・前提・設定と、省略のない悪い例・良い例をまとめています。変更箇所は行の色で示します。コードをコピーすると、ソースコード全体を取得できます。各例に現在の対応範囲も明記しています。",
 };
 const crossIntro = {
-  en: "All 66 project packets include shared files and complete Bad/Good examples here. Apply shared files to both sides. The 60 analyzer codes retain their actual boundaries: 19 CLI codes (18 qualified source pairs and one illustrative project with its retained reactive graph), 16 experimental Rust analyzer codes not emitted individually by that CLI pass, and 25 contracts without a current producer. Configuring an ID does not enable an unavailable producer.",
+  en: "This page shows all 66 project examples with their complete Bad and Good versions and the files both versions share. Use the shared files with both. Of the 60 diagnostic codes, the CLI reports 19 today (18 verified against source examples and one shown with an illustrative project), 16 exist only in the experimental Rust analyzer and are not reported individually by the CLI, and 25 are specified but nothing produces them yet. Configuring an ID does not turn on a check that is not available.",
   ja: "全 66 件のプロジェクトの例について、共通ファイルと、省略のない悪い例・良い例をこのページにまとめています。共通ファイルは両方で使用します。解析器の 60 件の診断コードには、CLI の 19 件（検証済みのソース例 18 件と、参照関係を保持したリアクティブなグラフを含む説明用プロジェクト 1 件）、CLI が個別には生成しない実験的な Rust 解析器の 16 件、現在は診断を生成する処理のない契約 25 件があります。ID を設定しても、未対応の診断処理は有効になりません。",
 };
 const cliInstructions = {

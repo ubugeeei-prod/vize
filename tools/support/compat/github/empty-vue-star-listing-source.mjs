@@ -14,6 +14,10 @@ import {
 
 const base = "bd5702c0a4d5fb3bb64487794fc45f6f876e6e38";
 const prior = "19b451f951137814a8a8d36b57d200a23100344e";
+// The main commit that merged this ledger (#8809). Its rows describe that tree,
+// which never changes. Later edits to the files it names are ordinary work, so
+// they are read from this commit instead of being pinned at HEAD.
+const recorded = "53db87849ea0d4d5d60d95f87acf4088566337b2";
 const execution = "crates/vize_canon/tests/empty_vue_star_exports/execution.rs";
 const lexicalCounterparts = new Set([
   "tests/performance/support/warm-type-backed-host-qualifications.ts",
@@ -109,7 +113,7 @@ function raw(root, source, files) {
 function confirm(owned) {
   assert.equal(git(owned.root, ["rev-parse", "HEAD"]).toString().trim(), owned.head);
   assert.equal(git(owned.root, ["for-each-ref", "--format=%(refname)", "refs/replace"]).length, 0);
-  for (const [file, body] of owned.current)
+  for (const [file, body] of owned.live)
     assertBytes(regular(owned.root, file), body, "same complete current source: " + file);
 }
 
@@ -120,7 +124,7 @@ export function authenticateStarListingSource(root) {
   assert.match(head, /^[a-f0-9]{40}$/u);
   assert.equal(git(root, ["for-each-ref", "--format=%(refname)", "refs/replace"]).length, 0);
   primeStarCounterpartHistory(root);
-  for (const source of [base, prior]) {
+  for (const source of [base, prior, recorded]) {
     const body = git(root, ["cat-file", "commit", source]);
     assert.equal(
       createHash("sha1").update(`commit ${body.length}\0`).update(body).digest("hex"),
@@ -137,7 +141,8 @@ export function authenticateStarListingSource(root) {
   ];
   assert.equal(new Set(files).size, files.length);
   const before = raw(root, base, files),
-    current = raw(root, head, files);
+    current = raw(root, recorded, files),
+    live = raw(root, head, files);
   const projectedCurrent = new Map(current);
   const canonical = metadata.mainUnion.canonicalSuccessor;
   if (canonical) {
@@ -162,6 +167,10 @@ export function authenticateStarListingSource(root) {
     metadata.mainUnion.source,
     metadata.mainUnion.cells.map(([file]) => file),
   );
+  // The union records one incoming main change. Shared files outside the named
+  // BD cohort keep evolving on main; once one moves past its recorded successor
+  // it is no longer the live source, so only its incoming body stays authenticated.
+  const superseded = new Set();
   for (const [file, oldBlob, oldLength, oldSHA, nextBlob, nextLength, nextSHA] of metadata.mainUnion
     .cells) {
     const old = incoming.get(file),
@@ -169,11 +178,16 @@ export function authenticateStarListingSource(root) {
     assert.equal(blob(old), oldBlob);
     assert.equal(old.length, oldLength);
     assert.equal(sha(old), oldSHA);
+    if (!named.has(file) && !loaded.has(file) && blob(next) !== nextBlob) {
+      superseded.add(file);
+      continue;
+    }
     assert.equal(blob(next), nextBlob);
     assert.equal(next.length, nextLength);
     assert.equal(sha(next), nextSHA);
   }
   for (const pair of mainInverses) {
+    if (superseded.has(pair.file)) continue;
     let body = Buffer.from(projectedCurrent.get(pair.file));
     for (const [start, end, from, to] of [...pair.clauses].reverse()) {
       assertBytes(body.subarray(start, end), Buffer.from(from, "base64"));
@@ -250,7 +264,7 @@ export function authenticateStarListingSource(root) {
   }
   for (const [file, expected] of loaded) {
     assert.equal(before.get(file), undefined, "genuine named source predecessor absence: " + file);
-    assertBytes(current.get(file), expected, "complete committed executing source: " + file);
+    assertBytes(live.get(file), expected, "complete committed executing source: " + file);
   }
   for (const pair of metadata.inverses) {
     let body = Buffer.from(current.get(pair.file));
@@ -266,7 +280,7 @@ export function authenticateStarListingSource(root) {
     metadata.inverses.map(({ file }) => file),
     metadata.changed,
   );
-  const owned = { root, head, before, current };
+  const owned = { root, head, before, current, live };
   confirm(owned);
   const packet = Object.freeze({
     authority: "complete-literal-bd-star-listing-source",
@@ -344,10 +358,13 @@ export function qualifyStarListingMain(production, qualified, digest) {
       digest("after", file) !== nextSHA
     )
       return null;
+  // An executing file that is also a recorded main cell is governed by that
+  // cell below, not by whatever the file contains today.
+  const cells = new Set(metadata.mainUnion.cells.map(([file]) => file));
   for (const [file, body] of loaded)
     if (
-      digest("before", file) !== (before.get(file) ?? null) ||
-      digest("after", file) !== sha(body)
+      !cells.has(file) &&
+      (digest("before", file) !== (before.get(file) ?? null) || digest("after", file) !== sha(body))
     )
       return null;
   for (const [file, , , oldSHA, , , nextSHA] of metadata.mainUnion.cells)
@@ -408,7 +425,7 @@ export function starListingLexicalReader(copiedRoot) {
   const read = (file) => {
     assert(metadata.javascriptPaths.includes(file), "one closed current lexical JS93 source");
     const current = regular(copiedRoot, file);
-    assertBytes(current, value.current.get(file), "complete actual copied lexical source");
+    assertBytes(current, value.live.get(file), "complete actual copied lexical source");
     if (lexicalCounterparts.has(file)) {
       owned(packet);
       return Buffer.from(value.before.get(file));

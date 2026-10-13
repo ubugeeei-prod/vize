@@ -14,6 +14,7 @@ import {
 } from "../../tools/support/compat/github/canonical-corpus-io-probe.mjs";
 import { gitObjectId } from "../../tools/support/compat/github/canonical-corpus-inventory.mjs";
 import { parseNativeVector } from "../../tools/support/compat/github/canonical-corpus-native-walk.mjs";
+import { observerProcesses } from "../../tools/support/compat/github/canonical-corpus-shard-plan.ts";
 
 const temporary = mkdtempSync(join(tmpdir(), "canonical-io-control-"));
 after(() => rmSync(temporary, { recursive: true, force: true }));
@@ -191,6 +192,15 @@ void test("diagnostics cannot suppress the ordinary SSR worker or become an acce
   assert.match(workflow.slice(fatal, upload), /exit 1/);
   assert.match(
     workflow.slice(ssr, diagnostic),
-    /cargo test -p vize_atelier_ssr[\s\S]*&& VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests\/_fixtures\/_git cargo test -p vize_l1_to_l2/,
+    /run: node tools\/support\/compat\/github\/canonical-corpus-shards\.ts run ssr-pug ssr-pug\.log\n/,
+  );
+  // The ordinary worker still runs the complete SSR binary and the pug corpus.
+  assert.deepEqual(
+    [
+      ...new Set(
+        observerProcesses("ssr-pug").map((entry) => `${entry.suite.package}:${entry.suite.test}`),
+      ),
+    ],
+    ["vize_atelier_ssr:davinci_ssr_corpus", "vize_l1_to_l2:davinci_pug_corpus"],
   );
 });

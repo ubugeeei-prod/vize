@@ -2,6 +2,7 @@ mod custom_elements;
 mod define_props_regressions;
 mod options_api_events;
 mod page_meta;
+mod props_rest;
 mod scoped;
 mod vapor;
 use super::{compile_sfc, helpers, normal_script};
@@ -24,7 +25,6 @@ fn fixtures_path() -> PathBuf {
         .join("sfc")
         .join("imported_types")
 }
-
 fn temp_compile_project_dir(test_name: &str) -> PathBuf {
     let nonce = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)

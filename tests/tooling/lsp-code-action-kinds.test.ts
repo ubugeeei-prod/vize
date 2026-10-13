@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
+import { parse } from "yaml";
 import { repoRoot, withPinnedFixtureWorkspace } from "../_helpers/realworld-patch.ts";
 import { isDiagnosticsForUri, offsetToPosition } from "./support/lsp/assertions.ts";
 import type { LspDiagnostic, LspRange, PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
@@ -12,9 +13,17 @@ const CLEAN_ATTRIBUTE = 'alt="Vue logo" class="logo"';
 const BROKEN_ATTRIBUTE = 'alt="Vue logo"  class="logo"';
 
 test("release-script CI hydrates the pinned create-vue code-action oracle", () => {
-  const workflow = fs.readFileSync(`${repoRoot}/.github/workflows/check.yml`, "utf8");
+  const workflow = parse(fs.readFileSync(`${repoRoot}/.github/workflows/check.yml`, "utf8"));
+  assert.equal(
+    workflow.jobs["test-scripts"].steps.at(-1).uses,
+    "./.github/actions/test-full-tooling",
+  );
+  const worker = fs.readFileSync(
+    `${repoRoot}/.github/actions/test-full-tooling/action.yml`,
+    "utf8",
+  );
   assert.match(
-    workflow,
+    worker,
     /git submodule update --init --force --depth 1 --[^\n]*tests\/_fixtures\/_git\/create-vue/,
   );
 });

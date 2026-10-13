@@ -58,11 +58,6 @@
       "tools/support/release/typed_defaults/archive.py"
     ],
     "lean": [
-      "tests/formal/html-content-model/HtmlContentModel.lean",
-      "tests/formal/html-content-model/HtmlContentModel/Tri.lean",
-      "tests/formal/html-content-model/HtmlContentModel/Walk.lean",
-      "tests/formal/html-content-model/lakefile.lean",
-      "tests/formal/html-content-model/lean-toolchain",
       "tests/formal/impeto/Impeto.lean",
       "tests/formal/impeto/Impeto/Audit.lean",
       "tests/formal/impeto/Impeto/Behavior.lean",
