@@ -50,6 +50,7 @@ pub(super) fn build_jsx_registered_file(
     let virtual_path = virtual_jsx_path(context.project_root, context.virtual_root, path)?;
 
     Ok(RegisteredFile {
+        star_projection: None,
         file: VirtualFile {
             content: rewritten.code,
             source_map,
@@ -71,6 +72,7 @@ pub(super) fn build_jsx_registered_file(
         // `checkJs` the way a JavaScript `.vue` script block is (#3322).
         unchecked_javascript: false,
         typed_router_import: false,
+        empty_module_exports: false,
     })
 }
 

@@ -1,0 +1,66 @@
+{
+  "name": "wrong-prop-before",
+  "argv": [
+    "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@typescript+typescript-darwin-arm64@7.0.2/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+    "--checkers",
+    "1",
+    "--pretty",
+    "false",
+    "--project",
+    "/tmp/vize-canon-star-barrel-counterfactual-authentic-providers-20261012/wrong-prop-before/tsconfig.json"
+  ],
+  "cwd": "/tmp/vize-canon-star-barrel-counterfactual-authentic-providers-20261012/wrong-prop-before",
+  "exitCode": 1,
+  "wallNanoseconds": 808191500,
+  "wholeStdoutUtf8": "../../../../tmp/vize-canon-star-barrel-counterfactual-authentic-providers-20261012/wrong-prop-before/barrel.ts(2,1): error TS2308: Module './A.vue.ts' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.\n../../../../tmp/vize-canon-star-barrel-counterfactual-authentic-providers-20261012/wrong-prop-before/barrel.ts(2,1): error TS2308: Module './A.vue.ts' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.\n../../../../tmp/vize-canon-star-barrel-counterfactual-authentic-providers-20261012/wrong-prop-before/barrel.ts(2,1): error TS2308: Module './A.vue.ts' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.\n../../../../tmp/vize-canon-star-barrel-counterfactual-authentic-providers-20261012/wrong-prop-before/consumer.ts(3,24): error TS2322: Type 'number' is not assignable to type 'string'.\n../../../../tmp/vize-canon-star-barrel-counterfactual-authentic-providers-20261012/wrong-prop-before/consumer.ts(7,9): error TS2322: Type 'number' is not assignable to type 'never'.\n",
+  "wholeStderrBytes": [],
+  "stdoutSha256": "5922f41fb76b885ecfd095768070d053cd3e20eec5622214e3e6d3b6d1751a56",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "inputs": {
+    "A.vue.ts": {
+      "bytes": 5759,
+      "sha256": "7bb0ab12259c36baec1340f2dd92a3cea96732714fb4a7c6d3538e3ed0eb6a8f",
+      "relativeBlob": "blobs/7bb0ab12259c36baec1340f2dd92a3cea96732714fb4a7c6d3538e3ed0eb6a8f.json"
+    },
+    "B.vue.ts": {
+      "bytes": 5759,
+      "sha256": "7bb0ab12259c36baec1340f2dd92a3cea96732714fb4a7c6d3538e3ed0eb6a8f",
+      "relativeBlob": "blobs/7bb0ab12259c36baec1340f2dd92a3cea96732714fb4a7c6d3538e3ed0eb6a8f.json"
+    },
+    "A.vue": {
+      "bytes": 233,
+      "sha256": "c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61",
+      "relativeBlob": "blobs/c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61.json"
+    },
+    "B.vue": {
+      "bytes": 233,
+      "sha256": "c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61",
+      "relativeBlob": "blobs/c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61.json"
+    },
+    "__vize_helpers.d.ts": {
+      "bytes": 28193,
+      "sha256": "c861a2681e7472803dd082e8667ba69bb20dbcd65a12fe96d7eab411099aab76",
+      "relativeBlob": "blobs/c861a2681e7472803dd082e8667ba69bb20dbcd65a12fe96d7eab411099aab76.json"
+    },
+    "__vize_vue_modules.d.ts": {
+      "bytes": 63,
+      "sha256": "e14058b0c703cd7df25c2b88f9889f993bafb343f51e7f1942192242932d651a",
+      "relativeBlob": "blobs/e14058b0c703cd7df25c2b88f9889f993bafb343f51e7f1942192242932d651a.json"
+    },
+    "tsconfig.json": {
+      "bytes": 342,
+      "sha256": "9f22cfcce3413480ff14eaf6c4876a96daca232a5213beb362e21afa7ded64f1",
+      "relativeBlob": "blobs/9f22cfcce3413480ff14eaf6c4876a96daca232a5213beb362e21afa7ded64f1.json"
+    },
+    "consumer.ts": {
+      "bytes": 327,
+      "sha256": "4c1c46cdeb0cc342ac2472b58dae7de3bcbc6c2ad44d94f3fa813a4f94e44db3",
+      "relativeBlob": "blobs/4c1c46cdeb0cc342ac2472b58dae7de3bcbc6c2ad44d94f3fa813a4f94e44db3.json"
+    },
+    "barrel.ts": {
+      "bytes": 142,
+      "sha256": "fae1cb4019dc4bc61cc840fec8b51f2e0c30b244dff6bbceec2877a1334a41e1",
+      "relativeBlob": "blobs/fae1cb4019dc4bc61cc840fec8b51f2e0c30b244dff6bbceec2877a1334a41e1.json"
+    }
+  }
+}

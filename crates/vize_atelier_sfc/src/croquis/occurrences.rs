@@ -1,6 +1,8 @@
 //! Demand-only editor facts carried through the existing descriptor analysis.
 
-use super::analysis::{DescriptorAnalysisMode, analyze_sfc_descriptor_resolved_impl};
+use super::analysis::{
+    DescriptorAnalysisMode, DescriptorObservation, analyze_sfc_descriptor_resolved_impl,
+};
 use super::{SfcCroquisAnalysis, SfcCroquisOptions};
 use crate::SfcDescriptor;
 use vize_atelier_core::RootNode;
@@ -26,7 +28,10 @@ pub fn analyze_sfc_descriptor_with_occurrences(
         },
         None,
         None,
-        Some(&mut packet),
+        DescriptorObservation {
+            occurrences: Some(&mut packet),
+            ..Default::default()
+        },
     );
     if options.template_is_derived
         || descriptor

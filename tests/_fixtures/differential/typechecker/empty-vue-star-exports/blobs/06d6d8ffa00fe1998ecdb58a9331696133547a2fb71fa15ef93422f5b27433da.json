@@ -1,0 +1,5 @@
+{
+  "bytes": 143,
+  "sha256": "06d6d8ffa00fe1998ecdb58a9331696133547a2fb71fa15ef93422f5b27433da",
+  "wholeUtf8": "export * from './A.vue.ts';\nexport {} from './B.vue.ts';\nexport { default as A } from './A.vue.ts';\nexport { default as B } from './B.vue.ts';\n"
+}

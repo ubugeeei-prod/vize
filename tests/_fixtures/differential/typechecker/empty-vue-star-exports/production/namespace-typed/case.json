@@ -1,0 +1,63 @@
+{
+  "id": "namespace-typed",
+  "nativeContract": "exact",
+  "inputs": [
+    {
+      "file": "tsconfig.json",
+      "bytes": 254,
+      "sha256": "aff76fd6ad18712292612c21db66690dc61bc7c9ad3d3fa9df4ac8017420021b",
+      "relativeBlob": "blobs/aff76fd6ad18712292612c21db66690dc61bc7c9ad3d3fa9df4ac8017420021b.json"
+    },
+    {
+      "file": "A.vue",
+      "bytes": 233,
+      "sha256": "c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61",
+      "relativeBlob": "blobs/c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61.json"
+    },
+    {
+      "file": "B.vue",
+      "bytes": 233,
+      "sha256": "c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61",
+      "relativeBlob": "blobs/c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61.json"
+    },
+    {
+      "file": "consumer.ts",
+      "bytes": 1104,
+      "sha256": "bdbf54d8b85375ba3f41844772e835df89a41ffea195642db9536bb38abc5819",
+      "relativeBlob": "blobs/bdbf54d8b85375ba3f41844772e835df89a41ffea195642db9536bb38abc5819.json"
+    },
+    {
+      "file": "barrel.ts",
+      "bytes": 173,
+      "sha256": "4e4e4a28d216361d991a7d8b9cc13193b213df02d4cf90179b6b92ff24252766",
+      "relativeBlob": "blobs/4e4e4a28d216361d991a7d8b9cc13193b213df02d4cf90179b6b92ff24252766.json"
+    }
+  ],
+  "diagnostics": [],
+  "projectedEquals": {
+    "consumer.ts": {
+      "bytes": 1110,
+      "sha256": "398caf67cc5bdbedaf3a8ec98329acb3b592a8d7af143ccc4fd242c120bc9401",
+      "relativeBlob": "blobs/398caf67cc5bdbedaf3a8ec98329acb3b592a8d7af143ccc4fd242c120bc9401.json"
+    },
+    "barrel.ts": {
+      "bytes": 190,
+      "sha256": "9dc4e0a694d64b2101c15df80d0c55a0717dd4217bc5d012af6422745c0ea685",
+      "relativeBlob": "blobs/9dc4e0a694d64b2101c15df80d0c55a0717dd4217bc5d012af6422745c0ea685.json"
+    }
+  },
+  "exportedNamesEquals": {
+    "A.vue": [
+      "Emits",
+      "Props",
+      "Slots",
+      "default"
+    ],
+    "B.vue": [
+      "Emits",
+      "Props",
+      "Slots",
+      "default"
+    ]
+  }
+}

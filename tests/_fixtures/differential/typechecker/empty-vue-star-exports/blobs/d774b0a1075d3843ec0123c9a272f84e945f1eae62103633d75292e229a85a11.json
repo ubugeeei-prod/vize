@@ -1,0 +1,5 @@
+{
+  "bytes": 281,
+  "sha256": "d774b0a1075d3843ec0123c9a272f84e945f1eae62103633d75292e229a85a11",
+  "wholeUtf8": "<script src=\"./external.ts\" lang=\"ts\"></script>\n<script setup lang=\"ts\">\ndefineProps<{ title?: string }>()\ndefineSlots<{ default(props: { label: string; items: { label: string }[] }): unknown }>()\n</script>\n<template><slot label=\"typed\" :items=\"[{ label: 'child' }]\" /></template>\n"
+}

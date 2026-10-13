@@ -32,7 +32,10 @@ void test("complete current93 source retains the exact original88 model without 
   assert.equal(current.receipt.runtimeCredit, false);
   assert.equal(javascriptSfcBodyPairs.length, 93);
   for (const entry of data.existing) {
-    assert.deepEqual(bodies.get(entry.path), Buffer.from(entry.currentAfter.body, "base64"));
+    assert.deepEqual(
+      current.retainedOptionsAfter(entry.path),
+      Buffer.from(entry.currentAfter.body, "base64"),
+    );
     assert.deepEqual(
       current.retainedCapturedAfter(entry.path),
       Buffer.from(entry.retainedAfter.body, "base64"),
@@ -152,7 +155,11 @@ void test("genuine private raw and physical modes missing symlinks mutations and
       authenticateJavaScriptSfcSource(javascriptSfcSourceReader(fixture, true)).receipt.bodyPairs,
       93,
     );
-    assert.equal(sha(bodies.get(data.existing[0].path)), data.existing[0].currentAfter.sha256);
+    const current = authenticateJavaScriptSfcSource(javascriptSfcSourceReader(fixture, true));
+    assert.equal(
+      sha(current.retainedOptionsAfter(data.existing[0].path)),
+      data.existing[0].currentAfter.sha256,
+    );
   } finally {
     fs.rmSync(fixture, { recursive: true, force: true });
   }

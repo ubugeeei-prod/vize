@@ -1,0 +1,76 @@
+{
+  "name": "authored-duplicate-counterfactual",
+  "argv": [
+    "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@typescript+typescript-darwin-arm64@7.0.2/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+    "--checkers",
+    "1",
+    "--pretty",
+    "false",
+    "--project",
+    "/tmp/vize-canon-star-barrel-counterfactual-authentic-providers-20261012/authored-duplicate-counterfactual/tsconfig.json"
+  ],
+  "cwd": "/tmp/vize-canon-star-barrel-counterfactual-authentic-providers-20261012/authored-duplicate-counterfactual",
+  "exitCode": 1,
+  "wallNanoseconds": 790315958,
+  "wholeStdoutUtf8": "../../../../tmp/vize-canon-star-barrel-counterfactual-authentic-providers-20261012/authored-duplicate-counterfactual/barrel.ts(6,1): error TS2308: Module './left.ts' has already exported a member named 'Shared'. Consider explicitly re-exporting to resolve the ambiguity.\n",
+  "wholeStderrBytes": [],
+  "stdoutSha256": "d1d1dc165f857824f64c4ebc20e43b603382515e405ba8a56afb4a0cf184ab7c",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "inputs": {
+    "A.vue.ts": {
+      "bytes": 5759,
+      "sha256": "7bb0ab12259c36baec1340f2dd92a3cea96732714fb4a7c6d3538e3ed0eb6a8f",
+      "relativeBlob": "blobs/7bb0ab12259c36baec1340f2dd92a3cea96732714fb4a7c6d3538e3ed0eb6a8f.json"
+    },
+    "B.vue.ts": {
+      "bytes": 5759,
+      "sha256": "7bb0ab12259c36baec1340f2dd92a3cea96732714fb4a7c6d3538e3ed0eb6a8f",
+      "relativeBlob": "blobs/7bb0ab12259c36baec1340f2dd92a3cea96732714fb4a7c6d3538e3ed0eb6a8f.json"
+    },
+    "A.vue": {
+      "bytes": 233,
+      "sha256": "c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61",
+      "relativeBlob": "blobs/c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61.json"
+    },
+    "B.vue": {
+      "bytes": 233,
+      "sha256": "c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61",
+      "relativeBlob": "blobs/c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61.json"
+    },
+    "__vize_helpers.d.ts": {
+      "bytes": 28193,
+      "sha256": "c861a2681e7472803dd082e8667ba69bb20dbcd65a12fe96d7eab411099aab76",
+      "relativeBlob": "blobs/c861a2681e7472803dd082e8667ba69bb20dbcd65a12fe96d7eab411099aab76.json"
+    },
+    "__vize_vue_modules.d.ts": {
+      "bytes": 63,
+      "sha256": "e14058b0c703cd7df25c2b88f9889f993bafb343f51e7f1942192242932d651a",
+      "relativeBlob": "blobs/e14058b0c703cd7df25c2b88f9889f993bafb343f51e7f1942192242932d651a.json"
+    },
+    "tsconfig.json": {
+      "bytes": 342,
+      "sha256": "9f22cfcce3413480ff14eaf6c4876a96daca232a5213beb362e21afa7ded64f1",
+      "relativeBlob": "blobs/9f22cfcce3413480ff14eaf6c4876a96daca232a5213beb362e21afa7ded64f1.json"
+    },
+    "consumer.ts": {
+      "bytes": 337,
+      "sha256": "3d06469c0d63a437dc4e67cabede017df8087c77f70497bd7765239fa5bebc10",
+      "relativeBlob": "blobs/3d06469c0d63a437dc4e67cabede017df8087c77f70497bd7765239fa5bebc10.json"
+    },
+    "left.ts": {
+      "bytes": 41,
+      "sha256": "49d70afae93c30974d12147c570993c90c907dd5e3dbe7aae5472e6632182eaa",
+      "relativeBlob": "blobs/49d70afae93c30974d12147c570993c90c907dd5e3dbe7aae5472e6632182eaa.json"
+    },
+    "right.ts": {
+      "bytes": 42,
+      "sha256": "b7cb666e2b2577499982d842fc9026f980354ca2f4bc28efae9d1da99e40acf6",
+      "relativeBlob": "blobs/b7cb666e2b2577499982d842fc9026f980354ca2f4bc28efae9d1da99e40acf6.json"
+    },
+    "barrel.ts": {
+      "bytes": 199,
+      "sha256": "dc5fedafc9e52406a7e3162e2a1179ff1da12d8c1c787aa6b6d063c6ce5cfc7d",
+      "relativeBlob": "blobs/dc5fedafc9e52406a7e3162e2a1179ff1da12d8c1c787aa6b6d063c6ce5cfc7d.json"
+    }
+  }
+}

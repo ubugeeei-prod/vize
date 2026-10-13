@@ -5,7 +5,8 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     CallExpression, ExportAllDeclaration, ExportNamedDeclaration, Expression, ImportAttributeKey,
     ImportDeclaration, ImportExpression, ObjectExpression, ObjectPropertyKind, PropertyKey,
-    StringLiteral, TSExternalModuleReference, TSImportType, TSModuleDeclarationName, WithClause,
+    Statement, StringLiteral, TSExternalModuleReference, TSImportType, TSModuleDeclarationName,
+    WithClause,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
@@ -29,14 +30,35 @@ pub(super) fn collect_specifier_occurrences(
     occurrences
 }
 
+pub(super) struct BareStarExport {
+    pub(super) header: oxc_span::Span,
+    pub(super) literal: oxc_span::Span,
+    pub(super) is_type: bool,
+    pub(super) specifier: String,
+    pub(super) mode: crate::PackageResolutionMode,
+}
+
 pub(super) struct ModuleSpecifierCollector {
     pub(super) specifiers: Vec<(u32, u32, String, crate::PackageResolutionMode)>,
+    pub(super) empty_stars: Vec<BareStarExport>,
+    capture_stars: bool,
+    statement_depth: usize,
 }
 
 impl ModuleSpecifierCollector {
     pub(super) fn new() -> Self {
         Self {
             specifiers: Vec::new(),
+            empty_stars: Vec::new(),
+            capture_stars: false,
+            statement_depth: 0,
+        }
+    }
+
+    pub(super) fn with_stars() -> Self {
+        Self {
+            capture_stars: true,
+            ..Self::new()
         }
     }
 
@@ -51,6 +73,16 @@ impl ModuleSpecifierCollector {
 }
 
 impl<'a> Visit<'a> for ModuleSpecifierCollector {
+    fn visit_statement(&mut self, statement: &Statement<'a>) {
+        if !self.capture_stars {
+            walk::walk_statement(self, statement);
+            return;
+        }
+        self.statement_depth += 1;
+        walk::walk_statement(self, statement);
+        self.statement_depth -= 1;
+    }
+
     fn visit_import_declaration(&mut self, decl: &ImportDeclaration<'a>) {
         self.push_literal(
             &decl.source,
@@ -67,6 +99,15 @@ impl<'a> Visit<'a> for ModuleSpecifierCollector {
     }
 
     fn visit_export_all_declaration(&mut self, decl: &ExportAllDeclaration<'a>) {
+        if self.capture_stars && self.statement_depth == 1 && decl.exported.is_none() {
+            self.empty_stars.push(BareStarExport {
+                header: oxc_span::Span::new(decl.span.start, decl.source.span.start),
+                literal: oxc_span::Span::new(decl.source.span.start + 1, decl.source.span.end - 1),
+                is_type: decl.export_kind.is_type(),
+                specifier: decl.source.value.as_str().into(),
+                mode: mode_from_with_clause(decl.with_clause.as_deref()),
+            });
+        }
         self.push_literal(
             &decl.source,
             mode_from_with_clause(decl.with_clause.as_deref()),

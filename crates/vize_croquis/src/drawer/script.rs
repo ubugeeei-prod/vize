@@ -63,13 +63,14 @@ impl Drawer {
         // Use OXC-based parser for accurate AST drawing
         let result = profile!(
             "croquis.drawer.script_setup",
-            crate::script_parser::parse_script_setup_for_unused::<BUILTIN_TYPES>(
+            crate::script_parser::parse_script_setup_with_exports::<BUILTIN_TYPES>(
                 source,
                 generic,
                 jsx,
                 self.track_unused_bindings,
                 !self.options.detect_undefined,
                 self.occurrence_capture.is_some(),
+                self.module_export_capture.as_mut(),
             )
         );
 
@@ -97,6 +98,11 @@ impl Drawer {
 
         self.script_drawn = true;
 
+        // A caller-owned Program does not include original parser admission.
+        if let Some(capture) = self.module_export_capture.as_mut() {
+            capture.refuse();
+        }
+
         let result = profile!(
             "croquis.drawer.script_setup_program",
             crate::script_parser::analyze_script_setup_program_demand::<false>(
@@ -105,6 +111,7 @@ impl Drawer {
                 generic,
                 !self.options.detect_undefined,
                 self.occurrence_capture.is_some(),
+                None,
             )
         );
 
@@ -136,7 +143,7 @@ impl Drawer {
         // Use OXC-based parser for non-script-setup
         let result = profile!(
             "croquis.drawer.script_plain",
-            crate::script_parser::parse_script_plain(
+            crate::script_parser::parse_script_plain_with_exports(
                 source,
                 crate::script_parser::ScriptParserOptions {
                     options_api: self.options_api,
@@ -145,6 +152,7 @@ impl Drawer {
                 jsx,
                 !self.options.detect_undefined,
                 self.occurrence_capture.is_some(),
+                self.module_export_capture.as_mut(),
             )
         );
 

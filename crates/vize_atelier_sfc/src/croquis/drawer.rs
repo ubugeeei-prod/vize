@@ -1,5 +1,5 @@
 use super::SfcCroquisOptions;
-use super::script_demand::{CapturedScript, OrdinaryScript, ScriptDemand};
+use super::script_demand::{CapturedScript, ModuleExportsScript, OrdinaryScript, ScriptDemand};
 use crate::types::SfcDescriptor;
 use vize_carton::profile;
 use vize_croquis::binding_occurrences::BindingOccurrences;
@@ -35,6 +35,15 @@ pub(super) fn analyze_scripts_with_occurrences(
     legacy_vue2: bool,
 ) -> (Croquis, Option<BindingOccurrences>) {
     analyze_scripts_impl::<CapturedScript>(descriptor, options, options_api, legacy_vue2)
+}
+
+pub(super) fn analyze_scripts_with_empty_module_exports(
+    descriptor: &SfcDescriptor<'_>,
+    options: SfcCroquisOptions,
+    options_api: bool,
+    legacy_vue2: bool,
+) -> (Croquis, bool) {
+    analyze_scripts_impl::<ModuleExportsScript>(descriptor, options, options_api, legacy_vue2)
 }
 
 fn analyze_scripts_impl<D: ScriptDemand>(

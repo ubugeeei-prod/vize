@@ -1,0 +1,5 @@
+{
+  "bytes": 507,
+  "sha256": "e26397c49771e3aaf50d58a54d76f6fcc049c86c56e2a6e23cdd6e8128c8ad3c",
+  "wholeUtf8": "import { A, B } from './barrel.ts';\nimport type { Props, Slots, Emits } from './A.vue';\nconst props: Props = { title: 'typed' };\nconst slots: Slots = { default: ({ label }) => label };\nconst emits: Emits = {};\nconst title: string | undefined = new A(props).$props.title;\nnew B({ title: 'typed' });\nvoid slots; void emits; void title;\ntype IsAny<T> = 0 extends (1 & T) ? true : false;\nconst concrete: [IsAny<Props>, IsAny<Slots>, IsAny<Emits>, IsAny<typeof A>] = [false, false, false, false];\nvoid concrete;\n"
+}

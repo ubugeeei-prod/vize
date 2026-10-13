@@ -22,13 +22,14 @@ await test("native renderer input preserves route/source bytes and replaces only
     for (const [path, bytes] of Object.entries(originals)) put(`content/${path}`, bytes);
     assert.equal(
       CATALOGUE_SOURCES.length,
-      70,
-      "five complete catalogue locales, eleven retained English subgroups and four Japanese accessibility groups",
+      71,
+      "five complete catalogue locales, eleven retained English subgroups, four Japanese accessibility groups and Japanese components",
     );
     assert.ok(CATALOGUE_SOURCES.includes("generated/rules/ja/accessibility-core.md"));
     assert.ok(CATALOGUE_SOURCES.includes("generated/rules/ja/accessibility-integrity.md"));
     assert.ok(CATALOGUE_SOURCES.includes("generated/rules/ja/accessibility-interactions.md"));
     assert.ok(CATALOGUE_SOURCES.includes("generated/rules/ja/accessibility-structure.md"));
+    assert.ok(CATALOGUE_SOURCES.includes("generated/rules/ja/vue-components.md"));
     const catalogues = CATALOGUE_SOURCES.map((source) => {
       const match = source.match(/^generated\/rules\/([^/]+)\/(.+)$/);
       assert(match, "derivative follows its existing route convention");

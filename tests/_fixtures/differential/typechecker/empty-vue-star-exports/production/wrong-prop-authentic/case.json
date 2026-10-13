@@ -1,0 +1,64 @@
+{
+  "id": "wrong-prop-authentic",
+  "nativeContract": "exact",
+  "inputs": [
+    {
+      "file": "tsconfig.json",
+      "bytes": 254,
+      "sha256": "aff76fd6ad18712292612c21db66690dc61bc7c9ad3d3fa9df4ac8017420021b",
+      "relativeBlob": "blobs/aff76fd6ad18712292612c21db66690dc61bc7c9ad3d3fa9df4ac8017420021b.json"
+    },
+    {
+      "file": "A.vue",
+      "bytes": 233,
+      "sha256": "c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61",
+      "relativeBlob": "blobs/c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61.json"
+    },
+    {
+      "file": "B.vue",
+      "bytes": 233,
+      "sha256": "c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61",
+      "relativeBlob": "blobs/c83a3fd52a9e898a795d6bbdac7ae728130540d30f692a9688d8b55b3b643e61.json"
+    },
+    {
+      "file": "consumer.ts",
+      "bytes": 324,
+      "sha256": "ddb1b5636d3d163f8c96fc1ff2634758f70e0ffb9996fbb8b531085d80f0351c",
+      "relativeBlob": "blobs/ddb1b5636d3d163f8c96fc1ff2634758f70e0ffb9996fbb8b531085d80f0351c.json"
+    },
+    {
+      "file": "barrel.ts",
+      "bytes": 130,
+      "sha256": "a7c105b81822b7324998a2ec9447f2121058630315560bac31687380bd35df89",
+      "relativeBlob": "blobs/a7c105b81822b7324998a2ec9447f2121058630315560bac31687380bd35df89.json"
+    }
+  ],
+  "expectedAuthenticPacket": "wrong-prop-counterfactual",
+  "projectedEquals": {
+    "consumer.ts": {
+      "bytes": 327,
+      "sha256": "4c1c46cdeb0cc342ac2472b58dae7de3bcbc6c2ad44d94f3fa813a4f94e44db3",
+      "relativeBlob": "blobs/4c1c46cdeb0cc342ac2472b58dae7de3bcbc6c2ad44d94f3fa813a4f94e44db3.json"
+    },
+    "barrel.ts": {
+      "bytes": 144,
+      "sha256": "f8f1f17e858ce72de2934681a821f12e5f15fff12eda5c3c5c5c863eaf83e863",
+      "relativeBlob": "blobs/f8f1f17e858ce72de2934681a821f12e5f15fff12eda5c3c5c5c863eaf83e863.json"
+    }
+  },
+  "exportedNamesEquals": {
+    "A.vue": [
+      "Emits",
+      "Props",
+      "Slots",
+      "default"
+    ],
+    "B.vue": [
+      "Emits",
+      "Props",
+      "Slots",
+      "default"
+    ]
+  },
+  "expectedAuthenticRawPacket": "wrong-prop-counterfactual"
+}

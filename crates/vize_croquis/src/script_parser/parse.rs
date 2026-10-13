@@ -5,6 +5,8 @@ use oxc_ast::ast::Program;
 use oxc_span::SourceType;
 
 use super::globals::setup_global_scopes;
+use super::module_exports::ModuleExportCapture;
+pub(crate) use super::module_exports::{parse_script_plain, parse_script_setup_for_unused};
 use super::process;
 use super::recovery::parse_program_for_analysis;
 use super::result::{ScriptParseResult, ScriptParserOptions};
@@ -31,13 +33,14 @@ pub fn parse_script_setup_with_generic_and_jsx(
     parse_script_setup_for_unused::<false>(source, generic, jsx, false, false, false)
 }
 
-pub(crate) fn parse_script_setup_for_unused<const BUILTIN_TYPES: bool>(
+pub(crate) fn parse_script_setup_with_exports<const BUILTIN_TYPES: bool>(
     source: &str,
     generic: Option<&str>,
     jsx: bool,
     unused: bool,
     skip_diagnostics: bool,
     occurrences: bool,
+    mut exports: Option<&mut ModuleExportCapture>,
 ) -> ScriptParseResult {
     let allocator = Allocator::default();
     let path = if jsx { "script.tsx" } else { "script.ts" };
@@ -47,7 +50,7 @@ pub(crate) fn parse_script_setup_for_unused<const BUILTIN_TYPES: bool>(
         "croquis.script_setup.oxc_parse",
         parse_program_for_analysis(&allocator, source, source_type)
     );
-
+    ModuleExportCapture::observe_if(exports.as_deref_mut(), &ret);
     if ret.panicked {
         return ScriptParseResult::default();
     }
@@ -58,6 +61,7 @@ pub(crate) fn parse_script_setup_for_unused<const BUILTIN_TYPES: bool>(
         generic,
         skip_diagnostics,
         occurrences,
+        exports,
     );
     if !ret.diagnostics.is_empty() {
         result.setup_context.clear_ssr_facts();
@@ -99,6 +103,7 @@ pub(crate) fn analyze_script_setup_program_skipping<const BUILTIN_TYPES: bool>(
         generic,
         skip_diagnostics,
         false,
+        None,
     )
 }
 
@@ -108,6 +113,7 @@ pub(crate) fn analyze_script_setup_program_demand<const BUILTIN_TYPES: bool>(
     generic: Option<&str>,
     skip_diagnostics: bool,
     occurrences: bool,
+    mut exports: Option<&mut ModuleExportCapture>,
 ) -> ScriptParseResult {
     let source_len = source.len() as u32;
 
@@ -145,6 +151,7 @@ pub(crate) fn analyze_script_setup_program_demand<const BUILTIN_TYPES: bool>(
     // Process all statements
     profile!("croquis.script_setup.walk_statements", {
         for stmt in program.body.iter() {
+            ModuleExportCapture::observe_statement_if(exports.as_deref_mut(), stmt, true);
             if BUILTIN_TYPES {
                 process::process_statement_with_builtin(&mut result, stmt, source);
             } else {
@@ -187,6 +194,7 @@ pub fn parse_script_with_options(source: &str, options: ScriptParserOptions) -> 
         SourceType::from_path("script.ts").unwrap_or_default(),
         false,
         false,
+        None,
     )
 }
 
@@ -199,12 +207,13 @@ pub fn parse_script_with_options_and_jsx(
     parse_script_plain(source, options, jsx, false, false)
 }
 
-pub(crate) fn parse_script_plain(
+pub(crate) fn parse_script_plain_with_exports(
     source: &str,
     options: ScriptParserOptions,
     jsx: bool,
     skip_diagnostics: bool,
     occurrences: bool,
+    exports: Option<&mut ModuleExportCapture>,
 ) -> ScriptParseResult {
     let path = if jsx { "script.tsx" } else { "script.ts" };
     parse_script_with_options_source_type(
@@ -213,6 +222,7 @@ pub(crate) fn parse_script_plain(
         SourceType::from_path(path).unwrap_or_default(),
         skip_diagnostics,
         occurrences,
+        exports,
     )
 }
 
@@ -222,6 +232,7 @@ pub(crate) fn parse_script_with_options_source_type(
     source_type: SourceType,
     skip_diagnostics: bool,
     occurrences: bool,
+    mut exports: Option<&mut ModuleExportCapture>,
 ) -> ScriptParseResult {
     let allocator = Allocator::default();
 
@@ -229,7 +240,7 @@ pub(crate) fn parse_script_with_options_source_type(
         "croquis.script_plain.oxc_parse",
         parse_program_for_analysis(&allocator, source, source_type)
     );
-
+    ModuleExportCapture::observe_if(exports.as_deref_mut(), &ret);
     if ret.panicked {
         return ScriptParseResult::default();
     }
@@ -272,6 +283,7 @@ pub(crate) fn parse_script_with_options_source_type(
     // Process all statements
     profile!("croquis.script_plain.walk_statements", {
         for stmt in ret.program.body.iter() {
+            ModuleExportCapture::observe_statement_if(exports.as_deref_mut(), stmt, false);
             process::process_statement(&mut result, stmt, source);
         }
     });

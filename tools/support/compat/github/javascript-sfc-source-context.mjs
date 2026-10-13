@@ -9,6 +9,11 @@ import {
   javascriptSfcOptionsProductionPaths,
   retainedJavaScriptSfcOptionsAfter,
 } from "./javascript-sfc-options-source.mjs";
+import {
+  javascriptSfcStarRows,
+  javascriptSfcStarContextPaths,
+  retainedJavaScriptSfcStarOptions,
+} from "./javascript-sfc-star-source.mjs";
 
 const sha = (body) => createHash("sha256").update(body).digest("hex");
 const regular = (file) => {
@@ -100,9 +105,11 @@ assert.deepEqual(
   Buffer.from(correctedBody.toString().replace(assertion.clause.after, assertion.clause.before)),
   retainedBody,
 );
-const currentRows = javascriptSfcOptionsRows(
-  rows.map((row) =>
-    row.path === assertion.path ? { ...row, after: assertion.currentAfter } : row,
+const currentRows = javascriptSfcStarRows(
+  javascriptSfcOptionsRows(
+    rows.map((row) =>
+      row.path === assertion.path ? { ...row, after: assertion.currentAfter } : row,
+    ),
   ),
 );
 
@@ -130,6 +137,7 @@ export const javascriptSfcProductionPaths = Object.freeze([
 export const javascriptSfcContextPaths = Object.freeze([
   "tools/support/compat/github/javascript-sfc-source-context.mjs",
   ...javascriptSfcOptionsContextPaths,
+  ...javascriptSfcStarContextPaths,
   data.callerContext,
   "tools/support/compat/github/" + assertionName,
   ...[dataName, ...data.parts.map(([name]) => name)].map(
@@ -263,7 +271,11 @@ export function authenticateJavaScriptSfcSource(read) {
         rows.some((row) => row.path === file),
         "one original88 source owner",
       );
-      return retainedJavaScriptSfcOptionsAfter(file, actual);
+      return retainedJavaScriptSfcOptionsAfter(file, retainedJavaScriptSfcStarOptions(actual));
+    },
+    retainedOptionsAfter(file) {
+      assert.ok(actual.has(file), file);
+      return Buffer.from(retainedJavaScriptSfcStarOptions(actual).get(file));
     },
     historicalAfter(file) {
       assert.ok(actual.has(file), file);

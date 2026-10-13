@@ -1,0 +1,34 @@
+{
+  "schema": "vize.empty-vue-star.javascript-current-source",
+  "version": 1,
+  "sourceOnly": true,
+  "beforeSource": "3a680d0a0b59b720af0d23a70a85cf56c5c4f175",
+  "beforeTree": "577d549f8a9c6b0a51f6bf99bc23fb35eec5942a",
+  "originalSource": "a93e78147b0990c813e965a7868b32dda341eb77",
+  "sharedJavaScriptCapsulesSHA256": "e202062b0362e21f5b7847ab70911b3d3f7c7e5c7ca7c6d51fb88ca35944a56f",
+  "compiledBodies": 281,
+  "starMetadataBodies": 9,
+  "originalAuxiliaryBodies": 8,
+  "javascriptAuxiliaryBodies": 13,
+  "parts": [
+    {
+      "file": "empty-vue-star-javascript-aux-0.json",
+      "mode": "100644",
+      "blob": "14f57f0699f1fc0219425ac1b0e6b5a21fbd3469",
+      "byteLength": 4113,
+      "sha256": "4066db3ac0fd89d827c8b0fbdab253f894d13a71e9049642cb1071122fe7eacb",
+      "entries": 8
+    },
+    {
+      "file": "empty-vue-star-javascript-aux-1.json",
+      "mode": "100644",
+      "blob": "15ff1f4c00612ffb2f4aa9cb49ec1f4be2901240",
+      "byteLength": 4115,
+      "sha256": "48e81568bd38f45e715c95cc95baa9fa2f697c6b5ce4b7fb1d9bca9bdd615ba5",
+      "entries": 13
+    }
+  ],
+  "runtimeCredit": false,
+  "performanceCredit": false,
+  "original400Credit": false
+}

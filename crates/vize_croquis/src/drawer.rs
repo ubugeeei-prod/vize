@@ -7,6 +7,7 @@ mod core;
 #[cfg(any(test, feature = "legacy-differential"))]
 pub mod differential;
 mod helpers;
+mod module_exports;
 mod occurrences;
 mod options;
 mod script;

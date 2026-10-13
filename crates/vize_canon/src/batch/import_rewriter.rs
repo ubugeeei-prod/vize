@@ -18,6 +18,13 @@ mod policy;
 mod collect;
 use collect::{ModuleSpecifierCollector, collect_specifier_occurrences};
 
+#[path = "import_rewriter_empty_vue_stars.rs"]
+mod empty_vue_stars;
+pub(in crate::batch) use empty_vue_stars::{EmptyVueStar, apply_captured_empty_vue_stars};
+
+#[path = "import_rewriter_star_capture.rs"]
+mod star_capture;
+
 #[path = "import_rewriter_virtual.rs"]
 mod virtual_rewrite;
 pub(super) use virtual_rewrite::rewrite_relative_vue_specifier;
@@ -129,11 +136,43 @@ impl ImportRewriter {
     where
         F: Fn(&str, crate::PackageResolutionMode) -> Option<String>,
     {
+        self.rewrite_with_star_capture(source, source_type, rewrite_specifier, false)
+            .0
+    }
+
+    /// Retain authentic original bare-star edges during this same initial parse.
+    #[cfg(test)]
+    pub(super) fn rewrite_with_captured_stars<F>(
+        &self,
+        source: &str,
+        source_type: SourceType,
+        rewrite_specifier: F,
+    ) -> (RewriteResult, Vec<EmptyVueStar>)
+    where
+        F: Fn(&str, crate::PackageResolutionMode) -> Option<String>,
+    {
+        self.rewrite_with_star_capture(source, source_type, rewrite_specifier, true)
+    }
+
+    fn rewrite_with_star_capture<F>(
+        &self,
+        source: &str,
+        source_type: SourceType,
+        rewrite_specifier: F,
+        capture_stars: bool,
+    ) -> (RewriteResult, Vec<EmptyVueStar>)
+    where
+        F: Fn(&str, crate::PackageResolutionMode) -> Option<String>,
+    {
         let allocator = Allocator::default();
         let parser = Parser::new(&allocator, source, source_type);
         let result = parser.parse();
 
-        let mut collector = ModuleSpecifierCollector::new();
+        let mut collector = if capture_stars && !result.panicked && result.diagnostics.is_empty() {
+            ModuleSpecifierCollector::with_stars()
+        } else {
+            ModuleSpecifierCollector::new()
+        };
         collector.visit_program(&result.program);
 
         let mut rewrites: Vec<(u32, u32, String)> = Vec::new();
@@ -142,6 +181,13 @@ impl ImportRewriter {
                 rewrites.push((start, end, rewrite));
             }
         }
+        let stars = collector
+            .empty_stars
+            .into_iter()
+            .filter_map(|candidate| {
+                EmptyVueStar::capture(source, &result.program.comments, candidate)
+            })
+            .collect();
 
         rewrites.sort_by_key(|rewrite| std::cmp::Reverse(rewrite.0));
 
@@ -162,10 +208,13 @@ impl ImportRewriter {
 
         adjustments.reverse();
 
-        RewriteResult {
-            code: output,
-            source_map: ImportSourceMap::new(adjustments),
-        }
+        (
+            RewriteResult {
+                code: output,
+                source_map: ImportSourceMap::new(adjustments),
+            },
+            stars,
+        )
     }
 
     /// Relative SFC dependencies of `source`, always spelled with the `.vue`
@@ -274,3 +323,11 @@ impl Default for ImportRewriter {
 #[cfg(test)]
 #[path = "import_rewriter_dependency_tests.rs"]
 mod dependency_tests;
+
+#[cfg(test)]
+#[path = "import_rewriter_empty_vue_stars_tests.rs"]
+mod empty_vue_stars_tests;
+
+#[cfg(test)]
+#[path = "import_rewriter_empty_vue_star_capture_tests.rs"]
+mod empty_vue_star_capture_tests;

@@ -11,8 +11,8 @@ use super::virtual_rewrite::{
     is_rewritable_vue_specifier, resolve_source_path,
 };
 use super::{
-    ImportRewriter, ImportSourceMap, RewriteResult, VirtualAliasRewritePolicy, authored_vue_ts,
-    rewrite_relative_vue_specifier, source_may_contain_relative_specifier,
+    EmptyVueStar, ImportRewriter, ImportSourceMap, RewriteResult, VirtualAliasRewritePolicy,
+    authored_vue_ts, rewrite_relative_vue_specifier, source_may_contain_relative_specifier,
 };
 
 #[derive(Clone, Copy)]
@@ -25,14 +25,15 @@ pub(in crate::batch) struct VirtualProjectRewriteOptions<'a> {
 }
 
 impl ImportRewriter {
-    pub(in crate::batch) fn rewrite_generated_for_virtual_project_with_alias_policy(
+    pub(super) fn rewrite_generated_for_virtual_project_with_star_capture(
         &self,
         source: &str,
         source_type: SourceType,
         roots: (&Path, &Path),
         source_dir: Option<&Path>,
         options: VirtualProjectRewriteOptions<'_>,
-    ) -> RewriteResult {
+        capture_stars: bool,
+    ) -> (RewriteResult, Vec<EmptyVueStar>) {
         let VirtualProjectRewriteOptions {
             preserve_relative_declarations,
             mirrorable_project_files,
@@ -50,41 +51,54 @@ impl ImportRewriter {
             && !alias_candidate
             && options.module_resolver.is_none()
         {
-            return RewriteResult {
-                code: source.to_compact_string(),
-                source_map: ImportSourceMap::empty(),
-            };
+            return (
+                RewriteResult {
+                    code: source.to_compact_string(),
+                    source_map: ImportSourceMap::empty(),
+                },
+                Vec::new(),
+            );
         }
 
-        self.rewrite_with(source, source_type, |path, mode| {
-            if let Some(rewritten) = module_resolver.and_then(|resolve| resolve(path, mode)) {
-                return Some(rewritten.into());
-            }
-            self.rewrite_module_specifier_with_missing_vue_policy_and_alias_policy(
-                path,
-                source_dir,
-                true,
-                true,
-                alias_rewrite_policy,
-            )
-            .or_else(|| {
-                (!preserve_relative_declarations)
-                    .then(|| {
-                        source_dir.and_then(|dir| {
-                            rewrite_relative_dts_specifier(path, dir, roots.0, roots.1, None)
+        self.rewrite_with_star_capture(
+            source,
+            source_type,
+            |path, mode| {
+                if let Some(rewritten) = module_resolver.and_then(|resolve| resolve(path, mode)) {
+                    return Some(rewritten.into());
+                }
+                self.rewrite_module_specifier_with_missing_vue_policy_and_alias_policy(
+                    path,
+                    source_dir,
+                    true,
+                    true,
+                    alias_rewrite_policy,
+                )
+                .or_else(|| {
+                    (!preserve_relative_declarations)
+                        .then(|| {
+                            source_dir.and_then(|dir| {
+                                rewrite_relative_dts_specifier(path, dir, roots.0, roots.1, None)
+                            })
                         })
+                        .flatten()
+                })
+                .or_else(|| source_dir.and_then(|dir| rewrite_relative_vue_specifier(path, dir)))
+                .or_else(|| {
+                    alias_rewrite_policy.and_then(|policy| {
+                        policy.rewrite_extensionless_vue_specifier(path, roots.0)
                     })
-                    .flatten()
-            })
-            .or_else(|| source_dir.and_then(|dir| rewrite_relative_vue_specifier(path, dir)))
-            .or_else(|| {
-                alias_rewrite_policy
-                    .and_then(|policy| policy.rewrite_extensionless_vue_specifier(path, roots.0))
-            })
-            .or_else(|| {
-                self.rewrite_known_virtual_project_specifier(path, roots, mirrorable_project_files)
-            })
-        })
+                })
+                .or_else(|| {
+                    self.rewrite_known_virtual_project_specifier(
+                        path,
+                        roots,
+                        mirrorable_project_files,
+                    )
+                })
+            },
+            capture_stars,
+        )
     }
 
     /// Rewrite a script's module specifiers for the canon virtual project.
@@ -110,6 +124,7 @@ impl ImportRewriter {
         )
     }
 
+    #[cfg(test)]
     pub(crate) fn rewrite_for_package_shadow_with_alias_policy(
         &self,
         source: &str,
@@ -132,6 +147,7 @@ impl ImportRewriter {
         )
     }
 
+    #[cfg(test)]
     pub(in crate::batch) fn rewrite_for_virtual_project_with_alias_policy(
         &self,
         source: &str,
@@ -155,14 +171,15 @@ impl ImportRewriter {
         )
     }
 
-    pub(in crate::batch) fn rewrite_for_virtual_project_with_policy(
+    pub(super) fn rewrite_for_virtual_project_with_star_capture(
         &self,
         source: &str,
         source_type: SourceType,
         roots: (&Path, &Path),
         source_dir: Option<&Path>,
         options: VirtualProjectRewriteOptions<'_>,
-    ) -> RewriteResult {
+        capture_stars: bool,
+    ) -> (RewriteResult, Vec<EmptyVueStar>) {
         let project_root = roots.0.to_string_lossy();
         let dts_candidate = source_dir.is_some() && source_may_contain_relative_specifier(source);
         let alias_candidate = options
@@ -174,28 +191,36 @@ impl ImportRewriter {
             && !alias_candidate
             && options.module_resolver.is_none()
         {
-            return RewriteResult {
-                code: source.to_compact_string(),
-                source_map: ImportSourceMap::empty(),
-            };
+            return (
+                RewriteResult {
+                    code: source.to_compact_string(),
+                    source_map: ImportSourceMap::empty(),
+                },
+                Vec::new(),
+            );
         }
 
-        self.rewrite_with(source, source_type, |path, mode| {
-            if let Some(rewritten) = options
-                .module_resolver
-                .and_then(|resolve| resolve(path, mode))
-            {
-                return Some(rewritten.into());
-            }
-            self.rewrite_virtual_project_specifier(
-                path,
-                roots,
-                source_dir,
-                options.preserve_relative_declarations,
-                options.mirrorable_project_files,
-                options.alias_rewrite_policy,
-            )
-        })
+        self.rewrite_with_star_capture(
+            source,
+            source_type,
+            |path, mode| {
+                if let Some(rewritten) = options
+                    .module_resolver
+                    .and_then(|resolve| resolve(path, mode))
+                {
+                    return Some(rewritten.into());
+                }
+                self.rewrite_virtual_project_specifier(
+                    path,
+                    roots,
+                    source_dir,
+                    options.preserve_relative_declarations,
+                    options.mirrorable_project_files,
+                    options.alias_rewrite_policy,
+                )
+            },
+            capture_stars,
+        )
     }
 
     fn rewrite_virtual_project_specifier(

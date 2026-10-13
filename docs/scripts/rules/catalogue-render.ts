@@ -146,7 +146,9 @@ export function generateRemainingCatalogues(
         : locale === "ja"
           ? japaneseAccessibilityIntroductions[accessibilityGroup]
           : undefined
-      : undefined;
+      : locale === "ja"
+        ? catalogueSubgroups[file]?.jaIntroduction
+        : undefined;
     if (locale === "ja" && accessibilityGroup && !groupIntroduction)
       throw new Error(`Missing Japanese accessibility introduction: ${accessibilityGroup}`);
     const labels = vueCategoryLabels[locale];

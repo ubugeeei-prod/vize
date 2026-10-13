@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "predecessorSource": "dd36599600f2c1e622cd05a4d6f73dc6649a8a18",
+  "reviewedSource": "fe8f4fcf9dbbe750a211cf5df2588356f785f590",
+  "sourceIndexSHA256": "680708e5b876e665d6c0dcb4f33f3b3e8db021c17eb4eda2550510a02dad2f23",
+  "updates": [
+    [
+      "crates/vize_canon/tests/empty_vue_star_exports.rs",
+      null,
+      "deb66f0aa9e33a5bb200802ae1b360cf693155d284dcd65b68f7156f0a8a9788",
+      "d13969bf79b513a23675c28970fb56540d4d950efec4a3aa33442a8ea5911000"
+    ],
+    [
+      "crates/vize_canon/tests/empty_vue_star_exports/execution.rs",
+      null,
+      "7c802689e696a9ffe52aa58bf74ca9af9e707261d657705156f8569a1d2040cf",
+      "dea4749d405c1d43c9d42de9dc38f949dc454981d933f73d6bd2eb442837e904"
+    ],
+    [
+      "tests/_fixtures/differential/typechecker/empty-vue-star-exports/production/authored-reserved-props-refusal/case.json",
+      null,
+      "34b48c0f2d28bacf16a4c162feb9bacc234e7f3d56c6f049f8524f7482dd2065",
+      "6fe90527393bd6539fa5293deb84e58dcc8a60f4d3ea1cd41d052000b2fdf4c0"
+    ],
+    [
+      "crates/vize_canon/src/batch/virtual_project/build.rs",
+      "bc4e62350dd11e82b7f411323ba6e51c06615a3865b49d7921b0dcd187d7e437",
+      "21877bf1c511f75cc448d6002afe60619cdfd28994d7d231a720011d7b83257e",
+      "41c01d8b1efea3dfe78bddcea0d1bcef4e9ff9b1880ae68ae1cd6db92a9134a7"
+    ],
+    [
+      "crates/vize_canon/src/batch/virtual_project/star_exports.rs",
+      null,
+      "7f447a70bcd64c9896c85dfe8d3116f532b63f3e663f999896484786d388eb09",
+      "7f314b5a8a6bf8f8f0648e67b71850a60c8672ce15bd8d32bdbd298830497d12"
+    ],
+    [
+      "crates/vize_canon/src/batch/virtual_project/star_exports/tests/materialized.rs",
+      null,
+      "56f70f8f15e2e47c897be85f3af4253789fa32a7b3d8b17c1734b42dfb772287",
+      "cb3aced36b5d22140b05933631d393f44e806034e693f0570dfe92bcb535bfe2"
+    ]
+  ],
+  "additions": [
+    [
+      "crates/vize_canon/src/batch/virtual_project/vue_codegen/malformed_setup_tests.rs",
+      "3d2ed96ee659135316350724b2496f7c9854b40d16d75ff9c60113c249f0612e",
+      "b5bedc67a7c6de49b49efbde7926801fcfa801110e9fd7ae4e61178da3a3e2ac"
+    ],
+    [
+      "crates/vize_canon/tests/empty_vue_star_exports/membership.rs",
+      null,
+      "707cf4c1afb3458848fe8bda0ccdc0faf119ec507fc6d09ab1bb5de9c76bb722"
+    ],
+    [
+      "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/c4bb61cac8d9689e7e09e5db9fc4c7ab926b6d1e7c31396d30d507842c398314.json",
+      null,
+      "8421fe320b4897aaaef4df518bc1f9b9f9d5166aa73c03c18620139dc31bb984"
+    ],
+    [
+      "tests/_fixtures/differential/typechecker/empty-vue-star-exports/blobs/e01b60f7b50f8f4823ba291993361a7fb4625b065e92cf0a34b6daffdf30353f.json",
+      null,
+      "11e0096bea0a3262137c242df784bda9e4d565dab10ae378c856a7ddc4a9f0fa"
+    ],
+    [
+      "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/manifest.json",
+      null,
+      "161eb2c5b787f67395086b7f0fbbb80ac70b2875558da9c56c02b37946726c1c"
+    ],
+    [
+      "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/part-00.json",
+      null,
+      "5f315ecffe1d21a9a54d2ba3c545ebaf7cc25d1fb19395f77fe4e0b51e088264"
+    ],
+    [
+      "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/part-01.json",
+      null,
+      "d21d321a89b3c7e620b067ff04353ca17fc3d9e6a878caf51c0b152032c136f5"
+    ]
+  ],
+  "productionAdditions": [
+    "crates/vize_canon/src/batch/virtual_project/vue_codegen/malformed_setup_tests.rs",
+    "crates/vize_canon/tests/empty_vue_star_exports/membership.rs"
+  ],
+  "scope": "exact six after-cell corrections and seven whole additional pairs; original42/80/152 tables remain byte-exact; complete86membership and TSX forwarding require actual current-source execution"
+}

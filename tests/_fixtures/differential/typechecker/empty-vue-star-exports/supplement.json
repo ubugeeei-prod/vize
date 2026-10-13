@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "kind": "additive-native-supplement",
+  "historicalIssue": 6879,
+  "historicalManifestMutation": "forbidden",
+  "historical32Credit": false,
+  "legacyAdapterCredit": false,
+  "fullFixHistoryClosureCredit": false,
+  "authenticReceipt": "authentic/receipt.json",
+  "producer": "ordinary BatchTypeChecker explicit configured scan_project/check_project",
+  "scope": "captured unaliased top-level star with explicit-relative .vue; original both-script known-empty proof only",
+  "discovery": "Cargo automatic integration-test target crates/vize_canon/tests/empty_vue_star_exports.rs",
+  "requiredNativeEnv": "VIZE_TEST_REQUIRE_TSGO=1",
+  "optionalAbsence": "explicit unobserved; no native acceptance credit",
+  "captureEnv": "VIZE_TEST_FIX_HISTORY_CAPTURE_DIR or VIZE_NATIVE_SYNTAX_CAPTURE_DIR",
+  "diagnosticContract": {
+    "comparison": "complete vectors; no diagnostic filtering",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "messages": "exact",
+    "semanticGoldens": "authentic counterfactual full output for original positive/wrong-prop/plain Shared; full expectations for additive controls; refusal boundaries explicitly observation-only",
+    "nativeRawCoordinates": "separate complete generated-coordinate vector; authentic raw oracle only with exact diagnostic-source projected-body and authored-line identity; otherwise explicit unrecorded raw observation"
+  },
+  "cases": [
+    "positive-authentic",
+    "wrong-prop-authentic",
+    "authored-shared-duplicate",
+    "concrete-direct-types",
+    "classic-default-only",
+    "namespace-typed",
+    "authored-named-refusal",
+    "authored-reserved-props-refusal",
+    "config-strict",
+    "config-permissive",
+    "malformed-refusal",
+    "script-src-refusal",
+    "indirect-refusal",
+    "alias-refusal",
+    "extensionless-refusal",
+    "missing-refusal"
+  ],
+  "providerRoles": "provider-roles.json"
+}

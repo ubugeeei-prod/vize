@@ -1,0 +1,5 @@
+{
+  "bytes": 41,
+  "sha256": "49d70afae93c30974d12147c570993c90c907dd5e3dbe7aae5472e6632182eaa",
+  "wholeUtf8": "export interface Shared { left: string }\n"
+}

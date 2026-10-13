@@ -163,10 +163,11 @@ await test("real private Git and physical missing mode symlink body replacement 
 await test("five caller inverses recover every old source and packet law without weakening their tails", () => {
   const file = path.join(root, "tests/_fixtures/ci/javascript-sfc-source-callers.json");
   const records = JSON.parse(fs.readFileSync(file));
+  const context = authenticateJavaScriptSfcSource(javascriptSfcSourceReader(root));
   assert.equal(records.length, 5);
   for (const row of records) {
     const before = Buffer.from(row.beforeBody, "base64"),
-      after = fs.readFileSync(path.join(root, row.path));
+      after = context.retainedCapturedAfter(row.path);
     assert.equal(sha(before), row.beforeSHA256);
     assert.equal(sha(after), row.afterSHA256);
     assert.deepEqual(after, Buffer.from(row.afterBody, "base64"));

@@ -52,7 +52,7 @@ void test("all93 JS and all323 current NoMutating sources precede the genuine hi
   assert.equal(view.receipt.runtimeCredit, false);
   assert.equal(
     sha(bodies.get(hook)!),
-    "874e2aaaf8459d854d782c898e0d17c5bbec4928b85d86fda903a7a61ad7ca59",
+    "9d22006fc19d80e1ebb8051cba2dc753a5bbf7756d87e4e5216bdf4fa2a46be4",
   );
   const current = authenticateNoMutatingComponentJoinPhysical(root);
   assert.equal(current.completeCurrentClosedBodies, 323);
