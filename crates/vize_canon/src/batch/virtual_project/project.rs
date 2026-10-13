@@ -131,6 +131,7 @@ impl VirtualProject {
                 options_api: self.options_api,
                 legacy_vue2: self.legacy_vue2,
                 jsx_typecheck: self.jsx_typecheck,
+                allow_javascript: self.source_policy.allows_javascript(),
                 dialect: self.dialect,
                 template_syntax: self.template_syntax,
                 experimental_in_tag_comments: self.experimental_in_tag_comments,
@@ -146,7 +147,7 @@ impl VirtualProject {
                 runtime_prop_resolve_cache: None,
             },
         )?;
-        self.absorb_registered_file(registered);
+        self.absorb_registered_file(registered)?;
         Ok(())
     }
 
@@ -195,6 +196,7 @@ impl VirtualProject {
             options_api: self.options_api,
             legacy_vue2: self.legacy_vue2,
             jsx_typecheck: self.jsx_typecheck,
+            allow_javascript: self.source_policy.allows_javascript(),
             dialect: self.dialect,
             template_syntax: self.template_syntax,
             experimental_in_tag_comments: self.experimental_in_tag_comments,
@@ -229,7 +231,7 @@ impl VirtualProject {
 
         self.virtual_files.reserve(valid_paths.len());
         for registered in registered? {
-            self.absorb_registered_file(registered);
+            self.absorb_registered_file(registered)?;
         }
         Ok(())
     }
@@ -249,6 +251,7 @@ impl VirtualProject {
                 options_api: self.options_api,
                 legacy_vue2: self.legacy_vue2,
                 jsx_typecheck: self.jsx_typecheck,
+                allow_javascript: self.source_policy.allows_javascript(),
                 dialect: self.dialect,
                 template_syntax: self.template_syntax,
                 experimental_in_tag_comments: self.experimental_in_tag_comments,
@@ -265,7 +268,7 @@ impl VirtualProject {
                 runtime_prop_resolve_cache: None,
             },
         )?;
-        self.absorb_registered_file(registered);
+        self.absorb_registered_file(registered)?;
         Ok(())
     }
 
@@ -304,7 +307,7 @@ impl VirtualProject {
                 alias_rewrite_policy: Some(self.alias_rewrite_policy()),
             },
         )?;
-        self.absorb_registered_file(registered);
+        self.absorb_registered_file(registered)?;
         Ok(())
     }
 }

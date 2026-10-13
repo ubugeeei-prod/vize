@@ -134,7 +134,7 @@ fn pin_message(source: &Source) -> String {
         source.candidate.tag,
         source.base_version,
         source.integration
-    )
+    ) + &super::stable::annotation(source.stable.as_ref())
 }
 
 pub(super) fn verify_pin(source: &Source, root: &Path) -> Result<(), String> {

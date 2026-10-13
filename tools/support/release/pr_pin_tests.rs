@@ -25,6 +25,7 @@ pub(super) fn source(head: &str, cut: &str) -> Source {
         base_version: "1.2.2".into(),
         integration: 99,
         closed: false,
+        stable: None,
     }
 }
 fn run(pinned: bool) -> Value {

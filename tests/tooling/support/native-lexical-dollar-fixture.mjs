@@ -6,7 +6,7 @@ import { execFileSync } from "node:child_process";
 import {
   digest,
   cargoArgs,
-  helperPaths,
+  sourcePaths,
   originalReceiptNames,
   unobserved,
 } from "../../../tools/support/compat/github/native-lexical-dollar-metadata.mjs";
@@ -40,17 +40,7 @@ export function createPacketFixture() {
   const git = (args) => execFileSync("git", ["--no-replace-objects", ...args], { cwd: repo });
   const manifestPath = "tests/performance/support/warm-type-backed-lexical-dollar-manifest.json";
   const manifest = JSON.parse(fs.readFileSync(path.join(actualRoot, manifestPath)));
-  const files = [
-    ...helperPaths,
-    ...manifest.files.map(([file]) => file),
-    ...manifest.corpusBodies.map(([file]) => file),
-    manifestPath,
-    "Cargo.toml",
-    "Cargo.lock",
-    "rust-toolchain.toml",
-    "crates/vize_canon/Cargo.toml",
-    "crates/vize_canon/src/lib.rs",
-  ];
+  const files = sourcePaths(manifest);
   for (const file of files) write(repo, file, fs.readFileSync(path.join(actualRoot, file)));
   git(["init", "--quiet"]);
   git(["add", "."]);

@@ -71,16 +71,21 @@ pub(super) fn integration(
     github::git(&["fetch", "--no-tags", "origin", &merge, &head], root)?;
     let parent = github::parent(&merge, root)?;
     let main = github::fetch_main(root)?;
-    first_parent(&source.cut, &parent, root)?;
+    super::stable::main_anchor(source, &parent, root)?;
     first_parent(&merge, &main, root)?;
     let version = candidate.tag.trim_start_matches('v');
     metadata::verify_delta(&parent, &merge, &source.base_version, version, root)?;
     // The exact source registry closure remains authoritative. A newly added
     // package, changed publishing plan, or changed local dependency topology
     // requires a new cut rather than borrowing H's artifacts for moving main.
-    let catalog = metadata::catalog(&candidate.head, version, root)?;
-    if metadata::catalog(&merge, version, root)? != catalog
-        || metadata::catalog(&main, version, root)? != catalog
+    let catalog = if source.stable.is_some() {
+        super::stable::shipping_catalog(source, root)?
+    } else {
+        metadata::catalog(&candidate.head, version, root)?
+    };
+    if source.stable.is_none()
+        && (metadata::catalog(&merge, version, root)? != catalog
+            || metadata::catalog(&main, version, root)? != catalog)
     {
         return Err(
             "The integration/current main registry closure differs from the qualified H catalog."

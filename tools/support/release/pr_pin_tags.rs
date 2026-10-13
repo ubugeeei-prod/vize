@@ -15,7 +15,7 @@ pub(super) fn annotation(source: &Source, id: u64, receipt: &Receipt) -> String 
         receipt.merge,
         receipt.parent,
         receipt.gate
-    )
+    ) + &super::stable::annotation(source.stable.as_ref())
 }
 
 pub(super) fn tag_receipt(source: &Source, root: &Path) -> Result<(u64, Receipt), String> {

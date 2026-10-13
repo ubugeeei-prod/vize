@@ -67,13 +67,25 @@ export function selectComparableRules(ruleMap, preset, { includeUnimplemented = 
 }
 
 export function baselineConfig(runtime, rules) {
+  // A .vue path is an unknown extension to the TypeScript parser: jsx=true
+  // therefore parses even lang="ts" as TSX and rejects valid <T> assertions
+  // and generic arrows. Let the Vue parser choose the mode from script lang.
+  const typescript = {
+    ...runtime.scriptParser,
+    parseForESLint(code, options) {
+      return runtime.scriptParser.parseForESLint(code, {
+        ...options,
+        ecmaFeatures: { ...options.ecmaFeatures, jsx: false },
+      });
+    },
+  };
   return [
     {
       files: ["**/*.vue"],
       languageOptions: {
         parser: runtime.vueParser,
         parserOptions: {
-          parser: runtime.scriptParser,
+          parser: { js: runtime.scriptParser, ts: typescript, tsx: runtime.scriptParser },
           ecmaVersion: "latest",
           sourceType: "module",
           ecmaFeatures: { jsx: true },

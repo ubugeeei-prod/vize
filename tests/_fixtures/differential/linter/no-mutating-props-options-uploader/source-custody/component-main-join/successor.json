@@ -577,9 +577,9 @@
     {
       "path": "crates/vize_patina/src/rules/vue/no_unused_components/script_setup_refs.rs",
       "mode": "100644",
-      "bytes": 4726,
-      "sha256": "63f0338fe4ecf372b6616bbc99d70fd5b6ce9d0aa803432e43a7dbde715f9fe3",
-      "gitBlob": "5c3133ef1b2bc2611058b0d52ae462254708a4e1"
+      "bytes": 4930,
+      "sha256": "ebded8d680f6f4a38d75f0a27beaa6eb827f29ad17f8080c9db94818599d7b3c",
+      "gitBlob": "5b9897650bdcd1be285633cd29c59cde1e172527"
     },
     {
       "path": "crates/vize_patina/src/rules/vue/no_unused_components/tests.rs",
