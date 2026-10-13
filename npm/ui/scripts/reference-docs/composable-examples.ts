@@ -15,6 +15,7 @@ import { environmentExamples } from "./environment-examples.ts";
 import { pointerSelectionExamples } from "./pointer-selection-examples.ts";
 import { localeFormatExamples } from "./locale-format-examples.ts";
 import { workflowStateExamples } from "./workflow-state-examples.ts";
+import { timeFormatExamples } from "./time-format-examples.ts";
 
 const stateExamples = [
   {
@@ -102,6 +103,7 @@ export const composableExamples = [
   },
   ...localeFormatExamples,
   ...workflowStateExamples,
+  ...timeFormatExamples,
 ] as const;
 
 export function composableExampleSource(packageRoot: string, name: string): string {
