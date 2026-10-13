@@ -112,7 +112,7 @@ fn normal_cached_driver_module_changes_require_new_entry_source_pin() {
         .unwrap();
     assert_eq!(
         pin,
-        "//! Driver source pin: decorated-integration-body-custody-v15."
+        "//! Driver source pin: release-bot-envelope-variants-v16."
     );
     let repo = Repo::new();
     let body = "#[path = \"dependency.rs\"] mod dependency;\nfn main() { println!(\"{}\", dependency::catalog_contract()); }\n";
