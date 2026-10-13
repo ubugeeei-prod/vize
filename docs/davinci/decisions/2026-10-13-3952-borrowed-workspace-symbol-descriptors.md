@@ -75,3 +75,25 @@ private parser/options function with the original owned `parse_outcome`. A
 private Maestro alias delegates to that entry. Resident memoization, Arc
 ownership and typed parser errors remain unchanged; no cache, parse pass or
 request-path exemption is added. Revalidate the composed source on Actions.
+
+The composed `4130df0` source passed the original whole Vue parity and Nix
+gates. Its original400 comparison failed before measurement: the before
+Incremental library compiled with `fresh: false`, while after reused the
+identical `.rlib`/`.rmeta` filenames with `fresh: true`; Maestro then reported
+E0432 for the new borrowed entry. The changed-dependency custody table lacked
+Incremental. Add that exact crate/prefix to its existing clean-and-rebuild
+selection and retain the existing linked-artifact `fresh: false` requirement
+on both sides. New controls refuse stale, missing and lookalike dependencies.
+Original400 inputs, release recipe, protocol, diagnostics and budgets remain
+unchanged. The full failure artifact `11786336708` and source-specific successful
+parity run remain separate from acceptance of the corrected source.
+
+The distinct final `4130df0792ac0a5e7b39452b7d247d02ba1d822e`
+[whole parity/churn job](https://github.com/ubugeeei-prod/vize/actions/runs/38339103331/job/115105861101)
+measured 125,424 KiB (122.484 MiB), 7,320 KiB (7.148 MiB) below the original
+failed sample and 5.516 MiB beneath the unchanged server ceiling. The complete
+fixture, runtime and budget objects remained equal, with all 40 edits, 20
+lifecycles, 287 publishes and 63 samples retained. The tree peak was 348,824 KiB
+(340.648 MiB) with three processes. This is another source-specific observation;
+it does not isolate the variance between repair heads or qualify the dependency
+custody correction, final whole checks, merge or public release.
