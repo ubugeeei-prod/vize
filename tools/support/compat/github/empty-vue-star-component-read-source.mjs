@@ -130,10 +130,10 @@ export function authenticateStarComponentReadSource(root) {
   root = fs.realpathSync(root);
   const head = joinGit(root, ["rev-parse", "HEAD"]).toString().trim();
   assert.equal(joinGit(root, ["for-each-ref", "--format=%(refname)", "refs/replace"]).length, 0);
+  for (const row of declared("after")) joinPhysical(root, row);
   ensureHostedLiteralSource(root, source);
   const before = joinRawBodies(root, source, declared("before"));
   const current = joinRawBodies(root, head, declared("after"));
-  for (const row of declared("after")) joinPhysical(root, row);
   for (const row of data.changes) {
     assert.deepEqual(before.get(row.path), decode(row.before));
     assert.deepEqual(current.get(row.path), decode(row.after));
