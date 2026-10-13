@@ -167,11 +167,13 @@ function select(root, frame) {
       }
     });
   }
-  const records = [...chosen].sort().map((name) => {
-    const row = tree.get(name),
-      body = cache.get(name);
-    return [name, row.mode, row.blob, body.length, sha(body)];
-  });
+  const records = [...chosen]
+    .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+    .map((name) => {
+      const row = tree.get(name),
+        body = cache.get(name);
+      return [name, row.mode, row.blob, body.length, sha(body)];
+    });
   assert.equal(records.length, frame.files);
   assert.equal(
     records.reduce((sum, row) => sum + row[3], 0),
