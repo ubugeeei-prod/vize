@@ -44,8 +44,10 @@ aggregates from all four workers.
 
 ## Trusted seed
 
-`check.yml` gains `rust-pr-target-seed`. It runs on every push to `main` and on
-the daily schedule, and it is the trusted writer of the `nextest-ci` disk.
+The new `rust-pr-target-seed.yml` workflow runs on every push to `main` and
+on a daily schedule, and it is the trusted writer of the `nextest-ci` disk.
+It is its own workflow because `check.yml` is already over the source-length
+budget.
 It reuses a workspace-scope PR's setup exactly:
 
 - toolchain, Wild linker and environment;
@@ -60,6 +62,16 @@ Once read-only candidate clones are available
 ([#8833](https://github.com/ubugeeei-prod/vize/pull/8833)), each PR job rebuilds only the crates a persistent checkout would rebuild.
 Without them, each shard still compiles in parallel instead of waiting for one
 builder and a multi-gigabyte transfer.
+
+## Measured
+
+On this PR's own run, with no read-only clone and no seed yet, so every job
+compiled cold:
+
+- the lane job took 218 s;
+- the four shards took 202-227 s;
+- the Rust tier finished 227 s after it started, against about 505 s for the
+  old build-then-shard chain.
 
 ## Tradeoff
 

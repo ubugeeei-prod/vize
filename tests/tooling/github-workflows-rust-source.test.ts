@@ -113,12 +113,16 @@ test("PR and merge-group source checks are included in the required report", () 
   );
   assert.match(rustCommands("pr-rust-shard"), /cargo nextest run --archive-file/);
   assert.deepEqual(rustWorkflow.jobs?.["pr-rust-shard"]?.needs, ["merge-rust-source"]);
-  const seed = workflow.jobs?.["rust-pr-target-seed"];
+  const seedWorkflow = parse(readRepoFile(".github", "workflows", "rust-pr-target-seed.yml")) as {
+    on?: { push?: { branches?: string[] }; schedule?: unknown[]; pull_request?: unknown };
+    jobs?: Record<string, Job>;
+  };
+  // Only trusted default-branch and scheduled runs may write the stable disk.
+  assert.deepEqual(seedWorkflow.on?.push?.branches, ["main"]);
+  assert.ok(seedWorkflow.on?.schedule?.length);
+  assert.deepEqual(Object.keys(seedWorkflow.on ?? {}).sort(), ["push", "schedule"]);
+  const seed = seedWorkflow.jobs?.["rust-pr-target-seed"];
   const seedCommands = (seed?.steps ?? []).map((step) => step.run ?? "").join("\n");
-  assert.equal(
-    seed?.if,
-    "${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'schedule' }}",
-  );
   assert.equal(
     seed?.steps?.find((step) => step.uses === "./.github/actions/setup-rust-sticky-cache")?.with
       ?.key,

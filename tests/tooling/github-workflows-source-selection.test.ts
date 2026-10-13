@@ -194,7 +194,8 @@ test("PR browser validation retains tests while every VRT outcome is deferred to
 
 test("the Rust report waits for the builder and all four independently executing shards", () => {
   const shard = rust.jobs["pr-rust-shard"];
-  assert.deepEqual(shard.needs, ["pr-rust-build", "merge-rust-source"]);
+  // PR shards build in place beside the lanes; only the merge queue waits for its archive.
+  assert.deepEqual(shard.needs, ["merge-rust-source"]);
   assert.equal(shard.strategy?.["fail-fast"], false);
   assert.deepEqual(
     typeof shard.strategy?.matrix === "object" ? shard.strategy.matrix.shard : undefined,
