@@ -105,7 +105,7 @@ pub(super) fn check(case: &Value, runtime: &Runtime) -> Observation {
     let effective: Value = serde_json::from_str(show["wholeStdoutUtf8"].as_str().unwrap()).unwrap();
     packet["nativeEffectiveConfig"] = effective;
     support::capture(id, &packet);
-    let listing = support::cli(runtime, &config, &["--listFilesOnly"]);
+    let listing = support::cli(runtime, &config, &["--listFilesOnly", "--pretty", "false"]);
     packet["wholeNativeLoadedFileListing"] = listing.clone();
     support::capture(id, &packet);
     let (listed_paths, partition) = partition_listing(&packet, &listing);
@@ -172,7 +172,10 @@ fn partition_listing<'a>(packet: &Value, listing: &'a Value) -> (&'a str, Value)
         packet["case"]["nativeContract"],
         "projection-refusal-observation"
     );
-    assert_eq!(listing["arguments"], json!(["--listFilesOnly"]));
+    assert_eq!(
+        listing["arguments"],
+        json!(["--listFilesOnly", "--pretty", "false"])
+    );
     assert_eq!(
         native["arguments"],
         json!(["--checkers", "1", "--pretty", "false"])

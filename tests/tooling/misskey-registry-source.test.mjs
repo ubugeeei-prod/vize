@@ -1,4 +1,7 @@
-import { runRetainedComponentReadMisskeySource } from "../../tools/support/compat/github/empty-vue-star-component-read-source.mjs";
+import { runStarListingOriginalTest } from "../../tools/support/compat/github/empty-vue-star-listing-source.mjs";
 
-// Full current source custody precedes every unchanged literal SDK427 refusal.
-await runRetainedComponentReadMisskeySource(new URL("../../", import.meta.url));
+// Authenticate the entire actual union before the unchanged literal SDK427 laws.
+await runStarListingOriginalTest(
+  new URL("../../", import.meta.url),
+  "tests/tooling/misskey-registry-source.test.mjs",
+);

@@ -6,7 +6,7 @@ import { aliasHostPaths } from "./warm-type-backed-alias-host.ts";
 import { unqualifiedReceiptPaths } from "./warm-type-backed-build-receipt-extension.ts";
 import { gitReaderHarness } from "./warm-type-backed-git-reader-harness.ts";
 import { finiteCut } from "./warm-type-backed-cut.ts";
-import { gitBodyDigest } from "./warm-type-backed-path-host.ts";
+import { gitBodyDigest } from "./warm-type-backed-host-qualifications.ts";
 import { qualifyHostMoves } from "./warm-type-backed-host-qualifications.ts";
 import { htmlHoverPaths } from "./warm-type-backed-html-hover-host.ts";
 import {

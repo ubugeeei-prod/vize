@@ -1,9 +1,7 @@
 name: PR source checks
 on: { workflow_call: null }
 permissions: { contents: read }
-env:
-  CARGO_TERM_COLOR: always
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+env: { CARGO_TERM_COLOR: always, FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true }
 jobs:
   wit-contracts:
     name: Guest contracts
@@ -39,12 +37,15 @@ jobs:
         run: |
           comparison_base="$(node tools/support/compat/github/comparison-base.ts)"
           if [[ ! "$comparison_base" =~ ^0+$ ]]; then
-            git fetch --no-tags --depth=1 origin "$comparison_base"
+            git fetch --no-tags origin "$comparison_base"
           fi
       - name: Check Davinci source inventories
         uses: ./.github/actions/check-level-inventories
       - name: Check ordinary Rust module layout
         run: node --test tests/tooling/davinci-module-layout.test.ts
+      - name: Check retired tooling languages
+        env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
+        run: node --test tests/tooling/retired-tooling-languages.test.ts
       - name: Plan source checks
         id: plan
         env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
@@ -117,6 +118,7 @@ jobs:
         run: echo 'Tooling scripts skipped because this PR changes no release scripts, tooling tests, or unknown source paths.' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        with: { fetch-depth: 0 }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
         with: { node-version-file: "package.json", cache: true, run-install: false }
@@ -145,7 +147,7 @@ jobs:
           BASE_SHA: ${{ needs.pr-source-plan.outputs.comparison-base }}
           TOOLING_TIER: ${{ github.event_name == 'merge_group' && 'merge' || 'pr' }}
         run: |
-          if [[ ! "$BASE_SHA" =~ ^0+$ ]]; then git fetch --no-tags --depth=1 origin "$BASE_SHA"; fi
+          if [[ ! "$BASE_SHA" =~ ^0+$ ]]; then git fetch --no-tags origin "$BASE_SHA"; fi
           node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier "$TOOLING_TIER" --output "$RUNNER_TEMP/tooling-plan.json"
       - name: Install fixture and JS dependencies
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}

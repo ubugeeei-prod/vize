@@ -38,6 +38,7 @@
     "tests/tooling/native-build-token.test.ts",
     "tests/tooling/postprocess-types.test.ts",
     "tests/tooling/task-commands.test.ts",
-    "tests/tooling/command-runtime.test.ts"
+    "tests/tooling/command-runtime.test.ts",
+    "tests/tooling/retired-tooling-languages.test.ts"
   ]
 }

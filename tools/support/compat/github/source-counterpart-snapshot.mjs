@@ -1,15 +1,191 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
+const history = Object.freeze([
+  "b45d789b317933d48dadbba4841c8e353231547b",
+  "6fb01f335952780d7a6321ca092049753645c83d",
+  "ea1fc59ee6ef61a3509b1ef42a6fa7aacd9f8586",
+  "e02a861cc1c6ad12724036c70bfdd5d48173b189",
+  "f6017bf3a9837136f7ce60d52d67ecc3ee649dd0",
+  "e78d2cb93e278032cd262201b0a444273618ee25",
+  "3a680d0a0b59b720af0d23a70a85cf56c5c4f175",
+  "a93e78147b0990c813e965a7868b32dda341eb77",
+  "f20740ef6b0958ddb0bbbd64fd1b38210ea5e207",
+  "49d95b8e93a9f5bcb73e0c1c307815d4b3a9d570",
+  "5c54b1195fa8c0bf151e0a2862bf4238a3597b4e",
+  "eafe5bed4f602e0787ff9f2f48ec4155d115ab7f",
+  "2489128d5f8fab1b7442a1e5c09b4e1701cbf185",
+  "3dda8f9d71fbd7e701f0805187daff6191865190",
+  "66d2cfab35dd6dc8f730371b3b127543b6cc9505",
+  "f518d884e3a1c70ce147fb966093cd9721e0e81f",
+  "8a5f5b8f3a39e123ad20ad8ccd9ecd3b39276695",
+  "d95c151c18d85c8fdd95541291bc614e44790101",
+  "5c8f3825fd2eb698c27d3b97d0a47b0671b33e01",
+  "43afa9b09ae0f334d7fcba41f721ac52a8d1ab23",
+]);
+
 const sources = new Set([
   "bd5702c0a4d5fb3bb64487794fc45f6f876e6e38",
   "19b451f951137814a8a8d36b57d200a23100344e",
   "2da71113a3f8ab528b1a9cda20fc6a4c2bd273f6",
+  "ebbdc1b1e1559d7f4efd55978bd8b52f127acb3a",
 ]);
+function observePrime(event) {
+  const directory = process.env.VIZE_TOOLING_LISTING_OBSERVATION_DIR;
+  if (!directory) return;
+  fs.mkdirSync(directory, { recursive: true });
+  fs.appendFileSync(
+    path.join(directory, "history-prime-" + process.pid + ".jsonl"),
+    JSON.stringify({ time: new Date().toISOString(), pid: process.pid, ...event }) + "\n",
+  );
+}
+function alive(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    if (error.code === "ESRCH") return false;
+    throw error;
+  }
+}
+function stopGroup(pid) {
+  if (!pid) return;
+  observePrime({ event: "cleanup-signal", group: pid, signal: "SIGKILL" });
+  try {
+    process.kill(process.platform === "win32" ? pid : -pid, "SIGKILL");
+  } catch (error) {
+    if (error.code !== "ESRCH") throw error;
+  }
+}
+/** One finite public history set; serialize strict hosted fetches across source entrypoints. */
+export function primeStarCounterpartHistory(owner, { timeoutMs = 240_000 } = {}) {
+  assert(Number.isSafeInteger(timeoutMs) && timeoutMs > 0 && timeoutMs <= 240_000);
+  const root = fs.realpathSync(owner),
+    required = [...sources, ...history];
+  const present = () => {
+    const records = git(
+      root,
+      ["cat-file", "--batch-check=%(objectname) %(objecttype)"],
+      required.join("\n") + "\n",
+    )
+      .toString()
+      .trim()
+      .split("\n");
+    assert.equal(records.length, required.length);
+    return records.every((record, index) => record === required[index] + " commit");
+  };
+  if (present()) return;
+  observePrime({ event: "missing-history", root, required, timeoutMs });
+  const common = git(root, ["rev-parse", "--git-common-dir"]).toString().trim();
+  const directory = fs.realpathSync(path.resolve(root, common, "objects/info"));
+  const lock = path.join(directory, "star-counterpart-prime.lock");
+  const token = process.pid + ":" + Date.now(),
+    workerFile = lock + ".worker." + token,
+    deadline = performance.now() + timeoutMs;
+  let acquired;
+  try {
+    while (!acquired) {
+      try {
+        const descriptor = fs.openSync(lock, "wx", 0o600);
+        acquired = fs.fstatSync(descriptor);
+        try {
+          fs.writeFileSync(descriptor, token);
+        } finally {
+          fs.closeSync(descriptor);
+        }
+      } catch (error) {
+        if (error.code !== "EEXIST") throw error;
+        assert(performance.now() < deadline, "bounded owned history priming wait");
+        if (present()) return;
+        try {
+          const stat = fs.lstatSync(lock),
+            previous = fs.readFileSync(lock, "utf8");
+          assert(stat.isFile() && !stat.isSymbolicLink() && (stat.mode & 0o777) === 0o600);
+          const parsed = /^([1-9][0-9]*):([0-9]+)$/u.exec(previous);
+          if (parsed && !alive(Number(parsed[1]))) {
+            let finished = true;
+            const previousWorkerFile = lock + ".worker." + previous;
+            if (fs.existsSync(previousWorkerFile)) {
+              const worker = fs.readFileSync(previousWorkerFile, "utf8");
+              assert(worker.startsWith(previous + ":"), "same dead owner's worker");
+              const pid = Number(worker.slice(previous.length + 1));
+              assert(Number.isSafeInteger(pid) && pid > 0);
+              finished = !alive(process.platform === "win32" ? pid : -pid);
+              if (finished) fs.unlinkSync(previousWorkerFile);
+            }
+            if (finished) {
+              const current = fs.lstatSync(lock);
+              if (
+                current.ino === stat.ino &&
+                current.dev === stat.dev &&
+                fs.readFileSync(lock, "utf8") === previous
+              )
+                fs.unlinkSync(lock);
+              continue;
+            }
+          }
+        } catch (observationError) {
+          if (observationError.code !== "ENOENT") throw observationError;
+          continue;
+        }
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 50);
+      }
+    }
+    const remaining = Math.ceil(deadline - performance.now()) - 500;
+    assert(remaining > 0, "remaining bounded history priming budget");
+    const helper = new URL(
+      "../../../../tests/performance/support/warm-type-backed-git-reader-literal-source.ts",
+      import.meta.url,
+    ).href;
+    const observation = `const observe=${observePrime.toString()};`;
+    const monitor = `const fs=require('node:fs'), path=require('node:path'); ${observation} const owner=${process.pid}; const group=Number(process.argv[1]); const end=Date.now()+Number(process.argv[2]); observe({event:'monitor-start',owner,group,end}); const alive=p=>{try{process.kill(p,0);return true}catch(e){if(e.code==='ESRCH')return false;throw e}}; process.on('SIGTERM',()=>{}); const timer=setInterval(()=>{const ownerAlive=alive(owner),groupAlive=alive(group),expired=Date.now()>=end;if(!ownerAlive||!groupAlive||expired){clearInterval(timer);observe({event:'monitor-signal',owner,group,ownerAlive,groupAlive,expired,signal:'SIGTERM'});try{process.kill(-group,'SIGTERM')}catch(e){if(e.code!=='ESRCH')throw e}setTimeout(()=>{observe({event:'monitor-signal',owner,group,signal:'SIGKILL'});try{process.kill(-group,'SIGKILL')}catch(e){if(e.code!=='ESRCH')throw e}},200)}},50);`;
+    const script = `import fs from 'node:fs'; import path from 'node:path'; import {spawn} from 'node:child_process'; import {ensureHostedLiteralSource} from ${JSON.stringify(helper)}; ${observation} const lock=${JSON.stringify(lock)}, token=${JSON.stringify(token)}; observe({event:'worker-start',owner:${process.pid},group:process.pid}); if(fs.readFileSync(lock,'utf8')!==token) throw Error('same owned lock required'); fs.writeFileSync(${JSON.stringify(workerFile)},token+':'+process.pid,{flag:'wx',mode:0o600}); if(fs.readFileSync(lock,'utf8')!==token) throw Error('same live owner lock required'); try{process.kill(${process.pid},0)}catch(e){throw Error('live owner required')} const monitor=spawn(process.execPath,['-e',${JSON.stringify(monitor)},String(process.pid),${JSON.stringify(String(remaining))}],{stdio:'ignore'}); observe({event:'monitor-launched',monitor:monitor.pid,owner:${process.pid},group:process.pid}); monitor.unref(); for(const source of ${JSON.stringify(required)}) ensureHostedLiteralSource(${JSON.stringify(root)},source); observe({event:'worker-complete',owner:${process.pid},group:process.pid});`;
+    let result;
+    try {
+      result = spawnSync(process.execPath, ["--input-type=module", "-e", script], {
+        cwd: root,
+        env: process.env,
+        stdio: "inherit",
+        detached: process.platform !== "win32",
+        timeout: remaining + 500,
+        killSignal: "SIGKILL",
+      });
+      observePrime({
+        event: "worker-result",
+        group: result.pid,
+        status: result.status,
+        signal: result.signal,
+        error: result.error ? { code: result.error.code, message: result.error.message } : null,
+      });
+      if (result.error) throw result.error;
+      assert.equal(result.status, 0, "bounded strict literal history worker");
+    } finally {
+      stopGroup(result?.pid);
+    }
+    assert(present(), "complete finite source history before counterpart provisioning");
+  } finally {
+    if (acquired) {
+      const current = fs.lstatSync(lock);
+      assert(
+        current.ino === acquired.ino && current.dev === acquired.dev,
+        "same owned priming lock inode",
+      );
+      if (fs.existsSync(workerFile)) {
+        assert(
+          fs.readFileSync(workerFile, "utf8").startsWith(token + ":"),
+          "same owned history worker",
+        );
+        fs.unlinkSync(workerFile);
+      }
+      fs.unlinkSync(lock);
+    }
+  }
+}
+
 const object = (kind, body) =>
   createHash("sha1")
     .update(kind + " " + body.length + "\0")
@@ -56,7 +232,7 @@ function git(root, args, input) {
 }
 
 function context(owner, source) {
-  assert(sources.has(source), "only the three literal Star source counterparts");
+  assert(sources.has(source), "only the four literal Star/SDK source counterparts");
   const root = fs.realpathSync(owner);
   assert.equal(
     fs.realpathSync(git(root, ["rev-parse", "--show-toplevel"]).toString().trim()),
