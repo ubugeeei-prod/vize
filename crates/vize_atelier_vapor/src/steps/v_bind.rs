@@ -53,6 +53,8 @@ pub fn transform_v_bind_dynamic<'a>(
             element: element_id,
             props,
             is_event: false,
+            // This legacy step has no element; it never sees SVG elements.
+            namespace: vize_atelier_core::Namespace::Html,
         },
     ))
 }

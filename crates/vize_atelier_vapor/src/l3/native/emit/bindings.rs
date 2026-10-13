@@ -202,6 +202,7 @@ impl<'a> Emitter<'a, '_> {
                         element,
                         props,
                         is_event: true,
+                        namespace: Namespace::Html,
                     }),
                     block,
                 );

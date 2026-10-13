@@ -87,6 +87,10 @@ fn generate_set_dynamic_props_inline(
                 }
             })
             .collect();
-        cstr!("_setDynamicProps({element}, [{}])", props_parts.join(", "))
+        cstr!(
+            "_setDynamicProps({element}, [{}]{})",
+            props_parts.join(", "),
+            super::operations::svg_argument(set_props.namespace)
+        )
     }
 }
