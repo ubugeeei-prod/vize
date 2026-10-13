@@ -50,14 +50,14 @@ fn outer_runtime_filter_keeps_complete_authored_range_and_finding() {
         assert_result(
             linter(None).lint_template(&source, "Filter.vue"),
             "Filter.vue",
-            vec![finding.clone()],
+            vec![finding],
         );
-        // The legacy raw-template constructor still routes VueDialect::Vue.
-        // Preserve its actual complete finding; it does not select Vue 2 dialect.
+        // A project configured as Vue 2 still runs filters. The removal check
+        // is disabled for it, like the other default Vue 3 removal checks.
         assert_result(
             linter(Some(VueVersion::V2)).lint_template(&source, "Filter.vue"),
             "Filter.vue",
-            vec![finding],
+            vec![],
         );
     }
 }
