@@ -1,0 +1,4 @@
+<script setup>
+const index = 1;
+</script>
+<template><slot name="actions" :index="index" /></template>

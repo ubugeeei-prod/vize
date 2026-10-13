@@ -3,6 +3,10 @@ import { spawnSync, execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import {
+  nativeLexicalSourcePaths,
+  validateNativeLexicalSources,
+} from "./native-lexical-javascript-source.mjs";
 
 export const helperPaths = [
   "native-lexical-dollar.sh",
@@ -38,17 +42,7 @@ export const unobserved = [
   "native normalized options",
   "engine loaded source-file vector",
 ];
-const sourcePaths = (manifest) => [
-  ...helperPaths,
-  ...manifest.files.map(([file]) => file),
-  ...manifest.corpusBodies.map(([file]) => file),
-  "tests/performance/support/warm-type-backed-lexical-dollar-manifest.json",
-  "Cargo.toml",
-  "Cargo.lock",
-  "rust-toolchain.toml",
-  "crates/vize_canon/Cargo.toml",
-  "crates/vize_canon/src/lib.rs",
-];
+export const sourcePaths = (manifest) => nativeLexicalSourcePaths(manifest, helperPaths);
 const git = (args) => execFileSync("git", ["--no-replace-objects", ...args]);
 const identity = (file) => {
   const actual = fs.realpathSync(file);
@@ -207,17 +201,7 @@ export function validateMetadata(output) {
   const manifest = read(
     "source/tests/performance/support/warm-type-backed-lexical-dollar-manifest.json",
   );
-  assert.deepEqual(
-    metadata.copied.map((entry) => entry.file).sort((a, b) => a.localeCompare(b)),
-    sourcePaths(manifest).sort((a, b) => a.localeCompare(b)),
-  );
-  for (const name of helperPaths)
-    assert.equal(
-      metadata.copied.find((entry) => entry.file === name).sha256,
-      digest(fs.readFileSync(new URL(path.basename(name), import.meta.url))),
-    );
-  for (const [file, , expected] of [...manifest.files, ...manifest.corpusBodies])
-    assert.equal(metadata.copied.find((entry) => entry.file === file).sha256, expected);
+  validateNativeLexicalSources(output, metadata, manifest, helperPaths);
   assert.equal(manifest.files.length, 9);
   assert.equal(manifest.corpusBodies.length, 21);
   for (const executable of [metadata.testBinary, metadata.native])

@@ -23,7 +23,10 @@ impl SourceFilePolicy {
         compiler_options: &Map<std::string::String, Value>,
     ) -> Self {
         Self {
-            allow_javascript: option_enabled(compiler_options, "allowJs"),
+            allow_javascript: compiler_options
+                .get("allowJs")
+                .and_then(Value::as_bool)
+                .unwrap_or_else(|| option_enabled(compiler_options, "checkJs")),
             check_javascript: option_enabled(compiler_options, "checkJs"),
         }
     }
@@ -80,7 +83,7 @@ mod tests {
 
     #[test]
     fn allowjs_controls_membership_while_checkjs_only_controls_diagnostics() {
-        let typescript_only = policy(json!({ "checkJs": true }));
+        let typescript_only = policy(json!({ "allowJs": false, "checkJs": true }));
         let allow_js = policy(json!({ "allowJs": true, "checkJs": false }));
 
         for path in [
@@ -108,5 +111,17 @@ mod tests {
         assert!(typescript_only.checks_javascript());
         assert!(allow_js.allows_javascript());
         assert!(!allow_js.checks_javascript());
+    }
+
+    #[test]
+    fn checkjs_implies_allowjs_only_when_allowjs_is_absent() {
+        let implicit = policy(json!({ "checkJs": true }));
+        assert!(implicit.allows_javascript());
+        assert!(implicit.checks_javascript());
+        assert!(implicit.accepts_project_source(Path::new("entry.js")));
+        let explicit = policy(json!({ "allowJs": false, "checkJs": true }));
+        assert!(!explicit.allows_javascript());
+        assert!(explicit.checks_javascript());
+        assert!(!explicit.accepts_project_source(Path::new("entry.js")));
     }
 }

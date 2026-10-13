@@ -58,3 +58,13 @@ The original 487/272 divergence counts remain unresolved until fresh causal
 evidence shows the measured changes. This decision supplies no typechecker
 migration, API/LSP, performance, merge or release-completion credit. The full
 Real Project Matrix and release acceptance remain required.
+
+The prepared successor composes literal main
+`bd5702c0a4d5fb3bb64487794fc45f6f876e6e38` without altering the emitter or
+refusal controls. Removing only the Misskey baseline addition reconstructs the
+entire current registry, including every original corpus/config/pin/budget.
+The shared foundation retains every current-main byte and adds only the existing
+112-byte decision clause at350lines. Old source run38342813975's five-minute
+planner setup cancellation remains historical; the merged direct-Node planner
+requires fresh source Actions on the actual composed head. Hosted native
+preparation and full diagnostic/declaration-load qualification remain pending.
