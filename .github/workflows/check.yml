@@ -267,49 +267,39 @@ jobs:
           key: vue-parity
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/check-vue-parity
+  full-source-cli:
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
+    uses: ./.github/workflows/full-source-cli.yml
+  tooling-plan:
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
+    uses: ./.github/workflows/full-tooling-plan.yml
   test-scripts:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }} # CLI, MoonBit and native artifact fixtures require the full bootstrap.
+    if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')) }} # Preserve native evidence when the producer fails.
     timeout-minutes: 30
-    env: { NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169" }
+    needs: [full-source-cli, tooling-plan]
+    strategy: { fail-fast: false, matrix: "${{ fromJSON(needs.tooling-plan.outputs.matrix) }}" }
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      VIZE_SOURCE_CLI_RECEIPT_SHA256: ${{ needs.full-source-cli.outputs.receipt-sha256 }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { fetch-depth: 0 }
+      - uses: ./.github/actions/test-full-tooling
         with:
-          node-version-file: "package.json"
-          cache: true
-          run-install: false
-      - uses: ./.github/actions/setup-moonbit
-      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: stable }
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with: { wild-version: "0.9.0" }
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
-      - uses: ./.github/actions/setup-rust-script
-      - name: Hydrate CLI diagnostic fixture and install JS dependencies
-        run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/vue-select tests/_fixtures/_git/vue-router && vp install --frozen-lockfile --prefer-offline && node tools/support/compat/github/prepare-vue-benchmarks.mjs
-      - name: Build vize CLI
-        run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.ts && cat target/ci/vize.differential-build.json && cargo build --profile ci -p vize_atelier_sfc --example cli_build_result_oracle
-      - name: Install vize CLI
-        run: sudo install -m 0755 target/ci/vize /usr/local/bin/vize
-      - name: Check configured Router page CLI and editor types
-        uses: ./.github/actions/check-router-page-types
-      - name: Prepare plugin runtime and test native JS setup
-        if: ${{ always() }}
-        uses: ./.github/actions/test-native-js-setup
-      - name: Capture original native attribute values and fixed fresh mounts
-        if: ${{ always() }}
-        uses: ./.github/actions/test-native-attribute-values-7502
-      - name: Install CSS formatter reference browser
-        uses: ./.github/actions/install-formatter-css-browser
-      - name: Test release scripts
-        env:
-          VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
-          VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
-        run: vp run --workspace-root test:scripts
-      - uses: ./.github/actions/upload-formatter-api-corpus-evidence
-        if: ${{ always() }}
+          producer: ${{ toJSON(needs.full-source-cli.outputs) }}
+          shard: ${{ matrix.index }}
+          total: ${{ matrix.total }}
+  test-scripts-gate:
+    name: test-scripts # Release preflight requires exactly one successful job with this exact name.
+    runs-on: ubuntu-24.04
+    if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')) }}
+    timeout-minutes: 5
+    needs: [full-source-cli, tooling-plan, test-scripts]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/report-full-js-qualification
+        with: { needs-json: "${{ toJSON(needs) }}" }
   editor-extensions:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
@@ -396,6 +386,7 @@ jobs:
       - test-js-packages
       - build-js-packages
       - test-scripts
+      - full-source-cli
       - check-js
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -498,7 +489,16 @@ jobs:
         with:
           tool: cargo-llvm-cov
       - name: Source coverage report
+        env:
+          VIZE_NATIVE_SYNTAX_CAPTURE_DIR: ${{ runner.temp }}/source-coverage-native-syntax
         run: vp run --workspace-root coverage:source
+      - name: Retain raw source coverage native syntax packets
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: source-coverage-native-syntax-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/source-coverage-native-syntax/
+          if-no-files-found: warn
       - name: Verify source coverage summary
         run: test -s target/llvm-cov/source-summary.json
       - name: Upload source coverage summary

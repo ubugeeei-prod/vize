@@ -45,8 +45,15 @@ await test("selection covers pinned inputs, drivers and real producers in both c
   const inputs = [
     ".gitmodules",
     "tests/_fixtures/_git/vue-benchmarks",
-    "tests/_fixtures/fixture-compatibility-ledger.json",
-    "tests/_fixtures/vue-benchmarks-upstream.json",
+    "tests/_fixtures/vue-ecosystem-fixtures.json",
+    "tests/_fixtures/differential/compiler/ssr-builtins-7891/App.vue.txt",
+    "tests/_fixtures/differential/compiler/n8n-if-key-regression/diagnostics.json",
+    "tests/_fixtures/davinci-pug/corpus-baseline.tsv",
+    "tests/_fixtures/differential/lint/authored/Original.vue",
+    "docs/davinci/plan/reach-budgets.toml",
+    "package.json",
+    "vendor/lightningcss/src/lib.rs",
+    "crates/vize_curator/src/lib.rs",
     "tests/davinci_test_support/Cargo.toml",
     "tests/davinci_test_support/src/corpus.rs",
     "tests/davinci_test_support/src/corpus/io_tests.rs",
@@ -65,6 +72,10 @@ await test("selection covers pinned inputs, drivers and real producers in both c
     "tools/support/compat/github/canonical-corpus-logical-walk.mjs",
     "tools/support/compat/github/canonical-corpus-io-probe.mjs",
     "tools/support/compat/github/canonical-corpus-io-probe.rs",
+    "tools/support/compat/github/canonical-corpus-shards.ts",
+    "tools/support/compat/github/canonical-corpus-batch.ts",
+    "tools/support/compat/github/release-preflight-github.mjs",
+    "tools/support/common.rs",
     "tests/tooling/support/canonical-corpus-worker-inventory.mjs",
     "tests/tooling/fixtures/canonical-observer-logs/dom.log",
     "tools/support/compat/github/comparison-base.mjs",
@@ -75,7 +86,9 @@ await test("selection covers pinned inputs, drivers and real producers in both c
     "tools/benchmarks/scripts/vue-benchmarks-current-typecheck.mjs",
     ".github/workflows/davinci-canonical-corpus.yml",
     ".github/workflows/pr-source-checks.yml",
+    ".github/workflows/check.yml",
     ".github/actions/setup-rust-script/action.yml",
+    ".github/actions/setup-rust-sticky-cache/cache-policy.mjs",
     "davinci/vize_l1/src/lib.rs",
     "crates/vize_atelier_ssr/src/lib.rs",
     "crates/vize_armature/src/lib.rs",
@@ -86,6 +99,16 @@ await test("selection covers pinned inputs, drivers and real producers in both c
     assert.equal(canonicalCorpusRequired([], event), true);
     assert.equal(canonicalCorpusRequired(["docs/status.md"], event), false);
     assert.equal(canonicalCorpusRequired(["crates/vize_maestro/src/ide/rename.rs"], event), false);
+    // Fixture metadata and workflows the canonical jobs never read.
+    for (const unread of [
+      "tests/_fixtures/fixture-compatibility-ledger.json",
+      "tests/_fixtures/vue-benchmarks-upstream.json",
+      "tests/_fixtures/differential/lint/authored/cases.json",
+      ".github/workflows/e2e.yml",
+      ".github/workflows/canonical-corpus-objects.yml",
+      ".github/actions/setup-moonbit/action.yml",
+    ])
+      assert.equal(canonicalCorpusRequired([unread], event), false, unread);
   }
   assert.throws(() => canonicalCorpusRequired([".gitmodules"], "workflow_dispatch"));
   for (const path of ["/outside", "../escape", "a/./b", "", "a\0b"])

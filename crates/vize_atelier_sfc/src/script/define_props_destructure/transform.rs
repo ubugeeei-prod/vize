@@ -14,7 +14,6 @@ use vize_carton::FxHashMap;
 
 use super::PropsDestructuredBindings;
 use super::collector::collect_identifier_rewrites;
-use super::helpers::PROPS_REST_SENTINEL;
 use crate::types::SfcError;
 use vize_carton::{String, ToCompactString, profile};
 
@@ -49,13 +48,6 @@ pub(crate) fn transform_destructured_props_with_edits(
     let mut local_to_key: FxHashMap<&str, &str> = FxHashMap::default();
     for (key, binding) in &destructured.bindings {
         local_to_key.insert(binding.local.as_str(), key.as_str());
-    }
-
-    // Handle rest spread identifier: `const { a, ...rest } = defineProps()`
-    // References to `rest` should be rewritten to `__props`
-    // (e.g., `rest.foo` becomes `__props.foo`)
-    if let Some(ref rest_id) = destructured.rest_id {
-        local_to_key.insert(rest_id.as_str(), PROPS_REST_SENTINEL);
     }
 
     // AST-based transformation.

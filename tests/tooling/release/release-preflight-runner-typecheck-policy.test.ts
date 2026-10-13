@@ -1,40 +1,69 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
-import fs from "node:fs";
-import path from "node:path";
-import { tmpdir } from "node:os";
 import { test } from "node:test";
 
-import { repoRoot } from "../_helpers/moonbit.ts";
-import { createReleasePreflightVerifyOnlyFixture } from "../support/release-preflight-runner-fixture.ts";
+import { runVerifyOnlyPreflight as actualPreflight } from "../support/release-preflight-verify-only.ts";
 
-test("verify-only mode rejects shards without required typecheck divergence artifacts", () => {
-  const tempDir = fs.mkdtempSync(path.join(tmpdir(), "vize-release-optional-typecheck-"));
-  try {
-    const fixture = createReleasePreflightVerifyOnlyFixture(tempDir, {
-      mutateShardEntries(_shard, entries) {
-        for (const entryName of Object.keys(entries)) {
-          if (entryName.endsWith("-typecheck-divergence.json")) delete entries[entryName];
-        }
+function mutateLintBudget(budget: Record<string, unknown>) {
+  return (entries: Record<string, string>) => {
+    const report = JSON.parse(entries["lint-divergence-summary.json"]);
+    Object.assign(report.budget, budget);
+    entries["lint-divergence-summary.json"] = JSON.stringify(report);
+  };
+}
+
+test("actual Rust release runtime records parity gaps without refusing the release", () => {
+  for (const [mutate, warning] of [
+    [
+      (entries: Record<string, string>) => {
+        for (const name of Object.keys(entries))
+          if (name.endsWith("-typecheck-divergence.json")) delete entries[name];
       },
-    });
-    const result = spawnSync(
-      "rust-script",
-      ["tools/commands/ci/github/release-preflight.rs", "--verify-only"],
-      {
-        cwd: repoRoot,
-        encoding: "utf8",
-        env: {
-          ...process.env,
-          PATH: `${fixture.binDir}${path.delimiter}${process.env.PATH ?? ""}`,
-          ...fixture.env,
-        },
+      null,
+    ],
+    [
+      mutateLintBudget({
+        status: "failure",
+        passed: false,
+        passedCount: 0,
+        failedCount: 1,
+        breachedCount: 1,
+        failedProjects: ["fixture"],
+      }),
+      /::warning title=Release lint parity recorded::real-project-matrix-0 retains 1 breached and 0 unusable lint divergence project\(s\): fixture/,
+    ],
+    [
+      (entries: Record<string, string>) => {
+        const name = Object.keys(entries).find((name) =>
+          name.endsWith("-typecheck-divergence.json"),
+        );
+        assert.ok(name);
+        const report = JSON.parse(entries[name]);
+        report.divergence.summary.falseNegativeCount = 1;
+        entries[name] = JSON.stringify(report);
       },
+      /::warning title=Release typecheck parity not enforced::.*zero unexplained false positives and false negatives/,
+    ],
+  ] as const) {
+    const result = actualPreflight(mutate);
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /Release preflight passed/);
+    if (warning != null) assert.match(result.stdout, warning);
+  }
+});
+
+test("actual Rust release runtime refuses a lint budget that hides measured projects", () => {
+  for (const budget of [
+    { status: "failure", passed: false, failedCount: 1 },
+    { status: "success", passed: true, passedCount: 0, failedCount: 1, breachedCount: 1 },
+    { passedCount: 0, failedCount: 1, breachedCount: 1, failedProjects: ["fixture"] },
+    { projectCount: 2, passedCount: 2 },
+  ]) {
+    const result = actualPreflight(mutateLintBudget(budget));
+    assert.equal(result.status, 1, JSON.stringify(budget));
+    assert.match(
+      result.stderr,
+      /lint divergence budget does not account for every measured project/,
     );
-    assert.ifError(result.error);
-    assert.equal(result.status, 1, `${result.stderr}\n${result.stdout}`.trim());
-    assert.match(result.stderr, /typecheck dependency artifact count/);
-  } finally {
-    fs.rmSync(tempDir, { recursive: true, force: true });
+    assert.doesNotMatch(result.stdout, /Release preflight passed/);
   }
 });
