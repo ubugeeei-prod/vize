@@ -9,7 +9,7 @@ const url = new URL("./javascript-sfc-options-source.json", import.meta.url);
 const stat = fs.lstatSync(url);
 assert(stat.isFile() && !stat.isSymbolicLink() && (stat.mode & 0o777) === 0o644);
 const bytes = fs.readFileSync(url);
-assert.equal(sha(bytes), "c07a157b22fe20b82f1e0992f3fd699cdf2bdc5727fa20454d608ce871ac4fee");
+assert.equal(sha(bytes), "823c3fb00c9fdcedfcead6bc1fa9cf7fb038fedc26b94e957b1069bd4c927f2c");
 const data = JSON.parse(bytes);
 assert.equal(data.schema, "vize.javascript-options.complete-source-successor");
 assert.equal(data.version, 1);

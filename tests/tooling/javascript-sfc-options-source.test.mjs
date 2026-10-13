@@ -12,6 +12,12 @@ import {
   javascriptSfcBodyPairs,
 } from "../../tools/support/compat/github/javascript-sfc-source-context.mjs";
 import { retainedJavaScriptSfcOptionsAfter } from "../../tools/support/compat/github/javascript-sfc-options-source.mjs";
+import { javascriptSfcProductionPaths } from "../../tools/support/compat/github/javascript-sfc-source-context.mjs";
+import {
+  qualifyJavaScriptSfcHost,
+  javascriptSfcStarAliasCorrection,
+  javascriptSfcStarAliasMetadataPairs,
+} from "../performance/support/warm-type-backed-javascript-sfc-host.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const data = JSON.parse(
@@ -163,4 +169,114 @@ void test("genuine private raw and physical modes missing symlinks mutations and
   } finally {
     fs.rmSync(fixture, { recursive: true, force: true });
   }
+});
+
+void test("actual29 changed crate sources qualify while both passive Options fixtures remain mandatory", () => {
+  // Classify the complete authenticated source delta, independently of its declared production list.
+  const actualProduction = javascriptSfcBodyPairs
+    .filter(([file, before, after]) => file.startsWith("crates/") && before !== after)
+    .map(([file]) => file);
+  assert.equal(actualProduction.length, 29);
+  assert.deepEqual([...javascriptSfcProductionPaths], actualProduction);
+  const pairs = new Map(javascriptSfcBodyPairs.map(([file, before]) => [file, before]));
+  // These callbacks are source-only controls over pinned before cells and genuine raw/physical after bytes.
+  const digest = (side, file) => {
+    assert(pairs.has(file), "closed current93 source digest");
+    return side === "before" ? pairs.get(file) : sha(bodies.get(file));
+  };
+  const result = qualifyJavaScriptSfcHost(actualProduction, new Set(), digest);
+  assert(result);
+  assert.equal(result.completeBodyPairs, 93);
+  assert.equal(result.runtimeCredit, false);
+  assert.equal(result.original400Credit, false);
+  assert.equal(result.performanceCredit, false);
+  const fixtures = data.supplemental.filter(({ path }) => path.endsWith(".vue.txt"));
+  assert.equal(fixtures.length, 2);
+  for (const row of fixtures) {
+    assert(!actualProduction.includes(row.path));
+    assert.equal(pairs.get(row.path), null);
+    assert.equal(sha(bodies.get(row.path)), row.after.sha256);
+    for (const changed of [null, Buffer.concat([bodies.get(row.path), Buffer.from("\n")])]) {
+      assert.throws(() =>
+        authenticateJavaScriptSfcSource((file) => (file === row.path ? changed : bodies.get(file))),
+      );
+      assert.equal(
+        qualifyJavaScriptSfcHost(actualProduction, new Set(), (side, file) =>
+          side === "after" && file === row.path
+            ? changed === null
+              ? null
+              : sha(changed)
+            : digest(side, file),
+        ),
+        null,
+      );
+    }
+  }
+  read.confirmSource();
+});
+
+void test("only actual30 plus the whole typed-and-denied Star test pair admits the current source", () => {
+  const alias = javascriptSfcStarAliasCorrection;
+  const actual = fs.readFileSync(path.join(root, alias.path));
+  assert.equal(sha(actual), alias.currentAfter.sha256);
+  const production = [...javascriptSfcProductionPaths, alias.path];
+  assert.equal(production.length, 30);
+  const before = new Map(javascriptSfcBodyPairs.map(([file, value]) => [file, value]));
+  const after = new Map(javascriptSfcSourcePaths.map((file) => [file, sha(bodies.get(file))]));
+  before.set(alias.path, alias.currentBefore.sha256);
+  after.set(alias.path, sha(actual));
+  for (const [file, original, expected] of javascriptSfcStarAliasMetadataPairs) {
+    before.set(file, original);
+    const value = sha(fs.readFileSync(path.join(root, file)));
+    assert.equal(value, expected);
+    after.set(file, value);
+  }
+  // Finite source controls use only raw-authenticated before cells and genuine physical after bytes.
+  const digest = (side, file) => {
+    const values = side === "before" ? before : after;
+    assert(values.has(file), "unknown source cannot become an alias correction");
+    return values.get(file);
+  };
+  const admitted = qualifyJavaScriptSfcHost(production, new Set(), digest);
+  assert(admitted);
+  assert.equal(admitted.completeBodyPairs, 93);
+  assert.equal(admitted.starAliasTestPairs, 1);
+  assert.equal(admitted.files.length, 30);
+  assert.equal(admitted.runtimeCredit, false);
+  assert.equal(admitted.original400Credit, false);
+  assert.equal(admitted.performanceCredit, false);
+  // The genuine old277 whole test is the refused current-source counterexample.
+  assert.equal(
+    qualifyJavaScriptSfcHost(production, new Set(), (side, file) =>
+      side === "after" && file === alias.path ? alias.currentBefore.sha256 : digest(side, file),
+    ),
+    null,
+  );
+  for (const file of [alias.path, ...javascriptSfcStarAliasMetadataPairs.map(([file]) => file)])
+    for (const side of ["before", "after"])
+      for (const value of [
+        null,
+        "f".repeat(64),
+        side === "before" ? after.get(file) : before.get(file),
+      ]) {
+        if (value === digest(side, file)) continue;
+        assert.equal(
+          qualifyJavaScriptSfcHost(production, new Set(), (s, name) =>
+            s === side && name === file ? value : digest(s, name),
+          ),
+          null,
+        );
+      }
+  for (const files of [
+    [],
+    production.slice(1),
+    [...production, "unknown.rs"],
+    [...production, alias.path],
+  ])
+    assert.equal(qualifyJavaScriptSfcHost(files, new Set(), digest), null);
+  assert.equal(qualifyJavaScriptSfcHost(production, new Set(production), digest), null);
+  const original = qualifyJavaScriptSfcHost([...javascriptSfcProductionPaths], new Set(), digest);
+  assert(original && !("starAliasTestPairs" in original));
+  assert.equal(original.completeBodyPairs, 93);
+  read.confirmSource();
 });

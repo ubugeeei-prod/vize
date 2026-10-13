@@ -37,9 +37,8 @@ const manifest = load("empty-vue-star-javascript-source.json");
 const auxiliary = manifest.parts.flatMap(({ file }) => load(file));
 const shared = load("javascript-sfc-star-source.json");
 const contexts = shared.parts.map(([file]) => load(file));
-const originalFiles = [...emptyVueStarBodyPairs, ...emptyVueStarMetadataPairs].map(
-  ([file]) => file,
-);
+contexts.push(load("javascript-sfc-star-alias-source.json").pair);
+const originalFiles = emptyVueStarBodyPairs.concat(emptyVueStarMetadataPairs).map(([file]) => file);
 const executingFiles = [
   "tools/support/compat/github/empty-vue-star-javascript-source.mjs",
   "tools/support/compat/github/empty-vue-star-custody-runner.mjs",
@@ -139,11 +138,11 @@ function changed(root, head, file, body, mode = "100644") {
   fs.chmodSync(path.join(root, file), Number.parseInt(mode, 8) & 0o777);
   return commit;
 }
-void test("actual complete318 current bodies precede the unchanged290 Star source model", () => {
+void test("actual complete322 current bodies precede the unchanged290 Star source model", () => {
   if (!indexPath) {
     const actual = authenticateEmptyVueStarJoinedSource(owner);
     assert.equal(actual.head, git(owner, ["rev-parse", "HEAD"]).toString().trim());
-    assert.equal(actual.completeCurrentBodies, 318);
+    assert.equal(actual.completeCurrentBodies, 322);
     assert.equal(actual.runtimeCredit, false);
   }
   console.log(
@@ -157,12 +156,12 @@ void test("actual complete318 current bodies precede the unchanged290 Star sourc
   );
   fixture((root) => {
     const packet = authenticateEmptyVueStarJoinedSource(root);
-    assert.equal(packet.completeCurrentBodies, 318);
+    assert.equal(packet.completeCurrentBodies, 322);
     assert.equal(packet.executingAdapterBodies, 6);
     assert.equal(packet.compiledBodies, 281);
     assert.equal(packet.starMetadataBodies, 9);
     assert.equal(packet.nativeAndOriginalCallerBodies, 9);
-    assert.equal(packet.javascriptAuxiliaryBodies, 13);
+    assert.equal(packet.javascriptAuxiliaryBodies, 17);
     assert.equal(packet.retainedStarQualifier.completeBodyPairs, 44);
     assert.equal(packet.retainedStarQualifier.supplementalBodyPairs, 85);
     assert.equal(packet.retainedStarQualifier.preservedBodyPairs, 152);
@@ -198,7 +197,7 @@ void test("each declared current source group refuses missing or mutated physica
     }
   });
 });
-void test("all six old/fused hybrids refuse even when physical and raw bytes agree", () => {
+void test("all seven old/fused hybrids refuse even when physical and raw bytes agree", () => {
   fixture((root, head) => {
     for (const row of contexts) {
       changed(root, head, row.path, bodies.get(row.path).before);

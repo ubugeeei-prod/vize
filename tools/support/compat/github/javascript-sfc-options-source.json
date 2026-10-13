@@ -22,16 +22,7 @@
         "byteLength": 8997,
         "blob": "3d1a61abe5381692611352de0b2251ecdcb51149"
       },
-      "inverse": [
-        [
-          8972,
-          8972,
-          8972,
-          8997,
-          "",
-          "Cm1vZCBvcHRpb25zX3Byb2plY3Rpb247Cg=="
-        ]
-      ]
+      "inverse": [[8972, 8972, 8972, 8997, "", "Cm1vZCBvcHRpb25zX3Byb2plY3Rpb247Cg=="]]
     },
     {
       "path": "crates/vize_canon/src/batch/virtual_project/build.rs",
@@ -56,14 +47,7 @@
           "",
           "ICAgIC8vIE9wdGlvbnMgQVBJIGNvZGVnZW4gZ2l2ZXMgYSBub3JtYWwgc2NyaXB0IGEgdHlwZWQgY29tcG9uZW50IHN1cmZhY2UsCiAgICAvLyBpbmNsdWRpbmcgdGhlIG5vcm1hbCBibG9jayBpbiBhIG1peGVkIG5vcm1hbC9zZXR1cCBTRkMuIE1hdGNoIHRoZQogICAgLy8gZ2VuZXJhdG9yJ3MgVnVlIDIgbW9kZTsgYSBzZXR1cC1vbmx5IEpTIGJsb2NrIHJldGFpbnMgYWxsb3dKcyBtZW1iZXJzaGlwLgogICAgbGV0IHR5cGVkX29wdGlvbnNfcHJvamVjdGlvbiA9IGRlc2NyaXB0b3Iuc2NyaXB0LmlzX3NvbWUoKQogICAgICAgICYmIChjb250ZXh0Lm9wdGlvbnNfYXBpCiAgICAgICAgICAgIHx8IGNvbnRleHQubGVnYWN5X3Z1ZTIKICAgICAgICAgICAgfHwgbWF0Y2hlcyEoCiAgICAgICAgICAgICAgICBjb250ZXh0LmRpYWxlY3QsCiAgICAgICAgICAgICAgICB2aXplX2NhcnRvbjo6Y29uZmlnOjpWdWVWZXJzaW9uOjpWMiB8IHZpemVfY2FydG9uOjpjb25maWc6OlZ1ZVZlcnNpb246OlYyXzcKICAgICAgICAgICAgKSk7Cg=="
         ],
-        [
-          4332,
-          4332,
-          4858,
-          4895,
-          "",
-          "ICAgICAgICAmJiAhdHlwZWRfb3B0aW9uc19wcm9qZWN0aW9uCg=="
-        ]
+        [4332, 4332, 4858, 4895, "", "ICAgICAgICAmJiAhdHlwZWRfb3B0aW9uc19wcm9qZWN0aW9uCg=="]
       ]
     },
     {
@@ -81,14 +65,7 @@
         "blob": "845c10e2c701ae5268e9fc768446e3be1642af8f"
       },
       "inverse": [
-        [
-          8472,
-          8472,
-          8472,
-          8516,
-          "",
-          "CiNbY2ZnKHRlc3QpXQptb2Qgb3B0aW9uc19wcm9qZWN0aW9uX3Rlc3RzOwo="
-        ]
+        [8472, 8472, 8472, 8516, "", "CiNbY2ZnKHRlc3QpXQptb2Qgb3B0aW9uc19wcm9qZWN0aW9uX3Rlc3RzOwo="]
       ]
     },
     {
@@ -176,9 +153,7 @@
   ],
   "productionAdditions": [
     "crates/vize_canon/src/batch/type_checker/tests/recent_issues/options_projection.rs",
-    "crates/vize_canon/src/batch/virtual_project/project/artifacts/options_projection_tests.rs",
-    "tests/_fixtures/differential/canon/javascript-sfc-membership/OptionsChild.vue.txt",
-    "tests/_fixtures/differential/canon/javascript-sfc-membership/OptionsParent.vue.txt"
+    "crates/vize_canon/src/batch/virtual_project/project/artifacts/options_projection_tests.rs"
   ],
   "sourceOnly": true,
   "runtimeCredit": false,

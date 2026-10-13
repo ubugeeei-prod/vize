@@ -4,9 +4,9 @@
     "before": null,
     "after": {
       "mode": "100644",
-      "blob": "3b6c8c7c3b464523b10e6bbd44af54e50b7d0267",
-      "byteLength": 6382,
-      "sha256": "f80a319774ff8506e21bd19e2544706635a9675e455abf72b2cd43663647e62d"
+      "blob": "fcd8484bb9f231b74ae2358d5b2dcbc411c0077f",
+      "byteLength": 11669,
+      "sha256": "2ee5be08efdaedc69c98d2c78ab12547054033c26891c598c8ab4d29ccc5ec8a"
     }
   },
   {
@@ -24,9 +24,9 @@
     "before": null,
     "after": {
       "mode": "100644",
-      "blob": "1298086a8caeb25df4e72abe6ab4df609784148e",
+      "blob": "f01604ccab84e2710c1fa2c45767233aab731707",
       "byteLength": 7033,
-      "sha256": "ba97040430df708db0a19185b2102be08031061c81b09b7a630aae4a7c942fd3"
+      "sha256": "0694b7facbca16bd2b22c5570a98a0ff41c80d7aa529502ad92336ccc8fee408"
     }
   },
   {
@@ -127,6 +127,46 @@
       "blob": "c873df5f33da69994c05c6ba9b3d2c89d7b0b066",
       "byteLength": 6992,
       "sha256": "589c299202e1491fd2127769008783e6b6d061513b8853c2ada92b32dd6c4c34"
+    }
+  },
+  {
+    "path": "tools/support/compat/github/javascript-sfc-options-source.json",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "8b2d8e5f857ca0f477389896e457831c4f4c5f39",
+      "byteLength": 128889,
+      "sha256": "823c3fb00c9fdcedfcead6bc1fa9cf7fb038fedc26b94e957b1069bd4c927f2c"
+    }
+  },
+  {
+    "path": "tools/support/compat/github/javascript-sfc-options-source.mjs",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "81560ee3e5c5a07f88a6fffdb799c28b6fe263c8",
+      "byteLength": 5462,
+      "sha256": "126102cfb7a81ef29585f9e31a14a7cc118f4928f8a5cefad8701e4d892bb34f"
+    }
+  },
+  {
+    "path": "tests/performance/support/warm-type-backed-javascript-sfc-host.ts",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "3773f35ae6618b9369ee09c809b5117c615f90e5",
+      "byteLength": 6207,
+      "sha256": "8811f4833e4c2d836171d2bc8de9f91c92dde877ce07fa31a84ecd536afa0bd5"
+    }
+  },
+  {
+    "path": "tools/support/compat/github/javascript-sfc-star-alias-source.json",
+    "before": null,
+    "after": {
+      "mode": "100644",
+      "blob": "4b50a10891a3cb57ef1052ff2400244a2dcf42cd",
+      "byteLength": 41983,
+      "sha256": "3d765b1da0b37f7d0ffd162e01ca01ec4161eb34d8ff9e8f373b76fc4cb818ca"
     }
   }
 ]

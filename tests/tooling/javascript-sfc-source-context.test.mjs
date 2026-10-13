@@ -31,7 +31,7 @@ await test("all93 actual producer and caller bodies authenticate before the one 
     authority: "complete-javascript-sfc-source-context",
     bodyPairs: 93,
     baseBodyPairs: 88,
-    changedProductionBodies: 31,
+    changedProductionBodies: 29,
     sourceOnly: true,
     runtimeCredit: false,
     original400Credit: false,

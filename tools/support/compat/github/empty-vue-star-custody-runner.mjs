@@ -223,7 +223,7 @@ export async function runRetainedEmptyVueStarCustody(root) {
   const js = authenticateJavaScriptSfcSource(javascriptSfcSourceReader(root, true));
   assert.equal(js.receipt.bodyPairs, 93);
   const current = authenticateEmptyVueStarJoinedSource(root);
-  assert.equal(current.completeCurrentBodies, 318);
+  assert.equal(current.completeCurrentBodies, 322);
   const data = JSON.parse(
     fs.readFileSync(new URL("empty-vue-star-javascript-source.json", import.meta.url)),
   );
@@ -308,7 +308,7 @@ export async function runRetainedEmptyVueStarCustody(root) {
     await import(pathToFileURL(path.join(directory, law)).href);
     return Object.freeze({
       sourceOnly: true,
-      currentBodies: 318,
+      currentBodies: 322,
       retainedSource: source,
       retainedFiles: frame.files,
       registeredOriginalTests: 8,
