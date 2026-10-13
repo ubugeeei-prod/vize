@@ -99,6 +99,41 @@ fn whole_original_photo_metadata_has_no_unrelated_component_dependencies() {
             );
         }
     }
+    // A Vapor page now renders on the server as a Vapor component (#8859):
+    // the captured fallback packets gain the `__vapor` marker and lose the
+    // fallback warning.
+    for observation in expected.as_array_mut().expect("all original observations") {
+        if observation["shape"] != "vapor-ssr" {
+            continue;
+        }
+        let code = observation["compileResult"]["code"]
+            .as_str()
+            .expect("complete captured Vapor SSR code");
+        assert_eq!(
+            code.matches("  ssrRender,\n").count(),
+            1,
+            "one SSR render option"
+        );
+        let code = code.replacen("  ssrRender,\n", "  ssrRender,\n  __vapor: true,\n", 1);
+        // The marker is one more generated line, which the map records as
+        // one more empty line group.
+        if let Some(mappings) = observation["compileResult"]["map"]["mappings"].as_str() {
+            let line = code
+                .lines()
+                .position(|line| line == "  __vapor: true,")
+                .expect("marker line");
+            let mut groups = mappings.split(';').collect::<Vec<_>>();
+            groups.insert(line, "");
+            observation["compileResult"]["map"]["mappings"] = json!(groups.join(";"));
+        }
+        observation["compileResult"]["code"] = json!(code);
+        let warnings = observation["compileResult"]["warnings"]
+            .as_array_mut()
+            .expect("captured warnings");
+        assert_eq!(warnings.len(), 1, "the captured fallback warning");
+        assert_eq!(warnings[0]["code"], "VAPOR_SSR_FALLBACK");
+        warnings.clear();
+    }
     // #8636 fixes nested Vapor components inside Photo's actual <div> root.
     // Preserve the captured before packet and permit only its two root flags.
     for (index, nuxt, source_map) in [

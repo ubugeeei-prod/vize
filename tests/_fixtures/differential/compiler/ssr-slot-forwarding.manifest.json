@@ -71,7 +71,7 @@
           "complete-ssr-vnode-html",
           "production-dom",
           "production-vapor-dom",
-          "documented-vapor-ssr-fallback"
+          "vapor-ssr-server-render"
         ]
       }
     }

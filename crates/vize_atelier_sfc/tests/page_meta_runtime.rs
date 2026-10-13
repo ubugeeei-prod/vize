@@ -87,12 +87,7 @@ fn compile(source: &str, shape: &str, nuxt: bool, map: bool) -> SfcCompileResult
     )
     .expect("compile complete module");
     assert!(result.errors.is_empty(), "{:?}", result.errors);
-    assert_eq!(
-        result.warnings.len(),
-        usize::from(shape == "vapor-ssr"),
-        "{:?}",
-        result.warnings
-    );
+    assert!(result.warnings.is_empty(), "{shape}: {:?}", result.warnings);
     let script_erased = nuxt && (source == source!("Page") || source == source!("global"));
     assert_eq!(
         result.map.is_some(),

@@ -82,18 +82,11 @@ fn compile(name: &str, source: &str, target: &str, map: bool) -> SfcCompileResul
         "{target}/{name}: {:?}",
         result.errors
     );
-    assert_eq!(result.warnings.len(), usize::from(target == "vapor-ssr"));
-    if target == "vapor-ssr" {
-        assert_eq!(
-            result
-                .warnings
-                .first()
-                .expect("documented fallback")
-                .code
-                .as_deref(),
-            Some("VAPOR_SSR_FALLBACK")
-        );
-    }
+    assert!(
+        result.warnings.is_empty(),
+        "{target}/{name}: {:?}",
+        result.warnings
+    );
     assert!(result.css.is_none());
     assert!(result.macro_artifacts.is_empty());
     if let Some(map) = &result.map {

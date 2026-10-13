@@ -31,9 +31,9 @@ fn compile(source: &str, target: &str) -> SfcCompileResult {
     let result = compile_sfc_for_adapter(
         &descriptor,
         SfcCompileOptions {
-            vapor: matches!(target, "vapor" | "vapor-ssr-fallback"),
+            vapor: matches!(target, "vapor" | "vapor-ssr"),
             template: TemplateCompileOptions {
-                ssr: matches!(target, "ssr" | "vapor-ssr-fallback"),
+                ssr: matches!(target, "ssr" | "vapor-ssr"),
                 compiler_options: Some(DomCompilerOptions {
                     // Vapor's public backend currently omits authored comments.
                     comments: target != "vapor",
@@ -54,27 +54,11 @@ fn compile(source: &str, target: &str) -> SfcCompileResult {
     assert!(result.map.is_none());
     assert!(result.bindings.is_none());
     assert!(result.macro_artifacts.is_empty());
-    if target == "vapor-ssr-fallback" {
-        assert_eq!(result.warnings.len(), 1);
-        assert_eq!(
-            result.warnings.first().unwrap().code.as_deref(),
-            Some("VAPOR_SSR_FALLBACK")
-        );
-        assert_eq!(
-            result.warnings.first().unwrap().message,
-            "SFC Vapor SSR is not supported yet; falling back to standard SSR output."
-        );
-        assert_eq!(
-            serde_json::to_value(&result.warnings.first().unwrap().loc).unwrap(),
-            serde_json::to_value(&descriptor.template.as_ref().unwrap().loc).unwrap()
-        );
-    } else {
-        assert!(
-            result.warnings.is_empty(),
-            "{target}: {:?}",
-            result.warnings
-        );
-    }
+    assert!(
+        result.warnings.is_empty(),
+        "{target}: {:?}",
+        result.warnings
+    );
     result
 }
 
@@ -86,7 +70,7 @@ fn fixtures() -> Vec<Value> {
 
 #[test]
 fn direct_comments_only_change_implicit_slots_beside_named_templates() {
-    for target in ["dom", "ssr", "vapor", "vapor-ssr-fallback"] {
+    for target in ["dom", "ssr", "vapor", "vapor-ssr"] {
         for fixture in fixtures() {
             let source = fixture["source"].as_str().unwrap();
             let actual = compile(source, target);
@@ -96,11 +80,6 @@ fn direct_comments_only_change_implicit_slots_beside_named_templates() {
             if fixture["drop"] == true || target == "vapor" {
                 let mut actual = serde_json::to_value(actual).unwrap();
                 let mut expected = serde_json::to_value(without_comment).unwrap();
-                // The fallback warning retains its original template span.
-                if target == "vapor-ssr-fallback" {
-                    actual["warnings"][0]["loc"] = Value::Null;
-                    expected["warnings"][0]["loc"] = Value::Null;
-                }
                 assert_eq!(actual, expected, "{target}: {}", fixture["name"]);
             } else {
                 assert_ne!(
@@ -115,7 +94,7 @@ fn direct_comments_only_change_implicit_slots_beside_named_templates() {
 
 #[test]
 fn original_corpus_matches_independent_official_compilers_at_runtime() {
-    for target in ["dom", "ssr", "vapor", "vapor-ssr-fallback"] {
+    for target in ["dom", "ssr", "vapor", "vapor-ssr"] {
         let cases: Vec<_> = fixtures()
             .into_iter()
             .map(|mut fixture| {

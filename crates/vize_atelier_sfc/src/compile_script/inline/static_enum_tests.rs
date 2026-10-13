@@ -21,6 +21,7 @@ fn compile(source: &str, preserve_typescript: bool) -> Result<vize_carton::Strin
             preamble: "",
             render_body: "null",
             render_is_block: false,
+            hydrates_as_vapor: false,
         },
         None,
         &[],

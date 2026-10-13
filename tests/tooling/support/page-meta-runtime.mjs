@@ -205,7 +205,7 @@ for (const fixture of fixtures) {
       actual,
       vue: fixture.shape === "vapor" ? vaporCompiler.version : stable.version,
       authority: "complete-default-component/setup/production-runtime",
-      ...(fixture.shape === "vapor-ssr" ? { ssr: "documented-vdom-fallback" } : {}),
+      ...(fixture.shape === "vapor-ssr" ? { ssr: "vapor-server-render" } : {}),
     }),
   );
 }

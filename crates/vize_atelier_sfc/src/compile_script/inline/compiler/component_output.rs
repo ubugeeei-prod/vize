@@ -109,6 +109,9 @@ pub(super) fn emit_component_definition(
         }
         output.extend_from_slice(b",\n");
     }
+    if template.hydrates_as_vapor {
+        output.extend_from_slice(b"  __vapor: true,\n");
+    }
 
     // Build setup function signature based on what macros are used
     let mut setup_args = Vec::new();

@@ -67,19 +67,7 @@ fn compile(source: &str, requested: bool, typed: bool, production: bool, ssr: bo
         complete_mapped,
         "source mapping changes no code, CSS, diagnostics, bindings or artifacts"
     );
-    let vapor = requested || source == ORIGINAL || source == TYPED;
-    assert_eq!(plain.warnings.len(), usize::from(vapor && ssr));
-    if vapor && ssr {
-        assert_eq!(
-            plain
-                .warnings
-                .first()
-                .expect("fallback diagnostic")
-                .code
-                .as_deref(),
-            Some("VAPOR_SSR_FALLBACK")
-        );
-    }
+    assert!(plain.warnings.is_empty(), "{:?}", plain.warnings);
     json!({ "result": plain, "mapped": mapped })
 }
 

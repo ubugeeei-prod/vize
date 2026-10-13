@@ -75,6 +75,7 @@ fn test_slice_template_parts_matches_line_scanner() {
                     experimental_self_component: false,
                     bindings: Some(&bindings),
                     croquis: None,
+                    hydrates_as_vapor: false,
                 },
                 vize_atelier_core::TemplateSyntaxMode::Standard,
                 &vize_atelier_core::CodegenOptions::default(),

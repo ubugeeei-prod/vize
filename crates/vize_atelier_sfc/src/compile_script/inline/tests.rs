@@ -17,6 +17,7 @@ mod tests {
             preamble: "",
             render_body: "null",
             render_is_block: false,
+            hydrates_as_vapor: false,
         };
         let result = compile_script_setup_inline(
             script_content,
@@ -44,6 +45,7 @@ mod tests {
             preamble: "",
             render_body: "null",
             render_is_block: false,
+            hydrates_as_vapor: false,
         };
         let result = compile_script_setup_inline(
             script_content,
@@ -282,6 +284,7 @@ const x = ref(1)
             preamble: "",
             render_body: "",
             render_is_block: false,
+            hydrates_as_vapor: false,
         };
         let result = compile_script_setup_inline(
             script_content,

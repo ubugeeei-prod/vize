@@ -93,7 +93,7 @@
           "explicit-nuxt-route-metadata",
           "local-binding-preservation",
           "maps-additive",
-          "documented-vapor-ssr-fallback"
+          "vapor-ssr-server-render"
         ]
       }
     }

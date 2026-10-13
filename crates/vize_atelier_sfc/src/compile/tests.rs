@@ -1199,7 +1199,7 @@ const reactiveObject = reactive({ foo: 'bar' });
 }
 
 #[test]
-fn test_ssr_vapor_request_falls_back_with_warning() {
+fn test_ssr_vapor_request_renders_a_vapor_server_component() {
     let source = r#"<script setup>
 const count = 1
 </script>
@@ -1209,30 +1209,34 @@ const count = 1
 </template>"#;
 
     let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
-    let result = compile_sfc(
-        &descriptor,
-        SfcCompileOptions {
-            template: TemplateCompileOptions {
-                ssr: true,
+    let compile = |vapor| {
+        compile_sfc(
+            &descriptor,
+            SfcCompileOptions {
+                template: TemplateCompileOptions {
+                    ssr: true,
+                    ..Default::default()
+                },
+                vapor,
                 ..Default::default()
             },
-            vapor: true,
-            ..Default::default()
-        },
-    )
-    .expect("Failed to compile SFC");
+        )
+        .expect("Failed to compile SFC")
+    };
+    let plain = compile(false);
+    let result = compile(true);
 
-    assert!(result.code.contains("ssrRender"));
-    assert!(!result.code.contains("__vapor"));
-    assert_eq!(result.warnings.len(), 1);
+    // The server render is the SSR compiler's, as Vue's compiler-sfc does,
+    // and the component is marked so the client hydrates it as Vapor. This
+    // template has no Vapor hydration anchor to add.
+    assert!(result.warnings.is_empty(), "{:?}", result.warnings);
     assert_eq!(
-        result.warnings[0].code.as_deref(),
-        Some("VAPOR_SSR_FALLBACK")
+        result.code.matches("__vapor: true").count(),
+        1,
+        "{}",
+        result.code
     );
-    assert_eq!(
-        result.warnings[0].message.as_str(),
-        "SFC Vapor SSR is not supported yet; falling back to standard SSR output."
-    );
+    assert_eq!(result.code.replace("  __vapor: true,\n", ""), plain.code);
 }
 
 #[test]
@@ -2920,7 +2924,7 @@ const visible = true
 }
 
 #[test]
-fn test_script_setup_sfc_vapor_ssr_custom_renderer_falls_back_without_losing_intrinsics() {
+fn test_script_setup_sfc_vapor_ssr_custom_renderer_keeps_intrinsics() {
     let source = r#"<script setup lang="ts" vapor>
 import { Primitive } from '@tresjs/core'
 const visible = true
@@ -2951,11 +2955,7 @@ const visible = true
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert_eq!(result.warnings.len(), 1);
-    assert_eq!(
-        result.warnings[0].code.as_deref(),
-        Some("VAPOR_SSR_FALLBACK")
-    );
+    assert!(result.warnings.is_empty(), "{:?}", result.warnings);
     insta::assert_snapshot!(result.code.as_str());
 }
 

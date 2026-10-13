@@ -15,6 +15,7 @@ const msg = 'hello'
 export default /*@__PURE__*/_defineComponent({
   __name: 'anonymous',
   ssrRender: ssrRender,
+  __vapor: true,
   setup(__props) {
 
 

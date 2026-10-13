@@ -252,6 +252,7 @@ const isRootSelected = ref(false)
             experimental_self_component: false,
             bindings: Some(&binding_metadata),
             croquis: Some(croquis),
+            hydrates_as_vapor: false,
         },
         vize_atelier_core::TemplateSyntaxMode::Standard,
         &vize_atelier_core::CodegenOptions::default(),

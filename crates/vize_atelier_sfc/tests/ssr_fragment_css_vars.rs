@@ -16,6 +16,16 @@ const ORIGINAL: &str = include_str!(
 const CONTROLS: &str =
     include_str!("../../../tests/_fixtures/differential/compiler/ssr-fragment-css-vars/cases.json");
 
+/// The SSR output without the line that marks the component as Vapor.
+fn strip_vapor_marker(code: &str) -> String {
+    code.replace("  __vapor: true,\n", "")
+        .replace("_sfc_main.__vapor = true\n", "")
+}
+
+fn without_fragment_anchors(code: &str) -> String {
+    code.replace("<!--[-->", "").replace("<!--]-->", "")
+}
+
 fn compile(source: &str, target: &str) -> SfcCompileResult {
     let parse = SfcParseOptions {
         filename: "App.vue".into(),
@@ -26,7 +36,7 @@ fn compile(source: &str, target: &str) -> SfcCompileResult {
         &descriptor,
         SfcCompileOptions {
             parse,
-            vapor: target == "vapor-ssr-fallback",
+            vapor: target == "vapor-ssr",
             scope_id: Some("cssvars".into()),
             template: TemplateCompileOptions {
                 ssr: target != "client",
@@ -40,26 +50,11 @@ fn compile(source: &str, target: &str) -> SfcCompileResult {
     assert!(result.errors.is_empty(), "{target}: {:?}", result.errors);
     assert!(result.map.is_none());
     assert!(result.macro_artifacts.is_empty());
-    if target == "vapor-ssr-fallback" {
-        assert_eq!(result.warnings.len(), 1);
-        let warning = result.warnings.first().expect("explicit fallback warning");
-        assert_eq!(warning.code.as_deref(), Some("VAPOR_SSR_FALLBACK"));
-        assert_eq!(
-            warning.message,
-            "SFC Vapor SSR is not supported yet; falling back to standard SSR output."
-        );
-        assert_eq!(
-            serde_json::to_value(&warning.loc).expect("warning span"),
-            serde_json::to_value(&descriptor.template.as_ref().expect("template").loc)
-                .expect("whole authored template span")
-        );
-    } else {
-        assert!(
-            result.warnings.is_empty(),
-            "{target}: {:?}",
-            result.warnings
-        );
-    }
+    assert!(
+        result.warnings.is_empty(),
+        "{target}: {:?}",
+        result.warnings
+    );
     result
 }
 
@@ -86,11 +81,18 @@ fn original_fragment_css_variables_keep_complete_public_result_packets() {
         let source = fixture["source"].as_str().expect("whole input");
         let ssr = compile(source, "ssr");
         let client = compile(source, "client");
-        let fallback = compile(source, "vapor-ssr-fallback");
-        assert_eq!(fallback.code, ssr.code);
-        assert_eq!(fallback.css, ssr.css);
+        // A Vapor component renders the same server markup apart from the
+        // fragment anchors Vapor hydration claims (around Suspense slots), and
+        // is marked to hydrate as Vapor.
+        let vapor = compile(source, "vapor-ssr");
+        assert_eq!(vapor.code.matches("__vapor").count(), 1, "{}", vapor.code);
         assert_eq!(
-            serde_json::to_value(&fallback.bindings).expect("complete fallback bindings"),
+            without_fragment_anchors(&strip_vapor_marker(&vapor.code)),
+            without_fragment_anchors(&ssr.code)
+        );
+        assert_eq!(vapor.css, ssr.css);
+        assert_eq!(
+            serde_json::to_value(&vapor.bindings).expect("complete Vapor SSR bindings"),
             serde_json::to_value(&ssr.bindings).expect("complete SSR bindings")
         );
         if fixture["name"] == "reported" {
@@ -98,7 +100,7 @@ fn original_fragment_css_variables_keep_complete_public_result_packets() {
         }
         fixture["ssr"] = serde_json::to_value(ssr).expect("complete SSR result");
         fixture["client"] = serde_json::to_value(client).expect("complete client result");
-        fixture["fallback"] = serde_json::to_value(fallback).expect("complete fallback result");
+        fixture["vaporSsr"] = serde_json::to_value(vapor).expect("complete Vapor SSR result");
     }
     if let Some(path) = std::env::var_os("VIZE_FRAGMENT_CSS_CAPTURE") {
         std::fs::write(

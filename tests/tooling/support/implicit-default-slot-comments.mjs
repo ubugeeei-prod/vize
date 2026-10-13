@@ -10,7 +10,8 @@ const chunks = [];
 for await (const chunk of process.stdin) chunks.push(chunk);
 const input = JSON.parse(Buffer.concat(chunks).toString("utf8"));
 const vapor = input.target === "vapor";
-const ssr = ["ssr", "vapor-ssr-fallback"].includes(input.target);
+const ssr = ["ssr", "vapor-ssr"].includes(input.target);
+const vaporSsr = input.target === "vapor-ssr";
 const window = new Window();
 for (const key of [
   "window",
@@ -73,6 +74,7 @@ function reference(source, serverTarget = ssr) {
     filename: "Reported.vue",
     id: "probe",
     ssr: serverTarget,
+    vapor: serverTarget && vaporSsr,
     ssrCssVars: [],
     compilerOptions: { comments: true },
   });
