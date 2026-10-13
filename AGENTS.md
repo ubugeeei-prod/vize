@@ -56,9 +56,12 @@ product fix-history gates still apply; use the [order record](./docs/davinci/dec
 - **Clean up as you go.** When a slice lands, remove its worktree, its local
   branch and its cargo target directory. Local disk is a shared, limited
   resource.
-- **Prioritize third-party reports.** They are urgent. Include the issue
-  reporter in a `Co-authored-by` trailer with a verified public identity.
-  Carry the fix through actual merge and a published release, then close the
+- **Prioritize third-party reports.** They are urgent, and they interrupt
+  other work. The target is a published release containing the fix within
+  30 minutes of the issue being filed; anything slower is an incident. Start
+  the fix as soon as the issue appears, move its PR to the front of the merge
+  queue, and release as soon as it merges. Include the issue reporter in a
+  `Co-authored-by` trailer with a verified public identity, then close the
   issue with the released version.
 - **Release often.** Cut a release for each user-facing fix instead of
   batching. Release gates exist to stop regressions; a gate that requires
