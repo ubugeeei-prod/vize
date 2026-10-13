@@ -141,7 +141,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: 1.95.0 }
+        with: { toolchain: 1.99.0 }
       - uses: ./.github/actions/setup-rust-script
       - name: Use candidate version for SemVer classification
         # cargo-semver-checks derives the release type from the bumped version.
@@ -161,7 +161,7 @@ jobs:
       - name: Check public API SemVer compatibility
         env:
           BASELINE_REV: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || (github.event_name == 'push' && github.event.before || '') }}
-          RUSTUP_TOOLCHAIN: 1.95.0
+          RUSTUP_TOOLCHAIN: 1.99.0
         run: bash tools/commands/ci/github/check-semver.sh "${{ matrix.crate }}"
   security-audit:
     runs-on: blacksmith-32vcpu-ubuntu-2404

@@ -51,7 +51,7 @@ members = [
 [workspace.package]
 version = "0.443.0"
 edition = "2024"
-rust-version = "1.95.0"
+rust-version = "1.99.0"
 license = "MIT"
 repository = "https://github.com/ubugeeei-prod/vize"
 
