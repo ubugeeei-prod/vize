@@ -133,22 +133,18 @@ test("docs navigation exposes the language engineering practices page", () => {
   // live in `docs/theme/i18n/sitemap.js` and the labels in
   // `docs/theme/i18n/locales/`. Assert the whole Architecture group so a page
   // dropped from it fails here rather than reading as an unrelated reorder.
-  // Architecture remains in the goal-oriented detailed-guides group.
+  // Architecture shares the project group with stability, credits and
+  // contributing; command-line tools have their own group.
   assert.deepEqual(sitemap.navGroups.find((group) => group.key === "architecture")?.paths, [
-    "/guide/cli",
-    "/guide/troubleshooting",
-    "/guide/lib-pull",
-    "/guide/auto-imports",
-    "/guide/cross-file-complexity",
-    "/integrations/mcp",
-    "/guide/wasm",
     "/stability",
     "/credits",
+    "/contributing",
     "/architecture/overview",
     "/architecture/crates",
     "/architecture/source-guide",
     "/architecture/language-engineering-practices",
     "/architecture/performance",
+    "/architecture/performance-blacksmith",
   ]);
   assert.equal(
     locales.en.labels["/architecture/language-engineering-practices"],
