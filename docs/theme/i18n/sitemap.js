@@ -162,6 +162,7 @@
           "/getting-started",
           "/philosophy",
           "/guide/vite-plus",
+          "/guide/vite-plus-editor",
           "/guide/init",
           "/guide/migration",
           "/guide/configuration",

@@ -241,6 +241,7 @@ void test("the sidebar groups the pages the site actually publishes", () => {
       "/getting-started",
       "/philosophy",
       "/guide/vite-plus",
+      "/guide/vite-plus-editor",
       "/guide/init",
       "/guide/migration",
       "/guide/configuration",
