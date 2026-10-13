@@ -33,3 +33,11 @@ immutable original rows, historical laws and frames remain present. The
 physical inventory check provides source identity only. Native Actions
 independently executes the 17 cases, existing refusal corpora, and four
 foreign/derived/generic/external qualification boundaries.
+
+Before changing comparison scope, the complete 27-file native corpus executes
+all 72 component-prop false positives from the original release matrix.
+Its unchanged original files retain five genuinely unread setup imports and
+one Pug registration warning. Every current public result field is written
+under the existing Nextest artifact directory before assertions; no new CI
+stage or source frame is introduced. The separate JSX PR executes the
+remaining unchanged Douyin file.
