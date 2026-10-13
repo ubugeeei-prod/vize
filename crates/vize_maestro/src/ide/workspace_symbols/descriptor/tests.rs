@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 use super::parse;
 
-fn assert_borrowed(value: &Cow<'_, str>, source: &str) {
+fn assert_borrowed(value: Cow<'_, str>, source: &str) {
     let Cow::Borrowed(text) = value else {
         panic!("synchronous workspace symbol parsing must borrow the input");
     };
@@ -24,17 +24,23 @@ fn symbol_descriptor_borrows_whole_source_and_every_block() {
 <style>\n#root { display: block; }\n</style>\n\
 <i18n>\n{\"en\":{\"label\":\"owned names, borrowed source\"}}\n</i18n>\n";
     let descriptor = parse("/workspace/borrowed-component.vue", source).unwrap();
-    assert_borrowed(&descriptor.source, source);
-    assert_borrowed(&descriptor.template.as_ref().unwrap().content, source);
-    assert_borrowed(&descriptor.script.as_ref().unwrap().content, source);
-    assert_borrowed(&descriptor.script_setup.as_ref().unwrap().content, source);
+    assert_borrowed(descriptor.source.clone(), source);
+    assert_borrowed(
+        descriptor.template.as_ref().unwrap().content.clone(),
+        source,
+    );
+    assert_borrowed(descriptor.script.as_ref().unwrap().content.clone(), source);
+    assert_borrowed(
+        descriptor.script_setup.as_ref().unwrap().content.clone(),
+        source,
+    );
     assert_eq!(descriptor.styles.len(), 2);
     for block in &descriptor.styles {
-        assert_borrowed(&block.content, source);
+        assert_borrowed(block.content.clone(), source);
     }
     assert_eq!(descriptor.custom_blocks.len(), 1);
     for block in &descriptor.custom_blocks {
-        assert_borrowed(&block.content, source);
+        assert_borrowed(block.content.clone(), source);
     }
 
     let owned =

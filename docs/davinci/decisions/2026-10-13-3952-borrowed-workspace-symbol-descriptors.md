@@ -47,3 +47,10 @@ not established by source inspection. Fresh exact-head Actions must run the
 whole original Vue parity/churn workload before this release blocker is
 treated as fixed. Broader LSP correctness, the 40/63 resource targets and
 published-package acceptance remain separate unfinished work.
+
+The first exact-head source checks exposed stale generated consumer ledgers
+and Clippy rejected the test-only `&Cow` argument. Regenerate both named
+Maestro shards with their original Node generators and pass a cloned Cow
+value to the ownership helper. All source-pointer, ownership and whole
+descriptor/rejection assertions remain intact; production parser bytes are
+unchanged by this correction. The initial failed checks remain failed.
