@@ -11,8 +11,7 @@ When a `Check` run is cancelled, it now ends in well under a minute:
 - The `Rust source report` and `PR source report` jobs are skipped when a job
   they need was cancelled.
 - `test-report` still always runs, so a cancelled run can never leave the
-  required check skipped. When a job it needs was cancelled it fails in its
-  first step, before checkout and the test inventory.
+  required check skipped, and still fails when a job it needs was cancelled.
 - `test-report-comment` does not run for a cancelled run.
 
 ## Reason
