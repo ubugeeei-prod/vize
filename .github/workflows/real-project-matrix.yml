@@ -1,12 +1,20 @@
 name: Real Project Matrix
+# "enforced" gates every surface. "release-gated" is the exact release dispatch:
+# tool surfaces and the Davinci corpus enforce, lint and LSP parity record their
+# raw outcomes, and typecheck divergence is skipped. Every other combination is
+# "observational".
 run-name: >-
   Real Project Matrix ${{ (inputs.core_tools_mode || 'enforce') == 'enforce' &&
   (inputs.typecheck_dependencies_mode || 'enforce') == 'enforce' &&
-  (inputs.lint_divergence_mode || 'enforce') == 'enforce' &&
+  (inputs.davinci_dom_corpus_mode || 'enforce') == 'enforce' &&
+  ((inputs.lint_divergence_mode || 'enforce') == 'enforce' &&
   (inputs.lsp_mode || 'enforce') == 'enforce' &&
   (inputs.typecheck_divergence_mode || 'enforce') == 'enforce' &&
-  (inputs.davinci_dom_corpus_mode || 'enforce') == 'enforce' &&
-  'enforced' || 'observational' }} @ ${{ github.sha }}
+  'enforced' ||
+  (inputs.lint_divergence_mode || 'enforce') == 'record-only' &&
+  (inputs.lsp_mode || 'enforce') == 'record-only' &&
+  (inputs.typecheck_divergence_mode || 'enforce') == 'skip' &&
+  'release-gated') || 'observational' }} @ ${{ github.sha }}
 
 on:
   workflow_dispatch:

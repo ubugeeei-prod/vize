@@ -55,5 +55,16 @@ test("passive native LSP capture retains the complete original Matrix workflow",
       "retention-days": 30,
     },
   });
+  // The release-gated title is the only other change: it names the exact
+  // release dispatch beside the original enforced and observational titles.
+  assert.match(
+    original["run-name"],
+    /'enforced' \|\| 'observational' \}\} @ \$\{\{ github\.sha \}\}$/,
+  );
+  assert.match(
+    current["run-name"],
+    /'enforced' \|\|[\s\S]*'release-gated'\) \|\| 'observational' \}\} @ \$\{\{ github\.sha \}\}$/,
+  );
+  current["run-name"] = original["run-name"];
   assert.deepEqual(current, original);
 });
