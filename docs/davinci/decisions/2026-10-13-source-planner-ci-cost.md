@@ -1,86 +1,184 @@
-# CI cost audit, 2026-10-13
-
-Read-only measurements collected around 04:10–04:20 UTC. Source policy pinned to `b45d789b317933d48dadbba4841c8e353231547b`; no rerun, workflow mutation or gate reduction performed. `ubugeeei-redundancy.md` was reread. Preserve original tests, diagnostics, public receipts and full event/caller gates.
-
-## Selected implementation
+# Direct Node setup for source planning and measured CI costs
 
 Issue: [#6830](https://github.com/ubugeeei-prod/vize/issues/6830).
+Measurements were collected on 2026-10-13 around 04:10–04:20 UTC. Workflow
+policy is pinned to `b45d789b317933d48dadbba4841c8e353231547b`.
+`ubugeeei-redundancy.md` was reread. The audit did not rerun workflows or
+change gates, caches, dependencies or build systems.
+
+## Selected change
 
 Use the same SHA-pinned setup-node v6 as #8810 only in `pr-source-plan`,
 with `node-version-file: package.json` and `package-manager-cache: false`.
-The planner and inventory graph uses Node builtins, local modules and Cargo
-metadata. Preserve every command, output, event condition, dependency edge,
-mandatory preflight, runner and five-minute deadline. Existing workflow laws
-now reject a package-manager bootstrap while retaining failure propagation.
-Keep the real Vite+/Vue/TSGO installs in downstream test consumers.
+The planner and inventory graph uses Node built-ins, local modules and Cargo
+metadata. Every original command, output, event condition, dependency edge,
+mandatory preflight, runner and five-minute deadline stays intact. Existing
+workflow regressions reject package-manager bootstrap while retaining required
+preflight failure propagation. Downstream test consumers keep their real
+Vite+/Vue/tsgo dependencies.
 
-Local Node25.8.1 checks: the new runtime contract fails on the unchanged parent
-workflow;22 source-selection/preflight/plan/dependency regressions pass after
-the change. Hosted Node24.14 validation remains required.
-
-The parent measured144s setup out of182s planning. Fresh child exact-head
-Actions must prove the existing inventories/plans still pass and measure the
-new setup and total planner duration; this is an expected improvement, not
-an achieved whole-CI speed claim. Native Stack, exact-head gates and protected
-queue delivery remain required. Larger cache/build candidates below remain
-unimplemented and require their own bounded measurements.
+The parent planner spent 144 of 182 seconds in runtime setup. Local Node
+25.8.1 validation: the new runtime contract fails on the parent workflow;
+22 source-selection, preflight, planning and dependency regressions pass after
+the change. The two actual planner preflight files also pass all eight tests
+on the declared Node 24.14 runtime without installed workspace dependencies.
+A byte comparison confirms only the planner setup action and its inputs changed.
+Fresh child Actions must prove all existing inventories/plans and measure the
+new setup and total planner duration. Native Stack and protected queue delivery
+remain required. Larger candidates below remain unimplemented.
 
 ## Exact run evidence
 
-| Event / run | Head | Result | Measured wall time / limitation |
+| Event / run | Head | Result | Wall time and limitation |
 | --- | --- | --- | --- |
-| [PR Check 38341424403](https://github.com/ubugeeei-prod/vize/actions/runs/38341424403) | `d64adbc0085232ad11778838bfbf20dfd3bded3c` | success | 03:22:46→04:06:55, 44m09s; different changes from queue sample |
-| [merge_group Check 38340776641](https://github.com/ubugeeei-prod/vize/actions/runs/38340776641) | `b45d789b317933d48dadbba4841c8e353231547b` | success | 03:14:44→03:33:38, 18m54s; required source tier, not full schedule/dispatch qualification |
-| [main push Check 38342328555](https://github.com/ubugeeei-prod/vize/actions/runs/38342328555) | same `b45d789…` | in progress at measurement | Starts03:34:11; main push excludes Nix/full workspace/coverage/editor/parity suites by policy, cannot be called full Check |
-| [last scheduled main full Check 38237754010](https://github.com/ubugeeei-prod/vize/actions/runs/38237754010) | `01fb9eaa1089a6d5175eb0f9dd88df6285ebbd19` | failure | 10:40:03→11:14:09 on Oct12, 34m06s; older SHA, Nix failed and scripts hit30m deadline |
-| [previous main push 38341999006](https://github.com/ubugeeei-prod/vize/actions/runs/38341999006) | `6fb01f335952780d7a6321ca092049753645c83d` | cancelled | New main push created03:34:11; `check-v3-Check-refs/heads/main`, cancel-in-progress:true allows supersession. Cancellation is not test failure. Explicit dispatch/schedule uses `full-{sha}` and is insulated. |
+| [PR Check 38341424403](https://github.com/ubugeeei-prod/vize/actions/runs/38341424403) | `d64adbc0085232ad11778838bfbf20dfd3bded3c` | success | 03:22:46–04:06:55, 44m 09s; different changes from queue sample |
+| [Merge group Check 38340776641](https://github.com/ubugeeei-prod/vize/actions/runs/38340776641) | `b45d789b317933d48dadbba4841c8e353231547b` | success | 03:14:44–03:33:38, 18m 54s; required source tier |
+| [Main push Check 38342328555](https://github.com/ubugeeei-prod/vize/actions/runs/38342328555) | same `b45d789…` | in progress when measured | Starts 03:34:11; main push excludes full workspace, Nix, coverage, editor and parity suites by policy |
+| [Last scheduled full Check 38237754010](https://github.com/ubugeeei-prod/vize/actions/runs/38237754010) | `01fb9eaa1089a6d5175eb0f9dd88df6285ebbd19` | failure | Oct 12, 10:40:03–11:14:09, 34m 06s; older SHA, Nix failed and scripts hit their deadline |
+| [Previous main push 38341999006](https://github.com/ubugeeei-prod/vize/actions/runs/38341999006) | `6fb01f335952780d7a6321ca092049753645c83d` | cancelled | New main push created at 03:34:11; permitted supersession, not a test failure |
 
-Successor repair [#8810](https://github.com/ubugeeei-prod/vize/pull/8810) exact
-`d386fec942a26e190856d02050162cb64d0bd758` level direction
-[job115124107084](https://github.com/ubugeeei-prod/vize/actions/runs/38344961197/job/115124107084)
-was independently verified success04:07:57→04:08:21 UTC,24s, against main
-job115117177368 duration301s (setup-vp296s,cancelled). This is evidence for
-the bounded Node-only level gate repair, not whole-PR success. Its source
-planner [job115124107148](https://github.com/ubugeeei-prod/vize/actions/runs/38344961197/job/115124107148)
-ran182s04:07:57→04:10:59, including setup-vp144s04:08:02→04:10:26.
-Original remaining commands took33s, including inventory21s.
+Main push concurrency uses `check-v3-Check-refs/heads/main` with
+`cancel-in-progress: true`. Explicit dispatch and schedule use `full-{sha}`
+and are insulated from main push supersession. Neither queue source success
+nor main push success proves the full schedule/dispatch qualification.
+
+Parent [#8810](https://github.com/ubugeeei-prod/vize/pull/8810) at exact head
+`d386fec942a26e190856d02050162cb64d0bd758` supplies a narrow comparison:
+
+| Job | Duration | Observed phase |
+| --- | --- | --- |
+| [Dependency direction 115124107084](https://github.com/ubugeeei-prod/vize/actions/runs/38344961197/job/115124107084) | 24s, 04:07:57–04:08:21 | Direct Node successor succeeded |
+| Main dependency direction 115117177368 | 301s | setup-vp consumed 296s and was cancelled |
+| [Parent source planner 115124107148](https://github.com/ubugeeei-prod/vize/actions/runs/38344961197/job/115124107148) | 182s, 04:07:57–04:10:59 | setup-vp 144s, 04:08:02–04:10:26; remaining commands 33s including inventory 21s |
+
+The 24s dependency result proves the bounded level-gate repair, not whole-PR
+success or universal runtime-download availability.
 
 ## DAG and dominant costs
 
-PR plan job115117975618 started03:42:57, **20m11s after run creation**, then ran52s. Downstream producer/source jobs could not start before03:43:56. This scheduler wait alone is45.7% of44m09s. The timestamp delta measures wait, not proven runner-capacity cause.
+PR planner job 115117975618 started at 03:42:57, **20m 11s after run creation**,
+then ran for 52s. Its downstream producers could not start before 03:43:56.
+This timestamp gap accounts for 45.7% of the 44m 09s run. It measures waiting;
+it does not establish a runner-capacity or concurrency-limit cause.
 
-PR Rust chain: build115118206555 ran335s; shard3 115119603586 ran926s; source report11512340039825s; source report11512351659914s; top test report11512358837740s; PR comment11512377246423s. **Shard3 setup-vp742s vs actual nextest109s**. Log: installing vite-plus1.1.0 started03:49:51; next emitted installing dependencies04:00:24 (~633s bootstrap), dependencies20s, then Node24.14/cache598MB restore and vp install~79s (1915 reused,0 downloaded). No explicit retry/error explains the633s silence, so do not claim a diagnosed network endpoint failure. Other Rust shard setup-vp durations219/257/409s; archive download49–53s; tests83–109s.
+| PR job in run 38341424403 | Total | Relevant phase |
+| --- | --- | --- |
+| Rust producer 115118206555 | 335s | Archive build 117s; upload 33s |
+| Rust shard 3, 115119603586 | 926s | **setup-vp 742s**; archive download 53s; nextest 109s |
+| Other Rust shards | 374–581s | setup-vp 219 / 257 / 409s; downloads 49–51s; nextest 83–108s |
+| Rust report 115123400398 | 25s | Follows all shards |
+| Source report 115123516599 | 14s | Follows complete source DAG |
+| Final report 115123588377 | 40s | Required aggregation |
+| PR comment 115123772464 | 23s | Final completion at 04:06:55 |
 
-Sum of successful job wall durations: PR11,324s (~188.7 runner minutes), queue8,267s (~137.8 runner minutes). These are sums of elapsed jobs, not billable CPU or normalized performance comparison. Individually visible setup-vp steps: PR4,634s (~77.2 runner minutes), queue185s (~3.1 runner minutes); composites may hide additional setup time.
+Shard 3 logged `installing vite-plus@1.1.0` at 03:49:51, then
+`Installing dependencies` at 04:00:24: about 633s of bootstrap. Those
+dependencies took 20s. Node 24.14 and a 598 MB cache restore followed, then
+`vp install` took about 79s, reusing 1,915 packages and downloading zero.
+The 633s gap has no explicit retry/error identifying its endpoint or cause.
+Actual test execution was 109s; a slow setup must not be described as slow
+Rust execution.
 
-Queue critical paths: source CLI producer11511124644786s (build57s) unlocks tooling shard1 115111634380895s, including tooling611s plus current native evidence; required Rust differential115112525310679s (corpora550s) follows full archive producer115111246358298s. JS115111246227911s (package tests726s, UI147s), reach115111246325831s (actual reach708s), ssr-pug115111246345565s (corpora435s). Rust shards177–197s, actual nextest97–118s; archive transfer44–47s. More Rust shards alone will not improve the18m54s queue critical path.
+| Merge group job in run 38340776641 | Total | Relevant phase |
+| --- | --- | --- |
+| Shared source CLI 115111246447 | 86s | Build 57s; unlocks tooling consumers |
+| Tooling shard 1, 115111634380 | 895s | Tooling 611s plus original native evidence |
+| Full Rust producer 115111246358 | 298s | Archive 123s; doctests 46s; upload 31s |
+| Required differential 115112525310 | 679s | Corpora 550s, follows producer |
+| JS package gate 115111246227 | 911s | Tests 726s; UI 147s |
+| Production reach 115111246325 | 831s | Actual reach 708s |
+| SSR/Pug 115111246345 | 565s | Corpora 435s |
+| Four Rust consumers | 177–197s | nextest 97–118s; downloads 44–47s |
 
-Main push `build-js-packages`1151171774261515s: setup-vp245s, actual native/UI268s, **post sticky+Actions cache907s**. Log tar/zstd starts03:49:46.537; target seed saved04:04:51.504 (~905s). `check-vize-apps`115117177638585s includes build42s and post-cache394s. Sticky mounts succeeded. New fingerprint seed was absent, so this is one-time-per-lock/toolchain/role Actions seed serialization, not proof that every main SHA rearchives. API query did not expose this entry's size; do not invent GB figures. Existing source already suppresses target saves for clippy-test/coverage-source after historical25GB backend limits.
+Adding Rust shards alone cannot shorten the tooling/differential critical path.
+Sum of successful job durations was 11,324s for the PR and 8,267s for the
+queue. Individually visible setup-vp steps summed to 4,634s and 185s,
+respectively; composites may hide more. These are elapsed job sums, not billed
+CPU minutes or a normalized comparison between different source changes.
 
-Last full scheduled run: source coverage1147725301532037s, source report1976s (critical path); full clippy-and-test1147725301701617s, Clippy138s/allocation212s/Test1202s; scripts1147725300771808s (cancelled), test release scripts1483s; full JS114772530121924s with tests894s. These older timings identify targets, not current-main qualification. Full suite cannot be replaced by queue history.
+| Main push job in run 38342328555 | Total | Relevant phase |
+| --- | --- | --- |
+| Build JS packages 115117177426 | 1,515s | setup-vp 245s; native/UI 268s; **post-cache 907s** |
+| Check apps 115117177638 | 585s | CLI build 42s; post-cache 394s |
 
-## Rust build/cache identity
+Sticky mounts worked. The build target seed was absent for the current
+lock/toolchain fingerprint. `tar`/`zstd` started at 03:49:46.537; the seed save
+finished at 04:04:51.504, about 905s later. This is a one-time Actions seed cost
+per lock/toolchain/role, not evidence of rearchiving every main SHA. Cache API
+did not expose this entry's size. Do not invent a size from elapsed time.
+The implementation already suppresses target saves for `clippy-test` and
+`coverage-source` after historical entries exceeded the backend's 25 GB limit.
+
+| Older full scheduled job in run 38237754010 | Total | Relevant phase |
+| --- | --- | --- |
+| Source coverage 114772530153 | 2,037s | Coverage report 1,976s; critical path |
+| Full Clippy/tests 114772530170 | 1,617s | Clippy 138s; allocation 212s; tests 1,202s |
+| Scripts 114772530077 | 1,808s, cancelled | Release-script tests 1,483s; original 30m deadline |
+| Full JS tests 114772530121 | 924s | Tests 894s |
+
+Older full-suite timings identify candidates; they do not qualify current main.
+
+## Rust build and cache identity
 
 Official [stable channel metadata](https://static.rust-lang.org/dist/channel-rust-stable.toml)
-was fetched on2026-10-13: channel date2026-10-01, Rust/rustc1.99.0
-(b940084d7,2026-09-28), Cargo0.100.0(5f94df478,2026-08-27). The pinned
-1.99.0 matches current stable; no toolchain install/update was needed.
+was fetched on 2026-10-13: channel date 2026-10-01, Rust/rustc 1.99.0
+(`b940084d7`, 2026-09-28), Cargo 0.100.0 (`5f94df478`, 2026-08-27).
+Pinned 1.99.0 matches current stable; no toolchain install/update was needed.
+PR and queue logs independently confirm rustc 1.99.0. Some full jobs select
+`stable`; SemVer intentionally selects 1.95.0 and branch coverage uses nightly.
 
-Committed toolchain is1.99.0; PR/queue logs confirm rustc1.99.0(b940084d7,2026-09-28). PR builder pins1.99.0; several full jobs use stable; semver intentionally1.95.0, branch coverage nightly. Lock/toolchain fingerprint is`1ea6087ed98bd6cc1048efef91faa0112497b52eead3d2bbdbc26fe9effff72a` in these logs. Cache policy fingerprints committed Cargo.lock/rust-toolchain.toml, not the live stable/nightly compiler output; actual toolchain identity needs care when designing alternate seed roles.
+The cache fingerprint in these logs is
+`1ea6087ed98bd6cc1048efef91faa0112497b52eead3d2bbdbc26fe9effff72a`.
+It covers committed Cargo.lock and rust-toolchain.toml, not the live
+stable/nightly compiler output. Actual compiler identity matters for future seeds.
+PR producer 115118206555 had registry/git hits but a `nextest-ci-target` miss.
+Queue producer 115111246358 had registry/git hits but a `clippy-test-target` miss.
+Only trusted main push/schedule/dispatch can mount sticky disks; PR and merge
+checkouts remain restore-only. `nextest-ci` currently appears only in the
+untrusted PR producer, so it has no trusted producer. `clippy-test` deliberately
+cannot save its whole target. Opening mutable sticky disks to PRs is not a remedy.
 
-PR builder115118206555 had registry/git hits but `nextest-ci-target` miss. Queue producer115111246358 had registry/git hits but `clippy-test-target` miss. Sticky is allowed only trusted main push/schedule/dispatch, never PR/merge_group. `nextest-ci` appears only in the untrusted PR producer, so there is no current trusted producer for that role. `clippy-test` deliberately restore-only due historic entry size. Avoid opening sticky mutable targets to PRs to solve these misses.
+Build-once archives already serve four consumers. They bind SHA, tree, platform,
+rustc, profile, nextest and runtime envelope through receipts. Consumers execute
+`--archive-file` without rebuilding; doctests remain separate. The source CLI
+producer separately builds `cargo build --profile ci -p vize` plus the SFC
+oracle and shares receipt-bound binaries with four tooling consumers. Apps
+still builds its own CLI (47s in the queue sample). Different profiles,
+features, platforms and original-build receipt requirements prevent treating
+all Rust products as interchangeable.
 
-Archive build-once design already exists: PR cargo nextest archive affected packages117s, upload33s; queue full workspace archive123s, upload31s; four consumers run --archive-file without rebuilding. Receipt verifies SHA/tree/platform/rustc/profile/nextest/runtime envelope. Doctests execute separately (queue46s). Source CLI producer separately builds `cargo build --profile ci -p vize` plus SFC oracle, shares receipt-bound binaries among four tooling consumers; apps still builds own CLI47s in queue. Independent profile/features/platform artifacts and original-build receipt requirements prevent treating all builds as interchangeable.
+Rust shards are not dependency-free. Setup-vp `run-install: true` supplies the
+real workspace dependencies. `crates/vize_canon/tests/original_jsx_check.rs:80`
+unconditionally reads actual `docs/node_modules/vue/package.json` version
+3.5.35 and Vue typings. `crates/vize/tests/check_instance_props_cli.rs:31`
+resolves actual `node_modules/.bin/tsgo` and Vue. The merge envelope requires
+`VIZE_TEST_REQUIRE_TSGO=1`; the worker also invokes
+`vp node tests/differential/typechecker-shards.ts`. Removing their setup/install
+could break or skip original acceptance, so no Rust shard change was made.
 
-## Bounded next actions, preserving all gates
+## Bounded follow-ups with every gate retained
 
-1. **Fix runtime bootstrap at the actual dependency boundary.** #8810 removes Vite+ only from a proved Node-only level job;24s successor vs301s cancelled main confirms this narrow repair. Extend direct Node only to similarly dependency-free planning/reporting actions with unchanged scripts/gates. Investigate633s Vite+ bootstrap gap separately; consumers that need packages must retain full installation and real Vue/TSGO runtime. Compare same exact head/event at least twice, separate bootstrap/cache/installation/execution and preserve failing receipts.
-2. **Reduce trusted seed serialization cost without weakening isolation.** Current role-specific whole-target tar cost905s warrants a bounded compact build-cache/seed experiment; keep sticky for trusted main and restore-only for PR/queue. Measure size/serialization/restore plus correctness before accepting a trimmed Cargo seed. Fingerprint/profile/toolchain/runtime must remain explicit; don't add background work that races unmount or hides failure. Source target roles already specially suppress excessive archives; candidate must preserve existing actual-build evidence and every gate.
-3. **Measure full-suite execution and cold Rust roles before changing build systems.** The full current path runs `cargo test --workspace` plus feature corpora serially while queue already uses verified nextest build-once archives. Evaluate full nextest archive/shards only with same registered test inventory, full TSGO fixture envelopes, doctests, all feature corpora, allocation/Nix/coverage/editor/native/public receipts preserved; instrumented coverage retains separate compiler products. Also quantify a trusted compact nextest-ci seed because current role is never populated. Changes are candidates, not proof of savings; no Bazel/Ninja/dependency migration is supported by the measured primary costs.
+1. **Runtime bootstrap:** direct Node belongs only in proven dependency-free
+   planning/reporting actions. Investigate the unexplained 633s bootstrap gap
+   separately. Package consumers retain complete installation and real Vue/tsgo
+   runtime. Compare the same exact head/event, separating setup, installation,
+   cache and execution; retain failures and inventories.
+2. **Trusted seed cost:** measure a compact role-specific Cargo seed against the
+   905s whole-target serialization. Keep trusted sticky disks and restore-only
+   PR/queue policy, explicit fingerprint/profile/compiler identity and all
+   original-build receipts. Measure size, save, restore and correctness before
+   adopting a trimmed seed. No background work may race unmount or hide failure.
+3. **Full execution and cold roles:** compare full nextest archive/shards against
+   `cargo test --workspace` plus serial feature corpora. Preserve the complete
+   registered inventory, required tsgo fixtures, doctests, every feature corpus,
+   allocation/Nix/coverage/editor/native/public gate and receipt. Instrumented
+   coverage keeps separate compiler products. Measure a trusted compact
+   `nextest-ci` seed because that role is never populated today. No Bazel/Ninja
+   migration is justified by the primary measured costs.
 
-No direct-Node Rust shard change is safe merely because its visible command is cargo: setup-vp `run-install:true` populates real workspace dependencies. `crates/vize_canon/tests/original_jsx_check.rs:80` unconditionally reads actual `docs/node_modules/vue/package.json` version3.5.35 and Vue runtime typings; `crates/vize/tests/check_instance_props_cli.rs:31` resolves actual node_modules/.bin/tsgo and Vue. Merge envelope requires VIZE_TEST_REQUIRE_TSGO=1. The worker also uses `vp node tests/differential/typechecker-shards.ts`. Removing setup/install would break or silently skip original acceptance, so no shard child was created. The separate Rust source report is dependency-free (Node builtins/local imports, install:false), but costs25s and cannot resolve the742s shard bootstrap. A report-only child would be modest overhead hardening, not the main CI acceleration.
+These are candidates, not demonstrated savings or permission to reduce checks.
 
-## Reproduction commands
+## Reproduction
 
 Retain raw JSON and subtract startedAt/completedAt for each job/step:
 
@@ -93,5 +191,5 @@ rtk gh run view 38340776641 --job 115111246358 --log
 rtk gh api repos/ubugeeei-prod/vize/actions/jobs/115117177426/logs --allow-escape-sequences
 ```
 
-Pin workflow/cache policy with `git show b45d789b317933d48dadbba4841c8e353231547b:<path>`;
-avoid mutable origin/main when reproducing this snapshot.
+Pin workflow/cache policy with
+`git show b45d789b317933d48dadbba4841c8e353231547b:<path>` rather than mutable main.
