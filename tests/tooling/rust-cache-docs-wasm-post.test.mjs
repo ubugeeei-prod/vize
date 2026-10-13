@@ -4,12 +4,13 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
+import { cacheFixture, executeCacheAction } from "./support/rust-cache-fixture.mjs";
 import {
   allMountFailures,
   assertNoCandidateCommit,
-  cacheFixture,
-  executeCacheAction,
-} from "./support/rust-cache-fixture.mjs";
+  assertUntrustedStickyRows,
+  isCandidate,
+} from "./support/rust-cache-candidates.ts";
 
 const action = parse(
   readFileSync(
@@ -154,13 +155,8 @@ await test("PR, merge-group, foreign source and other untrusted events retain or
       if (foreignSource) context.sourceSha = foreignSource;
       context.event.deleted = deleted;
       // Candidates fall back to these restores only when their read-only mounts fail.
-      const candidate = event === "pull_request" || event === "merge_group";
-      const options = {
-        hit: "partial",
-        nestedPost: true,
-        secondaryWorkload: true,
-        mountFailures: candidate ? allMountFailures : [],
-      };
+      const mountFailures = isCandidate(event) ? allMountFailures : [];
+      const options = { hit: "partial", nestedPost: true, secondaryWorkload: true, mountFailures };
       const before = executeCacheAction(fixture, context, {
         ...options,
         steps: original.runs.steps,
@@ -172,12 +168,7 @@ await test("PR, merge-group, foreign source and other untrusted events retain or
       assert.equal(target(after).restoreOnly, true);
       assert.equal(target(after).lookup, false);
       assert.equal(after.trace.filter(({ kind }) => kind === "cache-post").length, 0);
-      if (candidate) assertNoCandidateCommit(after.trace);
-      else
-        assert.equal(
-          after.trace.filter(({ kind }) => kind === "sticky" || kind === "sticky-post").length,
-          0,
-        );
+      assertUntrustedStickyRows(after.trace, event);
     });
 });
 

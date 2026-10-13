@@ -3,12 +3,8 @@ import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
-import {
-  allMountFailures,
-  assertNoCandidateCommit,
-  cacheFixture,
-  executeCacheAction,
-} from "./support/rust-cache-fixture.mjs";
+import { cacheFixture, executeCacheAction } from "./support/rust-cache-fixture.mjs";
+import { allMountFailures, assertNoCandidateCommit } from "./support/rust-cache-candidates.ts";
 
 await test("nested cache posts save the validated target inputs after step outputs disappear", () => {
   for (const targetPath of ["target", "head/target", "tests/fuzz/target"])

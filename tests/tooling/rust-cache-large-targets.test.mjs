@@ -4,12 +4,8 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
-import {
-  allMountFailures,
-  assertNoCandidateCommit,
-  cacheFixture,
-  executeCacheAction,
-} from "./support/rust-cache-fixture.mjs";
+import { cacheFixture, executeCacheAction } from "./support/rust-cache-fixture.mjs";
+import { allMountFailures, assertNoCandidateCommit } from "./support/rust-cache-candidates.ts";
 
 const action = parse(
   readFileSync(

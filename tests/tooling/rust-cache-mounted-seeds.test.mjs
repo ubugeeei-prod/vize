@@ -5,12 +5,8 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { rustCachePolicy } from "../../.github/actions/setup-rust-sticky-cache/cache-policy.mjs";
-import {
-  allMountFailures,
-  assertNoCandidateCommit,
-  cacheFixture,
-  executeCacheAction,
-} from "./support/rust-cache-fixture.mjs";
+import { cacheFixture, executeCacheAction } from "./support/rust-cache-fixture.mjs";
+import { allMountFailures, assertNoCandidateCommit } from "./support/rust-cache-candidates.ts";
 
 const steps = parse(
   readFileSync(

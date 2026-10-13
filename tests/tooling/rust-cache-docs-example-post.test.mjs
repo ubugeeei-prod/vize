@@ -5,12 +5,13 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { rustCacheMountState } from "../../.github/actions/setup-rust-sticky-cache/cache-policy.mjs";
+import { cacheFixture, executeCacheAction } from "./support/rust-cache-fixture.mjs";
 import {
   allMountFailures,
   assertNoCandidateCommit,
-  cacheFixture,
-  executeCacheAction,
-} from "./support/rust-cache-fixture.mjs";
+  assertUntrustedStickyRows,
+  isCandidate,
+} from "./support/rust-cache-candidates.ts";
 
 const action = parse(
   readFileSync(
@@ -206,13 +207,8 @@ await test("PRs, merge groups and untrusted pushes retain exact restore-only beh
     cacheFixture((fixture) => {
       const context = { ...fixture.context(event, ref), ...paths };
       // Candidates fall back to these restores only when their read-only mounts fail.
-      const candidate = event === "pull_request" || event === "merge_group";
-      const options = {
-        hit: "partial",
-        nestedPost: true,
-        secondaryWorkload: true,
-        mountFailures: candidate ? allMountFailures : [],
-      };
+      const mountFailures = isCandidate(event) ? allMountFailures : [];
+      const options = { hit: "partial", nestedPost: true, secondaryWorkload: true, mountFailures };
       const old = executeCacheAction(fixture, context, { ...options, steps: original.runs.steps });
       const result = executeCacheAction(fixture, context, options);
       currentWorkloads(fixture, result);
@@ -220,12 +216,7 @@ await test("PRs, merge groups and untrusted pushes retain exact restore-only beh
       assert.equal(secondary(result).restoreOnly, true);
       assert.equal(secondary(result).lookup, false);
       assert.equal(result.trace.filter(({ kind }) => kind === "cache-post").length, 0);
-      if (candidate) assertNoCandidateCommit(result.trace);
-      else
-        assert.equal(
-          result.trace.filter(({ kind }) => kind === "sticky" || kind === "sticky-post").length,
-          0,
-        );
+      assertUntrustedStickyRows(result.trace, event);
     });
 });
 
