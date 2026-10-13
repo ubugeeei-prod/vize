@@ -29,13 +29,13 @@ remain required. Larger candidates below remain unimplemented.
 
 ## Exact run evidence
 
-| Event / run | Head | Result | Wall time and limitation |
-| --- | --- | --- | --- |
-| [PR Check 38341424403](https://github.com/ubugeeei-prod/vize/actions/runs/38341424403) | `d64adbc0085232ad11778838bfbf20dfd3bded3c` | success | 03:22:46–04:06:55, 44m 09s; different changes from queue sample |
-| [Merge group Check 38340776641](https://github.com/ubugeeei-prod/vize/actions/runs/38340776641) | `b45d789b317933d48dadbba4841c8e353231547b` | success | 03:14:44–03:33:38, 18m 54s; required source tier |
-| [Main push Check 38342328555](https://github.com/ubugeeei-prod/vize/actions/runs/38342328555) | same `b45d789…` | in progress when measured | Starts 03:34:11; main push excludes full workspace, Nix, coverage, editor and parity suites by policy |
-| [Last scheduled full Check 38237754010](https://github.com/ubugeeei-prod/vize/actions/runs/38237754010) | `01fb9eaa1089a6d5175eb0f9dd88df6285ebbd19` | failure | Oct 12, 10:40:03–11:14:09, 34m 06s; older SHA, Nix failed and scripts hit their deadline |
-| [Previous main push 38341999006](https://github.com/ubugeeei-prod/vize/actions/runs/38341999006) | `6fb01f335952780d7a6321ca092049753645c83d` | cancelled | New main push created at 03:34:11; permitted supersession, not a test failure |
+| Event / run                                                                                             | Head                                       | Result                    | Wall time and limitation                                                                              |
+| ------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ------------------------- | ----------------------------------------------------------------------------------------------------- |
+| [PR Check 38341424403](https://github.com/ubugeeei-prod/vize/actions/runs/38341424403)                  | `d64adbc0085232ad11778838bfbf20dfd3bded3c` | success                   | 03:22:46–04:06:55, 44m 09s; different changes from queue sample                                       |
+| [Merge group Check 38340776641](https://github.com/ubugeeei-prod/vize/actions/runs/38340776641)         | `b45d789b317933d48dadbba4841c8e353231547b` | success                   | 03:14:44–03:33:38, 18m 54s; required source tier                                                      |
+| [Main push Check 38342328555](https://github.com/ubugeeei-prod/vize/actions/runs/38342328555)           | same `b45d789…`                            | in progress when measured | Starts 03:34:11; main push excludes full workspace, Nix, coverage, editor and parity suites by policy |
+| [Last scheduled full Check 38237754010](https://github.com/ubugeeei-prod/vize/actions/runs/38237754010) | `01fb9eaa1089a6d5175eb0f9dd88df6285ebbd19` | failure                   | Oct 12, 10:40:03–11:14:09, 34m 06s; older SHA, Nix failed and scripts hit their deadline              |
+| [Previous main push 38341999006](https://github.com/ubugeeei-prod/vize/actions/runs/38341999006)        | `6fb01f335952780d7a6321ca092049753645c83d` | cancelled                 | New main push created at 03:34:11; permitted supersession, not a test failure                         |
 
 Main push concurrency uses `check-v3-Check-refs/heads/main` with
 `cancel-in-progress: true`. Explicit dispatch and schedule use `full-{sha}`
@@ -45,10 +45,10 @@ nor main push success proves the full schedule/dispatch qualification.
 Parent [#8810](https://github.com/ubugeeei-prod/vize/pull/8810) at exact head
 `d386fec942a26e190856d02050162cb64d0bd758` supplies a narrow comparison:
 
-| Job | Duration | Observed phase |
-| --- | --- | --- |
-| [Dependency direction 115124107084](https://github.com/ubugeeei-prod/vize/actions/runs/38344961197/job/115124107084) | 24s, 04:07:57–04:08:21 | Direct Node successor succeeded |
-| Main dependency direction 115117177368 | 301s | setup-vp consumed 296s and was cancelled |
+| Job                                                                                                                   | Duration                | Observed phase                                                                   |
+| --------------------------------------------------------------------------------------------------------------------- | ----------------------- | -------------------------------------------------------------------------------- |
+| [Dependency direction 115124107084](https://github.com/ubugeeei-prod/vize/actions/runs/38344961197/job/115124107084)  | 24s, 04:07:57–04:08:21  | Direct Node successor succeeded                                                  |
+| Main dependency direction 115117177368                                                                                | 301s                    | setup-vp consumed 296s and was cancelled                                         |
 | [Parent source planner 115124107148](https://github.com/ubugeeei-prod/vize/actions/runs/38344961197/job/115124107148) | 182s, 04:07:57–04:10:59 | setup-vp 144s, 04:08:02–04:10:26; remaining commands 33s including inventory 21s |
 
 The 24s dependency result proves the bounded level-gate repair, not whole-PR
@@ -61,15 +61,15 @@ then ran for 52s. Its downstream producers could not start before 03:43:56.
 This timestamp gap accounts for 45.7% of the 44m 09s run. It measures waiting;
 it does not establish a runner-capacity or concurrency-limit cause.
 
-| PR job in run 38341424403 | Total | Relevant phase |
-| --- | --- | --- |
-| Rust producer 115118206555 | 335s | Archive build 117s; upload 33s |
-| Rust shard 3, 115119603586 | 926s | **setup-vp 742s**; archive download 53s; nextest 109s |
-| Other Rust shards | 374–581s | setup-vp 219 / 257 / 409s; downloads 49–51s; nextest 83–108s |
-| Rust report 115123400398 | 25s | Follows all shards |
-| Source report 115123516599 | 14s | Follows complete source DAG |
-| Final report 115123588377 | 40s | Required aggregation |
-| PR comment 115123772464 | 23s | Final completion at 04:06:55 |
+| PR job in run 38341424403  | Total    | Relevant phase                                               |
+| -------------------------- | -------- | ------------------------------------------------------------ |
+| Rust producer 115118206555 | 335s     | Archive build 117s; upload 33s                               |
+| Rust shard 3, 115119603586 | 926s     | **setup-vp 742s**; archive download 53s; nextest 109s        |
+| Other Rust shards          | 374–581s | setup-vp 219 / 257 / 409s; downloads 49–51s; nextest 83–108s |
+| Rust report 115123400398   | 25s      | Follows all shards                                           |
+| Source report 115123516599 | 14s      | Follows complete source DAG                                  |
+| Final report 115123588377  | 40s      | Required aggregation                                         |
+| PR comment 115123772464    | 23s      | Final completion at 04:06:55                                 |
 
 Shard 3 logged `installing vite-plus@1.1.0` at 03:49:51, then
 `Installing dependencies` at 04:00:24: about 633s of bootstrap. Those
@@ -79,16 +79,16 @@ The 633s gap has no explicit retry/error identifying its endpoint or cause.
 Actual test execution was 109s; a slow setup must not be described as slow
 Rust execution.
 
-| Merge group job in run 38340776641 | Total | Relevant phase |
-| --- | --- | --- |
-| Shared source CLI 115111246447 | 86s | Build 57s; unlocks tooling consumers |
-| Tooling shard 1, 115111634380 | 895s | Tooling 611s plus original native evidence |
-| Full Rust producer 115111246358 | 298s | Archive 123s; doctests 46s; upload 31s |
-| Required differential 115112525310 | 679s | Corpora 550s, follows producer |
-| JS package gate 115111246227 | 911s | Tests 726s; UI 147s |
-| Production reach 115111246325 | 831s | Actual reach 708s |
-| SSR/Pug 115111246345 | 565s | Corpora 435s |
-| Four Rust consumers | 177–197s | nextest 97–118s; downloads 44–47s |
+| Merge group job in run 38340776641 | Total    | Relevant phase                             |
+| ---------------------------------- | -------- | ------------------------------------------ |
+| Shared source CLI 115111246447     | 86s      | Build 57s; unlocks tooling consumers       |
+| Tooling shard 1, 115111634380      | 895s     | Tooling 611s plus original native evidence |
+| Full Rust producer 115111246358    | 298s     | Archive 123s; doctests 46s; upload 31s     |
+| Required differential 115112525310 | 679s     | Corpora 550s, follows producer             |
+| JS package gate 115111246227       | 911s     | Tests 726s; UI 147s                        |
+| Production reach 115111246325      | 831s     | Actual reach 708s                          |
+| SSR/Pug 115111246345               | 565s     | Corpora 435s                               |
+| Four Rust consumers                | 177–197s | nextest 97–118s; downloads 44–47s          |
 
 Adding Rust shards alone cannot shorten the tooling/differential critical path.
 Sum of successful job durations was 11,324s for the PR and 8,267s for the
@@ -96,10 +96,10 @@ queue. Individually visible setup-vp steps summed to 4,634s and 185s,
 respectively; composites may hide more. These are elapsed job sums, not billed
 CPU minutes or a normalized comparison between different source changes.
 
-| Main push job in run 38342328555 | Total | Relevant phase |
-| --- | --- | --- |
-| Build JS packages 115117177426 | 1,515s | setup-vp 245s; native/UI 268s; **post-cache 907s** |
-| Check apps 115117177638 | 585s | CLI build 42s; post-cache 394s |
+| Main push job in run 38342328555 | Total  | Relevant phase                                     |
+| -------------------------------- | ------ | -------------------------------------------------- |
+| Build JS packages 115117177426   | 1,515s | setup-vp 245s; native/UI 268s; **post-cache 907s** |
+| Check apps 115117177638          | 585s   | CLI build 42s; post-cache 394s                     |
 
 Sticky mounts worked. The build target seed was absent for the current
 lock/toolchain fingerprint. `tar`/`zstd` started at 03:49:46.537; the seed save
@@ -109,12 +109,12 @@ did not expose this entry's size. Do not invent a size from elapsed time.
 The implementation already suppresses target saves for `clippy-test` and
 `coverage-source` after historical entries exceeded the backend's 25 GB limit.
 
-| Older full scheduled job in run 38237754010 | Total | Relevant phase |
-| --- | --- | --- |
-| Source coverage 114772530153 | 2,037s | Coverage report 1,976s; critical path |
-| Full Clippy/tests 114772530170 | 1,617s | Clippy 138s; allocation 212s; tests 1,202s |
-| Scripts 114772530077 | 1,808s, cancelled | Release-script tests 1,483s; original 30m deadline |
-| Full JS tests 114772530121 | 924s | Tests 894s |
+| Older full scheduled job in run 38237754010 | Total             | Relevant phase                                     |
+| ------------------------------------------- | ----------------- | -------------------------------------------------- |
+| Source coverage 114772530153                | 2,037s            | Coverage report 1,976s; critical path              |
+| Full Clippy/tests 114772530170              | 1,617s            | Clippy 138s; allocation 212s; tests 1,202s         |
+| Scripts 114772530077                        | 1,808s, cancelled | Release-script tests 1,483s; original 30m deadline |
+| Full JS tests 114772530121                  | 924s              | Tests 894s                                         |
 
 Older full-suite timings identify candidates; they do not qualify current main.
 
