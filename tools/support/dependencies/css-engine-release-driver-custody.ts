@@ -81,8 +81,20 @@ export function authenticateCssReleaseDriver(
   // Authenticate the original reference before accepting either entire known body.
   assert.equal(expectedOriginalSha256, driver.original, filename);
   if (actual === driver.original) return;
-  assert.equal(actual, driver.current, filename);
   let inverse = bytes.toString("utf8");
+  // The reviewed footer parser changes only the entry's cache pin. Authenticate
+  // the entire composed driver before reversing that one literal; the existing
+  // stable-route inverse must still recover the original producer afterwards.
+  if (
+    filename === "tools/commands/release/pr.rs" &&
+    actual === "f52e21a0b92203079a0a2f59cc509d7fe5864a64689cbde891412a7392bab73a"
+  ) {
+    const current = "//! Driver source pin: release-bot-envelope-variants-v16.";
+    const original = "//! Driver source pin: decorated-integration-body-custody-v15.";
+    assert.equal(inverse.split(current).length - 1, 1, filename);
+    inverse = inverse.replace(current, original);
+  }
+  assert.equal(sha256(Buffer.from(inverse)), driver.current, filename);
   for (const step of driver.inverses) {
     assert.equal(inverse.split(step.current).length - 1, step.exactOccurrences, filename);
     inverse = inverse.replaceAll(step.current, step.original);

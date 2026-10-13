@@ -15,6 +15,12 @@ the repository and PR identity in both footer links, the disabled marker,
 balanced envelopes, and the existing refusal of duplicate or unknown suffixes.
 Bot summaries remain nonauthoritative and cannot relax qualification gates.
 
+After #8778 merged, retain its reviewed stable-route driver. Authenticate the
+entire composed driver before reversing exactly one cache-pin comment to that
+known driver, then apply the existing whole stable-route inverse to the original
+producer. Keep all nine original producer references and reject any unknown
+body, reference pin, or path; this is no general source-hash exemption.
+
 The original hosted event/current snapshots and the settled body are regression
 fixtures under `tests/_fixtures/release/integration-body-448/`. Existing v0.447.0
 fixtures and refusal tests remain in place. This correction fixes body parsing;

@@ -208,7 +208,7 @@ for (const [filename, checksum] of [
   ],
   [
     "tools/support/dependencies/css-engine-release-driver-custody.ts",
-    "7f6a1a1f407dd72f996cc421830116c1707906a73ac7bc7975c5821b9783807a",
+    "894d2e91a72b93a349623657c54309196848242cec390e837a2688573c2c1431",
   ],
   [
     "tests/_fixtures/differential/css-engine-vendor-exit/release-inheritance/stable-driver/pr-original.rs.txt",
