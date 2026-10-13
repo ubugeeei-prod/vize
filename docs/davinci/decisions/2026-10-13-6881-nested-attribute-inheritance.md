@@ -30,3 +30,9 @@ message, byte range, help, labels, fixes and counts.
 The initial source-plan run 38337620437 refused a stale Patina source inventory.
 Regenerating that existing inventory changes only its Patina shard; all checks
 remain required on the successor head. The original failure is retained.
+
+The namesake control lives in an integration test outside the production rule
+catalog. Actual Actions then exposed a borrowed temporary and repository
+string/slicing checks; those bounded source repairs retain the same rule laws.
+Current source bookkeeping updates three existing rows and their whole-manifest
+pins, retaining all 206 historical bodies and the remaining 320 current rows.

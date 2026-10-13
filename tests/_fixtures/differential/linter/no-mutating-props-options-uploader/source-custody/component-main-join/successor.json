@@ -367,9 +367,9 @@
     {
       "path": "crates/vize_patina/src/linter/script_rules.rs",
       "mode": "100644",
-      "bytes": 9734,
-      "sha256": "9a3f6978f30b5895c31d5eb0f333175f8ee60c1a52bccc31615d5ceb075f1e2b",
-      "gitBlob": "9eddae3f363f1965b59aedbc487af25ff18f9e94"
+      "bytes": 10420,
+      "sha256": "7f66cc2be7164e940ada709020311b1e9f19917a72cdfad194a4ba27aa59079b",
+      "gitBlob": "d875e6d54e40f09648a943c61e7ff00b7c63618b"
     },
     {
       "path": "crates/vize_patina/src/linter/script_rules/registry/rules.rs",
@@ -381,9 +381,9 @@
     {
       "path": "crates/vize_patina/src/linter/script_rules/sfc.rs",
       "mode": "100644",
-      "bytes": 7993,
-      "sha256": "4ba51a6cabd3fdb1ce973edfa7cf7bf4dac6d0bf12b6e9294ee75b9c3dd1ba46",
-      "gitBlob": "c36f934e635b6aced245ae92ce0bafa1ddb613bf"
+      "bytes": 8917,
+      "sha256": "0a6b3092ee6aa301af5807a74e56edc206deb009b77677f949a68cc769e4b550",
+      "gitBlob": "a91ed6995bd9276260087eced38a67487c7f1c0c"
     },
     {
       "path": "crates/vize_patina/src/linter/script_rules/sfc/registered_sfc.rs",
@@ -605,9 +605,9 @@
     {
       "path": "docs/davinci/plan/consumer-migration-surfaces/linter/vize_patina.tsv",
       "mode": "100644",
-      "bytes": 161345,
-      "sha256": "2e6aea481b67658a0a55f8b8df79bba8b79b73542f8020072f1e0a4b52d82b05",
-      "gitBlob": "25eb6ca6b79ad74890f78072112e4dc153e16f3c"
+      "bytes": 162451,
+      "sha256": "df279bc952314af5fb264857234ed3a223941379d8760282578d7bc7260ab80f",
+      "gitBlob": "b9ab5faff6e6da69dd2d23fb75cd2f0df9f6f159"
     },
     {
       "path": "tests/_fixtures/differential/lint/n8n-cli-config/cases.json",
