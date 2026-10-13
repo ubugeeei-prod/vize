@@ -129,7 +129,7 @@ test("check workflow gates PRs and merge groups, and comments on PRs", () => {
 
   assert.match(
     commentJob,
-    /if:\s*\$\{\{\s*always\(\) && github\.event_name == 'pull_request' && github\.event\.pull_request\.head\.repo\.full_name == github\.repository\s*\}\}/,
+    /if:\s*\$\{\{\s*!cancelled\(\) && github\.event_name == 'pull_request' && github\.event\.pull_request\.head\.repo\.full_name == github\.repository\s*\}\}/,
   );
   assert.match(commentJob, /needs:\n\s+- test-report\b/);
   assert.match(commentJob, /actions:\s*read/);

@@ -42,6 +42,16 @@ pub struct SsrCompilerOptions {
     #[serde(default)]
     pub custom_renderer: bool,
 
+    /// The component hydrates as a Vapor component. Its markup keeps the
+    /// anchors the Vapor runtime claims: the empty `v-if` placeholder where
+    /// comments are otherwise dropped, a fragment around each Suspense slot,
+    /// and nested fragments inside `TransitionGroup`.
+    ///
+    /// Left out of the serialized options while it is off, so option
+    /// payloads recorded before it existed still describe the default.
+    #[serde(default, skip_serializing_if = "core::ops::Not::not")]
+    pub vapor: bool,
+
     /// CSS variables to inject (from SFC <style> blocks with v-bind)
     #[serde(default)]
     pub ssr_css_vars: Option<String>,
@@ -73,6 +83,7 @@ impl Clone for SsrCompilerOptions {
             inline: self.inline,
             is_ts: self.is_ts,
             custom_renderer: self.custom_renderer,
+            vapor: self.vapor,
             ssr_css_vars: self.ssr_css_vars.clone(),
             dialect: self.dialect,
             binding_metadata: self.binding_metadata.clone(),

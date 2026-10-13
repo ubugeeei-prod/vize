@@ -159,7 +159,6 @@ test("P3-15 theorems are audited and the lattice differential is wired", () => {
     }
   }
   const theorems = readRepoFile("tests", "formal", "impeto", "Impeto", "Theorems.lean");
-  assert.match(theorems, /^import Impeto\.LatticeLaws$/mu);
   assert.match(theorems, /^import Impeto\.ScheduleLaws$/mu);
   assert.match(theorems, /^import Impeto\.IncrementalLaws$/mu);
   assert.match(theorems, /^#audit_impeto_theorems \d+$/mu);
@@ -169,17 +168,34 @@ test("P3-15 theorems are audited and the lattice differential is wired", () => {
     main,
     /"--check-lattice-fixtures"\] => LatticeFixture\.checkFile "fixtures\/reactivity-lattice\.folio"/u,
   );
-  const laws = readRepoFile("tests", "formal", "impeto", "Impeto", "LatticeLaws.lean");
+  // The lattice laws left Lean: Kani verifies the shipped evaluator instead.
+  const lattice =
+    readRepoFile("tests", "formal", "kani", "l3_lattice.rs") +
+    readRepoFile("tests", "formal", "kani", "l3_lattice_classify.rs");
   for (const name of [
-    "join_le_iff",
-    "effectsFloor_eq_tier",
-    "classify_spec",
-    "classify_monotone",
-    "classify_verdict_orthogonal",
-    "provideInject_capped",
+    "join_has_its_units_and_is_monotone",
+    "the_effect_floor_is_the_join_of_the_rule_table",
+    "classify_is_the_least_admissible_class",
+    "classification_is_monotone",
+    "the_provide_inject_cap_never_lowers_and_is_already_implied",
   ]) {
-    assert.match(laws, new RegExp(`^theorem ${name}\\b`, "mu"), `missing theorem ${name}`);
+    assert.match(
+      lattice,
+      new RegExp(
+        `^ *#\\[kani::proof\\]\\n(?: *#\\[kani::unwind\\(\\d+\\)\\]\\n)? *fn ${name}\\(\\)`,
+        "mu",
+      ),
+      `missing Kani harness ${name}`,
+    );
   }
+  assert.match(
+    readRepoFile("davinci", "vize_l3", "tests", "lattice.rs"),
+    /^fn the_verdict_never_changes_the_class_and_only_proven_facts_fire\(\)/mu,
+  );
+  assert.match(
+    readRepoFile(".github", "workflows", "davinci-kani.yml"),
+    /args: tests\/formal\/kani\/l3_lattice\.rs /u,
+  );
   const schedule = readRepoFile("tests", "formal", "impeto", "Impeto", "ScheduleLaws.lean");
   for (const name of [
     "accepted_schedule_orders_edges",

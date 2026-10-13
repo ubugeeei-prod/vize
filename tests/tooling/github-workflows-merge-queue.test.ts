@@ -80,7 +80,10 @@ test("queue scope reaches the planner and every full source lane remains require
     "canonical-corpus",
     "pr-source-cli",
   ]);
-  assert.equal(source.jobs["source-report"].if, "${{ always() }}");
+  assert.equal(
+    source.jobs["source-report"].if,
+    "${{ always() && !contains(needs.*.result, 'cancelled') }}",
+  );
   assert.match(commands(source.jobs["source-report"]), /canonical-corpus-selection\.mjs/);
   assert.ok(check.jobs["test-report"].needs?.includes("pr-source-checks"));
   for (const required of [
@@ -131,7 +134,7 @@ test("queue Rust retains full doctests and the unchanged feature tail beside req
   const coverage = sibling.findIndex((step) => step.name === "Check fixture coverage");
   assert.ok(pkl >= 0 && pkl < workspace && tail >= 0 && tail < coverage);
   assert.equal(steps[workspace].env?.VIZE_TEST_REQUIRE_TSGO, "1");
-  assert.equal(rust.jobs["merge-rust-differential"].needs, "merge-rust-source");
+  assert.equal(rust.jobs["merge-rust-differential"].needs, undefined);
   assert.equal(
     rust.jobs["merge-rust-differential"].uses,
     "./.github/workflows/pr-rust-differential.yml",

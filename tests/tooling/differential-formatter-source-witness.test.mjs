@@ -53,7 +53,9 @@ void test("assertion-only source witness rejects owner, archived source and snap
     const target = path.join(scratch, relative);
     const saved = fs.readFileSync(target);
     fs.writeFileSync(target, Buffer.concat([saved, Buffer.from("// drift\n")]));
-    assert.throws(() => resolvePreservedFormatterSource(scratch, artifact));
+    // A later edit outside the preserved functions of the live owner is admitted.
+    if (relative === authority.owner) resolvePreservedFormatterSource(scratch, artifact);
+    else assert.throws(() => resolvePreservedFormatterSource(scratch, artifact));
     fs.rmSync(target);
     assert.throws(() => resolvePreservedFormatterSource(scratch, artifact));
     fs.writeFileSync(target, saved);

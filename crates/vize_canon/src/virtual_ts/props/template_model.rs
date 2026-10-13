@@ -29,8 +29,10 @@ use super::with_defaults::{
 use super::{strip_generic_params, strip_outer_angle_brackets, type_reference_lookup_key};
 use crate::virtual_ts::generator::setup_scope::define_props_type_requires_setup_scope;
 
+mod opaque_defaults;
 mod type_shape;
 
+use opaque_defaults::{generate_opaque_defaults_capture, opaque_defaults_props_type_ref};
 use type_shape::{has_top_level_type_operator, is_plain_inline_type_literal};
 
 /// The component's resolved prop contract as the template sees it.
@@ -99,8 +101,9 @@ impl TemplatePropsModel {
         } else {
             authored_type_ref.clone()
         };
-        let resolved_type_ref =
-            template_props_type_ref(base_type_ref.as_str(), &defaulted_prop_names);
+        let resolved_type_ref = opaque_defaults_props_type_ref(summary).unwrap_or_else(|| {
+            template_props_type_ref(base_type_ref.as_str(), &defaulted_prop_names)
+        });
 
         Self {
             authored_type_ref,
@@ -120,6 +123,13 @@ impl TemplatePropsModel {
     pub(crate) fn instance_props_type(&self) -> Option<String> {
         self.declares_props
             .then(|| cstr!("Readonly<{}>", self.resolved_type_ref))
+    }
+
+    /// Emit the setup-scope capture an opaque `withDefaults` argument is typed
+    /// from. Must precede the template scope that reads the resolved contract.
+    pub(crate) fn emit_defaults_capture(ts: &mut String, summary: &Croquis) {
+        let model = Self::new(summary);
+        generate_opaque_defaults_capture(ts, summary, model.authored_type_ref.as_str());
     }
 }
 

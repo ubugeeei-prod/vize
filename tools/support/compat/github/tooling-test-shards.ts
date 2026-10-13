@@ -6,8 +6,7 @@ import { readFileSync } from "node:fs";
 export const MAX_TOOLING_SHARDS = 16;
 export const TARGET_TOOLING_SHARD_MS = 100_000;
 export const TOOLING_TIMINGS_SCHEMA = "vize-tooling-test-timings-v1";
-// The table names every tooling test, so it lives beside them rather than among the tools
-// whose mentions of the release-input roots typechecker-native-release-inputs reviews.
+// The table names every tooling test, so it lives beside them.
 export const TOOLING_TIMINGS_PATH = new URL(
   "../../../../tests/tooling/fixtures/tooling-test-timings.json",
   import.meta.url,

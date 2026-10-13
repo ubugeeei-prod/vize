@@ -4,11 +4,8 @@ import fs from "node:fs";
 import path from "node:path";
 import {
   authenticateJavaScriptSfcSource,
-  javascriptSfcSourcePaths,
   javascriptSfcContextPaths,
 } from "./javascript-sfc-source-context.mjs";
-
-import { starListingLexicalReader } from "./empty-vue-star-listing-source.mjs";
 
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const supplementalHelpers = [
@@ -26,12 +23,15 @@ export const nativeLexicalSourcePaths = (manifest, helpers) => [
     "rust-toolchain.toml",
     "crates/vize_canon/Cargo.toml",
     "crates/vize_canon/src/lib.rs",
-    ...javascriptSfcSourcePaths,
     ...supplementalHelpers,
   ]),
 ];
 
-/** Raw copied metadata remains actual; only the unchanged lexical table reads historical source. */
+/**
+ * Raw copied metadata remains actual; only the unchanged lexical table reads
+ * historical source. The historical view comes from the recorded JavaScript
+ * SFC context, so the packet does not copy or pin the files that context names.
+ */
 export function validateNativeLexicalSources(output, metadata, manifest, helpers) {
   assert.deepEqual(
     metadata.copied.map((entry) => entry.file).sort((a, b) => a.localeCompare(b)),
@@ -49,9 +49,7 @@ export function validateNativeLexicalSources(output, metadata, manifest, helpers
       digest(fs.readFileSync(actual)),
     );
   }
-  const context = authenticateJavaScriptSfcSource(
-    starListingLexicalReader(path.join(output, "source")),
-  );
+  const context = authenticateJavaScriptSfcSource();
   for (const [file, , expected] of [...manifest.files, ...manifest.corpusBodies])
     assert.equal(digest(context.historicalAfter(file)), expected);
   return context.receipt;

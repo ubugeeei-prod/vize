@@ -17,7 +17,7 @@ use vize_l1_to_l2::{
 };
 
 use super::pipeline::L2EmitSelection;
-use super::selection::DomLegacyReason;
+use super::selection::{DomLegacyReason, noting_refusal};
 use crate::namespace::get_namespace;
 use crate::options::DomCompilerOptions;
 
@@ -225,7 +225,7 @@ pub(super) fn try_emit_l2(
         hoisted_scope_id,
         experimental_component_name,
     )?;
-    profile!(
+    noting_refusal(profile!(
         "atelier.dom.template.s2_codegen",
         emit_l2(
             allocator,
@@ -236,7 +236,7 @@ pub(super) fn try_emit_l2(
             false,
             false,
         )
-    )
+    ))
     .ok()
 }
 

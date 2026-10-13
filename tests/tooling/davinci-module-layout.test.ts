@@ -185,6 +185,66 @@ function pathAttributeAt(source: string, hash: number): boolean {
   return cfgAttrContainsPath(source, cursor);
 }
 
+function attributeEnd(source: string, hash: number): number | undefined {
+  let cursor = skipTrivia(source, hash + 1);
+  if (source[cursor] !== "[") return undefined;
+  let depth = 1;
+  cursor += 1;
+  while (cursor < source.length && depth > 0) {
+    const triviaEnd = skipTrivia(source, cursor);
+    if (triviaEnd !== cursor) {
+      cursor = triviaEnd;
+      continue;
+    }
+    const rawEnd = rawStringEnd(source, cursor);
+    if (rawEnd !== undefined) {
+      cursor = rawEnd;
+      continue;
+    }
+    if (source[cursor] === '"') {
+      cursor = skipQuoted(source, cursor);
+      continue;
+    }
+    if (source[cursor] === "'") {
+      const charEnd = charLiteralEnd(source, cursor);
+      if (charEnd !== undefined) {
+        cursor = charEnd;
+        continue;
+      }
+    }
+    if (source[cursor] === "[") depth += 1;
+    if (source[cursor] === "]") depth -= 1;
+    cursor += 1;
+  }
+  return depth === 0 ? cursor : undefined;
+}
+
+function siblingTestModuleEnd(source: string, start: number): number | undefined {
+  let cursor = start;
+  let testOnly = false;
+  let siblingPath = false;
+  while (source[cursor] === "#") {
+    const end = attributeEnd(source, cursor);
+    if (end === undefined) return undefined;
+    const attribute = source.slice(cursor, end);
+    if (/^#\s*\[\s*cfg\s*\(\s*test\s*\)\s*\]$/u.test(attribute)) testOnly = true;
+    if (pathAttributeAt(source, cursor)) {
+      if (
+        siblingPath ||
+        !/^#\s*\[\s*(?:r#)?path\s*=\s*"(?:[A-Za-z_][A-Za-z_0-9]*_)?tests?\.rs"\s*\]$/u.test(
+          attribute,
+        )
+      )
+        return undefined;
+      siblingPath = true;
+    }
+    cursor = skipTrivia(source, end);
+  }
+  if (!testOnly || !siblingPath) return undefined;
+  const declaration = /^mod\s+(?:r#)?[A-Za-z_][A-Za-z_0-9]*\s*;/u.exec(source.slice(cursor));
+  return declaration === null ? undefined : cursor + declaration[0].length;
+}
+
 function hasPathAttribute(source: string): boolean {
   let cursor = 0;
   while (cursor < source.length) {
@@ -211,7 +271,14 @@ function hasPathAttribute(source: string): boolean {
         continue;
       }
     }
-    if (source[cursor] === "#" && pathAttributeAt(source, cursor)) return true;
+    if (source[cursor] === "#") {
+      const testEnd = siblingTestModuleEnd(source, cursor);
+      if (testEnd !== undefined) {
+        cursor = testEnd;
+        continue;
+      }
+      if (pathAttributeAt(source, cursor)) return true;
+    }
     cursor += 1;
   }
   return false;
@@ -230,7 +297,7 @@ function rustFiles(root: string): string[] {
   return files;
 }
 
-test("gated Rust modules use ordinary module discovery", () => {
+test("gated Rust modules use ordinary discovery or test-only sibling files", () => {
   const violations = ordinaryModuleRoots.flatMap((root) =>
     rustFiles(path.join(repoRoot, root))
       .filter((file) => hasPathAttribute(fs.readFileSync(file, "utf8")))
@@ -239,8 +306,39 @@ test("gated Rust modules use ordinary module discovery", () => {
   assert.deepEqual(
     violations,
     [],
-    `replace path-attributed modules with ordinary mod declarations:\n${violations.join("\n")}`,
+    `use ordinary modules or cfg(test) sibling test files:\n${violations.join("\n")}`,
   );
+});
+
+test("a test-only sibling file does not require a dedicated directory", () => {
+  for (const file of ["tests.rs", "test.rs", "parser_tests.rs", "parser_test.rs"]) {
+    assert.equal(hasPathAttribute(`#[cfg(test)]\n#[path = "${file}"]\nmod tests;`), false);
+    assert.equal(hasPathAttribute(`#[path = "${file}"]\n#[cfg(test)]\nmod tests;`), false);
+  }
+  assert.equal(
+    hasPathAttribute(
+      '#[cfg(test)]\n// unit tests\n#[allow(dead_code)]\n#[path = "parser_tests.rs"]\nmod tests;',
+    ),
+    false,
+  );
+});
+
+test("sibling test exceptions cannot redirect production modules or unrelated paths", () => {
+  for (const source of [
+    '#[path = "parser_tests.rs"]\nmod tests;',
+    '#[cfg(feature = "test")]\n#[path = "parser_tests.rs"]\nmod tests;',
+    '#[cfg(any(test, unix))]\n#[path = "parser_tests.rs"]\nmod tests;',
+    '#[cfg(test)]\n#[path = "../tests.rs"]\nmod tests;',
+    '#[cfg(test)]\n#[path = "nested/tests.rs"]\nmod tests;',
+    '#[cfg(test)]\n#[path = "production.rs"]\nmod tests;',
+    '#[cfg(test)]\n#[path = "parser_tests.rs"]\n#[path = "production.rs"]\nmod tests;',
+    '#[cfg(test)]\n#[path = "parser_tests.rs"]\n#[cfg_attr(unix, path = "production.rs")]\nmod tests;',
+    '#[cfg(test)]\nfn unrelated() {}\n#[path = "parser_tests.rs"]\nmod tests;',
+    '// #[cfg(test)]\n#[path = "parser_tests.rs"]\nmod tests;',
+    'const EXAMPLE: &str = "#[cfg(test)]";\n#[path = "parser_tests.rs"]\nmod tests;',
+    '#[cfg(test)]\n#[path = "parser_tests.rs"]\nmod tests;\n#[path = "production.rs"]\nmod production;',
+  ])
+    assert.equal(hasPathAttribute(source), true, source);
 });
 
 test("the module-layout gate recognizes only path attributes", () => {

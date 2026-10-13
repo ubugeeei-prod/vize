@@ -29,8 +29,8 @@ void test("release prose and decision changes skip only the audited native produ
   ]) {
     const plan = planToolingTests([file]);
     for (const observer of observers) assert.ok(!plan.tests.includes(observer), file);
-    // An unaudited native observer retains conservative documentation inputs.
-    assert.ok(plan.tests.includes("tests/tooling/lsp-bind-style-code-actions.test.ts"));
+    // An undeclared test that never names the prose leaves it to the merge queue.
+    assert.ok(!plan.tests.includes("tests/tooling/lsp-bind-style-code-actions.test.ts"));
     assert.ok(plan.tests.includes("tests/tooling/release/release-readiness.test.ts"));
   }
 });
@@ -101,7 +101,11 @@ void test("incomplete or nonliteral observer imports retain conservative docs qu
 });
 
 void test("full merge qualification always retains both original product observers", () => {
-  for (const paths of [[], ["docs/release/pr-workflow.md"], ["unclassified-input"]]) {
+  for (const paths of [
+    [],
+    ["docs/release/pr-workflow.md", "tools/x.mjs"],
+    ["unclassified-input"],
+  ]) {
     const plan = planToolingTests(paths, { tier: "merge" });
     assert.equal(plan.tests.length, plan.totalTests);
     assert.equal(plan.deferredTests, 0);
