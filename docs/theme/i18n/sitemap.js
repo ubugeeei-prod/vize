@@ -30,6 +30,9 @@
     /^\/guide\/(?:ui|composables)\/.+/,
     /^\/guide\/(?:compiler-)?configuration-reference$/,
     /^\/rules\/(?:reference|project)\//,
+    // Reached from their parent page: Experimentals links to both of these in
+    // every locale, so listing them again would only lengthen the sidebar.
+    /^\/guide\/experimentals-(?:reference|vue-rfcs)$/,
   ];
 
   // petite-vue has authored pages in English and Japanese only.
@@ -47,17 +50,110 @@
     "/rules/cross-file",
   ];
 
+  // Every published page belongs to exactly one group below or is hidden
+  // above. `navigation.js` still collects anything left over into a trailing
+  // "More" section, but that section is a safety net, not a place to file pages:
+  // `tests/tooling/docs-navigation.test.ts` fails while it is non-empty.
+  //
+  // `paths` lists the pages all five locales publish. `pathsByLocale` adds the
+  // pages only some locales have; each list must repeat the common paths.
+  const startPaths = ["/", "/getting-started", "/philosophy", "/guide/configuration"];
+  const projectSetupPaths = [
+    "/guide/vite-plugin",
+    "/integrations/nuxt",
+    "/guide/workflows",
+    "/guide/jsx",
+    "/guide/jsx-babel-compat",
+    "/guide/unplugin",
+  ];
+  const staticAnalysisPaths = [
+    "/guide/static-analysis",
+    "/guide/analysis-diagnostics",
+    "/guide/cross-file-complexity",
+    "/guide/oxlint",
+    "/guide/comment-annotations",
+    "/guide/content-mapper",
+    "/integrations/vscode",
+  ];
+  const checkSettingsPaths = [
+    "/guide/static-analysis",
+    "/guide/analysis-diagnostics",
+    "/guide/lint-execution",
+    "/guide/check-performance",
+    "/guide/cross-file-complexity",
+    "/guide/oxlint",
+    "/guide/comment-annotations",
+    "/guide/content-mapper",
+    "/integrations/vscode",
+  ];
+  const formatterPaths = [
+    "/guide/formatter",
+    "/guide/formatter-import-sorting",
+    "/guide/formatter-indent-width",
+    "/guide/formatter-line-endings",
+    "/guide/formatter-property-quotes",
+    "/guide/formatter-jsx-quotes",
+  ];
+  const authoredRulePaths = [
+    "/rules",
+    "/rules/all",
+    "/rules/options",
+    "/rules/options-vue",
+    "/rules/options-script",
+    "/rules/options-type",
+    "/rules/options-musea",
+    "/rules/migration",
+    ...rulePaths.slice(2),
+    "/rules/petite-vue",
+  ];
+  const ruleGuidePaths = [
+    "/rules/vue-sfc",
+    "/rules/vue-components",
+    "/rules/vue-directives",
+    "/rules/vue-directive-validity",
+    "/rules/vue-template-safety",
+    "/rules/vue-template-structure",
+    "/rules/vue-formatting",
+    "/rules/accessibility-core",
+    "/rules/accessibility-integrity",
+    "/rules/accessibility-interactions",
+    "/rules/accessibility-structure",
+  ];
+  const componentPaths = [
+    "/guide/musea",
+    "/guide/musea-globals",
+    "/guide/musea-capture",
+    "/guide/musea-snapshots",
+    "/guide/musea-hosting",
+    "/guide/ui-styles",
+    "/guide/ui",
+    "/guide/composables",
+    "/guide/lib-pull",
+    "/guide/auto-imports",
+  ];
+  const toolPaths = [
+    "/guide/cli",
+    "/guide/doctor",
+    "/guide/compiler-inspector",
+    "/integrations/mcp",
+    "/guide/wasm",
+    "/guide/troubleshooting",
+    "/guide/testing",
+  ];
+
   // `key` selects the section heading from a locale's `ui.groups`.
   sitemap.navGroups = [
     {
       key: "start",
-      paths: ["/", "/getting-started", "/philosophy", "/guide/configuration"],
+      paths: startPaths,
       pathsByLocale: {
         en: [
           "/",
           "/getting-started",
           "/philosophy",
           "/guide/vite-plus",
+          "/guide/vite-plus-editor",
+          "/guide/init",
           "/guide/migration",
           "/guide/configuration",
         ],
@@ -66,6 +162,8 @@
           "/getting-started",
           "/philosophy",
           "/guide/vite-plus",
+          "/guide/vite-plus-editor",
+          "/guide/init",
           "/guide/migration",
           "/guide/configuration",
         ],
@@ -73,64 +171,72 @@
     },
     {
       key: "projectSetup",
-      paths: [
-        "/guide/vite-plugin",
-        "/integrations/nuxt",
-        "/guide/workflows",
-        "/guide/jsx",
-        "/guide/jsx-babel-compat",
-        "/guide/unplugin",
-      ],
+      paths: projectSetupPaths,
+      pathsByLocale: {
+        en: [
+          ...projectSetupPaths,
+          "/guide/vue-configuration",
+          "/guide/vite-scoped-compiler",
+          "/guide/experimentals",
+        ],
+        ja: [...projectSetupPaths, "/guide/vue-configuration", "/guide/experimentals"],
+      },
     },
     {
       key: "staticAnalysis",
-      paths: [
-        "/guide/static-analysis",
-        "/guide/analysis-diagnostics",
-        "/guide/oxlint",
-        "/guide/comment-annotations",
-        "/guide/content-mapper",
-        "/integrations/vscode",
-      ],
+      paths: staticAnalysisPaths,
+      pathsByLocale: { en: checkSettingsPaths, ja: checkSettingsPaths },
+    },
+    {
+      key: "formatting",
+      paths: [],
+      pathsByLocale: { en: formatterPaths, ja: formatterPaths },
     },
     {
       key: "rules",
       paths: rulePaths,
       pathsByLocale: {
-        en: [...rulePaths, "/rules/petite-vue"],
-        ja: [...rulePaths, "/rules/petite-vue"],
+        en: authoredRulePaths,
+        ja: authoredRulePaths,
         "zh-CN": [...rulePaths, "/rules/petite-vue"],
         "pt-BR": [...rulePaths, "/rules/petite-vue"],
         fr: [...rulePaths, "/rules/petite-vue"],
       },
     },
     {
+      key: "ruleGuides",
+      paths: [],
+      pathsByLocale: { en: ruleGuidePaths, ja: ruleGuidePaths },
+    },
+    {
       key: "tooling",
       paths: [
         "/guide/musea",
         "/guide/ui-styles",
-
         "/guide/ui",
         "/guide/composables",
+        "/guide/lib-pull",
+        "/guide/auto-imports",
       ],
+      pathsByLocale: { en: componentPaths, ja: componentPaths },
+    },
+    {
+      key: "tools",
+      paths: toolPaths.filter((path) => path !== "/guide/doctor"),
+      pathsByLocale: { en: toolPaths, ja: toolPaths },
     },
     {
       key: "architecture",
       paths: [
-        "/guide/cli",
-        "/guide/troubleshooting",
-        "/guide/lib-pull",
-        "/guide/auto-imports",
-        "/guide/cross-file-complexity",
-        "/integrations/mcp",
-        "/guide/wasm",
         "/stability",
         "/credits",
+        "/contributing",
         "/architecture/overview",
         "/architecture/crates",
         "/architecture/source-guide",
         "/architecture/language-engineering-practices",
         "/architecture/performance",
+        "/architecture/performance-blacksmith",
       ],
     },
     {

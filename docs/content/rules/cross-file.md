@@ -4,9 +4,9 @@ title: "Cross-file rules"
 
 # Cross-file rules
 
-Every rule on this page includes its purpose, prerequisites, configuration, and complete Bad/Good examples. Highlighted lines show the changes; copied code keeps the complete source. Each packet states its current support limits.
+Every rule on this page includes its purpose, prerequisites, configuration, and complete Bad/Good examples. Highlighted lines show what changes; copying an example gives you the complete source. Each rule also states its current support limits.
 
-All 66 project packets include shared files and complete Bad/Good examples here. Apply shared files to both sides. The 60 analyzer codes retain their actual boundaries: 19 CLI codes (18 qualified source pairs and one illustrative project with its retained reactive graph), 16 experimental Rust analyzer codes not emitted individually by that CLI pass, and 25 contracts without a current producer. Configuring an ID does not enable an unavailable producer.
+This page shows all 66 project examples with their complete Bad and Good versions and the files both versions share. Use the shared files with both. Of the 60 diagnostic codes, the CLI reports 19 today (18 verified against source examples and one shown with an illustrative project), 16 exist only in the experimental Rust analyzer and are not reported individually by the CLI, and 25 are specified but nothing produces them yet. Configuring an ID does not turn on a check that is not available.
 
 The public CLI exposes the same pass with `vize lint --cross-file`. Displayed `vize:croquis/cf/*` codes use `croquis/cf/*` in `lint.vize.rules` (omit `vize:`). Information/hint diagnostics become CLI warnings. Related locations explain the source/consumer relationship.
 

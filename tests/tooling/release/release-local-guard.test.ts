@@ -26,6 +26,7 @@ interface GuardFixture {
 function runGuard(
   options: GuardFixture = {},
   timeoutMs = 30_000,
+  mode: { candidate?: boolean; pinnedCut?: string } = {},
 ): { error?: Error; gitLog: string } {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-local-release-guard-"));
   const bin = path.join(root, "bin");
@@ -56,7 +57,11 @@ function runGuard(
 
   const result = spawnSync(
     "rust-script",
-    [path.join(repoRoot, "tools/commands/ci/github/release-local-guard.rs"), "v0.290.1"],
+    [
+      path.join(repoRoot, "tools/commands/ci/github/release-local-guard.rs"),
+      "v0.290.1",
+      ...(mode.candidate ? ["--candidate"] : []),
+    ],
     {
       cwd: root,
       encoding: "utf8",
@@ -64,6 +69,7 @@ function runGuard(
         ...process.env,
         PATH: `${bin}${path.delimiter}${process.env.PATH ?? ""}`,
         VIZE_RELEASE_GUARD_GIT_TIMEOUT_MS: String(timeoutMs),
+        VIZE_RELEASE_PINNED_CUT: mode.pinnedCut ?? "",
       },
     },
   );
@@ -92,6 +98,26 @@ test("local release guard accepts an exact merge commit at the main tip", () => 
 
   assert.equal(safe.error, undefined);
   assert.doesNotMatch(safe.gitLog, /^rev-list\b/m);
+});
+
+test("a pinned candidate keeps its frozen cut while main advances", () => {
+  const advanced = { branch: "", remoteSha: OTHER_SHA };
+  const pinned = { candidate: true, pinnedCut: HEAD_SHA };
+  assert.equal(runGuard(advanced, 30_000, pinned).error, undefined);
+
+  const cases: Array<[GuardFixture, { candidate?: boolean; pinnedCut?: string }, RegExp]> = [
+    [advanced, { candidate: true }, /exactly match the current origin\/main/],
+    [advanced, { candidate: true, pinnedCut: OTHER_SHA }, /exactly match the current origin\/main/],
+    [advanced, { pinnedCut: HEAD_SHA }, /local main branch/],
+    [{ ...advanced, ancestor: false }, pinned, /not reachable from the current origin\/main/],
+    [{ ...advanced, dirty: true }, pinned, /uncommitted changes/],
+    [{ ...advanced, remoteTagExists: true }, pinned, /release tags are immutable/],
+  ];
+  for (const [fixture, mode, expected] of cases) {
+    const result = runGuard(fixture, 30_000, mode);
+    assert.match(result.error?.message ?? "", expected);
+    assert.doesNotMatch(result.gitLog, /^(?:add|commit|tag|push)\b/m);
+  }
 });
 
 test("local release guard bounds stalled git commands", () => {

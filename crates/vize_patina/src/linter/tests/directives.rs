@@ -1,5 +1,7 @@
 use super::Linter;
 
+mod root_comment_scope;
+mod script_file_scope;
 mod script_style;
 
 #[test]

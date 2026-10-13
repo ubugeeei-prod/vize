@@ -1,0 +1,119 @@
+name: Release JSR
+# Publishes `@vizejs/vize` to JSR after the same version is public on npm, then
+# installs the published package from JSR in fresh Node, Deno and Bun projects.
+# Publication is off until `jsr/vize/channel.json` enables it.
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: Published npm release version or tag
+        required: true
+        type: string
+      source_sha:
+        description: Release source commit
+        required: false
+        default: ""
+        type: string
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Published npm release version or tag
+        required: true
+        type: string
+permissions: { contents: read }
+concurrency:
+  group: release-jsr-${{ inputs.version }}
+  cancel-in-progress: false
+jobs:
+  channel:
+    name: Read the JSR channel
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      enabled: ${{ steps.channel.outputs.enabled }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ inputs.source_sha || github.sha }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24", package-manager-cache: false }
+      - id: channel
+        run: node tools/support/release/jsr/package.ts channel >> "$GITHUB_OUTPUT"
+  publish:
+    name: Publish the JSR package
+    needs: channel
+    if: needs.channel.outputs.enabled == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions: { contents: read, id-token: write }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ inputs.source_sha || github.sha }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24", package-manager-cache: false }
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2
+        with: { deno-version: "2.9.7" }
+      - name: Generate the package for the published npm release
+        env:
+          JSR_VERSION: ${{ inputs.version }}
+        run: node tools/support/release/jsr/package.ts prepare "$RUNNER_TEMP/jsr-package" "$JSR_VERSION"
+      - name: Check the publication graph and public types
+        working-directory: ${{ runner.temp }}/jsr-package
+        run: deno publish --dry-run --config jsr.json
+      - name: Publish through the repository's JSR OIDC link
+        working-directory: ${{ runner.temp }}/jsr-package
+        run: deno publish --config jsr.json
+  consumer:
+    name: JSR consumer (${{ matrix.runtime }}, ${{ matrix.os }})
+    needs: publish
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-24.04, runtime: node, node: "22" }
+          - { os: ubuntu-24.04, runtime: node, node: "24" }
+          - { os: blacksmith-12vcpu-macos-15, runtime: node, node: "24" }
+          - { os: blacksmith-32vcpu-windows-2025, runtime: node, node: "24" }
+          - { os: ubuntu-24.04, runtime: deno, node: "24" }
+          - { os: ubuntu-24.04, runtime: bun, node: "24" }
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+    env:
+      JSR_VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ inputs.source_sha || github.sha }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "${{ matrix.node }}", package-manager-cache: false }
+      - if: matrix.runtime == 'deno'
+        uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2
+        with: { deno-version: "2.9.7" }
+      - if: matrix.runtime == 'bun'
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with: { bun-version: "1.3.14" }
+      - name: Create a fresh consumer project
+        run: |
+          mkdir "$RUNNER_TEMP/consumer"
+          cp tools/support/release/jsr/consumer.ts "$RUNNER_TEMP/consumer/consumer.ts"
+          echo '{ "name": "vize-jsr-consumer", "private": true, "type": "module" }' \
+            > "$RUNNER_TEMP/consumer/package.json"
+      - name: Install from JSR and import every entry point (Node)
+        if: matrix.runtime == 'node'
+        working-directory: ${{ runner.temp }}/consumer
+        run: |
+          npm install vite@8 vue@3
+          npx --yes jsr add "@vizejs/vize@${JSR_VERSION#v}"
+          node --experimental-strip-types consumer.ts @vizejs/vize --vite
+      - name: Install from JSR and import every entry point (Bun)
+        if: matrix.runtime == 'bun'
+        working-directory: ${{ runner.temp }}/consumer
+        run: |
+          bun add vite@8 vue@3
+          bunx jsr add "@vizejs/vize@${JSR_VERSION#v}"
+          bun run consumer.ts @vizejs/vize --vite
+      - name: Import the published entry points (Deno)
+        if: matrix.runtime == 'deno'
+        working-directory: ${{ runner.temp }}/consumer
+        run: deno run --allow-all consumer.ts "jsr:@vizejs/vize@${JSR_VERSION#v}"

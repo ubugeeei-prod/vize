@@ -167,6 +167,10 @@ export function authenticateStarListingSource(root) {
     metadata.mainUnion.source,
     metadata.mainUnion.cells.map(([file]) => file),
   );
+  // The union records one incoming main change. Shared files outside the named
+  // BD cohort keep evolving on main; once one moves past its recorded successor
+  // it is no longer the live source, so only its incoming body stays authenticated.
+  const superseded = new Set();
   for (const [file, oldBlob, oldLength, oldSHA, nextBlob, nextLength, nextSHA] of metadata.mainUnion
     .cells) {
     const old = incoming.get(file),
@@ -174,11 +178,16 @@ export function authenticateStarListingSource(root) {
     assert.equal(blob(old), oldBlob);
     assert.equal(old.length, oldLength);
     assert.equal(sha(old), oldSHA);
+    if (!named.has(file) && !loaded.has(file) && blob(next) !== nextBlob) {
+      superseded.add(file);
+      continue;
+    }
     assert.equal(blob(next), nextBlob);
     assert.equal(next.length, nextLength);
     assert.equal(sha(next), nextSHA);
   }
   for (const pair of mainInverses) {
+    if (superseded.has(pair.file)) continue;
     let body = Buffer.from(projectedCurrent.get(pair.file));
     for (const [start, end, from, to] of [...pair.clauses].reverse()) {
       assertBytes(body.subarray(start, end), Buffer.from(from, "base64"));
