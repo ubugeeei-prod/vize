@@ -586,7 +586,7 @@ fn test_compile_v_for_destructured_aliases_resolve_source_paths() {
     assert!(
         result
             .code
-            .contains("_setText(x3, _toDisplayString(_for_item0.value.meta.count))"),
+            .contains("_setText(x3, _toDisplayString(_getDefaultValue(_for_item0.value.meta.count, () => (0))))"),
         "{}",
         result.code
     );

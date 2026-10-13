@@ -1,5 +1,6 @@
-//! Renamed and nested destructuring in `v-slot` reads each name from its own
-//! path in the slot props, as Vue's compiler does.
+//! Destructuring in `v-slot` and `v-for` reads each name from its own path in
+//! the slot props or loop item, as Vue's compiler does: renames, nesting,
+//! defaults, computed keys, rest elements and annotated patterns.
 
 use super::{VaporCompilerOptions, compile_vapor};
 use vize_carton::{Allocator, String};
@@ -54,5 +55,100 @@ fn a_renamed_slot_prop_with_a_default_reads_its_original_key() {
             "{code}"
         );
         assert!(!code.contains("_slotProps0.trigger"), "{code}");
+    }
+}
+
+#[test]
+fn an_object_rest_slot_prop_excludes_its_sibling_keys() {
+    let source = r#"<Child v-slot="{ a, 'kebab-key': k, [key]: v, ...rest }">{{ a }}{{ k }}{{ v }}{{ rest }}</Child>"#;
+    for retained in [false, true] {
+        let code = compile(source, retained);
+        assert!(
+            code.contains(r#"_getRestElement(_slotProps0, ["a", "kebab-key", _ctx.key])"#),
+            "{code}"
+        );
+        assert!(code.contains("getRestElement as _getRestElement"), "{code}");
+        assert!(code.contains("_slotProps0[_ctx.key]"), "{code}");
+        assert!(!code.contains("_ctx.rest"), "{code}");
+        assert!(!code.contains("_ctx.v)"), "{code}");
+    }
+}
+
+#[test]
+fn a_nested_rest_slot_prop_reads_from_its_own_parent() {
+    let source = r#"<Child v-slot="{ item: { id, ...others } }">{{ id }}{{ others }}</Child>"#;
+    for retained in [false, true] {
+        let code = compile(source, retained);
+        assert!(
+            code.contains(r#"_getRestElement(_slotProps0.item, ["id"])"#),
+            "{code}"
+        );
+        assert!(code.contains("_slotProps0.item.id"), "{code}");
+    }
+}
+
+#[test]
+fn an_array_rest_slot_prop_slices_after_the_named_positions() {
+    let source = r#"<Child v-slot="{ list: [first, , third, ...tail] }">{{ first }}{{ third }}{{ tail }}</Child>"#;
+    for retained in [false, true] {
+        let code = compile(source, retained);
+        assert!(code.contains("_slotProps0.list[0]"), "{code}");
+        assert!(code.contains("_slotProps0.list[2]"), "{code}");
+        assert!(code.contains("_slotProps0.list.slice(3)"), "{code}");
+        assert!(!code.contains("_ctx.tail"), "{code}");
+    }
+}
+
+#[test]
+fn a_type_annotated_slot_pattern_still_binds_its_names() {
+    for source in [
+        r#"<Child v-slot="{ a }: any">{{ a }}</Child>"#,
+        r#"<Child v-slot="{ a }: { a: string }">{{ a }}</Child>"#,
+        r#"<Child v-slot="props: { a: string }">{{ props.a }}</Child>"#,
+    ] {
+        for retained in [false, true] {
+            let code = compile(source, retained);
+            assert!(code.contains("_toDisplayString(_slotProps0.a)"), "{code}");
+            assert!(!code.contains("_ctx.a"), "{code}");
+            assert!(!code.contains("_ctx.props"), "{code}");
+        }
+    }
+}
+
+#[test]
+fn a_loop_value_with_a_default_rest_and_computed_key_reads_the_item() {
+    let source = r#"<li v-for="{ [key]: v, id: itemId = 0, ...others } in rows" :key="itemId">{{ v }}{{ itemId }}{{ others }}</li>"#;
+    for retained in [false, true] {
+        let code = compile(source, retained);
+        assert!(code.contains("_for_item0.value[_ctx.key]"), "{code}");
+        assert!(
+            code.contains("_getDefaultValue(_for_item0.value.id, () => (0))"),
+            "{code}"
+        );
+        assert!(
+            code.contains(r#"_getRestElement(_for_item0.value, [_ctx.key, "id"])"#),
+            "{code}"
+        );
+        // The key callback destructures the raw item: its computed key reads
+        // the component, and the key itself is the pattern's own local.
+        assert!(
+            code.contains("({ [_ctx.key]: v, id: itemId = 0, ...others }) => (itemId)"),
+            "{code}"
+        );
+    }
+}
+
+#[test]
+fn an_array_loop_value_with_a_rest_element_slices_the_item() {
+    let source = r#"<li v-for="([first, ...tail], index) in rows" :key="first">{{ first }}{{ tail }}{{ index }}</li>"#;
+    for retained in [false, true] {
+        let code = compile(source, retained);
+        assert!(code.contains("_for_item0.value[0]"), "{code}");
+        assert!(code.contains("_for_item0.value.slice(1)"), "{code}");
+        assert!(
+            code.contains("([first, ...tail], index) => (first)"),
+            "{code}"
+        );
+        assert!(!code.contains("_ctx.tail"), "{code}");
     }
 }

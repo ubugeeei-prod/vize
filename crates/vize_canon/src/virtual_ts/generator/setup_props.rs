@@ -263,6 +263,7 @@ impl SetupPropsPlan {
     }
 
     pub(super) fn emit_artifact(&self, ts: &mut String, source: PropsSource<'_>) {
+        crate::virtual_ts::props::TemplatePropsModel::emit_defaults_capture(ts, source.summary);
         if self.defer {
             let generated_start = ts.len();
             generate_setup_scoped_props_artifact(ts, source.summary);

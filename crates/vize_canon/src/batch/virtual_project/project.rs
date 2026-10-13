@@ -117,6 +117,36 @@ impl VirtualProject {
 
     /// Register a supported file path with already-loaded content.
     pub fn register_path_with_content(&mut self, path: &Path, content: &str) -> CorsaResult<()> {
+        self.register_content_with_prop_cache(path, content, None)
+    }
+
+    /// Register already-loaded sources as one revision.
+    ///
+    /// Like a `register_paths` batch, the sources share one immutable
+    /// dependency snapshot, so an imported type module is read, resolved and
+    /// parsed once rather than once per importer. Registration order and each
+    /// file's own text are unchanged.
+    pub fn register_paths_with_content<'a>(
+        &mut self,
+        sources: impl IntoIterator<Item = (&'a Path, &'a str)>,
+    ) -> CorsaResult<()> {
+        let runtime_prop_resolve_cache = RuntimePropResolveCache::default();
+        for (path, content) in sources {
+            self.register_content_with_prop_cache(
+                path,
+                content,
+                Some(&runtime_prop_resolve_cache),
+            )?;
+        }
+        Ok(())
+    }
+
+    fn register_content_with_prop_cache(
+        &mut self,
+        path: &Path,
+        content: &str,
+        runtime_prop_resolve_cache: Option<&RuntimePropResolveCache>,
+    ) -> CorsaResult<()> {
         let package_route_path = self.is_package_route_path(path);
         let registered = build_registered_file(
             path,
@@ -144,7 +174,7 @@ impl VirtualProject {
                 mirrorable_project_files: None,
                 rewriter: &self.rewriter,
                 alias_rewrite_policy: Some(self.alias_rewrite_policy()),
-                runtime_prop_resolve_cache: None,
+                runtime_prop_resolve_cache,
             },
         )?;
         self.absorb_registered_file(registered)?;

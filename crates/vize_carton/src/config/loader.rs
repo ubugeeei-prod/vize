@@ -15,6 +15,9 @@ pub use formatter::{
 mod discovery;
 #[cfg(test)]
 mod experimental_tests;
+mod extends;
+#[cfg(test)]
+mod extends_tests;
 mod js;
 mod jsx;
 mod language_server;

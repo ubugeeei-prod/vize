@@ -250,13 +250,21 @@ pub(super) fn transform_component<'a>(
 
     let element_id = existing_id.unwrap_or_else(|| ctx.next_id());
 
+    // Under `v-once`, on the component or on an ancestor, the runtime reads
+    // each prop and slot getter a single time.
+    let once = ctx.is_non_reactive()
+        || el
+            .props
+            .iter()
+            .any(|prop| matches!(prop, PropNode::Directive(directive) if directive.name == "once"));
+
     let create_component = CreateComponentIRNode {
         id: element_id,
         tag: el.tag,
         props,
         slots,
         asset: kind == ComponentKind::Regular,
-        once: false,
+        once,
         dynamic_slots: has_dynamic_slot,
         kind,
         is_expr,

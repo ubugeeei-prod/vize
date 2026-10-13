@@ -46,7 +46,8 @@ export function preparePublishedProvider(fixture: PinnedFixtureWorkspace) {
   // node_modules is intentionally treated as an authored workspace package.
   const destination = fixture.resolve("node_modules/.router-page-provider");
   fs.mkdirSync(path.dirname(destination), { recursive: true });
-  const result = execFileSync("python3", [path.join(here, "provider.py"), destination], {
+  const stager = path.join(here, "provider-archive.ts");
+  const result = execFileSync(process.execPath, [stager, destination], {
     encoding: "utf8",
     timeout: 60_000,
     maxBuffer: 8 * 1024 * 1024,

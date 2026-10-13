@@ -35,6 +35,7 @@ import { isJsxDocument } from "./jsx-routing.js";
 import { downloadFile } from "./release-download.js";
 import { extractReleaseArchive } from "./release-archive.js";
 import { WorkspaceLspConfigDiscovery } from "./workspace-config.js";
+import { trustedServerPath, workspaceDevServerPaths } from "./server-trust.js";
 import type {
   InspectedServerCandidate,
   ReleaseServerTarget,
@@ -871,47 +872,14 @@ async function warnAboutVersionMismatch(
 }
 
 function getWorkspaceDevPaths(exeName: string): string[] {
-  // Skip workspace-derived server paths in untrusted workspaces — a cloned
-  // repo that ships a malicious binary at `target/{release,debug}/vize`
-  // would otherwise be executed when the workspace was opened. (#969)
-  if (!workspace.isTrusted) {
-    return [];
-  }
-  const paths: string[] = [];
-  const workspaceFolders = workspace.workspaceFolders;
-  if (workspaceFolders) {
-    for (const folder of workspaceFolders) {
-      paths.push(path.join(folder.uri.fsPath, "target", "release", exeName));
-      paths.push(path.join(folder.uri.fsPath, "target", "debug", exeName));
-    }
-  }
-  return paths;
+  const folders = (workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath);
+  return workspaceDevServerPaths(folders, exeName, workspace.isTrusted);
 }
 
-/// Resolve only user-/machine-scoped `vize.serverPath` values. Workspace settings are
-/// repo-controlled and could point at arbitrary executables; package capabilities and this
-/// check provide two layers of protection. (#969)
 function resolveTrustedServerPath(
   config: ReturnType<typeof workspace.getConfiguration>,
 ): string | undefined {
-  const inspected = config.inspect<string>("serverPath");
-  if (!inspected) {
-    return undefined;
-  }
-  const candidates: Array<string | undefined> = [
-    inspected.globalValue,
-    inspected.workspaceValue && workspace.isTrusted ? inspected.workspaceValue : undefined,
-    inspected.workspaceFolderValue && workspace.isTrusted
-      ? inspected.workspaceFolderValue
-      : undefined,
-  ];
-  for (const raw of candidates) {
-    const trimmed = raw?.trim();
-    if (trimmed) {
-      return trimmed;
-    }
-  }
-  return undefined;
+  return trustedServerPath(config.inspect<string>("serverPath"), workspace.isTrusted);
 }
 
 function getImplicitPathDirs(): string[] {

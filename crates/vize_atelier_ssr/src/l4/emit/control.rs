@@ -87,7 +87,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             .branches
             .iter()
             .all(|branch| branch.condition.is_some())
-            && !disable_comments
+            && (!disable_comments || self.ctx.options.vapor)
         {
             self.ctx.push_indent();
             self.ctx.push("} else {\n");

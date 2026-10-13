@@ -77,7 +77,7 @@ test("failed source preflights block every source build and cannot pass the sour
   assert.equal(source.jobs["pr-source-cli"].if, undefined, "producer retains implicit success()");
   const report = source.jobs["source-report"];
   const dependencies = typeof report.needs === "string" ? [report.needs] : (report.needs ?? []);
-  assert.equal(report.if, "${{ always() }}");
+  assert.equal(report.if, "${{ always() && !contains(needs.*.result, 'cancelled') }}");
   assert.ok(dependencies.includes("pr-source-plan"));
   assert.equal(
     report.steps?.at(-1)?.run,

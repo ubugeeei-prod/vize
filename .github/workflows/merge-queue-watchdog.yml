@@ -1,0 +1,36 @@
+name: Merge queue watchdog
+# Rebuilding or removing a queue candidate deletes its gh-readonly-queue ref,
+# but the candidate's runs keep going and hold runners the live candidates
+# need. This run cancels them once the ref is gone.
+on:
+  merge_group:
+    types: [checks_requested]
+    branches: [main]
+permissions: {}
+jobs:
+  watch:
+    name: Stop superseded candidate runs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions: { actions: write, contents: read }
+    steps:
+      - name: Cancel this candidate's runs once its queue ref is gone
+        env:
+          GH_TOKEN: ${{ github.token }}
+          QUEUE_REF: ${{ github.event.merge_group.head_ref }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          api="https://api.github.com/repos/$GITHUB_REPOSITORY"
+          status() { curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $GH_TOKEN" "$api/git/ref/${QUEUE_REF#refs/}"; }
+          others() { gh api "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$HEAD_SHA&event=merge_group&per_page=100" --jq ".workflow_runs[] | select(.id != $GITHUB_RUN_ID and .status != \"completed\") | .id"; }
+          missing=0
+          while sleep 30; do
+            # Only a confirmed absence counts; any other answer keeps the candidate.
+            if [[ "$(status)" == 404 ]]; then missing=$((missing + 1)); else missing=0; fi
+            if (( missing >= 2 )); then
+              for id in $(others); do gh api -X POST "repos/$GITHUB_REPOSITORY/actions/runs/$id/cancel" --silent || true; done
+              echo "Queue ref $QUEUE_REF is gone; cancelled its remaining runs."
+              exit 0
+            fi
+            [[ -n "$(others || echo unknown)" ]] || exit 0
+          done
