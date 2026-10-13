@@ -41,3 +41,23 @@ one Pug registration warning. Every current public result field is written
 under the existing Nextest artifact directory before assertions; no new CI
 stage or source frame is introduced. The separate JSX PR executes the
 remaining unchanged Douyin file.
+
+The merged JavaScript membership correction adds a complete current Star
+source adapter. Its original 322 bodies and every original 290-pair Star
+qualifier remain immutable. Positive component reads change two of those
+current bodies; the other four production changes are outside that closure.
+A separately named component-read counterpart authenticates the complete
+415-body union of Star, JavaScript membership, their metadata, and all six
+production files. Frozen whole before/after bodies and reversible splice
+clauses retain each old source exactly. Raw Git bodies, modes, physical bytes,
+ancestor symlinks, replacement refs and complete metadata remain mandatory.
+
+The two current test entrypoints authenticate that actual counterpart first.
+They then execute the complete original nine Star source laws and eight
+original custody laws from a private snapshot of their real merged source
+commit. That snapshot has its original commit and tree identity and selects
+only its finite dependency closure. The production checkout and object pool
+remain untouched. These original tests retain every assertion and refusal;
+no individual clause is disabled or rewritten. The new source admission
+provides no native, performance, original-400 or published-consumer credit.
+Actions must independently execute the actual positive-read native corpora.

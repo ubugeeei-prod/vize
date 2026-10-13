@@ -15,6 +15,8 @@ import {
   provisionStarSourceCounterpart,
 } from "./source-counterpart-snapshot.mjs";
 
+import { ensureHostedLiteralSource } from "../../../../tests/performance/support/warm-type-backed-git-reader-literal-source.ts";
+
 const directory = "tools/support/compat/github/";
 const metadataDirectory =
   "tests/_fixtures/differential/linter/component-positive-template-reads/source-custody/";
@@ -128,6 +130,7 @@ export function authenticateStarComponentReadSource(root) {
   root = fs.realpathSync(root);
   const head = joinGit(root, ["rev-parse", "HEAD"]).toString().trim();
   assert.equal(joinGit(root, ["for-each-ref", "--format=%(refname)", "refs/replace"]).length, 0);
+  ensureHostedLiteralSource(root, source);
   const before = joinRawBodies(root, source, declared("before"));
   const current = joinRawBodies(root, head, declared("after"));
   for (const row of declared("after")) joinPhysical(root, row);
