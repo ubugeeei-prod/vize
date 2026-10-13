@@ -17,6 +17,7 @@ import {
   gitObjectId,
 } from "./canonical-corpus-inventory.mjs";
 import { captureNativeWalk } from "./canonical-corpus-native-walk.mjs";
+import { commandOutput, runChain, runChainsSync } from "./canonical-corpus-batch.ts";
 import { needsNativeWalk } from "./canonical-corpus-logical-walk.mjs";
 import { rustCachePolicy } from "../../../../.github/actions/setup-rust-sticky-cache/cache-policy.mjs";
 
@@ -130,6 +131,9 @@ export function corpusPlan(cwd, env = process.env) {
     gitlinksSha256,
     modulesSha256,
     cacheKey: `canonical-corpus-objects-v1-${identity.repository}-${modulesSha256}-${gitlinksSha256}`,
+    // Same submodule URLs, older pins: reuse the objects and fetch only the
+    // changed gitlinks. Content is still verified against the committed tree.
+    cacheRestoreKey: `canonical-corpus-objects-v1-${identity.repository}-${modulesSha256}-`,
     cacheTrusted: policy.trusted === "true",
   };
 }
@@ -210,9 +214,15 @@ export function validateFiles(files, committedFiles) {
   return sha256(JSON.stringify(files));
 }
 
-export function assertFixtureCheckout(cwd) {
-  execFileSync("git", ["diff", "--cached", "--quiet", "HEAD", "--"], { cwd });
-  const changed = git(cwd, "diff", "--name-only", "-z", "--").split("\0").filter(Boolean);
+export const fixtureCheckoutCommands = (cwd) => [
+  { cwd, args: ["diff", "--cached", "--quiet", "HEAD", "--"] },
+  { cwd, args: ["diff", "--name-only", "-z", "--"] },
+];
+
+// `observed` holds the results of fixtureCheckoutCommands(cwd), in order.
+export function assertFixtureCheckout(cwd, observed = runChain(fixtureCheckoutCommands(cwd))) {
+  commandOutput(observed[0]);
+  const changed = commandOutput(observed[1], "utf8").split("\0").filter(Boolean);
   if (!changed.length) return;
   const indexed = new Map(
     git(cwd, "ls-files", "--stage", "-z")
@@ -245,13 +255,22 @@ export function assertFixtureCheckout(cwd) {
 
 export function captureCorpus(cwd, env = process.env) {
   const plan = corpusPlan(cwd, env);
-  for (const row of plan.gitlinks) {
+  // The same read-only commands as before, one chain per fixture, run
+  // concurrently; results are checked in committed gitlink order.
+  const observed = runChainsSync(
+    plan.gitlinks.map((row) => {
+      const checkout = join(cwd, row.path);
+      return [{ cwd: checkout, args: ["rev-parse", "HEAD"] }, ...fixtureCheckoutCommands(checkout)];
+    }),
+  );
+  for (const [index, row] of plan.gitlinks.entries()) {
+    const [head, ...checkout] = observed[index];
     assert.equal(
-      git(join(cwd, row.path), "rev-parse", "HEAD").trim(),
+      commandOutput(head, "utf8").trim(),
       row.sha,
       `Canonical submodule drift: ${row.path}`,
     );
-    assertFixtureCheckout(join(cwd, row.path));
+    assertFixtureCheckout(join(cwd, row.path), checkout);
   }
   const proof = createCommittedProof(cwd, plan.gitlinks);
   const native = needsNativeWalk(plan.gitlinks)

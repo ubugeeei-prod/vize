@@ -25,7 +25,14 @@ static SCRATCH_COUNTER: AtomicU64 = AtomicU64::new(0);
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ReleaseTypecheckEvidencePolicy {
+    /// Exact parity: complete project coverage, enforced budgets and zero
+    /// unexplained divergences.
     Enforce,
+    /// Release policy while the typecheck divergence surface is skipped:
+    /// divergence artifacts are not required, and any retained artifact must
+    /// still be bound to the source and its preparation. Parity gaps are
+    /// reported without refusing.
+    Optional,
 }
 
 pub fn assert_real_project_matrix_release_artifacts_with_typecheck_policy<F>(

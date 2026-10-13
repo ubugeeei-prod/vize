@@ -4,17 +4,17 @@ Issue: [#6097](https://github.com/ubugeeei-prod/vize/issues/6097). This is the t
 
 Nine more implemented rules that mirror eslint-plugin-vue's `vue3-essential` removal checks were opt-in only: no bundle enabled them, so a Vue 3 project using a removed Vue 2 API got no diagnostic unless it named the rule. They now belong to `essential` and therefore to every bundle built on it (`happy-path`, `ecosystem`, `nuxt`, `opinionated`). `incremental` stays empty.
 
-| Rule | eslint-plugin-vue rule | Reports |
-| --- | --- | --- |
-| `vue/no-deprecated-filter` | `vue/no-deprecated-filter` | `{{ value \| filter }}` pipes |
-| `vue/no-deprecated-html-element-is` | `vue/no-deprecated-html-element-is` | `is` on native elements without the `vue:` prefix |
-| `vue/no-deprecated-inline-template` | `vue/no-deprecated-inline-template` | the `inline-template` attribute |
-| `vue/no-deprecated-router-link-tag-prop` | `vue/no-deprecated-router-link-tag-prop` | `<router-link tag>` |
-| `script/no-deprecated-destroyed-lifecycle` | `vue/no-deprecated-destroyed-lifecycle` | `destroyed` / `beforeDestroy` hooks |
-| `script/no-deprecated-dollar-listeners-api` | `vue/no-deprecated-dollar-listeners-api` | `this.$listeners` |
-| `script/no-deprecated-dollar-scopedslots-api` | `vue/no-deprecated-dollar-scopedslots-api` | `this.$scopedSlots` |
-| `script/no-deprecated-events-api` | `vue/no-deprecated-events-api` | `this.$on` / `$off` / `$once` |
-| `script/no-deprecated-props-default-this` | `vue/no-deprecated-props-default-this` | `this` inside a prop default |
+| Rule                                          | eslint-plugin-vue rule                     | Reports                                           |
+| --------------------------------------------- | ------------------------------------------ | ------------------------------------------------- |
+| `vue/no-deprecated-filter`                    | `vue/no-deprecated-filter`                 | `{{ value \| filter }}` pipes                     |
+| `vue/no-deprecated-html-element-is`           | `vue/no-deprecated-html-element-is`        | `is` on native elements without the `vue:` prefix |
+| `vue/no-deprecated-inline-template`           | `vue/no-deprecated-inline-template`        | the `inline-template` attribute                   |
+| `vue/no-deprecated-router-link-tag-prop`      | `vue/no-deprecated-router-link-tag-prop`   | `<router-link tag>`                               |
+| `script/no-deprecated-destroyed-lifecycle`    | `vue/no-deprecated-destroyed-lifecycle`    | `destroyed` / `beforeDestroy` hooks               |
+| `script/no-deprecated-dollar-listeners-api`   | `vue/no-deprecated-dollar-listeners-api`   | `this.$listeners`                                 |
+| `script/no-deprecated-dollar-scopedslots-api` | `vue/no-deprecated-dollar-scopedslots-api` | `this.$scopedSlots`                               |
+| `script/no-deprecated-events-api`             | `vue/no-deprecated-events-api`             | `this.$on` / `$off` / `$once`                     |
+| `script/no-deprecated-props-default-this`     | `vue/no-deprecated-props-default-this`     | `this` inside a prop default                      |
 
 All nine keep their `error` severity. Each reports code that Vue 3 no longer runs as written, which is the definition of the essential tier. They are inert for a project configured as Vue 2 or 2.7: `with_vue_version` disables them for a legacy version, and the template rules additionally check the dialect. A project can still turn any of them off by name.
 

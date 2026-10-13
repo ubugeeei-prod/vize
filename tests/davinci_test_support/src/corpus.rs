@@ -11,6 +11,7 @@
 //! smoke/shard scope with `closure_evidence=false`.
 
 mod inventory;
+mod shard;
 
 #[cfg(test)]
 mod tests;
@@ -25,6 +26,7 @@ pub use inventory::{
     IndexedGitlinks, InventoryError, SubmoduleState, parse_indexed_gitlinks,
     parse_submodule_status, reconcile,
 };
+pub use shard::{CorpusShard, SHARD_ENV, SHARD_VECTOR_ENV, logical_vector, resolve_env_shard};
 
 use std::path::{Path, PathBuf};
 use std::process::Command;

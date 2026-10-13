@@ -60,19 +60,19 @@ description: 開発の記録、アーキテクチャの考察、プロジェク�
     <span>Vize が独立した個人のプロジェクトであることが、探求、速さ、意欲的なツールチェーンの設計にもたらす利点。</span>
   </a>
   <a class="blog-post-list-item" href="./2026-03-26-the-advantages-and-beauty-of-toolchains-and-vertical-integration/">
-    <strong>ツールチェーンの垂直統合</strong>
-    <span>スタックを広く自分で扱うことが、開発ツールの速さ、一貫性、美しさを高める理由。</span>
+    <strong>ツールチェーンを垂直統合する利点</strong>
+    <span>処理を共有する設計が、開発ツールの速度、一貫性、使いやすさにつながる理由。</span>
   </a>
   <a class="blog-post-list-item" href="./2026-03-26-why-ai-needs-deterministic-fast-static-analysis/">
     <strong>AI のための静的解析</strong>
     <span>AI が書くコードが増えるほど、速く信頼できる静的なフィードバックが必要になります。</span>
   </a>
   <a class="blog-post-list-item" href="./2026-03-26-where-vize-fits-in-the-vue-tooling-landscape/">
-    <strong>Vue ツールの中での Vize の位置</strong>
-    <span>Vue のツール環境における Vize の位置付けと、周辺のプロジェクトとの違いを示す地図。</span>
+    <strong>Vue ツールの中での Vize の位置づけ</strong>
+    <span>Vue の周辺ツールが担う役割と Vize の違いを整理した、2026 年 3 月時点の設計ノート。</span>
   </a>
   <a class="blog-post-list-item" href="./2026-03-26-why-vize-needs-notes/">
-    <strong>ノートを書く理由</strong>
-    <span>変更履歴だけでは伝えきれない、プロジェクトの背景や判断を説明するための場所。</span>
+    <strong>開発ノートを設ける理由</strong>
+    <span>変更履歴だけでは伝えきれない背景や設計の考え方を、開発ノートとして残す理由。</span>
   </a>
 </div>

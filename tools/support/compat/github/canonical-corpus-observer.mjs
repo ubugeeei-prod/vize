@@ -20,6 +20,7 @@ import {
   sha256,
   validateFiles,
 } from "./canonical-corpus-identity.mjs";
+import { hasProcessSegments, validateShardedObserver } from "./canonical-corpus-shard-evidence.ts";
 
 export const observerLogs = { dom: "dom-corpus.log", "ssr-pug": "ssr-pug.log", reach: "reach.log" };
 const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
@@ -39,7 +40,13 @@ function counter(line, name) {
   return Number(match[1]);
 }
 
-export function validateObserverLog(observer, bytes, identity) {
+// `evidence` ({ files, readVector }) is required for process-sharded logs:
+// their shard vectors must exactly and disjointly cover files.json.
+export function validateObserverLog(observer, bytes, identity, evidence) {
+  return inspectObserverLog(observer, bytes, identity, evidence).counters;
+}
+
+function inspectObserverLog(observer, bytes, identity, evidence) {
   assert(observers.includes(observer), "Unknown canonical observer");
   const expectedFiles = identity.files;
   const expectedGitlinks = identity.gitlinks.length;
@@ -52,6 +59,16 @@ export function validateObserverLog(observer, bytes, identity) {
     .replace(ansiSequence, "")
     .split(/\r?\n/)
     .map((line) => line.replace(/^\d{4}-\d\d-\d\dT[\d:.]+Z /, ""));
+  const counters = lines.filter(
+    (line) => line.startsWith("davinci ") || line.startsWith("davinci-differential "),
+  );
+  if (observer !== "dom" && hasProcessSegments(lines)) {
+    assert(evidence, "Sharded observer evidence requires the canonical manifest");
+    return {
+      counters,
+      vectors: validateShardedObserver(observer, lines, identity, evidence),
+    };
+  }
   const closure = lines.filter((line) => line.startsWith("davinci-differential corpus scope:"));
   assert.equal(closure.length, observer === "ssr-pug" ? 2 : 1, "Incomplete canonical scope");
   for (const line of closure) {
@@ -137,10 +154,15 @@ export function validateObserverLog(observer, bytes, identity) {
       );
     }
   }
-  return lines.filter(
-    (line) => line.startsWith("davinci ") || line.startsWith("davinci-differential "),
-  );
+  return { counters, vectors: [] };
 }
+
+const shardEvidence = (directory, files) => ({
+  files,
+  readVector: (name) => readFileSync(join(directory, name)),
+});
+const vectorDigests = (directory, names) =>
+  Object.fromEntries(names.map((name) => [name, sha256(readFileSync(join(directory, name)))]));
 
 export function validateObserverArtifact(observer, directory) {
   const receipt = readJson(join(directory, "observer.json"));
@@ -172,11 +194,14 @@ export function validateObserverArtifact(observer, directory) {
   validateNativeWalk(directory, identity, proof, files);
   const bytes = readFileSync(join(directory, observerLogs[observer]));
   assert.equal(sha256(bytes), receipt.logSha256, "Observer log was replaced");
-  assert.deepEqual(
-    validateObserverLog(observer, bytes, identity),
-    receipt.counters,
-    "Observer counters changed",
-  );
+  const inspected = inspectObserverLog(observer, bytes, identity, shardEvidence(directory, files));
+  assert.deepEqual(inspected.counters, receipt.counters, "Observer counters changed");
+  if (inspected.vectors.length || receipt.vectorSha256 !== undefined)
+    assert.deepEqual(
+      vectorDigests(directory, inspected.vectors),
+      receipt.vectorSha256,
+      "Observer shard vectors were replaced",
+    );
   assert.equal(
     sha256(readFileSync(join(directory, "selected-gitlinks.txt"))),
     receipt.selectedSha256,
@@ -219,6 +244,12 @@ export function recordObserver(observer, outcome, cwd, env = process.env) {
   const identity = readJson(join(directory, "identity.json"));
   sameCorpus(identity, captureCorpus(cwd, env).identity);
   const bytes = readFileSync(join(directory, observerLogs[observer]));
+  const inspected = inspectObserverLog(
+    observer,
+    bytes,
+    identity,
+    shardEvidence(directory, readJson(join(directory, "files.json"))),
+  );
   writeJson(join(directory, "observer.json"), {
     schema: "vize.canonical-corpus-observer",
     version: 1,
@@ -229,7 +260,10 @@ export function recordObserver(observer, outcome, cwd, env = process.env) {
     logSha256: sha256(bytes),
     selectedSha256: sha256(readFileSync(join(directory, "selected-gitlinks.txt"))),
     statusSha256: sha256(readFileSync(join(directory, "submodule-status.txt"))),
-    counters: validateObserverLog(observer, bytes, identity),
+    counters: inspected.counters,
+    ...(inspected.vectors.length
+      ? { vectorSha256: vectorDigests(directory, inspected.vectors) }
+      : {}),
   });
   return validateObserverArtifact(observer, directory);
 }
@@ -243,7 +277,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     assert(process.env.GITHUB_OUTPUT, "Missing canonical plan output");
     appendFileSync(
       process.env.GITHUB_OUTPUT,
-      `cache-key=${plan.cacheKey}\ncache-trusted=${plan.cacheTrusted}\n`,
+      `cache-key=${plan.cacheKey}\ncache-restore-key=${plan.cacheRestoreKey}\ncache-trusted=${plan.cacheTrusted}\n`,
     );
   } else if (mode === "rehydrate") {
     recoverFixtureCheckout(cwd, corpusPlan(cwd));
@@ -254,7 +288,11 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     writeJson(join(artifactRoot, "committed-corpus.json"), capture.proof);
   } else if (mode === "record") {
     recordObserver(observer, process.env.OBSERVER_OUTCOME, cwd);
+  } else if (mode === "validate") {
+    const directory = process.argv[4];
+    assert(directory, "Expected canonical validate OBSERVER DIRECTORY");
+    process.stdout.write(`${JSON.stringify(validateObserverArtifact(observer, directory))}\n`);
   } else {
-    throw new Error("Expected canonical plan|rehydrate|snapshot|record OBSERVER");
+    throw new Error("Expected canonical plan|rehydrate|snapshot|record|validate OBSERVER");
   }
 }

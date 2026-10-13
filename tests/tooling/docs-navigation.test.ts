@@ -198,7 +198,18 @@ void test("the sitemap ships the locales the docs site is built for", () => {
 void test("the sidebar groups the pages the site actually publishes", () => {
   assert.deepEqual(
     sitemap.navGroups.map((group) => group.key),
-    ["start", "projectSetup", "staticAnalysis", "rules", "tooling", "architecture", "blog"],
+    [
+      "start",
+      "projectSetup",
+      "staticAnalysis",
+      "formatting",
+      "rules",
+      "ruleGuides",
+      "tooling",
+      "tools",
+      "architecture",
+      "blog",
+    ],
   );
   assert.deepEqual(sitemap.navGroups.at(-1)?.paths, sitemap.blogNavigationPaths);
   assert.deepEqual(sitemap.blogNavigationPaths, ["/blog", "/blog/notes", "/blog/releases"]);
@@ -220,6 +231,8 @@ void test("the sidebar groups the pages the site actually publishes", () => {
       "/getting-started",
       "/philosophy",
       "/guide/vite-plus",
+      "/guide/vite-plus-editor",
+      "/guide/init",
       "/guide/migration",
       "/guide/configuration",
     ],
@@ -228,6 +241,8 @@ void test("the sidebar groups the pages the site actually publishes", () => {
       "/getting-started",
       "/philosophy",
       "/guide/vite-plus",
+      "/guide/vite-plus-editor",
+      "/guide/init",
       "/guide/migration",
       "/guide/configuration",
     ],
@@ -306,7 +321,9 @@ void test("the docs theme suite passes", () => {
   const result = spawnSync(
     process.execPath,
     ["--test", "docs/theme/navigation.test.js", "docs/theme/background.test.ts"],
-    { cwd: repoRoot, encoding: "utf8" },
+    // A nested runner that inherits NODE_TEST_CONTEXT reports to its parent and
+    // exits 0 even when a test fails, which would make this assertion vacuous.
+    { cwd: repoRoot, encoding: "utf8", env: { ...process.env, NODE_TEST_CONTEXT: undefined } },
   );
 
   assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());

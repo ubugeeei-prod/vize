@@ -1,0 +1,5 @@
+<script setup lang="ts">
+const { 'aria-label': label = 'Fallback', ...attrs } = defineProps(['aria-label', 'placeholder']);
+const readRest = () => attrs;
+</script>
+<template><input :aria-label="label" v-bind="readRest()" /></template>

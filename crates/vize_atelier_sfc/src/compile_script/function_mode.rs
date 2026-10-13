@@ -8,6 +8,7 @@
 //! - `imports`: import deduplication logic
 
 mod compiler;
+mod expose;
 pub(crate) mod helpers;
 pub(crate) mod imports;
 mod model;

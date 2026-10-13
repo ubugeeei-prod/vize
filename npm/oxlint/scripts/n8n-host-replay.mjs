@@ -14,6 +14,12 @@ import {
   verifyCorpus,
 } from "./n8n-replay-inputs.mjs";
 
+// One mode lints the whole pinned n8n corpus on a single thread: about 40 s
+// alone, and 99 to 136 s beside the builds that share its runner. The former
+// 180 s limit left that no room, so the reference mode timed out on every PR
+// that also rebuilt the type checker. The job timeout still bounds a real hang.
+const modeDeadlineMs = 600_000;
+
 export function qualifyN8nHost(engine, version, output, environment, reference) {
   const inventory = verifyCorpus();
   const original = fs.mkdtempSync(path.join(os.tmpdir(), "vize-n8n-original-project-"));
@@ -61,7 +67,7 @@ export function qualifyN8nHost(engine, version, output, environment, reference) 
       const result = spawnSync(process.execPath, args, {
         cwd: original,
         encoding: "utf8",
-        timeout: 180_000,
+        timeout: modeDeadlineMs,
         maxBuffer: 64 * 1024 * 1024,
         env: { ...process.env, ...environment, VIZE_N8N_REPLAY_PHASE: `host:${version}:${mode}` },
       });
@@ -92,7 +98,7 @@ export function qualifyN8nHost(engine, version, output, environment, reference) 
         const originalResult = spawnSync(process.execPath, [engine, ...args.slice(1)], {
           cwd: original,
           encoding: "utf8",
-          timeout: 180_000,
+          timeout: modeDeadlineMs,
           maxBuffer: 64 * 1024 * 1024,
           env: {
             ...process.env,

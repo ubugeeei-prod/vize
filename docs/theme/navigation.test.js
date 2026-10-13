@@ -77,7 +77,7 @@ void test("applyNavigationOrder keeps the Blog group compact", () => {
   ]);
 });
 
-void test("applyNavigationOrder places the stability contract in detailed guides", () => {
+void test("applyNavigationOrder places the stability contract with the project pages", () => {
   const document = createNavigationDocument([
     ["/", "index"],
     ["/getting-started", "Getting Started"],
@@ -93,7 +93,7 @@ void test("applyNavigationOrder places the stability contract in detailed guides
       labels: ["Overview", "Getting Started"],
     },
     {
-      title: "More guides",
+      title: "Project & internals",
       labels: ["Stability", "Credits"],
     },
   ]);
@@ -115,6 +115,35 @@ void test("applyNavigationOrder groups component exploration together", () => {
   ]);
 });
 
+void test("applyNavigationOrder files former More pages under the task they belong to", () => {
+  const document = createNavigationDocument([
+    ["/guide/init", "Project Setup"],
+    ["/guide/lint-execution", "Native lint execution settings"],
+    ["/guide/formatter-indent-width", "Indentation width"],
+    ["/rules/options-vue", "Vue Rule Options"],
+    ["/rules/vue-sfc", "Vue Rules: SFC Blocks"],
+    ["/guide/musea-hosting", "Musea Hosting"],
+    ["/guide/doctor", "Doctor Diagnostics"],
+    ["/contributing", "Contributing"],
+    ["/guide/experimentals-reference", "Experimentals Reference"],
+  ]);
+
+  applyNavigation(document);
+
+  // No trailing "More" section: every page has a named group, and the
+  // experimentals reference is reached from the Experimentals page instead.
+  assert.deepEqual(sections(document), [
+    { title: "Start", labels: ["Project initializer"] },
+    { title: "Check code", labels: ["Lint Execution"] },
+    { title: "Format code", labels: ["Indent Width"] },
+    { title: "Rule reference", labels: ["Options: Vue"] },
+    { title: "Rules by topic", labels: ["Vue: SFC Blocks"] },
+    { title: "Explore components", labels: ["Musea Hosting"] },
+    { title: "CLI & tools", labels: ["Doctor"] },
+    { title: "Project & internals", labels: ["Contributing"] },
+  ]);
+});
+
 void test("applyNavigationOrder keeps developer architecture pages together", () => {
   const document = createNavigationDocument([
     ["/architecture/overview", "Architecture"],
@@ -128,7 +157,7 @@ void test("applyNavigationOrder keeps developer architecture pages together", ()
 
   assert.deepEqual(sections(document), [
     {
-      title: "More guides",
+      title: "Project & internals",
       labels: [
         "Architecture Overview",
         "Crates",
