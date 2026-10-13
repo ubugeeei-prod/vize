@@ -46,8 +46,25 @@ function savedTargets(result) {
   );
 }
 
-await test("mounted targets seed once across source commits while the original keys archive again", () => {
+function archivalSteps() {
   const original = structuredClone(steps);
+  for (const step of original) {
+    if (step.name === "Cache Rust target or seed it from the trusted sticky clone")
+      step.if = "${{ steps.cache-policy.outputs.target-save == 'true' }}";
+    if (step.name === "Cache the secondary Rust target or seed its trusted clone")
+      step.if =
+        "${{ steps.cache-policy.outputs.secondary-save == 'true' && steps.cache-policy.outputs.secondary == 'true' }}";
+    if (step.name === "Restore a Rust target without registering a save")
+      step.if = "${{ steps.cache-policy.outputs.target-save == 'false' }}";
+    if (step.name === "Restore a secondary target without registering a save")
+      step.if =
+        "${{ steps.cache-policy.outputs.secondary-save == 'false' && steps.cache-policy.outputs.secondary == 'true' }}";
+  }
+  return original;
+}
+
+await test("mounted targets never archive across source commits while the original keys archive again", () => {
+  const original = archivalSteps();
   for (const step of original) {
     if (step.name === "Cache Rust target or seed it from the trusted sticky clone")
       step.with.key = "${{ steps.cache-policy.outputs.target-key }}";
@@ -60,7 +77,7 @@ await test("mounted targets seed once across source commits while the original k
       const options = { nestedPost: true, storedCache: true, steps: actionSteps };
       const first = executeCacheAction(fixture, context, options);
       assert.equal(first.status, 0);
-      assert.equal(savedTargets(first).length, 2);
+      assert.equal(savedTargets(first).length, actionSteps === original ? 2 : 0);
       const stored = readFileSync(join(fixture.cwd, "stored-cache.json"), "utf8");
       const changed = advanceSource(fixture);
       const second = executeCacheAction(fixture, { ...context, ...changed }, options);
@@ -81,7 +98,7 @@ await test("mounted targets seed once across source commits while the original k
         assert.ok(targets.every((row) => row.hit === "partial"));
       } else {
         assert.equal(savedTargets(second).length, 0);
-        assert.ok(targets.every((row) => row.hit === true));
+        assert.ok(targets.every((row) => row.restoreOnly && row.lookup));
         assert.equal(readFileSync(join(fixture.cwd, "stored-cache.json"), "utf8"), stored);
       }
       const unmount = second.trace.findIndex((row) => row.kind === "sticky-post");
@@ -93,7 +110,11 @@ await test("mounted targets seed once across source commits while the original k
 await test("a mounted stable seed remains a compatible restore for untrusted current input", () => {
   cacheFixture((fixture) => {
     const options = { nestedPost: true, storedCache: true };
-    const seeded = executeCacheAction(fixture, { ...fixture.context(), ...paths }, options);
+    const seeded = executeCacheAction(
+      fixture,
+      { ...fixture.context(), ...paths },
+      { ...options, steps: archivalSteps() },
+    );
     const seeds = savedTargets(seeded);
     const changed = advanceSource(fixture);
     for (const path of ["target", paths.secondaryPath])
@@ -125,9 +146,9 @@ await test("a mounted stable seed remains a compatible restore for untrusted cur
   });
 });
 
-await test("an old per-SHA seed migrates once, then the exact stable key wins over its prefix", () => {
+await test("an old per-SHA seed remains lookup-only without migration archives", () => {
   cacheFixture((fixture) => {
-    const original = structuredClone(steps);
+    const original = archivalSteps();
     for (const step of original) {
       if (step.name === "Cache Rust target or seed it from the trusted sticky clone")
         step.with.key = "${{ steps.cache-policy.outputs.target-key }}";
@@ -140,11 +161,15 @@ await test("an old per-SHA seed migrates once, then the exact stable key wins ov
     assert.equal(savedTargets(old).length, 2);
     const migrated = executeCacheAction(fixture, context, options);
     assert.equal(migrated.status, 0);
-    assert.equal(savedTargets(migrated).length, 2);
+    assert.equal(savedTargets(migrated).length, 0);
     const stable = executeCacheAction(fixture, context, options);
     assert.equal(stable.status, 0);
     assert.equal(savedTargets(stable).length, 0);
-    assert.ok(stable.trace.filter((row) => row.kind === "cache").every((row) => row.hit === true));
+    assert.ok(
+      stable.trace
+        .filter((row) => row.kind === "cache" && ["target", "secondary"].includes(row.name))
+        .every((row) => row.restoreOnly && row.lookup && row.hit === "partial"),
+    );
     assert.equal(stable.trace.filter((row) => row.kind === "workload").length, 1);
   });
 });
@@ -181,8 +206,8 @@ await test("nonmounted trusted targets retain exact-source saves independently o
         assert.equal(after.lookup, mounted);
         if (mounted) {
           assert.equal(after.key, before.key);
-          assert.equal(after.hit, true);
-          assert.equal(post.saved, null);
+          assert.equal(after.restoreOnly, true);
+          assert.equal(post, undefined);
         } else {
           assert.notEqual(after.key, before.key);
           assert.ok(after.key.endsWith(changed.checkoutSha));

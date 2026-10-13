@@ -197,7 +197,7 @@ await test("mounted tooling omits its archive post while the original conditions
             const posts = result.trace.filter((row) => row.kind === "cache-post");
             assert.deepEqual(
               posts.map((row) => row.name),
-              ["secondary", "git", "registry"],
+              ["git", "registry"],
             );
             const workload = result.trace.filter((row) => row.kind === "workload");
             assert.equal(workload.length, 1);
@@ -246,22 +246,25 @@ await test("tooling mount failures and hosted fallbacks retain saves and a secon
           assert.equal(result.status, 0);
           for (const name of ["target", "secondary"]) {
             const cache = result.trace.find((row) => row.kind === "cache" && row.name === name);
-            assert.equal(cache.restoreOnly, false);
-            assert.equal(
-              cache.lookup,
-              mode !== "github-hosted" && (name === "secondary" || mode === "ordinary-primary"),
-            );
+            const mounted =
+              mode !== "github-hosted" && (name === "secondary" || mode === "ordinary-primary");
+            assert.equal(cache.restoreOnly, mounted);
+            assert.equal(cache.lookup, mounted);
             const posts = result.trace.filter(
               (row) => row.kind === "cache-post" && row.name === name,
             );
-            assert.equal(posts.length, 1);
+            assert.equal(posts.length, mounted ? 0 : 1);
             const workload = result.trace.find((row) => row.kind === "workload");
-            assert.ok(result.trace.indexOf(workload) < result.trace.indexOf(posts[0]));
-            if (name === "target" && hit !== true)
+            if (!mounted)
+              assert.ok(result.trace.indexOf(workload) < result.trace.indexOf(posts[0]));
+            if (!mounted && name === "target" && hit !== true)
               assert.equal(posts[0].saved, `compiled:${workload.artifact}`);
           }
           assert.equal(result.trace.filter((row) => row.kind === "cache").length, 4);
-          assert.equal(result.trace.filter((row) => row.kind === "cache-post").length, 4);
+          assert.equal(
+            result.trace.filter((row) => row.kind === "cache-post").length,
+            mode === "github-hosted" ? 4 : mode === "failed-mount" ? 3 : 2,
+          );
         });
 });
 
