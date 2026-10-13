@@ -1,6 +1,9 @@
 # Scoped compiler settings
 
-Use `entries[].compiler` to override compiler settings for matching files:
+Use `entries[].compiler` when part of a project needs different compiler settings, for example a
+directory whose whitespace must stay as written. Entries go in the shared configuration described in
+[Configuration](./configuration.md), and [the Vite plugin's compiler options](./vite-plugin.md#compiler-options)
+list the settings an entry can override.
 
 ```json
 {
