@@ -121,7 +121,6 @@ function sourceFixture(t) {
   }
   return directory;
 }
-
 void test("actual ordered YAML excludes exactly three reviewed release tests", () => {
   const paths = workflow.on.pull_request.paths;
   assert.deepEqual(
@@ -196,10 +195,11 @@ void test("the actual full local imports and physical source bytes match one ato
       "reviewed-init-native-ssr-composition",
       "reviewed-stable-patch-operator-inventory",
       "reviewed-timed-tooling-shards",
+      "reviewed-build-ci-typescript-commands",
     ].includes(verifyReviewedReleaseInputs()),
   );
   const rootCounts = pins.reviews.map((review) => review.presentRoots.length);
-  assert.deepEqual(rootCounts, [2, 3, 3, 3, 3, 3, 3, 3, 3]);
+  assert.deepEqual(rootCounts, [2, 3, 3, 3, 3, 3, 3, 3, 3, 3]);
 });
 void test("a native command with unchanged imports fails for both roots and transitive helpers", (t) => {
   for (const member of [excluded[0], "tools/support/release/retirement_evidence.ts"]) {
