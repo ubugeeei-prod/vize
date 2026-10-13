@@ -29,8 +29,6 @@ const tab = useRouteQuery(route, "tab", {
         {{ name }}
       </button>
     </div>
-    <output aria-live="polite"
-      >Query: {{ queryText }}</output
-    >
+    <output aria-live="polite">Query: {{ queryText }}</output>
   </div>
 </template>
