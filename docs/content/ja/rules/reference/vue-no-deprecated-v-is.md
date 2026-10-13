@@ -8,7 +8,7 @@ title: "vue/no-deprecated-v-is"
 
 [悪い例](#悪い) · [良い例](#良い)
 
-既定の重大度: `warning`  
+既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
@@ -24,7 +24,7 @@ export default defineConfig({
     vize: {
       "preset": "incremental",
       "rules": {
-        "vue/no-deprecated-v-is": "warn"
+        "vue/no-deprecated-v-is": "error"
       }
     },
   },

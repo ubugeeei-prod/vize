@@ -4058,7 +4058,7 @@ Disallow the deprecated `v-is` directive
 
 tier: exact
 domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
-severity: warning
+severity: error
 category: essential
 autofix: no
 docs: docs/content/rules/vue.md
@@ -5599,7 +5599,7 @@ Enforce valid `v-else-if` directives
 
 tier: exact
 domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
-severity: warning
+severity: error
 category: essential
 autofix: no
 docs: docs/content/rules/vue.md
@@ -5700,7 +5700,7 @@ Enforce valid `v-is` directives
 
 tier: exact
 domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
-severity: warning
+severity: error
 category: essential
 autofix: no
 docs: docs/content/rules/vue.md
@@ -5830,7 +5830,7 @@ Enforce valid `v-pre` directives
 
 tier: exact
 domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
-severity: warning
+severity: error
 category: essential
 autofix: no
 docs: docs/content/rules/vue.md

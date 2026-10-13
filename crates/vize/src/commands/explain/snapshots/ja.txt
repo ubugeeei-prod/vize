@@ -4003,7 +4003,7 @@ vue/no-deprecated-v-is · lint ルール
 
 精度: exact
 対象: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
-重大度: 警告
+重大度: エラー
 カテゴリー: essential
 自動修正: なし
 ドキュメント: docs/content/rules/vue.md
@@ -5473,7 +5473,7 @@ vue/valid-v-else-if · lint ルール
 
 精度: exact
 対象: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
-重大度: 警告
+重大度: エラー
 カテゴリー: essential
 自動修正: なし
 ドキュメント: docs/content/rules/vue.md
@@ -5561,7 +5561,7 @@ vue/valid-v-is · lint ルール
 
 精度: exact
 対象: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
-重大度: 警告
+重大度: エラー
 カテゴリー: essential
 自動修正: なし
 ドキュメント: docs/content/rules/vue.md
@@ -5669,7 +5669,7 @@ vue/valid-v-pre · lint ルール
 
 精度: exact
 対象: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
-重大度: 警告
+重大度: エラー
 カテゴリー: essential
 自動修正: なし
 ドキュメント: docs/content/rules/vue.md

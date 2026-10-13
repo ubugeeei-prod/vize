@@ -1673,7 +1673,7 @@ vp run lint
 
 [错误示例](#vue-no-deprecated-v-is-bad) · [正确示例](#vue-no-deprecated-v-is-good)
 
-默认严重程度: `warning`  
+默认严重程度: `error`  
 预设: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 模板和代码块，包括规则所需的脚本上下文  
@@ -1689,7 +1689,7 @@ export default defineConfig({
     vize: {
       "preset": "incremental",
       "rules": {
-        "vue/no-deprecated-v-is": "warn"
+        "vue/no-deprecated-v-is": "error"
       }
     },
   },
@@ -6139,7 +6139,7 @@ vp run lint
 
 [错误示例](#vue-valid-v-else-if-bad) · [正确示例](#vue-valid-v-else-if-good)
 
-默认严重程度: `warning`  
+默认严重程度: `error`  
 预设: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 模板和代码块，包括规则所需的脚本上下文  
@@ -6155,7 +6155,7 @@ export default defineConfig({
     vize: {
       "preset": "incremental",
       "rules": {
-        "vue/valid-v-else-if": "warn"
+        "vue/valid-v-else-if": "error"
       }
     },
   },
@@ -6395,7 +6395,7 @@ vp run lint
 
 [错误示例](#vue-valid-v-is-bad) · [正确示例](#vue-valid-v-is-good)
 
-默认严重程度: `warning`  
+默认严重程度: `error`  
 预设: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 模板和代码块，包括规则所需的脚本上下文  
@@ -6411,7 +6411,7 @@ export default defineConfig({
     vize: {
       "preset": "incremental",
       "rules": {
-        "vue/valid-v-is": "warn"
+        "vue/valid-v-is": "error"
       }
     },
   },
@@ -6712,7 +6712,7 @@ vp run lint
 
 [错误示例](#vue-valid-v-pre-bad) · [正确示例](#vue-valid-v-pre-good)
 
-默认严重程度: `warning`  
+默认严重程度: `error`  
 预设: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 模板和代码块，包括规则所需的脚本上下文  
@@ -6728,7 +6728,7 @@ export default defineConfig({
     vize: {
       "preset": "incremental",
       "rules": {
-        "vue/valid-v-pre": "warn"
+        "vue/valid-v-pre": "error"
       }
     },
   },

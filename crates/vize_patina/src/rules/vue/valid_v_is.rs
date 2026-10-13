@@ -32,7 +32,7 @@ static META: RuleMeta = RuleMeta {
     description: "Enforce valid `v-is` directives",
     category: RuleCategory::Essential,
     fixable: false,
-    default_severity: Severity::Warning,
+    default_severity: Severity::Error,
 };
 
 /// Enforce valid v-is directives

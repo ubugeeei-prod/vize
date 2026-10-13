@@ -109,7 +109,7 @@ fn every_error_row_and_only_those_reports_under_its_own_exemption() {
             ),
         }
     }
-    assert_eq!(exempt.len(), 98);
+    assert_eq!(exempt.len(), 102);
 }
 
 #[test]
@@ -128,8 +128,8 @@ fn the_tier_census_is_pinned() {
         [
             (("complete", "error"), 10),
             (("complete", "warning"), 23),
-            (("exact", "error"), 88),
-            (("exact", "warning"), 116),
+            (("exact", "error"), 92),
+            (("exact", "warning"), 112),
             (("heuristic", "warning"), 17),
             (("sound", "warning"), 1),
         ]

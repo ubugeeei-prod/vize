@@ -1674,7 +1674,7 @@ Proibir a diretiva obsoleta `v-is`
 
 [Incorreto](#vue-no-deprecated-v-is-bad) · [Correto](#vue-no-deprecated-v-is-good)
 
-Severidade padrão: `warning`  
+Severidade padrão: `error`  
 Predefinições: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra  
@@ -1690,7 +1690,7 @@ export default defineConfig({
     vize: {
       "preset": "incremental",
       "rules": {
-        "vue/no-deprecated-v-is": "warn"
+        "vue/no-deprecated-v-is": "error"
       }
     },
   },
@@ -6140,7 +6140,7 @@ Exigir diretivas `v-else-if` válidas
 
 [Incorreto](#vue-valid-v-else-if-bad) · [Correto](#vue-valid-v-else-if-good)
 
-Severidade padrão: `warning`  
+Severidade padrão: `error`  
 Predefinições: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra  
@@ -6156,7 +6156,7 @@ export default defineConfig({
     vize: {
       "preset": "incremental",
       "rules": {
-        "vue/valid-v-else-if": "warn"
+        "vue/valid-v-else-if": "error"
       }
     },
   },
@@ -6396,7 +6396,7 @@ Exigir diretivas `v-is` válidas
 
 [Incorreto](#vue-valid-v-is-bad) · [Correto](#vue-valid-v-is-good)
 
-Severidade padrão: `warning`  
+Severidade padrão: `error`  
 Predefinições: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra  
@@ -6412,7 +6412,7 @@ export default defineConfig({
     vize: {
       "preset": "incremental",
       "rules": {
-        "vue/valid-v-is": "warn"
+        "vue/valid-v-is": "error"
       }
     },
   },
@@ -6713,7 +6713,7 @@ Exigir diretivas `v-pre` válidas
 
 [Incorreto](#vue-valid-v-pre-bad) · [Correto](#vue-valid-v-pre-good)
 
-Severidade padrão: `warning`  
+Severidade padrão: `error`  
 Predefinições: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra  
@@ -6729,7 +6729,7 @@ export default defineConfig({
     vize: {
       "preset": "incremental",
       "rules": {
-        "vue/valid-v-pre": "warn"
+        "vue/valid-v-pre": "error"
       }
     },
   },

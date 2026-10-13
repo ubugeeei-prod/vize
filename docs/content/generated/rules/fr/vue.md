@@ -1673,7 +1673,7 @@ Interdire la directive obsolète `v-is`
 
 [Mauvais](#vue-no-deprecated-v-is-bad) · [Bon](#vue-no-deprecated-v-is-good)
 
-Gravité par défaut: `warning`  
+Gravité par défaut: `error`  
 Préréglages: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle  
@@ -1689,7 +1689,7 @@ export default defineConfig({
     vize: {
       "preset": "incremental",
       "rules": {
-        "vue/no-deprecated-v-is": "warn"
+        "vue/no-deprecated-v-is": "error"
       }
     },
   },
@@ -6139,7 +6139,7 @@ Exiger des directives `v-else-if` valides
 
 [Mauvais](#vue-valid-v-else-if-bad) · [Bon](#vue-valid-v-else-if-good)
 
-Gravité par défaut: `warning`  
+Gravité par défaut: `error`  
 Préréglages: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle  
@@ -6155,7 +6155,7 @@ export default defineConfig({
     vize: {
       "preset": "incremental",
       "rules": {
-        "vue/valid-v-else-if": "warn"
+        "vue/valid-v-else-if": "error"
       }
     },
   },
@@ -6395,7 +6395,7 @@ Exiger des directives `v-is` valides
 
 [Mauvais](#vue-valid-v-is-bad) · [Bon](#vue-valid-v-is-good)
 
-Gravité par défaut: `warning`  
+Gravité par défaut: `error`  
 Préréglages: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle  
@@ -6411,7 +6411,7 @@ export default defineConfig({
     vize: {
       "preset": "incremental",
       "rules": {
-        "vue/valid-v-is": "warn"
+        "vue/valid-v-is": "error"
       }
     },
   },
@@ -6712,7 +6712,7 @@ Exiger des directives `v-pre` valides
 
 [Mauvais](#vue-valid-v-pre-bad) · [Bon](#vue-valid-v-pre-good)
 
-Gravité par défaut: `warning`  
+Gravité par défaut: `error`  
 Préréglages: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle  
@@ -6728,7 +6728,7 @@ export default defineConfig({
     vize: {
       "preset": "incremental",
       "rules": {
-        "vue/valid-v-pre": "warn"
+        "vue/valid-v-pre": "error"
       }
     },
   },

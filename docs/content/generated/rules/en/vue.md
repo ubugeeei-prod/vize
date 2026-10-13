@@ -1672,7 +1672,7 @@ Disallow the deprecated `v-is` directive
 
 [Bad](#vue-no-deprecated-v-is-bad) · [Good](#vue-no-deprecated-v-is-good)
 
-Default severity: `warning`  
+Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
@@ -1688,7 +1688,7 @@ export default defineConfig({
     vize: {
       "preset": "incremental",
       "rules": {
-        "vue/no-deprecated-v-is": "warn"
+        "vue/no-deprecated-v-is": "error"
       }
     },
   },
@@ -6138,7 +6138,7 @@ Enforce valid `v-else-if` directives
 
 [Bad](#vue-valid-v-else-if-bad) · [Good](#vue-valid-v-else-if-good)
 
-Default severity: `warning`  
+Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
@@ -6154,7 +6154,7 @@ export default defineConfig({
     vize: {
       "preset": "incremental",
       "rules": {
-        "vue/valid-v-else-if": "warn"
+        "vue/valid-v-else-if": "error"
       }
     },
   },
@@ -6394,7 +6394,7 @@ Enforce valid `v-is` directives
 
 [Bad](#vue-valid-v-is-bad) · [Good](#vue-valid-v-is-good)
 
-Default severity: `warning`  
+Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
@@ -6410,7 +6410,7 @@ export default defineConfig({
     vize: {
       "preset": "incremental",
       "rules": {
-        "vue/valid-v-is": "warn"
+        "vue/valid-v-is": "error"
       }
     },
   },
@@ -6711,7 +6711,7 @@ Enforce valid `v-pre` directives
 
 [Bad](#vue-valid-v-pre-bad) · [Good](#vue-valid-v-pre-good)
 
-Default severity: `warning`  
+Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
@@ -6727,7 +6727,7 @@ export default defineConfig({
     vize: {
       "preset": "incremental",
       "rules": {
-        "vue/valid-v-pre": "warn"
+        "vue/valid-v-pre": "error"
       }
     },
   },

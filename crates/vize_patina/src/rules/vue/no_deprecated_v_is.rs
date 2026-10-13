@@ -29,7 +29,7 @@ static META: RuleMeta = RuleMeta {
     description: "Disallow the deprecated `v-is` directive",
     category: RuleCategory::Essential,
     fixable: false,
-    default_severity: Severity::Warning,
+    default_severity: Severity::Error,
 };
 
 /// Disallow the deprecated `v-is` directive.

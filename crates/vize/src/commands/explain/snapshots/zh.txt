@@ -4173,7 +4173,7 @@ vue/no-deprecated-v-is · lint 规则
 
 精度层级: exact
 适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
-严重级别: 警告
+严重级别: 错误
 类别: essential
 自动修复: 不支持
 文档: docs/content/rules/vue.md
@@ -5775,7 +5775,7 @@ vue/valid-v-else-if · lint 规则
 
 精度层级: exact
 适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
-严重级别: 警告
+严重级别: 错误
 类别: essential
 自动修复: 不支持
 文档: docs/content/rules/vue.md
@@ -5876,7 +5876,7 @@ vue/valid-v-is · lint 规则
 
 精度层级: exact
 适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
-严重级别: 警告
+严重级别: 错误
 类别: essential
 自动修复: 不支持
 文档: docs/content/rules/vue.md
@@ -6002,7 +6002,7 @@ vue/valid-v-pre · lint 规则
 
 精度层级: exact
 适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
-严重级别: 警告
+严重级别: 错误
 类别: essential
 自动修复: 不支持
 文档: docs/content/rules/vue.md

@@ -36,7 +36,7 @@ static META: RuleMeta = RuleMeta {
     description: "Enforce valid `v-else-if` directives",
     category: RuleCategory::Essential,
     fixable: false,
-    default_severity: Severity::Warning,
+    default_severity: Severity::Error,
 };
 
 /// Enforce valid v-else-if directives

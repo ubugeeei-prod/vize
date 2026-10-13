@@ -497,7 +497,7 @@
         "opinionated"
       ],
       "patinaRule": "vue/no-deprecated-v-is",
-      "patinaSeverity": "warning",
+      "patinaSeverity": "error",
       "status": "mapped"
     },
     "vue/no-deprecated-v-on-native-modifier": {
@@ -1623,7 +1623,7 @@
         "opinionated"
       ],
       "patinaRule": "vue/valid-v-else-if",
-      "patinaSeverity": "warning",
+      "patinaSeverity": "error",
       "status": "mapped"
     },
     "vue/valid-v-for": {
@@ -1671,7 +1671,7 @@
         "opinionated"
       ],
       "patinaRule": "vue/valid-v-is",
-      "patinaSeverity": "warning",
+      "patinaSeverity": "error",
       "status": "mapped"
     },
     "vue/valid-v-memo": {
@@ -1731,7 +1731,7 @@
         "opinionated"
       ],
       "patinaRule": "vue/valid-v-pre",
-      "patinaSeverity": "warning",
+      "patinaSeverity": "error",
       "status": "mapped"
     },
     "vue/valid-v-show": {

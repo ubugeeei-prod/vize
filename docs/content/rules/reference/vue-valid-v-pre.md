@@ -8,7 +8,7 @@ Enforce valid `v-pre` directives
 
 [Bad](#bad) · [Good](#good)
 
-Default severity: `warning`  
+Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
@@ -24,7 +24,7 @@ export default defineConfig({
     vize: {
       "preset": "incremental",
       "rules": {
-        "vue/valid-v-pre": "warn"
+        "vue/valid-v-pre": "error"
       }
     },
   },
