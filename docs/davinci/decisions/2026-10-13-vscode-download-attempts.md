@@ -37,3 +37,7 @@ Matrix38331707741 failed actual lint divergence in all22 shards, LSP in ten
 and typecheck in five. Those product/oracle failures, source coverage and native
 memory gates remain separate release blockers. This acquisition repair alone
 provides no release, installed-consumer or issue-completion credit.
+
+The first hosted check-js run rejected five unawaited test registrations under
+the existing zero-warning policy. Await each original registration without
+changing its child, assertions or deadlines; fresh successor Actions remain required.

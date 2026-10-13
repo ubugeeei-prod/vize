@@ -14,7 +14,7 @@ function fixture(t, body) {
   return { directory, script };
 }
 
-test("a failed acquisition exits before a genuine successful retry", async (t) => {
+await test("a failed acquisition exits before a genuine successful retry", async (t) => {
   const { directory, script } = fixture(
     t,
     `
@@ -29,12 +29,12 @@ test("a failed acquisition exits before a genuine successful retry", async (t) =
   assert.equal(readFileSync(mark, "utf8"), "actual-success");
 });
 
-test("exhausted real failures retain the final nonzero exit", async (t) => {
+await test("exhausted real failures retain the final nonzero exit", async (t) => {
   const { script } = fixture(t, "process.exit(7)");
   assert.equal(await downloadAttempts(process.execPath, [script]), 7);
 });
 
-test("a hung acquisition and its descendant are reaped within the original budget", async (t) => {
+await test("a hung acquisition and its descendant are reaped within the original budget", async (t) => {
   const { directory, script } = fixture(
     t,
     `
@@ -64,7 +64,7 @@ test("a hung acquisition and its descendant are reaped within the original budge
   assert(state.status !== 0 || state.stdout.trim().startsWith("Z"));
 });
 
-test("both original child streams survive retries without rewriting", (t) => {
+await test("both original child streams survive retries without rewriting", (t) => {
   const { directory, script } = fixture(
     t,
     `
@@ -87,7 +87,7 @@ process.exitCode = await downloadAttempts(process.execPath, [${JSON.stringify(sc
   assert.equal(result.stderr.toString().split("aborted: original failure\n").length, 3);
 });
 
-test("the total deadline prevents a hanging retry from extending acquisition", async (t) => {
+await test("the total deadline prevents a hanging retry from extending acquisition", async (t) => {
   const { script } = fixture(t, "process.on('SIGTERM', () => {}); setInterval(() => {}, 1000)");
   const start = performance.now();
   assert.equal(
