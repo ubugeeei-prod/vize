@@ -260,7 +260,7 @@ jobs:
         if: ${{ env.RUN_PLAYGROUND == 'true' && steps.cache-wasm.outputs.cache-hit != 'true' }}
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
-          tool: wasm-bindgen-cli@0.2.127
+          tool: wasm-bindgen-cli@0.2.129
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
         with: { node-version-file: "package.json", cache: true, run-install: false }
