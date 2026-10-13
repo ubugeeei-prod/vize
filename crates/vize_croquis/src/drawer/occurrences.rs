@@ -244,7 +244,7 @@ fn runtime_import_seeds(
                 continue;
             }
             let &(start, end) = result.binding_spans.get(name)?;
-            if source.get(start as usize..end as usize) != Some(name.as_str()) {
+            if source.get(start as usize..end as usize) != Some(name) {
                 return None;
             }
             packet.note_binding(parent.id, name, start, end);
