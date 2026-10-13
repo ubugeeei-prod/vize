@@ -127,7 +127,14 @@ function validate(value, current = false) {
       "whole predecessor helper/law and every refusal control",
     );
   }
-  assert(value.producers.length > 0);
+  assert.deepEqual(
+    value.producers.map(({ path: file }) => file),
+    [
+      "crates/vize_patina/src/rules/script/return_in_computed_property.rs",
+      "crates/vize_patina/src/rules/script/return_in_computed_property/flow.rs",
+      "crates/vize_patina/tests/computed_return_flow_history.rs",
+    ],
+  );
   assert.equal(new Set(value.producers.map(({ path: file }) => file)).size, value.producers.length);
   for (const producer of value.producers) {
     assert(producer.path.startsWith("crates/vize_patina/"));
@@ -208,6 +215,12 @@ void test("missing, hybrid, unrelated inventory, changed pins, producer bytes an
     },
     (value) => {
       value.producers[0].after.bytes++;
+    },
+    (value) => {
+      value.producers.pop();
+    },
+    (value) => {
+      value.producers.reverse();
     },
     (value) => {
       value.credit.old400 = true;
