@@ -17,7 +17,7 @@ help, severity, fixes and dialect gates.
 
 The corpus retains the two complete Vue Element Admin files at revision
 `6858a9ad67483025f6a9432a926beb9327037be3`, their original Matrix observations,
-and eighteen native API cases. Independent pinned-provider execution covers
+and twenty-four native API cases. Independent pinned-provider execution covers
 short and long bindings, dynamic arguments, multiple modifiers, multiline and
 Unicode values, boolean and valued attributes, misleading quoted text,
 duplicate attributes, healthy replacements and neighbouring names. The native
