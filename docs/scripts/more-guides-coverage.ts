@@ -46,7 +46,14 @@ function authoredPages(directory: string, prefix = ""): string[] {
   });
 }
 
-/** Match navigation.js's More guides group and ungrouped More fallback. */
+/**
+ * The project group plus anything `navigation.js` would still collect into its
+ * trailing "More" section.
+ *
+ * #8365 audited the pages that used to sit in "More guides" and "More". Each of
+ * them now has a named sidebar group, and `docs-navigation.test.ts` keeps the
+ * fallback empty, so this returns the project pages unless a page is unfiled.
+ */
 export function moreGuideRoutes(locale: "en" | "ja"): string[] {
   const localeDirectory = path.join(docsRoot, "content", locale === "en" ? "" : locale);
   const used = new Set(
