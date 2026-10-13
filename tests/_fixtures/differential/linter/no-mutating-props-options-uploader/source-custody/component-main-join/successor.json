@@ -409,9 +409,9 @@
     {
       "path": "crates/vize_patina/src/preset/default_migration_tests.rs",
       "mode": "100644",
-      "bytes": 6248,
-      "sha256": "79ecfdbe72c74890ec84b4f31307bc15bbabac749334732ddf918592dc3e74d3",
-      "gitBlob": "a22b52a650dc6e5c2e02b2976303bc5cbd63b24d"
+      "bytes": 6262,
+      "sha256": "da3f38a68ec7598373806ee30860bf53cf451fafa1523000620733a4115a4170",
+      "gitBlob": "6f991af6c53b35d7fc68ac8a5ef7af4657a7c8dd"
     },
     {
       "path": "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
@@ -507,9 +507,9 @@
     {
       "path": "crates/vize_patina/src/rules/vue/no_deprecated_functional_template.rs",
       "mode": "100644",
-      "bytes": 8773,
-      "sha256": "4807bf0ace61ad9db7f885402a15f8bacb88ced005367142376ac0203bd930db",
-      "gitBlob": "328df640e98257fe589de6070c12aca5e130c516"
+      "bytes": 11084,
+      "sha256": "2b1f5e5564b292e768fa4779deb1af5ec2a87b05ac8654bf1774b56a811193d9",
+      "gitBlob": "3572382d68c036b88d686bfc0118dc821cafc81c"
     },
     {
       "path": "crates/vize_patina/src/rules/vue/no_mutating_props.rs",
@@ -2131,9 +2131,9 @@
     {
       "path": "tests/tooling/lint-default-correctness-reference.mjs",
       "mode": "100644",
-      "bytes": 3048,
-      "sha256": "d0fe46840f15d3aee0cad8b0394b4c67dd1f738a9ddaba39f55073fefd9df6b7",
-      "gitBlob": "6395d65599a8c40343cb12d64a1bf735dd77acb7"
+      "bytes": 3071,
+      "sha256": "d1a28bf156a624e101c58fcf7a9c122a7420a51a2366e2cf2d0efce4a85f8009",
+      "gitBlob": "b8076270e0035e4e99d55d791f17f8f8a1485b76"
     },
     {
       "path": "tests/tooling/lint-props-deep-destructure.test.mjs",
