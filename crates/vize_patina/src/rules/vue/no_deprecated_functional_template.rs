@@ -165,7 +165,8 @@ fn functional_attribute_span(source: &str, start: usize, end: usize) -> Option<(
         }
         let name_end = cursor;
         if name_start == name_end {
-            return None;
+            cursor += 1;
+            continue;
         }
         while header.get(cursor).is_some_and(u8::is_ascii_whitespace) {
             cursor += 1;

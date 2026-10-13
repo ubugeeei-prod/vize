@@ -3,7 +3,7 @@
 use serde::Deserialize;
 use serde_json::{Value, json};
 use vize_patina::{
-    HelpLevel, LintResult, Linter, Locale, RuleRegistry,
+    HelpLevel, LintResult, Linter, Locale, RuleRegistry, Severity,
     rules::vue::{
         NoDeprecatedFunctionalTemplate, NoDeprecatedSlotScopeAttribute, NoDeprecatedVBindSync,
     },
@@ -54,6 +54,29 @@ fn complete(result: &LintResult) -> Value {
         "warning_count": result.warning_count, "diagnostics": diagnostics})
 }
 
+fn reference_point(source: &str, offset: u32) -> (usize, usize) {
+    let prefix = source
+        .get(..offset as usize)
+        .expect("authored UTF-8 boundary");
+    let (mut line, mut column) = (1, 1);
+    let mut chars = prefix.chars().peekable();
+    while let Some(ch) = chars.next() {
+        if ch == '\r' {
+            if chars.peek() == Some(&'\n') {
+                chars.next();
+            }
+            line += 1;
+            column = 1;
+        } else if matches!(ch, '\n' | '\u{2028}' | '\u{2029}') {
+            line += 1;
+            column = 1;
+        } else {
+            column += ch.len_utf16();
+        }
+    }
+    (line, column)
+}
+
 #[test]
 fn deprecation_targets_keep_complete_native_packets_and_pinned_reference_spans() {
     let corpus: Corpus =
@@ -63,7 +86,7 @@ fn deprecation_targets_keep_complete_native_packets_and_pinned_reference_spans()
     assert_eq!(corpus.original_matrix["budget"]["falsePositives"], 0);
     assert_eq!(corpus.original_matrix["budget"]["falseNegatives"], 0);
     assert!(!corpus.original_observations.is_null());
-    assert_eq!(corpus.cases.len(), 18);
+    assert_eq!(corpus.cases.len(), 24);
 
     for case in corpus.cases {
         let mut registry = RuleRegistry::new();
@@ -79,6 +102,24 @@ fn deprecation_targets_keep_complete_native_packets_and_pinned_reference_spans()
             other => panic!("{}: unsupported corpus mode {other}", case.id),
         };
         assert_eq!(complete(&actual), case.expected, "{}", case.id);
+        for (diagnostic, reference) in actual.diagnostics.iter().zip(&case.reference) {
+            let (line, column) = reference_point(&case.source, diagnostic.start);
+            let (end_line, end_column) = reference_point(&case.source, diagnostic.end);
+            let severity = match diagnostic.severity {
+                Severity::Error => 2,
+                Severity::Warning => 1,
+            };
+            assert_eq!(
+                json!({"ruleId": diagnostic.rule_name, "severity": severity,
+                    "line": line, "column": column,
+                    "endLine": end_line, "endColumn": end_column}),
+                json!({"ruleId": reference["ruleId"], "severity": reference["severity"],
+                    "line": reference["line"], "column": reference["column"],
+                    "endLine": reference["endLine"], "endColumn": reference["endColumn"]}),
+                "{}: direct pinned-reference parity",
+                case.id
+            );
+        }
         assert_eq!(
             actual.diagnostics.len(),
             case.reference.len(),

@@ -789,6 +789,194 @@
         "warning_count": 0,
         "diagnostics": []
       }
+    },
+    {
+      "id": "functional-header-0",
+      "source": "<template = functional><div /></template>",
+      "filename": "functional-header-0.vue",
+      "mode": "sfc",
+      "reference": [
+        {
+          "ruleId": "vue/no-deprecated-functional-template",
+          "severity": 2,
+          "message": "The `functional` template are deprecated.",
+          "line": 1,
+          "column": 13,
+          "messageId": "unexpected",
+          "endLine": 1,
+          "endColumn": 23
+        }
+      ],
+      "expected": {
+        "filename": "functional-header-0.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-deprecated-functional-template",
+            "severity": "error",
+            "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+            "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+            "start": 12,
+            "end": 22,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "functional-header-1",
+      "source": "<template =\nfunctional><div /></template>",
+      "filename": "functional-header-1.vue",
+      "mode": "sfc",
+      "reference": [
+        {
+          "ruleId": "vue/no-deprecated-functional-template",
+          "severity": 2,
+          "message": "The `functional` template are deprecated.",
+          "line": 2,
+          "column": 1,
+          "messageId": "unexpected",
+          "endLine": 2,
+          "endColumn": 11
+        }
+      ],
+      "expected": {
+        "filename": "functional-header-1.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-deprecated-functional-template",
+            "severity": "error",
+            "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+            "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+            "start": 12,
+            "end": 22,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "functional-header-2",
+      "source": "<template functional\n=\"true\"><div /></template>",
+      "filename": "functional-header-2.vue",
+      "mode": "sfc",
+      "reference": [
+        {
+          "ruleId": "vue/no-deprecated-functional-template",
+          "severity": 2,
+          "message": "The `functional` template are deprecated.",
+          "line": 1,
+          "column": 11,
+          "messageId": "unexpected",
+          "endLine": 2,
+          "endColumn": 8
+        }
+      ],
+      "expected": {
+        "filename": "functional-header-2.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-deprecated-functional-template",
+            "severity": "error",
+            "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+            "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+            "start": 10,
+            "end": 28,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "functional-header-3",
+      "source": "<template functional=\n\"true\"><div /></template>",
+      "filename": "functional-header-3.vue",
+      "mode": "sfc",
+      "reference": [
+        {
+          "ruleId": "vue/no-deprecated-functional-template",
+          "severity": 2,
+          "message": "The `functional` template are deprecated.",
+          "line": 1,
+          "column": 11,
+          "messageId": "unexpected",
+          "endLine": 2,
+          "endColumn": 7
+        }
+      ],
+      "expected": {
+        "filename": "functional-header-3.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-deprecated-functional-template",
+            "severity": "error",
+            "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+            "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+            "start": 10,
+            "end": 28,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "functional-header-4",
+      "source": "<template foo=\nfunctional><div /></template>",
+      "filename": "functional-header-4.vue",
+      "mode": "sfc",
+      "reference": [],
+      "expected": {
+        "filename": "functional-header-4.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "functional-header-5",
+      "source": "<template foo=\"a\nb\" functional><div /></template>",
+      "filename": "functional-header-5.vue",
+      "mode": "sfc",
+      "reference": [
+        {
+          "ruleId": "vue/no-deprecated-functional-template",
+          "severity": 2,
+          "message": "The `functional` template are deprecated.",
+          "line": 2,
+          "column": 4,
+          "messageId": "unexpected",
+          "endLine": 2,
+          "endColumn": 14
+        }
+      ],
+      "expected": {
+        "filename": "functional-header-5.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-deprecated-functional-template",
+            "severity": "error",
+            "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+            "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+            "start": 20,
+            "end": 30,
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
     }
   ]
 }

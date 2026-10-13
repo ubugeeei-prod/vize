@@ -39,3 +39,9 @@ Historical preset corpora stay at their original paths and exact bytes. Current
 native and CLI regressions read separate `current-range-cases.json` copies;
 their complete authored vectors differ only at the approved diagnostic ranges.
 Released typed-default and runtime-prop reference authorities are not repinned.
+
+Review controls add six whole header cases and direct native rule/severity/UTF-16
+range comparisons with the pinned reference. Empty `=` tokens are skipped; HTML
+whitespace keeps newline-spanning attribute values intact. Matching only the
+block parser’s spaces/tabs would diverge from the verified provider on those
+newlines, so no opening-tag fallback or parser-syntax weakening is introduced.
