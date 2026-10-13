@@ -209,7 +209,21 @@ impl crate::Croquis {
     /// Retain only a caller-qualified packet from the same descriptor analysis.
     #[doc(hidden)]
     pub fn retain_authored_binding_reads(&mut self, packet: Option<BindingOccurrences>) {
+        let qualified = packet.is_some();
         self.setup_context.set_ssr_occurrences(packet);
+        self.setup_context.qualify_component_reads(qualified);
+    }
+
+    /// Admit independent positive import reads after checking the actual SFC view.
+    #[doc(hidden)]
+    pub fn qualify_authored_component_reads(&mut self, qualified: bool) {
+        self.setup_context.qualify_component_reads(qualified);
+    }
+
+    /// Preserve descriptor admission when the complete editor packet is refused.
+    #[doc(hidden)]
+    pub fn authored_component_reads_are_qualified(&self) -> bool {
+        self.setup_context.component_reads_are_qualified()
     }
 
     /// A positive template read of this exact authored setup declaration.
@@ -229,7 +243,7 @@ impl crate::Croquis {
         {
             return false;
         }
-        let Some(packet) = self.setup_context.authored_binding_occurrences() else {
+        let Some(packet) = self.setup_context.authored_runtime_template_reads() else {
             return false;
         };
         let identity = BindingIdentity {
@@ -245,14 +259,8 @@ impl crate::Croquis {
         {
             return false;
         }
-        self.setup_context
-            .authored_runtime_template_reads()
-            .is_some_and(|reads| {
-                reads.iter().any(|reference| {
-                    reference.binding == identity
-                        && reference.block == OccurrenceBlock::Template
-                        && packet.seen.contains(reference)
-                })
-            })
+        packet.occurrences.iter().any(|reference| {
+            reference.binding == identity && reference.block == OccurrenceBlock::Template
+        })
     }
 }
