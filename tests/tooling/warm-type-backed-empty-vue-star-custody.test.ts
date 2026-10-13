@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import path from "node:path";
 import { test } from "node:test";
-import { runRetainedEmptyVueStarCustody } from "../../tools/support/compat/github/empty-vue-star-custody-runner.mjs";
+import { runRetainedComponentReadStarCustody } from "../../tools/support/compat/github/empty-vue-star-component-read-source.mjs";
 
 const root = path.resolve(import.meta.dirname, "../..");
-const result = await runRetainedEmptyVueStarCustody(root);
+const result = await runRetainedComponentReadStarCustody(root);
 void test("actual JS93 and Star322 source gates precede all eight unchanged original Star custody laws", () => {
   assert.equal(result.registeredOriginalTests, 8);
   assert.equal(result.currentBodies, 322);
