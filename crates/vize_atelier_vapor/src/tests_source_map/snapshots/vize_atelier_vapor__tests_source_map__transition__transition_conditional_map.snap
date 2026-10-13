@@ -10,5 +10,6 @@ expression: segments
     "4:0 \"export f\" -> \"<main><T\"",
     "13:17 \"_createI\" -> \"<button \"",
     "13:34 \"_ctx.sho\" -> \"show\\\" @c\" [show]",
+    "16:30 \"_ctx.sen\" -> \"send\\\">{{\" [send]",
     "17:58 \"_ctx.lab\" -> \"label }}\" [label]",
 ]

@@ -10,6 +10,7 @@ expression: segments
     "4:46 \"Child\\\")⏎\" -> \"Child><t\"",
     "7:29 \"_ctx.ite\" -> \"items\\\" #\" [items]",
     "7:69 \"(p) => {\" -> \"<templat\"",
+    "10:25 \"$event =\" -> \"record(i\"",
     "11:58 \"_for_ite\" -> \"item.lab\"",
     "11:85 \":\\\" + _to\" -> \":{{key}}\"",
     "11:107 \"_for_key\" -> \"key}}:{{\"",

@@ -130,12 +130,11 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
             if set_event.modifiers.options.passive {
                 opts.push("passive: true");
             }
-            ctx.push_line_fmt(format_args!(
-                "_on({}, \"{}\", {}, {{",
-                element,
-                event_name,
-                wrapped_handler.as_str()
-            ));
+            // The handler keeps its expression anchors, as a delegated one does.
+            let mut line = EmitDocument::plain(&cstr!("_on({}, \"{}\", ", element, event_name));
+            line.push_spanned(&wrapped_handler);
+            line.push_str(", {");
+            ctx.push_line_spanned(&line);
             ctx.indent();
             for (index, opt) in opts.iter().enumerate() {
                 let comma = if index + 1 < opts.len() { "," } else { "" };
@@ -144,12 +143,10 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
             ctx.deindent();
             ctx.push_line("})");
         } else {
-            ctx.push_line_fmt(format_args!(
-                "_on({}, \"{}\", {})",
-                element,
-                event_name,
-                wrapped_handler.as_str()
-            ));
+            let mut line = EmitDocument::plain(&cstr!("_on({}, \"{}\", ", element, event_name));
+            line.push_spanned(&wrapped_handler);
+            line.push_str(")");
+            ctx.push_line_spanned(&line);
         }
     }
 }
