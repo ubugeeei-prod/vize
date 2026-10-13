@@ -1262,7 +1262,7 @@ export default {
 
 Le bon exemple évite le diagnostic de cette règle avec la configuration ci-dessus ; d’autres règles peuvent encore signaler des diagnostics.
 
-[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_dupe_keys.rs#L52) · [Toutes les règles](all.md)
+[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_dupe_keys.rs#L55) · [Toutes les règles](all.md)
 
 ### `script/no-duplicate-attr-inheritance`
 
