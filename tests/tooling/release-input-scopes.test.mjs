@@ -216,11 +216,13 @@ void test("release scripts, manifests, workflow, docs and copied fixture restore
     "npm/cli/package.json",
     "editors/vscode/package.json",
     "Cargo.toml",
-    "docs/content/guide/init.md",
     "crates/vize/tests/fixtures/content_mapper_project/src/App.vue",
   ]) {
     assert.deepEqual(selected(path), releaseFiles, path);
   }
+  // Prose selects the contracts that declare it; the merge queue runs the rest.
+  const init = selected("docs/content/guide/init.md");
+  for (const file of scoped) assert.ok(init.includes(file), file);
 });
 
 void test("direct, global and unknown changes remain broad; merge runs every release test", () => {

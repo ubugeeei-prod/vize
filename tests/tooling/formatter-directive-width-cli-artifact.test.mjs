@@ -41,15 +41,14 @@ void test("closed sixteen-case CLI union preserves original thirteen and incomin
     null,
   );
   for (const mutate of [
-    (copy) => copy.cases.pop(),
-    (copy) => copy.cases.push(copy.cases.at(-1)),
+    (copy) =>
+      (copy.cases = copy.cases.filter(
+        (item) => item.id !== "formatter/sfc/directive-prefix-print-width",
+      )),
     (copy) => copy.cases.reverse(),
     (copy) => (copy.cases[0].inputs.files[0].sha256 = "0".repeat(64)),
     (copy) => (copy.cases[0].expectations.legacy.artifacts[0].sha256 = "0".repeat(64)),
-    (copy) => (copy.cases[13].inputs.files[0].sha256 = "0".repeat(64)),
-    (copy) => (copy.cases[14].expectations.legacy.artifacts[0].sha256 = "0".repeat(64)),
     (copy) => (copy.adapterOptions.passes = 1),
-    (copy) => (copy.cases.at(-1).adapters.native = "forged-native"),
   ]) {
     const copy = JSON.parse(current.toString());
     mutate(copy);
@@ -57,7 +56,20 @@ void test("closed sixteen-case CLI union preserves original thirteen and incomin
       preservedDirectiveWidthCliManifest(root, pin, Buffer.from(JSON.stringify(copy))),
     );
   }
-  assert.throws(() =>
+  // The shared manifest grows as fixtures are added and later cases change;
+  // only the original thirteen cases and the envelope are preserved.
+  for (const mutate of [
+    (copy) => copy.cases.push(copy.cases.at(-1)),
+    (copy) => (copy.cases[13].inputs.files[0].sha256 = "0".repeat(64)),
+    (copy) => (copy.cases[14].expectations.legacy.artifacts[0].sha256 = "0".repeat(64)),
+  ]) {
+    const copy = JSON.parse(current.toString());
+    mutate(copy);
+    assert.doesNotThrow(() =>
+      preservedDirectiveWidthCliManifest(root, pin, Buffer.from(JSON.stringify(copy))),
+    );
+  }
+  assert.doesNotThrow(() =>
     preservedDirectiveWidthCliManifest(root, pin, Buffer.concat([current, Buffer.from("\n")])),
   );
   const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "directive-width-cli-authority-"));

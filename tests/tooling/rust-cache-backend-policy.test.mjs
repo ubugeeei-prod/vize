@@ -154,14 +154,18 @@ await test("a trusted GitHub-hosted miss seeds Actions without mounting a provid
   });
 });
 
-await test("a trusted seed includes the fresh artifact and is saved before unmount", () => {
+await test("a trusted mounted target validates fresh source before provider unmount without an archive", () => {
   cacheFixture((fixture) => {
     const result = executeCacheAction(fixture, { ...fixture.context(), role: "docs-example" });
     assert.equal(result.status, 0);
     const seeds = result.trace.filter((row) => row.kind === "cache-post");
-    assert.equal(seeds.length, 3);
+    assert.equal(seeds.length, 2);
     const artifact = readFileSync(join(fixture.cwd, "artifact.txt"), "utf8");
-    assert.equal(seeds.find((row) => row.name === "target").saved, `compiled:${artifact}`);
+    assert.equal(
+      readFileSync(join(fixture.cwd, "target/cache-artifact.txt"), "utf8"),
+      `compiled:${artifact}`,
+    );
+    assert.equal(seeds.filter((row) => row.name === "target").length, 0);
     assert.ok(
       seeds.filter((row) => row.name !== "target").every((row) => row.saved === "sticky clone"),
     );
@@ -173,7 +177,7 @@ await test("a trusted seed includes the fresh artifact and is saved before unmou
   });
 });
 
-await test("a compatible prior target lookup saves the new exact seed without restoring over its clone", () => {
+await test("a compatible prior target lookup retains its clone and never registers an archive", () => {
   cacheFixture((fixture) => {
     const result = executeCacheAction(
       fixture,
@@ -186,8 +190,12 @@ await test("a compatible prior target lookup saves the new exact seed without re
     );
     const artifact = readFileSync(join(fixture.cwd, "artifact.txt"), "utf8");
     assert.equal(
-      result.trace.find((row) => row.kind === "cache-post" && row.name === "target").saved,
+      readFileSync(join(fixture.cwd, "target/cache-artifact.txt"), "utf8"),
       `compiled:${artifact}`,
+    );
+    assert.equal(
+      result.trace.filter((row) => row.kind === "cache-post" && row.name === "target").length,
+      0,
     );
   });
 });

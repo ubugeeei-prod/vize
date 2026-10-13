@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/davinci-kani.yml"
+      - "davinci/vize_l3/src/lattice/axis.rs"
       - "davinci/vize_l3/src/lattice/class.rs"
       - "davinci/vize_l3/src/lattice/effect.rs"
       - "crates/vize_patina/src/html_content_model/tri.rs"

@@ -114,6 +114,19 @@ pub(super) fn record(outcome: Result<(), DomLegacyReason>) {
     profiler.record_counter_enabled(counter, 1);
 }
 
+/// Keep L2's typed refusal for the differential census. Production builds
+/// compile this to the identity.
+#[inline]
+pub(super) fn noting_refusal<T>(
+    emitted: Result<T, vize_l1_to_l2::EmitError>,
+) -> Result<T, vize_l1_to_l2::EmitError> {
+    #[cfg(feature = "legacy-differential")]
+    if let Err(error) = &emitted {
+        differential::note_emit_refusal(*error);
+    }
+    emitted
+}
+
 /// The `legacy-differential` legacy override: while it is armed on a
 /// thread, every DOM compile on that thread selects the legacy lane, so a
 /// production entry point (`compile_sfc`) can be run on both lanes and its
@@ -122,8 +135,11 @@ pub(super) fn record(outcome: Result<(), DomLegacyReason>) {
 pub mod differential {
     use core::cell::Cell;
 
+    use vize_l1_to_l2::EmitError;
+
     std::thread_local! {
         static FORCE_LEGACY: Cell<bool> = const { Cell::new(false) };
+        static EMIT_REFUSAL: Cell<Option<EmitError>> = const { Cell::new(None) };
     }
 
     /// Historical arm. A projectable Croquis summary is admitted in
@@ -146,5 +162,17 @@ pub mod differential {
 
     pub(in crate::compile) fn legacy_forced() -> bool {
         FORCE_LEGACY.with(Cell::get)
+    }
+
+    /// Take the typed error L2 returned for this thread's latest DOM
+    /// compile, so a corpus sweep can attribute `emit_refused` templates to
+    /// their [`vize_l1_to_l2::UnsupportedReason`] bucket. `None` when L2
+    /// emitted the module or the selector never ran it.
+    pub fn take_emit_refusal() -> Option<EmitError> {
+        EMIT_REFUSAL.with(Cell::take)
+    }
+
+    pub(in crate::compile) fn note_emit_refusal(error: EmitError) {
+        EMIT_REFUSAL.with(|slot| slot.set(Some(error)));
     }
 }

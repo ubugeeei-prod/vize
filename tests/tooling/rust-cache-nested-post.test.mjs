@@ -17,7 +17,11 @@ await test("nested cache posts save the validated target inputs after step outpu
         secondarySuffix: "Linux-X64",
         secondaryPath: "base/target",
       };
-      const result = executeCacheAction(fixture, context, { nestedPost: true });
+      const result = executeCacheAction(fixture, context, {
+        nestedPost: true,
+        secondaryWorkload: true,
+        mountFailures: ["target", "secondary"],
+      });
       assert.equal(result.status, 0);
       const workload = result.trace.find((row) => row.kind === "workload");
       const seeds = result.trace.filter((row) => row.kind === "cache-post");
@@ -28,10 +32,10 @@ await test("nested cache posts save the validated target inputs after step outpu
       assert.equal(target.saved, `compiled:${workload.artifact}`);
       assert.equal(target.warning, undefined);
       assert.equal(resolve(fixture.cwd, secondary.path), resolve(fixture.cwd, "base/target"));
-      assert.equal(secondary.saved, "sticky clone");
+      assert.equal(secondary.saved, `compiled:${workload.artifact}`);
       const firstUnmount = result.trace.findIndex((row) => row.kind === "sticky-post");
       assert.ok(seeds.every((row) => result.trace.indexOf(row) < firstUnmount));
-      assert.equal(target.key, result.outputs["cache-policy"]["target-seed-key"]);
+      assert.equal(target.key, result.outputs["cache-policy"]["target-key"]);
     });
 });
 
@@ -53,6 +57,7 @@ await test("the old output-based path loses the seed while its warning lets clea
       {
         nestedPost: true,
         steps: action.runs.steps,
+        mountFailures: ["target"],
       },
     );
     assert.equal(status, 0);
@@ -92,7 +97,12 @@ await test("a versioned nested seed restores both targets after failed PR and tr
       const seeded = executeCacheAction(
         fixture,
         { ...fixture.context(), ...paths },
-        { nestedPost: true, storedCache: true },
+        {
+          nestedPost: true,
+          storedCache: true,
+          secondaryWorkload: true,
+          mountFailures: ["target", "secondary"],
+        },
       );
       const prior = seeded.trace.filter((row) => row.kind === "cache-post");
       const original = seeded.trace.find((row) => row.kind === "workload");
@@ -159,11 +169,11 @@ await test("an absolute-path reader cannot use a relative-path seed despite an i
     if (step.uses?.startsWith("actions/cache/restore@")) {
       if (step.with.path === "${{ inputs.target-path }}") {
         step.with.path = "${{ steps.cache-policy.outputs.target-path }}";
-        step.with.key = "${{ steps.cache-policy.outputs.target-seed-key }}";
+        step.with.key = "${{ steps.cache-policy.outputs.target-key }}";
       }
       if (step.with.path === "${{ inputs.secondary-target-path }}") {
         step.with.path = "${{ steps.cache-policy.outputs.secondary-path }}";
-        step.with.key = "${{ steps.cache-policy.outputs.secondary-seed-key }}";
+        step.with.key = "${{ steps.cache-policy.outputs.secondary-key }}";
       }
     }
   cacheFixture((fixture) => {
@@ -176,10 +186,12 @@ await test("an absolute-path reader cannot use a relative-path seed despite an i
     const seed = executeCacheAction(
       fixture,
       { ...fixture.context(), ...paths },
-      { storedCache: true, nestedPost: true },
+      { storedCache: true, nestedPost: true, mountFailures: ["target", "secondary"] },
     );
     for (const path of ["target", "secondary"])
       rmSync(resolve(fixture.cwd, path), { recursive: true, force: true });
+    // This reader is cold: discarded target files cannot leave a prior-run marker.
+    rmSync(resolve(fixture.cwd, "markers"), { recursive: true, force: true });
     const result = executeCacheAction(
       fixture,
       { ...fixture.context("pull_request", "refs/pull/24/merge"), ...paths },

@@ -23,7 +23,7 @@ test("only canonical released contract artifacts are exempt from source length",
     git(cwd, "-c", "user.name=Vize", "-c", "user.email=vize@example.com", "commit", "-qm", "base");
     const base = git(cwd, "rev-parse", "HEAD");
     const artifact = "davinci/vize_guest/versions/vize-contracts@0.1.3.json";
-    const text = `${Array.from({ length: 351 }, () => "line").join("\n")}\n`;
+    const text = `${Array.from({ length: 501 }, () => "line").join("\n")}\n`;
     const write = (relative: string) => {
       const file = path.join(cwd, relative);
       fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -53,7 +53,7 @@ test("only canonical released contract artifacts are exempt from source length",
       [
         "| Lines | Base | Reason | Path |",
         "| ---: | ---: | --- | --- |",
-        ...controls.toSorted().map((file) => `| 351 | - | new file exceeds limit | \`${file}\` |`),
+        ...controls.toSorted().map((file) => `| 501 | - | new file exceeds limit | \`${file}\` |`),
       ].join("\n"),
     );
   } finally {

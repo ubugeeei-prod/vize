@@ -14,7 +14,10 @@ jobs:
     timeout-minutes: 5
     outputs:
       comparison-base: ${{ steps.comparison.outputs.base }}
-      canonical-corpus: ${{ steps.canonical-corpus-plan.outputs.canonical-corpus }}
+      # The heavy lanes always run in the merge queue. A PR also runs them when
+      # its change can break them or it carries the `full-ci` label.
+      heavy: ${{ steps.tier.outputs.heavy }}
+      canonical-corpus: ${{ steps.tier.outputs.heavy == 'true' && steps.canonical-corpus-plan.outputs.canonical-corpus || 'false' }}
       rust: ${{ steps.plan.outputs.rust }}
       rust-plan: ${{ steps.rust-plan.outputs.rust-plan }}
       js: ${{ steps.plan.outputs.js }}
@@ -24,7 +27,7 @@ jobs:
       native-setup-capture: ${{ steps.tooling-plan.outputs.native-setup-capture }}
       native-ssr-capture: ${{ steps.tooling-plan.outputs.native-ssr-capture }}
       native-attribute-values-7502-capture: ${{ steps.tooling-plan.outputs.native-attribute-values-7502-capture }}
-      playground: ${{ steps.plan.outputs.playground }}
+      playground: ${{ steps.tier.outputs.heavy == 'true' && steps.plan.outputs.playground || 'false' }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -50,6 +53,12 @@ jobs:
         id: plan
         env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
         run: node tools/support/compat/github/plan-source-checks.ts "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
+      - name: Select the PR tier
+        id: tier
+        env:
+          BASE_SHA: ${{ steps.comparison.outputs.base }}
+          PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: node tools/support/compat/github/select-pr-tier.ts "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
       - name: Report legacy fix differential inputs
         if: ${{ github.event_name == 'pull_request' }}
         continue-on-error: true
@@ -94,7 +103,9 @@ jobs:
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
     needs: pr-source-plan
     uses: ./.github/workflows/pr-js-checks.yml
-    with: { run-js: "${{ needs.pr-source-plan.outputs.js == 'true' }}" }
+    with:
+      run-js: ${{ needs.pr-source-plan.outputs.js == 'true' }}
+      run-original-project: ${{ needs.pr-source-plan.outputs.heavy == 'true' }}
   pr-source-cli:
     needs: pr-source-plan
     uses: ./.github/workflows/pr-source-cli.yml
@@ -173,13 +184,13 @@ jobs:
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
         run: vp exec node tools/support/compat/davinci/plugin-sandbox-image.mjs
       - name: Test source-bound native JS setup modules and runtime
-        if: ${{ always() && needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-setup-capture == 'true')) }}
+        if: ${{ !cancelled() && needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-setup-capture == 'true')) }}
         uses: ./.github/actions/test-native-js-setup
       - name: Capture original native Vapor modules and runtime
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-vapor-capture == 'true')) }}
         uses: ./.github/actions/test-native-vapor
       - name: Capture original attribute values across native targets
-        if: ${{ always() && needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-attribute-values-7502-capture == 'true')) }}
+        if: ${{ !cancelled() && needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-attribute-values-7502-capture == 'true')) }}
         uses: ./.github/actions/test-native-attribute-values-7502
       - name: Test selected PR tooling scripts
         if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling == 'true' }}
@@ -207,7 +218,7 @@ jobs:
           VIZE_TOOLING_TEST_SHARD: ${{ format('{0}/{1}', matrix.index, matrix.total) }}
         run: vp run --workspace-root test:scripts:planned
       - uses: ./.github/actions/upload-formatter-api-corpus-evidence
-        if: ${{ always() && needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ !cancelled() && needs.pr-source-plan.outputs.tooling == 'true' }}
         with: { shard: "${{ matrix.index }}" }
   pr-playground-test:
     name: PR playground browser tests
@@ -300,7 +311,8 @@ jobs:
         run: exit 1
   source-report:
     name: PR source report
-    if: ${{ always() }}
+    # A superseded run reports nothing: its required check fails in test-report.
+    if: ${{ always() && !contains(needs.*.result, 'cancelled') }}
     # prettier-ignore
     needs: [pr-source-plan, pr-rust-source, pr-js-packages, pr-tooling-scripts, pr-playground-test, wit-contracts, canonical-corpus, pr-source-cli]
     runs-on: ubuntu-24.04

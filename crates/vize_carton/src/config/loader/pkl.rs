@@ -40,11 +40,21 @@ impl std::error::Error for PklError {
 
 /// Evaluate a PKL config and deserialize it into the raw config model.
 pub(super) fn parse_pkl_config(path: &Path) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
+    let json = evaluate_pkl_config(path)?;
+    if super::extends::mentions_extends(&json) {
+        return super::parse::document_from_json(&json, path);
+    }
+    serde_json::from_slice::<ConfigDocument>(&json)
+        .map_err(|error| Box::new(PklError::Json(error)) as Box<dyn std::error::Error>)
+}
+
+/// Evaluate a PKL config to JSON, trying project-local binaries first.
+pub(super) fn evaluate_pkl_config(path: &Path) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     let mut last_process_error = None;
 
     for command in pkl_command_candidates(path) {
-        match parse_pkl_config_with_command(path, &command) {
-            Ok(config) => return Ok(config),
+        match evaluate_pkl_config_with_command(path, &command) {
+            Ok(json) => return Ok(json),
             Err(error) if is_process_error(&error) => {
                 last_process_error = Some(error);
             }
@@ -69,7 +79,7 @@ pub(super) fn is_process_error_box(error: &(dyn std::error::Error + 'static)) ->
         .is_some_and(is_process_error)
 }
 
-fn parse_pkl_config_with_command(path: &Path, command: &Path) -> Result<ConfigDocument, PklError> {
+fn evaluate_pkl_config_with_command(path: &Path, command: &Path) -> Result<Vec<u8>, PklError> {
     let mut process = Command::new(command);
     process.arg("eval").arg("-f").arg("json").arg(path);
     if let Some(parent) = path.parent() {
@@ -79,7 +89,7 @@ fn parse_pkl_config_with_command(path: &Path, command: &Path) -> Result<ConfigDo
     if !output.status.success() {
         return Err(PklError::Eval(format_pkl_failure(&output)));
     }
-    serde_json::from_slice::<ConfigDocument>(&output.stdout).map_err(PklError::Json)
+    Ok(output.stdout)
 }
 
 fn is_process_error(error: &PklError) -> bool {
