@@ -25,14 +25,12 @@ import { fileURLToPath } from "node:url";
 import {
   artifactDirectory,
   cargoArguments,
-  corpusRelative,
   exitLine,
   observerProcesses,
   prebuildTargets,
   processArguments,
+  processEnvironment,
   processHeader,
-  shardEnv,
-  shardVectorEnv,
   shardedObservers,
 } from "./canonical-corpus-shard-plan.ts";
 import type { Finished, ObserverProcess, Suite } from "./canonical-corpus-shard-plan.ts";
@@ -76,17 +74,7 @@ function runProcess(
   cwd: string,
   outputPath: string,
 ): Promise<Finished> {
-  const env: NodeJS.ProcessEnv = {
-    ...process.env,
-    CARGO_MANIFEST_DIR: built.manifestDirectory,
-    VIZE_DAVINCI_DIFFERENTIAL_CORPUS: corpusRelative,
-  };
-  delete env[shardEnv];
-  delete env[shardVectorEnv];
-  if (entry.role === "shard") {
-    env[shardEnv] = `${entry.index}/${entry.suite.shards}`;
-    env[shardVectorEnv] = resolve(cwd, artifactDirectory, entry.vector as string);
-  }
+  const env = processEnvironment(entry, process.env, built.manifestDirectory, cwd);
   const descriptor = openSync(outputPath, "w");
   const started = Date.now();
   return new Promise((resolvePromise) => {

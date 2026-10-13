@@ -2,6 +2,7 @@
 // which observer runs which test binaries, how each process is invoked, and
 // the exact segment lines its combined log carries.
 import assert from "node:assert/strict";
+import { resolve } from "node:path";
 
 export const artifactDirectory = "real-project-davinci-dom-corpus";
 export const corpusRelative = "tests/_fixtures/_git";
@@ -122,6 +123,32 @@ export function cargoArguments(target: BuildTarget, extra: readonly string[]): s
     target.test,
     ...extra,
   ];
+}
+
+/**
+ * The environment `cargo test` gave the binary (the corpus root, resolved
+ * against the workspace, and the package directory), plus this process's
+ * shard and vector path. Inherited shard variables never leak into a
+ * complete or base process.
+ */
+export function processEnvironment(
+  entry: ObserverProcess,
+  inherited: Readonly<Record<string, string | undefined>>,
+  manifestDirectory: string,
+  cwd: string,
+): Record<string, string | undefined> {
+  const env: Record<string, string | undefined> = {
+    ...inherited,
+    CARGO_MANIFEST_DIR: manifestDirectory,
+    VIZE_DAVINCI_DIFFERENTIAL_CORPUS: corpusRelative,
+  };
+  delete env[shardEnv];
+  delete env[shardVectorEnv];
+  if (entry.role === "shard") {
+    env[shardEnv] = `${entry.index}/${entry.suite.shards}`;
+    env[shardVectorEnv] = resolve(cwd, artifactDirectory, entry.vector as string);
+  }
+  return env;
 }
 
 export type Finished = {
