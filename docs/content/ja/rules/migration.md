@@ -4,7 +4,7 @@ title: ESLint ルール移行対応表
 
 # ESLint ルール移行対応表
 
-コミットされた対応記録は 252 件で、対応付け 123 件、意図的な差異 2 件、未実装 127 件です。「対応」はルール名の対応を示し、オプション・検出・修正・適用範囲の完全な一致を保証しません。
+コミットされた対応記録は 252 件で、対応付け 127 件、意図的な差異 2 件、未実装 123 件です。「対応」はルール名の対応を示し、オプション・検出・修正・適用範囲の完全な一致を保証しません。
 
 Vite+ の設定では Vize のルールを `lint.vize.rules` に指定します。Oxlint の JS / TS ルールは `lint.rules` に残します。ESLint の配列形式をそのまま移さず、重大度と型付き `ruleOptions` を分けて指定します。
 
@@ -108,7 +108,7 @@ Vite+ の設定では Vize のルールを `lint.vize.rules` に指定します�
 | `vue/no-deprecated-slot-attribute` | [`vue/no-deprecated-slot-attribute`](./reference/vue-no-deprecated-slot-attribute.md) | 対応付け |
 | `vue/no-deprecated-slot-scope-attribute` | [`vue/no-deprecated-slot-scope-attribute`](./reference/vue-no-deprecated-slot-scope-attribute.md) | 対応付け |
 | `vue/no-deprecated-v-bind-sync` | [`vue/no-deprecated-v-bind-sync`](./reference/vue-no-deprecated-v-bind-sync.md) | 対応付け |
-| `vue/no-deprecated-v-is` | — | 未実装 |
+| `vue/no-deprecated-v-is` | [`vue/no-deprecated-v-is`](./reference/vue-no-deprecated-v-is.md) | 対応付け |
 | `vue/no-deprecated-v-on-native-modifier` | [`vue/no-deprecated-v-on-native-modifier`](./reference/vue-no-deprecated-v-on-native-modifier.md) | 対応付け |
 | `vue/no-deprecated-v-on-number-modifiers` | [`vue/no-deprecated-v-on-number-modifiers`](./reference/vue-no-deprecated-v-on-number-modifiers.md) | 対応付け |
 | `vue/no-deprecated-vue-config-keycodes` | — | 未実装 |
@@ -264,16 +264,16 @@ Vite+ の設定では Vize のルールを `lint.vize.rules` に指定します�
 | `vue/valid-v-bind-sync` | — | 未実装 |
 | `vue/valid-v-cloak` | [`vue/valid-v-cloak`](./reference/vue-valid-v-cloak.md) | 対応付け |
 | `vue/valid-v-else` | [`vue/valid-v-else`](./reference/vue-valid-v-else.md) | 対応付け |
-| `vue/valid-v-else-if` | — | 未実装 |
+| `vue/valid-v-else-if` | [`vue/valid-v-else-if`](./reference/vue-valid-v-else-if.md) | 対応付け |
 | `vue/valid-v-for` | [`vue/valid-v-for`](./reference/vue-valid-v-for.md) | 対応付け |
 | `vue/valid-v-html` | [`vue/valid-v-html`](./reference/vue-valid-v-html.md) | 対応付け |
 | `vue/valid-v-if` | [`vue/valid-v-if`](./reference/vue-valid-v-if.md) | 対応付け |
-| `vue/valid-v-is` | — | 未実装 |
+| `vue/valid-v-is` | [`vue/valid-v-is`](./reference/vue-valid-v-is.md) | 対応付け |
 | `vue/valid-v-memo` | [`vue/valid-v-memo`](./reference/vue-valid-v-memo.md) | 対応付け |
 | `vue/valid-v-model` | [`vue/valid-v-model`](./reference/vue-valid-v-model.md) | 対応付け |
 | `vue/valid-v-on` | [`vue/valid-v-on`](./reference/vue-valid-v-on.md) | 対応付け |
 | `vue/valid-v-once` | [`vue/valid-v-once`](./reference/vue-valid-v-once.md) | 対応付け |
-| `vue/valid-v-pre` | — | 未実装 |
+| `vue/valid-v-pre` | [`vue/valid-v-pre`](./reference/vue-valid-v-pre.md) | 対応付け |
 | `vue/valid-v-show` | [`vue/valid-v-show`](./reference/vue-valid-v-show.md) | 対応付け |
 | `vue/valid-v-slot` | [`vue/valid-v-slot`](./reference/vue-valid-v-slot.md) | 対応付け |
 | `vue/valid-v-text` | [`vue/valid-v-text`](./reference/vue-valid-v-text.md) | 対応付け |

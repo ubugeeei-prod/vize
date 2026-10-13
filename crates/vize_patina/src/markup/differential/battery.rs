@@ -259,15 +259,15 @@ pub struct BatteryCensus {
 /// The committed census. Re-pinned deliberately, in both lanes at once.
 pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     templates: 37,
-    rule_fixtures: 869,
-    // Preserve the original 1057/87 census, adding precisely the three
-    // non-literal calls in valid_v_slot/tests.rs's explicit-false policy test.
-    // That test separately checks complete equality and disabled-rule behavior;
-    // the original 869 literal templates and every compared trace stay intact.
-    rule_fixture_calls: 1057 + 3,
-    rule_fixture_skipped: 87 + 3,
+    rule_fixtures: 869 + 38,
+    // Original 1057/87 census, plus valid_v_slot/tests.rs's three non-literal
+    // explicit-false policy calls, plus the v-else-if/v-is/v-pre directive
+    // rules: 38 literal templates over 42 calls and one non-literal helper for
+    // the `v-pre:arg` / `v-pre.mod` templates L2 does not freeze yet (#8856).
+    rule_fixture_calls: 1057 + 3 + 43,
+    rule_fixture_skipped: 87 + 3 + 1,
     matrix: 90,
-    template_lines: 6316,
+    template_lines: 6316 + 233,
     restructured: 0,
     jsx: JsxComparison {
         roots: 14,

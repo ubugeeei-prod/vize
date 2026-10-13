@@ -155,6 +155,13 @@ export const vue2Explanations: readonly ExplanationRecord[] = [
     "対応する `v-if` の直後に、値のない `v-else` を置きます。",
   ],
   [
+    "vue/valid-v-else-if",
+    "The examples leave `v-else-if` without a preceding conditional branch or a condition, or give it an argument or modifier.",
+    "Place `v-else-if` with a condition immediately after the `v-if` or `v-else-if` branch it continues.",
+    "`v-else-if` の直前に条件分岐がない、条件式がない、引数や修飾子を渡している、といった不正な書き方です。",
+    "続きとなる `v-if` または `v-else-if` の直後に、条件式を持つ `v-else-if` を置きます。",
+  ],
+  [
     "vue/valid-v-for",
     "The loops omit their iteration expression or add an unsupported `.stop` modifier.",
     "Use `item in items` or `(item, index) of items` with a complete iteration expression and the shown keys.",
@@ -174,6 +181,13 @@ export const vue2Explanations: readonly ExplanationRecord[] = [
     "Each `v-if` has a nonempty condition such as `ready` or `count > 0`, without an incompatible else directive.",
     "条件式がないか、同じノードに `v-if` と else 分岐のディレクティブを併記しています。",
     "`ready` や `count > 0` の式を各 `v-if` に指定し、競合する else 分岐のディレクティブを除きます。",
+  ],
+  [
+    "vue/valid-v-is",
+    "`v-is` has an argument or modifier, lacks its value, or sits on a component instead of a native HTML element.",
+    "`v-is` with a value on a native element such as `<tr>` names the component to render in its place.",
+    "`v-is` に引数や修飾子を渡す、値がない、ネイティブの HTML 要素ではなくコンポーネントに指定している、といった不正な書き方です。",
+    "`<tr>` などのネイティブ要素に値付きの `v-is` を指定し、代わりに描画するコンポーネントを示します。",
   ],
   [
     "vue/valid-v-memo",
@@ -202,6 +216,13 @@ export const vue2Explanations: readonly ExplanationRecord[] = [
     "Bare `v-once` marks the subtree for one-time rendering without unsupported syntax.",
     "一度だけ描画する印である `v-once` に、値・引数・修飾子を渡しています。",
     "値のない `v-once` で、サブツリーを一度だけ描画する対象にします。",
+  ],
+  [
+    "vue/valid-v-pre",
+    "`v-pre` has an argument, modifier, or value, although this directive is a value-free marker that skips compilation.",
+    "Bare `v-pre` leaves the subtree uncompiled, so its mustaches render as written.",
+    "コンパイルを省く印である `v-pre` に、引数・修飾子・値を渡しています。",
+    "値のない `v-pre` でサブツリーをコンパイル対象から外し、マスタッシュをそのまま表示します。",
   ],
   [
     "vue/valid-v-show",

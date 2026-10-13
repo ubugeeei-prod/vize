@@ -33,6 +33,7 @@ title: Vue ルール
 | [`vue/no-deprecated-slot-attribute`](#vue-no-deprecated-slot-attribute) | [悪い](#vue-no-deprecated-slot-attribute-bad) · [良い](#vue-no-deprecated-slot-attribute-good) | 削除済みの slot 属性を検出します。 |
 | [`vue/no-deprecated-slot-scope-attribute`](#vue-no-deprecated-slot-scope-attribute) | [悪い](#vue-no-deprecated-slot-scope-attribute-bad) · [良い](#vue-no-deprecated-slot-scope-attribute-good) | 削除済みの slot-scope 属性を検出します。 |
 | [`vue/no-deprecated-v-bind-sync`](#vue-no-deprecated-v-bind-sync) | [悪い](#vue-no-deprecated-v-bind-sync-bad) · [良い](#vue-no-deprecated-v-bind-sync-good) | 削除済みの v-bind の .sync 修飾子を検出します。 |
+| [`vue/no-deprecated-v-is`](#vue-no-deprecated-v-is) | [悪い](#vue-no-deprecated-v-is-bad) · [良い](#vue-no-deprecated-v-is-good) | 非推奨の v-is ディレクティブを検出します。 |
 | [`vue/no-deprecated-v-on-native-modifier`](#vue-no-deprecated-v-on-native-modifier) | [悪い](#vue-no-deprecated-v-on-native-modifier-bad) · [良い](#vue-no-deprecated-v-on-native-modifier-good) | 削除済みの v-on の .native 修飾子を検出します。 |
 | [`vue/no-deprecated-v-on-number-modifiers`](#vue-no-deprecated-v-on-number-modifiers) | [悪い](#vue-no-deprecated-v-on-number-modifiers-bad) · [良い](#vue-no-deprecated-v-on-number-modifiers-good) | v-on の削除済みの数値 keyCode 修飾子を検出します。 |
 | [`vue/no-dupe-v-else-if`](#vue-no-dupe-v-else-if) | [悪い](#vue-no-dupe-v-else-if-bad) · [良い](#vue-no-dupe-v-else-if-good) | v-if / v-else-if の条件重複を検出します。 |
@@ -101,13 +102,16 @@ title: Vue ルール
 | [`vue/valid-v-bind`](#vue-valid-v-bind) | [悪い](#vue-valid-v-bind-bad) · [良い](#vue-valid-v-bind-good) | v-bind の引数・値・修飾子を検査します。 |
 | [`vue/valid-v-cloak`](#vue-valid-v-cloak) | [悪い](#vue-valid-v-cloak-bad) · [良い](#vue-valid-v-cloak-good) | v-cloak の引数・値・修飾子を検査します。 |
 | [`vue/valid-v-else`](#vue-valid-v-else) | [悪い](#vue-valid-v-else-bad) · [良い](#vue-valid-v-else-good) | v-else の位置・引数・値を検査します。 |
+| [`vue/valid-v-else-if`](#vue-valid-v-else-if) | [悪い](#vue-valid-v-else-if-bad) · [良い](#vue-valid-v-else-if-good) | v-else-if の位置・引数・値を検査します。 |
 | [`vue/valid-v-for`](#vue-valid-v-for) | [悪い](#vue-valid-v-for-bad) · [良い](#vue-valid-v-for-good) | v-for の式と変数宣言を検査します。 |
 | [`vue/valid-v-html`](#vue-valid-v-html) | [悪い](#vue-valid-v-html-bad) · [良い](#vue-valid-v-html-good) | v-html の値・引数・修飾子を検査します。 |
 | [`vue/valid-v-if`](#vue-valid-v-if) | [悪い](#vue-valid-v-if-bad) · [良い](#vue-valid-v-if-good) | v-if に有効な条件式を指定します。 |
+| [`vue/valid-v-is`](#vue-valid-v-is) | [悪い](#vue-valid-v-is-bad) · [良い](#vue-valid-v-is-good) | v-is の適用先・引数・値を検査します。 |
 | [`vue/valid-v-memo`](#vue-valid-v-memo) | [悪い](#vue-valid-v-memo-bad) · [良い](#vue-valid-v-memo-good) | v-memo の値を配列の式にします。 |
 | [`vue/valid-v-model`](#vue-valid-v-model) | [悪い](#vue-valid-v-model-bad) · [良い](#vue-valid-v-model-good) | v-model の値・引数・修飾子を検査します。 |
 | [`vue/valid-v-on`](#vue-valid-v-on) | [悪い](#vue-valid-v-on-bad) · [良い](#vue-valid-v-on-good) | v-on のイベント名・式・修飾子を検査します。 |
 | [`vue/valid-v-once`](#vue-valid-v-once) | [悪い](#vue-valid-v-once-bad) · [良い](#vue-valid-v-once-good) | v-once の引数・値・修飾子を検査します。 |
+| [`vue/valid-v-pre`](#vue-valid-v-pre) | [悪い](#vue-valid-v-pre-bad) · [良い](#vue-valid-v-pre-good) | v-pre の引数・値・修飾子を検査します。 |
 | [`vue/valid-v-show`](#vue-valid-v-show) | [悪い](#vue-valid-v-show-bad) · [良い](#vue-valid-v-show-good) | v-show に有効な条件式を指定します。 |
 | [`vue/valid-v-slot`](#vue-valid-v-slot) | [悪い](#vue-valid-v-slot-bad) · [良い](#vue-valid-v-slot-good) | v-slot の適用先・宣言・修飾子を検査します。 |
 | [`vue/valid-v-text`](#vue-valid-v-text) | [悪い](#vue-valid-v-text-bad) · [良い](#vue-valid-v-text-good) | v-text の値・引数・修飾子を検査します。 |
@@ -1661,6 +1665,68 @@ vp run lint
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_bind_sync.rs#L42) · [全ルール](all.md)
+
+### `vue/no-deprecated-v-is`
+
+非推奨の v-is ディレクティブを検出します。
+
+[悪い例](#vue-no-deprecated-v-is-bad) · [良い例](#vue-no-deprecated-v-is-good)
+
+既定の重大度: `warning`  
+プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
+自動修正: なし。修正内容を確認してください  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
+オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+
+**設定（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  lint: {
+    vize: {
+      "preset": "incremental",
+      "rules": {
+        "vue/no-deprecated-v-is": "warn"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="vue-no-deprecated-v-is-bad"></span>
+
+**悪い**
+
+Vue 3.1 で非推奨になった `v-is` で、描画するコンポーネントを切り替えています。
+
+```vue annotate="remove:2"
+<template>
+<tr v-is="'MyRow'"></tr>
+</template>
+```
+
+<span id="vue-no-deprecated-v-is-good"></span>
+
+**良い**
+
+`vue:` プレフィックス付きの `is` 属性、または `<component :is>` で切り替えます。
+
+```vue annotate="add:2,3"
+<template>
+<tr is="vue:MyRow"></tr>
+<component :is="MyRow" />
+</template>
+```
+
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
+
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_is.rs#L27) · [全ルール](all.md)
 
 ### `vue/no-deprecated-v-on-native-modifier`
 
@@ -6067,7 +6133,72 @@ vp run lint
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_else.rs#L32) · [全ルール](all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_else.rs#L31) · [全ルール](all.md)
+
+### `vue/valid-v-else-if`
+
+v-else-if の位置・引数・値を検査します。
+
+[悪い例](#vue-valid-v-else-if-bad) · [良い例](#vue-valid-v-else-if-good)
+
+既定の重大度: `warning`  
+プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
+自動修正: なし。修正内容を確認してください  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
+オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+
+**設定（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  lint: {
+    vize: {
+      "preset": "incremental",
+      "rules": {
+        "vue/valid-v-else-if": "warn"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="vue-valid-v-else-if-bad"></span>
+
+**悪い**
+
+`v-else-if` の直前に条件分岐がない、条件式がない、引数や修飾子を渡している、といった不正な書き方です。
+
+```vue annotate="remove:2,3,4,5"
+<template>
+<div v-else-if="foo"></div> <!-- without preceding v-if -->
+<div v-if="foo"></div><div v-else-if></div>
+<div v-if="foo"></div><div v-else-if:arg="bar"></div>
+<div v-if="foo"></div><div v-else-if.mod="bar"></div>
+</template>
+```
+
+<span id="vue-valid-v-else-if-good"></span>
+
+**良い**
+
+続きとなる `v-if` または `v-else-if` の直後に、条件式を持つ `v-else-if` を置きます。
+
+```vue annotate="add:2,3"
+<template>
+<div v-if="foo"></div>
+<div v-else-if="bar"></div>
+</template>
+```
+
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
+
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_else_if.rs#L34) · [全ルール](all.md)
 
 ### `vue/valid-v-for`
 
@@ -6259,6 +6390,70 @@ vp run lint
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_if.rs#L29) · [全ルール](all.md)
+
+### `vue/valid-v-is`
+
+v-is の適用先・引数・値を検査します。
+
+[悪い例](#vue-valid-v-is-bad) · [良い例](#vue-valid-v-is-good)
+
+既定の重大度: `warning`  
+プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
+自動修正: なし。修正内容を確認してください  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
+オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+
+**設定（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  lint: {
+    vize: {
+      "preset": "incremental",
+      "rules": {
+        "vue/valid-v-is": "warn"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="vue-valid-v-is-bad"></span>
+
+**悪い**
+
+`v-is` に引数や修飾子を渡す、値がない、ネイティブの HTML 要素ではなくコンポーネントに指定している、といった不正な書き方です。
+
+```vue annotate="remove:2,3,4,5"
+<template>
+<tr v-is:arg="'MyRow'"></tr>
+<tr v-is.mod="'MyRow'"></tr>
+<tr v-is></tr>
+<MyComponent v-is="'MyRow'" />
+</template>
+```
+
+<span id="vue-valid-v-is-good"></span>
+
+**良い**
+
+`<tr>` などのネイティブ要素に値付きの `v-is` を指定し、代わりに描画するコンポーネントを示します。
+
+```vue annotate="add:2"
+<template>
+<tr v-is="'MyRow'"></tr>
+</template>
+```
+
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
+
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_is.rs#L30) · [全ルール](all.md)
 
 ### `vue/valid-v-memo`
 
@@ -6512,6 +6707,69 @@ vp run lint
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_once.rs#L27) · [全ルール](all.md)
+
+### `vue/valid-v-pre`
+
+v-pre の引数・値・修飾子を検査します。
+
+[悪い例](#vue-valid-v-pre-bad) · [良い例](#vue-valid-v-pre-good)
+
+既定の重大度: `warning`  
+プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
+自動修正: なし。修正内容を確認してください  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
+オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+
+**設定（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  lint: {
+    vize: {
+      "preset": "incremental",
+      "rules": {
+        "vue/valid-v-pre": "warn"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="vue-valid-v-pre-bad"></span>
+
+**悪い**
+
+コンパイルを省く印である `v-pre` に、引数・修飾子・値を渡しています。
+
+```vue annotate="remove:2,3,4"
+<template>
+<div v-pre:arg></div>
+<div v-pre.mod></div>
+<div v-pre="foo"></div>
+</template>
+```
+
+<span id="vue-valid-v-pre-good"></span>
+
+**良い**
+
+値のない `v-pre` でサブツリーをコンパイル対象から外し、マスタッシュをそのまま表示します。
+
+```vue annotate="add:2"
+<template>
+<div v-pre>{{ raw }}</div>
+</template>
+```
+
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
+
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_pre.rs#L30) · [全ルール](all.md)
 
 ### `vue/valid-v-show`
 

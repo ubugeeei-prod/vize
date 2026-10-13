@@ -119,6 +119,11 @@ export const chineseVue0: Record<string, readonly [purpose: string, bad: string,
     "绑定使用了已移除的 .sync 修饰符，包括它与 .camel 的组合。",
     "使用普通的单向 title 绑定；需要更新通道时，则使用 v-model:title。",
   ],
+  "vue/no-deprecated-v-is": [
+    "禁止使用已废弃的 `v-is` 指令",
+    "`v-is` 已在 Vue 3.1 中废弃；示例仍用它切换渲染的组件。",
+    "改用带 `vue:` 前缀的 `is` 属性，或使用 `<component :is>` 选择组件。",
+  ],
   "vue/no-deprecated-v-on-native-modifier": [
     "禁止在 `v-on` 上使用已弃用的 `.native` 修饰符",
     "组件事件处理器使用了已移除的 .native 事件修饰符。",

@@ -4,7 +4,7 @@ title: ESLint rule migration map
 
 # ESLint rule migration map
 
-The committed ESLint mapping records 252 rule IDs: 123 mapped, 2 intentional divergences, and 127 unimplemented. A mapped ID identifies a Vize rule; it does not guarantee identical options, findings, fixes, or coverage.
+The committed ESLint mapping records 252 rule IDs: 127 mapped, 2 intentional divergences, and 123 unimplemented. A mapped ID identifies a Vize rule; it does not guarantee identical options, findings, fixes, or coverage.
 
 Enable Vize rules under `lint.vize.rules` in the Vite+ configuration. Keep JS/TS rules handled by Oxlint in `lint.rules`. Do not copy an ESLint option tuple directly: Vize severity and typed `ruleOptions` are separate.
 
@@ -108,7 +108,7 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/no-deprecated-slot-attribute` | [`vue/no-deprecated-slot-attribute`](./reference/vue-no-deprecated-slot-attribute.md) | mapped |
 | `vue/no-deprecated-slot-scope-attribute` | [`vue/no-deprecated-slot-scope-attribute`](./reference/vue-no-deprecated-slot-scope-attribute.md) | mapped |
 | `vue/no-deprecated-v-bind-sync` | [`vue/no-deprecated-v-bind-sync`](./reference/vue-no-deprecated-v-bind-sync.md) | mapped |
-| `vue/no-deprecated-v-is` | — | unimplemented |
+| `vue/no-deprecated-v-is` | [`vue/no-deprecated-v-is`](./reference/vue-no-deprecated-v-is.md) | mapped |
 | `vue/no-deprecated-v-on-native-modifier` | [`vue/no-deprecated-v-on-native-modifier`](./reference/vue-no-deprecated-v-on-native-modifier.md) | mapped |
 | `vue/no-deprecated-v-on-number-modifiers` | [`vue/no-deprecated-v-on-number-modifiers`](./reference/vue-no-deprecated-v-on-number-modifiers.md) | mapped |
 | `vue/no-deprecated-vue-config-keycodes` | — | unimplemented |
@@ -264,16 +264,16 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/valid-v-bind-sync` | — | unimplemented |
 | `vue/valid-v-cloak` | [`vue/valid-v-cloak`](./reference/vue-valid-v-cloak.md) | mapped |
 | `vue/valid-v-else` | [`vue/valid-v-else`](./reference/vue-valid-v-else.md) | mapped |
-| `vue/valid-v-else-if` | — | unimplemented |
+| `vue/valid-v-else-if` | [`vue/valid-v-else-if`](./reference/vue-valid-v-else-if.md) | mapped |
 | `vue/valid-v-for` | [`vue/valid-v-for`](./reference/vue-valid-v-for.md) | mapped |
 | `vue/valid-v-html` | [`vue/valid-v-html`](./reference/vue-valid-v-html.md) | mapped |
 | `vue/valid-v-if` | [`vue/valid-v-if`](./reference/vue-valid-v-if.md) | mapped |
-| `vue/valid-v-is` | — | unimplemented |
+| `vue/valid-v-is` | [`vue/valid-v-is`](./reference/vue-valid-v-is.md) | mapped |
 | `vue/valid-v-memo` | [`vue/valid-v-memo`](./reference/vue-valid-v-memo.md) | mapped |
 | `vue/valid-v-model` | [`vue/valid-v-model`](./reference/vue-valid-v-model.md) | mapped |
 | `vue/valid-v-on` | [`vue/valid-v-on`](./reference/vue-valid-v-on.md) | mapped |
 | `vue/valid-v-once` | [`vue/valid-v-once`](./reference/vue-valid-v-once.md) | mapped |
-| `vue/valid-v-pre` | — | unimplemented |
+| `vue/valid-v-pre` | [`vue/valid-v-pre`](./reference/vue-valid-v-pre.md) | mapped |
 | `vue/valid-v-show` | [`vue/valid-v-show`](./reference/vue-valid-v-show.md) | mapped |
 | `vue/valid-v-slot` | [`vue/valid-v-slot`](./reference/vue-valid-v-slot.md) | mapped |
 | `vue/valid-v-text` | [`vue/valid-v-text`](./reference/vue-valid-v-text.md) | mapped |
