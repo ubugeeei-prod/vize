@@ -92,26 +92,6 @@
       "tests/formal/impeto/lean-toolchain"
     ],
     "mbt": [
-      "tools/moon/cmd/prepare_npm_publish_manifest/main.mbt",
-      "tools/moon/cmd/publish_crates/config.mbt",
-      "tools/moon/cmd/publish_crates/main.mbt",
-      "tools/moon/cmd/publish_crates/manifest.mbt",
-      "tools/moon/cmd/publish_crates/manifest_wbtest.mbt",
-      "tools/moon/cmd/publish_crates/registry.mbt",
-      "tools/moon/cmd/publish_npm_package/main.mbt",
-      "tools/moon/cmd/publish_npm_package/registry.mbt",
-      "tools/moon/cmd/publish_npm_package/staged_error.mbt",
-      "tools/moon/cmd/publish_npm_package_dirs/main.mbt",
-      "tools/moon/cmd/publish_open_vsx_extension/main.mbt",
-      "tools/moon/cmd/publish_vscode_extension/main.mbt",
-      "tools/moon/cmd/release/apply_versions.mbt",
-      "tools/moon/cmd/release/main.mbt",
-      "tools/moon/cmd/release/manifest_alignment.mbt",
-      "tools/moon/cmd/release/native_catalog.mbt",
-      "tools/moon/cmd/release/preparation.mbt",
-      "tools/moon/cmd/release/readmes.mbt",
-      "tools/moon/cmd/release/registry_refresh.mbt",
-      "tools/moon/cmd/release/versions.mbt",
       "tools/moon/lib/main.mbt"
     ]
   }
