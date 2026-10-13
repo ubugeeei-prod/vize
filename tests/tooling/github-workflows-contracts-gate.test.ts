@@ -64,7 +64,10 @@ test("one parallel reusable WIT lane gates merge groups without adding a PR buil
     "canonical-corpus",
     "pr-source-cli",
   ]);
-  assert.equal(source.jobs["source-report"].if, "${{ always() }}");
+  assert.equal(
+    source.jobs["source-report"].if,
+    "${{ always() && !contains(needs.*.result, 'cancelled') }}",
+  );
   assert.equal(
     source.jobs["source-report"].steps?.at(-1)?.run,
     "node tools/support/compat/github/canonical-corpus-selection.mjs --check",

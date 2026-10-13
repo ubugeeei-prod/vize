@@ -25,7 +25,7 @@ const jsChecksPath = "./.github/workflows/pr-js-checks.yml";
 const jsChecks = parse(readFileSync(join(root, jsChecksPath), "utf8"));
 const selectedJs = "${{ needs.pr-source-plan.outputs.js == 'true' }}";
 const inputJs = "${{ inputs.run-js }}";
-const evidenceJs = "${{ always() && inputs.run-js }}";
+const evidenceJs = "${{ !cancelled() && inputs.run-js }}";
 const groupCommand =
   'python3 .github/actions/test-js-packages-with-history/native-fault-evidence.py -- vp run --workspace-root "test:js:$VIZE_JS_PACKAGE_GROUP"';
 const historyActionPath = "./.github/actions/test-js-packages-with-history";

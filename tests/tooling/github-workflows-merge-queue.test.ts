@@ -80,7 +80,10 @@ test("queue scope reaches the planner and every full source lane remains require
     "canonical-corpus",
     "pr-source-cli",
   ]);
-  assert.equal(source.jobs["source-report"].if, "${{ always() }}");
+  assert.equal(
+    source.jobs["source-report"].if,
+    "${{ always() && !contains(needs.*.result, 'cancelled') }}",
+  );
   assert.match(commands(source.jobs["source-report"]), /canonical-corpus-selection\.mjs/);
   assert.ok(check.jobs["test-report"].needs?.includes("pr-source-checks"));
   for (const required of [

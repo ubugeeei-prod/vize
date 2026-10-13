@@ -68,7 +68,7 @@ test("required aggregate rejects failed, cancelled and skipped instruction check
 
 test("required report keeps inventory and final dependency verification in the same job", () => {
   const report = workflow.jobs?.["test-report"];
-  assert.equal(report?.steps?.[1]?.uses, "./.github/actions/report-test-inventory");
+  assert.equal(report?.steps?.[2]?.uses, "./.github/actions/report-test-inventory");
   assert.equal(
     report?.steps?.at(-1)?.run,
     "node tools/support/compat/github/require-needs-success.ts",

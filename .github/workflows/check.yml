@@ -648,6 +648,11 @@ jobs:
     permissions:
       contents: read
     steps:
+      # A cancelled dependency already decides this check. Failing here, before
+      # checkout and the inventory, lets the superseding run start sooner.
+      - name: Fail a cancelled run without reporting
+        if: ${{ contains(needs.*.result, 'cancelled') }}
+        run: exit 1
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/report-test-inventory
       # Runs last so the inventory is collected and uploaded either way.
@@ -658,7 +663,7 @@ jobs:
     name: test-report-comment
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    if: ${{ always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+    if: ${{ !cancelled() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
     needs:
       - test-report
     permissions:
