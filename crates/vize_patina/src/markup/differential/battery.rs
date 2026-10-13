@@ -264,8 +264,10 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     // non-literal calls in valid_v_slot/tests.rs's explicit-false policy test.
     // That test separately checks complete equality and disabled-rule behavior;
     // the original 869 literal templates and every compared trace stay intact.
-    rule_fixture_calls: 1057 + 3,
-    rule_fixture_skipped: 87 + 3,
+    // The three looped custom-element tests in
+    // require_toggle_inside_transition/tests.rs add three more non-literal calls.
+    rule_fixture_calls: 1057 + 3 + 3,
+    rule_fixture_skipped: 87 + 3 + 3,
     matrix: 90,
     template_lines: 6316,
     restructured: 0,
