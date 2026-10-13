@@ -381,9 +381,9 @@
     {
       "path": "crates/vize_patina/src/linter/script_rules/sfc.rs",
       "mode": "100644",
-      "bytes": 10321,
-      "sha256": "c8d0e0656b3d46ae272ed526ab76513b2af5cd6a6efdd0bae917a9e6b800187c",
-      "gitBlob": "60876cc2ba398f49392ae529aa94d56393d2d605"
+      "bytes": 10317,
+      "sha256": "8964d2626bc69cec6ea23d22384b96cd9ff811935d9add15aae484c99354c0bb",
+      "gitBlob": "257fbf8ad1dd7d495332734be3d544f58395541a"
     },
     {
       "path": "crates/vize_patina/src/linter/script_rules/sfc/registered_sfc.rs",
@@ -606,8 +606,8 @@
       "path": "docs/davinci/plan/consumer-migration-surfaces/linter/vize_patina.tsv",
       "mode": "100644",
       "bytes": 166847,
-      "sha256": "4cf934559b79a10a163fed5208ab8c7b57ceaaa0f2897e4c87ac1cb0ad5fb6c5",
-      "gitBlob": "df41c96ab933de68863c8f651527f5191f5583c8"
+      "sha256": "0ad6718413477e505a713e1906d04e56042392ec8a373d7599f1766b60b650c5",
+      "gitBlob": "366f2ec2d3d79b963041cf949a7240bbebe84905"
     },
     {
       "path": "tests/_fixtures/differential/lint/n8n-cli-config/cases.json",
