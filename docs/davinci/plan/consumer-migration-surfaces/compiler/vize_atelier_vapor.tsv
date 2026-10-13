@@ -170,9 +170,10 @@ compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/context.rs	5	carton
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/control.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/directive.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	2
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/element.rs	11	carton	Carton host/compatibility	old	vize_carton	legacy	1
-compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/element/component.rs	41	l0	L0	stage	vize_l0	preferred	2
+compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/element/component.rs	40	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/element/component/implicit_slot.rs	7	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/element/component/model.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	1
+compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/element/component/prop_key.rs	30	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/element/component/slots.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/element/component/structural_slots.rs	10	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/element/deferred.rs	4	carton	Carton host/compatibility	old	vize_carton	legacy	1
