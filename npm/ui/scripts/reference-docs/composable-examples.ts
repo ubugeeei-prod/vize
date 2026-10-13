@@ -88,6 +88,16 @@ export const composableExamples = [
   ...preferenceBrowserExamples,
   ...environmentExamples,
   ...pointerSelectionExamples,
+  {
+    name: "use-throttled",
+    title: "Preview a release title while editing",
+    purpose:
+      "Keep the latest release-title draft editable while limiting how often its local preview updates.",
+    observe:
+      "Change the title once to update the preview immediately. Further edits in the same 800 ms window wait; the newest draft appears when that window ends. Update preview now applies the waiting draft immediately. Cancel waiting update keeps both your draft and the last accepted preview; the next edit starts a fresh window.",
+    context:
+      "The example uses useThrottled's default leading and trailing edges and its real timer. `pending` describes a queued update, not whether the draft equals the preview. `flush()` applies waiting work and closes its window; `cancel()` discards waiting work and closes its window without changing the draft. SSR mirrors the source without starting timers. Call inside setup so scope disposal releases the watcher and timer. This local preview neither saves nor publishes a title; the package remains experimental.",
+  },
 ] as const;
 
 export function composableExampleSource(packageRoot: string, name: string): string {
@@ -129,7 +139,7 @@ export function composableHub(locale: string, linkPrefix: string): string {
   return blocks(
     ja ? "## 動作から選ぶ" : "## Try a behavior",
     ja
-      ? "入力、検証、検索、履歴、ページ切り替え、非同期処理、タイマー、保存、画面サイズ、フォーカス、フォーム、手順、選択、循環する案内、クリップボード、スクロール、要素のサイズと表示範囲、通信状態、配色、画面幅に応じた表示、ポインター座標、ドラッグ、文書のテキスト選択を実例で試せます。各リンクのプレビューと表示コードは同じ Vue SFC を使っています (英語)。"
+      ? "入力、入力に追従するプレビュー、検証、検索、履歴、ページ切り替え、非同期処理、タイマー、保存、画面サイズ、フォーカス、フォーム、手順、選択、循環する案内、クリップボード、スクロール、要素のサイズと表示範囲、通信状態、配色、画面幅に応じた表示、ポインター座標、ドラッグ、文書のテキスト選択を実例で試せます。各リンクのプレビューと表示コードは同じ Vue SFC を使っています (英語)。"
       : "See how reactive state changes an interface. Each live preview and its copyable code come from the same complete Vue SFC.",
     table(
       [ja ? "やりたいこと" : "Goal", "Composable"],

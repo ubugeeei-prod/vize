@@ -24,6 +24,7 @@ import { exerciseEnvironmentExample } from "./interactions-environment.ts";
 import { pointerSelectionExamples } from "../../../npm/ui/scripts/reference-docs/pointer-selection-examples.ts";
 import { exercisePointerSelectionExample } from "./interactions-pointer-selection.ts";
 import { verifyUnavailableStorage } from "./capture-unavailable-storage.ts";
+import { exerciseThrottledExample } from "./interactions-throttled.ts";
 
 async function activate(page: Page, label: string): Promise<void> {
   await page.getByRole("button", { name: label, exact: true }).focus();
@@ -49,6 +50,7 @@ async function exercise(page: Page, name: string): Promise<string[]> {
     return exerciseEnvironmentExample(page, name);
   if (pointerSelectionExamples.some((example) => example.name === name))
     return exercisePointerSelectionExample(page, name);
+  if (name === "use-throttled") return exerciseThrottledExample(page);
   if (name === "use-toggle") {
     assert.equal(await page.getByText("Free delivery in 2–3 business days.").count(), 0);
     await activate(page, "Show delivery details");
