@@ -85,7 +85,12 @@ fn run() -> Result<(), String> {
         .stdout
         .trim()
         .to_string();
-    if head != remote_main {
+    // A pinned cut freezes C when it starts. Ordinary merges may advance main
+    // while its candidate is prepared, so a candidate at that exact frozen C
+    // only has to remain reachable from the current main, as checked above.
+    let frozen_cut = candidate
+        && env::var("VIZE_RELEASE_PINNED_CUT").is_ok_and(|cut| cut.len() == 40 && cut == head);
+    if head != remote_main && !frozen_cut {
         return Err(
             "HEAD must exactly match the current origin/main before preparing a release."
                 .to_string(),

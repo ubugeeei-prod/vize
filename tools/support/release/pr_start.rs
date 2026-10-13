@@ -105,6 +105,10 @@ fn prepare_with_target(
     ]);
     if let Some(target) = target {
         command.args(["--pinned-target", target]);
+        // The frozen C may fall behind main while it is prepared; the local
+        // guard accepts exactly this cut while it stays reachable from main.
+        let cut = github::git(&["rev-parse", "HEAD"], work)?;
+        command.env("VIZE_RELEASE_PINNED_CUT", cut);
     }
     super::pr_budget::child_command(&mut command, budget)?;
     let status = command
