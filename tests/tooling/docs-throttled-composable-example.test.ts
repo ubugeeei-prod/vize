@@ -57,7 +57,7 @@ void test("the throttled preview appends one public example and retains original
   assert.deepEqual(names.slice(0, 36), originalNames);
   assert.deepEqual(names.slice(36, 37), ["use-throttled"]);
   // Later examples append after the throttled preview.
-  assert.deepEqual(names.slice(37), [
+  assert.deepEqual(names.slice(37, 44), [
     "use-number-format",
     "use-list-format",
     "use-plural-rules",
@@ -66,7 +66,7 @@ void test("the throttled preview appends one public example and retains original
     "use-countdown",
     "use-relative-time-format",
   ]);
-  assert.equal(new Set(names).size, 44);
+  assert.equal(new Set(names).size, 70);
   const entry = COMPOSABLE_CATALOG.entries.find(({ subpath }) => subpath === "./use-throttled");
   assert.ok(entry);
   assert.deepEqual(entry.runtimeExports, ["useThrottled"]);

@@ -31,6 +31,8 @@ import { workflowStateExamples } from "../../../npm/ui/scripts/reference-docs/wo
 import { exerciseWorkflowStateExample } from "./interactions-workflow-state.ts";
 import { timeFormatExamples } from "../../../npm/ui/scripts/reference-docs/time-format-examples.ts";
 import { exerciseTimeFormatExample } from "./interactions-time-format.ts";
+import { dataStateExamples } from "../../../npm/ui/scripts/reference-docs/data-state-examples.ts";
+import { exerciseDataStateExample } from "./interactions-data-state.ts";
 
 async function activate(page: Page, label: string): Promise<void> {
   await page.getByRole("button", { name: label, exact: true }).focus();
@@ -63,6 +65,8 @@ async function exercise(page: Page, name: string): Promise<string[]> {
     return exerciseWorkflowStateExample(page, name);
   if (timeFormatExamples.some((example) => example.name === name))
     return exerciseTimeFormatExample(page, name);
+  if (dataStateExamples.some((example) => example.name === name))
+    return exerciseDataStateExample(page, name);
   if (name === "use-toggle") {
     assert.equal(await page.getByText("Free delivery in 2–3 business days.").count(), 0);
     await activate(page, "Show delivery details");
