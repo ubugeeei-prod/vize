@@ -66,3 +66,32 @@ fn positive_lint_reads_never_make_incomplete_editor_packets_complete() {
         );
     }
 }
+
+#[test]
+fn foreign_derived_generic_and_external_views_cannot_qualify_positive_import_reads() {
+    use vize_atelier_sfc::croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_occurrences};
+    let original = "<script setup>import Child from './Child.vue'; if(true){console.log(1)}</script><template><Control :component=\"Child\" /></template>";
+    let generic = "<script setup generic=\"T\">import Child from './Child.vue';</script><template><Control :component=\"Child\" /></template>";
+    for (source, template, derived, external) in [
+        (original, "<Control :component=\"Other\" />", false, false),
+        (original, "<Control :component=\"Child\" />", true, false),
+        (generic, "<Control :component=\"Child\" />", false, false),
+        (original, "<Control :component=\"Child\" />", false, true),
+    ] {
+        let mut descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap();
+        if external {
+            descriptor.script_setup.as_mut().unwrap().src = Some("./component.js".into());
+        }
+        let allocator = vize_l0::Allocator::default();
+        let (root, errors) = vize_armature::parse(&allocator, template);
+        assert!(errors.is_empty());
+        let options = if derived {
+            SfcCroquisOptions::lint_demand().with_derived_template()
+        } else {
+            SfcCroquisOptions::lint_demand()
+        };
+        let (analysis, _) =
+            analyze_sfc_descriptor_with_occurrences(&descriptor, Some(&root), options);
+        assert!(!analysis.croquis.authored_component_reads_are_qualified());
+    }
+}

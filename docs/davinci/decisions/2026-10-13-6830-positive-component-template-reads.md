@@ -26,3 +26,10 @@ Frappe Builder files, minimal unrelated script forms, and unread, property,
 literal, object-key, loop, slot, callback, type and assignment controls.
 Actions must verify these native cases and every existing refusal before
 protected merge. Release and lint divergence budgets remain unchanged.
+
+The finite current-source inventory updates only five changed owned rows and
+its whole-manifest checksum. All 323 current paths, the 206-path union,
+immutable original rows, historical laws and frames remain present. The
+physical inventory check provides source identity only. Native Actions
+independently executes the 17 cases, existing refusal corpora, and four
+foreign/derived/generic/external qualification boundaries.
