@@ -1,5 +1,8 @@
 //! A component that hydrates as Vapor keeps the anchors the Vapor runtime
 //! claims in its server markup, as `@vue/compiler-ssr` emits with `vapor`.
+//!
+//! Each shape is pinned whole, with and without the option, so the anchors
+//! are the only difference a reader sees between the paired snapshots.
 #![expect(clippy::panic, reason = "tests assert by panicking")]
 
 use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_options};
@@ -21,51 +24,26 @@ fn compile(source: &str, vapor: bool) -> String {
     result.code
 }
 
+const TRANSITION_GROUP: &str = r#"<TransitionGroup tag="ul"><li v-if="a" key="a">a</li><template v-for="i in l"><li :key="i">{{ i }}</li></template></TransitionGroup>"#;
+const SUSPENSE_SLOTS: &str = "<Suspense><div>a</div><template #fallback>f</template></Suspense>";
+const SUSPENSE_CHILD: &str = "<Suspense><Comp/></Suspense>";
+
 #[test]
 fn transition_group_keeps_the_empty_branch_and_nested_fragments() {
-    let source = r#"<TransitionGroup tag="ul"><li v-if="a" key="a">a</li><template v-for="i in l"><li :key="i">{{ i }}</li></template></TransitionGroup>"#;
-
-    let plain = compile(source, false);
-    assert!(!plain.contains("<!---->"), "{plain}");
-    assert!(!plain.contains("<!--[-->"), "{plain}");
-
-    let vapor = compile(source, true);
-    assert!(vapor.contains("_push(`<!---->`)"), "{vapor}");
-    let open = vapor.find("<!--[-->").unwrap_or(usize::MAX);
-    let list = vapor.find("_ssrRenderList(").unwrap_or(usize::MAX);
-    let close = vapor.find("<!--]-->").unwrap_or(0);
-    let end = vapor.find("</ul>").unwrap_or(0);
-    assert!(open < list && list < close && close < end, "{vapor}");
+    insta::assert_snapshot!("transition_group_plain", compile(TRANSITION_GROUP, false));
+    insta::assert_snapshot!("transition_group_vapor", compile(TRANSITION_GROUP, true));
 }
 
 #[test]
 fn each_suspense_slot_renders_as_one_fragment() {
-    let source = r#"<Suspense><div>a</div><template #fallback>f</template></Suspense>"#;
-
-    let plain = compile(source, false);
-    assert!(plain.contains("_push(`<div>a</div>`)"), "{plain}");
-    assert!(plain.contains("_push(`f`)"), "{plain}");
-
-    let vapor = compile(source, true);
-    assert!(
-        vapor.contains("_push(`<!--[--><div>a</div><!--]-->`)"),
-        "{vapor}"
-    );
-    assert!(vapor.contains("_push(`<!--[-->f<!--]-->`)"), "{vapor}");
+    insta::assert_snapshot!("suspense_slots_plain", compile(SUSPENSE_SLOTS, false));
+    insta::assert_snapshot!("suspense_slots_vapor", compile(SUSPENSE_SLOTS, true));
 }
 
 #[test]
 fn a_lone_suspense_child_is_wrapped_too() {
-    let source = "<Suspense><Comp/></Suspense>";
-
-    let plain = compile(source, false);
-    assert!(!plain.contains("<!--[-->"), "{plain}");
-
-    let vapor = compile(source, true);
-    let open = vapor.find("_push(`<!--[-->`)").unwrap_or(usize::MAX);
-    let component = vapor.find("_ssrRenderComponent(").unwrap_or(usize::MAX);
-    let close = vapor.find("_push(`<!--]-->`)").unwrap_or(0);
-    assert!(open < component && component < close, "{vapor}");
+    insta::assert_snapshot!("suspense_child_plain", compile(SUSPENSE_CHILD, false));
+    insta::assert_snapshot!("suspense_child_vapor", compile(SUSPENSE_CHILD, true));
 }
 
 #[test]
