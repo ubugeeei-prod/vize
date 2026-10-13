@@ -42,7 +42,7 @@ test("failed source preflights block every source build and cannot pass the sour
   const plan = source.jobs["pr-source-plan"];
   const steps = plan.steps ?? [];
   const runtime = steps.findIndex(
-    (step) => step.uses?.startsWith("voidzero-dev/setup-vp@") === true,
+    (step) => step.uses?.startsWith("actions/setup-node@") === true,
   );
   const base = steps.findIndex((step) => step.name === "Resolve and fetch comparison base");
   const inventory = steps.findIndex(
