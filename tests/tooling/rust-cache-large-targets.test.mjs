@@ -103,7 +103,7 @@ await test("a prior compatible target can still restore, then current input is r
   }
 });
 
-await test("primary and secondary role eligibility remain independent", () => {
+await test("primary and secondary policy eligibility stay independent without mounted archives", () => {
   for (const [primary, secondary] of [
     ["coverage-source", "docs-example"],
     ["docs-example", "clippy-test"],
@@ -122,18 +122,21 @@ await test("primary and secondary role eligibility remain independent", () => {
         ["secondary", secondary],
       ]) {
         const target = result.trace.find((row) => row.kind === "cache" && row.name === name);
-        assert.equal(target.restoreOnly, largeRoles.includes(role));
+        assert.equal(
+          result.outputs["cache-policy"][`${name}-save`],
+          largeRoles.includes(role) ? "false" : "true",
+        );
+        assert.equal(target.restoreOnly, true);
         assert.equal(target.lookup, true);
         const posts = result.trace.filter((row) => row.kind === "cache-post" && row.name === name);
-        assert.equal(posts.length, largeRoles.includes(role) ? 0 : 1);
-        if (posts.length) assert.ok(posts[0].saved !== null);
+        assert.equal(posts.length, 0);
       }
       assert.equal(result.trace.filter((row) => row.kind === "sticky-post").length, 4);
     });
   }
 });
 
-await test("eligible ordinary roles still save while every untrusted role remains restore-only", () => {
+await test("mounted ordinary roles omit archives while every untrusted role remains restore-only", () => {
   for (const role of ["test-scripts", "nextest-ci", "coverage", "new-role", ...largeRoles]) {
     cacheFixture((fixture) => {
       const context = { ...fixture.context(), role };
@@ -141,7 +144,7 @@ await test("eligible ordinary roles still save while every untrusted role remain
       assert.equal(trusted.status, 0);
       assert.equal(
         trusted.trace.filter((row) => row.kind === "cache-post" && row.name === "target").length,
-        largeRoles.includes(role) || role === "test-scripts" ? 0 : 1,
+        0,
       );
       for (const mountFailures of [[], allMountFailures]) {
         const untrusted = executeCacheAction(

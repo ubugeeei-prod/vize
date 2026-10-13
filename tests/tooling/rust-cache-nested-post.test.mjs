@@ -97,7 +97,12 @@ await test("a versioned nested seed restores both targets after failed PR and tr
       const seeded = executeCacheAction(
         fixture,
         { ...fixture.context(), ...paths },
-        { nestedPost: true, storedCache: true, mountFailures: ["target", "secondary"] },
+        {
+          nestedPost: true,
+          storedCache: true,
+          secondaryWorkload: true,
+          mountFailures: ["target", "secondary"],
+        },
       );
       const prior = seeded.trace.filter((row) => row.kind === "cache-post");
       const original = seeded.trace.find((row) => row.kind === "workload");
