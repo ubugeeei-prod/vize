@@ -18,6 +18,7 @@ import {
   sha256,
 } from "./canonical-corpus-identity.mjs";
 import { validateObserverArtifact } from "./canonical-corpus-observer.mjs";
+import { validateArtifactsConcurrently } from "./canonical-corpus-artifact-batch.ts";
 
 const commands = {
   dom: "Run L2 DOM differential corpus",
@@ -216,7 +217,17 @@ export function selectCanonicalWorkers(context, run, jobs, artifacts) {
   return { schema: "vize.canonical-worker-selection", version: 1, ...context, workers };
 }
 
-export function verifyCanonicalArtifacts(selection, root, plan) {
+export const validateArtifactsInProcess = (workers, root) =>
+  workers.map((worker) =>
+    validateObserverArtifact(worker.observer, join(root, worker.artifactName)),
+  );
+
+export function verifyCanonicalArtifacts(
+  selection,
+  root,
+  plan,
+  validateArtifacts = validateArtifactsInProcess,
+) {
   for (const key of ["repository", "runId", "attempt", "event", "sha", ...providerKeys])
     assert.deepEqual(selection[key], plan[key], `Foreign canonical selection ${key}`);
   const entries = readdirSync(root, { withFileTypes: true });
@@ -229,8 +240,11 @@ export function verifyCanonicalArtifacts(selection, root, plan) {
     selection.workers.map((worker) => worker.artifactName).sort(),
     "Incomplete canonical artifacts",
   );
-  const receipts = selection.workers.map((worker) => {
-    const receipt = validateObserverArtifact(worker.observer, join(root, worker.artifactName));
+  const validated = validateArtifacts(selection.workers, root);
+  assert.equal(validated.length, selection.workers.length, "Incomplete canonical validation");
+  const receipts = selection.workers.map((worker, index) => {
+    const receipt = validated[index];
+    assert.equal(receipt.observer, worker.observer, "Foreign canonical observer receipt");
     for (const key of [
       "schema",
       "version",
@@ -323,7 +337,8 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       JSON.parse(readFileSync(selectionPath, "utf8")),
       "Canonical workers changed after download",
     );
-    const identity = verifyCanonicalArtifacts(selection, downloadedRoot, plan);
+    const validate = validateArtifactsConcurrently;
+    const identity = verifyCanonicalArtifacts(selection, downloadedRoot, plan, validate);
     const dom = selection.workers.find((worker) => worker.observer === "dom");
     cpSync(join(downloadedRoot, dom.artifactName), artifactRoot, { recursive: true });
     writeFileSync(join(artifactRoot, "workers.json"), `${JSON.stringify(selection)}\n`);

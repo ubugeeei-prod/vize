@@ -2,18 +2,10 @@
 //!
 //! Provides utility functions for generating props access expressions.
 
-use vize_carton::{String, ToCompactString};
-
-/// Sentinel value for rest spread identifiers in local_to_key map.
-/// When `gen_props_access_exp` receives this, it returns just `__props`.
-pub(crate) const PROPS_REST_SENTINEL: &str = "\0__REST__";
+use vize_carton::String;
 
 /// Generate prop access expression
 pub fn gen_props_access_exp(key: &str) -> String {
-    // Rest spread sentinel: just return `__props` (no property access)
-    if key == PROPS_REST_SENTINEL {
-        return "__props".to_compact_string();
-    }
     if is_simple_identifier(key) {
         let mut out = String::with_capacity(key.len() + 8);
         out.push_str("__props.");

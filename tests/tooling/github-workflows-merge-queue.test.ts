@@ -5,10 +5,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
-
 import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.ts";
 import { readRepoFile, root } from "./support/github-workflows.ts";
-
 type Step = {
   name?: string;
   if?: string;
@@ -71,7 +69,6 @@ const commands = (job: Job) =>
     .flatMap((step) => (step.uses === jsHistoryPath ? jsHistory.runs.steps : [step]))
     .map((step) => step.run ?? "")
     .join("\n");
-
 test("queue scope reaches the planner and every full source lane remains required", () => {
   assert.equal(
     source.jobs["pr-source-plan"].steps?.find((step) => step.name === "Plan source checks")?.run,
@@ -122,7 +119,6 @@ test("queue scope reaches the planner and every full source lane remains require
   assert.match(vrtFailure?.if ?? "", /steps\.vrt\.outcome == 'failure'/);
   assert.equal(vrtFailure?.run, "exit 1");
 });
-
 test("queue Rust retains full doctests and the unchanged feature tail beside required workspace shards", () => {
   assert.equal(source.jobs["pr-rust-source"].uses, "./.github/workflows/pr-rust-checks.yml");
   const steps = rust.jobs["merge-rust-source"].steps ?? [];
@@ -152,12 +148,18 @@ test("queue Rust retains full doctests and the unchanged feature tail beside req
   assert.ok(workspaceStep);
   assert.equal(workspaceStep.if, "${{ inputs.workspace-already-tested != 'true' }}");
   assert.equal(workspaceStep.run, "node tools/support/compat/github/run-rust-workspace-tests.mjs");
-  for (const step of recipe.runs.steps) {
+  const hydration = recipe.runs.steps[0];
+  assert.equal(
+    hydration.run,
+    "git submodule update --init --depth 1 -- tests/_fixtures/_git/element-plus",
+  );
+  assert.equal(hydration.if, undefined);
+  assert.notEqual(hydration["continue-on-error"], true);
+  for (const step of recipe.runs.steps.slice(1)) {
     assert.equal(step.env?.VIZE_TEST_REQUIRE_TSGO, "1");
     assert.notEqual(step["continue-on-error"], true);
   }
 });
-
 test("both queue reports reject failed, cancelled, skipped and missing actual dependencies", () => {
   for (const job of [source.jobs["source-report"], check.jobs["test-report"]]) {
     const dependencies = job.needs;
@@ -173,7 +175,6 @@ test("both queue reports reject failed, cancelled, skipped and missing actual de
     }
   }
 });
-
 test("the shared bash recipe stops at a failed feature command (simulated cargo)", () => {
   const differentialStep = recipe.runs.steps.find(
     (step) => step.name === "Test feature-enabled differential corpora",

@@ -1,0 +1,7 @@
+{
+  "issue": 8835,
+  "reporter": "daugvinasr",
+  "cases": ["Child", "Alias", "RestOnly", "FollowedByCall"],
+  "contract": "rest bindings exist, exclude destructured source keys, and retain reactive getters",
+  "source": "https://github.com/ubugeeei-prod/vize/issues/8835"
+}

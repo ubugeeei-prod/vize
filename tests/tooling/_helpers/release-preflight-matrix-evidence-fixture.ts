@@ -5,7 +5,22 @@ import {
 } from "../../../tools/support/compat/fixtures/real-project-surface-verdict.mjs";
 
 import { requiredRealProjectMatrixShardCount } from "../../../tools/support/compat/github/release-preflight-matrix-evidence.mjs";
+import { releaseSurfacePolicies } from "../../../tools/support/compat/github/release-preflight-surface-evidence.mjs";
 import { releaseSha, successfulReleaseRun } from "../support/release-preflight.ts";
+
+const releaseSurfaceResults = {
+  enforced: { outcome: "success", rawOutcome: "success", budgetMode: "enforce" },
+  recorded: { outcome: "success", rawOutcome: "success", budgetMode: "record-only" },
+  skipped: { outcome: "success", rawOutcome: "skipped", budgetMode: "skip" },
+} as const;
+
+/** The surface results an exact release-gated Matrix dispatch reports. */
+export function releaseGatedSurfaceResults() {
+  return realProjectSurfaceNames.map((name: keyof typeof releaseSurfacePolicies) => ({
+    name,
+    ...releaseSurfaceResults[releaseSurfacePolicies[name] as keyof typeof releaseSurfaceResults],
+  }));
+}
 
 export function realProjectArtifacts(run: ReturnType<typeof successfulReleaseRun>) {
   return Array.from({ length: requiredRealProjectMatrixShardCount }, (_, shard) => ({
@@ -52,15 +67,10 @@ export function shardEntries(
       command: { shardIndex: shard, shardCount: requiredRealProjectMatrixShardCount },
     }),
     "surface-verdict.json": json(
-      createRealProjectSurfaceVerdict(
-        realProjectSurfaceNames.map((name) => ({
-          name,
-          outcome: "success",
-          rawOutcome: "success",
-          budgetMode: "enforce",
-        })),
-        { GITHUB_SHA: releaseSha, FIXTURE_SHARD_INDEX: String(shard) },
-      ),
+      createRealProjectSurfaceVerdict(releaseGatedSurfaceResults(), {
+        GITHUB_SHA: releaseSha,
+        FIXTURE_SHARD_INDEX: String(shard),
+      }),
     ),
     "lint-divergence-summary.json": json({
       schema: "vize.fixtureLintDivergenceIndex",
