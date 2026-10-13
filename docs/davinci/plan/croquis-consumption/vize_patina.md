@@ -66,6 +66,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `extract_identifiers_oxc`                 |     1 |     2 |
 | `is_builtin_component`                    |     2 |     4 |
 | `is_kebab_case_loose`                     |     1 |     1 |
+| `is_native_tag`                           |     1 |     1 |
 | `is_pascal_case`                          |     2 |     2 |
 | `names_match`                             |     3 |     3 |
 | `parse_script_setup`                      |     4 |     4 |
