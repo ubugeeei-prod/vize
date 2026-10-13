@@ -61,9 +61,9 @@ export class BaselineObserver {
       this.failure = error.message;
     });
     const sampler = spawn(
-      "python3",
+      process.execPath,
       [
-        path.join(this.repoRoot, "tests/performance/support/current-baseline/sample_rss.py"),
+        path.join(this.repoRoot, "tests/performance/support/current-baseline/sample-rss.ts"),
         String(child.pid),
         ticks,
         path.join(this.output, "rss.jsonl"),
