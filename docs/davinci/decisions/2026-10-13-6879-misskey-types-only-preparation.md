@@ -1,0 +1,60 @@
+# Misskey SDK declarations in the shared typecheck fixture
+
+Issue: [#6879](https://github.com/ubugeeei-prod/vize/issues/6879).
+
+## Decision
+
+Run the pinned Misskey SDK's declaration-only emitter in the existing dependency
+preparation hook, before either Vize or `vue-tsc` checks the shared fixture. Keep
+the original frontend config, corpus, frozen lockfile and divergence budgets.
+Refuse a failed emitter or a missing, empty or non-regular SDK declaration entry.
+The existing preparation receipt retains the actual command, exit status and
+output hashes. This change prepares the fixture; it changes no checker behavior.
+
+## Reproduction and source evidence
+
+The original report at Vize `2817a0aa13518dd46c16bc8bf56ac831f68c24dc`, for
+Misskey `810faa8e5db4bbf9d6d408a61df148559340ee99`, records a successful frozen
+`--ignore-scripts` install with no preparation command. Its 487 false negatives
+include 278 unresolved `misskey-js` imports; it also records 272 false positives.
+The whole report is 241157 bytes, SHA256
+`98a8d694bad470933ca00a1035f29851707fca976468b71f8b33edca9a18908d`.
+
+The pinned [SDK package](https://github.com/misskey-dev/misskey/blob/810faa8e5db4bbf9d6d408a61df148559340ee99/packages/misskey-js/package.json)
+exports `built/index.d.ts`, which is absent from that Git tree. Its
+[build script](https://github.com/misskey-dev/misskey/blob/810faa8e5db4bbf9d6d408a61df148559340ee99/packages/misskey-js/build.js)
+already separates declaration emission from JavaScript output:
+
+```sh
+pnpm --filter misskey-js exec tsgo --project tsconfig.json --outDir built \
+  --declaration true --emitDeclarationOnly true
+```
+
+The [SDK config](https://github.com/misskey-dev/misskey/blob/810faa8e5db4bbf9d6d408a61df148559340ee99/packages/misskey-js/tsconfig.json)
+includes its source tree, and all five generated schema sources under
+[`src/autogen`](https://github.com/misskey-dev/misskey/tree/810faa8e5db4bbf9d6d408a61df148559340ee99/packages/misskey-js/src/autogen)
+are tracked. Their whole bodies match their pinned Git blobs. No backend build,
+API-schema regeneration, install scripts or JavaScript build is needed for this
+selected emitter. The frozen workspace pins its own
+`@typescript/native-preview` at `7.0.0-dev.20260116.1`; its main package's source
+archive matches the lockfile integrity and resolves the installed platform
+package's native executable.
+
+## Verification and unfinished work
+
+The dependency-preparation regression runs the existing native Rust command and
+checks failed, missing and empty emitter output plus a successful receipt. Its
+controlled package-manager stand-in proves refusal behavior; it earns no actual
+compiler or real-project acceptance credit.
+
+Hosted qualification must capture the actual fixture-local provider and
+executable, emitter command and status, generated declarations, and unchanged
+source/config/lockfile. Compare the full Vize and `vue-tsc` diagnostic vectors
+under the same fixture. Prove their actual declaration reads separately: Vize's
+owned input manifest and a shared working directory do not establish transitive
+program loads. The preparation receipt alone does not establish them either.
+
+The original 487/272 divergence counts remain unresolved until fresh causal
+evidence shows the measured changes. This decision supplies no typechecker
+migration, API/LSP, performance, merge or release-completion credit. The full
+Real Project Matrix and release acceptance remain required.
