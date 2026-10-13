@@ -215,14 +215,14 @@ linter	Linter	source	crates/vize_patina/src/linter/rule_selection.rs	3	l0	L0	sta
 linter	Linter	source	crates/vize_patina/src/linter/script_rules.rs	5	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/linter/script_rules.rs	5	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 linter	Linter	source	crates/vize_patina/src/linter/script_rules.rs	5	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-linter	Linter	test/dev	crates/vize_patina/src/linter/script_rules.rs	175	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+linter	Linter	test/dev	crates/vize_patina/src/linter/script_rules.rs	187	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 linter	Linter	test/dev	crates/vize_patina/src/linter/script_rules/deep_props_dispatch_tests.rs	7	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	test/dev	crates/vize_patina/src/linter/script_rules/runtime_props_dispatch_tests.rs	7	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	test/dev	crates/vize_patina/src/linter/script_rules/setup_emits_dispatch_tests.rs	4	raw_oxc	raw OXC	raw	oxc_ast	raw	1
-linter	Linter	source	crates/vize_patina/src/linter/script_rules/sfc.rs	14	l0	L0	stage	vize_l0	preferred	1
-linter	Linter	source	crates/vize_patina/src/linter/script_rules/sfc.rs	14	old_ast	old AST/parser	old	vize_relief	legacy	1
-linter	Linter	source	crates/vize_patina/src/linter/script_rules/sfc.rs	14	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
-linter	Linter	source	crates/vize_patina/src/linter/script_rules/sfc.rs	14	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+linter	Linter	source	crates/vize_patina/src/linter/script_rules/sfc.rs	15	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	source	crates/vize_patina/src/linter/script_rules/sfc.rs	15	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	source	crates/vize_patina/src/linter/script_rules/sfc.rs	15	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+linter	Linter	source	crates/vize_patina/src/linter/script_rules/sfc.rs	15	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 linter	Linter	source	crates/vize_patina/src/linter/script_rules/sfc/registered_sfc.rs	5	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/linter/script_rules/sfc/registered_sfc.rs	5	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 linter	Linter	source	crates/vize_patina/src/linter/severity.rs	3	l0	L0	stage	vize_l0	preferred	1
@@ -716,10 +716,17 @@ linter	Linter	source	crates/vize_patina/src/rules/script/no_deprecated_props_def
 linter	Linter	source	crates/vize_patina/src/rules/script/no_dupe_keys.rs	47	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/script/no_dupe_keys.rs	47	croquis	Croquis analysis	old	vize_croquis	legacy	2
 linter	Linter	source	crates/vize_patina/src/rules/script/no_dupe_keys.rs	47	raw_oxc	raw OXC	raw	oxc_ast	raw	1
-linter	Linter	test/dev	crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs	68	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+linter	Linter	test/dev	crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs	15	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	test/dev	crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs	15	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance/options.rs	9	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance/options.rs	9	raw_oxc	raw OXC	raw	oxc_ast	raw	1
-linter	Linter	source	crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance/template.rs	35	old_ast	old AST/parser	old	vize_relief	legacy	4
+linter	Linter	source	crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance/template.rs	6	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	source	crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance/template.rs	6	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+linter	Linter	source	crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance/template.rs	6	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+linter	Linter	source	crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance/template.rs	6	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
+linter	Linter	source	crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance/template.rs	6	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+linter	Linter	source	crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance/template.rs	6	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
+linter	Linter	test/dev	crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance/tests.rs	261	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/no_export_in_script_setup.rs	46	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	test/dev	crates/vize_patina/src/rules/script/no_export_in_script_setup/ownership_tests.rs	2	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 linter	Linter	test/dev	crates/vize_patina/src/rules/script/no_export_in_script_setup/ownership_tests.rs	2	raw_oxc	raw OXC	raw	oxc_parser	raw	1

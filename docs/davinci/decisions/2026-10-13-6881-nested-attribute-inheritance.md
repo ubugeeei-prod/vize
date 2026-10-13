@@ -26,3 +26,7 @@ its independently parsed finite inputs do not qualify the original project.
 The installed eslint-plugin-vue 10.9.2 reference passed all 26 cases; native
 qualification belongs to Actions. Full native packets include severity,
 message, byte range, help, labels, fixes and counts.
+
+The initial source-plan run 38337620437 refused a stale Patina source inventory.
+Regenerating that existing inventory changes only its Patina shard; all checks
+remain required on the successor head. The original failure is retained.
