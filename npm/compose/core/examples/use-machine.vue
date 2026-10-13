@@ -35,7 +35,7 @@ const labels: Record<Action, string> = {
     <p>Walk through a checkout that only moves forward when each step is ready.</p>
     <output aria-live="polite">Step: {{ state }} · Items: {{ context.items }}</output>
     <div class="example-actions">
-      <button v-for="event in nextEvents" :key="event" type="button" @click="send(event)">
+      <button v-for="event in nextEvents" :key="event" type="button" @click="() => send(event)">
         {{ labels[event] }}
       </button>
     </div>
