@@ -137,8 +137,8 @@ jobs:
         if: runner.os == 'Linux'
         uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          # Release binaries rebuild workspace crates from their fresh checkout.
-          source-mtimes: "false"
+          # Release binaries build from a fresh checkout without reused run state.
+          reuse-target: "false"
           key: release-cli-${{ matrix.settings.target }}
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Cache Rust (non-Linux)
@@ -194,7 +194,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           {
-            source-mtimes: "false",
+            reuse-target: "false",
             key: release-tools,
             cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}",
           }
@@ -274,8 +274,8 @@ jobs:
           targets: wasm32-unknown-unknown
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          # Release binaries rebuild workspace crates from their fresh checkout.
-          source-mtimes: "false"
+          # Release binaries build from a fresh checkout without reused run state.
+          reuse-target: "false"
           key: release-wasm
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/setup-rust-script
@@ -341,8 +341,8 @@ jobs:
         if: runner.os == 'Linux'
         uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          # Release binaries rebuild workspace crates from their fresh checkout.
-          source-mtimes: "false"
+          # Release binaries build from a fresh checkout without reused run state.
+          reuse-target: "false"
           key: release-native-${{ matrix.settings.target }}
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Cache Rust (non-Linux)
@@ -959,8 +959,8 @@ jobs:
         with: { toolchain: stable }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          # Release binaries rebuild workspace crates from their fresh checkout.
-          source-mtimes: "false"
+          # Release binaries build from a fresh checkout without reused run state.
+          reuse-target: "false"
           key: release-crates
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Get crates.io token via Trusted Publishing
@@ -995,8 +995,8 @@ jobs:
         with: { toolchain: stable }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: {
-            # Release binaries rebuild workspace crates from their fresh checkout.
-            source-mtimes: "false",
+            # Release binaries build from a fresh checkout without reused run state.
+            reuse-target: "false",
             key: release-crates-handoff,
             cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}-${{ inputs.crate_set }}",
           }

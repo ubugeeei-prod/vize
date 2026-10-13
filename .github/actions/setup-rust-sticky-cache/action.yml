@@ -28,8 +28,8 @@ inputs:
     description: Stable runner suffix (os/arch) for the optional second target directory
     required: false
     default: ""
-  source-mtimes:
-    description: Restore recorded source mtimes so Cargo reuses unchanged workspace crates
+  reuse-target:
+    description: Prune non-Cargo run outputs and restore recorded source mtimes so Cargo reuses unchanged crates
     required: false
     default: "true"
 
@@ -167,9 +167,9 @@ runs:
 
     # Registered after every cache step so its post records the final tree
     # before Actions seeds are saved and before the sticky disks commit.
-    - name: Restore unchanged Rust source mtimes
-      if: ${{ runner.os == 'Linux' && inputs.source-mtimes == 'true' }}
-      uses: ./.github/actions/rust-source-mtimes
+    - name: Reuse the Rust target as a fresh build cache
+      if: ${{ runner.os == 'Linux' && inputs.reuse-target == 'true' }}
+      uses: ./.github/actions/reuse-rust-target
       with:
         target-path: ${{ steps.cache-policy.outputs.target-path }}
         secondary-target-path: ${{ steps.cache-policy.outputs.secondary-path }}

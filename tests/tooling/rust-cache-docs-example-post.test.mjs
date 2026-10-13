@@ -89,7 +89,7 @@ function currentWorkloads(fixture, result) {
 await test("docs example omission changes only two conditions and the mounted restore key", () => {
   assert.equal(
     hash(JSON.stringify(original)),
-    "d58a987f2a427e66802374a1e8c1e2af7c37ef0c5560a6b6395b6899c506a592",
+    "a8be3963c056be6e07650418e2931d849faade9e4fca350c2fca25219fdaa74b",
   );
   const docs = parse(
     readFileSync(new URL("../../.github/workflows/build-docs.yml", import.meta.url), "utf8"),

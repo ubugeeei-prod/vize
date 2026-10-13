@@ -19,8 +19,9 @@ import {
   manifestName,
   recordSourceMtimes,
   restoreSourceMtimes,
-} from "../../.github/actions/rust-source-mtimes/source-mtimes.ts";
-import type { RestoreResult } from "../../.github/actions/rust-source-mtimes/source-mtimes.ts";
+} from "../../.github/actions/reuse-rust-target/source-mtimes.ts";
+import type { RestoreResult } from "../../.github/actions/reuse-rust-target/source-mtimes.ts";
+import { pruneRunOutputs } from "../../.github/actions/reuse-rust-target/prune-run-outputs.ts";
 
 const git = (cwd: string, ...args: string[]) =>
   execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
@@ -34,7 +35,7 @@ function applied(result: RestoreResult) {
 const nextSecond = () => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1100);
 
 function repository(files: Record<string, string>) {
-  const root = mkdtempSync(join(tmpdir(), "vize-source-mtimes-"));
+  const root = mkdtempSync(join(tmpdir(), "vize-reuse-rust-target-"));
   const origin = join(root, "origin");
   mkdirSync(origin);
   const write = (path: string, text: string) => {
@@ -179,7 +180,54 @@ await test("release binaries keep rebuilding workspace crates from a fresh check
     (job.steps ?? []).filter(({ uses }) => uses === "./.github/actions/setup-rust-sticky-cache"),
   );
   assert.ok(mounts.length > 0);
-  for (const mount of mounts) assert.equal(mount.with?.["source-mtimes"], "false", mount.with?.key);
+  for (const mount of mounts) assert.equal(mount.with?.["reuse-target"], "false", mount.with?.key);
+});
+
+await test("a reused target keeps only Cargo's build cache", () => {
+  const target = mkdtempSync(join(tmpdir(), "vize-prune-target-"));
+  const touch = (path: string) => {
+    mkdirSync(dirname(join(target, path)), { recursive: true });
+    writeFileSync(join(target, path), "x");
+  };
+  const kept = [
+    ".rustc_info.json",
+    "CACHEDIR.TAG",
+    manifestName,
+    "ci/.fingerprint/vize-1/lib-vize",
+    "ci/deps/libvize-1.rlib",
+    "ci/build/vize-2/out/generated.rs",
+    "ci/incremental/vize-3/s",
+    "ci/examples/cli_build_result_oracle",
+    "wasm32-unknown-unknown/release/.fingerprint/vitrine-4/lib",
+    "wasm32-unknown-unknown/release/deps/vize_vitrine.wasm",
+    "llvm-cov-target/debug/.fingerprint/carton-5/lib",
+    "contract-guests/wasm32-wasip2/release/.fingerprint/guest-6/lib",
+  ];
+  const removed = [
+    "ci/vize",
+    "ci/vize.d",
+    "ci/vize.differential-build.json",
+    "ci/receipts/run.json",
+    "wasm32-unknown-unknown/release/vize_vitrine.wasm",
+    "wasm32-unknown-unknown/notes.txt",
+    "differential/formatter/observations.json",
+    "oxlint-original-project-transport/run-1/package.json",
+    "template-style-fixes-7905.json",
+    "nextest/pr/junit.xml",
+    "tmp/scratch",
+    "doc/vize/index.html",
+    "llvm-cov/source-summary.json",
+  ];
+  try {
+    for (const path of [...kept, ...removed]) touch(path);
+    pruneRunOutputs(target);
+    for (const path of kept) assert.ok(existsSync(join(target, path)), `${path} must stay`);
+    for (const path of removed) assert.ok(!existsSync(join(target, path)), `${path} must go`);
+    for (const directory of ["differential", "nextest", "tmp", "doc", "ci/receipts"])
+      assert.ok(!existsSync(join(target, directory)), `${directory} must go`);
+  } finally {
+    rmSync(target, { recursive: true, force: true });
+  }
 });
 
 // Probe outside this checkout so its pinned toolchain file does not apply.
@@ -252,6 +300,41 @@ await test(
       assert.deepEqual(job({ record: false }), ["b"]);
     } finally {
       rmSync(repo.root, { recursive: true, force: true });
+    }
+  },
+);
+
+await test(
+  "Cargo relinks pruned binaries without recompiling fresh units",
+  { skip: cargo.status !== 0 && "cargo is unavailable" },
+  () => {
+    const root = mkdtempSync(join(tmpdir(), "vize-prune-cargo-"));
+    try {
+      writeFileSync(
+        join(root, "Cargo.toml"),
+        '[package]\nname = "app"\nversion = "0.1.0"\nedition = "2021"\n',
+      );
+      mkdirSync(join(root, "src"));
+      writeFileSync(join(root, "src/main.rs"), "fn main() {}\n");
+      const build = () =>
+        execFileSync("cargo", ["build", "--message-format=json"], {
+          cwd: root,
+          encoding: "utf8",
+          stdio: ["ignore", "pipe", "ignore"],
+        })
+          .split("\n")
+          .filter((line) => line.startsWith("{"))
+          .map((line) => JSON.parse(line) as { reason?: string; fresh?: boolean })
+          .filter(({ reason }) => reason === "compiler-artifact");
+      build();
+      writeFileSync(join(root, "target/debug/app.differential-build.json"), "{}");
+      pruneRunOutputs(join(root, "target"));
+      assert.ok(!existsSync(join(root, "target/debug/app")));
+      assert.ok(!existsSync(join(root, "target/debug/app.differential-build.json")));
+      assert.ok(build().every(({ fresh }) => fresh === true));
+      assert.ok(existsSync(join(root, "target/debug/app")), "Cargo relinks the binary");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
     }
   },
 );

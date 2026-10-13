@@ -40,6 +40,29 @@ The sticky action is pinned to commit
 line with the `commit` input. Its post step still commits a trusted disk only
 when no earlier step failed or was cancelled.
 
+## Only Cargo's cache is reused
+
+Tests and tools also write run outputs under `target/`, such as differential
+evidence, staging projects, receipts beside binaries and nextest reports. On a
+persistent disk these accumulate. The first read-only run uploaded a
+2,747,454,784-byte Oxlint evidence artifact (37,197 files) instead of the
+235,349,320 bytes of a fresh run. An output that a run did not produce could
+also be read or uploaded as if it had.
+
+Before anything else, the `reuse-rust-target` step therefore prunes the
+mounted or restored target to Cargo's build cache:
+
+- the root `.rustc_info.json` and `CACHEDIR.TAG`;
+- each profile's `.fingerprint`, `build`, `deps`, `incremental` and
+  `examples`;
+- target triples and nested target directories, recognised by a profile with a
+  `.fingerprint` within three levels.
+
+Top-level files in a profile go too. Cargo relinks uplifted binaries and
+dep-info for fresh units without recompiling, which a real Cargo test checks.
+Trusted runs prune before committing, so their own uploads also stop carrying
+old evidence.
+
 ## Source mtimes
 
 Cargo treats a path source as dirty when one of its inputs is newer than the
@@ -48,7 +71,7 @@ time, so even a warm target rebuilds every workspace crate and test binary.
 `sccache` does not help here, because it cannot cache the linked test binaries
 that dominate this workspace's build.
 
-The new `rust-source-mtimes` action, registered last in
+The new `reuse-rust-target` action, registered last in
 `setup-rust-sticky-cache`, emulates the persistent working tree that Cargo
 assumes. It is TypeScript that the runner's Node 24 executes through native
 type stripping, with no build step:
@@ -68,11 +91,11 @@ type stripping, with no build step:
   directory in the same job shares the work tree, the step leaves mtimes
   untouched and a trusted run deletes the record.
 - Any error leaves the checked-out mtimes, which are always conservative.
-- `release.yml` opts out with `source-mtimes: "false"`, so release binaries
-  keep rebuilding every workspace crate from their fresh checkout.
+- `release.yml` opts out with `reuse-target: "false"`, so release binaries
+  keep building every workspace crate from their fresh checkout.
 
 Cargo therefore rebuilds exactly what a persistent checkout would rebuild.
-`tests/tooling/rust-source-mtimes.test.ts` drives real Cargo through fresh
+`tests/tooling/reuse-rust-target.test.ts` drives real Cargo through fresh
 clones that share one target directory. It checks that:
 
 - nothing rebuilds when the source is unchanged;

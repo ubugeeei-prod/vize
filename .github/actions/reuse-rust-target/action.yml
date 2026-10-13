@@ -1,5 +1,5 @@
-name: Restore Rust source mtimes
-description: Give unchanged sources the mtimes recorded beside a warm Rust target directory
+name: Reuse a Rust target directory
+description: Keep only Cargo's build cache and give unchanged sources their recorded mtimes
 
 inputs:
   target-path:

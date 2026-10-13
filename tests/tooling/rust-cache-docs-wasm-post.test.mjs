@@ -75,7 +75,7 @@ function workloads(fixture, result) {
 await test("primary docs omission preserves the complete original action except three expressions", () => {
   assert.equal(
     hash(JSON.stringify(original)),
-    "f992020d6836c35f06ac1a08d819f1ef717f998269122e149b8bcbea8d5f942b",
+    "3089a3a88d5b5349f40d84e4ab236380df28abe0ad3890b32681c99636f7cd0e",
   );
 });
 

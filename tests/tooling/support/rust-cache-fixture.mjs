@@ -287,7 +287,7 @@ export function executeCacheAction(
       const args = Object.fromEntries(
         Object.entries(step.with).map(([key, expr]) => [key, value(expr, inputs, outputs)]),
       );
-      if (step.uses === "./.github/actions/rust-source-mtimes") continue; // own test file
+      if (step.uses === "./.github/actions/reuse-rust-target") continue; // own test file
       const path = String(args.path);
       const name = path.endsWith("registry")
         ? "registry"
