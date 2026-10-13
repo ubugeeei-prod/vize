@@ -10,12 +10,16 @@ import {
   qualifyEmptyVueStarHost,
 } from "../../performance/support/warm-type-backed-empty-vue-star-host.ts";
 import { ensureHostedLiteralSource } from "../../performance/support/warm-type-backed-git-reader-literal-source.ts";
+import {
+  emptyVueStarListingPath,
+  retainedEmptyVueStarListingExecution,
+} from "../../performance/support/warm-type-backed-empty-vue-star-listing.ts";
 
 type Read = (file: string) => Buffer | null;
 const root = path.resolve(import.meta.dirname, "../../..");
 const host = "tests/performance/support/warm-type-backed-host-qualifications.ts";
 const originalSHA = "b19f6783e50429d2779efeb7d2d21c64dcd98a67810fc4f6a1ccc698febae337";
-const currentSHA = "bec16c021cf11fce5e41180b42eb7df3ec5a38c6c14bdba64d0aba14991e78fe";
+const currentSHA = "c9e5b59b344bfe40d08d7b365214bf1e5eb29b260e871721df0808645a1b6e17";
 const beforeSource = "a93e78147b0990c813e965a7868b32dda341eb77";
 const helperPairs = [
   [
@@ -25,6 +29,14 @@ const helperPairs = [
   [
     "tests/tooling/warm-type-backed-empty-vue-star-host.test.ts",
     "3dc6a16c6e9869302858df257d21e2e2b03acdc13606460bd7849d9d9ce28fc2",
+  ],
+  [
+    "tests/performance/support/warm-type-backed-empty-vue-star-listing.ts",
+    "6e7941072788c2fad4e678d5edd6d4abb5b8e3b87ad53b85c198a6e78d8af801",
+  ],
+  [
+    "tests/performance/support/warm-type-backed-empty-vue-star-listing-singleton.ts",
+    "ec0fc623eb66eab0df4015d6bfe70cf106d53d427f395c0c1e7d39d060f899f6",
   ],
 ] as const;
 const clauses = [
@@ -108,15 +120,16 @@ export function retainedHostBeforeEmptyVueStars(read: Read): Buffer {
   assert.equal(new Set(files).size, files.length);
   const before = beforeBodies(files);
   const after = new Map<string, string>();
-  for (const [file, , expected] of pairs) {
-    const body = physical(file);
-    assert.equal(sha(body), expected, "complete actual star source: " + file);
-    after.set(file, sha(body));
-  }
   for (const [file, expected] of helperPairs) {
     assert.equal(before.get(file), null, "genuine predecessor helper absence: " + file);
     const body = physical(file);
     assert.equal(sha(body), expected, "whole qualified star helper: " + file);
+    after.set(file, sha(body));
+  }
+  const execution = retainedEmptyVueStarListingExecution(physical(emptyVueStarListingPath));
+  for (const [file, , expected] of pairs) {
+    const body = file === emptyVueStarListingPath ? execution : physical(file);
+    assert.equal(sha(body), expected, "complete actual star source: " + file);
     after.set(file, sha(body));
   }
   assert(
@@ -126,6 +139,39 @@ export function retainedHostBeforeEmptyVueStars(read: Read): Buffer {
   );
   let inverse = actual.toString("utf8");
   assert.deepEqual(Buffer.from(inverse), actual);
+  const singletonClauses = [
+    'import { qualifyEmptyVueStarListingSingleton } from "./warm-type-backed-empty-vue-star-listing-singleton.ts";\n\n',
+    '  const emptyVueStarListingSingleton =\n    enabled &&\n    digest(\n      "before",\n      "tests/performance/support/warm-type-backed-empty-vue-star-listing-singleton.ts",\n    ) === null &&\n    digest(\n      "after",\n      "tests/performance/support/warm-type-backed-empty-vue-star-listing-singleton.ts",\n    ) === "ec0fc623eb66eab0df4015d6bfe70cf106d53d427f395c0c1e7d39d060f899f6"\n      ? qualifyEmptyVueStarListingSingleton(production, alreadyQualified, digest)\n      : null;\n',
+    "    ...(emptyVueStarListingSingleton ? { emptyVueStarListingSingleton } : {}),\n",
+  ];
+  for (const clause of singletonClauses) {
+    assert.equal(inverse.split(clause).length, 2, "one exact singleton caller clause");
+    inverse = inverse.replace(clause, "");
+  }
+  assert.equal(
+    sha(Buffer.from(inverse)),
+    "d6e2f7ff409137866d2d0b0b6ba545a3602cc5ce6a467b992309f1cd9101f5ec",
+    "complete formatted listing caller before singleton admission",
+  );
+  const listingImport =
+    'import { qualifyEmptyVueStarListingHost } from "./warm-type-backed-empty-vue-star-listing.ts";\n\n';
+  const listingGuard =
+    ' &&\n    digest("before", "tests/performance/support/warm-type-backed-empty-vue-star-listing.ts") ===\n      null &&\n    digest("after", "tests/performance/support/warm-type-backed-empty-vue-star-listing.ts") ===\n      "6e7941072788c2fad4e678d5edd6d4abb5b8e3b87ad53b85c198a6e78d8af801"';
+  const listingCall =
+    "qualifyEmptyVueStarListingHost(\n          production,\n          alreadyQualified,\n          digest,\n          qualifyEmptyVueStarHost,\n        )";
+  for (const [after, before] of [
+    [listingImport, ""],
+    [listingGuard, ""],
+    [listingCall, "qualifyEmptyVueStarHost(production, alreadyQualified, digest)"],
+  ]) {
+    assert.equal(inverse.split(after).length, 2);
+    inverse = inverse.replace(after, before);
+  }
+  assert.equal(
+    sha(Buffer.from(inverse)),
+    "bec16c021cf11fce5e41180b42eb7df3ec5a38c6c14bdba64d0aba14991e78fe",
+    "whole hook before listing correction",
+  );
   for (const clause of clauses) {
     assert.equal(inverse.split(clause).length, 2);
     inverse = inverse.replace(clause, "");

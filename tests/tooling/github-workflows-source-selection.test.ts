@@ -122,7 +122,10 @@ test("every isolated tooling runner regenerates its tier and retains the full me
     steps[regenerate].env?.BASE_SHA,
     "${{ needs.pr-source-plan.outputs.comparison-base }}",
   );
-  assert.match(steps[regenerate].run ?? "", /git fetch --no-tags --depth=1 origin "\$BASE_SHA"/);
+  assert.equal(
+    (steps[regenerate].run ?? "").split("\n")[0],
+    'if [[ ! "$BASE_SHA" =~ ^0+$ ]]; then git fetch --no-tags origin "$BASE_SHA"; fi',
+  );
   assert.match(
     steps[regenerate].run ?? "",
     /--tier "\$TOOLING_TIER" --output "\$RUNNER_TEMP\/tooling-plan\.json"/,

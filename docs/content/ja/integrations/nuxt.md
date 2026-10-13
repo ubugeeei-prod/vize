@@ -1,33 +1,28 @@
 ---
-title: ナクスト
+title: Nuxt
+description: モジュールをひとつ追加するだけで、Nuxt プロジェクトの Vue コンポーネントを Vize でコンパイル・lint・プレビューできます。
 ---
 
-<!-- Generated translation; source: integrations/nuxt.md -->
+<!-- Reviewed translation; source: integrations/nuxt.md; scope: complete document -->
 
-# Nuxt の統合
+# Nuxt
 
-> **⚠️ 進行中の作業:** Vize は積極的に開発中であり、まだ運用環境で使用する準備ができていません。 Nuxt プロジェクトに採用する前に徹底的にテストしてください。
+`@vizejs/nuxt` は、Nuxt プロジェクトに Vize を導入するためのモジュールです。Nuxt 標準の Vue コンパイラの代わりに、Rust で書かれた Vize のコンパイラで `.vue` ファイルをコンパイルします。あわせて Nuxt 向けの lint 設定を生成し、コンポーネントギャラリーの [Musea](../guide/musea.md) も利用できます。自動インポート、コンポーネント、ミドルウェア、SSR は、これまでどおり Nuxt が処理します。
 
-Vize は、`@vizejs/nuxt` モジュールを通じてファーストクラスの Nuxt 統合を提供します。これにより、Nuxt のデフォルトの Vue コンパイラが Vize の Rust ネイティブ コンパイラに置き換えられ、Nuxt プロジェクトでも同様の速度向上が実現します。
+> [!WARNING]
+> Vize は開発中で、まだ本番利用できる段階ではありません。導入する前に、自分のプロジェクトでビルド結果と診断を見比べ、[対応状況](../stability.md)を確認してください。
 
-## はじめる
+## セットアップ
 
 ### 1. モジュールをインストールする
 
-[Vite+ インストール ガイド](https://viteplus.dev/guide/install) から `vp` を一度インストールし、モジュールを追加します。
+[Vite+ のインストールガイド](https://viteplus.dev/guide/install)に沿って `vp` を用意し、モジュールを追加します。
 
 ```bash
 vp install @vizejs/nuxt
 ```
 
-pnpm で `pkl` 構成を使用する場合は、`vize` パッケージ自体をインストールする必要がある場合があります。
-`@vizejs/nuxt` は、デフォルト設定で `vize.pkl` を提供する `vize` をインストールしますが、pnpm を使用する場合、`vize.pkl` の場所が異なる場合があります。
-
-```bash
-vp install vize
-```
-
-### 2. Nuxt モジュールを登録する
+### 2. モジュールを登録する
 
 ```ts
 // nuxt.config.ts
@@ -39,24 +34,56 @@ export default defineNuxtConfig({
 });
 ```
 
-### 3. Nuxtを起動する
+`compiler: true` は既定値なので、`modules: ["@vizejs/nuxt"]` だけでも動きます。このページで紹介するオプションは、すべて `vize` キーの下に書きます。
 
-通常どおり開発サーバーを起動します。
+### 3. Nuxt を起動する
+
+いつもどおり開発サーバーを起動します。
 
 ```bash
 vp run dev
 ```
 
-このモジュールは `@vizejs/vite-plugin` を Nuxt の Vite 構成に挿入し、Nuxt 固有の変換を保持します
-パイプライン内にあるため、自動インポート、コンポーネント、ミドルウェア、SSR の動作は引き続き機能します。
-ナクスト。
-開発中、サーバー応答のクリーンアップにより、次のような有効な URL エンコードされた Nuxt アセット リンクが保存されます。
-`%40fs/` およびエンコードされた `assets/` パスとして、デコードされた null バイトまたはトラバーサル パスを削除します。
+モジュールは Nuxt の Vite 設定に `@vizejs/vite-plugin` を追加し、Nuxt 自身の変換処理はそのまま残します。ページ、レイアウト、自動インポートされるコンポーザブルやコンポーネントは、これまでと同じように動作します。
 
-## モジュールオプション
+### 4. Vize がコンパイルしていることを確認する
 
-`@vizejs/nuxt` は単純な `compiler: true | false` スイッチを保持しますが、モジュール オプションも公開します
-より厳密な制御が必要なプロジェクト向けの Vize コンパイラーと Nuxt 互換性ブリッジ:
+コンパイラのデバッグログを有効にすると、Vize が処理したファイルを確認できます。
+
+```ts
+export default defineNuxtConfig({
+  modules: ["@vizejs/nuxt"],
+  vize: {
+    compiler: { debug: true },
+  },
+});
+```
+
+Nuxt ではコンポーネントを必要になった時点でコンパイルするため、`[vize] load: on-demand compiling ...` というログは、リクエストで実際に読み込まれたファイルにだけ出力されます。確認できたら `debug` は外してください。
+
+<span id="options"></span>
+
+## オプション
+
+オプションはすべて `nuxt.config.ts` の `vize` の下に書きます。ほとんどのプロジェクトで必要になるのは、最初の 4 つです。
+
+| オプション            | 型                                      | 既定値                     | 説明                                                                                                                             |
+| --------------------- | --------------------------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `compiler`            | `boolean \| VizeNuxtCompilerOptions`    | `true`                     | Vue SFC を Vize でコンパイルします。オブジェクトを渡すと、その内容を `@vizejs/vite-plugin` に引き継ぎます。                      |
+| `lint`                | `boolean \| VizeNuxtLintOptions`        | `true`                     | Nuxt 向けの Oxlint 設定を生成します。[lint](#lint) を参照してください。                                                          |
+| `checker`             | `boolean \| VizeNuxtLintCheckerOptions` | `false`                    | 開発サーバーと並行して lint を実行し、ターミナルとブラウザーのオーバーレイに表示します。[開発中の lint](#lint-while-developing) を参照してください。 |
+| `musea`               | `boolean \| MuseaOptions`               | `false`                    | Musea のギャラリーを配信します。[Musea](#musea) を参照してください。                                                             |
+| `ui`                  | `boolean \| VizeNuxtUiOptions`          | `false`                    | `@vizejs/ui` のコンポーネントを自動登録します。[自動インポート](../guide/auto-imports.md#nuxt)を参照してください。               |
+| `composables`         | `boolean \| VizeNuxtComposablesOptions` | `false`                    | `@vizejs/composable` の関数を自動インポートします。[自動インポート](../guide/auto-imports.md#nuxt)を参照してください。           |
+| `bridge`              | `boolean \| VizeNuxtBridgeOptions`      | `true`                     | Nuxt の自動インポート、コンポーネント解決、i18n、非同期データのキー生成を、Vize がコンパイルしたモジュールにも適用します。       |
+| `unocss`              | `boolean \| VizeNuxtUnoCssOptions`      | `true`                     | UnoCSS が元の `.vue` ソースを読めるようにします。`originalSource: false` で無効化、`maxBytes` で 1 ファイルあたりの上限を指定します。 |
+| `dev.stylesheetLinks` | `boolean`                               | `true`                     | 開発時の SSR HTML から、重複したスタイルシートのリンクや安全でないリンクを取り除きます。                                         |
+| `compatibility`       | `VizeNuxtCompatibilityOptions`          | 自動検出                   | 検出された Nuxt と Vue のメジャーバージョンを上書きします。[Nuxt 2 と Vue 2](#nuxt-2-and-vue-2) を参照してください。             |
+| `nuxtMusea`           | `NuxtMuseaOptions`                      | `{ route: { path: "/" } }` | Musea のプレビューから見えるルート、ランタイム設定、fetch のモックを指定します。                                                 |
+
+### コンパイラ
+
+`compiler` には `@vizejs/vite-plugin` のオプションをそのまま渡せます。プロジェクトのルート、オンデマンドのコンパイル、依存パッケージ内の `.vue` ファイルの扱いは、Nuxt 向けの既定値が使われます。
 
 ```ts
 // nuxt.config.ts
@@ -99,61 +126,58 @@ export default defineNuxtConfig({
 });
 ```
 
-| オプション            | タイプ                               | デフォルト                 | 説明                                                                                                                                                                                                                                                         |
-| --------------------- | ------------------------------------ | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `compatibility`       | `VizeNuxtCompatibilityOptions`       | 自動検出                   | 異常なラッパーに対して検出された Nuxt/Vue メジャー バージョンをオーバーライドします。 Nuxt 2 はデフォルトで Vue 2 ホストコンパイラー互換性を持っています。 Nuxt 3/4 のデフォルトは Vue 3 です。Vue 0.11/1/2 はすべてホスト コンパイラー モードを使用します。 |
-| `compiler`            | `boolean \| VizeNuxtCompilerOptions` | `true`                     | Vize を Vue SFC コンパイラーとして有効にします。オブジェクトを渡すと、`root`、`devUrlBase`、オンデマンド `scanPatterns`、依存関係 SFC 処理の Nuxt デフォルトを維持しながら、オプションが `@vizejs/vite-plugin` に転送されます。                              |
-| `bridge`              | `boolean \| VizeNuxtBridgeOptions`   | `true`                     | Vize 仮想モジュール上の自動インポート、コンポーネント インポート、i18n ヘルパー、安定した非同期データ キー用の Nuxt 変換ブリッジを制御します。                                                                                                               |
-| `unocss`              | `boolean \| VizeNuxtUnoCssOptions`   | `true`                     | Vize 仮想モジュールの UnoCSS ブリッジを制御します。 `originalSource: false` はソース SFC の読み取りを無効にします。 `maxBytes` はメモリ使用量を制限します。                                                                                                  |
-| `dev.stylesheetLinks` | `boolean`                            | `true`                     | Vize で生成された Nuxt アセット URL の開発専用 SSR HTML スタイルシート リンクのクリーンアップを有効にします。                                                                                                                                                |
-| `musea`               | `boolean \| MuseaOptions`            | `false`                    | Musea ギャラリーの統合を選択します。 Musea のデフォルトに `true` を使用するか、パターン、トークン、プレビュー CSS、ルーティングなどを構成するオブジェクトを渡します。                                                                                        |
-| `nuxtMusea`           | `NuxtMuseaOptions`                   | `{ route: { path: "/" } }` | Musea プレビュー ヘルパーで使用される Nuxt モック シェイプを文書化します。 Nuxt モジュールはモック レイヤーをグローバルにインストールしません。そうすると、Nuxt 自体の `#imports` がシャドウされるためです。                                                 |
+各コンパイラオプションの意味は [Vite プラグインのガイド](../guide/vite-plugin.md#compiler-options)にまとめています。`compiler: false` を指定すると、コンパイルは Nuxt 標準のコンパイラに任せたまま、lint や Musea だけを使えます。
 
-## 高度なセットアップ
+<span id="lint"></span>
 
-### Nuxt 2 とレガシー Vue
+### lint
 
-Nuxt 2 プロジェクトは Vue 2 コンパイラ出力を使用します。 Vize のネイティブ SFC コンパイラは Vue 3 をターゲットとしているため、Nuxt
-モジュールは、Nuxt 2 を検出すると、ホスト コンパイラーの置き換えを自動的に回避します。 Nuxt 2 Bridge の場合
-または他の Vite ベースの Vue 2 セットアップでは、Vite プラグインは `vueVersion: 2` を受け取ります。
-`@vitejs/plugin-vue2`、`vue-loader`、または `.vue` ファイルを担当する Nuxt 独自のコンパイラー。
+`lint` が有効な場合、モジュールはプロジェクトのルートに `.oxlint.vize.json` を書き出します。これは `@nuxt/eslint` が生成する設定の Oxlint 版で、Nuxt のバージョンとディレクトリ構成に合わせたルールが入ります。このファイルは `.gitignore` に追加してください。
 
-同じホスト コンパイラー モードは、`vueVersion: 0.11` 経由で古い Vue プロジェクトでも利用できます。
-`vueVersion: 1`、または `vueVersion: "legacy"`。
+プロジェクトに Oxlint や Vite の設定ファイルがまだない場合は、生成したファイルを読み込む `oxlint.config.mts` もあわせて作成します。既存の設定ファイルを書き換えることはありません。その場合は、自分の設定から `.oxlint.vize.json` を読み込んでください。
 
-Nuxt Kit からバージョンを隠す方法でプロジェクトが Nuxt をラップしている場合は、互換性を設定してください
-明示的にオーバーライドします。
+| オプション   | 既定値                | 説明                                                                                        |
+| ------------ | --------------------- | ------------------------------------------------------------------------------------------- |
+| `configFile` | `".oxlint.vize.json"` | 生成する設定ファイルの出力先です。lint のルート、またはその親ディレクトリに置く必要があります。 |
+| `autoInit`   | `true`                | Oxlint や Vite の設定ファイルがないときに `oxlint.config.mts` を作成します。                |
+| `rootDir`    | Nuxt のルート         | 生成される glob の基準になるディレクトリです。                                              |
+| `devtools`   | `{ enabled: "lazy" }` | 解決後の lint 設定を Nuxt DevTools のタブに表示します。                                     |
+
+`lint` には `@nuxt/eslint-config` と同じ機能スイッチも指定できます。`standalone`（既定は `true`）、`import`（既定は `true`）、`typescript`、`stylistic`、`tooling`、`formatters`、`nuxt` です。
+
+lint の設定を Nuxt のルートの外に置いている場合は、`lint.autoInit: false` を指定してください。ルールの実行方法は [Oxlint プラグインのガイド](../guide/oxlint.md)で説明しています。
+
+<span id="lint-while-developing"></span>
+
+### 開発中の lint
+
+`checker` を有効にすると、`@nuxt/eslint` の checker と同じように、開発サーバーと並行して Oxlint と Vize の lint ルールを実行します。
 
 ```ts
 export default defineNuxtConfig({
   modules: ["@vizejs/nuxt"],
   vize: {
-    compatibility: {
-      nuxtVersion: 2,
-      vueVersion: 2,
-    },
+    checker: true,
   },
 });
 ```
 
-### Vite プラグインを直接使用する
+| オプション    | 既定値                                    | 説明                                                         |
+| ------------- | ----------------------------------------- | ------------------------------------------------------------ |
+| `lintOnStart` | `true`                                    | 開発サーバーの起動時にプロジェクト全体を lint します。       |
+| `cache`       | `true`                                    | 起動後は、変更されたファイルだけを lint します。             |
+| `include`     | `<srcDir>/**/*.{js,jsx,ts,tsx,vue}`       | 検査の対象にするファイルです。                               |
+| `exclude`     | `**/node_modules/**` とビルドディレクトリ | 検査の対象から外すファイルとディレクトリです。               |
+| `emitWarning` | `true`                                    | 警告をターミナルに出力し、ブラウザーのオーバーレイにも表示します。 |
+| `emitError`   | `true`                                    | エラーをターミナルに出力し、ブラウザーのオーバーレイにも表示します。 |
+| `fix`         | `false`                                   | 報告する前に、安全な修正を適用します。                       |
+| `formatter`   | `"stylish"`                               | Oxlint の出力形式です。                                      |
 
-あるいは、Vite プラグインを直接使用することもできます。 Nuxt は内部で Vite を使用しているため、これは機能しますが、Nuxt 固有の最適化がいくつか欠けています。
+<span id="musea"></span>
 
-```ts
-// nuxt.config.ts
-import vize from "@vizejs/vite-plugin";
+## Musea
 
-export default defineNuxtConfig({
-  vite: {
-    plugins: [vize()],
-  },
-});
-```
-
-## Musea の統合
-
-Nuxt モジュールは Musea (コンポーネント ギャラリー) の統合もサポートしています。
+コンポーネントギャラリーは `musea` で有効にします。
 
 ```ts
 // nuxt.config.ts
@@ -174,13 +198,11 @@ export default defineNuxtConfig({
 });
 ```
 
-構成すると、開発中に `/__musea__/` で Musea ギャラリーが利用可能になります。
+開発中は `/__musea__/` でギャラリーを開けます。art ファイル、デザイントークン、視覚的な回帰テストについては [Musea のガイド](../guide/musea.md)を参照してください。
 
-### アートファイルの配置
+### art ファイルの置き場所
 
-Nuxt コンポーネントの自動検出は、構成されたコンポーネント ディレクトリ内の `.vue` ファイルをスキャンします。なぜなら
-Musea アート ファイルも `.vue` で終わります。`*.art.vue` ファイルは Nuxt のこれらのディレクトリの外に保管してください。
-プロジェクトを作成し、Musea にその場所を指定します。
+Nuxt はコンポーネントディレクトリ内の `.vue` ファイルをすべて走査しますが、Musea の art ファイルも拡張子は `.vue` です。`*.art.vue` はコンポーネントディレクトリの外に置き、Musea にその場所を指定してください。
 
 ```txt
 app/components/Tag.vue
@@ -198,15 +220,11 @@ export default defineNuxtConfig({
 });
 ```
 
-Musea が `@vizejs/nuxt` を通じて有効になっている場合、モジュールは `**/*.art.vue` も Nuxt のモジュールから除外します。
-コンポーネント スキャナーを使用するため、同じ場所に配置されたレガシー ファイルは Nuxt の Webpack または Vite コンポーネント パイプラインに到達しません。
+Musea を有効にすると、モジュールは `**/*.art.vue` を Nuxt のコンポーネント走査からも除外します。そのため、コンポーネントの隣に残っている art ファイルがコンポーネントとして登録されることはありません。
 
-### Nuxt のプレビューセットアップ
+### プレビューで Nuxt の機能を使う
 
-Nuxt プロジェクトでは、Musea プレビュー環境で利用できる必要がある機能がよく使用されます。
-(`NuxtLink`、`useRoute`、`useNuxtApp`、`useRuntimeConfig`、データ コンポーザブル、および組み込み Nuxt
-コンポーネント）。スタンドアロン Musea Vite 構成で `@vizejs/musea-nuxt` を使用し、そのプレビューをインストールします
-`previewSetup` のモック レイヤー:
+コンポーネントは `NuxtLink`、`useRoute`、`useNuxtApp`、`useRuntimeConfig`、データ取得のコンポーザブル、Nuxt の組み込みコンポーネントなどに依存していることがよくあります。Musea を単独の Vite 設定で動かす場合は、`@vizejs/musea-nuxt` を追加し、`previewSetup` からモックをインストールします。
 
 ```ts
 // vite.config.ts
@@ -257,15 +275,55 @@ export default ((app) => {
 }) satisfies MuseaPreviewSetup;
 ```
 
+Nuxt アプリの中では、モジュールはこれらのモックをグローバルにはインストールしません。Nuxt 自身の `#imports` を置き換えてしまうためです。その場合は、本物の Nuxt のコンポーザブルが使われます。
+
+<span id="nuxt-2-and-vue-2"></span>
+
+## Nuxt 2 と Vue 2
+
+モジュールは Nuxt 2、3、4 に対応しています。Vize のコンパイラは Vue 3 向けのコードを出力するため、Nuxt 2 では `.vue` のコンパイルを既存のコンパイラ（`@vitejs/plugin-vue2`、`vue-loader`、または Nuxt 自身）に任せ、lint と Musea だけを提供します。さらに古い Vue のプロジェクトでも、`vueVersion: 0.11`、`vueVersion: 1`、`vueVersion: "legacy"` を指定すれば同じように動作します。
+
+バージョンは自動的に検出されます。ラッパーによって Nuxt Kit からバージョンが見えない場合は、明示的に指定してください。
+
+```ts
+export default defineNuxtConfig({
+  modules: ["@vizejs/nuxt"],
+  vize: {
+    compatibility: {
+      nuxtVersion: 2,
+      vueVersion: 2,
+    },
+  },
+});
+```
+
+## Vite プラグインを直接使う
+
+Nuxt は Vite でビルドするので、モジュールを使わずに Vite プラグインを直接登録することもできます。その場合、ここまでに紹介した Nuxt 向けのブリッジや lint 設定の生成は使えません。
+
+```ts
+// nuxt.config.ts
+import vize from "@vizejs/vite-plugin";
+
+export default defineNuxtConfig({
+  vite: {
+    plugins: [vize()],
+  },
+});
+```
+
 ## 仕組み
 
-Nuxt モジュールがインストールされている場合:
+1. **Vite プラグイン**: モジュールが `@vizejs/vite-plugin` を登録し、`.vue` ファイルをコンパイルします。
+2. **Vue プラグインとの互換性**: プラグインは `@vitejs/plugin-vue` と同じ API を公開するので、Nuxt が内部で行う Vue プラグインの確認もそのまま通ります。
+3. **SSR**: サーバー側のビルドも Vize がコンパイルし、クライアントとサーバーの環境変数は分けて扱います。
+4. **Nuxt の変換処理**: 自動インポート、コンポーザブル、ミドルウェアは Nuxt 自身の変換処理が担当します。この処理は、Vize がコンポーネントをコンパイルした後に実行されます。
 
-1.**Vite プラグイン挿入**— モジュールは `@vizejs/vite-plugin` を Vite プラグインとして登録し、`.vue` ファイルのコンパイルをインターセプトします。2.**互換性シム**— プラグインは `@vitejs/plugin-vue` 互換性 API を公開するため、Nuxt の内部チェック (Vue プラグインのプローブ) が正しく機能します。3.**SSR サポート**— Vize の `vize_atelier_ssr` はサーバー側のコンパイルを処理します。このプラグインは、クライアントとサーバーの環境変数を分離して、相互汚染を防ぎます。4.**Nuxt 機能の保持**— 自動インポート、コンポーザブル、ミドルウェア、その他の Nuxt 機能は、Vize のコンパイル後に実行される Nuxt 独自の変換レイヤーを通じて機能します。
+公開されている `@vizejs/nuxt` は、`vize`、`@vizejs/vite-plugin`、`@vizejs/native` などの Vize のパッケージを、すべて同じバージョンに固定しています。
 
-## 実際の例
+## 利用例: Vue Fes Japan 2026
 
-[Vue Fes Japan 2026](https://vuefes.jp/2026) カンファレンス Web サイトでは、Nuxt 4 で Vize を使用しています。
+[Vue Fes Japan 2026](https://vuefes.jp/2026) の Web サイトは、Nuxt 4 でこのモジュールを使っています。
 
 ```ts
 // nuxt.config.ts
@@ -284,11 +342,17 @@ export default defineNuxtConfig({
 });
 ```
 
-この構成では、実稼働ビルド用の Nuxt のデフォルト コンパイラを維持しながら、コンポーネントの開発とドキュメントに Musea を使用します。
+コンポーネントの開発とドキュメントには Musea を使い、本番ビルドは Nuxt 標準のコンパイラのままにしています。
 
-## 注意事項
+## トラブルシューティング
 
-- Vize は現在開発中です - 本番の Nuxt プロジェクトで使用する前に徹底的にテストしてください
-- SSR コンパイルは `vize_atelier_ssr` 経由でサポートされます
-- Nuxt 固有の機能 (自動インポート、コンポーザブル、ミドルウェア) は、Nuxt 独自の変換レイヤーを通じて機能します
-- Nuxt モジュールは Nuxt 2、Nuxt 3、および Nuxt 4 をサポートします。Vize のネイティブ SFC コンパイラーは Vue 3 出力をターゲットとしているため、Nuxt 2 はホスト コンパイラー互換モードを使用します。
+- **pnpm で Pkl の設定を使う**: `@vizejs/nuxt` が依存する `vize` パッケージには、既定の `vize.pkl` が含まれています。pnpm では、このファイルが `node_modules/vize` に置かれないことがあります。Pkl の設定を使う場合は、`vize` を直接インストールしてください。
+
+  ```bash
+  vp install vize
+  ```
+
+- **`lint.configFile` に指定した設定が反映されない**: 設定ファイルは `lint.rootDir`、またはその親ディレクトリに置く必要があります。`.nuxt/` の中に置いた設定には、Oxlint のプロジェクト単位の除外設定が適用されません。
+- **開発時の SSR HTML に含まれるアセットのリンク**: `dev.stylesheetLinks` は、`%40fs/` やエンコードされた `assets/` パスのような、URL エンコードされた正しい Nuxt のアセットリンクを残します。デコードすると null バイトやパストラバーサルを含むリンクは取り除きます。
+
+解決しない場合は、[トラブルシューティング](../guide/troubleshooting.md)を確認するか、[問題を報告](../guide/testing.md)してください。

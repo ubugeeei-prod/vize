@@ -6,8 +6,9 @@ import {
   authenticateJavaScriptSfcSource,
   javascriptSfcSourcePaths,
   javascriptSfcContextPaths,
-  javascriptSfcSourceReader,
 } from "./javascript-sfc-source-context.mjs";
+
+import { starListingLexicalReader } from "./empty-vue-star-listing-source.mjs";
 
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const supplementalHelpers = [
@@ -49,7 +50,7 @@ export function validateNativeLexicalSources(output, metadata, manifest, helpers
     );
   }
   const context = authenticateJavaScriptSfcSource(
-    javascriptSfcSourceReader(path.join(output, "source")),
+    starListingLexicalReader(path.join(output, "source")),
   );
   for (const [file, , expected] of [...manifest.files, ...manifest.corpusBodies])
     assert.equal(digest(context.historicalAfter(file)), expected);
