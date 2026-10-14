@@ -120,6 +120,11 @@ export const portugueseVue0: Record<string, readonly [purpose: string, bad: stri
       "As vinculações usam o modificador .sync removido, inclusive em combinação com .camel.",
       "Use uma vinculação comum unidirecional de title ou v-model:title quando for necessário um canal de atualização.",
     ],
+    "vue/no-deprecated-v-is": [
+      "Proibir a diretiva obsoleta `v-is`",
+      "`v-is` foi descontinuada no Vue 3.1; o exemplo ainda a usa para trocar o componente renderizado.",
+      "O atributo `is` com o prefixo `vue:`, ou `<component :is>`, seleciona o componente em seu lugar.",
+    ],
     "vue/no-deprecated-v-on-native-modifier": [
       "Proibir o modificador obsoleto `.native` em `v-on`",
       "Os manipuladores do componente usam o modificador de evento .native removido.",

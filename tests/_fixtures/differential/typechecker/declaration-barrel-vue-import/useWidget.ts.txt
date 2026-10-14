@@ -1,0 +1,2 @@
+import type { WidgetProps } from '../components/Widget.vue';
+export function useWidget(props: WidgetProps): number { return props.count; }

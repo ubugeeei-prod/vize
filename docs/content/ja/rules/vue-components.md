@@ -29,4 +29,4 @@ title: "コンポーネントと props のルール"
 | [`vue/require-component-is`](https://vizejs.dev/ja/rules/vue-components.html#vue-require-component-is) | [悪い](https://vizejs.dev/ja/rules/vue-components.html#vue-require-component-is-bad) · [良い](https://vizejs.dev/ja/rules/vue-components.html#vue-require-component-is-good) | 動的 component 要素に :is を指定します。 |
 | [`vue/require-component-registration`](https://vizejs.dev/ja/rules/vue-components.html#vue-require-component-registration) | [悪い](https://vizejs.dev/ja/rules/vue-components.html#vue-require-component-registration-bad) · [良い](https://vizejs.dev/ja/rules/vue-components.html#vue-require-component-registration-good) | 使用するコンポーネントを import または登録します。 |
 
-[全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
+[全ルール](./all.md) · [ルールのオプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)

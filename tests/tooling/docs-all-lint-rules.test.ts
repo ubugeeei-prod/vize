@@ -52,7 +52,7 @@ function implementations(directory = "crates/vize_patina/src/rules") {
 
 await test("the generated bilingual reference covers every implemented rule with real example context", () => {
   const names = [...implementations()].sort((a, b) => a.localeCompare(b));
-  assert.equal(names.length, 251);
+  assert.equal(names.length, 255);
   for (const locale of ["", "ja/"]) {
     const index = read(`docs/content/${locale}rules/all.md`);
     const links = [
@@ -256,7 +256,7 @@ await test("all category and cross-file reader routes retain complete current so
 
 await test("all five Vue categories keep every rule and whole Bad/Good source on the current page", () => {
   const names = [...implementations()].filter((name) => name.startsWith("vue/")).sort();
-  assert.equal(names.length, 104);
+  assert.equal(names.length, 108);
   const sources = (markdown: string) =>
     [...markdown.matchAll(/```(\w+)[^\n]*\n([\s\S]*?)\n```/g)].map((match) => [match[1], match[2]]);
   const legacyAnchors: Record<string, readonly string[]> = {

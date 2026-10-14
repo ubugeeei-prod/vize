@@ -489,8 +489,16 @@
       "status": "mapped"
     },
     "vue/no-deprecated-v-is": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "vue/no-deprecated-v-is",
+      "patinaSeverity": "error",
+      "status": "mapped"
     },
     "vue/no-deprecated-v-on-native-modifier": {
       "patinaPresets": [
@@ -1607,8 +1615,16 @@
       "status": "mapped"
     },
     "vue/valid-v-else-if": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "vue/valid-v-else-if",
+      "patinaSeverity": "error",
+      "status": "mapped"
     },
     "vue/valid-v-for": {
       "patinaPresets": [
@@ -1647,8 +1663,16 @@
       "status": "mapped"
     },
     "vue/valid-v-is": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "vue/valid-v-is",
+      "patinaSeverity": "error",
+      "status": "mapped"
     },
     "vue/valid-v-memo": {
       "patinaPresets": [
@@ -1699,8 +1723,16 @@
       "status": "mapped"
     },
     "vue/valid-v-pre": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "vue/valid-v-pre",
+      "patinaSeverity": "error",
+      "status": "mapped"
     },
     "vue/valid-v-show": {
       "patinaPresets": [
@@ -1742,8 +1774,8 @@
   "schemaVersion": 1,
   "summary": {
     "intentionalDivergence": 2,
-    "mapped": 123,
-    "unimplemented": 127
+    "mapped": 127,
+    "unimplemented": 123
   },
   "upstream": {
     "package": "eslint-plugin-vue",

@@ -35,6 +35,7 @@ mod slot_outlet_props;
 pub(crate) use slot_outlet_props::has_inferred_slots;
 mod slot_scope;
 mod vif_guard;
+mod vif_guard_chain;
 
 pub(crate) use closures::generate_scope_closures;
 pub(crate) use component_events::emit_event_inference_helpers;
@@ -49,3 +50,4 @@ pub(crate) use ref_instances::{REF_INSTANCE_HELPERS, REFS_RETURN_KEY, instantiat
 pub(crate) use slot_scope::emit_slot_payload_helpers;
 pub(crate) use vif_guard::append_ignored_vif_guard_open;
 pub(crate) use vif_guard::remove_enclosing_vif_guard_prefix;
+pub(crate) use vif_guard_chain::{append_chained_vif_guard_close, append_chained_vif_guard_open};

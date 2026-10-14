@@ -4167,6 +4167,26 @@ vue/no-deprecated-v-bind-sync · lint 规则
 
 帮助:
   Vue 3 移除了 .sync 修饰符，并将其双向绑定并入带参数的 v-model。请改用 v-model:<prop>（例如 :title.sync="title" → v-model:title="title"）。
+=== vue/no-deprecated-v-is
+vue/no-deprecated-v-is · lint 规则
+禁止使用已废弃的v-is指令
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <tr v-is="'MyRow'"></tr>
+
+正确示例:
+  <tr is="vue:MyRow"></tr>
+  <component :is="MyRow" />
+
+帮助:
+  请改用带vue:前缀的is属性，例如is="vue:MyComponent"
 === vue/no-deprecated-v-on-native-modifier
 vue/no-deprecated-v-on-native-modifier · lint 规则
 禁止在 `v-on` 上使用已弃用的 `.native` 修饰符
@@ -5749,6 +5769,29 @@ vue/valid-v-else · lint 规则
   - v-else不需要表达式
   - 必须紧跟在v-if或v-else-if之后
   - 它们之间不能有其他元素
+=== vue/valid-v-else-if
+vue/valid-v-else-if · lint 规则
+强制有效的v-else-if指令
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div v-else-if="foo"></div> <!-- without preceding v-if -->
+  <div v-if="foo"></div><div v-else-if></div>
+  <div v-if="foo"></div><div v-else-if:arg="bar"></div>
+  <div v-if="foo"></div><div v-else-if.mod="bar"></div>
+
+正确示例:
+  <div v-if="foo"></div>
+  <div v-else-if="bar"></div>
+
+帮助:
+  请将v-else-if紧跟在v-if或v-else-if元素之后，并且只提供条件表达式
 === vue/valid-v-for
 vue/valid-v-for · lint 规则
 强制有效的v-for指令
@@ -5827,6 +5870,28 @@ vue/valid-v-if · lint 规则
     <div v-if="isVisible">内容</div>
     <div v-if="items.length > 0">有项目</div>
   注意: 频繁切换使用v-show（性能更好），很少改变的条件使用v-if。
+=== vue/valid-v-is
+vue/valid-v-is · lint 规则
+强制有效的v-is指令
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <tr v-is:arg="'MyRow'"></tr>
+  <tr v-is.mod="'MyRow'"></tr>
+  <tr v-is></tr>
+  <MyComponent v-is="'MyRow'" />
+
+正确示例:
+  <tr v-is="'MyRow'"></tr>
+
+帮助:
+  请在原生HTML元素上使用带值的v-is，不要添加参数或修饰符
 === vue/valid-v-memo
 vue/valid-v-memo · lint 规则
 强制有效的v-memo指令
@@ -5931,6 +5996,27 @@ vue/valid-v-once · lint 规则
 
 帮助:
   请从v-once指令中移除值、参数或修饰符
+=== vue/valid-v-pre
+vue/valid-v-pre · lint 规则
+强制有效的v-pre指令
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div v-pre:arg></div>
+  <div v-pre.mod></div>
+  <div v-pre="foo"></div>
+
+正确示例:
+  <div v-pre>{{ raw }}</div>
+
+帮助:
+  请从v-pre指令中移除参数、修饰符或值
 === vue/valid-v-show
 vue/valid-v-show · lint 规则
 强制有效的v-show指令

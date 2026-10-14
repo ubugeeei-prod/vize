@@ -27,4 +27,4 @@ title: "ディレクティブの構文と配置"
 | [`vue/valid-v-show`](https://vizejs.dev/ja/rules/vue-directive-validity.html#vue-valid-v-show) | [悪い](https://vizejs.dev/ja/rules/vue-directive-validity.html#vue-valid-v-show-bad) · [良い](https://vizejs.dev/ja/rules/vue-directive-validity.html#vue-valid-v-show-good) | v-show に有効な条件式を指定します。 |
 | [`vue/valid-v-slot`](https://vizejs.dev/ja/rules/vue-directive-validity.html#vue-valid-v-slot) | [悪い](https://vizejs.dev/ja/rules/vue-directive-validity.html#vue-valid-v-slot-bad) · [良い](https://vizejs.dev/ja/rules/vue-directive-validity.html#vue-valid-v-slot-good) | v-slot の適用先・宣言・修飾子を検査します。 |
 
-[全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
+[全ルール](./all.md) · [ルールのオプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)

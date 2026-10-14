@@ -2,10 +2,6 @@
 //!
 //! Provides JavaScript/Node.js bindings for the Fresco terminal UI framework.
 
-#[expect(
-    clippy::disallowed_macros,
-    reason = "the N-API boundary exchanges std strings with napi-rs and its derives"
-)]
 mod frame_output;
 #[expect(
     clippy::disallowed_macros,
@@ -39,7 +35,6 @@ mod render_tests;
 )]
 mod terminal;
 #[expect(
-    clippy::disallowed_macros,
     clippy::disallowed_types,
     reason = "the N-API boundary exchanges std strings with napi-rs and its derives"
 )]

@@ -82,7 +82,7 @@ title: "ファイル間ルール"
 | [`vize:croquis/cf/watcher-outside-setup`](#vize-croquis-cf-watcher-outside-setup) | [悪い](#vize-croquis-cf-watcher-outside-setup-bad) · [良い](#vize-croquis-cf-watcher-outside-setup-good) | `watch` または `watchEffect` が `setup` の外で呼ばれています。 | 契約（現在の生成元なし） |
 | [`vue/cross-file-attrs-fallthrough`](#vue-cross-file-attrs-fallthrough) | [悪い](#vue-cross-file-attrs-fallthrough-bad) · [良い](#vue-cross-file-attrs-fallthrough-good) | 属性を渡す親と、属性を自動継承できず $attrs も使っていない子コンポーネントの関係を検査します。 | プロジェクト固有の lint ID |
 
-[全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
+[全ルール](./all.md) · [ルールのオプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
 
 ### `ecosystem/vue-router-extra-param`
 

@@ -112,7 +112,12 @@ impl<'a> Emitter<'a, '_> {
             sources.push(MergedPropsSource::Group(group));
         }
         self.effect(
-            OperationNode::SetMergedProps(SetMergedPropsIRNode { element, sources }),
+            // The native lane admits HTML elements only.
+            OperationNode::SetMergedProps(SetMergedPropsIRNode {
+                element,
+                sources,
+                namespace: vize_atelier_core::Namespace::Html,
+            }),
             block,
         );
     }

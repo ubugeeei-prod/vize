@@ -119,6 +119,11 @@ export const frenchVue0 = {
     "Les liaisons utilisent le modificateur .sync supprimé, y compris en combinaison avec .camel.",
     "Utilisez une liaison title ordinaire à sens unique, ou v-model:title lorsqu’un canal de mise à jour est nécessaire.",
   ],
+  "vue/no-deprecated-v-is": [
+    "Interdire la directive obsolète `v-is`",
+    "`v-is` est obsolète depuis Vue 3.1 ; l’exemple l’utilise encore pour changer le composant affiché.",
+    "L’attribut `is` avec le préfixe `vue:`, ou `<component :is>`, sélectionne le composant à la place.",
+  ],
   "vue/no-deprecated-v-on-native-modifier": [
     "Interdire le modificateur obsolète `.native` sur `v-on`",
     "Les gestionnaires du composant utilisent le modificateur d’événement .native supprimé.",

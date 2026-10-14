@@ -63,7 +63,7 @@ export function generateRulePages({
         : "With Vite+, import `defineConfig` from `@vizejs/vite-plugin/vite-plus`, configure `lint.vize.rules`, and run `vp run lint` for Vize and Oxlint diagnostics.",
       "",
       ja
-        ? "既定の重大度は実装で定められた値です。プロジェクトでは `off` / `warn` / `error` に変更できます。オプションは[ルール オプション](./options.md)、複数ファイルの検査は[ファイル間ルール](./cross-file.md)を参照してください。"
+        ? "既定の重大度は実装で定められた値です。プロジェクトでは `off` / `warn` / `error` に変更できます。オプションは[ルールのオプション](./options.md)、複数ファイルの検査は[ファイル間ルール](./cross-file.md)を参照してください。"
         : "Severity is the implementation default; override it with `off`, `warn`, or `error`. See [Rule Options](./options.md) for rule-option support and [Cross-file rules](./cross-file.md) for project-graph findings.",
       "",
       ja

@@ -45,7 +45,6 @@ await test("the full Rust differential tail starts beside the producer and stays
     "dtolnay/rust-toolchain@",
     "wild-linker/action@",
     "voidzero-dev/setup-vp@",
-    "./.github/actions/setup-rust-sticky-cache",
     "./.github/actions/setup-rust-script",
   ];
   for (const prefix of sameTools) {
@@ -54,6 +53,33 @@ await test("the full Rust differential tail starts beside the producer and stays
     assert.equal(actual.uses, original.uses);
     assert.deepEqual(actual.with, original.with);
   }
+  // Each job mounts the disk a main push seeds with its own Cargo profile: the
+  // producer the ci-profile workspace build, the tail the dev-profile feature builds.
+  const disk = (steps) =>
+    steps.find((step) => step.uses === "./.github/actions/setup-rust-sticky-cache").with.key;
+  assert.equal(disk(producer), "nextest-ci");
+  assert.equal(disk(job.steps), "clippy-test");
+  const seed = workflow(".github/workflows/rust-pr-target-seed.yml");
+  assert.equal(seed.concurrency["cancel-in-progress"], false);
+  assert.equal(disk(seed.jobs["rust-pr-target-seed"].steps), "nextest-ci");
+  assert.equal(disk(seed.jobs["rust-differential-target-seed"].steps), "clippy-test");
+  assert.deepEqual(seed.jobs["rust-differential-target-seed"].env, job.env);
+  const seeded = seed.jobs["rust-pr-target-seed"].steps.map((step) => step.run ?? "").join("\n");
+  for (const command of [
+    "cargo clippy --workspace --profile ci -- -D warnings -D clippy::wildcard_imports",
+    "cargo test --workspace --profile ci --no-run",
+  ])
+    assert(seeded.includes(command), command);
+  assert(
+    producer.some(
+      (step) =>
+        step.run ===
+        "cargo clippy --workspace --profile ci -- -D warnings -D clippy::wildcard_imports",
+    ),
+  );
+  const seedTail = seed.jobs["rust-differential-target-seed"].steps.at(-1);
+  assert.equal(seedTail.uses, `./${recipePath}`);
+  assert.equal(seedTail.with["workspace-already-tested"], "true");
   // No step moves or extracts the multi-GB producer archive the tail never executes.
   assert(!job.steps.some((step) => step.uses?.startsWith("actions/download-artifact@")));
   assert(!job.steps.some((step) => /nextest|rust-test-archive/.test(step.run ?? "")));

@@ -45,6 +45,27 @@ test("GitHub API GETs retry transient responses but mutations do not", async () 
   assert.equal(calls, 1);
 });
 
+test("GitHub API GETs back off across a minute-scale outage before giving up", async () => {
+  let calls = 0;
+  const waits: number[] = [];
+  const flaky = (failures: number) => async () => {
+    calls += 1;
+    return calls <= failures
+      ? new Response("bad gateway", { status: 502 })
+      : new Response("{}", { status: 200 });
+  };
+  const sleep = async (milliseconds: number) => {
+    waits.push(milliseconds);
+  };
+  const response = await githubApiRequest({ ...requestBase, fetchImpl: flaky(5), sleep });
+  assert.equal(response.body, "{}");
+  assert.deepEqual(waits, [1_000, 2_000, 4_000, 8_000, 16_000]);
+
+  calls = 0;
+  await assert.rejects(githubApiRequest({ ...requestBase, fetchImpl: flaky(6), sleep }), /502/);
+  assert.equal(calls, 6);
+});
+
 test("GitHub API request timeout covers both headers and response body", async () => {
   await assert.rejects(
     githubApiRequest({

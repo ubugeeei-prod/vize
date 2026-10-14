@@ -152,10 +152,10 @@ tempfile = "=3.27.0"
 napi = { version = "=3.14.2", default-features = false, features = ["napi8", "serde-json"] }
 napi-derive = "=3.6.12"
 napi-build = "=2.6.0"
-wasm-bindgen = "=0.2.127"
+wasm-bindgen = "=0.2.129"
 serde-wasm-bindgen = "=0.6.5"
-js-sys = "=0.3.104"
-web-sys = { version = "=0.3.104", features = ["console"] }
+js-sys = "=0.3.106"
+web-sys = { version = "=0.3.106", features = ["console"] }
 getrandom = { version = "=0.3.4", features = ["wasm_js"] }
 
 # Proc-macro toolkit (host build dependencies; versions match the lockfile)

@@ -1,0 +1,7 @@
+<script lang="ts">
+export type ToggleEvent<T> = CustomEvent<{ value?: T }>;
+</script>
+<script setup lang="ts" generic="T extends Record<string, any>">
+defineProps<{ value: T; level: number }>();
+defineEmits<{ toggle: [event: ToggleEvent<T>] }>();
+</script>

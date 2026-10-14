@@ -1,0 +1,2 @@
+import type { AbsentProps } from '../components/Absent.vue';
+export type Missing = AbsentProps;

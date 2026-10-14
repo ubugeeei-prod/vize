@@ -273,6 +273,7 @@ title: "全部规则"
 | [`vue/no-deprecated-slot-attribute`](#vue-no-deprecated-slot-attribute) | [错误示例](#vue-no-deprecated-slot-attribute-bad) · [正确示例](#vue-no-deprecated-slot-attribute-good) | 禁止使用已弃用的 `slot` 属性 |
 | [`vue/no-deprecated-slot-scope-attribute`](#vue-no-deprecated-slot-scope-attribute) | [错误示例](#vue-no-deprecated-slot-scope-attribute-bad) · [正确示例](#vue-no-deprecated-slot-scope-attribute-good) | 禁止使用已弃用的 `slot-scope` 属性 |
 | [`vue/no-deprecated-v-bind-sync`](#vue-no-deprecated-v-bind-sync) | [错误示例](#vue-no-deprecated-v-bind-sync-bad) · [正确示例](#vue-no-deprecated-v-bind-sync-good) | 禁止在 `v-bind` 上使用已弃用的 `.sync` 修饰符 |
+| [`vue/no-deprecated-v-is`](#vue-no-deprecated-v-is) | [错误示例](#vue-no-deprecated-v-is-bad) · [正确示例](#vue-no-deprecated-v-is-good) | 禁止使用已废弃的 `v-is` 指令 |
 | [`vue/no-deprecated-v-on-native-modifier`](#vue-no-deprecated-v-on-native-modifier) | [错误示例](#vue-no-deprecated-v-on-native-modifier-bad) · [正确示例](#vue-no-deprecated-v-on-native-modifier-good) | 禁止在 `v-on` 上使用已弃用的 `.native` 修饰符 |
 | [`vue/no-deprecated-v-on-number-modifiers`](#vue-no-deprecated-v-on-number-modifiers) | [错误示例](#vue-no-deprecated-v-on-number-modifiers-bad) · [正确示例](#vue-no-deprecated-v-on-number-modifiers-good) | 禁止在 `v-on` 上使用已弃用的数字 `keyCode` 修饰符 |
 | [`vue/no-dupe-v-else-if`](#vue-no-dupe-v-else-if) | [错误示例](#vue-no-dupe-v-else-if-bad) · [正确示例](#vue-no-dupe-v-else-if-good) | 禁止在 `v-if` / `v-else-if` 链中使用重复条件 |
@@ -341,13 +342,16 @@ title: "全部规则"
 | [`vue/valid-v-bind`](#vue-valid-v-bind) | [错误示例](#vue-valid-v-bind-bad) · [正确示例](#vue-valid-v-bind-good) | 要求 `v-bind` 指令有效 |
 | [`vue/valid-v-cloak`](#vue-valid-v-cloak) | [错误示例](#vue-valid-v-cloak-bad) · [正确示例](#vue-valid-v-cloak-good) | 要求 `v-cloak` 指令有效 |
 | [`vue/valid-v-else`](#vue-valid-v-else) | [错误示例](#vue-valid-v-else-bad) · [正确示例](#vue-valid-v-else-good) | 要求 `v-else` 指令有效 |
+| [`vue/valid-v-else-if`](#vue-valid-v-else-if) | [错误示例](#vue-valid-v-else-if-bad) · [正确示例](#vue-valid-v-else-if-good) | 要求 `v-else-if` 指令有效 |
 | [`vue/valid-v-for`](#vue-valid-v-for) | [错误示例](#vue-valid-v-for-bad) · [正确示例](#vue-valid-v-for-good) | 要求 `v-for` 指令有效 |
 | [`vue/valid-v-html`](#vue-valid-v-html) | [错误示例](#vue-valid-v-html-bad) · [正确示例](#vue-valid-v-html-good) | 要求 `v-html` 指令有效 |
 | [`vue/valid-v-if`](#vue-valid-v-if) | [错误示例](#vue-valid-v-if-bad) · [正确示例](#vue-valid-v-if-good) | 要求 `v-if` 指令有效 |
+| [`vue/valid-v-is`](#vue-valid-v-is) | [错误示例](#vue-valid-v-is-bad) · [正确示例](#vue-valid-v-is-good) | 要求 `v-is` 指令有效 |
 | [`vue/valid-v-memo`](#vue-valid-v-memo) | [错误示例](#vue-valid-v-memo-bad) · [正确示例](#vue-valid-v-memo-good) | 要求 `v-memo` 指令有效 |
 | [`vue/valid-v-model`](#vue-valid-v-model) | [错误示例](#vue-valid-v-model-bad) · [正确示例](#vue-valid-v-model-good) | 要求 `v-model` 指令有效 |
 | [`vue/valid-v-on`](#vue-valid-v-on) | [错误示例](#vue-valid-v-on-bad) · [正确示例](#vue-valid-v-on-good) | 要求 `v-on` 指令有效 |
 | [`vue/valid-v-once`](#vue-valid-v-once) | [错误示例](#vue-valid-v-once-bad) · [正确示例](#vue-valid-v-once-good) | 要求 `v-once` 指令有效 |
+| [`vue/valid-v-pre`](#vue-valid-v-pre) | [错误示例](#vue-valid-v-pre-bad) · [正确示例](#vue-valid-v-pre-good) | 要求 `v-pre` 指令有效 |
 | [`vue/valid-v-show`](#vue-valid-v-show) | [错误示例](#vue-valid-v-show-bad) · [正确示例](#vue-valid-v-show-good) | 要求 `v-show` 指令有效 |
 | [`vue/valid-v-slot`](#vue-valid-v-slot) | [错误示例](#vue-valid-v-slot-bad) · [正确示例](#vue-valid-v-slot-good) | 要求 `v-slot` 指令有效 |
 | [`vue/valid-v-text`](#vue-valid-v-text) | [错误示例](#vue-valid-v-text-bad) · [正确示例](#vue-valid-v-text-good) | 要求 `v-text` 指令有效 |
@@ -3674,6 +3678,20 @@ setup 上下文被以 Vue 不允许的方式使用。
 
 [分组示例](./vue.md#vue-no-deprecated-v-bind-sync) · [规则参考](/rules/reference/vue-no-deprecated-v-bind-sync.md)
 
+### `vue/no-deprecated-v-is`
+
+禁止使用已废弃的 `v-is` 指令
+
+<span id="vue-no-deprecated-v-is-bad"></span>
+
+[错误示例](./vue.md#vue-no-deprecated-v-is-bad)
+
+<span id="vue-no-deprecated-v-is-good"></span>
+
+[正确示例](./vue.md#vue-no-deprecated-v-is-good)
+
+[分组示例](./vue.md#vue-no-deprecated-v-is) · [规则参考](/rules/reference/vue-no-deprecated-v-is.md)
+
 ### `vue/no-deprecated-v-on-native-modifier`
 
 禁止在 `v-on` 上使用已弃用的 `.native` 修饰符
@@ -4626,6 +4644,20 @@ setup 上下文被以 Vue 不允许的方式使用。
 
 [分组示例](./vue.md#vue-valid-v-else) · [规则参考](/rules/reference/vue-valid-v-else.md)
 
+### `vue/valid-v-else-if`
+
+要求 `v-else-if` 指令有效
+
+<span id="vue-valid-v-else-if-bad"></span>
+
+[错误示例](./vue.md#vue-valid-v-else-if-bad)
+
+<span id="vue-valid-v-else-if-good"></span>
+
+[正确示例](./vue.md#vue-valid-v-else-if-good)
+
+[分组示例](./vue.md#vue-valid-v-else-if) · [规则参考](/rules/reference/vue-valid-v-else-if.md)
+
 ### `vue/valid-v-for`
 
 要求 `v-for` 指令有效
@@ -4667,6 +4699,20 @@ setup 上下文被以 Vue 不允许的方式使用。
 [正确示例](./vue.md#vue-valid-v-if-good)
 
 [分组示例](./vue.md#vue-valid-v-if) · [规则参考](/rules/reference/vue-valid-v-if.md)
+
+### `vue/valid-v-is`
+
+要求 `v-is` 指令有效
+
+<span id="vue-valid-v-is-bad"></span>
+
+[错误示例](./vue.md#vue-valid-v-is-bad)
+
+<span id="vue-valid-v-is-good"></span>
+
+[正确示例](./vue.md#vue-valid-v-is-good)
+
+[分组示例](./vue.md#vue-valid-v-is) · [规则参考](/rules/reference/vue-valid-v-is.md)
 
 ### `vue/valid-v-memo`
 
@@ -4723,6 +4769,20 @@ setup 上下文被以 Vue 不允许的方式使用。
 [正确示例](./vue.md#vue-valid-v-once-good)
 
 [分组示例](./vue.md#vue-valid-v-once) · [规则参考](/rules/reference/vue-valid-v-once.md)
+
+### `vue/valid-v-pre`
+
+要求 `v-pre` 指令有效
+
+<span id="vue-valid-v-pre-bad"></span>
+
+[错误示例](./vue.md#vue-valid-v-pre-bad)
+
+<span id="vue-valid-v-pre-good"></span>
+
+[正确示例](./vue.md#vue-valid-v-pre-good)
+
+[分组示例](./vue.md#vue-valid-v-pre) · [规则参考](/rules/reference/vue-valid-v-pre.md)
 
 ### `vue/valid-v-show`
 

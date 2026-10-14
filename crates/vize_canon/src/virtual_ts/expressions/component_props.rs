@@ -6,7 +6,9 @@
 //! validate the values and infer generics across the component boundary.
 
 use super::super::helpers::to_safe_identifier_fragment;
-use super::super::scope::append_ignored_vif_guard_open;
+use super::super::scope::{
+    append_chained_vif_guard_close, append_chained_vif_guard_open, append_ignored_vif_guard_open,
+};
 use super::super::types::{VizeMapping, VizeSubSpan};
 use super::prop_sources::{
     PropSpan, append_prop_value, generated_prop_span, generated_prop_span_preserving_comments,
@@ -208,7 +210,7 @@ pub(crate) fn generate_component_prop_checks(
             };
 
             if !grouped_guard && let Some(ref guard) = usage.vif_guard {
-                append_ignored_vif_guard_open(ts, indent, guard, "Inference-only guard");
+                append_chained_vif_guard_open(ts, indent, guard, "Inference-only guard");
             }
 
             // A repeated attribute name (static class next to :class) still
@@ -302,7 +304,7 @@ pub(crate) fn generate_component_prop_checks(
             }
 
             if !grouped_guard && usage.vif_guard.is_some() {
-                append!(*ts, "{indent}}}\n");
+                append_chained_vif_guard_close(ts, indent);
             }
         }
     }

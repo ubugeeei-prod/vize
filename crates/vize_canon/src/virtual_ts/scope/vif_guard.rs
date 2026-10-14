@@ -133,7 +133,7 @@ fn trim_v_for_alias_guard_prefix(guard: String, data: &VForScopeData) -> Option<
     (!outside_terms.is_empty()).then(|| String::from(outside_terms.join(" && ").as_str()))
 }
 
-fn split_guard_terms(guard: &str) -> Vec<&str> {
+pub(super) fn split_guard_terms(guard: &str) -> Vec<&str> {
     let bytes = guard.as_bytes();
     let mut terms = Vec::new();
     let mut depth = 0i32;

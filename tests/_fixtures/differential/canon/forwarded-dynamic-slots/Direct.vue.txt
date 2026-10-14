@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Inner from "./Inner.vue";
+</script>
+
+<template>
+  <Inner>
+    <template #option="payload">{{ payload.option.label }}{{ payload.missing }}</template>
+  </Inner>
+</template>

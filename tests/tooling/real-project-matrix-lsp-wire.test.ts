@@ -55,6 +55,13 @@ test("passive native LSP capture retains the complete original Matrix workflow",
       "retention-days": 30,
     },
   });
+  const corpus = current.jobs["davinci-dom-corpus"];
+  assert.deepEqual(corpus.permissions, {
+    contents: "read",
+    actions: "read",
+    checks: "read",
+  });
+  corpus.permissions = original.jobs["davinci-dom-corpus"].permissions;
   // The release-gated title is the only other change: it names the exact
   // release dispatch beside the original enforced and observational titles.
   assert.match(

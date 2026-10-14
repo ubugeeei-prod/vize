@@ -8,13 +8,13 @@ title: 全 lint ルール
 
 Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lint.vize.rules` に指定します。`vp run lint` で Vize と Oxlint の lint を実行します。
 
-既定の重大度は実装で定められた値です。プロジェクトでは `off` / `warn` / `error` に変更できます。オプションは[ルール オプション](./options.md)、複数ファイルの検査は[ファイル間ルール](./cross-file.md)を参照してください。
+既定の重大度は実装で定められた値です。プロジェクトでは `off` / `warn` / `error` に変更できます。オプションは[ルールのオプション](./options.md)、複数ファイルの検査は[ファイル間ルール](./cross-file.md)を参照してください。
 
 プリセットが `_none_` のルールは明示的な有効化または追加の設定が必要です。
 
 [ESLint からのルール移行対応表](./migration.md)で対応名と未実装の範囲を確認できます。
 
-## 単一ファイルのルール (251)
+## 単一ファイルのルール (255)
 
 | ルール | 例 | 重大度 | プリセット | 自動修正 | オプション | 実装 | 目的 | カテゴリ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -32,6 +32,7 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 | [`vue/no-deprecated-slot-attribute`](#vue-no-deprecated-slot-attribute) | [悪い例](#vue-no-deprecated-slot-attribute-bad) · [良い例](#vue-no-deprecated-slot-attribute-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs#L39) | 削除済みの slot 属性を検出します。 | Essential |
 | [`vue/no-deprecated-slot-scope-attribute`](#vue-no-deprecated-slot-scope-attribute) | [悪い例](#vue-no-deprecated-slot-scope-attribute-bad) · [良い例](#vue-no-deprecated-slot-scope-attribute-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_scope_attribute.rs#L33) | 削除済みの slot-scope 属性を検出します。 | Essential |
 | [`vue/no-deprecated-v-bind-sync`](#vue-no-deprecated-v-bind-sync) | [悪い例](#vue-no-deprecated-v-bind-sync-bad) · [良い例](#vue-no-deprecated-v-bind-sync-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_bind_sync.rs#L42) | 削除済みの v-bind の .sync 修飾子を検出します。 | Essential |
+| [`vue/no-deprecated-v-is`](#vue-no-deprecated-v-is) | [悪い例](#vue-no-deprecated-v-is-bad) · [良い例](#vue-no-deprecated-v-is-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_is.rs#L27) | 非推奨の v-is ディレクティブを検出します。 | Essential |
 | [`vue/no-deprecated-v-on-native-modifier`](#vue-no-deprecated-v-on-native-modifier) | [悪い例](#vue-no-deprecated-v-on-native-modifier-bad) · [良い例](#vue-no-deprecated-v-on-native-modifier-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_on_native_modifier.rs#L43) | 削除済みの v-on の .native 修飾子を検出します。 | Essential |
 | [`vue/no-deprecated-v-on-number-modifiers`](#vue-no-deprecated-v-on-number-modifiers) | [悪い例](#vue-no-deprecated-v-on-number-modifiers-bad) · [良い例](#vue-no-deprecated-v-on-number-modifiers-good) | `error` | `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_on_number_modifiers.rs#L43) | v-on の削除済みの数値 keyCode 修飾子を検出します。 | Essential |
 | [`vue/no-dupe-v-else-if`](#vue-no-dupe-v-else-if) | [悪い例](#vue-no-dupe-v-else-if-bad) · [良い例](#vue-no-dupe-v-else-if-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_dupe_v_else_if.rs#L34) | v-if / v-else-if の条件重複を検出します。 | Essential |
@@ -57,14 +58,17 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 | [`vue/valid-template-root`](#vue-valid-template-root) | [悪い例](#vue-valid-template-root-bad) · [良い例](#vue-valid-template-root-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_template_root.rs#L82) | Vue 3 のフラグメントに対応する有効なテンプレートルートを検査します。 | Essential |
 | [`vue/valid-v-bind`](#vue-valid-v-bind) | [悪い例](#vue-valid-v-bind-bad) · [良い例](#vue-valid-v-bind-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_bind.rs#L30) | v-bind の引数・値・修飾子を検査します。 | Essential |
 | [`vue/valid-v-cloak`](#vue-valid-v-cloak) | [悪い例](#vue-valid-v-cloak-bad) · [良い例](#vue-valid-v-cloak-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_cloak.rs#L27) | v-cloak の引数・値・修飾子を検査します。 | Essential |
-| [`vue/valid-v-else`](#vue-valid-v-else) | [悪い例](#vue-valid-v-else-bad) · [良い例](#vue-valid-v-else-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | あり | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_else.rs#L32) | v-else の位置・引数・値を検査します。 | Essential |
+| [`vue/valid-v-else`](#vue-valid-v-else) | [悪い例](#vue-valid-v-else-bad) · [良い例](#vue-valid-v-else-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | あり | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_else.rs#L31) | v-else の位置・引数・値を検査します。 | Essential |
+| [`vue/valid-v-else-if`](#vue-valid-v-else-if) | [悪い例](#vue-valid-v-else-if-bad) · [良い例](#vue-valid-v-else-if-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_else_if.rs#L34) | v-else-if の位置・引数・値を検査します。 | Essential |
 | [`vue/valid-v-for`](#vue-valid-v-for) | [悪い例](#vue-valid-v-for-bad) · [良い例](#vue-valid-v-for-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_for.rs#L39) | v-for の式と変数宣言を検査します。 | Essential |
 | [`vue/valid-v-html`](#vue-valid-v-html) | [悪い例](#vue-valid-v-html-bad) · [良い例](#vue-valid-v-html-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_html.rs#L28) | v-html の値・引数・修飾子を検査します。 | Essential |
 | [`vue/valid-v-if`](#vue-valid-v-if) | [悪い例](#vue-valid-v-if-bad) · [良い例](#vue-valid-v-if-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_if.rs#L29) | v-if に有効な条件式を指定します。 | Essential |
+| [`vue/valid-v-is`](#vue-valid-v-is) | [悪い例](#vue-valid-v-is-bad) · [良い例](#vue-valid-v-is-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_is.rs#L30) | v-is の適用先・引数・値を検査します。 | Essential |
 | [`vue/valid-v-memo`](#vue-valid-v-memo) | [悪い例](#vue-valid-v-memo-bad) · [良い例](#vue-valid-v-memo-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_memo.rs#L27) | v-memo の値を配列の式にします。 | Essential |
 | [`vue/valid-v-model`](#vue-valid-v-model) | [悪い例](#vue-valid-v-model-bad) · [良い例](#vue-valid-v-model-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_model.rs#L36) | v-model の値・引数・修飾子を検査します。 | Essential |
 | [`vue/valid-v-on`](#vue-valid-v-on) | [悪い例](#vue-valid-v-on-bad) · [良い例](#vue-valid-v-on-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_on.rs#L30) | v-on のイベント名・式・修飾子を検査します。 | Essential |
 | [`vue/valid-v-once`](#vue-valid-v-once) | [悪い例](#vue-valid-v-once-bad) · [良い例](#vue-valid-v-once-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_once.rs#L27) | v-once の引数・値・修飾子を検査します。 | Essential |
+| [`vue/valid-v-pre`](#vue-valid-v-pre) | [悪い例](#vue-valid-v-pre-bad) · [良い例](#vue-valid-v-pre-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_pre.rs#L30) | v-pre の引数・値・修飾子を検査します。 | Essential |
 | [`vue/valid-v-show`](#vue-valid-v-show) | [悪い例](#vue-valid-v-show-bad) · [良い例](#vue-valid-v-show-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_show.rs#L28) | v-show に有効な条件式を指定します。 | Essential |
 | [`vue/valid-v-slot`](#vue-valid-v-slot) | [悪い例](#vue-valid-v-slot-bad) · [良い例](#vue-valid-v-slot-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | [`ruleOptions`](./options.md) | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_slot.rs#L29) | v-slot の適用先・宣言・修飾子を検査します。 | Essential |
 | [`vue/valid-v-text`](#vue-valid-v-text) | [悪い例](#vue-valid-v-text-bad) · [良い例](#vue-valid-v-text-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_text.rs#L27) | v-text の値・引数・修飾子を検査します。 | Essential |
@@ -274,7 +278,7 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 
 ## プロジェクトのルールと解析器の診断契約 (66)
 
-以下の項目は、上の 251 件の単一ファイルのルールを補足します。それぞれの例には、コンポーネントやプロジェクトの構成、または参照を追跡するグラフの具体的な条件が含まれます。CLI の検査、実験的なライブラリーの生成元、生成元のない診断契約では対応範囲が異なります。[ファイル間検査の概要](./cross-file.md)を確認してください。
+以下の項目は、上の 255 件の単一ファイルのルールを補足します。それぞれの例には、コンポーネントやプロジェクトの構成、または参照を追跡するグラフの具体的な条件が含まれます。CLI の検査、実験的なライブラリーの生成元、生成元のない診断契約では対応範囲が異なります。[ファイル間検査の概要](./cross-file.md)を確認してください。
 
 | ルール / コード | 例 | 現在の対応 |
 | --- | --- | --- |
@@ -542,6 +546,20 @@ template の削除済み scope 属性を検出します。
 [良い](./vue.md#vue-no-deprecated-v-bind-sync-good)
 
 [カテゴリの例](./vue.md#vue-no-deprecated-v-bind-sync) · [ルール参照](./reference/vue-no-deprecated-v-bind-sync.md)
+
+### `vue/no-deprecated-v-is`
+
+非推奨の v-is ディレクティブを検出します。
+
+<span id="vue-no-deprecated-v-is-bad"></span>
+
+[悪い](./vue.md#vue-no-deprecated-v-is-bad)
+
+<span id="vue-no-deprecated-v-is-good"></span>
+
+[良い](./vue.md#vue-no-deprecated-v-is-good)
+
+[カテゴリの例](./vue.md#vue-no-deprecated-v-is) · [ルール参照](./reference/vue-no-deprecated-v-is.md)
 
 ### `vue/no-deprecated-v-on-native-modifier`
 
@@ -907,6 +925,20 @@ v-else の位置・引数・値を検査します。
 
 [カテゴリの例](./vue.md#vue-valid-v-else) · [ルール参照](./reference/vue-valid-v-else.md)
 
+### `vue/valid-v-else-if`
+
+v-else-if の位置・引数・値を検査します。
+
+<span id="vue-valid-v-else-if-bad"></span>
+
+[悪い](./vue.md#vue-valid-v-else-if-bad)
+
+<span id="vue-valid-v-else-if-good"></span>
+
+[良い](./vue.md#vue-valid-v-else-if-good)
+
+[カテゴリの例](./vue.md#vue-valid-v-else-if) · [ルール参照](./reference/vue-valid-v-else-if.md)
+
 ### `vue/valid-v-for`
 
 v-for の式と変数宣言を検査します。
@@ -948,6 +980,20 @@ v-if に有効な条件式を指定します。
 [良い](./vue.md#vue-valid-v-if-good)
 
 [カテゴリの例](./vue.md#vue-valid-v-if) · [ルール参照](./reference/vue-valid-v-if.md)
+
+### `vue/valid-v-is`
+
+v-is の適用先・引数・値を検査します。
+
+<span id="vue-valid-v-is-bad"></span>
+
+[悪い](./vue.md#vue-valid-v-is-bad)
+
+<span id="vue-valid-v-is-good"></span>
+
+[良い](./vue.md#vue-valid-v-is-good)
+
+[カテゴリの例](./vue.md#vue-valid-v-is) · [ルール参照](./reference/vue-valid-v-is.md)
 
 ### `vue/valid-v-memo`
 
@@ -1004,6 +1050,20 @@ v-once の引数・値・修飾子を検査します。
 [良い](./vue.md#vue-valid-v-once-good)
 
 [カテゴリの例](./vue.md#vue-valid-v-once) · [ルール参照](./reference/vue-valid-v-once.md)
+
+### `vue/valid-v-pre`
+
+v-pre の引数・値・修飾子を検査します。
+
+<span id="vue-valid-v-pre-bad"></span>
+
+[悪い](./vue.md#vue-valid-v-pre-bad)
+
+<span id="vue-valid-v-pre-good"></span>
+
+[良い](./vue.md#vue-valid-v-pre-good)
+
+[カテゴリの例](./vue.md#vue-valid-v-pre) · [ルール参照](./reference/vue-valid-v-pre.md)
 
 ### `vue/valid-v-show`
 

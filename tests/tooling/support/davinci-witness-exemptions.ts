@@ -195,10 +195,16 @@ export function deriveInventory(
  * unified channel gains a code. A producer absent from `base` is joining the
  * channel, and its legacy errors enter the inventory with it (the P4-6c
  * onboarding shape); `base === undefined` is the inventory's introduction.
+ *
+ * `newRules` holds contract-table codes that `base` did not register at any
+ * severity. A newly added rule enters at its declared default severity, which
+ * follows the upstream preset it mirrors; promoting an existing rule to error
+ * is still a new exemption and is rejected.
  */
 export function ratchetViolations(
   base: readonly ExemptionRow[] | undefined,
   head: readonly ExemptionRow[],
+  newRules: ReadonlySet<string> = new Set(),
 ): string[] {
   if (base === undefined) return [];
   const before = new Map(base.map((row) => [key(row), row.exempt]));
@@ -208,7 +214,7 @@ export function ratchetViolations(
     const label = `${row.producer}/${row.code}`;
     const previous = before.get(key(row));
     if (previous === undefined) {
-      if (producers.has(row.producer)) {
+      if (producers.has(row.producer) && !newRules.has(key(row))) {
         violations.push(`${label}: new exemption for a producer already on the channel`);
       }
     } else if (row.exempt > previous) {
@@ -223,6 +229,40 @@ function git(
   args: string[],
 ): { status: number | null; stdout: string; stderr: string } {
   return spawnSync("git", args, { cwd, encoding: "utf8" });
+}
+
+/** Every `row!` code in one contract table source, at any severity. */
+export function contractTableCodes(source: string): Set<string> {
+  const codes = new Set<string>();
+  for (const line of source.split("\n")) {
+    const match = tableRow.exec(line);
+    if (match) codes.add(match.groups!.code);
+  }
+  return codes;
+}
+
+/**
+ * Contract-table rules registered in the working tree but absent from `ref`,
+ * as inventory keys. A table missing at `ref` contributes nothing, so a whole
+ * new table still onboards through the producer rule above.
+ */
+export function readNewContractRules(
+  cwd: string,
+  ref: string,
+  tables: readonly ContractTable[] = contractTables,
+): Set<string> {
+  const added = new Set<string>();
+  for (const table of tables) {
+    const shown = git(cwd, ["show", `${ref}:${table.rows}`]);
+    if (shown.status !== 0) continue;
+    const before = contractTableCodes(shown.stdout);
+    const file = path.join(cwd, table.rows);
+    if (!fs.existsSync(file)) continue;
+    for (const code of contractTableCodes(fs.readFileSync(file, "utf8"))) {
+      if (!before.has(code)) added.add(key({ producer: table.producer, code }));
+    }
+  }
+  return added;
 }
 
 /** The inventory at `ref`, or `undefined` when it does not exist there. */

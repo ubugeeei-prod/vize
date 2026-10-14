@@ -18,6 +18,7 @@ import { workflowStateExamples } from "./workflow-state-examples.ts";
 import { timeFormatExamples } from "./time-format-examples.ts";
 import { dataStateExamples } from "./data-state-examples.ts";
 import { browserPageExamples } from "./browser-page-examples.ts";
+import { deviceExamples } from "./device-examples.ts";
 
 const stateExamples = [
   {
@@ -108,6 +109,7 @@ export const composableExamples = [
   ...timeFormatExamples,
   ...dataStateExamples,
   ...browserPageExamples,
+  ...deviceExamples,
 ] as const;
 
 export function composableExampleSource(packageRoot: string, name: string): string {

@@ -16,6 +16,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { cases } from "./canon-alias-corpus.mjs";
 import {
+  directoryModuleResolver,
   expectedFiles,
   sourceContract,
   successor,
@@ -62,6 +63,30 @@ void test("the successor preserves the original corpus and pins both independent
   );
   assert.throws(
     () => sourceContract(resolver.selected, collector.historical, "head"),
+    /Head must satisfy selected CLI membership/,
+  );
+});
+
+void test("the explicit directory-module successor preserves the eight alias contracts", () => {
+  const resolverPath = "crates/vize_canon/src/batch/virtual_project/dependency_scan/resolution.rs";
+  const actual = createHash("sha256")
+    .update(readFileSync(new URL(`../../../${resolverPath}`, import.meta.url)))
+    .digest("hex");
+  assert.equal(actual, directoryModuleResolver.resolverSha256);
+  assert.equal(directoryModuleResolver.originalSuccessorSha256, successorSha256);
+  assert.equal(directoryModuleResolver.originalResolverSha256, resolver.selected);
+  for (const collectorMode of ["historical", "selected"]) {
+    const original = sourceContract(resolver.selected, collector[collectorMode], "base");
+    const qualified = sourceContract(actual, collector[collectorMode], "base");
+    assert.equal(qualified.resolverMode, "selected");
+    assert.deepEqual(
+      cases.map((item) => expectedFiles(item, qualified)),
+      cases.map((item) => expectedFiles(item, original)),
+    );
+  }
+  assert.equal(sourceContract(actual, collector.selected, "head").resolverMode, "selected");
+  assert.throws(
+    () => sourceContract(actual, collector.historical, "head"),
     /Head must satisfy selected CLI membership/,
   );
 });

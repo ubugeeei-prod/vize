@@ -29,12 +29,14 @@ pub(super) fn generate_inferred_emit_args(
     super::super::super::script_facts::binding_span(ctx.summary, ctx.component_ref)?;
     let (usage_idx, usage) =
         find_component_usage_for_event(ctx.summary, ctx.component_name, ctx.data, ctx.scope)?;
-    if !usage.props.iter().any(|prop| {
-        !prop.name_is_dynamic
-            && prop.name.as_str() != "key"
-            && prop.name.as_str() != "ref"
-            && prop.value.is_some()
-    }) {
+    if usage.spread_props.is_empty()
+        && !usage.props.iter().any(|prop| {
+            !prop.name_is_dynamic
+                && prop.name.as_str() != "key"
+                && prop.name.as_str() != "ref"
+                && prop.value.is_some()
+        })
+    {
         return None;
     }
 
@@ -79,38 +81,51 @@ pub(super) fn generate_inferred_emit_args(
         );
         append!(
             *ts,
-            "{call_indent}if ({guard}) return (undefined as unknown as {resolver_type})({})({{\n",
+            "{call_indent}if ({guard}) return (undefined as unknown as {resolver_type})({})(",
             ctx.component_ref,
         );
     } else {
         append!(
             *ts,
-            "{}const {emit_props} = (undefined as unknown as {resolver_type})({})({{\n",
+            "{}const {emit_props} = (undefined as unknown as {resolver_type})({})(",
             ctx.indent,
             ctx.component_ref,
         );
     }
-    for prop in &usage.props {
-        if prop.name_is_dynamic || prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
-            continue;
-        }
-        let Some(generated_value) = generated_prop_value(prop, ctx.template_binding_access) else {
-            continue;
-        };
-        let camel_prop_name = to_camel_case(prop.name.as_str());
-        if is_inline_callback_prop(prop) {
+    if !usage.spread_props.is_empty() {
+        crate::virtual_ts::expressions::append_inference_props_literal(
+            ts,
+            &usage,
+            ctx.template_binding_access,
+            crate::virtual_ts::expressions::ComponentPropSource::new(None, 0, &ctx.summary.scopes),
+            call_indent,
+        );
+        ts.push_str(");\n");
+    } else {
+        ts.push_str("{\n");
+        for prop in &usage.props {
+            if prop.name_is_dynamic || prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
+                continue;
+            }
+            let Some(generated_value) = generated_prop_value(prop, ctx.template_binding_access)
+            else {
+                continue;
+            };
+            let camel_prop_name = to_camel_case(prop.name.as_str());
+            if is_inline_callback_prop(prop) {
+                append!(
+                    *ts,
+                    "{call_indent}  // @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\n"
+                );
+            }
             append!(
                 *ts,
-                "{call_indent}  // @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\n"
+                "{call_indent}  \"{camel_prop_name}\": {},\n",
+                generated_value.as_str(),
             );
         }
-        append!(
-            *ts,
-            "{call_indent}  \"{camel_prop_name}\": {},\n",
-            generated_value.as_str(),
-        );
+        append!(*ts, "{call_indent}}});\n");
     }
-    append!(*ts, "{call_indent}}});\n");
     if guard.is_some() {
         append!(
             *ts,

@@ -39,7 +39,7 @@ browser checks with its normal OG-image configuration.
 
 ## Composable examples
 
-Ninety-seven complete SFCs in `npm/compose/core/examples/` demonstrate disclosure,
+One hundred twenty-three complete SFCs in `npm/compose/core/examples/` demonstrate disclosure,
 bounded quantities, debounced local search, blur validation, undo/redo, and
 pagination, plus async results, interval/timeout controls, browser storage,
 media queries, document focus, form submission, multistep navigation, bounded
@@ -59,7 +59,11 @@ dialogs, async step queues, form field wiring, URL query/hash/search state, cook
 favicon, style and script tags, object URLs, images), network (fetch, event streams, WebSockets,
 broadcast channels), workers, compression, animation frames, idle and prioritized scheduling, Web
 Locks, view transitions, performance entries, storage estimates, the visual viewport, user
-activation, the Navigation API, drag-and-drop, file pickers and media controls.
+activation, the Navigation API, drag-and-drop, file pickers and media controls. Device and permission examples (Bluetooth,
+HID, serial, USB, MIDI, gamepads, payments, passkeys, contacts, eye dropper, barcode detection,
+file system access, fullscreen, notifications, permissions, sharing, vibration, wake lock, screen
+details, screen and camera capture, speech, service workers, push and built-in AI) are checked
+against the browser's own feature detection, because the preview browser has no devices.
 Their displayed source and compiled preview share the same complete SFC packet,
 with a SHA-256 identity exposed by each iframe. They use public composable
 imports and can be copied into a Vue 3.5+ project. The preview shell's CSS is
