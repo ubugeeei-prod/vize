@@ -68,5 +68,6 @@ pub(in crate::batch::virtual_project) fn build_script_registered_file(
         unchecked_javascript: false,
         typed_router_import: false,
         empty_module_exports: false,
+        module_exports: None,
     })
 }

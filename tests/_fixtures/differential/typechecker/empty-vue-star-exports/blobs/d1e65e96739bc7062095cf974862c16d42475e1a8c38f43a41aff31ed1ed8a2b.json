@@ -1,0 +1,5 @@
+{
+  "bytes": 159,
+  "sha256": "d1e65e96739bc7062095cf974862c16d42475e1a8c38f43a41aff31ed1ed8a2b",
+  "wholeUtf8": "export { type Authored } from './A.vue.ts';\nexport {} from './B.vue.ts';\nexport { default as A } from './A.vue.ts';\nexport { default as B } from './B.vue.ts';\n"
+}

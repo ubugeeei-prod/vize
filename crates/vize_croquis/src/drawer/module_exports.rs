@@ -24,6 +24,22 @@ impl Drawer {
             .is_some_and(ModuleExportCapture::known_empty);
         (self.finish(), empty)
     }
+
+    /// Return ordinary Croquis unchanged and every authored named export, or
+    /// `None` when the module's export set is not provable from its own source.
+    #[doc(hidden)]
+    pub fn finish_with_module_exports(
+        self,
+    ) -> (
+        crate::Croquis,
+        Option<Vec<crate::script_parser::AuthoredModuleExport>>,
+    ) {
+        let exports = self
+            .module_export_capture
+            .as_ref()
+            .and_then(ModuleExportCapture::known_exports);
+        (self.finish(), exports)
+    }
 }
 
 #[cfg(test)]

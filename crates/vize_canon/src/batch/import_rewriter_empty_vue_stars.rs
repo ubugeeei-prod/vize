@@ -16,6 +16,7 @@ pub(in crate::batch) struct EmptyVueStar {
     quote: u8,
     specifier: String,
     mode: crate::PackageResolutionMode,
+    type_only: bool,
 }
 
 impl EmptyVueStar {
@@ -42,6 +43,7 @@ impl EmptyVueStar {
             quote,
             specifier: candidate.specifier,
             mode: candidate.mode,
+            type_only: candidate.is_type,
         })
     }
 
@@ -75,8 +77,19 @@ impl EmptyVueStar {
     }
 }
 
+/// What a captured `export * from './X.vue'` may be replaced by.
+#[derive(Debug, Clone)]
+pub(in crate::batch) enum VueStarTarget<'a> {
+    /// The component has no named module exports: re-export nothing.
+    Empty,
+    /// The component's authored named exports, which exclude the declarations
+    /// the virtual module generates for it (`Props`, `Emits`, `Slots`, ...).
+    Names(&'a [vize_croquis::script_parser::AuthoredModuleExport]),
+}
+
 /// Replay only captured original star bytes onto their original literal baseline.
 /// This never parses, reconstructs candidates, or reruns a specifier policy.
+#[cfg(test)]
 pub(in crate::batch) fn apply_captured_empty_vue_stars<E>(
     base_code: &str,
     base_map: &ImportSourceMap,
@@ -86,33 +99,118 @@ pub(in crate::batch) fn apply_captured_empty_vue_stars<E>(
 where
     E: Fn(&str, &str, crate::PackageResolutionMode) -> bool,
 {
-    let mut edits = Vec::new();
+    apply_captured_vue_stars(base_code, base_map, stars, |authored, projected, mode| {
+        empty_target(authored, projected, mode).then_some(VueStarTarget::Empty)
+    })
+}
+
+/// Replace each certified star with an explicit list of the component's
+/// authored exports. Two stars of the same module that would re-export the
+/// same name keep their original `*`, so an authored collision is still
+/// reported exactly as TypeScript reports it for star exports.
+pub(in crate::batch) fn apply_captured_vue_stars<'t, E>(
+    base_code: &str,
+    base_map: &ImportSourceMap,
+    stars: &[EmptyVueStar],
+    target: E,
+) -> RewriteResult
+where
+    E: Fn(&str, &str, crate::PackageResolutionMode) -> Option<VueStarTarget<'t>>,
+{
+    let mut candidates = Vec::new();
     for star in stars {
         let Some(projected) = star.projected_literal(base_code, base_map) else {
             continue;
         };
-        if !empty_target(star.specifier(), projected, star.mode()) {
+        let Some(target) = target(star.specifier(), projected, star.mode()) else {
             continue;
-        }
+        };
         let start = base_map.get_virtual_offset(star.source_start);
         let end = base_map.get_virtual_offset(star.source_end);
         if end == start + 1
             && base_code.get(start as usize..end as usize) == Some("*")
-            && !edits.iter().any(|(offset, _)| *offset == start)
+            && !candidates
+                .iter()
+                .any(|(offset, _, _, _): &(u32, u32, VueStarTarget<'t>, bool)| *offset == start)
         {
-            edits.push((start, star.source_start));
+            candidates.push((start, star.source_start, target, star.type_only));
         }
     }
-    edits.sort_by_key(|(start, _)| std::cmp::Reverse(*start));
-    let mut code = base_code.to_compact_string();
-    for (start, _) in &edits {
-        code.replace_range(*start as usize..*start as usize + 1, "{}");
+    let mut name_counts: vize_carton::FxHashMap<&str, usize> = vize_carton::FxHashMap::default();
+    for (_, _, target, _) in &candidates {
+        if let VueStarTarget::Names(names) = target {
+            for export in names.iter() {
+                *name_counts.entry(export.name.as_str()).or_default() += 1;
+            }
+        }
     }
-    let original_starts: Vec<_> = edits.into_iter().map(|(_, original)| original).collect();
+    let mut edits: Vec<(u32, u32, String)> = candidates
+        .iter()
+        .filter_map(|(start, original, target, type_only)| {
+            let text = match target {
+                VueStarTarget::Empty => String::from("{}"),
+                VueStarTarget::Names(names) => {
+                    // A local export shadows a star silently but conflicts
+                    // with an explicit list, so any mention keeps the star.
+                    if names.iter().any(|export| {
+                        name_counts.get(export.name.as_str()) > Some(&1)
+                            || mentions_identifier(base_code, export.name.as_str())
+                    }) {
+                        return None;
+                    }
+                    named_star_replacement(names, *type_only)
+                }
+            };
+            Some((*start, *original, text))
+        })
+        .collect();
+    edits.sort_by_key(|(start, _, _)| std::cmp::Reverse(*start));
+    let mut code = base_code.to_compact_string();
+    for (start, _, text) in &edits {
+        code.replace_range(*start as usize..*start as usize + 1, text);
+    }
+    let replacements: Vec<_> = edits
+        .into_iter()
+        .map(|(_, original, text)| (original, text.len() as u32))
+        .collect();
     RewriteResult {
         code,
-        source_map: base_map.with_added_star_replacements(&original_starts),
+        source_map: base_map.with_added_star_replacements(&replacements),
     }
+}
+
+fn mentions_identifier(code: &str, name: &str) -> bool {
+    let is_ident = |c: char| c.is_alphanumeric() || c == '_' || c == '$';
+    code.match_indices(name).any(|(start, _)| {
+        let before = code.get(..start).and_then(|text| text.chars().next_back());
+        let after = code
+            .get(start + name.len()..)
+            .and_then(|text| text.chars().next());
+        !before.is_some_and(is_ident) && !after.is_some_and(is_ident)
+    })
+}
+
+/// `{ value, type Props }` for an ordinary star; an `export type *` star makes
+/// every name type-only already, so its list carries no modifiers.
+fn named_star_replacement(
+    names: &[vize_croquis::script_parser::AuthoredModuleExport],
+    type_star: bool,
+) -> String {
+    if names.is_empty() {
+        return String::from("{}");
+    }
+    let mut text = String::from("{ ");
+    for (index, export) in names.iter().enumerate() {
+        if index > 0 {
+            text.push_str(", ");
+        }
+        if export.type_only && !type_star {
+            text.push_str("type ");
+        }
+        text.push_str(export.name.as_str());
+    }
+    text.push_str(" }");
+    text
 }
 
 pub(super) fn star_offset(

@@ -1,6 +1,6 @@
 //! Same-owner baseline for graph-dependent star edits without another parse.
 
-use crate::batch::import_rewriter::{EmptyVueStar, ImportSourceMap, RewriteResult};
+use crate::batch::import_rewriter::{EmptyVueStar, ImportSourceMap, RewriteResult, VueStarTarget};
 use vize_carton::String;
 
 pub(super) struct StarProjection {
@@ -20,59 +20,56 @@ impl StarProjection {
 }
 
 impl super::VirtualProject {
-    /// Only a direct authored edge and its actual same-owner mirror can erase
+    /// Only a direct authored edge and its actual same-owner mirror can narrow
     /// a star. Alias, package and extensionless routes remain conservative.
-    pub(super) fn known_empty_vue_target(
+    pub(super) fn known_vue_star_target(
         &self,
         importer: &super::VirtualFile,
         specifier: &str,
         projected: &str,
-    ) -> bool {
+    ) -> Option<VueStarTarget<'_>> {
         if !(specifier.starts_with("./") || specifier.starts_with("../"))
             || std::path::Path::new(specifier)
                 .extension()
                 .is_none_or(|ext| ext != "vue")
             || projected.strip_suffix(".ts") != Some(specifier)
         {
-            return false;
+            return None;
         }
-        let Some(source_dir) = importer.original_path.parent() else {
-            return false;
-        };
+        let source_dir = importer.original_path.parent()?;
         let original = vize_carton::path::canonicalize_non_verbatim(&source_dir.join(specifier));
-        let Some(owner) = self.source_artifacts.get(&original) else {
-            return false;
-        };
+        let owner = self.source_artifacts.get(&original)?;
         let mut mapped = owner
             .virtual_paths
             .iter()
             .filter_map(|path| self.virtual_files.get(path))
             .filter(|file| file.original_path == original && file.source_map.sfc_map.is_some());
-        let Some(target) = mapped.next() else {
-            return false;
-        };
-        if mapped.next().is_some() || !owner.empty_module_exports {
-            return false;
+        let target = mapped.next()?;
+        if mapped.next().is_some() {
+            return None;
         }
-        let Some(mirror_dir) = importer.virtual_path.parent() else {
-            return false;
+        let star_target = if owner.empty_module_exports {
+            VueStarTarget::Empty
+        } else if let Some(names) = &owner.module_exports {
+            VueStarTarget::Names(names)
+        } else {
+            return None;
         };
+        let mirror_dir = importer.virtual_path.parent()?;
         let mirror = super::tsconfig_paths::normalize_path_lexically(&mirror_dir.join(projected));
         if !owner.virtual_paths.contains(&mirror) {
-            return false;
+            return None;
         }
-        let Some(file) = self.virtual_files.get(&mirror) else {
-            return false;
-        };
+        let file = self.virtual_files.get(&mirror)?;
         if file.virtual_path == target.virtual_path && file.original_path == original {
-            return true;
+            return Some(star_target);
         }
         if target
             .virtual_path
             .extension()
             .is_none_or(|ext| ext != "tsx")
         {
-            return false;
+            return None;
         }
         let Ok(expected) = super::build::build_tsx_vue_import_shim(
             &self.project_root,
@@ -80,13 +77,14 @@ impl super::VirtualProject {
             &original,
             &target.virtual_path,
         ) else {
-            return false;
+            return None;
         };
-        file.virtual_path == expected.virtual_path
+        (file.virtual_path == expected.virtual_path
             && file.original_path == expected.original_path
             && file.content == expected.content
             && file.source_map.sfc_map.is_none()
-            && file.source_map.import_map == expected.source_map.import_map
+            && file.source_map.import_map == expected.source_map.import_map)
+            .then_some(star_target)
     }
 }
 

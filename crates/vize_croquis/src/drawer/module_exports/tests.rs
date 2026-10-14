@@ -8,6 +8,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 
 use crate::{Croquis, Drawer, DrawerOptions};
+use vize_carton::CompactString;
 
 fn assert_contract(ordinary: &Croquis, captured: &Croquis) {
     assert_eq!(format!("{ordinary:#?}"), format!("{captured:#?}"));
@@ -271,4 +272,57 @@ fn parse_free_caller_program_refuses_even_after_an_authentic_empty_parse() {
         assert!(!empty);
         assert_contract(&ordinary.finish(), &captured);
     }
+}
+
+fn known_exports(source: &str, setup: bool) -> Option<Vec<(CompactString, bool)>> {
+    let mut drawer = Drawer::with_options(DrawerOptions::full()).with_empty_module_exports();
+    draw(&mut drawer, source, setup);
+    let (_, exports) = drawer.finish_with_module_exports();
+    exports.map(|exports| {
+        exports
+            .into_iter()
+            .map(|export| (export.name, export.type_only))
+            .collect()
+    })
+}
+
+#[test]
+fn normal_script_named_exports_are_listed_with_their_type_or_value_meaning() {
+    let source = "import type { Shared } from './shared'; \
+        export interface AccordionProps { value: string } \
+        export type AccordionEmits = { change: [] }; \
+        export const accordionTheme = {}; \
+        function helper() {} \
+        class Box {} \
+        export { helper, Box as Boxed, type Shared as SharedAlias }; \
+        export { Shared }; \
+        export default {};";
+    assert_eq!(
+        known_exports(source, false),
+        Some(vec![
+            ("AccordionProps".into(), true),
+            ("AccordionEmits".into(), true),
+            ("accordionTheme".into(), false),
+            ("helper".into(), false),
+            ("Boxed".into(), false),
+            ("SharedAlias".into(), true),
+            ("Shared".into(), true),
+        ])
+    );
+    assert_eq!(known_exports("export default {};", false), Some(vec![]));
+}
+
+#[test]
+fn unprovable_named_exports_leave_the_export_set_unknown() {
+    for source in [
+        "import { Value } from './other'; export { Value };",
+        "export * from './other';",
+        "export { named } from './other';",
+        "export const { first } = { first: 1 };",
+        "const local = 1; export { local as 'quoted name' };",
+        "export namespace Space { export const value = 1; }",
+    ] {
+        assert_eq!(known_exports(source, false), None, "source={source}");
+    }
+    assert_eq!(known_exports("export interface Props {}", true), None);
 }

@@ -83,6 +83,7 @@ fn project(source: &str) -> (GeneratedVueFile, GeneratedVueFile, serde_json::Val
         diagnostics: retained.diagnostics,
         typed_router_import: false,
         empty_module_exports: false,
+        module_exports: None,
     };
     let after = generate_vue_virtual_ts(
         path,

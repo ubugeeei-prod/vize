@@ -61,6 +61,7 @@ impl VirtualProject {
         let auto_import_count = self.virtual_ts_options.auto_import_stubs.len();
         let mut artifacts = SourceArtifacts {
             empty_module_exports: registered.empty_module_exports,
+            module_exports: registered.module_exports,
             star_projection: registered.star_projection,
             ..Default::default()
         };

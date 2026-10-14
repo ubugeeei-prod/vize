@@ -38,6 +38,7 @@ mod unused;
 mod walk;
 
 pub use define_art::parse_define_art;
+pub use module_exports::AuthoredModuleExport;
 pub(crate) use module_exports::ModuleExportCapture;
 #[cfg(test)]
 pub(crate) use parse::parse_script_setup_for_unused;

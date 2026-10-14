@@ -21,6 +21,9 @@ const BASE_MAP: &str =
     "ImportSourceMap { adjustments: [OffsetAdjustment { original_offset: 15, adjustment: 3 }] }";
 const EMPTY_MAP: &str = "ImportSourceMap { adjustments: [OffsetAdjustment { original_offset: 8, adjustment: 1 }, OffsetAdjustment { original_offset: 15, adjustment: 3 }], replacement_ranges: [ReplacementRange { original_start: 7, original_end: 8, virtual_start: 7, virtual_end: 9 }] }";
 
+const NAMED_VALUE_MAP: &str = "ImportSourceMap { adjustments: [OffsetAdjustment { original_offset: 8, adjustment: 8 }, OffsetAdjustment { original_offset: 15, adjustment: 3 }], replacement_ranges: [ReplacementRange { original_start: 7, original_end: 8, virtual_start: 7, virtual_end: 16 }] }";
+const NAMED_TYPE_MAP: &str = "ImportSourceMap { adjustments: [OffsetAdjustment { original_offset: 8, adjustment: 14 }, OffsetAdjustment { original_offset: 15, adjustment: 3 }], replacement_ranges: [ReplacementRange { original_start: 7, original_end: 8, virtual_start: 7, virtual_end: 22 }] }";
+
 fn project(root: &Path) -> VirtualProject {
     let mut project = VirtualProject::new(root).unwrap();
     project.scope_batch_namespace(&root.join("cache"));
@@ -107,15 +110,24 @@ fn known_empty_source_refreshes_named_empty_removed_and_recreated_ownership() {
         ),
         (7, 7)
     );
-    for source in [
-        "<script lang=\"ts\">export const Props = 1;</script><template />",
-        "<script lang=\"ts\">export type Public = string;</script><template />",
+    // Authored names replace the star, so generated `Props`/`Slots` stay private.
+    for (source, code, map) in [
+        (
+            "<script lang=\"ts\">export const Props = 1;</script><template />",
+            "export { Props } from './Panel.vue.ts';\n",
+            NAMED_VALUE_MAP,
+        ),
+        (
+            "<script lang=\"ts\">export type Public = string;</script><template />",
+            "export { type Public } from './Panel.vue.ts';\n",
+            NAMED_TYPE_MAP,
+        ),
     ] {
         register(&mut project, "Panel.vue", source);
         let named = owner_packet(&project, "Panel.vue");
         assert_eq!(named["empty"], false);
         project.finalize_module_imports();
-        assert_barrel(&project, "index.ts", BASELINE, BASE_MAP);
+        assert_barrel(&project, "index.ts", code, map);
         assert_eq!(owner_packet(&project, "Panel.vue"), named);
     }
     register(&mut project, "Panel.vue", EMPTY);
@@ -161,7 +173,11 @@ fn only_same_owner_current_mirror_can_admit_an_explicit_relative_edge() {
     let importer = project
         .find_by_original(&project.project_root().join("nested/index.ts"))
         .unwrap();
-    assert!(project.known_empty_vue_target(importer, "../Panel.vue", "../Panel.vue.ts"));
+    assert!(
+        project
+            .known_vue_star_target(importer, "../Panel.vue", "../Panel.vue.ts")
+            .is_some()
+    );
     for (authored, projected) in [
         ("../Panel", "../Panel.vue.ts"),
         ("@panel", "../Panel.vue.ts"),
@@ -171,7 +187,11 @@ fn only_same_owner_current_mirror_can_admit_an_explicit_relative_edge() {
         ("../Panel.vue", "../Panel.vue.tsx"),
         ("../Panel.vue.ts", "../Panel.vue.ts"),
     ] {
-        assert!(!project.known_empty_vue_target(importer, authored, projected));
+        assert!(
+            project
+                .known_vue_star_target(importer, authored, projected)
+                .is_none()
+        );
     }
     project.finalize_module_imports();
     assert_eq!(
@@ -186,7 +206,11 @@ fn only_same_owner_current_mirror_can_admit_an_explicit_relative_edge() {
     let importer = project
         .find_by_original(&project.project_root().join("nested/index.ts"))
         .unwrap();
-    assert!(project.known_empty_vue_target(importer, "../Panel.vue", "../Panel.vue.ts"));
+    assert!(
+        project
+            .known_vue_star_target(importer, "../Panel.vue", "../Panel.vue.ts")
+            .is_some()
+    );
     // The existing collision alias keeps an ordinary authored companion separate.
     // Removing the physical SFC before re-registering creates a real overwritten
     // mirror; stale source metadata must not authenticate that foreign body.
@@ -195,7 +219,11 @@ fn only_same_owner_current_mirror_can_admit_an_explicit_relative_edge() {
     let importer = project
         .find_by_original(&project.project_root().join("nested/index.ts"))
         .unwrap();
-    assert!(!project.known_empty_vue_target(importer, "../Panel.vue", "../Panel.vue.ts"));
+    assert!(
+        project
+            .known_vue_star_target(importer, "../Panel.vue", "../Panel.vue.ts")
+            .is_none()
+    );
     project.finalize_module_imports();
     assert_eq!(
         project

@@ -1,6 +1,7 @@
 //! Result specialization for the same existing script walks.
 
 use vize_croquis::binding_occurrences::BindingOccurrences;
+use vize_croquis::script_parser::AuthoredModuleExport;
 use vize_croquis::{Croquis, Drawer};
 
 pub(super) trait ScriptDemand {
@@ -54,33 +55,41 @@ pub(super) struct CapturedScript;
 pub(super) struct ModuleExportsScript;
 
 impl ScriptDemand for ModuleExportsScript {
-    type Output = (Croquis, bool);
+    type Output = (Croquis, Option<Vec<AuthoredModuleExport>>);
 
     fn prepare(drawer: Drawer) -> Drawer {
         drawer.with_empty_module_exports()
     }
 
     fn disabled() -> Self::Output {
-        (Croquis::new(), false)
+        (Croquis::new(), None)
     }
 
     fn empty() -> Self::Output {
-        (Croquis::new(), true)
+        (Croquis::new(), Some(Vec::new()))
     }
 
     fn finish(drawer: Drawer) -> Self::Output {
-        drawer.finish_with_empty_module_exports()
+        drawer.finish_with_module_exports()
     }
 
     fn merge(
-        (plain, plain_empty): Self::Output,
-        (setup, setup_empty): Self::Output,
+        (plain, plain_exports): Self::Output,
+        (setup, setup_exports): Self::Output,
         offset: u32,
     ) -> Self::Output {
-        (
-            OrdinaryScript::merge(plain, setup, offset),
-            plain_empty && setup_empty,
-        )
+        let exports = match (plain_exports, setup_exports) {
+            (Some(mut plain), Some(setup)) => {
+                for export in setup {
+                    if !plain.iter().any(|known| known.name == export.name) {
+                        plain.push(export);
+                    }
+                }
+                Some(plain)
+            }
+            _ => None,
+        };
+        (OrdinaryScript::merge(plain, setup, offset), exports)
     }
 }
 

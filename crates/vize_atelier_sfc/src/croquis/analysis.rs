@@ -23,7 +23,8 @@ pub(super) struct DescriptorAnalysisMode {
 #[derive(Default)]
 pub(super) struct DescriptorObservation<'a> {
     pub(super) occurrences: Option<&'a mut Option<BindingOccurrences>>,
-    pub(super) empty_module_exports: Option<&'a mut bool>,
+    pub(super) module_exports:
+        Option<&'a mut Option<Vec<vize_croquis::script_parser::AuthoredModuleExport>>>,
 }
 
 pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
@@ -37,7 +38,7 @@ pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
 ) -> SfcCroquisAnalysis {
     let DescriptorObservation {
         occurrences,
-        empty_module_exports,
+        module_exports,
     } = observation;
     let drawer_options = options.analyzer_options;
     let script_analyzed = drawer_options.analyze_script
@@ -52,14 +53,14 @@ pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
         );
         packet = captured;
         summary
-    } else if let Some(empty) = empty_module_exports {
-        let (summary, observed_empty) = analyze_scripts_with_empty_module_exports(
+    } else if let Some(exports) = module_exports {
+        let (summary, observed_exports) = analyze_scripts_with_empty_module_exports(
             descriptor,
             options,
             mode.options_api,
             mode.legacy_vue2,
         );
-        *empty = observed_empty;
+        *exports = observed_exports;
         summary
     } else {
         analyze_scripts(descriptor, options, mode.options_api, mode.legacy_vue2)
