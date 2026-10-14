@@ -19,6 +19,8 @@ export default defineConfig({
       "src/rolldown.ts",
       "src/webpack.ts",
       "src/webpack-cjs.ts",
+      // Loaded by path from webpack rules (see src/webpack-styles.ts).
+      "src/webpack-style-loader.ts",
     ],
     format: ["esm", "cjs"],
     dts: {

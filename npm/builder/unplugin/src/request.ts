@@ -1,3 +1,4 @@
+import { isPreprocessorLang } from "./style-scope.ts";
 import type { ParsedVueRequest, ParsedVueRequestQuery } from "./types.ts";
 
 const STYLE_MARKER = ".__vize_style_";
@@ -52,7 +53,9 @@ export function createVirtualStyleId(id: string): string {
   const { filename, query } = parseVueRequest(id);
   const index = query.index ?? 0;
   const lang = query.lang ?? "css";
-  const suffix = query.module !== false ? `.module.${lang}` : `.${lang}`;
+  // Scoped preprocessor blocks load as compiled CSS (see loadStyleBlock).
+  const fileLang = query.scoped && isPreprocessorLang(lang) ? "css" : lang;
+  const suffix = query.module !== false ? `.module.${fileLang}` : `.${fileLang}`;
   const params = new URLSearchParams();
 
   params.set("vue", "");

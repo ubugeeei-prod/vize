@@ -84,12 +84,19 @@ void test("parseVueRequest leaves lang/type/scoped null when absent", (t) => {
 });
 
 void test("createVirtualStyleId emits the marker, index and .module.<lang> suffix", (t) => {
-  const vid = createVirtualStyleId(
-    "/a/App.vue?vue&type=style&index=1&lang=scss&module&scoped=data-v-z",
-  );
+  const vid = createVirtualStyleId("/a/App.vue?vue&type=style&index=1&lang=scss&module");
   t.assert.equal(vid.includes(".__vize_style_1"), true);
   t.assert.equal(vid.includes(".module.scss?"), true);
   t.assert.equal(vid.startsWith("/a/App.vue.__vize_style_1.module.scss"), true);
+});
+
+void test("createVirtualStyleId names a scoped preprocessor block as CSS", (t) => {
+  // load() preprocesses and then scopes it, so bundlers receive plain CSS.
+  const vid = createVirtualStyleId(
+    "/a/App.vue?vue&type=style&index=1&lang=scss&module&scoped=data-v-z",
+  );
+  t.assert.equal(vid.startsWith("/a/App.vue.__vize_style_1.module.css?"), true);
+  t.assert.equal(parseVueRequest(vid).query.lang, "scss");
 });
 
 void test("createVirtualStyleId uses .<lang> (no module segment) when module is false", (t) => {

@@ -97,5 +97,6 @@ export default {
 
 - 如果你需要最完整、最经过测试的行为，Vite仍然是推荐的集成。
 - CSS 模块和 Vite 以外的样式预处理器依赖于主机捆绑器的 CSS 流水线，且更可能发生变化。
+- 带作用域的预处理器样式（`<style scoped lang="scss|sass|less|stylus">`）与 Vue 一样，先编译再添加作用域。webpack 使用项目自己的 `.scss`/`.less`/`.styl` 规则（例如 `sass-loader` 之后接 `css-loader`）。Rollup、Rolldown 和 esbuild 没有通用的预处理器流水线，因此 Vize 会直接运行项目中安装的 `sass`（或 `sass-embedded`）、`less` 或 `stylus`。
 - 如果你的捆绑器将Vue运行时内嵌而非外部化，确保该捆绑器配置了通常的Vue编译时功能标志。
 - 将这些集成视为实验性，并在推广前与自身应用进行验证。

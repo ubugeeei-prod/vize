@@ -12,7 +12,13 @@ import {
   isVueStyleRequest,
   parseVueRequest,
 } from "./request.ts";
-import { generateOutput, wrapScopedPreprocessorStyle } from "./style.ts";
+import { generateOutput } from "./style.ts";
+import { isPreprocessorLang, preprocessStyle, scopeCss } from "./style-scope.ts";
+import {
+  findVirtualModules,
+  registerWebpackStyleRule,
+  webpackStylePath,
+} from "./webpack-styles.ts";
 import { stripTypeScript } from "./strip-types.ts";
 import type {
   CachedCompiledModule,
@@ -180,13 +186,27 @@ async function loadStyleBlock(
     return "";
   }
 
-  return wrapScopedPreprocessorStyle(block.content, request.query.scoped, block.lang);
+  // Vue order: preprocess, then scope. Webpack never loads these ids; its
+  // style files go through the host's loaders instead (webpack-styles.ts).
+  const scoped = request.query.scoped;
+  if (!scoped) {
+    return block.content;
+  }
+  const css =
+    block.lang && isPreprocessorLang(block.lang)
+      ? await preprocessStyle(block.content, block.lang, request.filename, options.root)
+      : block.content;
+  return scopeCss(css, scoped);
 }
 
-export const vizeUnplugin = createUnplugin<VizeUnpluginOptions | undefined>((rawOptions = {}) => {
+type VizeUnpluginInput = VizeUnpluginOptions | undefined;
+
+export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, meta) => {
   const options = normalizeOptions(rawOptions);
   const filter = createFilter(options.include, options.exclude);
   const cache = new Map<string, CachedCompiledModule>();
+  const webpackStyleFiles = meta.framework === "webpack";
+  let virtualModules: ReturnType<typeof findVirtualModules>;
 
   return {
     name: "unplugin-vize",
@@ -205,7 +225,7 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginOptions | undefined>((raw
       if (options.hostCompiler) {
         return false;
       }
-      return isVirtualStyleId(id);
+      return !webpackStyleFiles && isVirtualStyleId(id);
     },
 
     async load(id) {
@@ -278,6 +298,16 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginOptions | undefined>((raw
         isProduction: options.isProduction,
         isDev: false,
         filePath: id,
+        styleRequest: webpackStyleFiles
+          ? (block, scoped) => {
+              const stylePath = webpackStylePath(id, block, scoped);
+              if (!virtualModules) {
+                throw new Error("[vize] webpack style blocks need the plugin's virtual modules.");
+              }
+              virtualModules.writeModule(stylePath, block.content);
+              return stylePath;
+            }
+          : undefined,
       });
 
       const transformed = await stripTypeScript(id, generated, options.sourceMap);
@@ -295,6 +325,8 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginOptions | undefined>((raw
 
     webpack(compiler) {
       if (!options.hostCompiler) {
+        virtualModules = findVirtualModules(compiler);
+        registerWebpackStyleRule(compiler);
         injectWebpackVueDefines(
           compiler,
           options.isProduction,

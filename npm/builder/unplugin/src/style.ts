@@ -1,14 +1,9 @@
-import {
-  extractSfcStyleBlocks,
-  generateSfcScopeId,
-  wrapSfcScopedPreprocessorStyle,
-} from "@vizejs/native";
+import { extractSfcStyleBlocks, generateSfcScopeId } from "@vizejs/native";
+import { isPreprocessorLang } from "./style-scope.ts";
 import type { CompiledModule, StyleBlockInfo, StyleBlockNapi } from "./types.ts";
 
-const PREPROCESSOR_LANGS = new Set(["scss", "sass", "less", "stylus", "styl"]);
-
 function needsPreprocessor(block: StyleBlockInfo): boolean {
-  return block.lang !== null && PREPROCESSOR_LANGS.has(block.lang);
+  return isPreprocessorLang(block.lang);
 }
 
 function isCssModule(block: StyleBlockInfo): boolean {
@@ -74,10 +69,12 @@ export interface GenerateOutputOptions {
   isDev: boolean;
   extractCss?: boolean;
   filePath?: string;
+  /** Overrides the `?vue&type=style` import specifier (webpack style files). */
+  styleRequest?: (block: StyleBlockInfo, scoped: string | null) => string;
 }
 
 export function generateOutput(compiled: CompiledModule, options: GenerateOutputOptions): string {
-  const { isProduction, isDev, extractCss, filePath } = options;
+  const { isProduction, isDev, extractCss, filePath, styleRequest } = options;
 
   let output = compiled.code;
   const exportDefaultRegex = /^export default /m;
@@ -123,15 +120,15 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
         params.set("scoped", `data-v-${compiled.scopeId}`);
       }
 
-      const importUrl = `${filePath}?${params.toString()}`;
+      const scoped = block.scoped ? `data-v-${compiled.scopeId}` : null;
+      const importUrl = styleRequest?.(block, scoped) ?? `${filePath}?${params.toString()}`;
 
       if (isCssModule(block)) {
         const bindingName = typeof block.module === "string" ? block.module : "$style";
         const moduleParams = new URLSearchParams(params);
         moduleParams.set("module", typeof block.module === "string" ? block.module : "");
-        cssModuleImports.push(
-          `import ${bindingName} from ${JSON.stringify(`${filePath}?${moduleParams.toString()}`)};`,
-        );
+        const moduleUrl = styleRequest?.(block, scoped) ?? `${filePath}?${moduleParams.toString()}`;
+        cssModuleImports.push(`import ${bindingName} from ${JSON.stringify(moduleUrl)};`);
       } else {
         styleImports.push(`import ${JSON.stringify(importUrl)};`);
       }
@@ -165,14 +162,6 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
   }
 
   return output;
-}
-
-export function wrapScopedPreprocessorStyle(
-  content: string,
-  scoped: string | null,
-  lang: string | null,
-): string {
-  return wrapSfcScopedPreprocessorStyle(content, scoped, lang);
 }
 
 export function toStyleBlockInfo(block: StyleBlockNapi): StyleBlockInfo {

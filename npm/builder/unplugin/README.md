@@ -116,5 +116,6 @@ TypeScript/JSX transforms in the pipeline if your SFC scripts use those syntaxes
 
 - Vite is still the recommended integration if you need the most complete behavior today.
 - CSS Modules and preprocessors depend on the host bundler CSS pipeline and are more likely to change than the Vite path.
+- Scoped preprocessor styles are compiled before they are scoped, as in Vue: Webpack uses your `.scss`/`.less`/`.styl` rules, while Rollup, Rolldown and esbuild run the project's installed `sass` (or `sass-embedded`), `less` or `stylus`.
 - If your bundler inlines the Vue runtime, Vize injects the usual Vue 3 compile-time feature flags for Rollup-like and Webpack hosts when its compiler is active.
 - Test carefully before depending on this package in production.

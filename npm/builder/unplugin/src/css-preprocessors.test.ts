@@ -2,6 +2,7 @@ import path from "node:path";
 import { test } from "node:test";
 import "./test/setup.ts";
 import { vizeUnplugin } from "./unplugin.ts";
+import { createFakePreprocessorRoot } from "./test/fake-preprocessors.ts";
 import { packageRoot } from "./test/helpers.ts";
 
 const STYLE_MARKER = ".__vize_style_";
@@ -16,7 +17,7 @@ function createPlugin() {
   return vizeUnplugin.raw(
     {
       isProduction: true,
-      root: packageRoot,
+      root: createFakePreprocessorRoot("css-preprocessors"),
     },
     {
       framework: "rollup",
@@ -82,16 +83,14 @@ void test("scss scoped style is delegated through transform -> resolveId -> load
   t.assert.ok(scopeMatch, "expected a data-v scope id in the import query");
   const scopeId = scopeMatch[1];
 
-  // resolveId() hands back the STYLE_MARKER virtual id.
+  // resolveId() hands back the STYLE_MARKER virtual id, named as plain CSS
+  // because load() runs the project's preprocessor before scoping.
   t.assert.ok(resolvedId.includes(STYLE_MARKER), "resolved id contains the STYLE_MARKER");
-  t.assert.match(resolvedId, /\.scss\?/);
+  t.assert.match(resolvedId, /\.css\?/);
   t.assert.equal(loadInclude, true);
 
-  // load() returns the wrapScopedPreprocessorStyle output: the original
-  // (un-compiled) scss is wrapped in the scope-attribute selector so the
-  // downstream preprocessor sees the scope.
-  t.assert.ok(loadedCss.includes(`[${scopeId}]`), "scoped selector present in loaded css");
-  t.assert.ok(loadedCss.includes("$c: red"), "raw scss content preserved for the preprocessor");
+  t.assert.ok(loadedCss.includes(`.a[${scopeId}]`), "compiled rule scoped in place");
+  t.assert.ok(!loadedCss.includes("$c"), "preprocessor ran before scoping");
 });
 
 void test("less style (non-scoped) is delegated and returned verbatim", async (t) => {
@@ -115,7 +114,7 @@ void test("less style (non-scoped) is delegated and returned verbatim", async (t
   t.assert.ok(!/\[data-v-/.test(loadedCss), "no scope wrapper for a non-scoped block");
 });
 
-void test("stylus scoped style is delegated and scope-wrapped", async (t) => {
+void test("stylus scoped style is preprocessed, then scoped", async (t) => {
   const { importId, resolvedId, loadInclude, loadedCss } = await runPipeline(
     `<template><div class="a">x</div></template>
 <style scoped lang="stylus">.a
@@ -131,11 +130,11 @@ void test("stylus scoped style is delegated and scope-wrapped", async (t) => {
   const scopeId = scopeMatch[1];
 
   t.assert.ok(resolvedId.includes(STYLE_MARKER), "resolved id contains the STYLE_MARKER");
-  t.assert.match(resolvedId, /\.stylus\?/);
+  t.assert.match(resolvedId, /\.css\?/);
   t.assert.equal(loadInclude, true);
 
-  t.assert.ok(loadedCss.includes(`[${scopeId}]`), "scoped selector present in loaded stylus");
-  t.assert.ok(loadedCss.includes("color red"), "raw stylus content preserved");
+  t.assert.ok(loadedCss.includes(`.a[${scopeId}]`), "compiled stylus rule scoped in place");
+  t.assert.ok(loadedCss.includes("color: red"), "stylus compiled to CSS");
 });
 
 void test("css-module style is delegated via a default import binding", async (t) => {
