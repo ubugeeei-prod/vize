@@ -8,7 +8,7 @@ use vize_l0::{
         LinterFeatureFlags,
     },
 };
-use vize_patina::{HelpLevel, LintPreset, Linter, Locale, Severity};
+use vize_patina::{HelpLevel, LintPreset, Linter, Locale, Severity, VUE_ROUTER_COMPONENTS};
 
 mod rule_option_mapping;
 
@@ -30,6 +30,7 @@ pub(super) struct ResolvedLinterRuleGroups {
     rule_options: Vec<ConfigLintRuleOptions>,
     pub(super) file_config_indices: Vec<usize>,
     pinia_available: Vec<bool>,
+    vue_router_available: Vec<bool>,
 }
 
 impl ResolvedLinterRuleGroups {
@@ -44,9 +45,9 @@ impl ResolvedLinterRuleGroups {
     ) -> Vec<Linter> {
         self.configs
             .iter()
-            .zip(&self.pinia_available)
+            .zip(self.pinia_available.iter().zip(&self.vue_router_available))
             .zip(&self.rule_options)
-            .map(|((config, pinia_available), rule_options)| {
+            .map(|((config, (pinia_available, vue_router)), rule_options)| {
                 let type_aware =
                     args.type_aware || args.strict_reactivity || config.type_aware_lint_enabled();
                 let mut additional_rules = config.enabled_rules();
@@ -93,8 +94,11 @@ impl ResolvedLinterRuleGroups {
                     .with_restricted_globals(restricted_globals)
                     .with_restricted_members(restricted_members)
                     .with_musea_design_tokens(musea_design_tokens);
-                if let Some(globals) = rule_options.component_registration_globals() {
-                    linter = linter.with_component_registration_globals(globals.to_vec());
+                if let Some(globals) = component_registration_globals(
+                    rule_options.component_registration_globals(),
+                    *vue_router,
+                ) {
+                    linter = linter.with_component_registration_globals(globals);
                 }
                 if let Some(names) = rule_options.palpable_content_directives() {
                     linter = linter.with_palpable_content_directives(names.to_vec());
@@ -196,16 +200,19 @@ impl LinterRuleResolver {
 
     /// Resolve each distinct matching-entry signature exactly once for the batch.
     pub(super) fn resolve_files(&self, files: &[PathBuf], cwd: &Path) -> ResolvedLinterRuleGroups {
-        let mut signatures = FxHashMap::<(Vec<usize>, bool), usize>::default();
-        let mut dependency_cache = FxHashMap::default();
+        let mut signatures = FxHashMap::<(Vec<usize>, bool, bool), usize>::default();
+        let mut pinia_cache = FxHashMap::default();
+        let mut vue_router_cache = FxHashMap::default();
         let mut configs = Vec::new();
         let mut rule_options = Vec::new();
         let mut pinia_available = Vec::new();
+        let mut vue_router_available = Vec::new();
         let mut file_config_indices = Vec::with_capacity(files.len());
         for file in files {
             let signature = (
                 self.matching_entries(file, cwd),
-                package_is_resolvable_from(file, cwd, "pinia", &mut dependency_cache),
+                package_is_resolvable_from(file, cwd, "pinia", &mut pinia_cache),
+                package_is_resolvable_from(file, cwd, "vue-router", &mut vue_router_cache),
             );
             let index = match signatures.get(&signature) {
                 Some(index) => *index,
@@ -215,6 +222,7 @@ impl LinterRuleResolver {
                     configs.push(resolved.config);
                     rule_options.push(resolved.rule_options);
                     pinia_available.push(signature.1);
+                    vue_router_available.push(signature.2);
                     signatures.insert(signature, index);
                     index
                 }
@@ -226,6 +234,7 @@ impl LinterRuleResolver {
             rule_options,
             file_config_indices,
             pinia_available,
+            vue_router_available,
         }
     }
 
@@ -248,6 +257,19 @@ fn resolved_disabled_rules(
         rules.push(PINIA_PREFER_STORE_TO_REFS.into());
     }
     rules
+}
+
+/// Configured globals plus the components an installed Vue Router registers.
+fn component_registration_globals(
+    configured: Option<&[String]>,
+    vue_router_available: bool,
+) -> Option<Vec<String>> {
+    if !vue_router_available {
+        return configured.map(<[String]>::to_vec);
+    }
+    let mut globals = configured.map(<[String]>::to_vec).unwrap_or_default();
+    globals.extend(VUE_ROUTER_COMPONENTS.iter().map(|name| String::from(*name)));
+    Some(globals)
 }
 
 fn package_is_resolvable_from(

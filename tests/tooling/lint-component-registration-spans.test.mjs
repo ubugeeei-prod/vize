@@ -101,12 +101,20 @@ await test("original component-registration CLI findings point to whole physical
     persist();
     validateBuildReceipt(receipt, build);
     const binary = path.join(root, build.binaryPath);
-    for (const [input, filename, tags] of [
+    const router = path.join(directory, "node_modules/vue-router");
+    for (const [input, filename, tags, routerInstalled = false] of [
       ["my-panel.vue.txt", "my-panel.vue", ["MyButton"]],
       ["crlf-panel.vue.txt", "my-panel.vue", ["MyButton"]],
       ["UnicodePanel.vue.txt", "UnicodePanel.vue", ["MissingPanel", "my-button"]],
-      ["RegisteredPanel.vue.txt", "RegisteredPanel.vue", []],
+      // Router components are registered only by an installed vue-router.
+      ["RegisteredPanel.vue.txt", "RegisteredPanel.vue", ["router-link"]],
+      ["RegisteredPanel.vue.txt", "RegisteredPanel.vue", [], true],
     ]) {
+      fs.rmSync(router, { recursive: true, force: true });
+      if (routerInstalled) {
+        fs.mkdirSync(router, { recursive: true });
+        fs.writeFileSync(path.join(router, "package.json"), '{"name":"vue-router"}\n');
+      }
       const bytes = fs.readFileSync(path.join(fixture, input));
       const source = bytes.toString("utf8");
       fs.writeFileSync(path.join(directory, filename), bytes);
@@ -124,6 +132,7 @@ await test("original component-registration CLI findings point to whole physical
       evidence.runs.push({
         input,
         filename,
+        routerInstalled,
         source,
         bytes: bytes.length,
         sha256: sha256(bytes),
@@ -157,7 +166,7 @@ await test("original component-registration CLI findings point to whole physical
         assert.match(visible, /────────/);
       }
     }
-    assert.equal(evidence.cliQualified, 4);
+    assert.equal(evidence.cliQualified, 5);
   } finally {
     persist();
     fs.rmSync(directory, { recursive: true, force: true });

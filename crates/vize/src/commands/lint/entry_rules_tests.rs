@@ -1,4 +1,7 @@
-use super::{GlobSequence, LintPlanScope, LinterRuleResolver, resolved_disabled_rules};
+use super::{
+    GlobSequence, LintPlanScope, LinterRuleResolver, component_registration_globals,
+    resolved_disabled_rules,
+};
 use crate::config::{
     LintRuleSeverity as Severity, LinterConfig, LinterConfigEntry, LinterConfigPlan,
 };
@@ -344,4 +347,49 @@ fn pinia_availability_isolated_per_monorepo_package() {
     );
     assert!(!resolved.pinia_available[resolved.file_config_indices[0]]);
     assert!(resolved.pinia_available[resolved.file_config_indices[1]]);
+}
+
+#[test]
+fn router_components_are_registered_only_by_a_resolvable_vue_router() {
+    const ROUTER_SFC: &str = "<template><RouterLink to=\"/\" /><router-view /></template>\n";
+    let project = tempfile::tempdir().unwrap();
+    let plain = project.path().join("packages/plain/App.vue");
+    let routed = project.path().join("packages/routed/App.vue");
+    for file in [&plain, &routed] {
+        fs::create_dir_all(file.parent().unwrap()).unwrap();
+        fs::write(file, ROUTER_SFC).unwrap();
+    }
+    let router = project
+        .path()
+        .join("packages/routed/node_modules/vue-router");
+    fs::create_dir_all(&router).unwrap();
+    fs::write(router.join("package.json"), r#"{"name":"vue-router"}"#).unwrap();
+
+    let files = vec![plain.clone(), routed.clone()];
+    let resolved =
+        LinterRuleResolver::new(LinterConfigPlan::default(), project.path(), project.path())
+            .resolve_files(&files, project.path());
+    let warnings = |index: usize, file: &PathBuf| {
+        let available = resolved.vue_router_available[resolved.file_config_indices[index]];
+        let mut linter = Linter::with_preset(LintPreset::Opinionated);
+        if let Some(globals) = component_registration_globals(None, available) {
+            linter = linter.with_component_registration_globals(globals);
+        }
+        linter
+            .lint_sfc(ROUTER_SFC, file.to_string_lossy().as_ref())
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "vue/require-component-registration")
+            .count()
+    };
+    assert_eq!(
+        warnings(0, &plain),
+        2,
+        "no vue-router, no implicit Router names"
+    );
+    assert_eq!(
+        warnings(1, &routed),
+        0,
+        "an installed vue-router registers both"
+    );
 }

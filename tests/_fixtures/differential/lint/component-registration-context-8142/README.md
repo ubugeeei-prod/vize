@@ -8,7 +8,7 @@ research, with explicit component names and custom-element policies.
 The rule now classifies native HTML, SVG and MathML with the existing shared
 classifier. Lowercase unknown names, `x-`, `ion-`, `md-` and `mwc-` prefixes,
 Router and Nuxt names have no implicit registration outside an explicitly
-selected project policy. Nine previously silent missing-component controls
+selected project policy or an installed `vue-router`. Nine previously silent missing-component controls
 now warn. Built-ins, actual setup/value imports, recursive names and explicit
 global components remain accepted. Existing Nuxt auto-import mode is explicit.
 

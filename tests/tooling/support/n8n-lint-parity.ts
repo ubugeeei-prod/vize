@@ -143,6 +143,21 @@ async function eslintFindings(workspace: string, packageRoot: string): Promise<F
   return findings;
 }
 
+/**
+ * Mirror the installed workspace for the one dependency the selected rules
+ * read: `vue-router` registers RouterLink and RouterView when it resolves.
+ */
+function installRouterWhenDeclared(packageRoot: string): void {
+  const manifest = JSON.parse(readFileSync(join(fixture, packageRoot, "package.json"), "utf8"));
+  const declared = ["dependencies", "devDependencies", "peerDependencies"].some(
+    (field) => manifest[field]?.["vue-router"] !== undefined,
+  );
+  if (!declared) return;
+  const router = join(workspace, packageRoot, "node_modules/vue-router");
+  mkdirSync(router, { recursive: true });
+  writeFileSync(join(router, "package.json"), '{"name":"vue-router"}\n');
+}
+
 function vizeFindings(
   binary: string,
   config: string,
@@ -199,6 +214,7 @@ for (const [packageRoot, expected] of Object.entries(projection.packageVueFileCo
     count += 1;
   }
   assert.equal(count, expected, `${packageRoot}: Vue file count`);
+  installRouterWhenDeclared(packageRoot);
   const key = (finding: Finding) => `${finding.file}:${finding.line}:${finding.rule}`;
   const pending = new Map<string, Finding[]>();
   for (const finding of await eslintFindings(workspace, packageRoot)) {

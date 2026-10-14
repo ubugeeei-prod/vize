@@ -1,7 +1,7 @@
 use std::fs;
 use tower_lsp::lsp_types::Url;
 
-use super::pinia_is_available;
+use super::{package_is_installed, pinia_is_available};
 
 #[test]
 fn pinia_availability_tracks_ancestor_package_identity() {
@@ -28,4 +28,19 @@ fn pinia_availability_tracks_ancestor_package_identity() {
 #[test]
 fn non_file_documents_keep_the_existing_unknown_project_policy() {
     assert!(pinia_is_available(&Url::parse("untitled:App.vue").unwrap()));
+}
+
+#[test]
+fn vue_router_registers_router_components_only_when_installed() {
+    let root = tempfile::tempdir().unwrap();
+    let file = root.path().join("src/App.vue");
+    fs::create_dir_all(file.parent().unwrap()).unwrap();
+    let uri = Url::from_file_path(&file).unwrap();
+    assert!(!package_is_installed(&uri, "vue-router"));
+    let package = root.path().join("node_modules/vue-router");
+    fs::create_dir_all(&package).unwrap();
+    fs::write(package.join("package.json"), "{}").unwrap();
+    assert!(package_is_installed(&uri, "vue-router"));
+    let untitled = Url::parse("untitled:App.vue").unwrap();
+    assert!(!package_is_installed(&untitled, "vue-router"));
 }

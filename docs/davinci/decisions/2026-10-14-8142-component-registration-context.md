@@ -9,12 +9,13 @@ The rule now registers a tag only from project facts:
 - native HTML, SVG and MathML elements, through the shared tag classifier;
 - Vue built-ins, actual imports and setup bindings, and the component's own recursive name;
 - globals listed in the rule's options;
+- `RouterLink` and `RouterView` when `vue-router` resolves from the linted file (`node_modules/vue-router/package.json` in an ancestor directory, the same check that enables the Pinia rule);
 - the compiler's custom-element policy (`compiler.customElements`, same case-sensitive literal and glob semantics as the compiler);
 - Nuxt auto-imports when the Nuxt preset is selected.
 
 `vize lint` passes the custom-element matcher from the same loaded configuration document it already reads for the lint plan, so configuration is evaluated once.
 
-This is a behavior change for opinionated users: an app that registers Router components globally through `app.use(router)` now has to list `RouterView` and `RouterLink` as globals in the rule options. That matches eslint-plugin-vue's `vue/no-undef-components`, which also has no implicit Router names.
+An app with Vue Router installed keeps `<RouterLink>` and `<RouterView>` registered without configuration, so n8n's current Vize configuration (which lists no globals) stays clean; its ESLint configuration ignored the same two names. Without an installed `vue-router`, Router tags are reported like any other unregistered component.
 
 ## Coverage
 

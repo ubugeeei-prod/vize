@@ -61,7 +61,7 @@ pub use no_useless_v_bind::NoUselessVBind;
 pub use no_v_text::NoVText;
 pub use prefer_props_shorthand::PreferPropsShorthand;
 pub use prefer_true_attribute_shorthand::PreferTrueAttributeShorthand;
-pub use require_component_registration::RequireComponentRegistration;
+pub use require_component_registration::{RequireComponentRegistration, VUE_ROUTER_COMPONENTS};
 pub use scoped_event_names::ScopedEventNames;
 pub use slot_name_casing::SlotNameCasing;
 pub use this_in_template::ThisInTemplate;

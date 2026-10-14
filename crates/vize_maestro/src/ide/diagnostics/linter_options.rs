@@ -98,13 +98,22 @@ pub(super) fn resolve_patina_options(
 
 // Match CLI package availability without changing the rule's store-name policy.
 fn pinia_is_available(uri: &Url) -> bool {
+    uri.to_file_path().is_err() || package_is_installed(uri, "pinia")
+}
+
+/// Whether `package` resolves from the document, as the CLI checks it.
+pub(super) fn package_is_installed(uri: &Url, package: &str) -> bool {
     let Ok(file) = uri.to_file_path() else {
-        return true;
+        return false;
     };
     file.parent().is_some_and(|directory| {
-        directory
-            .ancestors()
-            .any(|parent| parent.join("node_modules/pinia/package.json").is_file())
+        directory.ancestors().any(|parent| {
+            parent
+                .join("node_modules")
+                .join(package)
+                .join("package.json")
+                .is_file()
+        })
     })
 }
 
@@ -144,9 +153,19 @@ pub(super) fn musea_linter_for_uri(
 pub(super) fn apply_rule_options(
     mut linter: vize_patina::Linter,
     options: &vize_l0::config::ConfigLintRuleOptions,
+    vue_router_installed: bool,
 ) -> vize_patina::Linter {
-    if let Some(globals) = options.component_registration_globals() {
-        linter = linter.with_component_registration_globals(globals.to_vec());
+    let configured = options.component_registration_globals();
+    if configured.is_some() || vue_router_installed {
+        let mut globals = configured.map(<[String]>::to_vec).unwrap_or_default();
+        if vue_router_installed {
+            globals.extend(
+                vize_patina::VUE_ROUTER_COMPONENTS
+                    .iter()
+                    .map(|name| String::from(*name)),
+            );
+        }
+        linter = linter.with_component_registration_globals(globals);
     }
     if let Some(names) = options.palpable_content_directives() {
         linter = linter.with_palpable_content_directives(names.to_vec());

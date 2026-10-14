@@ -62,6 +62,10 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Warning,
 };
 
+/// Components `app.use(router)` registers globally. Callers add them only when
+/// `vue-router` resolves from the linted file.
+pub const VUE_ROUTER_COMPONENTS: &[&str] = &["RouterLink", "RouterView"];
+
 /// Require component registration rule
 #[derive(Default)]
 pub struct RequireComponentRegistration {
