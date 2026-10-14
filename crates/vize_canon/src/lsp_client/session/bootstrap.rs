@@ -113,7 +113,7 @@ fn note_project_init(session: ProjectSession) -> ProjectSession {
     session
 }
 
-pub(super) fn api_mode_for_executable(executable: &str) -> ApiMode {
+pub(in crate::lsp_client) fn api_mode_for_executable(executable: &str) -> ApiMode {
     if uses_async_json_rpc_api(Path::new(executable)) {
         ApiMode::AsyncJsonRpcStdio
     } else {

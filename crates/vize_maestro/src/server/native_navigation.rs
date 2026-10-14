@@ -19,15 +19,25 @@ pub(super) const MODULE_LINKS_METHOD: &str = "vize/nativeModuleDocumentLinks";
 mod module_links;
 
 impl MaestroServer {
+    pub(super) fn native_navigation_project(
+        &self,
+    ) -> Result<&crate::source_project::navigation::NativeNavigationProject<'static>> {
+        self.navigation.as_deref().ok_or_else(|| {
+            #[cfg(feature = "native")]
+            if self.state.project_context_retired() {
+                return query_error(NavigationRefusal::Host(SnapshotRefusal::Superseded));
+            }
+            Error::internal_error()
+        })
+    }
+
     pub(super) async fn native_linked_editing(
         &self,
         params: LinkedEditingRangeParams,
         ticket: super::NativeLinkedNamesTicket,
     ) -> Result<Option<LinkedEditingRanges>> {
         let request = params.text_document_position_params;
-        self.navigation
-            .as_ref()
-            .ok_or_else(Error::internal_error)?
+        self.native_navigation_project()?
             .linked_editing_configured(&request.text_document.uri, request.position, ticket)
             .await
             .map_err(query_error)
@@ -37,10 +47,10 @@ impl MaestroServer {
         &self,
         params: DocumentHighlightParams,
     ) -> Result<Vec<DocumentHighlight>> {
+        let server = self.for_pos(&params.text_document_position_params).await;
         let request = params.text_document_position_params;
-        self.navigation
-            .as_ref()
-            .ok_or_else(Error::internal_error)?
+        server
+            .native_navigation_project()?
             .highlights(&request.text_document.uri, request.position)
             .await
             .map_err(query_error)
@@ -50,10 +60,10 @@ impl MaestroServer {
         &self,
         params: DocumentHighlightParams,
     ) -> Result<Vec<DocumentHighlight>> {
+        let server = self.for_pos(&params.text_document_position_params).await;
         let request = params.text_document_position_params;
-        self.navigation
-            .as_ref()
-            .ok_or_else(Error::internal_error)?
+        server
+            .native_navigation_project()?
             .template_highlights(&request.text_document.uri, request.position)
             .await
             .map_err(query_error)
@@ -62,10 +72,10 @@ impl MaestroServer {
         &self,
         params: GotoDefinitionParams,
     ) -> Result<Vec<Location>> {
+        let server = self.for_pos(&params.text_document_position_params).await;
         let request = params.text_document_position_params;
-        self.navigation
-            .as_ref()
-            .ok_or_else(Error::internal_error)?
+        server
+            .native_navigation_project()?
             .template_definition(&request.text_document.uri, request.position)
             .await
             .map_err(query_error)
@@ -75,10 +85,10 @@ impl MaestroServer {
         &self,
         params: ReferenceParams,
     ) -> Result<Vec<Location>> {
+        let server = self.for_pos(&params.text_document_position).await;
         let request = params.text_document_position;
-        self.navigation
-            .as_ref()
-            .ok_or_else(Error::internal_error)?
+        server
+            .native_navigation_project()?
             .template_references(
                 &request.text_document.uri,
                 request.position,
@@ -98,20 +108,20 @@ impl MaestroServer {
         &self,
         params: GotoDefinitionParams,
     ) -> Result<Option<Location>> {
+        let server = self.for_pos(&params.text_document_position_params).await;
         let request = params.text_document_position_params;
-        self.navigation
-            .as_ref()
-            .ok_or_else(Error::internal_error)?
+        server
+            .native_navigation_project()?
             .definition(&request.text_document.uri, request.position)
             .await
             .map_err(query_error)
     }
 
     pub(super) async fn native_references(&self, params: ReferenceParams) -> Result<Vec<Location>> {
+        let server = self.for_pos(&params.text_document_position).await;
         let request = params.text_document_position;
-        self.navigation
-            .as_ref()
-            .ok_or_else(Error::internal_error)?
+        server
+            .native_navigation_project()?
             .references(
                 &request.text_document.uri,
                 request.position,

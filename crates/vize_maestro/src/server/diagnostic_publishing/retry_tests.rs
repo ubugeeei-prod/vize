@@ -20,6 +20,7 @@ use tower_lsp::{
 
 use super::{CollectedDiagnostics, MaestroServer};
 
+mod project_retirement_tests;
 mod publication_tests;
 mod sync_feedback_tests;
 

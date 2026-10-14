@@ -1,0 +1,105 @@
+{
+  "source": "bd77ac6637a7f59d80a9a9c7ecdd6076ff783608",
+  "run": 38130825597,
+  "artifact": 11699196647,
+  "wholeResolvedMemberSHA256": "007e5e160db3fd54b1f32006095519f95e46119e396b7a8cd0a1549aca09dbc8",
+  "stage": "cross-root",
+  "wholeIssuedParams": {
+    "data": {
+      "vizeCompletion": {
+        "item": {
+          "data": {
+            "fileName": "/tmp/vize-canon/editor/sessions/session-CSfXiz/projects/41e3b84db2abaa159bcfd6b2b9a0960e5f14b6912bf87bd8b84992036404bd87/src/c/Comp0.vue.ts",
+            "name": "count",
+            "position": 15361
+          },
+          "kind": 5,
+          "label": "count",
+          "sortText": "11"
+        },
+        "requestUri": "file:///tmp/vize-canon/editor/sessions/session-CSfXiz/projects/41e3b84db2abaa159bcfd6b2b9a0960e5f14b6912bf87bd8b84992036404bd87/src/c/Comp0.vue.ts",
+        "revision": 7,
+        "uri": "file:///home/runner/_work/_temp/warm-pair/workspace-other/src/c/Comp0.vue"
+      }
+    },
+    "kind": 5,
+    "label": "count",
+    "sortText": "11"
+  },
+  "wholeValidResolved": {
+    "data": {
+      "vizeCompletion": {
+        "item": {
+          "data": {
+            "fileName": "/tmp/vize-canon/editor/sessions/session-CSfXiz/projects/41e3b84db2abaa159bcfd6b2b9a0960e5f14b6912bf87bd8b84992036404bd87/src/c/Comp0.vue.ts",
+            "name": "count",
+            "position": 15361
+          },
+          "kind": 5,
+          "label": "count",
+          "sortText": "11"
+        },
+        "requestUri": "file:///tmp/vize-canon/editor/sessions/session-CSfXiz/projects/41e3b84db2abaa159bcfd6b2b9a0960e5f14b6912bf87bd8b84992036404bd87/src/c/Comp0.vue.ts",
+        "revision": 7,
+        "uri": "file:///home/runner/_work/_temp/warm-pair/workspace-other/src/c/Comp0.vue"
+      }
+    },
+    "detail": "(property) count: Ref<number, number>",
+    "documentation": {
+      "kind": "markdown",
+      "value": "```typescript\n(property) count: Ref<number, number>\n```"
+    },
+    "kind": 5,
+    "label": "count",
+    "sortText": "11"
+  },
+  "wholeForeignParams": {
+    "data": {
+      "vizeCompletion": {
+        "item": {
+          "data": {
+            "fileName": "/tmp/vize-canon/editor/sessions/session-CSfXiz/projects/41e3b84db2abaa159bcfd6b2b9a0960e5f14b6912bf87bd8b84992036404bd87/src/c/Comp0.vue.ts",
+            "name": "count",
+            "position": 15362
+          },
+          "kind": 5,
+          "label": "count",
+          "sortText": "11"
+        },
+        "requestUri": "file:///tmp/vize-canon/editor/sessions/session-CSfXiz/projects/41e3b84db2abaa159bcfd6b2b9a0960e5f14b6912bf87bd8b84992036404bd87/src/c/Comp0.vue.ts",
+        "revision": 7,
+        "uri": "file:///home/runner/_work/_temp/warm-pair/workspace-other/src/c/Comp0.vue"
+      }
+    },
+    "kind": 5,
+    "label": "count",
+    "sortText": "11"
+  },
+  "wholeHistoricalResolved": {
+    "data": {
+      "vizeCompletion": {
+        "item": {
+          "data": {
+            "fileName": "/tmp/vize-canon/editor/sessions/session-CSfXiz/projects/41e3b84db2abaa159bcfd6b2b9a0960e5f14b6912bf87bd8b84992036404bd87/src/c/Comp0.vue.ts",
+            "name": "count",
+            "position": 15362
+          },
+          "kind": 5,
+          "label": "count",
+          "sortText": "11"
+        },
+        "requestUri": "file:///tmp/vize-canon/editor/sessions/session-CSfXiz/projects/41e3b84db2abaa159bcfd6b2b9a0960e5f14b6912bf87bd8b84992036404bd87/src/c/Comp0.vue.ts",
+        "revision": 7,
+        "uri": "file:///home/runner/_work/_temp/warm-pair/workspace-other/src/c/Comp0.vue"
+      }
+    },
+    "detail": "(property) count: Ref<number, number>",
+    "documentation": {
+      "kind": "markdown",
+      "value": "```typescript\n(property) count: Ref<number, number>\n```"
+    },
+    "kind": 5,
+    "label": "count",
+    "sortText": "11"
+  }
+}

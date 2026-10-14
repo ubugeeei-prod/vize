@@ -8,7 +8,9 @@ impl SourceQueryProject<'_> {
         &self,
         snapshot: &crate::source_project::SourceSnapshot,
     ) -> bool {
-        snapshot.check_current(self.host.documents()).is_ok()
+        !self.active.1.load(std::sync::atomic::Ordering::Acquire)
+            && !self.host.project_retired()
+            && snapshot.check_current(self.host.documents()).is_ok()
     }
 
     /// Notify only after another owner actually mutates the same live store.

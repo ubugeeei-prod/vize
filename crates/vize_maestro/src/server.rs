@@ -17,6 +17,7 @@ mod capabilities;
 mod client_capabilities;
 mod code_actions;
 mod diagnostic_publishing;
+mod document_changes;
 mod document_structure;
 mod format;
 mod handlers;
@@ -32,6 +33,7 @@ mod module_target;
 mod native_navigation;
 mod native_requests;
 mod open_document;
+mod project_contexts;
 mod semantic_tokens;
 mod state;
 mod workspace_files;
@@ -75,7 +77,12 @@ pub struct MaestroServer {
     )]
     state: std::sync::Arc<ServerState>,
     #[cfg(feature = "experimental-source-navigation")]
-    navigation: Option<crate::source_project::navigation::NativeNavigationProject<'static>>,
+    #[expect(
+        clippy::disallowed_types,
+        reason = "request views retain the same navigation owner"
+    )]
+    navigation:
+        Option<std::sync::Arc<crate::source_project::navigation::NativeNavigationProject<'static>>>,
     // Only the foreground owns termination. Diagnostic Self instances have None.
     #[cfg(feature = "experimental-source-navigation")]
     module_link_termination: Option<ModuleLinkTerminationLease>,
@@ -106,11 +113,11 @@ impl MaestroServer {
         };
 
         #[cfg(feature = "experimental-source-navigation")]
-        let navigation = Some(
+        let navigation = Some(std::sync::Arc::new(
             crate::source_project::navigation::NativeNavigationProject::new(
                 crate::source_project::SourceQueryProject::new_server(state.clone()),
             ),
-        );
+        ));
 
         #[cfg(feature = "experimental-source-navigation")]
         let module_link_termination = Some(ModuleLinkTerminationLease::new(
@@ -136,9 +143,16 @@ impl MaestroServer {
     }
 
     fn finish_shutdown(&self) -> tower_lsp::jsonrpc::Result<()> {
+        #[cfg(feature = "native")]
+        self.state.retire_project_contexts();
         #[cfg(feature = "experimental-source-navigation")]
-        self.state
-            .retire_module_links(ModuleLinkRetirement::Shutdown);
+        {
+            if let Some(navigation) = &self.navigation {
+                navigation.retire();
+            }
+            self.state
+                .retire_module_links(ModuleLinkRetirement::Shutdown);
+        }
         Ok(())
     }
 

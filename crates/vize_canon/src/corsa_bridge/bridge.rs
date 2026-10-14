@@ -49,6 +49,8 @@ pub struct CorsaBridge {
     pub(super) package_route_resolver: crate::PackageRouteResolver,
     /// Private materialized mirrors and cache for this native session.
     pub(super) editor_session: Arc<super::EditorMirrorSession>,
+    /// Editor owners can attach their project API to their own LSP process.
+    shared_editor_transport: bool,
 }
 
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
@@ -60,7 +62,10 @@ impl CorsaBridge {
 
     /// Create a new Corsa bridge with custom configuration.
     pub fn with_config(config: CorsaBridgeConfig) -> Self {
-        Self::with_config_and_package_routes(config, crate::PackageRouteResolver::default())
+        let mut bridge =
+            Self::with_config_and_package_routes(config, crate::PackageRouteResolver::default());
+        bridge.shared_editor_transport = false;
+        bridge
     }
 
     /// Create a bridge that shares package-route cache ownership with its LSP
@@ -89,6 +94,7 @@ impl CorsaBridge {
             cache_stats: CacheStats::new(),
             package_route_resolver,
             editor_session,
+            shared_editor_transport: true,
         }
     }
 
@@ -103,13 +109,14 @@ impl CorsaBridge {
         }
 
         let config = self.config.clone();
+        let shared_editor_transport = self.shared_editor_transport;
         let initialized = Arc::clone(&self.initialized);
         self.submit_async(move |slot| {
             if slot.is_some() {
                 initialized.store(true, Ordering::SeqCst);
                 return Ok(());
             }
-            *slot = Some(build_client(&config)?);
+            *slot = Some(build_client(&config, shared_editor_transport)?);
             // The worker owns completion even if the awaiting caller cancels.
             initialized.store(true, Ordering::SeqCst);
             Ok(())

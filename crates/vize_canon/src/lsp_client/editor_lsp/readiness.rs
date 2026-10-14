@@ -65,6 +65,7 @@ impl EditorLspSession {
     }
 
     pub(super) fn advance_document_generation(&mut self) {
+        self.issued_completions.invalidate();
         self.document_generation = self.document_generation.wrapping_add(1);
         self.ready_generation = None;
     }

@@ -28,6 +28,7 @@ impl CorsaProjectClient {
         line: u32,
         character: u32,
     ) -> Result<Option<Value>, String> {
+        self.ensure_project_transport()?;
         // The project-session API rejects hover as unsupported on every pinned
         // runtime (corsa-bind#409), either up front through
         // `describeCapabilities` or at request time. Both roads lead to the
@@ -54,6 +55,7 @@ impl CorsaProjectClient {
         line: u32,
         character: u32,
     ) -> Result<Option<Value>, String> {
+        self.ensure_project_transport()?;
         let Some(position) =
             self.api_position(uri, line, character, self.supports_definition_api())?
         else {
@@ -130,6 +132,7 @@ impl CorsaProjectClient {
         character: u32,
         include_declaration: bool,
     ) -> Result<Option<Value>, String> {
+        self.ensure_project_transport()?;
         let Some(position) =
             self.api_position(uri, line, character, self.supports_references_api())?
         else {
@@ -167,6 +170,7 @@ impl CorsaProjectClient {
         character: u32,
         new_name: &str,
     ) -> Result<Option<Value>, String> {
+        self.ensure_project_transport()?;
         let Some(position) = self.api_position(uri, line, character, self.supports_rename_api())?
         else {
             return self.rename_via_editor_lsp(uri, line, character, new_name);
@@ -199,6 +203,7 @@ impl CorsaProjectClient {
         line: u32,
         character: u32,
     ) -> Result<Option<Value>, String> {
+        self.ensure_project_transport()?;
         // Like hover, the project-session API rejects completion as
         // unsupported on every pinned runtime (corsa-bind#409); the editor LSP
         // transport on the same runtime does serve it (#3911).

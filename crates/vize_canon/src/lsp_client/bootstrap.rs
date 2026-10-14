@@ -47,20 +47,56 @@ impl CorsaProjectClient {
         temp_dir: Option<PathBuf>,
         config_path: Option<&Path>,
     ) -> Result<Self, String> {
+        Self::spawn_initialized_client_with_transport(
+            executable,
+            cwd,
+            root_path,
+            temp_dir,
+            config_path,
+            false,
+        )
+    }
+
+    pub(super) fn spawn_initialized_client_with_transport(
+        executable: &str,
+        cwd: PathBuf,
+        root_path: Option<PathBuf>,
+        temp_dir: Option<PathBuf>,
+        config_path: Option<&Path>,
+        shared_editor_transport: bool,
+    ) -> Result<Self, String> {
         let project_root = root_path.as_deref().unwrap_or(&cwd);
         let explicit_project_config = config_path.map(Path::to_path_buf);
         let config_path = selected_workspace_config(project_root, config_path);
-        let (session, capabilities) = match spawn_project_session(executable, &cwd, &config_path) {
-            Ok((session, capabilities)) => (Some(session), capabilities),
-            Err(ProjectSessionSpawnError::Unavailable(reason)) => {
-                tracing::debug!(
-                    reason = reason.as_str(),
-                    "using standard tsgo editor-only session"
-                );
-                (None, Arc::new(Default::default()))
-            }
-            Err(ProjectSessionSpawnError::Failed(error)) => return Err(error),
-        };
+        let shared = shared_editor_transport
+            .then(|| {
+                super::editor_lsp::configured_project::try_shared_editor_project(
+                    executable,
+                    &cwd,
+                    project_root,
+                    &config_path,
+                )
+            })
+            .flatten();
+        let (session, capabilities, editor_lsp) =
+            if let Some((session, capabilities, editor)) = shared {
+                (Some(session), capabilities, Some(editor))
+            } else {
+                let (session, capabilities) =
+                    match spawn_project_session(executable, &cwd, &config_path) {
+                        Ok((session, capabilities)) => (Some(session), capabilities),
+                        Err(ProjectSessionSpawnError::Unavailable(reason)) => {
+                            tracing::debug!(
+                                reason = reason.as_str(),
+                                "using standard tsgo editor-only session"
+                            );
+                            (None, Arc::new(Default::default()))
+                        }
+                        Err(ProjectSessionSpawnError::Failed(error)) => return Err(error),
+                    };
+                (session, capabilities, None)
+            };
+        let project_session_attached_to_editor = editor_lsp.is_some();
         Ok(Self {
             executable: executable.into(),
             cwd: cwd.clone(),
@@ -76,7 +112,9 @@ impl CorsaProjectClient {
             session_document_uris: Default::default(),
             external_document_uris: Default::default(),
             temp_dir,
-            editor_lsp: None,
+            editor_lsp,
+            shared_editor_transport: project_session_attached_to_editor,
+            project_session_attached_to_editor,
             original_diagnosing_session: None,
             editor_lsp_documents_dirty: true,
             editor_lsp_will_rename_supported: None,
@@ -122,14 +160,8 @@ impl CorsaProjectClient {
         }
         if self.has_project_session() {
             self.retire_project_session()?;
-            let (session, capabilities) =
-                match spawn_project_session(self.executable.as_str(), &self.cwd, &config_path) {
-                    Ok(result) => result,
-                    Err(ProjectSessionSpawnError::Unavailable(error))
-                    | Err(ProjectSessionSpawnError::Failed(error)) => return Err(error),
-                };
-            self.session = Some(session);
-            self.capabilities = capabilities;
+            let overlay_root = super::session_paths::overlay_root_for_project(&self.project_root);
+            self.replace_project_transport(&config_path, &overlay_root)?;
         }
         self.session_document_uris.clear();
         self.external_document_uris.clear();
@@ -140,9 +172,13 @@ impl CorsaProjectClient {
         if self.explicit_project_config.is_some() {
             self.explicit_project_config = Some(config_path);
         }
-        // The overlay root moved, so the editor session must be respawned
-        // against the materialized tree on the next request.
-        self.retire_editor_lsp()
+        // An attached editor was opened against the exact new materialized
+        // config above. Independent editor transports still respawn lazily.
+        if self.project_session_attached_to_editor {
+            Ok(())
+        } else {
+            self.retire_editor_lsp()
+        }
     }
 }
 

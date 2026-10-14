@@ -83,6 +83,32 @@ impl<'host> NativeNavigationProject<'host> {
         }
     }
 
+    pub(crate) fn mark_retired(&self) {
+        self.source.mark_retired();
+    }
+
+    pub(crate) fn retire(&self) {
+        self.source.retire();
+        for cache in [&self.workers, &self.selected_workers, &self.names_workers] {
+            let retired = core::mem::take(&mut *cache.lock());
+            for cached in retired.into_values() {
+                if let Ok(worker) = cached.result {
+                    worker.retire();
+                }
+            }
+        }
+    }
+
+    #[cfg(test)]
+    pub(crate) fn cached_program_worker_for_test(
+        &self,
+        uri: &Url,
+    ) -> Option<(usize, (usize, usize))> {
+        let workers = self.workers.lock();
+        let worker = workers.get(uri)?.result.as_ref().ok()?;
+        Some((Arc::as_ptr(worker) as usize, worker.counts()))
+    }
+
     /// Called after the genuine host update, never instead of that mutation.
     pub fn notify_host_change(&self, uri: &Url) {
         self.source.notify_host_change(uri);
@@ -173,17 +199,6 @@ impl<'host> NativeNavigationProject<'host> {
 
 impl Drop for NativeNavigationProject<'_> {
     fn drop(&mut self) {
-        for cache in [
-            self.workers.get_mut(),
-            self.selected_workers.get_mut(),
-            self.names_workers.get_mut(),
-        ] {
-            let retired = core::mem::take(cache);
-            for cached in retired.into_values() {
-                if let Ok(worker) = cached.result {
-                    worker.retire();
-                }
-            }
-        }
+        self.retire();
     }
 }

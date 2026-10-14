@@ -170,3 +170,71 @@ fn recognizes_only_the_standard_runtime_project_session_gap() {
         ));
     }
 }
+
+#[test]
+fn canon_batch_preserves_physical_identity_only_for_a_complete_existing_project() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../../../tests/_fixtures/differential/config/canon-incoming-batch-8476.json"
+    ))
+    .unwrap();
+    let files = fixture["files"].as_array().unwrap();
+    assert_eq!(files.len(), 2);
+    assert_eq!(files[0]["open"], true);
+    assert_eq!(files[1]["open"], false);
+    for (marked, missing_member) in [(true, false), (false, false), (true, true)] {
+        let root = tempfile::tempdir().unwrap();
+        for file in files {
+            let path = root.path().join(file["path"].as_str().unwrap());
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(&path, file["source"].as_str().unwrap()).unwrap();
+        }
+        if marked {
+            std::fs::write(root.path().join(fixture["marker"].as_str().unwrap()), "").unwrap();
+        }
+        let source = root.path().join(files[0]["path"].as_str().unwrap());
+        let consumer = root.path().join(files[1]["path"].as_str().unwrap());
+        let source_uri = path_to_file_uri(&source);
+        let missing_uri = path_to_file_uri(&root.path().join("src/Missing.ts"));
+        let edited = vize_l0::cstr!("// unsaved\n{}", files[0]["source"].as_str().unwrap());
+        let mut documents = vec![(source_uri.as_str(), edited.as_str())];
+        if missing_member {
+            documents.push((missing_uri.as_str(), files[1]["source"].as_str().unwrap()));
+        }
+        let mut client = super::CorsaProjectClient::empty_for_test(root.path().to_path_buf());
+        client
+            .synchronize_materialized_project_documents(&documents)
+            .unwrap();
+        assert_eq!(client.document_texts.len(), documents.len());
+        for (uri, content) in &documents {
+            assert_eq!(client.document_texts.get(*uri).unwrap(), *content);
+        }
+        assert_eq!(
+            std::fs::read_to_string(consumer).unwrap(),
+            files[1]["source"].as_str().unwrap()
+        );
+        let mapped = client
+            .session_document_uris
+            .get(source_uri.as_str())
+            .unwrap();
+        if marked && !missing_member {
+            assert!(!client.materialized_project_session);
+            assert_eq!(mapped, &source_uri);
+            assert_eq!(std::fs::read_to_string(source).unwrap(), edited);
+            assert!(!super::super::session_paths::overlay_root_for_project(root.path()).exists());
+        } else {
+            assert!(client.materialized_project_session);
+            assert_ne!(mapped, &source_uri);
+            assert_eq!(
+                std::fs::read_to_string(source).unwrap(),
+                files[0]["source"].as_str().unwrap()
+            );
+            assert_eq!(
+                std::fs::read_to_string(crate::file_uri::file_uri_to_path(mapped).unwrap())
+                    .unwrap(),
+                edited
+            );
+        }
+        assert!(client.session.is_none());
+        assert!(client.editor_lsp.is_none());
+    }
+}

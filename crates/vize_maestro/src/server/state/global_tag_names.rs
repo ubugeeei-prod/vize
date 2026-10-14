@@ -42,6 +42,7 @@ impl GlobalTagNamesCache {
 impl ServerState {
     pub(crate) async fn global_component_tag_names(&self) -> Vec<String> {
         let mut paths = self.global_component_reference_paths().await;
+        let mut open_paths: BTreeMap<PathBuf, (u64, Url)> = BTreeMap::new();
         for document in self.documents.iter() {
             if let Ok(path) = document.key().to_file_path()
                 && path.to_str().is_some_and(|path| {
@@ -51,6 +52,14 @@ impl ServerState {
                 })
                 && !vize_carton::path::is_git_metadata_path(&path)
             {
+                let path = vize_carton::path::canonicalize_non_verbatim(&path);
+                let revision = document.revision();
+                let entry = open_paths
+                    .entry(path.clone())
+                    .or_insert_with(|| (revision, document.key().clone()));
+                if revision > entry.0 {
+                    *entry = (revision, document.key().clone());
+                }
                 paths.push(path);
             }
         }
@@ -61,9 +70,9 @@ impl ServerState {
         let mut result = BTreeSet::new();
         let mut missing = Vec::new();
         for path in &paths {
-            let document = Url::from_file_path(path)
-                .ok()
-                .and_then(|uri| self.documents.get(&uri));
+            let document = open_paths
+                .get(path)
+                .and_then(|(_, uri)| self.documents.get(uri));
             let stamp = if let Some(document) = &document {
                 Stamp::Open(document.revision())
             } else if let Ok(metadata) = std::fs::metadata(path) {
@@ -247,6 +256,62 @@ mod tests {
         state
             .documents
             .open(uri, " ".repeat(4 * 1024 * 1024 + 1), 2, "typescript".into());
+        assert_eq!(names(), Vec::<String>::new());
+        assert_eq!(names(), Vec::<String>::new());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn physical_aliases_use_latest_open_revision_through_close_reopen_and_oversize() {
+        let root = tempfile::tempdir().expect("workspace");
+        let path = root.path().join("components.d.ts");
+        let alias = root.path().join("alias.d.ts");
+        std::fs::write(
+            &path,
+            "declare module 'vue' { interface GlobalComponents { DiskCard: unknown } }",
+        )
+        .expect("declaration");
+        std::os::unix::fs::symlink(&path, &alias).expect("physical alias");
+        let state = super::ServerState::new();
+        state.set_workspace_root(root.path().to_path_buf());
+        let names = || crate::runtime::block_on(state.global_component_tag_names());
+        assert_eq!(names(), [String::from("DiskCard")]);
+        let canonical_uri = tower_lsp::lsp_types::Url::from_file_path(
+            std::fs::canonicalize(&path).expect("canonical declaration"),
+        )
+        .expect("URI");
+        let alias_uri = tower_lsp::lsp_types::Url::from_file_path(&alias).expect("alias URI");
+        state.documents.open(
+            canonical_uri.clone(),
+            "declare module 'vue' { interface GlobalComponents { EarlierCard: unknown } }".into(),
+            1,
+            "typescript".into(),
+        );
+        state.documents.open(
+            alias_uri.clone(),
+            "declare module 'vue' { interface GlobalComponents { LatestCard: unknown } }".into(),
+            1,
+            "typescript".into(),
+        );
+        assert_eq!(names(), [String::from("LatestCard")]);
+        assert_eq!(names(), [String::from("LatestCard")]);
+        state.documents.close(&alias_uri);
+        assert_eq!(names(), [String::from("EarlierCard")]);
+        state.documents.close(&canonical_uri);
+        assert_eq!(names(), [String::from("DiskCard")]);
+        state.documents.open(
+            alias_uri.clone(),
+            "declare module 'vue' { interface GlobalComponents { ReopenedCard: unknown } }".into(),
+            1,
+            "typescript".into(),
+        );
+        assert_eq!(names(), [String::from("ReopenedCard")]);
+        state.documents.open(
+            alias_uri,
+            " ".repeat(4 * 1024 * 1024 + 1),
+            2,
+            "typescript".into(),
+        );
         assert_eq!(names(), Vec::<String>::new());
         assert_eq!(names(), Vec::<String>::new());
     }

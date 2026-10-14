@@ -5,6 +5,9 @@ use corsa::{api::UpdateSnapshotParams, runtime::block_on};
 use std::path::Path;
 use vize_l0::{String, cstr};
 
+mod shared_transport;
+pub(in crate::lsp_client) use shared_transport::try_shared_editor_project;
+
 impl EditorLspSession {
     pub(super) fn spawn_with_config(
         executable: &str,
@@ -12,12 +15,31 @@ impl EditorLspSession {
         project_root: &Path,
         config: Option<&Path>,
     ) -> Result<Self, String> {
+        Self::spawn_configured(executable, cwd, project_root, config, false)
+    }
+
+    pub(super) fn spawn_with_startup_configuration(
+        executable: &str,
+        cwd: &Path,
+        project_root: &Path,
+        config: &Path,
+    ) -> Result<Self, String> {
+        Self::spawn_configured(executable, cwd, project_root, Some(config), true)
+    }
+
+    fn spawn_configured(
+        executable: &str,
+        cwd: &Path,
+        project_root: &Path,
+        config: Option<&Path>,
+        apply_startup_configuration: bool,
+    ) -> Result<Self, String> {
         if let Some(config) = config {
             validate_config_path(config)?;
         }
         let mut session = Self::spawn(executable, cwd, project_root)?;
         if let Some(config) = config
-            && let Err(error) = session.open_explicit_project(config)
+            && let Err(error) = session.open_explicit_project(config, apply_startup_configuration)
         {
             // Startup errors use the same owner-before-attachment cleanup.
             let _ = session.shutdown();
@@ -26,13 +48,20 @@ impl EditorLspSession {
         Ok(session)
     }
 
-    fn open_explicit_project(&mut self, config: &Path) -> Result<(), String> {
+    fn open_explicit_project(
+        &mut self,
+        config: &Path,
+        apply_startup_configuration: bool,
+    ) -> Result<(), String> {
         let config = config
             .to_str()
             .ok_or_else(|| cstr!("Explicit Corsa project path is not UTF-8"))?;
         // Retain the actual LSP attachment before opening, including errors.
         // Closing a snapshot does not release this session's project ref.
         self.configured_api = Some(self.attach_api().map_err(configuration_error)?);
+        if apply_startup_configuration {
+            self.apply_startup_configuration(Path::new(config))?;
+        }
         let api = self
             .configured_api
             .as_ref()

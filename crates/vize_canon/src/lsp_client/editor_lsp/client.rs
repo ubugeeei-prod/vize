@@ -243,16 +243,7 @@ impl CorsaProjectClient {
     }
 
     pub(super) fn editor_lsp_session(&mut self) -> Result<&mut EditorLspSession, String> {
-        let project_root = self.editor_lsp_project_root();
-        if self.editor_lsp.is_none() {
-            self.editor_lsp = Some(EditorLspSession::spawn_with_config(
-                self.executable.as_str(),
-                &self.cwd,
-                &project_root,
-                self.explicit_project_config.as_deref(),
-            )?);
-            self.editor_lsp_documents_dirty = true;
-        }
+        self.ensure_editor_transport()?;
         let session = self
             .editor_lsp
             .as_mut()
@@ -268,17 +259,8 @@ impl CorsaProjectClient {
         &mut self,
         documents: &FxHashMap<String, String>,
     ) -> Result<&mut EditorLspSession, String> {
-        let project_root = self.editor_lsp_project_root();
         let keep_dirty_after_sync = !document_maps_equal(documents, &self.document_texts);
-        if self.editor_lsp.is_none() {
-            self.editor_lsp = Some(EditorLspSession::spawn_with_config(
-                self.executable.as_str(),
-                &self.cwd,
-                &project_root,
-                self.explicit_project_config.as_deref(),
-            )?);
-            self.editor_lsp_documents_dirty = true;
-        }
+        self.ensure_editor_transport()?;
         let session = self
             .editor_lsp
             .as_mut()
@@ -290,7 +272,7 @@ impl CorsaProjectClient {
         Ok(session)
     }
 
-    fn editor_lsp_project_root(&self) -> PathBuf {
+    pub(in crate::lsp_client) fn editor_lsp_project_root(&self) -> PathBuf {
         if self.materialized_project_session {
             overlay_root_for_project(&self.project_root)
         } else {
@@ -301,6 +283,9 @@ impl CorsaProjectClient {
     /// Drop the editor session so the next request respawns it after a project
     /// session transition.
     pub(in crate::lsp_client) fn retire_editor_lsp(&mut self) -> Result<(), String> {
+        if self.project_session_attached_to_editor {
+            return self.retire_shared_editor_transport(false);
+        }
         let result = match self.editor_lsp.as_mut() {
             Some(session) => session.shutdown(),
             None => Ok(()),
@@ -315,6 +300,9 @@ impl CorsaProjectClient {
     /// protocol `shutdown` response from the stale process, so file-operation
     /// notifications cannot hold the foreground LSP queue hostage.
     pub(in crate::lsp_client) fn discard_editor_lsp(&mut self) -> Result<(), String> {
+        if self.project_session_attached_to_editor {
+            return self.retire_shared_editor_transport(true);
+        }
         let result = match self.editor_lsp.as_mut() {
             Some(session) => session.discard(),
             None => Ok(()),

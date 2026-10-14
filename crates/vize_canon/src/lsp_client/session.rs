@@ -23,9 +23,12 @@ use vize_l0::{String, cstr};
 mod bootstrap;
 mod canon_document;
 mod capabilities;
-pub(super) use bootstrap::{ProjectSessionSpawnError, spawn_project_session};
+mod replay;
+pub(super) use bootstrap::{
+    ProjectSessionSpawnError, api_mode_for_executable, spawn_project_session,
+};
 #[cfg(test)]
-use bootstrap::{api_mode_for_executable, classify_project_session_error, should_retry_json_rpc};
+use bootstrap::{classify_project_session_error, should_retry_json_rpc};
 
 pub(super) fn uri_document_identifier(uri: &str) -> DocumentIdentifier {
     if let Some(path) = file_uri_to_path(uri) {
@@ -43,13 +46,15 @@ impl CorsaProjectClient {
         self.session.is_some()
     }
 
-    pub(super) fn project_session(&self) -> Result<&ProjectSession, String> {
+    pub(super) fn project_session(&mut self) -> Result<&ProjectSession, String> {
+        self.ensure_project_transport()?;
         self.session
             .as_ref()
             .ok_or_else(|| cstr!("Corsa project-session API is unavailable"))
     }
 
     pub(super) fn project_session_mut(&mut self) -> Result<&mut ProjectSession, String> {
+        self.ensure_project_transport()?;
         self.session
             .as_mut()
             .ok_or_else(|| cstr!("Corsa project-session API is unavailable"))
@@ -132,11 +137,7 @@ impl CorsaProjectClient {
             .materialized_session_document_uri(uri)
             .ok_or_else(|| cstr!("Failed to derive materialized Corsa overlay path for {uri}"))?;
         let file_changes = materialize_session_document(uri, document_uri.as_str(), content);
-        if !self.has_project_session() {
-            return Ok(());
-        }
-        block_on(self.project_session_mut()?.refresh(file_changes))
-            .map_err(|error| cstr!("Failed to refresh Corsa snapshot: {error}"))
+        self.refresh_materialized_overlay_snapshot(file_changes)
     }
 
     pub(super) fn delete_overlay_document(&mut self, uri: &str) -> Result<(), String> {

@@ -20,6 +20,8 @@ impl<T> ProjectQueryResult<'_, T> {
     pub(crate) fn capture_current_module_link_context(
         &self,
     ) -> Result<ModuleLinkContext, ModuleLinkPublicationError> {
+        self.check_project_current()
+            .map_err(ModuleLinkPublicationError::Source)?;
         self.result
             .with_current(self.host.documents(), || {
                 self.host
@@ -37,6 +39,8 @@ impl<T> ProjectQueryResult<'_, T> {
         context: &ModuleLinkContext,
         publish: impl FnOnce(T) -> R,
     ) -> Result<R, ModuleLinkPublicationError> {
+        self.check_project_current()
+            .map_err(ModuleLinkPublicationError::Source)?;
         let Self {
             result,
             host,

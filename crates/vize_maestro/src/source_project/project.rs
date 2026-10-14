@@ -11,6 +11,8 @@ mod tests;
 mod tracked;
 
 use std::sync::Arc;
+#[cfg(feature = "experimental-source-navigation")]
+use std::sync::atomic::AtomicBool;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use futures::future::AbortHandle;
@@ -33,7 +35,10 @@ struct ActiveQuery {
 }
 
 #[derive(Default)]
-struct ActiveQueries(Mutex<Vec<ActiveQuery>>);
+struct ActiveQueries(
+    Mutex<Vec<ActiveQuery>>,
+    #[cfg(feature = "experimental-source-navigation")] AtomicBool,
+);
 
 impl ActiveQueries {
     fn remove_for(&self, uri: &Url) -> Vec<AbortHandle> {
@@ -75,6 +80,10 @@ impl<'host> SourceQueryProject<'host> {
         uri: &Url,
     ) -> Result<(ProjectQuery<'host>, AbortHandle), SnapshotRefusal> {
         let _lifecycle = self.lifecycle.lock();
+        #[cfg(feature = "experimental-source-navigation")]
+        if self.active.1.load(Ordering::Acquire) || self.host.project_retired() {
+            return Err(SnapshotRefusal::Superseded);
+        }
         let (query, cancel) = self.cache.begin_query(self.host.documents(), uri)?;
         let id = self.next_query.fetch_add(1, Ordering::Relaxed);
         self.active.0.lock().push(ActiveQuery {
@@ -162,6 +171,26 @@ impl<'host> SourceQueryProject<'host> {
     fn invalidate(&self, uri: &Url) -> Vec<AbortHandle> {
         self.cache.forget(uri);
         self.active.remove_for(uri)
+    }
+
+    #[cfg(feature = "experimental-source-navigation")]
+    pub(crate) fn mark_retired(&self) {
+        self.active.1.store(true, Ordering::Release);
+    }
+
+    #[cfg(feature = "experimental-source-navigation")]
+    pub(crate) fn retire(&self) {
+        self.mark_retired();
+        let aborted = {
+            let _lifecycle = self.lifecycle.lock();
+            self.active
+                .0
+                .lock()
+                .drain(..)
+                .map(|query| query.cancel)
+                .collect()
+        };
+        abort(aborted);
     }
 }
 

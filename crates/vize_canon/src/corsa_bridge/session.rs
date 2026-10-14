@@ -10,6 +10,7 @@ use crate::corsa_client::CorsaProjectClient;
 /// later request, so it has to be bounded the same way.
 pub(super) fn build_client(
     config: &CorsaBridgeConfig,
+    shared_editor_transport: bool,
 ) -> Result<CorsaProjectClient, CorsaBridgeError> {
     let corsa_path = config
         .corsa_path
@@ -33,7 +34,13 @@ pub(super) fn build_client(
         .filter(|dir| dir.join("tsconfig.json").is_file() || dir.join("jsconfig.json").is_file());
 
     match workspace_root {
+        Some(dir) if shared_editor_transport => {
+            CorsaProjectClient::new_for_editor_workspace(corsa_path.as_deref(), dir)
+        }
         Some(dir) => CorsaProjectClient::new_for_workspace(corsa_path.as_deref(), dir),
+        None if shared_editor_transport => {
+            CorsaProjectClient::new_for_editor(corsa_path.as_deref(), working_dir.as_deref())
+        }
         None => CorsaProjectClient::new(corsa_path.as_deref(), working_dir.as_deref()),
     }
     .map_err(CorsaBridgeError::SpawnFailed)

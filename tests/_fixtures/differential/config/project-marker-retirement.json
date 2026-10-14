@@ -1,0 +1,9 @@
+{
+  "schema": "vize.project-marker-retirement",
+  "issue": 8371,
+  "excludedDirectories": ["node_modules", ".git", "target", "dist", "build"],
+  "ordinaryNestedMarker": "packages/app/vite.config.mjs",
+  "acceptedWorkspaceNames": ["build", "target", "dist", "node_modules"],
+  "openSource": "<template>unsaved</template>",
+  "expectedRetainedVersion": 7
+}

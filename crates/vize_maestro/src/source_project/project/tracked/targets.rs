@@ -66,6 +66,8 @@ impl<T> ProjectQueryResult<'_, T> {
         context: &ModuleLinkContext,
         candidates: &[&str],
     ) -> Result<ObservedModuleTargets, ModuleTargetError> {
+        self.check_project_current()
+            .map_err(ModuleTargetError::Source)?;
         let (state, stamp) = self
             .result
             .with_current(self.host.documents(), || {
@@ -86,6 +88,8 @@ impl<T> ProjectQueryResult<'_, T> {
         let physical =
             PhysicalTargets::observe(stamp.root(), self.result.snapshot().uri(), candidates);
         // Always revalidate owner facts after IO, even when IO itself refused.
+        self.check_project_current()
+            .map_err(ModuleTargetError::Source)?;
         self.result
             .with_current(self.host.documents(), || {
                 state
@@ -112,6 +116,8 @@ impl<T> ProjectQueryResult<'_, T> {
         targets: RecheckedModuleTargets,
         publish: impl FnOnce(T, &[Url]) -> R,
     ) -> Result<R, ModuleTargetError> {
+        self.check_project_current()
+            .map_err(ModuleTargetError::Source)?;
         let Self {
             result,
             host,

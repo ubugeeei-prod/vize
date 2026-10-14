@@ -13,8 +13,14 @@ pub(crate) struct CorsaRequestStamp {
 }
 
 impl CorsaRequestStamp {
+    #[cfg(all(test, feature = "native"))]
+    pub(crate) fn environment_revision_for_test(self) -> u64 {
+        self.environment
+    }
+
     pub(crate) fn is_current(self, state: &ServerState) -> bool {
         self.stable
+            && !state.project_context_retired()
             && state.corsa_environment_changes.load(Ordering::Acquire) == 0
             && self.documents.is_some()
             && self.documents == state.documents.stable_revision()
@@ -115,3 +121,7 @@ impl Drop for CorsaEnvironmentChange<'_> {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "corsa_requests/importer_invalidation_tests.rs"]
+mod importer_invalidation_tests;

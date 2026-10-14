@@ -68,8 +68,15 @@ impl CorsaProjectClient {
         // The editor owner may still be live. Reap the previous API process
         // before the replacement can exist, including its initialization IPC.
         self.retire_project_session()?;
-        let (session, capabilities) =
-            match spawn_project_session(self.executable.as_str(), &project_root, &config_path) {
+        if self.shared_editor_transport {
+            self.cwd = project_root.clone();
+            self.replace_project_transport(&config_path, &project_root)?;
+        } else {
+            let (session, capabilities) = match spawn_project_session(
+                self.executable.as_str(),
+                &project_root,
+                &config_path,
+            ) {
                 Ok((session, capabilities)) => (Some(session), capabilities),
                 Err(ProjectSessionSpawnError::Unavailable(reason)) => {
                     tracing::debug!(
@@ -80,8 +87,9 @@ impl CorsaProjectClient {
                 }
                 Err(ProjectSessionSpawnError::Failed(error)) => return Err(error),
             };
-        self.session = session;
-        self.capabilities = capabilities;
+            self.session = session;
+            self.capabilities = capabilities;
+        }
         self.cwd = project_root.clone();
         self.project_root = project_root;
         if self.explicit_project_config.is_some() {
@@ -92,7 +100,7 @@ impl CorsaProjectClient {
         self.session_document_uris.clear();
         self.external_document_uris.clear();
         self.diagnostics.clear();
-        if root_changed || config_changed {
+        if (root_changed || config_changed) && !self.project_session_attached_to_editor {
             self.retire_editor_lsp()?;
         }
         Ok(())

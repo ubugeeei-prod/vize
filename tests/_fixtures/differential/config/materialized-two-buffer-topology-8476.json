@@ -1,0 +1,24 @@
+{
+  "schema": "vize.materialized-two-buffer-topology-8476",
+  "documents": [
+    {
+      "uri": "file:///workspace/source.ts",
+      "disk": "import { value } from './shared.js';\nexport function answer(): string { return value; }\n",
+      "unsaved": "import { value } from './shared.js';\nexport function answer(): number { return value; }\n",
+      "expectedType": "() => number"
+    },
+    {
+      "uri": "file:///workspace/other.ts",
+      "disk": "import { value } from './shared.js';\nexport function answer(): number { return value; }\n",
+      "unsaved": "import { value } from './shared.js';\nexport function answer(): string { return value; }\n",
+      "expectedType": "() => string"
+    }
+  ],
+  "dependencies": {
+    "shared.js": "export const value = 1;\n"
+  },
+  "preparationFailure": {
+    "uri": "invalid-uri",
+    "text": "export const blocked = true;\n"
+  }
+}

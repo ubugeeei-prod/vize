@@ -22,6 +22,15 @@ pub(super) enum DocumentHost<'host> {
 }
 
 impl DocumentHost<'_> {
+    #[cfg(feature = "experimental-source-navigation")]
+    pub(super) fn project_retired(&self) -> bool {
+        #[cfg(feature = "native")]
+        if let Self::Server(state) = self {
+            return state.project_context_retired();
+        }
+        false
+    }
+
     pub(super) fn documents(&self) -> &DocumentStore {
         match self {
             Self::Borrowed(documents) => documents,

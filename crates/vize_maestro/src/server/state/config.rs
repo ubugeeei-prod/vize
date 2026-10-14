@@ -3,14 +3,13 @@
 #[cfg(feature = "glyph")]
 mod formatting;
 mod read;
+#[cfg(feature = "glyph")]
+use formatting::format_options_from_config;
 
 use std::path::Path;
 use std::sync::atomic::Ordering;
 
 use vize_l0::config::{GlobalTypesConfig, LinterConfig, TypeCheckerConfig};
-
-#[cfg(feature = "glyph")]
-use formatting::format_options_from_config;
 
 use super::ServerState;
 use super::features::LspConfigSection;
@@ -18,6 +17,8 @@ use super::features::LspConfigSection;
 impl ServerState {
     /// Apply LSP initialization options sent by an editor client.
     pub fn apply_lsp_initialization_options(&self, options: Option<&serde_json::Value>) {
+        #[cfg(feature = "native")]
+        self.retain_project_initialization_options(options);
         let Some(options) = options else {
             return;
         };
@@ -32,13 +33,11 @@ impl ServerState {
             }
         }
     }
-
     /// Get a clone of the current type checker config.
     #[inline]
     pub fn get_type_checker_config(&self) -> TypeCheckerConfig {
         self.type_checker_config.read().0.clone()
     }
-
     /// Effective editor Corsa request bound in milliseconds.
     #[inline]
     pub fn lsp_request_timeout_ms(&self) -> u64 {
@@ -107,11 +106,11 @@ impl ServerState {
         let _change = self.corsa_environment_change();
         #[cfg(feature = "experimental-source-navigation")]
         self.update_module_link_context(Some(source.to_path_buf()), || {
-            *self.type_checker_config.write() = (config, timeout_ms);
+            self.install_type_checker_snapshot(config, timeout_ms, source);
         });
         #[cfg(not(feature = "experimental-source-navigation"))]
         {
-            *self.type_checker_config.write() = (config, timeout_ms);
+            self.install_type_checker_snapshot(config, timeout_ms, source);
         }
         self.invalidate_component_interfaces();
         // The tsconfig and runtime this selects decide which project the
@@ -160,19 +159,9 @@ impl ServerState {
         self.experimental_patterned_template.load(Ordering::SeqCst)
     }
 
-    /// JSX checking is opt-in so ordinary React files are not treated as Vue.
+    /// Effective JSX policy; dedicated configurations retain their opt-in default.
     pub(crate) fn jsx_typecheck_enabled(&self) -> bool {
         *self.type_checker_jsx_typecheck.read()
-    }
-
-    /// Effective project Vue version used by type checking and formatting.
-    #[cfg(any(
-        feature = "native",
-        feature = "glyph",
-        feature = "experimental-source-navigation"
-    ))]
-    pub(crate) fn type_checker_vue_version(&self) -> vize_l0::config::VueVersion {
-        *self.type_checker_vue_version.read()
     }
 
     /// Build the config-file LSP section, folding in the `languageServer`
@@ -231,6 +220,14 @@ impl ServerState {
         if !loaded.valid {
             return;
         }
+        self.install_project_linter_context(
+            dir,
+            &loaded.project.document,
+            loaded.project.source_path.as_deref(),
+            loaded.project.project_root.as_deref(),
+        );
+        #[cfg(feature = "native")]
+        self.apply_project_path_identity(dir, loaded.project.project_root.as_deref());
         self.apply_project_formatting_default(loaded.source_path.as_deref());
         if loaded.source_path.is_none() {
             self.apply_config_features(loaded.features);

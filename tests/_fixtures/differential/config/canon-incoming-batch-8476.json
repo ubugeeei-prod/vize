@@ -1,0 +1,16 @@
+{
+  "schema": "vize.canon-incoming-batch-8476",
+  "marker": "__vize_vue_modules.d.ts",
+  "files": [
+    {
+      "path": "src/Source.ts",
+      "source": "/*😀*/ export const exportValue = 1;\n",
+      "open": true
+    },
+    {
+      "path": "src/Consumer.ts",
+      "source": "import { exportValue } from './Source';\nexport const result = exportValue;\n",
+      "open": false
+    }
+  ]
+}

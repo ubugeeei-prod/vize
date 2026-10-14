@@ -65,6 +65,9 @@ pub struct CorsaProjectClient {
     /// project-session API rejects as unsupported (corsa-bind#409), and the
     /// standard-tsgo diagnostics path when no project-session API exists.
     editor_lsp: Option<editor_lsp::EditorLspSession>,
+    /// A project API attachment may borrow this same owner's editor process.
+    shared_editor_transport: bool,
+    project_session_attached_to_editor: bool,
     /// Independent authored diagnostics never share a live virtual overlay.
     original_diagnosing_session: Option<editor_lsp::OriginalDiagnosingSession>,
     /// Whether the reusable editor LSP needs the latest virtual project mirror.
@@ -94,6 +97,8 @@ impl CorsaProjectClient {
             external_document_uris: Default::default(),
             temp_dir: None,
             editor_lsp: None,
+            shared_editor_transport: false,
+            project_session_attached_to_editor: false,
             original_diagnosing_session: None,
             editor_lsp_documents_dirty: true,
             editor_lsp_will_rename_supported: None,

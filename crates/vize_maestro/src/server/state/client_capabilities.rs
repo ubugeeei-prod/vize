@@ -10,6 +10,8 @@ impl ServerState {
     /// Record the exact properties advertised during this session's initialize.
     /// The non-native handler cannot resolve items, so it keeps eager docs.
     pub(crate) fn record_client_capabilities(&self, capabilities: &ClientCapabilities) {
+        #[cfg(feature = "native")]
+        self.retain_project_client_capabilities(capabilities);
         crate::server::workspace_files::record_watcher_support(self, capabilities);
         let supported = cfg!(feature = "native")
             && capabilities

@@ -25,6 +25,14 @@ impl InlayHintService {
         } else {
             open_canonical_virtual_document(ctx, bridge).await
         };
+        trace_native_inlay("canonicalDocument", || {
+            serde_json::json!({
+                "authoredUri":ctx.uri,"requestedRange":range,
+                "document":document.as_ref().map(|document| serde_json::json!({
+                    "requestUri":document.request_uri,"code":document.virtual_result.code
+                }))
+            })
+        });
         let Some(document) = document else {
             return Vec::new();
         };
@@ -34,19 +42,30 @@ impl InlayHintService {
             &document.virtual_result.code,
             document.virtual_result.code.len(),
         );
-        let Ok(Some(response)) = bridge
+        let response = bridge
             .inlay_hints(document.request_uri.as_str(), (0, 0), end)
-            .await
-        else {
+            .await;
+        trace_native_inlay("canonicalResponse", || match &response {
+            Ok(value) => serde_json::json!({"ok":true,"response":value}),
+            Err(error) => serde_json::json!({"ok":false,"error":error.to_string()}),
+        });
+        let Ok(Some(response)) = response else {
             return Vec::new();
         };
-        let Ok(hints) = serde_json::from_value::<Vec<InlayHint>>(response) else {
+        let hints = serde_json::from_value::<Vec<InlayHint>>(response);
+        trace_native_inlay("decodedHints", || match &hints {
+            Ok(value) => serde_json::json!({"ok":true,"hints":value}),
+            Err(error) => serde_json::json!({"ok":false,"error":error.to_string()}),
+        });
+        let Ok(hints) = hints else {
             return Vec::new();
         };
-        hints
+        let mapped: Vec<_> = hints
             .into_iter()
             .filter_map(|hint| map_hint(ctx, &document, range, hint))
-            .collect()
+            .collect();
+        trace_native_inlay("mappedHints", || serde_json::json!(mapped));
+        mapped
     }
 }
 
@@ -79,3 +98,11 @@ fn map_hint(
 
 #[cfg(test)]
 mod tests;
+
+fn trace_native_inlay(stage: &str, value: impl FnOnce() -> serde_json::Value) {
+    if std::env::var_os("VIZE_TRACE_EDITOR_PREPARATION").as_deref()
+        == Some(std::ffi::OsStr::new("1"))
+    {
+        tracing::warn!(stage, value = %value(), "native inlay hint observation");
+    }
+}

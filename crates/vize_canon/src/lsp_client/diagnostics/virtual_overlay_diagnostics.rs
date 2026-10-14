@@ -5,6 +5,7 @@ pub(super) fn ensure_materialized_project<'a>(
     client: &mut CorsaProjectClient,
     uris: impl IntoIterator<Item = &'a str>,
 ) -> Result<(), String> {
+    client.ensure_project_transport()?;
     if client.materialized_project_session {
         return Ok(());
     }

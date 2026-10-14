@@ -29,6 +29,21 @@ mod workspace;
 impl CorsaProjectClient {
     /// Start a Corsa project session rooted at an isolated scratch workspace.
     pub fn new(corsa_path: Option<&str>, working_dir: Option<&str>) -> Result<Self, String> {
+        Self::new_with_transport(corsa_path, working_dir, false)
+    }
+
+    pub(crate) fn new_for_editor(
+        corsa_path: Option<&str>,
+        working_dir: Option<&str>,
+    ) -> Result<Self, String> {
+        Self::new_with_transport(corsa_path, working_dir, true)
+    }
+
+    fn new_with_transport(
+        corsa_path: Option<&str>,
+        working_dir: Option<&str>,
+        shared_editor_transport: bool,
+    ) -> Result<Self, String> {
         let executable = resolve_corsa_executable(corsa_path, working_dir)?;
 
         let project_root = working_dir
@@ -54,12 +69,19 @@ impl CorsaProjectClient {
         write_temp_tsconfig(&temp_dir_path)?;
 
         let temp_root = temp_dir_path.canonicalize().ok();
-        Self::spawn_initialized_client(
-            executable.as_str(),
-            temp_dir_path,
-            temp_root,
-            Some(temp_dir_base.join(&*cstr!("{}-{}", std::process::id(), client_id))),
-        )
+        let temp_dir = Some(temp_dir_path.clone());
+        if shared_editor_transport {
+            Self::spawn_initialized_client_with_transport(
+                executable.as_str(),
+                temp_dir_path,
+                temp_root,
+                temp_dir,
+                None,
+                true,
+            )
+        } else {
+            Self::spawn_initialized_client(executable.as_str(), temp_dir_path, temp_root, temp_dir)
+        }
     }
 
     /// Shutdown the project session.
@@ -83,6 +105,9 @@ impl CorsaProjectClient {
     /// topology reload; retaining both old and new API owners would add a
     /// third native child to the running LSP server (#3952).
     pub(super) fn retire_project_session(&mut self) -> Result<(), String> {
+        if self.project_session_attached_to_editor {
+            return self.retire_shared_editor_transport(false);
+        }
         self.session.take().map_or(Ok(()), |session| {
             block_on(session.close())
                 .map_err(|error| cstr!("Failed to close Corsa project session: {error}"))
@@ -126,11 +151,7 @@ impl CorsaProjectClient {
             build_session_document_uri(uri, &self.project_root, overlay_supported) != *uri
         });
         if self.materialized_project_session || !overlay_supported || requires_materialization {
-            for (uri, content) in documents {
-                self.clear_document_state(uri);
-                self.sync_overlay_document(uri, content)?;
-            }
-            return Ok(());
+            return self.synchronize_materialized_project_documents(documents);
         }
 
         let mut summary = FileChangeSummary::default();
@@ -206,11 +227,7 @@ impl CorsaProjectClient {
                     self.document_texts.remove(*uri);
                     self.overlay_versions.remove(*uri);
                 }
-                for (uri, content) in documents {
-                    self.clear_document_state(uri);
-                    self.sync_overlay_document(uri, content)?;
-                }
-                Ok(())
+                self.synchronize_materialized_project_documents(documents)
             }
             Err(error) => Err(cstr!("Failed to refresh Corsa snapshot: {error}")),
         }
