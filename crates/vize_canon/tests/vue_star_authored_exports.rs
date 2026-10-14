@@ -59,11 +59,16 @@ fn authored_collisions_and_local_shadowing_keep_typescript_star_semantics() {
         ("src/Twin.vue", &twin),
         ("src/index.ts", barrel),
     ]);
-    assert!(
-        diagnostics.contains(&String::from(
-            "src/index.ts(2,1): error TS2308: Module './Accordion.vue' has already exported a member named 'AccordionProps'. Consider explicitly re-exporting to resolve the ambiguity."
-        )),
-        "{diagnostics:?}"
+    // Both stars stay whole, so the generated aliases join the authored
+    // collision exactly as they did before stars were narrowed.
+    assert_eq!(
+        diagnostics,
+        [
+            "src/index.ts(2,1): error TS2308: Module './Accordion.vue' has already exported a member named 'AccordionProps'. Consider explicitly re-exporting to resolve the ambiguity.",
+            "src/index.ts(2,1): error TS2308: Module './Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
+            "src/index.ts(2,1): error TS2308: Module './Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
+            "src/index.ts(2,1): error TS2308: Module './Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
+        ]
     );
     let shadowed = "export * from './Accordion.vue';\nexport const accordionDefaults = 1;\n";
     assert_eq!(
