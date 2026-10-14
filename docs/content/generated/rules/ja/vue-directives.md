@@ -172,7 +172,7 @@ v-bind の表記形式を揃えます。
 [悪い例](#vue-v-bind-style-bad) · [良い例](#vue-v-bind-style-good)
 
 既定の重大度: `warning`  
-プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
+プリセット: `nuxt`, `opinionated`  
 自動修正: 対応している診断で利用できます  
 適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。

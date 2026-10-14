@@ -1504,8 +1504,6 @@
     },
     "vue/v-bind-style": {
       "patinaPresets": [
-        "ecosystem",
-        "general-recommended",
         "nuxt",
         "opinionated"
       ],

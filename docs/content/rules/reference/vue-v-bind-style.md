@@ -9,7 +9,7 @@ Enforce `v-bind` directive style
 [Bad](#bad) · [Good](#good)
 
 Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
+Presets: `nuxt`, `opinionated`  
 Automatic fix: Available for supported findings  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.

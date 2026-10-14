@@ -5504,7 +5504,7 @@ Imposer un style de directive `v-bind`
 [Mauvais](#vue-v-bind-style-bad) · [Bon](#vue-v-bind-style-good)
 
 Gravité par défaut: `warning`  
-Préréglages: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
+Préréglages: `nuxt`, `opinionated`  
 Correction automatique: Disponible pour les diagnostics pris en charge  
 Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
