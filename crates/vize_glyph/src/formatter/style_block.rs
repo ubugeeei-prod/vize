@@ -22,6 +22,8 @@ pub(super) fn write_style_block(
     let formatted_content = if is_plain_css {
         style::format_style_content(content, options)
             .unwrap_or_else(|_| content.trim().to_compact_string())
+    } else if options.normalize_css_quotes && requotes_preprocessor(block.lang.as_deref()) {
+        style::requote_preprocessor_strings(content.trim(), options)
     } else {
         content.trim().to_compact_string()
     };
@@ -65,4 +67,10 @@ pub(super) fn write_style_block(
 
     output.extend_from_slice(b"</style>");
     Ok(())
+}
+
+/// Sass (SCSS syntax) and Less share CSS string and comment syntax; the
+/// indented Sass and Stylus dialects are left alone, as Prettier does.
+fn requotes_preprocessor(lang: Option<&str>) -> bool {
+    lang.is_some_and(|lang| lang.eq_ignore_ascii_case("scss") || lang.eq_ignore_ascii_case("less"))
 }

@@ -105,6 +105,12 @@ pub struct FormatOptions {
     #[serde(default = "default_true")]
     pub sort_blocks: bool,
 
+    /// Re-quote strings in CSS, SCSS and Less `<style>` blocks with the
+    /// `singleQuote` preference, as Prettier does (default: false keeps
+    /// authored quotes)
+    #[serde(default)]
+    pub normalize_css_quotes: bool,
+
     /// Skip the `<script>` idempotence stabilization pass (default: false).
     ///
     /// When false (the default), script blocks are formatted to a stable fixed
@@ -141,6 +147,7 @@ impl Default for FormatOptions {
             attribute_groups: None,
             normalize_directive_shorthands: true,
             sort_blocks: true,
+            normalize_css_quotes: false,
             skip_script_stabilization: false,
         }
     }
@@ -169,6 +176,7 @@ impl FormatPreset {
         options.sort_attributes = vize;
         options.sort_blocks = vize;
         options.normalize_directive_shorthands = vize;
+        options.normalize_css_quotes = !vize;
     }
 }
 

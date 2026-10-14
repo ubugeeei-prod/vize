@@ -78,4 +78,47 @@ const id = "a";
         options.normalize_directive_shorthands,
         defaults.normalize_directive_shorthands
     );
+    assert_eq!(options.normalize_css_quotes, defaults.normalize_css_quotes);
+}
+
+#[test]
+fn prettier_preset_requotes_css_strings() {
+    let source = "<style>\n@import 'a.css';\n.a {\n  content: 'it\\'s';\n  font-family: 'A \"B\"';\n}\n</style>\n";
+    let kept = format_sfc(source, &FormatOptions::default()).expect("format");
+    assert_eq!(kept.code.as_str(), source);
+
+    let mut options = FormatOptions::default();
+    FormatPreset::Prettier.apply(&mut options);
+    let requoted = format_sfc(source, &options).expect("format").code;
+    assert_eq!(
+        requoted.as_str(),
+        "<style>\n@import \"a.css\";\n.a {\n  content: \"it's\";\n  font-family: 'A \"B\"';\n}\n</style>\n"
+    );
+    assert_eq!(
+        format_sfc(&requoted, &options).expect("format").code,
+        requoted
+    );
+}
+
+#[test]
+fn prettier_preset_requotes_less_and_scss_strings() {
+    let mut options = FormatOptions::default();
+    FormatPreset::Prettier.apply(&mut options);
+    for lang in ["less", "scss"] {
+        let source = format!(
+            "<style lang=\"{lang}\">\n// it's kept\n@import 'a';\n.a {{ background: url(http://x/'y'); }}\n</style>\n"
+        );
+        let expected = format!(
+            "<style lang=\"{lang}\">\n// it's kept\n@import \"a\";\n.a {{ background: url(http://x/'y'); }}\n</style>\n"
+        );
+        assert_eq!(
+            format_sfc(&source, &options).expect("format").code.as_str(),
+            expected
+        );
+    }
+    let sass = "<style lang=\"sass\">\n@import 'a'\n</style>\n";
+    assert_eq!(
+        format_sfc(sass, &options).expect("format").code.as_str(),
+        sass
+    );
 }

@@ -33,3 +33,16 @@ change touches the Pkl schema, the JSON schema and the generated TypeScript
 types and is left to a follow-up on #6098. Presets for compact application
 code and documentation examples are also left open; they should be added only
 with corpus evidence that a fixed option set serves them.
+
+## CSS string quotes
+
+Follow-up: `normalizeCssQuotes` (default `false`) re-quotes strings in CSS,
+SCSS and Less `<style>` blocks with the `singleQuote` preference, as Prettier
+does. A string keeps its quotes when its content holds more of the preferred
+quote than of the other one. The pass skips comments, and in SCSS and Less it
+treats every `//` as a line comment, so a doubtful `//` only leaves the rest of
+its line unchanged. The pass runs before CSS layout, because the layout treats
+`url('…')` and `url("…")` differently and running it afterwards was not
+idempotent. The `prettier` preset sets it. Like the other new options, it is a
+`FormatOptions` field that the WASM binding accepts; the Node binding and
+the config-file key wait for the same loader follow-up as `preset`.
