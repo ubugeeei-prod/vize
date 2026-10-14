@@ -215,9 +215,19 @@ export async function observeFragmentCss(input) {
       const stockClient = reference(fixture.source, false);
       const expected = await render(stockSsr.code, `stock-${index}`);
       const actual = await render(fixture.ssr.code, `current-${index}`);
-      const fallback = await render(fixture.fallback.code, `fallback-${index}`);
+      const vaporSsr = await render(fixture.vaporSsr.code, `vapor-ssr-${index}`);
       assert.deepEqual(actual, expected, `${fixture.name}: complete raw SSR HTML/diagnostics`);
-      assert.deepEqual(fallback, expected, `${fixture.name}: explicit standard SSR fallback`);
+      // Vapor server markup differs only by the fragment anchors Vapor
+      // hydration claims.
+      const withoutAnchors = ({ html, diagnostics }) => ({
+        html: html.replaceAll("<!--[-->", "").replaceAll("<!--]-->", ""),
+        diagnostics,
+      });
+      assert.deepEqual(
+        withoutAnchors(vaporSsr),
+        withoutAnchors(expected),
+        `${fixture.name}: Vapor SSR markup`,
+      );
       assert.deepEqual(actual.diagnostics, []);
       const properties = [...actual.html.matchAll(/style="([^"]*)"/gu)].filter((match) =>
         /--[^:;]+:red;/u.test(match[1]),
@@ -258,7 +268,7 @@ export async function observeFragmentCss(input) {
         stockClient,
         expected,
         actual,
-        fallback,
+        vaporSsr,
         currentHydration,
         referenceHydration,
         currentClient,

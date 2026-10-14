@@ -18,7 +18,7 @@ void test("#7892 retains the complete original reported App.vue bytes", () => {
   );
 });
 void test(
-  "#7892 actual original whole SSR/client/fallback modules and production hydration",
+  "#7892 actual original whole SSR/client/Vapor SSR modules and production hydration",
   {
     skip: !capture && "source-bound runtime runs in the scoped SSR composite action",
   },
