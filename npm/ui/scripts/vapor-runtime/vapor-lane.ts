@@ -7,7 +7,7 @@
  */
 import { readFileSync, writeFileSync } from "node:fs";
 
-import { installDomGlobals } from "./dom-env.ts";
+import { adjustSvgAttributeCase, installDomGlobals } from "./dom-env.ts";
 import { compileFailures, registerSfcHooks } from "./sfc-hooks.ts";
 
 interface SsrRecord {
@@ -72,7 +72,10 @@ for (const fixture of fixtures) {
     continue;
   }
   const host = document.createElement("div");
-  if (mode === "hydrate") host.innerHTML = html;
+  if (mode === "hydrate") {
+    host.innerHTML = html;
+    adjustSvgAttributeCase(host);
+  }
   document.body.append(host);
   const serverRoot = host.firstElementChild;
   const messages: string[] = [];
