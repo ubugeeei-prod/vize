@@ -57,7 +57,7 @@ impl Rule for NoArrayIndexKey {
             if dir.name == "for"
                 && let Some(ExpressionNode::Simple(exp)) = &dir.exp
             {
-                index_alias = v_for_index_alias(exp.content);
+                index_alias = v_for_index_alias(ctx, exp.content);
             }
         }
 
@@ -81,7 +81,7 @@ impl Rule for NoArrayIndexKey {
         let Some(ExpressionNode::Simple(exp)) = &directive.exp else {
             return;
         };
-        let Some(index) = v_for_index_alias(exp.content) else {
+        let Some(index) = v_for_index_alias(ctx, exp.content) else {
             return;
         };
 
@@ -147,7 +147,7 @@ fn report_index_key(ctx: &mut LintContext<'_>, loc: &vize_relief::SourceLocation
 /// key. Report it by default so unconventionally named array indices remain
 /// covered. Exempt object-key names when the source's type is not available;
 /// an array or range source still makes any second alias an index.
-fn v_for_index_alias(raw: &str) -> Option<&str> {
+fn v_for_index_alias<'s>(ctx: &LintContext<'_>, raw: &'s str) -> Option<&'s str> {
     let (alias_part, source) = split_for_parts(raw)?;
     let alias_part = alias_part.trim();
 
@@ -165,7 +165,9 @@ fn v_for_index_alias(raw: &str) -> Option<&str> {
 
     let index = match parts.as_slice() {
         [_, _, index] => *index,
-        [_, _] if is_known_object_source(source) => return None,
+        [_, _] if is_known_object_source(source) || script_binds_object(ctx, source) => {
+            return None;
+        }
         [_, second] if is_known_array_source(source) || !is_object_key_name(second) => *second,
         _ => return None,
     };
@@ -187,6 +189,55 @@ fn split_for_parts(content: &str) -> Option<(&str, &str)> {
 /// Literal sources can be classified without guessing from variable names.
 fn is_known_object_source(source: &str) -> bool {
     source.starts_with('{') && source.ends_with('}')
+}
+
+/// Whether a script block of the SFC declares `source` as an object literal,
+/// directly or through `reactive`/`ref` (`const colors = { … }`,
+/// `const state = reactive({ … })`). Its second `v-for` alias is then a
+/// property key.
+fn script_binds_object(ctx: &LintContext<'_>, source: &str) -> bool {
+    if !is_plain_identifier(source) {
+        return false;
+    }
+    // The engine attaches the descriptor for this rule (SHARED_SFC_DESCRIPTOR_RULES).
+    let Some(descriptor) = ctx.sfc_descriptor() else {
+        return false;
+    };
+    [descriptor.script.as_ref(), descriptor.script_setup.as_ref()]
+        .into_iter()
+        .flatten()
+        .any(|block| declares_object(block.content.as_ref(), source))
+}
+
+fn declares_object(script: &str, name: &str) -> bool {
+    ["const ", "let ", "var "].iter().any(|keyword| {
+        script.match_indices(keyword).any(|(start, _)| {
+            let Some(rest) = script.get(start + keyword.len()..) else {
+                return false;
+            };
+            let Some(rest) = rest.strip_prefix(name) else {
+                return false;
+            };
+            if rest.starts_with(|c: char| c.is_ascii_alphanumeric() || c == '_' || c == '$') {
+                return false;
+            }
+            let Some((_, value)) = rest.split_once('=') else {
+                return false;
+            };
+            let value = value.trim_start();
+            let value = [
+                "reactive(",
+                "shallowReactive(",
+                "readonly(",
+                "ref(",
+                "shallowRef(",
+            ]
+            .iter()
+            .find_map(|wrapper| value.strip_prefix(wrapper))
+            .unwrap_or(value);
+            value.trim_start().starts_with('{')
+        })
+    })
 }
 
 fn is_known_array_source(source: &str) -> bool {
