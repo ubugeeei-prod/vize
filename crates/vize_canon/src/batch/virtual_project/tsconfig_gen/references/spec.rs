@@ -67,14 +67,14 @@ impl OwnershipSpec {
         let excluded = match self.excludes.as_ref() {
             Some(excludes) => excludes
                 .iter()
-                .any(|exclude| exclude.matches(&source_path, case_sensitive)),
+                .any(|exclude| exclude.matches(source_path, case_sensitive)),
             None => self
                 .out_dir
                 .as_ref()
                 .and_then(Option::as_ref)
                 .into_iter()
                 .chain(self.declaration_dir.as_ref().and_then(Option::as_ref))
-                .any(|exclude| exclude.matches(&source_path, case_sensitive)),
+                .any(|exclude| exclude.matches(source_path, case_sensitive)),
         };
         !excluded
     }
