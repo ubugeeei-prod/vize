@@ -21,6 +21,9 @@ interface ImportMeta {
 }
 
 declare namespace JSX { interface IntrinsicAttributes { class?: unknown; style?: unknown; } }
+// vue-tsc generic library components accept unknown attrs through this
+// fallback, which vue-tsc itself declares unless `checkUnknownProps` is set.
+declare var __VLS_PROPS_FALLBACK: Record<string, unknown>;
 
 // Shared type helpers used by generated virtual modules
 type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;

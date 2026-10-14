@@ -125,7 +125,7 @@ pub(super) fn append_prop_checker_alias(
     if usage_needs_per_prop_aliases(usage) {
         append!(
             *ts,
-            "  type __{component_type_name}_ValueProps_{idx} = __{component_type_name}_Props_{idx} & __VizeEmitListeners<__{component_type_name}_Component_{idx}> & __VizePublicComponentAttrs;\n",
+            "  type __{component_type_name}_ValueProps_{idx} = __VizeIsLibraryGenericExport<__{component_type_name}_Component_{idx}> extends true ? Record<string, any> : __{component_type_name}_Props_{idx} & __VizeEmitListeners<__{component_type_name}_Component_{idx}> & __VizePublicComponentAttrs;\n",
         );
         append!(
             *ts,

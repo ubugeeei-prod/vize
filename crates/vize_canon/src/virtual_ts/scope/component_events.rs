@@ -113,9 +113,15 @@ pub(super) fn generate_component_event_types(
     let event_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_event");
     let listener_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_listener");
 
+    // A vue-tsc generic library export instantiates its generics with their
+    // constraints here; its listener stays untyped rather than wrong.
     append!(
         *ts,
-        "{indent}type {prop_args} = typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }}\n",
+        "{indent}type {prop_args}_library = typeof {component_ref} extends {{ __vizeCheck: any }} | {{ readonly __vizeComponentMarker: true }} ? false : typeof {component_ref} extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;\n",
+    );
+    append!(
+        *ts,
+        "{indent}type {prop_args} = {prop_args}_library extends true ? unknown[] : typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }}\n",
     );
     // A listener prop may also accept an array of listeners (`onClick?: Fn |
     // Fn[]`, as Nuxt UI's Button declares); its function member still

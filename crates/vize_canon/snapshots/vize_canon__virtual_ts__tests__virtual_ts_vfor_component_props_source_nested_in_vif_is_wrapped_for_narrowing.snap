@@ -182,7 +182,8 @@ function __setup() {
   type __VizeComponentRawProps<C> = __VizeHasInstanceRawProps<C> extends true ? __VizeInstanceRawProps<C> : __VizeStaticRawProps<C>;
   type __VizeHasRawProps<C> = __VizeHasInstanceRawProps<C> extends true ? true : __VizeHasStaticRawProps<C>;
   type __VizeFallthroughValue<C, K extends PropertyKey> = __VizeHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? __VizeIsAny<__F> extends true ? unknown : __VizePropValue<NonNullable<__F>, K, unknown> : unknown : unknown;
-  type __VizePropChecker<C, P, T = __VizeComponentCheckTail<C>> = __VizeIsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? __VizeIsAny<__F> extends true ? (props: __VizeComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: __VizeComponentCheckProps<P, T>) => void : (props: __VizeComponentCheckProps<P, T>) => void;
+  type __VizeIsLibraryGenericExport<C> = C extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : C extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;
+  type __VizePropChecker<C, P, T = __VizeComponentCheckTail<C>> = __VizeIsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? __VizeIsAny<__F> extends true ? (props: __VizeComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: __VizeComponentCheckProps<P, T>) => void : __VizeIsLibraryGenericExport<C> extends true ? C : (props: __VizeComponentCheckProps<P, T>) => void;
   type __VizePropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;
   type __VizeStructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : any;
   type __VizeEmptyVueNavigationSlots<C> = ('__isFragment' | '__isTeleport' | '__isSuspense' | 'slots') extends keyof C ? __VizeIsAny<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]> extends true ? any : [NonNullable<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]>] extends [never] ? C extends { slots?: infer __S } ? __VizeIsAny<__S> extends true ? any : unknown extends __S ? any : [keyof NonNullable<__S>] extends [never] ? C extends { setup?: (props: infer __P, ...args: any[]) => any } ? string extends keyof __P ? any : {} : {} : any : any : any : any;
@@ -196,7 +197,7 @@ function __setup() {
   type __Test_Component_0 = typeof Test;
   type __Test_CheckProps_0 = __Test_Props_0 & __VizeEmitListeners<__Test_Component_0> & __VizeRequiredFallthroughProps<__Test_Component_0>;
   type __Test_CheckTail_0 = __VizeComponentCheckTail<__Test_Component_0>;
-  type __Test_ValueProps_0 = __Test_Props_0 & __VizeEmitListeners<__Test_Component_0> & __VizePublicComponentAttrs;
+  type __Test_ValueProps_0 = __VizeIsLibraryGenericExport<__Test_Component_0> extends true ? Record<string, any> : __Test_Props_0 & __VizeEmitListeners<__Test_Component_0> & __VizePublicComponentAttrs;
   type __Test_FallthroughValue_0<K extends PropertyKey> = __VizeFallthroughValue<__Test_Component_0, K>;
   type __Test_Check_0 = __VizePropChecker<__Test_Component_0, __Test_CheckProps_0, __Test_CheckTail_0>;
   type __Test_0_prop_value1 = __VizePropValue<__Test_ValueProps_0, 'value1', __Test_FallthroughValue_0<'value1'>>;

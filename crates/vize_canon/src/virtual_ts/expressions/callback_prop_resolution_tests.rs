@@ -19,7 +19,7 @@ fn callback_resolution_keeps_inference_and_branch_selection_separate() {
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
     assert!(
         output.code.contains(
-            "const __vize_resolved_Child_props_0 = (undefined as unknown as __VizePropsResolver<typeof Child>)({"
+            "const __vize_resolved_Child_props_0 = (undefined as unknown as __VizeResolvedContextProps)((undefined as unknown as __VizePropsResolver<typeof Child>)({"
         ),
         "inference resolver must keep the authored callback:\n{}",
         output.code

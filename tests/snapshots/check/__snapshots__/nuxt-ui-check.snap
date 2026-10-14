@@ -792,9 +792,7 @@
     },
     {
       "file": "src/runtime/components/CommandPalette.vue",
-      "diagnostics": [
-        "error:649:38 [TS2345] Argument of type 'AcceptableValue' is not assignable to parameter of type 'Record<string, any> | undefined'.\nType 'null' is not assignable to type 'Record<string, any> | undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/runtime/components/Container.vue",
@@ -946,10 +944,7 @@
     },
     {
       "file": "src/runtime/components/InputTags.vue",
-      "diagnostics": [
-        "error:161:4 [TS2345] Argument of type '{ required?: boolean; addOnPaste?: boolean; addOnTab?: boolean; addOnBlur?: boolean; duplicate?: boolean; delimiter?: string | RegExp; max?: number; convertValue?: ((value: string) => T) | undefined; ... 9 more ...; disabled: boolean | undefined; }' is not assignable to parameter of type '__VizeComponentCheckProps<__TagsInputRoot_CheckProps_8, Record<string, unknown>>'.\nType '{ required?: boolean; addOnPaste?: boolean; addOnTab?: boolean; addOnBlur?: boolean; duplicate?: boolean; delimiter?: string | RegExp; max?: number; convertValue?: ((value: string) => T) | undefined; ... 9 more ...; disabled: boolean | undefined; }' is not assignable to type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 28 more ...; readonly onRemoveTag?: ((payload: AcceptableInputValue) => any) | undefined; }'.\nTypes of property 'displayValue' are incompatible.\nType '((value: T) => string) | undefined' is not assignable to type '((value: AcceptableInputValue) => string) | undefined'.\nType '(value: T) => string' is not assignable to type '(value: AcceptableInputValue) => string'.\nTypes of parameters 'value' and '<target>' are incompatible.\nType 'AcceptableInputValue' is not assignable to type 'T'.\n'AcceptableInputValue' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.\nType 'string' is not assignable to type 'T'.\n'string' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.",
-        "error:171:6 [TS2322] Type '(value: T[]) => void' is not assignable to type '(payload: AcceptableInputValue[]) => any'.\nTypes of parameters 'value' and '<target>' are incompatible.\nType 'AcceptableInputValue[]' is not assignable to type 'T[]'.\nType 'AcceptableInputValue' is not assignable to type 'T'.\n'AcceptableInputValue' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.\nType 'string' is not assignable to type 'T'.\n'string' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/runtime/components/InputTime.vue",
@@ -1057,10 +1052,7 @@
     },
     {
       "file": "src/runtime/components/PinInput.vue",
-      "diagnostics": [
-        "error:162:6 [TS2322] Type 'PinInputValue<T>' is not assignable to type 'string[] | null | undefined'.\nType 'string[] | number[]' is not assignable to type 'string[] | null | undefined'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.\nType 'PinInputValue<T>' is not assignable to type 'string[]'.\nType 'string[] | number[]' is not assignable to type 'string[]'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.",
-        "error:163:6 [TS2322] Type 'PinInputValue<T>' is not assignable to type 'string[] | undefined'.\nType 'string[] | number[]' is not assignable to type 'string[] | undefined'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.\nType 'PinInputValue<T>' is not assignable to type 'string[]'.\nType 'string[] | number[]' is not assignable to type 'string[]'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/runtime/components/Popover.vue",
@@ -1605,7 +1597,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 7,
+  "errorCount": 2,
   "warningCount": 0,
   "fileCount": 398
 }

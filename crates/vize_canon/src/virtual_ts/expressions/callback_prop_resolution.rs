@@ -46,7 +46,7 @@ pub(super) fn generate_callback_props_resolution(
 
     append!(
         *ts,
-        "{expr_indent}const {resolved_props} = (undefined as unknown as __VizePropsResolver<typeof {component_ref}>)({{\n",
+        "{expr_indent}const {resolved_props} = (undefined as unknown as __VizeResolvedContextProps)((undefined as unknown as __VizePropsResolver<typeof {component_ref}>)({{\n",
     );
 
     append_props_object(
@@ -57,7 +57,7 @@ pub(super) fn generate_callback_props_resolution(
         expr_indent.as_str(),
         false,
     );
-    append!(*ts, "{expr_indent}}});\n");
+    append!(*ts, "{expr_indent}}}));\n");
     append!(
         *ts,
         "{expr_indent}const {selected_props} = (undefined as unknown as __VizePropsSelector<typeof {resolved_props}>)({{\n",

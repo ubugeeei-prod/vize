@@ -124,6 +124,7 @@ pub const SHARED_PREAMBLE_DTS: &str = concat!(
     "  prod: boolean;\n",
     "  ssr: boolean;\n",
     "}\n\ndeclare namespace JSX { interface IntrinsicAttributes { class?: unknown; style?: unknown; } }\n",
+    "// vue-tsc generic library components accept unknown attrs through this\n// fallback, which vue-tsc itself declares unless `checkUnknownProps` is set.\ndeclare var __VLS_PROPS_FALLBACK: Record<string, unknown>;\n",
     "\n",
     "// Shared type helpers used by generated virtual modules\n",
     vue_type_helpers_text!(),
