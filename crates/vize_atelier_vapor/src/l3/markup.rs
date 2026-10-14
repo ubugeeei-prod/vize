@@ -6,12 +6,52 @@ use vize_l3::{
     operand::OperandRole,
 };
 
+/// The message the legacy parser reports for `<div/>`.
+pub(crate) const SELF_CLOSING_RECOVERY: &str = "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.";
+
+/// The spans of self-closed non-void elements, each of which the legacy
+/// parser reports as a recovery that the native lane reproduces; `None` when
+/// the legacy parser diagnoses markup the native lane cannot reproduce.
+/// Every op spans its authored markup: an element from `<` through its end
+/// tag (or `/>`), a binding over its attribute.
+pub(super) fn self_closing_recoveries(
+    allocator: &vize_carton::Allocator,
+    source: &str,
+    program: &Program<'_>,
+) -> Option<std::vec::Vec<(u32, u32)>> {
+    // `v-pre` freezes some self-closed tags without a report.
+    if source.contains("v-pre") {
+        return (!legacy_diagnosed(allocator, source, program)).then(std::vec::Vec::new);
+    }
+    let mut recoveries = std::vec::Vec::new();
+    let refused = scan(allocator, source, program, |op, markup| {
+        if op.kind == OpKind::InsertNode && markup.ends_with("/>") {
+            recoveries.push((op.span.start, op.span.end));
+            true
+        } else {
+            false
+        }
+    });
+    (!refused).then_some(recoveries)
+}
+
 /// Every op spans its authored markup: an element from `<` through its end
 /// tag, a binding over its attribute.
 pub(super) fn legacy_diagnosed(
     allocator: &vize_carton::Allocator,
     source: &str,
     program: &Program<'_>,
+) -> bool {
+    scan(allocator, source, program, |_, _| false)
+}
+
+/// Whether any op is markup the legacy parser diagnoses; `reproduced` takes
+/// an unclosed element the native lane can report itself.
+fn scan(
+    allocator: &vize_carton::Allocator,
+    source: &str,
+    program: &Program<'_>,
+    mut reproduced: impl FnMut(&vize_l3::op::Op, &str) -> bool,
 ) -> bool {
     let mut bindings = vize_carton::Vec::with_capacity_in(program.ops.len(), &allocator);
     bindings.resize(program.ops.len(), false);
@@ -30,7 +70,7 @@ pub(super) fn legacy_diagnosed(
             OpKind::InsertNode | OpKind::CreateComponent | OpKind::SlotOutlet
                 if markup.starts_with('<') =>
             {
-                !closed(markup, op.kind == OpKind::InsertNode)
+                !closed(markup, op.kind == OpKind::InsertNode) && !reproduced(op, markup)
             }
             _ if bound => empty_modifier(markup),
             _ => false,

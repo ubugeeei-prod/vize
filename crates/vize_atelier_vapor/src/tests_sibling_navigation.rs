@@ -123,7 +123,7 @@ fn element_next_calls_do_not_pass_is_text() {
 fn single_step_navigation_shapes_are_unchanged() {
     let first = compile(r#"<div><a :id="x"/><b/></div>"#);
     assert!(
-        first.contains("_child(n1)"),
+        first.contains(" = _child(n"),
         "index 0 stays a plain _child:\n{first}"
     );
     assert!(
@@ -133,7 +133,7 @@ fn single_step_navigation_shapes_are_unchanged() {
 
     let second = compile(r#"<div><a/><b :id="x"/></div>"#);
     assert!(
-        second.contains("_next(_child(n1))"),
+        second.contains(" = _next(_child(n"),
         "index 1 stays one _next step from the first child:\n{second}"
     );
     assert!(

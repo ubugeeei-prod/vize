@@ -87,9 +87,24 @@ pub(crate) enum VaporL3BridgeStatus<'a> {
 /// Private fields prevent callers from confusing a verified generic graph with
 /// the narrower executable backend contract. There is no boolean acceptance.
 #[derive(Debug)]
-pub(crate) struct VaporL3Artifact<'a>(NativeArtifact<'a>);
+pub(crate) struct VaporL3Artifact<'a>(NativeArtifact<'a>, std::vec::Vec<(u32, u32)>);
 
 impl<'a> VaporL3Artifact<'a> {
+    /// The recoveries the legacy parser reports for this source, which the
+    /// native lane reports in its place: one per self-closed non-void element.
+    pub(crate) fn legacy_diagnostics(&self) -> std::vec::Vec<vize_atelier_core::CompilerError> {
+        self.1
+            .iter()
+            .map(|&(start, end)| {
+                vize_atelier_core::CompilerError::with_message(
+                    vize_atelier_core::ErrorCode::ExtendPoint,
+                    markup::SELF_CLOSING_RECOVERY,
+                    Some(vize_atelier_core::SourceLocation::new(start, end)),
+                )
+            })
+            .collect()
+    }
+
     #[cfg(test)]
     pub(crate) fn into_ir(
         self,
@@ -207,12 +222,12 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
             "atelier.vapor.bridge.s2_to_s3",
             vize_l2_to_l3::lower(allocator, &s2.root)
         );
-        if bridge_profile!(
+        let Some(recoveries) = bridge_profile!(
             "atelier.vapor.bridge.markup_admission",
-            markup::legacy_diagnosed(allocator, source, &s3.program)
-        ) {
+            markup::self_closing_recoveries(allocator, source, &s3.program)
+        ) else {
             return VaporL3BridgeStatus::Legacy(LegacyReason::SurfaceSemantics);
-        }
+        };
         let mut retained = bridge_profile!(
             "atelier.vapor.bridge.retained_index",
             retained::Retained::collect(allocator, &s2.root)
@@ -247,13 +262,13 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
         capture.page(Level::L3, "values", || {
             vize_l2::dump::render_full_page(&vize_l3::values_dump::Page::of(&s3.program))
         });
-        admit_with(s3, &retained, &loops, source)
+        admit_with(s3, &retained, &loops, source, recoveries)
     })
 }
 
 #[cfg(test)]
 fn admit<'a>(s3: Lowered<'a>, retained: &retained::Retained<'_, 'a>) -> VaporL3BridgeStatus<'a> {
-    admit_with(s3, retained, &[], "")
+    admit_with(s3, retained, &[], "", std::vec::Vec::new())
 }
 
 fn admit_with<'a>(
@@ -261,6 +276,7 @@ fn admit_with<'a>(
     retained: &retained::Retained<'_, 'a>,
     loops: &[templates::TemplateLoop<'a>],
     source: &str,
+    recoveries: std::vec::Vec<(u32, u32)>,
 ) -> VaporL3BridgeStatus<'a> {
     let violations = bridge_profile!("atelier.vapor.bridge.generic_verify", verify(&s3.program));
     if !violations.is_empty() {
@@ -293,7 +309,7 @@ fn admit_with<'a>(
         "atelier.vapor.bridge.native_admission",
         NativeArtifact::admit(&s3, retained, loops, source)
     ) {
-        Ok(artifact) => VaporL3BridgeStatus::Accepted(VaporL3Artifact(artifact)),
+        Ok(artifact) => VaporL3BridgeStatus::Accepted(VaporL3Artifact(artifact, recoveries)),
         Err(AdmissionFailure::Unsupported(reason)) => VaporL3BridgeStatus::Legacy(reason),
         Err(AdmissionFailure::Invalid(message)) => VaporL3BridgeStatus::Rejected(std::vec![cstr!(
             "Davinci L3 verifier rejected Vapor artifact: {message}"

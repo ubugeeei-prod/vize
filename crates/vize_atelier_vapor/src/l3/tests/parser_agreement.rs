@@ -1,5 +1,6 @@
 //! An admitted source never reaches the legacy parser, so admission must imply
-//! that the legacy parser reports nothing for it. The corpus is every fixture
+//! that the native lane reports exactly what the legacy parser would: nothing,
+//! or one recovery per self-closed non-void element. The corpus is every fixture
 //! input, each of its prefixes and punctuation deletions (unterminated tags,
 //! attributes, interpolations and comments, empty modifiers), and hand-written
 //! malformed markup.
@@ -84,7 +85,9 @@ fn admitted_sources_are_clean_for_the_legacy_parser() {
     let mut check = |source: &str| {
         let allocator = Allocator::new();
         let status = lower_source_for_vapor(&allocator, source, options());
-        if matches!(status, VaporL3BridgeStatus::Accepted(_)) && !legacy_errors(source).is_empty() {
+        if let VaporL3BridgeStatus::Accepted(artifact) = status
+            && reports(&legacy_errors(source)) != reports(&artifact.legacy_diagnostics())
+        {
             disagreements.push(String::from(source));
         }
     };
@@ -108,6 +111,68 @@ fn admitted_sources_are_clean_for_the_legacy_parser() {
     assert_eq!(disagreements, std::vec::Vec::<String>::new());
 }
 
+/// A self-closed non-void element takes the native lane and reports the
+/// legacy parser's recovery for each such element.
+#[test]
+fn self_closed_elements_take_the_native_lane() {
+    for (source, recoveries) in [
+        ("<div />", 1),
+        ("<span v-if=\"ok\" />", 1),
+        ("<div><span/><b :id=\"x\"/></div>", 2),
+        ("<div><br/><Comp/></div>", 0),
+    ] {
+        let allocator = Allocator::new();
+        let VaporL3BridgeStatus::Accepted(artifact) =
+            lower_source_for_vapor(&allocator, source, options())
+        else {
+            panic!("{source} should take the native lane");
+        };
+        let diagnostics = artifact.legacy_diagnostics();
+        assert_eq!(diagnostics.len(), recoveries, "{source}");
+        assert_eq!(
+            reports(&diagnostics),
+            reports(&legacy_errors(source)),
+            "{source}"
+        );
+    }
+}
+
+/// A self-closed element compiles exactly like its explicitly closed form,
+/// including a dynamic style written before the static one (upstream keeps
+/// authored order: `[{ color: _ctx.c }, "top: 0"]`).
+#[test]
+fn self_closed_elements_compile_like_explicitly_closed_ones() {
+    let code = |source: &str| {
+        let allocator = Allocator::new();
+        let result = crate::compile_vapor(
+            &allocator,
+            source,
+            VaporCompilerOptions {
+                prefix_identifiers: true,
+                ..Default::default()
+            },
+        );
+        assert!(result.error_messages.is_empty(), "{source}");
+        String::from(result.code.as_str())
+    };
+    for (closed, self_closed) in [
+        (
+            "<div :style=\"{ color: c }\" style=\"top: 0\"></div>",
+            "<div :style=\"{ color: c }\" style=\"top: 0\"/>",
+        ),
+        (
+            "<div><a :id=\"x\"></a><b></b></div>",
+            "<div><a :id=\"x\"/><b/></div>",
+        ),
+        (
+            "<div><div v-if=\"a\"></div>{{ b }}<div v-for=\"i in l\"></div></div>",
+            "<div><div v-if=\"a\"/>{{ b }}<div v-for=\"i in l\"/></div>",
+        ),
+    ] {
+        assert_eq!(code(self_closed), code(closed), "{self_closed}");
+    }
+}
+
 /// The legacy parser flattens and reports elements nested 4096 deep; the
 /// native lane stops well before that limit.
 #[test]
@@ -129,6 +194,20 @@ fn deep_nesting_is_left_to_the_legacy_parser() {
         [admitted(1024), admitted(1025)],
         [(true, true), (false, true)]
     );
+}
+
+/// What a diagnostic reports: its code, message and span.
+fn reports(
+    errors: &[vize_atelier_core::CompilerError],
+) -> std::vec::Vec<(
+    vize_atelier_core::ErrorCode,
+    &str,
+    Option<&vize_atelier_core::SourceLocation>,
+)> {
+    errors
+        .iter()
+        .map(|error| (error.code, error.message.as_str(), error.loc.as_ref()))
+        .collect()
 }
 
 fn legacy_errors(source: &str) -> std::vec::Vec<vize_atelier_core::CompilerError> {

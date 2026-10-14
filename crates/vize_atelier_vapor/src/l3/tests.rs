@@ -209,9 +209,6 @@ fn unsupported_source_semantics_have_explicit_legacy_routes() {
         "<Comp v-slot=\"{ p: q }\">{{ q }}</Comp>",
         "<div v-bind=\"props\" @click=\"go\"></div>",
         "<pre> text </pre>",
-        // The legacy parser reports invalid self-closing HTML elements.
-        "<div />",
-        "<span v-if=\"ok\" />",
     ] {
         assert!(
             matches!(

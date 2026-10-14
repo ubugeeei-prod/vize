@@ -148,7 +148,8 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
         generate(ir, &options, &experimental_options, errors, spans)
     };
     if let VaporL3BridgeStatus::Accepted(artifact) = l3_bridge_status {
-        debug_assert!(
+        let diagnostics = artifact.legacy_diagnostics();
+        debug_assert_eq!(
             parse_with_options_custom_elements_and_template_syntax(
                 allocator,
                 source,
@@ -157,8 +158,14 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
                 template_syntax,
             )
             .1
-            .is_empty(),
-            "the native Vapor lane admitted a source the legacy parser diagnoses"
+            .iter()
+            .map(|error| (error.code, error.message.clone(), error.loc.clone()))
+            .collect::<std::vec::Vec<_>>(),
+            diagnostics
+                .iter()
+                .map(|error| (error.code, error.message.clone(), error.loc.clone()))
+                .collect::<std::vec::Vec<_>>(),
+            "the native Vapor lane reports exactly the legacy parser's diagnostics"
         );
         let result = native::emit_accepted(
             allocator,
@@ -180,7 +187,7 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
                 CaptureOutcome::Rejected(result.error_messages.first().cloned().unwrap_or_default())
             }
         });
-        return (result, std::vec::Vec::new());
+        return (result, diagnostics);
     }
 
     let (mut root, errors) = parse_with_options_custom_elements_and_template_syntax(
