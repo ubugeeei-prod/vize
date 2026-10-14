@@ -857,11 +857,11 @@
               "ruleId": "vue/require-v-for-key",
               "ruleDocsPath": "docs/content/rules/vue.md",
               "severity": 2,
-              "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
-              "line": 6,
-              "column": 15,
-              "endLine": 6,
-              "endColumn": 34
+              "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <tr>",
+              "line": 7,
+              "column": 24,
+              "endLine": 7,
+              "endColumn": 28
             }
           ],
           "errorCount": 1,
@@ -895,11 +895,11 @@
               "ruleId": "vue/require-v-for-key",
               "ruleDocsPath": "docs/content/rules/vue.md",
               "severity": 2,
-              "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
-              "line": 6,
-              "column": 15,
-              "endLine": 6,
-              "endColumn": 34
+              "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <div>",
+              "line": 7,
+              "column": 7,
+              "endLine": 7,
+              "endColumn": 12
             }
           ],
           "errorCount": 1,
@@ -958,11 +958,11 @@
               "ruleId": "vue/require-v-for-key",
               "ruleDocsPath": "docs/content/rules/vue.md",
               "severity": 2,
-              "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
-              "line": 7,
-              "column": 17,
-              "endLine": 7,
-              "endColumn": 36
+              "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <div>",
+              "line": 8,
+              "column": 39,
+              "endLine": 8,
+              "endColumn": 44
             }
           ],
           "errorCount": 1,
@@ -996,11 +996,11 @@
               "ruleId": "vue/require-v-for-key",
               "ruleDocsPath": "docs/content/rules/vue.md",
               "severity": 2,
-              "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
-              "line": 7,
-              "column": 17,
-              "endLine": 7,
-              "endColumn": 36
+              "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <div>",
+              "line": 8,
+              "column": 40,
+              "endLine": 8,
+              "endColumn": 45
             }
           ],
           "errorCount": 1,

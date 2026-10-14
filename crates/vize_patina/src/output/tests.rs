@@ -22,7 +22,7 @@ const items = [1]
     );
 
     assert!(output.contains(r#""line": 6"#), "{output}");
-    assert!(output.contains(r#""column": 8"#), "{output}");
+    assert!(output.contains(r#""column": 3"#), "{output}");
     assert!(
         output.contains(r#""ruleDocsPath": "docs/content/rules/vue.md""#),
         "{output}"

@@ -79,7 +79,7 @@ void test("real worker re-reads its oxlint + Patina config on every pass", async
   assert.equal(diagnostics[0].code, "vize(vue/require-v-for-key)");
   assert.equal(diagnostics[0].filename ?? diagnostics[0].filePath, path.relative(root, source));
   assert.equal(diagnostics[0].labels[0].span.line, 3);
-  assert.equal(diagnostics[0].labels[0].span.column, 9);
+  assert.equal(diagnostics[0].labels[0].span.column, 5);
 
   await writeConfig("off");
   assert.deepEqual(await worker.run(task), {

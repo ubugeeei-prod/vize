@@ -5012,7 +5012,7 @@ Cada `<li>` repetido não tem uma chave que identifique seu item correspondente 
 
 O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
-[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_v_for_key.rs#L43) · [Todas as regras](all.md)
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_v_for_key.rs#L46) · [Todas as regras](all.md)
 
 ### `vue/scoped-event-names`
 

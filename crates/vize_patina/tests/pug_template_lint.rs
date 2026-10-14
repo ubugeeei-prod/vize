@@ -62,13 +62,13 @@ fn pug_diagnostics_match_the_html_twin_and_land_on_pug() {
         "the twin has findings to compare"
     );
     assert_eq!(signature(&from_pug), signature(&from_html));
-    // Each range covers the authored pug that wrote the construct — here the
-    // same bytes the HTML twin's range covers.
-    assert_eq!(spans(&from_pug, &pug), spans(&from_html, &html));
+    // The finding lands on the element head: the opening tag in HTML, the
+    // tag name that opens the element in pug.
     assert_eq!(
-        spans(&from_pug, &pug),
-        [("vue/require-v-for-key", "v-for=\"item in items\""),]
+        spans(&from_html, &html),
+        [("vue/require-v-for-key", "<li v-for=\"item in items\">")]
     );
+    assert_eq!(spans(&from_pug, &pug), [("vue/require-v-for-key", "li")]);
 }
 
 #[test]

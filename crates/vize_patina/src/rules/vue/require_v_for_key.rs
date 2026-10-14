@@ -6,6 +6,10 @@
 //! The key attribute is essential for Vue's virtual DOM diffing algorithm
 //! to efficiently update the DOM when the list changes.
 //!
+//! Like eslint-plugin-vue, a finding is reported at the element's opening tag,
+//! and an unkeyed `<template v-for>` or `<slot v-for>` forwards the check to
+//! each child element, so each unkeyed native child is reported.
+//!
 //! ## Examples
 //!
 //! ### Invalid
@@ -30,15 +34,14 @@ use oxc_ast::ast::{Expression, ObjectExpression, ObjectPropertyKind, PropertyKey
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_l0::ensure_sufficient_stack;
-use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode, TemplateChildNode};
+use vize_relief::{DirectiveNode, ElementNode};
 
 mod components;
+mod relief;
 
+use components::markup_element_is_custom_component;
 pub(super) use components::relief_element_is_custom_component;
-use components::{
-    has_markup_native_child, markup_element_is_custom_component, relief_has_native_child,
-    relief_template_has_slot_directive,
-};
+use relief::relief_check;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/require-v-for-key",
@@ -52,7 +55,9 @@ static META: RuleMeta = RuleMeta {
 pub struct RequireVForKey;
 
 impl RequireVForKey {
-    /// Report when `element` (the repeated node of a `v-for`) lacks a key.
+    /// Check the repeated node of a `v-for` like eslint-plugin-vue: a keyed node
+    /// is fine; an unkeyed `<template>` / `<slot>` forwards the check to each
+    /// child element; an unkeyed native element is reported at its opening tag.
     fn check_keyed_element<'a>(
         ctx: &mut MarkupContext<'_, 'a>,
         element: &MarkupElement<'a>,
@@ -64,28 +69,76 @@ impl RequireVForKey {
             return;
         }
         let exact = ctx.is_template();
-        if element.tag() == "slot" || (!exact && element.is_tag("slot")) {
+        if is_transparent(element, exact) {
+            if !element.has_directive("slot") && !has_markup_key(element, exact) {
+                Self::check_children(ctx, element, exact);
+            }
             return;
         }
-        if element.tag() == "template" || (!exact && element.is_tag("template")) {
-            if has_markup_template_v_for_key(element, exact)
-                || (template_directive && !has_markup_native_child(element, exact))
-            {
-                return;
-            }
-        } else if has_markup_key(element, exact)
+        if has_markup_key(element, exact)
             || (template_directive && markup_element_is_custom_component(element))
         {
             return;
         }
+        let range = if template_directive {
+            element.open_tag_range(ctx.lint().source)
+        } else {
+            range
+        };
+        Self::report(ctx, element, range);
+    }
 
-        let tag = element.tag();
+    fn check_children<'a>(
+        ctx: &mut MarkupContext<'_, 'a>,
+        parent: &MarkupElement<'a>,
+        exact: bool,
+    ) {
+        parent.walk_children(&mut |child| {
+            let MarkupNode::Element(child) = child else {
+                return;
+            };
+            // A child with its own loop is checked by that loop.
+            let mut own_loop = false;
+            child.walk_authored_directive_ranges("for", &mut |_| own_loop = true);
+            // Like the reference rule, only a bound `:key` satisfies a child;
+            // the root's static and object-spread key exemptions stay at the root.
+            if own_loop || has_markup_bound_key(&child, exact) {
+                return;
+            }
+            if is_transparent(&child, exact) {
+                ensure_sufficient_stack(|| Self::check_children(ctx, &child, exact));
+            } else if !markup_element_is_custom_component(&child) {
+                let range = child.open_tag_range(ctx.lint().source);
+                Self::report(ctx, &child, range);
+            }
+        });
+    }
+
+    fn report(ctx: &mut MarkupContext<'_, '_>, element: &MarkupElement<'_>, range: ByteRange) {
         let message = ctx
             .lint()
-            .t_fmt("vue/require-v-for-key.message", &[("tag", tag)]);
+            .t_fmt("vue/require-v-for-key.message", &[("tag", element.tag())]);
         let help = ctx.lint().t("vue/require-v-for-key.help");
         ctx.lint().error_at_with_help(message, range, help);
     }
+}
+
+fn is_transparent(element: &MarkupElement<'_>, exact: bool) -> bool {
+    matches!(element.tag(), "template" | "slot")
+        || (!exact && (element.is_tag("template") || element.is_tag("slot")))
+}
+
+fn has_markup_bound_key(element: &MarkupElement<'_>, exact: bool) -> bool {
+    let mut found = false;
+    element.walk_bindings(&mut |binding| {
+        found |= binding.kind() == MarkupBindingKind::Bind
+            && if exact {
+                binding.is_unqualified_arg_exact("key")
+            } else {
+                binding.arg_name_eq("key")
+            };
+    });
+    found
 }
 
 fn has_markup_key(element: &MarkupElement<'_>, exact: bool) -> bool {
@@ -103,43 +156,6 @@ fn has_markup_key(element: &MarkupElement<'_>, exact: bool) -> bool {
     found || has_object_bound_key(element)
 }
 
-fn has_markup_template_v_for_key(element: &MarkupElement<'_>, exact: bool) -> bool {
-    if element.has_directive("slot") {
-        return true;
-    }
-    if has_markup_key(element, exact) {
-        return true;
-    }
-    has_markup_child_bound_key(element, exact)
-}
-
-fn has_markup_child_bound_key(element: &MarkupElement<'_>, exact: bool) -> bool {
-    let mut found = false;
-    element.walk_children(&mut |child| {
-        if found {
-            return;
-        }
-        if let MarkupNode::Element(child) = child {
-            child.walk_bindings(&mut |binding| {
-                found |= binding.kind() == MarkupBindingKind::Bind
-                    && if exact {
-                        binding.is_unqualified_arg_exact("key")
-                    } else {
-                        binding.arg_name_eq("key")
-                    };
-            });
-            // Root slot/static/object-key exemptions do not belong to descendants.
-            if !found
-                && (matches!(child.tag(), "template" | "slot")
-                    || (!exact && (child.is_tag("template") || child.is_tag("slot"))))
-            {
-                found = ensure_sufficient_stack(|| has_markup_child_bound_key(&child, exact));
-            }
-        }
-    });
-    found
-}
-
 fn has_object_bound_key(element: &MarkupElement<'_>) -> bool {
     let mut found = false;
     element.walk_bindings(&mut |binding| {
@@ -154,7 +170,7 @@ fn has_object_bound_key(element: &MarkupElement<'_>) -> bool {
     found
 }
 
-fn object_has_static_key(source: &str) -> bool {
+pub(super) fn object_has_static_key(source: &str) -> bool {
     let source = source.trim();
     if !matches!(source.as_bytes().first(), Some(b'{') | Some(b'(')) {
         return false;
@@ -211,48 +227,6 @@ fn is_static_key(key: &PropertyKey<'_>) -> bool {
         PropertyKey::StringLiteral(literal) => literal.value == "key",
         _ => false,
     }
-}
-
-fn relief_element_has_key(element: &ElementNode<'_>) -> bool {
-    element.props.iter().any(|prop| match prop {
-        PropNode::Attribute(attr) => attr.name == "key",
-        PropNode::Directive(dir) => {
-            if relief_directive_is_bound_key(dir) {
-                return true;
-            }
-            dir.name == "bind"
-                && dir.arg.is_none()
-                && matches!(&dir.exp, Some(ExpressionNode::Simple(expression)) if object_has_static_key(expression.content))
-        }
-    })
-}
-
-fn relief_directive_is_bound_key(directive: &DirectiveNode<'_>) -> bool {
-    directive.name == "bind"
-        && matches!(
-            directive.arg.as_ref(),
-            Some(ExpressionNode::Simple(arg)) if arg.content == "key"
-        )
-}
-
-fn relief_template_v_for_has_key(element: &ElementNode<'_>) -> bool {
-    relief_template_has_slot_directive(element)
-        || relief_element_has_key(element)
-        || relief_child_has_bound_key(element)
-}
-
-fn relief_child_has_bound_key(element: &ElementNode<'_>) -> bool {
-    element.children.iter().any(|child| {
-        matches!(
-            child,
-            TemplateChildNode::Element(child) if child
-                .props
-                .iter()
-                .any(|prop| matches!(prop, PropNode::Directive(dir) if relief_directive_is_bound_key(dir)))
-                || (matches!(child.tag, "template" | "slot")
-                    && ensure_sufficient_stack(|| relief_child_has_bound_key(child)))
-        )
-    })
 }
 
 /// Markup-IR entry point for `vue/require-v-for-key`.
@@ -324,22 +298,7 @@ impl Rule for RequireVForKey {
             return;
         }
 
-        if element.tag == "template" {
-            if relief_template_v_for_has_key(element) || !relief_has_native_child(element) {
-                return;
-            }
-        } else if element.tag == "slot"
-            || relief_element_has_key(element)
-            || relief_element_is_custom_component(element)
-        {
-            return;
-        }
-
-        ctx.error_with_help(
-            ctx.t_fmt("vue/require-v-for-key.message", &[("tag", element.tag)]),
-            &directive.loc,
-            ctx.t("vue/require-v-for-key.help"),
-        );
+        relief_check(ctx, element, true);
     }
 }
 

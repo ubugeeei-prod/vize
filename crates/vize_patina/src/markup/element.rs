@@ -203,6 +203,33 @@ impl<'a> MarkupElement<'a> {
         }
     }
 
+    /// Byte range of the opening tag (`<li v-for="…" …>`), the span
+    /// eslint-plugin-vue reports for element-level findings. `source` is the
+    /// text the element's offsets index (the lint context source).
+    pub fn open_tag_range(&self, source: &str) -> ByteRange {
+        match self.inner {
+            MarkupElementInner::Relief(node) => {
+                let start = node.loc.span.start;
+                let mut from = start as usize + 1 + node.tag.len();
+                for prop in &node.props {
+                    from = from.max(prop.loc().span.end as usize);
+                }
+                let end = source
+                    .get(from..)
+                    .and_then(|rest| rest.find('>'))
+                    .map_or(node.loc.span.end, |at| (from + at + 1) as u32);
+                ByteRange::new(start, end.min(node.loc.span.end))
+            }
+            MarkupElementInner::JsxElement { node, offset } => {
+                span_to_range(jsx_element_ref(node).opening_element.span, offset)
+            }
+            MarkupElementInner::JsxFragment { node, offset } => {
+                span_to_range(jsx_fragment_ref(node).opening_fragment.span, offset)
+            }
+            _ => self.range(),
+        }
+    }
+
     /// Visit direct child nodes, as authored.
     ///
     /// In a template an element that carries `v-if` / `v-for` is itself the

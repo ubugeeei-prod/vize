@@ -136,14 +136,14 @@
       "expectedNativePacket": {
         "diagnostics": [
           {
-            "end": 112,
+            "end": 141,
             "fix": null,
             "help": null,
             "labels": [],
-            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <tr>",
             "rule_name": "vue/require-v-for-key",
             "severity": "error",
-            "start": 93
+            "start": 137
           }
         ],
         "error_count": 1,
@@ -159,14 +159,14 @@
       "expectedNativePacket": {
         "diagnostics": [
           {
-            "end": 112,
+            "end": 125,
             "fix": null,
             "help": null,
             "labels": [],
-            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <div>",
             "rule_name": "vue/require-v-for-key",
             "severity": "error",
-            "start": 93
+            "start": 120
           }
         ],
         "error_count": 1,
@@ -194,14 +194,14 @@
       "expectedNativePacket": {
         "diagnostics": [
           {
-            "end": 112,
+            "end": 142,
             "fix": null,
             "help": null,
             "labels": [],
-            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <div>",
             "rule_name": "vue/require-v-for-key",
             "severity": "error",
-            "start": 93
+            "start": 137
           }
         ],
         "error_count": 1,
@@ -229,14 +229,14 @@
       "expectedNativePacket": {
         "diagnostics": [
           {
-            "end": 106,
+            "end": 107,
             "fix": null,
             "help": null,
             "labels": [],
             "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <tr>",
             "rule_name": "vue/require-v-for-key",
             "severity": "error",
-            "start": 87
+            "start": 83
           }
         ],
         "error_count": 1,
@@ -325,8 +325,19 @@
       "expectedNativeDiagnostics": 0,
       "policyLimit": "Native preserves the historical any directly keyed child contract; the official rule checks each ordinary child.",
       "expectedNativePacket": {
-        "diagnostics": [],
-        "error_count": 0,
+        "diagnostics": [
+          {
+            "end": 168,
+            "fix": null,
+            "help": null,
+            "labels": [],
+            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <tr>",
+            "rule_name": "vue/require-v-for-key",
+            "severity": "error",
+            "start": 164
+          }
+        ],
+        "error_count": 1,
         "filename": "multiple-child-any-key-policy-limit.vue",
         "warning_count": 0
       }
@@ -338,8 +349,19 @@
       "expectedNativeDiagnostics": 0,
       "policyLimit": "Transparent traversal preserves the native any bound child key policy; the official rule checks each fallback child.",
       "expectedNativePacket": {
-        "diagnostics": [],
-        "error_count": 0,
+        "diagnostics": [
+          {
+            "end": 185,
+            "fix": null,
+            "help": null,
+            "labels": [],
+            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <tr>",
+            "rule_name": "vue/require-v-for-key",
+            "severity": "error",
+            "start": 181
+          }
+        ],
+        "error_count": 1,
         "filename": "mixed-fallback-any-key-policy-limit.vue",
         "warning_count": 0
       }
@@ -377,14 +399,14 @@
       "expectedNativePacket": {
         "diagnostics": [
           {
-            "end": 119,
+            "end": 153,
             "fix": null,
             "help": null,
             "labels": [],
-            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <div>",
             "rule_name": "vue/require-v-for-key",
             "severity": "error",
-            "start": 100
+            "start": 148
           }
         ],
         "error_count": 1,
@@ -401,14 +423,14 @@
       "expectedNativePacket": {
         "diagnostics": [
           {
-            "end": 119,
+            "end": 157,
             "fix": null,
             "help": null,
             "labels": [],
-            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <div>",
             "rule_name": "vue/require-v-for-key",
             "severity": "error",
-            "start": 100
+            "start": 152
           }
         ],
         "error_count": 1,
@@ -425,14 +447,14 @@
       "expectedNativePacket": {
         "diagnostics": [
           {
-            "end": 119,
+            "end": 164,
             "fix": null,
             "help": null,
             "labels": [],
-            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <div>",
             "rule_name": "vue/require-v-for-key",
             "severity": "error",
-            "start": 100
+            "start": 159
           }
         ],
         "error_count": 1,
@@ -449,14 +471,14 @@
       "expectedNativePacket": {
         "diagnostics": [
           {
-            "end": 119,
+            "end": 169,
             "fix": null,
             "help": null,
             "labels": [],
-            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <div>",
             "rule_name": "vue/require-v-for-key",
             "severity": "error",
-            "start": 100
+            "start": 164
           }
         ],
         "error_count": 1,
@@ -473,14 +495,14 @@
       "expectedNativePacket": {
         "diagnostics": [
           {
-            "end": 119,
+            "end": 165,
             "fix": null,
             "help": null,
             "labels": [],
-            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <div>",
             "rule_name": "vue/require-v-for-key",
             "severity": "error",
-            "start": 100
+            "start": 160
           }
         ],
         "error_count": 1,

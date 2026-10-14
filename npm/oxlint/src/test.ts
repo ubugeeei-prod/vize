@@ -542,7 +542,7 @@ assert.match(
 );
 assert.match(
   defaultRun.output,
-  /Elements in iteration expect to have 'v-bind:key' directives\. \(at <template>:6:9\)/u,
+  /Elements in iteration expect to have 'v-bind:key' directives\. \(at <template>:6:5\)/u,
   "Template diagnostics should expose the real Vue location inline in the summary",
 );
 assert.doesNotMatch(
@@ -560,7 +560,7 @@ const stylishRun = runOxlint(["-c", ".oxlintrc.no-help.json", "-f", "stylish", "
 assert.notEqual(stylishRun.exitCode, 0, "stylish formatter should still report Patina failures");
 assert.match(
   stylishRun.output,
-  /App\.vue[\s\S]*2:2[\s\S]*Elements in iteration expect to have 'v-bind:key' directives\. \(at <template>:6:9\)[\s\S]*^    Details:$[\s\S]*^      Element: <li>  vize\(vue\/require-v-for-key\)$/mu,
+  /App\.vue[\s\S]*2:2[\s\S]*Elements in iteration expect to have 'v-bind:key' directives\. \(at <template>:6:5\)[\s\S]*^    Details:$[\s\S]*^      Element: <li>  vize\(vue\/require-v-for-key\)$/mu,
   "Stylish formatter should keep the output concise while surfacing the real Vue location",
 );
 assert.doesNotMatch(stylishRun.output, /^Help:/mu, "showHelp: false should omit the help section");

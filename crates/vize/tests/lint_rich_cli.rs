@@ -49,10 +49,10 @@ fn rich_output_renders_the_excerpt_in_english_by_default() {
     assert_eq!(
         std::str::from_utf8(&output.stdout).expect("UTF-8 stdout"),
         "error[vue/require-v-for-key]: Elements in iteration expect to have 'v-bind:key' directives. Element: <li>
- --> src/TodoList.vue:9:9
+ --> src/TodoList.vue:9:5
   |
 9 |     <li v-for=\"todo in todos\">{{ todo.title }}</li>
-  |         ^^^^^^^^^^^^^^^^^^^^^
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
   |
   = help: Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.
 
@@ -69,10 +69,10 @@ fn rich_output_speaks_the_requested_locale_end_to_end() {
     assert_eq!(
         std::str::from_utf8(&output.stdout).expect("UTF-8 stdout"),
         "エラー[vue/require-v-for-key]: `v-for` で繰り返す <li> には `v-bind:key` が必要です
- --> src/TodoList.vue:9:9
+ --> src/TodoList.vue:9:5
   |
 9 |     <li v-for=\"todo in todos\">{{ todo.title }}</li>
-  |         ^^^^^^^^^^^^^^^^^^^^^
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
   |
   = ヒント: 各項目を一意に識別できる値を :key に指定してください
 
@@ -95,10 +95,10 @@ fn rich_output_honors_explicit_force_color_when_piped() {
         concat!(
             "\x1b[1;91merror[vue/require-v-for-key]\x1b[0m",
             "\x1b[1m: Elements in iteration expect to have 'v-bind:key' directives. Element: <li>\x1b[0m\n",
-            " \x1b[1;94m-->\x1b[0m src/TodoList.vue:9:9\n",
+            " \x1b[1;94m-->\x1b[0m src/TodoList.vue:9:5\n",
             "  \x1b[1;94m|\x1b[0m\n",
             "\x1b[1;94m9\x1b[0m \x1b[1;94m|\x1b[0m     <li v-for=\"todo in todos\">{{ todo.title }}</li>\n",
-            "  \x1b[1;94m|\x1b[0m         \x1b[1;91m^^^^^^^^^^^^^^^^^^^^^\x1b[0m\n",
+            "  \x1b[1;94m|\x1b[0m     \x1b[1;91m^^^^^^^^^^^^^^^^^^^^^^^^^^\x1b[0m\n",
             "  \x1b[1;94m|\x1b[0m\n",
             "  \x1b[1;94m=\x1b[0m \x1b[1mhelp\x1b[0m: Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\n",
             "\n\x1b[1m1 error and 0 warnings in 1 file\x1b[0m\n",

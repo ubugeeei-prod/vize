@@ -37,7 +37,7 @@ pub const SNIPPETS: &[Snippet] = &[
     snippet(
         "require-v-for-key",
         "vue/require-v-for-key",
-        "<template>\n<ul><li [[v-for=\"item in items\"]]>{{ item.name }}</li></ul>\n</template>\n",
+        "<template>\n<ul>[[<li v-for=\"item in items\">]]{{ item.name }}</li></ul>\n</template>\n",
     ),
     snippet(
         "no-textarea-mustache",

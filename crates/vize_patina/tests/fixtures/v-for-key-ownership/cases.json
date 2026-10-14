@@ -134,9 +134,9 @@
     "valid_for": 0
   },
   {
-    "id": "historical-any-child-key-policy",
+    "id": "unkeyed-sibling-of-keyed-child",
     "source": "<template v-for=\"item in items\"><Row :key=\"item.id\" /><li /></template>",
-    "require_key": 0,
+    "require_key": 1,
     "valid_for": 0
   },
   {

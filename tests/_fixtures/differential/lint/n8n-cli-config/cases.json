@@ -1103,9 +1103,9 @@
               "severity": 2,
               "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <li>",
               "line": 6,
-              "column": 9,
+              "column": 5,
               "endLine": 6,
-              "endColumn": 30
+              "endColumn": 31
             }
           ],
           "errorCount": 1,

@@ -93,7 +93,7 @@
   },
   "linter/report/original-line-columns": {
     "path": "crates/vize_patina/tests/snapshots/report_history__original-line-columns.snap",
-    "sha256": "13b8c0d62001408d40f3b1b879d1f32e8965a12c7dddc830491d2fd4127c4067"
+    "sha256": "c87adcf0ab771ce49a82e1f581142a6f7317170a5b14021a6a70cbb4cd3ddfee"
   },
   "linter/report/unicode-crlf-columns": {
     "path": "crates/vize_patina/tests/snapshots/report_history__unicode-crlf-columns.snap",
