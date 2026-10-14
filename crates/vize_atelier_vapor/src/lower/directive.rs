@@ -159,7 +159,7 @@ pub(crate) fn transform_directive<'a>(
 
                     // Delegate only on request, as Vue's compiler does.
                     let requested = dir.modifiers.iter().any(|m| m.content == "delegate");
-                    let stopped = !is_dynamic
+                    let stopped = requested && !is_dynamic
                         && el.props.iter().any(|prop| match prop {
                             vize_atelier_core::PropNode::Directive(other) if other.name == "on" => {
                                 match &other.arg {

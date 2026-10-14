@@ -4,13 +4,12 @@ options: vapor
 --- INPUT ---
 <button @click="handler"></button>
 --- OUTPUT ---
-import { createInvoker as _createInvoker, delegateEvents as _delegateEvents, template as _template } from 'vue';
+import { on as _on, template as _template } from 'vue';
 const t0 = _template("<button></button>", true)
-_delegateEvents("click")
 
 export function render(_ctx) {
   const n0 = t0()
-  n0.$evtclick = _createInvoker(e => _ctx.handler(e))
+  _on(n0, "click", e => _ctx.handler(e))
   return n0
 }
 
@@ -20,13 +19,12 @@ options: vapor
 --- INPUT ---
 <button @click="count++"></button>
 --- OUTPUT ---
-import { createInvoker as _createInvoker, delegateEvents as _delegateEvents, template as _template } from 'vue';
+import { on as _on, template as _template } from 'vue';
 const t0 = _template("<button></button>", true)
-_delegateEvents("click")
 
 export function render(_ctx) {
   const n0 = t0()
-  n0.$evtclick = _createInvoker($event => (_ctx.count++))
+  _on(n0, "click", $event => (_ctx.count++))
   return n0
 }
 
@@ -38,13 +36,12 @@ options: vapor
 fuga();
 ">Hoge</button>
 --- OUTPUT ---
-import { createInvoker as _createInvoker, delegateEvents as _delegateEvents, template as _template } from 'vue';
+import { on as _on, template as _template } from 'vue';
 const t0 = _template("<button>Hoge</button>", true)
-_delegateEvents("click")
 
 export function render(_ctx) {
   const n0 = t0()
-  n0.$evtclick = _createInvoker($event => {
+  _on(n0, "click", $event => {
 _ctx.hoge();
 _ctx.fuga();
 })
@@ -57,13 +54,12 @@ options: vapor
 --- INPUT ---
 <button @click="handler()"></button>
 --- OUTPUT ---
-import { createInvoker as _createInvoker, delegateEvents as _delegateEvents, template as _template } from 'vue';
+import { on as _on, template as _template } from 'vue';
 const t0 = _template("<button></button>", true)
-_delegateEvents("click")
 
 export function render(_ctx) {
   const n0 = t0()
-  n0.$evtclick = _createInvoker($event => (_ctx.handler()))
+  _on(n0, "click", $event => (_ctx.handler()))
   return n0
 }
 
@@ -73,13 +69,12 @@ options: vapor
 --- INPUT ---
 <button @click="handler($event)"></button>
 --- OUTPUT ---
-import { createInvoker as _createInvoker, delegateEvents as _delegateEvents, template as _template } from 'vue';
+import { on as _on, template as _template } from 'vue';
 const t0 = _template("<button></button>", true)
-_delegateEvents("click")
 
 export function render(_ctx) {
   const n0 = t0()
-  n0.$evtclick = _createInvoker($event => (_ctx.handler($event)))
+  _on(n0, "click", $event => (_ctx.handler($event)))
   return n0
 }
 
@@ -89,13 +84,12 @@ options: vapor
 --- INPUT ---
 <button @click.stop="handler"></button>
 --- OUTPUT ---
-import { createInvoker as _createInvoker, withModifiers as _withModifiers, delegateEvents as _delegateEvents, template as _template } from 'vue';
+import { withModifiers as _withModifiers, on as _on, template as _template } from 'vue';
 const t0 = _template("<button></button>", true)
-_delegateEvents("click")
 
 export function render(_ctx) {
   const n0 = t0()
-  n0.$evtclick = _createInvoker(_withModifiers(e => _ctx.handler(e), ["stop"]))
+  _on(n0, "click", _withModifiers(e => _ctx.handler(e), ["stop"]))
   return n0
 }
 
@@ -105,12 +99,12 @@ options: vapor
 --- INPUT ---
 <form @submit.prevent="onSubmit"></form>
 --- OUTPUT ---
-import { createInvoker as _createInvoker, withModifiers as _withModifiers, on as _on, template as _template } from 'vue';
+import { withModifiers as _withModifiers, on as _on, template as _template } from 'vue';
 const t0 = _template("<form></form>", true)
 
 export function render(_ctx) {
   const n0 = t0()
-  _on(n0, "submit", _createInvoker(_withModifiers(e => _ctx.onSubmit(e), ["prevent"])))
+  _on(n0, "submit", _withModifiers(e => _ctx.onSubmit(e), ["prevent"]))
   return n0
 }
 
@@ -120,12 +114,12 @@ options: vapor
 --- INPUT ---
 <button @click.once="handler"></button>
 --- OUTPUT ---
-import { createInvoker as _createInvoker, on as _on, template as _template } from 'vue';
+import { on as _on, template as _template } from 'vue';
 const t0 = _template("<button></button>", true)
 
 export function render(_ctx) {
   const n0 = t0()
-  _on(n0, "click", _createInvoker(e => _ctx.handler(e)), {
+  _on(n0, "click", e => _ctx.handler(e), {
     once: true
   })
   return n0
@@ -137,13 +131,12 @@ options: vapor
 --- INPUT ---
 <button @click.stop.prevent="handler"></button>
 --- OUTPUT ---
-import { createInvoker as _createInvoker, withModifiers as _withModifiers, delegateEvents as _delegateEvents, template as _template } from 'vue';
+import { withModifiers as _withModifiers, on as _on, template as _template } from 'vue';
 const t0 = _template("<button></button>", true)
-_delegateEvents("click")
 
 export function render(_ctx) {
   const n0 = t0()
-  n0.$evtclick = _createInvoker(_withModifiers(e => _ctx.handler(e), ["stop","prevent"]))
+  _on(n0, "click", _withModifiers(e => _ctx.handler(e), ["stop","prevent"]))
   return n0
 }
 
@@ -153,13 +146,12 @@ options: vapor
 --- INPUT ---
 <input @keyup.enter="submit">
 --- OUTPUT ---
-import { createInvoker as _createInvoker, withKeys as _withKeys, delegateEvents as _delegateEvents, template as _template } from 'vue';
+import { withKeys as _withKeys, on as _on, template as _template } from 'vue';
 const t0 = _template("<input>", true)
-_delegateEvents("keyup")
 
 export function render(_ctx) {
   const n0 = t0()
-  n0.$evtkeyup = _createInvoker(_withKeys(e => _ctx.submit(e), ["enter"]))
+  _on(n0, "keyup", _withKeys(e => _ctx.submit(e), ["enter"]))
   return n0
 }
 
@@ -169,13 +161,12 @@ options: vapor
 --- INPUT ---
 <input @keyup.esc="cancel">
 --- OUTPUT ---
-import { createInvoker as _createInvoker, withKeys as _withKeys, delegateEvents as _delegateEvents, template as _template } from 'vue';
+import { withKeys as _withKeys, on as _on, template as _template } from 'vue';
 const t0 = _template("<input>", true)
-_delegateEvents("keyup")
 
 export function render(_ctx) {
   const n0 = t0()
-  n0.$evtkeyup = _createInvoker(_withKeys(e => _ctx.cancel(e), ["esc"]))
+  _on(n0, "keyup", _withKeys(e => _ctx.cancel(e), ["esc"]))
   return n0
 }
 
@@ -185,13 +176,13 @@ options: vapor
 --- INPUT ---
 <input @focus="onFocus" @blur="onBlur">
 --- OUTPUT ---
-import { createInvoker as _createInvoker, on as _on, template as _template } from 'vue';
+import { on as _on, template as _template } from 'vue';
 const t0 = _template("<input>", true)
 
 export function render(_ctx) {
   const n0 = t0()
-  _on(n0, "focus", _createInvoker(e => _ctx.onFocus(e)))
-  _on(n0, "blur", _createInvoker(e => _ctx.onBlur(e)))
+  _on(n0, "focus", e => _ctx.onFocus(e))
+  _on(n0, "blur", e => _ctx.onBlur(e))
   return n0
 }
 

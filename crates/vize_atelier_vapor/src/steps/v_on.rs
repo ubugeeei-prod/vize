@@ -104,6 +104,9 @@ fn should_delegate(dir: &DirectiveNode<'_>, modifiers: &EventModifiers<'_>) -> b
         .modifiers
         .iter()
         .any(|modifier| modifier.content == "delegate");
+    if !requested {
+        return false;
+    }
     match &dir.arg {
         Some(ExpressionNode::Simple(arg)) if arg.is_static => {
             let name = modifiers.event_name(arg.content);

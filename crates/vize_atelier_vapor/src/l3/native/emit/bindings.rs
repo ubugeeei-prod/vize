@@ -89,7 +89,7 @@ impl<'a> Emitter<'a, '_> {
                 };
                 // Delegate only on request, as Vue's compiler does.
                 let requested = binding.modifiers.contains(&"delegate");
-                let stopped = dynamic.is_none()
+                let stopped = requested && dynamic.is_none()
                     && node.bindings.iter().any(|other| {
                         other.kind == BindingKind::Event
                             && other.dynamic_name.is_none()
