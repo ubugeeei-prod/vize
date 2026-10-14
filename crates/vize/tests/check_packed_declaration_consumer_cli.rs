@@ -148,10 +148,11 @@ fn packed_component_props_and_emits_check_in_a_consumer_template() {
         broken.stderr
     );
     let diagnostics = diagnostics_for(&parse_json(&broken), "src/App.vue");
-    assert_eq!(diagnostics.len(), 1, "{diagnostics:#?}\n{}", broken.stdout);
-    assert!(
-        diagnostics[0].starts_with("error:10:31 [TS2322]"),
-        "the diagnostic must land on the authored prop binding: {diagnostics:#?}"
+    assert_eq!(
+        diagnostics,
+        vec!["error:10:31 [TS2322] Type 'string' is not assignable to type 'number'."],
+        "the diagnostic must land on the authored prop binding:\n{}",
+        broken.stdout
     );
 
     consumer.write("src/App.vue", CLEAN_TEMPLATE);
