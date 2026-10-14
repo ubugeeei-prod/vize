@@ -1,0 +1,13 @@
+<script setup lang="ts">
+defineSlots<{
+  option(props: { option: { label: string } }): any;
+  header(props: { value: number }): any;
+}>();
+</script>
+
+<template>
+  <div>
+    <slot name="option" :option="{ label: 'a' }" />
+    <slot name="header" :value="1" />
+  </div>
+</template>

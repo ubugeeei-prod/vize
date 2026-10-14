@@ -34,6 +34,7 @@ title: Vue 规则
 | [`vue/no-deprecated-slot-attribute`](#vue-no-deprecated-slot-attribute) | [错误示例](#vue-no-deprecated-slot-attribute-bad) · [正确示例](#vue-no-deprecated-slot-attribute-good) | 禁止使用已弃用的 `slot` 属性 |
 | [`vue/no-deprecated-slot-scope-attribute`](#vue-no-deprecated-slot-scope-attribute) | [错误示例](#vue-no-deprecated-slot-scope-attribute-bad) · [正确示例](#vue-no-deprecated-slot-scope-attribute-good) | 禁止使用已弃用的 `slot-scope` 属性 |
 | [`vue/no-deprecated-v-bind-sync`](#vue-no-deprecated-v-bind-sync) | [错误示例](#vue-no-deprecated-v-bind-sync-bad) · [正确示例](#vue-no-deprecated-v-bind-sync-good) | 禁止在 `v-bind` 上使用已弃用的 `.sync` 修饰符 |
+| [`vue/no-deprecated-v-is`](#vue-no-deprecated-v-is) | [错误示例](#vue-no-deprecated-v-is-bad) · [正确示例](#vue-no-deprecated-v-is-good) | 禁止使用已废弃的 `v-is` 指令 |
 | [`vue/no-deprecated-v-on-native-modifier`](#vue-no-deprecated-v-on-native-modifier) | [错误示例](#vue-no-deprecated-v-on-native-modifier-bad) · [正确示例](#vue-no-deprecated-v-on-native-modifier-good) | 禁止在 `v-on` 上使用已弃用的 `.native` 修饰符 |
 | [`vue/no-deprecated-v-on-number-modifiers`](#vue-no-deprecated-v-on-number-modifiers) | [错误示例](#vue-no-deprecated-v-on-number-modifiers-bad) · [正确示例](#vue-no-deprecated-v-on-number-modifiers-good) | 禁止在 `v-on` 上使用已弃用的数字 `keyCode` 修饰符 |
 | [`vue/no-dupe-v-else-if`](#vue-no-dupe-v-else-if) | [错误示例](#vue-no-dupe-v-else-if-bad) · [正确示例](#vue-no-dupe-v-else-if-good) | 禁止在 `v-if` / `v-else-if` 链中使用重复条件 |
@@ -102,13 +103,16 @@ title: Vue 规则
 | [`vue/valid-v-bind`](#vue-valid-v-bind) | [错误示例](#vue-valid-v-bind-bad) · [正确示例](#vue-valid-v-bind-good) | 要求 `v-bind` 指令有效 |
 | [`vue/valid-v-cloak`](#vue-valid-v-cloak) | [错误示例](#vue-valid-v-cloak-bad) · [正确示例](#vue-valid-v-cloak-good) | 要求 `v-cloak` 指令有效 |
 | [`vue/valid-v-else`](#vue-valid-v-else) | [错误示例](#vue-valid-v-else-bad) · [正确示例](#vue-valid-v-else-good) | 要求 `v-else` 指令有效 |
+| [`vue/valid-v-else-if`](#vue-valid-v-else-if) | [错误示例](#vue-valid-v-else-if-bad) · [正确示例](#vue-valid-v-else-if-good) | 要求 `v-else-if` 指令有效 |
 | [`vue/valid-v-for`](#vue-valid-v-for) | [错误示例](#vue-valid-v-for-bad) · [正确示例](#vue-valid-v-for-good) | 要求 `v-for` 指令有效 |
 | [`vue/valid-v-html`](#vue-valid-v-html) | [错误示例](#vue-valid-v-html-bad) · [正确示例](#vue-valid-v-html-good) | 要求 `v-html` 指令有效 |
 | [`vue/valid-v-if`](#vue-valid-v-if) | [错误示例](#vue-valid-v-if-bad) · [正确示例](#vue-valid-v-if-good) | 要求 `v-if` 指令有效 |
+| [`vue/valid-v-is`](#vue-valid-v-is) | [错误示例](#vue-valid-v-is-bad) · [正确示例](#vue-valid-v-is-good) | 要求 `v-is` 指令有效 |
 | [`vue/valid-v-memo`](#vue-valid-v-memo) | [错误示例](#vue-valid-v-memo-bad) · [正确示例](#vue-valid-v-memo-good) | 要求 `v-memo` 指令有效 |
 | [`vue/valid-v-model`](#vue-valid-v-model) | [错误示例](#vue-valid-v-model-bad) · [正确示例](#vue-valid-v-model-good) | 要求 `v-model` 指令有效 |
 | [`vue/valid-v-on`](#vue-valid-v-on) | [错误示例](#vue-valid-v-on-bad) · [正确示例](#vue-valid-v-on-good) | 要求 `v-on` 指令有效 |
 | [`vue/valid-v-once`](#vue-valid-v-once) | [错误示例](#vue-valid-v-once-bad) · [正确示例](#vue-valid-v-once-good) | 要求 `v-once` 指令有效 |
+| [`vue/valid-v-pre`](#vue-valid-v-pre) | [错误示例](#vue-valid-v-pre-bad) · [正确示例](#vue-valid-v-pre-good) | 要求 `v-pre` 指令有效 |
 | [`vue/valid-v-show`](#vue-valid-v-show) | [错误示例](#vue-valid-v-show-bad) · [正确示例](#vue-valid-v-show-good) | 要求 `v-show` 指令有效 |
 | [`vue/valid-v-slot`](#vue-valid-v-slot) | [错误示例](#vue-valid-v-slot-bad) · [正确示例](#vue-valid-v-slot-good) | 要求 `v-slot` 指令有效 |
 | [`vue/valid-v-text`](#vue-valid-v-text) | [错误示例](#vue-valid-v-text-bad) · [正确示例](#vue-valid-v-text-good) | 要求 `v-text` 指令有效 |
@@ -1662,6 +1666,68 @@ vp run lint
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
 [实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_bind_sync.rs#L42) · [全部规则](all.md)
+
+### `vue/no-deprecated-v-is`
+
+禁止使用已废弃的 `v-is` 指令
+
+[错误示例](#vue-no-deprecated-v-is-bad) · [正确示例](#vue-no-deprecated-v-is-good)
+
+默认严重程度: `error`  
+预设: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
+自动修复: 无；请检查建议的修改  
+适用范围: Vue SFC 模板和代码块，包括规则所需的脚本上下文  
+选项: 没有规则专属选项。可以配置严重程度和预设。
+
+**配置（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  lint: {
+    vize: {
+      "preset": "incremental",
+      "rules": {
+        "vue/no-deprecated-v-is": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="vue-no-deprecated-v-is-bad"></span>
+
+**错误示例**
+
+`v-is` 已在 Vue 3.1 中废弃；示例仍用它切换渲染的组件。
+
+```vue annotate="remove:2"
+<template>
+<tr v-is="'MyRow'"></tr>
+</template>
+```
+
+<span id="vue-no-deprecated-v-is-good"></span>
+
+**正确示例**
+
+改用带 `vue:` 前缀的 `is` 属性，或使用 `<component :is>` 选择组件。
+
+```vue annotate="add:2,3"
+<template>
+<tr is="vue:MyRow"></tr>
+<component :is="MyRow" />
+</template>
+```
+
+正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
+
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_is.rs#L27) · [全部规则](all.md)
 
 ### `vue/no-deprecated-v-on-native-modifier`
 
@@ -6065,7 +6131,72 @@ vp run lint
 
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
-[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_else.rs#L32) · [全部规则](all.md)
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_else.rs#L31) · [全部规则](all.md)
+
+### `vue/valid-v-else-if`
+
+要求 `v-else-if` 指令有效
+
+[错误示例](#vue-valid-v-else-if-bad) · [正确示例](#vue-valid-v-else-if-good)
+
+默认严重程度: `error`  
+预设: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
+自动修复: 无；请检查建议的修改  
+适用范围: Vue SFC 模板和代码块，包括规则所需的脚本上下文  
+选项: 没有规则专属选项。可以配置严重程度和预设。
+
+**配置（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  lint: {
+    vize: {
+      "preset": "incremental",
+      "rules": {
+        "vue/valid-v-else-if": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="vue-valid-v-else-if-bad"></span>
+
+**错误示例**
+
+示例中的 `v-else-if` 前面没有条件分支、缺少条件，或带有参数或修饰符。
+
+```vue annotate="remove:2,3,4,5"
+<template>
+<div v-else-if="foo"></div> <!-- without preceding v-if -->
+<div v-if="foo"></div><div v-else-if></div>
+<div v-if="foo"></div><div v-else-if:arg="bar"></div>
+<div v-if="foo"></div><div v-else-if.mod="bar"></div>
+</template>
+```
+
+<span id="vue-valid-v-else-if-good"></span>
+
+**正确示例**
+
+将带条件的 `v-else-if` 紧跟在它所延续的 `v-if` 或 `v-else-if` 分支之后。
+
+```vue annotate="add:2,3"
+<template>
+<div v-if="foo"></div>
+<div v-else-if="bar"></div>
+</template>
+```
+
+正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
+
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_else_if.rs#L34) · [全部规则](all.md)
 
 ### `vue/valid-v-for`
 
@@ -6257,6 +6388,70 @@ vp run lint
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
 [实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_if.rs#L29) · [全部规则](all.md)
+
+### `vue/valid-v-is`
+
+要求 `v-is` 指令有效
+
+[错误示例](#vue-valid-v-is-bad) · [正确示例](#vue-valid-v-is-good)
+
+默认严重程度: `error`  
+预设: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
+自动修复: 无；请检查建议的修改  
+适用范围: Vue SFC 模板和代码块，包括规则所需的脚本上下文  
+选项: 没有规则专属选项。可以配置严重程度和预设。
+
+**配置（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  lint: {
+    vize: {
+      "preset": "incremental",
+      "rules": {
+        "vue/valid-v-is": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="vue-valid-v-is-bad"></span>
+
+**错误示例**
+
+`v-is` 带有参数或修饰符、缺少值，或用在组件上而不是原生 HTML 元素上。
+
+```vue annotate="remove:2,3,4,5"
+<template>
+<tr v-is:arg="'MyRow'"></tr>
+<tr v-is.mod="'MyRow'"></tr>
+<tr v-is></tr>
+<MyComponent v-is="'MyRow'" />
+</template>
+```
+
+<span id="vue-valid-v-is-good"></span>
+
+**正确示例**
+
+在 `<tr>` 等原生元素上使用带值的 `v-is`，指定要在该位置渲染的组件。
+
+```vue annotate="add:2"
+<template>
+<tr v-is="'MyRow'"></tr>
+</template>
+```
+
+正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
+
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_is.rs#L30) · [全部规则](all.md)
 
 ### `vue/valid-v-memo`
 
@@ -6510,6 +6705,69 @@ vp run lint
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
 [实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_once.rs#L27) · [全部规则](all.md)
+
+### `vue/valid-v-pre`
+
+要求 `v-pre` 指令有效
+
+[错误示例](#vue-valid-v-pre-bad) · [正确示例](#vue-valid-v-pre-good)
+
+默认严重程度: `error`  
+预设: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
+自动修复: 无；请检查建议的修改  
+适用范围: Vue SFC 模板和代码块，包括规则所需的脚本上下文  
+选项: 没有规则专属选项。可以配置严重程度和预设。
+
+**配置（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  lint: {
+    vize: {
+      "preset": "incremental",
+      "rules": {
+        "vue/valid-v-pre": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="vue-valid-v-pre-bad"></span>
+
+**错误示例**
+
+`v-pre` 设置了参数、修饰符或值，但此指令是跳过编译的无值标记。
+
+```vue annotate="remove:2,3,4"
+<template>
+<div v-pre:arg></div>
+<div v-pre.mod></div>
+<div v-pre="foo"></div>
+</template>
+```
+
+<span id="vue-valid-v-pre-good"></span>
+
+**正确示例**
+
+不带值的 `v-pre` 让子树跳过编译，其中的插值按原样显示。
+
+```vue annotate="add:2"
+<template>
+<div v-pre>{{ raw }}</div>
+</template>
+```
+
+正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
+
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_pre.rs#L30) · [全部规则](all.md)
 
 ### `vue/valid-v-show`
 

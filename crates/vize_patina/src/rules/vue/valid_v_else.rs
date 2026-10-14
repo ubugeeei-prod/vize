@@ -22,12 +22,11 @@
 //! <div v-else></div>
 //! ```
 
+use super::if_chain::{OrphanBranch, for_each_orphan_branch};
 use crate::context::LintContext;
 use crate::diagnostic::{Fix, Severity, TextEdit};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{
-    DirectiveNode, ElementNode, PropNode, RootNode, SourceLocation, TemplateChildNode,
-};
+use vize_relief::{DirectiveNode, ElementNode, PropNode, RootNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/valid-v-else",
@@ -96,78 +95,20 @@ impl Rule for ValidVElse {
     }
 }
 
-struct IfChainDirectiveInfo {
-    has_v_if: bool,
-    else_if_loc: Option<SourceLocation>,
-    else_loc: Option<SourceLocation>,
-}
-
+/// Report every `v-else` that does not directly follow a conditional branch.
+///
+/// An orphaned `v-else-if` belongs to `vue/valid-v-else-if`, as in
+/// eslint-plugin-vue.
 fn check_adjacent_if_chain(ctx: &mut LintContext, children: &[TemplateChildNode]) {
-    let mut can_follow_if = false;
-
-    for child in children {
-        match child {
-            TemplateChildNode::Element(element) => {
-                let info = get_if_chain_directive_info(element);
-
-                if info.has_v_if {
-                    can_follow_if = true;
-                    continue;
-                }
-
-                if let Some(loc) = info.else_if_loc {
-                    if !can_follow_if {
-                        report_missing_adjacent_if(ctx, &loc);
-                    }
-                    continue;
-                }
-
-                if let Some(loc) = info.else_loc {
-                    if !can_follow_if {
-                        report_missing_adjacent_if(ctx, &loc);
-                    }
-                    can_follow_if = false;
-                    continue;
-                }
-
-                can_follow_if = false;
-            }
-            TemplateChildNode::Text(text) if text.content.trim().is_empty() => {}
-            TemplateChildNode::Comment(_) => {}
-            _ => {
-                can_follow_if = false;
-            }
+    for_each_orphan_branch(children, |branch, loc| {
+        if matches!(branch, OrphanBranch::Else) {
+            ctx.error_with_help(
+                ctx.t("vue/valid-v-else.missing_v_if"),
+                loc,
+                ctx.t("vue/valid-v-else.help"),
+            );
         }
-    }
-}
-
-fn get_if_chain_directive_info(element: &ElementNode) -> IfChainDirectiveInfo {
-    let mut info = IfChainDirectiveInfo {
-        has_v_if: false,
-        else_if_loc: None,
-        else_loc: None,
-    };
-
-    for prop in element.props.iter() {
-        if let PropNode::Directive(dir) = prop {
-            match dir.name {
-                "if" => info.has_v_if = true,
-                "else-if" => info.else_if_loc = Some(dir.loc.clone()),
-                "else" => info.else_loc = Some(dir.loc.clone()),
-                _ => {}
-            }
-        }
-    }
-
-    info
-}
-
-fn report_missing_adjacent_if(ctx: &mut LintContext, loc: &SourceLocation) {
-    ctx.error_with_help(
-        ctx.t("vue/valid-v-else.missing_v_if"),
-        loc,
-        ctx.t("vue/valid-v-else.help"),
-    );
+    });
 }
 
 #[cfg(test)]
@@ -237,11 +178,20 @@ mod tests {
     }
 
     #[test]
-    fn test_invalid_v_else_if_without_adjacent_v_if() {
+    fn test_orphan_v_else_if_belongs_to_valid_v_else_if() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div v-else-if="foo"></div>"#, "test.vue");
-        assert_eq!(result.error_count, 1);
-        assert_eq!(result.diagnostics[0].rule_name, "vue/valid-v-else");
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_v_else_after_orphan_v_else_if_is_not_reported_twice() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div v-else-if="foo"></div><div v-else></div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]

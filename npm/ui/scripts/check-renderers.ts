@@ -235,7 +235,10 @@ async function collectSfcFiles(sourceRoot: string): Promise<readonly string[]> {
     entries.map(async (entry): Promise<readonly string[]> => {
       const entryPath = path.join(sourceRoot, entry.name);
       if (entry.isDirectory()) return collectSfcFiles(entryPath);
-      return entry.isFile() && entry.name.endsWith(".vue") ? [entryPath] : [];
+      // Musea stories (`*.art.vue`) document a component; story-art.test.ts renders them.
+      return entry.isFile() && entry.name.endsWith(".vue") && !entry.name.endsWith(".art.vue")
+        ? [entryPath]
+        : [];
     }),
   );
 

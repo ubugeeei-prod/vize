@@ -106,7 +106,7 @@ const core = useCalendarCore(props, selection.adapter, root, (date) =>
   emit("update:focusedDate", date),
 );
 resolveWeekStart = () => core.exposed.weekStartsOn.value;
-const { id, headingId, slotState, direction, state } = core;
+const { id: resolvedId, headingId, slotState, direction, state } = core;
 const isoStart = computed(() =>
   selection.value.value ? formatIsoDate(selection.value.value.start) : "",
 );
@@ -137,7 +137,7 @@ defineExpose(exposed);
 
 <template>
   <div
-    :id
+    :id="resolvedId"
     ref="root"
     role="group"
     :dir="direction"

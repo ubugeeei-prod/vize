@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import Wrapper from "./Wrapper.vue";
+</script>
+
+<template>
+  <Wrapper>
+    <template #option="slotProps">{{ slotProps.option.label }}</template>
+    <template #header="slotProps">{{ slotProps.value.toFixed(1) }}</template>
+  </Wrapper>
+</template>

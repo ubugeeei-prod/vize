@@ -1,0 +1,27 @@
+{
+  "compiler": "6.0.3",
+  "scope": "TypeScript 6 discriminator; actual Canon/native acceptance pending",
+  "wholeSource": "type PinInputType = 'text' | 'number';\ntype PinInputValue<Type extends PinInputType> = [Type] extends ['number'] ? number[] : string[];\ninterface Props<Type extends PinInputType> { type?: Type; modelValue?: PinInputValue<Type> | null; }\ndeclare const prior: <Type extends PinInputType = any>(props: Props<Type>) => void;\ndeclare const authored: <Type extends PinInputType>(props: Props<Type>) => void;\ndeclare const explicitAny: <Type extends PinInputType = any>(props: Props<Type>) => void;\nprior({ modelValue: [] as string[] });\nauthored({ modelValue: [] as string[] });\nauthored({ type: 'number', modelValue: [] as number[] });\nauthored({ type: 'number', modelValue: [] as string[] });\nexplicitAny({ modelValue: [] as string[] });\n",
+  "options": {
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "rows": [
+    {
+      "code": 2322,
+      "line": 7,
+      "message": "Type 'string[]' is not assignable to type 'number[]'.\n  Type 'string' is not assignable to type 'number'."
+    },
+    {
+      "code": 2322,
+      "line": 10,
+      "message": "Type 'string[]' is not assignable to type 'number[]'.\n  Type 'string' is not assignable to type 'number'."
+    },
+    {
+      "code": 2322,
+      "line": 11,
+      "message": "Type 'string[]' is not assignable to type 'number[]'.\n  Type 'string' is not assignable to type 'number'."
+    }
+  ]
+}

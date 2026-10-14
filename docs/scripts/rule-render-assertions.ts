@@ -69,7 +69,7 @@ export async function verifyRenderedRulePackets(page: Page, route: string) {
       };
     }),
   );
-  assert.equal(expected.length, 317, "251 source rules plus 66 project entries per locale");
+  assert.equal(expected.length, 321, "255 source rules plus 66 project entries per locale");
   const receipts = [];
   for (let offset = 0; offset < expected.length; offset += 12) {
     const packet = expected.slice(offset, offset + 12);

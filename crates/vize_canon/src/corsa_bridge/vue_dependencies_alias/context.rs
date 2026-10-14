@@ -13,6 +13,7 @@ pub(in crate::corsa_bridge) use cache::SessionCache;
 pub(in crate::corsa_bridge) use cache::recover_lock;
 use cache::{ContextFingerprint, ProjectMember};
 mod namespace;
+mod prebuild;
 mod prepare;
 mod routes;
 
@@ -48,6 +49,8 @@ pub(in crate::corsa_bridge) struct AliasContext {
     pub(in crate::corsa_bridge) package_routes:
         FxHashMap<(PathBuf, CompactString), crate::PackageRoute>,
     route_inputs: Vec<PathBuf>,
+    /// Live overlay members this revision registered again while building.
+    refreshed_sources: Vec<PathBuf>,
     mirror: Option<VirtualProject>,
     virtual_ts_options: crate::virtual_ts::VirtualTsOptions,
     pub(in crate::corsa_bridge) query_surface:

@@ -116,6 +116,10 @@ pub enum AssembledOrigin<P> {
     MissingVueImport(P),
     /// A template diagnostic directive nothing consumed.
     UnusedExpectation,
+    /// The checker gave up on unmapped generated code (for example TS2563).
+    /// Reported once per authored file, because the give-up can degrade types
+    /// in other files while the original diagnostic has no authored range.
+    GeneratedGiveUp(P),
 }
 
 /// A diagnostic on authored bytes.
@@ -180,6 +184,7 @@ pub fn assemble_diagnostics<P>(
         }
     }
     let mut assembled = dedup::dedup(assembled);
+    rules::keep_first_generated_give_up(&mut assembled);
     authored_rules::filter(authored, &mut assembled);
     if authored.is_vue {
         apply_template_directives(authored, &mut assembled);
@@ -213,6 +218,9 @@ fn project<P>(
         ..
     } = diagnostic;
     let Some((authored_start, authored_end)) = projected else {
+        if rules::is_checker_give_up(code) {
+            return Some(rules::generated_give_up(authored, code, payload));
+        }
         return rules::missing_vue_import(authored.text, code, severity, message, payload);
     };
     if rules::is_authored_vue_import_extension(
@@ -288,3 +296,6 @@ fn apply_template_directives<P>(
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod generated_give_up_tests;

@@ -10,7 +10,7 @@ function staleStep(value, shard = 1, step = 1, status = "in_progress") {
     status,
     conclusion: null,
     completed_at: null,
-    ...(status === "queued" ? { started_at: null } : {}),
+    ...(status === "queued" || status === "pending" ? { started_at: null } : {}),
   });
   return value;
 }
@@ -54,6 +54,10 @@ await test("a completed-success worker's stale step is freshly observed, never m
     [1, "queued"],
     [3, "in_progress"],
     [3, "queued"],
+    // Seen on 2026-10-13 after an Actions metadata incident: finished jobs
+    // reported `pending` steps for over two minutes.
+    [1, "pending"],
+    [3, "pending"],
   ]) {
     const pending = staleStep(fixture(), 1, step, status);
     const api = transport([pending, fixture()]);
@@ -73,7 +77,7 @@ await test("a completed-success worker's stale step is freshly observed, never m
   }
 });
 
-await test("all inventories are repaginated at most six times before pending metadata refuses", async () => {
+await test("all inventories are repaginated at most 24 times before pending metadata refuses", async () => {
   const value = staleStep(fixture());
   value.jobs.push(
     ...Array.from({ length: 100 - value.jobs.length }, () => ({ name: "unrelated" })),
@@ -83,7 +87,7 @@ await test("all inventories are repaginated at most six times before pending met
   );
   const api = transport([value]);
   await assert.rejects(readRustWorkerSelection(context, api.options), PendingRustWorkerMetadata);
-  assert.deepEqual(api.waits, Array(5).fill(2000));
+  assert.deepEqual(api.waits, [...Array(5).fill(2000), ...Array(18).fill(10000)]);
   for (const resource of ["jobs", "artifacts"]) {
     for (const page of [1, 2]) {
       assert.equal(
@@ -92,7 +96,7 @@ await test("all inventories are repaginated at most six times before pending met
             url.includes(`/${resource}?`) &&
             new URL(url, "https://api.example.invalid").searchParams.get("page") === String(page),
         ).length,
-        6,
+        24,
       );
     }
   }

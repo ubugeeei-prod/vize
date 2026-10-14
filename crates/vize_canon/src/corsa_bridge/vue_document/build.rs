@@ -32,13 +32,7 @@ pub(super) fn build_vue_virtual_workspace_project(
         requested_sources.len() + overlays.len() + 1,
     );
     let rewriter = ImportRewriter::new();
-    let overlays = overlays
-        .iter()
-        .map(|(path, content)| {
-            let key = std::fs::canonicalize(path).unwrap_or_else(|_| path.clone());
-            (key, *content)
-        })
-        .collect::<FxHashMap<_, _>>();
+    let overlays = canonical_overlays(overlays);
     // The alias mirror is built before generation, and from the same buffers the
     // dependency walk reads, so a specifier the resolver rewrites always has a
     // materialized target (#3900).
@@ -80,6 +74,19 @@ pub(super) fn build_vue_virtual_workspace_project(
         session_config_path: surface.session_config_path.clone(),
         materialized_changes: alias_context.materialized_changes.clone(),
     })
+}
+
+/// Every preparation of one revision must key unsaved buffers identically.
+pub(super) fn canonical_overlays<'a>(
+    overlays: &[(PathBuf, &'a str)],
+) -> FxHashMap<PathBuf, &'a str> {
+    overlays
+        .iter()
+        .map(|(path, content)| {
+            let key = std::fs::canonicalize(path).unwrap_or_else(|_| path.clone());
+            (key, *content)
+        })
+        .collect()
 }
 
 #[expect(clippy::too_many_arguments, reason = "exact query surface inputs")]

@@ -82,11 +82,11 @@ fn original_v0436_script_drift_is_rejected_before_metadata_delivery() {
         ("pkg/src/lib.rs", "pub fn law() {}\n"),
         ("npm/cli/package.json", &manifest(&packet["before"])),
         ("pnpm-workspace.yaml", "catalogs:\n  native-binaries:\n    \"@vizejs/native-test\": \"1.2.2\"\n"),
-        ("tools/moon/cmd/publish_crates/main.mbt", "let published_crates = [\"vize_law\"]\n"),
+        ("tools/support/release/publish_crates/main.ts", "let published_crates = [\"vize_law\"]\n"),
         (".github/workflows/release.yml", "publish npm/cli\n"),
         ("tools/commands/ci/github/release-platforms.rs", "native-test\n"),
-        ("tools/moon/cmd/publish_npm_package_dirs/main.mbt", "all native directories\n"),
-        ("tools/moon/cmd/publish_npm_package/main.mbt", "publish exact version\n"),
+        ("tools/support/release/publish_npm_package_dirs/main.ts", "all native directories\n"),
+        ("tools/support/release/publish_npm_package/main.ts", "publish exact version\n"),
     ]);
     github::output("cargo", &["generate-lockfile", "--offline"], &repo.work).unwrap();
     let cut = repo.commit(&[]);

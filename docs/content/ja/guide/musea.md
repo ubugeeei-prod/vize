@@ -22,13 +22,13 @@ Musea は、自分のコンポーネントをギャラリーで一覧し、状�
 
 ## 概要
 
-![Musea コンポーネント ギャラリー — ホーム](/musea-home.png)
+![Musea のコンポーネントギャラリーのホーム画面](/musea-home.png)
 
-Musea は、`*.art.vue` ファイルを使用して、Vue ネイティブ構文でコンポーネント バリアントを記述します。
+Musea では、`*.art.vue` ファイルに Vue の構文でコンポーネントのバリアントを書きます。
 
 ## インストール
 
-[Vite+ インストール ガイド](https://viteplus.dev/guide/install) から `vp` を一度インストールし、パッケージを追加します。
+[Vite+ のインストールガイド](https://viteplus.dev/guide/install)に沿って `vp` を用意し、パッケージを追加します。
 
 ```bash
 vp install -D @vizejs/vite-plugin @vizejs/vite-plugin-musea vize
@@ -130,7 +130,9 @@ export default defineConfig({
 
 </details>
 
-## アート ファイル
+<span id="アート-ファイル"></span>
+
+## art ファイル
 
 ```art-vue
 <script setup lang="ts">
@@ -209,20 +211,20 @@ const sharedCount = ref(0);
 
 | 要素/マクロ                      | 目的                                           |
 | -------------------------------- | ---------------------------------------------- |
-| `defineArt(source, options)`     | ターゲット コンポーネントとアートのメタデータ  |
+| `defineArt(source, options)`     | 対象のコンポーネントと art のメタデータ        |
 | `defineArt(...).title`           | 表示名                                         |
 | `defineArt(...).category`        | サイドバーのグループ化                         |
 | `defineArt(...).status`          | オプションのステータスバッジ                   |
 | `defineArt(...).tags`            | タグの検索とフィルタリング                     |
 | `<script setup>`                 | デフォルトのバリアントローカルセットアップ状態 |
 | `<script setup isolate="false">` | すべてのバリアント間でセットアップ状態を共有   |
-| `<art>`                          | ルート バリアント ブロック                     |
+| `<art>`                          | バリアントをまとめるルートのブロック           |
 | `<art title component ...>`      | 互換性メタデータ属性                           |
 | `<variant>`                      | 名前付きコンポーネントのバリエーション         |
 | `default`                        | デフォルトのバリアントをマークします           |
 | `args`、`viewport`、`skip-vrt`   | オプションのバリアント構成                     |
 
-バリアントがコンポーネントのコントラクトの一部である場合は、アート ファイルをコンポーネントの近くに置きます。
+バリアントがコンポーネントの仕様の一部である場合は、art ファイルをコンポーネントの隣に置きます。
 
 ```txt
 src/components/Button.vue
@@ -247,7 +249,7 @@ musea({
 });
 ```
 
-インライン アート内で、`<Self>` を使用してホスト コンポーネントをレンダリングします。
+インライン art の中では、`<Self>` で、その art を持つコンポーネント自身をレンダリングします。
 
 ## ギャラリーの機能
 
@@ -268,7 +270,7 @@ Musea は次のことを実現できます。
 
 ![Musea の Props パネル](/musea-props.png)
 
-パレット パイプラインは、コンポーネントのメタデータとアート定義からインタラクティブなコントロールを推測できます。
+Props パレットは、コンポーネントのメタデータと art の定義から、操作用のコントロールを推測します。
 
 Vue 3.5.41 は、名前が `__proto__` のコンポーネント prop を適用しません。この key をエディターの
 データに保存できても、プレビューに適用されたことにはなりません。この prop 名は避けてください。
@@ -289,7 +291,7 @@ musea({
 
 ## 構成をプレビューする
 
-プロジェクト CSS を挿入し、セットアップ コードをプレビューできます。
+プレビューにプロジェクトの CSS を読み込み、セットアップ用のコードを実行できます。
 
 ```ts
 musea({
@@ -334,7 +336,7 @@ vp exec musea-vrt approve "Button/*"
 vp exec musea-vrt clean
 ```
 
-一般的な CI フローでは、1 つのプロセスで Vite サーバーを起動し、それに対してスナップショット コマンドを実行します。
+CI では一般に、Vite サーバーを起動しておき、そのサーバーに対してスナップショットのコマンドを実行します。
 
 ```bash
 vp dev --host 0.0.0.0
@@ -349,7 +351,9 @@ vp exec musea-vrt --base-url http://localhost:5173 --ci --json
 
 サンプルアプリ `examples/vite-musea` には、Playwright による VRT もあります。`vp run test:vrt` / `vp run test:vrt:update` で実行できます。スナップショットは `e2e/vrt/__snapshots__`、失敗時の成果物は `e2e/vrt/test-results`、HTML レポートは `playwright-report` に保存します。GitHub Actions は失敗時にこれらをアップロードするため、ベースライン・現在の画像・差分をレビューできます。
 
-## アート ファイルを生成する
+<span id="アート-ファイルを生成する"></span>
+
+## art ファイルを生成する
 
 ジェネレーターを使用して、既存のコンポーネントから最初の `.art.vue` ドラフトを作成します。
 

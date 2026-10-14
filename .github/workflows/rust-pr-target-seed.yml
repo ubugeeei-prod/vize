@@ -1,8 +1,9 @@
 name: Seed PR Rust target
-# Trusted writer of the `nextest-ci` sticky disk that PR Rust jobs mount
-# read-only. It repeats a workspace-scope PR's exact toolchain, linker,
-# environment, package list and Cargo commands, so a PR clone only rebuilds
-# what changed.
+# Trusted writer of the sticky disks that PR and merge-queue Rust jobs mount
+# read-only. `nextest-ci` repeats a workspace-scope PR's and the queue
+# producer's exact toolchain, linker, package list and Cargo commands;
+# `clippy-test` repeats the queue's differential feature recipe. A candidate
+# clone then only rebuilds what its change touches.
 on:
   push:
     branches: [main]
@@ -10,8 +11,10 @@ on:
     # Daily 02:41 UTC, ahead of the full Check run.
     - cron: "41 2 * * *"
 concurrency:
+  # A newer push replaces a waiting seed but never a running one: a seed that is
+  # cancelled on every merge would leave the disks stale during a merge train.
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 permissions: { contents: read }
 env: { CARGO_TERM_COLOR: always, FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true }
 jobs:
@@ -44,9 +47,51 @@ jobs:
         run: node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/rust-plan.json" cargo clippy @packages@ --profile ci -- -D warnings -D clippy::wildcard_imports
       - name: Build every PR Rust test binary
         run: node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/rust-plan.json" cargo test @packages@ --profile ci --no-run
+      - name: Build the merge-queue workspace producer
+        # The queue runs these two builds over the whole workspace.
+        run: |
+          cargo clippy --workspace --profile ci -- -D warnings -D clippy::wildcard_imports
+          cargo test --workspace --profile ci --no-run
       - name: Build the PR feature lanes
         run: |
           cargo test -p vize_armature --features native-lex-parity,legacy --lib --test markup_lex_parity --no-run
           cargo test -p vize_l1 --features legacy-differential --test surface_corpus --no-run
       - name: Seed native Program and Vue navigation
         uses: ./.github/actions/test-native-navigation
+
+  # No trusted run wrote this disk before, so every queue candidate compiled the
+  # differential feature builds, and the producer its ci profile, from scratch.
+  rust-differential-target-seed:
+    name: Seed merge-queue differential target
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 45
+    env:
+      CARGO_BUILD_JOBS: "12"
+      RUST_TEST_THREADS: "4"
+      VIZE_NUXT_CONFIG_ITERATIONS: "100"
+      VIZE_TEST_REQUIRE_TSGO: "1"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
+        with:
+          components: clippy
+          toolchain: "1.99.0"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: true
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: clippy-test
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+      - name: Install Pkl CLI
+        run: npm install --global @pkl-community/pkl@0.27.2
+      - name: Run the merge-queue differential recipe
+        uses: ./.github/actions/test-rust-workspace-differential
+        with:
+          workspace-already-tested: "true"

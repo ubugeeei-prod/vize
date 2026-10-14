@@ -6,7 +6,7 @@
 //! P2-9 re-expresses `vize_atelier_core`'s transform lane as classified
 //! L2 passes, but the passes cannot live *in* `vize_atelier_core`: that
 //! crate is published to crates.io and the release gate
-//! (`tests/tooling/moonbit-publish-crates.test.ts`) rejects any
+//! (`tests/tooling/publish-crates-plan.test.ts`) rejects any
 //! published crate whose release graph names an unpublished one — the
 //! constraint `docs/davinci/plan/phase-2.md` records under "Davinci
 //! describes the shipped pipeline". The backends read Davinci from

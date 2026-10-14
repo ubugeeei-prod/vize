@@ -67,7 +67,7 @@ defineSlots<{
 const root = useTemplateRef<HTMLDivElement>("root");
 const input = useTemplateRef<HTMLInputElement>("input");
 const field = useDurationField(props, emit, root);
-const { id, direction, isoValue, slotState, exposed, segmentId } = field;
+const { id: resolvedId, direction, isoValue, slotState, exposed, segmentId } = field;
 const validation = useFieldValidationInput({
   input,
   invalid: () => false,
@@ -96,7 +96,7 @@ defineExpose(exposed);
 
 <template>
   <div
-    :id
+    :id="resolvedId"
     ref="root"
     part="root"
     role="group"
@@ -171,7 +171,7 @@ defineExpose(exposed);
       :required="slotState.required"
       :disabled="slotState.disabled"
       tabindex="-1"
-      :aria-labelledby="id"
+      :aria-labelledby="resolvedId"
       autocomplete="off"
       data-vize-ui="duration-field-input"
       :style="fieldValidationInputStyle"

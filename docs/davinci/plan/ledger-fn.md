@@ -226,6 +226,7 @@ assert is not relaxed to count-only or to an optional span.
 - `vue/no-deprecated-slot-attribute`
 - `vue/no-deprecated-slot-scope-attribute`
 - `vue/no-deprecated-v-bind-sync`
+- `vue/no-deprecated-v-is`
 - `vue/no-deprecated-v-on-native-modifier`
 - `vue/no-deprecated-v-on-number-modifiers`
 - `vue/no-empty-component-block`
@@ -275,13 +276,16 @@ assert is not relaxed to count-only or to an optional span.
 - `vue/valid-template-root`
 - `vue/valid-v-bind`
 - `vue/valid-v-cloak`
+- `vue/valid-v-else-if`
 - `vue/valid-v-for`
 - `vue/valid-v-html`
 - `vue/valid-v-if`
+- `vue/valid-v-is`
 - `vue/valid-v-memo`
 - `vue/valid-v-model`
 - `vue/valid-v-on`
 - `vue/valid-v-once`
+- `vue/valid-v-pre`
 - `vue/valid-v-show`
 - `vue/valid-v-slot`
 - `vue/valid-v-text`

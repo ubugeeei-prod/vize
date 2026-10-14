@@ -7,7 +7,7 @@ import { test } from "node:test";
 
 import { parse as parseToml, stringify as stringifyToml } from "@iarna/toml";
 
-import { repoRoot, runMoonScript } from "./_helpers/moonbit.ts";
+import { repoRoot, runReleaseCommand } from "./support/release-command.ts";
 
 const rootSource = fs.readFileSync(path.join(repoRoot, "Cargo.toml"), "utf8");
 const root = parseToml(rootSource);
@@ -43,7 +43,7 @@ test("the real release rewrite resolves both forks and rejects the historical st
   try {
     const input = path.join(directory, "release-input.toml");
     fs.writeFileSync(input, rootSource);
-    const rewrite = runMoonScript("release", [
+    const rewrite = runReleaseCommand("release", [
       "--print-workspace-manifest-update",
       input,
       current,

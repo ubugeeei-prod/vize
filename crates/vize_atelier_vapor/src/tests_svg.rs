@@ -125,3 +125,43 @@ fn html_anchor_bindings_keep_html_semantics_at_svg_integration_points() {
         }
     }
 }
+
+#[test]
+fn spread_props_on_svg_elements_are_attributes() {
+    for (source, call) in [
+        (
+            r#"<svg><circle v-bind="attrs"/></svg>"#,
+            "_setDynamicProps(n0, [_ctx.attrs], null, true)",
+        ),
+        (
+            r#"<svg v-bind="attrs" :viewBox="box"><path/></svg>"#,
+            ", null, true)",
+        ),
+    ] {
+        let allocator = Allocator::new();
+        let code = compile_vapor(
+            &allocator,
+            source,
+            VaporCompilerOptions {
+                prefix_identifiers: true,
+                ..Default::default()
+            },
+        )
+        .code;
+        assert!(code.contains(call), "{source}\n{code}");
+    }
+    let allocator = Allocator::new();
+    let code = compile_vapor(
+        &allocator,
+        r#"<div><span v-bind="attrs"></span></div>"#,
+        VaporCompilerOptions {
+            prefix_identifiers: true,
+            ..Default::default()
+        },
+    )
+    .code;
+    assert!(
+        code.contains("_setDynamicProps(n1, [_ctx.attrs]))"),
+        "{code}"
+    );
+}

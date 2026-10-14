@@ -266,27 +266,87 @@
     {
       "path": "docs/content/ja/guide/musea.md",
       "originalSha256": "7f22bf041ae8737c0d6ffedcd7e8c7ae4eb5361dfe0db867b8e4fe096860f9c7",
-      "successorSha256": "454ce9824715e588e12103bdf620c433a53f1936fc2e789b7329d3977e7b0705",
+      "successorSha256": "0fca848d6599987a7b2fcddfbf46c0ee36108eb84a471da402b6f3a62f9bc545",
       "patches": [
         {
-          "offset": 2206,
+          "offset": 899,
+          "before": "![Musea コンポーネント ギャラリー — ホーム](/musea-home.png)\n",
+          "after": "![Musea のコンポーネントギャラリーのホーム画面](/musea-home.png)\n"
+        },
+        {
+          "offset": 946,
+          "before": "Musea は、`*.art.vue` ファイルを使用して、Vue ネイティブ構文でコンポーネント バリアントを記述します。\n",
+          "after": "Musea では、`*.art.vue` ファイルに Vue の構文でコンポーネントのバリアントを書きます。\n"
+        },
+        {
+          "offset": 1013,
+          "before": "[Vite+ インストール ガイド](https://viteplus.dev/guide/install) から `vp` を一度インストールし、パッケージを追加します。\n",
+          "after": "[Vite+ のインストールガイド](https://viteplus.dev/guide/install)に沿って `vp` を用意し、パッケージを追加します。\n"
+        },
+        {
+          "offset": 2193,
           "before": "複数のツールで既定値を共有したい場合は、共有設定を使います。\nVite+ のギャラリーだけなら、上の `vite.config.ts` にオプションをまとめられます。\n",
-          "after": "共有の既定値は `vite.config.*` のトップレベルの `vize.musea` にまとめます。`musea()` に直接渡したオプションが、その項目の共有設定より優先されます。同じ Vite プロジェクトに既存の専用設定がある場合は、その設定を優先します。\n"
+          "after": "共有の既定値は `vite.config.*` のトップレベルの `vize.musea` にまとめます。`musea()` に直接渡したオプションが、その項目の共有設定より優先されます。同じ Vite プロジェクトに既存の専用設定がある場合は、その設定を優先します。\n\n```ts\n// vite.config.ts\nimport { defineConfig } from \"@vizejs/vite-plugin/vite-plus\";\nimport { musea } from \"@vizejs/vite-plugin-musea\";\n\nexport default defineConfig({\n  plugins: [musea()],\n  vize: {\n    musea: {\n      include: [\"src/**/*.art.vue\"],\n      exclude: [\"node_modules/**\", \"dist/**\"],\n      basePath: \"/__musea__\",\n      storybookCompat: false,\n      inlineArt: false,\n    },\n  },\n});\n```\n\n共有設定に指定できるのは `include`、`exclude`、`basePath`、`storybookCompat`、`inlineArt` です。`previewCss`、`previewSetup`、`tokensPath`、`theme`、`storybookOutDir` は `musea()` に直接渡します。\n\n`musea-vrt` も同じ Vite 設定から `include`、`exclude`、`vrt` を読み込みます。`vrt.outDir` はスナップショットの保存先で、プラグインに渡した `vrt` の各項目が共有設定より優先されます。`vize musea new` は既定の探索規則で Art ファイルを作成し、専用設定ファイルは生成しません。\n\n<details>\n<summary>既存の専用設定を引き続き使う</summary>\n"
         },
         {
-          "offset": 2342,
+          "offset": 3122,
           "before": "`musea()` に渡すオプションは、共有設定より優先されます。複数のツールで使う既定値は `vize.config.ts` に、プレビュー専用の設定は `vite.config.ts` に置いてください。\n",
-          "after": "```ts\n// vite.config.ts\nimport { defineConfig } from \"@vizejs/vite-plugin/vite-plus\";\nimport { musea } from \"@vizejs/vite-plugin-musea\";\n\nexport default defineConfig({\n  plugins: [musea()],\n  vize: {\n    musea: {\n      include: [\"src/**/*.art.vue\"],\n      exclude: [\"node_modules/**\", \"dist/**\"],\n      basePath: \"/__musea__\",\n      storybookCompat: false,\n      inlineArt: false,\n    },\n  },\n});\n```\n\n共有設定に指定できるのは `include`、`exclude`、`basePath`、`storybookCompat`、`inlineArt` です。`previewCss`、`previewSetup`、`tokensPath`、`theme`、`storybookOutDir` は `musea()` に直接渡します。\n\n`musea-vrt` も同じ Vite 設定から `include`、`exclude`、`vrt` を読み込みます。`vrt.outDir` はスナップショットの保存先で、プラグインに渡した `vrt` の各項目が共有設定より優先されます。`vize musea new` は既定の探索規則で Art ファイルを作成し、専用設定ファイルは生成しません。\n\n<details>\n<summary>既存の専用設定を引き続き使う</summary>\n\n同じ Vite プロジェクトに専用設定がある場合は、こちらの設定が優先されます。\n"
+          "after": "同じ Vite プロジェクトに専用設定がある場合は、こちらの設定が優先されます。\n"
         },
         {
-          "offset": 3452,
+          "offset": 3439,
           "before": "共有設定に指定できる項目は、`include`、`exclude`、`basePath`、`storybookCompat`、`inlineArt` です。`previewCss`、`previewSetup`、`tokensPath`、`theme`、`storybookOutDir` は、`musea()` に直接渡してください。\n",
-          "after": "</details>\n"
+          "after": "</details>\n\n<span id=\"アート-ファイル\"></span>\n"
         },
         {
-          "offset": 8233,
+          "offset": 3480,
+          "before": "## アート ファイル\n",
+          "after": "## art ファイル\n"
+        },
+        {
+          "offset": 5582,
+          "before": "| `defineArt(source, options)`     | ターゲット コンポーネントとアートのメタデータ  |\n",
+          "after": "| `defineArt(source, options)`     | 対象のコンポーネントと art のメタデータ        |\n"
+        },
+        {
+          "offset": 6081,
+          "before": "| `<art>`                          | ルート バリアント ブロック                     |\n",
+          "after": "| `<art>`                          | バリアントをまとめるルートのブロック           |\n"
+        },
+        {
+          "offset": 6432,
+          "before": "バリアントがコンポーネントのコントラクトの一部である場合は、アート ファイルをコンポーネントの近くに置きます。\n",
+          "after": "バリアントがコンポーネントの仕様の一部である場合は、art ファイルをコンポーネントの隣に置きます。\n"
+        },
+        {
+          "offset": 6905,
+          "before": "インライン アート内で、`<Self>` を使用してホスト コンポーネントをレンダリングします。\n",
+          "after": "インライン art の中では、`<Self>` で、その art を持つコンポーネント自身をレンダリングします。\n"
+        },
+        {
+          "offset": 7243,
+          "before": "パレット パイプラインは、コンポーネントのメタデータとアート定義からインタラクティブなコントロールを推測できます。\n",
+          "after": "Props パレットは、コンポーネントのメタデータと art の定義から、操作用のコントロールを推測します。\n"
+        },
+        {
+          "offset": 7719,
+          "before": "プロジェクト CSS を挿入し、セットアップ コードをプレビューできます。\n",
+          "after": "プレビューにプロジェクトの CSS を読み込み、セットアップ用のコードを実行できます。\n"
+        },
+        {
+          "offset": 8254,
           "before": "",
           "after": "<span id=\"visual-regression-testing\"></span>\n\n"
+        },
+        {
+          "offset": 8579,
+          "before": "一般的な CI フローでは、1 つのプロセスで Vite サーバーを起動し、それに対してスナップショット コマンドを実行します。\n",
+          "after": "CI では一般に、Vite サーバーを起動しておき、そのサーバーに対してスナップショットのコマンドを実行します。\n"
+        },
+        {
+          "offset": 9459,
+          "before": "## アート ファイルを生成する\n",
+          "after": "<span id=\"アート-ファイルを生成する\"></span>\n\n## art ファイルを生成する\n"
         }
       ]
     }

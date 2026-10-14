@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import Indexed from "./Indexed.vue";
+declare const name: string;
+</script>
+
+<template>
+  <Indexed>
+    <template #[name]="payload">{{ payload.id.toFixed(1) }}{{ payload.missing }}</template>
+  </Indexed>
+</template>

@@ -13,7 +13,7 @@
 
 use glob::{MatchOptions, Pattern};
 use ignore::WalkBuilder;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
     collections::{BTreeMap, BTreeSet},
@@ -24,6 +24,9 @@ use std::{
     time::Instant,
 };
 
+#[path = "../../support/lint_divergence_surface.rs"]
+mod surface;
+use surface::{baseline_intentional_reason, outside_baseline_surface};
 #[path = "../../support/common.rs"]
 mod common;
 
@@ -387,6 +390,11 @@ fn compare_lint_findings(
                 value["reason"] = entry.get("reason").cloned().unwrap_or(Value::Null);
                 intentional_divergences.push(value);
             }
+            "mapped" if baseline_intentional_reason(&finding).is_some() => {
+                let mut value = finding.to_value();
+                value["reason"] = Value::from(baseline_intentional_reason(&finding));
+                intentional_divergences.push(value);
+            }
             "mapped" => {
                 let mut mapped = finding.clone();
                 mapped.upstream_rule_id = Some(finding.rule_id.clone());
@@ -414,16 +422,17 @@ fn compare_lint_findings(
     // does not parse pug; Patina lints it through the Davinci pug dialect), so
     // findings there are outside the comparable surface: reported, not scored.
     let mut patina_outside_baseline_surface = Vec::new();
-    let mut pug_bodies = BTreeMap::<String, Option<(u64, u64)>>::new();
+    // eslint-plugin-vue's vue/no-unused-components checks only the `components`
+    // option, so an unused <script setup> import is outside its surface too.
+    let mut sources = BTreeMap::<String, Option<String>>::new();
     for finding in patina {
-        let pug_body = pug_bodies
+        let source = sources
             .entry(finding.file.clone())
-            .or_insert_with(|| {
-                fs::read_to_string(cwd.join(&finding.file))
-                    .ok()
-                    .and_then(|source| pug_template_lines(&source))
-            });
-        if pug_body.is_some_and(|(start, end)| (start..=end).contains(&finding.line)) {
+            .or_insert_with(|| fs::read_to_string(cwd.join(&finding.file)).ok());
+        if source
+            .as_deref()
+            .is_some_and(|source| outside_baseline_surface(&finding, source))
+        {
             patina_outside_baseline_surface.push(finding.to_value());
         } else if index.patina_targets.contains(&finding.rule_id) {
             comparable_patina.push(finding);
@@ -557,30 +566,6 @@ fn compare_lint_findings(
         "documentedDivergences": classified["documentedDivergences"],
         "sha256": sha256(&hash_input.to_string()),
     }))
-}
-
-/// The 1-based line range of an inline `<template lang="pug">` body — the
-/// first top-level template, no `src` — or `None`. A body that starts on
-/// the tag's line starts there; otherwise on the next line.
-fn pug_template_lines(source: &str) -> Option<(u64, u64)> {
-    let tag_start = source.find("<template")?;
-    let tag_end = tag_start + source[tag_start..].find('>')?;
-    let tag = &source[tag_start..tag_end];
-    let pug = ["lang=\"pug\"", "lang='pug'", "lang=pug"]
-        .iter()
-        .any(|spelling| tag.contains(spelling));
-    if !pug || tag.contains("src=") {
-        return None;
-    }
-    let body_start = tag_end + 1;
-    let body_end = body_start + source[body_start..].find("</template>")?;
-    let line_of = |offset: usize| source[..offset].matches('\n').count() as u64 + 1;
-    let first = if source[body_start..].starts_with(['\n', '\r']) {
-        line_of(body_start) + 1
-    } else {
-        line_of(body_start)
-    };
-    Some((first, line_of(body_end)))
 }
 
 struct BaselineInput {
@@ -1898,9 +1883,15 @@ mod tests {
     fn pug_template_bodies_are_located_by_line() {
         let sfc = "<script setup>\nconst a = 1\n</script>\n<template lang=\"pug\">\ndiv\n  p x\n</template>\n";
         assert_eq!(pug_template_lines(sfc), Some((5, 7)));
-        assert_eq!(pug_template_lines("<template lang='pug'>div</template>"), Some((1, 1)));
+        assert_eq!(
+            pug_template_lines("<template lang='pug'>div</template>"),
+            Some((1, 1))
+        );
         assert_eq!(pug_template_lines("<template>\n<div/>\n</template>"), None);
-        assert_eq!(pug_template_lines("<template lang=\"pug\" src=\"./a.pug\"></template>"), None);
+        assert_eq!(
+            pug_template_lines("<template lang=\"pug\" src=\"./a.pug\"></template>"),
+            None
+        );
     }
 
     #[test]

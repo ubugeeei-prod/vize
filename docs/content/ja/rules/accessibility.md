@@ -1,11 +1,12 @@
 ---
-title: "アクセシビリティ ルール"
+title: "アクセシビリティのルール"
 ---
 
-# アクセシビリティ ルール
+# アクセシビリティのルール
 
 このページに、各ルールの目的・前提・設定と、省略のない悪い例・良い例をまとめています。変更箇所は行の色で示します。コードをコピーすると、ソースコード全体を取得できます。各例に現在の対応範囲も明記しています。
 
+<span id="アクセシビリティ-ルール"></span>
 
 | ルール | 例 | 目的 |
 | --- | --- | --- |
@@ -41,4 +42,4 @@ title: "アクセシビリティ ルール"
 | [`a11y/use-list`](https://vizejs.dev/ja/rules/accessibility.html#a11y-use-list) | [悪い](https://vizejs.dev/ja/rules/accessibility.html#a11y-use-list-bad) · [良い](https://vizejs.dev/ja/rules/accessibility.html#a11y-use-list-good) | 箇条書きに見えるテキストをリスト要素で表現します。 |
 | [`vue/use-unique-element-ids`](https://vizejs.dev/ja/rules/accessibility.html#vue-use-unique-element-ids) | [悪い](https://vizejs.dev/ja/rules/accessibility.html#vue-use-unique-element-ids-bad) · [良い](https://vizejs.dev/ja/rules/accessibility.html#vue-use-unique-element-ids-good) | 静的 ID の代わりに useId() で一意な ID を生成します。 |
 
-[全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
+[全ルール](./all.md) · [ルールのオプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)

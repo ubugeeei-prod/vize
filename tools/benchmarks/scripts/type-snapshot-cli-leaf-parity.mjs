@@ -126,6 +126,7 @@ const CASES = [
     extra: TEMPLATE_PACKAGE_SOURCES,
     vueImport,
     expectedError: true,
+    expectedParserRecovery: true,
     split: false,
   })),
   ...JSX_RUNTIME_CASES.map(([id, file, options]) => ({
@@ -145,6 +146,7 @@ const CASES = [
     include: ["*.vue", "*.ts", "*.js", "*.tsx"],
     options,
     expectedError: file === "loader.js",
+    expectedParserRecovery: file === "loader.js" ? "js-jsx" : false,
     split: false,
   })),
   ...INHERITED_JSX_CASES.map(([id, inherited]) => ({
@@ -212,6 +214,7 @@ const CASES = [
     extra: TEMPLATE_PACKAGE_SOURCES,
     vueImport,
     expectedError: true,
+    expectedParserRecovery: true,
     split: false,
   })),
   ...[
@@ -289,6 +292,7 @@ export function checkLeafParity(directory, vuePackageDir, run) {
     const corpus = {
       id: `leaf-parity-${fixture.id}`,
       args: ["--no-config"],
+      expectedParserRecovery: fixture.expectedParserRecovery ?? false,
       expectedVuePaths: Object.keys(sources).filter((file) => file.endsWith(".vue")),
     };
     let reference;

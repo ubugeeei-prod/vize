@@ -271,6 +271,7 @@ A CLI pública expõe a mesma etapa por meio de `vize lint --cross-file`. Os có
 | [`vue/no-deprecated-slot-attribute`](#vue-no-deprecated-slot-attribute) | [Incorreto](#vue-no-deprecated-slot-attribute-bad) · [Correto](#vue-no-deprecated-slot-attribute-good) | Proibir o atributo obsoleto `slot` |
 | [`vue/no-deprecated-slot-scope-attribute`](#vue-no-deprecated-slot-scope-attribute) | [Incorreto](#vue-no-deprecated-slot-scope-attribute-bad) · [Correto](#vue-no-deprecated-slot-scope-attribute-good) | Proibir o atributo obsoleto `slot-scope` |
 | [`vue/no-deprecated-v-bind-sync`](#vue-no-deprecated-v-bind-sync) | [Incorreto](#vue-no-deprecated-v-bind-sync-bad) · [Correto](#vue-no-deprecated-v-bind-sync-good) | Proibir o modificador obsoleto `.sync` em `v-bind` |
+| [`vue/no-deprecated-v-is`](#vue-no-deprecated-v-is) | [Incorreto](#vue-no-deprecated-v-is-bad) · [Correto](#vue-no-deprecated-v-is-good) | Proibir a diretiva obsoleta `v-is` |
 | [`vue/no-deprecated-v-on-native-modifier`](#vue-no-deprecated-v-on-native-modifier) | [Incorreto](#vue-no-deprecated-v-on-native-modifier-bad) · [Correto](#vue-no-deprecated-v-on-native-modifier-good) | Proibir o modificador obsoleto `.native` em `v-on` |
 | [`vue/no-deprecated-v-on-number-modifiers`](#vue-no-deprecated-v-on-number-modifiers) | [Incorreto](#vue-no-deprecated-v-on-number-modifiers-bad) · [Correto](#vue-no-deprecated-v-on-number-modifiers-good) | Proibir modificadores numéricos obsoletos de `keyCode` em `v-on` |
 | [`vue/no-dupe-v-else-if`](#vue-no-dupe-v-else-if) | [Incorreto](#vue-no-dupe-v-else-if-bad) · [Correto](#vue-no-dupe-v-else-if-good) | Proibir condições duplicadas em cadeias de `v-if` / `v-else-if` |
@@ -339,13 +340,16 @@ A CLI pública expõe a mesma etapa por meio de `vize lint --cross-file`. Os có
 | [`vue/valid-v-bind`](#vue-valid-v-bind) | [Incorreto](#vue-valid-v-bind-bad) · [Correto](#vue-valid-v-bind-good) | Exigir diretivas `v-bind` válidas |
 | [`vue/valid-v-cloak`](#vue-valid-v-cloak) | [Incorreto](#vue-valid-v-cloak-bad) · [Correto](#vue-valid-v-cloak-good) | Exigir diretivas `v-cloak` válidas |
 | [`vue/valid-v-else`](#vue-valid-v-else) | [Incorreto](#vue-valid-v-else-bad) · [Correto](#vue-valid-v-else-good) | Exigir diretivas `v-else` válidas |
+| [`vue/valid-v-else-if`](#vue-valid-v-else-if) | [Incorreto](#vue-valid-v-else-if-bad) · [Correto](#vue-valid-v-else-if-good) | Exigir diretivas `v-else-if` válidas |
 | [`vue/valid-v-for`](#vue-valid-v-for) | [Incorreto](#vue-valid-v-for-bad) · [Correto](#vue-valid-v-for-good) | Exigir diretivas `v-for` válidas |
 | [`vue/valid-v-html`](#vue-valid-v-html) | [Incorreto](#vue-valid-v-html-bad) · [Correto](#vue-valid-v-html-good) | Exigir diretivas `v-html` válidas |
 | [`vue/valid-v-if`](#vue-valid-v-if) | [Incorreto](#vue-valid-v-if-bad) · [Correto](#vue-valid-v-if-good) | Exigir diretivas `v-if` válidas |
+| [`vue/valid-v-is`](#vue-valid-v-is) | [Incorreto](#vue-valid-v-is-bad) · [Correto](#vue-valid-v-is-good) | Exigir diretivas `v-is` válidas |
 | [`vue/valid-v-memo`](#vue-valid-v-memo) | [Incorreto](#vue-valid-v-memo-bad) · [Correto](#vue-valid-v-memo-good) | Exigir diretivas `v-memo` válidas |
 | [`vue/valid-v-model`](#vue-valid-v-model) | [Incorreto](#vue-valid-v-model-bad) · [Correto](#vue-valid-v-model-good) | Exigir diretivas `v-model` válidas |
 | [`vue/valid-v-on`](#vue-valid-v-on) | [Incorreto](#vue-valid-v-on-bad) · [Correto](#vue-valid-v-on-good) | Exigir diretivas `v-on` válidas |
 | [`vue/valid-v-once`](#vue-valid-v-once) | [Incorreto](#vue-valid-v-once-bad) · [Correto](#vue-valid-v-once-good) | Exigir diretivas `v-once` válidas |
+| [`vue/valid-v-pre`](#vue-valid-v-pre) | [Incorreto](#vue-valid-v-pre-bad) · [Correto](#vue-valid-v-pre-good) | Exigir diretivas `v-pre` válidas |
 | [`vue/valid-v-show`](#vue-valid-v-show) | [Incorreto](#vue-valid-v-show-bad) · [Correto](#vue-valid-v-show-good) | Exigir diretivas `v-show` válidas |
 | [`vue/valid-v-slot`](#vue-valid-v-slot) | [Incorreto](#vue-valid-v-slot-bad) · [Correto](#vue-valid-v-slot-good) | Exigir diretivas `v-slot` válidas |
 | [`vue/valid-v-text`](#vue-valid-v-text) | [Incorreto](#vue-valid-v-text-bad) · [Correto](#vue-valid-v-text-good) | Exigir diretivas `v-text` válidas |
@@ -3672,6 +3676,20 @@ Proibir o modificador obsoleto `.sync` em `v-bind`
 
 [Exemplos do grupo](./vue.md#vue-no-deprecated-v-bind-sync) · [Referência da regra](/rules/reference/vue-no-deprecated-v-bind-sync.md)
 
+### `vue/no-deprecated-v-is`
+
+Proibir a diretiva obsoleta `v-is`
+
+<span id="vue-no-deprecated-v-is-bad"></span>
+
+[Incorreto](./vue.md#vue-no-deprecated-v-is-bad)
+
+<span id="vue-no-deprecated-v-is-good"></span>
+
+[Correto](./vue.md#vue-no-deprecated-v-is-good)
+
+[Exemplos do grupo](./vue.md#vue-no-deprecated-v-is) · [Referência da regra](/rules/reference/vue-no-deprecated-v-is.md)
+
 ### `vue/no-deprecated-v-on-native-modifier`
 
 Proibir o modificador obsoleto `.native` em `v-on`
@@ -4624,6 +4642,20 @@ Exigir diretivas `v-else` válidas
 
 [Exemplos do grupo](./vue.md#vue-valid-v-else) · [Referência da regra](/rules/reference/vue-valid-v-else.md)
 
+### `vue/valid-v-else-if`
+
+Exigir diretivas `v-else-if` válidas
+
+<span id="vue-valid-v-else-if-bad"></span>
+
+[Incorreto](./vue.md#vue-valid-v-else-if-bad)
+
+<span id="vue-valid-v-else-if-good"></span>
+
+[Correto](./vue.md#vue-valid-v-else-if-good)
+
+[Exemplos do grupo](./vue.md#vue-valid-v-else-if) · [Referência da regra](/rules/reference/vue-valid-v-else-if.md)
+
 ### `vue/valid-v-for`
 
 Exigir diretivas `v-for` válidas
@@ -4665,6 +4697,20 @@ Exigir diretivas `v-if` válidas
 [Correto](./vue.md#vue-valid-v-if-good)
 
 [Exemplos do grupo](./vue.md#vue-valid-v-if) · [Referência da regra](/rules/reference/vue-valid-v-if.md)
+
+### `vue/valid-v-is`
+
+Exigir diretivas `v-is` válidas
+
+<span id="vue-valid-v-is-bad"></span>
+
+[Incorreto](./vue.md#vue-valid-v-is-bad)
+
+<span id="vue-valid-v-is-good"></span>
+
+[Correto](./vue.md#vue-valid-v-is-good)
+
+[Exemplos do grupo](./vue.md#vue-valid-v-is) · [Referência da regra](/rules/reference/vue-valid-v-is.md)
 
 ### `vue/valid-v-memo`
 
@@ -4721,6 +4767,20 @@ Exigir diretivas `v-once` válidas
 [Correto](./vue.md#vue-valid-v-once-good)
 
 [Exemplos do grupo](./vue.md#vue-valid-v-once) · [Referência da regra](/rules/reference/vue-valid-v-once.md)
+
+### `vue/valid-v-pre`
+
+Exigir diretivas `v-pre` válidas
+
+<span id="vue-valid-v-pre-bad"></span>
+
+[Incorreto](./vue.md#vue-valid-v-pre-bad)
+
+<span id="vue-valid-v-pre-good"></span>
+
+[Correto](./vue.md#vue-valid-v-pre-good)
+
+[Exemplos do grupo](./vue.md#vue-valid-v-pre) · [Referência da regra](/rules/reference/vue-valid-v-pre.md)
 
 ### `vue/valid-v-show`
 

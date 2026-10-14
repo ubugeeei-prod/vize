@@ -26,7 +26,7 @@ title: "Musea と CSS のルール"
 | [`musea/unique-variant-names`](#musea-unique-variant-names) | [悪い](#musea-unique-variant-names-bad) · [良い](#musea-unique-variant-names-good) | 同じ Art ファイル内の variant 名を一意にします。 |
 | [`musea/valid-variant`](#musea-valid-variant) | [悪い](#musea-valid-variant-bad) · [良い](#musea-valid-variant-good) | variant ブロックに name を指定します。 |
 
-[全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
+[全ルール](./all.md) · [ルールのオプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
 
 ### `css/no-display-none`
 

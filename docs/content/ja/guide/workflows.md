@@ -123,7 +123,7 @@ Vite アプリでは [Vite プラグイン](./vite-plugin.md)を導入し、Vite
 
 ## CI
 
-CI で同じパッケージ スクリプトを使用します。
+CI で同じパッケージのスクリプトを使用します。
 
 ```yaml
 - run: vp install --frozen-lockfile

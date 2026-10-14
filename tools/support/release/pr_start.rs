@@ -92,17 +92,8 @@ fn prepare_with_target(
     let original = env::current_dir().map_err(|error| error.to_string())?;
     let bin = env::var("MOON_BIN").ok();
     let home = env::var("MOON_HOME").ok();
-    let mut command = preparation_command(&original, bin.as_deref(), home.as_deref());
-    command.args([
-        "run",
-        "--target",
-        "native",
-        "tools/moon/cmd/release",
-        "--",
-        bump,
-        "-y",
-        "--prepare-only",
-    ]);
+    let mut command = release_preparation(work, &original, bin.as_deref(), home.as_deref());
+    command.args([bump, "-y", "--prepare-only"]);
     if let Some(target) = target {
         command.args(["--pinned-target", target]);
         // The frozen C may fall behind main while it is prepared; the local
@@ -121,6 +112,27 @@ fn prepare_with_target(
     } else {
         Err(format!("Release preparation failed ({status})"))
     }
+}
+
+/// The release preparation entry point of the TypeScript release command.
+pub const RELEASE_COMMAND: &str = "tools/support/release/release/main.ts";
+
+/// Runs the prepared source's own release command. Source cuts from before the
+/// TypeScript port keep their MoonBit release package.
+pub fn release_preparation(
+    work: &Path,
+    original: &Path,
+    bin: Option<&str>,
+    home: Option<&str>,
+) -> process::Command {
+    if work.join(RELEASE_COMMAND).is_file() {
+        let mut command = process::Command::new("node");
+        command.arg(RELEASE_COMMAND);
+        return command;
+    }
+    let mut command = preparation_command(original, bin, home);
+    command.args(["run", "--target", "native", "tools/moon/cmd/release", "--"]);
+    command
 }
 
 pub fn preparation_command(
@@ -305,4 +317,31 @@ pub fn start_pinned(bump: &str, root: &Path) -> Result<(), String> {
 
 pub fn resume_pinned(number: u64, root: &Path) -> Result<(), String> {
     super::pr_pin::resume(number, root)
+}
+
+#[cfg(test)]
+mod preparation_tests {
+    use std::{fs, path::Path};
+
+    #[test]
+    fn release_preparation_runs_the_prepared_sources_own_release_command() {
+        let work = std::env::temp_dir().join(format!("vize-preparation-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&work);
+        fs::create_dir_all(&work).unwrap();
+        let original = Path::new("/original/workspace");
+        let legacy = super::release_preparation(&work, original, Some("moon"), None);
+        assert_eq!(legacy.get_program(), "moon");
+        let args = ["run", "--target", "native", "tools/moon/cmd/release", "--"];
+        assert_eq!(legacy.get_args().collect::<Vec<_>>(), args);
+        let command = work.join(super::RELEASE_COMMAND);
+        fs::create_dir_all(command.parent().unwrap()).unwrap();
+        fs::write(&command, "").unwrap();
+        let current = super::release_preparation(&work, original, Some("moon"), None);
+        assert_eq!(current.get_program(), "node");
+        assert_eq!(
+            current.get_args().collect::<Vec<_>>(),
+            [super::RELEASE_COMMAND]
+        );
+        fs::remove_dir_all(&work).unwrap();
+    }
 }

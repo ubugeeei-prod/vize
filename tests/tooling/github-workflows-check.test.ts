@@ -31,7 +31,7 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
     ["test-js-packages", 45],
     ["clippy-and-test", 45],
     ["coverage", 30],
-    ["source-coverage", 40],
+    ["source-coverage", 50],
     ["branch-coverage", 45],
     ["playground-test", 30],
     ["test-report", 5],

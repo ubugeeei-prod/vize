@@ -109,6 +109,11 @@ export const frenchVue2 = {
     "Les exemples donnent une expression à `v-else`, le combinent avec `v-if` ou omettent la branche conditionnelle qui doit le précéder immédiatement.",
     "Placez `v-else` seul immédiatement après la branche `v-if` correspondante.",
   ],
+  "vue/valid-v-else-if": [
+    "Exiger des directives `v-else-if` valides",
+    "Les exemples laissent `v-else-if` sans branche conditionnelle précédente ou sans condition, ou lui donnent un argument ou un modificateur.",
+    "Placez `v-else-if` avec une condition juste après la branche `v-if` ou `v-else-if` qu’il prolonge.",
+  ],
   "vue/valid-v-for": [
     "Exiger des directives `v-for` valides",
     "Les boucles omettent leur expression d’itération ou ajoutent un modificateur `.stop` non pris en charge.",
@@ -123,6 +128,11 @@ export const frenchVue2 = {
     "Exiger des directives `v-if` valides",
     "Les conditions omettent une expression ou combinent `v-if` avec une directive else sur le même nœud.",
     "Chaque `v-if` possède une condition non vide, telle que `ready` ou `count > 0`, sans directive else incompatible.",
+  ],
+  "vue/valid-v-is": [
+    "Exiger des directives `v-is` valides",
+    "`v-is` possède un argument ou un modificateur, n’a pas de valeur, ou est placé sur un composant plutôt que sur un élément HTML natif.",
+    "`v-is` avec une valeur sur un élément natif tel que `<tr>` désigne le composant à afficher à sa place.",
   ],
   "vue/valid-v-memo": [
     "Exiger des directives `v-memo` valides",
@@ -143,6 +153,11 @@ export const frenchVue2 = {
     "Exiger des directives `v-once` valides",
     "`v-once` possède une valeur, un argument ou un modificateur, alors que cette directive marque un rendu unique sans recevoir de valeur.",
     "`v-once` seul marque le sous-arbre pour un rendu unique sans syntaxe non prise en charge.",
+  ],
+  "vue/valid-v-pre": [
+    "Exiger des directives `v-pre` valides",
+    "`v-pre` possède un argument, un modificateur ou une valeur, alors que cette directive est un marqueur sans valeur qui ignore la compilation.",
+    "`v-pre` seul laisse le sous-arbre non compilé ; ses moustaches s’affichent telles qu’elles sont écrites.",
   ],
   "vue/valid-v-show": [
     "Exiger des directives `v-show` valides",

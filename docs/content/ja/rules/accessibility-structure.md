@@ -28,4 +28,4 @@ title: "ページ構造のアクセシビリティ"
 | [`a11y/landmark-roles`](https://vizejs.dev/ja/rules/accessibility-structure.html#a11y-landmark-roles) | [悪い](https://vizejs.dev/ja/rules/accessibility-structure.html#a11y-landmark-roles-bad) · [良い](https://vizejs.dev/ja/rules/accessibility-structure.html#a11y-landmark-roles-good) | ランドマーク role の配置と重複を検査します。 |
 | [`a11y/media-has-caption`](https://vizejs.dev/ja/rules/accessibility-structure.html#a11y-media-has-caption) | [悪い](https://vizejs.dev/ja/rules/accessibility-structure.html#a11y-media-has-caption-bad) · [良い](https://vizejs.dev/ja/rules/accessibility-structure.html#a11y-media-has-caption-good) | 音声・動画に字幕を用意します。 |
 
-[全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
+[全ルール](./all.md) · [ルールのオプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)

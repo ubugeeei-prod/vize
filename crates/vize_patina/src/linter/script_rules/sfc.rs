@@ -1,7 +1,7 @@
 use super::prefilter::{
     descriptor_scripts_may_match_ecosystem_rule, has_only_active_ecosystem_script_rules,
 };
-use super::registry::RULE_RETURN_IN_EMITS_VALIDATOR;
+use super::registry::{RULE_NO_DUPE_KEYS, RULE_RETURN_IN_EMITS_VALIDATOR};
 use super::template_context;
 use super::{
     LintResult, Linter, active_builtin_script_rule_entries, block_has_active_ast_rule,
@@ -9,8 +9,8 @@ use super::{
     resolved_rule, run_builtin_script_rule,
 };
 use crate::rules::script::{
-    EmitsModuleScript, NoDuplicateAttrInheritance, ReturnInEmitsValidator, ScriptLintResult,
-    SfcScriptContext, script_source_type,
+    EmitsModuleScript, NoDupeKeys, NoDupeKeysModuleScript, NoDuplicateAttrInheritance,
+    ReturnInEmitsValidator, ScriptLintResult, SfcScriptContext, script_source_type,
 };
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
@@ -125,10 +125,25 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
                 && parsed.diagnostics.is_empty()
                 && ReturnInEmitsValidator::setup_needs_module(&parsed.program)
         });
+    let dupe_setup_rule = active_builtin_script_rule_entries(linter, vapor_component)
+        .find(|entry| entry.rule_name == RULE_NO_DUPE_KEYS)
+        .filter(|entry| {
+            script_setup.is_some_and(|(source, _)| {
+                entry_may_match(linter, entry, source, result.filename.as_str())
+            })
+        })
+        .and_then(|entry| resolved_rule(linter, entry).as_setup_dupe_keys());
+    let needs_dupe_module = inline_emits_blocks
+        && dupe_setup_rule.is_some()
+        && script_setup_parsed.as_ref().is_some_and(|parsed| {
+            !parsed.panicked
+                && parsed.diagnostics.is_empty()
+                && NoDupeKeys::setup_needs_module(&parsed.program)
+        });
     let script_alloc = Allocator::default();
     let script_parsed = script_source
         .filter(|(source, _)| {
-            registered_scripts || needs_emits_module || {
+            registered_scripts || needs_emits_module || needs_dupe_module || {
                 block_has_active_ast_rule(linter, vapor_component, source, result.filename.as_str())
             }
         })
@@ -150,6 +165,20 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
             }
         }
         _ => EmitsModuleScript::Unavailable,
+    };
+
+    let dupe_module = match (inline_emits_blocks, script_source, script_parsed.as_ref()) {
+        (false, _, _) => NoDupeKeysModuleScript::Unavailable,
+        (true, None, _) => NoDupeKeysModuleScript::Absent,
+        (true, Some((_, offset)), Some(parsed))
+            if !parsed.panicked && parsed.diagnostics.is_empty() =>
+        {
+            NoDupeKeysModuleScript::Parsed {
+                program: &parsed.program,
+                offset,
+            }
+        }
+        _ => NoDupeKeysModuleScript::Unavailable,
     };
 
     // Share raw template text and the validated AST with rules that correlate
@@ -189,6 +218,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
                 script_parsed.as_ref(),
                 sfc_context,
                 None,
+                None,
                 false,
                 result,
             );
@@ -206,6 +236,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
                     ..sfc_context
                 },
                 emits_setup_rule.map(|_| emits_module),
+                dupe_setup_rule.map(|_| dupe_module),
                 descriptor.script.is_none()
                     && descriptor
                         .script_setup

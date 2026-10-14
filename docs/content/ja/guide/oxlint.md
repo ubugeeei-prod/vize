@@ -17,13 +17,13 @@ Vize 単独で lint や型チェックを実行する方法は、[静的解析](
 
 ## インストール
 
-[Vite+ インストール ガイド](https://viteplus.dev/guide/install) から `vp` を一度インストールし、パッケージを追加します。
+[Vite+ インストールガイド](https://viteplus.dev/guide/install) から `vp` を一度インストールし、パッケージを追加します。
 
 ```bash
 vp install -D oxlint oxlint-plugin-vize
 ```
 
-`oxlint-plugin-vize` は、オプションの依存関係を通じて、一致する Vize ネイティブ バインディングを解決します。
+`oxlint-plugin-vize` は、オプションの依存関係を通じて、一致する Vize ネイティブバインディングを解決します。
 ほとんどのユーザーは、`@vizejs/native` を個別にインストールする必要はありません。
 
 ## 基本的な使い方
@@ -137,7 +137,7 @@ Oxlint 本体の JavaScript プラグインの対応範囲も引き続き改善�
 - Oxlint 1.78 と 1.86 の直接の `oxlint`、`vp lint`、対応する `vp check` の lint 経路では、
   スクリプトのない `.vue` では Vize のコールバックが呼び出されません。テンプレートのみの SFC には、
   ネイティブの `vp run lint` タスクか `oxlint-vize` を使ってください。
-- Oxlint JS プラグインは抽出されたスクリプト プログラムに範囲を固定するため、テンプレートとスタイル
+- Oxlint JS プラグインは抽出されたスクリプトのプログラムに範囲を固定するため、テンプレートとスタイル
   診断では、出力形式によって元の SFC の位置が失われる場合があります。
 - `stylish` は、Oxlint と Vize の診断をターミナルで読むための推奨形式です。JSON などの機械可読形式では、
   元のテンプレートやスタイルの位置情報に制約があります。

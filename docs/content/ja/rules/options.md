@@ -1,10 +1,10 @@
 ---
-title: ルール オプション
+title: ルールのオプション
 ---
 <!-- Reviewed translation; source: rules/options.md -->
 
-# ルール オプション
-<!-- Type-aware reference: [型ルール オプション](./options-type.md) -->
+# ルールのオプション
+<!-- Type-aware reference: [型ルールのオプション](./options-type.md) -->
 
 ルールの判定方法をプロジェクトに合わせたいときに、このページを使ってください。
 Vite+ では `vite.config.ts` の `lint.vize.ruleOptions` に指定し、`vp run lint` で検査します。

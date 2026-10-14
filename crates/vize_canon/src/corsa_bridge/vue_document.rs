@@ -16,12 +16,14 @@ pub(super) mod materialized_documents;
 use build::build_vue_virtual_workspace_project;
 #[path = "vue_document/types.rs"]
 mod model;
+mod prepare;
 pub(crate) use model::CorsaVueVirtualProject;
 pub(super) use model::GeneratedVueDocument;
 pub use model::{
     CorsaMaterializedMappingKind, CorsaMaterializedSource, CorsaVueVirtualDependency,
     CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions,
 };
+pub use prepare::CorsaVueWorkspaceRequest;
 
 pub(crate) use model::CorsaProjectEnvironment;
 

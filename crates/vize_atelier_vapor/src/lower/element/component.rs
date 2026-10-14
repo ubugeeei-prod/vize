@@ -8,10 +8,12 @@ use super::{
 
 mod implicit_slot;
 mod model;
+mod prop_key;
 mod slots;
 mod structural_slots;
 use super::template::{is_runtime_only_attr, transform_template_ref};
 use model::transform_component_v_model;
+use prop_key::modified_prop_key;
 
 /// Transform a component element into a `CreateComponent` operation.
 ///
@@ -123,7 +125,11 @@ pub(super) fn transform_component<'a>(
                                 }
                                 continue;
                             }
-                            let key_node = SimpleExpressionNode::from_node(key_exp);
+                            let key_node = if dir.modifiers.is_empty() {
+                                SimpleExpressionNode::from_node(key_exp)
+                            } else {
+                                modified_prop_key(ctx, key_exp, &dir.modifiers)
+                            };
                             let key = Box::new_in(key_node, &ctx.allocator);
                             let mut values = Vec::new_in(&ctx.allocator);
                             if let Some(ref exp) = dir.exp

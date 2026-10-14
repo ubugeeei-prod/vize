@@ -25,7 +25,7 @@ title: "テンプレートの安全性と HTML の構造"
 | [`vue/permitted-contents`](#vue-permitted-contents) | [悪い](#vue-permitted-contents-bad) · [良い](#vue-permitted-contents-good) | HTML の要素ごとのコンテンツモデルを検査します。 |
 | [`vue/use-unique-element-ids`](#vue-use-unique-element-ids) | [悪い](#vue-use-unique-element-ids-bad) · [良い](#vue-use-unique-element-ids-good) | 静的 ID の代わりに useId() で一意な ID を生成します。 |
 
-[全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
+[全ルール](./all.md) · [ルールのオプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
 
 ### `vue/no-duplicate-attributes`
 

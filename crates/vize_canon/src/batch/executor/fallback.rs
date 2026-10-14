@@ -120,7 +120,7 @@ pub(super) fn warn_fallback(step: FallbackStep, error: &CorsaError) {
         step.description(),
     );
 
-    if let Some(notice) = fallback_stderr_notice(step, cause) {
+    if let Some(notice) = fallback_stderr_notice(step, cause, &cstr!("{error}")) {
         eprintln!("{notice}");
     }
 }
@@ -130,7 +130,11 @@ pub(super) fn warn_fallback(step: FallbackStep, error: &CorsaError) {
 /// suppressed (`VIZE_SILENCE_CORSA_FALLBACK`) or already emitted this run, so a
 /// large project's repeated fallbacks stay quiet. Separated from `eprintln!` so
 /// the once/suppression policy is unit-testable without capturing real stderr.
-pub(super) fn fallback_stderr_notice(step: FallbackStep, cause: FallbackCause) -> Option<String> {
+pub(super) fn fallback_stderr_notice(
+    step: FallbackStep,
+    cause: FallbackCause,
+    error: &str,
+) -> Option<String> {
     // Noise-sensitive embedders can suppress only the stderr line; the
     // structured `tracing` event still fires for observability.
     if std::env::var_os("VIZE_SILENCE_CORSA_FALLBACK").is_some() {
@@ -140,8 +144,28 @@ pub(super) fn fallback_stderr_notice(step: FallbackStep, cause: FallbackCause) -
         return None;
     }
     Some(cstr!(
-        "\x1b[33mwarning:\x1b[0m corsa: {} ({} failure). Type checking continues on a slower path.",
+        "\x1b[33mwarning:\x1b[0m corsa: {} ({} failure: {}). Type checking continues on a slower path.",
         step.description(),
         cause.label(),
+        fallback_reason(error),
     ))
+}
+
+/// The longest reason a fallback notice prints, in characters.
+const FALLBACK_REASON_LIMIT: usize = 240;
+
+/// The first line of the error that caused a fallback, bounded so a large
+/// checker output cannot flood stderr. Without it the notice only named the
+/// cause class, and a degraded run could not be diagnosed from its log.
+pub(super) fn fallback_reason(error: &str) -> String {
+    let line = error
+        .lines()
+        .map(str::trim)
+        .find(|line| !line.is_empty())
+        .unwrap_or("no error message");
+    let mut reason: String = line.chars().take(FALLBACK_REASON_LIMIT).collect();
+    if line.chars().nth(FALLBACK_REASON_LIMIT).is_some() {
+        reason.push_str("…");
+    }
+    reason
 }

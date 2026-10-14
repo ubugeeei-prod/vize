@@ -1,0 +1,209 @@
+{
+  "provider": {
+    "name": "eslint-plugin-vue",
+    "version": "10.9.2"
+  },
+  "parser": "10.4.1",
+  "scope": "Narrow pinned provider replay; original complete native/reference owner packet remains authoritative",
+  "rows": [
+    {
+      "id": "local-inherited",
+      "filename": "local-inherited.vue",
+      "source": "<script setup lang=\"ts\">interface Base { foo: string }; interface Props extends Base {}; defineProps<Props>(); const foo = 1;</script>\n<template><div /></template>",
+      "messages": [],
+      "expectedNativeService": {
+        "filename": "local-inherited.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'foo'",
+            "start": 117,
+            "end": 124,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 117,
+                "end": 124
+              }
+            ],
+            "fix": null
+          }
+        ]
+      },
+      "comparisonStatus": "Raw provider captured; native assertions require lexical ownership, inherited local keys, and merged declarations. No new native execution."
+    },
+    {
+      "id": "sibling-inherited",
+      "filename": "sibling-inherited.vue",
+      "source": "<script lang=\"ts\">export interface Base { foo: string }; export interface Props extends Base {}</script>\n<script setup lang=\"ts\">defineProps<Props>(); const foo = 1;</script>\n<template><div /></template>",
+      "messages": [],
+      "expectedNativeService": {
+        "filename": "sibling-inherited.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'foo'",
+            "start": 157,
+            "end": 164,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 157,
+                "end": 164
+              }
+            ],
+            "fix": null
+          }
+        ]
+      },
+      "comparisonStatus": "Raw provider captured; native assertions require lexical ownership, inherited local keys, and merged declarations. No new native execution."
+    },
+    {
+      "id": "override-inherited",
+      "filename": "override-inherited.vue",
+      "source": "<script setup lang=\"ts\">interface Base { foo: string }; interface Props extends Base { foo: string }; defineProps<Props>(); const foo = 1;</script>\n<template><div /></template>",
+      "messages": [
+        {
+          "ruleId": "vue/no-dupe-keys",
+          "severity": 2,
+          "message": "Duplicate key 'foo'. May cause name collision in script or template tag.",
+          "line": 1,
+          "column": 131,
+          "messageId": "duplicateKey",
+          "endLine": 1,
+          "endColumn": 138
+        }
+      ],
+      "expectedNativeService": {
+        "filename": "override-inherited.vue",
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'foo'",
+            "start": 130,
+            "end": 137,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 130,
+                "end": 137
+              }
+            ],
+            "fix": null
+          }
+        ]
+      },
+      "comparisonStatus": "Raw provider captured; native assertions require lexical ownership, inherited local keys, and merged declarations. No new native execution."
+    },
+    {
+      "id": "merged-interface",
+      "filename": "merged-interface.vue",
+      "source": "<script setup lang=\"ts\">interface Props { foo: string }; interface Props { bar: string }; defineProps<Props>(); const foo = 1, bar = 2;</script>\n<template><div /></template>",
+      "messages": [],
+      "expectedNativeService": {
+        "filename": "merged-interface.vue",
+        "error_count": 2,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'foo'",
+            "start": 118,
+            "end": 125,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 118,
+                "end": 125
+              }
+            ],
+            "fix": null
+          },
+          {
+            "rule_name": "script/no-dupe-keys",
+            "severity": "error",
+            "message": "Duplicated key 'bar'",
+            "start": 127,
+            "end": 134,
+            "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop.",
+            "labels": [
+              {
+                "message": "binding shadows a prop",
+                "start": 127,
+                "end": 134
+              }
+            ],
+            "fix": null
+          }
+        ]
+      },
+      "comparisonStatus": "Raw provider captured; native assertions require lexical ownership, inherited local keys, and merged declarations. No new native execution."
+    },
+    {
+      "id": "class-type-shadow",
+      "filename": "class-type-shadow.vue",
+      "source": "<script lang=\"ts\">export interface Props { foo: string }; export const declarations = {foo: String};</script>\n<script setup lang=\"ts\">class Props {}; defineProps<Props>(); const foo = 1;</script>\n<template><div /></template>",
+      "messages": [],
+      "expectedNativeService": {
+        "filename": "class-type-shadow.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "comparisonStatus": "Raw provider captured; native assertions require lexical ownership, inherited local keys, and merged declarations. No new native execution."
+    },
+    {
+      "id": "function-runtime-shadow",
+      "filename": "function-runtime-shadow.vue",
+      "source": "<script lang=\"ts\">export interface Props { foo: string }; export const declarations = {foo: String};</script>\n<script setup lang=\"ts\">function declarations() {}; defineProps(declarations); const foo = 1;</script>\n<template><div /></template>",
+      "messages": [],
+      "expectedNativeService": {
+        "filename": "function-runtime-shadow.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "comparisonStatus": "Raw provider captured; native assertions require lexical ownership, inherited local keys, and merged declarations. No new native execution."
+    },
+    {
+      "id": "class-runtime-shadow",
+      "filename": "class-runtime-shadow.vue",
+      "source": "<script lang=\"ts\">export interface Props { foo: string }; export const declarations = {foo: String};</script>\n<script setup lang=\"ts\">class declarations {}; defineProps(declarations); const foo = 1;</script>\n<template><div /></template>",
+      "messages": [],
+      "expectedNativeService": {
+        "filename": "class-runtime-shadow.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "comparisonStatus": "Raw provider captured; native assertions require lexical ownership, inherited local keys, and merged declarations. No new native execution."
+    },
+    {
+      "id": "hoisted-runtime-shadow",
+      "filename": "hoisted-runtime-shadow.vue",
+      "source": "<script lang=\"ts\">export interface Props { foo: string }; export const declarations = {foo: String};</script>\n<script setup lang=\"ts\">if (true) { var declarations = external }; defineProps(declarations); const foo = 1;</script>\n<template><div /></template>",
+      "messages": [],
+      "expectedNativeService": {
+        "filename": "hoisted-runtime-shadow.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "comparisonStatus": "Raw provider captured; native assertions require lexical ownership, inherited local keys, and merged declarations. No new native execution."
+    }
+  ]
+}

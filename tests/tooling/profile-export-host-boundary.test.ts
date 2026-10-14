@@ -1,34 +1,16 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { test } from "node:test";
 import { withoutHostRuntimeReferences } from "./support/davinci-host-imports.ts";
-import { currentTimingOraclePath } from "../../tools/support/levels/timing-profile-continuation.ts";
 import {
   profileHostImports,
   previousCuratorProfileImport,
 } from "./support/davinci-profile-host-imports.ts";
-import {
-  edges,
-  callerChanges,
-  calls,
-  exportFile,
-  exportTests,
-  gateChanges,
-  hashes,
-} from "../../tools/support/levels/profile-export-host-contract.ts";
-import {
-  prepare,
-  validateEdges,
-} from "../../tools/support/levels/profile-export-host-preflight.ts";
-import {
-  cssNamingGate,
-  cssNamingGateReplayText,
-  currentCSSNamingGateSHA,
-  historicalCSSNamingGateSHA,
-} from "../../tools/support/levels/css-naming-gate-continuation.ts";
+import { hashes } from "../../tools/support/levels/profile-export-host-contract.ts";
 
+// The profile-export host move is complete. These tests keep the host import
+// boundary; the move replay that pinned live caller bytes is retired.
 const read = (file: string) => fs.readFileSync(new URL("../../" + file, import.meta.url), "utf8");
 const forbidden = /\bvize_carton::|use vize_carton\b/u;
 
@@ -67,7 +49,6 @@ test("every tracked Rust caller retires the L0 wire API and inherent export meth
       file,
     );
   assert.doesNotMatch(read("davinci/vize_l0/src/profiler.rs"), /ProfileExport|mod export;/u);
-  assert.equal(prepare(read).size, 0);
 });
 
 test("both exact Curator input APIs remain limited to the original host path", () => {
@@ -83,197 +64,4 @@ test("both exact Curator input APIs remain limited to the original host path", (
     ])
       assert.match(withoutHostRuntimeReferences(changed, file), forbidden);
   }
-});
-
-test("owned Curator replay requires the entire caller and its exact companion", () => {
-  const file = hashes.snapshotCaller[0];
-  for (const changed of [
-    read(file).replace("allocation: None", "allocation: Some(unreviewed_allocation())"),
-    read(file).replace("Vec::new()", "unreviewed_counters()"),
-    read(file).replace(".or_insert_with(Metrics::new)", ".or_insert_with(unreviewed_metrics)"),
-    read(file) + "\nfn extra_caller() {}\n",
-  ]) {
-    assert.notEqual(changed, read(file));
-    assert.throws(() => prepare((path) => (path === file ? changed : read(path))), /unexpected/u);
-  }
-});
-
-test("replay rejects malformed actual callers, metric bodies and wire law before returning writes", () => {
-  for (const [originalFile, , after] of callerChanges) {
-    const file = currentTimingOraclePath(originalFile);
-    const parts = after.split(/(?<=;)\s*(?=use )/u);
-    const changed = read(file).replace(
-      profileHostImports[file] ?? parts[0],
-      (profileHostImports[file] ?? parts[0]).replace("export_report", "unexpected_exporter"),
-    );
-    assert.notEqual(changed, read(file));
-    assert.throws(() => prepare((path) => (path === file ? changed : read(path))), /unexpected/u);
-  }
-  for (const [originalFile, , after] of calls) {
-    const file = currentTimingOraclePath(originalFile);
-    const changed = read(file).replace(
-      /export_report(?:_from_snapshots)?\(/u,
-      "unexpected_report(",
-    );
-    assert.notEqual(changed, read(file));
-    assert.throws(
-      () => prepare((path) => (path === file ? changed : read(path))),
-      /unexpected/u,
-      after,
-    );
-    for (const extra of [
-      "other.export_report(&options);",
-      "use vize_l0::profiler::{ProfileExportBudget};",
-    ])
-      assert.throws(
-        () => prepare((path) => read(path) + (path === file ? "\n" + extra : "")),
-        /unexpected|retired/u,
-      );
-  }
-  for (const file of [
-    exportFile,
-    hashes.assembly[0],
-    exportTests,
-    "davinci/vize_l0/src/profiler/snapshot.rs",
-  ])
-    assert.throws(
-      () => prepare((path) => read(path) + (path === file ? "\nfn unexpected() {}" : "")),
-      /unexpected/u,
-    );
-});
-
-test("host dependency and lock ownership reject aliases, targets, malformed and extra declarations", () => {
-  for (const [name, file] of edges) {
-    for (const extra of [
-      "\n[build-dependencies]\nvize_carton.workspace = true\n",
-      "\n[target.'cfg(unix)'.dependencies]\nvize_carton.workspace = true\n",
-      '\n[dependencies.alias]\npackage = "vize_carton"\nversion = "*"\n',
-      '\n[dependencies]\n"vize_carton"."workspace" = false\n',
-    ])
-      assert.throws(() => prepare((path) => read(path) + (path === file ? extra : "")));
-    const lock = read("Cargo.lock"),
-      start = lock.indexOf(`name = "${name}"\n`),
-      end = lock.indexOf("\n[[package]]", start);
-    const changed =
-      lock.slice(0, start) +
-      lock.slice(start, end).replace(' "vize_carton",\n', "") +
-      lock.slice(end);
-    assert.throws(
-      () => prepare((path) => (path === "Cargo.lock" ? changed : read(path))),
-      /lock ownership/u,
-    );
-  }
-});
-
-test("fresh manifest insertion rejects valid quoted or spaced old dependency keys", () => {
-  const old = new Map(
-    edges.map(([, file, , declaration]) => [file, read(file).replace(declaration + "\n", "")]),
-  );
-  const oldRead = (file: string) => old.get(file) ?? read(file);
-  validateEdges(oldRead, true);
-  for (const [, file, kind] of edges)
-    for (const bad of [
-      "vize_carton.workspace = false",
-      '"vize_carton"."workspace" = false',
-      "vize_carton . workspace = false",
-    ]) {
-      const changed = oldRead(file).replace(`[${kind}]\n`, `[${kind}]\n${bad}\n`);
-      assert.throws(
-        () => validateEdges((path) => (path === file ? changed : oldRead(path)), true),
-        /dependency/u,
-      );
-    }
-});
-
-test("wire identity preserves literal and golden indentation bytes", () => {
-  for (const [file, before, after] of [
-    [hashes.assembly[0], 'tool: "vize"', 'tool: "vi ze"'],
-    [exportTests, '"  \\"schema_version\\": 1,\\n"', '"   \\"schema_version\\": 1,\\n"'],
-  ]) {
-    assert.ok(read(file).includes(before), "actual reviewed wire witness");
-    assert.throws(
-      () => prepare((path) => (path === file ? read(path).replace(before, after) : read(path))),
-      /wire law|assembly/u,
-    );
-  }
-});
-
-test("replay checks the executable gate companions as well as the real Rust callers", () => {
-  for (const [file, before, after] of gateChanges) {
-    const source = read(file);
-    const compact = (text: string) => text.replace(/\s+/gu, "").replace(/,(?=[}\]])/gu, "");
-    assert.ok(compact(source).includes(compact(after)));
-    const changed =
-      file !== "tests/tooling/davinci-stage-dependencies.test.ts"
-        ? source.replace(after, before)
-        : source.replace(/(hostRuntime:\s*\[[\s\S]*?)"vize_curator",?/u, '$1"unexpected_curator",');
-    assert.notEqual(changed, source);
-    assert.throws(() => prepare((path) => (path === file ? changed : read(path))), /gate/u);
-  }
-});
-
-test("gate literal whitespace and blanket host companion replacement reject before writes", () => {
-  const gate = "tests/tooling/support/davinci-host-imports.ts";
-  const list = "tests/tooling/davinci-stage-dependencies.test.ts";
-  for (const [file, changed] of [
-    [
-      gate,
-      read(gate).replace("davinci-profile-host-imports.ts", "davinci-prof ile-host-imports.ts"),
-    ],
-    [list, read(list).replace(/(hostRuntime:\s*\[[\s\S]*?)"vize_curator"/u, '$1"vize_cur ator"')],
-    [
-      "tests/tooling/support/davinci-profile-host-imports.ts",
-      'export function withoutProfileHostImports(source: string, file: string) { return "host_profile_export"; }',
-    ],
-  ]) {
-    assert.notEqual(changed, read(file));
-    assert.throws(
-      () => prepare((path) => (path === file ? changed : read(path))),
-      /gate|companion/u,
-    );
-  }
-});
-
-test("the SFC executable dependency law rejects literal drift and partial helpers", () => {
-  const file = "tests/tooling/davinci/davinci-atelier-sfc-stage-alias.test.mjs";
-  for (const changed of [
-    read(file).replace("vize_carton", "vize_car ton"),
-    read(file) + "\nfunction assertPreferredDependencies() {}\n",
-  ])
-    assert.throws(
-      () => prepare((path) => (path === file ? changed : read(path))),
-      /exact SFC dependency gate/u,
-    );
-});
-
-test("finite CSS naming closure preserves complete historical bytes and rejects body drift", () => {
-  const source = read(cssNamingGate);
-  const sha = (text: string) => createHash("sha256").update(text).digest("hex");
-  assert.equal(sha(source), currentCSSNamingGateSHA);
-  const historical = cssNamingGateReplayText(cssNamingGate, source);
-  assert.equal(sha(historical), historicalCSSNamingGateSHA);
-  assert.equal(cssNamingGateReplayText(cssNamingGate, historical), historical);
-  assert.equal(cssNamingGateReplayText("foreign-gate", source), source);
-  assert.equal(prepare(read).size, 0);
-  for (const changed of [
-    source.replace(
-      'css_engine_panic_boundary.rs", "test", 2]',
-      'css_engine_panic_boundary.rs", "test", 3]',
-    ),
-    source.replace(
-      '  ["crates/vize_atelier_sfc/tests/support/css_engine_successors.rs", "test", 1],\n',
-      "",
-    ),
-    source.replace("  assertPreferredSource(preserved, preservedPath);\n", ""),
-    source.replace("manifest.dependencies.vize_l0", "manifest.dependencies.vize_carton"),
-    source + "\n// unreviewed naming gate\n",
-  ]) {
-    assert.notEqual(changed, source);
-    assert.equal(cssNamingGateReplayText(cssNamingGate, changed), changed);
-    assert.throws(
-      () => prepare((file) => (file === cssNamingGate ? changed : read(file))),
-      /exact SFC dependency gate/u,
-    );
-  }
-  assert.equal(read(cssNamingGate), source, "current executable law is never rewritten");
 });

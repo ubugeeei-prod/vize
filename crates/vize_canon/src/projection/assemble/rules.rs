@@ -5,7 +5,9 @@ use std::ops::Range;
 use vize_atelier_sfc::{SfcDescriptor, SfcParseOptions, parse_sfc};
 use vize_carton::{String, cstr};
 
-use super::{AssembledDiagnostic, AssembledOrigin, AssemblyPolicy, FinishedDiagnostic};
+use super::{
+    AssembledDiagnostic, AssembledOrigin, AssemblyPolicy, AuthoredSource, FinishedDiagnostic,
+};
 use crate::batch::virtual_specifier_message::missing_vue_import_specifier_source;
 
 /// Whether a checker diagnostic is reportable at all, independent of where it
@@ -97,6 +99,49 @@ pub fn is_exhaustiveness_elaboration(line: &str) -> bool {
     line.starts_with("Type '")
         && line.contains(" is not assignable to type ")
         && line.ends_with('.')
+}
+
+/// Checker codes that mean the checker stopped analyzing part of the program:
+/// TS2563 (control flow analysis limit), TS2589 (instantiation depth) and
+/// TS2590 (union too complex). In generated code they have no authored range,
+/// and dropping them hides the cause of degraded types elsewhere.
+const CHECKER_GIVE_UP_CODES: [u32; 3] = [2563, 2589, 2590];
+
+pub(super) fn is_checker_give_up(code: Option<u32>) -> bool {
+    code.is_some_and(|code| CHECKER_GIVE_UP_CODES.contains(&code))
+}
+
+/// The internal-error diagnostic for a checker give-up in unmapped generated
+/// code, placed on the template block (or the file start) of the authored file.
+pub(super) fn generated_give_up<P>(
+    authored: &AuthoredSource<'_>,
+    code: Option<u32>,
+    payload: P,
+) -> AssembledDiagnostic<P> {
+    let start = authored.template().map_or(0, |template| template.start);
+    let code_text = code.map_or_else(String::default, |code| cstr!("TS{}", code));
+    AssembledDiagnostic {
+        start,
+        end: start,
+        code,
+        severity: Some(1),
+        message: cstr!(
+            "Vize internal error: the type-check code generated for this file made the checker give up ({}). Types in this and other files may be degraded. Please report this file to Vize.",
+            code_text
+        ),
+        origin: AssembledOrigin::GeneratedGiveUp(payload),
+    }
+}
+
+/// Keep only the first generated give-up of one authored file.
+pub(super) fn keep_first_generated_give_up<P>(assembled: &mut Vec<AssembledDiagnostic<P>>) {
+    let mut seen = false;
+    assembled.retain(|diagnostic| {
+        if !matches!(diagnostic.origin, AssembledOrigin::GeneratedGiveUp(_)) {
+            return true;
+        }
+        !core::mem::replace(&mut seen, true)
+    });
 }
 
 /// A `TS2307` for a generated `.vue` import the projection has no range for

@@ -1,0 +1,11 @@
+type PinInputType = 'text' | 'number';
+type PinInputValue<Type extends PinInputType> = [Type] extends ['number'] ? number[] : string[];
+interface Props<Type extends PinInputType> { type?: Type; modelValue?: PinInputValue<Type> | null; }
+declare const prior: <Type extends PinInputType = any>(props: Props<Type>) => void;
+declare const authored: <Type extends PinInputType>(props: Props<Type>) => void;
+declare const explicitAny: <Type extends PinInputType = any>(props: Props<Type>) => void;
+prior({ modelValue: [] as string[] });
+authored({ modelValue: [] as string[] });
+authored({ type: 'number', modelValue: [] as number[] });
+authored({ type: 'number', modelValue: [] as string[] });
+explicitAny({ modelValue: [] as string[] });

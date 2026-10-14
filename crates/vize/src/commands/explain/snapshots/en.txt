@@ -4052,6 +4052,26 @@ valid:
 
 help:
   Vue 3 removed the .sync modifier and folded its two-way binding into argumented v-model. Replace it with v-model:<prop> (e.g. :title.sync="title" -> v-model:title="title").
+=== vue/no-deprecated-v-is
+vue/no-deprecated-v-is · lint rule
+Disallow the deprecated `v-is` directive
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <tr v-is="'MyRow'"></tr>
+
+valid:
+  <tr is="vue:MyRow"></tr>
+  <component :is="MyRow" />
+
+help:
+  Use the is attribute with the vue: prefix instead, for example is="vue:MyComponent"
 === vue/no-deprecated-v-on-native-modifier
 vue/no-deprecated-v-on-native-modifier · lint rule
 Disallow the deprecated `.native` modifier on `v-on`
@@ -5573,6 +5593,29 @@ help:
   - v-else takes no expression
   - Must immediately follow v-if or v-else-if
   - No other elements between them
+=== vue/valid-v-else-if
+vue/valid-v-else-if · lint rule
+Enforce valid `v-else-if` directives
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div v-else-if="foo"></div> <!-- without preceding v-if -->
+  <div v-if="foo"></div><div v-else-if></div>
+  <div v-if="foo"></div><div v-else-if:arg="bar"></div>
+  <div v-if="foo"></div><div v-else-if.mod="bar"></div>
+
+valid:
+  <div v-if="foo"></div>
+  <div v-else-if="bar"></div>
+
+help:
+  Place v-else-if directly after a v-if or v-else-if element and give it only a condition
 === vue/valid-v-for
 vue/valid-v-for · lint rule
 Enforce valid `v-for` directives
@@ -5651,6 +5694,28 @@ help:
     <div v-if="isVisible">Content</div>
     <div v-if="items.length > 0">Has items</div>
   Note: Use v-show for frequent toggling (better performance), v-if for conditions that rarely change.
+=== vue/valid-v-is
+vue/valid-v-is · lint rule
+Enforce valid `v-is` directives
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <tr v-is:arg="'MyRow'"></tr>
+  <tr v-is.mod="'MyRow'"></tr>
+  <tr v-is></tr>
+  <MyComponent v-is="'MyRow'" />
+
+valid:
+  <tr v-is="'MyRow'"></tr>
+
+help:
+  Use v-is with a value on a native HTML element, without an argument or modifier
 === vue/valid-v-memo
 vue/valid-v-memo · lint rule
 Enforce valid `v-memo` directives
@@ -5759,6 +5824,27 @@ valid:
 
 help:
   Remove the value, argument, or modifier from the v-once directive
+=== vue/valid-v-pre
+vue/valid-v-pre · lint rule
+Enforce valid `v-pre` directives
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div v-pre:arg></div>
+  <div v-pre.mod></div>
+  <div v-pre="foo"></div>
+
+valid:
+  <div v-pre>{{ raw }}</div>
+
+help:
+  Remove the argument, modifier, or value from the v-pre directive
 === vue/valid-v-show
 vue/valid-v-show · lint rule
 Enforce valid `v-show` directives

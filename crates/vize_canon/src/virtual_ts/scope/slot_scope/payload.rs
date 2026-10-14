@@ -10,9 +10,14 @@ type __VizeNativeSlotsFactory<C> = C extends new (...args: any[]) => any ? typeo
 type __VizeSlotsFactory<C> = __VizeIsAny<C> extends true ? (component: C) => (props: any) => any : C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeSlotsFactory<C> : __VizeNativeSlotsFactory<C>;
 "#;
 
-/// Only names admitted by the authored key contribute payloads. A broad string
-/// can select any string slot; a literal union cannot acquire unrelated slots.
-/// Optional slot provisioning must not add `undefined` to the payload itself.
+/// Only names admitted by the authored key contribute payloads. A literal union
+/// cannot acquire unrelated slots. Optional slot provisioning must not add
+/// `undefined` to the payload itself.
+///
+/// A broad `string` key on a host without a string index signature leaves the
+/// payload unchecked, as `vue-tsc` does. A forwarding wrapper
+/// (`v-for="(_, name) in $slots"` with `#[name]="props"`) would otherwise hand
+/// every consumer the union of all host payloads and reject each named slot.
 ///
 /// An untyped host (an unresolved tag, an `any` component) yields an *error
 /// type* rather than a declared `any`. Both leave the payload unchecked, but
@@ -21,7 +26,7 @@ type __VizeSlotsFactory<C> = __VizeIsAny<C> extends true ? (component: C) => (pr
 /// unknown tag through a missing registry key, so its payloads are silent in
 /// exactly this way. The component itself stays `any`: listener and prop
 /// checks rely on conditional types an error type would collapse.
-const SLOT_PAYLOAD_HELPER: &str = "// @ts-ignore The unchecked payload of an untyped host: an error type, never reported.\ntype __VizeSilentAny = {}[\"__vizeSilentAny\"];\ntype __VizeSlotPayload<__S, __N> = __VizeIsAny<__S> extends true ? __VizeSilentAny : { [__K in keyof __S & __N]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S & __N] extends infer __P ? ([__P] extends [never] ? any : __P) : any;\n";
+const SLOT_PAYLOAD_HELPER: &str = "// @ts-ignore The unchecked payload of an untyped host: an error type, never reported.\ntype __VizeSilentAny = {}[\"__vizeSilentAny\"];\ntype __VizeNamedSlotPayload<__S, __N> = { [__K in keyof __S & __N]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S & __N] extends infer __P ? ([__P] extends [never] ? any : __P) : any;\ntype __VizeSlotPayload<__S, __N> = __VizeIsAny<__S> extends true ? __VizeSilentAny : string extends __N ? string extends keyof __S ? __VizeNamedSlotPayload<__S, __N> : any : __VizeNamedSlotPayload<__S, __N>;\n";
 
 /// Emit helpers only when a component owns an authored slot scope. Keeping
 /// unused aliases out also preserves `noUnusedLocals` declaration consumers.

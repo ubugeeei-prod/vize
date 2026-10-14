@@ -9,7 +9,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, edited]
     # prettier-ignore
-    paths: [".github/workflows/typechecker-native-phases.yml", "tools/benchmarks/scripts/typechecker-native-*.mjs", "tools/support/compat/github/native-phase-artifact*", "tools/benchmarks/scripts/type-snapshot-cli-*.mjs",
+    paths: [".github/workflows/typechecker-native-phases.yml", "tools/benchmarks/scripts/typechecker-native-*", "tools/support/compat/github/native-phase-artifact*", "tools/benchmarks/scripts/type-snapshot-cli-*.mjs",
       "crates/vize/tests/check_*_cli.rs",
       "tests/fixtures/typechecker/model-modifier-ranges/**",
       "crates/vize/tests/lint_unchecked_indexed_access_cli**",
@@ -19,17 +19,14 @@ on:
       "docs/davinci/decisions/2026-10-04-typechecker-*.md",
       "tools/benchmarks/scripts/generate.mjs",
       "tools/benchmarks/scripts/check-gate-*.mjs",
-      "tools/benchmarks/scripts/typecheck-command.mjs",
+      "tools/benchmarks/scripts/typecheck-command.mjs", "tools/benchmarks/scripts/type-snapshot-parser-recovery.ts",
       "tools/benchmarks/scripts/benchmark-binary.mjs",
       "tests/_fixtures/differential/typechecker/**",
       "crates/vize_canon/**",
       "crates/vize_atelier_jsx/**",
       "tests/_fixtures/differential/typecheck/jsx-*/**",
       ".github/actions/check-*/**",
-      "tests/tooling/**",
-      "!tests/tooling/release-input-scopes.test.mjs",
-      "!tests/tooling/release/release-public-acceptance.test.ts",
-      "!tests/tooling/support/release-retirement-transport-law.ts",
+      "tests/tooling/davinci-storage-rust-syntax.ts",
       "tests/_fixtures/differential/lsp/**",
       "crates/vize/tests/lsp_*_cli.rs",
       "crates/vize_maestro/src/ide/hover/component_prop**",
@@ -118,12 +115,12 @@ jobs:
         run: node tools/benchmarks/scripts/typechecker-native-source-custody.mjs "$RUNNER_TEMP/typechecker-native-source-custody.json"
       - name: Install pinned native runtime and shared Vue dependencies
         run: |
-          set -euo pipefail; vp install --frozen-lockfile --prefer-offline
+          set -euo pipefail; vp install --frozen-lockfile --prefer-offline; bash tools/support/compat/github/native-syntax-semantics.sh
           if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
             [[ ! -e "$NATIVE_PHASE_SOURCE_ROOT/node_modules" ]]
             ln -s "$GITHUB_WORKSPACE/node_modules" "$NATIVE_PHASE_SOURCE_ROOT/node_modules"
           fi
-          bash tools/support/compat/github/native-custom-directive-arguments.sh; bash tools/support/compat/github/native-syntax-semantics.sh; bash tools/support/compat/github/native-javascript-sfc-membership.sh; bash tools/support/compat/github/native-empty-vue-star-exports.sh
+          bash tools/support/compat/github/native-syntax-semantics.sh; bash tools/support/compat/github/native-javascript-sfc-membership.sh; bash tools/support/compat/github/native-empty-vue-star-exports.sh
       - name: Qualify declared template emits and config-scoped Vue helpers in the source CLI and editor
         if: github.event_name == 'pull_request'
         env:

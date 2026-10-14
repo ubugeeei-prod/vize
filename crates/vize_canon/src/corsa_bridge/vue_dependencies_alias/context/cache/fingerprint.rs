@@ -102,4 +102,13 @@ impl ContextFingerprint {
     pub(crate) fn overlay_identity(&self) -> u64 {
         self.overlays
     }
+
+    /// Host, overlay and option identity without the disk stamps, so equal
+    /// requests can share one preparation.
+    pub(crate) fn identity(&self) -> u64 {
+        use std::hash::{Hash, Hasher};
+        let mut hash = std::hash::DefaultHasher::new();
+        (self.host_content, self.overlays, self.generation_options).hash(&mut hash);
+        hash.finish()
+    }
 }
