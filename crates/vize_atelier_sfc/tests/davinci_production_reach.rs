@@ -54,6 +54,9 @@ mod davinci_production_reach {
     #[cfg(test)]
     mod source_io_tests;
     pub mod tally;
+    pub mod vapor_surface;
+    #[cfg(test)]
+    mod vapor_surface_tests;
 }
 
 use std::collections::BTreeMap;
@@ -63,11 +66,13 @@ use std::sync::Mutex;
 use davinci_production_reach::acceptance::report;
 use davinci_production_reach::diff::{divergence, error_divergence};
 use davinci_production_reach::fixtures::collect_committed_fixtures;
-use davinci_production_reach::parity::{absorb_prebackend, parity_failures};
+use davinci_production_reach::parity::{
+    absorb_prebackend, compare_with_legacy, measure_projection, parity_failures,
+};
 use davinci_production_reach::shapes::{Shape, compile, explicit_vapor_source};
 use davinci_production_reach::tally::{Lane, Tally, classify, classify_route, floors};
 use davinci_test_support::corpus::read_corpus_source;
-use vize_atelier_sfc::{SfcCompileResult, SfcParseOptions, parse_sfc};
+use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_l0::profiler::global_profiler;
 
 // The production reach and focused parity tests all read the global profiler.
@@ -478,56 +483,13 @@ fn measure(
     let accepted = lane == Lane::Accepted;
     let croquis = lane == Lane::Legacy("croquis".to_owned());
     tally.note_refusal(shape, name, &lane, refusal);
+    tally.note_vapor_surface(shape, name, &lane, descriptor);
     tally.note(name, lane);
     if accepted && shape.is_dom() {
         compare_with_legacy(descriptor, name, shape, &selected, tally);
     }
     if croquis && shape.is_dom() {
         measure_projection(descriptor, name, shape, tally);
-    }
-}
-
-/// The Croquis projection the production selector still refuses (perf):
-/// how many refused templates L2 would emit, each held to whole-module
-/// parity with the legacy lane.
-fn measure_projection(
-    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
-    name: &str,
-    shape: Shape,
-    tally: &mut Tally,
-) {
-    let profiler = global_profiler();
-    profiler.clear();
-    profiler.enable();
-    let projected = vize_atelier_dom::differential::with_croquis_projection(|| {
-        compile(descriptor, name, shape)
-    });
-    let counters = profiler.counter_summary();
-    profiler.disable();
-    profiler.clear();
-    let Ok(projected) = projected else {
-        return;
-    };
-    if classify(shape, &counters) == Ok(Lane::Accepted) {
-        tally.ready += 1;
-        compare_with_legacy(descriptor, name, shape, &projected, tally);
-    }
-}
-
-fn compare_with_legacy(
-    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
-    name: &str,
-    shape: Shape,
-    selected: &SfcCompileResult,
-    tally: &mut Tally,
-) {
-    tally.compared += 1;
-    let legacy =
-        vize_atelier_dom::differential::with_legacy_lane(|| compile(descriptor, name, shape));
-    if let Some(divergence) = divergence(selected, &legacy) {
-        tally
-            .divergences
-            .push(format!("{name} [{}]: {divergence}", shape.id()));
     }
 }
 

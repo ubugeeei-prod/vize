@@ -10,7 +10,7 @@ pub(super) fn source_contains_interpolation_ampersand(source: &str) -> bool {
         };
         if rest
             .get(..end)
-            .is_some_and(|expression| expression.contains('&'))
+            .is_some_and(|expression| may_contain_character_reference(expression.as_bytes()))
         {
             return true;
         }
@@ -98,7 +98,7 @@ fn tag_contains_directive_ampersand(bytes: &[u8], start: usize, end: usize) -> b
         }
         if directive_name(name)
             && bytes.get(value_start..index).is_some_and(|value| {
-                value.contains(&b'&') && !is_decoded_if_comparison(name, value)
+                may_contain_character_reference(value) && !is_decoded_if_comparison(name, value)
             })
         {
             return true;
@@ -121,13 +121,31 @@ fn is_decoded_if_comparison(name: &[u8], value: &[u8]) -> bool {
         let Some(rest) = remaining.get(position..) else {
             return false;
         };
-        remaining = if rest.starts_with(b"&gt;") || rest.starts_with(b"&lt;") {
+        remaining = if !starts_character_reference(rest) {
+            rest.get(1..).unwrap_or_default()
+        } else if rest.starts_with(b"&gt;") || rest.starts_with(b"&lt;") {
             rest.get(4..).unwrap_or_default()
         } else {
             return false;
         };
     }
     true
+}
+
+/// Whether `text` may hold an HTML character reference: `&` followed by an
+/// ASCII alphanumeric or `#`. Only these change when the shipped parser
+/// decodes entities; `a && b` or `a & b` reach L2 as authored.
+fn may_contain_character_reference(text: &[u8]) -> bool {
+    text.windows(2)
+        .any(|pair| pair.first() == Some(&b'&') && is_reference_start(pair.get(1)))
+}
+
+fn starts_character_reference(rest: &[u8]) -> bool {
+    rest.first() == Some(&b'&') && is_reference_start(rest.get(1))
+}
+
+fn is_reference_start(byte: Option<&u8>) -> bool {
+    byte.is_some_and(|byte| byte.is_ascii_alphanumeric() || *byte == b'#')
 }
 
 fn directive_name(name: &[u8]) -> bool {

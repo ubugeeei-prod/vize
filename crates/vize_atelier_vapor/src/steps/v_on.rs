@@ -17,13 +17,14 @@ pub fn transform_v_on<'a>(
     let key = extract_event_name(allocator, dir, source)?;
     let value = extract_handler(allocator, dir, source);
     let modifiers = parse_modifiers(allocator, dir);
+    let delegate = should_delegate(dir, &modifiers);
 
     let set_event = SetEventIRNode {
         element: element_id,
         key,
         value,
         modifiers,
-        delegate: should_delegate(dir),
+        delegate,
         effect: is_dynamic_handler(dir),
     };
 
@@ -97,10 +98,22 @@ fn parse_modifiers<'a>(allocator: &'a Allocator, dir: &DirectiveNode<'a>) -> Eve
     modifiers
 }
 
-/// Check if event should use delegation
-fn should_delegate(_dir: &DirectiveNode<'_>) -> bool {
-    // By default, use delegation for performance
-    true
+/// Delegate only on request (`.delegate`), as Vue's compiler does.
+fn should_delegate(dir: &DirectiveNode<'_>, modifiers: &EventModifiers<'_>) -> bool {
+    let requested = dir
+        .modifiers
+        .iter()
+        .any(|modifier| modifier.content == "delegate");
+    if !requested {
+        return false;
+    }
+    match &dir.arg {
+        Some(ExpressionNode::Simple(arg)) if arg.is_static => {
+            let name = modifiers.event_name(arg.content);
+            modifiers.delegates(requested, name, modifiers.stops(arg.content, name))
+        }
+        _ => false,
+    }
 }
 
 /// Check if handler is dynamic (needs effect)

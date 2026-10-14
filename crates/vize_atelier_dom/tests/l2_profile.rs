@@ -40,7 +40,7 @@ fn profile_reports_real_l2_dom_walks() {
     let unobserved_counters = profiler.counter_summary();
     assert!(unobserved_errors.is_empty());
     assert_eq!(
-        counter_total(&unobserved_counters, "davinci.s2_dom.files"),
+        counter_total(&unobserved_counters, "l2.dom.files"),
         None,
         "normal DOM compilation must not instantiate the profiling observer"
     );
@@ -54,14 +54,14 @@ fn profile_reports_real_l2_dom_walks() {
     assert!(!result.code.is_empty());
     assert_eq!(result.code, unobserved.code);
     assert_eq!(result.preamble, unobserved.preamble);
-    assert_eq!(counter(&counters, "davinci.s2_dom.files"), 1);
+    assert_eq!(counter(&counters, "l2.dom.files"), 1);
     // Vue 3 DOM emission folds preserving fact products before the
     // code-producing walk, so no pass-manager transform walk is reported.
-    assert_eq!(counter(&counters, "davinci.s2_dom.transform.walks"), 0);
-    assert_eq!(counter(&counters, "davinci.s2_dom.transform.passes"), 0);
-    assert_eq!(counter(&counters, "davinci.s2_dom.emit.walks"), 1);
-    assert!(counter(&counters, "davinci.s2_dom.emit.visits") > 0);
-    assert_eq!(counter(&counters, "davinci.s2_dom.total.walks"), 1);
+    assert_eq!(counter(&counters, "l2.dom.transform.walks"), 0);
+    assert_eq!(counter(&counters, "l2.dom.transform.passes"), 0);
+    assert_eq!(counter(&counters, "l2.dom.emit.walks"), 1);
+    assert!(counter(&counters, "l2.dom.emit.visits") > 0);
+    assert_eq!(counter(&counters, "l2.dom.total.walks"), 1);
 }
 
 #[test]
@@ -104,25 +104,22 @@ fn profile_reports_ladder_l2_dom_walk_budget() {
             "{} profiled L2 emit must keep the compatibility code",
             fixture.name
         );
-        assert_eq!(counter(&counters, "davinci.s2_dom.files"), 1);
+        assert_eq!(counter(&counters, "l2.dom.files"), 1);
         assert_eq!(
-            counter(&counters, "davinci.s2_dom.transform.walks"),
+            counter(&counters, "l2.dom.transform.walks"),
             expected.transform_walks
         );
         assert_eq!(
-            counter(&counters, "davinci.s2_dom.transform.passes"),
+            counter(&counters, "l2.dom.transform.passes"),
             expected.transform_walks
         );
+        assert_eq!(counter(&counters, "l2.dom.emit.walks"), expected.emit_walks);
         assert_eq!(
-            counter(&counters, "davinci.s2_dom.emit.walks"),
-            expected.emit_walks
-        );
-        assert_eq!(
-            counter(&counters, "davinci.s2_dom.emit.visits"),
+            counter(&counters, "l2.dom.emit.visits"),
             expected.emit_visits
         );
         assert_eq!(
-            counter(&counters, "davinci.s2_dom.total.walks"),
+            counter(&counters, "l2.dom.total.walks"),
             expected.transform_walks + expected.emit_walks
         );
     }
@@ -159,7 +156,7 @@ fn source_map_disabled_scope_id_stays_on_l2_codegen() {
     assert_eq!(result.preamble, compat.preamble);
     assert_eq!(result.code, compat.code);
     assert_eq!(
-        counter(&counters, "davinci.s2_dom.files"),
+        counter(&counters, "l2.dom.files"),
         1,
         "direct scope_id compiles are covered by the L2 production option surface"
     );
@@ -196,7 +193,7 @@ fn source_map_disabled_hoisted_scope_id_stays_on_l2_codegen() {
     let counters = profile.finish();
 
     assert!(errors.is_empty());
-    assert_eq!(counter(&counters, "davinci.s2_dom.files"), 1);
+    assert_eq!(counter(&counters, "l2.dom.files"), 1);
     assert_eq!(result.preamble, compat.preamble);
     assert_eq!(result.code, compat.code);
 }
@@ -240,7 +237,7 @@ fn source_map_disabled_runtime_global_name_stays_on_l2_codegen() {
     assert_eq!(result.preamble, compat.preamble);
     assert_eq!(result.code, compat.code);
     assert_eq!(
-        counter(&counters, "davinci.s2_dom.files"),
+        counter(&counters, "l2.dom.files"),
         1,
         "custom runtime-global compiles are covered by the L2 production option surface"
     );
@@ -277,7 +274,7 @@ fn source_map_disabled_comments_use_l2_codegen() {
     assert_eq!(result.preamble, compat.preamble);
     assert_eq!(result.code, compat.code);
     assert_eq!(
-        counter(&counters, "davinci.s2_dom.files"),
+        counter(&counters, "l2.dom.files"),
         1,
         "comment-preserving source-map-free compiles are covered by the L2 production option surface"
     );

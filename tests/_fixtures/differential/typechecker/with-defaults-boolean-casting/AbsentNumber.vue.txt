@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { amount } from './expect';
+
+withDefaults(defineProps<{ count?: number; label?: string }>(), { label: 'Total' });
+</script>
+
+<template>
+  <p>{{ label }} {{ amount(count) }}</p>
+</template>

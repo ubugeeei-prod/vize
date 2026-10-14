@@ -53,7 +53,7 @@ fn source_map_disabled_runtime_module_name_stays_on_l2_codegen() {
     assert_eq!(result.preamble, compat.preamble);
     assert_eq!(result.code, compat.code);
     assert_eq!(
-        counter(&counters, "davinci.s2_dom.files"),
+        counter(&counters, "l2.dom.files"),
         1,
         "custom runtime-module compiles are covered by the L2 production option surface"
     );

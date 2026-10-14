@@ -45,7 +45,7 @@ fn removed_dom_lane_flag_does_not_disarm_vue3_l2_selection() {
         "L2 DOM must keep codegen sections available"
     );
     assert_eq!(
-        counter_total(&counters, "davinci.s2_dom.files"),
+        counter_total(&counters, "l2.dom.files"),
         Some(1),
         "removed DOM lane env values must not disarm the L2 production selector",
     );
@@ -69,7 +69,7 @@ fn assert_compatibility_sections_without_l2_profile(
         "the compatibility lane must keep codegen sections available"
     );
     assert_eq!(
-        counter_total(counters, "davinci.s2_dom.files"),
+        counter_total(counters, "l2.dom.files"),
         None,
         "{l2_message}"
     );

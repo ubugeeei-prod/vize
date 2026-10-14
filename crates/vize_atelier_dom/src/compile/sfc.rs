@@ -111,7 +111,10 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
         }
         true
     } else {
-        selector::source_contains_expression_ampersand(source) || no_slotted
+        // L2 emits expressions from source text, so a possible character
+        // reference must stay on the shipped lane, which decodes it. The
+        // shared pipeline hands L2 the same slot-outlet flag as the fast path.
+        selector::source_contains_expression_ampersand(source)
     };
 
     let mut pipeline_options = if force_compat_sections {
@@ -128,6 +131,8 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
         )
     };
     pipeline_options.no_slotted = no_slotted;
+    // L2 runs before the shipped transform reports malformed slot parameters.
+    pipeline_options.strict_slot_params = true;
 
     let (_, errors, result) = super::inner::compile_template_inner_with_sections_captured(
         allocator,

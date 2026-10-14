@@ -11,10 +11,14 @@ use vize_l0::profiler::CounterSummary;
 
 use super::refusal::RefusalCensus;
 use super::shapes::Shape;
+use super::vapor_surface;
+use vize_atelier_sfc::SfcDescriptor;
 use vize_l1_to_l2::EmitError;
 
 /// The selection reason of a template the L2 DOM emitter attempted and refused.
 pub const EMIT_REFUSED: &str = "emit_refused";
+/// The Vapor bridge kept the template off native L3 after lowering it.
+pub const SURFACE_SEMANTICS: &str = "surface_semantics";
 
 /// The lane one template compile took, read from its selection counters.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -141,6 +145,27 @@ impl Tally {
         if shape.is_dom() && *lane == Lane::Legacy(EMIT_REFUSED.to_owned()) {
             self.refusals.note(name, refusal);
         }
+    }
+
+    /// Attribute a Vapor `surface_semantics` template to its first lowering cause.
+    pub fn note_vapor_surface(
+        &mut self,
+        shape: Shape,
+        name: &str,
+        lane: &Lane,
+        descriptor: &SfcDescriptor<'_>,
+    ) {
+        if shape != Shape::Vapor || *lane != Lane::Legacy(SURFACE_SEMANTICS.to_owned()) {
+            return;
+        }
+        let Some(template) = descriptor.template.as_ref() else {
+            return;
+        };
+        let cause = match template.lang.as_deref() {
+            None | Some("html") => vapor_surface::first_cause(&template.content),
+            Some(lang) => format!("template_lang:{lang}"),
+        };
+        self.refusals.note_code(name, cause, None);
     }
 
     pub fn record(&mut self, lane: Lane) {

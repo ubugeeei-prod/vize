@@ -68,19 +68,19 @@ impl LegacyReason {
     #[cfg(feature = "legacy-differential")]
     pub(crate) fn counter_suffix(self) -> &'static str {
         let counter = self.counter();
-        counter.strip_prefix("davinci.s4_ssr.").unwrap_or(counter)
+        counter.strip_prefix("l4.ssr.").unwrap_or(counter)
     }
 
     const fn counter(self) -> &'static str {
         match self {
-            Self::Options => "davinci.s4_ssr.legacy.options",
-            Self::Croquis => "davinci.s4_ssr.legacy.croquis",
-            Self::SurfaceSemantics => "davinci.s4_ssr.legacy.surface_semantics",
-            Self::Operation => "davinci.s4_ssr.legacy.operation",
-            Self::Element => "davinci.s4_ssr.legacy.element",
-            Self::Binding => "davinci.s4_ssr.legacy.binding",
-            Self::ExpressionOrEncoding => "davinci.s4_ssr.legacy.expression_or_encoding",
-            Self::Structure => "davinci.s4_ssr.legacy.structure",
+            Self::Options => "l4.ssr.legacy.options",
+            Self::Croquis => "l4.ssr.legacy.croquis",
+            Self::SurfaceSemantics => "l4.ssr.legacy.surface_semantics",
+            Self::Operation => "l4.ssr.legacy.operation",
+            Self::Element => "l4.ssr.legacy.element",
+            Self::Binding => "l4.ssr.legacy.binding",
+            Self::ExpressionOrEncoding => "l4.ssr.legacy.expression_or_encoding",
+            Self::Structure => "l4.ssr.legacy.structure",
         }
     }
 }
@@ -224,9 +224,9 @@ pub(super) fn record_selection(selection: &SsrL4Selection) {
         return;
     }
     let counter = match selection {
-        SsrL4Selection::Emitted(_) => "davinci.s4_ssr.accepted",
+        SsrL4Selection::Emitted(_) => "l4.ssr.accepted",
         SsrL4Selection::Legacy(reason) => reason.counter(),
-        SsrL4Selection::Rejected(_) => "davinci.s4_ssr.rejected",
+        SsrL4Selection::Rejected(_) => "l4.ssr.rejected",
     };
     profiler.record_counter_enabled(counter, 1);
 }
@@ -242,12 +242,12 @@ pub(super) fn record_bridge_counters(
     if !profiler.is_enabled() {
         return;
     }
-    profiler.record_counter_enabled("davinci.s4_ssr.files", 1);
-    profiler.record_counter_enabled("davinci.s4_ssr.segments", segments);
-    profiler.record_counter_enabled("davinci.s4_ssr.static_segments", static_segments);
-    profiler.record_counter_enabled("davinci.s4_ssr.dynamic_segments", dynamic_segments);
-    profiler.record_counter_enabled("davinci.s4_ssr.partition_facts", partition_facts);
-    profiler.record_counter_enabled("davinci.s4_ssr.s2_diagnostics", diagnostics);
+    profiler.record_counter_enabled("l4.ssr.files", 1);
+    profiler.record_counter_enabled("l4.ssr.segments", segments);
+    profiler.record_counter_enabled("l4.ssr.static_segments", static_segments);
+    profiler.record_counter_enabled("l4.ssr.dynamic_segments", dynamic_segments);
+    profiler.record_counter_enabled("l4.ssr.partition_facts", partition_facts);
+    profiler.record_counter_enabled("l4.ssr.s2_diagnostics", diagnostics);
 }
 
 mod surface_gate;

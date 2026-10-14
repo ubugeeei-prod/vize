@@ -31,15 +31,29 @@ fn registrations(source: &str) -> Vec<String> {
 }
 
 #[test]
+fn listeners_without_delegate_register_nothing() {
+    for source in [
+        r#"<button @click="save">save</button>"#,
+        r#"<button v-if="ready" @click="save">save</button>"#,
+        r#"<button @click.delegate.stop="save">save</button>"#,
+        r#"<button @click.delegate="a" @click.stop="b">save</button>"#,
+        r#"<button @click.delegate.once="save">save</button>"#,
+        r#"<button @scroll.delegate="save">save</button>"#,
+    ] {
+        assert_eq!(registrations(source), Vec::<String>::new(), "{source}");
+    }
+}
+
+#[test]
 fn delegated_events_are_registered_from_every_nested_emitted_block() {
     for source in [
-        r#"<button v-if="ready" @click="save">save</button>"#,
-        r#"<button v-if="ready">ready</button><button v-else @click="save">save</button>"#,
-        r#"<button v-for="item in items" :key="item" @click="save">{{ item }}</button>"#,
-        r#"<slot name="body"><button @click="save">save</button></slot>"#,
-        r#"<Widget><button @click="save">save</button></Widget>"#,
-        r#"<Widget><template #body><button @click="save">save</button></template></Widget>"#,
-        r#"<section v-if="ready"><button v-for="item in items" :key="item" @click="save">{{ item }}</button></section>"#,
+        r#"<button v-if="ready" @click.delegate="save">save</button>"#,
+        r#"<button v-if="ready">ready</button><button v-else @click.delegate="save">save</button>"#,
+        r#"<button v-for="item in items" :key="item" @click.delegate="save">{{ item }}</button>"#,
+        r#"<slot name="body"><button @click.delegate="save">save</button></slot>"#,
+        r#"<Widget><button @click.delegate="save">save</button></Widget>"#,
+        r#"<Widget><template #body><button @click.delegate="save">save</button></template></Widget>"#,
+        r#"<section v-if="ready"><button v-for="item in items" :key="item" @click.delegate="save">{{ item }}</button></section>"#,
     ] {
         assert_eq!(
             registrations(source),
@@ -53,7 +67,7 @@ fn delegated_events_are_registered_from_every_nested_emitted_block() {
 fn nested_registrations_are_deduplicated_and_sorted_with_root_events() {
     assert_eq!(
         registrations(
-            r#"<button @click="save">root</button><button v-if="ready" @keydown="save">ready</button><button v-else @click="save">save</button><slot><button @keydown="save">slot</button></slot>"#
+            r#"<button @click.delegate="save">root</button><button v-if="ready" @keydown.delegate="save">ready</button><button v-else @click.delegate="save">save</button><slot><button @keydown.delegate="save">slot</button></slot>"#
         ),
         [
             r#"_delegateEvents("click")"#,

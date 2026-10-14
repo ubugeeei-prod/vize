@@ -215,6 +215,8 @@ pub(super) fn try_emit_l2(
     hoisted_scope_id: Option<&str>,
     experimental_component_name: Option<&str>,
     pre_s2_walks: Option<WalkCounts>,
+    strict_slot_params: bool,
+    no_slotted: bool,
 ) -> Option<CodegenResultWithSections> {
     let binding_table = l2_binding_table_for(options);
     let emit_options = l2_emit_options(
@@ -233,8 +235,8 @@ pub(super) fn try_emit_l2(
             options.dialect,
             &emit_options,
             pre_s2_walks,
-            false,
-            false,
+            strict_slot_params,
+            no_slotted,
         )
     ))
     .ok()
@@ -264,29 +266,23 @@ pub(super) fn emit_l2(
         )?;
         let budget = observed.budget;
         // P2-12b counts this product path; ordinary calls instantiate no observer.
-        profiler.record_counter_enabled("davinci.s2_dom.files", 1);
+        profiler.record_counter_enabled("l2.dom.files", 1);
+        profiler
+            .record_counter_enabled("l2.dom.transform.walks", u64::from(budget.transform.walks));
         profiler.record_counter_enabled(
-            "davinci.s2_dom.transform.walks",
-            u64::from(budget.transform.walks),
-        );
-        profiler.record_counter_enabled(
-            "davinci.s2_dom.transform.passes",
+            "l2.dom.transform.passes",
             u64::from(budget.transform.passes),
         );
-        profiler.record_counter_enabled("davinci.s2_dom.emit.walks", u64::from(budget.emit_walks));
-        profiler
-            .record_counter_enabled("davinci.s2_dom.emit.visits", u64::from(budget.emit_visits));
-        profiler.record_counter_enabled(
-            "davinci.s2_dom.total.walks",
-            u64::from(budget.total_walks()),
-        );
+        profiler.record_counter_enabled("l2.dom.emit.walks", u64::from(budget.emit_walks));
+        profiler.record_counter_enabled("l2.dom.emit.visits", u64::from(budget.emit_visits));
+        profiler.record_counter_enabled("l2.dom.total.walks", u64::from(budget.total_walks()));
         let (pre_s2_walks, pre_s2_visits) = pre_s2_walks.map_or((0, 0), |counts| {
             (counts.total_walks(), counts.total_visits())
         });
-        profiler.record_counter_enabled("davinci.s2_dom.pre_s2.walks", pre_s2_walks);
-        profiler.record_counter_enabled("davinci.s2_dom.pre_s2.visits", pre_s2_visits);
+        profiler.record_counter_enabled("l2.dom.pre_s2.walks", pre_s2_walks);
+        profiler.record_counter_enabled("l2.dom.pre_s2.visits", pre_s2_visits);
         profiler.record_counter_enabled(
-            "davinci.s2_dom.build.walks",
+            "l2.dom.build.walks",
             pre_s2_walks + u64::from(budget.total_walks()),
         );
         observed.emit

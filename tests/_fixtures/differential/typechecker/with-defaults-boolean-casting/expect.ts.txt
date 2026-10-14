@@ -1,0 +1,7 @@
+export function flag(value: boolean): string {
+  return value ? 'on' : 'off';
+}
+
+export function amount(value: number): string {
+  return value.toFixed(0);
+}

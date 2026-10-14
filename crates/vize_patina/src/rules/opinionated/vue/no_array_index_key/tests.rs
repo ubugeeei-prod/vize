@@ -253,3 +253,45 @@ fn ignores_object_destructuring_value_used_as_key() {
     );
     assert_eq!(result.warning_count, 0);
 }
+
+/// #8974: the second alias of an object declared in the SFC's script is a key.
+#[test]
+fn allows_second_alias_of_a_script_declared_object() {
+    let linter = create_linter();
+    for script in [
+        "const colors = { Green: '#42b883', Blue: '#3b82f6' }",
+        "const colors: Record<string, string> = { Green: '#42b883' }",
+        "const colors = reactive({ Green: '#42b883' })",
+        "let colors = ref({ Green: '#42b883' })",
+    ] {
+        let source = format!(
+            "<script setup lang=\"ts\">\n{script}\n</script>\n<template>\n  <button v-for=\"(color, label) in colors\" :key=\"label\" type=\"button\">{{{{ label }}}}</button>\n</template>\n"
+        );
+        let result = linter.lint_sfc(&source, "Colors.vue");
+        assert_eq!(
+            result.warning_count, 0,
+            "{script}: {:?}",
+            result.diagnostics
+        );
+    }
+}
+
+#[test]
+fn still_reports_second_alias_of_a_script_declared_array_or_other_binding() {
+    let linter = create_linter();
+    for script in [
+        "const colors = ['#42b883', '#3b82f6']",
+        "const colors = ref(['#42b883'])",
+        "const colorsMap = { Green: '#42b883' }\nconst colors = list()",
+    ] {
+        let source = format!(
+            "<script setup lang=\"ts\">\n{script}\n</script>\n<template>\n  <button v-for=\"(color, label) in colors\" :key=\"label\" type=\"button\">{{{{ label }}}}</button>\n</template>\n"
+        );
+        let result = linter.lint_sfc(&source, "Colors.vue");
+        assert_eq!(
+            result.warning_count, 1,
+            "{script}: {:?}",
+            result.diagnostics
+        );
+    }
+}

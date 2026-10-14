@@ -58,7 +58,7 @@ fn comment_preserving_sfc_sections_use_l2_when_profiled() {
         "comment-preserving SFC compiles must keep the exact comment vnode output"
     );
     assert_eq!(
-        counter_total(&counters, "davinci.s2_dom.files"),
+        counter_total(&counters, "l2.dom.files"),
         Some(1),
         "comment-preserving SFC sections must use L2 once L2 preserves comments"
     );

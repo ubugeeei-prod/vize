@@ -157,8 +157,28 @@ pub(crate) fn transform_directive<'a>(
                     key.content = event_name;
                     let is_dynamic = !key_exp.is_static;
 
-                    // Determine delegation
-                    let delegate = !is_dynamic && modifiers.can_delegate(event_name);
+                    // Delegate only on request, as Vue's compiler does.
+                    let requested = dir.modifiers.iter().any(|m| m.content == "delegate");
+                    let stopped = requested
+                        && !is_dynamic
+                        && el.props.iter().any(|prop| match prop {
+                            vize_atelier_core::PropNode::Directive(other) if other.name == "on" => {
+                                match &other.arg {
+                                    Some(ExpressionNode::Simple(arg)) if arg.is_static => {
+                                        crate::ir::EventModifiers::from_names(
+                                            ctx.allocator,
+                                            Some(arg.content),
+                                            other.modifiers.iter().map(|modifier| modifier.content),
+                                        )
+                                        .stops(arg.content, event_name)
+                                    }
+                                    _ => false,
+                                }
+                            }
+                            _ => false,
+                        });
+                    let delegate =
+                        !is_dynamic && modifiers.delegates(requested, event_name, stopped);
 
                     let set_event = SetEventIRNode {
                         element: element_id,

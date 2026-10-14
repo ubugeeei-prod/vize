@@ -4,34 +4,69 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{FxHashSet, String, append, cstr};
 
+/// The template's resolved prop contract for a `withDefaults` declaration.
+///
+/// `boolean_casting` applies Vue's boolean casting: an absent prop whose type
+/// is `boolean` is `false`, never `undefined`, exactly as `vue-tsc`'s
+/// `PropsWithDefaults<T, D, BKeys>` resolves it. Its set names the props whose
+/// default is literally `undefined`, which Vue leaves `boolean | undefined`.
+/// It is only safe when `keyof base` is concrete (not a generic SFC), see
+/// `__DefineProps` (#4242).
 pub(super) fn template_props_type_ref(
     base_type_ref: &str,
     defaulted_prop_names: &FxHashSet<String>,
+    boolean_casting: Option<&FxHashSet<String>>,
 ) -> String {
     if defaulted_prop_names.is_empty() {
         return base_type_ref.into();
     }
 
-    let mut names: Vec<&str> = defaulted_prop_names
-        .iter()
-        .map(|name| name.as_str())
-        .collect();
-    names.sort_unstable();
-
-    let mut default_keys = String::default();
-    for name in names {
-        if !default_keys.is_empty() {
-            default_keys.push_str(" | ");
-        }
-        append!(default_keys, "\"{name}\"");
-    }
-
-    cstr!("__WithDefaultsResult<{base_type_ref}, Pick<{base_type_ref}, {default_keys}>>")
+    let default_keys = key_union(defaulted_prop_names);
+    let Some(undefined_defaults) = boolean_casting else {
+        return cstr!(
+            "__WithDefaultsResult<{base_type_ref}, Pick<{base_type_ref}, {default_keys}>>"
+        );
+    };
+    let boolean_keys = if undefined_defaults.is_empty() {
+        cstr!("__VizeBooleanKey<{base_type_ref}>")
+    } else {
+        let excluded = key_union(undefined_defaults);
+        cstr!("Exclude<__VizeBooleanKey<{base_type_ref}>, {excluded}>")
+    };
+    cstr!(
+        "__WithDefaultsResult<{base_type_ref}, Pick<{base_type_ref}, {default_keys}>, {boolean_keys}>"
+    )
 }
 
+/// `"a" | "b"` over the names, sorted so the generated text is deterministic.
+fn key_union(names: &FxHashSet<String>) -> String {
+    let mut sorted: Vec<&str> = names.iter().map(|name| name.as_str()).collect();
+    sorted.sort_unstable();
+    let mut keys = String::default();
+    for name in sorted {
+        if !keys.is_empty() {
+            keys.push_str(" | ");
+        }
+        append!(keys, "\"{name}\"");
+    }
+    keys
+}
+
+#[cfg(test)]
 pub(super) fn collect_with_defaults_default_names_from_source(
     source: &str,
     names: &mut FxHashSet<String>,
+) {
+    collect_with_defaults_names_from_source(source, names, &mut FxHashSet::default());
+}
+
+/// Collect the props an object-literal `withDefaults` argument defaults:
+/// `defined` gets those with a value, `undefined` those whose default is
+/// literally `undefined` (Vue then keeps them `T | undefined`, booleans too).
+pub(super) fn collect_with_defaults_names_from_source(
+    source: &str,
+    defined: &mut FxHashSet<String>,
+    undefined: &mut FxHashSet<String>,
 ) {
     let source = source.trim();
     let expression_source = if source.starts_with("withDefaults") {
@@ -61,13 +96,17 @@ pub(super) fn collect_with_defaults_default_names_from_source(
         let ObjectPropertyKind::ObjectProperty(prop) = prop else {
             continue;
         };
-        if prop.computed || is_undefined_default_value(&prop.value) {
+        if prop.computed {
             continue;
         }
         let Some(name) = property_key_name(&prop.key) else {
             continue;
         };
-        names.insert(name.into());
+        if is_undefined_default_value(&prop.value) {
+            undefined.insert(name.into());
+        } else {
+            defined.insert(name.into());
+        }
     }
 }
 

@@ -87,7 +87,21 @@ impl<'a> Emitter<'a, '_> {
                 } else {
                     modifiers.event_name(binding.name)
                 };
-                let delegate = dynamic.is_none() && modifiers.can_delegate(name);
+                // Delegate only on request, as Vue's compiler does.
+                let requested = binding.modifiers.contains(&"delegate");
+                let stopped = requested
+                    && dynamic.is_none()
+                    && node.bindings.iter().any(|other| {
+                        other.kind == BindingKind::Event
+                            && other.dynamic_name.is_none()
+                            && EventModifiers::from_names(
+                                self.allocator,
+                                Some(other.name),
+                                other.modifiers.iter().copied(),
+                            )
+                            .stops(other.name, name)
+                    });
+                let delegate = dynamic.is_none() && modifiers.delegates(requested, name, stopped);
                 let key = match dynamic {
                     Some(expression) => {
                         self.spanned(expression, false, Some(self.trimmed(name_raw)))
