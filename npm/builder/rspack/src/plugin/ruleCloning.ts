@@ -198,7 +198,11 @@ function cloneRulesForVueStyle(rule: RuleSetRule, lang: string, nativeCss: boole
       use: deepCloneUse(clonedUse),
     };
 
-    if (rule.type) {
+    // `css/auto` decides by filename, and every block request is `App.vue`,
+    // so a `<style module>` branch must say `css/module` itself.
+    if (fallbackType === "css/module" && (!rule.type || rule.type === "css/auto")) {
+      cloned.type = fallbackType;
+    } else if (rule.type) {
       cloned.type = rule.type;
     } else if (fallbackType) {
       cloned.type = fallbackType;
