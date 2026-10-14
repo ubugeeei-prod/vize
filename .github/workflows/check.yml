@@ -222,12 +222,9 @@ jobs:
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with:
-          wild-version: "0.9.0"
+        with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          key: check-vize-apps
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+        with: { key: check-vize-apps, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Check generated reference docs
@@ -244,62 +241,13 @@ jobs:
         run: vp exec tsx --test gallery/components/MarkdownContent.test.ts
       - name: Check Vize app fixtures
         run: vp run --workspace-root check:ci:vize-apps
-  # Release preflight waits on Check full, Docs build, Miri and Fuzz at the
-  # exact release SHA. The queue runs the ones a candidate's paths can affect.
-  release-gate-plan:
-    name: Plan release gates
-    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    outputs:
-      vue-parity: ${{ steps.plan.outputs.vue-parity }}
-      docs: ${{ steps.plan.outputs.docs }}
-      miri: ${{ steps.plan.outputs.miri }}
-      fuzz: ${{ steps.plan.outputs.fuzz }}
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with: { node-version-file: "package.json", package-manager-cache: false }
-      - name: Plan release gates
-        id: plan
-        env: { BASE_SHA: "${{ github.event.merge_group.base_sha }}" }
-        run: |
-          if [[ "$GITHUB_EVENT_NAME" == merge_group && ! "$BASE_SHA" =~ ^0+$ ]]; then
-            git fetch --no-tags --depth=1 origin "$BASE_SHA"
-          fi
-          node tools/support/compat/github/plan-release-gates.ts "$GITHUB_EVENT_NAME" "$BASE_SHA" "$GITHUB_SHA"
-  docs-build:
-    needs: release-gate-plan
-    if: ${{ github.event_name == 'merge_group' && needs.release-gate-plan.outputs.docs == 'true' }}
-    uses: ./.github/workflows/build-docs.yml
-    with: { links-only: true }
-  miri:
-    needs: release-gate-plan
-    if: ${{ github.event_name == 'merge_group' && needs.release-gate-plan.outputs.miri == 'true' }}
-    uses: ./.github/workflows/miri.yml
-  fuzz-replay:
-    needs: release-gate-plan
-    if: ${{ github.event_name == 'merge_group' && needs.release-gate-plan.outputs.fuzz == 'true' }}
-    permissions: { contents: read, issues: write } # Triage runs only on schedule and dispatch.
-    uses: ./.github/workflows/fuzz.yml
-    with: { mode: replay }
   release-gates:
-    name: Release gates
-    if: ${{ always() && (github.event_name == 'pull_request' || github.event_name == 'merge_group') }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    needs: [release-gate-plan, vue-parity, docs-build, miri, fuzz-replay]
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with: { node-version-file: "package.json", package-manager-cache: false }
-      - name: Require every selected release gate to succeed
-        env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
-        run: node tools/support/compat/github/plan-release-gates.ts --check
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+    permissions: { contents: read, issues: write } # Fuzz triage runs only on schedule and dispatch.
+    uses: ./.github/workflows/queue-release-gates.yml
   vue-parity:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    needs: release-gate-plan
-    if: ${{ !cancelled() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'merge_group' && needs.release-gate-plan.outputs.vue-parity == 'true')) }}
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     timeout-minutes: 30
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -313,12 +261,9 @@ jobs:
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with:
-          wild-version: "0.9.0"
+        with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          key: vue-parity
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+        with: { key: vue-parity, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - uses: ./.github/actions/check-vue-parity
   full-source-cli:
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
@@ -384,8 +329,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with:
-          wild-version: "0.9.0"
+        with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: build-js-packages
@@ -525,8 +469,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable, components: llvm-tools-preview }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with:
-          wild-version: "0.9.0"
+        with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-moonbit
       - uses: ./.github/actions/setup-rust-script
       - uses: ./.github/actions/setup-rust-sticky-cache
@@ -579,8 +522,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # nightly
         with: { toolchain: nightly, components: llvm-tools-preview }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with:
-          wild-version: "0.9.0"
+        with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-moonbit
       - uses: ./.github/actions/setup-rust-script
       - uses: ./.github/actions/setup-rust-sticky-cache

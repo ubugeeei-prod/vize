@@ -89,11 +89,9 @@ test("source gates cover PRs and merge groups while full JS qualification also r
       workflow.jobs?.[job]?.if,
       job === "test-scripts"
         ? "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')) }}"
-        : job === "vue-parity"
-          ? "${{ !cancelled() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'merge_group' && needs.release-gate-plan.outputs.vue-parity == 'true')) }}"
-          : ["build-js-packages", "test-js-packages"].includes(job)
-            ? "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}"
-            : "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
+        : ["build-js-packages", "test-js-packages"].includes(job)
+          ? "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}"
+          : "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
     );
   }
   assert.equal(

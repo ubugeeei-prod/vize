@@ -75,15 +75,28 @@ void test("a release gate may skip only when the plan did not select it", () => 
 });
 
 void test("Check wires every planned gate into the required report", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "check.yml")) as {
-    jobs: Record<string, { needs?: string[]; if?: string; uses?: string; with?: object }>;
+  type Workflow = {
+    jobs: Record<
+      string,
+      { needs?: string[]; if?: string; uses?: string; with?: object; steps?: unknown[] }
+    >;
   };
+  const check = parse(readRepoFile(".github", "workflows", "check.yml")) as Workflow;
+  const workflow = parse(
+    readRepoFile(".github", "workflows", "queue-release-gates.yml"),
+  ) as Workflow;
+  assert.equal(check.jobs["release-gates"]!.uses, "./.github/workflows/queue-release-gates.yml");
+  assert.ok(check.jobs["test-report"]!.needs!.includes("release-gates"));
   const gate = workflow.jobs["release-gates"]!;
   assert.deepEqual(
     [...gate.needs!].sort(),
     ["release-gate-plan", ...Object.values(RELEASE_GATE_JOBS)].sort(),
   );
-  assert.ok(workflow.jobs["test-report"]!.needs!.includes("release-gates"));
+  assert.deepEqual(
+    workflow.jobs["vue-parity"]!.steps,
+    check.jobs["vue-parity"]!.steps,
+    "the queue runs the release vue-parity job unchanged",
+  );
   for (const [decision, job] of Object.entries(RELEASE_GATE_JOBS)) {
     assert.match(
       workflow.jobs[job]!.if!,
