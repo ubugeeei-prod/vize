@@ -37,9 +37,10 @@
 //! its instantiation cache across every generated module instead of
 //! re-instantiating `keyof __VizeNativeElements` per file.
 //!
-//! They are deliberately absent from `DECLARATION_HELPERS_DTS`: emitted
-//! declarations never contain a native prop check, so shipping the alias would
-//! push vize's Vue-version floor onto every consumer of the emitted `.d.ts`.
+//! Only `__VizeNativeElements` and the component global-attr chain ship in
+//! `DECLARATION_HELPERS_DTS`, for generic component signatures. The alias keeps
+//! its `@ts-ignore` and the chain collapses to `{}` when it is `any`, so a
+//! consumer's older `vue` degrades instead of erroring.
 
 use super::super::types::{VizeMapping, VizeSubSpan};
 use vize_carton::{CompactString, FxHashMap, String, append, is_native_tag};
