@@ -80,6 +80,7 @@ export type ServerCapabilities = {
   declarationProvider?: unknown;
   definitionProvider?: unknown;
   typeDefinitionProvider?: unknown;
+  monikerProvider?: boolean;
   documentHighlightProvider?: unknown;
   documentFormattingProvider?: unknown;
   documentLinkProvider?: { resolveProvider?: boolean };

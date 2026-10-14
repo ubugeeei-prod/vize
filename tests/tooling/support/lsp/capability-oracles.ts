@@ -71,6 +71,7 @@ export const EDITOR_BUNDLE_CAPABILITIES = {
   typeDefinitionProvider: true,
   implementationProvider: true,
   callHierarchyProvider: true,
+  monikerProvider: true,
   referencesProvider: true,
   documentHighlightProvider: true,
   documentSymbolProvider: true,

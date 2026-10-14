@@ -19,11 +19,11 @@ use tower_lsp::{
         DocumentRangeFormattingParams, DocumentSymbolParams, DocumentSymbolResponse, FoldingRange,
         FoldingRangeParams, Hover, HoverParams, InitializeParams, InitializeResult,
         InitializedParams, InlayHint, InlayHintParams, LinkedEditingRangeParams,
-        LinkedEditingRanges, Location, PrepareRenameResponse, ReferenceParams, RenameFilesParams,
-        RenameParams, SelectionRange, SelectionRangeParams, SemanticTokensParams,
-        SemanticTokensRangeParams, SemanticTokensRangeResult, SemanticTokensResult, ServerInfo,
-        SymbolInformation, TextDocumentPositionParams, TextEdit, WorkspaceEdit,
-        WorkspaceSymbolParams,
+        LinkedEditingRanges, Location, Moniker, MonikerParams, PrepareRenameResponse,
+        ReferenceParams, RenameFilesParams, RenameParams, SelectionRange, SelectionRangeParams,
+        SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensRangeResult,
+        SemanticTokensResult, ServerInfo, SymbolInformation, TextDocumentPositionParams, TextEdit,
+        WorkspaceEdit, WorkspaceSymbolParams,
     },
 };
 
@@ -144,6 +144,11 @@ impl LanguageServer for MaestroServer {
 
     async fn signature_help(&self, params: SigHelpParams) -> Result<Option<SigHelp>> {
         self.native_request(async { signature_help::signature_help(self, params).await })
+            .await
+    }
+
+    async fn moniker(&self, params: MonikerParams) -> Result<Option<Vec<Moniker>>> {
+        self.native_request(async { navigation::moniker(self, params).await })
             .await
     }
 

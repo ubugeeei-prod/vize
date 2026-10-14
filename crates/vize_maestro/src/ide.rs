@@ -36,6 +36,7 @@ pub mod inlay_hint;
 pub mod jsx;
 pub mod linked_editing;
 pub(crate) mod markup;
+pub(crate) mod moniker;
 pub(crate) mod musea;
 pub(crate) mod pug;
 pub mod references;

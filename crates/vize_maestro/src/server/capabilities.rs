@@ -234,7 +234,8 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
         .then_some(CallHierarchyServerCapability::Simple(true)),
         // Features not yet implemented
         execute_command_provider: None,
-        moniker_provider: None,
+        // Monikers name the target go-to-definition resolves.
+        moniker_provider: features.definition.then_some(OneOf::Left(true)),
         experimental: features.auto_insert.then(|| {
             serde_json::json!({
                 "autoInsertionProvider": {

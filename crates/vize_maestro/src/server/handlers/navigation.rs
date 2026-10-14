@@ -4,7 +4,7 @@ use tower_lsp::lsp_types::request::{
 };
 use tower_lsp::{
     jsonrpc::Result,
-    lsp_types::{GotoDefinitionParams, GotoDefinitionResponse},
+    lsp_types::{GotoDefinitionParams, GotoDefinitionResponse, Location, Moniker, MonikerParams},
 };
 
 use super::super::MaestroServer;
@@ -23,6 +23,53 @@ pub(super) type TypeDefParams = GotoTypeDefinitionParams;
 pub(super) type TypeDefResponse = GotoTypeDefinitionResponse;
 pub(super) type DeclParams = GotoDeclarationParams;
 pub(super) type DeclResponse = GotoDeclarationResponse;
+
+/// Monikers of the symbol at a position, from the targets go-to-definition
+/// already resolves (see [`crate::ide::moniker`]).
+pub(super) async fn moniker(
+    server: &MaestroServer,
+    params: MonikerParams,
+) -> Result<Option<Vec<Moniker>>> {
+    let definition = goto_definition(
+        server,
+        GotoDefinitionParams {
+            text_document_position_params: params.text_document_position_params,
+            work_done_progress_params: params.work_done_progress_params,
+            partial_result_params: params.partial_result_params,
+        },
+    )
+    .await?;
+    let locations = match definition {
+        None => return Ok(None),
+        Some(GotoDefinitionResponse::Scalar(location)) => vec![location],
+        Some(GotoDefinitionResponse::Array(locations)) => locations,
+        Some(GotoDefinitionResponse::Link(links)) => links
+            .into_iter()
+            .map(|link| Location::new(link.target_uri, link.target_selection_range))
+            .collect(),
+    };
+    let mut monikers: Vec<Moniker> = Vec::new();
+    for location in locations {
+        let Ok(path) = location.uri.to_file_path() else {
+            continue;
+        };
+        let Some(text) = server
+            .state
+            .documents
+            .text(&location.uri)
+            .or_else(|| std::fs::read_to_string(&path).ok())
+        else {
+            continue;
+        };
+        if let Some(moniker) =
+            crate::ide::moniker::moniker_for_definition(&path, &text, location.range)
+            && !monikers.contains(&moniker)
+        {
+            monikers.push(moniker);
+        }
+    }
+    Ok((!monikers.is_empty()).then_some(monikers))
+}
 
 pub(super) async fn goto_definition(
     server: &MaestroServer,

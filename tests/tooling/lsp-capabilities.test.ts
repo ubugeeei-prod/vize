@@ -190,6 +190,8 @@ test("vize lsp per-feature init flags toggle individual providers independently"
       assert.equal(capabilities.hoverProvider, undefined);
       assert.equal(capabilities.definitionProvider, undefined);
       assert.equal(capabilities.typeDefinitionProvider, undefined);
+      // Monikers name definition targets, so they follow definition.
+      assert.equal(capabilities.monikerProvider, undefined);
       assert.equal(capabilities.referencesProvider, undefined);
       assert.equal(capabilities.documentHighlightProvider, undefined);
       // A sibling editor provider is untouched.
