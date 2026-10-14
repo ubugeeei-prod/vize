@@ -81,7 +81,9 @@ vp install -D vize
 vp exec vize check
 ```
 
-Discovery stops at the nearest `package.json`, `tsconfig.json`, or `jsconfig.json`. In a monorepo, run from the target package or use `vize.entries`, and select the editor's workspace folders explicitly. Automatic per-document nested Vite discovery is still being completed.
+CLI discovery stops at the nearest `package.json`, `tsconfig.json`, or `jsconfig.json`. In a monorepo, run from the target package or use `vize.entries`, and select the editor's workspace folders explicitly.
+
+For the next release, the editor assigns each document to its nearest project root within the selected workspace. A `package.json`, `tsconfig*.json`, `jsconfig.json`, `vite.config.*`, or `vize.config.*` establishes that root. Without a Vite or Vize config there, the fresh-project defaults apply; for example, `package/src/tsconfig.json` selects `package/src` as a separate project. Invalid config retains the editor's historical defaults. An explicit CLI `--config` remains an error if the selected file is missing or invalid.
 
 With Vite config, `build`, `lint`, `fmt`, and `check` without an input argument use the selected Vite `root`. A relative `root` resolves from the config directory. Vite-owned `typeChecker` paths and scoped `basePath` resolve from that root; dedicated-config paths retain their config-directory base. Explicit CLI file/glob arguments and `--tsconfig` remain relative to the directory where you run the command.
 

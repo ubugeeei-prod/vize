@@ -87,7 +87,9 @@ vp install -D vize
 vp exec vize check
 ```
 
-設定の検索は、最も近い `package.json`・`tsconfig.json`・`jsconfig.json` のあるディレクトリで止まります。モノリポジトリでは対象パッケージから実行するか `vize.entries` を使い、エディターのワークスペースフォルダーも明示してください。ファイルごとの入れ子の Vite 設定の自動検出は開発中です。
+CLI の設定の検索は、最も近い `package.json`・`tsconfig.json`・`jsconfig.json` のあるディレクトリで止まります。モノリポジトリでは対象パッケージから実行するか `vize.entries` を使い、エディターのワークスペースフォルダーも明示してください。
+
+次回リリースのエディターは、選択したワークスペースの範囲内で、ファイルごとに最も近いプロジェクトのルートを選びます。`package.json`・`tsconfig*.json`・`jsconfig.json`・`vite.config.*`・`vize.config.*` のあるディレクトリがルートになります。そこに Vite・Vize の設定がなければ、新規プロジェクトの既定値を使います。たとえば `package/src/tsconfig.json` があれば、`package/src` を独立したプロジェクトとして扱います。設定を読み込めなければ、従来のエディターの既定値を維持します。CLI で `--config` を明示した場合、指定したファイルがない、または読み込めないときはエラーになります。
 
 Vite 設定を使い、入力引数なしで `build`・`lint`・`fmt`・`check` を実行すると、選択した Vite の `root` が対象になります。相対指定の `root` は設定ファイルのディレクトリを基準に解決します。Vite の `typeChecker` 内のパスとスコープの `basePath` はその root を基準にし、専用設定内のパスは従来どおり設定ファイルのディレクトリを基準にします。CLI へ明示するファイル・glob・`--tsconfig` は、コマンドを実行したディレクトリが基準です。
 
