@@ -45,6 +45,29 @@ const expanded = ref(false);
 `,
   },
   {
+    filename: "AppBarConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { AppBar } from "./families/navigation/app-bar/app-bar.ts";
+
+function onVisibility(hidden: boolean) {
+  void hidden;
+}
+</script>
+
+<template>
+  <AppBar hide-on-scroll aria-label="Application" @visibility-change="onVisibility">
+    <template #start>
+      <button type="button">Menu</button>
+    </template>
+    Inbox
+    <template #end="{ elevated }">
+      <button type="button">{{ elevated ? "Top" : "Search" }}</button>
+    </template>
+  </AppBar>
+</template>
+`,
+  },
+  {
     filename: "BottomNavigationConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";

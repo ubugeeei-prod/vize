@@ -36,6 +36,7 @@ import { interactionSupportFamilyCatalog } from "../families/interaction/catalog
 import { layoutFamilyCatalog } from "./family-catalog-layout.ts";
 import { layoutPatternFamilyCatalog } from "./family-catalog-layout-patterns.ts";
 import { menuFamilyCatalog } from "./family-catalog-menus.ts";
+import { appBarFamilyCatalog } from "./family-catalog-app-bar.ts";
 import { navigationFamilyCatalog } from "./family-catalog-navigation.ts";
 import { navigationRailFamilyCatalog } from "./family-catalog-navigation-rail.ts";
 import { overlayFamilyCatalog } from "./family-catalog-overlays.ts";
@@ -123,6 +124,7 @@ const allFamilyCatalogEntries = [
   ...layoutFamilyCatalog,
   ...layoutPatternFamilyCatalog,
   ...menuFamilyCatalog,
+  ...appBarFamilyCatalog,
   ...navigationFamilyCatalog,
   ...navigationRailFamilyCatalog,
   ...overlayFamilyCatalog,

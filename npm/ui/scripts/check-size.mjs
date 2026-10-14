@@ -17,6 +17,7 @@ const budgets = new Map([
   ["badge.mjs", 850],
   ["banner.mjs", 4_250],
   ["block-ui.mjs", 1_250],
+  ["app-bar.mjs", 2_100],
   ["bottom-navigation.mjs", 999_999],
   ["navigation-rail.mjs", 4_600],
   ["calendar.mjs", 999_999],

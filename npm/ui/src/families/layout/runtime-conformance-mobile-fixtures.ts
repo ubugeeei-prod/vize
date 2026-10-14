@@ -1,4 +1,5 @@
 import { safeAreaRuntimeFixtures } from "./safe-area/runtime-conformance-safe-area-fixtures.ts";
+import { appBarRuntimeFixtures } from "../navigation/app-bar/runtime-conformance-app-bar-fixtures.ts";
 import { bottomNavigationRuntimeFixtures } from "../navigation/bottom-navigation/runtime-conformance-bottom-navigation-fixtures.ts";
 import { navigationRailRuntimeFixtures } from "../navigation/navigation-rail/runtime-conformance-navigation-rail-fixtures.ts";
 import { actionSheetRuntimeFixtures } from "../overlays/action-sheet/runtime-conformance-action-sheet-fixtures.ts";
@@ -10,6 +11,7 @@ import type { RuntimeFixture } from "../../conformance/runtime-conformance-fixtu
 /** SSR and hydration fixtures for mobile-first pattern SFCs. */
 export const mobileRuntimeFixtures: readonly RuntimeFixture[] = [
   ...safeAreaRuntimeFixtures,
+  ...appBarRuntimeFixtures,
   ...bottomNavigationRuntimeFixtures,
   ...navigationRailRuntimeFixtures,
   ...actionSheetRuntimeFixtures,

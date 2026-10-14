@@ -220,6 +220,7 @@ export * from "./families/form/knob/knob.ts";
 export * from "./families/form/angle-picker/angle-picker.ts";
 export * from "./families/form/phone-field/phone-field.ts";
 export * from "./families/layout/safe-area/safe-area.ts";
+export * from "./families/navigation/app-bar/app-bar.ts";
 export * from "./families/navigation/bottom-navigation/bottom-navigation.ts";
 export * from "./families/navigation/navigation-rail/navigation-rail.ts";
 export * from "./families/overlays/action-sheet/action-sheet.ts";

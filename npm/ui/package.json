@@ -105,6 +105,11 @@
       "import": "./dist/block-ui.mjs",
       "default": "./dist/block-ui.mjs"
     },
+    "./app-bar": {
+      "types": "./dist/app-bar.d.mts",
+      "import": "./dist/app-bar.mjs",
+      "default": "./dist/app-bar.mjs"
+    },
     "./bottom-navigation": {
       "types": "./dist/bottom-navigation.d.mts",
       "import": "./dist/bottom-navigation.mjs",
