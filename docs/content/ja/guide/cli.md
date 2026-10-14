@@ -117,6 +117,8 @@ vize build --profile src
 | `--profile`                   | 処理時間のプロファイルを表示する                                       |
 | `--continue-on-error`         | エラー後もコンパイルを続け、最後に失敗を報告する                       |
 
+`<style lang="scss">`・`sass`・`less`・`stylus` のブロックは、Vite と同じく、プロジェクトにインストールされたプリプロセッサ（`sass` または `sass-embedded`、`less`、`stylus`）でコンパイルしてからスコープを付けます。プリプロセッサのエラーは `.vue` ファイル内の行を指します。Node やパッケージが見つからない場合は、ブロックをそのまま出力して警告を表示します。
+
 ## フォーマット
 
 ```bash

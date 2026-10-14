@@ -71,7 +71,18 @@ function indentedToBraces(source) {
   return output + "}\n".repeat(stack.length);
 }
 
+/** `@error "message"` stops compilation, like Sass; the error carries a 1-based line and column. */
+function failOnDirective(source) {
+  source.split("\n").forEach((line, index) => {
+    const match = /@error\s+"([^"]*)"/.exec(line);
+    if (match) {
+      throw Object.assign(new Error(match[1]), { line: index + 1, column: match.index + 1 });
+    }
+  });
+}
+
 function compile(source, indented = false) {
+  failOnDirective(source);
   const variables = new Map();
   const braced = indented ? indentedToBraces(source) : source;
   const body = braced.replace(/\$([\w-]+)\s*:\s*([^;]+);/g, (_, name, value) => {
@@ -84,10 +95,16 @@ function compile(source, indented = false) {
 
 const PACKAGES = {
   sass: `const { compile } = require(STAND_IN);
-const run = (source, options = {}) => ({
-  css: compile(source, options.syntax === "indented"),
-  loadedUrls: [],
-});
+const run = (source, options = {}) => {
+  try {
+    return { css: compile(source, options.syntax === "indented"), loadedUrls: [] };
+  } catch (error) {
+    throw Object.assign(new Error(error.message), {
+      sassMessage: error.message,
+      span: { start: { line: error.line - 1, column: error.column - 1 } },
+    });
+  }
+};
 exports.info = "dart-sass\\t1.80.0";
 exports.compileString = run;
 exports.compileStringAsync = async (source, options) => run(source, options);
@@ -98,7 +115,13 @@ exports.initAsyncCompiler = async () => ({
 `,
   less: `const { compile } = require(STAND_IN);
 exports.FileManager = class FileManager {};
-exports.render = async (source) => ({ css: compile(source), imports: [] });
+exports.render = async (source) => {
+  try {
+    return { css: compile(source), imports: [] };
+  } catch (error) {
+    throw Object.assign(new Error(error.message), { line: error.line, column: error.column - 1 });
+  }
+};
 `,
   stylus: `const { compile } = require(STAND_IN);
 module.exports = (source) => {
@@ -109,7 +132,12 @@ module.exports = (source) => {
     import: () => ref,
     deps: () => [],
     render: (callback) => {
-      const css = compile(source, !source.includes("{"));
+      let css;
+      try {
+        css = compile(source, !source.includes("{"));
+      } catch (error) {
+        throw Object.assign(new Error(error.message), { lineno: error.line, column: error.column });
+      }
       return callback ? callback(null, css) : css;
     },
   };

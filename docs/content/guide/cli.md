@@ -114,6 +114,8 @@ Key options:
 | `--profile`                   | Print timing profile                                                   |
 | `--continue-on-error`         | Keep compiling and report failures at the end                          |
 
+`<style lang="scss">`, `sass`, `less` and `stylus` blocks are compiled with the preprocessor installed in your project (`sass` or `sass-embedded`, `less`, `stylus`) before they are scoped, as Vite does. Preprocessor errors point to the line in the `.vue` file. If Node or the package is missing, the block is emitted as written and the build reports a warning.
+
 ## Format
 
 ```bash

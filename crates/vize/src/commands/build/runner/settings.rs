@@ -81,6 +81,8 @@ pub(super) struct CompileFileSettings {
     pub(super) script_ext: ScriptExtension,
     pub(super) record_profile_totals: bool,
     pub(super) davinci: DavinciBuildSettings,
+    /// Project-preprocessed `<style lang="scss|…">` blocks (#8905).
+    pub(super) preprocessed_styles: super::preprocess::PreprocessedStyles,
 }
 
 /// The build's slice of the Davinci ICE machinery (P2-13): the plan the
@@ -180,6 +182,7 @@ impl CompileFileSettings {
                 inject,
                 repro_dir: args.output.clone(),
             },
+            preprocessed_styles: super::preprocess::PreprocessedStyles::default(),
         }
     }
 

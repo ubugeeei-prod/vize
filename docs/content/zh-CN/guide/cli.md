@@ -122,6 +122,8 @@ vize build --profile src
 | `--profile`                   | 打印时序配置文件                             |
 | `--continue-on-error`         | 继续编译并在最后报告失败                     |
 
+`<style lang="scss">`、`sass`、`less` 和 `stylus` 块会像 Vite 一样，先用项目中安装的预处理器（`sass` 或 `sass-embedded`、`less`、`stylus`）编译，再添加作用域。预处理器错误会指向 `.vue` 文件中的行。如果缺少 Node 或对应的包，该块会按原样输出，并报告警告。
+
 ## 节目形式
 
 ```bash
