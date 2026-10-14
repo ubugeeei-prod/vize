@@ -16,6 +16,7 @@ use super::declaration_path::is_declaration_file;
 pub(crate) struct SourceFilePolicy {
     allow_javascript: bool,
     check_javascript: bool,
+    javascript_explicitly_denied: bool,
 }
 
 impl SourceFilePolicy {
@@ -28,6 +29,8 @@ impl SourceFilePolicy {
                 .and_then(Value::as_bool)
                 .unwrap_or_else(|| option_enabled(compiler_options, "checkJs")),
             check_javascript: option_enabled(compiler_options, "checkJs"),
+            javascript_explicitly_denied: compiler_options.get("allowJs")
+                == Some(&Value::Bool(false)),
         }
     }
 
@@ -37,6 +40,11 @@ impl SourceFilePolicy {
 
     pub(crate) fn checks_javascript(self) -> bool {
         self.check_javascript
+    }
+
+    /// A per-file pragma may opt in only when the project did not deny JS.
+    pub(crate) fn explicitly_denies_javascript(self) -> bool {
+        self.javascript_explicitly_denied
     }
 
     pub(crate) fn accepts_project_source(self, path: &Path) -> bool {

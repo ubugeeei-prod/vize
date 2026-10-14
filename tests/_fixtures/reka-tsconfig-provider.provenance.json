@@ -1,0 +1,15 @@
+{
+  "package": "@vue/tsconfig",
+  "version": "0.7.0",
+  "source": "original ReKa Gitlink c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2 frozen pnpm-lock.yaml",
+  "lockIntegrity": "sha512-ku2uNz5MaZ9IerPPUyOHzyjhXoX2kVJaVf7hL315DC17vS6IiZRmmCPfggNbU16QTvM80+uYYy3eYJB59WCtvg==",
+  "purpose": "Complete genuine published provider packet for byte custody and config-resolution guard laws; never installed over the authored fixture",
+  "sha256": {
+    "LICENSE": "a8b93ecd961a4cd784843c8606056f4c932493d1154d21cafa438860fabb7d41",
+    "README.md": "dcaa9fa545f23d8313799235c8b30961e32d9afd807089d1d63e345395b4a198",
+    "package.json": "17f3fe5342df9040cc50e9ac83f53528218c042daf683fff476fb43ce7a07a81",
+    "tsconfig.dom.json": "51c8ca2010cc11a062f0af9bcbe0e40f93d2a09681041ffc803ea6b7cc73fdbf",
+    "tsconfig.json": "d28aed6bdd134fc14e1f4fa52188319ef14cbc7ea796071ee86bedb03497eb96",
+    "tsconfig.lib.json": "eb802639c8ae16480876b8fdd2834074034d177cc40b30a5416294673670c153"
+  }
+}

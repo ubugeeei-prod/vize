@@ -31,6 +31,7 @@ pub(in crate::batch::virtual_project) struct VirtualBuildContext<'a> {
     pub(in crate::batch::virtual_project) legacy_vue2: bool,
     pub(in crate::batch::virtual_project) jsx_typecheck: bool,
     pub(in crate::batch::virtual_project) allow_javascript: bool,
+    pub(in crate::batch::virtual_project) javascript_explicitly_denied: bool,
     pub(in crate::batch::virtual_project) dialect: vize_carton::config::VueVersion,
     pub(in crate::batch::virtual_project) template_syntax: TemplateSyntaxMode,
     pub(in crate::batch::virtual_project) experimental_in_tag_comments: bool,

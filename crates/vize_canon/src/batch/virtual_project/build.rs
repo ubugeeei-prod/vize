@@ -123,7 +123,9 @@ pub(super) fn build_vue_registered_file(
     let denied_javascript = context.editor_document_options.is_none()
         && !context.allow_javascript
         && !typed_options_projection
-        && descriptor_is_javascript(&descriptor);
+        && descriptor_is_javascript(&descriptor)
+        && (context.javascript_explicitly_denied
+            || descriptor_is_unchecked_javascript(&descriptor));
     let source_type = if use_tsx_virtual {
         SourceType::tsx()
     } else {

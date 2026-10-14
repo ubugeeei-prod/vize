@@ -30,6 +30,64 @@ impl MaestroServer {
     }
 }
 
+impl MaestroServer {
+    /// Run a request that may open the whole workspace. Building that
+    /// projection inside the native transaction keeps every other native
+    /// request waiting, so the first attempt gives the transaction back as
+    /// soon as it needs an unprepared projection; the projection is built on
+    /// its own thread and the request starts over inside a new transaction.
+    /// The second attempt never defers, so a request always completes.
+    pub(super) async fn workspace_native_request<T, F, Fut>(&self, request: F) -> Result<T>
+    where
+        F: Fn() -> Fut,
+        Fut: Future<Output = Result<T>>,
+    {
+        #[cfg(feature = "native")]
+        if self.state.is_lsp_typecheck_enabled() && !inline_workspace_build() {
+            let scope = self.state.corsa_request_scope().await;
+            let armed = self.state.workspace_preparation.arm();
+            let first = {
+                let mut attempt = std::pin::pin!(request());
+                std::future::poll_fn(|cx| {
+                    if let std::task::Poll::Ready(reply) = attempt.as_mut().poll(cx) {
+                        return std::task::Poll::Ready(Ok(reply));
+                    }
+                    match self.state.workspace_preparation.take() {
+                        Some(preparation) => std::task::Poll::Ready(Err(preparation)),
+                        None => std::task::Poll::Pending,
+                    }
+                })
+                .await
+            };
+            drop(armed);
+            match first {
+                Ok(reply) => {
+                    if !scope.is_current() {
+                        scope.trace_refusal();
+                        return Err(Error::content_modified());
+                    }
+                    return reply;
+                }
+                Err(preparation) => {
+                    drop(scope);
+                    preparation.await;
+                }
+            }
+        }
+        self.native_request(request()).await
+    }
+}
+
+/// Operators can keep workspace projections on the request thread.
+#[cfg(feature = "native")]
+fn inline_workspace_build() -> bool {
+    static INLINE: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    *INLINE.get_or_init(|| {
+        std::env::var_os("VIZE_LSP_INLINE_WORKSPACE_BUILD").as_deref()
+            == Some(std::ffi::OsStr::new("1"))
+    })
+}
+
 /// The real editor fixture opts into failure provenance; ordinary requests
 /// never consult this flag unless a complete result has already been refused.
 #[cfg(feature = "native")]
@@ -56,3 +114,6 @@ pub(super) fn trace_watched_file_events(
 
 #[cfg(all(test, feature = "native"))]
 mod tests;
+
+#[cfg(all(test, feature = "native"))]
+mod workspace_tests;

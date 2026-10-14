@@ -56,6 +56,49 @@ fn native_scope_retains_closed_sfc_owners_through_the_final_packet() {
 }
 
 #[test]
+fn native_scope_admits_plain_script_consumers_but_not_declarations_or_dependencies() {
+    let root = tempfile::tempdir().unwrap();
+    let host = root.path().join("Host.vue");
+    std::fs::write(&host, SOURCE).unwrap();
+    let uri = Url::from_file_path(&host).unwrap();
+    let state = ServerState::new();
+    state.set_workspace_root(root.path().to_path_buf());
+    let ctx = IdeContext::testing(&state, &uri, 24, SOURCE.to_string());
+    let document = host_document(&uri, SOURCE);
+    let native = entry(Url::parse(&document.request_uri).unwrap());
+    let write = |name: &str| {
+        let path = root.path().join(name);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(&path, "export const value = { title: 'x' };").unwrap();
+        Url::from_file_path(path).unwrap()
+    };
+    for (name, admitted) in [
+        ("src/render.ts", true),
+        ("src/stories.impl.mts", true),
+        ("src/legacy.js", true),
+        ("src/env.d.ts", false),
+        ("node_modules/pkg/index.ts", false),
+    ] {
+        let consumer = write(name);
+        let mut packet = native.clone();
+        packet
+            .changes
+            .as_mut()
+            .unwrap()
+            .extend(entry(consumer.clone()).changes.unwrap());
+        let mut scope = RenameScope::native(&ctx);
+        assert_eq!(scope.admits_native(&document, &packet), admitted, "{name}");
+        let mut final_edit = entry(uri.clone());
+        final_edit
+            .changes
+            .as_mut()
+            .unwrap()
+            .extend(entry(consumer).changes.unwrap());
+        assert_eq!(scope.admits_authored(&final_edit), admitted, "{name}");
+    }
+}
+
+#[test]
 fn native_scope_refuses_unknown_in_root_members_in_every_raw_and_final_container() {
     let root = tempfile::tempdir().unwrap();
     let host = root.path().join("Host.vue");

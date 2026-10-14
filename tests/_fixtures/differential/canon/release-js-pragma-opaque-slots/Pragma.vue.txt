@@ -1,0 +1,16 @@
+<script setup>
+// @ts-check
+import { ref } from 'vue'
+import { needsNumber } from './helper'
+
+const rows = ref([])
+function selectRow(row) {
+  needsNumber(row)
+}
+</script>
+
+<template>
+  <ul>
+    <li v-for="row in rows" :key="row.id" @click="selectRow(row)">{{ row.label }}</li>
+  </ul>
+</template>

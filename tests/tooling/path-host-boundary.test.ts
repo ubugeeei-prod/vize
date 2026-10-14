@@ -3,10 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import {
-  integrationPlan,
-  rewritePathImports,
-} from "../../tools/support/compat/levels/move-path-host.ts";
+import { rewritePathImports } from "../../tools/support/compat/levels/move-path-host.ts";
 import { pathHostCallers } from "../../tools/support/compat/levels/path-host-callers.ts";
 import { withoutHostRuntimeReferences } from "./support/davinci-host-imports.ts";
 import { withoutPathHostReferences } from "./support/davinci-path-host-imports.ts";
@@ -16,9 +13,10 @@ const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
 const caller = "crates/vize/src/commands/check/path_cache.rs";
 const source = read(caller);
 const forbidden = /\bvize_carton::|use vize_carton\b/u;
+// The path host move is complete. These tests keep the host import boundary;
+// the move replay that pinned live caller bytes is retired.
 
-test("path ownership replay is integrated and keeps literal/comment data", () => {
-  assert.equal(integrationPlan(read).size, 0);
+test("path import rewriting keeps literal and comment data", () => {
   assert.equal(
     rewritePathImports('let name = "vize_l0::path::is_git_metadata_path"; // vize_l0::path\n'),
     'let name = "vize_l0::path::is_git_metadata_path"; // vize_l0::path\n',
@@ -71,72 +69,4 @@ test("Maestro path and source IO compose without admitting extra source IO", () 
     "use vize_carton::source_io::*;",
   ])
     assert.match(withoutHostRuntimeReferences(actual + "\n" + extra, file), forbidden, extra);
-});
-
-test("changed caller shape refuses a complete integration plan before writes", () => {
-  assert.throws(
-    () =>
-      integrationPlan((file) =>
-        file === caller ? source + "\nvize_carton::path::is_git_metadata_path(path);" : read(file),
-      ),
-    /Changed path host references/u,
-  );
-  assert.throws(
-    () =>
-      integrationPlan((file) =>
-        file === "crates/vize_carton/src/lib.rs"
-          ? read(file).replace("pub mod path;\n", "")
-          : read(file),
-      ),
-    /Missing or duplicate/u,
-  );
-});
-
-const pendingRead = (file: string) => {
-  const current = read(file);
-  if (file === "davinci/vize_l0/src/lib.rs") return current + "pub mod path;\n";
-  if (file === "crates/vize_carton/src/lib.rs") return current.replace("\npub mod path;\n", "");
-  if (file === "crates/vize_carton/src/path.rs")
-    return current.replace(
-      /#\[expect\(\n    clippy::disallowed_types,\n    reason = [^\n]+\n\)\]\n/u,
-      "",
-    );
-  if (pathHostCallers[file])
-    return current
-      .replace(
-        "use {vize_carton::path::canonicalize_non_verbatim, vize_l0::cstr};",
-        "use vize_l0::{cstr, path::canonicalize_non_verbatim};",
-      )
-      .replace(
-        "use vize_carton::path::canonicalize_non_verbatim;\nuse vize_l0::{String as CompactString, cstr};",
-        "use vize_l0::{String as CompactString, cstr, path::canonicalize_non_verbatim};",
-      )
-      .replaceAll("vize_carton::path", "vize_l0::path");
-  return current;
-};
-
-test("pending integration rejects mixed owners before any writes", () => {
-  assert.equal(integrationPlan(pendingRead).size, 59);
-  assert.throws(
-    () =>
-      integrationPlan((file) =>
-        file === caller
-          ? pendingRead(file) + "\nvize_carton :: path :: canonicalize_non_verbatim(path);"
-          : pendingRead(file),
-      ),
-    /Partial path caller/u,
-  );
-});
-
-test("both replay states retain the complete original path laws", () => {
-  const file = "crates/vize_carton/src/path.rs";
-  for (const readState of [read, pendingRead])
-    for (const changed of [
-      readState(file).split("#[cfg(test)]\nmod tests {")[0],
-      readState(file).replace('Some("D:', 'Some("changed-D:'),
-    ])
-      assert.throws(
-        () => integrationPlan((name) => (name === file ? changed : readState(name))),
-        /Missing or duplicate|Changed original path laws/u,
-      );
 });
