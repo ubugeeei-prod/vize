@@ -211,13 +211,22 @@ pub(crate) fn set_text_call(
 
 /// Generate SetHtml
 pub(super) fn generate_set_html(ctx: &mut GenerateContext, set_html: &SetHtmlIRNode<'_>) {
-    let element = cstr!("n{}", set_html.element);
+    let call = set_html_call(ctx, set_html);
+    ctx.push_line(&call);
+}
 
+/// `_setHtml(nX, value)`: the runtime maps `null` and `undefined` to an empty
+/// string and skips a write of the HTML it already set, so an effect re-run
+/// for another binding does not rebuild the element's children.
+pub(crate) fn set_html_call(
+    ctx: &mut GenerateContext,
+    set_html: &SetHtmlIRNode<'_>,
+) -> vize_carton::String {
+    ctx.use_helper("setHtml");
     let value = if set_html.value.is_static {
         cstr!("\"{}\"", escape_js_string_literal(set_html.value.content))
     } else {
         ctx.resolve_expression_node(&set_html.value)
     };
-
-    ctx.push_line_fmt(format_args!("{}.innerHTML = {}", element, value));
+    cstr!("_setHtml(n{}, {})", set_html.element, value)
 }

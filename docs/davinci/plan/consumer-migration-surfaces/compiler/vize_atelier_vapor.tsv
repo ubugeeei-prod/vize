@@ -49,7 +49,7 @@ compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/compo
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/component_slots.rs	2	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/component.rs	3	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/directives.rs	3	carton	Carton host/compatibility	old	vize_carton	legacy	5
-compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/dom.rs	3	carton	Carton host/compatibility	old	vize_carton	legacy	1
+compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/dom.rs	3	carton	Carton host/compatibility	old	vize_carton	legacy	2
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/events.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/for_loop.rs	3	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/generate/operations/for_loop.rs	267	carton	Carton host/compatibility	old	vize_carton	legacy	1
@@ -230,6 +230,7 @@ compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_insertion_state.rs	
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_once_components.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_root_component.rs	8	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_same_event_listeners.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	1
+compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_set_html.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_setup_components.rs	11	carton	Carton host/compatibility	old	vize_carton	legacy	3
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_sibling_navigation.rs	12	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_slot_destructure.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	1
