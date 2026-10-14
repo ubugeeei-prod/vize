@@ -1068,9 +1068,7 @@
     },
     {
       "file": "src/runtime/components/PricingPlan.vue",
-      "diagnostics": [
-        "error:236:162 [TS2322] Type '((event: MouseEvent) => void)[] | ((event: MouseEvent) => void) | undefined' is not assignable to type '((...args: any[]) => any) | null | undefined'.\nType '((event: MouseEvent) => void)[]' is not assignable to type '(...args: any[]) => any'.\nType '((event: MouseEvent) => void)[]' provides no match for the signature '(...args: any[]): any'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/runtime/components/PricingPlans.vue",
@@ -1607,7 +1605,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 8,
+  "errorCount": 7,
   "warningCount": 0,
   "fileCount": 398
 }

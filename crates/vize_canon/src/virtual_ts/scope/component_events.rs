@@ -23,6 +23,9 @@ pub(super) struct ComponentEventTypes {
     pub(super) event_type: String,
     pub(super) handler_type: Option<String>,
     pub(super) handler_type_expr: Option<String>,
+    /// The handler annotation: the alias, plus any array form the child's
+    /// listener prop admits, kept outside the alias so TypeScript prints it.
+    pub(super) handler_annotation: Option<String>,
     pub(super) listener_type: String,
     pub(super) listener_type_expr: String,
 }
@@ -114,18 +117,18 @@ pub(super) fn generate_component_event_types(
         *ts,
         "{indent}type {prop_args} = typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }}\n",
     );
-    append!(
-        *ts,
-        "{indent}  ? __P extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : {missing_prop_args}\n",
+    // A listener prop may also accept an array of listeners (`onClick?: Fn |
+    // Fn[]`, as Nuxt UI's Button declares); its function member still
+    // supplies the payload.
+    let prop_listener_args = cstr!(
+        "__P extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : __P extends {{ {prop_key}?: infer __H }} ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? {missing_prop_args} : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : {missing_prop_args} : {missing_prop_args}"
     );
+    append!(*ts, "{indent}  ? {prop_listener_args}\n");
     append!(
         *ts,
         "{indent}  : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any\n",
     );
-    append!(
-        *ts,
-        "{indent}    ? __P extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : {missing_prop_args}\n",
-    );
+    append!(*ts, "{indent}    ? {prop_listener_args}\n");
     append!(*ts, "{indent}    : unknown[];\n");
     // Under `fallthroughAttributes`, a listener the child neither declares
     // nor emits can still be a fallthrough attribute of its root: `<child
@@ -259,11 +262,24 @@ pub(super) fn generate_component_event_types(
         super::super::script_facts::binding_span(summary, component_name.as_str()).is_some();
     let requires_unresolved_handler =
         requires_unresolved_handler_implicit_any(summary, component_name, data, scope);
+    let mut prop_arrays = None;
     let handler_type_expr = (!legacy_vue2
         && needs_typed_handler_assignment
         && (has_script_component_binding || requires_unresolved_handler))
         .then(|| {
             if has_script_component_binding {
+                // Vue invokes every listener of an array; accept one only
+                // where the child's own listener prop admits it, as vue-tsc.
+                let arrays_type =
+                    cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_prop_arrays");
+                let arrays = cstr!(
+                    "__P extends {{ {prop_key}?: infer __H }} ? Extract<NonNullable<__H>, readonly unknown[]> : never"
+                );
+                append!(
+                    *ts,
+                    "{indent}type {arrays_type} = typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }} ? {arrays} : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any ? {arrays} : never;\n",
+                );
+                prop_arrays = Some(arrays_type);
                 cstr!("unknown[] extends {args_type} ? ((...args: any[]) => any) : {listener_type}")
             } else {
                 cstr!("unknown[] extends {args_type} ? unknown : {listener_type}")
@@ -272,9 +288,14 @@ pub(super) fn generate_component_event_types(
     let handler_type = handler_type_expr
         .as_ref()
         .map(|_| cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_handler"));
+    let handler_annotation = handler_type.as_ref().map(|handler| match &prop_arrays {
+        Some(arrays) => cstr!("{handler} | {arrays}"),
+        None => handler.clone(),
+    });
     Some(ComponentEventTypes {
         event_type,
         handler_type,
+        handler_annotation,
         handler_type_expr,
         listener_type,
         listener_type_expr,
