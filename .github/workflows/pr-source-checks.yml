@@ -130,6 +130,8 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
         with: { fetch-depth: 0 }
+      - uses: ./.github/actions/cache-vp-bootstrap
+        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
         with: { node-version-file: "package.json", cache: true, run-install: false }
@@ -261,6 +263,8 @@ jobs:
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
           tool: wasm-bindgen-cli@0.2.129
+      - uses: ./.github/actions/cache-vp-bootstrap
+        if: ${{ env.RUN_PLAYGROUND == 'true' }}
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
         with: { node-version-file: "package.json", cache: true, run-install: false }

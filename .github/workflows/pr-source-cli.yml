@@ -27,6 +27,8 @@ jobs:
         run: echo 'Shared CLI build skipped because no tooling job is selected.' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         if: ${{ inputs.run-cli }}
+      - uses: ./.github/actions/cache-vp-bootstrap
+        if: ${{ inputs.run-cli }}
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         if: ${{ inputs.run-cli }}
         with: { node-version-file: "package.json", cache: false, run-install: false }

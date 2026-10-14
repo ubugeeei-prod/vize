@@ -30,6 +30,8 @@ jobs:
         run: echo 'JS package checks skipped because this PR changes no package, compiler, or unknown source paths.' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         if: ${{ inputs.run-js }}
+      - uses: ./.github/actions/cache-vp-bootstrap
+        if: ${{ inputs.run-js }}
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         if: ${{ inputs.run-js }}
         with: { node-version-file: "package.json", cache: true, run-install: false }
@@ -103,6 +105,8 @@ jobs:
         run: echo 'Oxlint project qualification skipped because this PR changes no package, compiler, or unknown source paths.' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         if: ${{ inputs.run-js }}
+      - uses: ./.github/actions/cache-vp-bootstrap
+        if: ${{ inputs.run-js }}
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         if: ${{ inputs.run-js }}
         with: { node-version-file: "package.json", cache: true, run-install: false }
@@ -171,6 +175,8 @@ jobs:
         if: ${{ !inputs.run-js }}
         run: echo 'Fresco and UI conformance skipped because this PR changes no package, compiler, or unknown source paths.' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        if: ${{ inputs.run-js }}
+      - uses: ./.github/actions/cache-vp-bootstrap
         if: ${{ inputs.run-js }}
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         if: ${{ inputs.run-js }}
