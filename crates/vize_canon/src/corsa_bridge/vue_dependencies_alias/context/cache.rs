@@ -10,6 +10,7 @@ use super::AliasContext;
 
 mod catalog;
 mod fingerprint;
+mod prebuilt;
 pub(super) use fingerprint::ContextFingerprint;
 
 const CONTEXT_CACHE_CAPACITY: usize = 8;
@@ -22,6 +23,9 @@ pub(in crate::corsa_bridge) struct SessionCache {
     project_overlay_identities: FxHashMap<PathBuf, u64>,
     project_catalogs: FxHashMap<PathBuf, crate::corsa_bridge::CorsaSourceCatalog>,
     clock: u64,
+    /// One revision prepared outside the native transaction.
+    prebuilt: Option<prebuilt::PrebuiltContext>,
+    generation: u64,
 }
 
 pub(super) struct ProjectMember {
@@ -73,6 +77,7 @@ impl SessionCache {
         self.project_overlay_identities.clear();
         self.project_catalogs.clear();
         self.clock = 0;
+        self.reset_prebuilt();
     }
 
     pub(super) fn get(
@@ -223,6 +228,7 @@ impl SessionCache {
         self.project_overlay_identities.clear();
         self.project_members
             .retain(|_, members| !members.is_empty());
+        self.reset_prebuilt();
     }
 
     fn prune_project_state(&mut self) {

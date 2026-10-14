@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 
 use vize_carton::FxHashMap;
 
-use super::{AliasContext, ContextFingerprint, PreparedAliasContext, ProjectMember, build};
+use super::{AliasContext, PreparedAliasContext, ProjectMember, build};
 
 impl AliasContext {
     pub(in crate::corsa_bridge) fn for_host_cached(
@@ -31,16 +31,14 @@ impl AliasContext {
             "alias_fingerprint",
             overlays.len(),
         );
-        let mut fingerprint = ContextFingerprint::capture(
+        let mut fingerprint = Self::request_fingerprint(
             source_path,
             content,
             overlays,
+            requested_sources,
             options,
-            environment.virtual_ts_options,
-            environment.project_root,
-            environment.tsconfig_path,
+            environment,
         );
-        fingerprint.include_requested_sources(requested_sources);
         capture_phase.finish();
         let cache_phase =
             crate::corsa_bridge::preparation_trace::Phase::start("alias_cache_lookup", 1);
@@ -64,27 +62,41 @@ impl AliasContext {
                 materialized_changes: Default::default(),
             });
         }
-        let mut resolver = environment.package_routes.clone();
-        let build_phase = crate::corsa_bridge::preparation_trace::Phase::start(
-            "alias_build",
-            requested_sources.len(),
-        );
-        let mut context = build::build(
-            source_path,
-            content,
-            overlays,
-            build::SourceRevision {
-                requested_sources,
-                overlay_identity: fingerprint.overlay_identity(),
-            },
-            &mut resolver,
-            options,
-            environment,
-        )?;
-        build_phase.finish();
-        let stamp_phase = crate::corsa_bridge::preparation_trace::Phase::start("alias_stamp", 1);
-        fingerprint.stamp(&context);
-        stamp_phase.finish();
+        // A revision prepared outside the native transaction is adopted only
+        // while it equals what building here would produce.
+        let prebuilt =
+            environment
+                .editor_session
+                .cache()
+                .take_prebuilt(source_path, &fingerprint, overlays);
+        let mut context = if let Some((context, stamped)) = prebuilt {
+            fingerprint = stamped;
+            context
+        } else {
+            let mut resolver = environment.package_routes.clone();
+            let build_phase = crate::corsa_bridge::preparation_trace::Phase::start(
+                "alias_build",
+                requested_sources.len(),
+            );
+            let context = build::build(
+                source_path,
+                content,
+                overlays,
+                build::SourceRevision {
+                    requested_sources,
+                    overlay_identity: fingerprint.overlay_identity(),
+                },
+                &mut resolver,
+                options,
+                environment,
+            )?;
+            build_phase.finish();
+            let stamp_phase =
+                crate::corsa_bridge::preparation_trace::Phase::start("alias_stamp", 1);
+            fingerprint.stamp(&context);
+            stamp_phase.finish();
+            context
+        };
         let mut cache = environment.editor_session.cache();
         if let Some(context) = cache.get(source_path, &fingerprint) {
             return Ok(PreparedAliasContext {

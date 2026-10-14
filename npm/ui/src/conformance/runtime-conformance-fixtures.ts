@@ -21,8 +21,7 @@ import { toastRuntimeFixtures } from "../families/feedback/toast/runtime-conform
 import { popconfirmRuntimeFixtures } from "../families/overlays/popconfirm/runtime-conformance-popconfirm-fixtures.ts";
 import { notificationCenterRuntimeFixtures } from "../families/feedback/notification-center/runtime-conformance-notification-center-fixtures.ts";
 import { commandPaletteRuntimeFixtures } from "../families/overlays/command-palette/runtime-conformance-command-palette-fixtures.ts";
-import { floatingActionButtonRuntimeFixtures } from "../families/actions/floating-action-button/runtime-conformance-floating-action-button-fixtures.ts";
-import { backToTopRuntimeFixtures } from "../families/actions/back-to-top/runtime-conformance-back-to-top-fixtures.ts";
+import { actionRuntimeFixtures } from "../families/actions/runtime-conformance-actions-fixtures.ts";
 import { sidebarRuntimeFixtures } from "../families/layout/sidebar/runtime-conformance-sidebar-fixtures.ts";
 import { resizableRuntimeFixtures } from "../families/layout/resizable/runtime-conformance-resizable-fixtures.ts";
 import { stickyRuntimeFixtures } from "../families/layout/sticky/runtime-conformance-sticky-fixtures.ts";
@@ -58,12 +57,6 @@ import { bannerRuntimeFixture } from "../families/feedback/banner/runtime-confor
 import { blockUIRuntimeFixture } from "../families/feedback/block-ui/runtime-conformance-block-ui-fixtures.ts";
 import { breadcrumbRuntimeFixtures } from "../families/navigation/breadcrumb/runtime-conformance-breadcrumb-fixtures.ts";
 import { emptyStateRuntimeFixture } from "../families/feedback/empty-state/runtime-conformance-empty-state-fixtures.ts";
-import { buttonGroupRuntimeFixtures } from "../families/actions/button-group/runtime-conformance-button-group-fixtures.ts";
-import { copyButtonRuntimeFixture } from "../families/actions/copy-button/runtime-conformance-copy-button-fixtures.ts";
-import { fullscreenButtonRuntimeFixture } from "../families/actions/fullscreen-button/runtime-conformance-fullscreen-button-fixtures.ts";
-import { printButtonRuntimeFixture } from "../families/actions/print-button/runtime-conformance-print-button-fixtures.ts";
-import { shareButtonRuntimeFixture } from "../families/actions/share-button/runtime-conformance-share-button-fixtures.ts";
-import { toolbarRuntimeFixtures } from "../families/actions/toolbar/runtime-conformance-toolbar-fixtures.ts";
 import { fieldRuntimeFixtures } from "../families/form/field/runtime-conformance-field-fixtures.ts";
 import { formInputRuntimeFixtures } from "../families/form/runtime-conformance-form-input-fixtures.ts";
 import { mobileRuntimeFixtures } from "../families/layout/runtime-conformance-mobile-fixtures.ts";
@@ -156,8 +149,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   ...popconfirmRuntimeFixtures,
   ...notificationCenterRuntimeFixtures,
   ...commandPaletteRuntimeFixtures,
-  ...floatingActionButtonRuntimeFixtures,
-  ...backToTopRuntimeFixtures,
+  ...actionRuntimeFixtures,
   ...sidebarRuntimeFixtures,
   ...resizableRuntimeFixtures,
   ...stickyRuntimeFixtures,
@@ -190,12 +182,6 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
       assert.equal(button.getAttribute("aria-busy"), "true");
     },
   },
-  ...buttonGroupRuntimeFixtures,
-  copyButtonRuntimeFixture,
-  fullscreenButtonRuntimeFixture,
-  printButtonRuntimeFixture,
-  shareButtonRuntimeFixture,
-  ...toolbarRuntimeFixtures,
   ...selectionRuntimeFixtures,
   ...formInputRuntimeFixtures,
   ...mobileRuntimeFixtures,

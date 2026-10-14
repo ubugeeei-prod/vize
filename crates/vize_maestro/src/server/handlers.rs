@@ -168,22 +168,22 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn prepare_call_hierarchy(&self, params: CHPrepareParams) -> Result<Option<CHItems>> {
-        self.native_request(async { call_hierarchy::prepare(self, params).await })
+        self.workspace_native_request(|| call_hierarchy::prepare(self, params.clone()))
             .await
     }
 
     async fn incoming_calls(&self, params: CHIncomingParams) -> Result<Option<CHIncomingResponse>> {
-        self.native_request(async { call_hierarchy::incoming(self, params).await })
+        self.workspace_native_request(|| call_hierarchy::incoming(self, params.clone()))
             .await
     }
 
     async fn outgoing_calls(&self, params: CHOutgoingParams) -> Result<Option<CHOutgoingResponse>> {
-        self.native_request(async { call_hierarchy::outgoing(self, params).await })
+        self.workspace_native_request(|| call_hierarchy::outgoing(self, params.clone()))
             .await
     }
 
     async fn references(&self, params: ReferenceParams) -> Result<Option<Vec<Location>>> {
-        self.native_request(async { references::references(self, params).await })
+        self.workspace_native_request(|| references::references(self, params.clone()))
             .await
     }
 
@@ -237,7 +237,8 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn rename(&self, params: RenameParams) -> Result<Option<WorkspaceEdit>> {
-        self.native_request(self.rename_request(params)).await
+        self.workspace_native_request(|| self.rename_request(params.clone()))
+            .await
     }
 
     async fn semantic_tokens_full(

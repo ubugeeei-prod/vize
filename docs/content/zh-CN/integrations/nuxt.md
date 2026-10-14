@@ -1,33 +1,28 @@
 ---
-title: 努克斯特
+title: Nuxt
+description: 只需添加一个模块，即可在 Nuxt 项目中用 Vize 编译、检查和预览 Vue 组件。
 ---
 
 <!-- Generated translation; source: integrations/nuxt.md -->
 
-# Nuxt 整合
+# Nuxt
 
-> **⚠️ 正在开发中：**Vize正在积极开发中，尚未准备好投入生产使用。在Nuxt项目中采用前请彻底测试。
+`@vizejs/nuxt` 以单个模块的形式把 Vize 加入 Nuxt 项目。它用 Vize 的 Rust 编译器代替 Nuxt 默认的 Vue 编译器来编译 `.vue` 文件，生成适配 Nuxt 的 lint 配置，并可以提供 [Musea](../guide/musea.md) 组件画廊。自动导入、组件、中间件和 SSR 仍由 Nuxt 照常处理。
 
-Vize通过`@vizejs/nuxt`模块提供一流的Nuxt集成。这用 Vize 的 Rust 原生编译器取代了 Nuxt 默认的 Vue 编译器，从而在 Nuxt 项目中实现了同样的速度提升。
+> [!WARNING]
+> Vize 仍在积极开发中，尚不适合用于生产环境。采用之前，请在自己的项目中对比构建产物和诊断结果，并查看[支持状态](../stability.md)。
 
-## 开始
+## 安装与配置
 
-### 1.安装模块
+### 1. 安装模块
 
-从[Vite+安装指南](https://viteplus.dev/guide/install)中安装一次`vp`，然后添加模块：
+先按照 [Vite+ 安装指南](https://viteplus.dev/guide/install)安装一次 `vp`，然后添加模块：
 
 ```bash
 vp install @vizejs/nuxt
 ```
 
-如果你想用`pkl`配置配合pnpm，可能需要安装`vize`包本身。
-`@vizejs/nuxt`安装`vize`，默认配置`vize.pkl`，但使用 pnpm 时 pnpm 的 `vize.pkl` 位置可能会不同。
-
-```bash
-vp install vize
-```
-
-### 2.注册Nuxt模块
+### 2. 注册模块
 
 ```ts
 // nuxt.config.ts
@@ -39,24 +34,56 @@ export default defineNuxtConfig({
 });
 ```
 
-### 3.开始Nuxt
+`compiler: true` 是默认值，因此只写 `modules: ["@vizejs/nuxt"]` 就够了。本页的所有选项都写在 `vize` 键下。
 
-像往常一样启动开发服务器：
+### 3. 启动 Nuxt
+
+照常启动开发服务器：
 
 ```bash
 vp run dev
 ```
 
-该模块将`@vizejs/vite-plugin`注入Nuxt的Vite配置，并保留Nuxt专属的变换
-因此自动导入、组件、中间件和SSR行为都能继续运行
-Nuxt。
-在开发过程中，服务器响应清理会保留有效的 URL 编码的 Nuxt 资产链接，如
-作为`%40fs/`和编码的`assets/`路径，同时丢弃解码的空字节或遍历路径。
+模块会把 `@vizejs/vite-plugin` 加入 Nuxt 的 Vite 配置，并保留 Nuxt 自身的转换。页面、布局、自动导入的组合式函数和组件都与之前一样工作。
 
-## 模块选项
+### 4. 确认由 Vize 编译组件
 
-`@vizejs/nuxt`保留了简单的`compiler: true | false`开关，但模块选项也会暴露
-Vize编译器和Nuxt兼容桥，用于需要更严格控制的项目：
+开启编译器的调试日志，查看 Vize 处理了哪些文件：
+
+```ts
+export default defineNuxtConfig({
+  modules: ["@vizejs/nuxt"],
+  vize: {
+    compiler: { debug: true },
+  },
+});
+```
+
+Nuxt 按需编译组件，因此只有请求实际访问到的文件才会输出 `[vize] load: on-demand compiling ...`。确认配置无误后，请去掉 `debug`。
+
+<span id="options"></span>
+
+## 选项
+
+所有选项都写在 `nuxt.config.ts` 的 `vize` 下。大多数项目只需要前四项。
+
+| 选项                  | 类型                                    | 默认值                     | 作用                                                                                                   |
+| --------------------- | --------------------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `compiler`            | `boolean \| VizeNuxtCompilerOptions`    | `true`                     | 用 Vize 编译 Vue SFC。传入对象时，会把其中的选项转交给 `@vizejs/vite-plugin`。                         |
+| `lint`                | `boolean \| VizeNuxtLintOptions`        | `true`                     | 生成适配 Nuxt 的 Oxlint 配置。参见 [Lint](#lint)。                                                     |
+| `checker`             | `boolean \| VizeNuxtLintCheckerOptions` | `false`                    | 在开发服务器旁运行 lint，并在终端和浏览器浮层中显示结果。参见[开发时的 lint](#lint-while-developing)。 |
+| `musea`               | `boolean \| MuseaOptions`               | `false`                    | 提供 Musea 画廊。参见 [Musea](#musea)。                                                                |
+| `ui`                  | `boolean \| VizeNuxtUiOptions`          | `false`                    | 自动注册 `@vizejs/ui` 组件。参见[自动导入](../guide/auto-imports.md#nuxt)。                            |
+| `composables`         | `boolean \| VizeNuxtComposablesOptions` | `false`                    | 自动导入 `@vizejs/composable` 的函数。参见[自动导入](../guide/auto-imports.md#nuxt)。                  |
+| `bridge`              | `boolean \| VizeNuxtBridgeOptions`      | `true`                     | 对 Vize 编译的模块重新应用 Nuxt 的自动导入、组件解析、i18n 和异步数据键的转换。                        |
+| `unocss`              | `boolean \| VizeNuxtUnoCssOptions`      | `true`                     | 让 UnoCSS 读取原始的 `.vue` 源码。`originalSource: false` 可关闭；`maxBytes` 限制每个文件读取的大小。  |
+| `dev.stylesheetLinks` | `boolean`                               | `true`                     | 清理开发环境 SSR HTML 中重复或不安全的样式表链接。                                                     |
+| `compatibility`       | `VizeNuxtCompatibilityOptions`          | 自动检测                   | 覆盖检测到的 Nuxt 和 Vue 主版本。参见 [Nuxt 2 与 Vue 2](#nuxt-2-and-vue-2)。                           |
+| `nuxtMusea`           | `NuxtMuseaOptions`                      | `{ route: { path: "/" } }` | 描述 Musea 预览中可见的路由、运行时配置和 fetch 模拟数据。                                             |
+
+### 编译器
+
+`compiler` 可以传入任意 `@vizejs/vite-plugin` 选项。项目根目录、按需编译以及依赖中的 `.vue` 文件仍使用 Nuxt 的默认设置：
 
 ```ts
 // nuxt.config.ts
@@ -99,61 +126,58 @@ export default defineNuxtConfig({
 });
 ```
 
-| 选项                  | 类型                                 | 默认                       | 描述                                                                                                                                                       |
-| --------------------- | ------------------------------------ | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `compatibility`       | `VizeNuxtCompatibilityOptions`       | 自动检测                   | 覆盖检测到Nuxt/Vue主版本的异常包装。Nuxt 2 默认支持 Vue 2 主机-编译器兼容性;Nuxt 3/4默认使用 Vue 3。Vue 0.11/1/2 均使用主机编译器模式。                    |
-| `compiler`            | `boolean \| VizeNuxtCompilerOptions` | `true`                     | 使 Vize 成为 Vue SFC 编译器。传递对象会将选项转发给`@vizejs/vite-plugin`，同时保持 Nuxt 默认的 `root`、`devUrlBase`、按需 `scanPatterns` 和依赖 SFC 处理。 |
-| `bridge`              | `boolean \| VizeNuxtBridgeOptions`   | `true`                     | 控制 Nuxt 变换桥，用于自动导入、组件导入、i18n 辅助工具以及 Vize 虚拟模块上的稳定异步数据键。                                                              |
-| `unocss`              | `boolean \| VizeNuxtUnoCssOptions`   | `true`                     | 控制 Vize 虚拟模块的 UnoCSS 桥接器。`originalSource: false` 会禁用读取源 SFC;`maxBytes`限制了内存的使用。                                                  |
-| `dev.stylesheetLinks` | `boolean`                            | `true`                     | 支持仅限开发者的SSR HTML样式表链接清理，用于Vize生成的Nuxt资源URL。                                                                                        |
-| `musea`               | `boolean \| MuseaOptions`            | `false`                    | 选择加入 Musea 画廊集成。使用`true` 来设置 Musea 默认值，或传递对象以配置包含模式、令牌、预览 CSS 和路由。                                                 |
-| `nuxtMusea`           | `NuxtMuseaOptions`                   | `{ route: { path: "/" } }` | 文档说明了 Musea 预览助手使用的 Nuxt 模拟形状。Nuxt 模块不会全局安装模拟层，因为这样做会影响 Nuxt 自身的`#imports`。                                       |
+[Vite 插件指南](../guide/vite-plugin.md#compiler-options)介绍了每个编译器选项。设置 `compiler: false` 时，Nuxt 保留默认编译器，你只使用 lint 或 Musea。
 
-## 高级设置
+<span id="lint"></span>
 
-### Nuxt 2 与 Legacy Vue
+### Lint
 
-Nuxt 2 项目使用 Vue 2 编译器的输出。Vize 的原生 SFC 编译器针对 Vue 3，所以 Nuxt
-模块在检测到 Nuxt 2 时会自动避免更换主机编译器。对于Nuxt 2号桥
-或其他基于Vite的Vue 2设置，Vite插件接收`vueVersion: 2`，保持
-`@vitejs/plugin-vue2`、`vue-loader`，或者Nuxt自家负责`.vue`文件的编译器。
+启用 `lint` 后，模块会在项目根目录写出 `.oxlint.vize.json`。它相当于 `@nuxt/eslint` 所生成配置的 Oxlint 版本：其中的规则块与你的 Nuxt 版本和目录结构相匹配。请把该文件加入 `.gitignore`。
 
-同样的主机编译器模式也可以通过`vueVersion: 0.11`在较老的Vue项目中提供，
-`vueVersion: 1`，或者说`vueVersion: "legacy"`。
+如果项目还没有 Oxlint 或 Vite 配置，模块还会创建一个加载生成文件的 `oxlint.config.mts`。已有的配置不会被改写；请在其中自行加载 `.oxlint.vize.json`。
 
-如果你的项目以一种方式包裹 Nuxt，导致 Nuxt Kit 中隐藏了该版本，请设置兼容性
-明确覆盖：
+| 选项         | 默认值                | 作用                                                     |
+| ------------ | --------------------- | -------------------------------------------------------- |
+| `configFile` | `".oxlint.vize.json"` | 生成配置的写入位置。必须位于 lint 根目录或其上级目录中。 |
+| `autoInit`   | `true`                | 在没有 Oxlint 或 Vite 配置时创建 `oxlint.config.mts`。   |
+| `rootDir`    | Nuxt 根目录           | 生成的 glob 所基于的目录。                               |
+| `devtools`   | `{ enabled: "lazy" }` | 在 Nuxt DevTools 的标签页中显示解析后的 lint 计划。      |
+
+`lint` 也接受 `@nuxt/eslint-config` 的功能开关：`standalone`（默认 `true`）、`import`（默认 `true`）、`typescript`、`stylistic`、`tooling`、`formatters` 和 `nuxt`。
+
+如果 lint 配置位于 Nuxt 根目录之外，请设置 `lint.autoInit: false`。[Oxlint 插件指南](../guide/oxlint.md)介绍了如何运行这些规则。
+
+<span id="lint-while-developing"></span>
+
+### 开发时的 lint
+
+`checker` 会像 `@nuxt/eslint` 的 checker 一样，在开发服务器旁运行 Oxlint 和 Vize 的 lint 规则：
 
 ```ts
 export default defineNuxtConfig({
   modules: ["@vizejs/nuxt"],
   vize: {
-    compatibility: {
-      nuxtVersion: 2,
-      vueVersion: 2,
-    },
+    checker: true,
   },
 });
 ```
 
-### 直接使用 Vite 插件
+| 选项          | 默认值                              | 作用                           |
+| ------------- | ----------------------------------- | ------------------------------ |
+| `lintOnStart` | `true`                              | 开发服务器启动时检查整个项目。 |
+| `cache`       | `true`                              | 启动后只检查发生变化的文件。   |
+| `include`     | `<srcDir>/**/*.{js,jsx,ts,tsx,vue}` | 要检查的文件。                 |
+| `exclude`     | `**/node_modules/**` 和构建目录     | 跳过的文件和目录。             |
+| `emitWarning` | `true`                              | 在终端和浏览器浮层中显示警告。 |
+| `emitError`   | `true`                              | 在终端和浏览器浮层中显示错误。 |
+| `fix`         | `false`                             | 报告前先应用安全的修复。       |
+| `formatter`   | `"stylish"`                         | Oxlint 的输出格式。            |
 
-或者，你也可以直接使用Vite插件。由于Nuxt在底层使用Vite，这可行，但缺少一些针对Nuxt的优化：
+<span id="musea"></span>
 
-```ts
-// nuxt.config.ts
-import vize from "@vizejs/vite-plugin";
+## Musea
 
-export default defineNuxtConfig({
-  vite: {
-    plugins: [vize()],
-  },
-});
-```
-
-## 博物馆整合
-
-Nuxt 模块还支持 Musea（组件画廊）集成：
+用 `musea` 启用组件画廊：
 
 ```ts
 // nuxt.config.ts
@@ -174,13 +198,11 @@ export default defineNuxtConfig({
 });
 ```
 
-配置完成后，博物馆展厅在开发期间可`/__musea__/`开放。
+开发期间可以在 `/__musea__/` 打开画廊。[Musea 指南](../guide/musea.md)介绍了 art 文件、设计令牌和视觉回归测试。
 
-### 艺术文件放置
+### art 文件放在哪里
 
-Nuxt 组件自动发现扫描已配置组件目录中的`.vue`文件。因为
-Musea的艺术文件结尾也`.vue`，`*.art.vue`文件放在Nuxt目录之外
-项目并指向该地点的博物馆：
+Nuxt 会扫描组件目录中的所有 `.vue` 文件，而 Musea 的 art 文件也以 `.vue` 结尾。请把 `*.art.vue` 放在这些目录之外，并告诉 Musea 它们的位置：
 
 ```txt
 app/components/Tag.vue
@@ -198,15 +220,11 @@ export default defineNuxtConfig({
 });
 ```
 
-当 Musea 通过 `@vizejs/nuxt` 启用时，模块也会从 Nuxt 中排除 `**/*.art.vue`
-组件扫描器，因此共址的遗留文件无法到达Nuxt的webpack或Vite组件流水线。
+启用 Musea 后，模块还会把 `**/*.art.vue` 排除在 Nuxt 的组件扫描之外，因此留在组件旁边的 art 文件不会被注册为组件。
 
-### Nuxt 预览设置
+### 在预览中使用 Nuxt 的功能
 
-Nuxt 项目通常使用需要在 Musea 预览环境中具备的功能
-（`NuxtLink`、`useRoute`、`useNuxtApp`、`useRuntimeConfig`、数据组合和内置Nuxt
-组件）。在独立的 Musea Vite 配置中使用 `@vizejs/musea-nuxt` 并安装预览版
-`previewSetup`的模拟图层：
+组件常常依赖 `NuxtLink`、`useRoute`、`useNuxtApp`、`useRuntimeConfig`、数据获取类组合式函数或 Nuxt 内置组件。在独立的 Musea Vite 配置中，添加 `@vizejs/musea-nuxt`，并在 `previewSetup` 中安装它的模拟实现：
 
 ```ts
 // vite.config.ts
@@ -245,27 +263,63 @@ export default ((app) => {
   const i18n = createI18n({
     locale: "ja",
     messages: {
-      ja: {
-        /* ... */
-      },
-      en: {
-        /* ... */
-      },
+      ja: {/* ... */},
+      en: {/* ... */},
     },
   });
   app.use(i18n);
 }) satisfies MuseaPreviewSetup;
 ```
 
+在 Nuxt 应用内部，模块不会全局安装这些模拟实现，因为它们会替换 Nuxt 自己的 `#imports`。此时使用的是真正的 Nuxt 组合式函数。
+
+<span id="nuxt-2-and-vue-2"></span>
+
+## Nuxt 2 与 Vue 2
+
+模块支持 Nuxt 2、3 和 4。Vize 的编译器输出 Vue 3 代码，因此在 Nuxt 2 中，模块会把 `.vue` 的编译交给现有的编译器（`@vitejs/plugin-vue2`、`vue-loader` 或 Nuxt 自带的编译器），同时继续提供 lint 和 Musea。更早的 Vue 项目也可以通过 `vueVersion: 0.11`、`vueVersion: 1` 或 `vueVersion: "legacy"` 获得同样的行为。
+
+版本会被自动检测。如果某个封装让 Nuxt Kit 无法看到版本，请手动指定：
+
+```ts
+export default defineNuxtConfig({
+  modules: ["@vizejs/nuxt"],
+  vize: {
+    compatibility: {
+      nuxtVersion: 2,
+      vueVersion: 2,
+    },
+  },
+});
+```
+
+## 直接使用 Vite 插件
+
+Nuxt 使用 Vite 构建，所以不使用模块也可以直接注册 Vite 插件。但这样会失去上文介绍的 Nuxt 专用桥接和 lint 配置生成：
+
+```ts
+// nuxt.config.ts
+import vize from "@vizejs/vite-plugin";
+
+export default defineNuxtConfig({
+  vite: {
+    plugins: [vize()],
+  },
+});
+```
+
 ## 工作原理
 
-安装Nuxt模块时：
+1. **Vite 插件：** 模块注册 `@vizejs/vite-plugin`，由它编译 `.vue` 文件。
+2. **与 Vue 插件兼容：** 插件提供与 `@vitejs/plugin-vue` 相同的 API，因此 Nuxt 内部对 Vue 插件的检查仍然能够通过。
+3. **SSR：** Vize 也会编译服务端构建，并分别处理客户端和服务端的环境变量。
+4. **Nuxt 的转换：** 自动导入、组合式函数和中间件由 Nuxt 自己的转换层处理，该层在 Vize 编译组件之后运行。
 
-1.**Vite 插件注入**— 该模块将`@vizejs/vite-plugin`注册为 Vite 插件，拦截`.vue`文件编译。2.**兼容性提示**— 该插件会暴露一个`@vitejs/plugin-vue`兼容API，因此Nuxt的内部检查（用于探测Vue插件）能够正常工作。3.**SSR 支持**— Vize 的`vize_atelier_ssr`负责服务器端编译。该插件隔离客户端和服务器环境变量，以防止交叉污染。4.**Nuxt 功能被保留**— 自动导入、组合、中间件及其他 Nuxt 功能通过 Nuxt 自身的变换层工作，该层运行于 Vize 编译之后。
+已发布的 `@vizejs/nuxt` 会把 `vize`、`@vizejs/vite-plugin`、`@vizejs/native` 以及其他 Vize 包固定为同一版本。
 
-## 现实世界的例子
+## 示例：Vue Fes Japan 2026
 
-[Vue Fes Japan 2026](https://vuefes.jp/2026)会议网站使用Vize配合Nuxt 4：
+[Vue Fes Japan 2026](https://vuefes.jp/2026) 的网站在 Nuxt 4 中使用了该模块：
 
 ```ts
 // nuxt.config.ts
@@ -284,11 +338,17 @@ export default defineNuxtConfig({
 });
 ```
 
-该配置使用 Musea 进行组件开发和文档，同时保留 Nuxt 默认编译器用于生产构建。
+它使用 Musea 开发和记录组件，生产构建仍使用 Nuxt 的默认编译器。
 
-## 注释
+## 故障排查
 
-- Vize处于积极开发阶段——在投入生产环境前彻底测试
-- 通过`vize_atelier_ssr`支持SSR编译
-- Nuxt 专属功能（自动导入、可组合、中间件）通过 Nuxt 自身的变换层工作
-- Nuxt 模块支持 Nuxt 2、Nuxt 3 和 Nuxt 4。Nuxt 2 采用主机-编译器兼容性模式，因为 Vize 的原生 SFC 编译器针对的是 Vue 3 输出。
+- **在 pnpm 中使用 Pkl 配置：** `@vizejs/nuxt` 依赖 `vize`，后者附带默认的 `vize.pkl`。使用 pnpm 时，该文件可能不在 `node_modules/vize` 中。如果使用 Pkl 配置，请直接安装 `vize`：
+
+  ```bash
+  vp install vize
+  ```
+
+- **自定义的 `lint.configFile` 没有生效：** 该文件必须位于 `lint.rootDir` 或其上级目录中。放在 `.nuxt/` 中的配置无法应用 Oxlint 的项目级忽略规则。
+- **开发环境 SSR HTML 中的资源链接：** `dev.stylesheetLinks` 会保留有效的、经过 URL 编码的 Nuxt 资源链接（例如 `%40fs/` 和编码后的 `assets/` 路径），并删除解码后包含空字节或路径穿越的链接。
+
+其他问题请参阅[故障排查](../guide/troubleshooting.md)或[报告问题](../guide/testing.md)。

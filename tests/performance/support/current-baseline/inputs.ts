@@ -113,7 +113,6 @@ export function sourceCustody(root: string, tsgo: string) {
       architecture: process.arch,
       rust: execFileSync("rustc", ["--version"], { encoding: "utf8" }).trim(),
       cargo: execFileSync("cargo", ["--version"], { encoding: "utf8" }).trim(),
-      python: execFileSync("python3", ["--version"], { encoding: "utf8" }).trim(),
     },
     hosted: {
       runId: process.env.GITHUB_RUN_ID ?? null,

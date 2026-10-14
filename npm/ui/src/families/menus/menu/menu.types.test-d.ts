@@ -42,7 +42,9 @@ declare const radioSlot: MenuRadioGroupSlotState<"a" | "b">;
 
 type _State = Expect<Equal<MenuState, "closed" | "open">>;
 type _Direction = Expect<Equal<MenuDirection, "ltr" | "rtl">>;
-type _Kind = Expect<Equal<MenuKind, "context-menu" | "dropdown-menu" | "menu" | "menubar">>;
+type _Kind = Expect<
+  Equal<MenuKind, "context-menu" | "dropdown-menu" | "menu" | "menubar" | "split-button">
+>;
 type _Entry = Expect<Equal<MenuEntryFocus, "content" | "first" | "last" | "none">>;
 type _Checked = Expect<Equal<MenuCheckedState, boolean | "indeterminate">>;
 type _CheckedToken = Expect<Equal<MenuItemCheckedState, "checked" | "indeterminate" | "unchecked">>;

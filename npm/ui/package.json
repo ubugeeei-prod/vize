@@ -110,6 +110,11 @@
       "import": "./dist/bottom-navigation.mjs",
       "default": "./dist/bottom-navigation.mjs"
     },
+    "./navigation-rail": {
+      "types": "./dist/navigation-rail.d.mts",
+      "import": "./dist/navigation-rail.mjs",
+      "default": "./dist/navigation-rail.mjs"
+    },
     "./calendar": {
       "types": "./dist/calendar.d.mts",
       "import": "./dist/calendar.mjs",
@@ -389,6 +394,11 @@
       "types": "./dist/button-group.d.mts",
       "import": "./dist/button-group.mjs",
       "default": "./dist/button-group.mjs"
+    },
+    "./split-button": {
+      "types": "./dist/split-button.d.mts",
+      "import": "./dist/split-button.mjs",
+      "default": "./dist/split-button.mjs"
     },
     "./copy-button": {
       "types": "./dist/copy-button.d.mts",

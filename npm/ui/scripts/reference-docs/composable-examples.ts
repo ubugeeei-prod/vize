@@ -14,6 +14,10 @@ import { preferenceBrowserExamples } from "./preference-browser-examples.ts";
 import { environmentExamples } from "./environment-examples.ts";
 import { pointerSelectionExamples } from "./pointer-selection-examples.ts";
 import { localeFormatExamples } from "./locale-format-examples.ts";
+import { workflowStateExamples } from "./workflow-state-examples.ts";
+import { timeFormatExamples } from "./time-format-examples.ts";
+import { dataStateExamples } from "./data-state-examples.ts";
+import { browserPageExamples } from "./browser-page-examples.ts";
 
 const stateExamples = [
   {
@@ -100,6 +104,10 @@ export const composableExamples = [
       "The example uses useThrottled's default leading and trailing edges and its real timer. `pending` describes a queued update, not whether the draft equals the preview. `flush()` applies waiting work and closes its window; `cancel()` discards waiting work and closes its window without changing the draft. SSR mirrors the source without starting timers. Call inside setup so scope disposal releases the watcher and timer. This local preview neither saves nor publishes a title; the package remains experimental.",
   },
   ...localeFormatExamples,
+  ...workflowStateExamples,
+  ...timeFormatExamples,
+  ...dataStateExamples,
+  ...browserPageExamples,
 ] as const;
 
 export function composableExampleSource(packageRoot: string, name: string): string {

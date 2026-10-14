@@ -29,7 +29,10 @@ async function collectSourceSfcFiles(
       // Usage demos are covered by src/gallery/examples.test.ts.
       if (entry.isDirectory() && entry.name === "examples") return [];
       if (entry.isDirectory()) return collectSourceSfcFiles(entryPath, relativePath);
-      return entry.isFile() && entry.name.endsWith(".vue") ? [relativePath] : [];
+      // Musea stories are rendered and hydrated by src/story-testbed/story-art.test.ts.
+      return entry.isFile() && entry.name.endsWith(".vue") && !entry.name.endsWith(".art.vue")
+        ? [relativePath]
+        : [];
     }),
   );
   return files.flat().sort((left, right) => left.localeCompare(right));

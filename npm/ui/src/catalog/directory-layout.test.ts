@@ -239,7 +239,10 @@ function rootSfcFiles(): readonly string[] {
 }
 
 function collectVueFiles(directory: string): readonly string[] {
-  return collectSourceFiles(directory).filter((filename) => filename.endsWith(".vue"));
+  // Musea stories (`*.art.vue`) document a component; they are not public SFCs.
+  return collectSourceFiles(directory).filter(
+    (filename) => filename.endsWith(".vue") && !filename.endsWith(".art.vue"),
+  );
 }
 
 function collectSourceFiles(directory: string): readonly string[] {
