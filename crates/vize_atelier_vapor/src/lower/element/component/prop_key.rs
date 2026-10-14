@@ -9,11 +9,11 @@ use super::{SimpleExpressionNode, String, TransformContext};
 pub(super) fn modified_prop_key<'a>(
     ctx: &TransformContext<'a>,
     key: &SimpleExpressionNode<'a>,
-    modifiers: impl Iterator<Item = &'a str>,
+    modifiers: &[SimpleExpressionNode<'a>],
 ) -> SimpleExpressionNode<'a> {
     let (mut camel, mut prefix) = (false, None);
     for modifier in modifiers {
-        match modifier {
+        match modifier.content {
             "camel" => camel = true,
             "prop" => prefix = Some('.'),
             "attr" => prefix = Some('^'),
