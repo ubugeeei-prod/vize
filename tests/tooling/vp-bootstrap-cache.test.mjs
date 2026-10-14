@@ -22,7 +22,10 @@ test("the bootstrap key is the highest Node.js LTS release for this runner", () 
     { version: "not-a-version", lts: "Krypton" },
   ]);
   assert.equal(version, "24.14.0");
-  assert.equal(bootstrapCacheKey("Linux", "X64", version), "vp-bootstrap-v1-Linux-X64-node-24.14.0");
+  assert.equal(
+    bootstrapCacheKey("Linux", "X64", version),
+    "vp-bootstrap-v1-Linux-X64-node-24.14.0",
+  );
   assert.throws(() => bootstrapCacheKey("Linux\n", "X64", version), /runner identity/);
   assert.throws(() => latestLtsVersion([{ version: "v25.0.0", lts: false }]), /no LTS/);
 });
