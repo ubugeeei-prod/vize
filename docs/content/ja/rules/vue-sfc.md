@@ -26,4 +26,4 @@ title: "SFC ブロックの構成"
 | [`vue/single-style-block`](https://vizejs.dev/ja/rules/vue-sfc.html#vue-single-style-block) | [悪い](https://vizejs.dev/ja/rules/vue-sfc.html#vue-single-style-block-bad) · [良い](https://vizejs.dev/ja/rules/vue-sfc.html#vue-single-style-block-good) | SFC の style を一つのブロックにまとめます。 |
 | [`vue/warn-custom-block`](https://vizejs.dev/ja/rules/vue-sfc.html#vue-warn-custom-block) | [悪い](https://vizejs.dev/ja/rules/vue-sfc.html#vue-warn-custom-block-bad) · [良い](https://vizejs.dev/ja/rules/vue-sfc.html#vue-warn-custom-block-good) | SFC のカスタムブロックを検出します。 |
 
-[全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
+[全ルール](./all.md) · [ルールのオプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)

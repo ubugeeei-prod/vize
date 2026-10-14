@@ -21,7 +21,7 @@ Vite+ の設定では Vize のルールを `lint.vize.rules` に指定します�
 
 `vue/component-definition-name-casing` には意図的な適用範囲の差があります。Vize は SFC のファイル名を検査し、ESLint はコンポーネントの定義名を検査します。この差を以下にも残しています。
 
-オプションの変換は[ルール オプション](./options.md)と [props 分割代入](./reference/script-define-props-destructuring.md)を参照してください。未実装の行は、対応する代替の検査が確認できるまで、既存のチェッカーで検査を続けます。
+オプションの変換は[ルールのオプション](./options.md)と [props 分割代入](./reference/script-define-props-destructuring.md)を参照してください。未実装の行は、対応する代替の検査が確認できるまで、既存のチェッカーで検査を続けます。
 
 | ESLint ID | Vize ID / リファレンス | 対応状況 |
 | --- | --- | --- |

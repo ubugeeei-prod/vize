@@ -19,7 +19,7 @@ title: "HTML ルール"
 | [`html/no-empty-palpable-content`](#html-no-empty-palpable-content) | [悪い](#html-no-empty-palpable-content-bad) · [良い](#html-no-empty-palpable-content-good) | 可視コンテンツを期待する要素が空の場合に検出します。 |
 | [`html/require-datetime`](#html-require-datetime) | [悪い](#html-require-datetime-bad) · [良い](#html-require-datetime-good) | time 要素に機械可読の datetime を指定します。 |
 
-[全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
+[全ルール](./all.md) · [ルールのオプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
 
 ### `html/deprecated-attr`
 

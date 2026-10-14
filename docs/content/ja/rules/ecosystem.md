@@ -1,11 +1,12 @@
 ---
-title: "エコシステム ルール"
+title: "エコシステムのルール"
 ---
 
-# エコシステム ルール
+# エコシステムのルール
 
 このページに、各ルールの目的・前提・設定と、省略のない悪い例・良い例をまとめています。変更箇所は行の色で示します。コードをコピーすると、ソースコード全体を取得できます。各例に現在の対応範囲も明記しています。
 
+<span id="エコシステム-ルール"></span>
 
 | ルール | 例 | 目的 |
 | --- | --- | --- |
@@ -23,4 +24,4 @@ title: "エコシステム ルール"
 | [`nuxt/nuxt-config-keys-order`](https://vizejs.dev/ja/rules/ecosystem.html#nuxt-nuxt-config-keys-order) | [悪い](https://vizejs.dev/ja/rules/ecosystem.html#nuxt-nuxt-config-keys-order-bad) · [良い](https://vizejs.dev/ja/rules/ecosystem.html#nuxt-nuxt-config-keys-order-good) | Nuxt 設定のプロパティを推奨順に並べます。 |
 | [`nuxt/prefer-import-meta`](https://vizejs.dev/ja/rules/ecosystem.html#nuxt-prefer-import-meta) | [悪い](https://vizejs.dev/ja/rules/ecosystem.html#nuxt-prefer-import-meta-bad) · [良い](https://vizejs.dev/ja/rules/ecosystem.html#nuxt-prefer-import-meta-good) | Nuxt の環境フラグを process.* から import.meta.* に置き換えます。 |
 
-[全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
+[全ルール](./all.md) · [ルールのオプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)

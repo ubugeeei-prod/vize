@@ -28,7 +28,7 @@ Vue テンプレートの基本的なアクセシビリティ情報を確認し�
 | [`a11y/click-events-have-key-events`](#a11y-click-events-have-key-events) | [悪い](#a11y-click-events-have-key-events-bad) · [良い](#a11y-click-events-have-key-events-good) | クリックで操作する要素にキーボード操作も用意します。 |
 | [`a11y/form-control-has-label`](#a11y-form-control-has-label) | [悪い](#a11y-form-control-has-label-bad) · [良い](#a11y-form-control-has-label-good) | フォーム部品に関連付けられたラベルを用意します。 |
 
-[全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
+[全ルール](./all.md) · [ルールのオプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
 
 ### `a11y/alt-text`
 
