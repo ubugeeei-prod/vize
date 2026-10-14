@@ -1,5 +1,5 @@
 use super::{
-    Decoded, DiagnosticMapper, is_cli_diagnostic_line, is_global_diagnostic_line,
+    CliPathResolver, Decoded, DiagnosticMapper, is_cli_diagnostic_line, is_global_diagnostic_line,
     parse_cli_diagnostic_line,
 };
 use crate::batch::VirtualProject;
@@ -17,6 +17,7 @@ pub(super) fn only_pattern_warnings(output: &Output, project: &VirtualProject) -
     }
     let mut found = 0;
     let mut mapper = DiagnosticMapper::new(project);
+    let mut paths = CliPathResolver::new(project.virtual_root());
     for stream in [&output.stdout, &output.stderr] {
         #[expect(clippy::disallowed_types, reason = "from_utf8_lossy yields std Cow")]
         let text = std::string::String::from_utf8_lossy(stream);
@@ -44,7 +45,7 @@ pub(super) fn only_pattern_warnings(output: &Output, project: &VirtualProject) -
             let Some(Decoded::Raw {
                 raw,
                 reachability: true,
-            }) = parse_cli_diagnostic_line(line, project, &mut mapper)
+            }) = parse_cli_diagnostic_line(line, project, &mut mapper, &mut paths)
             else {
                 return false;
             };

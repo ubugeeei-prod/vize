@@ -1,5 +1,5 @@
 use super::super::diagnostics::{DiagnosticMapper, RawDiagnostic};
-use super::{normalize_cli_path, project_diagnostics};
+use super::{CliPathResolver, project_diagnostics};
 use crate::batch::{Diagnostic, VirtualProject};
 
 /// One diagnostic line of `--pretty false` output, decoded but not assembled.
@@ -20,6 +20,7 @@ pub(super) fn parse_cli_diagnostic_line(
     line: &str,
     project: &VirtualProject,
     mapper: &mut DiagnosticMapper<'_>,
+    paths: &mut CliPathResolver<'_>,
 ) -> Option<Decoded> {
     let (prefix, suffix) = line.split_once("): ")?;
     let (path, position) = prefix.rsplit_once('(')?;
@@ -39,7 +40,7 @@ pub(super) fn parse_cli_diagnostic_line(
         .strip_prefix("TS")
         .and_then(|code| code.parse::<u32>().ok());
 
-    let virtual_path = normalize_cli_path(path, project.virtual_root());
+    let virtual_path = paths.resolve(path);
     if let Some(diagnostic) =
         project_diagnostics::config(&virtual_path, project, message, code, severity)
     {

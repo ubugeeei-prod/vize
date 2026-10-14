@@ -26,7 +26,7 @@ mod union_find;
 
 pub(super) use checkers::checker_count;
 use checkers::rejects_checkers_flag;
-use diagnostic_paths::normalize_cli_path;
+use diagnostic_paths::CliPathResolver;
 use file_diagnostics::{Decoded, parse_cli_diagnostic_line};
 
 #[cfg(test)]

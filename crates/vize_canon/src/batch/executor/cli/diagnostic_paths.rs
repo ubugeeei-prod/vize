@@ -13,58 +13,106 @@
 use std::path::{Path, PathBuf};
 
 use vize_carton::path::canonicalize_non_verbatim;
+use vize_carton::{FxHashMap, String};
 
 /// Resolve the path of a Corsa CLI diagnostic to its virtual path, spelled the
 /// way the project spells `virtual_root` so `find_by_virtual` can match it.
+#[cfg(test)]
 pub(super) fn normalize_cli_path(path: &str, virtual_root: &Path) -> PathBuf {
-    let reported = Path::new(path);
-    if reported.is_absolute() {
-        return anchor_in_virtual_root(normalize_path_lexically(reported), virtual_root);
-    }
+    CliPathResolver::new(virtual_root).resolve(path)
+}
 
-    let canonical_root = canonicalize_non_verbatim(virtual_root);
-    // The working directory the CLI printed against is the resolved spelling of
-    // the virtual root; it coincides with the through-link spelling whenever no
-    // symlink is involved, which is the common case and stays single-candidate.
-    let mut bases = Vec::with_capacity(2);
-    bases.push(virtual_root);
-    if canonical_root != virtual_root {
-        bases.push(canonical_root.as_path());
-    }
+/// Resolves the file paths of one CLI run's diagnostic lines.
+///
+/// A run prints one line per diagnostic, and a project with many findings
+/// repeats the same file path hundreds of times. Resolving a path stats and
+/// canonicalizes it, so the resolver canonicalizes the virtual root once and
+/// remembers every path it has resolved. The filesystem does not change while
+/// one run's output is decoded, so a remembered answer equals a fresh one.
+pub(super) struct CliPathResolver<'a> {
+    virtual_root: &'a Path,
+    canonical_root: Option<PathBuf>,
+    resolved: FxHashMap<String, PathBuf>,
+}
 
-    // Prefer whichever base places the file inside the virtual project: that is
-    // the only spelling the project's index can be keyed by, so an ambiguous
-    // relative path must not resolve to an unrelated file outside the project.
-    for base in &bases {
-        let candidate = normalize_path_lexically(&base.join(reported));
-        if let Some(anchored) =
-            virtual_root_relative(&candidate, virtual_root, canonical_root.as_path())
-        {
-            return anchored;
+impl<'a> CliPathResolver<'a> {
+    pub(super) fn new(virtual_root: &'a Path) -> Self {
+        Self {
+            virtual_root,
+            canonical_root: None,
+            resolved: FxHashMap::default(),
         }
     }
 
-    // A real file outside the virtual project (an ancestor `.d.ts`, a package
-    // under `node_modules`): report its resolved path.
-    for base in &bases {
-        let candidate = normalize_path_lexically(&base.join(reported));
-        if candidate.exists() {
-            return canonicalize_non_verbatim(&candidate);
+    pub(super) fn resolve(&mut self, path: &str) -> PathBuf {
+        if let Some(resolved) = self.resolved.get(path) {
+            return resolved.clone();
         }
+        let resolved = self.resolve_uncached(path);
+        self.resolved.insert(path.into(), resolved.clone());
+        resolved
     }
 
-    normalize_path_lexically(&virtual_root.join(reported))
+    fn canonical_root(&mut self) -> PathBuf {
+        self.canonical_root
+            .get_or_insert_with(|| canonicalize_non_verbatim(self.virtual_root))
+            .clone()
+    }
+
+    fn resolve_uncached(&mut self, path: &str) -> PathBuf {
+        let virtual_root = self.virtual_root;
+        let reported = Path::new(path);
+        let canonical_root = self.canonical_root();
+        if reported.is_absolute() {
+            return anchor_in_virtual_root(
+                normalize_path_lexically(reported),
+                virtual_root,
+                &canonical_root,
+            );
+        }
+
+        // The working directory the CLI printed against is the resolved spelling of
+        // the virtual root; it coincides with the through-link spelling whenever no
+        // symlink is involved, which is the common case and stays single-candidate.
+        let mut bases = Vec::with_capacity(2);
+        bases.push(virtual_root);
+        if canonical_root != virtual_root {
+            bases.push(canonical_root.as_path());
+        }
+
+        // Prefer whichever base places the file inside the virtual project: that is
+        // the only spelling the project's index can be keyed by, so an ambiguous
+        // relative path must not resolve to an unrelated file outside the project.
+        for base in &bases {
+            let candidate = normalize_path_lexically(&base.join(reported));
+            if let Some(anchored) =
+                virtual_root_relative(&candidate, virtual_root, canonical_root.as_path())
+            {
+                return anchored;
+            }
+        }
+
+        // A real file outside the virtual project (an ancestor `.d.ts`, a package
+        // under `node_modules`): report its resolved path.
+        for base in &bases {
+            let candidate = normalize_path_lexically(&base.join(reported));
+            if candidate.exists() {
+                return canonicalize_non_verbatim(&candidate);
+            }
+        }
+
+        normalize_path_lexically(&virtual_root.join(reported))
+    }
 }
 
 /// Re-express an existing path inside the virtual project the way the project
 /// spells `virtual_root`; a path that exists elsewhere keeps its resolved
 /// spelling, and a path that does not exist is left exactly as given.
-fn anchor_in_virtual_root(path: PathBuf, virtual_root: &Path) -> PathBuf {
+fn anchor_in_virtual_root(path: PathBuf, virtual_root: &Path, canonical_root: &Path) -> PathBuf {
     if !path.exists() {
         return path;
     }
-    let canonical_root = canonicalize_non_verbatim(virtual_root);
-    if let Some(anchored) = virtual_root_relative(&path, virtual_root, canonical_root.as_path()) {
+    if let Some(anchored) = virtual_root_relative(&path, virtual_root, canonical_root) {
         return anchored;
     }
     canonicalize_non_verbatim(&path)

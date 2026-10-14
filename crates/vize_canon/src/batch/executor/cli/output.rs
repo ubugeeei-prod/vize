@@ -5,8 +5,8 @@ use std::process::Output;
 
 use super::file_diagnostics::Decoded;
 use super::{
-    is_cli_diagnostic_line, is_global_diagnostic_line, parse_cli_diagnostic_line, patterns,
-    project_diagnostics,
+    CliPathResolver, is_cli_diagnostic_line, is_global_diagnostic_line, parse_cli_diagnostic_line,
+    patterns, project_diagnostics,
 };
 use crate::batch::executor::diagnostics::{
     DiagnosticMapper, dedup_diagnostics, restore_authored_paths_in_messages,
@@ -20,12 +20,25 @@ pub(super) fn parse_output_diagnostics(
 ) -> Vec<Diagnostic> {
     let mut decoded = Vec::new();
     let mut mapper = DiagnosticMapper::new(project);
+    let mut paths = CliPathResolver::new(project.virtual_root());
     #[expect(clippy::disallowed_types, reason = "from_utf8_lossy yields std Cow")]
     let stdout = std::string::String::from_utf8_lossy(&output.stdout);
-    decode_cli_diagnostics(stdout.as_ref(), project, &mut mapper, &mut decoded);
+    decode_cli_diagnostics(
+        stdout.as_ref(),
+        project,
+        &mut mapper,
+        &mut paths,
+        &mut decoded,
+    );
     #[expect(clippy::disallowed_types, reason = "from_utf8_lossy yields std Cow")]
     let stderr = std::string::String::from_utf8_lossy(&output.stderr);
-    decode_cli_diagnostics(stderr.as_ref(), project, &mut mapper, &mut decoded);
+    decode_cli_diagnostics(
+        stderr.as_ref(),
+        project,
+        &mut mapper,
+        &mut paths,
+        &mut decoded,
+    );
     let diagnostics = assemble_decoded(decoded, &mut mapper, owns);
     // A single template error surfaces twice — the dynamic prop binding it sits
     // on is generated at two virtual positions that map back to the same source
@@ -60,7 +73,8 @@ pub(super) fn parse_cli_diagnostics(
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     let mut decoded = Vec::new();
-    decode_cli_diagnostics(output, project, mapper, &mut decoded);
+    let mut paths = CliPathResolver::new(project.virtual_root());
+    decode_cli_diagnostics(output, project, mapper, &mut paths, &mut decoded);
     diagnostics.extend(assemble_decoded(decoded, mapper, &|_| true));
 }
 
@@ -68,6 +82,7 @@ fn decode_cli_diagnostics(
     output: &str,
     project: &VirtualProject,
     mapper: &mut DiagnosticMapper<'_>,
+    paths: &mut CliPathResolver<'_>,
     decoded: &mut Vec<Decoded>,
 ) {
     let mut last_was_kept = false;
@@ -77,7 +92,7 @@ fn decode_cli_diagnostics(
         // user-actionable problems — tsc and vue-tsc report them and the
         // runtime may skip the semantic pass because of them — so they are
         // attributed to the project's tsconfig instead of being dropped.
-        let entry = parse_cli_diagnostic_line(line, project, mapper).or_else(|| {
+        let entry = parse_cli_diagnostic_line(line, project, mapper, paths).or_else(|| {
             project_diagnostics::global(line, project)
                 .filter(|diagnostic| {
                     mapper.is_reportable_project_diagnostic(diagnostic.code, &diagnostic.message)
