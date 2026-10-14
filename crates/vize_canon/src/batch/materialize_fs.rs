@@ -143,7 +143,10 @@ pub(super) fn prune_unexpected_entries(
     // mirrors and avoiding large remove/create storms between check runs.
     let mut expected_dirs = FxHashSet::default();
     expected_dirs.insert(root.to_path_buf());
-    for file in expected_files {
+    // Keep the directories that only hold preserved entries (`@scope` above a
+    // preserved `@scope/pkg` link) and prune their other children, instead
+    // of deleting the preserved entry with its parent.
+    for file in expected_files.iter().chain(preserved_roots) {
         let mut parent = file.parent();
         while let Some(dir) = parent {
             if !dir.starts_with(root) {

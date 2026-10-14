@@ -37,7 +37,7 @@ use search::{
 };
 use source::{resolve_sources, resolve_workspace_source_fallbacks};
 
-pub use cache::{PackageRouteLookup, PackageRouteResolver};
+pub use cache::{PackageRouteLookup, PackageRouteResolver, PackageRouteValidationScope};
 #[cfg(feature = "native")]
 pub(crate) use model::PackageRouteKey;
 pub use model::{

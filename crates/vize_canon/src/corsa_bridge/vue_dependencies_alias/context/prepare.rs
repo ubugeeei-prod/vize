@@ -27,6 +27,8 @@ impl AliasContext {
         options: super::super::super::vue_document::CorsaVueVirtualDocumentOptions,
         environment: super::super::super::vue_document::CorsaProjectEnvironment<'_>,
     ) -> Result<PreparedAliasContext, super::super::super::types::CorsaBridgeError> {
+        // One preparation validates each package-route input once.
+        let _route_validation = environment.package_routes.validation_scope();
         let capture_phase = crate::corsa_bridge::preparation_trace::Phase::start(
             "alias_fingerprint",
             overlays.len(),

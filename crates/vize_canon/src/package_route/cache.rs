@@ -41,6 +41,11 @@ struct PackageRouteResolverState {
     canonical_paths: PackagePathCache,
     stamp_snapshots: InputStampCache,
     validation_epoch: u64,
+    /// Monotonic source of epoch ids, so a restored or later epoch never
+    /// reuses an id that cached entries were already marked with.
+    epoch_clock: u64,
+    scope_depth: u32,
+    scope_restore_epoch: u64,
     cache_hits: u64,
     cache_misses: u64,
     refresh_considered_routes: u64,
@@ -59,6 +64,42 @@ struct PackageRouteResolverState {
     last_reachability_packages: u64,
 }
 
+impl PackageRouteResolverState {
+    fn start_validation_epoch(&mut self) {
+        self.epoch_clock = self.epoch_clock.wrapping_add(1).max(1);
+        self.enter_validation_epoch(self.epoch_clock);
+    }
+
+    fn enter_validation_epoch(&mut self, epoch: u64) {
+        self.validation_epoch = epoch;
+        self.canonical_paths.clear();
+        self.stamp_snapshots.clear();
+        self.search.enter_validation_epoch(epoch);
+    }
+}
+
+/// Ends a [`PackageRouteResolver::validation_scope`] and restores the epoch
+/// that was active before it, with fresh stamp snapshots.
+#[must_use = "the scope ends when this guard drops"]
+pub struct PackageRouteValidationScope {
+    resolver: PackageRouteResolver,
+}
+
+impl Drop for PackageRouteValidationScope {
+    fn drop(&mut self) {
+        let mut state = self
+            .resolver
+            .state
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        state.scope_depth = state.scope_depth.saturating_sub(1);
+        if state.scope_depth == 0 {
+            let restore = state.scope_restore_epoch;
+            state.enter_validation_epoch(restore);
+        }
+    }
+}
+
 struct CachedPackageRouteLookup {
     lookup: PackageRouteLookup,
     stamps: Vec<InputStamp>,
@@ -72,10 +113,26 @@ impl PackageRouteResolver {
             .state
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
-        state.validation_epoch = state.validation_epoch.wrapping_add(1).max(1);
-        state.canonical_paths.clear();
-        state.stamp_snapshots.clear();
-        state.search.begin_validation_epoch();
+        state.start_validation_epoch();
+    }
+
+    /// Validate each route input at most once until the guard drops. Editor
+    /// preparation looks up the same manifests and links many times; outside
+    /// a scope every cached lookup re-reads its inputs. Nested and concurrent
+    /// scopes share the outermost epoch.
+    pub fn validation_scope(&self) -> PackageRouteValidationScope {
+        let mut state = self
+            .state
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        if state.scope_depth == 0 {
+            state.scope_restore_epoch = state.validation_epoch;
+            state.start_validation_epoch();
+        }
+        state.scope_depth += 1;
+        PackageRouteValidationScope {
+            resolver: self.clone(),
+        }
     }
 
     /// Derive one importer occurrence context through the resolver-owned

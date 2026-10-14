@@ -113,7 +113,7 @@ pub use intelligence::{
 pub use package_route::{
     PackageResolutionContext, PackageResolutionMode, PackageRoute, PackageRouteBinding,
     PackageRouteLookup, PackageRouteMetrics, PackageRouteResolver, PackageRouteSource,
-    PackageSourceOptions,
+    PackageRouteValidationScope, PackageSourceOptions,
 };
 pub use sfc_typecheck::{
     SfcRelatedLocation, SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic,
