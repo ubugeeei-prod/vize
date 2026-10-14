@@ -14,5 +14,5 @@ _None._
 
 | item              | files | sites |
 | ----------------- | ----: | ----: |
-| `BlockLocation`   |     1 |     3 |
+| `BlockLocation`   |     1 |     4 |
 | `SfcParseOptions` |     1 |     1 |
