@@ -1,0 +1,5 @@
+export function settle<T extends Promise<number>>(pending: T) {
+  return pending.then((value) => value + 1);
+}
+
+export const hasPositive = [1, -2, 3].some((value) => value > 0);
