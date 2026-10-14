@@ -3680,7 +3680,7 @@ Exiger que chaque prop déclare un type
 [Mauvais](#script-require-prop-types-bad) · [Bon](#script-require-prop-types-good)
 
 Gravité par défaut: `error`  
-Préréglages: _none_  
+Préréglages: `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.

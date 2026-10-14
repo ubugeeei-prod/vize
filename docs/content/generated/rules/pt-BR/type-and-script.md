@@ -3680,7 +3680,7 @@ Exigir que toda prop declare um tipo
 [Incorreto](#script-require-prop-types-bad) · [Correto](#script-require-prop-types-good)
 
 Severidade padrão: `error`  
-Predefinições: _none_  
+Predefinições: `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.

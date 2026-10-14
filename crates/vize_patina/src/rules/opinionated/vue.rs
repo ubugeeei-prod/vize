@@ -130,4 +130,5 @@ fn register_shared(registry: &mut RuleRegistry, flavor: PresetFlavor) {
     registry.register(Box::new(PreferTrueAttributeShorthand));
     registry.register(Box::new(VOnEventHyphenation::default()));
     registry.register(Box::new(NoArrayIndexKey));
+    registry.register(Box::new(crate::rules::vue::NoUseVElseWithVFor));
 }

@@ -115,11 +115,12 @@ fn prop_has_type(prop: PropDescriptor<'_>) -> bool {
     }
 }
 
-/// Whether a prop-descriptor object has a `type` member.
+/// Whether a prop-descriptor object has a `type` member. A spread may carry
+/// one, so it counts as typed.
 fn descriptor_has_type(descriptor: &ObjectExpression<'_>) -> bool {
     descriptor.properties.iter().any(|property| {
         let ObjectPropertyKind::ObjectProperty(property) = property else {
-            return false;
+            return true;
         };
         !property.computed && property_key_name(&property.key) == Some("type")
     })

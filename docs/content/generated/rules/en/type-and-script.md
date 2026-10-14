@@ -3679,7 +3679,7 @@ Require every prop to declare a type
 [Bad](#script-require-prop-types-bad) · [Good](#script-require-prop-types-good)
 
 Default severity: `error`  
-Presets: _none_  
+Presets: `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
 Options: No rule-specific options. Severity and preset selection are configurable.

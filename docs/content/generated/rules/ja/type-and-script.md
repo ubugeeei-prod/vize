@@ -3679,7 +3679,7 @@ export default {
 [悪い例](#script-require-prop-types-bad) · [良い例](#script-require-prop-types-good)
 
 既定の重大度: `error`  
-プリセット: _none_  
+プリセット: `opinionated`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。

@@ -168,3 +168,16 @@ export default {
     let result = create_linter().lint(source, 0);
     assert_eq!(result.error_count, 0);
 }
+
+#[test]
+fn spread_descriptor_may_carry_the_type() {
+    let source = r#"
+export default {
+  props: {
+    offset: { ...shared.offset, default: () => [2, 0] }
+  }
+}
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 0);
+}
