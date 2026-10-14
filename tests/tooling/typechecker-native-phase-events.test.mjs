@@ -106,7 +106,11 @@ void test("all source/new-head triggers and immutable manual evidence remain ena
   assert.ok(
     workflow.on.pull_request.paths.includes(".github/workflows/typechecker-native-phases.yml"),
   );
-  assert.ok(workflow.on.pull_request.paths.includes("tests/tooling/**"));
+  // The steps load one tooling module; other tooling changes do not start this workflow.
+  assert.ok(
+    workflow.on.pull_request.paths.includes("tests/tooling/davinci-storage-rust-syntax.ts"),
+  );
+  assert.ok(!workflow.on.pull_request.paths.includes("tests/tooling/**"));
   for (const action of ["opened", "synchronize", "reopened"]) {
     const source = plan(pullRequest(action));
     assert.equal(source.runs, true);
