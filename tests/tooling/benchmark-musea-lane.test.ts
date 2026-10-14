@@ -12,7 +12,10 @@ import {
   buildMuseaSurface,
 } from "../../tools/benchmarks/scripts/compare-tools-musea.mjs";
 import { MUSEA_CORPUS_FILE_COUNT } from "../../tools/benchmarks/scripts/musea-corpus.mjs";
-import { assertMuseaArtifactsUnchanged } from "../../tools/benchmarks/scripts/musea-artifacts.mjs";
+import {
+  NATIVE_RUNTIME_FILES,
+  assertMuseaArtifactsUnchanged,
+} from "../../tools/benchmarks/scripts/musea-artifacts.mjs";
 import { resolveMuseaArtifacts } from "../../tools/benchmarks/scripts/musea-stages.mjs";
 import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
 
@@ -46,6 +49,7 @@ function writeCompleteBuild(directory: string): void {
     'module.exports = require("./native-binding");\n',
   );
   fs.writeFileSync(path.join(nativeDir, "native-binding.js"), "module.exports = {};\n");
+  fs.writeFileSync(path.join(nativeDir, "native-binding-identity.js"), "module.exports = {};\n");
   fs.writeFileSync(
     path.join(nativeDir, "native-targets.js"),
     'module.exports = { nativeTargets: () => ["fixture"] };\n',
@@ -344,4 +348,14 @@ test("the lane refuses source or measured-copy mutation of an imported chunk", (
       /museaPlugin:chunks\/runtime\.mjs measured copy changed during the run/,
     );
   });
+});
+
+test("the Musea snapshot copies every runtime file @vizejs/native publishes", () => {
+  // native-targets.js began requiring native-binding-identity.js (#8704) and
+  // the scheduled benchmark failed until the snapshot copied it too.
+  const manifest = JSON.parse(fs.readFileSync(path.join(root, "npm/native/package.json"), "utf8"));
+  const published = (manifest.files as string[]).filter((file) => file.endsWith(".js"));
+  for (const file of published) {
+    assert.ok(NATIVE_RUNTIME_FILES.includes(file), `${file} is published but not snapshotted`);
+  }
 });
