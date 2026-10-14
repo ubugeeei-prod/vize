@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { test } from "node:test";
+import { before, test } from "node:test";
 
 import {
   artifactPath,
@@ -9,11 +9,20 @@ import {
   commit,
   git,
   run,
+  script,
   setup,
   successBody,
   writeJson,
   writeManager,
 } from "./support/typecheck-dependency-prepare-fixture.ts";
+import { buildRustScript } from "./support/rust-script-build.ts";
+
+// The install before the hanging prepare must succeed inside the same limit,
+// so it gets more than one slow Node startup.
+const succeedingStepTimeoutMs = 2_000;
+
+// Build outside the timed window: a cold rust-script build exceeded the bound.
+before(() => buildRustScript(script, ["--rust-script-build-check"]));
 
 test("dependency prepare bounds an install process that ignores SIGTERM", () => {
   if (process.platform === "win32") return;
@@ -88,13 +97,15 @@ test("dependency prepare bounds a baseline prepare process that ignores SIGTERM"
     );
 
     const startedAt = Date.now();
-    const result = run(fixture, ["--timeout-ms", "80"], { timeoutMs: 8_000 });
+    const result = run(fixture, ["--timeout-ms", String(succeedingStepTimeoutMs)], {
+      timeoutMs: 8_000,
+    });
     assert.equal(result.status, 1);
     assert.ok(
       Date.now() - startedAt < 8_000,
       "timeout handling must not wait for a baseline prepare process tree that ignores SIGTERM",
     );
-    assert.match(result.stderr, /baseline prepare failed to run: spawn timed out after 80ms/);
+    assert.match(result.stderr, /baseline prepare failed to run: spawn timed out after 2000ms/);
     assert.equal(fs.existsSync(artifactPath(fixture)), false);
   } finally {
     cleanup(fixture);

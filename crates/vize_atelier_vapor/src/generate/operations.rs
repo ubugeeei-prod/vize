@@ -8,7 +8,7 @@ mod component_slots;
 mod directives;
 mod dom;
 mod structural_slots;
-pub(crate) use dom::{set_prop_call, set_text_call};
+pub(crate) use dom::{set_html_call, set_prop_call, set_text_call};
 mod block_shape;
 mod events;
 mod for_loop;

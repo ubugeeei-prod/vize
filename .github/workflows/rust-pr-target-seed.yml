@@ -79,6 +79,7 @@ jobs:
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
+      - uses: ./.github/actions/cache-vp-bootstrap
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: "package.json"
@@ -95,3 +96,22 @@ jobs:
         uses: ./.github/actions/test-rust-workspace-differential
         with:
           workspace-already-tested: "true"
+
+  # Writes the Node.js LTS and pinned pnpm that setup-vp would otherwise
+  # download on every fresh runner. Pull requests only restore this entry.
+  # This job is the only saver: the differential seed beside it must not
+  # reserve the same key.
+  seed-vp-bootstrap:
+    name: Seed Vite+ runtime
+    permissions: { contents: read, actions: write }
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/cache-vp-bootstrap
+        with: { save: "true" }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: false
+          run-install: false

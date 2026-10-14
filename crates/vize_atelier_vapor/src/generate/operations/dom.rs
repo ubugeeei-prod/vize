@@ -129,23 +129,27 @@ pub(super) fn generate_set_dynamic_props(
         }
     } else {
         ctx.use_helper("setDynamicProps");
-        let props_parts: std::vec::Vec<vize_carton::String> = set_props
-            .props
-            .iter()
-            .map(|p| {
-                if p.is_static {
-                    cstr!("\"{}\"", escape_js_string_literal(p.content))
-                } else {
-                    ctx.resolve_expression_node(p)
-                }
-            })
-            .collect();
-        ctx.push_line_fmt(format_args!(
-            "_setDynamicProps({}, [{}]{})",
-            element,
-            props_parts.join(", "),
-            super::merged_props::svg_argument(set_props.namespace)
-        ));
+        // Written straight into the output: no per-prop strings to join.
+        ctx.push_indent();
+        ctx.push("_setDynamicProps(");
+        ctx.push(&element);
+        ctx.push(", [");
+        for (index, prop) in set_props.props.iter().enumerate() {
+            if index > 0 {
+                ctx.push(", ");
+            }
+            if prop.is_static {
+                ctx.push("\"");
+                ctx.push(&escape_js_string_literal(prop.content));
+                ctx.push("\"");
+            } else {
+                let resolved = ctx.resolve_expression_node(prop);
+                ctx.push(&resolved);
+            }
+        }
+        ctx.push("]");
+        ctx.push(super::merged_props::svg_argument(set_props.namespace));
+        ctx.push(")\n");
     }
 }
 
@@ -207,13 +211,22 @@ pub(crate) fn set_text_call(
 
 /// Generate SetHtml
 pub(super) fn generate_set_html(ctx: &mut GenerateContext, set_html: &SetHtmlIRNode<'_>) {
-    let element = cstr!("n{}", set_html.element);
+    let call = set_html_call(ctx, set_html);
+    ctx.push_line(&call);
+}
 
+/// `_setHtml(nX, value)`: the runtime maps `null` and `undefined` to an empty
+/// string and skips a write of the HTML it already set, so an effect re-run
+/// for another binding does not rebuild the element's children.
+pub(crate) fn set_html_call(
+    ctx: &mut GenerateContext,
+    set_html: &SetHtmlIRNode<'_>,
+) -> vize_carton::String {
+    ctx.use_helper("setHtml");
     let value = if set_html.value.is_static {
         cstr!("\"{}\"", escape_js_string_literal(set_html.value.content))
     } else {
         ctx.resolve_expression_node(&set_html.value)
     };
-
-    ctx.push_line_fmt(format_args!("{}.innerHTML = {}", element, value));
+    cstr!("_setHtml(n{}, {})", set_html.element, value)
 }

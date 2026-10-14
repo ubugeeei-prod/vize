@@ -11,6 +11,7 @@ mod compile_stats;
 mod declarations;
 mod fallback;
 mod output;
+mod preprocess;
 mod profile_facts;
 mod settings;
 mod stats_run;
@@ -127,7 +128,11 @@ pub(crate) fn run(args: BuildArgs) {
     let profiles: Mutex<Vec<FileProfile>> = Mutex::new(Vec::new());
 
     let compile_start = Instant::now();
-    let compile_settings = CompileFileSettings::resolve(&args, build_config);
+    let mut compile_settings = CompileFileSettings::resolve(&args, build_config);
+    if !stats_only {
+        compile_settings.preprocessed_styles =
+            preprocess::PreprocessedStyles::run(planned_inputs.iter().map(|input| &input.source));
+    }
 
     let results: Vec<_> = if stats_only {
         StatsRun {

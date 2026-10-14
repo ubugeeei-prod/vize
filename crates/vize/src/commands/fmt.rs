@@ -1,6 +1,6 @@
 //! Format command - High-performance Vue and script formatting using vize_glyph
 
-use clap::Args;
+use clap::{Args, ValueEnum};
 use rayon::prelude::*;
 use std::path::PathBuf;
 use std::sync::Mutex;
@@ -88,6 +88,10 @@ pub struct FmtArgs {
     #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub normalize_directive_shorthands: Option<bool>,
 
+    /// Apply a named set of defaults before the flags above
+    #[arg(long, value_enum)]
+    pub preset: Option<FmtPreset>,
+
     /// Show detailed timing profile
     #[arg(long)]
     pub profile: bool,
@@ -95,6 +99,24 @@ pub struct FmtArgs {
     /// Slow file threshold in milliseconds for profile output
     #[arg(long, default_value = "100")]
     pub slow_threshold: u64,
+}
+
+/// Named formatter defaults selectable from the CLI.
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub enum FmtPreset {
+    /// The Vize defaults
+    Vize,
+    /// Prettier's Vue layout, as listed in the formatter guide
+    Prettier,
+}
+
+impl From<FmtPreset> for vize_glyph::FormatPreset {
+    fn from(preset: FmtPreset) -> Self {
+        match preset {
+            FmtPreset::Vize => Self::Vize,
+            FmtPreset::Prettier => Self::Prettier,
+        }
+    }
 }
 
 pub fn run(args: FmtArgs) {

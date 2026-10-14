@@ -51,10 +51,10 @@ larger preset.
 | Preset | Rules | What is on |
 | --- | ---: | --- |
 | `essential` | 77 | Template and directive validity, Vue 3 removals (`vue/no-deprecated-*`, `script/no-deprecated-*`), script macro and Options API correctness, `vue/no-v-html`, `vue/no-unsafe-url`, `html/id-duplication` |
-| `happy-path` (default) | 135 | `essential`, plus template formatting conventions, accessibility, HTML conformance, SSR hazards, unused components and properties, and typed props and emits |
-| `ecosystem` | 143 | `happy-path`, plus the ecosystem library checks |
-| `nuxt` | 194 | `opinionated`, adjusted for Nuxt auto-imports |
-| `opinionated` | 193 | `happy-path`, plus stricter conventions and the `css/*` style rules |
+| `happy-path` (default) | 138 | `essential`, plus template formatting conventions, accessibility, HTML conformance, SSR hazards, unused components and properties, and typed props and emits |
+| `ecosystem` | 146 | `happy-path`, plus the ecosystem library checks |
+| `nuxt` | 195 | `opinionated`, adjusted for Nuxt auto-imports |
+| `opinionated` | 195 | `happy-path`, plus stricter conventions, typed props and the `css/*` style rules |
 | `incremental` | 0 | Nothing |
 
 Counts exclude cross-file rules. The Presets column of [All lint rules](./all.md) shows each rule's

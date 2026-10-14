@@ -11,11 +11,6 @@ on:
     # Daily 03:11 UTC, staggered from native smoke and e2e.
     - cron: "11 3 * * *"
   workflow_dispatch:
-    inputs:
-      allocation-ownership-diagnostic:
-        description: Run the finite allocation ownership experiment on its owned branch
-        type: boolean
-        default: false
 concurrency:
   # A push to main must not cancel an exact-SHA full validation used by release.
   group: check-v3-${{ github.workflow }}-${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') && format('full-{0}', github.sha) || (github.event.pull_request.number || github.ref) }}
@@ -23,24 +18,6 @@ concurrency:
 permissions: { contents: read }
 env: { CARGO_TERM_COLOR: always, FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true }
 jobs:
-  allocation-ownership-diagnostic:
-    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/ci/vapor-allocation-ownership-20261004' && inputs.allocation-ownership-diagnostic }}
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 90
-    permissions: { contents: read, actions: read }
-    env:
-      {
-        CARGO_BUILD_JOBS: "12",
-        CARGO_INCREMENTAL: "0",
-        RUST_TEST_THREADS: "4",
-        VIZE_NUXT_CONFIG_ITERATIONS: "100",
-        VIZE_TEST_REQUIRE_TSGO: "1",
-      }
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { fetch-depth: 0 }
-      - uses: ./.github/actions/diagnose-allocation-ownership
-        env: { GH_TOKEN: "${{ github.token }}" }
   pr-source-checks:
     name: PR source checks
     permissions: { contents: read, actions: read, checks: read }

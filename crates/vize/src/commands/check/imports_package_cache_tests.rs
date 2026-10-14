@@ -127,3 +127,50 @@ fn shared_import_session_reuses_package_lookup_across_walks() {
         "the shared session bypasses resolver validation on repeated lookups"
     );
 }
+
+#[test]
+fn shared_import_session_scans_each_file_once_across_walks() {
+    let root = tempfile::tempdir().unwrap();
+    let base = root.path().canonicalize().unwrap();
+    let main = write(
+        base.as_path(),
+        "src/main.ts",
+        "import { helper } from './helper';\nexport const value = helper;\n",
+    );
+    let helper = write(
+        base.as_path(),
+        "src/helper.ts",
+        "import type { Shape } from './shape';\nexport const helper: Shape = {};\n",
+    );
+    let shape = write(base.as_path(), "src/shape.ts", "export type Shape = {};\n");
+    let walk = |roots: &[PathBuf],
+                session: &mut LocalImportSession,
+                resolver: &mut PackageRouteResolver| {
+        collect_transitive_local_imports_with_session(
+            roots,
+            base.as_path(),
+            &mut CanonicalPathCache::default(),
+            false,
+            None,
+            resolver,
+            session,
+        )
+    };
+
+    let mut resolver = PackageRouteResolver::default();
+    let mut session = LocalImportSession::new(&mut resolver);
+    let first = walk(std::slice::from_ref(&main), &mut session, &mut resolver);
+    assert_eq!(first.authored, vec![helper.clone(), shape.clone()]);
+    assert_eq!(session.module_specifier_entries(), 3);
+
+    // A default run walks its roots again after adding hidden ambient files.
+    let roots = [main.clone(), helper.clone()];
+    let second = walk(&roots, &mut session, &mut resolver);
+    assert_eq!(session.module_specifier_entries(), 3);
+    let mut fresh_resolver = PackageRouteResolver::default();
+    let mut fresh_session = LocalImportSession::new(&mut fresh_resolver);
+    let fresh = walk(&roots, &mut fresh_session, &mut fresh_resolver);
+    assert_eq!(second.registrations, fresh.registrations);
+    assert_eq!(second.authored, fresh.authored);
+    assert_eq!(second.authored, vec![shape]);
+}

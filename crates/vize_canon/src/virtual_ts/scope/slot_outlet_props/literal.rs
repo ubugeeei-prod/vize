@@ -4,14 +4,15 @@ use super::SlotOutlet;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use crate::virtual_ts::{
     expressions::{
-        ComponentPropSource, append_prop_value, generated_prop_span, prop_name_source_range,
-        prop_value_source_range,
+        ComponentPropSource, append_prop_value, append_spread_value, generated_prop_span,
+        prop_name_source_range, prop_value_source_range,
     },
     helpers::to_camel_case,
     types::{VizeMapping, VizeSubSpan},
 };
 use std::ops::Range;
 use vize_carton::{String, append};
+use vize_croquis::ScopeId;
 use vize_croquis::croquis::{PassedProp, SpreadProp};
 
 enum SlotOutletLiteralEntry<'a> {
@@ -114,19 +115,20 @@ pub(super) fn append_slot_outlet_literal(
                     *ts,
                     "{expr_indent}  ...__vizeSlotOutletSpread<{payload_type}>()(",
                 );
-                let gen_range = append_prop_value(ts, spread.expression.as_str());
+                let (gen_range, sub_spans) = append_spread_value(
+                    ts,
+                    spread.expression.as_str(),
+                    spread_expression_source_range(source_context, spread),
+                    template_binding_access,
+                    source_context.scopes,
+                    ScopeId::new(outlet.scope_id),
+                );
                 ts.push_str("),\n");
-                let source_expression = spread_expression_source_range(source_context, spread);
                 mappings.push(VizeMapping {
-                    gen_range: gen_range.clone(),
+                    gen_range,
                     src_range: (source_context.offset + spread.start) as usize
                         ..(source_context.offset + spread.end) as usize,
-                    sub_spans: source_expression.map_or_else(Vec::new, |src_range| {
-                        vec![VizeSubSpan {
-                            gen_range,
-                            src_range,
-                        }]
-                    }),
+                    sub_spans,
                 });
             }
         }

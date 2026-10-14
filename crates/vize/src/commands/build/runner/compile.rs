@@ -184,13 +184,21 @@ fn compile_file_inner(
         ..Default::default()
     };
 
-    let descriptor =
+    let mut descriptor =
         profile!("atelier.sfc.parse", parse_sfc(&source, parse_opts)).map_err(|e| {
             CompileError {
                 path: path.clone(),
                 error: e.message,
                 phase: ErrorPhase::Parse,
             }
+        })?;
+    let preprocess_warnings = settings
+        .preprocessed_styles
+        .apply(path, &mut descriptor)
+        .map_err(|error| CompileError {
+            path: path.clone(),
+            error,
+            phase: ErrorPhase::Compile,
         })?;
     let parse_time = parse_start.elapsed();
     if settings.record_profile_totals {
@@ -338,7 +346,10 @@ fn compile_file_inner(
         code: result.code,
         css: result.css,
         errors: result.errors.into_iter().map(|e| e.message).collect(),
-        warnings: result.warnings.into_iter().map(|e| e.message).collect(),
+        warnings: preprocess_warnings
+            .into_iter()
+            .chain(result.warnings.into_iter().map(|e| e.message))
+            .collect(),
         script_lang,
         macro_artifacts: result.macro_artifacts,
     };

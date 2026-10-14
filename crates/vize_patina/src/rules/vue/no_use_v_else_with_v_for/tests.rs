@@ -106,13 +106,13 @@ fn accepts_each_control_flow_shape_when_it_is_not_mixed() {
 }
 
 #[test]
-fn remains_opt_in_and_can_be_enabled_by_exact_name() {
+fn strict_presets_enable_it_and_others_accept_the_exact_name() {
     assert!(!RuleRegistry::default().has_rule(RULE));
     assert!(!RuleRegistry::with_happy_path().has_rule(RULE));
     assert!(!RuleRegistry::with_essential().has_rule(RULE));
-    assert!(!RuleRegistry::with_opinionated().has_rule(RULE));
+    assert!(RuleRegistry::with_opinionated().has_rule(RULE));
     assert!(!RuleRegistry::with_ecosystem().has_rule(RULE));
-    assert!(!RuleRegistry::with_nuxt().has_rule(RULE));
+    assert!(RuleRegistry::with_nuxt().has_rule(RULE));
     assert!(RuleRegistry::with_opt_in_rules().has_rule(RULE));
 
     let source = r#"<div v-if="foo"></div><div v-else v-for="x in xs">{{ x }}</div>"#;

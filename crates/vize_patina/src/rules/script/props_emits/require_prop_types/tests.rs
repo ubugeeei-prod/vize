@@ -168,3 +168,40 @@ export default {
     let result = create_linter().lint(source, 0);
     assert_eq!(result.error_count, 0);
 }
+
+#[test]
+fn spread_descriptor_may_carry_the_type() {
+    let source = r#"
+export default {
+  props: {
+    offset: { ...shared.offset, default: () => [2, 0] }
+  }
+}
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 0);
+}
+
+#[test]
+fn plain_modules_need_define_component() {
+    use crate::{LintPreset, Linter};
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let options = "export default {\n  props: { contain: { hidden: true } }\n}\n";
+    let plain = linter.lint_script(options, "api-options.ts");
+    assert!(
+        plain
+            .diagnostics
+            .iter()
+            .all(|d| d.rule_name != "script/require-prop-types")
+    );
+    let component = linter.lint_script(
+        "import { defineComponent } from 'vue'\nexport default defineComponent({ props: ['icon'] })\n",
+        "Icon.ts",
+    );
+    assert!(
+        component
+            .diagnostics
+            .iter()
+            .any(|d| d.rule_name == "script/require-prop-types")
+    );
+}

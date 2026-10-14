@@ -317,6 +317,34 @@ impl<'a> GlyphFormatter<'a> {
     }
 }
 
+/// Write block attributes in authored order when attribute sorting is off,
+/// matching how template attributes behave. Returns `false` when the caller
+/// should print its canonical order instead.
+fn write_authored_attrs(
+    output: &mut Vec<u8>,
+    attrs: &FxHashMap<Cow<'_, str>, Cow<'_, str>>,
+    source: &str,
+    loc: &vize_atelier_sfc::BlockLocation,
+    options: &FormatOptions,
+) -> bool {
+    if options.sort_attributes {
+        return false;
+    }
+    let Some(order) =
+        opening_tag::authored_attr_order(source, loc, attrs.len(), |name| attrs.contains_key(name))
+    else {
+        return false;
+    };
+    for name in order {
+        let value = attrs
+            .get(name)
+            .map(|value| value.as_ref())
+            .filter(|value| !value.is_empty());
+        write_attr(output, name, value);
+    }
+    true
+}
+
 fn write_remaining_attrs(
     output: &mut Vec<u8>,
     attrs: &FxHashMap<Cow<'_, str>, Cow<'_, str>>,

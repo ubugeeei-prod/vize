@@ -1,0 +1,8 @@
+<template>
+  <h4 :class="item.is_premium ? 'premium' : ''" class="" class="shop_title ellipsis">{{ item.name }}</h4>
+</template>
+<script>
+export default {
+  props: ["item"],
+};
+</script>

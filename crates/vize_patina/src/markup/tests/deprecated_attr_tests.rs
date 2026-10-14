@@ -134,10 +134,11 @@ fn deprecated_attr_jsx_direct_matches_lowered_static_boundaries() {
             0,
             "component",
         ),
+        (r#"const A = () => <img border="0" />;"#, 1, "img border"),
         (
-            r#"const A = () => <svg:table border="1" />;"#,
-            1,
-            "namespaced table does not receive the unqualified table exception",
+            r#"const A = () => <svg:img border="0" />;"#,
+            0,
+            "namespaced img is not the unqualified img",
         ),
         (
             r#"const A = () => <div html:align="center" />;"#,

@@ -98,10 +98,22 @@ impl ScriptRule for NoDuplicateAttrInheritance {
             }
             return;
         }
-        if !sfc.sole_script_block {
+        // With both `<script>` and `<script setup>`, the setup invocation owns the
+        // whole-file conclusion and reads `inheritAttrs` from both blocks.
+        let sibling = if sfc.sole_script_block {
+            None
+        } else if sfc.is_script_setup
+            && let Some(sibling) = sfc.sibling_program
+        {
+            Some(sibling)
+        } else {
             return;
-        }
-        for declared in declared_inherit_attrs(program) {
+        };
+        let sibling_declared = sibling.map(declared_inherit_attrs).unwrap_or_default();
+        for declared in declared_inherit_attrs(program)
+            .into_iter()
+            .chain(sibling_declared)
+        {
             match declared {
                 InheritAttrs::Literal(literal) if literal.value => {}
                 InheritAttrs::Literal(_) | InheritAttrs::Opaque => return,

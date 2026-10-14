@@ -3,6 +3,7 @@
 //! Generates JavaScript code from Vapor IR.
 mod context;
 mod destructure;
+mod effect_order;
 mod entry;
 mod expression;
 mod expression_retained;
@@ -23,7 +24,6 @@ pub use entry::{
     VaporGenerateExperimentalOptions, VaporGenerateOptions, VaporGenerateResult, generate_vapor,
     generate_vapor_with_options, generate_vapor_with_options_and_experimentals,
 };
-use helpers::generate_effect;
 use operations::generate_operation;
 use root_component::collect_single_root_returns;
 pub(crate) use setup::escape_js_string_literal;
@@ -218,31 +218,19 @@ fn generate_block_guarded(
         }
     }
 
-    // Generate remaining operations (skip ChildRef/NextRef already generated above)
+    // Generate remaining operations (skip ChildRef/NextRef already generated
+    // above). The effects of elements that open before an inserted block run
+    // before it; the rest share one effect after the operations.
+    let mut effects = effect_order::EffectOrder::new(block);
     for (index, op) in block.operation.iter().enumerate() {
         if !generated_root_ops.contains(&index)
             && !matches!(op, OperationNode::ChildRef(_) | OperationNode::NextRef(_))
         {
+            effects.before(ctx, op, element_template_map);
             generate_operation(ctx, op, element_template_map);
         }
     }
-
-    // Generate effects. Multiple reactive updates in the same block share a
-    // single effect, matching Vue Vapor output for sibling dynamic children.
-    if let [effect] = block.effect.as_slice() {
-        generate_effect(ctx, effect, element_template_map);
-    } else if !block.effect.is_empty() {
-        ctx.use_helper("renderEffect");
-        ctx.push_line("_renderEffect(() => {");
-        ctx.indent();
-        for effect in block.effect.iter() {
-            for op in effect.operations.iter() {
-                generate_operation(ctx, op, element_template_map);
-            }
-        }
-        ctx.deindent();
-        ctx.push_line("})");
-    }
+    effects.rest(ctx, element_template_map);
 
     // Generate return
     if !block.returns.is_empty() {

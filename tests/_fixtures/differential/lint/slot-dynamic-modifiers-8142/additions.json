@@ -7,12 +7,12 @@
     {
       "id": "named-modifier",
       "sourceSha256": "efde38870b6a4a2754111133a0cab01087c0f31c8260c99c47f69bb340dd514c",
-      "authored": "#header.foo",
+      "authored": "foo",
       "diagnostic": {
         "rule_name": "vue/valid-v-slot",
         "severity": "error",
         "message": "v-slot with a slot argument does not support modifiers by default",
-        "start": 195,
+        "start": 203,
         "end": 206,
         "help": "Remove the modifiers or enable allowModifiers",
         "labels": [],
@@ -22,13 +22,13 @@
     {
       "id": "dotted-vuetify",
       "sourceSha256": "2d676632fd73f24277f636a75e1d1564a0a8e8eebb99c7f0b04bf44186a5153e",
-      "authored": "#item.memo=\"slot\"",
+      "authored": "memo",
       "diagnostic": {
         "rule_name": "vue/valid-v-slot",
         "severity": "error",
         "message": "v-slot with a slot argument does not support modifiers by default",
-        "start": 195,
-        "end": 212,
+        "start": 201,
+        "end": 205,
         "help": "Remove the modifiers or enable allowModifiers",
         "labels": [],
         "fix": null
@@ -37,13 +37,13 @@
     {
       "id": "dotted-vuetify",
       "sourceSha256": "2d676632fd73f24277f636a75e1d1564a0a8e8eebb99c7f0b04bf44186a5153e",
-      "authored": "#item.tagName=\"slot\"",
+      "authored": "tagName",
       "diagnostic": {
         "rule_name": "vue/valid-v-slot",
         "severity": "error",
         "message": "v-slot with a slot argument does not support modifiers by default",
-        "start": 244,
-        "end": 264,
+        "start": 250,
+        "end": 257,
         "help": "Remove the modifiers or enable allowModifiers",
         "labels": [],
         "fix": null

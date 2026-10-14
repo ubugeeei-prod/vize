@@ -3865,7 +3865,7 @@ Proibir `v-else-if` ou `v-else` no mesmo elemento que `v-for`
 [Incorreto](#vue-no-use-v-else-with-v-for-bad) · [Correto](#vue-no-use-v-else-with-v-for-good)
 
 Severidade padrão: `warning`  
-Predefinições: _none_  
+Predefinições: `nuxt`, `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.

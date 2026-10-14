@@ -1069,7 +1069,10 @@
       "status": "mapped"
     },
     "vue/no-use-v-else-with-v-for": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "vue/no-use-v-else-with-v-for",
       "patinaSeverity": "warning",
       "status": "mapped"
@@ -1355,7 +1358,9 @@
       "status": "mapped"
     },
     "vue/require-prop-types": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "opinionated"
+      ],
       "patinaRule": "script/require-prop-types",
       "patinaSeverity": "error",
       "status": "mapped"

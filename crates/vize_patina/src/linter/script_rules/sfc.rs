@@ -204,8 +204,17 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
         // from. Computed from the descriptor rather than filtered bindings: a skipped block
         // still contributes declarations a rule would need to see.
         sole_script_block: descriptor.script.is_some() != descriptor.script_setup.is_some(),
+        sibling_program: None,
     };
 
+    let setup_program = script_setup_parsed
+        .as_ref()
+        .filter(|parsed| !parsed.panicked && parsed.diagnostics.is_empty())
+        .map(|parsed| &parsed.program);
+    let normal_program = script_parsed
+        .as_ref()
+        .filter(|parsed| !parsed.panicked && parsed.diagnostics.is_empty())
+        .map(|parsed| &parsed.program);
     for entry in active_builtin_script_rule_entries(linter, vapor_component) {
         let rule = resolved_rule(linter, entry);
         if let Some((source, offset)) = script {
@@ -216,7 +225,10 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
                 source,
                 offset,
                 script_parsed.as_ref(),
-                sfc_context,
+                SfcScriptContext {
+                    sibling_program: setup_program,
+                    ..sfc_context
+                },
                 None,
                 None,
                 false,
@@ -233,6 +245,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
                 script_setup_parsed.as_ref(),
                 SfcScriptContext {
                     is_script_setup: true,
+                    sibling_program: normal_program,
                     ..sfc_context
                 },
                 emits_setup_rule.map(|_| emits_module),

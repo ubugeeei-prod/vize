@@ -98,11 +98,7 @@
     },
     {
       "file": "app/components/form/index.ts",
-      "diagnostics": [
-        "error:1:39 [TS2307] Cannot find module './VFTextarea.vue' or its corresponding type declarations.",
-        "error:2:36 [TS2307] Cannot find module './VFInput.vue' or its corresponding type declarations.",
-        "error:8:8 [TS2307] Cannot find module './VFForm.vue' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/header/VFHeader.vue",
@@ -401,7 +397,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 3,
+  "errorCount": 0,
   "warningCount": 0,
   "fileCount": 99
 }

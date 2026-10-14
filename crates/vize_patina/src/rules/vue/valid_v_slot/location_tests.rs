@@ -17,3 +17,32 @@ fn invalid_slot_template_under_plain_element() {
     );
     assert_eq!(result.error_count, 1);
 }
+
+/// eslint-plugin-vue reports `v-slot` modifiers at the modifiers themselves.
+#[test]
+fn modifiers_are_reported_at_their_own_range() {
+    let linter = create_linter();
+    for (source, expected) in [
+        (
+            r#"<MyList><template #item.name="{ item }">{{ item }}</template></MyList>"#,
+            "name",
+        ),
+        (
+            r#"<MyList><template v-slot:item.raw.value="{ item }">{{ item }}</template></MyList>"#,
+            "raw.value",
+        ),
+        (
+            r#"<MyList v-slot.trim="{ item }">{{ item }}</MyList>"#,
+            "trim",
+        ),
+    ] {
+        let result = linter.lint_template(source, "test.vue");
+        assert_eq!(result.error_count, 1, "{source}: {:?}", result.diagnostics);
+        let diagnostic = &result.diagnostics[0];
+        assert_eq!(
+            &source[diagnostic.start as usize..diagnostic.end as usize],
+            expected,
+            "{source}"
+        );
+    }
+}

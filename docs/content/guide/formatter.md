@@ -115,7 +115,7 @@ The same options are available as CLI flags:
 | `--use-tabs`                       | Indents with tabs instead of spaces.                          |
 | `--single-quote`                   | Uses single quotes instead of double quotes.                  |
 | `--no-semi`                        | Omits semicolons at the ends of statements.                   |
-| `--sort-attributes`                | Sorts attributes in the template.                             |
+| `--sort-attributes`                | Sorts attributes in the template and on block tags.           |
 | `--single-attribute-per-line`      | Puts each attribute on its own line.                          |
 | `--max-attributes-per-line`        | Wraps after the given number of attributes.                   |
 | `--normalize-directive-shorthands` | Turns `v-bind:`, `v-on:` and `v-slot:` into `:`, `@` and `#`. |
@@ -127,6 +127,39 @@ Each of these guides covers one setting in detail:
 - [Line endings](./formatter-line-endings.md)
 - [Property quotes](./formatter-property-quotes.md)
 - [JSX attribute quotes](./formatter-jsx-quotes.md)
+
+## Coming from Prettier
+
+Vize is close to Prettier and Oxfmt, but a few defaults differ on purpose. To keep the written order of attributes and blocks, as Prettier does, turn off sorting:
+
+```ts
+fmt: {
+  vize: {
+    sortAttributes: false,
+    sortBlocks: false,
+  },
+},
+```
+
+On the command line, `vize fmt --preset prettier` applies these settings and also:
+
+- sets the print width to 80, as in Prettier. The Vize default is 100, as in Oxfmt;
+- leaves `v-bind:`, `v-on:` and `v-slot:` as written;
+- writes strings in CSS, SCSS and Less with double quotes, or with single quotes when you add `--single-quote`;
+- writes a one-line `style` attribute as `color: red; top: 0`, without a trailing `;`;
+- writes several `v-for` aliases in parentheses, as in `v-for="(item, i) in items"`;
+- closes void elements, as in `<img src="a.png" />`;
+- re-indents SCSS and Less blocks by nesting depth and tidies their blank lines.
+
+Flags given with it still win.
+
+With `sortAttributes: false`, the attributes of `<script>`, `<template>`, `<style>` and custom block tags also stay in the written order. With the default, `<script lang="ts" setup>` becomes `<script setup lang="ts">`.
+
+These differences remain, even with the preset:
+
+- Text inside elements keeps its line breaks. Prettier refills long text up to the print width.
+- Template expressions other than `v-for` keep their written form, for example the `,` separators in a slot type such as `{ open: boolean, close: () => void }`. Prettier uses `;`.
+- Values in SCSS and Less blocks are kept as written; the preset only changes their quotes, indentation and blank lines. Prettier also reformats values, for example `.2s` to `0.2s`. Indented Sass and Stylus blocks are left as written, and Pug templates only get their outer indentation adjusted.
 
 ## Format on save
 

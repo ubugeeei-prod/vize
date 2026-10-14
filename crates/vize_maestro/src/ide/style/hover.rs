@@ -1,11 +1,6 @@
 //! Selected property/value/selector documentation uses the same static resolver.
 
-use super::{
-    context::{self, CssContext},
-    data, documentation,
-    resolve::Selected,
-    values, vue,
-};
+use super::{context::CssContext, data, documentation, resolve::Selected, values, vue};
 use crate::ide::{IdeContext, markup::markdown_content};
 use tower_lsp::lsp_types::{Hover, HoverContents};
 
@@ -22,10 +17,7 @@ pub(crate) fn hover(ctx: &IdeContext<'_>, index: usize) -> Option<Hover> {
             range: None,
         });
     }
-    if !standard_css {
-        return None;
-    }
-    let (selected, span) = match context::at(content, offset) {
+    let (selected, span) = match standard_css.classify(content, offset) {
         CssContext::Property { span, .. } => (
             Selected::Entry("property", data::property(content.get(span.0..span.1)?)?),
             span,

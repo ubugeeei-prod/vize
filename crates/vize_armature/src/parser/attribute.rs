@@ -207,7 +207,11 @@ impl<'a> Parser<'a> {
                 message,
                 "Duplicate attribute `",
                 attr.name,
-                "`. Keeping the repeated attribute so parsing can continue."
+                if self.options.dialect.is_legacy() {
+                    "`. Vue 2 keeps the last value."
+                } else {
+                    "`. Keeping the repeated attribute so parsing can continue."
+                }
             );
             self.errors.push(CompilerError::with_message(
                 ErrorCode::DuplicateAttribute,
@@ -236,7 +240,16 @@ impl<'a> Parser<'a> {
             attr_node.value = Some(TextNode::new("", empty_loc));
         }
 
+        // Vue 2 keeps the last value of a repeated attribute (its attrs map is
+        // overwritten); Vue 3 keeps the first.
+        let replace_earlier = self.options.dialect.is_legacy();
         if let Some(ref mut current) = self.current_element {
+            if replace_earlier {
+                current.props.retain(|prop| {
+                    !matches!(prop, PropNode::Attribute(existing)
+                        if existing.name.eq_ignore_ascii_case(attr_node.name))
+                });
+            }
             let boxed = Box::new_in(attr_node, &self.allocator);
             current.props.push(PropNode::Attribute(boxed));
         }

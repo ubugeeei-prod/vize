@@ -32,9 +32,10 @@ test("docs build prepares its browser before previews and checks the rendered si
     "pnpm generate:ui-previews",
     "pnpm generate:reference",
     "vp build",
-    "pnpm generate:og-images",
-    "pnpm check:ui-docs",
+    "node ./scripts/finish-build.ts",
   ]);
+  const finish = fs.readFileSync(path.join(repoRoot, "docs", "scripts", "finish-build.ts"), "utf8");
+  assert.match(finish, /finishSteps = \["generate:og-images", "check:ui-docs"\] as const/);
   assert.equal(script("generate:ui-previews"), "node ./scripts/build-ui-previews.ts");
   assert.equal(script("generate:reference"), "node ../npm/ui/scripts/generate-reference-docs.ts");
   assert.equal(script("check:ui-docs"), "node ./previews/ui/check-site.ts");

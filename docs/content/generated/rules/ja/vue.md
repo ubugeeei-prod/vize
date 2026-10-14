@@ -3866,7 +3866,7 @@ index を参照するか、未使用を意図する _index という名前にし
 [悪い例](#vue-no-use-v-else-with-v-for-bad) · [良い例](#vue-no-use-v-else-with-v-for-good)
 
 既定の重大度: `warning`  
-プリセット: _none_  
+プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。

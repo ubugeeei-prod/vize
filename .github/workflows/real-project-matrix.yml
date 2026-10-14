@@ -174,12 +174,23 @@ jobs:
 
       - name: Install JavaScript dependencies
         run: vp install --frozen-lockfile --prefer-offline
+      # v0.450.0 lost a shard to a stalled crates.io download; retry only the fetch.
+      - name: Fetch Rust dependencies
+        env: { CARGO_NET_RETRY: "10" }
+        run: |
+          for attempt in 1 2 3; do
+            cargo fetch --locked --target "$(rustc -vV | sed -n 's/^host: //p')" && exit 0
+            echo "::warning title=crates.io fetch::attempt $attempt failed"
+            sleep $((attempt * 30))
+          done
+          exit 1
       - name: Build Vize CLI
         run: cargo build --profile ci -p vize
       - name: Exercise real projects with every core tool
         id: core_tools
         if: ${{ !cancelled() }}
         continue-on-error: true
+        timeout-minutes: 60 # Green shards take at most 14 min; one project may use its 40.
         env:
           CORE_TOOLS_TIMEOUT_MS: ${{ inputs.core_tools_timeout_ms || '2400000' }}
         run: |
@@ -194,6 +205,7 @@ jobs:
         id: lsp
         if: ${{ !cancelled() }}
         continue-on-error: true
+        timeout-minutes: 30 # Green shards take at most 11 min.
         env:
           CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
           REAL_PROJECT_LSP_TIMEOUT_MS: "600000"

@@ -58,3 +58,88 @@ export async function withoutBrowserGlobals<Result>(
     }
   }
 }
+
+const svgNamespace = "http://www.w3.org/2000/svg";
+
+/** The HTML parser's "adjust SVG attributes" table: lowercase → SVG case. */
+const svgAttributeCase = new Map(
+  [
+    "attributeName",
+    "attributeType",
+    "baseFrequency",
+    "baseProfile",
+    "calcMode",
+    "clipPathUnits",
+    "diffuseConstant",
+    "edgeMode",
+    "filterUnits",
+    "glyphRef",
+    "gradientTransform",
+    "gradientUnits",
+    "kernelMatrix",
+    "kernelUnitLength",
+    "keyPoints",
+    "keySplines",
+    "keyTimes",
+    "lengthAdjust",
+    "limitingConeAngle",
+    "markerHeight",
+    "markerUnits",
+    "markerWidth",
+    "maskContentUnits",
+    "maskUnits",
+    "numOctaves",
+    "pathLength",
+    "patternContentUnits",
+    "patternTransform",
+    "patternUnits",
+    "pointsAtX",
+    "pointsAtY",
+    "pointsAtZ",
+    "preserveAlpha",
+    "preserveAspectRatio",
+    "primitiveUnits",
+    "refX",
+    "refY",
+    "repeatCount",
+    "repeatDur",
+    "requiredExtensions",
+    "requiredFeatures",
+    "specularConstant",
+    "specularExponent",
+    "spreadMethod",
+    "startOffset",
+    "stdDeviation",
+    "stitchTiles",
+    "surfaceScale",
+    "systemLanguage",
+    "tableValues",
+    "targetX",
+    "targetY",
+    "textLength",
+    "viewBox",
+    "viewTarget",
+    "xChannelSelector",
+    "yChannelSelector",
+    "zoomAndPan",
+  ].map((name) => [name.toLowerCase(), name]),
+);
+
+/**
+ * Restore SVG attribute case in markup parsed with `innerHTML`, as a browser's
+ * HTML parser does and happy-dom does not. Vue's `ssrRenderAttrs` lowercases
+ * attributes that fall through to an SVG root (`viewbox="0 0 1 1"`); a browser
+ * still parses that as `viewBox`, which is what hydration then checks.
+ */
+export function adjustSvgAttributeCase(root: Element): void {
+  for (const element of root.querySelectorAll("*")) {
+    if (element.namespaceURI !== svgNamespace) continue;
+    // A snapshot: renaming an attribute changes the live attribute map.
+    for (const { name, value } of Array.from(element.attributes)) {
+      const adjusted = svgAttributeCase.get(name);
+      if (adjusted === undefined || adjusted === name) continue;
+      element.removeAttribute(name);
+      element.setAttribute(adjusted, value);
+    }
+  }
+}

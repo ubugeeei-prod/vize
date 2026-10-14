@@ -11,6 +11,7 @@ import type {
   PublishDiagnosticsParams,
 } from "./lsp/protocol.ts";
 import { LspSession } from "./lsp/session.ts";
+import { sampleSessionResources } from "./real-project-lsp-resources.ts";
 import {
   assertFixtureFileCount,
   createLspReport,
@@ -111,14 +112,22 @@ export async function runRealProjectLspAudit(
         assert.ok(remaining > 0, `LSP fixture shard exceeded ${timeoutMs}ms`);
         return Math.min(remaining, diagnosticsTimeoutMs);
       };
-      const result = await exerciseLspLifecycle(
-        dependencies.createSession?.() ?? new LspSession(),
-        fixtureDir,
-        actualFile,
-        remainingMs,
-        project.lspAuthoredOracle,
-      );
-      Object.assign(projectEvidence, result, { status: "ok" as const });
+      const session = dependencies.createSession?.() ?? new LspSession();
+      // #3952: publish peak RSS and process count of the whole server tree.
+      const stopSampling = sampleSessionResources(session);
+      try {
+        const result = await exerciseLspLifecycle(
+          session,
+          fixtureDir,
+          actualFile,
+          remainingMs,
+          project.lspAuthoredOracle,
+        );
+        Object.assign(projectEvidence, result, { status: "ok" as const });
+      } finally {
+        const resources = stopSampling();
+        if (resources != null) projectEvidence.resources = resources;
+      }
     } catch (error) {
       projectEvidence.failure = errorMessage(error);
     }

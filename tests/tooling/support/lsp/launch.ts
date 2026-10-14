@@ -31,7 +31,9 @@ export type VerifiedLspLaunch = {
  * a globally installed CLI may exercise unrelated code and invalidate the
  * regression that the test is meant to cover.
  * Full tooling requires the receipted CI executable and rejects every identity
- * or launch failure before trying another candidate.
+ * or launch failure before trying another candidate. Without that receipt, a
+ * checkout binary older than the Rust sources is skipped: a stale build would
+ * report false failures or false passes for the current source (#3957).
  */
 export function resolveVizeLaunchCommand(
   canLaunch?: (command: string) => boolean,
@@ -39,6 +41,8 @@ export function resolveVizeLaunchCommand(
   sourceBinding: {
     required?: boolean;
     repoRoot?: string;
+    /** Whether a checkout binary predates the sources; injectable for tests. */
+    isStale?: (binary: string) => boolean;
     buildRecipe?: string;
     onVerifiedLaunch?: (launch: VerifiedLspLaunch) => void;
   } = {},
@@ -81,11 +85,61 @@ export function resolveVizeLaunchCommand(
     [path.join(root, "target/release/vize"), "lsp"],
   ];
 
+  const isStale =
+    sourceBinding.isStale ??
+    ((binary: string) =>
+      isStaleLocalBuild(
+        fs.statSync(binary, { throwIfNoEntry: false })?.mtimeMs,
+        newestSourceMtimeMs(sourceBinding.repoRoot ?? root),
+      ));
   for (const candidate of candidates) {
+    const local = candidate[0] !== envBinary;
+    if (local && isStale(candidate[0])) {
+      process.stderr.write(`skipping ${candidate[0]}: older than the Rust sources\n`);
+      continue;
+    }
     if (probe(candidate[0])) {
       return candidate;
     }
   }
 
   return ["cargo", "run", "-q", "-p", "vize", "--", "lsp"];
+}
+
+/** A build is stale when it predates the newest compiled source. */
+export function isStaleLocalBuild(
+  binaryMtimeMs: number | undefined,
+  sourcesMtimeMs: number,
+): boolean {
+  return binaryMtimeMs !== undefined && binaryMtimeMs < sourcesMtimeMs;
+}
+
+const newestSourceByRoot = new Map<string, number>();
+
+/** Newest mtime of the crates' Rust sources and manifests, once per process. */
+function newestSourceMtimeMs(repoRoot: string): number {
+  const cached = newestSourceByRoot.get(repoRoot);
+  if (cached !== undefined) return cached;
+  let newest =
+    fs.statSync(path.join(repoRoot, "Cargo.lock"), { throwIfNoEntry: false })?.mtimeMs ?? 0;
+  const stack = [path.join(repoRoot, "crates")];
+  while (stack.length > 0) {
+    const dir = stack.pop()!;
+    let entries: fs.Dirent[];
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    for (const entry of entries) {
+      const entryPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name !== "target" && entry.name !== "node_modules") stack.push(entryPath);
+      } else if (entry.name.endsWith(".rs") || entry.name === "Cargo.toml") {
+        newest = Math.max(newest, fs.statSync(entryPath).mtimeMs);
+      }
+    }
+  }
+  newestSourceByRoot.set(repoRoot, newest);
+  return newest;
 }

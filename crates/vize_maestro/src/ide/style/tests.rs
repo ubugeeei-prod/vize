@@ -2,6 +2,7 @@
 
 mod completion;
 mod hover;
+mod preprocessors;
 #[cfg(feature = "native")]
 mod resolve;
 
@@ -27,6 +28,18 @@ impl Document {
         ]
         .concat();
         Self::marked(&source, lazy)
+    }
+
+    fn lang(lang: &str, marked: &str) -> Self {
+        let source = [
+            "<template><div /></template>\n<style scoped lang=\"",
+            lang,
+            "\">\n",
+            marked,
+            "\n</style>",
+        ]
+        .concat();
+        Self::marked(&source, false)
     }
 
     fn marked(source: &str, lazy: bool) -> Self {

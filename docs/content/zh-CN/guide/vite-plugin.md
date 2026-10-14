@@ -208,6 +208,20 @@ Vite 通常跳过`import.meta.*`替换虚拟模块（前缀为 `\0`）。Vize �
 
 为了与 Nuxt 兼容，插件会根据 Vite 环境（客户端与服务器/SSR）分离`define`值。这防止客户端环境值泄漏到SSR输出中。
 
+### 样式预处理器与 Pug
+
+`<style lang="scss">`、`sass`、`less` 和 `stylus` 按 Vue 的顺序处理：先运行预处理器，再由 Vize 为其输出添加作用域并解析 `v-bind()`。`<style module>` 的类名映射由打包器的 CSS Modules 流水线生成。与 `@vitejs/plugin-vue` 一样，请在项目中安装预处理器包（`sass` 或 `sass-embedded`、`less`、`stylus`）。`<template lang="pug">` 由 Vize 自身编译，无需额外的包。
+
+| 场景 | scss / sass / less / stylus | pug |
+| --- | --- | --- |
+| Vite | 由 Vite 预处理，Vize 为结果添加作用域 | 原生 |
+| `@vizejs/unplugin`（webpack、Rollup、Rolldown、esbuild） | webpack 使用项目的 loader；Rollup、Rolldown、esbuild 运行已安装的预处理器 | 原生 |
+| `@vizejs/rspack` | 项目的 loader（css-loader 或原生 CSS） | 原生 |
+| `vize build` | 通过 Node 运行已安装的预处理器 | 原生 |
+| `vize fmt` | 预处理器块保持原样，一个字节都不改 | 格式化 |
+| `vize lint` | 应用模板规则；样式块不会作为 CSS 进行 lint | 应用模板规则 |
+| LSP | CSS 补全和悬停（包括缩进语法）、`v-bind()` 跳转到定义 | 标签补全和跳转到定义 |
+
 ## Nuxt 兼容性
 
 该插件为探测`@vitejs/plugin-vue` API（如 Nuxt）的工具提供了兼容性垫片。这意味着 Vize 无需特殊配置即可使用 Nuxt 内置的 Vue 集成：

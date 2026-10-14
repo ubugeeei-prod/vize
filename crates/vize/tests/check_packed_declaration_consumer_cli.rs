@@ -77,6 +77,38 @@ function onChange(value: number) {
 </template>
 "#;
 
+const GENERIC_LIST_VUE: &str = r#"<script setup lang="ts" generic="T extends { id: number }">
+defineProps<{ items: T[] }>()
+
+defineEmits<{
+  select: [item: T]
+}>()
+</script>
+
+<template>
+  <ul>
+    <li v-for="item in items" :key="item.id">{{ item.id }}</li>
+  </ul>
+</template>
+"#;
+
+const GENERIC_USAGE: &str = r#"import List, { type Props } from 'packed-list'
+
+export const list: typeof List = List
+export const props: Props<{ id: number }> = { items: [{ id: 1 }] }
+"#;
+
+const BROKEN_GENERIC_USAGE: &str = r#"import List, { type Props } from 'packed-list'
+
+export const list: typeof List = List
+export const props: Props<{ id: number }> = { items: [{ id: 'one' }] }
+"#;
+
+const TSC_CONSUMER_TSCONFIG: &str = r#"{
+  "compilerOptions": { "strict": true, "target": "ES2022", "module": "ESNext", "moduleResolution": "bundler", "noEmit": true, "skipLibCheck": false },
+  "include": ["src/**/*.ts"]
+}"#;
+
 #[test]
 fn packed_declarations_type_check_in_a_separate_consumer() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
@@ -166,10 +198,69 @@ fn packed_component_props_and_emits_check_in_a_consumer_template() {
     );
 }
 
+#[test]
+fn packed_generic_declarations_compile_under_tsc_without_skip_lib_check() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let consumer = packed_consumer(
+        &corsa_path,
+        "packed-dts-generic",
+        "List",
+        GENERIC_LIST_VUE,
+        "packed-list",
+        true,
+    );
+    consumer.write("tsconfig.json", TSC_CONSUMER_TSCONFIG);
+    consumer.write("src/usage.ts", GENERIC_USAGE);
+    let clean = consumer.tsc(&corsa_path);
+    assert_eq!(
+        (clean.status, clean.stdout.as_str()),
+        (Some(0), ""),
+        "packed generic declarations must resolve every helper:\n{}",
+        clean.stderr
+    );
+
+    consumer.write("src/usage.ts", BROKEN_GENERIC_USAGE);
+    let broken = consumer.tsc(&corsa_path);
+    assert_eq!(
+        (broken.status, broken.stdout.as_str()),
+        (
+            Some(1),
+            "src/usage.ts(4,57): error TS2322: Type 'string' is not assignable to type 'number'.\n"
+        ),
+        "{}",
+        broken.stderr
+    );
+}
+
 /// Builds `Button.vue` with `--dts` in one project and copies only the emitted
 /// files into `node_modules/packed-button` of a second, unrelated project.
 fn packed_button_consumer(corsa_path: &str, name: &str) -> Case {
+    packed_consumer(
+        corsa_path,
+        name,
+        "Button",
+        BUTTON_VUE,
+        "packed-button",
+        false,
+    )
+}
+
+/// Builds `src/{component}.vue` and packs only its emitted files as `package_name`;
+/// `real_vue` swaps the Vue stub for the installed package on both sides.
+fn packed_consumer(
+    corsa_path: &str,
+    name: &str,
+    component: &str,
+    source: &str,
+    package_name: &str,
+    real_vue: bool,
+) -> Case {
     let library = Case::new(cstr!("{name}-library").as_str());
+    if real_vue {
+        library.link_real_vue();
+    }
     library.write(
         "tsconfig.json",
         r#"{
@@ -177,10 +268,11 @@ fn packed_button_consumer(corsa_path: &str, name: &str) -> Case {
   "include": ["src/**/*"]
 }"#,
     );
-    library.write("src/Button.vue", BUTTON_VUE);
+    let entry = cstr!("src/{component}.vue");
+    library.write(entry.as_str(), source);
     let build = library.run(
         corsa_path,
-        &["build", "src/Button.vue", "--output", "dist", "--dts"],
+        &["build", entry.as_str(), "--output", "dist", "--dts"],
     );
     assert_eq!(
         build.status,
@@ -191,7 +283,10 @@ fn packed_button_consumer(corsa_path: &str, name: &str) -> Case {
     );
 
     let consumer = Case::new(cstr!("{name}-consumer").as_str());
-    let package = consumer.root.join("node_modules").join("packed-button");
+    if real_vue {
+        consumer.link_real_vue();
+    }
+    let package = consumer.root.join("node_modules").join(package_name);
     std::fs::create_dir_all(&package).unwrap();
     for entry in std::fs::read_dir(library.root.join("dist")).unwrap() {
         let entry = entry.unwrap();
@@ -199,7 +294,10 @@ fn packed_button_consumer(corsa_path: &str, name: &str) -> Case {
     }
     std::fs::write(
         package.join("package.json"),
-        r#"{ "name": "packed-button", "main": "./Button.js", "types": "./Button.vue.d.ts" }"#,
+        cstr!(
+            r#"{{ "name": "{package_name}", "main": "./{component}.js", "types": "./{component}.vue.d.ts" }}"#
+        )
+        .as_str(),
     )
     .unwrap();
     drop(library);
@@ -244,6 +342,31 @@ impl Case {
             std::fs::create_dir_all(parent).unwrap();
         }
         std::fs::write(path, source).unwrap();
+    }
+
+    /// Replace the Vue stub with the workspace's installed Vue package.
+    fn link_real_vue(&self) {
+        let vue = workspace_root()
+            .join("tests/node_modules/vue")
+            .canonicalize()
+            .expect("install workspace dependencies before packed Vue tests");
+        let link = self.root.join("node_modules").join("vue");
+        std::fs::remove_dir_all(&link).unwrap();
+        std::os::unix::fs::symlink(vue, link).unwrap();
+    }
+
+    /// Run plain tsc (the Corsa binary) on the consumer project.
+    fn tsc(&self, corsa_path: &str) -> RunResult {
+        let output = Command::new(corsa_path)
+            .current_dir(&self.root)
+            .args(["--noEmit", "--pretty", "false", "-p", "tsconfig.json"])
+            .output()
+            .unwrap();
+        RunResult {
+            status: output.status.code(),
+            stdout: std::str::from_utf8(&output.stdout).unwrap().into(),
+            stderr: std::str::from_utf8(&output.stderr).unwrap().into(),
+        }
     }
 
     fn run(&self, corsa_path: &str, args: &[&str]) -> RunResult {

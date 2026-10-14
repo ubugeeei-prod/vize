@@ -1,0 +1,224 @@
+//! Block-tag attribute order and formatter presets (#6098).
+
+use vize_glyph::{FormatOptions, FormatPreset, format_sfc};
+
+#[test]
+fn block_attributes_follow_sort_attributes() {
+    let source = r#"<script lang="ts" setup>
+const a = 1;
+</script>
+
+<template lang="html" functional>
+  <div>{{ a }}</div>
+</template>
+
+<style module="css" lang="css" scoped>
+.a {
+  color: red;
+}
+</style>
+
+<i18n locale="en" lang="json">
+{}
+</i18n>
+"#;
+    let authored = FormatOptions {
+        sort_attributes: false,
+        sort_blocks: false,
+        ..FormatOptions::default()
+    };
+    let formatted = format_sfc(source, &authored).expect("format").code;
+    assert_eq!(formatted.as_str(), source);
+
+    let canonical = format_sfc(source, &FormatOptions::default())
+        .expect("format")
+        .code;
+    assert_eq!(
+        canonical.as_str(),
+        r#"<script setup lang="ts">
+const a = 1;
+</script>
+
+<template lang="html" functional>
+  <div>{{ a }}</div>
+</template>
+
+<style scoped lang="css" module="css">
+.a {
+  color: red;
+}
+</style>
+
+<i18n lang="json" locale="en">
+{}
+</i18n>
+"#
+    );
+}
+
+#[test]
+fn prettier_preset_keeps_authored_order() {
+    let source = r#"<template>
+  <div v-bind:id="id" class="a">{{ id }}</div>
+</template>
+
+<script lang="ts" setup>
+const id = "a";
+</script>
+"#;
+    let mut options = FormatOptions::default();
+    FormatPreset::Prettier.apply(&mut options);
+    assert_eq!(options.print_width, 80);
+    assert_eq!(
+        format_sfc(source, &options).expect("format").code.as_str(),
+        source
+    );
+
+    FormatPreset::Vize.apply(&mut options);
+    let defaults = FormatOptions::default();
+    assert_eq!(options.print_width, defaults.print_width);
+    assert_eq!(options.sort_attributes, defaults.sort_attributes);
+    assert_eq!(options.sort_blocks, defaults.sort_blocks);
+    assert_eq!(
+        options.normalize_directive_shorthands,
+        defaults.normalize_directive_shorthands
+    );
+    assert_eq!(options.normalize_css_quotes, defaults.normalize_css_quotes);
+    assert_eq!(
+        options.normalize_inline_styles,
+        defaults.normalize_inline_styles
+    );
+    assert_eq!(
+        options.normalize_v_for_parens,
+        defaults.normalize_v_for_parens
+    );
+    assert_eq!(
+        options.self_close_void_elements,
+        defaults.self_close_void_elements
+    );
+    assert_eq!(
+        options.reindent_preprocessor_styles,
+        defaults.reindent_preprocessor_styles
+    );
+}
+
+#[test]
+fn prettier_preset_requotes_css_strings() {
+    let source = "<style>\n@import 'a.css';\n.a {\n  content: 'it\\'s';\n  font-family: 'A \"B\"';\n}\n</style>\n";
+    let kept = format_sfc(source, &FormatOptions::default()).expect("format");
+    assert_eq!(kept.code.as_str(), source);
+
+    let mut options = FormatOptions::default();
+    FormatPreset::Prettier.apply(&mut options);
+    let requoted = format_sfc(source, &options).expect("format").code;
+    assert_eq!(
+        requoted.as_str(),
+        "<style>\n@import \"a.css\";\n.a {\n  content: \"it's\";\n  font-family: 'A \"B\"';\n}\n</style>\n"
+    );
+    assert_eq!(
+        format_sfc(&requoted, &options).expect("format").code,
+        requoted
+    );
+}
+
+#[test]
+fn prettier_preset_requotes_less_and_scss_strings() {
+    let mut options = FormatOptions::default();
+    FormatPreset::Prettier.apply(&mut options);
+    for lang in ["less", "scss"] {
+        let source = format!(
+            "<style lang=\"{lang}\">\n// it's kept\n@import 'a';\n.a {{ background: url(http://x/'y'); }}\n</style>\n"
+        );
+        let expected = format!(
+            "<style lang=\"{lang}\">\n// it's kept\n@import \"a\";\n.a {{ background: url(http://x/'y'); }}\n</style>\n"
+        );
+        assert_eq!(
+            format_sfc(&source, &options).expect("format").code.as_str(),
+            expected
+        );
+    }
+    let sass = "<style lang=\"sass\">\n@import 'a'\n</style>\n";
+    assert_eq!(
+        format_sfc(sass, &options).expect("format").code.as_str(),
+        sass
+    );
+}
+
+#[test]
+fn prettier_preset_lays_out_inline_styles() {
+    let source =
+        "<template>\n  <div style=\"color:red;top:0;\" :style=\"{ a: 1 }\">a</div>\n</template>\n";
+    let kept = format_sfc(source, &FormatOptions::default()).expect("format");
+    assert_eq!(kept.code.as_str(), source);
+
+    let mut options = FormatOptions::default();
+    FormatPreset::Prettier.apply(&mut options);
+    let formatted = format_sfc(source, &options).expect("format").code;
+    assert_eq!(
+        formatted.as_str(),
+        "<template>\n  <div style=\"color: red; top: 0\" :style=\"{ a: 1 }\">a</div>\n</template>\n"
+    );
+    assert_eq!(
+        format_sfc(&formatted, &options).expect("format").code,
+        formatted
+    );
+}
+
+#[test]
+fn prettier_preset_writes_v_for_parens_and_closes_void_elements() {
+    let source = "<template>\n  <ul>\n    <li v-for=\"item, i in items\" :key=\"i\"><img :src=\"item\"><br></li>\n    <li v-for=\"{ a, b } of pairs\" :key=\"a\">{{ b }}</li>\n    <Input v-for=\"x in xs\" :key=\"x\"></Input>\n  </ul>\n</template>\n";
+    let kept = format_sfc(source, &FormatOptions::default()).expect("format");
+    assert_eq!(kept.code.as_str(), source);
+
+    let mut options = FormatOptions::default();
+    FormatPreset::Prettier.apply(&mut options);
+    let formatted = format_sfc(source, &options).expect("format").code;
+    assert_eq!(
+        formatted.as_str(),
+        "<template>\n  <ul>\n    <li v-for=\"(item, i) in items\" :key=\"i\"><img :src=\"item\" /><br /></li>\n    <li v-for=\"{ a, b } of pairs\" :key=\"a\">{{ b }}</li>\n    <Input v-for=\"x in xs\" :key=\"x\"></Input>\n  </ul>\n</template>\n"
+    );
+    assert_eq!(
+        format_sfc(&formatted, &options).expect("format").code,
+        formatted
+    );
+}
+
+#[test]
+fn prettier_preset_reindents_scss_and_less() {
+    let mut options = FormatOptions::default();
+    FormatPreset::Prettier.apply(&mut options);
+    for lang in ["scss", "less"] {
+        let source = format!(
+            "<style lang=\"{lang}\">\n.a {{\n\tcolor: red;\n\n\n\t&:hover {{\n\t\tcolor: blue;\n\t}}\n}}\n</style>\n"
+        );
+        let kept = format_sfc(&source, &FormatOptions::default()).expect("format");
+        assert_eq!(kept.code.as_str(), source);
+        let expected = format!(
+            "<style lang=\"{lang}\">\n.a {{\n  color: red;\n\n  &:hover {{\n    color: blue;\n  }}\n}}\n</style>\n"
+        );
+        assert_eq!(
+            format_sfc(&source, &options).expect("format").code.as_str(),
+            expected
+        );
+    }
+}
+
+#[test]
+fn default_options_serialize_as_the_published_reference() {
+    let reference: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/formatter/format-options-reference.json"
+    ))
+    .expect("reference");
+    let defaults = serde_json::to_value(FormatOptions::default()).expect("serialize");
+    assert_eq!(defaults, reference["formatOptions"]);
+
+    let mut options = FormatOptions::default();
+    FormatPreset::Prettier.apply(&mut options);
+    let round_trip: FormatOptions =
+        serde_json::from_value(serde_json::to_value(&options).expect("serialize"))
+            .expect("deserialize");
+    assert_eq!(
+        serde_json::to_value(round_trip).expect("serialize"),
+        serde_json::to_value(options).expect("serialize")
+    );
+}

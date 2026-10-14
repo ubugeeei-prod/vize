@@ -5,7 +5,9 @@
 //! language is opaque: its bytes are preserved and only the common outer
 //! indentation is rebased.
 
-use super::{opening_tag, template_indent, write_attr, write_remaining_attrs};
+use super::{
+    opening_tag, template_indent, write_attr, write_authored_attrs, write_remaining_attrs,
+};
 use crate::error::FormatError;
 use crate::options::FormatOptions;
 use crate::template;
@@ -44,10 +46,12 @@ pub(super) fn write_template_block(
     } else {
         // Build the opening tag
         output.extend_from_slice(b"<template");
-        if let Some(lang) = &block.lang {
-            write_attr(output, "lang", Some(lang));
+        if !write_authored_attrs(output, &block.attrs, source, &block.loc, options) {
+            if let Some(lang) = &block.lang {
+                write_attr(output, "lang", Some(lang));
+            }
+            write_remaining_attrs(output, &block.attrs, &["lang"]);
         }
-        write_remaining_attrs(output, &block.attrs, &["lang"]);
         output.push(b'>');
     }
     // An empty block stays empty on one line, as Prettier prints it.

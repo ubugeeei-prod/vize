@@ -43,8 +43,8 @@ impl TemplateFormatter<'_> {
                 tag_name,
                 sorted_attrs,
                 &rendered,
-                depth,
-                self.indent,
+                (depth + self.base_depth) * self.options.tab_width as usize,
+                compact_suffix_width,
             ) || (measure_prefix
                 && self.continued_attributes_overflow(output, &rendered, compact_suffix_width));
 

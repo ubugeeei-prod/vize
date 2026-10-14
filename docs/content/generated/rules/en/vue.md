@@ -3863,7 +3863,7 @@ Disallow using `v-else-if` or `v-else` on the same element as `v-for`
 [Bad](#vue-no-use-v-else-with-v-for-bad) · [Good](#vue-no-use-v-else-with-v-for-good)
 
 Default severity: `warning`  
-Presets: _none_  
+Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.

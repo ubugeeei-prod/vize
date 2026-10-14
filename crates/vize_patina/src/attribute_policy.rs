@@ -16,10 +16,16 @@ pub fn deprecated_attr_suggestion_by_tag(
     attr: &str,
     mut is_tag: impl FnMut(&str) -> bool,
 ) -> Option<&'static str> {
+    // Vue's built-in `<component>` is never an HTML element.
+    if is_tag("component") {
+        return None;
+    }
     match attr {
         "align" => Some("CSS `text-align` or `margin: auto`"),
         "bgcolor" => Some("CSS `background-color`"),
-        "border" if !is_tag("table") => Some("CSS `border`"),
+        // HTML only ever defined `border` on these; elsewhere it is an
+        // unknown attribute (UnoCSS attributify's `border="b base"`).
+        "border" if is_tag("img") || is_tag("object") => Some("CSS `border`"),
         "background" if is_tag("body") => Some("CSS `background-image`"),
         "text" if is_tag("body") => Some("CSS `color`"),
         "link" | "vlink" | "alink" if is_tag("body") => Some("CSS `:link`, `:visited`"),

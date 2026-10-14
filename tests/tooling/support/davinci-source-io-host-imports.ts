@@ -2,6 +2,7 @@
 export const sourceIoDirectReads: Record<string, number> = {
   "crates/vize/src/commands/build/runner/compile.rs": 3,
   "crates/vize/src/commands/build/runner/compile_stats.rs": 1,
+  "crates/vize/src/commands/build/runner/preprocess.rs": 1,
   "crates/vize_vitrine/src/napi/sfc/batch.rs": 1,
 };
 

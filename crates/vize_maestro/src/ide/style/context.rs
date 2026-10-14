@@ -4,6 +4,8 @@
 //! delimiter cannot prove that a quote/comment did not start outside a window,
 //! so requests beyond the explicit prefix budget conservatively fall back.
 
+#[path = "context/indented.rs"]
+pub(super) mod indented;
 #[path = "context/lex.rs"]
 mod lex;
 use lex::{

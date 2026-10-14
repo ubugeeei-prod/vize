@@ -86,47 +86,62 @@ pub(super) fn collect_default_run_files(
     canonical_paths: &mut CanonicalPathCache,
     resolver: &mut vize_canon::PackageRouteResolver,
 ) -> CollectedRoots {
-    let mut files = collect_default_check_files(
-        context.project_root,
-        context.tsconfig_path,
-        context.import_options.include_jsx,
-        tsconfig_input_cache,
+    let mut files = vize_l0::profile!(
+        "cli.check.collect.tsconfig_files",
+        collect_default_check_files(
+            context.project_root,
+            context.tsconfig_path,
+            context.import_options.include_jsx,
+            tsconfig_input_cache,
+        )
     );
     retain_unignored(&mut files, context.check_ignore_set);
     let inputs = files.clone();
-    let mut reported_files = canonical_file_set(&files, canonical_paths);
+    let mut reported_files = vize_l0::profile!(
+        "cli.check.collect.canonical",
+        canonical_file_set(&files, canonical_paths)
+    );
     let mut import_session = LocalImportSession::new(resolver);
-    let discovered = register_transitive_local_imports_with_session(
-        &mut files,
-        LocalImportContext {
-            cwd: context.cwd,
-            tsconfig_path: context.tsconfig_path,
-            import_options: context.import_options,
-        },
-        canonical_paths,
-        resolver,
-        &mut import_session,
+    let discovered = vize_l0::profile!(
+        "cli.check.collect.imports",
+        register_transitive_local_imports_with_session(
+            &mut files,
+            LocalImportContext {
+                cwd: context.cwd,
+                tsconfig_path: context.tsconfig_path,
+                import_options: context.import_options,
+            },
+            canonical_paths,
+            resolver,
+            &mut import_session,
+        )
     );
     reported_files.extend(canonical_file_set(&discovered.authored, canonical_paths));
     let mut package_routes = discovered.package_routes;
-    register_ambient_declaration_files(
-        &mut files,
-        context.project_root,
-        context.tsconfig_path,
-        tsconfig_input_cache,
+    vize_l0::profile!(
+        "cli.check.collect.ambient",
+        register_ambient_declaration_files(
+            &mut files,
+            context.project_root,
+            context.tsconfig_path,
+            tsconfig_input_cache,
+        )
     );
     // Imports reached only through hidden ambient declarations provide type
     // context, but are not authored members of the checked program.
-    let hidden_discovered = register_transitive_local_imports_with_session(
-        &mut files,
-        LocalImportContext {
-            cwd: context.cwd,
-            tsconfig_path: context.tsconfig_path,
-            import_options: context.import_options,
-        },
-        canonical_paths,
-        resolver,
-        &mut import_session,
+    let hidden_discovered = vize_l0::profile!(
+        "cli.check.collect.hidden_imports",
+        register_transitive_local_imports_with_session(
+            &mut files,
+            LocalImportContext {
+                cwd: context.cwd,
+                tsconfig_path: context.tsconfig_path,
+                import_options: context.import_options,
+            },
+            canonical_paths,
+            resolver,
+            &mut import_session,
+        )
     );
     package_routes.extend(hidden_discovered.package_routes);
     sort_package_route_bindings(&mut package_routes);

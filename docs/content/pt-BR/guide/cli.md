@@ -144,6 +144,7 @@ Principais opções:
 | `--single-attribute-per-line`      | Coloque um atributo por linha                          |
 | `--max-attributes-per-line`        | Enrolar após uma determinada contagem de atributos     |
 | `--normalize-directive-shorthands` | Normalizar `v-bind:` / `v-on:` / `v-slot:` abreviações |
+| `--preset`                         | Usar o layout Vue do Prettier com `prettier` |
 | `--profile`                        | Perfil de tempo de impressão                           |
 
 ## Fiapos

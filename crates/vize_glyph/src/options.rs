@@ -67,7 +67,7 @@ pub struct FormatOptions {
     #[serde(default)]
     pub vue_indent_script_and_style: bool,
 
-    /// Sort HTML attributes in template (default: true)
+    /// Sort attributes in the template and on SFC block tags (default: true)
     #[serde(default = "default_true")]
     pub sort_attributes: bool,
 
@@ -105,6 +105,33 @@ pub struct FormatOptions {
     #[serde(default = "default_true")]
     pub sort_blocks: bool,
 
+    /// Re-quote strings in CSS, SCSS and Less `<style>` blocks with the
+    /// `singleQuote` preference, as Prettier does (default: false keeps
+    /// authored quotes)
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub normalize_css_quotes: bool,
+
+    /// Lay out static `style` attributes as `name: value` declarations joined
+    /// by `; ` without a trailing `;`, as Prettier does (default: false)
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub normalize_inline_styles: bool,
+
+    /// Wrap several `v-for` aliases in parentheses, `(item, i) in items`, as
+    /// Prettier does (default: false keeps the authored form)
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub normalize_v_for_parens: bool,
+
+    /// Close void elements such as `<img>` as `<img />`, as Prettier does
+    /// (default: false keeps the authored form)
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub self_close_void_elements: bool,
+
+    /// Re-indent SCSS and Less `<style>` blocks by nesting depth and tidy
+    /// their blank lines, as Prettier does; tokens stay as written
+    /// (default: false)
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub reindent_preprocessor_styles: bool,
+
     /// Skip the `<script>` idempotence stabilization pass (default: false).
     ///
     /// When false (the default), script blocks are formatted to a stable fixed
@@ -141,9 +168,52 @@ impl Default for FormatOptions {
             attribute_groups: None,
             normalize_directive_shorthands: true,
             sort_blocks: true,
+            normalize_css_quotes: false,
+            normalize_inline_styles: false,
+            normalize_v_for_parens: false,
+            self_close_void_elements: false,
+            reindent_preprocessor_styles: false,
             skip_script_stabilization: false,
         }
     }
+}
+
+/// A named set of formatter defaults (#6098).
+///
+/// A preset only assigns the options it owns; options applied after it, such
+/// as CLI flags, still win.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum FormatPreset {
+    /// The Vize defaults.
+    #[default]
+    Vize,
+    /// Prettier's Vue layout: 80 columns, attributes and blocks in authored
+    /// order, directives as written, and Prettier's quotes, inline styles,
+    /// `v-for` parentheses and void-element closing.
+    Prettier,
+}
+
+impl FormatPreset {
+    /// Assign the options this preset owns.
+    pub fn apply(self, options: &mut FormatOptions) {
+        let vize = self == Self::Vize;
+        options.print_width = if vize { default_print_width() } else { 80 };
+        options.sort_attributes = vize;
+        options.sort_blocks = vize;
+        options.normalize_directive_shorthands = vize;
+        options.normalize_css_quotes = !vize;
+        options.normalize_inline_styles = !vize;
+        options.normalize_v_for_parens = !vize;
+        options.self_close_void_elements = !vize;
+        options.reindent_preprocessor_styles = !vize;
+    }
+}
+
+/// Options added after the published option set stay out of serialized
+/// options while off, so existing option snapshots keep their bytes.
+fn is_false(value: &bool) -> bool {
+    !*value
 }
 
 fn default_print_width() -> u32 {

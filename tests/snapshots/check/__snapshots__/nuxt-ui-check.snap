@@ -961,10 +961,7 @@
     },
     {
       "file": "src/runtime/components/Link.vue",
-      "diagnostics": [
-        "error:267:11 [TS18004] No value exists in scope for the shorthand property 'as'. Either declare one or provide an initializer.",
-        "error:303:9 [TS18004] No value exists in scope for the shorthand property 'as'. Either declare one or provide an initializer."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/runtime/components/LinkBase.vue",
@@ -1595,9 +1592,7 @@
     },
     {
       "file": "src/runtime/vue/overrides/inertia/Link.vue",
-      "diagnostics": [
-        "error:187:9 [TS18004] No value exists in scope for the shorthand property 'as'. Either declare one or provide an initializer."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/runtime/vue/overrides/inertia/LinkBase.vue",
@@ -1605,19 +1600,14 @@
     },
     {
       "file": "src/runtime/vue/overrides/none/Link.vue",
-      "diagnostics": [
-        "error:182:9 [TS18004] No value exists in scope for the shorthand property 'as'. Either declare one or provide an initializer."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/runtime/vue/overrides/vue-router/Link.vue",
-      "diagnostics": [
-        "error:190:11 [TS18004] No value exists in scope for the shorthand property 'as'. Either declare one or provide an initializer.",
-        "error:226:9 [TS18004] No value exists in scope for the shorthand property 'as'. Either declare one or provide an initializer."
-      ]
+      "diagnostics": []
     }
   ],
-  "errorCount": 14,
+  "errorCount": 8,
   "warningCount": 0,
   "fileCount": 398
 }

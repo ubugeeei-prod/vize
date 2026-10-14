@@ -17,9 +17,9 @@
                   "severity": 2,
                   "message": "[vize:vue/valid-v-slot] v-slot with a slot argument does not support modifiers by default",
                   "line": 2,
-                  "column": 23,
+                  "column": 31,
                   "endLine": 2,
-                  "endColumn": 50
+                  "endColumn": 39
                 }
               ],
               "errorCount": 1,
@@ -31,11 +31,11 @@
               "range": {
                 "start": {
                   "line": 1,
-                  "character": 22
+                  "character": 30
                 },
                 "end": {
                   "line": 1,
-                  "character": 49
+                  "character": 38
                 }
               },
               "severity": 1,
@@ -76,9 +76,9 @@
                   "severity": 2,
                   "message": "[vize:vue/valid-v-slot] v-slot with a slot argument does not support modifiers by default",
                   "line": 2,
-                  "column": 23,
+                  "column": 37,
                   "endLine": 2,
-                  "endColumn": 51
+                  "endColumn": 44
                 }
               ],
               "errorCount": 1,
@@ -90,11 +90,11 @@
               "range": {
                 "start": {
                   "line": 1,
-                  "character": 22
+                  "character": 36
                 },
                 "end": {
                   "line": 1,
-                  "character": 50
+                  "character": 43
                 }
               },
               "severity": 1,
@@ -135,9 +135,9 @@
                   "severity": 2,
                   "message": "[vize:vue/valid-v-slot] v-slot with a slot argument does not support modifiers by default",
                   "line": 2,
-                  "column": 23,
+                  "column": 40,
                   "endLine": 2,
-                  "endColumn": 55
+                  "endColumn": 48
                 }
               ],
               "errorCount": 1,
@@ -149,11 +149,11 @@
               "range": {
                 "start": {
                   "line": 1,
-                  "character": 22
+                  "character": 39
                 },
                 "end": {
                   "line": 1,
-                  "character": 54
+                  "character": 47
                 }
               },
               "severity": 1,
@@ -204,9 +204,9 @@
                   "severity": 2,
                   "message": "[vize:vue/valid-v-slot] v-slot with a slot argument does not support modifiers by default",
                   "line": 2,
-                  "column": 23,
+                  "column": 36,
                   "endLine": 2,
-                  "endColumn": 51
+                  "endColumn": 44
                 }
               ],
               "errorCount": 2,
@@ -237,11 +237,11 @@
               "range": {
                 "start": {
                   "line": 1,
-                  "character": 22
+                  "character": 35
                 },
                 "end": {
                   "line": 1,
-                  "character": 50
+                  "character": 43
                 }
               },
               "severity": 1,
@@ -313,9 +313,9 @@
                   "severity": 2,
                   "message": "[vize:vue/valid-v-slot] v-slot with a slot argument does not support modifiers by default",
                   "line": 3,
-                  "column": 23,
+                  "column": 31,
                   "endLine": 3,
-                  "endColumn": 50
+                  "endColumn": 39
                 }
               ],
               "errorCount": 1,
@@ -327,11 +327,11 @@
               "range": {
                 "start": {
                   "line": 2,
-                  "character": 22
+                  "character": 30
                 },
                 "end": {
                   "line": 2,
-                  "character": 49
+                  "character": 38
                 }
               },
               "severity": 1,
@@ -372,9 +372,9 @@
                   "severity": 2,
                   "message": "[vize:vue/valid-v-slot] v-slot with a slot argument does not support modifiers by default",
                   "line": 3,
-                  "column": 23,
+                  "column": 31,
                   "endLine": 3,
-                  "endColumn": 50
+                  "endColumn": 39
                 }
               ],
               "errorCount": 1,
@@ -386,11 +386,11 @@
               "range": {
                 "start": {
                   "line": 2,
-                  "character": 22
+                  "character": 30
                 },
                 "end": {
                   "line": 2,
-                  "character": 49
+                  "character": 38
                 }
               },
               "severity": 1,
@@ -431,9 +431,9 @@
                   "severity": 2,
                   "message": "[vize:vue/valid-v-slot] v-slot with a slot argument does not support modifiers by default",
                   "line": 2,
-                  "column": 23,
+                  "column": 29,
                   "endLine": 2,
-                  "endColumn": 40
+                  "endColumn": 33
                 }
               ],
               "errorCount": 1,
@@ -445,11 +445,11 @@
               "range": {
                 "start": {
                   "line": 1,
-                  "character": 22
+                  "character": 28
                 },
                 "end": {
                   "line": 1,
-                  "character": 39
+                  "character": 32
                 }
               },
               "severity": 1,
@@ -490,9 +490,9 @@
                   "severity": 2,
                   "message": "[vize:vue/valid-v-slot] v-slot with a slot argument does not support modifiers by default",
                   "line": 2,
-                  "column": 23,
+                  "column": 35,
                   "endLine": 2,
-                  "endColumn": 46
+                  "endColumn": 39
                 }
               ],
               "errorCount": 1,
@@ -504,11 +504,11 @@
               "range": {
                 "start": {
                   "line": 1,
-                  "character": 22
+                  "character": 34
                 },
                 "end": {
                   "line": 1,
-                  "character": 45
+                  "character": 38
                 }
               },
               "severity": 1,
@@ -549,9 +549,9 @@
                   "severity": 2,
                   "message": "[vize:vue/valid-v-slot] v-slot with a slot argument does not support modifiers by default",
                   "line": 2,
-                  "column": 23,
+                  "column": 32,
                   "endLine": 2,
-                  "endColumn": 43
+                  "endColumn": 36
                 }
               ],
               "errorCount": 1,
@@ -563,11 +563,11 @@
               "range": {
                 "start": {
                   "line": 1,
-                  "character": 22
+                  "character": 31
                 },
                 "end": {
                   "line": 1,
-                  "character": 42
+                  "character": 35
                 }
               },
               "severity": 1,
@@ -608,9 +608,9 @@
                   "severity": 2,
                   "message": "[vize:vue/valid-v-slot] v-slot without a slot argument does not support modifiers",
                   "line": 2,
-                  "column": 23,
+                  "column": 30,
                   "endLine": 2,
-                  "endColumn": 45
+                  "endColumn": 38
                 }
               ],
               "errorCount": 1,
@@ -622,11 +622,11 @@
               "range": {
                 "start": {
                   "line": 1,
-                  "character": 22
+                  "character": 29
                 },
                 "end": {
                   "line": 1,
-                  "character": 44
+                  "character": 37
                 }
               },
               "severity": 1,
@@ -650,9 +650,9 @@
                   "severity": 2,
                   "message": "[vize:vue/valid-v-slot] v-slot without a slot argument does not support modifiers",
                   "line": 2,
-                  "column": 23,
+                  "column": 30,
                   "endLine": 2,
-                  "endColumn": 45
+                  "endColumn": 38
                 }
               ],
               "errorCount": 1,
@@ -664,11 +664,11 @@
               "range": {
                 "start": {
                   "line": 1,
-                  "character": 22
+                  "character": 29
                 },
                 "end": {
                   "line": 1,
-                  "character": 44
+                  "character": 37
                 }
               },
               "severity": 1,

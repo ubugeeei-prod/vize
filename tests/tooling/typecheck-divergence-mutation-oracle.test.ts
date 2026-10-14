@@ -1,16 +1,21 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { test } from "node:test";
+import { before, test } from "node:test";
 
 import {
   cleanup,
   readJson,
   run,
+  script,
   setup,
   updateJson,
   updateVizeOutput,
 } from "./_helpers/typecheck-divergence-report-fixture.ts";
+import { buildRustScript } from "./support/rust-script-build.ts";
+
+// Build outside the timed window: a cold rust-script build exceeded the bound.
+before(() => buildRustScript(script, ["--rust-script-build-check"]));
 
 const outerHarnessTimeoutMs = 20_000;
 
@@ -100,7 +105,8 @@ test("seeded mutation oracle bounds a Vize mutation process that ignores SIGTERM
   try {
     updateJson(
       fixture.registryPath,
-      (registry) => (registry.projects[0].typecheckPerformance.hangTimeoutMs = 80),
+      (registry) => (registry.projects[0].typecheckPerformance.hangTimeoutMs = 2_000),
+      // The vue-tsc baseline before the hanging mutation run must finish in it.
     );
     fs.writeFileSync(
       fixture.vize,
@@ -126,7 +132,7 @@ setInterval(() => {}, 1000);
     const artifact = readJson(artifactPath(fixture, "json"));
     assert.match(
       artifact.mutationOracle.unusableReason,
-      /Vize mutation run failed: spawn timed out after 80ms/,
+      /Vize mutation run failed: spawn timed out after 2000ms/,
     );
     assert.equal(fs.readFileSync(sourcePath, "utf8"), originalSource);
   } finally {

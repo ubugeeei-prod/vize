@@ -19,7 +19,7 @@ use prop_entry::append_prop_entry;
 use vize_carton::String;
 use vize_carton::append;
 use vize_croquis::{
-    ScopeId,
+    ScopeChain, ScopeId,
     croquis::{ComponentUsage, SpreadProp},
 };
 
@@ -147,12 +147,38 @@ fn append_spread_entry(
     expr_indent: &str,
 ) {
     append!(*ts, "{expr_indent}  ...");
-    let expression = spread.expression.as_str();
-    let source_expression = spread_expression_source_range(source_context, spread);
-    let (gen_range, sub_spans) = if let Some(rewritten) = rewrite_reserved_spread_references(
-        expression,
+    let (gen_range, sub_spans) = append_spread_value(
+        ts,
+        spread.expression.as_str(),
+        spread_expression_source_range(source_context, spread),
         template_binding_access,
         source_context.scopes,
+        usage_scope_id,
+    );
+    ts.push_str(",\n");
+    mappings.push(VizeMapping {
+        gen_range,
+        src_range: (source_context.offset + spread.start) as usize
+            ..(source_context.offset + spread.end) as usize,
+        sub_spans,
+    });
+}
+
+/// Emit a spread expression with reserved prop names (`as`, `in`, ...)
+/// read through their template bindings, plus the sub spans that map it back
+/// to the authored expression.
+pub(crate) fn append_spread_value(
+    ts: &mut String,
+    expression: &str,
+    source_expression: Option<std::ops::Range<usize>>,
+    template_binding_access: &TemplateBindingAccess,
+    scopes: &ScopeChain,
+    usage_scope_id: ScopeId,
+) -> (std::ops::Range<usize>, Vec<VizeSubSpan>) {
+    if let Some(rewritten) = rewrite_reserved_spread_references(
+        expression,
+        template_binding_access,
+        scopes,
         usage_scope_id,
     ) {
         let gen_range = append_prop_value(ts, rewritten.code.as_str());
@@ -168,24 +194,16 @@ fn append_spread_entry(
                 })
                 .collect()
         });
-        (gen_range, sub_spans)
-    } else {
-        let gen_range = append_prop_value(ts, expression);
-        let sub_spans = source_expression.map_or_else(Vec::new, |source| {
-            vec![VizeSubSpan {
-                gen_range: gen_range.clone(),
-                src_range: source,
-            }]
-        });
-        (gen_range, sub_spans)
-    };
-    ts.push_str(",\n");
-    mappings.push(VizeMapping {
-        gen_range,
-        src_range: (source_context.offset + spread.start) as usize
-            ..(source_context.offset + spread.end) as usize,
-        sub_spans,
+        return (gen_range, sub_spans);
+    }
+    let gen_range = append_prop_value(ts, expression);
+    let sub_spans = source_expression.map_or_else(Vec::new, |source| {
+        vec![VizeSubSpan {
+            gen_range: gen_range.clone(),
+            src_range: source,
+        }]
     });
+    (gen_range, sub_spans)
 }
 
 fn spread_expression_source_range(

@@ -4,6 +4,15 @@ expression: diagnostics
 ---
 [
     (
+        "script/require-prop-types",
+        "Prop 'msg' should define a type.",
+        64,
+        69,
+        Some(
+            "Declare the prop's type, e.g. `{ type: String }` or the shorthand `status: String` instead of the array form or a typeless descriptor.",
+        ),
+    ),
+    (
         "type/no-floating-promises",
         "Floating Promise must be awaited, returned, or explicitly ignored with `void`",
         281,

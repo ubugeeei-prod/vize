@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
 import { createHash } from "node:crypto";
-import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, rename, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
@@ -130,7 +130,9 @@ for (const page of pages) {
   const png = await readFile(page.imagePath);
   assertPngDimensions(png, page.route);
   imageHashes.set(page.imagePath, createHash("sha256").update(png).digest("hex"));
-  await writeFile(page.htmlPath, applyOpenGraphMetadata(page.originalHtml, page));
+  // check:ui-docs may read this page concurrently; replace it atomically.
+  await writeFile(`${page.htmlPath}.og-tmp`, applyOpenGraphMetadata(page.originalHtml, page));
+  await rename(`${page.htmlPath}.og-tmp`, page.htmlPath);
 }
 const source = spawnSync("git", ["rev-parse", "HEAD"], {
   cwd: docsRoot,

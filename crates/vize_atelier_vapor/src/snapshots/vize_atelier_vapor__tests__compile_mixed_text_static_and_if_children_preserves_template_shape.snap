@@ -8,14 +8,14 @@ const t1 = _template("<span>  <em class=\"day-offset\">same day</em></span>", tr
 export function render(_ctx) {
 const n0 = t1()
 const x0 = _txt(n0)
+_renderEffect(() => {
+_setClass(n0, ["date-line", { weekend: _ctx.isWeekend }])
+_setText(x0, _toDisplayString(_ctx.dateLabel) + " ")
+})
 _setInsertionState(n0, 2)
 const n1 = _createIf(() => (_ctx.isWeekend), () => {
 const n3 = t0()
 return n3
-})
-_renderEffect(() => {
-_setClass(n0, ["date-line", { weekend: _ctx.isWeekend }])
-_setText(x0, _toDisplayString(_ctx.dateLabel) + " ")
 })
 return n0
 }

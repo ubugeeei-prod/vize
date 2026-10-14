@@ -12,6 +12,8 @@ mod comment_scan;
 mod declaration;
 mod engine_boundary;
 mod number;
+mod preprocessor_layout;
+mod quotes;
 mod rule_layout;
 mod stabilization;
 mod values;
@@ -31,6 +33,29 @@ use vize_l0::{String, ToCompactString};
 /// comments during parse. Nested comments keep the original block text instead
 /// of risking silent data loss.
 pub fn format_style_content(source: &str, options: &FormatOptions) -> Result<String, FormatError> {
+    // Re-quote before layout so a second pass lays out the same tokens.
+    if options.normalize_css_quotes {
+        let requoted = quotes::normalize(source, options.single_quote, false);
+        return format_style_layout(requoted.as_str(), options);
+    }
+    format_style_layout(source, options)
+}
+
+/// Re-indent an SCSS or Less block by nesting depth, or `None` to keep it.
+pub(crate) fn reindent_preprocessor(source: &str, options: &FormatOptions) -> Option<String> {
+    preprocessor_layout::reindent(
+        source,
+        options.indent_string().as_str(),
+        options.newline_string(),
+    )
+}
+
+/// Re-quote strings in a Sass or Less block that is otherwise kept as written.
+pub(crate) fn requote_preprocessor_strings(source: &str, options: &FormatOptions) -> String {
+    quotes::normalize(source, options.single_quote, true)
+}
+
+fn format_style_layout(source: &str, options: &FormatOptions) -> Result<String, FormatError> {
     if options.end_of_line == crate::EndOfLine::Auto {
         return options.format_with_source_line_ending(source, |options| {
             format_style_content(source, options)

@@ -48,6 +48,11 @@ pub(super) fn format_options_from_config(config: &FormatterConfig) -> vize_glyph
         attribute_groups: config.attribute_groups.clone(),
         normalize_directive_shorthands: config.normalize_directive_shorthands,
         sort_blocks: config.sort_blocks,
+        normalize_css_quotes: false,
+        normalize_inline_styles: false,
+        normalize_v_for_parens: false,
+        self_close_void_elements: false,
+        reindent_preprocessor_styles: false,
         skip_script_stabilization: false,
     }
 }

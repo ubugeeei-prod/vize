@@ -1398,9 +1398,9 @@
                   "severity": 2,
                   "message": "[vize:vue/valid-v-slot] v-slot with a slot argument does not support modifiers by default",
                   "line": 2,
-                  "column": 23,
+                  "column": 31,
                   "endLine": 2,
-                  "endColumn": 61
+                  "endColumn": 39
                 }
               ],
               "errorCount": 2,
@@ -1431,11 +1431,11 @@
               "range": {
                 "start": {
                   "line": 1,
-                  "character": 22
+                  "character": 30
                 },
                 "end": {
                   "line": 1,
-                  "character": 60
+                  "character": 38
                 }
               },
               "severity": 1,

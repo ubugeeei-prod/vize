@@ -12,6 +12,7 @@ const n2 = _child(n1)
 const n3 = _next(_child(n1))
 const n7 = _nthChild(n1, 2)
 _on(n2, "click", $event => (_ctx.activeTab = 'code'))
+_renderEffect(() => _setClass(n2, ['tab', { active: _ctx.activeTab === 'code' }]))
 _setInsertionState(n1, n3)
 const n4 = _createIf(() => (_ctx.inputMode === 'sfc'), () => {
 const n6 = t0()
@@ -20,9 +21,6 @@ _renderEffect(() => _setClass(n6, ['tab', { active: _ctx.activeTab === 'bindings
 return n6
 })
 _on(n7, "click", $event => (_ctx.activeTab = 'helpers'))
-_renderEffect(() => {
-_setClass(n2, ['tab', { active: _ctx.activeTab === 'code' }])
-_setClass(n7, ['tab', { active: _ctx.activeTab === 'helpers' }])
-})
+_renderEffect(() => _setClass(n7, ['tab', { active: _ctx.activeTab === 'helpers' }]))
 return n0
 }

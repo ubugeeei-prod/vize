@@ -9,6 +9,13 @@ interface Packet {
   filePath: string;
   [key: string]: unknown;
 }
+interface Diagnostic {
+  start: number;
+  end: number;
+  message: string;
+  help: string;
+}
+
 interface Provider {
   version: string;
   entrySha256: string;
@@ -72,20 +79,26 @@ await test("parameter vectors keep authored coordinates, reference differences a
       assert.equal(expected.filename, "ParameterSlot.vue");
       assert.equal(expected.error_count, expected.diagnostics.length);
       assert.equal(expected.warning_count, 0);
+      // Modifier findings cover the modifiers; every other finding the directive.
+      const position = (byte: number, scalar: boolean) =>
+        at(Buffer.from(input.source).subarray(0, byte).toString().length, scalar);
       for (const diagnostic of expected.diagnostics) {
-        assert.equal(diagnostic.start, byteSpan.start);
-        assert.equal(diagnostic.end, byteSpan.end);
+        if (diagnostic.message.includes("modifiers")) {
+          assert.ok(diagnostic.start > byteSpan.start && diagnostic.end <= byteSpan.end);
+        } else {
+          assert.equal(diagnostic.start, byteSpan.start);
+          assert.equal(diagnostic.end, byteSpan.end);
+        }
       }
-      const scalar = input.authored.scalarRange;
-      const cliMessages = expected.diagnostics.map((d: { message: string }) => ({
+      const cliMessages = expected.diagnostics.map((d: Diagnostic) => ({
         ruleId: "vue/valid-v-slot",
         ruleDocsPath: "docs/content/rules/vue.md",
         severity: 2,
         message: "[vize:vue/valid-v-slot] " + d.message,
-        line: scalar.start.line + 1,
-        column: scalar.start.character + 1,
-        endLine: scalar.end.line + 1,
-        endColumn: scalar.end.character + 1,
+        line: position(d.start, true).line + 1,
+        column: position(d.start, true).character + 1,
+        endLine: position(d.end, true).line + 1,
+        endColumn: position(d.end, true).character + 1,
       }));
       assert.deepEqual(consumer.options[key].cli, [
         {
@@ -97,8 +110,8 @@ await test("parameter vectors keep authored coordinates, reference differences a
       ]);
       assert.deepEqual(
         consumer.options[key].lspDiagnostics,
-        expected.diagnostics.map((d: { message: string; help: string }) => ({
-          range: input.authored.utf16Range,
+        expected.diagnostics.map((d: Diagnostic) => ({
+          range: { start: position(d.start, false), end: position(d.end, false) },
           severity: 1,
           code: "vue/valid-v-slot",
           codeDescription: { href: "https://eslint.vuejs.org/rules/valid-v-slot.html" },

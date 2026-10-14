@@ -5,7 +5,8 @@ use memchr::memchr2;
 use vize_l0::String;
 
 impl TemplateFormatter<'_> {
-    pub(crate) fn format_preserving_text(&self, source: &[u8]) -> Result<String, FormatError> {
+    pub(crate) fn format_preserving_text(&self, text: &str) -> Result<String, FormatError> {
+        let source = text.as_bytes();
         let mut output = Vec::with_capacity(source.len());
         let mut pos = 0;
         // The retained source is already inside the SFC template block.
@@ -35,7 +36,7 @@ impl TemplateFormatter<'_> {
                 continue;
             }
             if source.get(pos..pos + 2) == Some(b"</".as_slice())
-                && let Some((tag_name, end)) = helpers::parse_closing_tag(source, pos)
+                && let Some((tag_name, end)) = helpers::parse_closing_tag(text, pos)
                 && source.get(end.saturating_sub(1)) == Some(&b'>')
             {
                 output.extend_from_slice(b"</");
@@ -47,7 +48,7 @@ impl TemplateFormatter<'_> {
             }
             if source.get(pos) == Some(&b'<')
                 && let Some((tag_name, mut attrs, self_closing, end)) =
-                    self.parse_opening_tag(source, pos, depth)
+                    self.parse_opening_tag(text, pos, depth)
                 && source.get(end.saturating_sub(1)) == Some(&b'>')
             {
                 if self.options.sort_attributes {

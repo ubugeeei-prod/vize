@@ -57,7 +57,8 @@ impl<'a> TemplateFormatter<'a> {
         }
     }
 
-    pub(crate) fn format(&self, source: &[u8]) -> Result<String, FormatError> {
+    pub(crate) fn format(&self, input: &str) -> Result<String, FormatError> {
+        let source = input.as_bytes();
         let len = source.len();
         let mut output = Vec::with_capacity(len + len / 4);
         let mut pos = 0;
@@ -90,8 +91,7 @@ impl<'a> TemplateFormatter<'a> {
                 && sub_slice(source, pos..end_pos).contains(&b'\n')
             {
                 self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
-                let expr =
-                    std::str::from_utf8(sub_slice(source, expr_start..expr_end)).unwrap_or("");
+                let expr = input.get(expr_start..expr_end).unwrap_or_default();
                 let depth = joiner.interpolation_depth(pos, end_pos, depth);
                 self.open_chunk(&mut output, depth, joiner.open(pos));
                 self.write_multiline_interpolation(&mut output, expr, depth);
@@ -127,7 +127,7 @@ impl<'a> TemplateFormatter<'a> {
             if byte_at(source, pos) == b'<' {
                 if pos + 1 < len
                     && byte_at(source, pos + 1) == b'/'
-                    && let Some((tag_name, end_pos)) = parse_closing_tag(source, pos)
+                    && let Some((tag_name, end_pos)) = parse_closing_tag(input, pos)
                 {
                     self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
                     let join = joiner.open(pos);
@@ -149,7 +149,7 @@ impl<'a> TemplateFormatter<'a> {
                     continue;
                 }
                 if let Some((tag_name, attrs, is_self_closing, end_pos)) =
-                    self.parse_opening_tag(source, pos, depth)
+                    self.parse_opening_tag(input, pos, depth)
                 {
                     self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
                     let join = joiner.open(pos);
@@ -157,7 +157,15 @@ impl<'a> TemplateFormatter<'a> {
                     if self.options.sort_attributes {
                         sort_attributes(&mut sorted_attrs, self.options);
                     }
+                    if self.options.normalize_inline_styles {
+                        normalize_inline_styles(&mut sorted_attrs);
+                    }
 
+                    // Compute once per opening tag; consumed in the two
+                    // void-element branches below.
+                    let is_void = is_void_element_str(&tag_name);
+                    let is_self_closing =
+                        is_self_closing || (is_void && self.options.self_close_void_elements);
                     self.open_chunk(&mut output, depth, join);
                     output.push(b'<');
                     output.extend_from_slice(tag_name.as_bytes());
@@ -171,9 +179,6 @@ impl<'a> TemplateFormatter<'a> {
                         if is_self_closing { 3 } else { 1 },
                     );
 
-                    // Compute once per opening tag; consumed in the two
-                    // void-element branches below.
-                    let is_void = is_void_element_str(&tag_name);
                     // The policy is pure; ordinary nonempty tags previously
                     // queried it twice. Self-closing tags never query it.
                     let whitespace_significant = !is_self_closing
@@ -187,7 +192,7 @@ impl<'a> TemplateFormatter<'a> {
                     } else if !is_void
                         && !whitespace_significant
                         && let Some(closing_end_pos) =
-                            self.parse_immediate_empty_closing_tag(source, end_pos, &tag_name)
+                            self.parse_immediate_empty_closing_tag(input, end_pos, &tag_name)
                     {
                         output.push(b'>');
                         output.extend_from_slice(b"</");
@@ -296,5 +301,17 @@ impl<'a> TemplateFormatter<'a> {
         self.write_indent(output, depth);
         output.extend_from_slice(content);
         output.extend_from_slice(self.newline);
+    }
+}
+
+fn normalize_inline_styles(attrs: &mut [super::attributes::ParsedAttribute]) {
+    for attr in attrs.iter_mut().filter(|attr| attr.name == "style") {
+        if let Some(normalized) = attr
+            .value
+            .as_deref()
+            .and_then(super::inline_style::normalize)
+        {
+            attr.value = Some(normalized);
+        }
     }
 }
