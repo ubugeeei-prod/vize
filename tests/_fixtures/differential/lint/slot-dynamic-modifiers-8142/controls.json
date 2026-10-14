@@ -5,14 +5,14 @@
       "id": "dynamic-name",
       "source": "<template>\n<FancyPanel><template #[name].modifier=\"{ item }\">ready</template></FancyPanel>\n</template>\n",
       "sourceSha256": "9c86a25ac8dfef94f7ec8b16e3602ad793a931d81fae6f799974005f1a264252",
-      "authored": "#[name].modifier=\"{ item }\"",
+      "authored": "modifier",
       "added": [
         {
           "rule_name": "vue/valid-v-slot",
           "severity": "error",
           "message": "v-slot with a slot argument does not support modifiers by default",
-          "start": 33,
-          "end": 60,
+          "start": 41,
+          "end": 49,
           "help": "Remove the modifiers or enable allowModifiers",
           "labels": [],
           "fix": null
@@ -32,8 +32,8 @@
               "rule_name": "vue/valid-v-slot",
               "severity": "error",
               "message": "v-slot with a slot argument does not support modifiers by default",
-              "start": 33,
-              "end": 60,
+              "start": 41,
+              "end": 49,
               "help": "Remove the modifiers or enable allowModifiers",
               "labels": [],
               "fix": null
@@ -54,14 +54,14 @@
       "id": "dynamic-chain",
       "source": "<template>\n<FancyPanel><template v-slot:[name].one.two=\"slot\">ready</template></FancyPanel>\n</template>\n",
       "sourceSha256": "9a3ce55bfaa2ae73e89ac87347f72de356e0ee60f7dc6df94f12247c17e071ed",
-      "authored": "v-slot:[name].one.two=\"slot\"",
+      "authored": "one.two",
       "added": [
         {
           "rule_name": "vue/valid-v-slot",
           "severity": "error",
           "message": "v-slot with a slot argument does not support modifiers by default",
-          "start": 33,
-          "end": 61,
+          "start": 47,
+          "end": 54,
           "help": "Remove the modifiers or enable allowModifiers",
           "labels": [],
           "fix": null
@@ -81,8 +81,8 @@
               "rule_name": "vue/valid-v-slot",
               "severity": "error",
               "message": "v-slot with a slot argument does not support modifiers by default",
-              "start": 33,
-              "end": 61,
+              "start": 47,
+              "end": 54,
               "help": "Remove the modifiers or enable allowModifiers",
               "labels": [],
               "fix": null
@@ -103,14 +103,14 @@
       "id": "dynamic-member",
       "source": "<template>\n<FancyPanel><template #[names.current].modifier=\"slot\">ready</template></FancyPanel>\n</template>\n",
       "sourceSha256": "c18aa68bddaaa0f835a16d16f8ce0e76cf63665bac719e22ddef39dfe80bdcc2",
-      "authored": "#[names.current].modifier=\"slot\"",
+      "authored": "modifier",
       "added": [
         {
           "rule_name": "vue/valid-v-slot",
           "severity": "error",
           "message": "v-slot with a slot argument does not support modifiers by default",
-          "start": 33,
-          "end": 65,
+          "start": 50,
+          "end": 58,
           "help": "Remove the modifiers or enable allowModifiers",
           "labels": [],
           "fix": null
@@ -130,8 +130,8 @@
               "rule_name": "vue/valid-v-slot",
               "severity": "error",
               "message": "v-slot with a slot argument does not support modifiers by default",
-              "start": 33,
-              "end": 65,
+              "start": 50,
+              "end": 58,
               "help": "Remove the modifiers or enable allowModifiers",
               "labels": [],
               "fix": null
@@ -152,14 +152,14 @@
       "id": "dynamic-own",
       "source": "<template>\n<FancyPanel><template #[slot.name].modifier=\"slot\">ready</template></FancyPanel>\n</template>\n",
       "sourceSha256": "a2127773cee6aa59bc1f61c2aec5f677211a7f7fda6b2d2d0991ff44da3a4e21",
-      "authored": "#[slot.name].modifier=\"slot\"",
+      "authored": "modifier",
       "added": [
         {
           "rule_name": "vue/valid-v-slot",
           "severity": "error",
           "message": "v-slot with a slot argument does not support modifiers by default",
-          "start": 33,
-          "end": 61,
+          "start": 46,
+          "end": 54,
           "help": "Remove the modifiers or enable allowModifiers",
           "labels": [],
           "fix": null
@@ -200,8 +200,8 @@
               "rule_name": "vue/valid-v-slot",
               "severity": "error",
               "message": "v-slot with a slot argument does not support modifiers by default",
-              "start": 33,
-              "end": 61,
+              "start": 46,
+              "end": 54,
               "help": "Remove the modifiers or enable allowModifiers",
               "labels": [],
               "fix": null
@@ -233,14 +233,14 @@
       "id": "dynamic-utf8",
       "source": "<template>\n<!-- 備考 🐟 -->\n<FancyPanel><template #[name].modifier=\"{ item }\">ready</template></FancyPanel>\n</template>\n",
       "sourceSha256": "bc0558e93b32dc8e962720c704558c9969a3556ca0e34422e88e05b9d5c8d784",
-      "authored": "#[name].modifier=\"{ item }\"",
+      "authored": "modifier",
       "added": [
         {
           "rule_name": "vue/valid-v-slot",
           "severity": "error",
           "message": "v-slot with a slot argument does not support modifiers by default",
-          "start": 54,
-          "end": 81,
+          "start": 62,
+          "end": 70,
           "help": "Remove the modifiers or enable allowModifiers",
           "labels": [],
           "fix": null
@@ -260,8 +260,8 @@
               "rule_name": "vue/valid-v-slot",
               "severity": "error",
               "message": "v-slot with a slot argument does not support modifiers by default",
-              "start": 54,
-              "end": 81,
+              "start": 62,
+              "end": 70,
               "help": "Remove the modifiers or enable allowModifiers",
               "labels": [],
               "fix": null
@@ -282,14 +282,14 @@
       "id": "dynamic-crlf",
       "source": "<template>\r\n<!-- 備考 🐟 -->\r\n<FancyPanel><template #[name].modifier=\"{ item }\">ready</template></FancyPanel>\r\n</template>\r\n",
       "sourceSha256": "e218527b53b5c20ca7a8d647f7bc2a4793ba7ebf3565517af884aac5fa70f587",
-      "authored": "#[name].modifier=\"{ item }\"",
+      "authored": "modifier",
       "added": [
         {
           "rule_name": "vue/valid-v-slot",
           "severity": "error",
           "message": "v-slot with a slot argument does not support modifiers by default",
-          "start": 56,
-          "end": 83,
+          "start": 64,
+          "end": 72,
           "help": "Remove the modifiers or enable allowModifiers",
           "labels": [],
           "fix": null
@@ -309,8 +309,8 @@
               "rule_name": "vue/valid-v-slot",
               "severity": "error",
               "message": "v-slot with a slot argument does not support modifiers by default",
-              "start": 56,
-              "end": 83,
+              "start": 64,
+              "end": 72,
               "help": "Remove the modifiers or enable allowModifiers",
               "labels": [],
               "fix": null
@@ -331,14 +331,14 @@
       "id": "static-dotted",
       "source": "<template>\n<FancyPanel><template #item.memo=\"slot\">ready</template></FancyPanel>\n</template>\n",
       "sourceSha256": "0d76034ff86be7bd53bd7dcb40e0d37e91316e34fc4d9fed1d711f7ff6113af6",
-      "authored": "#item.memo=\"slot\"",
+      "authored": "memo",
       "added": [
         {
           "rule_name": "vue/valid-v-slot",
           "severity": "error",
           "message": "v-slot with a slot argument does not support modifiers by default",
-          "start": 33,
-          "end": 50,
+          "start": 39,
+          "end": 43,
           "help": "Remove the modifiers or enable allowModifiers",
           "labels": [],
           "fix": null
@@ -358,8 +358,8 @@
               "rule_name": "vue/valid-v-slot",
               "severity": "error",
               "message": "v-slot with a slot argument does not support modifiers by default",
-              "start": 33,
-              "end": 50,
+              "start": 39,
+              "end": 43,
               "help": "Remove the modifiers or enable allowModifiers",
               "labels": [],
               "fix": null
@@ -380,14 +380,14 @@
       "id": "static-longhand",
       "source": "<template>\n<FancyPanel><template v-slot:item.memo=\"slot\">ready</template></FancyPanel>\n</template>\n",
       "sourceSha256": "eed257653014187a38f45049156f1553b4e5175a0d02bbf22781a8ce35874128",
-      "authored": "v-slot:item.memo=\"slot\"",
+      "authored": "memo",
       "added": [
         {
           "rule_name": "vue/valid-v-slot",
           "severity": "error",
           "message": "v-slot with a slot argument does not support modifiers by default",
-          "start": 33,
-          "end": 56,
+          "start": 45,
+          "end": 49,
           "help": "Remove the modifiers or enable allowModifiers",
           "labels": [],
           "fix": null
@@ -407,8 +407,8 @@
               "rule_name": "vue/valid-v-slot",
               "severity": "error",
               "message": "v-slot with a slot argument does not support modifiers by default",
-              "start": 33,
-              "end": 56,
+              "start": 45,
+              "end": 49,
               "help": "Remove the modifiers or enable allowModifiers",
               "labels": [],
               "fix": null
@@ -429,14 +429,14 @@
       "id": "static-default",
       "source": "<template>\n<FancyPanel><template #default.memo=\"slot\">ready</template></FancyPanel>\n</template>\n",
       "sourceSha256": "234f69b66172c90de64b821cce1c328738f03f05a7753c8366c8ff1c70ba98f8",
-      "authored": "#default.memo=\"slot\"",
+      "authored": "memo",
       "added": [
         {
           "rule_name": "vue/valid-v-slot",
           "severity": "error",
           "message": "v-slot with a slot argument does not support modifiers by default",
-          "start": 33,
-          "end": 53,
+          "start": 42,
+          "end": 46,
           "help": "Remove the modifiers or enable allowModifiers",
           "labels": [],
           "fix": null
@@ -456,8 +456,8 @@
               "rule_name": "vue/valid-v-slot",
               "severity": "error",
               "message": "v-slot with a slot argument does not support modifiers by default",
-              "start": 33,
-              "end": 53,
+              "start": 42,
+              "end": 46,
               "help": "Remove the modifiers or enable allowModifiers",
               "labels": [],
               "fix": null
@@ -487,8 +487,8 @@
             "rule_name": "vue/valid-v-slot",
             "severity": "error",
             "message": "v-slot without a slot argument does not support modifiers",
-            "start": 33,
-            "end": 55,
+            "start": 40,
+            "end": 48,
             "help": "Remove the modifier from the v-slot directive",
             "labels": [],
             "fix": null
@@ -505,8 +505,8 @@
               "rule_name": "vue/valid-v-slot",
               "severity": "error",
               "message": "v-slot without a slot argument does not support modifiers",
-              "start": 33,
-              "end": 55,
+              "start": 40,
+              "end": 48,
               "help": "Remove the modifier from the v-slot directive",
               "labels": [],
               "fix": null
@@ -522,8 +522,8 @@
               "rule_name": "vue/valid-v-slot",
               "severity": "error",
               "message": "v-slot without a slot argument does not support modifiers",
-              "start": 33,
-              "end": 55,
+              "start": 40,
+              "end": 48,
               "help": "Remove the modifier from the v-slot directive",
               "labels": [],
               "fix": null

@@ -67,7 +67,8 @@ impl ValidVSlot {
             } else {
                 "vue/valid-v-slot.named_modifier_help"
             };
-            ctx.error_with_help(ctx.t(message), &directive.loc, ctx.t(help));
+            // Like the reference rule, report the modifiers themselves.
+            ctx.error_at_with_help(ctx.t(message), modifier_range(directive), ctx.t(help));
         }
 
         if tag == "template" && !has_component_parent(ctx) {
@@ -106,5 +107,25 @@ impl ValidVSlot {
                 ctx.t("vue/valid-v-slot.help"),
             );
         }
+    }
+}
+
+/// The span from the first modifier to the last (`name` in `#item.name`),
+/// or the whole directive when the parser recorded no modifier locations.
+fn modifier_range(directive: &DirectiveNode<'_>) -> crate::ir::ByteRange {
+    let first = directive
+        .modifiers
+        .first()
+        .map(|modifier| modifier.loc.span);
+    let last = directive.modifiers.last().map(|modifier| modifier.loc.span);
+    match (first, last) {
+        (Some(first), Some(last))
+            if first.start < last.end
+                && directive.loc.span.start <= first.start
+                && last.end <= directive.loc.span.end =>
+        {
+            crate::ir::ByteRange::new(first.start, last.end)
+        }
+        _ => crate::ir::ByteRange::new(directive.loc.span.start, directive.loc.span.end),
     }
 }

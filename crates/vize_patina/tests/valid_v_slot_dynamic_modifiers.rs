@@ -94,7 +94,7 @@ fn dynamic_modifier_diagnostic_is_localized() {
             json!({
                 "filename": "DynamicSlot.vue", "error_count": 1, "warning_count": 0,
                 "diagnostics": [{"rule_name": "vue/valid-v-slot", "severity": "error", "message": message,
-                  "start": 22, "end": 49, "help": help, "labels": [], "fix": null}],
+                  "start": 30, "end": 38, "help": help, "labels": [], "fix": null}],
             })
         );
     }

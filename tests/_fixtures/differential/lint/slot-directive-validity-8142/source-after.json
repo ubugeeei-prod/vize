@@ -624,14 +624,14 @@
         {
           "diagnostics": [
             {
-              "end": 202,
+              "end": 195,
               "fix": null,
               "help": "Remove the modifier from the v-slot directive",
               "labels": [],
               "message": "v-slot without a slot argument does not support modifiers",
               "rule_name": "vue/valid-v-slot",
               "severity": "error",
-              "start": 185
+              "start": 192
             }
           ],
           "error_count": 1,
@@ -641,14 +641,14 @@
         {
           "diagnostics": [
             {
-              "end": 202,
+              "end": 195,
               "fix": null,
               "help": "Remove the modifier from the v-slot directive",
               "labels": [],
               "message": "v-slot without a slot argument does not support modifiers",
               "rule_name": "vue/valid-v-slot",
               "severity": "error",
-              "start": 185
+              "start": 192
             }
           ],
           "error_count": 1,
