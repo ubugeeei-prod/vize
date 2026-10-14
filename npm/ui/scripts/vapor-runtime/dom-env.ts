@@ -134,7 +134,8 @@ const svgAttributeCase = new Map(
 export function adjustSvgAttributeCase(root: Element): void {
   for (const element of root.querySelectorAll("*")) {
     if (element.namespaceURI !== svgNamespace) continue;
-    for (const { name, value } of [...element.attributes]) {
+    // A snapshot: renaming an attribute changes the live attribute map.
+    for (const { name, value } of Array.from(element.attributes)) {
       const adjusted = svgAttributeCase.get(name);
       if (adjusted === undefined || adjusted === name) continue;
       element.removeAttribute(name);
