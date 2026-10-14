@@ -260,11 +260,10 @@ pub struct BatteryCensus {
 pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     templates: 37,
     rule_fixtures: 869 + 38,
-    // Original 1057/87 census, plus valid_v_slot/tests.rs's three non-literal
-    // explicit-false policy calls, plus require_toggle_inside_transition/tests.rs's three
-    // looped custom-element calls, plus the v-else-if/v-is/v-pre directive
-    // rules: 38 literal templates over 42 calls and one non-literal helper for
-    // the `v-pre:arg` / `v-pre.mod` templates L2 does not freeze yet (#8856).
+    // Original 1057/87 census, plus three non-literal calls each in valid_v_slot
+    // (explicit-false policy) and require_toggle_inside_transition (custom
+    // elements), plus the v-else-if/v-is/v-pre rules: 38 literal templates over
+    // 42 calls and one helper for `v-pre:arg` / `v-pre.mod` L2 skips (#8856).
     rule_fixture_calls: 1057 + 3 + 3 + 43,
     rule_fixture_skipped: 87 + 3 + 3 + 1,
     matrix: 90,
