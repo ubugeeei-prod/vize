@@ -182,6 +182,13 @@ test("event completion goldens remain bound to the six pinned component declarat
   }
 });
 
+// Generic DOM events that a fixture's boundary component declares in its own
+// emits. VOICEVOX's BaseButton (src/components/Base/BaseButton.vue) declares
+// `click`, so completion lists @click after the component's props (#9002).
+const componentDeclaredGenericEvents: Record<string, readonly string[]> = {
+  voicevox: ["@click"],
+};
+
 await test("common component attributes retain every complete authored ranked bank", () => {
   const current = JSON.parse(fs.readFileSync(registryPath, "utf8")) as Registry;
   const historical = originalRegistry();
@@ -258,10 +265,14 @@ await test("common component attributes retain every complete authored ranked ba
         .map((item) => item.label),
     );
     const added = common.filter((label) => !declared.has(label));
+    // A generic DOM event that the component declares as its own emit is
+    // listed with the component's members, after its props.
+    const ownEvents = new Set(componentDeclaredGenericEvents[project.id] ?? []);
     const predecessor = [
-      ...original.slice(0, 28),
+      ...original.slice(0, 28).filter((item) => !ownEvents.has(item.label)),
       ...added.map((label) => ({ label, rank: 0 })),
       ...original.slice(28),
+      ...original.slice(0, 28).filter((item) => ownEvents.has(item.label)),
     ].map((item, rank) => ({ ...item, rank }));
     const expected = appendAiriAuthoredEventSuccessor(project, predecessor);
     assert.equal(new Set(expected.map((item) => item.label)).size, expected.length);
