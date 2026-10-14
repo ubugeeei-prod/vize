@@ -29,12 +29,12 @@ fn runtime_failure_preserves_non_utf8_child_stream_bytes() {
     }
 }
 
-/// A child killed by a signal after printing the exact passing payload
-/// crashed during teardown (#9067). That is reported but does not fail; a
-/// wrong payload or a non-zero exit code still fails.
+/// The rendered payload can be right and the process can still be unusable.
+/// SIGSEGV after `{"passed":1}` failed the v0.453.0 gate (#9067); ignoring
+/// that signal is what let the crash through.
 #[cfg(unix)]
 #[test]
-fn only_a_signal_after_the_exact_passing_payload_is_a_teardown_crash() {
+fn a_signal_after_the_exact_passing_payload_fails() {
     use std::os::unix::process::ExitStatusExt;
 
     let run = |stdout: &str, end: &str| {
@@ -50,17 +50,20 @@ fn only_a_signal_after_the_exact_passing_payload_is_a_teardown_crash() {
     let crash = "process.kill(process.pid, 'SIGSEGV')";
     let passed = run("{\"passed\":1}", crash);
     assert_eq!(passed.status.signal(), Some(11));
-    let report = validate_runtime_output("vapor", "source", &json!([{}]), "code", &passed)
-        .unwrap()
-        .unwrap();
+    let report =
+        validate_runtime_output("vapor", "source", &json!([{}]), "code", &passed).unwrap_err();
     assert_eq!(
         report.lines().take(4).collect::<Vec<_>>(),
         [
-            "vapor: runtime child crashed after printing a passing result (#9067)",
+            "vapor: runtime child failed",
             &format!("status: {}", passed.status),
             "exit_code: None",
             "signal: Some(11)",
         ]
+    );
+    assert!(
+        report.contains("{\"passed\":1}"),
+        "rendered result must stay in the evidence:\n{report}"
     );
     for output in [
         run("{\"passed\":0}", crash),
@@ -74,4 +77,34 @@ fn only_a_signal_after_the_exact_passing_payload_is_a_teardown_crash() {
             "{report}"
         );
     }
+}
+
+/// Loading the mounted-trace binding and leaving through its exit must be a
+/// real status 0. A teardown signal fails this the way the gate failed.
+#[test]
+fn mounted_runtime_child_exits_zero_after_loading_native_binding() {
+    use std::path::Path;
+
+    let child = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../tests/tooling/support/mounted-runtime-native-exit.mjs");
+    let output = Command::new("node").arg(&child).output().unwrap();
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "native teardown must exit 0\nstatus: {}\nstdout:\n{stdout}\nstderr:\n{stderr}",
+        output.status,
+    );
+    #[cfg(unix)]
+    {
+        use std::os::unix::process::ExitStatusExt;
+        assert_eq!(
+            output.status.signal(),
+            None,
+            "native teardown signaled {}\nstdout:\n{stdout}\nstderr:\n{stderr}",
+            output.status,
+        );
+    }
+    assert_eq!(output.stdout, br#"{"passed":1}"#);
 }

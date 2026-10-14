@@ -1,11 +1,15 @@
 import assert from "node:assert/strict";
+import { writeSync } from "node:fs";
 import process from "node:process";
 import { transformSync } from "@babel/core";
 import { Window } from "happy-dom";
-import { traceMountedBackend } from "./davinci-mounted-trace.mjs";
+import { leaveMountedRuntimeProcess, traceMountedBackend } from "./davinci-mounted-trace.mjs";
 import { runtimeProcessEvidence } from "./mounted-runtime-devtools.ts";
 
 const evidence = runtimeProcessEvidence();
+// After the evidence listener, so a failed run still prints its phase before
+// the native shutdown hook is skipped.
+leaveMountedRuntimeProcess();
 const chunks = [];
 for await (const chunk of process.stdin) chunks.push(chunk);
 const { backend, code, cases } = JSON.parse(Buffer.concat(chunks).toString("utf8"));
@@ -214,7 +218,7 @@ for (const [fixtureIndex, fixture] of cases.entries()) {
   assert.deepEqual(trees, fixture.trees, `${backend}: ${JSON.stringify(fixture)}`);
   assert.equal(reads, fixture.reads ?? 0, "unexpected property reads");
 }
-process.stdout.write(JSON.stringify({ passed: cases.length }));
+writeSync(1, JSON.stringify({ passed: cases.length }));
 evidence.complete();
 
 function installRestMemory(context) {

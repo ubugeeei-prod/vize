@@ -29,7 +29,7 @@ mod patterned_template_runtime {
     mod evaluation;
     mod failure_evidence;
 }
-use patterned_template_runtime::child::{report_teardown_crash, validate_runtime_output};
+use patterned_template_runtime::child::validate_runtime_output;
 
 fn compile(backend: &str, source: &str) -> String {
     let allocator = Allocator::new();
@@ -104,10 +104,8 @@ fn check(source: &str, cases: Value) {
             )
             .unwrap();
         let output = child.wait_with_output().unwrap();
-        match validate_runtime_output(backend, source, &cases, &code, &output) {
-            Ok(None) => {}
-            Ok(Some(crash)) => report_teardown_crash(&crash),
-            Err(evidence) => panic!("{evidence}"),
+        if let Err(evidence) = validate_runtime_output(backend, source, &cases, &code, &output) {
+            panic!("{evidence}");
         }
     }
 }

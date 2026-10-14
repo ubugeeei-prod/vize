@@ -1,6 +1,7 @@
 import { childComponent } from "./davinci-mounted-child.mjs";
 export { childComponent } from "./davinci-mounted-child.mjs";
 import assert from "node:assert/strict";
+import { writeSync } from "node:fs";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 import { Window } from "happy-dom";
@@ -307,6 +308,29 @@ export async function loadRuntime({
   return import(`data:text/javascript;base64,${Buffer.from(chunks[0].code).toString("base64")}`);
 }
 
+let nativeExitArmed = false;
+
+/**
+ * `build()` above loads vite-plus's native binding. On process teardown its
+ * env-cleanup hook shuts the tokio runtime down while other native state is
+ * still live; that use-after-free is the Linux SIGSEGV after `{"passed":N}`
+ * (#9067). `execve` keeps the already-flushed stdio and the exit code, and
+ * does not run that hook. A signal still fails the parent.
+ */
+export function leaveMountedRuntimeProcess() {
+  if (nativeExitArmed) return;
+  nativeExitArmed = true;
+  process.on("exit", (code) => {
+    if (process.platform === "win32" || typeof process.execve !== "function") return;
+    const status = Number.isInteger(code) && code >= 0 && code <= 255 ? code : 1;
+    try {
+      process.execve("/bin/sh", ["/bin/sh", "-c", `exit ${status}`]);
+    } catch {
+      // The normal exit remains. The parent still fails if it is a signal.
+    }
+  });
+}
+
 /** Ignore backend anchor comments; retain text, attributes, and live form state. */
 export function observeChildren(parent) {
   const children = [];
@@ -337,8 +361,9 @@ export function observeChildren(parent) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  leaveMountedRuntimeProcess();
   const chunks = [];
   for await (const chunk of process.stdin) chunks.push(chunk);
   const input = JSON.parse(Buffer.concat(chunks).toString("utf8"));
-  process.stdout.write(`${JSON.stringify(await traceMountedBackend(input))}\n`);
+  writeSync(1, `${JSON.stringify(await traceMountedBackend(input))}\n`);
 }
