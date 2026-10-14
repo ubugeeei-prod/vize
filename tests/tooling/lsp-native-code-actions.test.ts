@@ -80,7 +80,12 @@ test("checker quick fixes apply to the current authored Vue buffer without lint"
       typecheck: true,
       codeActions: true,
     })) as { capabilities: ServerCapabilities };
-    assert.deepEqual(initialized.capabilities.codeActionProvider?.codeActionKinds, ["quickfix"]);
+    assert.deepEqual(initialized.capabilities.codeActionProvider?.codeActionKinds, [
+      "quickfix",
+      "source.organizeImports",
+      "source.sortImports",
+      "source.removeUnusedImports",
+    ]);
     for (const [name, source] of Object.entries(cases)) {
       await t.test(name, async () => {
         session.notify("textDocument/didOpen", {

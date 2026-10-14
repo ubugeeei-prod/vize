@@ -17,7 +17,7 @@ lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	16	raw_oxc	raw OXC	raw	oxc_synta
 lsp	LSP	source	crates/vize_maestro/src/document/store.rs	83	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/document/text.rs	6	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/document/text/tests.rs	4	l0	L0	stage	vize_l0	preferred	8
-lsp	LSP	source	crates/vize_maestro/src/ide.rs	110	l0	L0	stage	vize_l0	preferred	2
+lsp	LSP	source	crates/vize_maestro/src/ide.rs	112	l0	L0	stage	vize_l0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/auto_insert.rs	78	l0	L0	stage	vize_l0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/call_hierarchy.rs	140	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/call_hierarchy/document.rs	48	l0	L0	stage	vize_l0	preferred	1
@@ -271,6 +271,13 @@ lsp	LSP	source	crates/vize_maestro/src/ide/musea.rs	31	croquis	Croquis analysis	
 lsp	LSP	source	crates/vize_maestro/src/ide/native_code_actions/binding_origins.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/native_code_actions/binding_origins.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/native_code_actions/binding_origins.rs	3	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
+lsp	LSP	source	crates/vize_maestro/src/ide/native_code_actions/import_projection.rs	11	l0	L0	stage	vize_l0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/native_code_actions/import_projection.rs	11	carton	Carton host/compatibility	old	vize_carton	legacy	3
+lsp	LSP	source	crates/vize_maestro/src/ide/native_code_actions/import_projection.rs	11	old_ast	old AST/parser	old	vize_relief	legacy	1
+lsp	LSP	source	crates/vize_maestro/src/ide/native_code_actions/import_projection.rs	11	old_ast	old AST/parser	old	vize_armature	legacy	1
+lsp	LSP	source	crates/vize_maestro/src/ide/native_code_actions/import_projection.rs	11	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+lsp	LSP	source	crates/vize_maestro/src/ide/native_code_actions/import_projection.rs	11	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+lsp	LSP	source	crates/vize_maestro/src/ide/native_code_actions/import_projection.rs	11	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/references/canonical.rs	4	l0	L0	stage	vize_l0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/references/canonical.rs	4	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/references/canonical.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	2

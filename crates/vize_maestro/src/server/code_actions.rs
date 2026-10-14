@@ -48,6 +48,14 @@ pub(super) async fn code_actions(
                 let ctx = IdeContext::new(&server.state, uri, offset)?;
                 actions.extend(CodeActionService::native_actions(&ctx, range).await);
             }
+            // Source actions rewrite the whole script, so they are returned only
+            // when the client asks for them (`only`), as on save.
+            let source_kinds = native_source_kinds(params.context.only.as_deref());
+            if features.typecheck && !source_kinds.is_empty() {
+                let offset = position_to_offset(&content, range.start.line, range.start.character)?;
+                let ctx = IdeContext::new(&server.state, uri, offset)?;
+                actions.extend(CodeActionService::native_source_actions(&ctx, &source_kinds).await);
+            }
             actions
         };
 
@@ -56,6 +64,23 @@ pub(super) async fn code_actions(
     }
 
     filter_requested_code_actions(actions, params.context.only.as_deref())
+}
+
+/// The native source kinds an explicit `only` request covers, by the LSP
+/// kind hierarchy (`source` covers `source.organizeImports`).
+#[cfg(feature = "native")]
+fn native_source_kinds(only: Option<&[CodeActionKind]>) -> Vec<CodeActionKind> {
+    let Some(only) = only else {
+        return vec![];
+    };
+    crate::ide::NATIVE_SOURCE_KINDS
+        .into_iter()
+        .map(|kind| CodeActionKind::from(kind.to_owned()))
+        .filter(|kind| {
+            only.iter().any(|requested| !requested.as_str().is_empty())
+                && code_action_kind_is_requested(kind, only)
+        })
+        .collect()
 }
 
 /// Apply the LSP code-action kind hierarchy to one handler response.
@@ -95,6 +120,37 @@ fn code_action_kind_is_requested(kind: &CodeActionKind, requested: &[CodeActionK
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(feature = "native")]
+    #[test]
+    fn source_actions_are_served_only_when_explicitly_requested() {
+        let kinds = |only: Option<&[&str]>| {
+            let only = only.map(|only| {
+                only.iter()
+                    .map(|kind| CodeActionKind::from((*kind).to_owned()))
+                    .collect::<Vec<_>>()
+            });
+            native_source_kinds(only.as_deref())
+                .into_iter()
+                .map(|kind| kind.as_str().to_owned())
+                .collect::<Vec<_>>()
+        };
+        assert!(kinds(None).is_empty());
+        assert!(kinds(Some(&["quickfix"])).is_empty());
+        assert!(kinds(Some(&["refactor"])).is_empty());
+        assert_eq!(
+            kinds(Some(&["source.organizeImports"])),
+            ["source.organizeImports"]
+        );
+        assert_eq!(
+            kinds(Some(&["source"])),
+            [
+                "source.organizeImports",
+                "source.sortImports",
+                "source.removeUnusedImports"
+            ]
+        );
+    }
 
     #[test]
     fn requested_kinds_follow_the_lsp_hierarchy() {

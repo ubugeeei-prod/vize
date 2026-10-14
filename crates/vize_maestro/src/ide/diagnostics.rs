@@ -43,6 +43,8 @@ mod editor_event_partial_diagnostics_tests;
 #[cfg(all(test, feature = "native"))]
 mod editor_reference_options_tests;
 #[cfg(all(test, feature = "native"))]
+mod editor_source_action_tests;
+#[cfg(all(test, feature = "native"))]
 mod editor_typecheck_defaults_tests;
 #[cfg(all(test, feature = "native"))]
 mod editor_typecheck_emit_tests;

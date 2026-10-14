@@ -12,7 +12,7 @@ test("fresh LSP policy preserves the original whole tests, inputs and complete c
   const custodyBytes = readPolicyFixture("custody.json");
   assert.equal(
     createHash("sha256").update(custodyBytes).digest("hex"),
-    "bd2290e91b205837170cc3edb185f459d665267b32189089d7b457d313edba33",
+    "d2a5d325b98bb6b346939e129e00c86259ec5613ab342a801da0f865b417d70d",
   );
   const custody = JSON.parse(custodyBytes) as { files: Record<string, string> };
   for (const [name, expectedHash] of Object.entries(custody.files)) {

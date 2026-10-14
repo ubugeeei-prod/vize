@@ -13,8 +13,10 @@ use vize_canon::{LspPosition, LspRange};
 
 use super::code_action::CodeActionService;
 use crate::ide::{IdeContext, corsa_support, position_to_offset};
+use import_projection::ImportProjection;
 
 mod binding_origins;
+mod import_projection;
 #[cfg(test)]
 mod tests;
 
@@ -77,6 +79,156 @@ impl CodeActionService {
     }
 }
 
+/// Whole-document TypeScript source actions this server forwards to tsgo and
+/// advertises. Each has a real-tsgo whole-SFC oracle; `source.fixAll` waits
+/// for one.
+pub(crate) const NATIVE_SOURCE_KINDS: [&str; 3] = [
+    "source.organizeImports",
+    "source.sortImports",
+    "source.removeUnusedImports",
+];
+
+impl CodeActionService {
+    /// Organize, sort or remove imports, or fix all, in a Vue SFC script.
+    /// tsgo answers on [`ImportProjection`]; every edit must land on the
+    /// authored script or the action is dropped whole.
+    pub(crate) async fn native_source_actions(
+        ctx: &IdeContext<'_>,
+        kinds: &[CodeActionKind],
+    ) -> Vec<CodeActionOrCommand> {
+        if kinds.is_empty()
+            || !ctx.state.is_lsp_typecheck_enabled()
+            || !ctx.uri.path().ends_with(".vue")
+            || ctx.uri.path().ends_with(".art.vue")
+        {
+            return vec![];
+        }
+        let Some(version) = ctx
+            .state
+            .documents
+            .get(ctx.uri)
+            .map(|document| document.version)
+        else {
+            return vec![];
+        };
+        let Some(projection) = ImportProjection::build(ctx) else {
+            return vec![];
+        };
+        let Some(bridge) = ctx.state.get_corsa_bridge().await else {
+            return vec![];
+        };
+        let request_uri = match bridge
+            .open_or_update_virtual_document(&projection.path, &projection.text)
+            .await
+        {
+            Ok(uri) => uri,
+            Err(error) => {
+                tracing::warn!(%error, uri = %ctx.uri, "import projection could not be opened");
+                return vec![];
+            }
+        };
+        let requested = kinds.iter().map(|kind| kind.as_str().into()).collect();
+        let response = bridge.source_actions(&request_uri, requested).await;
+        if let Err(error) = bridge.close_virtual_document(&request_uri).await {
+            tracing::warn!(%error, uri = %ctx.uri, "import projection could not be closed");
+        }
+        let response = match response {
+            Ok(Some(response)) => response,
+            Ok(None) => return vec![],
+            Err(error) => {
+                tracing::warn!(%error, uri = %ctx.uri, "native source-action request failed");
+                return vec![];
+            }
+        };
+        let actions = match serde_json::from_value::<Vec<CodeActionOrCommand>>(response) {
+            Ok(actions) => actions,
+            Err(error) => {
+                tracing::warn!(%error, uri = %ctx.uri, "invalid native source-action response");
+                return vec![];
+            }
+        };
+        actions
+            .into_iter()
+            .filter_map(|action| {
+                let CodeActionOrCommand::CodeAction(action) = action else {
+                    return None;
+                };
+                if !action
+                    .kind
+                    .as_ref()
+                    .is_some_and(|kind| kinds.contains(kind))
+                {
+                    return None;
+                }
+                map_projection_action(ctx, &projection, &request_uri, version, action)
+                    .map(CodeActionOrCommand::CodeAction)
+            })
+            .collect()
+    }
+}
+
+fn map_projection_action(
+    ctx: &IdeContext<'_>,
+    projection: &ImportProjection,
+    request_uri: &str,
+    version: i32,
+    mut action: CodeAction,
+) -> Option<CodeAction> {
+    if action.command.is_some() {
+        return None;
+    }
+    let original = action.edit.take()?;
+    let mut edits = Vec::new();
+    let mut add = |uri: &str, edit: TextEdit| -> Option<()> {
+        if uri != request_uri {
+            return None;
+        }
+        edits.push(TextEdit {
+            range: projection.authored_range(ctx, edit.range)?,
+            new_text: edit.new_text,
+        });
+        Some(())
+    };
+    if original.changes.is_some() && original.document_changes.is_some() {
+        return None;
+    }
+    for (uri, changes) in original.changes.into_iter().flatten() {
+        for edit in changes {
+            add(uri.as_str(), edit)?;
+        }
+    }
+    if let Some(changes) = original.document_changes {
+        let DocumentChanges::Edits(changes) = changes else {
+            return None;
+        };
+        for change in changes {
+            for edit in change.edits {
+                let OneOf::Left(edit) = edit else {
+                    return None;
+                };
+                add(change.text_document.uri.as_str(), edit)?;
+            }
+        }
+    }
+    let edits = ordered_edits(edits)?;
+    if edits.is_empty() {
+        return None;
+    }
+    action.edit = Some(WorkspaceEdit {
+        document_changes: Some(DocumentChanges::Edits(vec![TextDocumentEdit {
+            text_document: OptionalVersionedTextDocumentIdentifier {
+                uri: ctx.uri.clone(),
+                version: Some(version),
+            },
+            edits: edits.into_iter().map(OneOf::Left).collect(),
+        }])),
+        ..Default::default()
+    });
+    action.diagnostics = None;
+    action.data = None;
+    Some(action)
+}
+
 fn request_range(
     ctx: &IdeContext<'_>,
     document: &corsa_support::CanonicalVirtualDocument,
@@ -110,9 +262,22 @@ fn map_action(
     ctx: &IdeContext<'_>,
     document: &corsa_support::CanonicalVirtualDocument,
     version: i32,
+    action: CodeAction,
+) -> Option<CodeAction> {
+    if action.kind.as_ref()? != &CodeActionKind::QUICKFIX {
+        return None;
+    }
+    map_action_edits(ctx, document, version, action)
+}
+
+/// Translate one backend action's edits onto the authored SFC, all or none.
+fn map_action_edits(
+    ctx: &IdeContext<'_>,
+    document: &corsa_support::CanonicalVirtualDocument,
+    version: i32,
     mut action: CodeAction,
 ) -> Option<CodeAction> {
-    if action.command.is_some() || action.kind.as_ref()? != &CodeActionKind::QUICKFIX {
+    if action.command.is_some() {
         return None;
     }
     let original = action.edit.take()?;

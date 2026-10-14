@@ -26,6 +26,19 @@ impl CorsaProjectClient {
         }
         self.request_with_editor_lsp_recovery(|session| session.code_actions(uri, range))
     }
+
+    /// Whole-document source actions (organize, sort or remove imports, fix
+    /// all) of the requested kinds. They need no diagnostics or range.
+    pub(crate) fn source_actions_via_editor_lsp(
+        &mut self,
+        uri: &str,
+        kinds: &[String],
+    ) -> Result<Option<Value>, String> {
+        if !self.document_texts.contains_key(uri) || kinds.is_empty() {
+            return Ok(None);
+        }
+        self.request_with_editor_lsp_recovery(|session| session.source_actions(uri, kinds))
+    }
 }
 
 impl EditorLspSession {
@@ -54,6 +67,18 @@ impl EditorLspSession {
             "context": { "diagnostics": diagnostics, "only": ["quickfix"] },
         })))
         .map_err(|error| cstr!("Failed to request editor LSP code actions: {error}"))
+    }
+}
+
+impl EditorLspSession {
+    fn source_actions(&mut self, uri: &str, kinds: &[String]) -> Result<Option<Value>, String> {
+        let uri = self.ready_document_uri(uri)?;
+        let empty = json!({ "line": 0, "character": 0 });
+        block_on(self.client.request::<CodeActionRequest>(json!({
+            "textDocument": { "uri": uri }, "range": { "start": empty, "end": empty },
+            "context": { "diagnostics": [], "only": kinds },
+        })))
+        .map_err(|error| cstr!("Failed to request editor LSP source actions: {error}"))
     }
 }
 

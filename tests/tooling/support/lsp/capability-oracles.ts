@@ -76,7 +76,12 @@ export const EDITOR_BUNDLE_CAPABILITIES = {
   documentSymbolProvider: true,
   workspaceSymbolProvider: true,
   codeActionProvider: {
-    codeActionKinds: ["quickfix"],
+    codeActionKinds: [
+      "quickfix",
+      "source.organizeImports",
+      "source.sortImports",
+      "source.removeUnusedImports",
+    ],
     resolveProvider: false,
   },
   codeLensProvider: { resolveProvider: false },

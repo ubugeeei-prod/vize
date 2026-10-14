@@ -20,4 +20,20 @@ impl CorsaBridge {
         })
         .await
     }
+
+    /// Request whole-document source actions of the given kinds, such as
+    /// `source.organizeImports`.
+    pub async fn source_actions(
+        &self,
+        uri: &str,
+        kinds: Vec<vize_l0::String>,
+    ) -> Result<Option<Value>, CorsaBridgeError> {
+        let uri = uri.to_owned();
+        self.with_client(move |client| {
+            client
+                .source_actions_via_editor_lsp(&uri, &kinds)
+                .map_err(CorsaBridgeError::CommunicationError)
+        })
+        .await
+    }
 }

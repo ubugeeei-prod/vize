@@ -20,6 +20,8 @@ mod expression_regions;
 mod native_code_actions;
 #[cfg(all(test, feature = "native"))]
 pub(crate) use corsa_support::{canonical_request_path, request_file_uri};
+#[cfg(feature = "native")]
+pub(crate) use native_code_actions::NATIVE_SOURCE_KINDS;
 pub mod cursor_context;
 pub mod declaration;
 pub mod definition;
