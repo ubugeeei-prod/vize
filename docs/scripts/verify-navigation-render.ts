@@ -12,6 +12,7 @@ import { CaptureTimings } from "./capture-render-timings.ts";
 import { verifyLocaleRenderControls } from "./locale-control-render.ts";
 import { verifyNavigationRenderJob } from "./navigation-render-page.ts";
 import type { RouteReceipt } from "./navigation-render-page.ts";
+import { verifyRuleSources } from "./rule-render-assertions.ts";
 import { brokenLinks } from "./verify-static-links.ts";
 import {
   collectRenderReceipts,
@@ -37,10 +38,18 @@ const dist = path.resolve(values.dir);
 const output = path.resolve(values.output);
 const routes = values.routes?.split(",") ?? defaultNavigationRenderRoutes;
 if (process.env.VIZE_DOCS_LINKS_ONLY === "1") {
-  // Merge-queue mode: the same routes and link predicate, without a browser.
+  // Merge-queue mode: the same routes, link predicate and source-side rule
+  // pins, without a browser.
   const failures = brokenLinks(dist, routes);
+  for (const route of routes) {
+    try {
+      verifyRuleSources(route);
+    } catch (error) {
+      failures.push(`${route}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
   assert.equal(failures.length, 0, failures.join("\n"));
-  console.log(`Verified links and anchors on ${routes.length} routes without a browser`);
+  console.log(`Verified links, anchors and rule pins on ${routes.length} routes without a browser`);
   process.exit(0);
 }
 const workers = parseRenderWorkers(values.workers);

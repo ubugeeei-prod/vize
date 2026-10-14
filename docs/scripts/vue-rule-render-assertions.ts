@@ -6,7 +6,8 @@ import type { Page } from "playwright";
 
 const root = resolve(import.meta.dirname, "../..");
 
-export async function verifyRenderedVueRulePackets(page: Page, route: string) {
+/** Source-side packets; the merge queue checks these without a browser. */
+export function expectedVueRulePackets(route: string) {
   const locale = route.match(/^\/(ja|zh-CN|pt-BR|fr)\//)?.[1] ?? "en";
   const directory = resolve(root, `docs/content/${locale === "ja" ? "ja/" : ""}rules/reference`);
   const expected = readdirSync(directory)
@@ -23,6 +24,11 @@ export async function verifyRenderedVueRulePackets(page: Page, route: string) {
       };
     });
   assert.equal(expected.length, 108, "every implemented Vue rule");
+  return { locale, expected };
+}
+
+export async function verifyRenderedVueRulePackets(page: Page, route: string) {
+  const { locale, expected } = expectedVueRulePackets(route);
   const actual = await page.evaluate(
     (expected) => {
       const names = new Set(expected.map(({ id }) => id));
