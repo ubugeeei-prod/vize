@@ -2,7 +2,7 @@
   "schemaVersion": 8,
   "requiredToolCoverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
   "lspAuthoredOracleGate": {
-    "minimumProjectCount": 52,
+    "minimumProjectCount": 57,
     "trackingIssue": 3952
   },
   "projects": [
@@ -2843,7 +2843,194 @@
       "vueGlobs": ["**/*.vue"],
       "tsconfig": "tsconfig.json",
       "coverage": ["compiler","linter","typechecker","formatter","syntax-highlighter","lsp"],
-      "diff": "e2e-vrt"
+      "diff": "e2e-vrt",
+      "lspAuthoredOracle": {
+        "templateBinding": {
+          "file": "src/views/able/mqtt-client.vue",
+          "symbol": "destroyConnection",
+          "usageAnchor": "=\"destroyConnection\"",
+          "declarationAnchor": "const destroyConnection = () => {",
+          "hoverContains": [
+            "const destroyConnection: () => void"
+          ],
+          "renameTo": "__vizeRenamedDestroyConnection"
+        },
+        "componentBoundary": {
+          "importerFile": "src/layout/components/lay-sidebar/components/SidebarItem.vue",
+          "componentFile": "src/layout/components/lay-sidebar/components/SidebarLinkItem.vue",
+          "tagName": "SidebarLinkItem",
+          "tagAnchor": "<SidebarLinkItem\n",
+          "completionItemCount": 38,
+          "completionItems": [
+            {
+              "label": "v-if",
+              "rank": 0
+            },
+            {
+              "label": "v-else-if",
+              "rank": 1
+            },
+            {
+              "label": "v-else",
+              "rank": 2
+            },
+            {
+              "label": "v-for",
+              "rank": 3
+            },
+            {
+              "label": "v-on",
+              "rank": 4
+            },
+            {
+              "label": "v-bind",
+              "rank": 5
+            },
+            {
+              "label": "v-model",
+              "rank": 6
+            },
+            {
+              "label": "v-slot",
+              "rank": 7
+            },
+            {
+              "label": "v-show",
+              "rank": 8
+            },
+            {
+              "label": "v-pre",
+              "rank": 9
+            },
+            {
+              "label": "v-once",
+              "rank": 10
+            },
+            {
+              "label": "v-memo",
+              "rank": 11
+            },
+            {
+              "label": "v-cloak",
+              "rank": 12
+            },
+            {
+              "label": "v-text",
+              "rank": 13
+            },
+            {
+              "label": "v-html",
+              "rank": 14
+            },
+            {
+              "label": "@",
+              "rank": 15
+            },
+            {
+              "label": ":",
+              "rank": 16
+            },
+            {
+              "label": "#",
+              "rank": 17
+            },
+            {
+              "label": "@click",
+              "rank": 18
+            },
+            {
+              "label": "@input",
+              "rank": 19
+            },
+            {
+              "label": "@change",
+              "rank": 20
+            },
+            {
+              "label": "@submit",
+              "rank": 21
+            },
+            {
+              "label": "@keydown",
+              "rank": 22
+            },
+            {
+              "label": "@keyup",
+              "rank": 23
+            },
+            {
+              "label": "@focus",
+              "rank": 24
+            },
+            {
+              "label": "@blur",
+              "rank": 25
+            },
+            {
+              "label": "@mouseenter",
+              "rank": 26
+            },
+            {
+              "label": "@mouseleave",
+              "rank": 27
+            },
+            {
+              "label": "id",
+              "rank": 28
+            },
+            {
+              "label": "class",
+              "rank": 29
+            },
+            {
+              "label": "style",
+              "rank": 30
+            },
+            {
+              "label": "title",
+              "rank": 31
+            },
+            {
+              "label": "role",
+              "rank": 32
+            },
+            {
+              "label": "tabindex",
+              "rank": 33
+            },
+            {
+              "label": "aria-label",
+              "rank": 34
+            },
+            {
+              "label": "ref",
+              "rank": 35
+            },
+            {
+              "label": "key",
+              "rank": 36
+            },
+            {
+              "label": "to",
+              "rank": 37
+            }
+          ],
+          "dependencyEdit": {
+            "anchor": "  to: menuType;\n",
+            "replacement": "  to: menuType;\n  vizeOracleProbe?: string\n",
+            "completionLabel": "vize-oracle-probe"
+          }
+        },
+        "fileLifecycle": {
+          "copiedFile": "src/layout/components/lay-sidebar/components/__VizeOracleSidebarLinkItem.vue",
+          "renamedFile": "src/layout/components/lay-sidebar/components/__VizeOracleRenamedSidebarLinkItem.vue",
+          "originalImportSpecifier": "./SidebarLinkItem.vue",
+          "copiedImportSpecifier": "./__VizeOracleSidebarLinkItem.vue",
+          "renamedImportSpecifier": "./__VizeOracleRenamedSidebarLinkItem.vue",
+          "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
+          "markerSymbol": "__vizeVuePureAdminFileLifecycleMarker__"
+        }
+      }
     },
     {
       "id": "vue-manage-system",
@@ -3120,7 +3307,218 @@
       "license": { "spdx": "MIT", "files": ["LICENSE"] },
       "vueGlobs": ["**/*.vue"],
       "coverage": ["compiler","linter","typechecker","formatter","syntax-highlighter","lsp"],
-      "diff": "curator-compare"
+      "diff": "curator-compare",
+      "lspAuthoredOracle": {
+        "templateBinding": {
+          "file": "packages/api-client/src/v2/blocks/scalar-auth-selector-block/components/OAuthScopesInput.vue",
+          "symbol": "openAddScopeModal",
+          "usageAnchor": "=\"openAddScopeModal\"",
+          "declarationAnchor": "const openAddScopeModal = () => {",
+          "hoverContains": [
+            "const openAddScopeModal: () => void"
+          ],
+          "renameTo": "__vizeRenamedOpenAddScopeModal"
+        },
+        "componentBoundary": {
+          "importerFile": "packages/api-client/src/v2/blocks/operation-block/components/Header.vue",
+          "componentFile": "packages/api-client/src/v2/blocks/operation-block/components/OpenApiClientButton.vue",
+          "tagName": "OpenApiClientButton",
+          "tagAnchor": "<OpenApiClientButton\n",
+          "completionItemCount": 44,
+          "completionItems": [
+            {
+              "label": "v-if",
+              "rank": 0
+            },
+            {
+              "label": "v-else-if",
+              "rank": 1
+            },
+            {
+              "label": "v-else",
+              "rank": 2
+            },
+            {
+              "label": "v-for",
+              "rank": 3
+            },
+            {
+              "label": "v-on",
+              "rank": 4
+            },
+            {
+              "label": "v-bind",
+              "rank": 5
+            },
+            {
+              "label": "v-model",
+              "rank": 6
+            },
+            {
+              "label": "v-slot",
+              "rank": 7
+            },
+            {
+              "label": "v-show",
+              "rank": 8
+            },
+            {
+              "label": "v-pre",
+              "rank": 9
+            },
+            {
+              "label": "v-once",
+              "rank": 10
+            },
+            {
+              "label": "v-memo",
+              "rank": 11
+            },
+            {
+              "label": "v-cloak",
+              "rank": 12
+            },
+            {
+              "label": "v-text",
+              "rank": 13
+            },
+            {
+              "label": "v-html",
+              "rank": 14
+            },
+            {
+              "label": "@",
+              "rank": 15
+            },
+            {
+              "label": ":",
+              "rank": 16
+            },
+            {
+              "label": "#",
+              "rank": 17
+            },
+            {
+              "label": "@click",
+              "rank": 18
+            },
+            {
+              "label": "@input",
+              "rank": 19
+            },
+            {
+              "label": "@change",
+              "rank": 20
+            },
+            {
+              "label": "@submit",
+              "rank": 21
+            },
+            {
+              "label": "@keydown",
+              "rank": 22
+            },
+            {
+              "label": "@keyup",
+              "rank": 23
+            },
+            {
+              "label": "@focus",
+              "rank": 24
+            },
+            {
+              "label": "@blur",
+              "rank": 25
+            },
+            {
+              "label": "@mouseenter",
+              "rank": 26
+            },
+            {
+              "label": "@mouseleave",
+              "rank": 27
+            },
+            {
+              "label": "id",
+              "rank": 28
+            },
+            {
+              "label": "class",
+              "rank": 29
+            },
+            {
+              "label": "style",
+              "rank": 30
+            },
+            {
+              "label": "title",
+              "rank": 31
+            },
+            {
+              "label": "role",
+              "rank": 32
+            },
+            {
+              "label": "tabindex",
+              "rank": 33
+            },
+            {
+              "label": "aria-label",
+              "rank": 34
+            },
+            {
+              "label": "ref",
+              "rank": 35
+            },
+            {
+              "label": "key",
+              "rank": 36
+            },
+            {
+              "label": "button-source",
+              "rank": 37
+            },
+            {
+              "label": "source",
+              "rank": 38
+            },
+            {
+              "label": "is-development",
+              "rank": 39
+            },
+            {
+              "label": "integration",
+              "rank": 40
+            },
+            {
+              "label": "url",
+              "rank": 41
+            },
+            {
+              "label": "operation-path",
+              "rank": 42
+            },
+            {
+              "label": "operation-method",
+              "rank": 43
+            }
+          ],
+          "dependencyEdit": {
+            "anchor": "  buttonSource: 'sidebar' | 'modal'\n",
+            "replacement": "  buttonSource: 'sidebar' | 'modal'\n  vizeOracleProbe?: string\n",
+            "completionLabel": "vize-oracle-probe"
+          }
+        },
+        "fileLifecycle": {
+          "copiedFile": "packages/api-client/src/v2/blocks/operation-block/components/__VizeOracleOpenApiClientButton.vue",
+          "renamedFile": "packages/api-client/src/v2/blocks/operation-block/components/__VizeOracleRenamedOpenApiClientButton.vue",
+          "originalImportSpecifier": "./OpenApiClientButton.vue",
+          "copiedImportSpecifier": "./__VizeOracleOpenApiClientButton.vue",
+          "renamedImportSpecifier": "./__VizeOracleRenamedOpenApiClientButton.vue",
+          "markerInsertionAnchor": "<script lang=\"ts\" setup>\n",
+          "markerSymbol": "__vizeScalarFileLifecycleMarker__"
+        }
+      }
     },
     {
       "id": "soybean-admin",
@@ -3242,6 +3640,193 @@
         "hangTimeoutMs": 2400000,
         "maxFalsePositiveRatio": 0.05,
         "maxFalseNegativeRatio": 0.05
+      },
+      "lspAuthoredOracle": {
+        "templateBinding": {
+          "file": "src/components/navbar/components/dropdowns/ProfileDropdown.vue",
+          "symbol": "isShown",
+          "usageAnchor": "=\"isShown\"",
+          "declarationAnchor": "const isShown = ref(false)",
+          "hoverContains": [
+            "const isShown: boolean"
+          ],
+          "renameTo": "__vizeRenamedIsShown"
+        },
+        "componentBoundary": {
+          "importerFile": "src/components/app-layout-navigation/AppLayoutNavigation.vue",
+          "componentFile": "src/components/icons/VaIconMenuCollapsed.vue",
+          "tagName": "VaIconMenuCollapsed",
+          "tagAnchor": "<VaIconMenuCollapsed\n",
+          "completionItemCount": 38,
+          "completionItems": [
+            {
+              "label": "v-if",
+              "rank": 0
+            },
+            {
+              "label": "v-else-if",
+              "rank": 1
+            },
+            {
+              "label": "v-else",
+              "rank": 2
+            },
+            {
+              "label": "v-for",
+              "rank": 3
+            },
+            {
+              "label": "v-on",
+              "rank": 4
+            },
+            {
+              "label": "v-bind",
+              "rank": 5
+            },
+            {
+              "label": "v-model",
+              "rank": 6
+            },
+            {
+              "label": "v-slot",
+              "rank": 7
+            },
+            {
+              "label": "v-show",
+              "rank": 8
+            },
+            {
+              "label": "v-pre",
+              "rank": 9
+            },
+            {
+              "label": "v-once",
+              "rank": 10
+            },
+            {
+              "label": "v-memo",
+              "rank": 11
+            },
+            {
+              "label": "v-cloak",
+              "rank": 12
+            },
+            {
+              "label": "v-text",
+              "rank": 13
+            },
+            {
+              "label": "v-html",
+              "rank": 14
+            },
+            {
+              "label": "@",
+              "rank": 15
+            },
+            {
+              "label": ":",
+              "rank": 16
+            },
+            {
+              "label": "#",
+              "rank": 17
+            },
+            {
+              "label": "@click",
+              "rank": 18
+            },
+            {
+              "label": "@input",
+              "rank": 19
+            },
+            {
+              "label": "@change",
+              "rank": 20
+            },
+            {
+              "label": "@submit",
+              "rank": 21
+            },
+            {
+              "label": "@keydown",
+              "rank": 22
+            },
+            {
+              "label": "@keyup",
+              "rank": 23
+            },
+            {
+              "label": "@focus",
+              "rank": 24
+            },
+            {
+              "label": "@blur",
+              "rank": 25
+            },
+            {
+              "label": "@mouseenter",
+              "rank": 26
+            },
+            {
+              "label": "@mouseleave",
+              "rank": 27
+            },
+            {
+              "label": "id",
+              "rank": 28
+            },
+            {
+              "label": "class",
+              "rank": 29
+            },
+            {
+              "label": "style",
+              "rank": 30
+            },
+            {
+              "label": "title",
+              "rank": 31
+            },
+            {
+              "label": "role",
+              "rank": 32
+            },
+            {
+              "label": "tabindex",
+              "rank": 33
+            },
+            {
+              "label": "aria-label",
+              "rank": 34
+            },
+            {
+              "label": "ref",
+              "rank": 35
+            },
+            {
+              "label": "key",
+              "rank": 36
+            },
+            {
+              "label": "color",
+              "rank": 37
+            }
+          ],
+          "dependencyEdit": {
+            "anchor": "    color?: string\n",
+            "replacement": "    color?: string\n    vizeOracleProbe?: string\n",
+            "completionLabel": "vize-oracle-probe"
+          }
+        },
+        "fileLifecycle": {
+          "copiedFile": "src/components/icons/__VizeOracleVaIconMenuCollapsed.vue",
+          "renamedFile": "src/components/icons/__VizeOracleRenamedVaIconMenuCollapsed.vue",
+          "originalImportSpecifier": "../icons/VaIconMenuCollapsed.vue",
+          "copiedImportSpecifier": "../icons/__VizeOracleVaIconMenuCollapsed.vue",
+          "renamedImportSpecifier": "../icons/__VizeOracleRenamedVaIconMenuCollapsed.vue",
+          "markerInsertionAnchor": "<script lang=\"ts\" setup>\n",
+          "markerSymbol": "__vizeVuesticAdminFileLifecycleMarker__"
+        }
       }
     },
     {
@@ -3886,7 +4471,194 @@
         "syntax-highlighter",
         "lsp"
       ],
-      "diff": "e2e-vrt"
+      "diff": "e2e-vrt",
+      "lspAuthoredOracle": {
+        "templateBinding": {
+          "file": "src/components/Dialogs/PluginManagerDialog.vue",
+          "symbol": "isInstallFormValid",
+          "usageAnchor": "=\"isInstallFormValid\"",
+          "declarationAnchor": "const isInstallFormValid = ref(false)",
+          "hoverContains": [
+            "const isInstallFormValid: boolean"
+          ],
+          "renameTo": "__vizeRenamedIsInstallFormValid"
+        },
+        "componentBoundary": {
+          "importerFile": "src/components/Core/RightClickMenu/RightClickMenu.vue",
+          "componentFile": "src/components/Core/RightClickMenu/RightClickMenuEntry.vue",
+          "tagName": "RightClickMenuEntry",
+          "tagAnchor": "<RightClickMenuEntry ",
+          "completionItemCount": 38,
+          "completionItems": [
+            {
+              "label": "v-if",
+              "rank": 0
+            },
+            {
+              "label": "v-else-if",
+              "rank": 1
+            },
+            {
+              "label": "v-else",
+              "rank": 2
+            },
+            {
+              "label": "v-for",
+              "rank": 3
+            },
+            {
+              "label": "v-on",
+              "rank": 4
+            },
+            {
+              "label": "v-bind",
+              "rank": 5
+            },
+            {
+              "label": "v-model",
+              "rank": 6
+            },
+            {
+              "label": "v-slot",
+              "rank": 7
+            },
+            {
+              "label": "v-show",
+              "rank": 8
+            },
+            {
+              "label": "v-pre",
+              "rank": 9
+            },
+            {
+              "label": "v-once",
+              "rank": 10
+            },
+            {
+              "label": "v-memo",
+              "rank": 11
+            },
+            {
+              "label": "v-cloak",
+              "rank": 12
+            },
+            {
+              "label": "v-text",
+              "rank": 13
+            },
+            {
+              "label": "v-html",
+              "rank": 14
+            },
+            {
+              "label": "@",
+              "rank": 15
+            },
+            {
+              "label": ":",
+              "rank": 16
+            },
+            {
+              "label": "#",
+              "rank": 17
+            },
+            {
+              "label": "@click",
+              "rank": 18
+            },
+            {
+              "label": "@input",
+              "rank": 19
+            },
+            {
+              "label": "@change",
+              "rank": 20
+            },
+            {
+              "label": "@submit",
+              "rank": 21
+            },
+            {
+              "label": "@keydown",
+              "rank": 22
+            },
+            {
+              "label": "@keyup",
+              "rank": 23
+            },
+            {
+              "label": "@focus",
+              "rank": 24
+            },
+            {
+              "label": "@blur",
+              "rank": 25
+            },
+            {
+              "label": "@mouseenter",
+              "rank": 26
+            },
+            {
+              "label": "@mouseleave",
+              "rank": 27
+            },
+            {
+              "label": "id",
+              "rank": 28
+            },
+            {
+              "label": "class",
+              "rank": 29
+            },
+            {
+              "label": "style",
+              "rank": 30
+            },
+            {
+              "label": "title",
+              "rank": 31
+            },
+            {
+              "label": "role",
+              "rank": 32
+            },
+            {
+              "label": "tabindex",
+              "rank": 33
+            },
+            {
+              "label": "aria-label",
+              "rank": 34
+            },
+            {
+              "label": "ref",
+              "rank": 35
+            },
+            {
+              "label": "key",
+              "rank": 36
+            },
+            {
+              "label": "entry-data",
+              "rank": 37
+            }
+          ],
+          "dependencyEdit": {
+            "anchor": "  entryData: RightClickMenuEntryType\n",
+            "replacement": "  entryData: RightClickMenuEntryType\n  vizeOracleProbe?: string\n",
+            "completionLabel": "vize-oracle-probe"
+          }
+        },
+        "fileLifecycle": {
+          "copiedFile": "src/components/Core/RightClickMenu/__VizeOracleRightClickMenuEntry.vue",
+          "renamedFile": "src/components/Core/RightClickMenu/__VizeOracleRenamedRightClickMenuEntry.vue",
+          "originalImportSpecifier": "./RightClickMenuEntry.vue",
+          "copiedImportSpecifier": "./__VizeOracleRightClickMenuEntry.vue",
+          "renamedImportSpecifier": "./__VizeOracleRenamedRightClickMenuEntry.vue",
+          "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
+          "markerSymbol": "__vizeVuetorrentFileLifecycleMarker__"
+        }
+      }
     },
     {
       "id": "vue-multiselect",
@@ -6764,7 +7536,202 @@
         "syntax-highlighter",
         "lsp"
       ],
-      "diff": "e2e-vrt"
+      "diff": "e2e-vrt",
+      "lspAuthoredOracle": {
+        "templateBinding": {
+          "file": "packages/frontend/src/components/Buttons/QueueButton.vue",
+          "symbol": "menuModel",
+          "usageAnchor": "=\"menuModel\"",
+          "declarationAnchor": "const menuModel = ref(false);",
+          "hoverContains": [
+            "const menuModel: boolean"
+          ],
+          "renameTo": "__vizeRenamedMenuModel"
+        },
+        "componentBoundary": {
+          "importerFile": "packages/ui-toolkit/src/components/JImg.vue",
+          "componentFile": "packages/ui-toolkit/src/components/JProgressCircular.vue",
+          "tagName": "JProgressCircular",
+          "tagAnchor": "<JProgressCircular\n",
+          "completionItemCount": 40,
+          "completionItems": [
+            {
+              "label": "v-if",
+              "rank": 0
+            },
+            {
+              "label": "v-else-if",
+              "rank": 1
+            },
+            {
+              "label": "v-else",
+              "rank": 2
+            },
+            {
+              "label": "v-for",
+              "rank": 3
+            },
+            {
+              "label": "v-on",
+              "rank": 4
+            },
+            {
+              "label": "v-bind",
+              "rank": 5
+            },
+            {
+              "label": "v-model",
+              "rank": 6
+            },
+            {
+              "label": "v-slot",
+              "rank": 7
+            },
+            {
+              "label": "v-show",
+              "rank": 8
+            },
+            {
+              "label": "v-pre",
+              "rank": 9
+            },
+            {
+              "label": "v-once",
+              "rank": 10
+            },
+            {
+              "label": "v-memo",
+              "rank": 11
+            },
+            {
+              "label": "v-cloak",
+              "rank": 12
+            },
+            {
+              "label": "v-text",
+              "rank": 13
+            },
+            {
+              "label": "v-html",
+              "rank": 14
+            },
+            {
+              "label": "@",
+              "rank": 15
+            },
+            {
+              "label": ":",
+              "rank": 16
+            },
+            {
+              "label": "#",
+              "rank": 17
+            },
+            {
+              "label": "@click",
+              "rank": 18
+            },
+            {
+              "label": "@input",
+              "rank": 19
+            },
+            {
+              "label": "@change",
+              "rank": 20
+            },
+            {
+              "label": "@submit",
+              "rank": 21
+            },
+            {
+              "label": "@keydown",
+              "rank": 22
+            },
+            {
+              "label": "@keyup",
+              "rank": 23
+            },
+            {
+              "label": "@focus",
+              "rank": 24
+            },
+            {
+              "label": "@blur",
+              "rank": 25
+            },
+            {
+              "label": "@mouseenter",
+              "rank": 26
+            },
+            {
+              "label": "@mouseleave",
+              "rank": 27
+            },
+            {
+              "label": "id",
+              "rank": 28
+            },
+            {
+              "label": "class",
+              "rank": 29
+            },
+            {
+              "label": "style",
+              "rank": 30
+            },
+            {
+              "label": "title",
+              "rank": 31
+            },
+            {
+              "label": "role",
+              "rank": 32
+            },
+            {
+              "label": "tabindex",
+              "rank": 33
+            },
+            {
+              "label": "aria-label",
+              "rank": 34
+            },
+            {
+              "label": "ref",
+              "rank": 35
+            },
+            {
+              "label": "key",
+              "rank": 36
+            },
+            {
+              "label": "indeterminate",
+              "rank": 37
+            },
+            {
+              "label": "inner-progress",
+              "rank": 38
+            },
+            {
+              "label": "value",
+              "rank": 39
+            }
+          ],
+          "dependencyEdit": {
+            "anchor": "  indeterminate?: boolean;\n",
+            "replacement": "  indeterminate?: boolean;\n  vizeOracleProbe?: string\n",
+            "completionLabel": "vize-oracle-probe"
+          }
+        },
+        "fileLifecycle": {
+          "copiedFile": "packages/ui-toolkit/src/components/__VizeOracleJProgressCircular.vue",
+          "renamedFile": "packages/ui-toolkit/src/components/__VizeOracleRenamedJProgressCircular.vue",
+          "originalImportSpecifier": "./JProgressCircular.vue",
+          "copiedImportSpecifier": "./__VizeOracleJProgressCircular.vue",
+          "renamedImportSpecifier": "./__VizeOracleRenamedJProgressCircular.vue",
+          "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
+          "markerSymbol": "__vizeJellyfinVueFileLifecycleMarker__"
+        }
+      }
     },
     {
       "id": "lew-ui",
