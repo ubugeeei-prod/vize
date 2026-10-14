@@ -24,6 +24,10 @@ on:
     # Daily long-run fuzz at 04:23 UTC; reproducers are uploaded as artifacts
     # so a regression triage can grab the failing input without re-running.
     - cron: "23 4 * * *"
+  # The merge queue replays the corpus for Rust changes (Check / fuzz-replay).
+  workflow_call:
+    inputs:
+      mode: { type: string, default: replay }
 run-name: Fuzz ${{ github.event_name == 'workflow_dispatch' && (inputs.mode == 'replay' && 'replay' || format('{0}s', inputs.max-total-time)) || github.event_name }} @ ${{ github.sha }}
 
 concurrency:
@@ -129,7 +133,18 @@ jobs:
         run: rust-script tools/commands/ci/fuzz/seed_corpus.rs
 
       - name: Restore grown corpus cache
+        if: ${{ github.event_name != 'merge_group' }}
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: tests/fuzz/corpus/${{ matrix.target }}
+          key: fuzz-corpus-${{ matrix.target }}-${{ github.run_id }}
+          restore-keys: |
+            fuzz-corpus-${{ matrix.target }}-
+
+      # Queue candidates read the corpus but never evict caches with their own.
+      - name: Restore grown corpus cache without saving
+        if: ${{ github.event_name == 'merge_group' }}
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: tests/fuzz/corpus/${{ matrix.target }}
           key: fuzz-corpus-${{ matrix.target }}-${{ github.run_id }}

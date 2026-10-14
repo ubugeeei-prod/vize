@@ -2,8 +2,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const outcomes = new Set(["success", "failure", "cancelled", "skipped"]);
-const events = new Set(["pull_request", "schedule", "workflow_dispatch"]);
-const releaseEvents = new Set(["schedule", "workflow_dispatch"]);
+const events = new Set(["pull_request", "merge_group", "schedule", "workflow_dispatch"]);
+const releaseEvents = new Set(["merge_group", "schedule", "workflow_dispatch"]);
 
 export function fuzzResultPolicy(eventName, outcome) {
   if (!events.has(eventName)) {

@@ -31,6 +31,7 @@ const topPrior = [
   "instruction-counts",
   "level-dependency-direction",
   "release-integration-catalog",
+  "release-gates",
 ];
 const prior = [
   "pr-source-plan",

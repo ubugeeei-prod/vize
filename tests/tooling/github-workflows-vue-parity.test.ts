@@ -10,7 +10,7 @@ import {
 import { vueParityAction } from "./support/check-vue-parity-action.ts";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
-test("the full typecheck divergence ratchet runs on schedule and dispatch", () => {
+test("the full typecheck divergence ratchet runs on schedule, dispatch and planned queue candidates", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
 
   const events = (parse(workflow) as { on: Record<string, unknown> }).on;
@@ -19,7 +19,7 @@ test("the full typecheck divergence ratchet runs on schedule and dispatch", () =
   assert.match(workflow, /\n  schedule:\n/);
   assert.match(
     workflowJobBody(workflow, "vue-parity"),
-    /^ {4}if: \$\{\{ github\.event_name == 'schedule' \|\| github\.event_name == 'workflow_dispatch' \}\}$/m,
+    /^ {4}if: \$\{\{ !cancelled\(\) && \(github\.event_name == 'schedule' \|\| github\.event_name == 'workflow_dispatch' \|\| \(github\.event_name == 'merge_group' && needs\.release-gate-plan\.outputs\.vue-parity == 'true'\)\) \}\}$/m,
   );
 });
 

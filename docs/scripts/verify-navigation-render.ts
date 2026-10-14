@@ -12,6 +12,7 @@ import { CaptureTimings } from "./capture-render-timings.ts";
 import { verifyLocaleRenderControls } from "./locale-control-render.ts";
 import { verifyNavigationRenderJob } from "./navigation-render-page.ts";
 import type { RouteReceipt } from "./navigation-render-page.ts";
+import { brokenLinks } from "./verify-static-links.ts";
 import {
   collectRenderReceipts,
   createRenderJobs,
@@ -35,6 +36,13 @@ const { values } = parseArgs({
 const dist = path.resolve(values.dir);
 const output = path.resolve(values.output);
 const routes = values.routes?.split(",") ?? defaultNavigationRenderRoutes;
+if (process.env.VIZE_DOCS_LINKS_ONLY === "1") {
+  // Merge-queue mode: the same routes and link predicate, without a browser.
+  const failures = brokenLinks(dist, routes);
+  assert.equal(failures.length, 0, failures.join("\n"));
+  console.log(`Verified links and anchors on ${routes.length} routes without a browser`);
+  process.exit(0);
+}
 const workers = parseRenderWorkers(values.workers);
 const jobs = createRenderJobs(routes);
 const captureTimings = values["capture-timings"] ? new CaptureTimings() : undefined;

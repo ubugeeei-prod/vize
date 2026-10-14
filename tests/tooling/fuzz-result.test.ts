@@ -15,7 +15,7 @@ test("fuzz result policy keeps PRs advisory and release evidence strict", () => 
       unsuccessful: true,
       releaseBlocking: false,
     });
-    for (const eventName of ["schedule", "workflow_dispatch"]) {
+    for (const eventName of ["merge_group", "schedule", "workflow_dispatch"]) {
       assert.deepEqual(fuzzResultPolicy(eventName, outcome), {
         unsuccessful: true,
         releaseBlocking: true,
