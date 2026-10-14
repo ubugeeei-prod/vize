@@ -21,9 +21,9 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `OptionGroup`                  | type  | `croquis`           |     2 |     7 |
 | `PassedProp`                   | type  | `croquis::template` |    11 |    25 |
 | `Scope`                        | type  | `scope`             |    14 |    25 |
-| `ScopeChain`                   | type  | `scope`             |     3 |     8 |
+| `ScopeChain`                   | type  | `scope`             |     4 |     9 |
 | `ScopeData`                    | type  | `scope`             |    19 |    36 |
-| `ScopeId`                      | type  | `scope`             |     8 |    23 |
+| `ScopeId`                      | type  | `scope`             |     9 |    25 |
 | `ScopeKind`                    | type  | `scope`             |    18 |    60 |
 | `SlotUsage`                    | type  | `croquis::template` |     1 |     1 |
 | `SpreadProp`                   | type  | `croquis::template` |     4 |     6 |
