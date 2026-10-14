@@ -261,8 +261,13 @@ vp exec oxlint-vize -c .oxlintrc.json -f stylish src
 
 `oxlint-vize` appends a temporary `<script setup>` location bridge for Vue and HTML files, including files with existing scripts. This lets Patina report the original SFC line and column through Oxlint's JS plugin pipeline. The wrapper rewrites temporary paths back to the original files; `-f json` retains those original positions for machine-readable diagnostics.
 
+### Oxlint type-aware rules in Vue files
+
+Oxlint's own type-aware rules (`typescript/no-floating-promises`, `typescript/no-misused-promises` and the rest of the tsgolint set) do not look inside `.vue` files. When you run `oxlint-vize --type-aware`, or your `.oxlintrc.json` sets `options.typeAware: true`, the wrapper runs those rules on each SFC's `<script>` and `<script setup>` blocks too, with the severities from your resolved configuration, and reports them at the original `.vue` lines and columns. Imports between `.vue` and `.ts` files resolve as they do for TypeScript. Template expressions are not part of this pass; Vize's `vize/type/*` rules cover them.
+
 ## Limitations
 
+- The type-aware pass for Vue script blocks uses your root configuration's resolved rules; per-file `overrides` and nested configs do not change which type-aware rules run on Vue files. Your `tsconfig.json` must include the `.vue` files' directories with a `**/*.ts` pattern, because each SFC is checked through a temporary `Component.vue.ts` sibling that is removed after the run.
 - Raw `oxlint` still misses files without `<script>` or `<script setup>`. It also anchors template diagnostics to an extracted script instead of the original template location. Use `oxlint-vize` when linting Vue and HTML files.
 - The wrapper's temporary files are not copied back when Oxlint fix flags are used; it warns when `--fix` or `--fix-suggestions` is passed.
 - With Oxlint 1.78, complete explicit/discovered JSON configs containing `ignorePatterns` or `overrides`, and root TS/MTS configs with object `extends`, the wrapper retains original file selection and ordered Vue overrides. This mode supports POSIX paths; inherited JSON configs, import/type-aware project resolution, suppression state, ambiguous filenames, unsupported outside-root patterns and unknown option forms produce actionable errors.

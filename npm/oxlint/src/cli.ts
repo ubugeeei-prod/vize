@@ -12,6 +12,7 @@ import { isStandaloneHtmlFile } from "./file-kinds.ts";
 import { prepareHtmlContext, executeHtml } from "./cli/html-operation.ts";
 import { mergeHtmlOutput, unavailableHtml, qualifyHtmlHost } from "./cli/html-project-output.ts";
 import { runOxlint } from "./cli/process.ts";
+import { requestsTypeAware, runVueTypeAwarePass } from "./cli/type-aware-vue.ts";
 
 async function main(): Promise<void> {
   const cwd = process.cwd();
@@ -85,6 +86,8 @@ async function main(): Promise<void> {
           merged = unavailableHtml(merged, error);
         }
       }
+      if (requestsTypeAware(forwardedArgs, cwd))
+        merged = await withVueTypeAwarePass(merged, cwd, oxlintEntrypoint, forwardedArgs, vueFiles);
     } catch (error) {
       // Preparation, spawn, mapping and JSON failures retain authored packets.
       if (transport?.originalResult) {
@@ -147,6 +150,31 @@ main().catch((error: unknown) => {
   );
   process.exitCode = Math.max(Number(process.exitCode) || 1, 1);
 });
+
+/** Adds oxlint's type-aware rules on Vue script blocks; a failure is reported, never hidden. */
+async function withVueTypeAwarePass(
+  merged: Awaited<ReturnType<typeof runOxlint>>,
+  cwd: string,
+  entrypoint: string,
+  forwardedArgs: readonly string[],
+  vueFiles: readonly string[],
+): Promise<Awaited<ReturnType<typeof runOxlint>>> {
+  try {
+    const pass = await runVueTypeAwarePass(cwd, entrypoint, forwardedArgs, vueFiles, (args) =>
+      runOxlint(process.execPath, args, cwd),
+    );
+    return pass ? mergeProjectOutput(merged, pass, forwardedArgs) : merged;
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    const notice = `\n[oxlint-plugin-vize] Type-aware rules could not run on Vue script blocks: ${detail}\n`;
+    return {
+      ...merged,
+      stderr: merged.stderr + notice,
+      rawStderr: undefined,
+      status: Math.max(merged.status ?? 1, 1),
+    };
+  }
+}
 
 function writeStream(stream: Writable, text: string | Uint8Array): Promise<void> {
   return new Promise((resolve, reject) => {
