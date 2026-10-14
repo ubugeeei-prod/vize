@@ -23,7 +23,7 @@ import {
   trimWhitespace,
 } from "../command-runtime.ts";
 
-export const wasmBindgenVersion = "0.2.121";
+export const wasmBindgenVersion = "0.2.129";
 
 const usage = "Usage: node tools/support/tasks/build-vitrine-wasm.ts <target> <out-dir>";
 const wasmTarget = "wasm32-unknown-unknown";

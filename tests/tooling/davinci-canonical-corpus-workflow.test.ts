@@ -66,6 +66,7 @@ await test("selection covers pinned inputs, drivers and real producers in both c
     "tools/support/compat/github/canonical-corpus-hydration.mjs",
     "tools/support/compat/github/canonical-corpus-observer.mjs",
     "tools/support/compat/github/canonical-corpus-workers.mjs",
+    "tools/support/compat/github/canonical-corpus-jobs.ts",
     "tools/support/compat/github/canonical-corpus-native-walk.mjs",
     "tools/support/compat/github/canonical-corpus-finite-walk.mjs",
     "tests/tooling/davinci-canonical-corpus-native-archive.test.mjs",
@@ -172,12 +173,12 @@ await test("ordinary source and queue reports require the strict reusable execut
     undefined,
   );
   assert.deepEqual(matrix.jobs["davinci-dom-corpus"], {
-    permissions: { contents: "read", actions: "read" },
+    permissions: { contents: "read", actions: "read", checks: "read" },
     uses: "./.github/workflows/davinci-canonical-corpus.yml",
     with: { davinci_dom_corpus_mode: "${{ inputs.davinci_dom_corpus_mode || 'enforce' }}" },
   });
   assert.deepEqual(source.jobs["canonical-corpus"], {
-    permissions: { contents: "read", actions: "read" },
+    permissions: { contents: "read", actions: "read", checks: "read" },
     needs: "pr-source-plan",
     if: "${{ !cancelled() && needs.pr-source-plan.result == 'success' && needs.pr-source-plan.outputs.canonical-corpus == 'true' }}",
     uses: "./.github/workflows/davinci-canonical-corpus.yml",
@@ -189,6 +190,12 @@ await test("ordinary source and queue reports require the strict reusable execut
   );
   assert.equal(corpus.on.workflow_call.inputs.davinci_dom_corpus_mode.default, "enforce");
   assert.deepEqual(corpus.permissions, { contents: "read" });
+  for (const job of [
+    corpus.jobs["davinci-dom-corpus"],
+    parse(readRepoFile(".github", "workflows", "check.yml")).jobs["pr-source-checks"],
+  ]) {
+    assert.deepEqual(job.permissions, { contents: "read", actions: "read", checks: "read" });
+  }
   assert.deepEqual(corpus.env, {
     CARGO_TERM_COLOR: "always",
     FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true,

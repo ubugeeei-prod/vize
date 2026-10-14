@@ -27,4 +27,4 @@ title: "操作とフォーカスのアクセシビリティ"
 | [`a11y/no-redundant-roles`](https://vizejs.dev/ja/rules/accessibility-interactions.html#a11y-no-redundant-roles) | [悪い](https://vizejs.dev/ja/rules/accessibility-interactions.html#a11y-no-redundant-roles-bad) · [良い](https://vizejs.dev/ja/rules/accessibility-interactions.html#a11y-no-redundant-roles-good) | 要素本来の意味と重複する ARIA role を検出します。 |
 | [`a11y/no-refer-to-non-existent-id`](https://vizejs.dev/ja/rules/accessibility-interactions.html#a11y-no-refer-to-non-existent-id) | [悪い](https://vizejs.dev/ja/rules/accessibility-interactions.html#a11y-no-refer-to-non-existent-id-bad) · [良い](https://vizejs.dev/ja/rules/accessibility-interactions.html#a11y-no-refer-to-non-existent-id-good) | 文書内に存在しない ID への参照を検出します。 |
 
-[全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
+[全ルール](./all.md) · [ルールのオプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)

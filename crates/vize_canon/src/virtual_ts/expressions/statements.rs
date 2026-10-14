@@ -13,7 +13,10 @@ use super::statement_guard::generate_vif_guard_expression;
 use super::ts_suppression_comments::expression_source_for_typecheck;
 use super::value_checks::TemplateValueChecks;
 use super::vif_chain::{VifControlFlowChain, emit_vif_control_flow_chain};
-use crate::virtual_ts::scope::{append_ignored_vif_guard_open, remove_enclosing_vif_guard_prefix};
+use crate::virtual_ts::scope::{
+    append_chained_vif_guard_close, append_chained_vif_guard_open,
+    remove_enclosing_vif_guard_prefix,
+};
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use std::borrow::Cow;
 use vize_carton::{CompactString, FxHashSet, String, append, cstr, profile};
@@ -159,7 +162,7 @@ pub(crate) fn generate_expression(
         // The authored condition has its own projection. This duplicate guard
         // only carries narrowing; mapping it onto the body would rename body
         // tokens when the condition's symbol is renamed.
-        append_ignored_vif_guard_open(ts, indent, generated_guard, "Narrowing-only guard");
+        append_chained_vif_guard_open(ts, indent, generated_guard, "Narrowing-only guard");
         generate_expression_statement(
             ts,
             mappings,
@@ -169,7 +172,7 @@ pub(crate) fn generate_expression(
             &cstr!("{indent}  "),
             checks,
         );
-        append!(*ts, "{indent}}}\n");
+        append_chained_vif_guard_close(ts, indent);
     } else {
         generate_expression_statement(
             ts,

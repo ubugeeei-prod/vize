@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { wasmBindgenVersion } from "../../tools/support/tasks/build-vitrine-wasm.ts";
 import { runToolCommand } from "./_helpers/tool-commands.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 
@@ -14,11 +15,18 @@ for (const [script, args, status] of [
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-wasm-panic-"));
     const bin = path.join(root, "bin");
     const record = path.join(root, "cargo.json");
-    const bindgen = path.join(root, ".cache/wasm-pack/.wasm-bindgen-cargo-install-0.2.121/bin");
+    const bindgen = path.join(
+      root,
+      `.cache/wasm-pack/.wasm-bindgen-cargo-install-${wasmBindgenVersion}/bin`,
+    );
     try {
       fs.mkdirSync(bin, { recursive: true });
       fs.mkdirSync(bindgen, { recursive: true });
-      writeFakeCommand(bindgen, "wasm-bindgen", "console.log('wasm-bindgen 0.2.121');");
+      writeFakeCommand(
+        bindgen,
+        "wasm-bindgen",
+        `console.log('wasm-bindgen ${wasmBindgenVersion}');`,
+      );
       // Exercise hosts without Apple's SDK discovery command, including macOS
       // installations where the command exists but cannot locate an SDK.
       writeFakeCommand(bin, "xcrun", "process.exit(1);");

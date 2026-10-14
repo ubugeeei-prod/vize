@@ -121,7 +121,7 @@ jobs:
     name: s2 dom corpus
     if: ${{ always() }}
     needs: canonical-observers
-    permissions: { contents: read, actions: read }
+    permissions: { contents: read, actions: read, checks: read }
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 120
     env:

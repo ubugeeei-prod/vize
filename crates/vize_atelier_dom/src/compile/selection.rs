@@ -12,7 +12,7 @@
 use vize_l0::profiler::global_profiler;
 
 /// The counter an L2-emitted DOM compile records.
-pub(super) const ACCEPTED_COUNTER: &str = "davinci.s2_dom.accepted";
+pub(super) const ACCEPTED_COUNTER: &str = "l2.dom.accepted";
 
 /// Why one DOM compile stayed on the legacy transform lane.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -81,22 +81,22 @@ impl DomLegacyReason {
     /// The profiler counter this reason records.
     pub(super) const fn counter(self) -> &'static str {
         match self {
-            Self::ParseError => "davinci.s2_dom.legacy.parse_error",
-            Self::Entry => "davinci.s2_dom.legacy.entry",
-            Self::EmitRefused => "davinci.s2_dom.legacy.emit_refused",
-            Self::SourceMapMismatch => "davinci.s2_dom.legacy.source_map_mismatch",
-            Self::Ssr => "davinci.s2_dom.legacy.ssr",
-            Self::PatternedTemplate => "davinci.s2_dom.legacy.patterned_template",
-            Self::SelfComponent => "davinci.s2_dom.legacy.self_component",
-            Self::CustomRenderer => "davinci.s2_dom.legacy.custom_renderer",
-            Self::Whitespace => "davinci.s2_dom.legacy.whitespace",
-            Self::Dialect => "davinci.s2_dom.legacy.dialect",
-            Self::TemplateSyntax => "davinci.s2_dom.legacy.template_syntax",
-            Self::Croquis => "davinci.s2_dom.legacy.croquis",
-            Self::PatternedSource => "davinci.s2_dom.legacy.patterned_source",
-            Self::DirectiveComment => "davinci.s2_dom.legacy.directive_comment",
+            Self::ParseError => "l2.dom.legacy.parse_error",
+            Self::Entry => "l2.dom.legacy.entry",
+            Self::EmitRefused => "l2.dom.legacy.emit_refused",
+            Self::SourceMapMismatch => "l2.dom.legacy.source_map_mismatch",
+            Self::Ssr => "l2.dom.legacy.ssr",
+            Self::PatternedTemplate => "l2.dom.legacy.patterned_template",
+            Self::SelfComponent => "l2.dom.legacy.self_component",
+            Self::CustomRenderer => "l2.dom.legacy.custom_renderer",
+            Self::Whitespace => "l2.dom.legacy.whitespace",
+            Self::Dialect => "l2.dom.legacy.dialect",
+            Self::TemplateSyntax => "l2.dom.legacy.template_syntax",
+            Self::Croquis => "l2.dom.legacy.croquis",
+            Self::PatternedSource => "l2.dom.legacy.patterned_source",
+            Self::DirectiveComment => "l2.dom.legacy.directive_comment",
             #[cfg(feature = "legacy-differential")]
-            Self::Forced => "davinci.s2_dom.legacy.forced",
+            Self::Forced => "l2.dom.legacy.forced",
         }
     }
 }

@@ -19,6 +19,7 @@ import {
 } from "./canonical-corpus-identity.mjs";
 import { validateObserverArtifact } from "./canonical-corpus-observer.mjs";
 import { validateArtifactsConcurrently } from "./canonical-corpus-artifact-batch.ts";
+import { readCanonicalJobs } from "./canonical-corpus-jobs.ts";
 
 const commands = {
   dom: "Run L2 DOM differential corpus",
@@ -283,6 +284,7 @@ async function readSelection(context, env) {
   assert(env.GH_TOKEN, "Canonical finalizer requires its read-only Actions token");
   const options = {
     apiUrl: env.GITHUB_API_URL,
+    serverUrl: env.GITHUB_SERVER_URL,
     repository: context.repository,
     token: env.GH_TOKEN,
   };
@@ -290,17 +292,14 @@ async function readSelection(context, env) {
   const readRun = async () => JSON.parse((await githubApiRequest({ ...options, resource })).body);
   const before = await readRun();
   const [jobs, artifacts] = await Promise.all([
-    githubApiPages({
-      ...options,
-      resource: `${resource}/jobs`,
-      collection: "jobs",
-      query: { filter: "all" },
-    }),
+    readCanonicalJobs(options, before),
     githubApiPages({ ...options, resource: `${resource}/artifacts`, collection: "artifacts" }),
   ]);
   const selected = selectCanonicalWorkers(context, before, jobs, artifacts);
+  const after = await readRun();
+  assert.equal(after.check_suite_id, before.check_suite_id, "Canonical check suite changed");
   assert.deepEqual(
-    selectCanonicalWorkers(context, await readRun(), jobs, artifacts),
+    selectCanonicalWorkers(context, after, jobs, artifacts),
     selected,
     "Canonical workflow identity changed during selection",
   );

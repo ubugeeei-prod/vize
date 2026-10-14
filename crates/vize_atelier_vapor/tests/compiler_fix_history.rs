@@ -45,9 +45,28 @@ fn seven_history_fixes_preserve_complete_vapor_outputs() {
 /// Cases whose captured output a later fix deliberately replaced. The capture
 /// stays as it was recorded; the corrected reference is what the compiler
 /// must produce now.
-const CORRECTED: &[(&str, &str)] = &[(
-    // The loop value's `count: total = 0` default was dropped; it is lazy now,
-    // as Vue's compiler emits it.
-    "destructured-aliases",
-    include_str!("fixtures/fix-history/destructured-aliases.corrected-8852.expected.json"),
-)];
+const CORRECTED: &[(&str, &str)] = &[
+    (
+        // The loop value's `count: total = 0` default was dropped; it is lazy
+        // now, as Vue's compiler emits it.
+        "destructured-aliases",
+        include_str!("fixtures/fix-history/destructured-aliases.corrected-8852.expected.json"),
+    ),
+    // These listeners carry no `.delegate`, so they attach directly, as Vue's
+    // compiler emits since 3.6.0-rc.6. Nested registration of requested
+    // delegation is covered by `nested_delegate_events.rs`.
+    (
+        "delegated-if",
+        include_str!("fixtures/fix-history/delegated-if.corrected-delegation.expected.json"),
+    ),
+    (
+        "delegated-loop",
+        include_str!("fixtures/fix-history/delegated-loop.corrected-delegation.expected.json"),
+    ),
+    (
+        "delegated-slot-fallback",
+        include_str!(
+            "fixtures/fix-history/delegated-slot-fallback.corrected-delegation.expected.json"
+        ),
+    ),
+];

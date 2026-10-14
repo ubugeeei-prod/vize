@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import Inner from "./Inner.vue";
+</script>
+
+<template>
+  <Inner>
+    <template v-for="(_, slotName) in $slots" v-slot:[slotName]="slotProps">
+      <slot :name="slotName" v-bind="slotProps ?? {}" />
+    </template>
+  </Inner>
+</template>

@@ -33,8 +33,8 @@ documents the current authentication and publisher-management options.
 
 ## crates.io
 
-Audit every crate in `published_crates` in
-`tools/moon/cmd/publish_crates/main.mbt`, including dependencies that the failed
+Audit every crate in `publishedCrates` in
+`tools/support/release/publish_crates/main.ts`, including dependencies that the failed
 job never reached. All publishable workspace crates belong in that automatic
 plan, in dependency order. The plan tests compare it against Cargo metadata.
 

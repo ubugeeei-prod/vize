@@ -12,7 +12,7 @@ use crate::virtual_ts::expressions::ComponentPropCheckContext;
 use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
 
 use self::strict_children::generate_strict_slot_child_checks;
-use super::vif_guard::append_ignored_vif_guard_open;
+use super::vif_guard_chain::{append_chained_vif_guard_close, append_chained_vif_guard_open};
 
 #[derive(Clone, Copy)]
 pub(super) struct ComponentSlotCheckMeta<'a, 'template> {
@@ -36,7 +36,7 @@ pub(super) fn append_component_slot_check_helpers(ts: &mut String, strict_childr
     // Vue's declared options retain their slots parameter even when `data: any`
     // collapses the public instance. Unknown constructors carry no such contract.
     ts.push_str(
-        "  type __VizeEmptyVueNavigationSlots<C> = ('__isFragment' | '__isTeleport' | '__isSuspense' | 'slots') extends keyof C ? __VizeIsAny<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]> extends true ? any : [NonNullable<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]>] extends [never] ? C extends { slots?: infer __S } ? __VizeIsAny<__S> extends true ? any : unknown extends __S ? any : [keyof NonNullable<__S>] extends [never] ? {} : any : any : any : any;\n",
+        "  type __VizeEmptyVueNavigationSlots<C> = ('__isFragment' | '__isTeleport' | '__isSuspense' | 'slots') extends keyof C ? __VizeIsAny<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]> extends true ? any : [NonNullable<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]>] extends [never] ? C extends { slots?: infer __S } ? __VizeIsAny<__S> extends true ? any : unknown extends __S ? any : [keyof NonNullable<__S>] extends [never] ? C extends { setup?: (props: infer __P, ...args: any[]) => any } ? string extends keyof __P ? any : {} : {} : any : any : any : any;\n",
     );
     ts.push_str(
         "  type __VizeNativeNavigationSlots<C> = C extends new (...args: any[]) => { $slots: any } ? __VizeIsAny<InstanceType<C>> extends true ? __VizeEmptyVueNavigationSlots<C> : __VizeIsAny<InstanceType<C>['$slots']> extends true ? any : unknown extends InstanceType<C>['$slots'] ? any : InstanceType<C>['$slots'] : any;\n",
@@ -78,7 +78,7 @@ pub(super) fn generate_component_slot_checks(
     };
 
     if let Some(ref guard) = usage.vif_guard {
-        append_ignored_vif_guard_open(ctx.ts, indent, guard, "Inference-only guard");
+        append_chained_vif_guard_open(ctx.ts, indent, guard, "Inference-only guard");
     }
 
     let contract_name = vize_carton::cstr!("__VizeSlotContract_{idx}");
@@ -117,7 +117,7 @@ pub(super) fn generate_component_slot_checks(
     }
 
     if usage.vif_guard.is_some() {
-        append!(*ctx.ts, "{indent}}}\n");
+        append_chained_vif_guard_close(ctx.ts, indent);
     }
 }
 

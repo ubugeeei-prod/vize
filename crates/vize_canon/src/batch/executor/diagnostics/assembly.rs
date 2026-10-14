@@ -184,7 +184,9 @@ impl DiagnosticMapper<'_> {
                 AssembledOrigin::Checker(()) => {
                     sfc_map.map(|map| map.block_type_at(assembled.start as u32))
                 }
-                AssembledOrigin::MissingVueImport(()) => None,
+                AssembledOrigin::MissingVueImport(()) | AssembledOrigin::GeneratedGiveUp(()) => {
+                    None
+                }
                 AssembledOrigin::UnusedExpectation => Some(SfcBlockType::Template),
             };
             let original = OriginalPosition {

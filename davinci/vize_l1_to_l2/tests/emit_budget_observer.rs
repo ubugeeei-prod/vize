@@ -128,7 +128,7 @@ fn observed_dom_emit_keeps_output_and_walk_budget() {
             fixture.name,
         );
         println!(
-            "davinci.s2_dom.walk {} emit_walks={} emit_visits={} transform_walks={} transform_passes={} total_walks={} fused_walk_target={} baseline_walks={} baseline_visits={}",
+            "l2.dom.walk {} emit_walks={} emit_visits={} transform_walks={} transform_passes={} total_walks={} fused_walk_target={} baseline_walks={} baseline_visits={}",
             fixture.name,
             observed.budget.emit_walks,
             observed.budget.emit_visits,

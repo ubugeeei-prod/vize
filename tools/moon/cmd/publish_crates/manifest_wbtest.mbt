@@ -1,5 +1,0 @@
-test "publish manifest retains complete normal/build sections and strips dotted dev tables" {
-  let original = "[package]\nname = \"fixture\"\n[dependencies]\nnormal = \"1\"\n[dev-dependencies]\nold = \"1\"\n[dev-dependencies.assert_cmd]\nversion = \"2\"\n[target.'cfg(unix)'.dev-dependencies]\nold_target = \"1\"\n[target.\"cfg(feature = \\\"a.b\\\")\".dev-dependencies.tempfile]\nversion = \"3\"\n[dependencies.normal]\nversion = \"1\"\n[build-dependencies]\ncc = \"1\"\n[target.'cfg(feature = \"a.dev-dependencies.fake\")'.dependencies]\nnormal_target = \"2\"\n[target.'cfg(unix)'.build-dependencies.cc]\nversion = \"1\"\n"
-  let expected = "[package]\nname = \"fixture\"\n[dependencies]\nnormal = \"1\"\n[dependencies.normal]\nversion = \"1\"\n[build-dependencies]\ncc = \"1\"\n[target.'cfg(feature = \"a.dev-dependencies.fake\")'.dependencies]\nnormal_target = \"2\"\n[target.'cfg(unix)'.build-dependencies.cc]\nversion = \"1\"\n"
-  inspect(publish_manifest_without_dev_dependencies(original), content=expected)
-}

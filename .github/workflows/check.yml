@@ -43,7 +43,7 @@ jobs:
         env: { GH_TOKEN: "${{ github.token }}" }
   pr-source-checks:
     name: PR source checks
-    permissions: { contents: read, actions: read }
+    permissions: { contents: read, actions: read, checks: read }
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
     uses: ./.github/workflows/pr-source-checks.yml
   instruction-counts:
@@ -119,7 +119,7 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 25
     permissions: { contents: read }
-    # Keep this list in sync with crates published by tools/moon/cmd/publish_crates.
+    # Keep this list in sync with crates published by tools/support/release/publish_crates.
     strategy:
       fail-fast: false
       matrix:
@@ -157,7 +157,7 @@ jobs:
       - name: Install cargo-semver-checks
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
-          tool: cargo-semver-checks
+          tool: cargo-semver-checks@0.51.0 # 0.50.0+ reads the rustdoc JSON v61 of Rust 1.99
       - name: Check public API SemVer compatibility
         env:
           BASELINE_REV: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || (github.event_name == 'push' && github.event.before || '') }}
@@ -456,7 +456,7 @@ jobs:
         run: rust-script tools/commands/ci/github/write-coverage-summary.rs
   source-coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 40
+    timeout-minutes: 50
     # Source coverage is a daily/full-run trend metric; fast checks stay on PRs and pushes.
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     env:
@@ -487,7 +487,7 @@ jobs:
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
-          tool: cargo-llvm-cov
+          tool: cargo-llvm-cov,cargo-nextest@0.9.146
       - name: Source coverage report
         env:
           VIZE_NATIVE_SYNTAX_CAPTURE_DIR: ${{ runner.temp }}/source-coverage-native-syntax
@@ -580,7 +580,7 @@ jobs:
         if: steps.cache-wasm.outputs.cache-hit != 'true'
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
-          tool: wasm-bindgen-cli@0.2.127
+          tool: wasm-bindgen-cli@0.2.129
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:

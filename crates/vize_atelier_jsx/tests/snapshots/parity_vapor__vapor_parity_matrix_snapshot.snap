@@ -257,12 +257,12 @@ export function render(_ctx) {
 ### source
 const A = () => <button onClickCapture={h}/>;
 ### output
-import { createInvoker as _createInvoker, on as _on, template as _template } from 'vue';
+import { on as _on, template as _template } from 'vue';
 const t0 = _template("<button></button>", true)
 
 export function render(_ctx) {
   const n0 = t0()
-  _on(n0, "click", _createInvoker(e => h(e)), {
+  _on(n0, "click", e => h(e), {
     capture: true
   })
   return n0

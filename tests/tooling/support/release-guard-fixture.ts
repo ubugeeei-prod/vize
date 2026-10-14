@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { repoRoot, runMoonScript } from "../_helpers/moonbit.ts";
+import { repoRoot, runReleaseCommand } from "./release-command.ts";
 import { writeFakeCommand } from "./fake-command.ts";
 
 export interface RepositoryGuardOptions {
@@ -39,11 +39,7 @@ export function runRepositoryGuardFixture(options: RepositoryGuardOptions) {
     .find((command) => fs.existsSync(command));
   fs.mkdirSync(binDir, { recursive: true });
   fs.mkdirSync(path.join(tempDir, "npm"));
-  if (options.env?.VIZE_RELEASE_REGISTRY_REFRESH) {
-    const updater = "tools/support/release/moon-registry-update.mjs";
-    fs.mkdirSync(path.dirname(path.join(tempDir, updater)), { recursive: true });
-    fs.copyFileSync(path.join(repoRoot, updater), path.join(tempDir, updater));
-  } else if (options.guestLocks) {
+  if (options.guestLocks) {
     fs.symlinkSync(path.join(repoRoot, "tools"), path.join(tempDir, "tools"), "dir");
   }
   if (options.guestLocks) {
@@ -137,7 +133,7 @@ export function runRepositoryGuardFixture(options: RepositoryGuardOptions) {
     ].join("\n"),
   );
 
-  const result = runMoonScript("release", ["patch", "-y", "--prepare-only"], {
+  const result = runReleaseCommand("release", ["patch", "-y", "--prepare-only"], {
     cwd: tempDir,
     env: {
       ...options.env,

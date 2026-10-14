@@ -43,7 +43,7 @@ export const vueCategoryLabels: Record<
     bad: "悪い",
     good: "良い",
     related:
-      "[全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)",
+      "[全ルール](./all.md) · [ルールのオプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)",
   },
   "zh-CN": {
     title: "Vue 规则",

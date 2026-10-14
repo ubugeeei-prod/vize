@@ -42,7 +42,10 @@
 //! }
 //! ```
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+mod setup;
+pub use setup::NoDupeKeysModuleScript;
+
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::Program;
 use vize_croquis::OptionMember;
@@ -68,6 +71,10 @@ impl ScriptRule for NoDupeKeys {
         true
     }
 
+    fn as_setup_dupe_keys(&self) -> Option<&NoDupeKeys> {
+        Some(self)
+    }
+
     #[inline]
     fn check_program<'a>(
         &self,
@@ -80,6 +87,45 @@ impl ScriptRule for NoDupeKeys {
             return;
         };
         check_descriptor_members(&descriptor.members, offset, result);
+    }
+    fn check_program_with_sfc<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        sfc: SfcScriptContext<'_>,
+        result: &mut ScriptLintResult,
+    ) {
+        if sfc.is_sfc && sfc.is_script_setup {
+            let module = if sfc.sole_script_block {
+                NoDupeKeysModuleScript::Absent
+            } else {
+                NoDupeKeysModuleScript::Unavailable
+            };
+            self.check_setup_with_module(program, source, offset, module, result);
+        } else {
+            self.check_program(program, source, offset, result);
+        }
+    }
+}
+
+impl NoDupeKeys {
+    pub(crate) fn setup_needs_module(program: &Program<'_>) -> bool {
+        setup::has_candidate(program)
+    }
+
+    pub(crate) fn check_setup_with_module<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        module: NoDupeKeysModuleScript<'a>,
+        result: &mut ScriptLintResult,
+    ) {
+        // Preserve every pre-existing Options descriptor diagnostic in this
+        // block before adding the compiler-owned setup namespace check.
+        self.check_program(program, source, offset, result);
+        setup::check(program, offset, module, result);
     }
 }
 
@@ -155,201 +201,4 @@ fn first_declaration_label(group: &'static str) -> CompactString {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::NoDupeKeys;
-    use crate::rules::script::ScriptLinter;
-
-    fn create_linter() -> ScriptLinter {
-        let mut linter = ScriptLinter::new();
-        linter.add_rule(Box::new(NoDupeKeys));
-        linter
-    }
-
-    #[test]
-    fn test_valid_unique_keys() {
-        let source = r#"
-export default {
-  props: ['foo'],
-  data() {
-    return { bar: 1 }
-  },
-  computed: {
-    baz() { return 2 }
-  },
-  methods: {
-    qux() {}
-  }
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_valid_no_options_object() {
-        let source = r#"
-import { ref } from 'vue'
-const foo = ref(0)
-const foo2 = ref(1)
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_prop_duplicated_in_data() {
-        let source = r#"
-export default {
-  props: ['foo'],
-  data() {
-    return { foo: 1 }
-  }
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-        insta::assert_debug_snapshot!(result.diagnostics);
-    }
-
-    #[test]
-    fn test_computed_duplicated_in_methods() {
-        let source = r#"
-export default {
-  computed: {
-    bar() { return 2 }
-  },
-  methods: {
-    bar() {}
-  }
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-        insta::assert_debug_snapshot!(result.diagnostics);
-    }
-
-    #[test]
-    fn test_prop_object_form_duplicated_in_computed() {
-        let source = r#"
-export default {
-  props: {
-    count: Number
-  },
-  computed: {
-    count() { return 1 }
-  }
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_define_component_duplicate() {
-        let source = r#"
-import { defineComponent } from 'vue'
-
-export default defineComponent({
-  data() {
-    return { value: 1 }
-  },
-  methods: {
-    value() {}
-  }
-})
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_identifier_export_duplicate() {
-        let source = r#"
-const component = {
-  props: ['name'],
-  methods: {
-    name() {}
-  }
-}
-
-export default component
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_arrow_data_concise_body_duplicate() {
-        let source = r#"
-export default {
-  inject: ['theme'],
-  data: () => ({ theme: 'dark' })
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_setup_return_duplicated_in_data() {
-        let source = r#"
-export default {
-  data() {
-    return { open: false }
-  },
-  setup() {
-    return { open: true }
-  }
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_multiple_duplicates_reported() {
-        let source = r#"
-export default {
-  props: ['a', 'b'],
-  computed: {
-    a() { return 1 }
-  },
-  methods: {
-    b() {}
-  }
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 2);
-    }
-
-    #[test]
-    fn test_inject_object_form_duplicate() {
-        let source = r#"
-export default {
-  inject: {
-    foo: { from: 'bar' }
-  },
-  computed: {
-    foo() { return 1 }
-  }
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_spread_in_object_is_ignored() {
-        let source = r#"
-export default {
-  props: ['foo'],
-  computed: {
-    ...mapGetters(['count'])
-  }
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 0);
-    }
-}
+mod tests;

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readdir, readFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -118,7 +119,11 @@ test("publishes a deterministic story-testbed inventory for each family", () => 
       entry.artifacts.map((artifact) => [artifact.surface, artifact]),
     );
     assert.deepEqual([...artifactsBySurface.keys()], uiStoryTestbedSurfaces);
-    assert.equal(artifactsBySurface.get("musea-story")?.status, "planned");
+    assert.equal(
+      artifactsBySurface.get("musea-story")?.status,
+      existsSync(path.join(uiRoot, entry.storyFile)) ? "ready" : "planned",
+      `${entry.canonicalName} story status follows its colocated story file`,
+    );
     assert.equal(artifactsBySurface.get("vue-test-utils")?.status, "planned");
     assert.equal(artifactsBySurface.get("vitest-browser")?.status, "planned");
     assert.equal(artifactsBySurface.get("playwright-vrt")?.status, "planned");
@@ -191,7 +196,9 @@ test("audits planned artifacts and supporting tests against source files", async
   const hookNames = uiStoryTestbedInventory.flatMap((entry) =>
     entry.harnessHooks.map((hook) => hook.name),
   );
-  assert.equal(plannedArtifacts.length, uiFamilyCatalog.length * 4);
+  const storyFiles = [...existingFiles].filter((file) => file.endsWith(".art.vue"));
+  // Only Musea stories have landed so far; every other surface is still planned.
+  assert.equal(plannedArtifacts.length, uiFamilyCatalog.length * 4 - storyFiles.length);
   assert.ok(supportingTestFiles.length >= uiFamilyCatalog.length);
   assert.equal(hookNames.length, uiFamilyCatalog.length * uiStoryTestbedHarnessHookNames.length);
 });

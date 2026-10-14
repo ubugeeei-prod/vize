@@ -60,7 +60,7 @@ fn sfc_sections_entry_uses_l2_for_parser_recovered_html_self_closing_native_tags
         assert_eq!(selected.preamble, compat.preamble, "{label} preamble");
         assert_eq!(selected.code, compat.code, "{label} code");
         assert_eq!(
-            counter_total(&counters, "davinci.s2_dom.files"),
+            counter_total(&counters, "l2.dom.files"),
             Some(1),
             "{label} must use L2 after parser-recorded compatibility diagnostics"
         );

@@ -6,7 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { repoRoot, runMoonScript } from "../_helpers/moonbit.ts";
+import { repoRoot, runReleaseCommand } from "../support/release-command.ts";
 import { writeFakeCommand } from "../support/fake-command.ts";
 import { readRepoFile } from "../support/github-workflows.ts";
 
@@ -42,7 +42,7 @@ test("public release CLI forwards pinned start, resume and retirement through it
       { args: retire, protocol: ["retire", "42", "a".repeat(40), "v0.440.0", "43", "44"] },
     ];
     for (const { args, protocol } of cases) {
-      const result = runMoonScript("release", args, {
+      const result = runReleaseCommand("release", args, {
         env: { PATH: `${bin}${path.delimiter}${process.env.PATH ?? ""}` },
       });
       assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
@@ -52,7 +52,7 @@ test("public release CLI forwards pinned start, resume and retirement through it
       ]);
     }
     fs.rmSync(capture);
-    const rejected = runMoonScript("release", ["patch", "-y", "--pin", "--prepare-only"]);
+    const rejected = runReleaseCommand("release", ["patch", "-y", "--pin", "--prepare-only"]);
     assert.notEqual(rejected.status, 0);
     assert.match(rejected.stderr, /--pin requires the release PR protocol/);
     assert.equal(fs.existsSync(capture), false);
@@ -75,7 +75,7 @@ test("public release CLI forwards pinned start, resume and retirement through it
       retire.map((arg, index) => (index === 2 ? "--run" : arg)),
     ];
     for (const args of invalid) {
-      const result = runMoonScript("release", args, {
+      const result = runReleaseCommand("release", args, {
         env: { PATH: `${bin}${path.delimiter}${process.env.PATH ?? ""}` },
       });
       assert.notEqual(result.status, 0, JSON.stringify(args));
@@ -91,7 +91,7 @@ test("public release CLI forwards pinned start, resume and retirement through it
       ["minor", "-y", "--prepare-only", "--pinned-target"],
       ["minor", "-y", "--prepare-only", "--pinned-target", target, "--pinned-target", target],
     ]) {
-      const result = runMoonScript("release", args, {
+      const result = runReleaseCommand("release", args, {
         env: { PATH: `${bin}${path.delimiter}${process.env.PATH ?? ""}` },
       });
       assert.notEqual(result.status, 0, JSON.stringify(args));
@@ -109,7 +109,7 @@ test("public release CLI forwards pinned start, resume and retirement through it
       process.exit(1);
     `,
     );
-    const prepared = runMoonScript(
+    const prepared = runReleaseCommand(
       "release",
       ["minor", "-y", "--prepare-only", "--pinned-target", target],
       { env: { PATH: `${bin}${path.delimiter}${process.env.PATH ?? ""}` } },

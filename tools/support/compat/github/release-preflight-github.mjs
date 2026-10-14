@@ -32,7 +32,9 @@ export async function githubApiRequest({
     throw new Error(`GitHub API request timeout must be positive, got ${requestTimeoutMs}`);
   }
   const url = new URL(`${apiUrl}/repos/${repository}/${resource}`);
-  const maxAttempts = method === "GET" ? 3 : 1;
+  // GitHub answered 502 for minutes at a time on 2026-10-13; three tries within
+  // three seconds failed CI jobs. Reads wait up to 31 s before giving up.
+  const maxAttempts = method === "GET" ? 6 : 1;
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), requestTimeoutMs);

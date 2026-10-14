@@ -4,8 +4,8 @@ expression: segments
 ---
 [
     "1:23 \"button> \" -> \"button v\"",
-    "4:0 \"export f\" -> \"<button \"",
-    "7:32 \"(event) \" -> \"(event) \"",
-    "7:43 \"_ctx.rec\" -> \"record(e\" [record]",
-    "8:32 \"_ctx.lab\" -> \"label }}\" [label]",
+    "3:0 \"export f\" -> \"<button \"",
+    "6:19 \"(event) \" -> \"(event) \"",
+    "6:30 \"_ctx.rec\" -> \"record(e\" [record]",
+    "7:32 \"_ctx.lab\" -> \"label }}\" [label]",
 ]

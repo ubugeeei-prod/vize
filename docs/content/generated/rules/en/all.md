@@ -14,7 +14,7 @@ Severity is the implementation default; override it with `off`, `warn`, or `erro
 
 See the [ESLint migration map](./migration.md) for rule IDs, differences, and unsupported mappings.
 
-## Single-file rules (251)
+## Single-file rules (255)
 
 | Rule | Examples | Severity | Presets | Fixable | Options | Implementation | Description | Category |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -32,6 +32,7 @@ See the [ESLint migration map](./migration.md) for rule IDs, differences, and un
 | [`vue/no-deprecated-slot-attribute`](#vue-no-deprecated-slot-attribute) | [Bad](#vue-no-deprecated-slot-attribute-bad) · [Good](#vue-no-deprecated-slot-attribute-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs#L39) | Disallow the deprecated `slot` attribute | Essential |
 | [`vue/no-deprecated-slot-scope-attribute`](#vue-no-deprecated-slot-scope-attribute) | [Bad](#vue-no-deprecated-slot-scope-attribute-bad) · [Good](#vue-no-deprecated-slot-scope-attribute-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_scope_attribute.rs#L33) | Disallow the deprecated `slot-scope` attribute | Essential |
 | [`vue/no-deprecated-v-bind-sync`](#vue-no-deprecated-v-bind-sync) | [Bad](#vue-no-deprecated-v-bind-sync-bad) · [Good](#vue-no-deprecated-v-bind-sync-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_bind_sync.rs#L42) | Disallow the deprecated `.sync` modifier on `v-bind` | Essential |
+| [`vue/no-deprecated-v-is`](#vue-no-deprecated-v-is) | [Bad](#vue-no-deprecated-v-is-bad) · [Good](#vue-no-deprecated-v-is-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_is.rs#L27) | Disallow the deprecated `v-is` directive | Essential |
 | [`vue/no-deprecated-v-on-native-modifier`](#vue-no-deprecated-v-on-native-modifier) | [Bad](#vue-no-deprecated-v-on-native-modifier-bad) · [Good](#vue-no-deprecated-v-on-native-modifier-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_on_native_modifier.rs#L43) | Disallow the deprecated `.native` modifier on `v-on` | Essential |
 | [`vue/no-deprecated-v-on-number-modifiers`](#vue-no-deprecated-v-on-number-modifiers) | [Bad](#vue-no-deprecated-v-on-number-modifiers-bad) · [Good](#vue-no-deprecated-v-on-number-modifiers-good) | `error` | `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_on_number_modifiers.rs#L43) | Disallow deprecated numeric `keyCode` modifiers on `v-on` | Essential |
 | [`vue/no-dupe-v-else-if`](#vue-no-dupe-v-else-if) | [Bad](#vue-no-dupe-v-else-if-bad) · [Good](#vue-no-dupe-v-else-if-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_dupe_v_else_if.rs#L34) | Disallow duplicate conditions in `v-if` / `v-else-if` chains | Essential |
@@ -57,14 +58,17 @@ See the [ESLint migration map](./migration.md) for rule IDs, differences, and un
 | [`vue/valid-template-root`](#vue-valid-template-root) | [Bad](#vue-valid-template-root-bad) · [Good](#vue-valid-template-root-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_template_root.rs#L82) | Enforce a valid `&lt;template&gt;` root for Vue 3 fragment semantics | Essential |
 | [`vue/valid-v-bind`](#vue-valid-v-bind) | [Bad](#vue-valid-v-bind-bad) · [Good](#vue-valid-v-bind-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_bind.rs#L30) | Enforce valid `v-bind` directives | Essential |
 | [`vue/valid-v-cloak`](#vue-valid-v-cloak) | [Bad](#vue-valid-v-cloak-bad) · [Good](#vue-valid-v-cloak-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_cloak.rs#L27) | Enforce valid `v-cloak` directives | Essential |
-| [`vue/valid-v-else`](#vue-valid-v-else) | [Bad](#vue-valid-v-else-bad) · [Good](#vue-valid-v-else-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | Yes | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_else.rs#L32) | Enforce valid `v-else` directives | Essential |
+| [`vue/valid-v-else`](#vue-valid-v-else) | [Bad](#vue-valid-v-else-bad) · [Good](#vue-valid-v-else-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | Yes | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_else.rs#L31) | Enforce valid `v-else` directives | Essential |
+| [`vue/valid-v-else-if`](#vue-valid-v-else-if) | [Bad](#vue-valid-v-else-if-bad) · [Good](#vue-valid-v-else-if-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_else_if.rs#L34) | Enforce valid `v-else-if` directives | Essential |
 | [`vue/valid-v-for`](#vue-valid-v-for) | [Bad](#vue-valid-v-for-bad) · [Good](#vue-valid-v-for-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_for.rs#L39) | Enforce valid `v-for` directives | Essential |
 | [`vue/valid-v-html`](#vue-valid-v-html) | [Bad](#vue-valid-v-html-bad) · [Good](#vue-valid-v-html-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_html.rs#L28) | Enforce valid `v-html` directives | Essential |
 | [`vue/valid-v-if`](#vue-valid-v-if) | [Bad](#vue-valid-v-if-bad) · [Good](#vue-valid-v-if-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_if.rs#L29) | Enforce valid `v-if` directives | Essential |
+| [`vue/valid-v-is`](#vue-valid-v-is) | [Bad](#vue-valid-v-is-bad) · [Good](#vue-valid-v-is-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_is.rs#L30) | Enforce valid `v-is` directives | Essential |
 | [`vue/valid-v-memo`](#vue-valid-v-memo) | [Bad](#vue-valid-v-memo-bad) · [Good](#vue-valid-v-memo-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_memo.rs#L27) | Enforce valid `v-memo` directives | Essential |
 | [`vue/valid-v-model`](#vue-valid-v-model) | [Bad](#vue-valid-v-model-bad) · [Good](#vue-valid-v-model-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_model.rs#L36) | Enforce valid `v-model` directives | Essential |
 | [`vue/valid-v-on`](#vue-valid-v-on) | [Bad](#vue-valid-v-on-bad) · [Good](#vue-valid-v-on-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_on.rs#L30) | Enforce valid `v-on` directives | Essential |
 | [`vue/valid-v-once`](#vue-valid-v-once) | [Bad](#vue-valid-v-once-bad) · [Good](#vue-valid-v-once-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_once.rs#L27) | Enforce valid `v-once` directives | Essential |
+| [`vue/valid-v-pre`](#vue-valid-v-pre) | [Bad](#vue-valid-v-pre-bad) · [Good](#vue-valid-v-pre-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_pre.rs#L30) | Enforce valid `v-pre` directives | Essential |
 | [`vue/valid-v-show`](#vue-valid-v-show) | [Bad](#vue-valid-v-show-bad) · [Good](#vue-valid-v-show-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_show.rs#L28) | Enforce valid `v-show` directives | Essential |
 | [`vue/valid-v-slot`](#vue-valid-v-slot) | [Bad](#vue-valid-v-slot-bad) · [Good](#vue-valid-v-slot-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | [`ruleOptions`](./options.md) | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_slot.rs#L29) | Enforce valid `v-slot` directives | Essential |
 | [`vue/valid-v-text`](#vue-valid-v-text) | [Bad](#vue-valid-v-text-bad) · [Good](#vue-valid-v-text-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_text.rs#L27) | Enforce valid `v-text` directives | Essential |
@@ -220,7 +224,7 @@ See the [ESLint migration map](./migration.md) for rule IDs, differences, and un
 | [`script/no-deprecated-dollar-scopedslots-api`](#script-no-deprecated-dollar-scopedslots-api) | [Bad](#script-no-deprecated-dollar-scopedslots-api-bad) · [Good](#script-no-deprecated-dollar-scopedslots-api-good) | `error` | _none_ | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_scopedslots_api.rs#L44) | Disallow the $scopedSlots instance property removed in Vue 3 (use $slots) | Script |
 | [`script/no-deprecated-events-api`](#script-no-deprecated-events-api) | [Bad](#script-no-deprecated-events-api-bad) · [Good](#script-no-deprecated-events-api-good) | `error` | _none_ | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L42) | Disallow the removed Vue 2 events API ($on / $off / $once) | Script |
 | [`script/no-deprecated-props-default-this`](#script-no-deprecated-props-default-this) | [Bad](#script-no-deprecated-props-default-this-bad) · [Good](#script-no-deprecated-props-default-this-good) | `error` | _none_ | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_props_default_this.rs#L71) | Disallow `this` inside a prop default/validator function (removed in Vue 3) | Script |
-| [`script/no-dupe-keys`](#script-no-dupe-keys) | [Bad](#script-no-dupe-keys-bad) · [Good](#script-no-dupe-keys-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_dupe_keys.rs#L52) | Disallow duplicate keys across Options API props/data/computed/methods/setup/inject | Script |
+| [`script/no-dupe-keys`](#script-no-dupe-keys) | [Bad](#script-no-dupe-keys-bad) · [Good](#script-no-dupe-keys-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_dupe_keys.rs#L55) | Disallow duplicate keys across Options API props/data/computed/methods/setup/inject | Script |
 | [`script/no-duplicate-attr-inheritance`](#script-no-duplicate-attr-inheritance) | [Bad](#script-no-duplicate-attr-inheritance-bad) · [Good](#script-no-duplicate-attr-inheritance-good) | `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs#L35) | Flag a component that applies its fallthrough attributes twice | Script |
 | [`script/no-export-in-script-setup`](#script-no-export-in-script-setup) | [Bad](#script-no-export-in-script-setup-bad) · [Good](#script-no-export-in-script-setup-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_export_in_script_setup.rs#L49) | Disallow export statements inside &lt;script setup&gt; | Script |
 | [`script/no-import-compiler-macros`](#script-no-import-compiler-macros) | [Bad](#script-no-import-compiler-macros-bad) · [Good](#script-no-import-compiler-macros-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_import_compiler_macros.rs#L39) | Disallow importing Vue compiler macros that are auto-imported | Script |
@@ -235,7 +239,7 @@ See the [ESLint migration map](./migration.md) for rule IDs, differences, and un
 | [`script/no-reserved-props`](#script-no-reserved-props) | [Bad](#script-no-reserved-props-bad) · [Good](#script-no-reserved-props-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_reserved_props.rs#L53) | Disallow reserved names in a component's props declaration | Script |
 | [`script/no-restricted-globals`](#script-no-restricted-globals) | [Bad](#script-no-restricted-globals-bad) · [Good](#script-no-restricted-globals-good) | `error` | _none_ | No | [`ruleOptions`](./options.md) | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_restricted_globals.rs#L57) | Disallow references to runtime-environment globals that must go through a typed wrapper | Script |
 | [`script/no-restricted-members`](#script-no-restricted-members) | [Bad](#script-no-restricted-members-bad) · [Good](#script-no-restricted-members-good) | `error` | _none_ | No | [`ruleOptions`](./options.md) | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_restricted_members.rs#L53) | Disallow project-configured object.property member accesses | Script |
-| [`script/no-side-effects-in-computed-properties`](#script-no-side-effects-in-computed-properties) | [Bad](#script-no-side-effects-in-computed-properties-bad) · [Good](#script-no-side-effects-in-computed-properties-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_side_effects_in_computed.rs#L70) | Disallow side effects in Options API computed getters | Script |
+| [`script/no-side-effects-in-computed-properties`](#script-no-side-effects-in-computed-properties) | [Bad](#script-no-side-effects-in-computed-properties-bad) · [Good](#script-no-side-effects-in-computed-properties-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_side_effects_in_computed.rs#L77) | Disallow side effects in Options API computed getters | Script |
 | [`script/no-top-level-ref-in-script`](#script-no-top-level-ref-in-script) | [Bad](#script-no-top-level-ref-in-script-bad) · [Good](#script-no-top-level-ref-in-script-good) | `error` | _none_ | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_top_level_ref_in_script.rs#L63) | Disallow top-level ref/reactive to prevent Cross-Request State Pollution | Script |
 | [`script/no-unstable-nested-components`](#script-no-unstable-nested-components) | [Bad](#script-no-unstable-nested-components-bad) · [Good](#script-no-unstable-nested-components-good) | `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_unstable_nested_components.rs#L19) | Disallow component definitions inside setup or render functions | Script |
 | [`script/no-unused-emit-declarations`](#script-no-unused-emit-declarations) | [Bad](#script-no-unused-emit-declarations-bad) · [Good](#script-no-unused-emit-declarations-good) | `warning` | _none_ | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_unused_emit_declarations.rs#L74) | Flag declared events that are never emitted | Script |
@@ -272,7 +276,7 @@ See the [ESLint migration map](./migration.md) for rule IDs, differences, and un
 
 ## Project rules and analyzer contracts (66)
 
-These project entries supplement the 251 single-file catalog entries above. Each example includes its component/project context or an explicit tracked-graph scenario. CLI, experimental library producers, and contracts without a producer have different support boundaries; see the [cross-file overview](./cross-file.md).
+These project entries supplement the 255 single-file catalog entries above. Each example includes its component/project context or an explicit tracked-graph scenario. CLI, experimental library producers, and contracts without a producer have different support boundaries; see the [cross-file overview](./cross-file.md).
 
 | Rule / code | Examples | Current support |
 | --- | --- | --- |
@@ -540,6 +544,20 @@ Disallow the deprecated `.sync` modifier on `v-bind`
 [Good](./vue.md#vue-no-deprecated-v-bind-sync-good)
 
 [Group examples](./vue.md#vue-no-deprecated-v-bind-sync) · [Rule reference](./reference/vue-no-deprecated-v-bind-sync.md)
+
+### `vue/no-deprecated-v-is`
+
+Disallow the deprecated `v-is` directive
+
+<span id="vue-no-deprecated-v-is-bad"></span>
+
+[Bad](./vue.md#vue-no-deprecated-v-is-bad)
+
+<span id="vue-no-deprecated-v-is-good"></span>
+
+[Good](./vue.md#vue-no-deprecated-v-is-good)
+
+[Group examples](./vue.md#vue-no-deprecated-v-is) · [Rule reference](./reference/vue-no-deprecated-v-is.md)
 
 ### `vue/no-deprecated-v-on-native-modifier`
 
@@ -905,6 +923,20 @@ Enforce valid `v-else` directives
 
 [Group examples](./vue.md#vue-valid-v-else) · [Rule reference](./reference/vue-valid-v-else.md)
 
+### `vue/valid-v-else-if`
+
+Enforce valid `v-else-if` directives
+
+<span id="vue-valid-v-else-if-bad"></span>
+
+[Bad](./vue.md#vue-valid-v-else-if-bad)
+
+<span id="vue-valid-v-else-if-good"></span>
+
+[Good](./vue.md#vue-valid-v-else-if-good)
+
+[Group examples](./vue.md#vue-valid-v-else-if) · [Rule reference](./reference/vue-valid-v-else-if.md)
+
 ### `vue/valid-v-for`
 
 Enforce valid `v-for` directives
@@ -946,6 +978,20 @@ Enforce valid `v-if` directives
 [Good](./vue.md#vue-valid-v-if-good)
 
 [Group examples](./vue.md#vue-valid-v-if) · [Rule reference](./reference/vue-valid-v-if.md)
+
+### `vue/valid-v-is`
+
+Enforce valid `v-is` directives
+
+<span id="vue-valid-v-is-bad"></span>
+
+[Bad](./vue.md#vue-valid-v-is-bad)
+
+<span id="vue-valid-v-is-good"></span>
+
+[Good](./vue.md#vue-valid-v-is-good)
+
+[Group examples](./vue.md#vue-valid-v-is) · [Rule reference](./reference/vue-valid-v-is.md)
 
 ### `vue/valid-v-memo`
 
@@ -1002,6 +1048,20 @@ Enforce valid `v-once` directives
 [Good](./vue.md#vue-valid-v-once-good)
 
 [Group examples](./vue.md#vue-valid-v-once) · [Rule reference](./reference/vue-valid-v-once.md)
+
+### `vue/valid-v-pre`
+
+Enforce valid `v-pre` directives
+
+<span id="vue-valid-v-pre-bad"></span>
+
+[Bad](./vue.md#vue-valid-v-pre-bad)
+
+<span id="vue-valid-v-pre-good"></span>
+
+[Good](./vue.md#vue-valid-v-pre-good)
+
+[Group examples](./vue.md#vue-valid-v-pre) · [Rule reference](./reference/vue-valid-v-pre.md)
 
 ### `vue/valid-v-show`
 

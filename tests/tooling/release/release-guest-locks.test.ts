@@ -5,6 +5,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import { parse as parseToml } from "@iarna/toml";
+import { standaloneGuestManifests } from "../../../tools/support/release/release/apply_versions.ts";
 import { runRepositoryGuardFixture } from "../support/release-guard-fixture.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -27,11 +28,8 @@ const sdkManifests = candidates.filter((file) => {
 });
 
 test("release refreshes every standalone workspace using the in-tree guest SDK", () => {
-  const source = read("tools/moon/cmd/release/apply_versions.mbt");
-  const refreshed = [...source.matchAll(/"([^"]+\/Cargo\.toml)"/g)]
-    .map((match) => match[1])
-    .filter((file) => sdkManifests.includes(file));
-  assert.deepEqual(refreshed.toSorted(), sdkManifests.toSorted());
+  const refreshed = standaloneGuestManifests.filter((file) => sdkManifests.includes(file));
+  assert.deepEqual([...refreshed].sort(), [...sdkManifests].sort());
 });
 
 test("standalone SDK locks retain the actual workspace guest version", () => {

@@ -148,13 +148,12 @@ options: vapor
 --- INPUT ---
 <button @click="handler">click</button>
 --- OUTPUT ---
-import { createInvoker as _createInvoker, delegateEvents as _delegateEvents, template as _template } from 'vue';
+import { on as _on, template as _template } from 'vue';
 const t0 = _template("<button>click</button>", true)
-_delegateEvents("click")
 
 export function render(_ctx) {
   const n0 = t0()
-  n0.$evtclick = _createInvoker(e => _ctx.handler(e))
+  _on(n0, "click", e => _ctx.handler(e))
   return n0
 }
 
@@ -164,13 +163,12 @@ options: vapor
 --- INPUT ---
 <button @click="count++">click</button>
 --- OUTPUT ---
-import { createInvoker as _createInvoker, delegateEvents as _delegateEvents, template as _template } from 'vue';
+import { on as _on, template as _template } from 'vue';
 const t0 = _template("<button>click</button>", true)
-_delegateEvents("click")
 
 export function render(_ctx) {
   const n0 = t0()
-  n0.$evtclick = _createInvoker($event => (_ctx.count++))
+  _on(n0, "click", $event => (_ctx.count++))
   return n0
 }
 
@@ -180,13 +178,12 @@ options: vapor
 --- INPUT ---
 <button @click="handler($event)">click</button>
 --- OUTPUT ---
-import { createInvoker as _createInvoker, delegateEvents as _delegateEvents, template as _template } from 'vue';
+import { on as _on, template as _template } from 'vue';
 const t0 = _template("<button>click</button>", true)
-_delegateEvents("click")
 
 export function render(_ctx) {
   const n0 = t0()
-  n0.$evtclick = _createInvoker($event => (_ctx.handler($event)))
+  _on(n0, "click", $event => (_ctx.handler($event)))
   return n0
 }
 

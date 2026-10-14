@@ -23,7 +23,13 @@ function collectMoonCommandNames(directory: string): string[] {
   return names.sort();
 }
 
-test("all MoonBit command packages compile without warnings", () => {
+test("all MoonBit command packages compile without warnings", (t) => {
+  if (!fs.existsSync(commandsRoot)) {
+    // Every command is TypeScript now (#8840). The final MoonBit cleanup
+    // removes this test together with tools/moon.
+    t.skip("no MoonBit command packages remain");
+    return;
+  }
   const scriptNames = collectMoonCommandNames(commandsRoot);
   assert.ok(scriptNames.length > 0, "expected repository MoonBit command packages");
 

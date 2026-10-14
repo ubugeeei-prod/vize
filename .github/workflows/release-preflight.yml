@@ -63,7 +63,8 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: ./.github/actions/setup-moonbit
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: "package.json", cache: false, run-install: false }
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
@@ -79,4 +80,4 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
 
       - name: Validate crates.io publish plan without credentials
-        run: moon run --target native tools/moon/cmd/publish_crates -- --dry-run
+        run: node tools/support/release/publish_crates/main.ts --dry-run

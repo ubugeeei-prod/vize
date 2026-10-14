@@ -15,6 +15,7 @@ import { performance } from "node:perf_hooks";
 import { fileSha256, hashInPlace, pinExecutable } from "./benchmark-binary.mjs";
 import { packageVersion, resolveVuePackageDir } from "./check-gate-env.mjs";
 import { diagnosticFingerprint } from "./typecheck-command.mjs";
+import { normalizeParserRecovery } from "./type-snapshot-parser-recovery.ts";
 import {
   BUILD,
   PROTOCOL,
@@ -67,6 +68,7 @@ export function prepareRun(baseInput, headInput, directory, root) {
           "type-snapshot-cli-leaf-corpus.mjs",
           "type-snapshot-cli-leaf-parity.mjs",
           "type-snapshot-cli-runner.mjs",
+          "type-snapshot-parser-recovery.ts",
           "generate.mjs",
           "check-gate-env.mjs",
           "check-gate-plants.mjs",
@@ -172,7 +174,11 @@ export function createRunner(directory, binaries, runtimePath) {
     assert.equal(result.error, undefined, `${id}: ${result.error?.message}`);
     const expected =
       corpus.expectedVuePaths ?? readdirSync(cwd).filter((file) => file.endsWith(".vue"));
-    const normalized = normalizeCliReport(result, cwd, expected);
+    const normalized = normalizeCliReport(
+      normalizeParserRecovery(result, corpus.expectedParserRecovery ?? false, phase),
+      cwd,
+      expected,
+    );
     record.fingerprint = diagnosticFingerprint(normalized);
     record.normalized = normalized;
     if (profile) {

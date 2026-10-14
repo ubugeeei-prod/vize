@@ -37,6 +37,8 @@ impl CorsaProjectClient {
                         "normalizedRequestedOptions",
                         "normalizedRequestedFiles",
                         "attachment",
+                        "sourceFileNamesRequest",
+                        "sourceFileNamesResponse",
                     ] {
                         receipt[key] = observed[key].clone();
                     }
@@ -51,6 +53,17 @@ impl CorsaProjectClient {
             receipt["selectedConfig"] = json!(session.project().config_file_name);
             receipt["project"] = json!(session.project());
             receipt["snapshotProjects"] = json!(session.snapshot().projects);
+            let request =
+                json!({"snapshot":session.snapshot().handle,"project":session.project().id});
+            receipt["sourceFileNamesRequest"] = request.clone();
+            receipt["sourceFileNamesResponse"] = match corsa::runtime::block_on(
+                session
+                    .client()
+                    .raw_json_request("getSourceFileNames", request),
+            ) {
+                Ok(value) => json!({"status":"ok","wholeResponse":value}),
+                Err(error) => json!({"status":"error","wholeError":vize_l0::cstr!("{error}")}),
+            };
             match corsa::runtime::block_on(session.client().parse_config_file(
                 corsa::api::DocumentIdentifier::from(session.project().config_file_name.as_str()),
             )) {

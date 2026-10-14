@@ -12,7 +12,7 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 `vp run vize:lint` を使ってください。組み込みの `vp lint` は Vite+ 自身の検査です。
 
 - [全ルールの検索・一覧](./all.md)
-- [ルール オプション](./options.md)：型と既定値
+- [ルールのオプション](./options.md)：型と既定値
 - [ESLint からの移行対応表](./migration.md)
 - [ファイル間の検査と Router の例](./cross-file.md)
 - [Vue の検査](./vue.md)

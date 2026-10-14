@@ -1,0 +1,13 @@
+<script lang="ts">
+export type PinInputType = 'text' | 'number'
+export type PinInputValue<Type extends PinInputType> = [Type] extends ['number'] ? number[] : string[]
+export interface PinInputRootProps<Type extends PinInputType = 'text'> {
+  modelValue?: PinInputValue<Type> | null
+  type?: Type
+  id?: string
+}
+</script>
+<script setup lang="ts" generic="Type extends PinInputType">
+withDefaults(defineProps<PinInputRootProps<Type>>(), { type: 'text' as any })
+</script>
+<template><div /></template>

@@ -48,7 +48,7 @@ test("Japanese rule option docs mirror every typed lint rule option", () => {
   ]);
 
   assertRuleOptionsReference(optionsDoc, {
-    title: /# ルール オプション/,
+    title: /# ルールのオプション/,
     unknownFields: /定義されていないフィールドを指定するとエラーになります/,
     scopedReplacement: /後から一致する設定がある場合は、\s*そのルールのオプション全体を置き換え/,
     badLabel: "悪い",
@@ -107,7 +107,7 @@ test("rules overview links to lint rule option references", () => {
   const jaIndex = fs.readFileSync(path.join(repoRoot, "docs/content/ja/rules/index.md"), "utf8");
 
   assert.match(index, /\[Rule Options\]\(\.\/options\.md\)/);
-  assert.match(jaIndex, /\[ルール オプション\]\(\.\/options\.md\)/);
+  assert.match(jaIndex, /\[ルールのオプション\]\(\.\/options\.md\)/);
 });
 
 test("all rules reference shows which rules accept lint rule options", () => {

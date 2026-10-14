@@ -199,11 +199,10 @@ jobs:
         with: { ref: "${{ github.sha }}" }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: package.json, cache: false, run-install: false }
-      - uses: ./.github/actions/setup-moonbit
       - name: Compare actual native publisher scheduling with controlled child waits
         env:
           VIZE_PUBLISH_BENCHMARK_RECEIPT: target/ci-walltime/native-controlled.json
-        run: node --test --test-name-pattern='controlled platform publish benchmark' tests/tooling/moonbit-publish-concurrency-benchmark.test.ts
+        run: node --test --test-name-pattern='controlled platform publish benchmark' tests/tooling/publish-npm-package-dirs-benchmark.test.ts
       - name: Preserve controlled publisher benchmark
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

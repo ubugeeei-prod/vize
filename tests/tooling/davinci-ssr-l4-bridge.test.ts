@@ -66,16 +66,16 @@ test("SSR L4 selection counters name every legacy reason", () => {
     "Structure",
   ]);
   for (const counter of [
-    "davinci.s4_ssr.accepted",
-    "davinci.s4_ssr.rejected",
-    "davinci.s4_ssr.legacy.options",
-    "davinci.s4_ssr.legacy.croquis",
-    "davinci.s4_ssr.legacy.surface_semantics",
-    "davinci.s4_ssr.legacy.operation",
-    "davinci.s4_ssr.legacy.element",
-    "davinci.s4_ssr.legacy.binding",
-    "davinci.s4_ssr.legacy.expression_or_encoding",
-    "davinci.s4_ssr.legacy.structure",
+    "l4.ssr.accepted",
+    "l4.ssr.rejected",
+    "l4.ssr.legacy.options",
+    "l4.ssr.legacy.croquis",
+    "l4.ssr.legacy.surface_semantics",
+    "l4.ssr.legacy.operation",
+    "l4.ssr.legacy.element",
+    "l4.ssr.legacy.binding",
+    "l4.ssr.legacy.expression_or_encoding",
+    "l4.ssr.legacy.structure",
   ]) {
     assert.ok(bridge.includes(`"${counter}"`), `l4.rs must record ${counter}`);
   }

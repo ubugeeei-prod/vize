@@ -8,6 +8,8 @@ import { fileURLToPath } from "node:url";
 import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vite-plus";
 
+import { uiStoryVariants } from "./scripts/story-variants.ts";
+
 // Exercise the unchanged UI suite against the Vue actually shipped by an example.
 const example = fileURLToPath(new URL("../builder/vite/example/package.json", import.meta.url));
 const requireExample = createRequire(example);
@@ -92,6 +94,7 @@ console.log(
 
 export default defineConfig({
   plugins: [
+    uiStoryVariants(),
     vue({ compiler }),
     {
       name: "production-vue-module-custody",

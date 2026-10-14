@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "originalSuccessorSha256": "3e8eb8c815da36acd27f2252461e39ec0786f88557f01eb5849371d173bce295",
+  "originalResolverSha256": "3d97f55712486403c0accc0db1121391ab70140177deb8630ce591e4df4781e8",
+  "resolverSha256": "0b0bb2644ea472bee40ce0c260513dc0ce10cb05cce4b996dae20ad58aa8915d",
+  "qualification": "The reviewed resolver adds authored dot and parent directory-module imports. The original eight alias cases, memberships, diagnostic oracles, and source manifest remain unchanged; exact-head Actions must qualify this additional source against them."
+}

@@ -12,7 +12,7 @@ const codeBlocks = (source: string) =>
 test("combined Vue examples exclude standalone configuration bookmarks and retain every source", () => {
   const directory = resolve(root, "docs/content/ja/rules/reference");
   const files = readdirSync(directory).filter((file) => file.startsWith("vue-"));
-  assert.equal(files.length, 104);
+  assert.equal(files.length, 108);
   let standaloneAliases = 0;
   for (const file of files) {
     const source = readFileSync(resolve(directory, file), "utf8");

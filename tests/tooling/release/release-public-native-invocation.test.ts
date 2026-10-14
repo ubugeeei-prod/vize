@@ -8,9 +8,9 @@ import { readRepoFile } from "../support/github-workflows.ts";
 import { sourceFixture } from "../support/release-public-acceptance-fixtures.ts";
 
 const legacy =
-  "run: moon run --target native tools/moon/cmd/publish_npm_package_dirs -- npm/native/npm --provenance";
+  "run: node tools/support/release/publish_npm_package_dirs/main.ts npm/native/npm --provenance";
 const concurrent =
-  'run: moon run --target native tools/moon/cmd/publish_npm_package_dirs -- npm/native/npm --concurrency 4 --provenance --receipt "$RUNNER_TEMP/native-platform-publish.json"';
+  'run: node tools/support/release/publish_npm_package_dirs/main.ts npm/native/npm --concurrency 4 --provenance --receipt "$RUNNER_TEMP/native-platform-publish.json"';
 
 type Fixture = ReturnType<typeof sourceFixture>;
 
@@ -52,7 +52,7 @@ test("the exact current four-child invocation derives the same authored native t
     .filter(
       (line) =>
         !line.trimStart().startsWith("#") &&
-        /tools\/moon\/cmd\/publish_npm_package_dirs\s/.test(line),
+        /tools\/support\/release\/publish_npm_package_dirs\/main\.ts\s/.test(line),
     );
   assert.deepEqual(
     actual.map((line) => line.trim()),
@@ -103,4 +103,31 @@ test("native source commands refuse every unreviewed flag, path, shell suffix an
       invocation,
     );
   }
+});
+
+test("sources from before the TypeScript port derive the same plan from MoonBit publishers", (t) => {
+  const source = sourceFixture(t);
+  const workflow = readRawBlob(source.root, source.head, ".github/workflows/release.yml")
+    .toString()
+    .replaceAll(
+      "node tools/support/release/publish_npm_package/main.ts ",
+      "moon run --target native tools/moon/cmd/publish_npm_package -- ",
+    )
+    .replace(
+      "node tools/support/release/publish_npm_package_dirs/main.ts ",
+      "moon run --target native tools/moon/cmd/publish_npm_package_dirs -- ",
+    );
+  source.git("reset", "--soft", source.cut);
+  source.git("rm", "-q", "--cached", "tools/support/release/publish_crates/main.ts");
+  source.write(".github/workflows/release.yml", workflow);
+  source.write(
+    "tools/moon/cmd/publish_crates/main.mbt",
+    'let published_crates : Array[String] = [\n  "vize_l0",\n  "vize_musea",\n]\n',
+  );
+  source.git("add", ".github/workflows/release.yml", "tools/moon/cmd/publish_crates/main.mbt");
+  source.git("commit", "-qm", "MoonBit-era H");
+  const head = source.git("rev-parse", "HEAD");
+  const plan = derivePublicationPlan(source.root, head);
+  assert.deepEqual(targets(plan), targets(source.plan));
+  assert.ok(plan.authority.blobs.some((blob) => blob.path.endsWith("publish_crates/main.mbt")));
 });

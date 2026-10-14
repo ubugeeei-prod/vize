@@ -79,7 +79,7 @@ test("SDK publication uses the built artifact and waits for native, smoke, and r
   assert.deepEqual(download.with, { name: "release-package-plugin-sdk", path: packagePath });
   assert.ok(
     publish.steps.some((step) =>
-      step.run?.includes(`publish_npm_package -- ${packagePath} --provenance`),
+      step.run?.includes(`publish_npm_package/main.ts ${packagePath} --provenance`),
     ),
   );
   assert.ok(workflow.jobs["create-github-release"].needs.includes("release-npm-plugin-sdk"));

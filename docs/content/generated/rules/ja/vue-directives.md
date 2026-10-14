@@ -25,7 +25,7 @@ title: "ディレクティブとイベントの書き方"
 | [`vue/v-slot-style`](#vue-v-slot-style) | [悪い](#vue-v-slot-style-bad) · [良い](#vue-v-slot-style-good) | v-slot の表記形式を揃えます。 |
 | [`vue/warn-custom-directive`](#vue-warn-custom-directive) | [悪い](#vue-warn-custom-directive-bad) · [良い](#vue-warn-custom-directive-good) | 登録が必要なカスタムディレクティブを検出します。 |
 
-[全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
+[全ルール](./all.md) · [ルールのオプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
 
 ### `vue/scoped-event-names`
 

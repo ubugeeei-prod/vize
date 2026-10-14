@@ -66,7 +66,7 @@ fn disabled_static_hoists_use_l2_codegen() {
             "{label}: disabled static hoists must not synthesize hoist declarations"
         );
         assert_eq!(
-            counter_total(&counters, "davinci.s2_dom.files"),
+            counter_total(&counters, "l2.dom.files"),
             Some(1),
             "{label}: disabled static hoists are a supported L2 production option"
         );

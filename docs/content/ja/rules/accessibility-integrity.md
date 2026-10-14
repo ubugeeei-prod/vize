@@ -26,4 +26,4 @@ ARIA の role を追加したときや、操作に使う要素を変更したと
 | [`a11y/use-list`](https://vizejs.dev/ja/rules/accessibility-integrity.html#a11y-use-list) | [悪い](https://vizejs.dev/ja/rules/accessibility-integrity.html#a11y-use-list-bad) · [良い](https://vizejs.dev/ja/rules/accessibility-integrity.html#a11y-use-list-good) | 箇条書きに見えるテキストをリスト要素で表現します。 |
 | [`vue/use-unique-element-ids`](https://vizejs.dev/ja/rules/accessibility-integrity.html#vue-use-unique-element-ids) | [悪い](https://vizejs.dev/ja/rules/accessibility-integrity.html#vue-use-unique-element-ids-bad) · [良い](https://vizejs.dev/ja/rules/accessibility-integrity.html#vue-use-unique-element-ids-good) | 静的 ID の代わりに useId() で一意な ID を生成します。 |
 
-[全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
+[全ルール](./all.md) · [ルールのオプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)

@@ -6,6 +6,7 @@ import path from "node:path";
 import { after } from "node:test";
 import { pathToFileURL } from "node:url";
 import { gunzipSync } from "node:zlib";
+import { parse } from "yaml";
 import {
   listStarCounterpartFiles,
   provisionStarSourceCounterpart,
@@ -115,6 +116,42 @@ function confirm(owned) {
   assert.equal(git(owned.root, ["for-each-ref", "--format=%(refname)", "refs/replace"]).length, 0);
   for (const [file, body] of owned.live)
     assertBytes(regular(owned.root, file), body, "same complete current source: " + file);
+}
+
+const setupWorkflows = new Set([
+  ".github/workflows/davinci-canon-scaling.yml",
+  ".github/workflows/typechecker-native-phases.yml",
+]);
+/** Historical source stays literal; current CI may use the approved setup changes. */
+export function assertStarListingWorkflowSetup(file, before, after) {
+  assert(setupWorkflows.has(file), "only the two reviewed current workflow contracts");
+  const documents = [before, after].map((body) => parse(body.toString()));
+  for (const document of documents) {
+    if (file === ".github/workflows/typechecker-native-phases.yml") {
+      const paths = document.on.pull_request.paths;
+      const helper = "tools/benchmarks/scripts/type-snapshot-parser-recovery.ts";
+      const index = paths.indexOf(helper);
+      if (index !== -1) {
+        assert.equal(index, paths.lastIndexOf(helper));
+        assert.equal(paths[index - 1], "tools/benchmarks/scripts/typecheck-command.mjs");
+        paths.splice(index, 1);
+      }
+    }
+    for (const job of Object.values(document.jobs))
+      for (const step of job.steps ?? []) {
+        if (step.uses === "wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203") {
+          assert.deepEqual(step.with, { "wild-version": "0.9.0" });
+          step.uses = "./.github/actions/setup-mold";
+          delete step.with;
+        }
+        if (
+          step.uses === "dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067" &&
+          step.with?.toolchain === "1.99.0"
+        )
+          step.with.toolchain = "stable";
+      }
+  }
+  assert.deepEqual(documents[1], documents[0], "unchanged current workflow commands and topology");
 }
 
 /** Authenticate the whole actual BD cohort and named entrypoints before any source counterpart. */
@@ -252,12 +289,17 @@ export function authenticateStarListingSource(root) {
     afterLength,
     afterSHA,
   ] of rows) {
-    const old = before.get(file),
-      body = current.get(file);
+    const old = before.get(file);
+    let body = current.get(file);
     assert(old && body, "complete named source pair: " + file);
     assert.equal(blob(old), beforeBlob);
     assert.equal(old.length, beforeLength);
     assert.equal(sha(old), beforeSHA);
+    if (setupWorkflows.has(file)) {
+      assert.equal(beforeBlob, afterBlob, "the recorded workflow did not change in the listing");
+      assertStarListingWorkflowSetup(file, old, body);
+      body = old;
+    }
     assert.equal(blob(body), afterBlob);
     assert.equal(body.length, afterLength);
     assert.equal(sha(body), afterSHA);
@@ -418,7 +460,7 @@ export async function runStarListingOriginalTest(root, file) {
     if (!retained) fixture.cleanup();
   }
 }
-/** Only the two whole named BD lexical owners follow complete actual source custody. */
+/** The original lexical tables retain their recorded bodies after current source verification. */
 export function starListingLexicalReader(copiedRoot) {
   const packet = authenticateStarListingSource(moduleRoot),
     value = owned(packet);
@@ -426,7 +468,7 @@ export function starListingLexicalReader(copiedRoot) {
     assert(metadata.javascriptPaths.includes(file), "one closed current lexical JS93 source");
     const current = regular(copiedRoot, file);
     assertBytes(current, value.live.get(file), "complete actual copied lexical source");
-    if (lexicalCounterparts.has(file)) {
+    if (lexicalCounterparts.has(file) || setupWorkflows.has(file)) {
       owned(packet);
       return Buffer.from(value.before.get(file));
     }

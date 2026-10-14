@@ -17,7 +17,7 @@ title: "Vapor ルール"
 | [`vapor/prefer-static-class`](#vapor-prefer-static-class) | [悪い](#vapor-prefer-static-class-bad) · [良い](#vapor-prefer-static-class-good) | 文字列リテラルの :class を静的 class に置き換えます。 |
 | [`vapor/require-vapor-attribute`](#vapor-require-vapor-attribute) | [悪い](#vapor-require-vapor-attribute-bad) · [良い](#vapor-require-vapor-attribute-good) | Vapor 向けの script setup に vapor 属性を付ける規約を示します。 |
 
-[全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
+[全ルール](./all.md) · [ルールのオプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
 
 ### `script/no-get-current-instance`
 

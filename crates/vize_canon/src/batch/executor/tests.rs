@@ -285,7 +285,7 @@ fn classifies_check_failures() {
 
 #[test]
 fn fallback_notice_is_observable_once_and_silenceable() {
-    use super::fallback::{FallbackCause, FallbackStep, fallback_stderr_notice};
+    use super::fallback::{FallbackCause, FallbackStep, fallback_reason, fallback_stderr_notice};
 
     let _fallback_guard = super::fallback::FALLBACK_TEST_LOCK
         .lock()
@@ -298,8 +298,16 @@ fn fallback_notice_is_observable_once_and_silenceable() {
     unsafe { std::env::remove_var("VIZE_SILENCE_CORSA_FALLBACK") };
 
     // First degradation produces an observable, descriptive notice.
-    let notice = fallback_stderr_notice(FallbackStep::SessionToCli, FallbackCause::Spawn)
-        .expect("first fallback must produce an observable notice");
+    let notice = fallback_stderr_notice(
+        FallbackStep::SessionToCli,
+        FallbackCause::Spawn,
+        "spawn tsgo: No such file or directory\nsecond line",
+    )
+    .expect("first fallback must produce an observable notice");
+    assert_eq!(
+        notice.as_str(),
+        "\x1b[33mwarning:\x1b[0m corsa: Corsa project-session API unavailable; degraded to a single CLI program (spawn failure: spawn tsgo: No such file or directory). Type checking continues on a slower path."
+    );
     assert!(
         notice.contains("corsa:") && notice.contains("slower path"),
         "expected an observable corsa fallback notice, got: {notice:?}"
@@ -311,7 +319,7 @@ fn fallback_notice_is_observable_once_and_silenceable() {
 
     // A second degradation in the same run must stay quiet (once per run).
     assert!(
-        fallback_stderr_notice(FallbackStep::CliToSession, FallbackCause::Parse).is_none(),
+        fallback_stderr_notice(FallbackStep::CliToSession, FallbackCause::Parse, "x").is_none(),
         "the stderr notice must fire at most once per run"
     );
 
@@ -319,7 +327,7 @@ fn fallback_notice_is_observable_once_and_silenceable() {
     super::fallback::FALLBACK_NOTICE_EMITTED.store(false, std::sync::atomic::Ordering::Relaxed);
     // SAFETY: single-threaded test; restored immediately after the call.
     unsafe { std::env::set_var("VIZE_SILENCE_CORSA_FALLBACK", "1") };
-    let suppressed = fallback_stderr_notice(FallbackStep::CliToSession, FallbackCause::Check);
+    let suppressed = fallback_stderr_notice(FallbackStep::CliToSession, FallbackCause::Check, "x");
     // SAFETY: single-threaded test cleanup.
     unsafe { std::env::remove_var("VIZE_SILENCE_CORSA_FALLBACK") };
     assert!(
@@ -330,4 +338,19 @@ fn fallback_notice_is_observable_once_and_silenceable() {
         !super::fallback::FALLBACK_NOTICE_EMITTED.load(std::sync::atomic::Ordering::Relaxed),
         "silenced fallback must not claim the once-per-run guard"
     );
+}
+
+#[test]
+fn fallback_reason_is_the_first_non_empty_line_bounded() {
+    use super::fallback::fallback_reason;
+
+    assert_eq!(
+        fallback_reason("\n  exit status 2  \nmore"),
+        "exit status 2"
+    );
+    assert_eq!(fallback_reason(""), "no error message");
+    let long = "é".repeat(300);
+    let reason = fallback_reason(&long);
+    assert_eq!(reason.chars().count(), 241);
+    assert_eq!(reason.chars().last(), Some('…'));
 }

@@ -7,12 +7,14 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import {
+  contractTableCodes,
   deriveInventory,
   formatInventory,
   inventoryRelative,
   parseInventory,
   ratchetViolations,
   readBaseInventory,
+  readNewContractRules,
   resolveBaseRef,
   type ExemptionRow,
 } from "./support/davinci-witness-exemptions.ts";
@@ -58,7 +60,55 @@ test("the committed inventory is exactly the one derived from the sources", () =
 test("the inventory only shrinks against the base revision", () => {
   const base = resolveBaseRef(repoRoot, process.env);
   const head = parseInventory(committed);
-  assert.deepEqual(ratchetViolations(readBaseInventory(repoRoot, base), head), []);
+  const newRules = readNewContractRules(repoRoot, base);
+  assert.deepEqual(ratchetViolations(readBaseInventory(repoRoot, base), head, newRules), []);
+});
+
+test("a newly registered rule may enter at error, but a promoted rule may not", () => {
+  const base = [row("vize_patina", "vue/valid-v-else", 1)];
+  const head = [
+    row("vize_patina", "vue/promoted", 1),
+    row("vize_patina", "vue/registered", 1),
+    row("vize_patina", "vue/valid-v-else", 1),
+  ];
+  const newRules = new Set(["vize_patina\tvue/registered"]);
+  assert.deepEqual(ratchetViolations(base, head, newRules), [
+    "vize_patina/vue/promoted: new exemption for a producer already on the channel",
+  ]);
+  assert.deepEqual(
+    contractTableCodes(
+      [
+        '    row!("vue/a", Exact, DIRECTIVES, Error),',
+        '    row!("vue/b", Heuristic, STYLE, Warning),',
+        '    // row!("vue/c", Exact, STYLE, Error),',
+      ].join("\n"),
+    ),
+    new Set(["vue/a", "vue/b"]),
+  );
+});
+
+test("new contract rules are read against a real base revision", () => {
+  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-witness-new-rules-"));
+  const table = {
+    producer: "producer_t",
+    constructor: "crates/producer_t/src/contracts.rs",
+    rows: "crates/producer_t/src/contracts/table.rs",
+  };
+  git(cwd, ["init", "-q"]);
+  write(cwd, table.rows, '    row!("vue/old", Exact, DIRECTIVES, Warning),\n');
+  git(cwd, ["add", table.rows]);
+  git(cwd, [...commit, "-m", "table"]);
+  const base = git(cwd, ["rev-parse", "HEAD"]);
+  write(
+    cwd,
+    table.rows,
+    [
+      '    row!("vue/old", Exact, DIRECTIVES, Error),',
+      '    row!("vue/new", Exact, DIRECTIVES, Error),',
+      "",
+    ].join("\n"),
+  );
+  assert.deepEqual(readNewContractRules(cwd, base, [table]), new Set(["producer_t\tvue/new"]));
 });
 
 test("an injected increase, and a new code for a known producer, are rejected", () => {

@@ -1,4 +1,4 @@
-//! Several listeners for one delegated event on one element all stay bound.
+//! Several delegated listeners for one event on one element all stay bound.
 //! The first owns the element's `$evt` slot; assigning it again would drop
 //! that listener, so each later one joins it through `delegate`.
 
@@ -26,7 +26,7 @@ fn compile(source: &str, davinci_retained_lane: bool) -> String {
 
 #[test]
 fn a_second_listener_for_the_same_event_joins_the_first() {
-    let source = r#"<div @click="first" @click.stop="second"></div>"#;
+    let source = r#"<div @click.delegate="first" @click.delegate.prevent="second"></div>"#;
     for retained in [false, true] {
         let code = compile(source, retained);
         assert_eq!(code.matches("n0.$evtclick = ").count(), 1, "{code}");
@@ -36,7 +36,7 @@ fn a_second_listener_for_the_same_event_joins_the_first() {
         );
         assert!(
             code.contains(
-                r#"_delegate(n0, "click", _withModifiers(e => _ctx.second(e), ["stop"]))"#
+                r#"_delegate(n0, "click", _withModifiers(e => _ctx.second(e), ["prevent"]))"#
             ),
             "{code}"
         );
@@ -47,7 +47,8 @@ fn a_second_listener_for_the_same_event_joins_the_first() {
 
 #[test]
 fn separate_elements_and_events_keep_their_own_slots() {
-    let source = r#"<div @click="a" @input="b"><span @click="c"></span></div>"#;
+    let source =
+        r#"<div @click.delegate="a" @input.delegate="b"><span @click.delegate="c"></span></div>"#;
     for retained in [false, true] {
         let code = compile(source, retained);
         assert_eq!(code.matches(".$evtclick = ").count(), 2, "{code}");
@@ -58,13 +59,30 @@ fn separate_elements_and_events_keep_their_own_slots() {
 
 #[test]
 fn each_loop_item_assigns_its_own_first_listener() {
-    let source = r#"<li v-for="item in items" @click="pick(item)" @click="log(item)"></li>"#;
+    let source = r#"<li v-for="item in items" @click.delegate="pick(item)" @click.delegate="log(item)"></li>"#;
     for retained in [false, true] {
         let code = compile(source, retained);
         assert_eq!(code.matches(".$evtclick = ").count(), 1, "{code}");
         assert_eq!(
             code.matches(r#"_delegate(n2, "click", "#).count(),
             1,
+            "{code}"
+        );
+    }
+}
+
+#[test]
+fn a_stop_listener_for_the_same_event_keeps_both_listeners_direct() {
+    let source = r#"<div @click.delegate="first" @click.stop="second"></div>"#;
+    for retained in [false, true] {
+        let code = compile(source, retained);
+        assert!(!code.contains("$evtclick"), "{code}");
+        assert!(
+            code.contains(r#"_on(n0, "click", e => _ctx.first(e))"#),
+            "{code}"
+        );
+        assert!(
+            code.contains(r#"_on(n0, "click", _withModifiers(e => _ctx.second(e), ["stop"]))"#),
             "{code}"
         );
     }

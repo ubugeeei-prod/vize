@@ -18,6 +18,8 @@ impl<'a> EventModifiers<'a> {
         });
         for name in names {
             match name {
+                // Requests delegation; it never guards the handler.
+                "delegate" => {}
                 "once" => modifiers.options.once = true,
                 "capture" => modifiers.options.capture = true,
                 "passive" => modifiers.options.passive = true,
@@ -50,43 +52,47 @@ impl<'a> EventModifiers<'a> {
         name
     }
 
-    pub(crate) fn can_delegate(&self, name: &str) -> bool {
-        !self.options.once
+    /// Whether a listener is delegated, as Vue's compiler decides since
+    /// 3.6.0-rc.6: only on request (`.delegate`), for a static delegatable
+    /// event without listener options, and not when a listener for the same
+    /// event on the element stops propagation (`stopped`, which includes this
+    /// listener's own `.stop`).
+    pub(crate) fn delegates(&self, requested: bool, name: &str, stopped: bool) -> bool {
+        requested
+            && !stopped
+            && !self.options.once
             && !self.options.capture
             && !self.options.passive
             && matches!(
                 name,
-                "click"
+                "beforeinput"
+                    | "click"
                     | "dblclick"
-                    | "mousedown"
-                    | "mouseup"
-                    | "mousemove"
-                    | "mouseover"
-                    | "mouseout"
-                    | "keydown"
-                    | "keyup"
-                    | "keypress"
-                    | "pointerdown"
-                    | "pointerup"
-                    | "pointermove"
-                    | "pointerover"
-                    | "pointerout"
-                    | "touchstart"
-                    | "touchend"
-                    | "touchmove"
+                    | "contextmenu"
                     | "focusin"
                     | "focusout"
                     | "input"
-                    | "change"
-                    | "contextmenu"
-                    | "wheel"
-                    | "drag"
-                    | "dragstart"
-                    | "dragend"
-                    | "dragenter"
-                    | "dragleave"
-                    | "dragover"
-                    | "drop"
+                    | "keydown"
+                    | "keyup"
+                    | "mousedown"
+                    | "mousemove"
+                    | "mouseout"
+                    | "mouseover"
+                    | "mouseup"
+                    | "pointerdown"
+                    | "pointermove"
+                    | "pointerout"
+                    | "pointerover"
+                    | "pointerup"
+                    | "touchend"
+                    | "touchmove"
+                    | "touchstart"
             )
+    }
+
+    /// Whether a static listener with these modifiers stops propagation of
+    /// `name`, the event its modifiers resolve to.
+    pub(crate) fn stops(&self, event: &str, name: &str) -> bool {
+        self.non_keys.contains(&"stop") && self.event_name(event) == name
     }
 }

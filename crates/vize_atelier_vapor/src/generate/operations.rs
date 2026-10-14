@@ -16,6 +16,7 @@ mod insertion;
 mod key;
 mod match_scope;
 mod merged_props;
+pub(crate) use merged_props::svg_argument;
 mod refs;
 mod slots;
 

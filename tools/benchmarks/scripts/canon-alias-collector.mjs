@@ -10,6 +10,17 @@ export const successorUrl = new URL(
 export const successorBytes = readFileSync(successorUrl);
 export const successorSha256 = createHash("sha256").update(successorBytes).digest("hex");
 export const successor = JSON.parse(successorBytes);
+const directoryModuleBytes = readFileSync(
+  new URL("directory-module-resolver-successor.json", successorUrl),
+);
+export const directoryModuleResolver = JSON.parse(directoryModuleBytes);
+assert.equal(directoryModuleResolver.schemaVersion, 1);
+assert.equal(directoryModuleResolver.originalSuccessorSha256, successorSha256);
+assert.equal(directoryModuleResolver.originalResolverSha256, successor.resolverSources.selected);
+assert.equal(
+  directoryModuleResolver.resolverSha256,
+  "0b0bb2644ea472bee40ce0c260513dc0ce10cb05cce4b996dae20ad58aa8915d",
+);
 assert.deepEqual(Object.keys(successor.resolverSources), ["historical", "selected"]);
 assert.deepEqual(Object.keys(successor.collectorSources), ["historical", "selected"]);
 const originalBytes = readFileSync(
@@ -49,7 +60,10 @@ function mode(sources, sha256, label) {
 
 export function sourceContract(resolverSha256, collectorSha256, side) {
   assert(["base", "head"].includes(side), "Unknown source side");
-  const resolverMode = mode(successor.resolverSources, resolverSha256, "Canon resolver");
+  const resolverMode =
+    resolverSha256 === directoryModuleResolver.resolverSha256
+      ? "selected"
+      : mode(successor.resolverSources, resolverSha256, "Canon resolver");
   const collectorMode = mode(successor.collectorSources, collectorSha256, "CLI collector");
   if (side === "head") {
     assert.equal(resolverMode, "selected", "Head must satisfy selected resolver semantics");

@@ -293,7 +293,7 @@ test("release workflow requires VS Code Marketplace publication", () => {
   assert.match(publishJob, /if \[ -z "\$\{VSCE_PAT:-\}" \]/);
   assert.match(publishJob, /VSCE_PAT is required in the protected vscode-marketplace environment/);
   assert.match(publishJob, /name:\s*Publish VS Code extension/);
-  assert.match(publishJob, /tools\/moon\/cmd\/publish_vscode_extension/);
+  assert.match(publishJob, /node tools\/support\/release\/publish_vscode_extension\/main\.ts /);
   assert.doesNotMatch(publishJob, /Skip publish|continue-on-error|if:\s*env\.VSCE_PAT/);
 });
 
@@ -339,6 +339,6 @@ test("Open VSX publication is an explicit, fail-closed opt-in", () => {
   assert.match(publishJob, /gh release download "\$\{\{ steps\.release\.outputs\.tag_name \}\}"/);
   assert.match(publishJob, /--pattern "\*\.vsix"/);
   assert.match(publishJob, /test "\$\{#vsix_files\[@\]\}" -eq 1/);
-  assert.match(publishJob, /tools\/moon\/cmd\/publish_open_vsx_extension/);
+  assert.match(publishJob, /node tools\/support\/release\/publish_open_vsx_extension\/main\.ts /);
   assert.doesNotMatch(publishJob, /Skip publish|continue-on-error|if:\s*env\.OVSX_PAT/);
 });

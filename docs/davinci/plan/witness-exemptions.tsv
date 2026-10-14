@@ -70,6 +70,7 @@ vize_patina	vue/no-deprecated-scope-attribute	1
 vize_patina	vue/no-deprecated-slot-attribute	1
 vize_patina	vue/no-deprecated-slot-scope-attribute	1
 vize_patina	vue/no-deprecated-v-bind-sync	1
+vize_patina	vue/no-deprecated-v-is	1
 vize_patina	vue/no-deprecated-v-on-native-modifier	1
 vize_patina	vue/no-deprecated-v-on-number-modifiers	1
 vize_patina	vue/no-dupe-v-else-if	1
@@ -91,13 +92,16 @@ vize_patina	vue/valid-template-root	1
 vize_patina	vue/valid-v-bind	1
 vize_patina	vue/valid-v-cloak	1
 vize_patina	vue/valid-v-else	1
+vize_patina	vue/valid-v-else-if	1
 vize_patina	vue/valid-v-for	1
 vize_patina	vue/valid-v-html	1
 vize_patina	vue/valid-v-if	1
+vize_patina	vue/valid-v-is	1
 vize_patina	vue/valid-v-memo	1
 vize_patina	vue/valid-v-model	1
 vize_patina	vue/valid-v-on	1
 vize_patina	vue/valid-v-once	1
+vize_patina	vue/valid-v-pre	1
 vize_patina	vue/valid-v-show	1
 vize_patina	vue/valid-v-slot	1
 vize_patina	vue/valid-v-text	1

@@ -79,12 +79,12 @@ fn profile_build_walks_report_the_current_p2_12b_gap() {
         assert!(errors.is_empty(), "{} should compile cleanly", fixture.name);
         assert!(!result.code.is_empty(), "{} should emit code", fixture.name);
 
-        let pre_s2_walks = counter(&counters, "davinci.s2_dom.pre_s2.walks");
-        let pre_s2_visits = counter(&counters, "davinci.s2_dom.pre_s2.visits");
-        let l2_walks = counter(&counters, "davinci.s2_dom.total.walks");
-        let emit_walks = counter(&counters, "davinci.s2_dom.emit.walks");
-        let emit_visits = counter(&counters, "davinci.s2_dom.emit.visits");
-        let build_walks = counter(&counters, "davinci.s2_dom.build.walks");
+        let pre_s2_walks = counter(&counters, "l2.dom.pre_s2.walks");
+        let pre_s2_visits = counter(&counters, "l2.dom.pre_s2.visits");
+        let l2_walks = counter(&counters, "l2.dom.total.walks");
+        let emit_walks = counter(&counters, "l2.dom.emit.walks");
+        let emit_visits = counter(&counters, "l2.dom.emit.visits");
+        let build_walks = counter(&counters, "l2.dom.build.walks");
 
         assert_eq!(
             pre_s2_walks, 0,

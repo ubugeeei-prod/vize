@@ -123,7 +123,7 @@ fn assert_inline_parity(filename: &str, source: &str) {
         counters
             .entries
             .iter()
-            .any(|entry| entry.name == "davinci.s2_dom.accepted" && entry.total == 1),
+            .any(|entry| entry.name == "l2.dom.accepted" && entry.total == 1),
         "{filename} must reach L2: {counters:?}"
     );
     let emitted = emitted.expect("L2 compile");

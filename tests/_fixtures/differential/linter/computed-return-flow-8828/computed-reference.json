@@ -1,0 +1,202 @@
+{
+  "schema": "vize.lint.computed.independent-reference",
+  "version": 1,
+  "plugin": "10.9.2",
+  "rules": {
+    "vue/return-in-computed-property": "error",
+    "vue/no-side-effects-in-computed-properties": "error"
+  },
+  "sourceOnly": true,
+  "nativeCredit": false,
+  "matrixCredit": false,
+  "cases": [
+    {
+      "id": "missing-if",
+      "source": "<script setup>import {computed,ref} from \"vue\"; computed(() => { if (ok) return 1 })</script>\n<template><div/></template>\n",
+      "sourceSHA256": "d171e13d5004ff74f94ce014a37361bcaeb81b69f638d0a0d9539a1700ee4442",
+      "expectedCount": 1,
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/missing-if.vue",
+          "messages": [
+            {
+              "ruleId": "vue/return-in-computed-property",
+              "severity": 2,
+              "message": "Expected to return a value in computed function.",
+              "line": 1,
+              "column": 58,
+              "messageId": "expectedReturnInFunction",
+              "endLine": 1,
+              "endColumn": 84
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<script setup>import {computed,ref} from \"vue\"; computed(() => { if (ok) return 1 })</script>\n<template><div/></template>\n",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "complete-if",
+      "source": "<script setup>import {computed,ref} from \"vue\"; computed(() => { if (ok) return 1; return 2 })</script>\n<template><div/></template>\n",
+      "sourceSHA256": "699a7f325c8c353bf214866b9392d11b815eec30b05a85feeb0c9e883c730cdd",
+      "expectedCount": 0,
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/complete-if.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "missing-switch",
+      "source": "<script setup>import {computed,ref} from \"vue\"; computed(() => { switch (kind) { case \"a\": return 1; case \"b\": return 2 } })</script>\n<template><div/></template>\n",
+      "sourceSHA256": "0920f6bf2b4f87bb9443718b746db1636d504204752347980b18c95916ba031e",
+      "expectedCount": 1,
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/missing-switch.vue",
+          "messages": [
+            {
+              "ruleId": "vue/return-in-computed-property",
+              "severity": 2,
+              "message": "Expected to return a value in computed function.",
+              "line": 1,
+              "column": 58,
+              "messageId": "expectedReturnInFunction",
+              "endLine": 1,
+              "endColumn": 124
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<script setup>import {computed,ref} from \"vue\"; computed(() => { switch (kind) { case \"a\": return 1; case \"b\": return 2 } })</script>\n<template><div/></template>\n",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "complete-switch",
+      "source": "<script setup>import {computed,ref} from \"vue\"; computed(() => { switch (kind) { case \"a\": return 1; default: return 2 } })</script>\n<template><div/></template>\n",
+      "sourceSHA256": "26bb5d2a3ed9fccc135d72600eda286c5dc32a41c125f19882924655f0abcc2f",
+      "expectedCount": 0,
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/complete-switch.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "ref-write",
+      "source": "<script setup>import {computed,ref} from \"vue\"; const state = ref(0); computed(() => { state.value = 1; return state.value })</script>\n<template><div/></template>\n",
+      "sourceSHA256": "29a931ceb3a63ec16f23380c5adb87a32f9b9d8d58a0f4ef71de45dc24a107dc",
+      "expectedCount": 1,
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/ref-write.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-side-effects-in-computed-properties",
+              "severity": 2,
+              "message": "Unexpected side effect in computed function.",
+              "line": 1,
+              "column": 88,
+              "messageId": "unexpectedSideEffectInFunction",
+              "endLine": 1,
+              "endColumn": 103
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<script setup>import {computed,ref} from \"vue\"; const state = ref(0); computed(() => { state.value = 1; return state.value })</script>\n<template><div/></template>\n",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "local-write",
+      "source": "<script setup>import {computed,ref} from \"vue\"; computed(() => { const state = {value:0}; state.value = 1; return state.value })</script>\n<template><div/></template>\n",
+      "sourceSHA256": "6bef24cc8ed9668cd3148400275238780522c62cbbda43b677c6322b81ab41b6",
+      "expectedCount": 0,
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/local-write.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "ref-read",
+      "source": "<script setup>import {computed,ref} from \"vue\"; const state = ref(0); computed(() => state.value)</script>\n<template><div/></template>\n",
+      "sourceSHA256": "42d6fd535ba945831240a32e330dcb88c6ea7cc716997894cc428123a681bb41",
+      "expectedCount": 0,
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/ref-read.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "ref-copy",
+      "source": "<script setup>import {computed,ref} from \"vue\"; const state = ref([]); computed(() => [...state.value].reverse())</script>\n<template><div/></template>\n",
+      "sourceSHA256": "3945cc72e8f9a311e438a131ee8519a17f1b67dead1c9d4e8f3397e10bddcfdd",
+      "expectedCount": 0,
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/ref-copy.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    }
+  ]
+}

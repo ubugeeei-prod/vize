@@ -49,15 +49,17 @@ jobs:
         if: ${{ !cancelled() }}
         env:
           VIZE_TEST_REQUIRE_TSGO: "1"
+          VIZE_TEST_REQUIRE_PIN_INPUT_FIXTURE: "1"
           VIZE_NATIVE_SYNTAX_CAPTURE_DIR: ${{ github.workspace }}/target/native-syntax-completion/packets
         run: |
           set -euo pipefail
           unset VIZE_TEST_DISABLE_TSGO
           qualifier_status=0
-          for control in anchors malformed-setup jsx native; do
+          for control in anchors malformed-setup generic jsx native; do
             case "$control" in
               anchors) control_args=(--lib anchors::tests:: -- --nocapture) ;;
               malformed-setup) control_args=(--lib vue_codegen::malformed_setup_tests:: -- --nocapture --test-threads=1) ;;
+              generic) control_args=(--lib vue_codegen::generic_component_tests:: -- --nocapture --test-threads=1) ;;
               jsx) control_args=(--lib jsx_codegen::nested_tests:: -- --nocapture) ;;
               native) control_args=(--test native_syntax_semantics -- --nocapture --test-threads=1) ;;
             esac

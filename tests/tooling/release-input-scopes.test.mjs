@@ -187,7 +187,7 @@ void test("hosted operator source and authority inputs select its audited contra
     "tools/support/release/pr_budget.rs",
     "tools/support/release/pr_pin_retire_guard.rs",
     "tools/support/release/pr_pin_retire_attempt_fixtures.rs",
-    "tools/moon/cmd/release/main.mbt",
+    "tools/support/release/release/main.ts",
     "tests/tooling/support/fake-command.ts",
   ]) {
     assert.ok(selected(input).includes(contract), input);

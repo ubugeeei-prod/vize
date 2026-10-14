@@ -52,8 +52,8 @@ impl Shape {
     /// template compile.
     pub const fn namespace(self) -> &'static str {
         match self {
-            Self::DomInline | Self::DomModule => "davinci.s2_dom.",
-            Self::Ssr => "davinci.s4_ssr.",
+            Self::DomInline | Self::DomModule => "l2.dom.",
+            Self::Ssr => "l4.ssr.",
             Self::Vapor => "davinci.s3_vapor.",
         }
     }
