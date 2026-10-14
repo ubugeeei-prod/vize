@@ -202,3 +202,23 @@ fn prettier_preset_reindents_scss_and_less() {
         );
     }
 }
+
+#[test]
+fn default_options_serialize_as_the_published_reference() {
+    let reference: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/formatter/format-options-reference.json"
+    ))
+    .expect("reference");
+    let defaults = serde_json::to_value(FormatOptions::default()).expect("serialize");
+    assert_eq!(defaults, reference["formatOptions"]);
+
+    let mut options = FormatOptions::default();
+    FormatPreset::Prettier.apply(&mut options);
+    let round_trip: FormatOptions =
+        serde_json::from_value(serde_json::to_value(&options).expect("serialize"))
+            .expect("deserialize");
+    assert_eq!(
+        serde_json::to_value(round_trip).expect("serialize"),
+        serde_json::to_value(options).expect("serialize")
+    );
+}

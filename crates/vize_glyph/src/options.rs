@@ -108,28 +108,28 @@ pub struct FormatOptions {
     /// Re-quote strings in CSS, SCSS and Less `<style>` blocks with the
     /// `singleQuote` preference, as Prettier does (default: false keeps
     /// authored quotes)
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "is_false")]
     pub normalize_css_quotes: bool,
 
     /// Lay out static `style` attributes as `name: value` declarations joined
     /// by `; ` without a trailing `;`, as Prettier does (default: false)
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "is_false")]
     pub normalize_inline_styles: bool,
 
     /// Wrap several `v-for` aliases in parentheses, `(item, i) in items`, as
     /// Prettier does (default: false keeps the authored form)
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "is_false")]
     pub normalize_v_for_parens: bool,
 
     /// Close void elements such as `<img>` as `<img />`, as Prettier does
     /// (default: false keeps the authored form)
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "is_false")]
     pub self_close_void_elements: bool,
 
     /// Re-indent SCSS and Less `<style>` blocks by nesting depth and tidy
     /// their blank lines, as Prettier does; tokens stay as written
     /// (default: false)
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "is_false")]
     pub reindent_preprocessor_styles: bool,
 
     /// Skip the `<script>` idempotence stabilization pass (default: false).
@@ -208,6 +208,12 @@ impl FormatPreset {
         options.self_close_void_elements = !vize;
         options.reindent_preprocessor_styles = !vize;
     }
+}
+
+/// Options added after the published option set stay out of serialized
+/// options while off, so existing option snapshots keep their bytes.
+fn is_false(value: &bool) -> bool {
+    !*value
 }
 
 fn default_print_width() -> u32 {
