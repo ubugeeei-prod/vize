@@ -122,24 +122,24 @@ oxc_formatter = { package = "vize_oxc_formatter", version = "=0.454.0", path = "
 oxc_formatter_core = { version = "=0.60.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
 
 # Serialization and schema formats
-serde = { version = "=1.0.228", features = ["derive"] }
-serde_json = "=1.0.149"
-toml = "=1.1.4"
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = "=1.0.154"
+toml = "=1.1.8"
 lsp-types = "=0.97.0"
 pklrust = "=0.9.0"
 
 # CLI, async, and IDE runtime
-clap = { version = "=4.6.6", features = ["derive"] }
-futures = "=0.3.32"
+clap = { version = "=4.6.7", features = ["derive"] }
+futures = "=0.3.34"
 tower = { version = "=0.4.13", default-features = false }
 tower-lsp = { version = "=0.20.0", default-features = false, features = ["runtime-agnostic"] }
-async-trait = "=0.1.89"
+async-trait = "=0.1.92"
 tracing = "=0.1.44"
 tracing-subscriber = "=0.3.23"
 parking_lot = "=0.12.5"
 ropey = "=1.6.1"
 dirs = "=6.0.0"
-which = "=8.0.5"
+which = "=8.0.6"
 walkdir = "=2.5.0"
 ignore = "=0.4.33"
 glob = "=0.3.4"
@@ -159,14 +159,14 @@ web-sys = { version = "=0.3.106", features = ["console"] }
 getrandom = { version = "=0.3.4", features = ["wasm_js"] }
 
 # Proc-macro toolkit (host build dependencies; versions match the lockfile)
-proc-macro2 = "=1.0.106"
-quote = "=1.0.45"
+proc-macro2 = "=1.0.107"
+quote = "=1.0.47"
 syn = "=2.0.117"
 
 # Utilities
-thiserror = "=2.0.20"
+thiserror = "=2.0.21"
 rustc-hash = "=2.1.3"
-bitflags = { version = "=2.13.1", features = ["serde"] }
+bitflags = { version = "=2.13.2", features = ["serde"] }
 once_cell = "=1.21.4"
 compact_str = { version = "=0.10.0", features = ["serde"] }
 lasso = "=0.7.3"
@@ -177,22 +177,22 @@ memchr = "=2.8.3"
 simdutf8 = "=0.1.5"
 fast-float2 = "=0.2.4"
 regex = "=1.13.1"
-smallvec = { version = "=1.15.2", features = ["union"] }
-thin-vec = "=0.2.20"
+smallvec = { version = "=1.16.3", features = ["union"] }
+thin-vec = "=0.2.21"
 index_vec = { version = "=0.1.4", default-features = false }
 fixedbitset = { version = "=0.5.7", default-features = false }
 dashmap = "=6.2.1"
-xxhash-rust = { version = "=0.8.18", features = ["xxh3"] }
+xxhash-rust = { version = "=0.8.19", features = ["xxh3"] }
 # Incremental query engine for the resident tier only (charter #10 and #39):
 # `vize_incremental` is its sole dependent, the one-shot CLI stays on the fused
 # pipeline, and `tests/tooling/davinci-resident-salsa.test.ts` enforces both.
 # Pinned exactly; the default `rayon` feature stays off (file-parallelism is
 # the caller's, charter #33).
 salsa = { version = "=0.28.5", default-features = false, features = ["macros", "inventory"] }
-sha2 = "=0.11.0"
+sha2 = "=0.11.1"
 url = "=2.5.8"
 htmlize = { version = "=1.1.0", features = ["unescape"] }
-libc = "=0.2.189"
+libc = "=0.2.190"
 # Moves a recursive AST pass onto a heap-allocated stack when the thread stack
 # runs low, so template nesting depth costs heap instead of stack. See
 # `vize_carton::recursion` for why the compiler needs it.
@@ -233,7 +233,7 @@ unicode-segmentation = "=1.13.3"
 similar = "=2.7.0"
 
 # Testing and benchmarking
-insta = { version = "=1.48.0", features = ["toml"] }
+insta = { version = "=1.49.0", features = ["toml"] }
 criterion = "=0.8.2"
 
 # Published corsa crates
