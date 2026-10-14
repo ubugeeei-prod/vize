@@ -32,13 +32,19 @@ fn universal_align_and_bgcolor_use_exact_original_suggestions() {
 }
 
 #[test]
-fn border_warns_except_on_the_exact_table_tag() {
-    policy("div", &[("border", "CSS `border`")]);
-    for locale in LOCALES {
-        assert_eq!(
-            parity("<template><table border='1'></table></template>", locale),
-            expected(vec![])
-        );
+fn border_warns_only_on_the_exact_img_and_object_tags() {
+    // HTML only ever defined `border` on these (and table, which stays
+    // conforming); elsewhere it is an unknown attribute such as UnoCSS
+    // attributify's `border="b base"`.
+    policy("img", &[("border", "CSS `border`")]);
+    policy("object", &[("border", "CSS `border`")]);
+    for source in [
+        "<template><table border='1'></table></template>",
+        "<template><div border='b base'></div></template>",
+    ] {
+        for locale in LOCALES {
+            assert_eq!(parity(source, locale), expected(vec![]));
+        }
     }
 }
 
@@ -121,8 +127,8 @@ fn tag_specific_names_are_clean_on_other_exact_tags() {
 
 #[test]
 fn namespace_spellings_do_not_receive_local_name_exceptions() {
-    policy("svg:table", &[("border", "CSS `border`")]);
     for source in [
+        "<template><svg:img border /></template>",
         "<template><svg:table cellpadding cellspacing /></template>",
         "<template><svg:body background text link /></template>",
         "<template><svg:td width height /></template>",

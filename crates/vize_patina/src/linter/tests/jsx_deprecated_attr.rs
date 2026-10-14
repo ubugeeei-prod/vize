@@ -67,12 +67,17 @@ fn deprecated_attr_preserves_legacy_jsx_boundaries() {
         );
     }
 
-    let namespaced_table = r#"const A = () => <svg:table border="1" />;"#;
-    let result = linter.lint_jsx(namespaced_table, "test.jsx", JsxLang::Jsx);
+    // `border` is obsolete only on the exact img/object tags; a namespaced
+    // spelling does not receive that local name.
+    let namespaced_img = r#"const A = () => <svg:img border="0" />;"#;
+    let result = linter.lint_jsx(namespaced_img, "test.jsx", JsxLang::Jsx);
     assert_eq!(
-        result.warning_count, 1,
-        "namespaced tags must keep the old lowered-tag table exception boundary"
+        result.warning_count, 0,
+        "namespaced img is not the unqualified img"
     );
+    let img = r#"const A = () => <img border="0" />;"#;
+    let result = linter.lint_jsx(img, "test.jsx", JsxLang::Jsx);
+    assert_eq!(result.warning_count, 1, "img border is obsolete");
 }
 
 #[test]

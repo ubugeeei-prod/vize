@@ -172,12 +172,18 @@ fn raw_element_bodies_never_create_fake_matching_headers() {
 }
 
 #[test]
-fn lowercase_component_slot_and_structural_template_are_not_component_exemptions() {
+fn lowercase_slot_and_structural_template_are_not_component_exemptions() {
+    // Vue's dynamic `<component>` is never an HTML element, so it is exempt.
+    for locale in LOCALES {
+        assert_eq!(
+            parity(
+                "<template><component :is='broken(' align /></template>",
+                locale
+            ),
+            expected(vec![])
+        );
+    }
     for (tag, source) in [
-        (
-            "component",
-            "<template><component :is='broken(' align /></template>",
-        ),
         ("slot", "<template><slot align /></template>"),
         (
             "template",
