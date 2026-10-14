@@ -2573,7 +2573,7 @@ Proibir invólucros de elementos comuns diretamente abaixo de `<KeepAlive>`
 [Incorreto](#vue-no-non-component-keep-alive-child-bad) · [Correto](#vue-no-non-component-keep-alive-child-good)
 
 Severidade padrão: `warning`  
-Predefinições: _none_  
+Predefinições: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
@@ -2636,7 +2636,7 @@ O primeiro exemplo torna UserCard o filho condicional. O invólucro com v-show i
 
 O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
-[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_non_component_keep_alive_child.rs#L14) · [Todas as regras](all.md)
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_non_component_keep_alive_child.rs#L15) · [Todas as regras](all.md)
 
 ### `vue/no-preprocessor-lang`
 

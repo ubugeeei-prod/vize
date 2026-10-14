@@ -3407,7 +3407,7 @@ Exigir que os eventos emitidos sejam declarados em defineEmits ou na opção emi
 [Incorreto](#script-require-explicit-emits-bad) · [Correto](#script-require-explicit-emits-good)
 
 Severidade padrão: `warning`  
-Predefinições: _none_  
+Predefinições: `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.

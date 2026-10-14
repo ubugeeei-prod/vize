@@ -3,6 +3,7 @@ use crate::rules::script::ScriptLinter;
 
 // Template-half tests (#3413 A) live in the `template` submodule, helpers and
 // all: this file is already close to the 350-line budget.
+mod other_instances;
 mod template;
 
 fn create_linter() -> ScriptLinter {

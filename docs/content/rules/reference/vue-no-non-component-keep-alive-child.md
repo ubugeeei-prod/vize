@@ -9,7 +9,7 @@ Disallow plain element wrappers directly below `<KeepAlive>`
 [Bad](#bad) · [Good](#good)
 
 Default severity: `warning`  
-Presets: _none_  
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
@@ -68,4 +68,4 @@ The first example makes UserCard the conditional child. The v-show wrapper illus
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_non_component_keep_alive_child.rs#L14) · [All rules](../all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_non_component_keep_alive_child.rs#L15) · [All rules](../all.md)

@@ -230,7 +230,8 @@ fn emitted_event<'a>(
 }
 
 /// Whether `callee` is an emit dispatcher: the captured `defineEmits` binding
-/// (when one exists), or a `*.$emit` member access (`this.$emit`, ...).
+/// (when one exists), or `this.$emit`. `other.$emit(...)` emits on another
+/// instance, so its events are not this component's to declare.
 fn is_emit_callee(callee: &Expression<'_>, binding: Option<&str>) -> bool {
     match callee {
         Expression::Identifier(identifier) => {
@@ -238,6 +239,12 @@ fn is_emit_callee(callee: &Expression<'_>, binding: Option<&str>) -> bool {
         }
         expression if expression.is_member_expression() => expression
             .as_member_expression()
+            .filter(|member| {
+                matches!(
+                    member.object().get_inner_expression(),
+                    Expression::ThisExpression(_)
+                )
+            })
             .and_then(|member| member.static_property_name())
             .is_some_and(|property| property == "$emit"),
         // Look through wrappers so `(emit)('x')` / `(this.$emit)('x')` count.

@@ -92,6 +92,7 @@ impl RuleRegistry {
         registry.register(Box::new(crate::rules::a11y::NoStaticElementInteractions));
         registry.register(Box::new(crate::rules::a11y::NoReferToNonExistentId));
         registry.register(Box::new(crate::rules::vue::PermittedContents));
+        registry.register(Box::new(crate::rules::vue::NoNonComponentKeepAliveChild));
 
         // HTML conformance rules.
         registry.register(Box::new(crate::rules::html::DeprecatedElement));

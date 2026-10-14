@@ -9,6 +9,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_l0::is_native_tag;
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
@@ -72,7 +73,12 @@ fn check_element_child<'a>(ctx: &mut LintContext<'a>, element: &ElementNode<'a>)
         return;
     }
 
-    if element.tag_type != ElementType::Element || has_v_show_only(element) {
+    // The lint parse leaves kebab-case components such as `<n-layout>` as
+    // elements; only a native tag is known to be a plain wrapper.
+    if element.tag_type != ElementType::Element
+        || !is_native_tag(element.tag)
+        || has_v_show_only(element)
+    {
         return;
     }
 
@@ -198,6 +204,16 @@ mod tests {
     fn accepts_component_children() {
         let result = create_linter().lint_template(
             r#"<KeepAlive><One v-if="a" /><Two v-else /></KeepAlive>"#,
+            "test.vue",
+        );
+
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn accepts_kebab_case_component_children() {
+        let result = create_linter().lint_template(
+            r#"<keep-alive><n-layout v-if="a" /><n-empty v-else /><router-view /></keep-alive>"#,
             "test.vue",
         );
 

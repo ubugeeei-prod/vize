@@ -1318,7 +1318,9 @@
       "status": "unimplemented"
     },
     "vue/require-explicit-emits": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "opinionated"
+      ],
       "patinaRule": "script/require-explicit-emits",
       "patinaSeverity": "warning",
       "status": "mapped"
