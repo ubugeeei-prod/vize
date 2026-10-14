@@ -2,6 +2,8 @@
 
 use std::path::Path;
 
+use rayon::prelude::*;
+
 use super::{
     BatchTypeChecker, BatchTypeCheckerOptions, CorsaExecutor, CorsaResult, IncrementalPaths,
     VirtualProject,
@@ -52,7 +54,7 @@ impl BatchTypeChecker {
         if self.scanned || self.owned_storage.is_some() {
             return Ok(());
         }
-        let installed = paths.iter().any(|path| {
+        let installed = paths.par_iter().any(|path| {
             if path.is_absolute() {
                 is_installed_source(path)
             } else {

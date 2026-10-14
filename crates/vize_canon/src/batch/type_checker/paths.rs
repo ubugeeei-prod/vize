@@ -3,6 +3,8 @@
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
+use rayon::prelude::*;
+
 use vize_carton::FxHashMap;
 
 use super::super::error::{CorsaError, CorsaResult};
@@ -55,7 +57,7 @@ impl IncrementalPaths {
             .get_mut()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
         state.roots = roots
-            .iter()
+            .par_iter()
             .filter(|path| path.is_file())
             .map(|path| vize_carton::path::canonicalize_non_verbatim(path))
             .collect();
@@ -165,6 +167,8 @@ fn stamp_project_inputs(
         .iter()
         .cloned()
         .chain(project.governing_config_paths())
+        .collect::<Vec<_>>()
+        .into_par_iter()
         .map(|path| {
             use crate::package_route::stamp::InputStamp;
             let content = project

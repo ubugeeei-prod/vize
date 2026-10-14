@@ -3,6 +3,8 @@
 
 use std::path::{Path, PathBuf};
 
+use rayon::prelude::*;
+
 use vize_atelier_core::TemplateSyntaxMode;
 
 use crate::batch::source_policy::SourceFilePolicy;
@@ -171,9 +173,11 @@ impl VirtualProject {
 
     pub(crate) fn set_declaration_roots(&mut self, paths: &[PathBuf]) {
         let roots = paths
-            .iter()
+            .par_iter()
             .filter(|path| path.is_file())
             .map(|path| vize_carton::path::canonicalize_non_verbatim(path))
+            .collect::<Vec<_>>()
+            .into_iter()
             .collect();
         if self.declaration_roots.as_ref() != Some(&roots) {
             self.mark_incremental_config_file();
