@@ -4,7 +4,7 @@
 //! `class`/`style` concatenate), exactly as `@vue/compiler-vapor` emits it.
 
 use crate::ir::{MergedPropsSource, SetMergedPropsIRNode};
-use vize_carton::{String, ToCompactString, cstr};
+use vize_carton::{String, ToCompactString};
 
 use super::super::{context::GenerateContext, setup::escape_js_string_literal};
 
@@ -22,53 +22,65 @@ pub(crate) fn merged_props_call(
     node: &SetMergedPropsIRNode<'_>,
 ) -> String {
     ctx.use_helper("setDynamicProps");
-    let mut sources: std::vec::Vec<String> = std::vec::Vec::with_capacity(node.sources.len());
-    for source in node.sources.iter() {
+    // One buffer for the whole call: no per-source strings to join.
+    let mut call = String::from("_setDynamicProps(n");
+    call.push_str(&node.element.to_compact_string());
+    call.push_str(", [");
+    for (index, source) in node.sources.iter().enumerate() {
+        if index > 0 {
+            call.push_str(", ");
+        }
         match source {
-            MergedPropsSource::Object(value) => sources.push(ctx.resolve_expression_node(value)),
+            MergedPropsSource::Object(value) => {
+                call.push_str(&ctx.resolve_expression_node(value));
+            }
             MergedPropsSource::Group(props) => {
-                let mut group = String::from("{ ");
+                call.push_str("{ ");
                 for (index, prop) in props.iter().enumerate() {
                     if index > 0 {
-                        group.push_str(", ");
+                        call.push_str(", ");
                     }
                     let key = prop.key.content;
                     if !prop.key.is_static {
-                        group.push('[');
-                        group.push_str(&ctx.resolve_expression_node(&prop.key));
-                        group.push(']');
+                        call.push('[');
+                        call.push_str(&ctx.resolve_expression_node(&prop.key));
+                        call.push(']');
                     } else if simple_identifier(key) {
-                        group.push_str(key);
+                        call.push_str(key);
                     } else {
-                        group.push_str(&cstr!("\"{}\"", escape_js_string_literal(key)));
+                        call.push('"');
+                        call.push_str(&escape_js_string_literal(key));
+                        call.push('"');
                     }
-                    group.push_str(": ");
-                    let values: std::vec::Vec<String> = (prop.values.iter())
-                        .map(|value| {
-                            if value.is_static {
-                                cstr!("\"{}\"", escape_js_string_literal(value.content))
-                            } else {
-                                ctx.resolve_expression_node(value)
-                            }
-                        })
-                        .collect();
-                    match values.as_slice() {
-                        [value] => group.push_str(value),
-                        values => group.push_str(&cstr!("[{}]", values.join(", "))),
+                    call.push_str(": ");
+                    let list = prop.values.len() != 1;
+                    if list {
+                        call.push('[');
+                    }
+                    for (index, value) in prop.values.iter().enumerate() {
+                        if index > 0 {
+                            call.push_str(", ");
+                        }
+                        if value.is_static {
+                            call.push('"');
+                            call.push_str(&escape_js_string_literal(value.content));
+                            call.push('"');
+                        } else {
+                            call.push_str(&ctx.resolve_expression_node(value));
+                        }
+                    }
+                    if list {
+                        call.push(']');
                     }
                 }
-                group.push_str(" }");
-                sources.push(group);
+                call.push_str(" }");
             }
         }
     }
-    cstr!(
-        "_setDynamicProps(n{}, [{}]{})",
-        node.element,
-        sources.join(", "),
-        svg_argument(node.namespace)
-    )
-    .to_compact_string()
+    call.push(']');
+    call.push_str(svg_argument(node.namespace));
+    call.push(')');
+    call
 }
 
 /// Upstream's `isSimpleIdentifier`: such keys stay bare, others are quoted.

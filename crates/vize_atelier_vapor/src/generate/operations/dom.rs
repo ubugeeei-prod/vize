@@ -129,23 +129,27 @@ pub(super) fn generate_set_dynamic_props(
         }
     } else {
         ctx.use_helper("setDynamicProps");
-        let props_parts: std::vec::Vec<vize_carton::String> = set_props
-            .props
-            .iter()
-            .map(|p| {
-                if p.is_static {
-                    cstr!("\"{}\"", escape_js_string_literal(p.content))
-                } else {
-                    ctx.resolve_expression_node(p)
-                }
-            })
-            .collect();
-        ctx.push_line_fmt(format_args!(
-            "_setDynamicProps({}, [{}]{})",
-            element,
-            props_parts.join(", "),
-            super::merged_props::svg_argument(set_props.namespace)
-        ));
+        // Written straight into the output: no per-prop strings to join.
+        ctx.push_indent();
+        ctx.push("_setDynamicProps(");
+        ctx.push(&element);
+        ctx.push(", [");
+        for (index, prop) in set_props.props.iter().enumerate() {
+            if index > 0 {
+                ctx.push(", ");
+            }
+            if prop.is_static {
+                ctx.push("\"");
+                ctx.push(&escape_js_string_literal(prop.content));
+                ctx.push("\"");
+            } else {
+                let resolved = ctx.resolve_expression_node(prop);
+                ctx.push(&resolved);
+            }
+        }
+        ctx.push("]");
+        ctx.push(super::merged_props::svg_argument(set_props.namespace));
+        ctx.push(")\n");
     }
 }
 

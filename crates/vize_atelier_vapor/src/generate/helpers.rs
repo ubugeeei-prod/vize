@@ -1,44 +1,14 @@
 //! Effect generation and inline operation helpers.
 
-use crate::ir::{IREffect, OperationNode};
+use crate::ir::OperationNode;
 use vize_atelier_core::codegen::document::EmitDocument;
-use vize_carton::{FxHashMap, String, cstr};
+use vize_carton::{String, cstr};
 
 use super::{
     context::GenerateContext,
-    operations::{generate_operation, merged_props_call, set_prop_call, set_text_call},
+    operations::{merged_props_call, set_prop_call, set_text_call},
     setup::escape_js_string_literal,
 };
-
-/// Generate effect
-pub(crate) fn generate_effect(
-    ctx: &mut GenerateContext,
-    effect: &IREffect<'_>,
-    element_template_map: &FxHashMap<usize, usize>,
-) {
-    ctx.use_helper("renderEffect");
-
-    // If only one operation, use single-line format
-    if let [op] = effect.operations.as_slice()
-        && let Some(op_code) = generate_operation_inline(ctx, op)
-    {
-        ctx.push_indent();
-        ctx.push("_renderEffect(() => ");
-        ctx.push_spanned(&op_code);
-        ctx.push(")\n");
-        return;
-    }
-
-    ctx.push_line("_renderEffect(() => {");
-    ctx.indent();
-
-    for op in effect.operations.iter() {
-        generate_operation(ctx, op, element_template_map);
-    }
-
-    ctx.deindent();
-    ctx.push_line("})");
-}
 
 /// Generate operation inline (returns code with its anchors). SetProp and
 /// SetText share the statement emitters' call builders.

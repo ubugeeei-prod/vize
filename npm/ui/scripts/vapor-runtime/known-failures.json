@@ -11,7 +11,6 @@
   },
   "hydrate": {
     "alert-dialog": "unclassified: AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:",
-    "command-palette-group": "vapor-hydration: codegen does not use the Vue 3.6 insertion-state hydration model",
     "date-range-picker-calendar": "vapor-hydration: codegen does not use the Vue 3.6 insertion-state hydration model",
     "notification-center-list": "vapor-hydration: codegen does not use the Vue 3.6 insertion-state hydration model",
     "qr-code": "vapor-hydration: codegen does not use the Vue 3.6 insertion-state hydration model",

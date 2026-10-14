@@ -56,7 +56,7 @@ const FIXTURES: [(&str, &str, u64); 7] = [
     (
         "spreads",
         "<main class=\"shell\"><section id=\"card\" class=\"card\" v-bind=\"attrs\" :title=\"title\"><b v-bind=\"badge\">{{ count }}</b></section><Panel v-bind=\"panel\" v-on=\"{ close: save }\" :size=\"size\" /><button v-on=\"handlers\">go</button></main>",
-        106,
+        99,
     ),
     (
         "control_flow",
