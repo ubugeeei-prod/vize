@@ -17,7 +17,7 @@ use serde_json::{Value, json};
 use std::{
     io::Write,
     path::Path,
-    process::{Command, Output, Stdio},
+    process::{Command, Stdio},
 };
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
 use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_options};
@@ -25,9 +25,11 @@ use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};
 use vize_carton::Allocator;
 
 mod patterned_template_runtime {
+    pub(crate) mod child;
     mod evaluation;
     mod failure_evidence;
 }
+use patterned_template_runtime::child::{report_teardown_crash, validate_runtime_output};
 
 fn compile(backend: &str, source: &str) -> String {
     let allocator = Allocator::new();
@@ -102,49 +104,12 @@ fn check(source: &str, cases: Value) {
             )
             .unwrap();
         let output = child.wait_with_output().unwrap();
-        if let Err(evidence) = validate_runtime_output(backend, source, &cases, &code, &output) {
-            panic!("{evidence}");
+        match validate_runtime_output(backend, source, &cases, &code, &output) {
+            Ok(None) => {}
+            Ok(Some(crash)) => report_teardown_crash(&crash),
+            Err(evidence) => panic!("{evidence}"),
         }
     }
-}
-
-fn validate_runtime_output(
-    backend: &str,
-    source: &str,
-    cases: &Value,
-    code: &str,
-    output: &Output,
-) -> Result<(), String> {
-    #[cfg(unix)]
-    let signal = {
-        use std::os::unix::process::ExitStatusExt;
-        output.status.signal()
-    };
-    #[cfg(not(unix))]
-    let signal: Option<i32> = None;
-    let evidence = |reason: &str| {
-        format!(
-            "{backend}: {reason}\nstatus: {}\nexit_code: {:?}\nsignal: {signal:?}\nstdout:\n{}\nstdout_bytes: {:?}\nstderr:\n{}\nstderr_bytes: {:?}\nsource:\n{source}\ncases:\n{cases}\ncode:\n{code}",
-            output.status,
-            output.status.code(),
-            String::from_utf8_lossy(&output.stdout),
-            output.stdout,
-            String::from_utf8_lossy(&output.stderr),
-            output.stderr,
-        )
-    };
-    if !output.status.success() {
-        return Err(evidence("runtime child failed"));
-    }
-    let actual = serde_json::from_slice::<Value>(&output.stdout)
-        .map_err(|error| evidence(&format!("invalid runtime JSON: {error}")))?;
-    let expected = json!({"passed": cases.as_array().unwrap().len()});
-    if actual != expected {
-        return Err(evidence(&format!(
-            "runtime result mismatch: expected {expected}, received {actual}"
-        )));
-    }
-    Ok(())
 }
 
 #[test]
