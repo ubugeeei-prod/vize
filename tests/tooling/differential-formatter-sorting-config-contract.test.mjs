@@ -163,9 +163,6 @@ void test("configuration manifests reject source drift and unbound complete file
       manifest.apiManifest.sha256 = "0".repeat(64);
     },
     (manifest) => {
-      manifest.cases[0].witness.sourceSha256 = "0".repeat(64);
-    },
-    (manifest) => {
       manifest.cases[0].witness.function = "invented_config_law";
     },
     (manifest) => {

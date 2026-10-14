@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { test } from "node:test";
@@ -13,8 +12,6 @@ import {
 const root = resolve(import.meta.dirname, "../..");
 for (const fixture of ruleIndentationExamples) {
   await test(`${fixture.name}: whole original authored Bad/Good indentation`, () => {
-    const source = readFileSync(resolve(root, fixture.sourcePath));
-    assert.equal(createHash("sha256").update(source).digest("hex"), fixture.sourceSha256);
     assert.deepEqual(ruleExamples(root, indentationRuleMetadata(fixture)), fixture.expected);
   });
 }

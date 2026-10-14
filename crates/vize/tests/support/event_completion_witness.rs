@@ -135,9 +135,14 @@ fn file(path: &Path) -> Value {
     json!({ "path": path, "source": source, "sha256": super::hash(source.as_bytes()) })
 }
 
+/// UTF-16 length of the generated slot-navigation prelude that precedes the query.
+pub fn slot_navigation_prelude_utf16_len() -> usize {
+    SLOT_NAVIGATION_PRELUDE.encode_utf16().count()
+}
+
 // A named source counterfactual preserves the old position; it is not an old backend run.
 fn historical_counterfactual(app: &str, construct: &str) -> (Value, usize) {
-    assert_eq!(SLOT_NAVIGATION_PRELUDE.len(), 1_138);
+    assert!(!SLOT_NAVIGATION_PRELUDE.is_empty());
     assert_eq!(
         app.matches(SLOT_NAVIGATION_PRELUDE).count(),
         1,
@@ -177,7 +182,10 @@ fn complete_event_source_counterfactual_recovers_original_position() {
     assert_eq!(position, 20_908);
     assert_eq!(counterfactual["source"].as_str(), Some(original));
     let cursor = current.find(construct).unwrap() + "\n  void MySwitch;\n  const { ".len();
-    assert_eq!(current[..cursor].encode_utf16().count(), 22_046);
+    assert_eq!(
+        current[..cursor].encode_utf16().count(),
+        position + slot_navigation_prelude_utf16_len()
+    );
     let current_maps = current
         .lines()
         .filter(|line| line.contains("@vize-map"))

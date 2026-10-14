@@ -13,9 +13,9 @@ import {
   expectedPublic,
   publicCoreReference,
 } from "../differential/formatter-vite-public.mjs";
+import { originalViteArchives } from "../differential/formatter-vite-source-family.mjs";
 import {
   originalViteInputs,
-  originalViteSources,
   viteConfigurationPlans,
 } from "../differential/formatter-vite-source.mjs";
 
@@ -74,13 +74,15 @@ void test("Vite history pins all original vectors while adding nine distinct who
   }
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-vite-source-control-"));
   try {
-    for (const file of Object.keys(originalViteSources)) {
+    const archives = Object.values(originalViteArchives);
+    for (const file of archives) {
       fs.mkdirSync(path.dirname(path.join(directory, file)), { recursive: true });
       fs.copyFileSync(path.join(root, file), path.join(directory, file));
     }
-    for (const file of Object.keys(originalViteSources)) {
+    assert.deepEqual(originalViteInputs(directory), original);
+    for (const file of archives) {
       fs.appendFileSync(path.join(directory, file), "\n");
-      assert.throws(() => originalViteInputs(directory), /original Vite vector changed/);
+      assert.throws(() => originalViteInputs(directory), /historical Vite vector changed/);
       fs.copyFileSync(path.join(root, file), path.join(directory, file));
     }
   } finally {

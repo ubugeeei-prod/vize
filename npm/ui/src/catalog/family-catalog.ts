@@ -10,6 +10,7 @@ import { floatingActionButtonFamilyCatalog } from "./family-catalog-floating-act
 import { backToTopFamilyCatalog } from "./family-catalog-back-to-top.ts";
 import { sidebarFamilyCatalog } from "./family-catalog-sidebar.ts";
 import { resizableFamilyCatalog } from "./family-catalog-resizable.ts";
+import { splitButtonFamilyCatalog } from "./family-catalog-split-button.ts";
 import { stickyFamilyCatalog } from "./family-catalog-sticky.ts";
 import { actionFamilyCatalog } from "./family-catalog-actions.ts";
 import { accessibilityFamilyCatalog } from "./family-catalog-accessibility.ts";
@@ -36,6 +37,7 @@ import { layoutFamilyCatalog } from "./family-catalog-layout.ts";
 import { layoutPatternFamilyCatalog } from "./family-catalog-layout-patterns.ts";
 import { menuFamilyCatalog } from "./family-catalog-menus.ts";
 import { navigationFamilyCatalog } from "./family-catalog-navigation.ts";
+import { navigationRailFamilyCatalog } from "./family-catalog-navigation-rail.ts";
 import { overlayFamilyCatalog } from "./family-catalog-overlays.ts";
 import { ratingFamilyCatalog } from "./family-catalog-rating.ts";
 import { audioPlayerFamilyCatalog } from "./family-catalog-audio-player.ts";
@@ -122,6 +124,7 @@ const allFamilyCatalogEntries = [
   ...layoutPatternFamilyCatalog,
   ...menuFamilyCatalog,
   ...navigationFamilyCatalog,
+  ...navigationRailFamilyCatalog,
   ...overlayFamilyCatalog,
   ...ratingFamilyCatalog,
   ...audioPlayerFamilyCatalog,
@@ -146,6 +149,7 @@ const allFamilyCatalogEntries = [
   ...webcamCaptureFamilyCatalog,
   ...selectionFamilyCatalog,
   ...sliderFamilyCatalog,
+  ...splitButtonFamilyCatalog,
   ...structureFamilyCatalog,
   ...autocompleteFamilyCatalog,
   ...listboxGridFamilyCatalog,

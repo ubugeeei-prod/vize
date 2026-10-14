@@ -1,7 +1,9 @@
 use std::path::PathBuf;
 
 use tower_lsp::lsp_types::Url;
-use vize_canon::{CorsaBridge, CorsaBridgeError, CorsaVueVirtualDocumentOptions};
+use vize_canon::{
+    CorsaBridge, CorsaBridgeError, CorsaVueVirtualDocumentOptions, CorsaVueWorkspaceRequest,
+};
 
 use super::{CanonicalDependencyDocument, CanonicalMaterializedSource, CanonicalVirtualDocument};
 use crate::ide::IdeContext;
@@ -54,18 +56,51 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
         return Ok(None);
     };
     let virtual_ts_options = ctx.state.editor_virtual_ts_options().await;
+    let options = CorsaVueVirtualDocumentOptions {
+        options_api: ctx.state.options_api_enabled(),
+        legacy_vue2: ctx.state.legacy_vue2_enabled(),
+        jsx_typecheck: ctx.state.jsx_typecheck_enabled(),
+        experimental_patterned_template: ctx.state.patterned_template_enabled(),
+        preserve_event_navigation: true,
+        dialect: ctx.state.type_checker_vue_version(),
+    };
+    // Projecting a whole workspace takes long enough to starve every other
+    // native request, so the transaction owner builds it between attempts.
+    if !requested_sources.is_empty()
+        && ctx.state.workspace_preparation.is_armed()
+        && !bridge.vue_virtual_workspace_is_prepared(
+            &source_path,
+            &ctx.content,
+            options,
+            overlays,
+            &virtual_ts_options,
+            requested_sources,
+        )
+    {
+        let preparation = bridge.prepare_vue_virtual_workspace(CorsaVueWorkspaceRequest {
+            source_path: source_path.clone(),
+            content: ctx.content.as_str().into(),
+            options,
+            overlays: overlays
+                .iter()
+                .map(|(path, content)| (path.clone(), (*content).into()))
+                .collect(),
+            virtual_ts_options: virtual_ts_options.clone(),
+            requested_sources: requested_sources
+                .iter()
+                .map(|(path, content)| (path.clone(), (*content).into()))
+                .collect(),
+        });
+        ctx.state
+            .workspace_preparation
+            .defer(Box::pin(preparation))
+            .await;
+    }
     let opened = bridge
         .open_vue_virtual_workspace_document(
             &source_path,
             &ctx.content,
-            CorsaVueVirtualDocumentOptions {
-                options_api: ctx.state.options_api_enabled(),
-                legacy_vue2: ctx.state.legacy_vue2_enabled(),
-                jsx_typecheck: ctx.state.jsx_typecheck_enabled(),
-                experimental_patterned_template: ctx.state.patterned_template_enabled(),
-                preserve_event_navigation: true,
-                dialect: ctx.state.type_checker_vue_version(),
-            },
+            options,
             overlays,
             &virtual_ts_options,
             requested_sources,

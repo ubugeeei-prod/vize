@@ -1,4 +1,4 @@
-import { computed, shallowRef, watchEffect } from "vue";
+import { customRef, shallowReadonly, shallowRef, watchEffect } from "vue";
 import type { Ref } from "vue";
 
 /** Registers a callback run when the current evaluation becomes stale. */
@@ -114,10 +114,20 @@ export function computedAsync<Value>(
   });
 
   if (options.lazy ?? false) {
-    return computed(() => {
-      started.value = true;
-      return current.value;
-    });
+    // Activation belongs to the lazy ref protocol, not a derived computed
+    // getter. Reading current still tracks the evaluator's settled updates.
+    return shallowReadonly(
+      customRef<Value | undefined>((track) => ({
+        get() {
+          track();
+          started.value = true;
+          return current.value;
+        },
+        set() {
+          // The readonly wrapper rejects writes before reaching this protocol.
+        },
+      })),
+    );
   }
   return current;
 }

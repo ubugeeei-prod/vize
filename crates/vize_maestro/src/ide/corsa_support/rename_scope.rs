@@ -124,11 +124,15 @@ impl<'a> RenameScope<'a> {
             authored.is_some_and(|path| {
                 // Validate the entire untouched packet before mapping can erase
                 // an unowned runtime member. Plain/identity catalog entries
-                // remain readable; they never become writable SFC owners.
-                if self.native && !projected {
+                // never become writable SFC owners; only an in-root,
+                // non-declaration script module is a writable plain consumer.
+                let plain_consumer = self.native && !projected && plain_script_consumer(&path);
+                if self.native && !projected && !plain_consumer {
                     return false;
                 }
-                if projected && let Some(physical) = physical_path(&path) {
+                if (projected || plain_consumer)
+                    && let Some(physical) = physical_path(&path)
+                {
                     self.projected.insert(physical);
                 }
                 (!is_dependency_path(&path) || retained) && self.admits_path(&path)
@@ -225,6 +229,28 @@ impl<'a> RenameScope<'a> {
                     || documents.art_templates.iter().any(Option::is_some)
             })
     }
+}
+
+/// A plain script module that consumes a component, such as a render function
+/// passing a prop, is authored source that TypeScript renames through.
+/// Declaration files stay read-only because configured runtime declarations
+/// may themselves be project root files.
+fn plain_script_consumer(path: &Path) -> bool {
+    const SCRIPTS: [&str; 8] = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs"];
+    const DECLARATIONS: [&str; 3] = [".d.ts", ".d.mts", ".d.cts"];
+    let Some(physical) = physical_path(path) else {
+        return false;
+    };
+    let Some(name) = physical.file_name().and_then(|name| name.to_str()) else {
+        return false;
+    };
+    SCRIPTS.iter().any(|suffix| name.ends_with(suffix))
+        && !DECLARATIONS.iter().any(|suffix| name.ends_with(suffix))
+        && !name.ends_with(".vue.ts")
+        && !name.ends_with(".vue.tsx")
+        && !is_dependency_path(&physical)
+        && physical.is_file()
+        && projection_node(&physical)
 }
 
 fn physical_sfc_path(path: &Path) -> bool {

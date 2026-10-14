@@ -70,6 +70,8 @@ impl ServerState {
             #[cfg(feature = "native")]
             corsa_request_lock: AsyncMutex::new(()),
             #[cfg(feature = "native")]
+            workspace_preparation: Default::default(),
+            #[cfg(feature = "native")]
             corsa_environment_revision: std::sync::atomic::AtomicU64::new(0),
             #[cfg(feature = "native")]
             corsa_environment_changes: std::sync::atomic::AtomicUsize::new(0),

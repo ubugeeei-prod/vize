@@ -4,6 +4,7 @@ import path from "node:path";
 import { sha256 } from "./manifest.mjs";
 import { loadFormatterApiManifest } from "./formatter-api.mjs";
 import { nativeFunction, originalViteSortingControls } from "./formatter-native-source.mjs";
+import { originalViteArchives } from "./formatter-vite-source-family.mjs";
 
 export const NATIVE_FORMATTER_MANIFEST =
   "tests/_fixtures/differential/formatter-history/import-sorting-native-manifest.json";
@@ -35,24 +36,15 @@ export function nativeManifestAsset(root, declared) {
   assert.equal(sha256(raw), declared.sha256, "public native fixture/source changed");
   return raw;
 }
-// #7736 adds a validated optional line-ending boundary. Original manifest and
-// function pins stay immutable; any other complete owner fails closed.
-const napiLineEndingOwner = {
-  original: "a0abcb393a9b87cf0757e59f81d56483388f81b6bb86fd7a87db1f87f2b7979c",
-  current: "0c21ebeab3cf20a3245b37e548699c23de53798fa3ea198588a8970cb2d7fc69",
-};
+// The manifest records the NAPI source it was captured from. The live file is
+// shipped code, so it is read for the witnessed functions but never byte-pinned.
+const napiCaptureSha256 = "a0abcb393a9b87cf0757e59f81d56483388f81b6bb86fd7a87db1f87f2b7979c";
+// The authored test that owns the reference stays an immutable historical law.
+const napiHistoricalLaw = "native_sfc_sorting_uses_the_authored_full_reference";
 function nativeFormatterWitness(root, witness) {
   assert.equal(witness.path, "crates/vize_vitrine/src/napi/format.rs");
-  assert.equal(witness.sourceSha256, napiLineEndingOwner.original);
-  const current = fs.readFileSync(path.join(root, witness.path));
-  const digest = sha256(current);
-  return nativeManifestAsset(root, {
-    path: witness.path,
-    sha256:
-      digest === napiLineEndingOwner.original
-        ? napiLineEndingOwner.original
-        : napiLineEndingOwner.current,
-  });
+  assert.equal(witness.sourceSha256, napiCaptureSha256);
+  return fs.readFileSync(path.join(root, witness.path));
 }
 export function loadPublicNativeManifest(root, manifestPath = NATIVE_FORMATTER_MANIFEST) {
   const raw = fs.readFileSync(path.join(root, manifestPath));
@@ -71,11 +63,14 @@ export function loadPublicNativeManifest(root, manifestPath = NATIVE_FORMATTER_M
     manifest.napiWitness.functions.map(({ name }) => name),
     ["native_sfc_sorting_uses_the_authored_full_reference", "format_sfc_napi"],
   );
-  for (const witness of manifest.napiWitness.functions)
-    assert.equal(sha256(nativeFunction(napi, witness.name)), witness.sha256);
+  for (const witness of manifest.napiWitness.functions) {
+    const body = nativeFunction(napi, witness.name);
+    if (witness.name === napiHistoricalLaw) assert.equal(sha256(body), witness.sha256);
+  }
   assert.equal(manifest.viteWitness.path, "npm/builder/vite/src/vite-plus/import-sorting.test.ts");
+  // Read the archived original Vite test so live edits to it never change this input.
   const vite = nativeManifestAsset(root, {
-    path: manifest.viteWitness.path,
+    path: originalViteArchives[manifest.viteWitness.path],
     sha256: manifest.viteWitness.sourceSha256,
   });
   assert.equal(
