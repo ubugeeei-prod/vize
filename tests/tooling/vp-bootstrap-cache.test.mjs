@@ -12,7 +12,7 @@ import {
 const root = new URL("../../", import.meta.url);
 const workflow = (path) => parse(readFileSync(new URL(path, root), "utf8"));
 
-test("the bootstrap key is the highest Node.js LTS release for this runner", () => {
+void test("the bootstrap key is the highest Node.js LTS release for this runner", () => {
   const version = latestLtsVersion([
     { version: "v25.0.0", lts: false },
     { version: "v24.9.0", lts: "Krypton" },
@@ -30,7 +30,7 @@ test("the bootstrap key is the highest Node.js LTS release for this runner", () 
   assert.throws(() => latestLtsVersion([{ version: "v25.0.0", lts: false }]), /no LTS/);
 });
 
-test("only a trusted default-branch run saves the bootstrap runtime", () => {
+void test("only a trusted default-branch run saves the bootstrap runtime", () => {
   assert.equal(bootstrapCacheSave("push", "refs/heads/main", "main"), true);
   assert.equal(bootstrapCacheSave("schedule", "refs/heads/main", "main"), true);
   assert.equal(bootstrapCacheSave("workflow_dispatch", "refs/heads/main", "main"), true);
@@ -44,7 +44,7 @@ test("only a trusted default-branch run saves the bootstrap runtime", () => {
   assert.equal(bootstrapCacheWrite(true, "merge_group", "refs/heads/main", "main"), false);
 });
 
-test("pull-request setup-vp restores the bootstrap runtime and does not install it twice", () => {
+void test("pull-request setup-vp restores the bootstrap runtime and does not install it twice", () => {
   const action = workflow(".github/actions/cache-vp-bootstrap/action.yml");
   const paths = action.runs.steps
     .filter((step) => step.uses?.startsWith("actions/cache"))
