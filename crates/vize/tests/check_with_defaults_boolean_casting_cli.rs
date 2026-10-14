@@ -107,5 +107,8 @@ fn an_absent_non_boolean_prop_stays_optional() {
 
 #[test]
 fn a_boolean_prop_defaulted_to_undefined_stays_optional() {
-    assert_reported(fixture!("UndefinedBooleanDefault.vue.txt"), &["8:26 TS2345"]);
+    assert_reported(
+        fixture!("UndefinedBooleanDefault.vue.txt"),
+        &["8:26 TS2345"],
+    );
 }
