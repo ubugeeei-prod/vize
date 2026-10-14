@@ -108,6 +108,29 @@ export default defineConfig({
 });
 ```
 
+## `extends` で共通の設定を継承する
+
+専用の設定ファイルは、ほかの設定ファイルを土台にできます。`extends` には指定子を1つ、または配列で複数指定します。
+
+```json
+{
+  "extends": ["../../vize.base.json", "@acme/vize-config/strict"],
+  "linter": {
+    "rules": {
+      "vue/no-v-html": "off"
+    }
+  }
+}
+```
+
+- `./`、`../`、絶対パスは、`extends` を書いたファイルの場所から解決します。ディレクトリを指定すると、[設定ファイルの優先順](#設定ファイル)でその中の `vize.config.*` を読みます。
+- それ以外の指定子はパッケージとして、`extends` を書いたファイルから Node の解決方法で探します。`@scope/pkg/subpath` はパッケージの `exports` に従います。
+- 継承元は順番に適用され、`extends` を書いたファイルの設定が最後に優先されます。オブジェクトはキーごとにマージし、`entries` は継承元のエントリーの後ろに追加します。それ以外の値（文字列、数値、`files` などの配列）は置き換えます。
+- `entries` の各項目も、`entries` を持たない継承元を `extends` できます。継承元の設定がそのエントリーに加わり、`name`、`basePath`、`files`、`ignores` はエントリー自身の値のままです。
+- 循環参照、存在しない継承元、文字列以外の値はエラーになります。空の設定として扱われることはありません。
+
+継承元には JSON、JavaScript、TypeScript、PKL を使えます。`extends` を合成するのは `vize` CLI（`check`、`lint`、`fmt`、`lsp`）と言語サーバーです。言語サーバーは `vize.config.*` の変更で再読み込みしますが、継承元ファイルの変更では再読み込みしません。Vite プラグインはまだ `extends` を読みません。共通の設定オブジェクトを TypeScript で import し、スプレッドしてください。
+
 ## PKL 構成
 
 ```pkl
