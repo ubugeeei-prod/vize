@@ -59,6 +59,18 @@ export function generateOutputWithMap(
       emitted,
       `_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`,
     );
+  } else if (!hasExportDefault && !hasSfcMainDefined) {
+    // Template-only SFCs compile to a bare render export; wrap it as Vite does.
+    const render = moduleInfo.hasNamedRenderExport
+      ? "render"
+      : moduleInfo.hasNamedSsrRenderExport
+        ? "ssrRender"
+        : null;
+    if (render) {
+      const scope =
+        compiled.hasScoped && compiled.scopeId ? `, __scopeId: "data-v-${compiled.scopeId}"` : "";
+      emitted.append(`\nconst _sfc_main = { ${render}${scope} };\nexport default _sfc_main;`);
+    }
   }
 
   if (compiled.styles.length > 0) {

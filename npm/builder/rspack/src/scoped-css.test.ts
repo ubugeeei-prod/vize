@@ -216,3 +216,26 @@ void test("scoped: multiple style blocks (scoped + module + unscoped) coexist", 
 
   t.assert.snapshot(JSON.stringify(assets, null, 2));
 });
+
+// ---------------------------------------------------------------------------
+// Test: template-only SFC keeps a default export and its scope id
+// ---------------------------------------------------------------------------
+
+void test("scoped: template-only SFC exports a component carrying __scopeId", async (t) => {
+  const compiler = createScopedCompiler("scoped-template-only", "scoped-template-only");
+  const stats = await runCompiler(compiler);
+
+  if (stats.hasErrors()) {
+    const info = stats.toJson({ all: false, errors: true });
+    throw new Error(JSON.stringify(info.errors, null, 2));
+  }
+
+  const assets = extractAssets(stats);
+  const scope = getCssAsset(assets)?.match(/\.note\[(data-v-[0-9a-f]+)\]/)?.[1];
+  t.assert.ok(scope, "the template-only block is scoped");
+  const bundle = getJsBundle(assets) ?? "";
+  // App.vue itself exports a default component (not only `render`)...
+  t.assert.match(bundle, /"\.\/App\.vue"[^]*?"default": \(\) => \(__rspack_default_export\)/);
+  // ...and that component carries the CSS scope.
+  t.assert.match(bundle, new RegExp(`render: render,\\n\\s+__scopeId: "${scope}"`));
+});

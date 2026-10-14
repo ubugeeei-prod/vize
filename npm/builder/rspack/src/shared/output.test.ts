@@ -244,3 +244,18 @@ for (const ssr of [false, true]) {
     assert.equal(originalPositionFor(map, { line: 1, column: 0 }).source, null);
   });
 }
+
+void test("template-only render output gains a default component export", () => {
+  const output = generateOutput(
+    compiledModule(`export function render(_ctx, _cache) {\n  return null;\n}`, {
+      hasScoped: true,
+      templateAssetUrls: [],
+    }),
+    { requestPath: "./App.vue" },
+  );
+
+  assert.equal(
+    output,
+    `export function render(_ctx, _cache) {\n  return null;\n}\nconst _sfc_main = { render, __scopeId: "data-v-test1234" };\nexport default _sfc_main;`,
+  );
+});

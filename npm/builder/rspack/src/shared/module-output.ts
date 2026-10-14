@@ -15,6 +15,8 @@ type AstNode = {
 export type ModuleOutputInfo = {
   hasDefaultExport: boolean;
   hasSfcMainDefined: boolean;
+  hasNamedRenderExport: boolean;
+  hasNamedSsrRenderExport: boolean;
 };
 
 function isNode(value: unknown): value is AstNode {
@@ -87,10 +89,33 @@ function getExportDefaultKeywordEnd(code: string, defaultExport: AstNode): numbe
   return match ? exportStart + match[0].length : null;
 }
 
+function getExportedNames(statement: AstNode): string[] {
+  const declaration = isNode(statement.declaration) ? statement.declaration : null;
+  const names: string[] = [];
+  if (declaration?.type === "FunctionDeclaration" || declaration?.type === "ClassDeclaration") {
+    const name = isNode(declaration.id) ? getNodeName(declaration.id) : null;
+    if (name) names.push(name);
+  }
+  if (declaration?.type === "VariableDeclaration") {
+    names.push(...getVariableDeclarationNames(declaration));
+  }
+  const specifiers = Array.isArray(statement.specifiers) ? statement.specifiers : [];
+  for (const specifier of specifiers.filter(isNode)) {
+    const name =
+      getNodeName(isNode(specifier.exported) ? specifier.exported : null) ??
+      getNodeName(isNode(specifier.local) ? specifier.local : null);
+    if (name) names.push(name);
+  }
+  return names;
+}
+
 export function analyzeModuleOutput(code: string): ModuleOutputInfo {
   const program = parseProgram(code);
   const body = getProgramBody(program);
   const defaultExport = findDefaultExport(program);
+  const exportedNames = body
+    .filter((statement) => statement.type === "ExportNamedDeclaration")
+    .flatMap(getExportedNames);
 
   return {
     hasDefaultExport: defaultExport != null,
@@ -100,6 +125,8 @@ export function analyzeModuleOutput(code: string): ModuleOutputInfo {
         getVariableDeclarationNames(statement).includes(SFC_MAIN_NAME)
       );
     }),
+    hasNamedRenderExport: exportedNames.includes("render"),
+    hasNamedSsrRenderExport: exportedNames.includes("ssrRender"),
   };
 }
 
