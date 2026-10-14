@@ -65,6 +65,22 @@ test("two-server parser recovery retains the first sharded fallback notice", () 
   assert.equal(normalizeParserRecovery(raw, true, "timed-0"), raw);
 });
 
+test("a notice that names the failure reason is the same recovery notice", () => {
+  const stderr = recovered.stderr.replace(
+    "(check failure)",
+    "(check failure: tsgo exited with status 1 (2 diagnostics))",
+  );
+  const raw = { ...recovered, stderr };
+  assert.equal(normalizeParserRecovery(raw, true, "parity").stderr, "");
+  assert.equal(normalizeParserRecovery(raw, true, "timed-0"), raw);
+});
+
+test("a reason on another line is not a recovery notice", () => {
+  const stderr = recovered.stderr.replace("(check failure)", "(check failure: one\ntwo)");
+  const raw = { ...recovered, stderr };
+  assert.equal(normalizeParserRecovery(raw, true, "parity"), raw);
+});
+
 test("timed, cold, gate and unmarked fixtures still reject recovery stderr", () => {
   for (const [expected, phase] of [
     [false, "parity"],

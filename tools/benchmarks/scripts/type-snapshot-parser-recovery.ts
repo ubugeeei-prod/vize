@@ -11,20 +11,11 @@ export function normalizeParserRecovery<T extends ProcessResult>(
   if (!expected || !["parity", "parity-profile"].includes(phase) || result.status !== 1)
     return result;
   const stderr = stripVTControlCharacters(result.stderr).trim();
-  const notices = [
-    "Corsa CLI fast path unavailable; degraded to the slower project-session API",
-    "sharded Corsa CLI check failed; degraded to a single CLI program",
-  ].map(
-    (step) => `warning: corsa: ${step} (check failure). Type checking continues on a slower path.`,
-  );
-  if (
-    !notices.some((notice) =>
-      ["", "\nerror handling method 'exit': EOF", "\ncontext canceled"].some(
-        (shutdown) => stderr === `${notice}${shutdown}`,
-      ),
-    )
-  )
-    return result;
+  // The notice now names the first line of the failure; base binaries built
+  // before that print only the cause class, so both spellings are accepted.
+  const notice =
+    /^warning: corsa: (?:Corsa CLI fast path unavailable; degraded to the slower project-session API|sharded Corsa CLI check failed; degraded to a single CLI program) \(check failure(?:: [^\n]*)?\)\. Type checking continues on a slower path\.(?:\nerror handling method 'exit': EOF|\ncontext canceled)?$/u;
+  if (!notice.test(stderr)) return result;
   const report = JSON.parse(result.stdout) as {
     files?: { file?: string; diagnostics?: unknown[] }[];
   };
