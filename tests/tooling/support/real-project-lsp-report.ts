@@ -132,6 +132,8 @@ export type LspProjectEvidence = {
   fixedProbeDiagnostics: DiagnosticEvidence | null;
   id: string;
   repairedProbeDiagnostics: DiagnosticEvidence | null;
+  /** Peak RSS and process count of the server tree; absent without an OS process. */
+  resources?: import("./real-project-lsp-resources.ts").LspResourceEvidence;
   revision: string;
   status: "failed" | "ok";
   vueFileCount: number;
