@@ -100,8 +100,8 @@ impl VirtualProject {
         }
     }
 
-    pub(super) fn index_package_source(&mut self, source: &Path, virtual_path: &Path) {
-        let source = vize_carton::path::canonicalize_non_verbatim(source);
+    /// `source` must already be canonicalized.
+    pub(super) fn index_canonical_package_source(&mut self, source: PathBuf, virtual_path: &Path) {
         let roots = source
             .ancestors()
             .filter(|ancestor| self.package_route_roots.contains_key(*ancestor))

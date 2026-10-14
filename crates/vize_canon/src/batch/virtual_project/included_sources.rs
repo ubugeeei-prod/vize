@@ -25,7 +25,8 @@ impl VirtualProject {
         let accepted: Vec<PathBuf> = paths
             .into_iter()
             .filter(|path| {
-                path.is_file()
+                !self.original_index.contains_key(path)
+                    && path.is_file()
                     && self.source_file_policy().accepts_project_source(path)
                     && !path_contains_node_modules(path)
             })
@@ -37,12 +38,20 @@ impl VirtualProject {
         &mut self,
         paths: impl IntoIterator<Item = PathBuf>,
     ) -> CorsaResult<()> {
+        // A path registered verbatim is known without canonicalizing every key.
+        let candidates: Vec<PathBuf> = paths
+            .into_iter()
+            .filter(|path| !self.original_index.contains_key(path))
+            .collect();
+        if candidates.is_empty() {
+            return Ok(());
+        }
         let known: FxHashSet<PathBuf> = self
             .original_index
             .keys()
             .map(|path| vize_carton::path::canonicalize_non_verbatim(path))
             .collect();
-        let missing: Vec<PathBuf> = paths
+        let missing: Vec<PathBuf> = candidates
             .into_iter()
             .map(|path| vize_carton::path::canonicalize_non_verbatim(&path))
             .filter(|path| path.is_file() && !known.contains(path))

@@ -7,6 +7,8 @@
 
 use std::path::{Path, PathBuf};
 
+use rayon::prelude::*;
+
 mod graph;
 mod implicit_exclude;
 mod ownership;
@@ -42,7 +44,7 @@ pub(in super::super) fn included_sources(
         return Vec::new();
     };
     let case_sensitive = !cfg!(windows);
-    let mut found = Vec::new();
+    let mut candidates = Vec::new();
     for entry in walkdir::WalkDir::new(project_root)
         .into_iter()
         .filter_entry(|entry| {
@@ -57,7 +59,13 @@ pub(in super::super) fn included_sources(
             continue;
         };
         let path = entry.path();
-        if !path.is_file() {
+        // The walk already knows the file type; only symlinks need a stat.
+        let is_file = if entry.path_is_symlink() {
+            path.is_file()
+        } else {
+            entry.file_type().is_file()
+        };
+        if !is_file {
             continue;
         }
         // Generated `.d.ts` keeps its authored path. Mirroring it loads the
@@ -68,10 +76,17 @@ pub(in super::super) fn included_sources(
         let Some(kind) = included_source_kind(path) else {
             continue;
         };
-        if spec.includes(path, case_sensitive, kind) {
-            found.push(graph::normalize_path(path));
-        }
+        candidates.push((path.to_path_buf(), kind));
     }
+    // Canonicalizing dominates; candidates are independent.
+    let mut found = candidates
+        .into_par_iter()
+        .filter_map(|(path, kind)| {
+            let normalized = graph::normalize_path(&path);
+            spec.includes_normalized(&normalized, case_sensitive, kind)
+                .then_some(normalized)
+        })
+        .collect::<Vec<_>>();
     found.sort();
     found.dedup();
     found

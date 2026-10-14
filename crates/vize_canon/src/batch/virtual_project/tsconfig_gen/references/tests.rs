@@ -241,3 +241,23 @@ fn package_json_tsconfig_extends_contributes_inherited_allow_js() {
         normalized(&root.path().join("packages/app/tsconfig.json"))
     );
 }
+
+#[cfg(unix)]
+#[test]
+fn included_sources_follow_file_symlinks_and_skip_dangling_ones() {
+    let root = tempfile::tempdir().unwrap();
+    let base = normalized(root.path());
+    std::fs::create_dir_all(base.join("src")).unwrap();
+    write(&base, "tsconfig.json", r#"{"include":["src/**/*"]}"#);
+    write(&base.join("src"), "real.ts", "export const real = 1;\n");
+    write(&base.join("src"), "App.vue", "<template />\n");
+    std::os::unix::fs::symlink(base.join("src/real.ts"), base.join("src/linked.ts")).unwrap();
+    std::os::unix::fs::symlink(base.join("src/missing.ts"), base.join("src/dangling.ts")).unwrap();
+
+    let sources = super::included_sources(&base.join("tsconfig.json"), &base);
+    // A file symlink canonicalizes to its target, so it collapses into it.
+    assert_eq!(
+        sources,
+        [base.join("src/App.vue"), base.join("src/real.ts")]
+    );
+}

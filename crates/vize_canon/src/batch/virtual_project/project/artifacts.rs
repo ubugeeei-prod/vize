@@ -24,6 +24,15 @@ impl VirtualProject {
     }
 
     pub(super) fn absorb_registered_file(&mut self, registered: RegisteredFile) -> CorsaResult<()> {
+        self.absorb_registered_file_with_canonical(registered, None)
+    }
+
+    /// `canonical` is the caller's `canonicalize_non_verbatim` of the original path.
+    pub(super) fn absorb_registered_file_with_canonical(
+        &mut self,
+        registered: RegisteredFile,
+        canonical: Option<PathBuf>,
+    ) -> CorsaResult<()> {
         if super::super::module_projection::is_javascript_projection_path(
             &registered.file.virtual_path,
         ) && self
@@ -40,7 +49,10 @@ impl VirtualProject {
         let shared_helpers_before = self.uses_shared_helpers();
         self.incremental_source_nodes_rebuilt += 1;
         let original_path = registered.file.original_path.clone();
-        let previous_materialized = self.remove_registered_source_inner(&original_path);
+        let canonical = canonical
+            .unwrap_or_else(|| vize_carton::path::canonicalize_non_verbatim(&original_path));
+        let previous_materialized =
+            self.remove_registered_source_with_canonical(&original_path, &canonical);
         if registered.typed_router_import {
             self.typed_router
                 .import_files
@@ -101,7 +113,7 @@ impl VirtualProject {
         // `original_index` maps this source to its own virtual path (inserted above).
         let canonical_virtual = registered.file.virtual_path.clone();
         self.replace_virtual_file(registered.file);
-        self.index_package_source(&original_path, &canonical_virtual);
+        self.index_canonical_package_source(canonical, &canonical_virtual);
         self.mark_package_shadow_source_changed(&canonical_virtual);
         artifacts.virtual_paths.sort();
         artifacts.virtual_paths.dedup();
@@ -156,10 +168,18 @@ impl VirtualProject {
 
     fn remove_registered_source_inner(&mut self, original_path: &Path) -> Vec<PathBuf> {
         let canonical = vize_carton::path::canonicalize_non_verbatim(original_path);
+        self.remove_registered_source_with_canonical(original_path, &canonical)
+    }
+
+    fn remove_registered_source_with_canonical(
+        &mut self,
+        original_path: &Path,
+        canonical: &Path,
+    ) -> Vec<PathBuf> {
         let key = if self.source_artifacts.contains_key(original_path) {
             original_path
         } else {
-            canonical.as_path()
+            canonical
         };
         let Some(artifacts) = self.source_artifacts.remove(key) else {
             return Vec::new();

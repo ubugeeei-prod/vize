@@ -212,10 +212,13 @@ impl VirtualProject {
 
         let preserve_unused_diagnostics = self.tsconfig_preserves_unused_diagnostics();
         let runtime_prop_resolve_cache = RuntimePropResolveCache::default();
-        let mut mirrorable_project_files: FxHashSet<PathBuf> = valid_paths
-            .iter()
+        // Canonicalized once, in parallel; absorb reuses them for its indexes.
+        let canonical_paths: Vec<PathBuf> = valid_paths
+            .par_iter()
             .map(|path| vize_carton::path::canonicalize_non_verbatim(path))
             .collect();
+        let mut mirrorable_project_files: FxHashSet<PathBuf> =
+            canonical_paths.iter().cloned().collect();
         mirrorable_project_files.extend(self.original_index.keys().cloned());
         let build_context = VirtualBuildContext {
             project_root: self.project_root.as_path(),
@@ -262,8 +265,13 @@ impl VirtualProject {
             .collect();
 
         self.virtual_files.reserve(valid_paths.len());
-        for registered in registered? {
-            self.absorb_registered_file(registered)?;
+        for ((registered, path), canonical) in registered?
+            .into_iter()
+            .zip(valid_paths.iter().copied())
+            .zip(canonical_paths)
+        {
+            let canonical = (registered.file.original_path == path).then_some(canonical);
+            self.absorb_registered_file_with_canonical(registered, canonical)?;
         }
         Ok(())
     }
