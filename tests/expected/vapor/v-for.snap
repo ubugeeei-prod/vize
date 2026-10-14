@@ -5,17 +5,18 @@ options: vapor
 <div v-for="item in items">{{ item }}</div>
 --- OUTPUT ---
 import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
-const t0 = _template("<div> ")
+const t0 = _template("<div> </div>")
 
 export function render(_ctx) {
-  const n0 = _createFor(() => (items), (_for_item0) => {
+  const n0 = _createFor(() => (_ctx.items), (_for_item0) => {
     const n2 = t0()
     const x2 = _txt(n2)
-    _renderEffect(() => _setText(x2, _toDisplayString(item)))
+    _renderEffect(() => _setText(x2, _toDisplayString(_for_item0.value)))
     return n2
-  }, undefined, 8 /* IS_SINGLE_NODE */)
+  })
   return n0
 }
+
 ===
 name: v-for with key
 options: vapor
@@ -23,17 +24,18 @@ options: vapor
 <div v-for="item in items" :key="item.id">{{ item.name }}</div>
 --- OUTPUT ---
 import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
-const t0 = _template("<div> ")
+const t0 = _template("<div> </div>")
 
 export function render(_ctx) {
-  const n0 = _createFor(() => (items), (_for_item0) => {
+  const n0 = _createFor(() => (_ctx.items), (_for_item0) => {
     const n2 = t0()
     const x2 = _txt(n2)
-    _renderEffect(() => _setText(x2, _toDisplayString(item.name)))
+    _renderEffect(() => _setText(x2, _toDisplayString(_for_item0.value.name)))
     return n2
-  }, (item) => (item.id), 8 /* IS_SINGLE_NODE */)
+  }, (item) => (item.id))
   return n0
 }
+
 ===
 name: v-for with index
 options: vapor
@@ -41,17 +43,18 @@ options: vapor
 <div v-for="(item, index) in items" :key="index">{{ index }}: {{ item }}</div>
 --- OUTPUT ---
 import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
-const t0 = _template("<div> ")
+const t0 = _template("<div> : </div>")
 
 export function render(_ctx) {
-  const n0 = _createFor(() => (items), (_for_item0, _for_key0) => {
+  const n0 = _createFor(() => (_ctx.items), (_for_item0, _for_key0) => {
     const n2 = t0()
     const x2 = _txt(n2)
-    _renderEffect(() => _setText(x2, _toDisplayString(index) + ": " + _toDisplayString(item)))
+    _renderEffect(() => _setText(x2, _toDisplayString(_for_key0.value) + ": " + _toDisplayString(_for_item0.value)))
     return n2
-  }, (item, index) => (index), 8 /* IS_SINGLE_NODE */)
+  }, (item, index) => (index))
   return n0
 }
+
 ===
 name: v-for object
 options: vapor
@@ -59,17 +62,18 @@ options: vapor
 <div v-for="(value, key) in obj" :key="key">{{ key }}: {{ value }}</div>
 --- OUTPUT ---
 import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
-const t0 = _template("<div> ")
+const t0 = _template("<div> : </div>")
 
 export function render(_ctx) {
-  const n0 = _createFor(() => (obj), (_for_item0, _for_key0) => {
+  const n0 = _createFor(() => (_ctx.obj), (_for_item0, _for_key0) => {
     const n2 = t0()
     const x2 = _txt(n2)
-    _renderEffect(() => _setText(x2, _toDisplayString(key) + ": " + _toDisplayString(value)))
+    _renderEffect(() => _setText(x2, _toDisplayString(_for_key0.value) + ": " + _toDisplayString(_for_item0.value)))
     return n2
-  }, (value, key) => (key), 8 /* IS_SINGLE_NODE */)
+  }, (value, key) => (key))
   return n0
 }
+
 ===
 name: v-for object with index
 options: vapor
@@ -77,17 +81,18 @@ options: vapor
 <div v-for="(value, key, idx) in obj" :key="idx">{{ key }}: {{ value }}: {{ idx }}</div>
 --- OUTPUT ---
 import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
-const t0 = _template("<div> ")
+const t0 = _template("<div> : : </div>")
 
 export function render(_ctx) {
-  const n0 = _createFor(() => (obj), (_for_item0, _for_key0, _for_index0) => {
+  const n0 = _createFor(() => (_ctx.obj), (_for_item0, _for_key0, _for_index0) => {
     const n2 = t0()
     const x2 = _txt(n2)
-    _renderEffect(() => _setText(x2, _toDisplayString(key) + ": " + _toDisplayString(value) + ": " + _toDisplayString(idx)))
+    _renderEffect(() => _setText(x2, _toDisplayString(_for_key0.value) + ": " + _toDisplayString(_for_item0.value) + ": " + _toDisplayString(_for_index0.value)))
     return n2
-  }, (value, key, idx) => (idx), 8 /* IS_SINGLE_NODE */)
+  }, (value, key, idx) => (idx))
   return n0
 }
+
 ===
 name: v-for range
 options: vapor
@@ -95,17 +100,18 @@ options: vapor
 <div v-for="n in 10" :key="n">{{ n }}</div>
 --- OUTPUT ---
 import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
-const t0 = _template("<div> ")
+const t0 = _template("<div> </div>")
 
 export function render(_ctx) {
   const n0 = _createFor(() => (10), (_for_item0) => {
     const n2 = t0()
     const x2 = _txt(n2)
-    _renderEffect(() => _setText(x2, _toDisplayString(n)))
+    _renderEffect(() => _setText(x2, _toDisplayString(_for_item0.value)))
     return n2
-  }, (n) => (n), 8 /* IS_SINGLE_NODE */)
+  }, (n) => (n), 4)
   return n0
 }
+
 ===
 name: v-for on template
 options: vapor
@@ -113,17 +119,18 @@ options: vapor
 <template v-for="item in items" :key="item.id"><div>{{ item }}</div></template>
 --- OUTPUT ---
 import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
-const t0 = _template("<div> ")
+const t0 = _template("<div> </div>")
 
 export function render(_ctx) {
-  const n0 = _createFor(() => (items), (_for_item0) => {
+  const n0 = _createFor(() => (_ctx.items), (_for_item0) => {
     const n2 = t0()
     const x2 = _txt(n2)
-    _renderEffect(() => _setText(x2, _toDisplayString(item)))
+    _renderEffect(() => _setText(x2, _toDisplayString(_for_item0.value)))
     return n2
-  }, (item) => (item.id), 8 /* IS_SINGLE_NODE */)
+  }, (item) => (item.id))
   return n0
 }
+
 ===
 name: v-for destructure
 options: vapor
@@ -131,41 +138,43 @@ options: vapor
 <div v-for="{ id, name } in items" :key="id">{{ name }}</div>
 --- OUTPUT ---
 import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
-const t0 = _template("<div> ")
+const t0 = _template("<div> </div>")
 
 export function render(_ctx) {
-  const n0 = _createFor(() => (items), (_for_item0) => {
+  const n0 = _createFor(() => (_ctx.items), (_for_item0) => {
     const n2 = t0()
     const x2 = _txt(n2)
-    _renderEffect(() => _setText(x2, _toDisplayString(name)))
+    _renderEffect(() => _setText(x2, _toDisplayString(_for_item0.value.name)))
     return n2
-  }, ({ id, name }) => (id), 8 /* IS_SINGLE_NODE */)
+  }, ({ id, name }) => (id))
   return n0
 }
+
 ===
 name: nested v-for
 options: vapor
 --- INPUT ---
 <div v-for="row in rows" :key="row.id"><span v-for="cell in row.cells" :key="cell.id">{{ cell }}</span></div>
 --- OUTPUT ---
-import { setInsertionState as _setInsertionState, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
-const t0 = _template("<span> ")
-const t1 = _template("<div>")
+import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
+const t0 = _template("<span> </span>")
+const t1 = _template("<div></div>")
 
 export function render(_ctx) {
-  const n0 = _createFor(() => (rows), (_for_item0) => {
-    const n5 = t1()
-    _setInsertionState(n5)
-    const n2 = _createFor(() => (row.cells), (_for_item1) => {
-      const n4 = t0()
-      const x4 = _txt(n4)
-      _renderEffect(() => _setText(x4, _toDisplayString(cell)))
-      return n4
-    }, (cell) => (cell.id), 9 /* FAST_REMOVE, IS_SINGLE_NODE */)
-    return n5
-  }, (row) => (row.id), 8 /* IS_SINGLE_NODE */)
+  const n0 = _createFor(() => (_ctx.rows), (_for_item0) => {
+    const n2 = t1()
+    _setInsertionState(n2)
+    const n3 = _createFor(() => (_for_item0.value.cells), (_for_item1) => {
+      const n5 = t0()
+      const x5 = _txt(n5)
+      _renderEffect(() => _setText(x5, _toDisplayString(_for_item1.value)))
+      return n5
+    }, (cell) => (cell.id), 1)
+    return n2
+  }, (row) => (row.id))
   return n0
 }
+
 ===
 name: v-for with v-if
 options: vapor
@@ -173,17 +182,17 @@ options: vapor
 <template v-for="item in items" :key="item.id"><div v-if="item.show">{{ item }}</div></template>
 --- OUTPUT ---
 import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, createIf as _createIf, createFor as _createFor, template as _template } from 'vue';
-const t0 = _template("<div> ")
+const t0 = _template("<div> </div>")
 
 export function render(_ctx) {
-  const n0 = _createFor(() => (items), (_for_item0) => {
-    const n2 = _createIf(() => (item.show), () => {
+  const n0 = _createFor(() => (_ctx.items), (_for_item0) => {
+    const n2 = _createIf(() => (_for_item0.value.show), () => {
       const n4 = t0()
       const x4 = _txt(n4)
-      _renderEffect(() => _setText(x4, _toDisplayString(item)))
+      _renderEffect(() => _setText(x4, _toDisplayString(_for_item0.value)))
       return n4
-    }, null, 10 /* TRUE_MULTI_ROOT, FALSE_MULTI_ROOT */)
+    })
     return n2
-  }, (item) => (item.id), 80 /* IS_FRAGMENT, WRAPPED_ROWS */)
+  }, (item) => (item.id))
   return n0
 }

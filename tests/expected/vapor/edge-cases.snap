@@ -5,7 +5,7 @@ options: vapor
 <div>He said "hello"</div>
 --- OUTPUT ---
 import { template as _template } from 'vue';
-const t0 = _template("<div>He said &quot;hello&quot;", 3)
+const t0 = _template("<div>He said &quot;hello&quot;</div>", true)
 
 export function render(_ctx) {
   const n0 = t0()
@@ -18,7 +18,7 @@ options: vapor
 <div>It's fine</div>
 --- OUTPUT ---
 import { template as _template } from 'vue';
-const t0 = _template("<div>It&#39;s fine", 3)
+const t0 = _template("<div>It&#39;s fine</div>", true)
 
 export function render(_ctx) {
   const n0 = t0()
@@ -31,9 +31,9 @@ options: vapor
 <span>Foo</span> <span>Bar</span>
 --- OUTPUT ---
 import { template as _template } from 'vue';
-const t0 = _template("<span>Foo", 2)
-const t1 = _template(" ", 2)
-const t2 = _template("<span>Bar", 2)
+const t0 = _template("<span>Foo</span>")
+const t1 = _template(" ")
+const t2 = _template("<span>Bar</span>")
 
 export function render(_ctx) {
   const n0 = t0()
@@ -49,8 +49,8 @@ options: vapor
 <span>Bar</span>
 --- OUTPUT ---
 import { template as _template } from 'vue';
-const t0 = _template("<span>Foo", 2)
-const t1 = _template("<span>Bar", 2)
+const t0 = _template("<span>Foo</span>")
+const t1 = _template("<span>Bar</span>")
 
 export function render(_ctx) {
   const n0 = t0()

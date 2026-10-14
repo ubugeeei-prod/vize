@@ -5,12 +5,13 @@ options: vapor
 <div></div>
 --- OUTPUT ---
 import { template as _template } from 'vue';
-const t0 = _template("<div>", 3)
+const t0 = _template("<div></div>", true)
 
 export function render(_ctx) {
   const n0 = t0()
   return n0
 }
+
 ===
 name: element with text
 options: vapor
@@ -18,12 +19,13 @@ options: vapor
 <div>hello</div>
 --- OUTPUT ---
 import { template as _template } from 'vue';
-const t0 = _template("<div>hello", 3)
+const t0 = _template("<div>hello</div>", true)
 
 export function render(_ctx) {
   const n0 = t0()
   return n0
 }
+
 ===
 name: element with interpolation
 options: vapor
@@ -31,14 +33,15 @@ options: vapor
 <div>{{ msg }}</div>
 --- OUTPUT ---
 import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';
-const t0 = _template("<div> ", 1)
+const t0 = _template("<div> </div>", true)
 
 export function render(_ctx) {
   const n0 = t0()
   const x0 = _txt(n0)
-  _renderEffect(() => _setText(x0, _toDisplayString(msg)))
+  _renderEffect(() => _setText(x0, _toDisplayString(_ctx.msg)))
   return n0
 }
+
 ===
 name: nested elements
 options: vapor
@@ -46,12 +49,13 @@ options: vapor
 <div><span>text</span></div>
 --- OUTPUT ---
 import { template as _template } from 'vue';
-const t0 = _template("<div><span>text", 3)
+const t0 = _template("<div><span>text</span></div>", true)
 
 export function render(_ctx) {
   const n0 = t0()
   return n0
 }
+
 ===
 name: multiple children
 options: vapor
@@ -59,12 +63,13 @@ options: vapor
 <div><span></span><p></p></div>
 --- OUTPUT ---
 import { template as _template } from 'vue';
-const t0 = _template("<div><span></span><p>", 3)
+const t0 = _template("<div><span></span><p></p></div>", true)
 
 export function render(_ctx) {
   const n0 = t0()
   return n0
 }
+
 ===
 name: static class
 options: vapor
@@ -72,12 +77,13 @@ options: vapor
 <div class="container"></div>
 --- OUTPUT ---
 import { template as _template } from 'vue';
-const t0 = _template("<div class=container>", 3)
+const t0 = _template("<div class=\"container\"></div>", true)
 
 export function render(_ctx) {
   const n0 = t0()
   return n0
 }
+
 ===
 name: static id
 options: vapor
@@ -85,12 +91,13 @@ options: vapor
 <div id="app"></div>
 --- OUTPUT ---
 import { template as _template } from 'vue';
-const t0 = _template("<div id=app>", 3)
+const t0 = _template("<div id=\"app\"></div>", true)
 
 export function render(_ctx) {
   const n0 = t0()
   return n0
 }
+
 ===
 name: multiple attributes
 options: vapor
@@ -98,12 +105,13 @@ options: vapor
 <div id="app" class="container"></div>
 --- OUTPUT ---
 import { template as _template } from 'vue';
-const t0 = _template("<div id=app class=container>", 3)
+const t0 = _template("<div id=\"app\" class=\"container\"></div>", true)
 
 export function render(_ctx) {
   const n0 = t0()
   return n0
 }
+
 ===
 name: dynamic class
 options: vapor
@@ -111,13 +119,14 @@ options: vapor
 <div :class="cls"></div>
 --- OUTPUT ---
 import { setClass as _setClass, renderEffect as _renderEffect, template as _template } from 'vue';
-const t0 = _template("<div>", 1)
+const t0 = _template("<div></div>", true)
 
 export function render(_ctx) {
   const n0 = t0()
-  _renderEffect(() => _setClass(n0, cls))
+  _renderEffect(() => _setClass(n0, _ctx.cls))
   return n0
 }
+
 ===
 name: dynamic id
 options: vapor
@@ -125,55 +134,62 @@ options: vapor
 <div :id="id"></div>
 --- OUTPUT ---
 import { setProp as _setProp, renderEffect as _renderEffect, template as _template } from 'vue';
-const t0 = _template("<div>", 1)
+const t0 = _template("<div></div>", true)
 
 export function render(_ctx) {
   const n0 = t0()
-  _renderEffect(() => _setProp(n0, "id", id))
+  _renderEffect(() => _setProp(n0, "id", _ctx.id))
   return n0
 }
+
 ===
 name: click handler
 options: vapor
 --- INPUT ---
 <button @click="handler">click</button>
 --- OUTPUT ---
-import { on as _on, template as _template } from 'vue';
-const t0 = _template("<button>click", 1)
+import { createInvoker as _createInvoker, delegateEvents as _delegateEvents, template as _template } from 'vue';
+const t0 = _template("<button>click</button>", true)
+_delegateEvents("click")
 
 export function render(_ctx) {
   const n0 = t0()
-  _on(n0, "click", e => handler(e))
+  n0.$evtclick = _createInvoker(e => _ctx.handler(e))
   return n0
 }
+
 ===
 name: inline handler
 options: vapor
 --- INPUT ---
 <button @click="count++">click</button>
 --- OUTPUT ---
-import { on as _on, template as _template } from 'vue';
-const t0 = _template("<button>click", 1)
+import { createInvoker as _createInvoker, delegateEvents as _delegateEvents, template as _template } from 'vue';
+const t0 = _template("<button>click</button>", true)
+_delegateEvents("click")
 
 export function render(_ctx) {
   const n0 = t0()
-  _on(n0, "click", () => (count++))
+  n0.$evtclick = _createInvoker($event => (_ctx.count++))
   return n0
 }
+
 ===
 name: handler with event
 options: vapor
 --- INPUT ---
 <button @click="handler($event)">click</button>
 --- OUTPUT ---
-import { on as _on, template as _template } from 'vue';
-const t0 = _template("<button>click", 1)
+import { createInvoker as _createInvoker, delegateEvents as _delegateEvents, template as _template } from 'vue';
+const t0 = _template("<button>click</button>", true)
+_delegateEvents("click")
 
 export function render(_ctx) {
   const n0 = t0()
-  _on(n0, "click", $event => (handler($event)))
+  n0.$evtclick = _createInvoker($event => (_ctx.handler($event)))
   return n0
 }
+
 ===
 name: text and interpolation
 options: vapor
@@ -181,14 +197,15 @@ options: vapor
 <div>Hello {{ name }}!</div>
 --- OUTPUT ---
 import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';
-const t0 = _template("<div> ", 1)
+const t0 = _template("<div>Hello !</div>", true)
 
 export function render(_ctx) {
   const n0 = t0()
   const x0 = _txt(n0)
-  _renderEffect(() => _setText(x0, "Hello " + _toDisplayString(name) + "!"))
+  _renderEffect(() => _setText(x0, "Hello " + _toDisplayString(_ctx.name) + "!"))
   return n0
 }
+
 ===
 name: static and dynamic
 options: vapor
@@ -196,13 +213,14 @@ options: vapor
 <div class="static" :id="dynamic">content</div>
 --- OUTPUT ---
 import { setProp as _setProp, renderEffect as _renderEffect, template as _template } from 'vue';
-const t0 = _template("<div class=static>content", 1)
+const t0 = _template("<div class=\"static\">content</div>", true)
 
 export function render(_ctx) {
   const n0 = t0()
-  _renderEffect(() => _setProp(n0, "id", dynamic))
+  _renderEffect(() => _setProp(n0, "id", _ctx.dynamic))
   return n0
 }
+
 ===
 name: element with dynamic children
 options: vapor
@@ -210,17 +228,17 @@ options: vapor
 <div><span>{{ a }}</span><span>{{ b }}</span></div>
 --- OUTPUT ---
 import { child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';
-const t0 = _template("<div><span> </span><span> ", 1)
+const t0 = _template("<div><span> </span><span> </span></div>", true)
 
 export function render(_ctx) {
-  const n2 = t0()
-  const n0 = _child(n2)
-  const n1 = _next(n0)
-  const x0 = _txt(n0)
+  const n0 = t0()
+  const n1 = _child(n0)
+  const n2 = _next(n1)
   const x1 = _txt(n1)
+  const x2 = _txt(n2)
   _renderEffect(() => {
-    _setText(x0, _toDisplayString(a))
-    _setText(x1, _toDisplayString(b))
+    _setText(x1, _toDisplayString(_ctx.a))
+    _setText(x2, _toDisplayString(_ctx.b))
   })
-  return n2
+  return n0
 }

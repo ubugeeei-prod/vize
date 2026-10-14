@@ -11,12 +11,19 @@
  *
  * Fixtures are Pkl modules (`*.pkl`, evaluated with the `pkl` CLI the fixture
  * runner also uses); a legacy `*.toml` fixture is read only when no Pkl
- * sibling exists. Vapor outputs come from the newest supported Vue release
- * (`vue-vapor-runtime-supported`), so a runtime protocol change shows up as
- * an expected-output diff.
+ * sibling exists.
+ *
+ * Vapor outputs come from the catalog `@vue/compiler-vapor`, which the gated
+ * fixture coverage compares against. `--vapor-supported` uses the newest
+ * supported release (`vue-vapor-runtime-supported`) instead, to measure what
+ * a newer runtime protocol changes; do not commit that output while coverage
+ * still requires every Vapor case to match:
+ *
+ *   node tests/tooling/support/generate-expected.ts --mode vapor --vapor-supported
  */
 
 import { execFileSync } from "node:child_process";
+import { createRequire } from "node:module";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { parse as parseTOML } from "@iarna/toml";
@@ -85,9 +92,16 @@ function compileVdom(source: string, options?: Record<string, any>): string {
 let _compileVaporFn: any = null;
 async function loadVaporCompiler() {
   if (!_compileVaporFn) {
-    const release = await import("./vue-vapor-release.mjs");
-    _compileVaporFn = release.supportedCompilerVapor.compile;
-    console.log(`Vapor expectations: @vue/compiler-vapor ${release.vueVaporSupportedVersion}`);
+    if (process.argv.includes("--vapor-supported")) {
+      const release = await import("./vue-vapor-release.mjs");
+      _compileVaporFn = release.supportedCompilerVapor.compile;
+      console.log(`Vapor expectations: @vue/compiler-vapor ${release.vueVaporSupportedVersion}`);
+    } else {
+      // The tests package depends on `@vue/compiler-sfc` only; its own
+      // `@vue/compiler-vapor` is the matching catalog release.
+      const fromSfc = createRequire(createRequire(import.meta.url).resolve("@vue/compiler-sfc"));
+      _compileVaporFn = fromSfc("@vue/compiler-vapor").compile;
+    }
   }
   return _compileVaporFn;
 }
