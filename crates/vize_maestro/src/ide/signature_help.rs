@@ -283,6 +283,7 @@ fn record_signature_help_stage(
     }
 }
 
+#[cfg(feature = "native")]
 /// Request signature help, retrying once when Corsa cancelled the request
 /// because a newer snapshot superseded it (for example, right after a
 /// dependency edit). Signature help is read-only, so the retry is safe and
@@ -308,6 +309,7 @@ async fn request_signature_help(
     }
 }
 
+#[cfg(feature = "native")]
 /// LSP `RequestCancelled` (-32800) and `ContentModified` (-32801), and the
 /// Go `context canceled` text tsgo reports when a newer request replaces one.
 fn is_superseded_request(error: &CorsaBridgeError) -> bool {

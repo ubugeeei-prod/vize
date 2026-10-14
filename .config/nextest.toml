@@ -28,6 +28,7 @@ junit.store-success-output = true
 # Audited real-TSGO cases remain mandatory in the full Cargo T1 lane.
 # Exact package, binary and names keep future tests in the PR tier.
 default-filter = '''not ((package(=vize_maestro) & (
+  test(=ide::signature_help::tests::signature_help_tracks_imported_callable_edits) |
   test(=ide::rename::corsa_session_tests::concurrent_real_corsa_rename_sessions_are_isolated) |
   test(=ide::rename::corsa_session_tests::direct_first::dependency_change_rearms_the_shared_editor_transport_once) |
   test(=ide::rename::corsa_session_tests::direct_first::direct_first_renames_survive_twenty_session_shutdown_overlap)
