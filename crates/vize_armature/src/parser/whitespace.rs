@@ -215,6 +215,10 @@ pub(super) fn preserve_whitespace<'a>(
     children: &mut Vec<'a, TemplateChildNode<'a>>,
     is_pre_tag: fn(&str) -> bool,
 ) {
+    if super::current_vue2_preserve() {
+        preserve_whitespace_vue2(allocator, children, is_pre_tag);
+        return;
+    }
     while children.first().is_some_and(is_whitespace_text) {
         children.remove(0);
     }
@@ -241,6 +245,72 @@ pub(super) fn preserve_whitespace<'a>(
             _ => {}
         }
     }
+}
+
+/// Vue 2.7's `preserve`. Vue 2 parses a run of text and interpolations as one
+/// text node, so a run that holds an interpolation or any non-whitespace text
+/// keeps every whitespace character as written, including at the start or end
+/// of an element. A run that is only whitespace sits between elements: it is
+/// dropped at either edge of the child list and condensed to one space
+/// elsewhere. `<pre>` and `<textarea>` keep their content (#8259).
+fn preserve_whitespace_vue2<'a>(
+    allocator: &'a Allocator,
+    children: &mut Vec<'a, TemplateChildNode<'a>>,
+    is_pre_tag: fn(&str) -> bool,
+) {
+    let mut start = 0;
+    while start < children.len() {
+        if !children.get(start).is_some_and(is_text_run_member) {
+            if let Some(TemplateChildNode::Element(element)) = children.get_mut(start) {
+                ignore_first_newline(element);
+                if is_pre_tag(element.tag) {
+                    ensure_sufficient_stack(|| {
+                        normalize_pre_newlines(allocator, &mut element.children)
+                    });
+                } else if element.ns != Namespace::Html || element.tag != "textarea" {
+                    ensure_sufficient_stack(|| {
+                        preserve_whitespace_vue2(allocator, &mut element.children, is_pre_tag)
+                    });
+                }
+            }
+            start += 1;
+            continue;
+        }
+        let mut end = start + 1;
+        while children.get(end).is_some_and(is_text_run_member) {
+            end += 1;
+        }
+        let whitespace_only = children
+            .get(start..end)
+            .unwrap_or_default()
+            .iter()
+            .all(is_whitespace_text);
+        if !whitespace_only {
+            start = end;
+            continue;
+        }
+        if start == 0 || end == children.len() {
+            for _ in start..end {
+                children.remove(start);
+            }
+            continue;
+        }
+        if let Some(TemplateChildNode::Text(text)) = children.get_mut(start) {
+            text.content = " ";
+        }
+        for _ in start + 1..end {
+            children.remove(start + 1);
+        }
+        start += 1;
+    }
+}
+
+/// Vue 2 merges adjacent text and interpolations into a single text node.
+fn is_text_run_member(child: &TemplateChildNode<'_>) -> bool {
+    matches!(
+        child,
+        TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_)
+    )
 }
 
 /// Vue normalizes Windows line endings in text nodes throughout `<pre>`,

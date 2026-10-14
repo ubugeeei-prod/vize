@@ -1,0 +1,1 @@
+{ "compiler": { "whitespace": "vue2-preserve" } }

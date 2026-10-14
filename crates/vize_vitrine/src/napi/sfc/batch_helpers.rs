@@ -76,6 +76,7 @@ pub(super) fn batch_options_bits(
         | (u16::from(is_prod) << 13)
         | (u16::from(whitespace.strategy == vize_atelier_core::WhitespaceStrategy::Preserve) << 10)
         | (u16::from(whitespace.legacy_line_breaks) << 11)
+        | (u16::from(whitespace.vue2_preserve) << 14)
         | experimental_bits
 }
 

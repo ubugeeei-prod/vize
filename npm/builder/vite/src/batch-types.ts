@@ -41,7 +41,7 @@ export interface BatchFileResult {
 }
 
 export interface BatchCompileOptionsNapi extends ExperimentalCompileFlags {
-  whitespace?: "condense" | "preserve" | "vue2-line-breaks";
+  whitespace?: "condense" | "preserve" | "vue2-line-breaks" | "vue2-preserve";
   mode?: "module" | "function";
   ssr?: boolean;
   vapor?: boolean;

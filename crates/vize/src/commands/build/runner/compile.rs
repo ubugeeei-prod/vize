@@ -31,7 +31,6 @@ use std::{
     time::Instant,
 };
 
-use vize_atelier_core::parser::with_whitespace_mode;
 use vize_atelier_core::{CodegenOptions, options::CustomElementMatcher};
 use vize_atelier_sfc::{
     ScriptCompileOptions, SfcCompileExperimentalOptions, SfcCompileOptions, SfcParseOptions,
@@ -262,7 +261,7 @@ fn compile_file_inner(
         scope_id: None,
     };
 
-    let (result, capture) = with_whitespace_mode(settings.whitespace, settings.legacy_line_breaks, || {
+    let (result, capture) = settings.with_whitespace(|| {
         profile!("atelier.sfc.compile", {
         let experimental = SfcCompileExperimentalOptions {
             self_component: settings.experimental_self_component,

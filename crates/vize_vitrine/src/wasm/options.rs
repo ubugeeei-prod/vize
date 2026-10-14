@@ -28,7 +28,7 @@ macro_rules! define_compiler_option_inventory {
 
 define_compiler_option_inventory! {
     Mode => ("mode", r#""module" | "function""#),
-    Whitespace => ("whitespace", r#""condense" | "preserve" | "vue2-line-breaks""#),
+    Whitespace => ("whitespace", r#""condense" | "preserve" | "vue2-line-breaks" | "vue2-preserve""#),
     PrefixIdentifiers => ("prefixIdentifiers", "boolean"),
     HoistStatic => ("hoistStatic", "boolean"),
     CacheHandlers => ("cacheHandlers", "boolean"),

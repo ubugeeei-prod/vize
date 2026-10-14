@@ -95,3 +95,134 @@ fn ascii_whitespace_keeps_between_element_spans_in_all_modes() {
         }
     }
 }
+
+/// Child list of `root.children[0]` as (kind, text) pairs; interpolations are
+/// reported by their expression source.
+fn vue2_preserve_children(source: &str) -> std::vec::Vec<(&'static str, std::string::String)> {
+    let allocator = Allocator::new();
+    let (root, errors) = crate::parser::with_vue2_preserve_whitespace(|| {
+        crate::parse_with_options(
+            &allocator,
+            source,
+            ParserOptions {
+                is_pre_tag: |tag| tag == "pre",
+                ..ParserOptions::default()
+            },
+        )
+    });
+    assert!(errors.is_empty(), "{errors:?}");
+    let Some(TemplateChildNode::Element(element)) = root.children.first() else {
+        panic!("expected a root element");
+    };
+    element
+        .children
+        .iter()
+        .map(|child| match child {
+            TemplateChildNode::Text(text) => ("text", text.content.to_string()),
+            TemplateChildNode::Interpolation(interpolation) => (
+                "interp",
+                interpolation.loc.span.slice(source).trim().to_string(),
+            ),
+            TemplateChildNode::Element(element) => ("element", element.tag.to_string()),
+            _ => ("other", std::string::String::new()),
+        })
+        .collect()
+}
+
+/// #8259. Expected values come from `@vue/compiler-sfc@2.7.16`
+/// `compileTemplate({ compilerOptions: { whitespace: "preserve" } })`, which
+/// merges each text/interpolation run into one `_v(...)` text node.
+#[test]
+fn vue2_preserve_keeps_whitespace_next_to_interpolations() {
+    let source = "<p>\n    <span>\n      {{ n }}件\n    </span>\n    <b>{{ a }}</b>\n    {{ b }}\n    <i>x</i>\n  </p>";
+    let p = vue2_preserve_children(source);
+    let kinds: std::vec::Vec<_> = p
+        .iter()
+        .map(|(kind, text)| (*kind, text.as_str()))
+        .collect();
+    assert_eq!(
+        kinds,
+        [
+            ("element", "span"),
+            ("text", " "),
+            ("element", "b"),
+            ("text", "\n    "),
+            ("interp", "{{ b }}"),
+            ("text", "\n    "),
+            ("element", "i"),
+        ],
+        "whitespace between elements condenses; whitespace beside {{ b }} stays as written; edges drop"
+    );
+
+    let span = vue2_preserve_children("<span>\n      {{ n }}件\n    </span>");
+    let kinds: std::vec::Vec<_> = span
+        .iter()
+        .map(|(kind, text)| (*kind, text.as_str()))
+        .collect();
+    assert_eq!(
+        kinds,
+        [
+            ("text", "\n      "),
+            ("interp", "{{ n }}"),
+            ("text", "件\n    "),
+        ],
+        "a text run with an interpolation keeps its leading and trailing whitespace"
+    );
+}
+
+#[test]
+fn vue2_preserve_whitespace_only_runs_and_pre() {
+    let only_elements = vue2_preserve_children("<div>\n  <a></a>\n\n  <b></b>\n</div>");
+    let kinds: std::vec::Vec<_> = only_elements
+        .iter()
+        .map(|(kind, text)| (*kind, text.as_str()))
+        .collect();
+    assert_eq!(kinds, [("element", "a"), ("text", " "), ("element", "b")]);
+
+    let edge = vue2_preserve_children("<div>\n  hello {{ x }}\n</div>");
+    let kinds: std::vec::Vec<_> = edge
+        .iter()
+        .map(|(kind, text)| (*kind, text.as_str()))
+        .collect();
+    assert_eq!(
+        kinds,
+        [
+            ("text", "\n  hello "),
+            ("interp", "{{ x }}"),
+            ("text", "\n")
+        ]
+    );
+
+    let mixed = vue2_preserve_children("<div>  a   b  <i></i></div>");
+    let kinds: std::vec::Vec<_> = mixed
+        .iter()
+        .map(|(kind, text)| (*kind, text.as_str()))
+        .collect();
+    assert_eq!(kinds, [("text", "  a   b  "), ("element", "i")]);
+
+    let pre = vue2_preserve_children("<pre>\n  a\n  <b> x </b>\n</pre>");
+    let kinds: std::vec::Vec<_> = pre
+        .iter()
+        .map(|(kind, text)| (*kind, text.as_str()))
+        .collect();
+    assert_eq!(
+        kinds,
+        [("text", "  a\n  "), ("element", "b"), ("text", "\n")],
+        "<pre> keeps its content apart from the ignored first newline"
+    );
+}
+
+#[test]
+fn vue2_preserve_reports_the_preserve_strategy_and_restores_scope() {
+    crate::parser::with_vue2_preserve_whitespace(|| {
+        assert!(crate::parser::current_vue2_preserve());
+        assert_eq!(
+            crate::parser::current_whitespace_strategy(WhitespaceStrategy::Condense),
+            WhitespaceStrategy::Preserve
+        );
+    });
+    assert!(!crate::parser::current_vue2_preserve());
+    crate::parser::with_whitespace_mode(WhitespaceStrategy::Preserve, false, || {
+        assert!(!crate::parser::current_vue2_preserve());
+    });
+}

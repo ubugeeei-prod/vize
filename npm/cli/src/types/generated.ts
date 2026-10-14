@@ -112,7 +112,7 @@ export interface CompilerConfig {
   /**
    * Vue template whitespace strategy or opt-in Vue 2 line-break migration mode
    */
-  whitespace?: "condense" | "preserve" | "vue2-line-breaks";
+  whitespace?: "condense" | "preserve" | "vue2-line-breaks" | "vue2-preserve";
   /**
    * Enable source map generation
    */

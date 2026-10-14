@@ -95,7 +95,7 @@
           "description": "Vue template whitespace strategy or opt-in Vue 2 line-break migration mode",
           "default": "condense",
           "type": "string",
-          "enum": ["condense", "preserve", "vue2-line-breaks"]
+          "enum": ["condense", "preserve", "vue2-line-breaks", "vue2-preserve"]
         },
         "sourceMap": {
           "description": "Enable source map generation",

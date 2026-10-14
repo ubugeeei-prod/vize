@@ -70,6 +70,8 @@ pub(super) struct CompileFileSettings {
     pub(super) template_syntax: TemplateSyntaxMode,
     pub(super) whitespace: WhitespaceStrategy,
     pub(super) legacy_line_breaks: bool,
+    /// Vue 2.7 `preserve` text rules (#8259); implies `whitespace: Preserve`.
+    pub(super) vue2_preserve: bool,
     pub(super) experimental_in_tag_comments: bool,
     pub(super) experimental_patterned_template: bool,
     pub(super) experimental_self_component: bool,
@@ -151,12 +153,16 @@ impl CompileFileSettings {
                 .template_syntax
                 .map(Into::into)
                 .unwrap_or_else(|| template_syntax_mode(build_config.compiler_template_syntax)),
-            whitespace: if build_config.compiler_whitespace == Some("preserve") {
+            whitespace: if matches!(
+                build_config.compiler_whitespace,
+                Some("preserve" | "vue2-preserve")
+            ) {
                 WhitespaceStrategy::Preserve
             } else {
                 WhitespaceStrategy::Condense
             },
             legacy_line_breaks: build_config.compiler_whitespace == Some("vue2-line-breaks"),
+            vue2_preserve: build_config.compiler_whitespace == Some("vue2-preserve"),
             experimental_in_tag_comments: build_config.features.experimental_in_tag_comments,
             experimental_patterned_template: build_config.features.experimental_patterned_template,
             experimental_self_component: build_config.experimental_vue.self_component,
@@ -198,6 +204,20 @@ impl CompileFileSettings {
             | (u16::from(self.experimental_self_component) << 11)
             | (u16::from(matches!(self.whitespace, WhitespaceStrategy::Preserve)) << 12)
             | (u16::from(self.legacy_line_breaks) << 13)
+            | (u16::from(self.vue2_preserve) << 14)
+    }
+
+    /// Scope the configured template whitespace mode around one compile.
+    pub(super) fn with_whitespace<R>(&self, compile: impl FnOnce() -> R) -> R {
+        if self.vue2_preserve {
+            vize_atelier_core::parser::with_vue2_preserve_whitespace(compile)
+        } else {
+            vize_atelier_core::parser::with_whitespace_mode(
+                self.whitespace,
+                self.legacy_line_breaks,
+                compile,
+            )
+        }
     }
 
     pub(super) fn custom_elements_hash(&self) -> u64 {

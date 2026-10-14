@@ -57,6 +57,17 @@ const migrationBatch = buildCompileBatchOptions({
 assert.equal(migrationFile.whitespace, "vue2-line-breaks");
 assert.equal(migrationBatch.whitespace, "vue2-line-breaks");
 
+const vue2PreserveFile = buildCompileFileOptions("/src/Legacy.vue", {
+  ...batchInput,
+  whitespace: "vue2-preserve",
+});
+const vue2PreserveBatch = buildCompileBatchOptions({
+  ...batchInput,
+  whitespace: "vue2-preserve",
+});
+assert.equal(vue2PreserveFile.whitespace, "vue2-preserve");
+assert.equal(vue2PreserveBatch.whitespace, "vue2-preserve");
+
 const productionFile = buildCompileFileOptions("/src/App.vue", {
   ...batchInput,
   inlineTemplate: true,

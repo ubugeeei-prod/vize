@@ -6,7 +6,7 @@ export const PLUGIN_VUE_COMPAT_VERSION = "6.0.7";
 const DEFAULT_CUSTOM_ELEMENT_PATTERN = /\.ce\.vue$/;
 
 export interface PluginVueCompileOptions {
-  whitespace?: "condense" | "preserve" | "vue2-line-breaks";
+  whitespace?: "condense" | "preserve" | "vue2-line-breaks" | "vue2-preserve";
   styleTrim?: boolean;
   templateCacheHandlers?: boolean;
   templateComments?: boolean;

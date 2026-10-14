@@ -1,0 +1,13 @@
+<template>
+  <p>
+    <span>
+      {{ n }}件
+    </span>
+    <b>{{ a }}</b>
+    {{ b }}
+    <i>x</i>
+  </p>
+</template>
+<script setup>
+const n = 3, a = "A", b = "B";
+</script>

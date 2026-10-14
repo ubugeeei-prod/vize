@@ -27,6 +27,10 @@ fn document_projects_only_documented_compiler_whitespace_modes() {
             r#"{"compiler":{"whitespace":"vue2-line-breaks"}}"#,
             Some("vue2-line-breaks"),
         ),
+        (
+            r#"{"compiler":{"whitespace":"vue2-preserve"}}"#,
+            Some("vue2-preserve"),
+        ),
     ] {
         let document: ConfigDocument = serde_json::from_str(json).unwrap();
         assert_eq!(document.compiler_whitespace(), expected);

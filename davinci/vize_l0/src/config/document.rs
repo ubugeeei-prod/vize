@@ -66,6 +66,7 @@ impl ConfigDocument {
             Some("preserve") => Some("preserve"),
             Some("condense") => Some("condense"),
             Some("vue2-line-breaks") => Some("vue2-line-breaks"),
+            Some("vue2-preserve") => Some("vue2-preserve"),
             _ => None,
         }
     }
