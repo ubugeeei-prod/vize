@@ -23,9 +23,7 @@ use super::setup_scoped::props_type_ref;
 use super::template_bindings::{
     emit_macro_template_prop_bindings, should_skip_template_prop_binding,
 };
-use super::with_defaults::{
-    collect_with_defaults_default_names_from_source, template_props_type_ref,
-};
+use super::with_defaults::{collect_with_defaults_names_from_source, template_props_type_ref};
 use super::{strip_generic_params, strip_outer_angle_brackets, type_reference_lookup_key};
 use crate::virtual_ts::generator::setup_scope::define_props_type_requires_setup_scope;
 
@@ -67,7 +65,8 @@ impl TemplatePropsModel {
         let authored_type_ref =
             props_type_ref(generic_param, setup_scoped.then_some("__VizeSetupProps"));
 
-        let mut defaulted_prop_names = collect_with_defaults_default_names(summary);
+        let (mut defaulted_prop_names, undefined_default_names) =
+            collect_with_defaults_default_names(summary);
         // Imported runtime props and type-based defaults retain their resolved
         // names separately from authored values, so a raw `undefined` expression
         // cannot acquire the imported resolver's default-presence facts.
@@ -101,8 +100,16 @@ impl TemplatePropsModel {
         } else {
             authored_type_ref.clone()
         };
+        // Boolean casting needs concrete keys, the same condition `__DefineProps`
+        // relies on above.
+        let boolean_casting = (define_props_type_args.is_some() && generic_param.is_none())
+            .then_some(&undefined_default_names);
         let resolved_type_ref = opaque_defaults_props_type_ref(summary).unwrap_or_else(|| {
-            template_props_type_ref(base_type_ref.as_str(), &defaulted_prop_names)
+            template_props_type_ref(
+                base_type_ref.as_str(),
+                &defaulted_prop_names,
+                boolean_casting,
+            )
         });
 
         Self {
@@ -146,7 +153,12 @@ fn sfc_generic_param(summary: &Croquis) -> Option<&str> {
         })
 }
 
-fn collect_with_defaults_default_names(summary: &Croquis) -> FxHashSet<String> {
+/// Props a `withDefaults` call defaults (with a value), and those it defaults
+/// to literally `undefined`.
+fn collect_with_defaults_default_names(
+    summary: &Croquis,
+) -> (FxHashSet<String>, FxHashSet<String>) {
+    let mut undefined = FxHashSet::default();
     let mut names = summary
         .macros
         .resolved_prop_defaults()
@@ -159,9 +171,9 @@ fn collect_with_defaults_default_names(summary: &Croquis) -> FxHashSet<String> {
         let Some(runtime_args) = &call.runtime_args else {
             continue;
         };
-        collect_with_defaults_default_names_from_source(runtime_args.as_str(), &mut names);
+        collect_with_defaults_names_from_source(runtime_args.as_str(), &mut names, &mut undefined);
     }
-    names
+    (names, undefined)
 }
 
 pub(crate) fn generate_props_variables(

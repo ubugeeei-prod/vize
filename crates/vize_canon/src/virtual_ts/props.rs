@@ -380,8 +380,19 @@ mod tests {
         names.insert("thickness".into());
 
         assert_eq!(
-            template_props_type_ref("Props", &names),
+            template_props_type_ref("Props", &names, None),
             r#"__WithDefaultsResult<Props, Pick<Props, "label" | "thickness">>"#
+        );
+        let no_undefined = FxHashSet::default();
+        assert_eq!(
+            template_props_type_ref("Props", &names, Some(&no_undefined)),
+            r#"__WithDefaultsResult<Props, Pick<Props, "label" | "thickness">, __VizeBooleanKey<Props>>"#
+        );
+        let mut undefined: FxHashSet<String> = FxHashSet::default();
+        undefined.insert("open".into());
+        assert_eq!(
+            template_props_type_ref("Props", &names, Some(&undefined)),
+            r#"__WithDefaultsResult<Props, Pick<Props, "label" | "thickness">, Exclude<__VizeBooleanKey<Props>, "open">>"#
         );
     }
 
