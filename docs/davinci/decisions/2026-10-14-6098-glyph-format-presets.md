@@ -66,3 +66,14 @@ destructured one, stays as written. `selfCloseVoidElements` closes the HTML
 void elements (`img`, `br`, `input` and the rest, but never a capitalized
 component such as `Input`) as `<img />`. Both default to `false`, keep the
 compiled render code unchanged, and are set by the `prettier` preset.
+
+## SCSS and Less layout
+
+`reindentPreprocessorStyles` (default `false`, set by the `prettier` preset)
+re-indents SCSS and Less blocks by their `{}` and `()` depth, adds one level
+to a declaration continued over several lines, collapses blank lines and drops
+them after `{` and before `}`. Only whitespace at line edges changes; lines
+that start inside a block comment or a string stay as written, and an
+unbalanced block is kept whole. Reformatting values, as Prettier's PostCSS
+printer does, is not attempted: it needs an SCSS-aware value parser, and
+Vize's CSS engine does not accept SCSS.

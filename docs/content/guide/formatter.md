@@ -148,7 +148,8 @@ On the command line, `vize fmt --preset prettier` applies these settings and als
 - writes strings in CSS, SCSS and Less with double quotes, or with single quotes when you add `--single-quote`;
 - writes a one-line `style` attribute as `color: red; top: 0`, without a trailing `;`;
 - writes several `v-for` aliases in parentheses, as in `v-for="(item, i) in items"`;
-- closes void elements, as in `<img src="a.png" />`.
+- closes void elements, as in `<img src="a.png" />`;
+- re-indents SCSS and Less blocks by nesting depth and tidies their blank lines.
 
 Flags given with it still win.
 
@@ -158,7 +159,7 @@ These differences remain, even with the preset:
 
 - Text inside elements keeps its line breaks. Prettier refills long text up to the print width.
 - Template expressions other than `v-for` keep their written form, for example the `,` separators in a slot type such as `{ open: boolean, close: () => void }`. Prettier uses `;`.
-- `<style>` blocks in Sass, Less or Stylus are left as written (the preset only changes quotes in SCSS and Less), and Pug templates only get their outer indentation adjusted. Prettier formats Sass and Less.
+- Values in SCSS and Less blocks are kept as written; the preset only changes their quotes, indentation and blank lines. Prettier also reformats values, for example `.2s` to `0.2s`. Indented Sass and Stylus blocks are left as written, and Pug templates only get their outer indentation adjusted.
 
 ## Format on save
 

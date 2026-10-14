@@ -12,6 +12,7 @@ mod comment_scan;
 mod declaration;
 mod engine_boundary;
 mod number;
+mod preprocessor_layout;
 mod quotes;
 mod rule_layout;
 mod stabilization;
@@ -38,6 +39,15 @@ pub fn format_style_content(source: &str, options: &FormatOptions) -> Result<Str
         return format_style_layout(requoted.as_str(), options);
     }
     format_style_layout(source, options)
+}
+
+/// Re-indent an SCSS or Less block by nesting depth, or `None` to keep it.
+pub(crate) fn reindent_preprocessor(source: &str, options: &FormatOptions) -> Option<String> {
+    preprocessor_layout::reindent(
+        source,
+        options.indent_string().as_str(),
+        options.newline_string(),
+    )
 }
 
 /// Re-quote strings in a Sass or Less block that is otherwise kept as written.

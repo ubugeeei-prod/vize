@@ -124,6 +124,7 @@ pub fn to_glyph_format_options(config: &FormatterConfig) -> vize_glyph::FormatOp
         normalize_inline_styles: false,
         normalize_v_for_parens: false,
         self_close_void_elements: false,
+        reindent_preprocessor_styles: false,
         skip_script_stabilization: false,
     }
 }

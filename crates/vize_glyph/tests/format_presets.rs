@@ -88,6 +88,18 @@ const id = "a";
         options.normalize_inline_styles,
         defaults.normalize_inline_styles
     );
+    assert_eq!(
+        options.normalize_v_for_parens,
+        defaults.normalize_v_for_parens
+    );
+    assert_eq!(
+        options.self_close_void_elements,
+        defaults.self_close_void_elements
+    );
+    assert_eq!(
+        options.reindent_preprocessor_styles,
+        defaults.reindent_preprocessor_styles
+    );
 }
 
 #[test]
@@ -169,4 +181,24 @@ fn prettier_preset_writes_v_for_parens_and_closes_void_elements() {
         format_sfc(&formatted, &options).expect("format").code,
         formatted
     );
+}
+
+#[test]
+fn prettier_preset_reindents_scss_and_less() {
+    let mut options = FormatOptions::default();
+    FormatPreset::Prettier.apply(&mut options);
+    for lang in ["scss", "less"] {
+        let source = format!(
+            "<style lang=\"{lang}\">\n.a {{\n\tcolor: red;\n\n\n\t&:hover {{\n\t\tcolor: blue;\n\t}}\n}}\n</style>\n"
+        );
+        let kept = format_sfc(&source, &FormatOptions::default()).expect("format");
+        assert_eq!(kept.code.as_str(), source);
+        let expected = format!(
+            "<style lang=\"{lang}\">\n.a {{\n  color: red;\n\n  &:hover {{\n    color: blue;\n  }}\n}}\n</style>\n"
+        );
+        assert_eq!(
+            format_sfc(&source, &options).expect("format").code.as_str(),
+            expected
+        );
+    }
 }

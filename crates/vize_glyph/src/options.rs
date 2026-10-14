@@ -126,6 +126,12 @@ pub struct FormatOptions {
     #[serde(default)]
     pub self_close_void_elements: bool,
 
+    /// Re-indent SCSS and Less `<style>` blocks by nesting depth and tidy
+    /// their blank lines, as Prettier does; tokens stay as written
+    /// (default: false)
+    #[serde(default)]
+    pub reindent_preprocessor_styles: bool,
+
     /// Skip the `<script>` idempotence stabilization pass (default: false).
     ///
     /// When false (the default), script blocks are formatted to a stable fixed
@@ -166,6 +172,7 @@ impl Default for FormatOptions {
             normalize_inline_styles: false,
             normalize_v_for_parens: false,
             self_close_void_elements: false,
+            reindent_preprocessor_styles: false,
             skip_script_stabilization: false,
         }
     }
@@ -199,6 +206,7 @@ impl FormatPreset {
         options.normalize_inline_styles = !vize;
         options.normalize_v_for_parens = !vize;
         options.self_close_void_elements = !vize;
+        options.reindent_preprocessor_styles = !vize;
     }
 }
 
