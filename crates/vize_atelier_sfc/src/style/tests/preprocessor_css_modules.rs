@@ -1,6 +1,6 @@
 //! `<style module lang="scss|less|...">` compile regressions.
 
-use super::super::compile_sfc;
+use crate::compile_sfc;
 use crate::types::SfcCompileOptions;
 use crate::{SfcParseOptions, parse_sfc};
 

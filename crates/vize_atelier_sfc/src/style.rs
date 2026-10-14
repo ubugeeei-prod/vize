@@ -2,8 +2,10 @@
 
 mod keyframes;
 mod nested;
+mod plain;
 mod where_selector;
 
+use plain::{is_preprocessor_lang, plain_style_output};
 use vize_carton::{String, ToCompactString};
 use where_selector::add_scope_to_element;
 pub(crate) use where_selector::scope_bare_where;
@@ -78,23 +80,6 @@ pub(crate) fn compile_style_with_modules(
         code: plain_style_output(style, options),
         css_module: None,
     })
-}
-
-fn plain_style_output(style: &SfcStyleBlock, options: &StyleCompileOptions) -> String {
-    let (mut output, _) = crate::css::transform_css_v_bind(&style.content, Some(&options.id));
-    // Apply scoped transformation if needed
-    if style.scoped || options.scoped {
-        output = crate::css::scope_mode::scope_style_css(&output, &options.id);
-    }
-    // Trim if requested
-    if options.trim {
-        output = output.trim().to_compact_string();
-    }
-    output
-}
-
-fn is_preprocessor_lang(lang: Option<&str>) -> bool {
-    matches!(lang, Some("scss" | "sass" | "less" | "stylus" | "styl"))
 }
 
 fn css_module_filename(style: &SfcStyleBlock<'_>, options: &StyleCompileOptions) -> String {

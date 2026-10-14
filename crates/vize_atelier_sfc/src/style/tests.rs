@@ -1,3 +1,5 @@
+mod preprocessor_css_modules;
+
 use super::{apply_scoped_css, extract_css_vars, scope_selector, transform_deep, transform_global};
 
 #[test]

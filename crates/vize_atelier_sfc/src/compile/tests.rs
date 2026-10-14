@@ -2,7 +2,6 @@ mod custom_elements;
 mod define_props_regressions;
 mod options_api_events;
 mod page_meta;
-mod preprocessor_css_modules;
 mod props_rest;
 mod scoped;
 mod vapor;
