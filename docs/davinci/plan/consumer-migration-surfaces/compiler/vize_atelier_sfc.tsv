@@ -410,9 +410,11 @@ compiler	Compiler	source	crates/vize_atelier_sfc/src/script/type_resolution.rs	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/type_resolution/union.rs	7	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/utils.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/snapshot_tests.rs	15	carton	Carton host/compatibility	old	vize_carton	legacy	1
-compiler	Compiler	source	crates/vize_atelier_sfc/src/style.rs	7	carton	Carton host/compatibility	old	vize_carton	legacy	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/style.rs	9	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/style/keyframes.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/style/nested.rs	4	carton	Carton host/compatibility	old	vize_carton	legacy	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/style/plain.rs	3	carton	Carton host/compatibility	old	vize_carton	legacy	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/style/tests/preprocessor_css_modules.rs	12	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/style/where_selector.rs	2	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/template_tests.rs	190	carton	Carton host/compatibility	old	vize_carton	legacy	2
 compiler	Compiler	source	crates/vize_atelier_sfc/src/types.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	2
