@@ -24,7 +24,7 @@ use std::{
     time::Instant,
 };
 
-#[path = "lint_divergence_surface.rs"]
+#[path = "../../support/lint_divergence_surface.rs"]
 mod surface;
 use surface::{baseline_intentional_reason, outside_baseline_surface};
 #[path = "../../support/common.rs"]

@@ -2,7 +2,7 @@
 
 Issue: [#6097](https://github.com/ubugeeei-prod/vize/issues/6097).
 
-The Real Project Matrix on main `b197d9de26` scored 121 `vue/attribute-hyphenation` false negatives and 50 `vue/no-unused-components` false positives against eslint-plugin-vue 10.9.2. Reading the findings showed that almost all of them are not parity gaps. The comparator in `tools/commands/fixtures/lint-divergence-report.rs` now classifies these findings instead of scoring them:
+The Real Project Matrix on main `b197d9de26` scored 121 `vue/attribute-hyphenation` false negatives and 50 `vue/no-unused-components` false positives against eslint-plugin-vue 10.9.2. Reading the findings showed that almost all of them are not parity gaps. The comparator in `tools/commands/fixtures/lint-divergence-report.rs` (helpers in `tools/support/lint_divergence_surface.rs`) now classifies these findings instead of scoring them:
 
 - **camelCase `aria*` / `data*` component props (119 of 121).** `vue/attribute-hyphenation` deliberately exempts names such as `ariaLabel` and `:dataKey` on components. Type checkers (vue-tsc and Vize) read hyphenated `aria-*` / `data-*` names as fallthrough attributes, so `aria-label` would drop the prop's type check and could not satisfy a required `ariaLabel` prop. eslint-plugin-vue's findings for these names are recorded as `intentionalDivergences`, together with the reason.
 - **Unused `<script setup>` imports (50 of 50).** Vize reports an imported component that the template never uses. eslint-plugin-vue's rule checks only the Options API `components` option. The sampled findings (misskey, vue-data-ui) are genuinely unused imports. They are recorded as `patinaOutsideBaselineSurface`, like Patina findings inside a pug template.
