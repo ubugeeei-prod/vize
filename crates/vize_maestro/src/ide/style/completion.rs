@@ -1,11 +1,6 @@
 //! Prefix filtering precedes item/Markdown allocation; documentation is lazy.
 
-use super::{
-    context::{self, CssContext},
-    data, documentation,
-    resolve::Selected,
-    values, vue,
-};
+use super::{context::CssContext, data, documentation, resolve::Selected, values, vue};
 use crate::ide::{IdeContext, markup::markdown_documentation};
 use tower_lsp::lsp_types::{CompletionItem, CompletionTextEdit, InsertTextFormat, Range, TextEdit};
 
@@ -15,10 +10,7 @@ pub(crate) fn complete(ctx: &IdeContext<'_>, index: usize) -> Vec<CompletionItem
     let Some((content, base, standard_css)) = super::region(ctx, index) else {
         return items;
     };
-    if !standard_css {
-        return items;
-    }
-    let (candidates, span, has_colon) = match context::at(content, ctx.offset - base) {
+    let (candidates, span, has_colon) = match standard_css.classify(content, ctx.offset - base) {
         CssContext::Property {
             prefix,
             span,

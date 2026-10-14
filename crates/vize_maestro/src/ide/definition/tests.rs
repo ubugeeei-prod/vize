@@ -1,6 +1,7 @@
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod basics;
 mod contexts;
+mod preprocessor_styles;
 mod template;
 
 use tower_lsp::lsp_types::{GotoDefinitionResponse, Location};
