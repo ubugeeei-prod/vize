@@ -27,5 +27,19 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 `ecosystem` は対応ライブラリー向け、`nuxt` は Nuxt 向けの規則を含みます。`incremental` は空の状態から
 必要なルールだけを有効にするためのプリセットです。実際の所属は[全ルールの一覧](./all.md)を参照してください。
 
+### 既定で有効なルール
+
+| プリセット | ルール数 | 有効になる内容 |
+| --- | ---: | --- |
+| `essential` | 77 | テンプレートとディレクティブの妥当性、Vue 3 で削除された構文と API（`vue/no-deprecated-*`、`script/no-deprecated-*`）、スクリプトのマクロと Options API の正しさ、`vue/no-v-html`、`vue/no-unsafe-url`、`html/id-duplication` |
+| `happy-path`（既定） | 135 | `essential` に加え、テンプレートの書式、アクセシビリティ、HTML 適合性、SSR の危険、未使用のコンポーネントとプロパティ、props と emits の型 |
+| `ecosystem` | 143 | `happy-path` に加え、エコシステムのライブラリー向けの検査 |
+| `nuxt` | 194 | `opinionated` を Nuxt の自動インポートに合わせたもの |
+| `opinionated` | 193 | `happy-path` に加え、より厳しい規約と `css/*` のスタイル規則 |
+| `incremental` | 0 | なし |
+
+ルール数にファイル横断のルールは含みません。各ルールの所属は[全ルールの一覧](./all.md)の「プリセット」列で確認できます。
+`compiler.compatibility.vueVersion` が `2` または `2.7` のときは、Vue 3 で削除された構文と API の検査を無効にします。
+
 型を使うルールには TypeScript プロジェクトと `typeAware` が必要です。グローバル名の型は
 `tsconfig.json` の `compilerOptions.types` や project references で管理してください。

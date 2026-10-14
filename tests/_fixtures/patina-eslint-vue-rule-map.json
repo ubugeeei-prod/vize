@@ -361,7 +361,13 @@
       "status": "unimplemented"
     },
     "vue/no-deprecated-data-object-declaration": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "script/no-deprecated-data-object-declaration",
       "patinaSeverity": "error",
       "status": "mapped"

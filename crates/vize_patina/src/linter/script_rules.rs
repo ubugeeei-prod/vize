@@ -26,7 +26,9 @@ mod runtime_props_dispatch_tests;
 mod setup_emits_dispatch_tests;
 
 use html_scripts::extract_inline_scripts;
-use prefilter::{script_rule_applies_to_filename, script_rule_may_match};
+use prefilter::{
+    script_rule_applies_to_filename, script_rule_applies_to_module, script_rule_may_match,
+};
 pub use registry::BuiltinScriptRuleMeta;
 use registry::{
     ALL_BUILTIN_SCRIPT_RULE_NAMES, BUILTIN_SCRIPT_RULES, BuiltinScriptRuleEntry, RULE_NO_DUPE_KEYS,
@@ -145,6 +147,7 @@ fn entry_may_match(
     filename: &str,
 ) -> bool {
     script_rule_applies_to_filename(entry.rule_name, filename)
+        && script_rule_applies_to_module(entry.rule_name, source, filename)
         && (linter.script_rule_overrides.contains_key(entry.rule_name)
             || script_rule_may_match(entry.rule_name, source))
 }

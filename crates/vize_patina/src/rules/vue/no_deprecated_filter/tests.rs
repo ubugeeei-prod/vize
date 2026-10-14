@@ -197,3 +197,13 @@ fn assertion_type_unions_stay_separate_from_runtime_pipes() {
         assert!(has_filter_pipe(expression), "{expression}");
     }
 }
+
+#[test]
+fn ignores_jsx_pipes() {
+    let result = create_linter().lint_jsx(
+        "const App = (o: any) => <div title={o.a | o.b}>{(o.id as string | number) | 0}</div>;",
+        "App.tsx",
+        vize_atelier_jsx::JsxLang::Tsx,
+    );
+    assert_eq!(result.error_count, 0, "{:?}", result.diagnostics);
+}

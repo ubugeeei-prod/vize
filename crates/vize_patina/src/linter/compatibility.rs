@@ -43,6 +43,8 @@ impl Linter {
                 .insert(String::from("script/no-deprecated-events-api"));
             self.disabled_rules
                 .insert(String::from("script/no-deprecated-props-default-this"));
+            self.disabled_rules
+                .insert(String::from("script/no-deprecated-data-object-declaration"));
         }
         self
     }
