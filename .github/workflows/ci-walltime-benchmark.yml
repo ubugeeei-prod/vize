@@ -18,7 +18,6 @@ on:
             n8n-baseline,
             n8n-preparation,
             artifact-payload,
-            rust-archive-window,
             owned-worker-fault,
             owned-worker-controls,
           ]
@@ -322,7 +321,3 @@ jobs:
           artifact_source_sha: ${{ inputs.artifact_source_sha }}
       - uses: ./.github/actions/upload-artifact-payload-receipt
         if: ${{ always() }}
-  rust-archive-window:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.component == 'rust-archive-window' }}
-    permissions: { contents: read, actions: read }
-    uses: ./.github/workflows/rust-archive-transport-benchmark.yml

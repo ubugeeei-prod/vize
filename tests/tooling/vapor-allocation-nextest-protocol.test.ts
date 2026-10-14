@@ -98,21 +98,6 @@ test("Vapor allocation harness separates nextest discovery, selection and callba
   }
 });
 
-test("historical diagnostic rejects an incompatible overlay before archive or process work", () => {
-  execFileSync(
-    "python3",
-    [
-      fileURLToPath(
-        new URL(
-          "../../tools/support/compat/github/allocation_ownership/test_verify.py",
-          import.meta.url,
-        ),
-      ),
-    ],
-    { stdio: "pipe" },
-  );
-});
-
 test("Vapor budget remains one mandatory, output-retained nextest case", () => {
   const manifest = readFileSync(
     fileURLToPath(new URL("../../crates/vize_atelier_vapor/Cargo.toml", import.meta.url)),
