@@ -257,11 +257,16 @@ pub(crate) fn should_use_multiline_attrs(
 
     // Measure the printed line: the indentation including the SFC level around
     // the template, the tag, every attribute by display width, and the `>` or
-    // ` />` that closes it.
-    let tag_len = 1 + tag_name.width();
-    let attrs_len: usize = rendered.iter().map(|a| 1 + a.width()).sum();
-
-    start_column + tag_len + attrs_len + closing_len > options.print_width as usize
+    // ` />` that closes it. UTF-8 byte length never undercounts display width,
+    // so only a tag whose bytes overflow needs the exact measurement.
+    let print_width = options.print_width as usize;
+    let fixed = start_column + 1 + closing_len;
+    let bytes: usize = rendered.iter().map(|a| 1 + a.len()).sum();
+    if fixed + tag_name.len() + bytes <= print_width {
+        return false;
+    }
+    let columns: usize = rendered.iter().map(|a| 1 + a.width()).sum();
+    fixed + tag_name.width() + columns > print_width
 }
 
 #[cfg(test)]
