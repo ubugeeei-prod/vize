@@ -33,6 +33,19 @@ test("passive native LSP capture retains the complete original Matrix workflow",
   delete lsp.env.VIZE_LSP_BUILD_RECIPE;
   lsp.run = lsp.run.slice(prefix.length);
 
+  // A retried network-only fetch and step timeouts sized from green shards.
+  const fetch = steps.findIndex((step) => step.name === "Fetch Rust dependencies");
+  assert.equal(steps[fetch + 1]?.name, "Build Vize CLI");
+  assert.match(steps.splice(fetch, 1)[0].run, /cargo fetch --locked/);
+  for (const [id, minutes] of [
+    ["core_tools", 60],
+    ["lsp", 30],
+  ] as const) {
+    const step = steps.find((candidate) => candidate.id === id);
+    assert.equal(step["timeout-minutes"], minutes, id);
+    delete step["timeout-minutes"];
+  }
+
   const integrity = steps.findIndex((step) => step.name === "Validate source-bound LSP wire");
   assert.equal(integrity, steps.findIndex((step) => step.id === "lsp") + 1);
   assert.deepEqual(steps.splice(integrity, 1)[0], {
