@@ -4,7 +4,7 @@ use super::TemplateFormatter;
 use crate::template::{
     attributes::ParsedAttribute,
     directives::normalize_attribute_with_vue_version,
-    helpers::{byte_at, is_tag_name_char, is_whitespace, parse_closing_tag, sub_slice},
+    helpers::{byte_at, is_tag_name_char, is_whitespace, parse_closing_tag},
 };
 use vize_l0::{String, ToCompactString};
 
@@ -12,10 +12,11 @@ impl TemplateFormatter<'_> {
     /// Parse an opening tag into structured attributes.
     pub(super) fn parse_opening_tag(
         &self,
-        source: &[u8],
+        text: &str,
         start: usize,
         depth: usize,
     ) -> Option<(String, Vec<ParsedAttribute>, bool, usize)> {
+        let source = text.as_bytes();
         let len = source.len();
         let mut pos = start + 1; // Skip '<'
 
@@ -28,8 +29,11 @@ impl TemplateFormatter<'_> {
             return None;
         }
 
-        let tag_name = std::str::from_utf8(sub_slice(source, tag_start..pos))
-            .unwrap_or("")
+        // Every range below starts and ends at ASCII bytes of UTF-8 text, so
+        // slicing the text needs no UTF-8 revalidation.
+        let tag_name = text
+            .get(tag_start..pos)
+            .unwrap_or_default()
             .to_compact_string();
 
         // Parse attributes
@@ -57,7 +61,7 @@ impl TemplateFormatter<'_> {
             }
 
             // Parse single attribute
-            let (attr, new_pos) = self.parse_single_attribute(source, pos, attr_index, depth);
+            let (attr, new_pos) = self.parse_single_attribute(text, pos, attr_index, depth);
             if let Some(attr) = attr {
                 attrs.push(attr);
                 attr_index += 1;
@@ -76,10 +80,11 @@ impl TemplateFormatter<'_> {
     /// Return the end of an immediately following matching closing tag.
     pub(super) fn parse_immediate_empty_closing_tag(
         &self,
-        source: &[u8],
+        text: &str,
         start: usize,
         tag_name: &str,
     ) -> Option<usize> {
+        let source = text.as_bytes();
         let len = source.len();
         let mut pos = start;
 
@@ -91,7 +96,7 @@ impl TemplateFormatter<'_> {
             return None;
         }
 
-        let (closing_tag_name, end_pos) = parse_closing_tag(source, pos)?;
+        let (closing_tag_name, end_pos) = parse_closing_tag(text, pos)?;
         if closing_tag_name.as_str() == tag_name {
             Some(end_pos)
         } else {
@@ -102,11 +107,12 @@ impl TemplateFormatter<'_> {
     /// Parse a single attribute: name, optional `="value"`.
     fn parse_single_attribute(
         &self,
-        source: &[u8],
+        text: &str,
         start: usize,
         index: usize,
         depth: usize,
     ) -> (Option<ParsedAttribute>, usize) {
+        let source = text.as_bytes();
         let len = source.len();
         let mut pos = start;
 
@@ -125,8 +131,9 @@ impl TemplateFormatter<'_> {
             return (None, pos + 1);
         }
 
-        let raw_name = std::str::from_utf8(sub_slice(source, name_start..pos))
-            .unwrap_or("")
+        let raw_name = text
+            .get(name_start..pos)
+            .unwrap_or_default()
             .to_compact_string();
 
         // Skip whitespace before '='
@@ -152,8 +159,9 @@ impl TemplateFormatter<'_> {
                 while val_pos < len && byte_at(source, val_pos) != quote {
                     val_pos += 1;
                 }
-                let value = std::str::from_utf8(sub_slice(source, value_start..val_pos))
-                    .unwrap_or("")
+                let value = text
+                    .get(value_start..val_pos)
+                    .unwrap_or_default()
                     .to_compact_string();
                 if val_pos < len {
                     val_pos += 1; // skip closing quote
@@ -170,8 +178,9 @@ impl TemplateFormatter<'_> {
                 {
                     val_pos += 1;
                 }
-                let value = std::str::from_utf8(sub_slice(source, value_start..val_pos))
-                    .unwrap_or("")
+                let value = text
+                    .get(value_start..val_pos)
+                    .unwrap_or_default()
                     .to_compact_string();
                 pos = val_pos;
                 Some(value)

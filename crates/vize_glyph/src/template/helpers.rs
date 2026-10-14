@@ -11,7 +11,8 @@ pub(crate) fn find_bytes(haystack: &[u8], needle: &[u8]) -> Option<usize> {
 }
 
 /// Parse a closing tag, returns `(tag_name, end_pos)`.
-pub(crate) fn parse_closing_tag(source: &[u8], start: usize) -> Option<(String, usize)> {
+pub(crate) fn parse_closing_tag(text: &str, start: usize) -> Option<(String, usize)> {
+    let source = text.as_bytes();
     let len = source.len();
     let mut pos = start + 2; // skip '</'
 
@@ -23,8 +24,11 @@ pub(crate) fn parse_closing_tag(source: &[u8], start: usize) -> Option<(String, 
         return None;
     }
 
-    let tag_name = std::str::from_utf8(source.get(tag_start..pos).unwrap_or_default())
-        .unwrap_or("")
+    // The name ends at an ASCII byte of UTF-8 text, so the range is on char
+    // boundaries and needs no revalidation.
+    let tag_name = text
+        .get(tag_start..pos)
+        .unwrap_or_default()
         .to_compact_string();
 
     // Skip whitespace and find '>'

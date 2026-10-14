@@ -48,7 +48,7 @@ pub(crate) fn format_template_content_preserving_text(
     options: &FormatOptions,
     vue_version: crate::VueVersion,
 ) -> Result<String, FormatError> {
-    TemplateFormatter::new(options, vue_version, 0).format_preserving_text(source.as_bytes())
+    TemplateFormatter::new(options, vue_version, 0).format_preserving_text(source)
 }
 
 pub(crate) fn format_template_content_with_vue_version(
@@ -78,7 +78,7 @@ pub(crate) fn format_template_content_with_base_depth(
     }
 
     let formatter = TemplateFormatter::new(options, vue_version, base_depth);
-    formatter.format(bytes)
+    formatter.format(source)
 }
 
 #[cfg(test)]
