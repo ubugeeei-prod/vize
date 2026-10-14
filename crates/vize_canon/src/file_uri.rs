@@ -21,8 +21,30 @@ pub(crate) fn path_to_file_uri(path: &Path) -> String {
     path_to_file_uri_in(&path.to_string_lossy(), HOST_STYLE)
 }
 
+/// The file name TypeScript expects for a host path: forward slashes and no
+/// verbatim prefix on Windows (`C:/dir/tsconfig.json`). A `\\?\C:\` spelling
+/// opens no project in the native checker (#8940).
+pub(crate) fn path_to_typescript_name(path: &Path) -> String {
+    typescript_name_in(&path.to_string_lossy(), HOST_STYLE)
+}
+
 pub(crate) fn file_uri_to_path(uri: &str) -> Option<PathBuf> {
     file_uri_to_path_in(uri, HOST_STYLE).map(|path| PathBuf::from(path.as_str()))
+}
+
+fn typescript_name_in(path: &str, style: PathStyle) -> String {
+    if style == PathStyle::Posix {
+        return String::from(path);
+    }
+    let slashed = path.replace('\\', "/");
+    // Verbatim prefixes (`\\?\C:\`, `\\?\UNC\server\share`) name the same file.
+    match slashed.strip_prefix("//?/") {
+        Some(rest) => match rest.strip_prefix("UNC/") {
+            Some(share) => String::from("//") + share,
+            None => String::from(rest),
+        },
+        None => String::from(slashed.as_str()),
+    }
 }
 
 fn path_to_file_uri_in(path: &str, style: PathStyle) -> String {
@@ -32,15 +54,7 @@ fn path_to_file_uri_in(path: &str, style: PathStyle) -> String {
         append_encoded_path(&mut uri, path.as_bytes());
         return uri;
     }
-    let slashed = path.replace('\\', "/");
-    // Verbatim prefixes (`\\?\C:\`, `\\?\UNC\server\share`) name the same file.
-    let slashed = match slashed.strip_prefix("//?/") {
-        Some(rest) => match rest.strip_prefix("UNC/") {
-            Some(share) => String::from("//") + share,
-            None => String::from(rest),
-        },
-        None => String::from(slashed.as_str()),
-    };
+    let slashed = typescript_name_in(path, style);
     if let Some(share) = slashed.strip_prefix("//") {
         // A UNC share's server is the URI authority.
         append_encoded_path(&mut uri, share.as_bytes());
@@ -136,6 +150,7 @@ fn hex_value(byte: u8) -> Option<u8> {
 mod tests {
     use super::{
         PathStyle, file_uri_to_path, file_uri_to_path_in, path_to_file_uri, path_to_file_uri_in,
+        typescript_name_in,
     };
     use std::path::{Path, PathBuf};
 
@@ -212,6 +227,47 @@ mod tests {
                 "{uri} -> {path}"
             );
         }
+    }
+
+    #[test]
+    fn spells_windows_typescript_names_without_backslashes_or_verbatim_prefixes() {
+        // #8940: the editor project's config under %TEMP% reached the native
+        // checker as a verbatim backslash path and opened no project.
+        let cases = [
+            (
+                r"\\?\C:\Users\runneradmin\AppData\Local\Temp\vize-canon\editor\sessions\s\projects\p\tsconfig.json",
+                "C:/Users/runneradmin/AppData/Local/Temp/vize-canon/editor/sessions/s/projects/p/tsconfig.json",
+            ),
+            (
+                r"C:\Users\runner\fresh\vite vue 日本語\tsconfig.json",
+                "C:/Users/runner/fresh/vite vue 日本語/tsconfig.json",
+            ),
+            (r"c:\work\tsconfig.json", "c:/work/tsconfig.json"),
+            (
+                r"\\server\share\tsconfig.json",
+                "//server/share/tsconfig.json",
+            ),
+            (
+                r"\\?\UNC\server\share\tsconfig.json",
+                "//server/share/tsconfig.json",
+            ),
+            (
+                "C:/already/forward/tsconfig.json",
+                "C:/already/forward/tsconfig.json",
+            ),
+        ];
+        for (path, expected) in cases {
+            assert_eq!(
+                typescript_name_in(path, PathStyle::Windows),
+                expected,
+                "{path}"
+            );
+        }
+        // A POSIX file name may legally contain a backslash.
+        assert_eq!(
+            typescript_name_in(r"/work/odd\name/tsconfig.json", PathStyle::Posix),
+            r"/work/odd\name/tsconfig.json"
+        );
     }
 
     #[test]

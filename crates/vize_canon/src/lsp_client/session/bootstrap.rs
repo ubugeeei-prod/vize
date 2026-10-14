@@ -15,7 +15,7 @@ pub(in crate::lsp_client) fn spawn_project_session(
     cwd: &Path,
     config_path: &Path,
 ) -> Result<(ProjectSession, Arc<CapabilitiesResponse>), ProjectSessionSpawnError> {
-    let config_path_wire = config_path.to_string_lossy();
+    let config_path_wire = crate::file_uri::path_to_typescript_name(config_path);
     let mode = api_mode_for_executable(executable);
     let session = match block_on(spawn_project_session_with_mode(
         executable,
@@ -35,12 +35,19 @@ pub(in crate::lsp_client) fn spawn_project_session(
                 Err(fallback) => {
                     return Err(classify_project_session_error(
                         fallback,
-                        Some(cstr!("after msgpack error: {error}")),
+                        Some(cstr!(
+                            "after msgpack error: {error}; project {config_path_wire}"
+                        )),
                     ));
                 }
             }
         }
-        Err(error) => return Err(classify_project_session_error(error, None)),
+        Err(error) => {
+            return Err(classify_project_session_error(
+                error,
+                Some(cstr!("project {config_path_wire}")),
+            ));
+        }
     };
     let capabilities = block_on(session.describe_capabilities())
         .unwrap_or_else(|_| Arc::new(CapabilitiesResponse::default()));

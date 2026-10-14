@@ -53,6 +53,7 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
     }
 
     let Some(source_path) = ctx.uri.to_file_path().ok() else {
+        tracing::warn!(uri = %ctx.uri, "canonical document skipped: URI is not a file path");
         return Ok(None);
     };
     let virtual_ts_options = ctx.state.editor_virtual_ts_options().await;

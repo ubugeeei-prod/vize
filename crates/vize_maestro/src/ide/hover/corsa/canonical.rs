@@ -37,16 +37,41 @@ pub(super) async fn hover(
     bridge: Option<&Arc<CorsaBridge>>,
     follow_declaration: bool,
 ) -> Option<Answer> {
-    let bridge = bridge.filter(|bridge| bridge.is_initialized())?;
-    let document = corsa_support::open_canonical_virtual_document(ctx, bridge).await?;
-    let (line, character) =
-        corsa_support::canonical_source_offset_to_position(&document, ctx.offset)?;
-    let Some(mut hover) = bridge
-        .hover(&document.request_uri, line, character)
-        .await
-        .ok()?
+    // Each give-up is logged: on a host where typed hover silently falls back
+    // (#8940) these lines are the only evidence of which step failed.
+    let Some(bridge) = bridge.filter(|bridge| bridge.is_initialized()) else {
+        tracing::info!(uri = %ctx.uri, "typed hover skipped: no initialized Corsa bridge");
+        return None;
+    };
+    let document = match corsa_support::open_canonical_virtual_document_strict(ctx, bridge).await {
+        Ok(Some(document)) => document,
+        Ok(None) => {
+            tracing::warn!(uri = %ctx.uri, "typed hover skipped: no canonical document for this URI");
+            return None;
+        }
+        Err(error) => {
+            tracing::warn!(uri = %ctx.uri, %error, "typed hover skipped: canonical document failed");
+            return None;
+        }
+    };
+    let Some((line, character)) =
+        corsa_support::canonical_source_offset_to_position(&document, ctx.offset)
     else {
-        return Some(Answer::Empty);
+        tracing::info!(uri = %ctx.uri, offset = ctx.offset, "typed hover skipped: offset has no generated position");
+        return None;
+    };
+    let mut hover = match bridge.hover(&document.request_uri, line, character).await {
+        Ok(Some(hover)) => hover,
+        Ok(None) => return Some(Answer::Empty),
+        Err(error) => {
+            tracing::warn!(
+                uri = %ctx.uri,
+                request_uri = %document.request_uri,
+                %error,
+                "typed hover failed in Corsa"
+            );
+            return None;
+        }
     };
     // Native quick info can omit JSDoc after a mapped type. Follow the
     // checker's declaration identities for documentation while retaining the

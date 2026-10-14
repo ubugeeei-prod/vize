@@ -165,11 +165,8 @@ await expectFeature(
   "hover on title shows its type",
   "textDocument/hover",
   at(':msg="title"', 6),
-  // Known gap: on Windows the hover names the binding without its type
-  // (https://github.com/ubugeeei-prod/vize/issues/8940). Remove with the fix.
   (result) =>
-    /\btitle\b/.test(JSON.stringify(result) ?? "") &&
-    (process.platform === "win32" || /string/.test(JSON.stringify(result) ?? "")),
+    /\btitle\b/.test(JSON.stringify(result) ?? "") && /string/.test(JSON.stringify(result) ?? ""),
 );
 await expectFeature(
   "definition of HelloWorld reaches the component",
