@@ -74,11 +74,16 @@ pub struct SfcScriptContext<'a> {
     /// wrong (an option declared in the sibling block is invisible — a
     /// `<script> export default { inheritAttrs: false }` next to a
     /// `<script setup>`) and doubled (both invocations would report it). Such
-    /// a rule reports only when this is `true`.
+    /// a rule reports only when this is `true`, or combines both blocks through
+    /// [`Self::sibling_program`] from one invocation.
     ///
     /// `false` in the `Default` value: a standalone script has no template to
     /// correlate with, so no whole-file conclusion is available there either.
     pub sole_script_block: bool,
+    /// The other script block's program when the SFC has both `<script>` and
+    /// `<script setup>` and that block parsed cleanly. A whole-file rule can
+    /// combine both halves from one invocation instead of skipping the file.
+    pub sibling_program: Option<&'a oxc_ast::ast::Program<'a>>,
 }
 
 impl<'a> SfcScriptContext<'a> {
