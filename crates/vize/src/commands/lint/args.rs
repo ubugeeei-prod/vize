@@ -36,6 +36,10 @@ pub struct LintArgs {
     #[arg(long)]
     pub max_warnings: Option<usize>,
 
+    /// Report `eslint-disable` template comments that suppressed nothing
+    #[arg(long)]
+    pub report_unused_disable_directives: bool,
+
     /// Quiet mode - only show summary
     #[arg(short, long)]
     pub quiet: bool,

@@ -35,6 +35,9 @@ Options:
       --max-warnings <MAX_WARNINGS>
           Maximum number of warnings before failing
 
+      --report-unused-disable-directives
+          Report `eslint-disable` template comments that suppressed nothing
+
   -q, --quiet
           Quiet mode - only show summary
 

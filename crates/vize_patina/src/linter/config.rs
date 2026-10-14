@@ -71,6 +71,8 @@ pub struct Linter {
     pub(crate) help_level: HelpLevel,
     /// The same declarative or static custom-element policy used by the compiler.
     pub(crate) custom_elements: CustomElementMatcher,
+    /// Report template disable pragmas that suppressed nothing.
+    pub(crate) report_unused_disable_directives: bool,
     /// Built-in script rules enabled for this linter.
     pub(crate) script_rules: &'static [&'static str],
     /// Project-wide Vapor mode, when selected by the host.
@@ -158,6 +160,14 @@ impl Linter {
     #[inline]
     pub fn with_help_level(mut self, level: HelpLevel) -> Self {
         self.help_level = level;
+        self
+    }
+
+    /// Report `eslint-disable` template comments that suppressed nothing, as
+    /// `vue/comment-directive` errors.
+    #[inline]
+    pub fn with_report_unused_disable_directives(mut self, enabled: bool) -> Self {
+        self.report_unused_disable_directives = enabled;
         self
     }
 

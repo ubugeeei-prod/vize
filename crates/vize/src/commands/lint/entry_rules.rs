@@ -86,6 +86,7 @@ impl ResolvedLinterRuleGroups {
                         config.rule_severity_overrides(),
                     ))
                     .with_help_level(help_level)
+                    .with_report_unused_disable_directives(args.report_unused_disable_directives)
                     .with_locale(Locale::parse(&args.locale).unwrap_or_default())
                     .with_type_aware_lint(type_aware)
                     .with_vue_version(features.vue_version)

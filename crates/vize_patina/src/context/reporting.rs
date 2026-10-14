@@ -42,6 +42,17 @@ impl<'a> LintContext<'a> {
         );
     }
 
+    /// Report a diagnostic about a directive comment itself. Directives and
+    /// rule selection do not apply to it.
+    pub(crate) fn report_directive(&mut self, mut diagnostic: LintDiagnostic) {
+        match diagnostic.severity {
+            Severity::Error => self.error_count += 1,
+            Severity::Warning => self.warning_count += 1,
+        }
+        offset_diagnostic(&mut diagnostic, self.source_offset);
+        self.diagnostics.push(diagnostic);
+    }
+
     /// Report a diagnostic whose range already addresses the containing SFC.
     #[inline]
     pub fn report_in_sfc(&mut self, diagnostic: LintDiagnostic) {

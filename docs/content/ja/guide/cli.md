@@ -58,12 +58,12 @@ cargo install --path crates/vize --force --locked
 
 ## npm パッケージのスクリプトと Rust CLI の比較
 
-| 用途                                                                               | 推奨エントリーポイント           |
-| ---------------------------------------------------------------------------------- | -------------------------------- |
-| ビルド・整形・lint・型チェック・準備・アップグレードを実行するパッケージスクリプト | npm パッケージの `vp run vize:*` |
-| `.vue`、`.ts`、`.tsx`、`.d.ts` を含むプロジェクト全体の型チェック                  | Rust `vize check`                |
-| LSP、IDE セットアップ、`check-server`、プロファイル出力                            | Rust `vize` バイナリ             |
-| 共有 Vite プラグイン、npm package コマンド、および Rust CLI 設定                   | [Vite config](./configuration.md#standalone-cli)                  |
+| 用途                                                                               | 推奨エントリーポイント                           |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------ |
+| ビルド・整形・lint・型チェック・準備・アップグレードを実行するパッケージスクリプト | npm パッケージの `vp run vize:*`                 |
+| `.vue`、`.ts`、`.tsx`、`.d.ts` を含むプロジェクト全体の型チェック                  | Rust `vize check`                                |
+| LSP、IDE セットアップ、`check-server`、プロファイル出力                            | Rust `vize` バイナリ                             |
+| 共有 Vite プラグイン、npm package コマンド、および Rust CLI 設定                   | [Vite config](./configuration.md#standalone-cli) |
 
 ## コマンド
 
@@ -154,19 +154,20 @@ vize lint --preset opinionated src
 vize lint --help-level short src
 ```
 
-| オプション            | 説明                                                                                                                                |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `--fix`               | テキスト編集を提供するルールの安全な自動修正を適用し、残った診断を報告する                                                          |
-| `-f, --format`        | 出力形式: `text`、`rich`（`--locale ja` または `zh` で言語を指定）、`ansi`、`plain`、`json`、`stylish`、`markdown`、`html`、`agent` |
-| `--max-warnings`      | 警告数が指定した上限を超えると失敗する                                                                                              |
-| `-q, --quiet`         | 概要だけを表示する                                                                                                                  |
-| `--help-level`        | `full`、`short`、`none`                                                                                                             |
-| `--preset`            | `happy-path`、`opinionated`、`essential`、`incremental`、`nuxt`                                                                     |
-| `--cross-file`        | ファイル間のチェックを有効にする（明示的な有効化が必要）                                                                            |
-| `--cross-file-tree`   | ファイル間 lint の実行時に provide/inject ツリーを表示する                                                                          |
-| `--strict-reactivity` | ネイティブチェッカーを使ってリアクティビティの喪失を検出する                                                                        |
-| `--profile`           | 処理時間のプロファイルを表示する                                                                                                    |
-| `--slow-threshold`    | プロファイルで遅いファイルとして報告する時間のしきい値                                                                              |
+| オプション                           | 説明                                                                                                                                |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `--fix`                              | テキスト編集を提供するルールの安全な自動修正を適用し、残った診断を報告する                                                          |
+| `-f, --format`                       | 出力形式: `text`、`rich`（`--locale ja` または `zh` で言語を指定）、`ansi`、`plain`、`json`、`stylish`、`markdown`、`html`、`agent` |
+| `--max-warnings`                     | 警告数が指定した上限を超えると失敗する                                                                                              |
+| `--report-unused-disable-directives` | 何も抑制していないテンプレートの `eslint-disable` コメントを `vue/comment-directive` のエラーとして報告する                         |
+| `-q, --quiet`                        | 概要だけを表示する                                                                                                                  |
+| `--help-level`                       | `full`、`short`、`none`                                                                                                             |
+| `--preset`                           | `happy-path`、`opinionated`、`essential`、`incremental`、`nuxt`                                                                     |
+| `--cross-file`                       | ファイル間のチェックを有効にする（明示的な有効化が必要）                                                                            |
+| `--cross-file-tree`                  | ファイル間 lint の実行時に provide/inject ツリーを表示する                                                                          |
+| `--strict-reactivity`                | ネイティブチェッカーを使ってリアクティビティの喪失を検出する                                                                        |
+| `--profile`                          | 処理時間のプロファイルを表示する                                                                                                    |
+| `--slow-threshold`                   | プロファイルで遅いファイルとして報告する時間のしきい値                                                                              |
 
 プリセットを選ぶと、段階的にルールを導入できます。
 

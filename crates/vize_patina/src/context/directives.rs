@@ -91,7 +91,27 @@ impl LintContext<'_> {
             .filter(|&&byte| byte == b'\n')
             .count() as u32;
         let line = self.offset_to_line(offset) + preceding_lines;
-        self.inline_suppressions.record(directive, line);
+        // The marker through the end of the comment text locates an unused report.
+        let marker = self
+            .source
+            .get(offset as usize..)
+            .and_then(|rest| rest.find(content))
+            .map(|start| {
+                let start = offset + start as u32;
+                (
+                    start + marker_offset as u32,
+                    start + content.trim_end().len() as u32,
+                )
+            });
+        self.inline_suppressions.record_at(directive, line, marker);
+    }
+
+    /// Disable pragmas in template comments that suppressed nothing.
+    pub(crate) fn unused_disable_directives(
+        &self,
+        is_active: impl Fn(&str) -> bool,
+    ) -> Vec<super::eslint_directive::UnusedDirective> {
+        self.inline_suppressions.unused(is_active)
     }
 
     /// JSX still uses the source scanner until its own comment AST is wired in.

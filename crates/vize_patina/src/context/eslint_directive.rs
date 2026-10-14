@@ -1,5 +1,7 @@
 //! ESLint and Oxlint suppression pragma parsing.
 
+use std::cell::{Cell, RefCell};
+
 use vize_l0::String;
 
 #[derive(Clone, Copy)]
@@ -25,10 +27,33 @@ struct InlineSuppressionEvent {
     end_line: Option<u32>,
     enabled: bool,
     rules: Vec<String>,
+    /// Byte range of the pragma marker, for template comments only.
+    marker: Option<(u32, u32)>,
+    /// Whether this pragma suppressed any diagnostic.
+    used: Cell<bool>,
+    /// Listed rules whose diagnostics this pragma suppressed.
+    used_rules: RefCell<Vec<String>>,
+}
+
+/// A disable pragma that suppressed nothing (`--report-unused-disable-directives`).
+pub(crate) struct UnusedDirective {
+    pub(crate) start: u32,
+    pub(crate) end: u32,
+    /// The listed rule that reported nothing; `None` for a pragma without rules.
+    pub(crate) rule: Option<String>,
 }
 
 impl InlineSuppressionState {
     pub(super) fn record(&mut self, directive: EslintDisableDirective, line: u32) {
+        self.record_at(directive, line, None);
+    }
+
+    pub(super) fn record_at(
+        &mut self,
+        directive: EslintDisableDirective,
+        line: u32,
+        marker: Option<(u32, u32)>,
+    ) {
         let (start_line, end_line, enabled) = match directive.kind {
             EslintDisableKind::DisableNextLine => (line + 1, Some(line + 1), false),
             EslintDisableKind::DisableLine => (line, Some(line), false),
@@ -40,19 +65,61 @@ impl InlineSuppressionState {
             end_line,
             enabled,
             rules: directive.rules,
+            marker,
+            used: Cell::new(false),
+            used_rules: RefCell::new(Vec::new()),
         });
     }
 
     pub(super) fn is_disabled_at(&self, rule_name: &str, line: u32) -> bool {
-        self.events
-            .iter()
-            .rev()
-            .find(|event| {
-                line >= event.start_line
-                    && event.end_line.is_none_or(|end| line <= end)
-                    && (event.rules.is_empty() || event.rules.iter().any(|rule| rule == rule_name))
-            })
-            .is_some_and(|event| !event.enabled)
+        let Some(event) = self.events.iter().rev().find(|event| {
+            line >= event.start_line
+                && event.end_line.is_none_or(|end| line <= end)
+                && (event.rules.is_empty() || event.rules.iter().any(|rule| rule == rule_name))
+        }) else {
+            return false;
+        };
+        if event.enabled {
+            return false;
+        }
+        event.used.set(true);
+        let mut used_rules = event.used_rules.borrow_mut();
+        if !used_rules.iter().any(|rule| rule == rule_name) {
+            used_rules.push(String::from(rule_name));
+        }
+        true
+    }
+
+    /// Located disable pragmas that suppressed nothing. A listed rule counts
+    /// only when `is_active` says this run could have reported it.
+    pub(super) fn unused(&self, is_active: impl Fn(&str) -> bool) -> Vec<UnusedDirective> {
+        let mut unused = Vec::new();
+        for event in &self.events {
+            let Some((start, end)) = event.marker.filter(|_| !event.enabled) else {
+                continue;
+            };
+            if event.rules.is_empty() {
+                if !event.used.get() {
+                    unused.push(UnusedDirective {
+                        start,
+                        end,
+                        rule: None,
+                    });
+                }
+                continue;
+            }
+            let used_rules = event.used_rules.borrow();
+            for rule in &event.rules {
+                if is_active(rule) && !used_rules.contains(rule) {
+                    unused.push(UnusedDirective {
+                        start,
+                        end,
+                        rule: Some(rule.clone()),
+                    });
+                }
+            }
+        }
+        unused
     }
 }
 

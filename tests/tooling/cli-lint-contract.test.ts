@@ -62,7 +62,13 @@ test("vize lint --help documents the fix/config/max-warnings surface", () => {
     encoding: "utf8",
   });
   assert.equal(result.status, 0, result.stderr);
-  for (const flag of ["--fix", "--no-config", "--max-warnings", "--format"]) {
+  for (const flag of [
+    "--fix",
+    "--no-config",
+    "--max-warnings",
+    "--report-unused-disable-directives",
+    "--format",
+  ]) {
     assert.match(
       result.stdout,
       new RegExp(flag.replace(/-/g, "\\-")),

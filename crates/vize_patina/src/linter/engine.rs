@@ -18,6 +18,7 @@ mod script;
 mod sfc;
 mod tag_scan;
 mod template_extract;
+mod unused_directives;
 
 pub(crate) use template_extract::extract_template_fast;
 
@@ -252,6 +253,9 @@ impl Linter {
                 rule_count,
             },
         );
+        if self.report_unused_disable_directives {
+            unused_directives::report(self, &mut ctx);
+        }
 
         let error_count = ctx.error_count();
         let warning_count = ctx.warning_count();
