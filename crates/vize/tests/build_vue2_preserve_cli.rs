@@ -18,31 +18,12 @@ const VUE27_RENDER: &str = include_str!(
     "../../../tests/_fixtures/differential/compiler/whitespace-vue2-preserve-8259/vue27-preserve-render.txt"
 );
 
-/// The text runs Vue 2.7.16 `preserve` emits for the fixture, as they appear
-/// in Vue 3 codegen (`_vm._s(_vm.x)` becomes `_toDisplayString(x)`).
-const VUE27_TEXT_RUNS: [(&str, &str); 2] = [
-    (
-        r#"_vm._v("\n      " + _vm._s(_vm.n) + "件\n    ")"#,
-        r#""\n      " + _toDisplayString(n) + "件\n    ""#,
-    ),
-    (
-        r#"_vm._v("\n    " + _vm._s(_vm.b) + "\n    ")"#,
-        r#""\n    " + _toDisplayString(b) + "\n    ""#,
-    ),
-];
-
 #[test]
 fn configured_vue2_preserve_matches_vue_2_7_text_runs() {
-    for (vue2, vue3) in VUE27_TEXT_RUNS {
-        assert!(VUE27_RENDER.contains(vue2), "reference lost {vue2}");
-        let built = build(false);
-        assert!(built.contains(vue3), "missing {vue3} in:\n{built}");
-    }
     let built = build(false);
-    assert!(
-        !built.contains(r#"" " + _toDisplayString(b) + " ""#),
-        "Vue 3 preserve output must not be produced"
-    );
+    // Every interpolated text run, in order, as Vue 2.7.16 `preserve` emits it
+    // (`_vm._s(_vm.x)` spelled `_toDisplayString(x)` in Vue 3 codegen).
+    assert_eq!(interpolated_runs(&built), vue2_interpolated_runs());
     assert_eq!(built, compiler_code(false, false));
 }
 
@@ -52,6 +33,67 @@ fn configured_vue2_preserve_reaches_ssr_and_vapor() {
         let built = build_with(ssr, vapor);
         assert_eq!(built, compiler_code(ssr, vapor), "ssr={ssr}, vapor={vapor}");
     }
+}
+
+fn vue2_interpolated_runs() -> Vec<String> {
+    VUE27_RENDER
+        .split("_vm._v(")
+        .skip(1)
+        .filter_map(|tail| {
+            let run = tail.get(..closing_paren(tail)?)?;
+            run.contains("_vm._s(")
+                .then(|| run.replace("_vm._s(_vm.", "_toDisplayString("))
+        })
+        .collect()
+}
+
+const DISPLAY: &str = "_toDisplayString(";
+
+/// `"lead" + _toDisplayString(x) + "trail"` spans; bare `_toDisplayString(x)`
+/// when no literal is joined to it.
+fn interpolated_runs(code: &str) -> Vec<String> {
+    let mut runs = Vec::new();
+    let mut from = 0;
+    while let Some(start) = code
+        .get(from..)
+        .and_then(|rest| rest.find(DISPLAY))
+        .map(|offset| from + offset)
+    {
+        let args = start + DISPLAY.len();
+        let Some(call_end) = code
+            .get(args..)
+            .and_then(closing_paren)
+            .map(|close| args + close + 1)
+        else {
+            break;
+        };
+        let begin = code
+            .get(..start)
+            .and_then(|head| head.strip_suffix("\" + "))
+            .and_then(|head| head.rfind('"'))
+            .unwrap_or(start);
+        let end = code
+            .get(call_end..)
+            .and_then(|tail| tail.strip_prefix(" + \""))
+            .and_then(|tail| tail.find('"'))
+            .map_or(call_end, |quote| call_end + " + \"".len() + quote + 1);
+        runs.push(code.get(begin..end).unwrap_or_default().to_owned());
+        from = end;
+    }
+    runs
+}
+
+fn closing_paren(text: &str) -> Option<usize> {
+    let mut depth = 0usize;
+    for (index, char) in text.char_indices() {
+        match char {
+            '(' => depth += 1,
+            ')' if depth == 0 => return Some(index),
+            ')' => depth -= 1,
+            _ => {}
+        }
+    }
+    None
 }
 
 fn build(ssr: bool) -> String {
