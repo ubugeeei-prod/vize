@@ -218,7 +218,7 @@ linter	Linter	source	crates/vize_patina/src/linter/rule_selection.rs	3	l0	L0	sta
 linter	Linter	source	crates/vize_patina/src/linter/script_rules.rs	6	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/linter/script_rules.rs	6	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 linter	Linter	source	crates/vize_patina/src/linter/script_rules.rs	6	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-linter	Linter	test/dev	crates/vize_patina/src/linter/script_rules.rs	190	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+linter	Linter	test/dev	crates/vize_patina/src/linter/script_rules.rs	193	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 linter	Linter	test/dev	crates/vize_patina/src/linter/script_rules/deep_props_dispatch_tests.rs	7	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	test/dev	crates/vize_patina/src/linter/script_rules/dupe_keys_dispatch_tests.rs	7	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	test/dev	crates/vize_patina/src/linter/script_rules/runtime_props_dispatch_tests.rs	7	raw_oxc	raw OXC	raw	oxc_ast	raw	1
