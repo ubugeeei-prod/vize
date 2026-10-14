@@ -27,6 +27,7 @@ import "./plugin/external-sfc-hmr.test.ts";
 import "./plugin/repeated-external-sfc-hmr.test.ts";
 import "./plugin/hot-update-environment.test.ts";
 import "./plugin/hmr.test.ts";
+import "./plugin/template-style-hmr.test.ts";
 import "./plugin/index.test.ts";
 import "./plugin/jsx-compat.test.ts";
 import "./plugin/load-jsx-passthrough.test.ts";

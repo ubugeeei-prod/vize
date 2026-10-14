@@ -67,6 +67,16 @@ export function generateHmrCode(scopeId: string, updateType: HmrUpdateType): str
   return generateViteHmrCode(scopeId, updateType);
 }
 
+/**
+ * Whether any style block changed between two compilations, regardless of the
+ * update type. A save that edits both the template and a style reports
+ * "template-only", but the style modules still have to be refreshed.
+ */
+export function hasStyleChanges(prev: CompiledModule | undefined, next: CompiledModule): boolean {
+  if (!prev) return true;
+  return prev.styleHash !== next.styleHash || styleFingerprint(prev) !== styleFingerprint(next);
+}
+
 function toHmrHashes(module: CompiledModule | undefined) {
   return module
     ? {

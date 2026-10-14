@@ -6,7 +6,7 @@ import type { VizePluginState } from "./state.ts";
 import { getCompileOptionsForRequest } from "./state.ts";
 import { evictCompiledModule, ownersOfDependency } from "./compiled-module-cache.ts";
 import { compileFile } from "../compiler.ts";
-import { detectHmrUpdateType, hasHmrChanges, type HmrUpdateType } from "../hmr.ts";
+import { detectHmrUpdateType, hasHmrChanges, hasStyleChanges, type HmrUpdateType } from "../hmr.ts";
 import { hasDelegatedStyles } from "../utils/index.ts";
 import { resolveCssImports } from "../utils/css.ts";
 import {
@@ -177,26 +177,7 @@ export async function handleHotUpdateHook(
       // plain CSS. Invalidate those modules so Vite reruns the configured CSS
       // transformer before sending the style update to the browser.
       if (newCompiled.styles?.length && updateType === "style-only") {
-        const affectedModules: Set<import("vite").ModuleNode> = new Set();
-        for (const block of newCompiled.styles ?? []) {
-          const params = new URLSearchParams();
-          params.set("vue", "");
-          params.set("type", "style");
-          params.set("index", String(block.index));
-          if (block.scoped) params.set("scoped", `data-v-${newCompiled.scopeId}`);
-          params.set("lang", block.lang ?? "css");
-          if (block.module !== false) {
-            params.set("module", typeof block.module === "string" ? block.module : "");
-          }
-          const styleId = `${file}?${params.toString()}`;
-          const styleMods = await collectModulesByFile(
-            server,
-            getStyleModuleFileCandidates(styleId),
-          );
-          for (const mod of styleMods) {
-            affectedModules.add(mod);
-          }
-        }
+        const affectedModules = await collectStyleModules(server, file, newCompiled);
         if (affectedModules.size > 0) {
           return [...affectedModules];
         }
@@ -229,6 +210,15 @@ export async function handleHotUpdateHook(
       if (modules.size > 0) {
         state.pendingHmrUpdateTypes.set(file, updateType);
         invalidateModules(server, modules);
+        // A save that changes the template (or script) together with a style
+        // reports a non-style update type, but the style modules are separate
+        // Vite modules and keep their cached CSS unless they are invalidated
+        // here as well (#7742).
+        if (newCompiled.styles?.length && hasStyleChanges(prevCompiled, newCompiled)) {
+          const styleModules = await collectStyleModules(server, file, newCompiled);
+          invalidateModules(server, styleModules);
+          return [...new Set([...modules, ...styleModules])];
+        }
         return [...modules];
       }
 
@@ -238,6 +228,30 @@ export async function handleHotUpdateHook(
       options.onRecompileError?.(e);
     }
   }
+}
+
+async function collectStyleModules(
+  server: import("vite").ViteDevServer,
+  file: string,
+  compiled: NonNullable<ReturnType<VizePluginState["cache"]["get"]>>,
+): Promise<Set<import("vite").ModuleNode>> {
+  const styleModules: Set<import("vite").ModuleNode> = new Set();
+  for (const block of compiled.styles ?? []) {
+    const params = new URLSearchParams();
+    params.set("vue", "");
+    params.set("type", "style");
+    params.set("index", String(block.index));
+    if (block.scoped) params.set("scoped", `data-v-${compiled.scopeId}`);
+    params.set("lang", block.lang ?? "css");
+    if (block.module !== false) {
+      params.set("module", typeof block.module === "string" ? block.module : "");
+    }
+    const styleId = `${file}?${params.toString()}`;
+    for (const mod of await collectModulesByFile(server, getStyleModuleFileCandidates(styleId))) {
+      styleModules.add(mod);
+    }
+  }
+  return styleModules;
 }
 
 export function handleGenerateBundleHook(
