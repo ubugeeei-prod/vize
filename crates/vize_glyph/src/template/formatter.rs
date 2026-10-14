@@ -161,6 +161,11 @@ impl<'a> TemplateFormatter<'a> {
                         normalize_inline_styles(&mut sorted_attrs);
                     }
 
+                    // Compute once per opening tag; consumed in the two
+                    // void-element branches below.
+                    let is_void = is_void_element_str(&tag_name);
+                    let is_self_closing =
+                        is_self_closing || (is_void && self.options.self_close_void_elements);
                     self.open_chunk(&mut output, depth, join);
                     output.push(b'<');
                     output.extend_from_slice(tag_name.as_bytes());
@@ -174,9 +179,6 @@ impl<'a> TemplateFormatter<'a> {
                         if is_self_closing { 3 } else { 1 },
                     );
 
-                    // Compute once per opening tag; consumed in the two
-                    // void-element branches below.
-                    let is_void = is_void_element_str(&tag_name);
                     // The policy is pure; ordinary nonempty tags previously
                     // queried it twice. Self-closing tags never query it.
                     let whitespace_significant = !is_self_closing

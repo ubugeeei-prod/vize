@@ -116,6 +116,16 @@ pub struct FormatOptions {
     #[serde(default)]
     pub normalize_inline_styles: bool,
 
+    /// Wrap several `v-for` aliases in parentheses, `(item, i) in items`, as
+    /// Prettier does (default: false keeps the authored form)
+    #[serde(default)]
+    pub normalize_v_for_parens: bool,
+
+    /// Close void elements such as `<img>` as `<img />`, as Prettier does
+    /// (default: false keeps the authored form)
+    #[serde(default)]
+    pub self_close_void_elements: bool,
+
     /// Skip the `<script>` idempotence stabilization pass (default: false).
     ///
     /// When false (the default), script blocks are formatted to a stable fixed
@@ -154,6 +164,8 @@ impl Default for FormatOptions {
             sort_blocks: true,
             normalize_css_quotes: false,
             normalize_inline_styles: false,
+            normalize_v_for_parens: false,
+            self_close_void_elements: false,
             skip_script_stabilization: false,
         }
     }
@@ -184,6 +196,8 @@ impl FormatPreset {
         options.normalize_directive_shorthands = vize;
         options.normalize_css_quotes = !vize;
         options.normalize_inline_styles = !vize;
+        options.normalize_v_for_parens = !vize;
+        options.self_close_void_elements = !vize;
     }
 }
 

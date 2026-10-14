@@ -57,3 +57,12 @@ trailing `;`, and lowercases property names other than custom properties. It
 only touches one-line declaration lists; a value with a newline, braces, a
 comment, an entity or an escape stays as written. Breaking a long value over
 several lines, as Prettier does, is not attempted.
+
+## v-for parentheses and void elements
+
+`normalizeVForParens` wraps several unparenthesized `v-for` aliases,
+`item, i in items`, as `(item, i) in items`; a single alias, including a
+destructured one, stays as written. `selfCloseVoidElements` closes the HTML
+void elements (`img`, `br`, `input` and the rest, but never a capitalized
+component such as `Input`) as `<img />`. Both default to `false`, keep the
+compiled render code unchanged, and are set by the `prettier` preset.

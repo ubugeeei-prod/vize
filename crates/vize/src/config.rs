@@ -122,6 +122,8 @@ pub fn to_glyph_format_options(config: &FormatterConfig) -> vize_glyph::FormatOp
         sort_blocks: config.sort_blocks,
         normalize_css_quotes: false,
         normalize_inline_styles: false,
+        normalize_v_for_parens: false,
+        self_close_void_elements: false,
         skip_script_stabilization: false,
     }
 }

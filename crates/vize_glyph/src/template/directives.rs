@@ -51,7 +51,13 @@ pub(super) fn format_directive_value(
 
     // v-for has special syntax: "(item, index) in items"
     if name == "v-for" {
-        return (format_v_for_expression(trimmed), false, false);
+        let formatted = format_v_for_expression(trimmed);
+        if options.normalize_v_for_parens
+            && let Some(wrapped) = parenthesize_v_for_aliases(&formatted)
+        {
+            return (format_v_for_expression(&wrapped), false, false);
+        }
+        return (formatted, false, false);
     }
 
     let decoded = decode_expression_attribute_entities(trimmed);
@@ -284,6 +290,17 @@ pub(crate) fn format_v_for_expression(expr: &str) -> String {
     };
 
     cstr!("{normalized_iter}{keyword}{collection_trimmed}")
+}
+
+/// Wrap several unparenthesized v-for aliases, `item, i in items`, in
+/// parentheses as Prettier does. A single alias stays as written.
+fn parenthesize_v_for_aliases(expr: &str) -> Option<String> {
+    let index = find_v_for_keyword(expr, " in ").or_else(|| find_v_for_keyword(expr, " of "))?;
+    let aliases = expr.get(..index)?.trim();
+    if aliases.starts_with('(') || find_v_for_keyword(aliases, ",").is_none() {
+        return None;
+    }
+    Some(cstr!("({aliases}){}", expr.get(index..)?))
 }
 
 /// Find `keyword` in a v-for expression while respecting nested parens/brackets.
