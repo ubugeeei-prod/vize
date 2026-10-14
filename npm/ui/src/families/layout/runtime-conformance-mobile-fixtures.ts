@@ -1,5 +1,6 @@
 import { safeAreaRuntimeFixtures } from "./safe-area/runtime-conformance-safe-area-fixtures.ts";
 import { bottomNavigationRuntimeFixtures } from "../navigation/bottom-navigation/runtime-conformance-bottom-navigation-fixtures.ts";
+import { navigationRailRuntimeFixtures } from "../navigation/navigation-rail/runtime-conformance-navigation-rail-fixtures.ts";
 import { actionSheetRuntimeFixtures } from "../overlays/action-sheet/runtime-conformance-action-sheet-fixtures.ts";
 import { pullToRefreshRuntimeFixtures } from "../interaction/pull-to-refresh/runtime-conformance-pull-to-refresh-fixtures.ts";
 import { swipeActionsRuntimeFixtures } from "../interaction/swipe-actions/runtime-conformance-swipe-actions-fixtures.ts";
@@ -10,6 +11,7 @@ import type { RuntimeFixture } from "../../conformance/runtime-conformance-fixtu
 export const mobileRuntimeFixtures: readonly RuntimeFixture[] = [
   ...safeAreaRuntimeFixtures,
   ...bottomNavigationRuntimeFixtures,
+  ...navigationRailRuntimeFixtures,
   ...actionSheetRuntimeFixtures,
   ...pullToRefreshRuntimeFixtures,
   ...swipeActionsRuntimeFixtures,

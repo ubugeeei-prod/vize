@@ -1,6 +1,42 @@
 {
   "files": [
     {
+      "file": ".nuxt/typed-router/__definePageMeta.ts",
+      "diagnostics": []
+    },
+    {
+      "file": ".nuxt/typed-router/__helpers.ts",
+      "diagnostics": []
+    },
+    {
+      "file": ".nuxt/typed-router/__i18n-router.ts",
+      "diagnostics": []
+    },
+    {
+      "file": ".nuxt/typed-router/__navigateTo.ts",
+      "diagnostics": []
+    },
+    {
+      "file": ".nuxt/typed-router/__routes.ts",
+      "diagnostics": []
+    },
+    {
+      "file": ".nuxt/typed-router/__useTypedLink.ts",
+      "diagnostics": []
+    },
+    {
+      "file": ".nuxt/typed-router/__useTypedRoute.ts",
+      "diagnostics": []
+    },
+    {
+      "file": ".nuxt/typed-router/__useTypedRouter.ts",
+      "diagnostics": []
+    },
+    {
+      "file": ".nuxt/typed-router/index.ts",
+      "diagnostics": []
+    },
+    {
       "file": "app/app.vue",
       "diagnostics": []
     },
@@ -46,32 +82,26 @@
     },
     {
       "file": "app/components/form/VFFileInput.vue",
-      "diagnostics": [
-        "error:2:37 [TS2307] Cannot find module '@primevue/forms' or its corresponding type declarations.",
-        "error:3:27 [TS2307] Cannot find module '@primevue/forms' or its corresponding type declarations.",
-        "error:4:56 [TS2307] Cannot find module 'primevue/fileupload' or its corresponding type declarations.",
-        "error:41:25 [TS7006] Parameter 'v' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/form/VFForm.vue",
-      "diagnostics": [
-        "error:2:25 [TS2307] Cannot find module 'valibot' or its corresponding type declarations.",
-        "error:7:8 [TS2307] Cannot find module '@primevue/forms' or its corresponding type declarations.",
-        "error:8:33 [TS2307] Cannot find module '@primevue/forms/resolvers/valibot' or its corresponding type declarations.",
-        "error:11:59 [TS2307] Cannot find module '@primevue/forms' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/form/VFInput.vue",
-      "diagnostics": [
-        "error:2:23 [TS2307] Cannot find module 'primevue/inputtext' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/form/VFTextarea.vue",
+      "diagnostics": []
+    },
+    {
+      "file": "app/components/form/index.ts",
       "diagnostics": [
-        "error:2:22 [TS2307] Cannot find module 'primevue/textarea' or its corresponding type declarations."
+        "error:1:39 [TS2307] Cannot find module './VFTextarea.vue' or its corresponding type declarations.",
+        "error:2:36 [TS2307] Cannot find module './VFInput.vue' or its corresponding type declarations.",
+        "error:8:8 [TS2307] Cannot find module './VFForm.vue' or its corresponding type declarations."
       ]
     },
     {
@@ -92,9 +122,7 @@
     },
     {
       "file": "app/components/mainVisual/MainVisualWebGL.vue",
-      "diagnostics": [
-        "error:3:24 [TS2307] Cannot find module 'three' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/menu/VFMenu.vue",
@@ -129,15 +157,16 @@
       "diagnostics": []
     },
     {
+      "file": "app/constant.ts",
+      "diagnostics": []
+    },
+    {
       "file": "app/error.vue",
       "diagnostics": []
     },
     {
       "file": "app/layouts/default.vue",
-      "diagnostics": [
-        "error:2:27 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
-        "error:132:32 [TS7006] Parameter 'hash' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/_components/SectionAccess.vue",
@@ -145,10 +174,7 @@
     },
     {
       "file": "app/pages/_components/SectionContact.vue",
-      "diagnostics": [
-        "error:2:20 [TS2307] Cannot find module 'valibot' or its corresponding type declarations.",
-        "error:40:52 [TS2339] Property 'value' does not exist on type 'unknown'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/_components/SectionEvent.vue",
@@ -172,9 +198,7 @@
     },
     {
       "file": "app/pages/_components/SectionSpeaker.vue",
-      "diagnostics": [
-        "error:2:22 [TS2307] Cannot find module 'primevue/carousel' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/_components/SectionSponsorClosed.vue",
@@ -242,9 +266,7 @@
     },
     {
       "file": "app/pages/speaker/[speakerId]/index.vue",
-      "diagnostics": [
-        "error:42:23 [TS7006] Parameter 'speaker' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/speaker/_components/SpeakerCard.vue",
@@ -256,9 +278,7 @@
     },
     {
       "file": "app/pages/sponsors/[sponsorId]/index.vue",
-      "diagnostics": [
-        "error:44:23 [TS7006] Parameter 'sponsor' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/sponsors/_components/SponsorTag.vue",
@@ -282,12 +302,7 @@
     },
     {
       "file": "app/pages/ticket/[userId]/edit/index.vue",
-      "diagnostics": [
-        "error:2:20 [TS2307] Cannot find module 'valibot' or its corresponding type declarations.",
-        "error:3:24 [TS2307] Cannot find module 'emoji-regex' or its corresponding type declarations.",
-        "error:74:8 [TS7006] Parameter 'value' implicitly has an 'any' type.",
-        "error:84:7 [TS7006] Parameter 'value' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/ticket/[userId]/index.vue",
@@ -319,9 +334,7 @@
     },
     {
       "file": "app/stores/animation.ts",
-      "diagnostics": [
-        "error:82:28 [TS7006] Parameter 'value' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "i18n/en/goods.ts",
@@ -333,20 +346,11 @@
     },
     {
       "file": "i18n/en/speakers.ts",
-      "diagnostics": [
-        "error:34:28 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
-        "error:35:31 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
-        "error:57:28 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
-        "error:58:31 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
-        "error:73:28 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
-        "error:74:31 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
-        "error:100:28 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
-        "error:101:31 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
-        "error:118:28 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
-        "error:119:31 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
-        "error:140:28 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
-        "error:141:31 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'."
-      ]
+      "diagnostics": []
+    },
+    {
+      "file": "i18n/en/sponsors.ts",
+      "diagnostics": []
     },
     {
       "file": "i18n/goods.ts",
@@ -362,20 +366,15 @@
     },
     {
       "file": "i18n/ja/speakers.ts",
-      "diagnostics": [
-        "error:34:28 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
-        "error:35:31 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
-        "error:57:28 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
-        "error:58:31 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
-        "error:73:28 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
-        "error:74:31 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
-        "error:100:28 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
-        "error:101:31 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
-        "error:118:28 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
-        "error:119:31 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
-        "error:140:28 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
-        "error:141:31 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'."
-      ]
+      "diagnostics": []
+    },
+    {
+      "file": "i18n/ja/sponsors.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "i18n/photo.ts",
+      "diagnostics": []
     },
     {
       "file": "i18n/related-events.ts",
@@ -384,9 +383,25 @@
     {
       "file": "i18n/speaker.ts",
       "diagnostics": []
+    },
+    {
+      "file": "i18n/sponsor.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "i18n/timetable.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "server/api/staffs/index.get.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "server/static-data/staffs.ts",
+      "diagnostics": []
     }
   ],
-  "errorCount": 47,
+  "errorCount": 3,
   "warningCount": 0,
-  "fileCount": 81
+  "fileCount": 99
 }

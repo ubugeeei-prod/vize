@@ -12,7 +12,15 @@ use super::vue_dependencies_alias::{SessionCache, recover_lock};
 pub(crate) struct EditorMirrorSession {
     storage: Result<tempfile::TempDir, vize_carton::String>,
     cache: Mutex<SessionCache>,
+    /// The workspace preparation in flight, shared by equal requests.
+    preparing: Mutex<Option<Preparation>>,
 }
+
+/// One preparation identity and the signal its worker thread resolves.
+pub(in crate::corsa_bridge) type Preparation = (
+    u64,
+    futures::future::Shared<futures::channel::oneshot::Receiver<()>>,
+);
 
 impl EditorMirrorSession {
     pub(crate) fn new() -> Self {
@@ -22,6 +30,7 @@ impl EditorMirrorSession {
         Self {
             storage,
             cache: Mutex::new(SessionCache::default()),
+            preparing: Mutex::new(None),
         }
     }
 
@@ -34,6 +43,10 @@ impl EditorMirrorSession {
 
     pub(in crate::corsa_bridge) fn cache(&self) -> MutexGuard<'_, SessionCache> {
         recover_lock(&self.cache)
+    }
+
+    pub(in crate::corsa_bridge) fn preparing(&self) -> MutexGuard<'_, Option<Preparation>> {
+        recover_lock(&self.preparing)
     }
 
     pub(crate) fn clear(&self) {

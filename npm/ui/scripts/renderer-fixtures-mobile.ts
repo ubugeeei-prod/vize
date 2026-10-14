@@ -15,6 +15,36 @@ import { SafeArea } from "./families/layout/safe-area/safe-area.ts";
 `,
   },
   {
+    filename: "NavigationRailConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import {
+  NavigationRail,
+  NavigationRailItem,
+  NavigationRailToggle,
+} from "./families/navigation/navigation-rail/navigation-rail.ts";
+
+const destination = ref<"home" | "inbox">("home");
+const expanded = ref(false);
+</script>
+
+<template>
+  <NavigationRail
+    v-model="destination"
+    v-model:expanded="expanded"
+    :destinations="['home', 'inbox']"
+    aria-label="Main"
+  >
+    <NavigationRailToggle aria-label="Toggle navigation labels" />
+    <NavigationRailItem value="home" href="/">Home</NavigationRailItem>
+    <NavigationRailItem value="inbox" :badge="3" v-slot="{ active }">
+      {{ active ? "Inbox (open)" : "Inbox" }}
+    </NavigationRailItem>
+  </NavigationRail>
+</template>
+`,
+  },
+  {
     filename: "BottomNavigationConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";

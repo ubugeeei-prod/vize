@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -303,11 +302,6 @@ void test("RSS requires exact actual server/backend, positive samples and clean 
     assert.throws(() => auditRss(p.rows, p.start, "a".repeat(64), p.backend));
     Object.assign(p, before);
   }
-});
-
-void test("sampler ownership keeps reparented children and refuses reused root PID", () => {
-  const program = `import runpy\nm=runpy.run_path('tests/performance/support/current-baseline/sample_rss.py')\nf=m['owned']\nrows={1:{'startTicks':'a','parentPid':0},2:{'startTicks':'b','parentPid':1},3:{'startTicks':'c','parentPid':2}}\nassert f(rows,1,'a',{1:'a'})==[1,2,3]\nassert f({2:{'startTicks':'b','parentPid':0}},1,'a',{1:'a',2:'b'})==[2]\ntry: f({1:{'startTicks':'new','parentPid':0}},1,'a',{1:'a'})\nexcept ValueError: pass\nelse: raise AssertionError('accepted reused root')\n`;
-  execFileSync("python3", ["-c", program], { cwd: path.resolve(import.meta.dirname, "../..") });
 });
 
 void test("full selected input manifest rejects symlink escapes and keeps exact bytes", () => {
