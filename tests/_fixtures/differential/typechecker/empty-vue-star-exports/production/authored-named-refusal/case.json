@@ -41,9 +41,9 @@
       "relativeBlob": "blobs/108079edf0a38631edcee7da95c3d06db50aed92b5842f98e7106b53fe89c05b.json"
     },
     "barrel.ts": {
-      "bytes": 143,
-      "sha256": "06d6d8ffa00fe1998ecdb58a9331696133547a2fb71fa15ef93422f5b27433da",
-      "relativeBlob": "blobs/06d6d8ffa00fe1998ecdb58a9331696133547a2fb71fa15ef93422f5b27433da.json"
+      "bytes": 159,
+      "sha256": "d1e65e96739bc7062095cf974862c16d42475e1a8c38f43a41aff31ed1ed8a2b",
+      "relativeBlob": "blobs/d1e65e96739bc7062095cf974862c16d42475e1a8c38f43a41aff31ed1ed8a2b.json"
     }
   },
   "exportedNamesEquals": {

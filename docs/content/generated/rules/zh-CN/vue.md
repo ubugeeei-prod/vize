@@ -3167,7 +3167,7 @@ p Notice
 [错误示例](#vue-no-template-shadow-bad) · [正确示例](#vue-no-template-shadow-good)
 
 默认严重程度: `warning`  
-预设: `nuxt`, `opinionated`  
+预设: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 模板和代码块，包括规则所需的脚本上下文  
 选项: 没有规则专属选项。可以配置严重程度和预设。
@@ -5300,7 +5300,7 @@ vp run lint
 [错误示例](#vue-this-in-template-bad) · [正确示例](#vue-this-in-template-good)
 
 默认严重程度: `warning`  
-预设: `nuxt`, `opinionated`  
+预设: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 模板和代码块，包括规则所需的脚本上下文  
 选项: 没有规则专属选项。可以配置严重程度和预设。
@@ -5435,7 +5435,7 @@ const emailId = useId();
 [错误示例](#vue-use-v-on-exact-bad) · [正确示例](#vue-use-v-on-exact-good)
 
 默认严重程度: `warning`  
-预设: `essential`, `nuxt`, `opinionated`  
+预设: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 模板和代码块，包括规则所需的脚本上下文  
 选项: 没有规则专属选项。可以配置严重程度和预设。
@@ -5556,7 +5556,7 @@ vp run lint
 
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
-[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_bind_style.rs#L30) · [全部规则](all.md)
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_bind_style.rs#L28) · [全部规则](all.md)
 
 ### `vue/v-on-event-hyphenation`
 

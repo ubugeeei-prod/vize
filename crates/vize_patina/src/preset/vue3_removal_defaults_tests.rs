@@ -10,7 +10,8 @@ const TEMPLATE_RULES: [&str; 4] = [
     "vue/no-deprecated-router-link-tag-prop",
 ];
 
-const SCRIPT_RULES: [&str; 5] = [
+const SCRIPT_RULES: [&str; 6] = [
+    "script/no-deprecated-data-object-declaration",
     "script/no-deprecated-destroyed-lifecycle",
     "script/no-deprecated-dollar-listeners-api",
     "script/no-deprecated-dollar-scopedslots-api",
@@ -20,6 +21,7 @@ const SCRIPT_RULES: [&str; 5] = [
 
 const REMOVED: &str = r#"<script>
 export default {
+  data: { ready: false },
   props: {
     label: { type: String, default() { return this.fallback } },
   },
@@ -46,6 +48,9 @@ export default {
 
 const CURRENT: &str = r#"<script>
 export default {
+  data() {
+    return { ready: false }
+  },
   props: {
     label: { type: String, default: 'label' },
   },
@@ -147,18 +152,38 @@ fn removal_checks_can_be_disabled_one_by_one() {
 }
 
 #[test]
-fn the_plain_module_data_object_check_stays_opt_in() {
-    let source = "const config = { data: { items: [] } };\nexport default config;\n";
-    for preset in LintPreset::ALL {
-        let result = Linter::with_preset(preset).lint_script(source, "site.config.ts");
-        assert!(
-            result
-                .diagnostics
-                .iter()
-                .all(|diagnostic| diagnostic.rule_name
-                    != "script/no-deprecated-data-object-declaration"),
-            "{}",
-            preset.as_str()
-        );
+fn plain_modules_are_not_components() {
+    for (source, filename) in [
+        (
+            "const config = { data: { items: [] } };\nexport default config;\n",
+            "site.config.ts",
+        ),
+        (
+            "export default class Lazy {\n  stop() { this.$off('load') }\n}\n",
+            "lazy.js",
+        ),
+    ] {
+        for preset in LintPreset::ALL {
+            let result = Linter::with_preset(preset).lint_script(source, filename);
+            assert!(
+                result
+                    .diagnostics
+                    .iter()
+                    .all(|diagnostic| !SCRIPT_RULES.contains(&diagnostic.rule_name)),
+                "{filename} / {}",
+                preset.as_str()
+            );
+        }
     }
+}
+
+#[test]
+fn define_component_modules_are_components() {
+    let source = "import { defineComponent } from 'vue'\nexport default defineComponent({ data: { ready: false } })\n";
+    let result = Linter::with_preset(LintPreset::Essential).lint_script(source, "Panel.ts");
+    assert!(
+        result.diagnostics.iter().any(
+            |diagnostic| diagnostic.rule_name == "script/no-deprecated-data-object-declaration"
+        )
+    );
 }

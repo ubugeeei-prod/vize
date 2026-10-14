@@ -69,17 +69,18 @@ impl ImportSourceMap {
         map
     }
 
-    pub(super) fn with_added_star_replacements(&self, original_starts: &[u32]) -> Self {
-        if original_starts.is_empty() {
+    /// Record star bytes replaced by text of the given virtual length.
+    pub(super) fn with_added_star_replacements(&self, replacements: &[(u32, u32)]) -> Self {
+        if replacements.is_empty() {
             return self.clone();
         }
         let mut adjustments = self.adjustments.clone();
-        adjustments.extend(original_starts.iter().map(|start| OffsetAdjustment {
+        adjustments.extend(replacements.iter().map(|(start, length)| OffsetAdjustment {
             original_offset: start + 1,
-            adjustment: 1,
+            adjustment: *length as i32 - 1,
         }));
         adjustments.sort_by_key(|adjustment| adjustment.original_offset);
-        let mut replacements: Vec<_> = self
+        let mut ranges: Vec<_> = self
             .replacement_ranges
             .iter()
             .map(|range| {
@@ -90,8 +91,12 @@ impl ImportSourceMap {
                 )
             })
             .collect();
-        replacements.extend(original_starts.iter().map(|start| (*start, start + 1, 2)));
-        Self::with_replacement_ranges(adjustments, replacements)
+        ranges.extend(
+            replacements
+                .iter()
+                .map(|(start, length)| (*start, start + 1, *length)),
+        );
+        Self::with_replacement_ranges(adjustments, ranges)
     }
 
     pub fn empty() -> Self {

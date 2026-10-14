@@ -5,7 +5,7 @@ use std::path::Path;
 use vize_carton::{FxHashSet, String};
 
 use super::{VirtualFile, VirtualProject};
-use crate::batch::import_rewriter::{VirtualProjectRewriteOptions, apply_captured_empty_vue_stars};
+use crate::batch::import_rewriter::{VirtualProjectRewriteOptions, apply_captured_vue_stars};
 use crate::{PackageResolutionContext, PackageResolutionMode};
 
 impl VirtualProject {
@@ -103,12 +103,12 @@ impl VirtualProject {
                             options,
                         )
                 };
-                let rewritten = apply_captured_empty_vue_stars(
+                let rewritten = apply_captured_vue_stars(
                     &rewritten.code,
                     &rewritten.source_map,
                     &stars,
                     |specifier, projected, _mode| {
-                        self.known_empty_vue_target(file, specifier, projected)
+                        self.known_vue_star_target(file, specifier, projected)
                     },
                 );
                 Some((file.virtual_path.clone(), rewritten))
@@ -161,12 +161,12 @@ impl VirtualProject {
                         .get(&file.original_path)?
                         .star_projection
                         .as_ref()?;
-                    let rewritten = apply_captured_empty_vue_stars(
+                    let rewritten = apply_captured_vue_stars(
                         &base.code,
                         &base.source_map,
                         &base.stars,
                         |specifier, projected, _mode| {
-                            self.known_empty_vue_target(file, specifier, projected)
+                            self.known_vue_star_target(file, specifier, projected)
                         },
                     );
                     return Some((file.virtual_path.clone(), rewritten));
@@ -193,12 +193,12 @@ impl VirtualProject {
                             module_resolver: None,
                         },
                     );
-                let rewritten = apply_captured_empty_vue_stars(
+                let rewritten = apply_captured_vue_stars(
                     &rewritten.code,
                     &rewritten.source_map,
                     &stars,
                     |specifier, projected, _mode| {
-                        self.known_empty_vue_target(file, specifier, projected)
+                        self.known_vue_star_target(file, specifier, projected)
                     },
                 );
                 Some((file.virtual_path.clone(), rewritten))

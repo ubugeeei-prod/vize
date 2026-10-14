@@ -34,8 +34,9 @@ impl PackageSearchCache {
         self.evictions = 0;
     }
 
-    pub(super) fn begin_validation_epoch(&mut self) {
-        self.validation_epoch = self.validation_epoch.wrapping_add(1).max(1);
+    /// The resolver owns epoch ids so both caches agree and never reuse one.
+    pub(super) fn enter_validation_epoch(&mut self, epoch: u64) {
+        self.validation_epoch = epoch;
         self.stamp_snapshots.clear();
     }
 

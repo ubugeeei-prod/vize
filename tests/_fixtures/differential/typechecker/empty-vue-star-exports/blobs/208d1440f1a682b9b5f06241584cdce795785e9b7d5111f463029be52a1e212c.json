@@ -1,0 +1,5 @@
+{
+  "bytes": 156,
+  "sha256": "208d1440f1a682b9b5f06241584cdce795785e9b7d5111f463029be52a1e212c",
+  "wholeUtf8": "export { type Props } from './A.vue.ts';\nexport {} from './B.vue.ts';\nexport { default as A } from './A.vue.ts';\nexport { default as B } from './B.vue.ts';\n"
+}

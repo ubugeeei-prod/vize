@@ -17,7 +17,7 @@ fn main() -> ExitCode {
 
     if !matches!(
         event_name.as_str(),
-        "pull_request" | "schedule" | "workflow_dispatch"
+        "pull_request" | "merge_group" | "schedule" | "workflow_dispatch"
     ) {
         eprintln!("Unsupported fuzz event: {}", empty_label(event_name));
         return ExitCode::from(1);
@@ -35,7 +35,10 @@ fn main() -> ExitCode {
     }
 
     let message = format!("Fuzz target {target} finished with {outcome} on {event_name}.");
-    if matches!(event_name.as_str(), "schedule" | "workflow_dispatch") {
+    if matches!(
+        event_name.as_str(),
+        "merge_group" | "schedule" | "workflow_dispatch"
+    ) {
         eprintln!("::error::{message} Release evidence must be green.");
         ExitCode::from(1)
     } else {

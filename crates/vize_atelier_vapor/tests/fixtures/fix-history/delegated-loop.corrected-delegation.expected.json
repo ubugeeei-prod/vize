@@ -20,7 +20,7 @@
     "templateSyntax": "Standard"
   },
   "output": {
-    "code": "import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, on as _on, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';\nconst t0 = _template(\"<button> </button>\")\n\nexport function render(_ctx) {\n  const n0 = _createFor(() => (_ctx.items), (_for_item0) => {\n    const n2 = t0()\n    const x2 = _txt(n2)\n    _on(n2, \"click\", e => _ctx.save(e))\n    _renderEffect(() => _setText(x2, _toDisplayString(_for_item0.value)))\n    return n2\n  }, (item) => (item))\n  return n0\n}\n",
+    "code": "import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, on as _on, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';\nconst t0 = _template(\"<button> </button>\")\n\nexport function render(_ctx) {\n  const n0 = _createFor(() => (_ctx.items), (_for_item0) => {\n    const n2 = t0()\n    const x2 = _txt(n2)\n    _on(n2, \"click\", e => _ctx.save(e))\n    _renderEffect(() => _setText(x2, _toDisplayString(_for_item0.value)))\n    return n2\n  }, (item) => (item), 8 /* IS_SINGLE_NODE */)\n  return n0\n}\n",
     "errorMessages": [],
     "map": null,
     "templates": [

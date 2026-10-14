@@ -361,7 +361,13 @@
       "status": "unimplemented"
     },
     "vue/no-deprecated-data-object-declaration": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "script/no-deprecated-data-object-declaration",
       "patinaSeverity": "error",
       "status": "mapped"
@@ -956,6 +962,8 @@
     },
     "vue/no-template-shadow": {
       "patinaPresets": [
+        "ecosystem",
+        "general-recommended",
         "nuxt",
         "opinionated"
       ],
@@ -1479,6 +1487,8 @@
     },
     "vue/this-in-template": {
       "patinaPresets": [
+        "ecosystem",
+        "general-recommended",
         "nuxt",
         "opinionated"
       ],
@@ -1488,7 +1498,9 @@
     },
     "vue/use-v-on-exact": {
       "patinaPresets": [
+        "ecosystem",
         "essential",
+        "general-recommended",
         "nuxt",
         "opinionated"
       ],

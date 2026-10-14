@@ -4,12 +4,21 @@ import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import type { Page } from "playwright";
 import { verifyRenderedRuleIndentation } from "./rule-indentation-render-assertions.ts";
-import { verifyRenderedVueRulePackets } from "./vue-rule-render-assertions.ts";
-import { verifyRenderedCategoryPackets } from "./category-rule-render-assertions.ts";
+import {
+  expectedVueRulePackets,
+  verifyRenderedVueRulePackets,
+} from "./vue-rule-render-assertions.ts";
+import {
+  expectedCategoryPackets,
+  verifyRenderedCategoryPackets,
+} from "./category-rule-render-assertions.ts";
 import { categoryFiles } from "./rules/catalogue-routes.ts";
 import { catalogueSubgroups } from "./rules/catalogue-subgroups.ts";
 import { verifyJapaneseRuleEditorial } from "./ja-rule-editorial-render-assertions.ts";
-import { verifyRenderedRuleOverview } from "./all-rules-overview-render-assertions.ts";
+import {
+  expectedRuleOverview,
+  verifyRenderedRuleOverview,
+} from "./all-rules-overview-render-assertions.ts";
 
 export const ruleRenderRoutes = [
   "/rules/all",
@@ -24,10 +33,10 @@ export const ruleRenderRoutes = [
 ];
 const root = resolve(import.meta.dirname, "../..");
 
-export async function verifyRenderedRulePackets(page: Page, route: string) {
-  const japaneseEditorial = await verifyJapaneseRuleEditorial(page, route);
-  if (/^\/(?:ja\/|zh-CN\/|pt-BR\/|fr\/)?rules\/vue$/.test(route))
-    return { ...(await verifyRenderedVueRulePackets(page, route)), japaneseEditorial };
+type RuleRouteKind = "vue" | "category" | "overview" | "references";
+
+export function ruleRouteKind(route: string): RuleRouteKind | null {
+  if (/^\/(?:ja\/|zh-CN\/|pt-BR\/|fr\/)?rules\/vue$/.test(route)) return "vue";
   const category = route.match(/^\/(ja\/|zh-CN\/|pt-BR\/|fr\/)?rules\/([^/]+)$/);
   if (
     category &&
@@ -36,13 +45,14 @@ export async function verifyRenderedRulePackets(page: Page, route: string) {
       (category[2] in catalogueSubgroups &&
         (!category[1] || (category[1] === "ja/" && catalogueSubgroups[category[2]].jaTitle))))
   )
-    return { ...(await verifyRenderedCategoryPackets(page, route)), japaneseEditorial };
+    return "category";
   if (!/^\/(?:ja\/|zh-CN\/|pt-BR\/|fr\/)?rules\/all$/.test(route)) return null;
-  const overview = await verifyRenderedRuleOverview(page, route);
-  if (!/^\/(?:ja\/)?rules\/all$/.test(route)) return { overview, japaneseEditorial };
+  return /^\/(?:ja\/)?rules\/all$/.test(route) ? "references" : "overview";
+}
+
+export function expectedRuleReferences(route: string) {
   const ja = route.startsWith("/ja/");
   const locale = ja ? "ja/" : "";
-  const indentation = await verifyRenderedRuleIndentation(page, locale);
   const expected = ["reference", "project"].flatMap((section) =>
     readdirSync(resolve(root, `docs/content/${locale}rules/${section}`)).map((file) => {
       const source = readFileSync(
@@ -70,6 +80,30 @@ export async function verifyRenderedRulePackets(page: Page, route: string) {
     }),
   );
   assert.equal(expected.length, 321, "255 source rules plus 66 project entries per locale");
+  return { ja, locale, expected };
+}
+
+/** The review's source-side rule pins, for the merge queue's browser-free run. */
+export function verifyRuleSources(route: string) {
+  const kind = ruleRouteKind(route);
+  if (kind === "vue") expectedVueRulePackets(route);
+  if (kind === "category") expectedCategoryPackets(route);
+  if (kind === "overview" || kind === "references") expectedRuleOverview(route);
+  if (kind === "references") expectedRuleReferences(route);
+}
+
+export async function verifyRenderedRulePackets(page: Page, route: string) {
+  const japaneseEditorial = await verifyJapaneseRuleEditorial(page, route);
+  const kind = ruleRouteKind(route);
+  if (kind === "vue")
+    return { ...(await verifyRenderedVueRulePackets(page, route)), japaneseEditorial };
+  if (kind === "category")
+    return { ...(await verifyRenderedCategoryPackets(page, route)), japaneseEditorial };
+  if (!kind) return null;
+  const overview = await verifyRenderedRuleOverview(page, route);
+  if (kind === "overview") return { overview, japaneseEditorial };
+  const { ja, locale, expected } = expectedRuleReferences(route);
+  const indentation = await verifyRenderedRuleIndentation(page, locale);
   const receipts = [];
   for (let offset = 0; offset < expected.length; offset += 12) {
     const packet = expected.slice(offset, offset + 12);

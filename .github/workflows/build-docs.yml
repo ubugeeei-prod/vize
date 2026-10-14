@@ -21,6 +21,11 @@ on:
         description: Record general navigation capture operation timings
         type: boolean
         default: false
+  # The merge queue builds the same site and checks the reviewed routes' links
+  # and anchors without the browser captures (Check / docs-build).
+  workflow_call:
+    inputs:
+      links-only: { type: boolean, default: false }
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -37,6 +42,8 @@ concurrency:
 jobs:
   build-docs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
+    env:
+      VIZE_DOCS_LINKS_ONLY: ${{ inputs.links-only && '1' || '0' }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 

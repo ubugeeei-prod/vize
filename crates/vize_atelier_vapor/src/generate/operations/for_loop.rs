@@ -8,6 +8,7 @@ use super::{
         destructure::{needs_parsed_reads, parse_destructure_bindings},
         generate_block,
     },
+    block_shape::{fragment_rows, single_node_rows},
     insertion::emit_insertion_state,
 };
 
@@ -74,7 +75,21 @@ pub(super) fn generate_for(
     ctx.push_line_spanned(&head);
     ctx.indent();
     ctx.push_component_scope();
+    // A `v-if` that is a loop row renders its branches as fragments.
+    let row_ifs = for_node
+        .render
+        .operation
+        .iter()
+        .filter_map(|operation| match operation {
+            crate::ir::OperationNode::If(node) if for_node.render.returns.contains(&node.id) => {
+                Some(node.id)
+            }
+            _ => None,
+        })
+        .collect::<std::vec::Vec<_>>();
+    let outer_row_ifs = core::mem::replace(&mut ctx.loop_row_ifs, row_ifs);
     generate_block(ctx, &for_node.render, element_template_map);
+    ctx.loop_row_ifs = outer_row_ifs;
     ctx.pop_component_scope();
     ctx.deindent();
 
@@ -84,29 +99,50 @@ pub(super) fn generate_for(
     // Check if this is a range-based for (source is a number literal)
     let is_range = for_node.source.content.parse::<f64>().is_ok();
 
-    // Determine memo flag: 4 = range, 1 = only child of parent (nested v-for)
-    let memo_flag = if slot_root && is_range {
-        Some("44")
-    } else if slot_root {
-        Some("40")
-    } else if is_range {
-        Some("4")
-    } else if for_node.only_child && was_fragment {
-        // only_child flag is for nested v-for inside another element
-        Some("1")
-    } else {
-        None
-    };
-
-    if let Some(key_fn) = key_func {
-        if let Some(flag) = memo_flag {
-            ctx.push_line(&["}, ", &key_fn, ", ", flag, ")"].concat());
-        } else {
-            ctx.push_line(&["}, ", &key_fn, ")"].concat());
-        }
-    } else {
-        ctx.push_line("})");
+    // The runtime's `createFor` flags, as Vue's compiler encodes them.
+    let table = [
+        (for_node.only_child, 1, "FAST_REMOVE"),
+        (for_node.component, 2, "IS_COMPONENT"),
+        (fragment_rows(&for_node.render), 16, "IS_FRAGMENT"),
+        (
+            slot_root
+                || !for_node.component && single_node_rows(&for_node.render, element_template_map),
+            8,
+            "IS_SINGLE_NODE",
+        ),
+        (is_range, 4, "ONCE"),
+        (slot_root, 32, "SLOT_ROOT"),
+        (
+            for_node.wrapped_rows && !previous_transition,
+            64,
+            "WRAPPED_ROWS",
+        ),
+    ];
+    let flags = table
+        .iter()
+        .filter(|(set, _, _)| *set)
+        .fold(0u32, |flags, (_, bit, _)| flags | bit);
+    ctx.push_indent();
+    ctx.push("}");
+    if let Some(key_fn) = &key_func {
+        ctx.push(", ");
+        ctx.push(key_fn);
     }
+    if flags != 0 {
+        use std::fmt::Write as _;
+        if key_func.is_none() {
+            ctx.push(", undefined");
+        }
+        let _ = write!(ctx, ", {flags} /* ");
+        for (index, (_, _, name)) in table.iter().filter(|(set, _, _)| *set).enumerate() {
+            if index > 0 {
+                ctx.push(", ");
+            }
+            ctx.push(name);
+        }
+        ctx.push(" */");
+    }
+    ctx.push(")\n");
 
     ctx.transition_slot = previous_transition;
     ctx.is_fragment = was_fragment;

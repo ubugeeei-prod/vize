@@ -5,7 +5,8 @@ import { resolve } from "node:path";
 import type { Page } from "playwright";
 
 const root = resolve(import.meta.dirname, "../..");
-export async function verifyRenderedCategoryPackets(page: Page, route: string) {
+/** Source-side packets; the merge queue checks these without a browser. */
+export function expectedCategoryPackets(route: string) {
   const [, prefix = "", file] = route.match(/^\/(ja\/|zh-CN\/|pt-BR\/|fr\/)?rules\/([^/]+)$/)!;
   const locale = prefix.slice(0, -1) || "en";
   const source = readFileSync(
@@ -39,6 +40,11 @@ export async function verifyRenderedCategoryPackets(page: Page, route: string) {
       graphBlocks: [...authored.matchAll(/```text\n/g)].length,
     };
   });
+  return { locale, expected };
+}
+
+export async function verifyRenderedCategoryPackets(page: Page, route: string) {
+  const { locale, expected } = expectedCategoryPackets(route);
   const actual = await page.evaluate(
     (expected) => {
       const names = new Set(expected.map(({ id }) => id));

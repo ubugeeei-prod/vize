@@ -111,6 +111,38 @@ export default defineConfig({
 });
 ```
 
+## Shared Bases with `extends`
+
+A dedicated config file can build on other config files. `extends` takes one specifier or an
+array of them:
+
+```json
+{
+  "extends": ["../../vize.base.json", "@acme/vize-config/strict"],
+  "linter": {
+    "rules": {
+      "vue/no-v-html": "off"
+    }
+  }
+}
+```
+
+- `./`, `../` and absolute paths resolve from the extending file. A directory resolves to its
+  `vize.config.*`, in the [config file order](#config-files).
+- Any other specifier is a package, resolved through Node from the extending file, so
+  `@scope/pkg/subpath` follows the package's `exports`.
+- Bases apply in order, and the extending file wins. Objects merge key by key, `entries` are
+  appended after the bases' entries, and every other value (strings, numbers, arrays such as
+  `files`) is replaced.
+- An item in `entries` can extend a base that has no `entries` of its own. The base adds settings to
+  that entry, and the entry keeps its own `name`, `basePath`, `files` and `ignores`.
+- A cycle, a missing base, or a value that is not a string is an error, not an empty config.
+
+Bases can be JSON, JavaScript, TypeScript or PKL. The `vize` CLI (`check`, `lint`, `fmt`, `lsp`) and
+the language server compose `extends`; the language server reloads when `vize.config.*` changes, not
+when a base file changes. The Vite plugin does not read `extends` yet: import the shared object from
+TypeScript and spread it instead.
+
 ## PKL Config
 
 ```pkl

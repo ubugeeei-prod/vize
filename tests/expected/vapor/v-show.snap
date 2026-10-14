@@ -74,7 +74,7 @@ export function render(_ctx) {
     _applyVShow(n2, () => (_for_item0.value.visible))
     _renderEffect(() => _setText(x2, _toDisplayString(_for_item0.value)))
     return n2
-  }, (item) => (item.id))
+  }, (item) => (item.id), 8 /* IS_SINGLE_NODE */)
   return n0
 }
 

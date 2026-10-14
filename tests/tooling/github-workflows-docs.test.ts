@@ -62,7 +62,12 @@ test("docs build evidence is immutable per SHA and has no Pages authority", () =
   };
 
   assert.equal(workflow.name, "Docs build");
-  assert.deepEqual(Object.keys(events).sort(), ["push", "schedule", "workflow_dispatch"]);
+  assert.deepEqual(Object.keys(events).sort(), [
+    "push",
+    "schedule",
+    "workflow_call",
+    "workflow_dispatch",
+  ]);
   assert.deepEqual(events.push?.branches, ["main"]);
   assert.deepEqual(events.push?.paths, [
     ".github/workflows/build-docs.yml",

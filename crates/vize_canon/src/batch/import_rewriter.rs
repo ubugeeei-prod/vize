@@ -20,7 +20,9 @@ use collect::{ModuleSpecifierCollector, collect_specifier_occurrences};
 
 #[path = "import_rewriter_empty_vue_stars.rs"]
 mod empty_vue_stars;
-pub(in crate::batch) use empty_vue_stars::{EmptyVueStar, apply_captured_empty_vue_stars};
+#[cfg(test)]
+pub(in crate::batch) use empty_vue_stars::apply_captured_empty_vue_stars;
+pub(in crate::batch) use empty_vue_stars::{EmptyVueStar, VueStarTarget, apply_captured_vue_stars};
 
 #[path = "import_rewriter_star_capture.rs"]
 mod star_capture;

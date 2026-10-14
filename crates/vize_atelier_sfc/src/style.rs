@@ -2,8 +2,10 @@
 
 mod keyframes;
 mod nested;
+mod plain;
 mod where_selector;
 
+use plain::{is_preprocessor_lang, plain_style_output};
 use vize_carton::{String, ToCompactString};
 use where_selector::add_scope_to_element;
 pub(crate) use where_selector::scope_bare_where;
@@ -37,6 +39,14 @@ pub(crate) fn compile_style_with_modules(
             ..Default::default()
         };
         let result = crate::css::compile_css(&style.content, &css_options);
+        // Preprocessor syntax is left to the bundler pipeline (Vite builds
+        // `$style` from it), so a plain-CSS parse failure is no diagnostic.
+        if !result.errors.is_empty() && is_preprocessor_lang(style.lang.as_deref()) {
+            return Ok(StyleCompileResult {
+                code: plain_style_output(style, options),
+                css_module: None,
+            });
+        }
         let mut output = result.code;
         if options.trim {
             output = output.trim().to_compact_string();
@@ -66,18 +76,8 @@ pub(crate) fn compile_style_with_modules(
         });
     }
 
-    let (mut output, _) = crate::css::transform_css_v_bind(&style.content, Some(&options.id));
-    // Apply scoped transformation if needed
-    if style.scoped || options.scoped {
-        output = crate::css::scope_mode::scope_style_css(&output, &options.id);
-    }
-    // Trim if requested
-    if options.trim {
-        output = output.trim().to_compact_string();
-    }
-
     Ok(StyleCompileResult {
-        code: output,
+        code: plain_style_output(style, options),
         css_module: None,
     })
 }

@@ -55,7 +55,12 @@ fn materialized_lifecycle_restores_complete_maps_and_prunes_removed_target() {
         "<script lang=\"ts\">export type Authored = number;</script><template />",
     );
     project.finalize_module_imports();
-    assert_barrel(&project, "index.ts", BASELINE, BASE_MAP);
+    assert_barrel(
+        &project,
+        "index.ts",
+        "export { type Authored } from './Panel.vue.ts';\n",
+        "ImportSourceMap { adjustments: [OffsetAdjustment { original_offset: 8, adjustment: 16 }, OffsetAdjustment { original_offset: 15, adjustment: 3 }], replacement_ranges: [ReplacementRange { original_start: 7, original_end: 8, virtual_start: 7, virtual_end: 24 }] }",
+    );
     let named = assert_materialized(&project);
     assert_ne!(named["files"], initial["files"]);
     assert_eq!(named["config"], initial["config"]);

@@ -11,7 +11,7 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
   const n0 = _createFor(() => (['a']), (_for_item0) => {
     const n2 = t0()
     return n2
-  }, (item) => (_ctx.props.itemKey(item)))
+  }, (item) => (_ctx.props.itemKey(item)), 8 /* IS_SINGLE_NODE */)
   return n0
 }
 const __vaporRender = render

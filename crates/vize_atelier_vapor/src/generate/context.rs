@@ -59,6 +59,10 @@ pub(crate) struct GenerateContext<'a> {
     resolved_component_scopes: std::vec::Vec<std::vec::Vec<String>>,
     /// Element IDs that are standalone text nodes (no _txt needed)
     pub(crate) standalone_text_elements: &'a FxHashSet<usize>,
+    /// Template HTML by template index, for block shapes.
+    pub(crate) templates: &'a [&'a str],
+    /// `createIf` nodes that are loop rows: their branches are fragments.
+    pub(crate) loop_row_ifs: std::vec::Vec<usize>,
     /// Binding metadata from script setup imports.
     pub(crate) binding_metadata: Option<&'a BindingMetadata>,
     /// JSX closure mode: the render code runs inside the component function's
@@ -102,6 +106,8 @@ impl<'a> GenerateContext<'a> {
             resolved_components: NameSet::default(),
             resolved_component_scopes: std::vec::Vec::new(),
             standalone_text_elements,
+            templates: &[],
+            loop_row_ifs: std::vec::Vec::new(),
             binding_metadata,
             jsx_closure: false,
             component_name: None,

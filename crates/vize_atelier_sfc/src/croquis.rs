@@ -18,7 +18,8 @@ use self::analysis::{
 };
 use crate::types::SfcDescriptor;
 pub use module_exports::{
-    analyze_sfc_descriptor_with_empty_module_exports, descriptor_module_sources_are_known,
+    analyze_sfc_descriptor_with_empty_module_exports, analyze_sfc_descriptor_with_module_exports,
+    descriptor_module_sources_are_known,
 };
 pub use occurrences::analyze_sfc_descriptor_with_occurrences;
 pub use resolved::{

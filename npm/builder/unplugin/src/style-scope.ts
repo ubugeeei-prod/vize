@@ -5,7 +5,7 @@
 import { createRequire } from "node:module";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { scopeViteCssForPipeline } from "@vizejs/native";
+import { scopeViteCssForPipeline, transformViteCssVarsForPipeline } from "@vizejs/native";
 
 const PREPROCESSOR_LANGS = new Set(["scss", "sass", "less", "stylus", "styl"]);
 
@@ -20,6 +20,14 @@ export function preprocessesInPlugin(framework: string): boolean {
 
 export function scopeCss(css: string, scoped: string): string {
   return scopeViteCssForPipeline(css, scoped);
+}
+
+/**
+ * `v-bind()` in a delegated block, named like the compiled `useCssVars` call.
+ * The plugin compiles without `isProd`, so both sides use the dev names.
+ */
+export function transformStyleVars(css: string, scopeId: string): string {
+  return transformViteCssVarsForPipeline(css, scopeId);
 }
 
 interface SassModule {

@@ -73,6 +73,7 @@ pub(super) fn build_jsx_registered_file(
         unchecked_javascript: false,
         typed_router_import: false,
         empty_module_exports: false,
+        module_exports: None,
     })
 }
 

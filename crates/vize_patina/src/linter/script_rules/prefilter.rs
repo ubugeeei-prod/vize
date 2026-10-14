@@ -12,7 +12,10 @@ mod js_source;
 mod ref_operand;
 
 use super::registry::{
-    RULE_NO_ARROW_FUNCTIONS_IN_WATCH, RULE_NO_ASYNC_IN_COMPUTED, RULE_NO_DUPE_KEYS,
+    RULE_NO_ARROW_FUNCTIONS_IN_WATCH, RULE_NO_ASYNC_IN_COMPUTED,
+    RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION, RULE_NO_DEPRECATED_DESTROYED_LIFECYCLE,
+    RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API, RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API,
+    RULE_NO_DEPRECATED_EVENTS_API, RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS, RULE_NO_DUPE_KEYS,
     RULE_NO_DUPLICATE_ATTR_INHERITANCE, RULE_NO_IMPORT_COMPILER_MACROS, RULE_NO_INTERNAL_IMPORTS,
     RULE_NO_MULTIPLE_SLOT_ARGS, RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO, RULE_NO_REF_AS_OPERAND,
     RULE_NO_REQUIRED_PROP_WITH_DEFAULT, RULE_NO_RESERVED_IDENTIFIERS, RULE_NO_RESERVED_KEYS,
@@ -199,6 +202,24 @@ fn source_may_declare_emits(bytes: &[u8]) -> bool {
 /// that boundary here instead of treating every default export as Nuxt config.
 pub(super) fn script_rule_applies_to_filename(rule_name: &str, filename: &str) -> bool {
     rule_name != RULE_NUXT_CONFIG_KEYS_ORDER || is_nuxt_config_filename(filename)
+}
+
+/// Vue 2 migration rules inspect component code only: an SFC or JSX module (as
+/// in eslint-plugin-vue) or one that calls `defineComponent`. A `$on` or
+/// `data: {}` in any other module is not a Vue component.
+pub(super) fn script_rule_applies_to_module(rule_name: &str, source: &str, filename: &str) -> bool {
+    !matches!(
+        rule_name,
+        RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION
+            | RULE_NO_DEPRECATED_DESTROYED_LIFECYCLE
+            | RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API
+            | RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API
+            | RULE_NO_DEPRECATED_EVENTS_API
+            | RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS
+    ) || [".vue", ".jsx", ".tsx"]
+        .iter()
+        .any(|extension| filename.ends_with(extension))
+        || contains(source.as_bytes(), b"defineComponent")
 }
 
 fn is_nuxt_config_filename(filename: &str) -> bool {

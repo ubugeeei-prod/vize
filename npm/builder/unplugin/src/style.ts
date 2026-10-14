@@ -64,6 +64,13 @@ const __vize_css_id__ = ${cssId};
 ${output}`;
 }
 
+const CSS_MODULE_LOCALS = "__vize_css_module_locals__";
+const CSS_MODULE_LOCALS_HELPER = `const ${CSS_MODULE_LOCALS} = (ns) =>
+  ns.default?.locals ??
+  (ns.default && typeof ns.default === "object" && !Array.isArray(ns.default)
+    ? ns.default
+    : Object.fromEntries(Object.entries(ns).filter(([key]) => key !== "default")));`;
+
 export interface GenerateOutputOptions {
   isProduction: boolean;
   isDev: boolean;
@@ -121,19 +128,34 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
       }
 
       const scoped = block.scoped ? `data-v-${compiled.scopeId}` : null;
-      const importUrl = styleRequest?.(block, scoped) ?? `${filePath}?${params.toString()}`;
+      const styleFile = styleRequest?.(block, scoped);
 
       if (isCssModule(block)) {
         const bindingName = typeof block.module === "string" ? block.module : "$style";
-        const moduleParams = new URLSearchParams(params);
-        moduleParams.set("module", typeof block.module === "string" ? block.module : "");
-        const moduleUrl = styleRequest?.(block, scoped) ?? `${filePath}?${moduleParams.toString()}`;
-        cssModuleImports.push(`import ${bindingName} from ${JSON.stringify(moduleUrl)};`);
+        if (styleFile) {
+          // css-loader exports class names as named exports (v7 default) or
+          // on the default export, depending on its options.
+          const namespace = `__vize_css_module_${block.index}__`;
+          cssModuleImports.push(
+            `import * as ${namespace} from ${JSON.stringify(styleFile)};`,
+            `const ${bindingName} = ${CSS_MODULE_LOCALS}(${namespace});`,
+          );
+        } else {
+          const moduleParams = new URLSearchParams(params);
+          moduleParams.set("module", typeof block.module === "string" ? block.module : "");
+          const moduleUrl = `${filePath}?${moduleParams.toString()}`;
+          cssModuleImports.push(`import ${bindingName} from ${JSON.stringify(moduleUrl)};`);
+        }
       } else {
-        styleImports.push(`import ${JSON.stringify(importUrl)};`);
+        styleImports.push(
+          `import ${JSON.stringify(styleFile ?? `${filePath}?${params.toString()}`)};`,
+        );
       }
     }
 
+    if (cssModuleImports.some((line) => line.includes(CSS_MODULE_LOCALS))) {
+      cssModuleImports.unshift(CSS_MODULE_LOCALS_HELPER);
+    }
     const allImports = [...styleImports, ...cssModuleImports].join("\n");
     if (allImports) {
       output = `${allImports}\n${output}`;

@@ -19,7 +19,7 @@ export function render(_ctx) {
           _setText(x2, _toDisplayString(_for_item0.value.text))
         })
         return n2
-      }, (item) => (item.id), 40)
+      }, (item) => (item.id), 40 /* IS_SINGLE_NODE, SLOT_ROOT */)
       return n0
     }, { _: 1 })
   }, true)

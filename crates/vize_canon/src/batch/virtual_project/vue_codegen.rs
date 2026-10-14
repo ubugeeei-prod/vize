@@ -10,7 +10,7 @@ use vize_carton::{Allocator, profile};
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_sfc::{
     SfcDescriptor,
-    croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_empty_module_exports},
+    croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_module_exports},
 };
 
 use crate::batch::SfcBlockType;
@@ -71,6 +71,7 @@ pub(super) fn generate_vue_virtual_ts(
             return Ok(GeneratedVueFile {
                 typed_router_import: false,
                 empty_module_exports: false,
+                module_exports: None,
                 code: invalid_sfc_fallback_virtual_ts(),
                 mappings: Vec::new(),
                 semantic_links: Vec::new(),
@@ -150,6 +151,7 @@ pub(super) fn generate_vue_virtual_ts(
         return Ok(GeneratedVueFile {
             typed_router_import: false,
             empty_module_exports: false,
+            module_exports: None,
             code: invalid_sfc_fallback_virtual_ts(),
             mappings: Vec::new(),
             semantic_links: Vec::new(),
@@ -165,9 +167,9 @@ pub(super) fn generate_vue_virtual_ts(
     let vue2_compat = codegen_options.legacy_vue2
         || matches!(codegen_options.dialect, VueVersion::V2 | VueVersion::V2_7);
 
-    let (analysis, empty_module_exports) = profile!(
+    let (analysis, module_exports) = profile!(
         "canon.croquis.analyze_sfc",
-        analyze_sfc_descriptor_with_empty_module_exports(
+        analyze_sfc_descriptor_with_module_exports(
             descriptor,
             template_ast.as_ref(),
             croquis_options,
@@ -319,6 +321,7 @@ pub(super) fn generate_vue_virtual_ts(
         prop_default_key_links,
         diagnostics,
         typed_router_import,
-        empty_module_exports,
+        empty_module_exports: module_exports.as_ref().is_some_and(Vec::is_empty),
+        module_exports: module_exports.map(Into::into),
     })
 }

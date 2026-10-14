@@ -1,0 +1,22 @@
+<template>
+  <div :class="$style.card">
+    <span :class="$style.title">x</span>
+  </div>
+</template>
+
+<style lang="scss" module>
+@use "@/styles/mixins" as mixins;
+
+$card-padding: var(--spacing--sm);
+
+.card {
+  padding: $card-padding;
+  @include mixins.focus-ring;
+
+  &:hover {
+    .title {
+      color: var(--color--primary);
+    }
+  }
+}
+</style>

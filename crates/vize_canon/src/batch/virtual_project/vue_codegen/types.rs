@@ -14,6 +14,9 @@ pub(in crate::batch::virtual_project) struct GeneratedVueFile {
     pub(in crate::batch::virtual_project) diagnostics: Vec<Diagnostic>,
     pub(in crate::batch::virtual_project) typed_router_import: bool,
     pub(in crate::batch::virtual_project) empty_module_exports: bool,
+    /// Every authored named export when the SFC's export set is provable.
+    pub(in crate::batch::virtual_project) module_exports:
+        Option<Box<[vize_croquis::script_parser::AuthoredModuleExport]>>,
 }
 
 #[derive(Clone, Copy)]

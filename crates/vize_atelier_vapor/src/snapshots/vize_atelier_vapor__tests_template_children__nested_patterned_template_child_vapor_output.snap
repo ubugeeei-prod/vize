@@ -28,14 +28,14 @@ export function render(_ctx) {
         }, () => _createIf(() => (_for_item1.value[0] === 1), () => {
           const n14 = t1()
           return n14
-        }))
+        }), 5 /* TRUE_SINGLE_ROOT, FALSE_SINGLE_ROOT */)
         return n10
       })(_computed(() => (((__vize_match_1_0) => { a0: { if (__vize_match_1_0 !== 'x') break a0; return [0]; } return [1]; })(_ctx.inner))))
       return n7
     }, () => _createIf(() => (_for_item0.value[0] === 1), () => {
       const n16 = t3()
       return n16
-    }))
+    }), 5 /* TRUE_SINGLE_ROOT, FALSE_SINGLE_ROOT */)
     return n5
   })(_computed(() => (((__vize_match_0_0) => { a0: { if (__vize_match_0_0 !== 'open') break a0; return [0]; } return [1]; })(_ctx.outer))))
   _renderEffect(() => _setClass(n1, _ctx.cls))

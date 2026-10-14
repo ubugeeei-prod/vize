@@ -94,7 +94,7 @@ Enforce `.exact` modifier on `v-on` when there are modifier-based handlers
 [Bad](#vue-use-v-on-exact-bad) · [Good](#vue-use-v-on-exact-good)
 
 Default severity: `warning`  
-Presets: `essential`, `nuxt`, `opinionated`  
+Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
@@ -215,7 +215,7 @@ vp run lint
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_bind_style.rs#L30) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_bind_style.rs#L28) · [All rules](all.md)
 
 ### `vue/v-on-style`
 

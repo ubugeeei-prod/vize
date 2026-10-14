@@ -61,6 +61,18 @@ impl<'a> Emitter<'a, '_> {
             Content::For(body) => {
                 let body = *body;
                 let members = take(self.allocator, &mut node.children);
+                let wrapped_rows = body.template
+                    && !matches!(
+                        members.as_slice(),
+                        [member] if self.artifact.nodes.get(*member).is_some_and(|row| {
+                            matches!(
+                                row.content,
+                                Content::Element { .. }
+                                    | Content::Component { .. }
+                                    | Content::Outlet { .. }
+                            )
+                        })
+                    );
                 self.id();
                 let render = self.body(&members);
                 let spans = body.spans;
@@ -90,6 +102,7 @@ impl<'a> Emitter<'a, '_> {
                     // Upstream's fast-remove flag clears the whole parent, so it
                     // is sound only when the loop is the parent's sole child.
                     only_child: placement.is_some_and(|(_, _, only)| only),
+                    wrapped_rows,
                     parent,
                     anchor,
                     match_scope: false,

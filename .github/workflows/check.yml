@@ -222,12 +222,9 @@ jobs:
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with:
-          wild-version: "0.9.0"
+        with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          key: check-vize-apps
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+        with: { key: check-vize-apps, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Check generated reference docs
@@ -244,6 +241,10 @@ jobs:
         run: vp exec tsx --test gallery/components/MarkdownContent.test.ts
       - name: Check Vize app fixtures
         run: vp run --workspace-root check:ci:vize-apps
+  release-gates:
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+    permissions: { contents: read, issues: write } # Fuzz triage runs only on schedule and dispatch.
+    uses: ./.github/workflows/queue-release-gates.yml
   vue-parity:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
@@ -260,12 +261,9 @@ jobs:
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with:
-          wild-version: "0.9.0"
+        with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          key: vue-parity
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+        with: { key: vue-parity, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - uses: ./.github/actions/check-vue-parity
   full-source-cli:
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
@@ -331,8 +329,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with:
-          wild-version: "0.9.0"
+        with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: build-js-packages
@@ -472,8 +469,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable, components: llvm-tools-preview }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with:
-          wild-version: "0.9.0"
+        with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-moonbit
       - uses: ./.github/actions/setup-rust-script
       - uses: ./.github/actions/setup-rust-sticky-cache
@@ -526,8 +522,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # nightly
         with: { toolchain: nightly, components: llvm-tools-preview }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with:
-          wild-version: "0.9.0"
+        with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-moonbit
       - uses: ./.github/actions/setup-rust-script
       - uses: ./.github/actions/setup-rust-sticky-cache
@@ -645,6 +640,7 @@ jobs:
       - instruction-counts
       - level-dependency-direction
       - release-integration-catalog
+      - release-gates
     permissions:
       contents: read
     steps:

@@ -91,6 +91,11 @@ fn fixed_legacy_output_matches_complete_frozen_bytes_and_metadata() {
     ))
     .expect("authenticated source-built compiler fixture");
     let actual = compile_fixtures();
+    // `VIZE_FALSY_AND_CAPTURE=<path>` writes the current outputs, from which
+    // the fixed packet is regenerated after an intended output change.
+    if let Some(path) = std::env::var_os("VIZE_FALSY_AND_CAPTURE") {
+        std::fs::write(path, actual.to_string()).expect("capture writes");
+    }
     let expected = &golden["fixtures"];
     assert_eq!(
         actual.as_object().expect("complete object").len(),

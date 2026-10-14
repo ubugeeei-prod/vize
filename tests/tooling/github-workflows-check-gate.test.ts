@@ -12,6 +12,7 @@ const PR_JOBS = [
   "instruction-counts",
   "level-dependency-direction",
   "release-integration-catalog",
+  "release-gates",
 ];
 const FULL_SUITE_JOBS = [
   "nix-flake",

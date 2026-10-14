@@ -13,7 +13,12 @@ import {
   parseVueRequest,
 } from "./request.ts";
 import { generateOutput } from "./style.ts";
-import { isPreprocessorLang, preprocessStyle, scopeCss } from "./style-scope.ts";
+import {
+  isPreprocessorLang,
+  preprocessStyle,
+  scopeCss,
+  transformStyleVars,
+} from "./style-scope.ts";
 import {
   findVirtualModules,
   registerWebpackStyleRule,
@@ -182,20 +187,21 @@ async function loadStyleBlock(
   }
 
   const block = compiled?.styles[index];
-  if (!block) {
+  if (!compiled || !block) {
     return "";
   }
+  const source = transformStyleVars(block.content, compiled.scopeId);
 
   // Vue order: preprocess, then scope. Webpack never loads these ids; its
   // style files go through the host's loaders instead (webpack-styles.ts).
   const scoped = request.query.scoped;
   if (!scoped) {
-    return block.content;
+    return source;
   }
   const css =
     block.lang && isPreprocessorLang(block.lang)
-      ? await preprocessStyle(block.content, block.lang, request.filename, options.root)
-      : block.content;
+      ? await preprocessStyle(source, block.lang, request.filename, options.root)
+      : source;
   return scopeCss(css, scoped);
 }
 
@@ -304,7 +310,10 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
               if (!virtualModules) {
                 throw new Error("[vize] webpack style blocks need the plugin's virtual modules.");
               }
-              virtualModules.writeModule(stylePath, block.content);
+              virtualModules.writeModule(
+                stylePath,
+                transformStyleVars(block.content, compiled.scopeId),
+              );
               return stylePath;
             }
           : undefined,
@@ -337,7 +346,8 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
 
     esbuild: {
       onResolveFilter: /\.(?:vue|[jt]sx)(?:$|\?)/,
-      onLoadFilter: /\.(?:vue|[jt]sx)(?:$|\?)/,
+      // Style blocks resolve to `App.vue.__vize_style_<n>.<lang>?…` ids.
+      onLoadFilter: /\.(?:vue|[jt]sx)(?:$|\?)|\.__vize_style_\d+\./,
       loader(_code, id) {
         const request = parseVueRequest(id);
         if (request.query.type === "style") {

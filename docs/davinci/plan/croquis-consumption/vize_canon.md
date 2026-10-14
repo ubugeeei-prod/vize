@@ -52,6 +52,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 
 | item                           | files | sites |
 | ------------------------------ | ----: | ----: |
+| `AuthoredModuleExport`         |     4 |     5 |
 | `BindingType`                  |    11 |    28 |
 | `Bindings`                     |     3 |    12 |
 | `BindingsTable`                |     1 |     3 |

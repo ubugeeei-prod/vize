@@ -107,7 +107,7 @@ fn control_flow_payload_mutations_drive_generation() {
     let code = generated(admit(s3, &Retained::new(&allocator)), &allocator);
     for expected in [
         "_createFor(() => (_ctx.rows), (_for_item0, _for_key0, _for_index0) => {",
-        "}, (item, name, position) => (item.uid))",
+        "}, (item, name, position) => (item.uid), 9 /* FAST_REMOVE, IS_SINGLE_NODE */)",
         "_setProp(n3, \"title\", _for_key0.value)",
         "_toDisplayString(_for_index0.value)",
     ] {

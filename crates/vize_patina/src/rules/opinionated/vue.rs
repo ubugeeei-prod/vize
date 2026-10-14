@@ -90,9 +90,6 @@ enum PresetFlavor {
 
 fn register_shared(registry: &mut RuleRegistry, flavor: PresetFlavor) {
     registry.register(Box::new(MultiWordComponentNames::default()));
-    registry.register(Box::new(UseVOnExact));
-
-    registry.register(Box::new(NoTemplateShadow));
     registry.register(Box::new(VBindStyle::default()));
     registry.register(Box::new(VOnHandlerStyle));
     match flavor {
@@ -132,6 +129,5 @@ fn register_shared(registry: &mut RuleRegistry, flavor: PresetFlavor) {
     registry.register(Box::new(NoUnusedRefs));
     registry.register(Box::new(PreferTrueAttributeShorthand));
     registry.register(Box::new(VOnEventHyphenation::default()));
-    registry.register(Box::new(ThisInTemplate));
     registry.register(Box::new(NoArrayIndexKey));
 }

@@ -346,5 +346,6 @@ struct SourceArtifacts {
     virtual_paths: Vec<PathBuf>,
     passthrough_paths: Vec<PathBuf>,
     empty_module_exports: bool,
+    module_exports: Option<Box<[vize_croquis::script_parser::AuthoredModuleExport]>>,
     star_projection: Option<star_exports::StarProjection>,
 }

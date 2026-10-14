@@ -112,12 +112,16 @@ impl VirtualProject {
             )
         )?;
 
+        // Current package links survive the runtime prune; the link pass
+        // below repairs any whose target changed.
+        let mut runtime_preserved = self.root_package_shadow_scope_entries();
+        runtime_preserved.extend(package_links.iter().map(|link| link.virtual_dir.clone()));
         profile!(
             "canon.project.runtime_deps",
             materialize_runtime_dependencies(
                 &self.project_root,
                 &self.virtual_root,
-                &self.root_package_shadow_scope_entries(),
+                &runtime_preserved,
             )
         )?;
         self.ensure_workspace_alias_targets()?;

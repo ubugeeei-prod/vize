@@ -42,7 +42,10 @@ pub(super) fn analyze_scripts_with_empty_module_exports(
     options: SfcCroquisOptions,
     options_api: bool,
     legacy_vue2: bool,
-) -> (Croquis, bool) {
+) -> (
+    Croquis,
+    Option<Vec<vize_croquis::script_parser::AuthoredModuleExport>>,
+) {
     analyze_scripts_impl::<ModuleExportsScript>(descriptor, options, options_api, legacy_vue2)
 }
 

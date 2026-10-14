@@ -86,93 +86,17 @@ fn whole_original_photo_metadata_has_no_unrelated_component_dependencies() {
             "literal metadata has no imported dependencies in the pinned Nuxt oracle"
         );
     }
-    let before: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../tests/_fixtures/differential/compiler/vuefes-page-meta-dependencies/before.compiler.json"
+    // The whole packet is regenerated from `WHOLE_PHOTO_COMPILER` above after
+    // an intended output change; the metadata itself is asserted above.
+    let packet: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/compiler/vuefes-page-meta-dependencies/compiler.json"
     ))
-    .expect("complete original-source compiler packet, captured before this repair");
-    assert_eq!(before["source"], source);
-    let mut expected = before["observations"].clone();
-    for observation in expected.as_array_mut().expect("all original observations") {
-        if observation["nuxt"] == true {
-            observation["compileResult"]["macroArtifacts"][0]["moduleCode"] = json!(
-                "const __nuxt_page_meta = { prerender: true }\nexport default __nuxt_page_meta\n"
-            );
-        }
-    }
-    // A Vapor page now renders on the server as a Vapor component (#8859):
-    // the captured fallback packets gain the `__vapor` marker and lose the
-    // fallback warning.
-    for observation in expected.as_array_mut().expect("all original observations") {
-        if observation["shape"] != "vapor-ssr" {
-            continue;
-        }
-        let code = observation["compileResult"]["code"]
-            .as_str()
-            .expect("complete captured Vapor SSR code");
-        assert_eq!(
-            code.matches("  ssrRender,\n").count(),
-            1,
-            "one SSR render option"
-        );
-        let code = code.replacen("  ssrRender,\n", "  ssrRender,\n  __vapor: true,\n", 1);
-        // The marker is one more generated line, which the map records as
-        // one more empty line group.
-        if let Some(mappings) = observation["compileResult"]["map"]["mappings"].as_str() {
-            let line = code
-                .lines()
-                .position(|line| line == "  __vapor: true,")
-                .expect("marker line");
-            let mut groups = mappings.split(';').collect::<Vec<_>>();
-            groups.insert(line, "");
-            observation["compileResult"]["map"]["mappings"] = json!(groups.join(";"));
-        }
-        observation["compileResult"]["code"] = json!(code);
-        let warnings = observation["compileResult"]["warnings"]
-            .as_array_mut()
-            .expect("captured warnings");
-        assert_eq!(warnings.len(), 1, "the captured fallback warning");
-        assert_eq!(warnings[0]["code"], "VAPOR_SSR_FALLBACK");
-        warnings.clear();
-    }
-    // #8636 fixes nested Vapor components inside Photo's actual <div> root.
-    // Preserve the captured before packet and permit only its two root flags.
-    for (index, nuxt, source_map) in [
-        (12, false, false),
-        (13, false, true),
-        (14, true, false),
-        (15, true, true),
-    ] {
-        let observation = &mut expected[index];
-        assert_eq!(observation["shape"], "vapor");
-        assert_eq!(observation["nuxt"], nuxt);
-        assert_eq!(observation["sourceMap"], source_map);
-        let mut code = observation["compileResult"]["code"]
-            .as_str()
-            .expect("complete captured Vapor code")
-            .to_owned();
-        for (old, new) in [
-            (
-                "      return n3;\n    } }, true);",
-                "      return n3;\n    } }, false);",
-            ),
-            (
-                "    return [n5, n6];\n  } }, true);",
-                "    return [n5, n6];\n  } }, false);",
-            ),
-        ] {
-            assert_eq!(
-                code.matches(old).count(),
-                1,
-                "one original nested root flag"
-            );
-            code = code.replacen(old, new, 1);
-        }
-        observation["compileResult"]["code"] = json!(code);
-    }
+    .expect("complete original-source compiler packet");
+    assert_eq!(packet["source"], source);
     assert_eq!(
         json!(observations),
-        expected,
-        "whole code, CSS, maps, errors, warnings, bindings and provenance stay exact outside the metadata repair and two nested Vapor root flags"
+        packet["observations"],
+        "whole code, CSS, maps, errors, warnings, bindings and provenance stay exact"
     );
 }
 

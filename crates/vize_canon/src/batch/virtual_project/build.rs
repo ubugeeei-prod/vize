@@ -52,6 +52,7 @@ pub(super) struct RegisteredFile {
     pub(super) unchecked_javascript: bool,
     pub(super) typed_router_import: bool,
     pub(super) empty_module_exports: bool,
+    pub(super) module_exports: Option<Box<[vize_croquis::script_parser::AuthoredModuleExport]>>,
     pub(super) star_projection: Option<super::star_exports::StarProjection>,
 }
 
@@ -172,6 +173,7 @@ pub(super) fn build_vue_registered_file(
         diagnostics,
         typed_router_import,
         empty_module_exports,
+        module_exports,
     } = generated;
     if use_tsx_virtual {
         prepend_vue_jsx_reference(
@@ -249,6 +251,7 @@ pub(super) fn build_vue_registered_file(
         unchecked_javascript: denied_javascript || descriptor_is_unchecked_javascript(&descriptor),
         typed_router_import,
         empty_module_exports: empty_module_exports && module_sources_known,
+        module_exports: module_exports.filter(|_| module_sources_known),
     })
 }
 

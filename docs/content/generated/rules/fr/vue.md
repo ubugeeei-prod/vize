@@ -3167,7 +3167,7 @@ Interdire les noms de variables qui masquent des variables d’une portée exter
 [Mauvais](#vue-no-template-shadow-bad) · [Bon](#vue-no-template-shadow-good)
 
 Gravité par défaut: `warning`  
-Préréglages: `nuxt`, `opinionated`  
+Préréglages: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -5300,7 +5300,7 @@ Interdire `this.` dans les expressions des templates
 [Mauvais](#vue-this-in-template-bad) · [Bon](#vue-this-in-template-good)
 
 Gravité par défaut: `warning`  
-Préréglages: `nuxt`, `opinionated`  
+Préréglages: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -5435,7 +5435,7 @@ Imposer le modificateur `.exact` sur `v-on` en présence de gestionnaires utilis
 [Mauvais](#vue-use-v-on-exact-bad) · [Bon](#vue-use-v-on-exact-good)
 
 Gravité par défaut: `warning`  
-Préréglages: `essential`, `nuxt`, `opinionated`  
+Préréglages: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -5556,7 +5556,7 @@ vp run lint
 
 Le bon exemple évite le diagnostic de cette règle avec la configuration ci-dessus ; d’autres règles peuvent encore signaler des diagnostics.
 
-[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_bind_style.rs#L30) · [Toutes les règles](all.md)
+[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_bind_style.rs#L28) · [Toutes les règles](all.md)
 
 ### `vue/v-on-event-hyphenation`
 

@@ -73,7 +73,7 @@ impl Rule for NoDeprecatedFilter {
     ) {
         // Filters were never part of petite-vue, and the legacy Vue 2 dialect
         // still resolves them, so only flag the default Vue 3 dialect.
-        if ctx.dialect() != VueDialect::Vue {
+        if ctx.dialect() != VueDialect::Vue || is_jsx(ctx) {
             return;
         }
 
@@ -96,7 +96,7 @@ impl Rule for NoDeprecatedFilter {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if ctx.dialect() != VueDialect::Vue {
+        if ctx.dialect() != VueDialect::Vue || is_jsx(ctx) {
             return;
         }
 
@@ -119,6 +119,11 @@ impl Rule for NoDeprecatedFilter {
             );
         }
     }
+}
+
+/// JSX never had filters: a `|` there is a bitwise OR or a type union.
+fn is_jsx(ctx: &LintContext<'_>) -> bool {
+    ctx.filename.ends_with(".jsx") || ctx.filename.ends_with(".tsx")
 }
 
 /// Whether `expr` contains a Vue 2 filter pipe (`|` used as a filter operator).

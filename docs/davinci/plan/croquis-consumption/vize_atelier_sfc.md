@@ -27,6 +27,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 
 | item                                        | files | sites |
 | ------------------------------------------- | ----: | ----: |
+| `AuthoredModuleExport`                      |     4 |     4 |
 | `BindingIdentity`                           |     1 |     1 |
 | `BindingOccurrences`                        |     6 |     7 |
 | `BindingType`                               |    20 |   143 |
@@ -46,11 +47,11 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `ScriptParseResult`                         |     1 |     1 |
 | `ScriptParserOptions`                       |     1 |     1 |
 | `SfcCustomBlock`                            |     2 |     2 |
-| `SfcDescriptor`                             |    20 |    51 |
+| `SfcDescriptor`                             |    20 |    52 |
 | `SfcError`                                  |    23 |    65 |
-| `SfcParseOptions`                           |    29 |   143 |
+| `SfcParseOptions`                           |    30 |   144 |
 | `SfcScriptBlock`                            |     2 |     2 |
-| `SfcStyleBlock`                             |     5 |     8 |
+| `SfcStyleBlock`                             |     6 |     9 |
 | `SfcTemplateBlock`                          |     7 |     9 |
 | `TypeDeclaration`                           |     1 |     3 |
 | `TypeDeclarationKind`                       |     1 |     2 |

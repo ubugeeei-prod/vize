@@ -240,6 +240,19 @@ fn transform_for_node_with_options<'a>(
     );
     ctx.for_depth -= 1;
 
+    // Upstream wraps a `<template v-for>` row unless it is one plain element.
+    // The loop's only child is its carrier element.
+    let wrapped_rows = match for_node.children.as_slice() {
+        [TemplateChildNode::Element(carrier)] if carrier.tag == "template" => !matches!(
+            carrier.children.as_slice(),
+            [TemplateChildNode::Element(row)] if !row.props.iter().any(|prop| matches!(
+                prop,
+                vize_atelier_core::PropNode::Directive(directive)
+                    if matches!(directive.name, "if" | "else-if" | "else" | "for")
+            ))
+        ),
+        _ => false,
+    };
     let ir_for = ForIRNode {
         id: for_id,
         source,
@@ -253,6 +266,7 @@ fn transform_for_node_with_options<'a>(
         // Upstream fast removal clears the insertion parent; the loop must be
         // that element's sole child, not merely render a single element.
         only_child,
+        wrapped_rows,
         parent,
         anchor,
         match_scope: for_node.parse_result.match_scope,

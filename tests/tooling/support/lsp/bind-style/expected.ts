@@ -96,7 +96,13 @@ export function actions(source: string, uri: string, diagnostic: Diagnostic) {
   if (code !== HTML) {
     const fixRange =
       code === STYLE
-        ? diagnostic.range
+        ? {
+            start: diagnostic.range.start,
+            end: {
+              ...diagnostic.range.start,
+              character: diagnostic.range.start.character + "v-bind:".length,
+            },
+          }
         : {
             start: {
               ...diagnostic.range.end,
@@ -110,7 +116,7 @@ export function actions(source: string, uri: string, diagnostic: Diagnostic) {
       diagnostics: [diagnostic],
       isPreferred: true,
       edit: {
-        changes: { [uri]: [{ range: fixRange, newText: code === STYLE ? ':title="title"' : "" }] },
+        changes: { [uri]: [{ range: fixRange, newText: code === STYLE ? ":" : "" }] },
       },
     });
   }
