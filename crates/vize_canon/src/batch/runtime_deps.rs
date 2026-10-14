@@ -200,7 +200,9 @@ fn prune_runtime_node_modules(
     preserved_entries: &[PathBuf],
 ) -> std::io::Result<()> {
     let expected_files = FxHashSet::default();
-    let preserved_roots = ["vue", "vite", "@vue"]
+    // `.vize` holds Vize's own session state, such as the overlay tsconfig a
+    // native project session reopens after a dependency edit.
+    let preserved_roots = ["vue", "vite", "@vue", ".vize"]
         .into_iter()
         .map(|name| node_modules_dir.join(name))
         .chain(preserved_entries.iter().cloned())

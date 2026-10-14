@@ -10,8 +10,6 @@ import { parse } from "yaml";
 import { readRepoFile } from "./support/github-workflows.ts";
 
 const corsaDeferred = [
-  // Races a dependency edit against tsgo's snapshot update (#9012).
-  "ide::signature_help::tests::signature_help_tracks_imported_callable_edits",
   "ide::rename::corsa_session_tests::concurrent_real_corsa_rename_sessions_are_isolated",
   "ide::rename::corsa_session_tests::direct_first::dependency_change_rearms_the_shared_editor_transport_once",
   "ide::rename::corsa_session_tests::direct_first::direct_first_renames_survive_twenty_session_shutdown_overlap",
@@ -81,14 +79,9 @@ test("only the present audited real-TSGO cases leave the PR default filter", () 
   const direct = readRepoFile(
     "crates/vize_maestro/src/ide/rename/corsa_session_tests/direct_first.rs",
   );
-  const signatureHelp = readRepoFile("crates/vize_maestro/src/ide/signature_help/tests.rs");
   for (const name of corsaDeferred) {
     const functionName = name.split("::").at(-1);
-    const body = name.startsWith("ide::signature_help::")
-      ? signatureHelp
-      : name.includes("::direct_first::")
-        ? direct
-        : source;
+    const body = name.includes("::direct_first::") ? direct : source;
     assert.ok(body.includes(`fn ${functionName}()`), `${name} must exist`);
   }
   assert.ok(source.includes("real-Corsa isolation coverage cannot be skipped"));

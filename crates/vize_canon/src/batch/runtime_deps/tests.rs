@@ -9,6 +9,28 @@ use super::stubs::VUE_RUNTIME_CORE_STUB_TYPES;
 use super::{materialize_runtime_dependencies, symlink_package_dir};
 
 #[test]
+fn runtime_prune_keeps_vize_session_state_and_removes_stale_entries() {
+    let temp = tempfile::tempdir().unwrap();
+    let project = temp.path().join("project");
+    let virtual_root = temp.path().join("virtual");
+    std::fs::create_dir_all(&project).unwrap();
+    let overlay = virtual_root.join("node_modules/.vize/corsa-overlay/tsconfig.json");
+    std::fs::create_dir_all(overlay.parent().unwrap()).unwrap();
+    std::fs::write(&overlay, r#"{"include":["**/*"]}"#).unwrap();
+    let stale = virtual_root.join("node_modules/stale-package");
+    std::fs::create_dir_all(&stale).unwrap();
+
+    materialize_runtime_dependencies(&project, &virtual_root, &[]).unwrap();
+
+    // A native project session reopens this config after a dependency edit.
+    assert_eq!(
+        std::fs::read_to_string(&overlay).unwrap(),
+        r#"{"include":["**/*"]}"#
+    );
+    assert!(!stale.exists());
+}
+
+#[test]
 fn explicit_runtime_packages_override_project_packages() {
     let temp = tempfile::tempdir().unwrap();
     let project = temp.path().join("project");
