@@ -322,7 +322,7 @@ function validateRatchets(oracles, fixtureMap, context) {
   for (const kind of ["compiler", "formatter-idempotency", "linter", "typechecker"]) {
     equal(oracles.get(kind).size, 143, `${kind} oracle count drifted`);
   }
-  equal(oracles.get("authored-lsp").size, 49, "authored LSP oracle count drifted");
+  equal(oracles.get("authored-lsp").size, 50, "authored LSP oracle count drifted");
   equal(oracles.get("vue-tsc-parity").size, 11, "vue-tsc parity count drifted");
   deepEqual(
     [...oracles.get("authored-lsp")].sort(compareCodepoints),

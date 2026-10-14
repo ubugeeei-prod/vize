@@ -63,7 +63,7 @@ test("report keeps present, exercised, and runtime evidence separate", () => {
       linter: 143,
       typechecker: 143,
       "production-build": 4,
-      "authored-lsp": 49,
+      "authored-lsp": 50,
       "vue-tsc-parity": 11,
       ssr: 3,
       hydration: 4,

@@ -136,6 +136,10 @@ pub enum TemplateExpressionKind {
     VIf,
     /// v-show condition: v-show="cond"
     VShow,
+    /// v-html content: v-html="html"
+    VHtml,
+    /// v-text content: v-text="text"
+    VText,
     /// v-model: v-model="value"
     VModel,
     /// Runtime property or slot argument: `:[name]` or `#[name]`.
@@ -161,6 +165,8 @@ impl TemplateExpressionKind {
             Self::VOn => "VOn",
             Self::VIf => "VIf",
             Self::VShow => "VShow",
+            Self::VHtml => "VHtml",
+            Self::VText => "VText",
             Self::VModel => "VModel",
             Self::DynamicDirectiveArgument => "DynamicDirectiveArgument",
             Self::DynamicEventArgument => "DynamicEventArgument",

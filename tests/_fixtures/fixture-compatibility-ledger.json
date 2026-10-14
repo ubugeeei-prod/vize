@@ -1137,7 +1137,8 @@
           "tests/_fixtures/_git/vue-virtual-scroller",
           "tests/_fixtures/_git/vue-multiselect",
           "tests/_fixtures/_git/portal-vue",
-          "tests/_fixtures/_git/buefy"
+          "tests/_fixtures/_git/buefy",
+          "tests/_fixtures/_git/koel"
         ]
       },
       "evidence": {

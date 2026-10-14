@@ -63,6 +63,17 @@ impl Drawer {
                         dir.exp.as_ref(),
                         TemplateExpressionKind::VShow,
                     );
+                } else if dir.name == "html" || dir.name == "text" {
+                    // Their values are ordinary template expressions; without
+                    // collecting them the checker never sees them (#9110).
+                    self.collect_basic_directive_expression(
+                        dir.exp.as_ref(),
+                        if dir.name == "html" {
+                            TemplateExpressionKind::VHtml
+                        } else {
+                            TemplateExpressionKind::VText
+                        },
+                    );
                 } else if dir.name == "model" {
                     self.collect_basic_directive_expression(
                         dir.exp.as_ref(),
