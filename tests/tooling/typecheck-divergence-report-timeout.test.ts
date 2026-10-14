@@ -1,17 +1,22 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { test } from "node:test";
+import { before, test } from "node:test";
 
 import {
   cleanup,
   readJson,
   run,
+  script,
   setup,
-  updateJson,
   unusableFailure,
+  updateJson,
   writeVueTsc,
 } from "./_helpers/typecheck-divergence-report-fixture.ts";
+import { buildRustScript } from "./support/rust-script-build.ts";
+
+// Build outside the timed window: a cold rust-script build exceeded the bound.
+before(() => buildRustScript(script, ["--rust-script-build-check"]));
 
 const outerHarnessTimeoutMs = 20_000;
 
