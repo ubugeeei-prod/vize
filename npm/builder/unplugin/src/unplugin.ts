@@ -190,7 +190,7 @@ async function loadStyleBlock(
   if (!compiled || !block) {
     return "";
   }
-  const source = transformStyleVars(block.content, compiled.scopeId, request.filename, options);
+  const source = transformStyleVars(block.content, compiled.scopeId);
 
   // Vue order: preprocess, then scope. Webpack never loads these ids; its
   // style files go through the host's loaders instead (webpack-styles.ts).
@@ -312,7 +312,7 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
               }
               virtualModules.writeModule(
                 stylePath,
-                transformStyleVars(block.content, compiled.scopeId, id, options),
+                transformStyleVars(block.content, compiled.scopeId),
               );
               return stylePath;
             }

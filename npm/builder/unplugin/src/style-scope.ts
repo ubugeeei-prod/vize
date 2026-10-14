@@ -22,14 +22,12 @@ export function scopeCss(css: string, scoped: string): string {
   return scopeViteCssForPipeline(css, scoped);
 }
 
-/** `v-bind()` in a delegated block, named like the compiled `useCssVars` call. */
-export function transformStyleVars(
-  css: string,
-  scopeId: string,
-  filename: string,
-  options: { isProduction: boolean },
-): string {
-  return transformViteCssVarsForPipeline(css, scopeId, options.isProduction ? filename : undefined);
+/**
+ * `v-bind()` in a delegated block, named like the compiled `useCssVars` call.
+ * The plugin compiles without `isProd`, so both sides use the dev names.
+ */
+export function transformStyleVars(css: string, scopeId: string): string {
+  return transformViteCssVarsForPipeline(css, scopeId);
 }
 
 interface SassModule {
