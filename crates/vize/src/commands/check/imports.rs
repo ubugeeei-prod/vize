@@ -10,7 +10,7 @@ use vize_canon::batch::is_vue_runtime_support_specifier;
 use vize_canon::{PackageRouteBinding, PackageRouteResolver, PackageSourceOptions};
 #[cfg(test)]
 use vize_l0::cstr;
-use vize_l0::{FxHashSet, String};
+use vize_l0::{FxHashMap, FxHashSet, String};
 
 use super::imports_aliases::PathAliasResolver;
 use super::imports_package_routes::sort_package_route_bindings;
@@ -27,7 +27,9 @@ use resolution::{absolutize, is_declaration_file, is_node_modules_path, resolve_
 pub(super) use resolution::{resolve_import_base, resolve_import_base_with_inputs};
 #[path = "imports_specifiers.rs"]
 mod specifiers;
-use specifiers::{extract_module_specifier_occurrences, is_relative_specifier};
+use specifiers::{
+    ModuleSpecifierOccurrence, extract_module_specifier_occurrences, is_relative_specifier,
+};
 #[path = "imports_session.rs"]
 mod session;
 pub(super) use session::LocalImportSession;
@@ -94,19 +96,24 @@ pub(super) fn collect_transitive_local_imports_with_session(
     let mut registrations: Vec<PathBuf> = Vec::new();
     let mut authored: Vec<PathBuf> = Vec::new();
     let mut package_routes = Vec::new();
+    let mut alias_targets: FxHashMap<String, Option<PathBuf>> = FxHashMap::default();
 
     while let Some((file, materialized_parent, package_graph)) = queue.pop() {
         let Some(dir) = file.parent() else {
             continue;
         };
-        let Ok(source) = std::fs::read_to_string(&file) else {
+        // Default runs walk the same roots again after adding hidden ambient
+        // declarations; the session keeps each file's specifiers for that pass.
+        let occurrences = match session.module_specifiers.remove(&file) {
+            Some(cached) => cached,
+            None => scan_module_specifiers(&file),
+        };
+        let Some(occurrences) = occurrences else {
+            session.module_specifiers.insert(file.clone(), None);
             continue;
         };
-        // Scan the raw file text directly — the byte scanner only reacts to
-        // `import`/`from` string operands, so an SFC's `<template>`/`<style>`
-        // are inert and no `.vue` parse is needed on this hot path.
-        for occurrence in extract_module_specifier_occurrences(&source) {
-            let specifier = occurrence.specifier;
+        for occurrence in &occurrences {
+            let specifier = occurrence.specifier.clone();
             let relative_specifier = is_relative_specifier(&specifier);
             let absolute_specifier = Path::new(specifier.as_str()).is_absolute();
             let mut package_lookup = None;
@@ -116,7 +123,17 @@ pub(super) fn collect_transitive_local_imports_with_session(
                 resolve_import_base(Path::new(specifier.as_str()), canonical_paths, options)
             } else {
                 let aliased = aliases.and_then(|aliases| {
-                    aliases.resolve(&specifier, canonical_paths, options, resolve_import_base)
+                    alias_targets
+                        .entry(specifier.clone())
+                        .or_insert_with(|| {
+                            aliases.resolve(
+                                &specifier,
+                                canonical_paths,
+                                options,
+                                resolve_import_base,
+                            )
+                        })
+                        .clone()
                 });
                 match aliased {
                     Some(resolved) => Some(resolved),
@@ -327,6 +344,7 @@ pub(super) fn collect_transitive_local_imports_with_session(
                 queue.push((resolved, needs_registration, in_package_graph));
             }
         }
+        session.module_specifiers.insert(file, Some(occurrences));
     }
 
     sort_package_route_bindings(&mut package_routes);
@@ -335,6 +353,14 @@ pub(super) fn collect_transitive_local_imports_with_session(
         authored,
         package_routes,
     }
+}
+
+/// Scan the raw file text directly — the byte scanner only reacts to
+/// `import`/`from` string operands, so an SFC's `<template>`/`<style>`
+/// are inert and no `.vue` parse is needed on this hot path.
+fn scan_module_specifiers(file: &Path) -> Option<Vec<ModuleSpecifierOccurrence>> {
+    let source = std::fs::read_to_string(file).ok()?;
+    Some(extract_module_specifier_occurrences(&source))
 }
 
 #[cfg(test)]
