@@ -24,7 +24,7 @@ export type MenuDirection = "ltr" | "rtl";
  * Which surface owns a menu tree. The kind only changes defaults and data hooks;
  * every kind shares the same keyboard, focus, and dismissal core.
  */
-export type MenuKind = "context-menu" | "dropdown-menu" | "menu" | "menubar";
+export type MenuKind = "context-menu" | "dropdown-menu" | "menu" | "menubar" | "split-button";
 
 /**
  * Where focus lands when a menu opens.

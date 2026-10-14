@@ -39,7 +39,7 @@ browser checks with its normal OG-image configuration.
 
 ## Composable examples
 
-Forty complete SFCs in `npm/compose/core/examples/` demonstrate disclosure,
+Ninety-seven complete SFCs in `npm/compose/core/examples/` demonstrate disclosure,
 bounded quantities, debounced local search, blur validation, undo/redo, and
 pagination, plus async results, interval/timeout controls, browser storage,
 media queries, document focus, form submission, multistep navigation, bounded
@@ -51,7 +51,15 @@ connectivity, color preference, viewport-dependent detail and card layout,
 actual pointer snapshots, element-relative mouse geometry, bounded note dragging,
 and native document selection in an editable excerpt, plus a throttled release-title
 preview with explicit pending, native flush/cancel and retained draft states, and
-locale-aware currency totals, speaker lists and unread-message counts.
+locale-aware currency totals, speaker lists and unread-message counts, a guarded
+checkout state machine, a price change compared with its previous value, a sign-in code
+resend cooldown, and relative meetup dates, plus collections (arrays, sets, maps, queues,
+stacks, sorting and memoization), date, language and text formatting, clocks, confirmation
+dialogs, async step queues, form field wiring, URL query/hash/search state, cookies and IndexedDB, and page resources (CSS variables, title,
+favicon, style and script tags, object URLs, images), network (fetch, event streams, WebSockets,
+broadcast channels), workers, compression, animation frames, idle and prioritized scheduling, Web
+Locks, view transitions, performance entries, storage estimates, the visual viewport, user
+activation, the Navigation API, drag-and-drop, file pickers and media controls.
 Their displayed source and compiled preview share the same complete SFC packet,
 with a SHA-256 identity exposed by each iframe. They use public composable
 imports and can be copied into a Vue 3.5+ project. The preview shell's CSS is

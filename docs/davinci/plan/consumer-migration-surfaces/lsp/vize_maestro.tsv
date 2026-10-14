@@ -111,7 +111,7 @@ lsp	LSP	test/dev	crates/vize_maestro/src/ide/corsa_support/canonical/mapping/com
 lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/model_links.rs	5	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/model_links.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/corsa_support/canonical/model_links/tests.rs	41	l0	L0	stage	vize_l0	preferred	5
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/corsa_support/canonical/open.rs	140	carton	Carton host/compatibility	old	vize_carton	legacy	3
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/corsa_support/canonical/open.rs	175	carton	Carton host/compatibility	old	vize_carton	legacy	3
 lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/project.rs	8	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/project.rs	8	carton	Carton host/compatibility	old	vize_carton	legacy	2
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/corsa_support/canonical/rename/merged_class_tests.rs	131	l0	L0	stage	vize_l0	preferred	2
@@ -417,7 +417,7 @@ lsp	LSP	test/dev	crates/vize_maestro/src/server/native_navigation/tests/linked/c
 lsp	LSP	test/dev	crates/vize_maestro/src/server/native_navigation/tests/module_links/jsx.rs	81	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/server/native_navigation/tests/module_links/refusals.rs	96	l0	L0	stage	vize_l0	preferred	2
 lsp	LSP	test/dev	crates/vize_maestro/src/server/native_navigation/tests/module_links/transport/io.rs	67	l0	L0	stage	vize_l0	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/src/server/state.rs	57	l0	L0	stage	vize_l0	preferred	6
+lsp	LSP	test/dev	crates/vize_maestro/src/server/state.rs	59	l0	L0	stage	vize_l0	preferred	6
 lsp	LSP	source	crates/vize_maestro/src/server/state/batch_cache.rs	83	carton	Carton host/compatibility	old	vize_carton	legacy	1
 lsp	LSP	test/dev	crates/vize_maestro/src/server/state/config_tests.rs	1	l0	L0	stage	vize_l0	preferred	6
 lsp	LSP	source	crates/vize_maestro/src/server/state/config.rs	10	l0	L0	stage	vize_l0	preferred	12

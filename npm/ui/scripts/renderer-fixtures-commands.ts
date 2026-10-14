@@ -112,6 +112,31 @@ function run(value: string) {
 `,
   },
   {
+    filename: "SplitButtonConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import {
+  SplitButton,
+  SplitButtonAction,
+  SplitButtonContent,
+  SplitButtonItem,
+  SplitButtonTrigger,
+} from "./families/actions/split-button/split-button.ts";
+
+function save() {}
+</script>
+
+<template>
+  <SplitButton id="renderer-split-button" aria-label="Save options" :modal="false">
+    <SplitButtonAction @press="save">Save</SplitButtonAction>
+    <SplitButtonTrigger aria-label="More save options" open-on="click" />
+    <SplitButtonContent placement="bottom-end">
+      <SplitButtonItem>Save as draft</SplitButtonItem>
+    </SplitButtonContent>
+  </SplitButton>
+</template>
+`,
+  },
+  {
     filename: "CommandConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";

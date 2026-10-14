@@ -8,13 +8,52 @@ use std::{
     time::Duration,
 };
 
+/// Read-only `gh api` requests that GitHub answered with a 5xx are retried.
+/// Release verification issues hundreds of reads, so one transient 502 must
+/// not fail a whole operation. Writes and every other failure fail at once.
+const GH_API_TRANSIENT_RETRIES: u32 = 4;
+
+fn is_read_only_gh_api(program: &str, args: &[&str]) -> bool {
+    program == "gh"
+        && args.first() == Some(&"api")
+        && !args.iter().any(|arg| {
+            matches!(
+                *arg,
+                "-X" | "--method" | "-f" | "-F" | "--field" | "--raw-field" | "--input"
+            ) || arg.starts_with("--method=")
+                || arg.starts_with("-X")
+        })
+}
+
+fn is_transient_server_error(stderr: &str) -> bool {
+    ["HTTP 500", "HTTP 502", "HTTP 503", "HTTP 504"]
+        .iter()
+        .any(|status| stderr.contains(status))
+}
+
 pub fn output(program: &str, args: &[&str], cwd: &Path) -> Result<String, String> {
-    let result = Command::new(program)
-        .args(args)
-        .current_dir(cwd)
-        .stdin(Stdio::null())
-        .output()
-        .map_err(|e| format!("Could not start {program}: {e}"))?;
+    let retries = if is_read_only_gh_api(program, args) {
+        GH_API_TRANSIENT_RETRIES
+    } else {
+        0
+    };
+    let mut attempt = 0;
+    let result = loop {
+        let result = Command::new(program)
+            .args(args)
+            .current_dir(cwd)
+            .stdin(Stdio::null())
+            .output()
+            .map_err(|e| format!("Could not start {program}: {e}"))?;
+        if result.status.success()
+            || attempt >= retries
+            || !is_transient_server_error(&String::from_utf8_lossy(&result.stderr))
+        {
+            break result;
+        }
+        attempt += 1;
+        sleep(Duration::from_secs(2u64.pow(attempt)));
+    };
     if !result.status.success() {
         return Err(format!(
             "{program} {} failed:\n{}{}",
@@ -234,3 +273,7 @@ pub fn clean(root: &Path) -> Result<(), String> {
         Err("Release worktree has uncommitted changes; preserving them.".into())
     }
 }
+
+#[cfg(test)]
+#[path = "pr_github_retry_tests.rs"]
+mod retry_tests;

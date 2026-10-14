@@ -11,13 +11,17 @@ import { sha256 } from "./manifest.mjs";
 export const SORTING_CONFIG_MANIFEST =
   "tests/_fixtures/differential/formatter-history/import-sorting-config-manifest.json";
 
-function asset(root, declared) {
-  assert.equal(typeof declared.path, "string");
-  assert(!path.isAbsolute(declared.path) && !declared.path.split("/").includes(".."));
-  const resolved = fs.realpathSync(path.join(root, declared.path));
+function contained(root, file) {
+  assert.equal(typeof file, "string");
+  assert(!path.isAbsolute(file) && !file.split("/").includes(".."));
+  const resolved = fs.realpathSync(path.join(root, file));
   const relative = path.relative(fs.realpathSync(root), resolved);
   assert(relative && !relative.startsWith("..") && !path.isAbsolute(relative));
-  const bytes = fs.readFileSync(resolved);
+  return fs.readFileSync(resolved);
+}
+
+function asset(root, declared) {
+  const bytes = contained(root, declared.path);
   assert.equal(sha256(bytes), declared.sha256, "sorting config asset changed");
   return bytes;
 }
@@ -62,10 +66,9 @@ export function loadSortingConfigManifest(root, manifestPath = SORTING_CONFIG_MA
     }
     const reference = api.cases.find(({ id }) => id === fixture.apiCase);
     assert(reference, "unregistered API reference");
-    const owner = asset(root, {
-      path: fixture.witness.path,
-      sha256: fixture.witness.sourceSha256,
-    });
+    // The witness file is a live test source: only the retained law inside it is
+    // pinned (by assertOriginalSortingConfig), never the whole file.
+    const owner = contained(root, fixture.witness.path);
     assert.match(fixture.witness.function, /^[a-z][a-z0-9_]+$/);
     assert(
       owner.toString().includes(`fn ${fixture.witness.function}(`),

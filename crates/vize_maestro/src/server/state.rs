@@ -35,6 +35,8 @@ mod global_components;
 #[cfg(feature = "native")]
 mod global_tag_names;
 #[cfg(feature = "native")]
+pub(crate) mod workspace_preparation;
+#[cfg(feature = "native")]
 mod workspace_project_files;
 #[cfg(feature = "native")]
 mod workspace_vue_files;
@@ -177,6 +179,9 @@ pub struct ServerState {
     /// Hold one complete native open/query/map operation, never syntax-only RPCs.
     #[cfg(feature = "native")]
     corsa_request_lock: AsyncMutex<()>,
+    /// Lets a workspace-wide request build its projection outside that lock.
+    #[cfg(feature = "native")]
+    pub(crate) workspace_preparation: workspace_preparation::WorkspacePreparation,
     /// Source-independent project/config/backend changes fence pending replies.
     #[cfg(feature = "native")]
     corsa_environment_revision: std::sync::atomic::AtomicU64,

@@ -208,3 +208,6 @@ mod javascript_collision_tests;
 
 #[cfg(test)]
 mod options_projection_tests;
+
+#[cfg(test)]
+mod pragma_projection_tests;

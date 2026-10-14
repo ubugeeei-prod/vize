@@ -27,6 +27,14 @@ import { verifyUnavailableStorage } from "./capture-unavailable-storage.ts";
 import { exerciseThrottledExample } from "./interactions-throttled.ts";
 import { localeFormatExamples } from "../../../npm/ui/scripts/reference-docs/locale-format-examples.ts";
 import { exerciseLocaleFormatExample } from "./interactions-locale-format.ts";
+import { workflowStateExamples } from "../../../npm/ui/scripts/reference-docs/workflow-state-examples.ts";
+import { exerciseWorkflowStateExample } from "./interactions-workflow-state.ts";
+import { timeFormatExamples } from "../../../npm/ui/scripts/reference-docs/time-format-examples.ts";
+import { exerciseTimeFormatExample } from "./interactions-time-format.ts";
+import { dataStateExamples } from "../../../npm/ui/scripts/reference-docs/data-state-examples.ts";
+import { exerciseDataStateExample } from "./interactions-data-state.ts";
+import { browserPageExamples } from "../../../npm/ui/scripts/reference-docs/browser-page-examples.ts";
+import { exerciseBrowserPageExample } from "./interactions-browser-page.ts";
 
 async function activate(page: Page, label: string): Promise<void> {
   await page.getByRole("button", { name: label, exact: true }).focus();
@@ -55,6 +63,14 @@ async function exercise(page: Page, name: string): Promise<string[]> {
   if (name === "use-throttled") return exerciseThrottledExample(page);
   if (localeFormatExamples.some((example) => example.name === name))
     return exerciseLocaleFormatExample(page, name);
+  if (workflowStateExamples.some((example) => example.name === name))
+    return exerciseWorkflowStateExample(page, name);
+  if (timeFormatExamples.some((example) => example.name === name))
+    return exerciseTimeFormatExample(page, name);
+  if (dataStateExamples.some((example) => example.name === name))
+    return exerciseDataStateExample(page, name);
+  if (browserPageExamples.some((example) => example.name === name))
+    return exerciseBrowserPageExample(page, name);
   if (name === "use-toggle") {
     assert.equal(await page.getByText("Free delivery in 2–3 business days.").count(), 0);
     await activate(page, "Show delivery details");

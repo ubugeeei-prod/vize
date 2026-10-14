@@ -15,7 +15,7 @@ import {
   UI_RESOLVER_COMPONENTS,
   UI_RESOLVER_COMPOSABLES,
   UI_RESOLVER_ENTRIES,
-} from "./resolver-manifest.ts";
+} from "./generated/resolver-manifest.ts";
 
 /** Every auto-registrable component export name. */
 export type VizeUiComponentName = keyof typeof UI_RESOLVER_COMPONENTS;
@@ -313,4 +313,4 @@ export {
   UI_RESOLVER_COMPONENTS,
   UI_RESOLVER_COMPOSABLES,
   UI_RESOLVER_ENTRIES,
-} from "./resolver-manifest.ts";
+} from "./generated/resolver-manifest.ts";

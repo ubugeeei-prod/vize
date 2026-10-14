@@ -34,6 +34,22 @@ function testbedTargetsFor(entry: UiFamilyCatalogEntry): readonly `src/${string}
   return componentTargets.length > 0 ? componentTargets : [entry.entryFile];
 }
 
+/**
+ * Families whose colocated Musea story (`<family>.art.vue`) is written and
+ * rendered by `story-art.test.ts`. Add a family here in the PR that adds its story.
+ */
+const readyMuseaStories: ReadonlySet<string> = new Set([
+  "back-to-top",
+  "button",
+  "button-group",
+  "copy-button",
+  "floating-action-button",
+  "fullscreen-button",
+  "print-button",
+  "share-button",
+  "toolbar",
+]);
+
 function createStoryTestbedEntry(entry: UiFamilyCatalogEntry): UiStoryTestbedEntry {
   const targetFiles = testbedTargetsFor(entry);
   const primaryTarget = targetFiles[0] ?? entry.entryFile;
@@ -59,7 +75,11 @@ function createStoryTestbedEntry(entry: UiFamilyCatalogEntry): UiStoryTestbedEnt
     harnessHooks: uiStoryTestbedHarnessHooks,
     screenshotReview: uiStoryTestbedScreenshotReview,
     artifacts: [
-      { surface: "musea-story", status: "planned", files: [storyFile] },
+      {
+        surface: "musea-story",
+        status: readyMuseaStories.has(entry.canonicalName) ? "ready" : "planned",
+        files: [storyFile],
+      },
       { surface: "vue-test-utils", status: "planned", files: [vueTestFile] },
       { surface: "vitest-browser", status: "planned", files: [browserTestFile] },
       { surface: "playwright-vrt", status: "planned", files: [vrtTestFile] },
