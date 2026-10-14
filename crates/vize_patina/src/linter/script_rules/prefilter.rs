@@ -24,7 +24,7 @@ use super::registry::{
     RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD, RULE_NUXT_CONFIG_KEYS_ORDER,
     RULE_NUXT_NO_CONFIG_TEST_KEY, RULE_NUXT_NO_PAGE_META_RUNTIME_VALUES,
     RULE_NUXT_PREFER_IMPORT_META, RULE_PINIA_PREFER_STORE_TO_REFS, RULE_PREFER_COMPUTED,
-    RULE_PREFER_IMPORT_FROM_VUE, RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR,
+    RULE_PREFER_IMPORT_FROM_VUE, RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR, RULE_REQUIRE_PROP_TYPES,
     RULE_REQUIRE_VALID_DEFAULT_PROP, RULE_RETURN_IN_COMPUTED_PROPERTY,
     RULE_RETURN_IN_EMITS_VALIDATOR, RULE_VALID_DEFINE_EMITS, RULE_VALID_DEFINE_OPTIONS,
     RULE_VALID_DEFINE_PROPS, RULE_VALID_NEXT_TICK, RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
@@ -204,9 +204,10 @@ pub(super) fn script_rule_applies_to_filename(rule_name: &str, filename: &str) -
     rule_name != RULE_NUXT_CONFIG_KEYS_ORDER || is_nuxt_config_filename(filename)
 }
 
-/// Vue 2 migration rules inspect component code only: an SFC or JSX module (as
-/// in eslint-plugin-vue) or one that calls `defineComponent`. A `$on` or
-/// `data: {}` in any other module is not a Vue component.
+/// Vue 2 migration rules and `require-prop-types` inspect component code only:
+/// an SFC or JSX module (as in eslint-plugin-vue) or one that calls
+/// `defineComponent`. A `$on`, `data: {}` or `props` object in any other module
+/// is not a Vue component.
 pub(super) fn script_rule_applies_to_module(rule_name: &str, source: &str, filename: &str) -> bool {
     !matches!(
         rule_name,
@@ -216,6 +217,7 @@ pub(super) fn script_rule_applies_to_module(rule_name: &str, source: &str, filen
             | RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API
             | RULE_NO_DEPRECATED_EVENTS_API
             | RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS
+            | RULE_REQUIRE_PROP_TYPES
     ) || [".vue", ".jsx", ".tsx"]
         .iter()
         .any(|extension| filename.ends_with(extension))
