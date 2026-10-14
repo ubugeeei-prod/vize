@@ -33,21 +33,26 @@ const a = 1;
     let canonical = format_sfc(source, &FormatOptions::default())
         .expect("format")
         .code;
-    assert!(
-        canonical.contains("<script setup lang=\"ts\">"),
-        "{canonical}"
-    );
-    assert!(
-        canonical.contains("<template lang=\"html\" functional>"),
-        "{canonical}"
-    );
-    assert!(
-        canonical.contains("<style scoped lang=\"css\" module=\"css\">"),
-        "{canonical}"
-    );
-    assert!(
-        canonical.contains("<i18n lang=\"json\" locale=\"en\">"),
-        "{canonical}"
+    assert_eq!(
+        canonical.as_str(),
+        r#"<script setup lang="ts">
+const a = 1;
+</script>
+
+<template lang="html" functional>
+  <div>{{ a }}</div>
+</template>
+
+<style scoped lang="css" module="css">
+.a {
+  color: red;
+}
+</style>
+
+<i18n lang="json" locale="en">
+{}
+</i18n>
+"#
     );
 }
 
@@ -151,35 +156,14 @@ fn prettier_preset_lays_out_inline_styles() {
 fn prettier_preset_writes_v_for_parens_and_closes_void_elements() {
     let source = "<template>\n  <ul>\n    <li v-for=\"item, i in items\" :key=\"i\"><img :src=\"item\"><br></li>\n    <li v-for=\"{ a, b } of pairs\" :key=\"a\">{{ b }}</li>\n    <Input v-for=\"x in xs\" :key=\"x\"></Input>\n  </ul>\n</template>\n";
     let kept = format_sfc(source, &FormatOptions::default()).expect("format");
-    assert!(
-        kept.code.contains("v-for=\"item, i in items\""),
-        "{}",
-        kept.code
-    );
-    assert!(
-        kept.code.contains("<img :src=\"item\"><br>"),
-        "{}",
-        kept.code
-    );
+    assert_eq!(kept.code.as_str(), source);
 
     let mut options = FormatOptions::default();
     FormatPreset::Prettier.apply(&mut options);
     let formatted = format_sfc(source, &options).expect("format").code;
-    assert!(
-        formatted.contains("v-for=\"(item, i) in items\""),
-        "{formatted}"
-    );
-    assert!(
-        formatted.contains("v-for=\"{ a, b } of pairs\""),
-        "{formatted}"
-    );
-    assert!(
-        formatted.contains("<img :src=\"item\" /><br />"),
-        "{formatted}"
-    );
-    assert!(
-        formatted.contains("<Input v-for=\"x in xs\" :key=\"x\"></Input>"),
-        "{formatted}"
+    assert_eq!(
+        formatted.as_str(),
+        "<template>\n  <ul>\n    <li v-for=\"(item, i) in items\" :key=\"i\"><img :src=\"item\" /><br /></li>\n    <li v-for=\"{ a, b } of pairs\" :key=\"a\">{{ b }}</li>\n    <Input v-for=\"x in xs\" :key=\"x\"></Input>\n  </ul>\n</template>\n"
     );
     assert_eq!(
         format_sfc(&formatted, &options).expect("format").code,
