@@ -214,9 +214,20 @@ mod tests {
     #[test]
     fn an_enclosing_guard_stays_on_every_branch() {
         let ts = emit(&["(p) && (a)", "(p) && !(a) && (b)", "(p) && !(a) && !(b)"]);
-        assert!(ts.contains("if ((p) && (a)) {"), "{ts}");
-        assert!(ts.contains("else if ((p) && (b)) {"), "{ts}");
-        assert!(ts.contains("else if ((p)) {"), "{ts}");
+        let conditions: Vec<&str> = ts
+            .lines()
+            .filter(|line| line.contains("if ("))
+            .map(str::trim)
+            .collect();
+        assert_eq!(
+            conditions,
+            [
+                "if ((p) && (a)) {",
+                "else if ((p) && (b)) {",
+                "else if ((p)) {"
+            ],
+            "{ts}"
+        );
     }
 
     #[test]
