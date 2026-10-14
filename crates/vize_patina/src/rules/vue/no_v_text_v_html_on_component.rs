@@ -27,7 +27,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use dynamic_component::{dynamic_component_may_render_component, is_dynamic_component};
-use vize_l0::is_html_tag;
+use vize_l0::{is_html_tag, is_math_ml_tag, is_svg_tag};
 use vize_relief::{DirectiveNode, ElementNode, ElementType};
 
 static META: RuleMeta = RuleMeta {
@@ -86,8 +86,23 @@ fn is_component_like_tag(ctx: &LintContext<'_>, element: &ElementNode<'_>) -> bo
         return true;
     }
 
+    // Like Vue's compiler and the reference rule, any tag outside the known
+    // names of its namespace resolves as a component, including a
+    // lowercase single word such as a mini-program `<view>`.
+    // The namespace comes from the enclosing `<svg>` / `<math>` (the template
+    // parser also tags a root-level SVG name such as `<view>` as SVG).
     let tag = element.tag;
-    tag.contains('-') && !is_html_tag(tag)
+    let inside = |root: &str| {
+        ctx.has_ancestor(|parent| parent.tag.as_str() == root)
+            && !ctx.has_ancestor(|parent| parent.tag.as_str() == "foreignObject")
+    };
+    if tag == "svg" || inside("svg") {
+        !is_svg_tag(tag)
+    } else if tag == "math" || inside("math") {
+        !is_math_ml_tag(tag)
+    } else {
+        !is_html_tag(tag)
+    }
 }
 
 #[cfg(test)]
