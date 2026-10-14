@@ -15,6 +15,7 @@ mod element;
 mod expr;
 mod logical_and;
 mod name;
+mod opaque_slots;
 mod slot;
 mod spread;
 mod style;

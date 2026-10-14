@@ -148,14 +148,6 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
             return;
         }
 
-        if !matches!(&attr.name, JSXAttributeName::Identifier(_)) {
-            self.reject(
-                attr.span,
-                "v-slots does not take an argument; the slot names are the keys of its \
-                 object, e.g. v-slots={{ header: () => <h1/> }}.",
-            );
-            return;
-        }
         if !on_component {
             self.reject(
                 attr.span,
@@ -173,6 +165,9 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
             return;
         };
         match classify_v_slots_value(value) {
+            SlotsValue::Object(object) if super::opaque_slots::forwards_verbatim(object) => {
+                self.forward_slots(node, object.span);
+            }
             SlotsValue::Object(object) => {
                 for template in self.lower_object_slots(object) {
                     node.children.push(template);
@@ -208,7 +203,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     /// or into the whole children argument when nothing else contributes slots
     /// (#3467). Keeping it a directive rather than a synthesized child is what
     /// lets the value stay opaque: there are no entries to build templates from.
-    fn forward_slots(&mut self, node: &mut ElementNode<'a>, span: Span) {
+    pub(crate) fn forward_slots(&mut self, node: &mut ElementNode<'a>, span: Span) {
         let expression = self.dyn_expr(span);
         self.forward_slots_expression(node, expression);
     }

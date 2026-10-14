@@ -41,6 +41,17 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
         has_v_slots: bool,
     ) {
         if !(self.uses_babel_vdom_compat() && has_v_slots)
+            && let Some(container) = sole_expression_container(children)
+            && let Some(Expression::ObjectExpression(object)) = container
+                .expression
+                .as_expression()
+                .map(|expression| expression.get_inner_expression())
+            && super::opaque_slots::forwards_verbatim(object)
+        {
+            self.forward_slots(node, object.span);
+            return;
+        }
+        if !(self.uses_babel_vdom_compat() && has_v_slots)
             && let Some(slots) = self.try_lower_slot_idiom(children)
         {
             node.children = slots;

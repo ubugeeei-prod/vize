@@ -1,0 +1,26 @@
+{
+  "argument": {
+    "code": "import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n\n// `v-slots:default` is read as `v-slots`, as Babel does (vuetify, #9075).\nimport { h } from \"vue\";\nconst Box = (props, { slots }) => h(\"section\", null, [slots.default?.()]);\nconst icon = () => h(\"i\", null, \"icon\");\nexport const App = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createBlock(_resolveDynamicComponent(Box), null, icon, 1024 /* DYNAMIC_SLOTS */))\n})(undefined, [])\n})();\n",
+    "diagnostics": [],
+    "lang": "tsx",
+    "source": "// `v-slots:default` is read as `v-slots`, as Babel does (vuetify, #9075).\nimport { h } from \"vue\";\nconst Box = (props, { slots }) => h(\"section\", null, [slots.default?.()]);\nconst icon = () => h(\"i\", null, \"icon\");\nexport const App = () => <Box v-slots:default={icon as () => unknown} />;\n"
+  },
+  "child": {
+    "code": "import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n\n// A sole object child whose entries are references (naive-ui, #9075).\nimport { h } from \"vue\";\nconst Box = (props, { slots }) => h(\"section\", null, [slots.title?.(), slots.default?.()]);\nconst icon = () => h(\"i\", null, \"icon\");\nexport const App = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createBlock(_resolveDynamicComponent(Box), null, { default: icon, title: () => \"t\" }, 1024 /* DYNAMIC_SLOTS */))\n})(undefined, [])\n})();\n",
+    "diagnostics": [],
+    "lang": "jsx",
+    "source": "// A sole object child whose entries are references (naive-ui, #9075).\nimport { h } from \"vue\";\nconst Box = (props, { slots }) => h(\"section\", null, [slots.title?.(), slots.default?.()]);\nconst icon = () => h(\"i\", null, \"icon\");\nexport const App = () => <Box>{{ default: icon, title: () => \"t\" }}</Box>;\n"
+  },
+  "reference": {
+    "code": "import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n\n// Slot object entries that are function references (vant, #9075).\nimport { h } from \"vue\";\nconst Box = (props, { slots }) => h(\"section\", null, [slots.title?.(), slots.default?.()]);\nconst icon = () => h(\"i\", null, \"icon\");\nexport const App = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createBlock(_resolveDynamicComponent(Box), null, { default: icon, title: () => \"t\" }, 1024 /* DYNAMIC_SLOTS */))\n})(undefined, [])\n})();\n",
+    "diagnostics": [],
+    "lang": "jsx",
+    "source": "// Slot object entries that are function references (vant, #9075).\nimport { h } from \"vue\";\nconst Box = (props, { slots }) => h(\"section\", null, [slots.title?.(), slots.default?.()]);\nconst icon = () => h(\"i\", null, \"icon\");\nexport const App = () => <Box v-slots={{ default: icon, title: () => \"t\" }} />;\n"
+  },
+  "spread": {
+    "code": "import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n\n// A slots object built from a spread (vuetify, #9075).\nimport { h } from \"vue\";\nconst Box = (props, { slots }) => h(\"section\", null, [slots.title?.(), slots.default?.()]);\nconst icon = () => h(\"i\", null, \"icon\");\nconst shared = { title: () => \"t\" };\nexport const App = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createBlock(_resolveDynamicComponent(Box), null, { ...shared, default: icon }, 1024 /* DYNAMIC_SLOTS */))\n})(undefined, [])\n})();\n",
+    "diagnostics": [],
+    "lang": "jsx",
+    "source": "// A slots object built from a spread (vuetify, #9075).\nimport { h } from \"vue\";\nconst Box = (props, { slots }) => h(\"section\", null, [slots.title?.(), slots.default?.()]);\nconst icon = () => h(\"i\", null, \"icon\");\nconst shared = { title: () => \"t\" };\nexport const App = () => <Box v-slots={{ ...shared, default: icon }} />;\n"
+  }
+}

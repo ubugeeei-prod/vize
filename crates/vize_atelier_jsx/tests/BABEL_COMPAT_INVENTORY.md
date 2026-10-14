@@ -271,6 +271,16 @@ stale — but that check is not committed and does not run in CI (#3391).
 `resolveDirective("slots")` lookup #3418 removed. A user directive named `slots`
 collides with it exactly as one named `show` or `model` would.
 
+### Slot objects Vize cannot expand
+
+A slots object (`v-slots={{…}}` or a sole object child) whose entries include a
+spread or a value that is not an inline function (`{ default: slots.icon }`) is
+forwarded verbatim when it contains no JSX and no TypeScript-only syntax: its
+source is then exactly the object Babel emits. `v-slots:arg={…}` is read as
+`v-slots`, as Babel does; the argument is ignored. An object that mixes such
+entries with JSX is still expanded, and the entries Vize cannot see inside are
+reported and dropped.
+
 ### `v-slots` spellings where native Vize is stricter than babel
 
 Native mode rejects all the shapes below. Babel VDOM compatibility adopts only
@@ -287,8 +297,6 @@ corpus-pinned self-contained literals; the remaining exclusions stay explicit
   object: babel forwards it as children and Vue wraps it as `{default: fn}`.
   Spreading it would contribute nothing, so Vize names it and points at
   `v-slots={{ default: … }}` (or the render-prop child form, which it supports).
-- `v-slots:arg={…}` — `v-slots` takes no argument; the slot names are the object's
-  keys.
 - `v-slots` on a plain element — babel drops it silently and emits `[]` children.
 - more than one `v-slots` on the same element — babel keeps the last and drops the
   rest silently.

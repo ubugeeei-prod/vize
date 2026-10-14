@@ -80,10 +80,10 @@ compiler	Compiler	source	crates/vize_atelier_jsx/src/lib.rs	59	old_ast	old AST/p
 compiler	Compiler	source	crates/vize_atelier_jsx/src/lib.rs	59	croquis	Croquis analysis	old	vize_croquis	legacy	2
 compiler	Compiler	source	crates/vize_atelier_jsx/src/lib.rs	59	raw_oxc	raw OXC	raw	oxc_allocator	raw	3
 compiler	Compiler	source	crates/vize_atelier_jsx/src/lib.rs	59	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
-compiler	Compiler	source	crates/vize_atelier_jsx/src/lower.rs	31	l0	L0	stage	vize_l0	preferred	1
-compiler	Compiler	source	crates/vize_atelier_jsx/src/lower.rs	31	old_ast	old AST/parser	old	vize_relief	legacy	1
-compiler	Compiler	source	crates/vize_atelier_jsx/src/lower.rs	31	raw_oxc	raw OXC	raw	oxc_ast	raw	1
-compiler	Compiler	source	crates/vize_atelier_jsx/src/lower.rs	31	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
+compiler	Compiler	source	crates/vize_atelier_jsx/src/lower.rs	32	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_jsx/src/lower.rs	32	old_ast	old AST/parser	old	vize_relief	legacy	1
+compiler	Compiler	source	crates/vize_atelier_jsx/src/lower.rs	32	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+compiler	Compiler	source	crates/vize_atelier_jsx/src/lower.rs	32	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
 compiler	Compiler	source	crates/vize_atelier_jsx/src/lower/attr.rs	15	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_jsx/src/lower/attr.rs	15	old_ast	old AST/parser	old	vize_relief	legacy	1
 compiler	Compiler	source	crates/vize_atelier_jsx/src/lower/attr.rs	15	raw_oxc	raw OXC	raw	oxc_ast	raw	1
@@ -116,6 +116,8 @@ compiler	Compiler	source	crates/vize_atelier_jsx/src/lower/logical_and.rs	3	old_
 compiler	Compiler	source	crates/vize_atelier_jsx/src/lower/logical_and.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 compiler	Compiler	source	crates/vize_atelier_jsx/src/lower/name.rs	3	l0	L0	stage	vize_l0	preferred	3
 compiler	Compiler	source	crates/vize_atelier_jsx/src/lower/name.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+compiler	Compiler	source	crates/vize_atelier_jsx/src/lower/opaque_slots.rs	11	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+compiler	Compiler	source	crates/vize_atelier_jsx/src/lower/opaque_slots.rs	11	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 compiler	Compiler	source	crates/vize_atelier_jsx/src/lower/slot.rs	16	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_jsx/src/lower/slot.rs	16	old_ast	old AST/parser	old	vize_relief	legacy	2
 compiler	Compiler	source	crates/vize_atelier_jsx/src/lower/slot.rs	16	raw_oxc	raw OXC	raw	oxc_ast	raw	4
@@ -231,6 +233,7 @@ compiler	Compiler	test/dev	crates/vize_atelier_jsx/tests/modes.rs	13	l0	L0	stage
 compiler	Compiler	test/dev	crates/vize_atelier_jsx/tests/module_code.rs	8	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_jsx/tests/module_props.rs	15	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_jsx/tests/nested_typecheck_runtime.rs	5	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_jsx/tests/opaque_slots.rs	17	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_jsx/tests/parity_tsx.rs	12	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_jsx/tests/parity_vapor.rs	9	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_jsx/tests/parser_allocation.rs	4	l0	L0	stage	vize_l0	preferred	1

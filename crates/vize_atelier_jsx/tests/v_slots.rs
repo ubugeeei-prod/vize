@@ -255,14 +255,20 @@ fn a_missing_value_is_rejected() {
 }
 
 #[test]
-fn the_argument_spelling_is_rejected() {
+fn the_argument_spelling_is_ignored_like_babel() {
+    // Babel reads any `v-slots:arg` as `v-slots` and drops the argument
+    // (vuetify writes `v-slots:default={slots.prepend}`).
+    let with_arg = "const A = () => <B v-slots:x={{foo: () => <i/>}}/>;";
+    assert_eq!(diagnostics(with_arg), Vec::<String>::new());
     assert_eq!(
-        errors("const A = () => <B v-slots:x={{foo: () => <i/>}}/>;"),
-        vec![
-            "v-slots does not take an argument; the slot names are the keys of its \
-             object, e.g. v-slots={{ header: () => <h1/> }}."
-                .to_string()
-        ]
+        render_code(with_arg),
+        render_code("const A = () => <B v-slots={{foo: () => <i/>}}/>;")
+    );
+    let forwarded = "const A = (p) => <B v-slots:default={p.slots}/>;";
+    assert_eq!(diagnostics(forwarded), Vec::<String>::new());
+    assert_eq!(
+        render_code(forwarded),
+        render_code("const A = (p) => <B v-slots={p.slots}/>;")
     );
 }
 
@@ -295,11 +301,16 @@ fn a_repeated_v_slots_is_rejected() {
 
 #[test]
 fn spreads_keep_their_object_children_warning() {
-    // `lower_object_slots` is shared with the object-children idiom, so spread
-    // entries stay warnings naming what was ignored rather than silence.
+    // `lower_object_slots` is shared with the object-children idiom, so a
+    // spread beside JSX entries stays a warning naming what was ignored.
+    assert_eq!(
+        diagnostics("const A = () => <B v-slots={{...rest, foo: () => <i/>}}/>;"),
+        vec!["spread in a JSX slot object is not supported and was ignored".to_string()]
+    );
+    // Without JSX the object is already what Babel emits, so it is forwarded.
     assert_eq!(
         diagnostics("const A = () => <B v-slots={{...rest}}/>;"),
-        vec!["spread in a JSX slot object is not supported and was ignored".to_string()]
+        Vec::<String>::new()
     );
     let dynamic_source = "const π = n; const A = () => <B v-slots={{[π]: () => <i/>}}/>;";
     assert_eq!(diagnostics(dynamic_source), Vec::<String>::new());
@@ -313,5 +324,26 @@ fn spreads_keep_their_object_children_warning() {
          ]),\n    \
          _: 2 /* DYNAMIC */\n  \
          }, 1024 /* DYNAMIC_SLOTS */))\n}"
+    );
+}
+
+#[test]
+fn plain_slot_objects_forward_verbatim() {
+    // naive-ui `{ default: createChildren }`, vant `v-slots={{ default: slots.icon }}`.
+    for source in [
+        "const A = (s) => <B v-slots={{ default: s.icon, title: s.title }}/>;",
+        "const A = (f) => <B>{{ default: f }}</B>;",
+    ] {
+        assert_eq!(diagnostics(source), Vec::<String>::new(), "{source}");
+        assert!(render_code(source).contains("default:"), "{source}");
+    }
+    assert!(
+        render_code("const A = (s) => <B v-slots={{ default: s.icon }}/>;")
+            .contains("{ default: s.icon }")
+    );
+    // JSX or TS syntax inside keeps the expansion and its warning.
+    assert_eq!(
+        diagnostics("const A = (s) => <B v-slots={{ default: s.icon, foo: () => <i/> }}/>;"),
+        vec!["JSX slot values must be a function returning the slot content; ignored".to_string()]
     );
 }
