@@ -170,6 +170,8 @@ await test("foreign raw bodies, changed entrypoints, hybrid source, modes and re
     for (const file of [
       "tests/performance/support/warm-type-backed-host-qualifications.ts",
       "tests/tooling/warm-type-backed-lexical-dollar-host.test.ts",
+      ".github/workflows/davinci-canon-scaling.yml",
+      ".github/workflows/typechecker-native-phases.yml",
     ]) {
       assert.deepEqual(readLexical(file), git(root, ["show", manifest.base + ":" + file]));
       const target = path.join(owner, file),

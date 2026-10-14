@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineSlots<Record<string, (props: { id: number }) => any>>();
+</script>
+
+<template>
+  <div><slot name="a" :id="1" /></div>
+</template>

@@ -45,10 +45,10 @@ export const japaneseCategoryTitles: typeof englishCategoryTitles = {
   "cross-file": "ファイル間ルール",
   "type-and-script": "型と script のルール",
   html: "HTML ルール",
-  accessibility: "アクセシビリティ ルール",
+  accessibility: "アクセシビリティのルール",
   ssr: "SSR ルール",
   "petite-vue": "petite-vue ルール",
   vapor: "Vapor ルール",
-  ecosystem: "エコシステム ルール",
+  ecosystem: "エコシステムのルール",
   "musea-and-css": "Musea と CSS のルール",
 };

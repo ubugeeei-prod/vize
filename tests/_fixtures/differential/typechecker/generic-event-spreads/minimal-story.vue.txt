@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import TreeRoot from '../TreeRoot.vue';
+import TreeItem, { type ToggleEvent } from '../TreeItem.vue';
+interface TreeNode { id: string; name: string; children?: TreeNode[] }
+const treeData = ref<TreeNode[]>([]);
+function fetchChildren(event: ToggleEvent<TreeNode>) {
+  void event.detail.value?.id;
+}
+</script>
+<template>
+  <TreeRoot v-slot="{ flattenItems }" :items="treeData" :get-key="(item) => item.id">
+    <TreeItem v-for="item in flattenItems" v-bind="item.bind" @toggle="fetchChildren" />
+  </TreeRoot>
+</template>

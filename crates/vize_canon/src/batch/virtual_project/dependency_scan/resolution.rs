@@ -80,7 +80,8 @@ pub(crate) fn resolve_dependency_with_inputs(
     let specifier = specifier
         .strip_suffix(".vue.ts")
         .map_or_else(|| specifier.to_owned(), |stem| cstr!("{stem}.vue").into());
-    if specifier.starts_with("./")
+    if matches!(specifier.as_str(), "." | "..")
+        || specifier.starts_with("./")
         || specifier.starts_with("../")
         || Path::new(&specifier).is_absolute()
     {
@@ -215,3 +216,7 @@ mod alias_tests;
 #[cfg(test)]
 #[path = "precedence_tests.rs"]
 mod precedence_tests;
+
+#[cfg(test)]
+#[path = "directory_module_tests.rs"]
+mod directory_module_tests;

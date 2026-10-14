@@ -80,4 +80,4 @@ title: "型と script のルール"
 | [`type/require-typed-props`](https://vizejs.dev/ja/rules/type-and-script.html#type-require-typed-props) | [悪い](https://vizejs.dev/ja/rules/type-and-script.html#type-require-typed-props-bad) · [良い](https://vizejs.dev/ja/rules/type-and-script.html#type-require-typed-props-good) | defineProps に型定義を指定します。 |
 | [`type/strict-boolean-expressions`](https://vizejs.dev/ja/rules/type-and-script.html#type-strict-boolean-expressions) | [悪い](https://vizejs.dev/ja/rules/type-and-script.html#type-strict-boolean-expressions-bad) · [良い](https://vizejs.dev/ja/rules/type-and-script.html#type-strict-boolean-expressions-good) | script とテンプレートの条件式で安全な真偽判定を使います。 |
 
-[全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
+[全ルール](./all.md) · [ルールのオプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)

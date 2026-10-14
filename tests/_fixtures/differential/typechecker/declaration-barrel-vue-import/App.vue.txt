@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import { useWidget } from '#imports';
+import type { Missing } from './composables/useMissing';
+useWidget({ count: 1 });
+const missing: Missing | undefined = undefined;
+void missing;
+</script>
+<template><span /></template>

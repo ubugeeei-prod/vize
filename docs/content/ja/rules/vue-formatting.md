@@ -29,4 +29,4 @@ title: "テンプレートの属性と表記を揃える"
 | [`vue/prop-name-casing`](https://vizejs.dev/ja/rules/vue-formatting.html#vue-prop-name-casing) | [悪い](https://vizejs.dev/ja/rules/vue-formatting.html#vue-prop-name-casing-bad) · [良い](https://vizejs.dev/ja/rules/vue-formatting.html#vue-prop-name-casing-good) | 宣言する prop 名の形式を揃えます。 |
 | [`vue/valid-attribute-name`](https://vizejs.dev/ja/rules/vue-formatting.html#vue-valid-attribute-name) | [悪い](https://vizejs.dev/ja/rules/vue-formatting.html#vue-valid-attribute-name-bad) · [良い](https://vizejs.dev/ja/rules/vue-formatting.html#vue-valid-attribute-name-good) | 有効な属性名を指定します。 |
 
-[全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
+[全ルール](./all.md) · [ルールのオプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)

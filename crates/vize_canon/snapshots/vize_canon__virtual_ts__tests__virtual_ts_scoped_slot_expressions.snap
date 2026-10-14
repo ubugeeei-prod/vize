@@ -102,7 +102,8 @@ type __VizeNativeSlotsFactory<C> = C extends new (...args: any[]) => any ? typeo
 type __VizeSlotsFactory<C> = __VizeIsAny<C> extends true ? (component: C) => (props: any) => any : C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeSlotsFactory<C> : __VizeNativeSlotsFactory<C>;
 // @ts-ignore The unchecked payload of an untyped host: an error type, never reported.
 type __VizeSilentAny = {}["__vizeSilentAny"];
-type __VizeSlotPayload<__S, __N> = __VizeIsAny<__S> extends true ? __VizeSilentAny : { [__K in keyof __S & __N]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S & __N] extends infer __P ? ([__P] extends [never] ? any : __P) : any;
+type __VizeNamedSlotPayload<__S, __N> = { [__K in keyof __S & __N]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S & __N] extends infer __P ? ([__P] extends [never] ? any : __P) : any;
+type __VizeSlotPayload<__S, __N> = __VizeIsAny<__S> extends true ? __VizeSilentAny : string extends __N ? string extends keyof __S ? __VizeNamedSlotPayload<__S, __N> : any : __VizeNamedSlotPayload<__S, __N>;
 import MyList from './MyList.vue'
 
 // ========== Exported Types ==========
@@ -130,7 +131,7 @@ function __setup() {
   // User setup code
   const items = ['a', 'b']
   
-  // @vize-map: 16007:16037 -> 0:59
+  // @vize-map: 16170:16200 -> 0:59
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

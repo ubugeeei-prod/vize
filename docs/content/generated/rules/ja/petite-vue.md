@@ -13,7 +13,7 @@ title: "petite-vue ルール"
 | [`petite-vue/valid-v-effect`](#petite-vue-valid-v-effect) | [悪い](#petite-vue-valid-v-effect-bad) · [良い](#petite-vue-valid-v-effect-good) | v-effect に空でない式を指定します。 |
 | [`petite-vue/valid-v-scope`](#petite-vue-valid-v-scope) | [悪い](#petite-vue-valid-v-scope-bad) · [良い](#petite-vue-valid-v-scope-good) | v-scope に値を指定する場合は、オブジェクトリテラルにします。 |
 
-[全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
+[全ルール](./all.md) · [ルールのオプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
 
 ### `petite-vue/no-unsupported-directive`
 

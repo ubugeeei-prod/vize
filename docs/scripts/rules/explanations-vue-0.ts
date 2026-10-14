@@ -170,6 +170,13 @@ export const vue0Explanations: readonly ExplanationRecord[] = [
     "一方向なら通常の title のバインディング、更新の受け取りが必要なら v-model:title を使います。",
   ],
   [
+    "vue/no-deprecated-v-is",
+    "`v-is` was deprecated in Vue 3.1; the example still uses it to swap the rendered component.",
+    "The `is` attribute with the `vue:` prefix, or `<component :is>`, selects the component instead.",
+    "Vue 3.1 で非推奨になった `v-is` で、描画するコンポーネントを切り替えています。",
+    "`vue:` プレフィックス付きの `is` 属性、または `<component :is>` で切り替えます。",
+  ],
+  [
     "vue/no-deprecated-v-on-native-modifier",
     "The component handlers use the removed .native event modifier.",
     "The handlers omit .native and preserve other event modifiers such as .stop.",

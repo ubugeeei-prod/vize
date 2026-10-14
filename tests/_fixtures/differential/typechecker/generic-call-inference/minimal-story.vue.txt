@@ -1,0 +1,6 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import { PinInputRoot } from '..'
+const value = ref<string[]>([])
+</script>
+<template><PinInputRoot id="otp" v-model="value" /></template>

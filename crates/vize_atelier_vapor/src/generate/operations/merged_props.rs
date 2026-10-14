@@ -63,9 +63,10 @@ pub(crate) fn merged_props_call(
         }
     }
     cstr!(
-        "_setDynamicProps(n{}, [{}])",
+        "_setDynamicProps(n{}, [{}]{})",
         node.element,
-        sources.join(", ")
+        sources.join(", "),
+        svg_argument(node.namespace)
     )
     .to_compact_string()
 }
@@ -79,4 +80,15 @@ fn simple_identifier(key: &str) -> bool {
         && bytes
             .iter()
             .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'_' | b'$'))
+}
+
+/// The trailing arguments that tell `setDynamicProps` an element is SVG, as
+/// Vue's compiler emits them (`staticKeys`, then `isSVG`; 3.6.0-rc.10+).
+/// An earlier runtime reads the null as `isSVG` and behaves as before.
+pub(crate) fn svg_argument(namespace: vize_atelier_core::Namespace) -> &'static str {
+    if namespace == vize_atelier_core::Namespace::Svg {
+        ", null, true"
+    } else {
+        ""
+    }
 }

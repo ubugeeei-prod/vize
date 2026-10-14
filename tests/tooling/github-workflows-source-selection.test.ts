@@ -264,11 +264,12 @@ test("the Rust report waits for the builder and all four independently executing
     /select-rust-workers\.mjs verify .*\n.*typechecker-shards\.ts aggregate/,
   );
   const check = parse(readRepoFile(".github", "workflows", "check.yml"));
-  for (const job of [
-    check.jobs["pr-source-checks"],
-    source.jobs["pr-rust-source"],
-    rust.jobs["rust-source-report"],
-  ])
+  assert.deepEqual(check.jobs["pr-source-checks"].permissions, {
+    contents: "read",
+    actions: "read",
+    checks: "read",
+  });
+  for (const job of [source.jobs["pr-rust-source"], rust.jobs["rust-source-report"]])
     assert.deepEqual(job.permissions, { contents: "read", actions: "read" });
   assert.equal(reportSteps[gate].if, undefined);
   assert.equal(reportSteps[gate].run, "node tools/support/compat/github/require-rust-tier.ts");

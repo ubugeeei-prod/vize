@@ -1,0 +1,42 @@
+{
+  "upstream": "unovue/reka-ui",
+  "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+  "tree": "c606a4d7e93833b70498d954a56f8f0eca854644",
+  "wholeSources": [
+    {
+      "path": "packages/core/src/PinInput/PinInputRoot.vue",
+      "gitBlob": "cfe11610b1de5cd0ac5d201bd07883f5dd93a0b4",
+      "sha256": "c1115c31eb8c79f911fc7f20eb2106c755b7a1226f4760d71830b88017d8709f",
+      "bytes": 5059,
+      "originalRetainedBytes": "/tmp/vize-app-e2e-remaining-20261011/fourth-da43-qualifier/target/native-syntax-completion/original-app-packets/reka-ui/bytes/c1115c31eb8c79f911fc7f20eb2106c755b7a1226f4760d71830b88017d8709f",
+      "corpus": "PinInputRoot.vue.txt"
+    },
+    {
+      "path": "packages/core/src/PinInput/story/PinInput.story.vue",
+      "gitBlob": "21a597ec6a9cc1612104372ca9fd9d5f83f00497",
+      "sha256": "cfbe18a9dcffea18e4a22e331bda10adf811e44aadc9ccf7db225c2c36f39502",
+      "bytes": 821,
+      "originalRetainedBytes": "/tmp/vize-app-e2e-remaining-20261011/fourth-da43-qualifier/target/native-syntax-completion/original-app-packets/reka-ui/bytes/cfbe18a9dcffea18e4a22e331bda10adf811e44aadc9ccf7db225c2c36f39502",
+      "corpus": "PinInput.story.vue.txt"
+    },
+    {
+      "path": "packages/core/src/shared/types.ts",
+      "gitBlob": "95c45de3b56f0169705027d8b615596e693e1619",
+      "sha256": "063e748ea6e7f1f406288e8076620b52c1ca7a8007ea54f1359694fbb836f4ef",
+      "bytes": 2304,
+      "originalRetainedBytes": "/tmp/vize-app-e2e-remaining-20261011/fourth-da43-qualifier/target/native-syntax-completion/original-app-packets/reka-ui/bytes/063e748ea6e7f1f406288e8076620b52c1ca7a8007ea54f1359694fbb836f4ef",
+      "corpus": "types.ts.txt"
+    }
+  ],
+  "originalAuthoredWholeVector": {
+    "file": "packages/core/src/PinInput/story/PinInput.story.vue",
+    "diagnostics": [
+      "error:20:11 [TS2322] Type 'string[]' is not assignable to type 'number[]'.\nType 'string' is not assignable to type 'number'."
+    ]
+  },
+  "originalSource": "da43c7ccd2c50a8df688e3d30e0b14a1ec2c223d",
+  "originalRun": 38122497358,
+  "originalArtifact": 11696141670,
+  "beforeNativeFullGeneratorPacketAvailable": false,
+  "qualification": "candidate only; pending composed exact source native/full original App"
+}

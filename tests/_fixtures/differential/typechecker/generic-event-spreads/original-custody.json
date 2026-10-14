@@ -1,0 +1,22 @@
+{
+  "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+  "source": "immutable original App packet 38129574946 / artifact 11698838966",
+  "completeBodies": {
+    "TreeRoot.vue.txt": {
+      "sha256": "cd45b4ad003c59ef0d8a9801741546a0f5cf75013716ef6ddcb65528e3c72a05",
+      "bytes": 9543
+    },
+    "TreeItem.vue.txt": {
+      "sha256": "c3fdc8790252c98512188fcfd6aaa53b6c70dde490b84af7a208700f7f0625ad",
+      "bytes": 6968
+    },
+    "TreeAsync.story.vue.txt": {
+      "sha256": "ba05253334c8c32f3237f5d5423d4580f3a29e041fcb21aad4b94df1748208bc",
+      "bytes": 2937
+    },
+    "index.ts.txt": {
+      "sha256": "309acce4d34083c7604426ffeb468942a2948729174ac6bc19de962f04a99923",
+      "bytes": 432
+    }
+  }
+}

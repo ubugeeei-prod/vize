@@ -1,10 +1,10 @@
 ---
-title: 型ルール オプション
+title: 型ルールのオプション
 ---
 
 <!-- Reviewed translation; source: rules/options-type.md; scope: introduction and rule options prose -->
 
-# 型ルール オプション
+# 型ルールのオプション
 
 条件式で、数値の 0・空文字列・存在しないオブジェクトをどう扱うか明示したいときに使う設定です。
 `type/strict-boolean-expressions` は自分で有効にする必要があり、型情報を使う lint も必要です。

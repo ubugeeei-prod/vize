@@ -12,7 +12,7 @@ use crate::virtual_ts::expressions::ComponentPropCheckContext;
 use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
 
 use self::strict_children::generate_strict_slot_child_checks;
-use super::vif_guard::append_ignored_vif_guard_open;
+use super::vif_guard_chain::{append_chained_vif_guard_close, append_chained_vif_guard_open};
 
 #[derive(Clone, Copy)]
 pub(super) struct ComponentSlotCheckMeta<'a, 'template> {
@@ -78,7 +78,7 @@ pub(super) fn generate_component_slot_checks(
     };
 
     if let Some(ref guard) = usage.vif_guard {
-        append_ignored_vif_guard_open(ctx.ts, indent, guard, "Inference-only guard");
+        append_chained_vif_guard_open(ctx.ts, indent, guard, "Inference-only guard");
     }
 
     let contract_name = vize_carton::cstr!("__VizeSlotContract_{idx}");
@@ -117,7 +117,7 @@ pub(super) fn generate_component_slot_checks(
     }
 
     if usage.vif_guard.is_some() {
-        append!(*ctx.ts, "{indent}}}\n");
+        append_chained_vif_guard_close(ctx.ts, indent);
     }
 }
 

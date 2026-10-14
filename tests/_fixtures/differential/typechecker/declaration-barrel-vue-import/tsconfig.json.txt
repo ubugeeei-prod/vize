@@ -1,0 +1,1 @@
+{"compilerOptions":{"strict":true,"noEmit":true,"skipLibCheck":true,"target":"ES2022","module":"preserve","moduleResolution":"bundler","types":[],"paths":{"#imports":["./.generated/imports.d.ts"]}},"include":["src/**/*"]}
