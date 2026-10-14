@@ -22,16 +22,16 @@ const app = pathToFileURL(appPath).href;
 const componentPath = path.join(root, "src", "components", "HelloWorld.vue");
 const appText = fs.readFileSync(appPath, "utf8");
 
-// With VIZE_SMOKE_LSP_LOG_DIR set, the server also traces editor preparation
-// and the whole session (stderr, every feature result) is kept there for CI
-// artifacts, so a
-// host-only failure such as the typeless Windows hover (#8940) shows where the
-// checker path gave up.
+// The server always traces editor preparation, which shows whether a typed
+// request reached the checker. With VIZE_SMOKE_LSP_LOG_DIR set, the whole
+// session (stderr, every feature result) is also kept there for CI artifacts,
+// so a host-only failure such as the typeless Windows hover (#8940) shows
+// where the checker path gave up.
 const logDir = process.env.VIZE_SMOKE_LSP_LOG_DIR;
 const server = spawn(process.execPath, [path.join(root, "node_modules/vize/bin/vize"), "lsp"], {
   cwd: root,
   stdio: ["pipe", "pipe", "pipe"],
-  env: logDir ? { ...process.env, VIZE_TRACE_EDITOR_PREPARATION: "1" } : process.env,
+  env: { ...process.env, VIZE_TRACE_EDITOR_PREPARATION: "1" },
 });
 let stderr = "";
 server.stderr.on("data", (chunk: Buffer) => (stderr += chunk.toString("utf8")));
@@ -40,7 +40,9 @@ const results: { name: string; result: unknown }[] = [];
 // checker path gave up.
 function serverEvidence(): string {
   const lines = stderr.split(/\r?\n/);
-  const notable = lines.filter((line) => /\b(WARN|ERROR)\b|panicked|corsa|tsgo/i.test(line));
+  const notable = lines.filter((line) =>
+    /\b(WARN|ERROR)\b|panicked|corsa|tsgo|vize_editor_preparation/i.test(line),
+  );
   return [
     `--- server warnings and errors (${notable.length} of ${lines.length} lines) ---`,
     ...notable.slice(-120).map((line) => line.slice(0, 600)),
