@@ -103,7 +103,7 @@ vp run lint
 [悪い例](#vue-use-v-on-exact-bad) · [良い例](#vue-use-v-on-exact-good)
 
 既定の重大度: `warning`  
-プリセット: `essential`, `nuxt`, `opinionated`  
+プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
@@ -172,7 +172,7 @@ v-bind の表記形式を揃えます。
 [悪い例](#vue-v-bind-style-bad) · [良い例](#vue-v-bind-style-good)
 
 既定の重大度: `warning`  
-プリセット: `nuxt`, `opinionated`  
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: 対応している診断で利用できます  
 適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
@@ -224,7 +224,7 @@ vp run lint
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_bind_style.rs#L30) · [全ルール](all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_bind_style.rs#L28) · [全ルール](all.md)
 
 ### `vue/v-on-style`
 

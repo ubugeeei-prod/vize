@@ -274,7 +274,7 @@ Disallow variable names that shadow variables in outer scope
 [Bad](#vue-no-template-shadow-bad) · [Good](#vue-no-template-shadow-good)
 
 Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.

@@ -154,6 +154,7 @@ pub use valid_v_text::ValidVText;
 
 // Strongly recommended rules exports
 pub use crate::rules::opinionated::vue::NoTemplateShadow;
+pub use crate::rules::opinionated::vue::ThisInTemplate;
 pub use crate::rules::opinionated::vue::{
     HtmlSelfClosing, HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions, HtmlSelfClosingStyle,
 };

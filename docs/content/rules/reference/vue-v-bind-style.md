@@ -9,7 +9,7 @@ Enforce `v-bind` directive style
 [Bad](#bad) · [Good](#good)
 
 Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: Available for supported findings  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
@@ -57,4 +57,4 @@ vp run lint
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_bind_style.rs#L30) · [All rules](../all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_bind_style.rs#L28) · [All rules](../all.md)

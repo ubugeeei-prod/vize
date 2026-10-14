@@ -23,8 +23,6 @@ use crate::context::LintContext;
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::String;
-use vize_l0::ToCompactString;
-use vize_l0::cstr;
 use vize_relief::{DirectiveNode, ElementNode};
 
 static META: RuleMeta = RuleMeta {
@@ -67,106 +65,46 @@ impl Rule for VBindStyle {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name != "bind" {
-            return;
-        }
-
         // Skip object binding syntax (v-bind="...")
-        if directive.arg.is_none() {
+        if directive.name != "bind" || directive.arg.is_none() {
             return;
         }
+        let start = directive.loc.span.start;
+        let Some(text) = ctx
+            .source
+            .get(start as usize..directive.loc.span.end as usize)
+        else {
+            return;
+        };
 
-        let raw_name = directive.raw_name.unwrap_or("");
-        let is_shorthand = raw_name.starts_with(':');
-
-        match self.style {
-            VBindStyleOption::Shorthand => {
-                if !is_shorthand {
-                    // Using v-bind:attr, should use :attr
-                    let arg_content = directive
-                        .arg
-                        .as_ref()
-                        .map(|a| match a {
-                            vize_relief::ExpressionNode::Simple(s) => s.content.to_compact_string(),
-                            _ => String::default(),
-                        })
-                        .unwrap_or_default();
-
-                    let exp_content = directive
-                        .exp
-                        .as_ref()
-                        .map(|e| match e {
-                            vize_relief::ExpressionNode::Simple(s) => s.content.to_compact_string(),
-                            _ => String::default(),
-                        })
-                        .unwrap_or_default();
-
-                    let new_text = cstr!(":{}=\"{}\"", arg_content, exp_content);
-                    let fix = Fix::new(
-                        "Use shorthand syntax",
-                        TextEdit::replace(
-                            directive.loc.span.start,
-                            directive.loc.span.end,
-                            new_text,
-                        ),
-                    );
-
-                    ctx.report(
-                        LintDiagnostic::warn(
-                            META.name,
-                            "Prefer shorthand `:` over `v-bind:`",
-                            directive.loc.span.start,
-                            directive.loc.span.end,
-                        )
-                        .with_help("Use `:attr=\"value\"` instead of `v-bind:attr=\"value\"`")
-                        .with_fix(fix),
-                    );
-                }
-            }
-            VBindStyleOption::Longform => {
-                if is_shorthand {
-                    // Using :attr, should use v-bind:attr
-                    let arg_content = directive
-                        .arg
-                        .as_ref()
-                        .map(|a| match a {
-                            vize_relief::ExpressionNode::Simple(s) => s.content.to_compact_string(),
-                            _ => String::default(),
-                        })
-                        .unwrap_or_default();
-
-                    let exp_content = directive
-                        .exp
-                        .as_ref()
-                        .map(|e| match e {
-                            vize_relief::ExpressionNode::Simple(s) => s.content.to_compact_string(),
-                            _ => String::default(),
-                        })
-                        .unwrap_or_default();
-
-                    let new_text = cstr!("v-bind:{}=\"{}\"", arg_content, exp_content);
-                    let fix = Fix::new(
-                        "Use longform syntax",
-                        TextEdit::replace(
-                            directive.loc.span.start,
-                            directive.loc.span.end,
-                            new_text,
-                        ),
-                    );
-
-                    ctx.report(
-                        LintDiagnostic::warn(
-                            META.name,
-                            "Prefer `v-bind:` over shorthand `:`",
-                            directive.loc.span.start,
-                            directive.loc.span.end,
-                        )
-                        .with_help("Use `v-bind:attr=\"value\"` instead of `:attr=\"value\"`")
-                        .with_fix(fix),
-                    );
-                }
-            }
-        }
+        // Only the prefix changes, so arguments, modifiers and the value keep
+        // their authored text. `.prop` shorthand matches neither style.
+        let (old, new, fix_message, message, help) = match self.style {
+            VBindStyleOption::Shorthand if text.starts_with("v-bind:") => (
+                "v-bind:",
+                ":",
+                "Use shorthand syntax",
+                "Prefer shorthand `:` over `v-bind:`",
+                "Use `:attr=\"value\"` instead of `v-bind:attr=\"value\"`",
+            ),
+            VBindStyleOption::Longform if text.starts_with(':') => (
+                ":",
+                "v-bind:",
+                "Use longform syntax",
+                "Prefer `v-bind:` over shorthand `:`",
+                "Use `v-bind:attr=\"value\"` instead of `:attr=\"value\"`",
+            ),
+            _ => return,
+        };
+        let fix = Fix::new(
+            fix_message,
+            TextEdit::replace(start, start + old.len() as u32, String::from(new)),
+        );
+        ctx.report(
+            LintDiagnostic::warn(META.name, message, start, directive.loc.span.end)
+                .with_help(help)
+                .with_fix(fix),
+        );
     }
 }
 
@@ -188,6 +126,15 @@ mod tests {
             style: VBindStyleOption::Longform,
         }));
         Linter::with_registry(registry)
+    }
+
+    fn fixed(linter: &Linter, source: &str) -> std::string::String {
+        let result = linter.lint_template(source, "test.vue");
+        assert_eq!(result.warning_count, 1, "{source}");
+        let edit = &result.diagnostics[0].fix.as_ref().unwrap().edits[0];
+        let mut out = source.to_owned();
+        out.replace_range(edit.start as usize..edit.end as usize, &edit.new_text);
+        out
     }
 
     #[test]
@@ -218,5 +165,35 @@ mod tests {
         let result = linter.lint_template(r#"<div :class="foo"></div>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
         assert!(result.diagnostics[0].has_fix());
+    }
+
+    #[test]
+    fn fix_keeps_arguments_modifiers_and_values() {
+        let shorthand = create_linter_shorthand();
+        for (source, expected) in [
+            (
+                r#"<a v-bind:title.camel="t"></a>"#,
+                r#"<a :title.camel="t"></a>"#,
+            ),
+            (
+                r#"<a v-bind:[key]='x("y")'></a>"#,
+                r#"<a :[key]='x("y")'></a>"#,
+            ),
+            (r#"<a v-bind:title></a>"#, r#"<a :title></a>"#),
+        ] {
+            assert_eq!(fixed(&shorthand, source), expected);
+        }
+        assert_eq!(
+            fixed(&create_linter_longform(), r#"<a :title.prop="t"></a>"#),
+            r#"<a v-bind:title.prop="t"></a>"#
+        );
+    }
+
+    #[test]
+    fn prop_shorthand_matches_neither_style() {
+        for linter in [create_linter_shorthand(), create_linter_longform()] {
+            let result = linter.lint_template(r#"<a .title="t"></a>"#, "test.vue");
+            assert_eq!(result.warning_count, 0);
+        }
     }
 }

@@ -206,6 +206,25 @@
       "source": "<template><Widget v-bind:title.sync.camel=\"title\" v-on:activate.native.stop=\"onActivate\" /></template>\n",
       "diagnostics": [
         {
+          "rule_name": "vue/v-bind-style",
+          "severity": "warning",
+          "message": "Prefer shorthand `:` over `v-bind:`",
+          "start": 18,
+          "end": 49,
+          "help": "Use `:attr=\"value\"` instead of `v-bind:attr=\"value\"`",
+          "labels": [],
+          "fix": {
+            "message": "Use shorthand syntax",
+            "edits": [
+              {
+                "start": 18,
+                "end": 25,
+                "new_text": ":"
+              }
+            ]
+          }
+        },
+        {
           "rule_name": "vue/no-deprecated-v-bind-sync",
           "severity": "error",
           "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
@@ -246,6 +265,25 @@
         }
       ],
       "lspDiagnostics": [
+        {
+          "range": {
+            "start": {
+              "line": 0,
+              "character": 18
+            },
+            "end": {
+              "line": 0,
+              "character": 49
+            }
+          },
+          "severity": 2,
+          "code": "vue/v-bind-style",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/v-bind-style.html"
+          },
+          "source": "vize/lint",
+          "message": "Prefer shorthand `:` over `v-bind:`\n\nHelp: Use :attr=\"value\" instead of v-bind:attr=\"value\""
+        },
         {
           "range": {
             "start": {
@@ -306,6 +344,25 @@
       ],
       "baselineDiagnostics": [
         {
+          "rule_name": "vue/v-bind-style",
+          "severity": "warning",
+          "message": "Prefer shorthand `:` over `v-bind:`",
+          "start": 18,
+          "end": 49,
+          "help": "Use `:attr=\"value\"` instead of `v-bind:attr=\"value\"`",
+          "labels": [],
+          "fix": {
+            "message": "Use shorthand syntax",
+            "edits": [
+              {
+                "start": 18,
+                "end": 25,
+                "new_text": ":"
+              }
+            ]
+          }
+        },
+        {
           "rule_name": "vue/v-on-style",
           "severity": "warning",
           "message": "Prefer shorthand `@` over `v-on:`",
@@ -326,6 +383,25 @@
         }
       ],
       "baselineLspDiagnostics": [
+        {
+          "range": {
+            "start": {
+              "line": 0,
+              "character": 18
+            },
+            "end": {
+              "line": 0,
+              "character": 49
+            }
+          },
+          "severity": 2,
+          "code": "vue/v-bind-style",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/v-bind-style.html"
+          },
+          "source": "vize/lint",
+          "message": "Prefer shorthand `:` over `v-bind:`\n\nHelp: Use :attr=\"value\" instead of v-bind:attr=\"value\""
+        },
         {
           "range": {
             "start": {
