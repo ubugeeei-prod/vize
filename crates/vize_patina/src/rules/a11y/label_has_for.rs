@@ -41,15 +41,14 @@ const FORM_CONTROL_TAGS: &[&str] = &["input", "select", "textarea"];
 fn has_for_attribute(element: &ElementNode) -> bool {
     element.props.iter().any(|prop| match prop {
         PropNode::Attribute(attr) => attr.name == "for" || attr.name == "htmlFor",
+        // `v-bind="attrs"` can supply `for` at runtime (#8961).
         PropNode::Directive(dir) => {
-            if dir.name == "bind" {
-                matches!(
-                    &dir.arg,
-                    Some(ExpressionNode::Simple(s)) if s.content == "for" || s.content == "htmlFor"
-                )
-            } else {
-                false
-            }
+            dir.name == "bind"
+                && match &dir.arg {
+                    Some(ExpressionNode::Simple(s)) => s.content == "for" || s.content == "htmlFor",
+                    Some(_) => false,
+                    None => true,
+                }
         }
     })
 }

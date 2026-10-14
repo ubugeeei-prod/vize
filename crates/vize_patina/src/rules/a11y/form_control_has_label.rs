@@ -129,6 +129,18 @@ impl FormControlHasLabel {
         result.flatten()
     }
 
+    /// `v-bind="attrs"` can supply `id`, `aria-label` or
+    /// `aria-labelledby` at runtime, so the label cannot be judged statically (#8961).
+    fn has_attribute_spread(element: &MarkupElement<'_>) -> bool {
+        let mut found = false;
+        element.walk_bindings(&mut |binding| {
+            if binding.kind() == MarkupBindingKind::Bind && binding.arg_name().is_none() {
+                found = true;
+            }
+        });
+        found
+    }
+
     fn check_element(
         ctx: &mut LintContext<'_>,
         element: &MarkupElement<'_>,
@@ -145,6 +157,7 @@ impl FormControlHasLabel {
 
         // Check for various label methods
         let has_label = Self::has_aria_label(element)
+            || Self::has_attribute_spread(element)
             || Self::has_id(element)
             || Self::has_title(element)
             || has_label_ancestor;
