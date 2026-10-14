@@ -171,9 +171,47 @@ mod process_tests {
     const FIXTURE: &str = include_str!(
         "../../../../tests/_fixtures/differential/lsp/native-project-retirement-3952/input.json"
     );
-    const OBSERVER: &str = include_str!(
-        "../../../../tests/_fixtures/differential/lsp/native-project-retirement-3952/observe-native-owner.py"
-    );
+    /// Launcher that records the native owners still alive from earlier
+    /// launches, then becomes the native process itself (`exec` keeps `$`),
+    /// so each record names the actual native process and its start time.
+    const OBSERVER: &str = r#"#!/bin/sh
+native=@NATIVE@
+trace=@TRACE@
+nth() { n=$1; shift; shift "$n"; printf '%s' "$1"; }
+role=--lsp
+for arg in "$@"; do [ "$arg" = --api ] && role=--api; done
+live=
+if [ -f "$trace" ]; then
+  while IFS= read -r line; do
+    # Only the record's own fields, never its nested previous owners.
+    own=${line%%'"previousNativeOwners"'*}
+    pid=$(printf '%s' "$own" | sed -n 's/^{"pid": *\([0-9]*\).*/\1/p')
+    birth=$(printf '%s' "$own" | sed -n 's/.*"birth": *"\([0-9]*\)".*/\1/p')
+    owner=$(printf '%s' "$own" | sed -n 's/.*"role": *"\(--[a-z]*\)".*/\1/p')
+    stat=$(cat "/proc/$pid/stat" 2>/dev/null) || continue
+    fields=${stat##*) }
+    # shellcheck disable=SC2086
+    state=$(nth 0 $fields)
+    # shellcheck disable=SC2086
+    [ "$(nth 19 $fields)" = "$birth" ] || continue
+    if [ "$state" != Z ]; then
+      physical=$(readlink "/proc/$pid/exe" 2>/dev/null) || continue
+      if [ "$physical" != "$native" ] || ! tr '\0' '\n' < "/proc/$pid/cmdline" | grep -qx -- "$owner"; then
+        echo "recorded native owner changed identity: $line, $physical" >&2
+        exit 1
+      fi
+    fi
+    entry="{\"pid\": $pid, \"birth\": \"$birth\", \"role\": \"$owner\", \"state\": \"$state\"}"
+    live="${live:+$live, }$entry"
+  done < "$trace"
+fi
+stat=$(cat "/proc/$/stat")
+fields=${stat##*) }
+# shellcheck disable=SC2086
+birth=$(nth 19 $fields)
+(umask 077; printf '{"pid": %s, "birth": "%s", "role": "%s", "previousNativeOwners": [%s]}\n' "$" "$birth" "$role" "$live" >> "$trace")
+exec "$native" "$@"
+"#;
 
     fn quote(path: &Path) -> vize_l0::String {
         cstr!("'{}'", path.to_str().unwrap().replace('\'', "'\"'\"'"))
@@ -190,8 +228,6 @@ mod process_tests {
         assert_eq!(fixture["source"], control::fixture()["source"]);
         let native = control::runtime();
         let trace = tempfile::tempdir().unwrap();
-        let observer = trace.path().join("observe.py");
-        fs::write(&observer, OBSERVER).unwrap();
         let log = trace.path().join("native-owners.jsonl");
         // The existing .bin classification selects the genuine async API recipe.
         let bin = trace.path().join(".bin");
@@ -199,13 +235,9 @@ mod process_tests {
         let launcher = bin.join("tsgo");
         fs::write(
             &launcher,
-            cstr!(
-                "#!/bin/sh\nexec python3 {} {} {} \"$@\"\n",
-                quote(&observer),
-                quote(&native),
-                quote(&log),
-            )
-            .as_str(),
+            OBSERVER
+                .replace("@NATIVE@", quote(&native).as_str())
+                .replace("@TRACE@", quote(&log).as_str()),
         )
         .unwrap();
         fs::set_permissions(&launcher, fs::Permissions::from_mode(0o755)).unwrap();

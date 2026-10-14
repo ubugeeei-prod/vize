@@ -8,6 +8,11 @@ use std::time::Duration;
 use corsa_lsp::{LspClient, LspSpawnConfig};
 use serde_json::{Value, json};
 
+/// Bounds a hang, not latency: the assertion is about the shutdown/exit
+/// message shape, and a loaded full test run once took longer than 5 s to
+/// start the fake server (v0.454.0 check run 38531768017).
+const HANG_BOUND: Duration = Duration::from_secs(60);
+
 struct RawInitialize;
 
 impl lsp_types::request::Request for RawInitialize {
@@ -18,20 +23,20 @@ impl lsp_types::request::Request for RawInitialize {
 
 #[test]
 fn graceful_close_omits_shutdown_and_exit_params() {
-    if find_python3().is_none() {
-        eprintln!("skipping params-less shutdown regression: python3 is not available");
+    if find_node().is_none() {
+        eprintln!("skipping params-less shutdown regression: node is not available");
         return;
     }
 
     let tempdir = tempfile::tempdir().unwrap();
-    let server = tempdir.path().join("params_less_lsp_server.py");
+    let server = tempdir.path().join("params-less-lsp-server.mjs");
     write_fake_lsp_server(&server);
 
     corsa::runtime::block_on(async {
         let client = LspClient::spawn(
             LspSpawnConfig::new(&server)
-                .with_request_timeout(Some(Duration::from_secs(5)))
-                .with_shutdown_timeout(Duration::from_secs(5)),
+                .with_request_timeout(Some(HANG_BOUND))
+                .with_shutdown_timeout(HANG_BOUND),
         )
         .await
         .unwrap();
@@ -50,57 +55,56 @@ fn graceful_close_omits_shutdown_and_exit_params() {
     });
 }
 
-fn find_python3() -> Option<PathBuf> {
+fn find_node() -> Option<PathBuf> {
     std::env::split_paths(&std::env::var_os("PATH")?).find_map(|dir| {
-        let candidate = dir.join("python3");
+        let candidate = dir.join("node");
         candidate.is_file().then_some(candidate)
     })
 }
 
+/// A minimal stdio LSP server that fails if `shutdown` or `exit` carries
+/// `params`.
 fn write_fake_lsp_server(path: &Path) {
-    let source = r#"#!/usr/bin/env python3
-import json
-import sys
+    let source = r#"#!/usr/bin/env node
+let buffer = Buffer.alloc(0);
 
+function write(message) {
+  const body = Buffer.from(JSON.stringify(message), "utf8");
+  process.stdout.write(`Content-Length: ${body.length}\r\n\r\n`);
+  process.stdout.write(body);
+}
 
-def read_message():
-    headers = {}
-    while True:
-        line = sys.stdin.buffer.readline()
-        if not line:
-            return None
-        if line in (b"\r\n", b"\n"):
-            break
-        name, value = line.decode("ascii").split(":", 1)
-        headers[name.lower()] = value.strip()
-    length = int(headers["content-length"])
-    return json.loads(sys.stdin.buffer.read(length))
+function handle(message) {
+  const method = message.method;
+  if ((method === "shutdown" || method === "exit") && "params" in message) {
+    process.stderr.write(`${method} unexpectedly included params: ${JSON.stringify(message.params)}\n`);
+    process.exit(1);
+  }
+  if (method === "initialize") {
+    write({ jsonrpc: "2.0", id: message.id, result: { capabilities: {} } });
+  } else if (method === "shutdown") {
+    write({ jsonrpc: "2.0", id: message.id, result: null });
+  } else if (method === "exit") {
+    process.exit(0);
+  }
+}
 
-
-def write_message(message):
-    body = json.dumps(message, separators=(",", ":")).encode("utf-8")
-    sys.stdout.buffer.write(f"Content-Length: {len(body)}\r\n\r\n".encode("ascii"))
-    sys.stdout.buffer.write(body)
-    sys.stdout.buffer.flush()
-
-
-while True:
-    message = read_message()
-    if message is None:
-        sys.exit("transport closed before exit")
-    method = message.get("method")
-    if method in ("shutdown", "exit") and "params" in message:
-        sys.exit(f"{method} unexpectedly included params: {message['params']!r}")
-    if method == "initialize":
-        write_message({
-            "jsonrpc": "2.0",
-            "id": message["id"],
-            "result": {"capabilities": {}},
-        })
-    elif method == "shutdown":
-        write_message({"jsonrpc": "2.0", "id": message["id"], "result": None})
-    elif method == "exit":
-        sys.exit(0)
+process.stdin.on("data", (chunk) => {
+  buffer = Buffer.concat([buffer, chunk]);
+  for (;;) {
+    const end = buffer.indexOf("\r\n\r\n");
+    if (end < 0) return;
+    const length = Number(/content-length:\s*(\d+)/i.exec(buffer.subarray(0, end).toString("ascii"))[1]);
+    if (buffer.length < end + 4 + length) return;
+    const body = buffer.subarray(end + 4, end + 4 + length).toString("utf8");
+    buffer = buffer.subarray(end + 4 + length);
+    handle(JSON.parse(body));
+  }
+});
+process.stdin.on("end", () => {
+  process.stderr.write("transport closed before exit\n");
+  process.exit(1);
+});
 "#;
     let mut file = std::fs::File::create(path).unwrap();
     file.write_all(source.trim_start().as_bytes()).unwrap();

@@ -12,7 +12,6 @@
       ".github/actions/test-js-packages-with-history/native-fault-evidence.py",
       ".github/actions/test-js-packages-with-history/native_fault_core.py",
       "tests/_fixtures/differential/lsp/event-rename/4075/named-model/author_contracts.py",
-      "tests/_fixtures/differential/lsp/native-project-retirement-3952/observe-native-owner.py",
       "tests/editor-conformance/drivers/pty-bridge.py",
 
       "tests/performance/support/warm-type-backed-release-bridge.py",
