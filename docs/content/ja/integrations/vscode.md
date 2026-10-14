@@ -96,7 +96,7 @@ vize lsp (vize_maestro)
 
 ### ソースまたは VSIX からのインストール
 
-[Vite+ インストール ガイド](https://viteplus.dev/guide/install) から `vp` を 1 回インストールしてから、次の手順を実行します。
+[Vite+ インストールガイド](https://viteplus.dev/guide/install) から `vp` を 1 回インストールしてから、次の手順を実行します。
 
 ```bash
 git clone https://github.com/ubugeeei-prod/vize.git
@@ -117,7 +117,7 @@ code --install-extension dist/vize.vsix
 
 次のブロックを認識します。
 
-- `<art>` メタデータ ブロック
+- `<art>` メタデータのブロック
 - `<variant>` ブロック
 - 標準の Vue `<template>`、`<script>`、および `<style>` セクション
 

@@ -19,7 +19,7 @@ Rspack では、共有の unplugin 実装を使わず、専用パッケージを
 
 ## インストール
 
-[Vite+ インストール ガイド](https://viteplus.dev/guide/install) から `vp` を一度インストールし、パッケージを追加します。
+[Vite+ インストールガイド](https://viteplus.dev/guide/install) から `vp` を一度インストールし、パッケージを追加します。
 
 ```bash
 vp install @vizejs/unplugin
