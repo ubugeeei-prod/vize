@@ -213,11 +213,11 @@ if [ -f "$trace" ]; then
     live="${live:+$live, }$entry"
   done < "$trace"
 fi
-stat=$(cat "/proc/$/stat")
+stat=$(cat "/proc/$$/stat")
 fields=${stat##*) }
 # shellcheck disable=SC2086
 birth=$(nth 19 $fields)
-(umask 077; printf '{"pid": %s, "birth": "%s", "role": "%s", "previousNativeOwners": [%s]}\n' "$" "$birth" "$role" "$live" >> "$trace")
+(umask 077; printf '{"pid": %s, "birth": "%s", "role": "%s", "previousNativeOwners": [%s]}\n' "$$" "$birth" "$role" "$live" >> "$trace")
 exec "$native" "$@"
 "#;
 
