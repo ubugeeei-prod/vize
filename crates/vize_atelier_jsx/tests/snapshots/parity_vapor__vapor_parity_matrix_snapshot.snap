@@ -190,7 +190,7 @@ export function render(_ctx) {
       const n7 = t1()
       _renderEffect(() => _setText(n7, _toDisplayString(_for_item0.value)))
       return n7
-    }))
+    }, null, 2 /* TRUE_MULTI_ROOT */), 5 /* TRUE_SINGLE_ROOT, FALSE_SINGLE_ROOT */)
     return n3
   })(_computed(() => (ok)))
   return n0
@@ -215,7 +215,7 @@ export function render(_ctx) {
   }, () => {
     const n5 = t1()
     return n5
-  })
+  }, 5 /* TRUE_SINGLE_ROOT, FALSE_SINGLE_ROOT */)
   return n0
 }
 
@@ -234,7 +234,7 @@ export function render(_ctx) {
   const n1 = _createFor(() => (items), (_for_item0) => {
     const n3 = t0()
     return n3
-  })
+  }, undefined, 9 /* FAST_REMOVE, IS_SINGLE_NODE */)
   return n0
 }
 

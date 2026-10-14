@@ -17,7 +17,7 @@ export function render(_ctx) {
         const x3 = _txt(n3)
         _renderEffect(() => _setText(x3, _toDisplayString(_for_item0.value.text)))
         return n2
-      }, (item) => (item.id), 40)
+      }, (item) => (item.id), 40 /* IS_SINGLE_NODE, SLOT_ROOT */)
       return n0
     }, { _: 1 })
   }, true)

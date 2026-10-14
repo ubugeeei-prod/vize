@@ -9,6 +9,7 @@ mod directives;
 mod dom;
 mod structural_slots;
 pub(crate) use dom::{set_prop_call, set_text_call};
+mod block_shape;
 mod events;
 mod for_loop;
 mod if_block;

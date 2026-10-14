@@ -22,7 +22,7 @@ export function render(_ctx) {
         _on(n5, "click", e => _ctx.send(e))
         _renderEffect(() => _setText(x5, _toDisplayString(_ctx.label)))
         return n6
-      }, null, 129)
+      }, null, 129 /* TRUE_SINGLE_ROOT, SLOT_ROOT */)
       return n3
     }, { _: 1 })
   }, false)

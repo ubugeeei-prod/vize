@@ -12,6 +12,6 @@ _renderEffect(() => {
 n3.innerHTML = _ctx.formatHelp(_for_item0.value.help)
 })
 return n2
-})
+}, undefined, 8 /* IS_SINGLE_NODE */)
 return n0
 }

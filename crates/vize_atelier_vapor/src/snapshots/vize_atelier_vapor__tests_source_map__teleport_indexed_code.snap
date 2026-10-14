@@ -20,7 +20,7 @@ export function render(_ctx) {
       }, () => {
         const n4 = t1()
         return n4
-      })
+      }, 5 /* TRUE_SINGLE_ROOT, FALSE_SINGLE_ROOT */)
       return n0
     }
   }, true)

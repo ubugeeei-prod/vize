@@ -17,8 +17,8 @@ _setClass(n5, _for_item1.value)
 _setText(x5, _toDisplayString(_for_item1.value))
 })
 return n5
-}, (icon, i) => (`${_for_item0.value}-${i}`))
+}, (icon, i) => (`${_for_item0.value}-${i}`), 8 /* IS_SINGLE_NODE */)
 return n3
-}, (n) => (`set-${n}`), 4)
+}, (n) => (`set-${n}`), 85 /* FAST_REMOVE, IS_FRAGMENT, ONCE, WRAPPED_ROWS */)
 return n0
 }

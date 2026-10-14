@@ -592,7 +592,7 @@ fn test_compile_v_for_destructured_aliases_resolve_source_paths() {
     );
     assert!(
         result.code.contains(
-            "}, ({ id: itemId, user: { name }, meta: { count: total = 0 } }) => (itemId))"
+            "}, ({ id: itemId, user: { name }, meta: { count: total = 0 } }) => (itemId), 9 /* FAST_REMOVE, IS_SINGLE_NODE */)"
         ),
         "{}",
         result.code

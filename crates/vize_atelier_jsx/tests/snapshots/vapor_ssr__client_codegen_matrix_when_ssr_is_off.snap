@@ -38,7 +38,7 @@ export function render(_ctx) {
   }, () => {
     const n5 = t1()
     return n5
-  })
+  }, 5 /* TRUE_SINGLE_ROOT, FALSE_SINGLE_ROOT */)
   return n0
 }
 
@@ -59,7 +59,7 @@ export function render(_ctx) {
     const x3 = _txt(n3)
     _renderEffect(() => _setText(x3, _toDisplayString(_for_item0.value)))
     return n3
-  })
+  }, undefined, 9 /* FAST_REMOVE, IS_SINGLE_NODE */)
   return n0
 }
 
@@ -86,6 +86,6 @@ export function render(_ctx) {
   }, () => {
     const n8 = t2()
     return n8
-  }))
+  }, 5 /* TRUE_SINGLE_ROOT, FALSE_SINGLE_ROOT */), 5 /* TRUE_SINGLE_ROOT, FALSE_SINGLE_ROOT */)
   return n0
 }

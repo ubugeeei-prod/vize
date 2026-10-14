@@ -52,6 +52,16 @@ const CORRECTED: &[(&str, &str)] = &[
         "destructured-aliases",
         include_str!("fixtures/fix-history/destructured-aliases.corrected-8852.expected.json"),
     ),
+    // Loops carry the runtime's `createFor` shape flags, as Vue's compiler
+    // emits them since 3.6.0-rc.6.
+    (
+        "destructured-key",
+        include_str!("fixtures/fix-history/destructured-key.corrected-shapes.expected.json"),
+    ),
+    (
+        "object-index",
+        include_str!("fixtures/fix-history/object-index.corrected-shapes.expected.json"),
+    ),
     // These listeners carry no `.delegate`, so they attach directly, as Vue's
     // compiler emits since 3.6.0-rc.6. Nested registration of requested
     // delegation is covered by `nested_delegate_events.rs`.

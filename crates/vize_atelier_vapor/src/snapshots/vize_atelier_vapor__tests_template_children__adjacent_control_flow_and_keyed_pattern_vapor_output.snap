@@ -31,12 +31,12 @@ export function render(_ctx) {
           _setText(x12, _toDisplayString(_for_item1.value.label))
         })
         return n12
-      })
+      }, undefined, 8 /* IS_SINGLE_NODE */)
       return n10
     }, () => _createIf(() => (_for_item0.value[0] === 1), () => {
       const n14 = t2()
       return n14
-    }))
+    }), 5 /* TRUE_SINGLE_ROOT, FALSE_SINGLE_ROOT */)
     return n8
   })(_computed(() => (((__vize_match_0_0) => { a0: { if (__vize_match_0_0 !== 'ready') break a0; return [0]; } return [1]; })(_ctx.status))))
   return n1

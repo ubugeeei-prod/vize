@@ -101,6 +101,7 @@ pub(crate) fn generate_vapor_with_spans(
         binding_metadata,
         ir.source,
     );
+    ctx.templates = &ir.templates;
     ctx.jsx_closure = options.jsx_closure;
     ctx.component_name = experimental_options.component_name;
     ctx.experimental_self_component = experimental_options.self_component;

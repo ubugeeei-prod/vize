@@ -37,6 +37,9 @@ pub struct ForIRNode<'a> {
     pub once: bool,
     pub component: bool,
     pub only_child: bool,
+    /// A `<template v-for>` row that is not one plain element: the server
+    /// wraps each row in a fragment, which hydration must claim.
+    pub wrapped_rows: bool,
     pub parent: Option<usize>,
     pub anchor: Option<InsertionAnchor>,
     /// The lexical scope a patterned-template `v-match` lowers to (RFC 823):

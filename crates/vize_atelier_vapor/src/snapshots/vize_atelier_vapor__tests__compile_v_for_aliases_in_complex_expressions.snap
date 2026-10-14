@@ -17,6 +17,6 @@ _setClass(n3, ['row', { active: _ctx.selected.has(_for_item0.value.id) }, `kind-
 _setText(x3, _toDisplayString(_for_item0.value.name))
 })
 return n3
-})
+}, undefined, 9 /* FAST_REMOVE, IS_SINGLE_NODE */)
 return n0
 }

@@ -41,9 +41,9 @@
       "bytes": 2911,
       "sha256": "f20ac13971ce5918afc30ec93e74a7f36dd734050ce8610e1c820c9f6e6b9e3b"
     },
-    "before.compiler.json": {
-      "bytes": 176371,
-      "sha256": "5fc8c639143e8a3091b437b6959f2d5adf6c981be1b20f1c235905d913207ecc"
+    "compiler.json": {
+      "bytes": 171391,
+      "sha256": "76d3643b2c44f7f7b81e0a34c19e2de13d1781899a01d35dcb28a8e8814a6370"
     },
     "dependencies.json": {
       "bytes": 8002,

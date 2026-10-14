@@ -253,6 +253,7 @@ pub(crate) fn transform_directive<'a>(
                     once: false,
                     component: el.tag_type == ElementType::Component,
                     only_child: false,
+                    wrapped_rows: false,
                     parent: None,
                     anchor: None,
                     match_scope: false,
