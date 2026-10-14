@@ -106,7 +106,7 @@ pub struct FmtArgs {
 pub enum FmtPreset {
     /// The Vize defaults
     Vize,
-    /// Prettier's Vue layout: 80 columns, authored attribute and block order
+    /// Prettier's Vue layout, as listed in the formatter guide
     Prettier,
 }
 

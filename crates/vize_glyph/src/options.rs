@@ -182,7 +182,8 @@ pub enum FormatPreset {
     #[default]
     Vize,
     /// Prettier's Vue layout: 80 columns, attributes and blocks in authored
-    /// order, and directives as written.
+    /// order, directives as written, and Prettier's quotes, inline styles,
+    /// `v-for` parentheses and void-element closing.
     Prettier,
 }
 
