@@ -8,8 +8,10 @@
 // The committed inventory is sharded so parallel PRs stop conflicting on it:
 // docs/davinci/plan/consumer-migration-surfaces.md (method, legend, scopes,
 // shard layout — configuration only) plus one TSV per (consumer, crate) under
-// docs/davinci/plan/consumer-migration-surfaces/. Cross-file totals are never
-// committed; --summary prints them.
+// docs/davinci/plan/consumer-migration-surfaces/. Only the index is committed:
+// the shards record file paths and line numbers, so they are written to
+// artifacts/davinci-ledgers/consumer-migration-surfaces/ on every run and
+// uploaded by CI. Cross-file totals are never committed; --summary prints them.
 //
 // Usage:
 //   rust-script tools/commands/davinci/consumer-migration-surfaces.rs --write
@@ -55,8 +57,8 @@ function main() {
           summaryCommand: SUMMARY_COMMAND,
         }),
       },
-      ...renderConsumerMigrationShards(scan),
     ],
+    runFiles: renderConsumerMigrationShards(scan),
     ownedDirs: [SHARD_DIR_REL],
     regenCommand: REGEN_COMMAND,
   };

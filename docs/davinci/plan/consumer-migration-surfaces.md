@@ -53,8 +53,10 @@ observational guard for planning only. It does not change rollout state.
 
 ## Shards
 
-Every row lives in exactly one TSV shard per (consumer, crate) under
-`docs/davinci/plan/consumer-migration-surfaces/`: one row per file x class x surface x matched name,
+Every row lives in exactly one TSV shard per (consumer, crate). Shards record
+file paths and line numbers, so they are not committed: each run writes them
+under `artifacts/davinci-ledgers/consumer-migration-surfaces/`, and CI uploads
+them in the `davinci-generated-ledgers` artifact. One row per file x class x surface x matched name,
 columns `consumer_id`, `consumer`, `class` (`source`, `manifest`,
 `test/dev`), `file`, `first_line`, `surface_id`, `surface`,
 `surface_group`, `matched_name`, `name_kind`, `sites`. The shard set is
@@ -64,28 +66,29 @@ Cross-file aggregates — per-consumer and per-surface totals and the top files
 by site count — are deliberately **not committed**: they changed with every PR
 and made every open PR conflict. They are pure sums over the shards; print
 them with `rust-script tools/commands/davinci/consumer-migration-surfaces.rs --summary`. The staleness check (TS-12)
-byte-compares this page, every shard, and the shard set itself.
+byte-compares this page and refuses shards committed under
+`docs/davinci/plan/consumer-migration-surfaces/`.
 
-| consumer                   | shard                                                                                                                  | scanned roots                                                                                            |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| Compiler                   | [`compiler/vize.tsv`](./consumer-migration-surfaces/compiler/vize.tsv)                                                 | `crates/vize/src/commands/build.rs`<br>`crates/vize/src/commands/build`                                  |
-| Compiler                   | [`compiler/vize_atelier_core.tsv`](./consumer-migration-surfaces/compiler/vize_atelier_core.tsv)                       | crate `vize_atelier_core` (`Cargo.toml`, `src`, `tests`, `benches`)                                      |
-| Compiler                   | [`compiler/vize_atelier_dom.tsv`](./consumer-migration-surfaces/compiler/vize_atelier_dom.tsv)                         | crate `vize_atelier_dom` (`Cargo.toml`, `src`, `tests`, `benches`)                                       |
-| Compiler                   | [`compiler/vize_atelier_jsx.tsv`](./consumer-migration-surfaces/compiler/vize_atelier_jsx.tsv)                         | crate `vize_atelier_jsx` (`Cargo.toml`, `src`, `tests`, `benches`)                                       |
-| Compiler                   | [`compiler/vize_atelier_sfc.tsv`](./consumer-migration-surfaces/compiler/vize_atelier_sfc.tsv)                         | crate `vize_atelier_sfc` (`Cargo.toml`, `src`, `tests`, `benches`)                                       |
-| Compiler                   | [`compiler/vize_atelier_ssr.tsv`](./consumer-migration-surfaces/compiler/vize_atelier_ssr.tsv)                         | crate `vize_atelier_ssr` (`Cargo.toml`, `src`, `tests`, `benches`)                                       |
-| Compiler                   | [`compiler/vize_atelier_vapor.tsv`](./consumer-migration-surfaces/compiler/vize_atelier_vapor.tsv)                     | crate `vize_atelier_vapor` (`Cargo.toml`, `src`, `tests`, `benches`)                                     |
-| Linter                     | [`linter/vize.tsv`](./consumer-migration-surfaces/linter/vize.tsv)                                                     | `crates/vize/src/commands/lint.rs`<br>`crates/vize/src/commands/lint`                                    |
-| Linter                     | [`linter/vize_patina.tsv`](./consumer-migration-surfaces/linter/vize_patina.tsv)                                       | crate `vize_patina` (`Cargo.toml`, `src`, `tests`, `benches`)                                            |
-| Typechecker                | [`typechecker/vize.tsv`](./consumer-migration-surfaces/typechecker/vize.tsv)                                           | `crates/vize/src/commands/check.rs`<br>`crates/vize/src/commands/check`                                  |
-| Typechecker                | [`typechecker/vize_canon.tsv`](./consumer-migration-surfaces/typechecker/vize_canon.tsv)                               | crate `vize_canon` (`Cargo.toml`, `src`, `tests`, `benches`) (filtered, see scope)                       |
-| Typechecker content-mapper | [`typechecker-content-mapper/vize.tsv`](./consumer-migration-surfaces/typechecker-content-mapper/vize.tsv)             | `crates/vize/src/commands/content_mapper.rs`<br>`crates/vize/src/commands/content_mapper`                |
-| Typechecker content-mapper | [`typechecker-content-mapper/vize_canon.tsv`](./consumer-migration-surfaces/typechecker-content-mapper/vize_canon.tsv) | `crates/vize_canon/src/batch/virtual_project` (filtered, see scope)                                      |
-| Formatter                  | [`formatter/vize.tsv`](./consumer-migration-surfaces/formatter/vize.tsv)                                               | `crates/vize/src/commands/fmt.rs`<br>`crates/vize/src/commands/fmt`                                      |
-| Formatter                  | [`formatter/vize_glyph.tsv`](./consumer-migration-surfaces/formatter/vize_glyph.tsv)                                   | crate `vize_glyph` (`Cargo.toml`, `src`, `tests`, `benches`)                                             |
-| Formatter                  | [`formatter/vize_maestro.tsv`](./consumer-migration-surfaces/formatter/vize_maestro.tsv)                               | `crates/vize_maestro/src/server/format.rs`                                                               |
-| LSP                        | [`lsp/vize.tsv`](./consumer-migration-surfaces/lsp/vize.tsv)                                                           | `crates/vize/src/commands/lsp.rs`<br>`crates/vize/src/commands/ide.rs`<br>`crates/vize/src/commands/ide` |
-| LSP                        | [`lsp/vize_maestro.tsv`](./consumer-migration-surfaces/lsp/vize_maestro.tsv)                                           | crate `vize_maestro` (`Cargo.toml`, `src`, `tests`, `benches`)                                           |
+| consumer                   | shard                                       | scanned roots                                                                                            |
+| -------------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Compiler                   | `compiler/vize.tsv`                         | `crates/vize/src/commands/build.rs`<br>`crates/vize/src/commands/build`                                  |
+| Compiler                   | `compiler/vize_atelier_core.tsv`            | crate `vize_atelier_core` (`Cargo.toml`, `src`, `tests`, `benches`)                                      |
+| Compiler                   | `compiler/vize_atelier_dom.tsv`             | crate `vize_atelier_dom` (`Cargo.toml`, `src`, `tests`, `benches`)                                       |
+| Compiler                   | `compiler/vize_atelier_jsx.tsv`             | crate `vize_atelier_jsx` (`Cargo.toml`, `src`, `tests`, `benches`)                                       |
+| Compiler                   | `compiler/vize_atelier_sfc.tsv`             | crate `vize_atelier_sfc` (`Cargo.toml`, `src`, `tests`, `benches`)                                       |
+| Compiler                   | `compiler/vize_atelier_ssr.tsv`             | crate `vize_atelier_ssr` (`Cargo.toml`, `src`, `tests`, `benches`)                                       |
+| Compiler                   | `compiler/vize_atelier_vapor.tsv`           | crate `vize_atelier_vapor` (`Cargo.toml`, `src`, `tests`, `benches`)                                     |
+| Linter                     | `linter/vize.tsv`                           | `crates/vize/src/commands/lint.rs`<br>`crates/vize/src/commands/lint`                                    |
+| Linter                     | `linter/vize_patina.tsv`                    | crate `vize_patina` (`Cargo.toml`, `src`, `tests`, `benches`)                                            |
+| Typechecker                | `typechecker/vize.tsv`                      | `crates/vize/src/commands/check.rs`<br>`crates/vize/src/commands/check`                                  |
+| Typechecker                | `typechecker/vize_canon.tsv`                | crate `vize_canon` (`Cargo.toml`, `src`, `tests`, `benches`) (filtered, see scope)                       |
+| Typechecker content-mapper | `typechecker-content-mapper/vize.tsv`       | `crates/vize/src/commands/content_mapper.rs`<br>`crates/vize/src/commands/content_mapper`                |
+| Typechecker content-mapper | `typechecker-content-mapper/vize_canon.tsv` | `crates/vize_canon/src/batch/virtual_project` (filtered, see scope)                                      |
+| Formatter                  | `formatter/vize.tsv`                        | `crates/vize/src/commands/fmt.rs`<br>`crates/vize/src/commands/fmt`                                      |
+| Formatter                  | `formatter/vize_glyph.tsv`                  | crate `vize_glyph` (`Cargo.toml`, `src`, `tests`, `benches`)                                             |
+| Formatter                  | `formatter/vize_maestro.tsv`                | `crates/vize_maestro/src/server/format.rs`                                                               |
+| LSP                        | `lsp/vize.tsv`                              | `crates/vize/src/commands/lsp.rs`<br>`crates/vize/src/commands/ide.rs`<br>`crates/vize/src/commands/ide` |
+| LSP                        | `lsp/vize_maestro.tsv`                      | crate `vize_maestro` (`Cargo.toml`, `src`, `tests`, `benches`)                                           |
 
 ## Independently mergeable no-rollout slices
 

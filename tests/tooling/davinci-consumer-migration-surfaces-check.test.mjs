@@ -32,7 +32,9 @@ const scannedCrates = [
   "vize_maestro",
 ];
 const shardDir = "docs/davinci/plan/consumer-migration-surfaces";
-const coreShard = `${shardDir}/compiler/vize_atelier_core.tsv`;
+const runShard =
+  "artifacts/davinci-ledgers/consumer-migration-surfaces/compiler/vize_atelier_core.tsv";
+const committedShard = `${shardDir}/compiler/vize_atelier_core.tsv`;
 
 function writeFile(root, relPath, content) {
   const target = path.join(root, relPath);
@@ -70,46 +72,46 @@ function runSurfaceCommand(root, mode) {
   });
 }
 
-void test("consumer migration surface check fails on an injected stale artifact", () => {
+void test("consumer migration surfaces are run artifacts and a committed shard is stale", () => {
   const scratch = createScratchRepo();
   try {
     const write = runSurfaceCommand(scratch, "--write");
     assert.equal(write.status, 0, `${write.stdout}${write.stderr}`.trim());
-
     const clean = runSurfaceCommand(scratch, "--check");
     assert.equal(clean.status, 0, `${clean.stdout}${clean.stderr}`.trim());
-
-    // The scanned `use vize_l0::Root;` lands in its (consumer, crate) shard
-    // and nowhere else.
-    const shard = fs.readFileSync(path.join(scratch, coreShard), "utf8").split("\n");
+    // The scanned `use vize_l0::Root;` lands in its (consumer, crate) shard,
+    // which every run writes under the uploaded ledger directory.
+    const shard = fs.readFileSync(path.join(scratch, runShard), "utf8").split("\n");
     assert.deepEqual(shard.slice(1), [
       "compiler\tCompiler\tsource\tcrates/vize_atelier_core/src/lib.rs\t1\tl0\tL0\tstage\tvize_l0\tpreferred\t1",
       "",
     ]);
+    assert.equal(fs.existsSync(path.join(scratch, committedShard)), false);
 
-    fs.appendFileSync(path.join(scratch, coreShard), "injected\tedit\n");
+    // The committed index is still byte-compared.
+    const indexPath = path.join(scratch, "docs/davinci/plan/consumer-migration-surfaces.md");
+    fs.appendFileSync(indexPath, "injected edit\n");
     const stale = runSurfaceCommand(scratch, "--check");
-
-    assert.equal(stale.status, 1, `--check accepted stale artifacts:\n${stale.stdout}`);
+    assert.equal(stale.status, 1, `--check accepted a stale index:\n${stale.stdout}`);
     assert.match(
       stale.stderr,
-      /stale: docs\/davinci\/plan\/consumer-migration-surfaces\/compiler\/vize_atelier_core\.tsv drifted/,
+      /stale: docs\/davinci\/plan\/consumer-migration-surfaces\.md drifted/,
     );
     assert.match(
       stale.stderr,
       /Regenerate with: rust-script tools\/commands\/davinci\/consumer-migration-surfaces\.rs --write/,
     );
 
-    // A shard the generator no longer produces is stale too, and --write
-    // deletes it: the shard set is gated as strictly as the shard bytes.
+    // A shard committed under the plan directory is stale, and --write deletes it.
     assert.equal(runSurfaceCommand(scratch, "--write").status, 0);
-    const leftover = path.join(scratch, shardDir, "compiler/vize_removed_crate.tsv");
+    const leftover = path.join(scratch, committedShard);
+    fs.mkdirSync(path.dirname(leftover), { recursive: true });
     fs.writeFileSync(leftover, "consumer_id\n");
     const stray = runSurfaceCommand(scratch, "--check");
-    assert.equal(stray.status, 1, `--check accepted a leftover shard:\n${stray.stdout}`);
+    assert.equal(stray.status, 1, `--check accepted a committed shard:\n${stray.stdout}`);
     assert.match(
       stray.stderr,
-      /stale: docs\/davinci\/plan\/consumer-migration-surfaces\/compiler\/vize_removed_crate\.tsv is not produced by the generator/,
+      /stale: docs\/davinci\/plan\/consumer-migration-surfaces\/compiler\/vize_atelier_core\.tsv is not produced by the generator/,
     );
     assert.equal(runSurfaceCommand(scratch, "--write").status, 0);
     assert.equal(fs.existsSync(leftover), false);

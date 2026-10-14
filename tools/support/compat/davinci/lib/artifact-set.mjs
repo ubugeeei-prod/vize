@@ -7,6 +7,11 @@
 // must exist and match byte for byte, and an owned shard directory must hold
 // exactly the generated shards — a leftover shard (a crate that stopped
 // consuming) is stale too, and `--write` deletes it.
+//
+// `runFiles` are per-run facts (file paths and line numbers) that every PR
+// would otherwise rewrite. They are never committed: both modes write them
+// under `artifacts/davinci-ledgers/`, which CI uploads, and an owned directory
+// that still holds one of them in the repository is stale.
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -40,6 +45,19 @@ function removeEmptyDirs(dirRel) {
     if (entry.isDirectory()) removeEmptyDirs(`${dirRel}/${entry.name}`);
   }
   if (readdirSync(abs).length === 0) rmSync(abs, { recursive: true });
+}
+
+/** Where a run file lands: its plan path moved under the uploaded ledger directory. */
+export function runFilePath(relPath) {
+  return relPath.replace(/^docs\/davinci\/plan\//u, "artifacts/davinci-ledgers/");
+}
+
+function writeRunFiles(set) {
+  for (const file of set.runFiles ?? []) {
+    const target = absolute(runFilePath(file.relPath));
+    mkdirSync(path.dirname(target), { recursive: true });
+    writeFileSync(target, file.text);
+  }
 }
 
 function fileCount(set) {
@@ -105,6 +123,7 @@ export function writeArtifactSet(set) {
     mkdirSync(path.dirname(target), { recursive: true });
     writeFileSync(target, file.text);
   }
+  writeRunFiles(set);
   console.log(`wrote ${set.label} (${fileCount(set)})`);
 }
 
@@ -137,5 +156,6 @@ export function checkArtifactSet(set) {
     stale++;
   }
   if (stale > 0) process.exit(1);
+  writeRunFiles(set);
   console.log(`${set.label} is up to date (${fileCount(set)})`);
 }

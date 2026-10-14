@@ -53,8 +53,10 @@ async function main() {
   }
   if (args.mode === "--check" && existsSync(args.outDir)) {
     const wanted = new Set(generators.map(([name]) => name));
-    for (const name of readdirSync(args.outDir)) {
-      if (!wanted.has(name)) {
+    // Subdirectories hold the per-crate inventory shards of other generators.
+    for (const entry of readdirSync(args.outDir, { withFileTypes: true })) {
+      const { name } = entry;
+      if (!entry.isDirectory() && !wanted.has(name)) {
         console.error(`stale: unexpected run artifact ${path.join(args.outDir, name)}`);
         process.exitCode = 1;
       }

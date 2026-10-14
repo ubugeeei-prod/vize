@@ -212,7 +212,7 @@ export function renderSummary(products, analysis) {
   lines.push("");
   lines.push(
     "Cross-crate aggregates of the sharded matrix in" +
-      " `docs/davinci/plan/croquis-consumption/`. Printed by `" +
+      " `artifacts/davinci-ledgers/croquis-consumption/`. Printed by `" +
       SUMMARY_COMMAND +
       "`; resolved totals match the per-crate shards. Naive-grep counts are" +
       " recomputed from the current source files, including crates with no" +

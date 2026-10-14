@@ -48,9 +48,12 @@ function renderIndex(products, analysis, productIds) {
   lines.push(
     "This page holds only what depends on `vize_croquis` itself: the resolution" +
       " method and the product set. Consumption facts are sharded one file per" +
-      ` consuming crate, \`${SHARD_DIR_REL}/<crate>.md\`: that crate's resolved` +
-      " product sites and its non-product `vize_croquis` imports." +
-      " A crate with neither has no shard.",
+      " consuming crate: that crate's resolved product sites and its non-product" +
+      " `vize_croquis` imports. A crate with neither has no shard. Shards record" +
+      " line-level facts, so they are not committed: each run writes them under" +
+      " `artifacts/davinci-ledgers/croquis-consumption/<crate>.md`, CI uploads them" +
+      ` in the \`davinci-generated-ledgers\` artifact, and a shard committed under` +
+      ` \`${SHARD_DIR_REL}/\` is stale.`,
   );
   lines.push("");
   lines.push(

@@ -10,7 +10,7 @@ Which workspace crates consume the public analysis products of `crates/vize_croq
 
 ## Layout
 
-This page holds only what depends on `vize_croquis` itself: the resolution method and the product set. Consumption facts are sharded one file per consuming crate, `docs/davinci/plan/croquis-consumption/<crate>.md`: that crate's resolved product sites and its non-product `vize_croquis` imports. A crate with neither has no shard.
+This page holds only what depends on `vize_croquis` itself: the resolution method and the product set. Consumption facts are sharded one file per consuming crate: that crate's resolved product sites and its non-product `vize_croquis` imports. A crate with neither has no shard. Shards record line-level facts, so they are not committed: each run writes them under `artifacts/davinci-ledgers/croquis-consumption/<crate>.md`, CI uploads them in the `davinci-generated-ledgers` artifact, and a shard committed under `docs/davinci/plan/croquis-consumption/` is stale.
 
 Cross-crate aggregates — per-product totals, the products with no external consumer — and raw naive-grep disagreements are deliberately **not committed**: unrelated same-named native symbols otherwise conflict on the same count. Every `--check` prints the fresh source-qualified summary, including exact per-crate resolved/grep disagreements; print it separately with `rust-script tools/commands/davinci/croquis-consumers.rs --summary`. The staleness check (TS-12) byte-compares this page, every shard, and the shard set itself (a leftover shard is stale).
 

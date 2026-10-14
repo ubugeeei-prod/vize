@@ -43,7 +43,14 @@ import { analyzeConsumers } from "./lib/croquis-analysis.mjs";
 import { enumerateProducts } from "./lib/croquis-products.mjs";
 import { gateViolations, renderSummary } from "./lib/croquis-render.mjs";
 import { renderCroquisArtifacts } from "./lib/croquis-shards.mjs";
-import { REGEN_COMMAND, SHARD_DIR_REL, repoRoot } from "./lib/paths.mjs";
+import { ARTIFACT_REL, REGEN_COMMAND, SHARD_DIR_REL, repoRoot } from "./lib/paths.mjs";
+
+function splitCroquisArtifacts(all) {
+  return {
+    files: all.filter((file) => file.relPath === ARTIFACT_REL),
+    runFiles: all.filter((file) => file.relPath !== ARTIFACT_REL),
+  };
+}
 
 function main() {
   const mode = process.argv[2];
@@ -86,7 +93,8 @@ function main() {
   }
   const set = {
     label: "croquis consumption matrix",
-    files: renderCroquisArtifacts(products, analysis),
+    // The per-crate shards record line-level facts; they are run artifacts.
+    ...splitCroquisArtifacts(renderCroquisArtifacts(products, analysis)),
     ownedDirs: [SHARD_DIR_REL],
     regenCommand: REGEN_COMMAND,
   };
