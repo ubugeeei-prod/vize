@@ -26,13 +26,59 @@ pub(super) fn self_closing_recoveries(
     let mut recoveries = std::vec::Vec::new();
     let refused = scan(allocator, source, program, |op, markup| {
         if op.kind == OpKind::InsertNode && markup.ends_with("/>") {
-            recoveries.push((op.span.start, op.span.end));
+            // A `<template>` with a structural directive is a fragment, not
+            // an HTML element, and the legacy parser accepts it self-closed.
+            if !structural_template(markup) {
+                recoveries.push((op.span.start, op.span.end));
+            }
             true
         } else {
             false
         }
     });
     (!refused).then_some(recoveries)
+}
+
+/// Whether `<template …/>` carries `v-if`, `v-else-if`, `v-else`, `v-for` or
+/// a slot directive, which make the legacy parser treat it as a fragment.
+fn structural_template(markup: &str) -> bool {
+    let Some(rest) = markup.strip_prefix("<template") else {
+        return false;
+    };
+    if !rest.starts_with(|c: char| c.is_ascii_whitespace() || c == '/') {
+        return false;
+    }
+    let mut quote = None;
+    let mut boundary = true;
+    let mut start = None;
+    for (at, c) in rest.char_indices() {
+        if let Some(open) = quote {
+            if c == open {
+                quote = None;
+            }
+            continue;
+        }
+        match c {
+            '"' | '\'' => quote = Some(c),
+            _ if c.is_ascii_whitespace() || c == '=' || c == '/' || c == '>' => {
+                if let Some(from) = start.take()
+                    && structural(rest.get(from..at).unwrap_or_default())
+                {
+                    return true;
+                }
+                boundary = c != '=';
+            }
+            _ if boundary && start.is_none() => start = Some(at),
+            _ => {}
+        }
+    }
+    false
+}
+
+fn structural(name: &str) -> bool {
+    matches!(name, "v-if" | "v-else-if" | "v-else" | "v-for")
+        || name.starts_with('#')
+        || name.starts_with("v-slot")
 }
 
 /// Every op spans its authored markup: an element from `<` through its end
