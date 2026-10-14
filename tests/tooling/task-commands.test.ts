@@ -9,6 +9,7 @@ import {
   macosLibraryPath,
   resolveMacosSdkRoot,
   wasmBindgenBinary,
+  wasmBindgenVersion,
   wasmPackCache,
   wasmRustflags,
 } from "../../tools/support/tasks/build-vitrine-wasm.ts";
@@ -21,7 +22,7 @@ import {
 
 const vitrine = "tools/support/tasks/build-vitrine-wasm.ts";
 const wasmPackage = "tools/support/tasks/build-vize-wasm-package.ts";
-const bindgenRoot = ".cache/wasm-pack/.wasm-bindgen-cargo-install-0.2.121";
+const bindgenRoot = `.cache/wasm-pack/.wasm-bindgen-cargo-install-${wasmBindgenVersion}`;
 
 function workspace(t: TestContext) {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(tmpdir(), "vize-task-commands-")));
@@ -39,7 +40,7 @@ void test("WASM flags, caches and macOS SDK paths follow the inherited environme
   assert.equal(wasmPackCache("/repo", { WASM_PACK_CACHE: "" }), process.cwd());
   assert.equal(
     wasmBindgenBinary("/repo", { WASM_PACK_CACHE: "/cache/" }),
-    path.join("/cache", ".wasm-bindgen-cargo-install-0.2.121", "bin", "wasm-bindgen"),
+    path.join("/cache", `.wasm-bindgen-cargo-install-${wasmBindgenVersion}`, "bin", "wasm-bindgen"),
   );
   assert.equal(macosLibraryPath("/sdk", {}), path.join("/sdk", "usr/lib"));
   assert.equal(macosLibraryPath("/sdk", { LIBRARY_PATH: "" }), path.join("/sdk", "usr/lib"));
@@ -112,7 +113,7 @@ void test("build-vitrine-wasm installs the pinned bindgen once and binds into th
         "--force",
         "wasm-bindgen-cli",
         "--version",
-        "0.2.121",
+        wasmBindgenVersion,
         "--root",
         path.join(root, bindgenRoot),
       ],
@@ -195,7 +196,7 @@ void test("build-vitrine-wasm stops at usage, install and build failures", (t) =
   );
   assert.equal(
     readRecordedCalls(log)[1]!.argv.at(-1),
-    path.join(root, "cache", ".wasm-bindgen-cargo-install-0.2.121"),
+    path.join(root, "cache", `.wasm-bindgen-cargo-install-${wasmBindgenVersion}`),
   );
 });
 

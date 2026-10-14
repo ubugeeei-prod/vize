@@ -90,6 +90,16 @@ impl BatchTypeChecker {
         )
     }
 
+    #[cfg(all(test, unix))]
+    pub(crate) fn preserve_native_event_navigation_for_test(&mut self) {
+        self.project.set_editor_document_options(
+            super::virtual_project::VueDocumentVirtualTsOptions {
+                preserve_event_navigation: true,
+                ..Default::default()
+            },
+        );
+    }
+
     /// Set the number of parallel Corsa CLI processes the project check is
     /// partitioned across. `None` (the default) auto-tunes from the machine
     /// width and the number of registered Vue files.

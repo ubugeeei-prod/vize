@@ -6,7 +6,7 @@
 //! assembled by [`super::props_literal`].
 
 use super::super::helpers::to_safe_identifier_fragment;
-use super::super::scope::append_ignored_vif_guard_open;
+use super::super::scope::{append_chained_vif_guard_close, append_chained_vif_guard_open};
 use super::super::types::VizeMapping;
 use super::component_props::ComponentPropSource;
 use super::props_literal::append_props_literal;
@@ -46,7 +46,7 @@ pub(super) fn generate_generic_props_call(
     };
 
     if let Some(ref guard) = usage.vif_guard {
-        append_ignored_vif_guard_open(ts, indent, guard, "Inference-only guard");
+        append_chained_vif_guard_open(ts, indent, guard, "Inference-only guard");
     }
 
     append!(
@@ -90,7 +90,7 @@ pub(super) fn generate_generic_props_call(
     }
 
     if usage.vif_guard.is_some() {
-        append!(*ts, "{indent}}}\n");
+        append_chained_vif_guard_close(ts, indent);
     }
 }
 

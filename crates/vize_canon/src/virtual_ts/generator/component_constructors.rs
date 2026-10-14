@@ -67,7 +67,7 @@ pub(super) fn emit_component_constructors<'a>(
     ts: &mut String,
     setup_props_plan: &SetupPropsPlan,
     aliases: &ComponentInstanceAliases<'a>,
-    authored_generic: Option<&str>,
+    authored_generic: Option<&'a str>,
     legacy_vue2: bool,
     dialect: VueVersion,
 ) -> Option<GenericComponentContract<'a>> {
@@ -88,7 +88,9 @@ pub(super) fn emit_component_constructors<'a>(
             setup_props_plan.component_props_type_ref(),
         );
         return Some(GenericComponentContract {
-            declaration,
+            // Alias defaults keep bare type references legal. Calls infer from
+            // the authored signature, including its genuine defaults only.
+            declaration: authored_generic,
             names,
             slots_is_generic: aliases.slots_is_generic,
             public_type: "__VizeGenericComponent",

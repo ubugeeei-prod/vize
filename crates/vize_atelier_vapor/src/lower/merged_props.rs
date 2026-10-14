@@ -142,7 +142,11 @@ pub(super) fn transform<'a>(
     }
     ctx.push_dynamic_operation(
         block,
-        OperationNode::SetMergedProps(SetMergedPropsIRNode { element, sources }),
+        OperationNode::SetMergedProps(SetMergedPropsIRNode {
+            element,
+            sources,
+            namespace: el.ns,
+        }),
     );
 }
 

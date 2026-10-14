@@ -141,9 +141,10 @@ pub(super) fn generate_set_dynamic_props(
             })
             .collect();
         ctx.push_line_fmt(format_args!(
-            "_setDynamicProps({}, [{}])",
+            "_setDynamicProps({}, [{}]{})",
             element,
-            props_parts.join(", ")
+            props_parts.join(", "),
+            super::merged_props::svg_argument(set_props.namespace)
         ));
     }
 }

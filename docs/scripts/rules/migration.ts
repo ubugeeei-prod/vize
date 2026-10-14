@@ -47,7 +47,7 @@ export function migrationPage(root: string, ruleNames: ReadonlySet<string>, ja: 
     "",
     label(
       "For option conversion, see [Rule Options](./options.md) and [props destructuring modes](./reference/script-define-props-destructuring.md). Unsupported rows must stay with an existing checker until a supported replacement is verified.",
-      "オプションの変換は[ルール オプション](./options.md)と [props 分割代入](./reference/script-define-props-destructuring.md)を参照してください。未実装の行は、対応する代替の検査が確認できるまで、既存のチェッカーで検査を続けます。",
+      "オプションの変換は[ルールのオプション](./options.md)と [props 分割代入](./reference/script-define-props-destructuring.md)を参照してください。未実装の行は、対応する代替の検査が確認できるまで、既存のチェッカーで検査を続けます。",
     ),
     "",
     label(

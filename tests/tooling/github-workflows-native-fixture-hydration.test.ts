@@ -91,7 +91,10 @@ test("whole-workspace source coverage prepares the native fixture in its own run
   const source = taskSource
     .split("const rustSourceCoverageCommand = [")[1]
     .split("const rustBranchCoverageCommand")[0];
-  assert.match(source, /"cargo llvm-cov --workspace --json --summary-only"/);
+  assert.match(
+    source,
+    /"cargo llvm-cov nextest --workspace --profile full --test-threads 8 --json --summary-only"/,
+  );
   assert.match(taskSource, /"coverage:source": task\(rustSourceCoverageCommand,/);
   const branch = taskSource.split("const rustBranchCoverageCommand = [")[1].split("/**")[0];
   assert.match(

@@ -37,6 +37,8 @@ pub(super) use types::{GeneratedVueFile, VueCodegenOptions};
 #[cfg(test)]
 mod editor_script_tests;
 #[cfg(test)]
+mod generic_component_tests;
+#[cfg(test)]
 mod malformed_setup_tests;
 
 pub(super) fn generate_vue_virtual_ts(

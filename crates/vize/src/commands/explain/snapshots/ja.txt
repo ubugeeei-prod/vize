@@ -3997,6 +3997,26 @@ vue/no-deprecated-v-bind-sync · lint ルール
 
 ヒント:
   Vue 3 では .sync 修飾子は削除され、引数付きの v-model に統合されました。v-model:<prop> に置き換えてください（例: :title.sync="title" → v-model:title="title"）。
+=== vue/no-deprecated-v-is
+vue/no-deprecated-v-is · lint ルール
+非推奨のv-isディレクティブを禁止する
+
+精度: exact
+対象: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+重大度: エラー
+カテゴリー: essential
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+不正な例:
+  <tr v-is="'MyRow'"></tr>
+
+正しい例:
+  <tr is="vue:MyRow"></tr>
+  <component :is="MyRow" />
+
+ヒント:
+  代わりにvue:プレフィックス付きのis属性を使ってください。例: is="vue:MyComponent"
 === vue/no-deprecated-v-on-native-modifier
 vue/no-deprecated-v-on-native-modifier · lint ルール
 `v-on` の非推奨な `.native` 修飾子を禁止する
@@ -5447,6 +5467,29 @@ vue/valid-v-else · lint ルール
 
 ヒント:
   v-elseはv-ifまたはv-else-if要素の直後に配置してください
+=== vue/valid-v-else-if
+vue/valid-v-else-if · lint ルール
+有効なv-else-ifディレクティブを強制する
+
+精度: exact
+対象: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+重大度: エラー
+カテゴリー: essential
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+不正な例:
+  <div v-else-if="foo"></div> <!-- without preceding v-if -->
+  <div v-if="foo"></div><div v-else-if></div>
+  <div v-if="foo"></div><div v-else-if:arg="bar"></div>
+  <div v-if="foo"></div><div v-else-if.mod="bar"></div>
+
+正しい例:
+  <div v-if="foo"></div>
+  <div v-else-if="bar"></div>
+
+ヒント:
+  v-else-ifはv-ifまたはv-else-if要素の直後に置き、条件式だけを指定してください
 === vue/valid-v-for
 vue/valid-v-for · lint ルール
 有効なv-forディレクティブを強制する
@@ -5512,6 +5555,28 @@ vue/valid-v-if · lint ルール
 
 ヒント:
   v-ifディレクティブに式を追加してください
+=== vue/valid-v-is
+vue/valid-v-is · lint ルール
+有効なv-isディレクティブを強制する
+
+精度: exact
+対象: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+重大度: エラー
+カテゴリー: essential
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+不正な例:
+  <tr v-is:arg="'MyRow'"></tr>
+  <tr v-is.mod="'MyRow'"></tr>
+  <tr v-is></tr>
+  <MyComponent v-is="'MyRow'" />
+
+正しい例:
+  <tr v-is="'MyRow'"></tr>
+
+ヒント:
+  v-isはネイティブのHTML要素に、引数と修飾子なしで値を付けて指定してください
 === vue/valid-v-memo
 vue/valid-v-memo · lint ルール
 有効なv-memoディレクティブを強制する
@@ -5598,6 +5663,27 @@ vue/valid-v-once · lint ルール
 
 ヒント:
   v-onceディレクティブから値・引数・修飾子を削除してください
+=== vue/valid-v-pre
+vue/valid-v-pre · lint ルール
+有効なv-preディレクティブを強制する
+
+精度: exact
+対象: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+重大度: エラー
+カテゴリー: essential
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+不正な例:
+  <div v-pre:arg></div>
+  <div v-pre.mod></div>
+  <div v-pre="foo"></div>
+
+正しい例:
+  <div v-pre>{{ raw }}</div>
+
+ヒント:
+  v-preディレクティブから引数・修飾子・値を削除してください
 === vue/valid-v-show
 vue/valid-v-show · lint ルール
 有効なv-showディレクティブを強制する

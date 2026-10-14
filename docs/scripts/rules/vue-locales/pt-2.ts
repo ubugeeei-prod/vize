@@ -110,6 +110,11 @@ export const portugueseVue2: Record<string, readonly [purpose: string, bad: stri
       "Os exemplos atribuem uma expressão a `v-else`, combinam-no com `v-if` ou omitem o ramo condicional adjacente que deve precedê-lo.",
       "Coloque `v-else` sozinho imediatamente após o ramo `v-if` correspondente.",
     ],
+    "vue/valid-v-else-if": [
+      "Exigir diretivas `v-else-if` válidas",
+      "Os exemplos deixam `v-else-if` sem um ramo condicional anterior ou sem condição, ou lhe dão um argumento ou modificador.",
+      "Coloque `v-else-if` com uma condição imediatamente após o ramo `v-if` ou `v-else-if` que ele continua.",
+    ],
     "vue/valid-v-for": [
       "Exigir diretivas `v-for` válidas",
       "Os laços omitem a expressão de iteração ou adicionam o modificador `.stop`, que não é aceito.",
@@ -124,6 +129,11 @@ export const portugueseVue2: Record<string, readonly [purpose: string, bad: stri
       "Exigir diretivas `v-if` válidas",
       "As condições omitem uma expressão ou combinam `v-if` com uma diretiva else no mesmo nó.",
       "Cada `v-if` tem uma condição não vazia, como `ready` ou `count > 0`, sem uma diretiva else incompatível.",
+    ],
+    "vue/valid-v-is": [
+      "Exigir diretivas `v-is` válidas",
+      "`v-is` tem um argumento ou modificador, não tem valor, ou está em um componente em vez de um elemento HTML nativo.",
+      "`v-is` com um valor em um elemento nativo como `<tr>` indica o componente a renderizar em seu lugar.",
     ],
     "vue/valid-v-memo": [
       "Exigir diretivas `v-memo` válidas",
@@ -144,6 +154,11 @@ export const portugueseVue2: Record<string, readonly [purpose: string, bad: stri
       "Exigir diretivas `v-once` válidas",
       "`v-once` tem um valor, argumento ou modificador, embora esta diretiva seja um marcador sem valor para renderização única.",
       "`v-once` sozinho marca a subárvore para renderização única, sem sintaxe não suportada.",
+    ],
+    "vue/valid-v-pre": [
+      "Exigir diretivas `v-pre` válidas",
+      "`v-pre` tem um argumento, modificador ou valor, embora esta diretiva seja um marcador sem valor que ignora a compilação.",
+      "`v-pre` sozinho deixa a subárvore sem compilar, então suas interpolações são exibidas como escritas.",
     ],
     "vue/valid-v-show": [
       "Exigir diretivas `v-show` válidas",

@@ -8,8 +8,8 @@
 //! to a fixpoint. Published packages are left alone: a canonical path that
 //! stays inside `node_modules` keeps the stub (that half is #3282), while a
 //! pnpm workspace symlink canonicalizes *out* of `node_modules` and is
-//! first-party source. Batch projects leave declaration files alone so their
-//! ambient declarations remain governed by the tsconfig. Editor sessions do
+//! first-party source. Batch mirrors source-backed declaration barrels while
+//! terminal ambient declarations remain governed by tsconfig. Editor sessions
 //! mirror reachable declarations, preserving their authored `.d.ts` spelling,
 //! but keep them inferred rather than adding them as ambient program roots
 //! (see [`is_declaration_file`]).
@@ -33,6 +33,9 @@ use crate::batch::error::CorsaResult;
 
 use super::VirtualProject;
 
+#[path = "dependency_scan/declaration_sources.rs"]
+mod declaration_sources;
+use declaration_sources::source_backed;
 #[path = "dependency_scan/references.rs"]
 mod references;
 #[path = "dependency_scan/resolution.rs"]
@@ -100,10 +103,18 @@ impl VirtualProject {
         mut package_resolver: Option<PackageResolver<'_>>,
     ) -> CorsaResult<()> {
         let aliases = self.dependency_alias_map();
+        let mut source_cache = FxHashMap::default();
         let alias_prefixes: Vec<CompactString> = aliases
             .iter()
             .filter(|(pattern, target)| {
                 alias_may_reach_first_party(pattern, target, &self.project_root)
+                    || declaration_sources::alias_reaches_project_source(
+                        self,
+                        target,
+                        &aliases,
+                        overlays,
+                        &mut source_cache,
+                    )
             })
             .map(|(pattern, _)| {
                 CompactString::from(
@@ -241,13 +252,14 @@ impl VirtualProject {
                 // Declarations reached through a path reference must keep
                 // their transitive declaration imports in this same mirror.
                 // The final rewrite then points imports at that one identity.
-                // Ordinary source imports can still use TypeScript's authored
-                // declaration resolution without registering another root.
+                // Terminal declarations keep their authored identity, but a
+                // source-backed barrel must own its projected source edges.
                 if is_declaration_file(&key)
                     && !package_local
                     && !self.session_scripts
                     && !is_reference
                     && !is_declaration_file(&importer)
+                    && !source_backed(self, &key, &aliases, overlays, &mut source_cache)
                 {
                     continue;
                 }

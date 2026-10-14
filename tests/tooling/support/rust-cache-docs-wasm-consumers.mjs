@@ -34,7 +34,7 @@ const producerHashes = {
   "tools/support/github/build-vitrine-wasm.ts":
     "1cdcb19eb0e60ad688a965fbdaa2dc7de90f306c910461c25a11f2ad651c61f7",
   "tools/support/tasks/build-vitrine-wasm.ts":
-    "550f407144f1600c59d5dc849de0423e07966afbbac910fc5211bc026454492c",
+    "ca6d0627ce29ca69b46f5189fd2a42055e4733dd0e416e3370348d22c8c869a2",
   "tools/support/command-runtime.ts":
     "256b427af28975329f8c51b7043407801a78b12e4b75e4c6178d92c5a7938f54",
   "npm/native/scripts/build-ci.mjs":
@@ -151,7 +151,7 @@ function verifyRecipes(root, docs, e2e) {
   // generated-WASM cache. Do not freeze the other Docs job or product libraries.
   assert.equal(
     hash(JSON.stringify(docs.jobs["build-playground"])),
-    "1749dbfb5e3c4a8d5d73d664bb9b63c14520017dd0ba253ee0b8f61ecba68b55",
+    "c3c1d8d2ab9cc111c2de77d2d24e826a489cd78d3e2bc424bd92dad0f9c7d193",
     "reviewed whole Docs WASM producer changed",
   );
   for (const [file, expected] of Object.entries(producerHashes))

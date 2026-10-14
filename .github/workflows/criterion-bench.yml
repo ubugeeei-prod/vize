@@ -112,6 +112,10 @@ jobs:
           wild-version: "0.9.0"
       # Criterion stores base/head build artifacts in isolated subdirectories
       # under head/target, while the surrounding cache keeps both sides warm.
+      # The cache action's nested local action resolves from the workspace root,
+      # and this job checks the repository out under head/.
+      - name: Expose the nested target action at the workspace root
+        run: mkdir -p .github/actions && cp -R head/.github/actions/reuse-rust-target .github/actions/
       - name: Mount Criterion cache
         uses: ./head/.github/actions/setup-rust-sticky-cache
         if: steps.impact.outputs.has_suites == 'true'

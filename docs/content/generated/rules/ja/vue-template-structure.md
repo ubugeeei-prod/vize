@@ -27,7 +27,7 @@ title: "繰り返し・条件分岐とテンプレートの構造"
 | [`vue/no-useless-template-attributes`](#vue-no-useless-template-attributes) | [悪い](#vue-no-useless-template-attributes-bad) · [良い](#vue-no-useless-template-attributes-good) | template 要素の効果がない属性を検出します。 |
 | [`vue/require-v-for-key`](#vue-require-v-for-key) | [悪い](#vue-require-v-for-key-bad) · [良い](#vue-require-v-for-key-good) | v-for に安定した :key を指定します。 |
 
-[全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
+[全ルール](./all.md) · [ルールのオプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
 
 ### `vue/no-child-content`
 

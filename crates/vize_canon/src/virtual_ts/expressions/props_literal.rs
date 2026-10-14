@@ -25,6 +25,25 @@ use vize_croquis::{
 
 mod prop_entry;
 
+/// An inference-only argument uses the same authored ordering and lexical
+/// spread binding authority as the mapped prop checker and slot resolver.
+pub(crate) fn append_inference_props_literal(
+    ts: &mut String,
+    usage: &ComponentUsage,
+    template_binding_access: &TemplateBindingAccess,
+    source_context: ComponentPropSource<'_>,
+    expr_indent: &str,
+) {
+    append_props_literal(
+        ts,
+        &mut Vec::new(),
+        usage,
+        template_binding_access,
+        source_context,
+        expr_indent,
+    );
+}
+
 /// Append the `{ … }` props literal for `usage`, returning its generated range.
 ///
 /// Entries follow template order, because Vue 3 resolves an overlapping key by

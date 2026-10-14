@@ -27,7 +27,7 @@ export async function verifyRenderedRuleOverview(page: Page, route: string) {
     id: match[1].replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase(),
     group: owningRuleGroup(match[1], projects.has(match[1])),
   }));
-  assert.equal(expected.length, 317, "overview retains all 317 rule headings");
+  assert.equal(expected.length, 321, "overview retains all 321 rule headings");
   const actual = await page.evaluate(
     ({ expected, prefix }) => {
       const content = document.querySelector(".content");
@@ -84,6 +84,6 @@ export async function verifyRenderedRuleOverview(page: Page, route: string) {
     },
     { expected, prefix },
   );
-  assert.equal(actual.length, 317, `${route}: complete overview reading flow`);
+  assert.equal(actual.length, 321, `${route}: complete overview reading flow`);
   return { locale, entries: actual };
 }

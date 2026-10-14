@@ -1,0 +1,7 @@
+<script lang="ts">
+export type FlattenedItem<T> = { value: T; bind: { value: T; level: number } };
+</script>
+<script setup lang="ts" generic="T extends Record<string, any>">
+defineProps<{ items: T[]; getKey: (item: T) => string }>();
+defineSlots<{ default?: (props: { flattenItems: FlattenedItem<T>[] }) => any }>();
+</script>

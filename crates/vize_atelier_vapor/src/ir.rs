@@ -154,6 +154,8 @@ pub struct SetDynamicPropsIRNode<'a> {
     pub element: usize,
     pub props: Vec<'a, Box<'a, SimpleExpressionNode<'a>>>,
     pub is_event: bool,
+    /// The element's namespace: SVG props are always attributes.
+    pub namespace: Namespace,
 }
 
 /// `setDynamicProps` over upstream's ordered sources for an element with a
@@ -162,6 +164,8 @@ pub struct SetDynamicPropsIRNode<'a> {
 pub struct SetMergedPropsIRNode<'a> {
     pub element: usize,
     pub sources: Vec<'a, MergedPropsSource<'a>>,
+    /// The element's namespace: SVG props are always attributes.
+    pub namespace: Namespace,
 }
 
 /// One `setDynamicProps` source.

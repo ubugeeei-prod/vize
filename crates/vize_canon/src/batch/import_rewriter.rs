@@ -309,9 +309,11 @@ impl ImportRewriter {
 }
 
 pub(crate) fn source_may_contain_relative_specifier(source: &str) -> bool {
-    ["'./", "\"./", "'../", "\"../"]
-        .iter()
-        .any(|needle| source.contains(needle))
+    [
+        "'./", "\"./", "'../", "\"../", "'.'", "\".\"", "'..'", "\"..\"",
+    ]
+    .iter()
+    .any(|needle| source.contains(needle))
 }
 
 impl Default for ImportRewriter {

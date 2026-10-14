@@ -67,6 +67,7 @@ pub(crate) fn transform_directive<'a>(
                                 element: element_id,
                                 props,
                                 is_event: false,
+                                namespace: el.ns,
                             };
                             ctx.push_dynamic_operation(
                                 block,
@@ -122,6 +123,7 @@ pub(crate) fn transform_directive<'a>(
                         element: element_id,
                         props,
                         is_event: false,
+                        namespace: el.ns,
                     };
                     ctx.push_dynamic_operation(block, OperationNode::SetDynamicProps(set_dynamic));
                 }
@@ -182,6 +184,7 @@ pub(crate) fn transform_directive<'a>(
                         element: element_id,
                         props: values,
                         is_event: true,
+                        namespace: el.ns,
                     };
                     ctx.push_dynamic_operation(block, OperationNode::SetDynamicProps(set_dynamic));
                 }
