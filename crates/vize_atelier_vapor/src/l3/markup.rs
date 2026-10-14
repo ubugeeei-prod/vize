@@ -6,22 +6,27 @@ use vize_l3::{
     operand::OperandRole,
 };
 
+use super::LegacyReason;
+
 /// The message the legacy parser reports for `<div/>`.
 pub(crate) const SELF_CLOSING_RECOVERY: &str = "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.";
 
 /// The spans of self-closed non-void elements, each of which the legacy
-/// parser reports as a recovery that the native lane reproduces; `None` when
-/// the legacy parser diagnoses markup the native lane cannot reproduce.
+/// parser reports as a recovery that the native lane reproduces. The legacy
+/// reason when the legacy parser diagnoses markup the native lane cannot
+/// reproduce, or an element attribute rules the native lane out.
 /// Every op spans its authored markup: an element from `<` through its end
 /// tag (or `/>`), a binding over its attribute.
 pub(super) fn self_closing_recoveries(
     allocator: &vize_carton::Allocator,
     source: &str,
     program: &Program<'_>,
-) -> Option<std::vec::Vec<(u32, u32)>> {
+) -> Result<std::vec::Vec<(u32, u32)>, LegacyReason> {
     // `v-pre` freezes some self-closed tags without a report.
     if source.contains("v-pre") {
-        return (!legacy_diagnosed(allocator, source, program)).then(std::vec::Vec::new);
+        return (!legacy_diagnosed(allocator, source, program))
+            .then(std::vec::Vec::new)
+            .ok_or(LegacyReason::SurfaceSemantics);
     }
     let mut recoveries = std::vec::Vec::new();
     let refused = scan(allocator, source, program, |op, markup| {
@@ -36,7 +41,28 @@ pub(super) fn self_closing_recoveries(
             false
         }
     });
-    (!refused).then_some(recoveries)
+    if refused {
+        return Err(LegacyReason::SurfaceSemantics);
+    }
+    // An element attribute the native lane never admits (`ref`, `key`, an
+    // `on…` name) fails fast, before the native lane indexes the source.
+    if unsupported_attribute(program) {
+        return Err(LegacyReason::Binding);
+    }
+    Ok(recoveries)
+}
+
+/// Whether an element carries a static attribute that native admission
+/// rejects as a binding (`ref="r"` on a `<div>`).
+fn unsupported_attribute(program: &Program<'_>) -> bool {
+    program.operands.iter().any(|operand| {
+        operand.role == OperandRole::Attribute
+            && (program.ops.get(operand.op.index() as usize))
+                .is_some_and(|op| op.kind == OpKind::InsertNode)
+            && operand
+                .name
+                .is_none_or(|name| !super::native::validate::attribute_name(name))
+    })
 }
 
 /// Whether `<template …/>` carries `v-if`, `v-else-if`, `v-else`, `v-for` or

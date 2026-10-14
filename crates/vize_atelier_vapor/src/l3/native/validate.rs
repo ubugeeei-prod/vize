@@ -13,6 +13,7 @@ mod model;
 mod names;
 mod once;
 mod operands;
+pub(in crate::l3) use operands::attribute_name;
 mod order;
 mod select;
 mod slots;

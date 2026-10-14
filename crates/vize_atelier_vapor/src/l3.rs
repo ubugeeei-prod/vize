@@ -222,11 +222,12 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
             "atelier.vapor.bridge.s2_to_s3",
             vize_l2_to_l3::lower(allocator, &s2.root)
         );
-        let Some(recoveries) = bridge_profile!(
+        let recoveries = match bridge_profile!(
             "atelier.vapor.bridge.markup_admission",
             markup::self_closing_recoveries(allocator, source, &s3.program)
-        ) else {
-            return VaporL3BridgeStatus::Legacy(LegacyReason::SurfaceSemantics);
+        ) {
+            Ok(recoveries) => recoveries,
+            Err(reason) => return VaporL3BridgeStatus::Legacy(reason),
         };
         let mut retained = bridge_profile!(
             "atelier.vapor.bridge.retained_index",

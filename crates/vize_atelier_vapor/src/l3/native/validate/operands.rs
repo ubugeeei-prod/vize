@@ -248,7 +248,7 @@ pub(super) fn one<'b, 'a>(values: &'b [Operand<'a>], role: Role) -> Result<&'b O
     Ok(value)
 }
 
-pub(super) fn attribute_name(name: &str) -> bool {
+pub(in crate::l3) fn attribute_name(name: &str) -> bool {
     !matches!(
         name,
         "key" | "ref" | "ref_for" | "ref_key" | "is" | "innerHTML" | "textContent"
