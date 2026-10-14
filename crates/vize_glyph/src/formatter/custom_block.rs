@@ -13,7 +13,9 @@ pub(super) fn format(
     } else {
         output.push(b'<');
         output.extend_from_slice(block.block_type.as_bytes());
-        super::write_remaining_attrs(output, &block.attrs, &[]);
+        if !super::write_authored_attrs(output, &block.attrs, source, &block.loc, options) {
+            super::write_remaining_attrs(output, &block.attrs, &[]);
+        }
         output.push(b'>');
     }
     output.extend_from_slice(options.newline_bytes());

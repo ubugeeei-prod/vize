@@ -146,6 +146,7 @@ vize fmt --write src
 | `--single-attribute-per-line`      | 每行放置一个属性                          |
 | `--max-attributes-per-line`        | 在给定属性计数                            |
 | `--normalize-directive-shorthands` | 规范化`v-bind:` / `v-on:` / `v-slot:`速记 |
+| `--preset`                         | 使用 `prettier` 采用 Prettier 的 Vue 布局 |
 | `--profile`                        | 打印时序配置文件                          |
 
 ## 绒毛

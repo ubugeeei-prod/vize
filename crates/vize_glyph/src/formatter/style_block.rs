@@ -1,4 +1,4 @@
-use super::{block_indent, opening_tag, write_attr, write_remaining_attrs};
+use super::{block_indent, opening_tag, write_attr, write_authored_attrs, write_remaining_attrs};
 use crate::{error::FormatError, options::FormatOptions, style};
 use vize_l0::ToCompactString;
 
@@ -30,13 +30,15 @@ pub(super) fn write_style_block(
         opening_tag::write_raw(output, opening_tag);
     } else {
         output.extend_from_slice(b"<style");
-        if block.scoped {
-            write_attr(output, "scoped", None);
+        if !write_authored_attrs(output, &block.attrs, source, &block.loc, options) {
+            if block.scoped {
+                write_attr(output, "scoped", None);
+            }
+            if let Some(lang) = &block.lang {
+                write_attr(output, "lang", Some(lang));
+            }
+            write_remaining_attrs(output, &block.attrs, &["scoped", "lang"]);
         }
-        if let Some(lang) = &block.lang {
-            write_attr(output, "lang", Some(lang));
-        }
-        write_remaining_attrs(output, &block.attrs, &["scoped", "lang"]);
         output.push(b'>');
     }
     // An empty block (for example one that only carries `src`) stays empty on

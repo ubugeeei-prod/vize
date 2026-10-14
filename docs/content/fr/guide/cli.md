@@ -144,6 +144,7 @@ Options clés :
 | `--single-attribute-per-line`      | Mettez un attribut par ligne                       |
 | `--max-attributes-per-line`        | Enrouler après un certain nombre d’attributs       |
 | `--normalize-directive-shorthands` | Normaliser `v-bind:` / `v-on:` / `v-slot:` abrégés |
+| `--preset`                         | Utiliser la mise en page Vue de Prettier avec `prettier` |
 | `--profile`                        | Profil de timing d’impression                      |
 
 ## Peluches

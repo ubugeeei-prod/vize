@@ -67,7 +67,7 @@ pub struct FormatOptions {
     #[serde(default)]
     pub vue_indent_script_and_style: bool,
 
-    /// Sort HTML attributes in template (default: true)
+    /// Sort attributes in the template and on SFC block tags (default: true)
     #[serde(default = "default_true")]
     pub sort_attributes: bool,
 
@@ -143,6 +143,32 @@ impl Default for FormatOptions {
             sort_blocks: true,
             skip_script_stabilization: false,
         }
+    }
+}
+
+/// A named set of formatter defaults (#6098).
+///
+/// A preset only assigns the options it owns; options applied after it, such
+/// as CLI flags, still win.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum FormatPreset {
+    /// The Vize defaults.
+    #[default]
+    Vize,
+    /// Prettier's Vue layout: 80 columns, attributes and blocks in authored
+    /// order, and directives as written.
+    Prettier,
+}
+
+impl FormatPreset {
+    /// Assign the options this preset owns.
+    pub fn apply(self, options: &mut FormatOptions) {
+        let vize = self == Self::Vize;
+        options.print_width = if vize { default_print_width() } else { 80 };
+        options.sort_attributes = vize;
+        options.sort_blocks = vize;
+        options.normalize_directive_shorthands = vize;
     }
 }
 

@@ -117,7 +117,7 @@ export default defineConfig({
 | `--use-tabs`                       | スペースの代わりにタブでインデントします。                      |
 | `--single-quote`                   | ダブルクォートの代わりにシングルクォートを使います。            |
 | `--no-semi`                        | 文末のセミコロンを省略します。                                  |
-| `--sort-attributes`                | テンプレートの属性を並べ替えます。                              |
+| `--sort-attributes`                | テンプレートとブロックタグの属性を並べ替えます。                |
 | `--single-attribute-per-line`      | 属性を 1 行に 1 つずつ書きます。                                |
 | `--max-attributes-per-line`        | 指定した数を超えると、属性を折り返します。                      |
 | `--normalize-directive-shorthands` | `v-bind:`、`v-on:`、`v-slot:` を `:`、`@`、`#` に置き換えます。 |
@@ -129,6 +129,33 @@ export default defineConfig({
 - [フォーマッタの改行コードを設定する](./formatter-line-endings.md)
 - [プロパティの引用符を設定する](./formatter-property-quotes.md)
 - [JSX 属性の引用符を設定する](./formatter-jsx-quotes.md)
+
+## Prettier から移行する
+
+Vize の出力は Prettier や Oxfmt とほぼ同じですが、いくつかの既定値は意図して変えています。Prettier と同じように属性やブロックを書いた順に残すには、並べ替えを無効にします。
+
+```ts
+fmt: {
+  vize: {
+    sortAttributes: false,
+    sortBlocks: false,
+  },
+},
+```
+
+コマンドラインでは、`vize fmt --preset prettier` でこれらの設定と行幅 80 をまとめて指定できます。`v-bind:`、`v-on:`、`v-slot:` も書いたとおりに残ります。同時に指定したフラグはプリセットより優先されます。
+
+`sortAttributes: false` のときは、`<script>`、`<template>`、`<style>`、カスタムブロックのタグの属性も書いた順のまま残ります。既定値では `<script lang="ts" setup>` が `<script setup lang="ts">` になります。
+
+次の違いは設定にかかわらず残ります。
+
+- `printWidth` の既定値は Oxfmt と同じ 100 です。Prettier は 80 です。
+- 要素内のテキストは改行位置を変えません。Prettier は長いテキストを行幅まで詰め直します。
+- テンプレートの式は書いた形のまま残ります。たとえば `v-for="item, i in items"` や、`{ open: boolean, close: () => void }` のようなスロットの型の `,` 区切りはそのままです。Prettier は括弧を補い、`;` に置き換えます。
+- 空要素の閉じ方は書いたとおりに残ります。`<img src="a.png">` は `<img src="a.png" />` になりません。
+- CSS の文字列の引用符は変えないため、`@import './a.css'` はそのままです。Prettier はダブルクォートに変えます。
+- インラインの `style` 属性では、最後の宣言の後に `;` を付けます。
+- Sass、Less、Stylus の `<style>` ブロックは書いたとおりに残し、Pug のテンプレートは外側のインデントだけを調整します。Prettier は Sass と Less もフォーマットします。
 
 ## 保存時にフォーマットする
 

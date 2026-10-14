@@ -88,6 +88,7 @@ pub fn run(args: ReadyArgs) {
             single_attribute_per_line: None,
             max_attributes_per_line: None,
             normalize_directive_shorthands: None,
+            preset: None,
             profile: false,
             slow_threshold: 100,
         });

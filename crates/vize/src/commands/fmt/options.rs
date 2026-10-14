@@ -20,6 +20,9 @@ pub(super) fn build_format_options(
             std::process::exit(2);
         });
     let mut opts = config::to_glyph_format_options(&snapshot.loaded.config.formatter);
+    if let Some(preset) = args.preset {
+        vize_glyph::FormatPreset::from(preset).apply(&mut opts);
+    }
 
     // CLI flags override config values
     if let Some(v) = args.print_width {
