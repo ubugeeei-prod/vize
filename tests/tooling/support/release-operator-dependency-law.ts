@@ -4,9 +4,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { writeFakeCommand } from "./fake-command.ts";
 
-/** Models capture argv only; no Rust, Moon or publication command is executed. */
+/** Models capture argv only; no Rust or publication command is executed. */
 export function dependencyCommands(bin: string, capture: string, dependencies: string) {
-  for (const command of ["vp", "moon", "rust-script"])
+  for (const command of ["vp", "moon", "rust-script"]) // moon stays faked so a regression is captured, not run
     writeFakeCommand(
       bin,
       command,
@@ -50,7 +50,7 @@ export function dependencyShell(
   for (const operation of ["start", "patch", "resume", "retire"]) {
     const result = setup(operation);
     assert.equal(result.status, 0, result.stderr);
-    assert.deepEqual(calls(), operation === "retire" ? [install] : [install, ["moon", "update"]]);
+    assert.deepEqual(calls(), [install]);
     fs.rmSync(dependencyCapture);
     assert.equal(fs.existsSync(capture), false);
   }

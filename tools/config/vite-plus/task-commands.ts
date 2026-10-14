@@ -1,5 +1,3 @@
-import { existsSync } from "node:fs";
-
 import type { PackagePath } from "./task-types.ts";
 import { shellCommand, shellQuote } from "./task-shell.ts";
 
@@ -86,89 +84,6 @@ export const rustToolFromVscodeExtension = (command: string, ...args: string[]) 
 /** Runs a TypeScript command under `tools/support` with Node's type stripping. */
 export const nodeTool = (command: string, ...args: string[]) =>
   ["node", `tools/support/${command}.ts`, ...args].map(shellQuote).join(" ");
-
-const workspaceMoonHome = ".cache/moonbit";
-const workspaceMoonBin = `${workspaceMoonHome}/bin/moon`;
-const workspaceMoonRegistryIndex = `${workspaceMoonHome}/registry/index/.git`;
-const moonToolsModule = "tools/moon";
-
-export const moonCommandForEnvironment = (
-  env: NodeJS.ProcessEnv = process.env,
-  pathExists: (path: string) => boolean = existsSync,
-) => {
-  if (env.MOON_BIN != null && env.MOON_BIN !== "") {
-    return env.MOON_BIN;
-  }
-
-  if (pathExists(workspaceMoonBin)) {
-    return `env MOON_HOME=${workspaceMoonHome} MOON_BIN=${workspaceMoonBin} ${workspaceMoonBin}`;
-  }
-
-  return "moon";
-};
-
-export const moonRegistryUpdateGuardForEnvironment = (
-  env: NodeJS.ProcessEnv = process.env,
-  pathExists: (path: string) => boolean = existsSync,
-) => {
-  const hasExplicitMoonBin = env.MOON_BIN != null && env.MOON_BIN !== "";
-  if (hasExplicitMoonBin || !pathExists(workspaceMoonBin)) {
-    return null;
-  }
-
-  // The registry update runs from the repository root so the workspace-relative
-  // MoonBit paths (MOON_HOME, MOON_BIN, and the moon binary itself) resolve. A
-  // `cd` into the module directory would break those relative paths, which is
-  // exactly what silently regressed the local `vp run release` path.
-  return `( [ -d ${workspaceMoonRegistryIndex} ] || ${moonCommandForEnvironment(env, pathExists)} update )`;
-};
-
-export const moonRegistryRefreshCommandForEnvironment = (
-  env: NodeJS.ProcessEnv = process.env,
-  pathExists: (path: string) => boolean = existsSync,
-) => `${moonCommandForEnvironment(env, pathExists)} update`;
-
-const moonCommand = moonCommandForEnvironment();
-const moonRegistryUpdateGuard = moonRegistryUpdateGuardForEnvironment();
-const moonRegistryRefreshCommand = moonRegistryRefreshCommandForEnvironment();
-
-const moonScriptCommand = (registrySetup: string | null, name: string, args: string[]) =>
-  [
-    ...(registrySetup == null ? [] : [registrySetup, "&&"]),
-    moonCommand,
-    "run",
-    "-q",
-    "--target",
-    "native",
-    `${moonToolsModule}/cmd/${name}`,
-    "--",
-    ...args,
-  ].join(" ");
-
-/**
- * Executes a repository MoonBit command package.
- *
- * The root task catalog treats MoonBit scripts as first-class automation. This
- * helper keeps the invocation uniform, prefers the workspace-local MoonBit
- * toolchain installed by the Nix shell, and forwards command arguments after
- * `--` so each package owns its own CLI parsing.
- */
-export const moonScript = (name: string, ...args: string[]) =>
-  moonScriptCommand(moonRegistryUpdateGuard, name, args);
-
-/**
- * Executes a MoonBit command after refreshing the registry index.
- *
- * Release tasks use this slower path because resolving a newly pinned package
- * against an existing but stale index must fail before any release files are
- * changed. Regular development tasks keep the cheaper initialize-once path.
- */
-export const moonScriptWithFreshRegistry = (name: string, ...args: string[]) =>
-  moonScriptCommand(
-    `node tools/support/release/moon-registry-update.mjs ${moonRegistryRefreshCommand}`,
-    name,
-    args,
-  );
 
 export const devApp = (target?: string) =>
   target == null ? nodeTool("tasks/dev-app") : nodeTool("tasks/dev-app", target);

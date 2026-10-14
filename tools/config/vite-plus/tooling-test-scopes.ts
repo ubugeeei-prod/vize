@@ -137,10 +137,6 @@ export const toolingTestScopes = [
     ],
   },
   {
-    input: "toolingMoonBuild",
-    tests: ["tests/tooling/moonbit-warnings.test.ts"],
-  },
-  {
     input: "toolingBenchCompare",
     tests: ["tests/tooling/davinci-bench-compare.test.ts"],
   },

@@ -73,16 +73,9 @@ jobs:
       - uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de # master
         with: { toolchain: "1.99.0" }
       - uses: ./.github/actions/setup-rust-script
-      - uses: ./.github/actions/setup-moonbit
-        if: ${{ inputs.operation == 'start' || inputs.operation == 'patch' || inputs.operation == 'resume' }}
 
-      - name: Install the frozen graph and refresh the source preparation registry
-        env: { RELEASE_OPERATION: "${{ inputs.operation }}" }
-        run: |
-          vp install --frozen-lockfile
-          if [[ "$RELEASE_OPERATION" == "start" || "$RELEASE_OPERATION" == "patch" || "$RELEASE_OPERATION" == "resume" ]]; then
-            moon update
-          fi
+      - name: Install the frozen graph
+        run: vp install --frozen-lockfile
 
       - name: Authorize the existing maintainer user and invoke the public release command
         env:

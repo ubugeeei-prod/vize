@@ -13,10 +13,9 @@ const corpus = [
   "tests/tooling/davinci-complexity-corpus.test.ts",
   "tests/tooling/davinci-metamorphic-corpus.test.ts",
 ];
-const moon = "tests/tooling/moonbit-warnings.test.ts";
 const bench = "tests/tooling/davinci-bench-compare.test.ts";
 const pack = "tests/tooling/vite-plus-fast-path.test.ts";
-const heavy = [...corpus, moon, bench];
+const heavy = [...corpus, bench];
 const scopeFixture = mkdtempSync(join(tmpdir(), "vize-heavy-scope-"));
 for (const directory of [
   "tests/tooling",
@@ -27,8 +26,6 @@ for (const directory of [
   mkdirSync(join(scopeFixture, directory), { recursive: true });
 }
 for (const file of heavy) writeFileSync(join(scopeFixture, file), "// scoped subprocess fixture\n");
-writeFileSync(join(scopeFixture, moon), 'import "./_helpers/moonbit.ts";\n');
-writeFileSync(join(scopeFixture, "tests/tooling/_helpers/moonbit.ts"), "// imported helper\n");
 after(() => rmSync(scopeFixture, { recursive: true, force: true }));
 const selected = (path) => new Set(planToolingTests([path], { cwd: scopeFixture }).tests);
 
@@ -75,22 +72,6 @@ void test("differential JavaScript harness changes do not select the Rust corpus
   for (const file of corpus) assert.equal(merge.has(file), true, file);
 });
 
-void test("Moon build inputs retain module, library, toolchain and imported helper without unrelated crates", () => {
-  assert.equal(selected("davinci/vize_l1/src/parser.rs").has(moon), false);
-  for (const path of [
-    "tools/moon/moon.mod",
-    "tools/moon/lib/process.mbt",
-    "tools/moon/cmd/new_command/main.mbt",
-    "tools/moon/cmd/new_command/moon.pkg",
-    ".moonbit-version",
-    "tools/nix/moonbit.nix",
-    ".github/actions/setup-moonbit/action.yml",
-    "tests/tooling/_helpers/moonbit.ts",
-  ]) {
-    assert.ok(selected(path).has(moon), path);
-  }
-});
-
 void test("standalone bench comparison retains Rust script, common helper and reports without workspace source", () => {
   assert.equal(selected("davinci/vize_l1/src/parser.rs").has(bench), false);
   assert.equal(selected("docs/davinci/plan/phase-4.md").has(bench), false);
@@ -135,11 +116,11 @@ void test("a scoped subprocess test with unresolved runtime imports restores bro
     for (const directory of ["tests/tooling", "tests/tooling/davinci", "tests/tooling/release"]) {
       mkdirSync(join(cwd, directory), { recursive: true });
     }
-    writeFileSync(join(cwd, moon), 'import "./missing-helper.mjs";\n');
+    writeFileSync(join(cwd, bench), 'import "./missing-helper.mjs";\n');
     const plan = planToolingTests(["docs/content/guide.md"], { cwd });
-    assert.deepEqual(plan.tests, [moon]);
-    writeFileSync(join(cwd, moon), "import(dynamicHelper);\n");
-    assert.deepEqual(planToolingTests(["docs/content/guide.md"], { cwd }).tests, [moon]);
+    assert.deepEqual(plan.tests, [bench]);
+    writeFileSync(join(cwd, bench), "import(dynamicHelper);\n");
+    assert.deepEqual(planToolingTests(["docs/content/guide.md"], { cwd }).tests, [bench]);
   } finally {
     rmSync(cwd, { recursive: true, force: true });
   }

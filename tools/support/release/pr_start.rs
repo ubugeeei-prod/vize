@@ -87,12 +87,7 @@ fn prepare_with_target(
     budget: Option<&super::pr_budget::Budget>,
     work: &Path,
 ) -> Result<(), String> {
-    // The task wrapper can provide workspace-relative MoonBit paths. Resolve
-    // them before changing the child's directory to the isolated worktree.
-    let original = env::current_dir().map_err(|error| error.to_string())?;
-    let bin = env::var("MOON_BIN").ok();
-    let home = env::var("MOON_HOME").ok();
-    let mut command = release_preparation(work, &original, bin.as_deref(), home.as_deref());
+    let mut command = release_preparation(work)?;
     command.args([bump, "-y", "--prepare-only"]);
     if let Some(target) = target {
         command.args(["--pinned-target", target]);
@@ -117,49 +112,18 @@ fn prepare_with_target(
 /// The release preparation entry point of the TypeScript release command.
 pub const RELEASE_COMMAND: &str = "tools/support/release/release/main.ts";
 
-/// Runs the prepared source's own release command. Source cuts from before the
-/// TypeScript port keep their MoonBit release package.
-pub fn release_preparation(
-    work: &Path,
-    original: &Path,
-    bin: Option<&str>,
-    home: Option<&str>,
-) -> process::Command {
-    if work.join(RELEASE_COMMAND).is_file() {
-        let mut command = process::Command::new("node");
-        command.arg(RELEASE_COMMAND);
-        return command;
+/// Runs the prepared source's own TypeScript release command. Sources cut
+/// before the TypeScript port (the MoonBit release package) can no longer be
+/// prepared: MoonBit was retired from the repository tooling.
+pub fn release_preparation(work: &Path) -> Result<process::Command, String> {
+    if !work.join(RELEASE_COMMAND).is_file() {
+        return Err(format!(
+            "{RELEASE_COMMAND} is missing; this source predates the TypeScript release port and cannot be re-released"
+        ));
     }
-    let mut command = preparation_command(original, bin, home);
-    command.args(["run", "--target", "native", "tools/moon/cmd/release", "--"]);
-    command
-}
-
-pub fn preparation_command(
-    original: &Path,
-    bin: Option<&str>,
-    home: Option<&str>,
-) -> process::Command {
-    let local = original.join(".cache/moonbit/bin/moon");
-    let bin = bin.filter(|value| !value.is_empty());
-    let program = match bin {
-        Some(value)
-            if Path::new(value).is_relative() && Path::new(value).components().count() > 1 =>
-        {
-            original.join(value)
-        }
-        Some(value) => PathBuf::from(value),
-        None if local.is_file() => local,
-        None => PathBuf::from("moon"),
-    };
-    let mut command = process::Command::new(&program);
-    command.env("MOON_BIN", &program);
-    if let Some(home) = home.filter(|value| !value.is_empty()) {
-        command.env("MOON_HOME", original.join(home));
-    } else if bin.is_none() && program.is_absolute() {
-        command.env("MOON_HOME", original.join(".cache/moonbit"));
-    }
-    command
+    let mut command = process::Command::new("node");
+    command.arg(RELEASE_COMMAND);
+    Ok(command)
 }
 
 fn prepare_and_open(bump: &str, repository: &str, work: &Path) -> Result<(), String> {
@@ -321,22 +285,18 @@ pub fn resume_pinned(number: u64, root: &Path) -> Result<(), String> {
 
 #[cfg(test)]
 mod preparation_tests {
-    use std::{fs, path::Path};
+    use std::fs;
 
     #[test]
     fn release_preparation_runs_the_prepared_sources_own_release_command() {
         let work = std::env::temp_dir().join(format!("vize-preparation-{}", std::process::id()));
         let _ = fs::remove_dir_all(&work);
         fs::create_dir_all(&work).unwrap();
-        let original = Path::new("/original/workspace");
-        let legacy = super::release_preparation(&work, original, Some("moon"), None);
-        assert_eq!(legacy.get_program(), "moon");
-        let args = ["run", "--target", "native", "tools/moon/cmd/release", "--"];
-        assert_eq!(legacy.get_args().collect::<Vec<_>>(), args);
+        assert!(super::release_preparation(&work).is_err());
         let command = work.join(super::RELEASE_COMMAND);
         fs::create_dir_all(command.parent().unwrap()).unwrap();
         fs::write(&command, "").unwrap();
-        let current = super::release_preparation(&work, original, Some("moon"), None);
+        let current = super::release_preparation(&work).unwrap();
         assert_eq!(current.get_program(), "node");
         assert_eq!(
             current.get_args().collect::<Vec<_>>(),

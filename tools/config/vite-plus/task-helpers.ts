@@ -3,8 +3,6 @@ export {
   devApp,
   installVscodeExtensionDependencies,
   localVp,
-  moonScript,
-  moonScriptWithFreshRegistry,
   nodeTool,
   runInDirectory,
   runInPackages,

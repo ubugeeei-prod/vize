@@ -321,23 +321,6 @@ fn refreshed_pr_head_replaces_stale_local_validation_head() {
 }
 
 #[test]
-fn workspace_moonbit_paths_survive_the_isolated_worktree() {
-    let root = std::path::Path::new("/original/workspace");
-    let command = super::pr_start::preparation_command(
-        root,
-        Some(".cache/moonbit/bin/moon"),
-        Some(".cache/moonbit"),
-    );
-    assert_eq!(command.get_program(), root.join(".cache/moonbit/bin/moon"));
-    assert!(
-        command.get_envs().any(|(key, value)| key == "MOON_HOME"
-            && value == Some(root.join(".cache/moonbit").as_os_str()))
-    );
-    let command = super::pr_start::preparation_command(root, Some("moon"), None);
-    assert_eq!(command.get_program(), "moon");
-}
-
-#[test]
 fn required_checks_follow_the_selected_pr_run_and_verify_exact_head_and_app() {
     let rules = json!([{"type": "required_status_checks", "parameters": {
         "required_status_checks": [{"context": "test-report", "integration_id": 15368}]

@@ -15,9 +15,6 @@ import {
 } from "../../tools/config/vite-plus/task-shell.ts";
 import {
   localVp,
-  moonCommandForEnvironment,
-  moonRegistryRefreshCommandForEnvironment,
-  moonRegistryUpdateGuardForEnvironment,
 } from "../../tools/config/vite-plus/task-commands.ts";
 import { checkTasks } from "../../tools/config/vite-plus/tasks/check.ts";
 import { releaseTasks } from "../../tools/config/vite-plus/tasks/release.ts";
@@ -66,50 +63,6 @@ test("Rust task environments preserve forwarded arguments", () => {
 
   assert.match(command, /sh -c .*node tools\/support\/release\/release\/main\.ts "\$@"/);
   assert.match(command, / --$/);
-});
-
-test("MoonBit task commands prefer the workspace toolchain cache", () => {
-  assert.equal(
-    moonCommandForEnvironment({}, (candidate) => candidate === ".cache/moonbit/bin/moon"),
-    "env MOON_HOME=.cache/moonbit MOON_BIN=.cache/moonbit/bin/moon .cache/moonbit/bin/moon",
-  );
-});
-
-test("MoonBit task commands preserve the GitHub runner shim", () => {
-  assert.equal(
-    moonCommandForEnvironment({ MOON_BIN: "/runner-temp/moonbit-shims/moon" }, () => true),
-    "/runner-temp/moonbit-shims/moon",
-  );
-});
-
-test("MoonBit task commands initialize the workspace registry index", () => {
-  assert.equal(
-    moonRegistryUpdateGuardForEnvironment(
-      {},
-      (candidate) => candidate === ".cache/moonbit/bin/moon",
-    ),
-    "( [ -d .cache/moonbit/registry/index/.git ] || env MOON_HOME=.cache/moonbit MOON_BIN=.cache/moonbit/bin/moon .cache/moonbit/bin/moon update )",
-  );
-});
-
-test("MoonBit task commands leave explicit MoonBit shims untouched", () => {
-  assert.equal(
-    moonRegistryUpdateGuardForEnvironment(
-      { MOON_BIN: "/runner-temp/moonbit-shims/moon" },
-      () => true,
-    ),
-    null,
-  );
-});
-
-test("release registry refreshes use an explicit MoonBit shim", () => {
-  assert.equal(
-    moonRegistryRefreshCommandForEnvironment(
-      { MOON_BIN: "/runner-temp/moonbit-shims/moon" },
-      () => true,
-    ),
-    "/runner-temp/moonbit-shims/moon update",
-  );
 });
 
 test("release task runs the TypeScript release command and forwards vp run arguments", () => {

@@ -181,7 +181,6 @@ export const cacheInputs = {
     "npm/**",
   ],
   // This command builds the Moon module only; it does not execute its tools.
-  toolingMoonBuild: [".github/**", ".moonbit-version", "tools/moon/**", "tools/nix/moonbit.nix"],
   // Standalone rust-script dependencies are in the script header, not crates/.
   toolingBenchCompare: [
     ".cargo/**",

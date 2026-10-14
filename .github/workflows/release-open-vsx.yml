@@ -81,9 +81,6 @@ jobs:
         with:
           node-version-file: "package.json"
           run-install: false
-      # Tags published before the TypeScript port keep their MoonBit publisher.
-      - uses: ./.github/actions/setup-moonbit
-        if: steps.published.outputs.existing != 'true' && hashFiles('tools/support/release/publish_open_vsx_extension/main.ts') == ''
 
       - name: Download VSIX from GitHub Release
         if: steps.published.outputs.existing != 'true'
@@ -96,8 +93,4 @@ jobs:
         run: |
           mapfile -t vsix_files < <(find open-vsx-artifacts -type f -name '*.vsix' -print)
           test "${#vsix_files[@]}" -eq 1
-          if [ -f tools/support/release/publish_open_vsx_extension/main.ts ]; then
-            node tools/support/release/publish_open_vsx_extension/main.ts "${vsix_files[0]}"
-          else
-            moon run --target native tools/moon/cmd/publish_open_vsx_extension -- "${vsix_files[0]}"
-          fi
+          node tools/support/release/publish_open_vsx_extension/main.ts "${vsix_files[0]}"
