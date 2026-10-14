@@ -86,7 +86,7 @@ pub(super) fn collect_default_run_files(
     canonical_paths: &mut CanonicalPathCache,
     resolver: &mut vize_canon::PackageRouteResolver,
 ) -> CollectedRoots {
-    let mut files = vize_carton::profile!(
+    let mut files = vize_l0::profile!(
         "cli.check.collect.tsconfig_files",
         collect_default_check_files(
             context.project_root,
@@ -97,12 +97,12 @@ pub(super) fn collect_default_run_files(
     );
     retain_unignored(&mut files, context.check_ignore_set);
     let inputs = files.clone();
-    let mut reported_files = vize_carton::profile!(
+    let mut reported_files = vize_l0::profile!(
         "cli.check.collect.canonical",
         canonical_file_set(&files, canonical_paths)
     );
     let mut import_session = LocalImportSession::new(resolver);
-    let discovered = vize_carton::profile!(
+    let discovered = vize_l0::profile!(
         "cli.check.collect.imports",
         register_transitive_local_imports_with_session(
             &mut files,
@@ -118,7 +118,7 @@ pub(super) fn collect_default_run_files(
     );
     reported_files.extend(canonical_file_set(&discovered.authored, canonical_paths));
     let mut package_routes = discovered.package_routes;
-    vize_carton::profile!(
+    vize_l0::profile!(
         "cli.check.collect.ambient",
         register_ambient_declaration_files(
             &mut files,
@@ -129,7 +129,7 @@ pub(super) fn collect_default_run_files(
     );
     // Imports reached only through hidden ambient declarations provide type
     // context, but are not authored members of the checked program.
-    let hidden_discovered = vize_carton::profile!(
+    let hidden_discovered = vize_l0::profile!(
         "cli.check.collect.hidden_imports",
         register_transitive_local_imports_with_session(
             &mut files,
