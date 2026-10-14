@@ -22,7 +22,7 @@ export async function verifyRenderedVueRulePackets(page: Page, route: string) {
         sourceSha256: createHash("sha256").update(source).digest("hex"),
       };
     });
-  assert.equal(expected.length, 104, "every implemented Vue rule");
+  assert.equal(expected.length, 108, "every implemented Vue rule");
   const actual = await page.evaluate(
     (expected) => {
       const names = new Set(expected.map(({ id }) => id));
