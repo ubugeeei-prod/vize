@@ -143,7 +143,7 @@ fmt: {
 },
 ```
 
-コマンドラインでは、`vize fmt --preset prettier` でこれらの設定と行幅 80 をまとめて指定できます。`v-bind:`、`v-on:`、`v-slot:` は書いたとおりに残り、CSS、SCSS、Less の文字列はダブルクォート（`--single-quote` ではシングルクォート）になります。同時に指定したフラグはプリセットより優先されます。
+コマンドラインでは、`vize fmt --preset prettier` でこれらの設定と行幅 80 をまとめて指定できます。`v-bind:`、`v-on:`、`v-slot:` は書いたとおりに残り、CSS、SCSS、Less の文字列はダブルクォート（`--single-quote` ではシングルクォート）になり、1 行の `style` 属性は末尾の `;` を付けずに `color: red; top: 0` の形で書かれます。同時に指定したフラグはプリセットより優先されます。
 
 `sortAttributes: false` のときは、`<script>`、`<template>`、`<style>`、カスタムブロックのタグの属性も書いた順のまま残ります。既定値では `<script lang="ts" setup>` が `<script setup lang="ts">` になります。
 
@@ -153,7 +153,6 @@ fmt: {
 - 要素内のテキストは改行位置を変えません。Prettier は長いテキストを行幅まで詰め直します。
 - テンプレートの式は書いた形のまま残ります。たとえば `v-for="item, i in items"` や、`{ open: boolean, close: () => void }` のようなスロットの型の `,` 区切りはそのままです。Prettier は括弧を補い、`;` に置き換えます。
 - 空要素の閉じ方は書いたとおりに残ります。`<img src="a.png">` は `<img src="a.png" />` になりません。
-- インラインの `style` 属性では、最後の宣言の後に `;` を付けます。
 - Sass、Less、Stylus の `<style>` ブロックは書いたとおりに残し（プリセットが変えるのは SCSS と Less の引用符だけです）、Pug のテンプレートは外側のインデントだけを調整します。Prettier は Sass と Less もフォーマットします。
 
 ## 保存時にフォーマットする

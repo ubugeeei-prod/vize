@@ -111,6 +111,11 @@ pub struct FormatOptions {
     #[serde(default)]
     pub normalize_css_quotes: bool,
 
+    /// Lay out static `style` attributes as `name: value` declarations joined
+    /// by `; ` without a trailing `;`, as Prettier does (default: false)
+    #[serde(default)]
+    pub normalize_inline_styles: bool,
+
     /// Skip the `<script>` idempotence stabilization pass (default: false).
     ///
     /// When false (the default), script blocks are formatted to a stable fixed
@@ -148,6 +153,7 @@ impl Default for FormatOptions {
             normalize_directive_shorthands: true,
             sort_blocks: true,
             normalize_css_quotes: false,
+            normalize_inline_styles: false,
             skip_script_stabilization: false,
         }
     }
@@ -177,6 +183,7 @@ impl FormatPreset {
         options.sort_blocks = vize;
         options.normalize_directive_shorthands = vize;
         options.normalize_css_quotes = !vize;
+        options.normalize_inline_styles = !vize;
     }
 }
 

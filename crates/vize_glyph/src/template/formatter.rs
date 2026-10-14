@@ -157,6 +157,9 @@ impl<'a> TemplateFormatter<'a> {
                     if self.options.sort_attributes {
                         sort_attributes(&mut sorted_attrs, self.options);
                     }
+                    if self.options.normalize_inline_styles {
+                        normalize_inline_styles(&mut sorted_attrs);
+                    }
 
                     self.open_chunk(&mut output, depth, join);
                     output.push(b'<');
@@ -296,5 +299,17 @@ impl<'a> TemplateFormatter<'a> {
         self.write_indent(output, depth);
         output.extend_from_slice(content);
         output.extend_from_slice(self.newline);
+    }
+}
+
+fn normalize_inline_styles(attrs: &mut [super::attributes::ParsedAttribute]) {
+    for attr in attrs.iter_mut().filter(|attr| attr.name == "style") {
+        if let Some(normalized) = attr
+            .value
+            .as_deref()
+            .and_then(super::inline_style::normalize)
+        {
+            attr.value = Some(normalized);
+        }
     }
 }

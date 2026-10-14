@@ -12,6 +12,7 @@ mod attributes;
 mod directives;
 mod formatter;
 pub(crate) mod helpers;
+mod inline_style;
 pub(crate) mod literal_lines;
 mod vue_filters;
 

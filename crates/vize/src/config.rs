@@ -121,6 +121,7 @@ pub fn to_glyph_format_options(config: &FormatterConfig) -> vize_glyph::FormatOp
         normalize_directive_shorthands: config.normalize_directive_shorthands,
         sort_blocks: config.sort_blocks,
         normalize_css_quotes: false,
+        normalize_inline_styles: false,
         skip_script_stabilization: false,
     }
 }

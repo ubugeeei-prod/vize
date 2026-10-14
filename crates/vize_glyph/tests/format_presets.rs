@@ -79,6 +79,10 @@ const id = "a";
         defaults.normalize_directive_shorthands
     );
     assert_eq!(options.normalize_css_quotes, defaults.normalize_css_quotes);
+    assert_eq!(
+        options.normalize_inline_styles,
+        defaults.normalize_inline_styles
+    );
 }
 
 #[test]
@@ -120,5 +124,25 @@ fn prettier_preset_requotes_less_and_scss_strings() {
     assert_eq!(
         format_sfc(sass, &options).expect("format").code.as_str(),
         sass
+    );
+}
+
+#[test]
+fn prettier_preset_lays_out_inline_styles() {
+    let source =
+        "<template>\n  <div style=\"color:red;top:0;\" :style=\"{ a: 1 }\">a</div>\n</template>\n";
+    let kept = format_sfc(source, &FormatOptions::default()).expect("format");
+    assert_eq!(kept.code.as_str(), source);
+
+    let mut options = FormatOptions::default();
+    FormatPreset::Prettier.apply(&mut options);
+    let formatted = format_sfc(source, &options).expect("format").code;
+    assert_eq!(
+        formatted.as_str(),
+        "<template>\n  <div style=\"color: red; top: 0\" :style=\"{ a: 1 }\">a</div>\n</template>\n"
+    );
+    assert_eq!(
+        format_sfc(&formatted, &options).expect("format").code,
+        formatted
     );
 }

@@ -141,7 +141,7 @@ fmt: {
 },
 ```
 
-On the command line, `vize fmt --preset prettier` applies these settings together with a print width of 80, leaves `v-bind:`, `v-on:` and `v-slot:` as written, and changes strings in CSS, SCSS and Less to double quotes, or to single quotes with `--single-quote`. Flags given with it still win.
+On the command line, `vize fmt --preset prettier` applies these settings together with a print width of 80, leaves `v-bind:`, `v-on:` and `v-slot:` as written, changes strings in CSS, SCSS and Less to double quotes, or to single quotes with `--single-quote`, and writes a one-line `style` attribute as `color: red; top: 0`, without a trailing `;`. Flags given with it still win.
 
 With `sortAttributes: false`, the attributes of `<script>`, `<template>`, `<style>` and custom block tags also stay in the written order. With the default, `<script lang="ts" setup>` becomes `<script setup lang="ts">`.
 
@@ -151,7 +151,6 @@ These differences remain whatever the settings:
 - Text inside elements keeps its line breaks. Prettier refills long text up to the print width.
 - Template expressions keep their written form, for example `v-for="item, i in items"` and `,` separators in a slot type such as `{ open: boolean, close: () => void }`. Prettier adds the parentheses and uses `;`.
 - A void element keeps the closing you wrote: `<img src="a.png">` is not turned into `<img src="a.png" />`.
-- An inline `style` attribute gets a trailing `;` after its last declaration.
 - `<style>` blocks in Sass, Less or Stylus are left as written (the preset only changes quotes in SCSS and Less), and Pug templates only get their outer indentation adjusted. Prettier formats Sass and Less.
 
 ## Format on save

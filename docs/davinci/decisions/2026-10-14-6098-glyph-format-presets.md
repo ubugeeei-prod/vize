@@ -46,3 +46,14 @@ its line unchanged. The pass runs before CSS layout, because the layout treats
 idempotent. The `prettier` preset sets it. Like the other new options, it is a
 `FormatOptions` field that the WASM binding accepts; the Node binding and
 the config-file key wait for the same loader follow-up as `preset`.
+
+## Inline style attributes
+
+The earlier sweep note that Vize adds a trailing `;` to `style` attributes was
+wrong: Vize keeps the value as written, and Prettier lays it out as CSS.
+`normalizeInlineStyles` (default `false`, set by the `prettier` preset) writes
+a static `style` value as `name: value` declarations joined by `; `, without a
+trailing `;`, and lowercases property names other than custom properties. It
+only touches one-line declaration lists; a value with a newline, braces, a
+comment, an entity or an escape stays as written. Breaking a long value over
+several lines, as Prettier does, is not attempted.
