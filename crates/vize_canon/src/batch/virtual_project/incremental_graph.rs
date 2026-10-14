@@ -22,8 +22,19 @@ impl VirtualProject {
         importer: &Path,
         targets: FxHashSet<PathBuf>,
     ) -> Vec<PathBuf> {
+        self.replace_canonical_dependency_edges(
+            vize_carton::path::canonicalize_non_verbatim(importer),
+            targets,
+        )
+    }
+
+    /// [`Self::replace_dependency_edges`] for an already canonical importer.
+    pub(crate) fn replace_canonical_dependency_edges(
+        &mut self,
+        importer: PathBuf,
+        targets: FxHashSet<PathBuf>,
+    ) -> Vec<PathBuf> {
         self.incremental_dependency_nodes_reconciled += 1;
-        let importer = vize_carton::path::canonicalize_non_verbatim(importer);
         let previous = self
             .dependency_edges
             .insert(importer, targets.clone())

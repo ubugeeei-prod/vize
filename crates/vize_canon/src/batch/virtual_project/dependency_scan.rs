@@ -25,6 +25,7 @@
 use std::path::{Path, PathBuf};
 
 use oxc_span::SourceType;
+use rayon::prelude::*;
 #[cfg(test)]
 use vize_carton::cstr;
 use vize_carton::{FxHashMap, FxHashSet, String as CompactString};
@@ -54,7 +55,10 @@ type PackageResolver<'a> = &'a mut dyn FnMut(&Path, &str, crate::PackageResoluti
 impl VirtualProject {
     /// Register every reachable first-party dependency, to a fixpoint.
     pub fn register_reachable_dependencies(&mut self) -> CorsaResult<()> {
-        self.register_reachable_dependencies_with_overlays(&FxHashMap::default())
+        vize_carton::profile!(
+            "canon.project.reachable_dependencies",
+            self.register_reachable_dependencies_with_overlays(&FxHashMap::default())
+        )
     }
 
     /// Reconcile only dependencies reachable from sources rebuilt by one
@@ -146,9 +150,24 @@ impl VirtualProject {
                 .map(|file| file.original_path.clone())
                 .collect(),
         };
-        let mut visited: FxHashSet<PathBuf> = queue
+        // Canonicalize the initial importers once, in parallel; the edge index
+        // and the visited set both key on these paths.
+        let canonical_importers = queue
+            .par_iter()
+            .map(|path| {
+                let canonical = vize_carton::path::canonicalize_non_verbatim(path);
+                let is_file = canonical.is_file();
+                (path.clone(), canonical, is_file)
+            })
+            .collect::<Vec<_>>();
+        let mut visited: FxHashSet<PathBuf> = canonical_importers
             .iter()
-            .filter_map(|path| canonical_key(path))
+            .filter(|(_, _, is_file)| *is_file)
+            .map(|(_, canonical, _)| canonical.clone())
+            .collect();
+        let canonical_importers: FxHashMap<PathBuf, PathBuf> = canonical_importers
+            .into_iter()
+            .map(|(path, canonical, _)| (path, canonical))
             .collect();
 
         while let Some(importer) = queue.pop() {
@@ -186,7 +205,10 @@ impl VirtualProject {
                     workspace_package_specifiers,
                 )
             {
-                let released = self.replace_dependency_edges(&importer, dependency_targets);
+                let released = self.replace_canonical_dependency_edges(
+                    canonical_importer(&canonical_importers, &importer),
+                    dependency_targets,
+                );
                 self.prune_unowned_sources(released);
                 continue;
             }
@@ -286,7 +308,10 @@ impl VirtualProject {
                     queue.push(key);
                 }
             }
-            let released = self.replace_dependency_edges(&importer, dependency_targets);
+            let released = self.replace_canonical_dependency_edges(
+                canonical_importer(&canonical_importers, &importer),
+                dependency_targets,
+            );
             self.prune_unowned_sources(released);
         }
         Ok(())
@@ -343,6 +368,13 @@ impl VirtualProject {
         }
         aliases
     }
+}
+
+fn canonical_importer(known: &FxHashMap<PathBuf, PathBuf>, importer: &Path) -> PathBuf {
+    known
+        .get(importer)
+        .cloned()
+        .unwrap_or_else(|| vize_carton::path::canonicalize_non_verbatim(importer))
 }
 
 #[cfg(test)]
