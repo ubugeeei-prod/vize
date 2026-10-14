@@ -108,10 +108,11 @@ fn parse_eslint_rule_list(raw: &str) -> Vec<String> {
                 .filter(|name| name.contains('/'))
                 .unwrap_or(rule)
         })
-        // This registered Options rule shares ESLint's identity. Keep the
+        // These registered script rules share ESLint's identity. Keep the
         // compatibility mapping narrow; unrelated Vue IDs still match exactly.
         .map(|rule| match rule {
             "vue/no-reserved-keys" => "script/no-reserved-keys",
+            "vue/no-dupe-keys" => "script/no-dupe-keys",
             rule => rule,
         })
         .map(String::from)
