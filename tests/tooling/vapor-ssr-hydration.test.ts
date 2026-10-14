@@ -85,7 +85,10 @@ test("a Vapor SFC rendered on the server hydrates without mismatch", async () =>
     try {
       app.mount(host);
       assert.deepEqual(warnings, []);
-      assert.deepEqual([...host.querySelectorAll("*")], serverElements);
+      // Hydration adopts every server element instead of re-creating it.
+      const hydrated = [...host.querySelectorAll("*")];
+      assert.equal(hydrated.length, serverElements.length);
+      hydrated.forEach((element, index) => assert.strictEqual(element, serverElements[index]));
       assert.equal(host.querySelector("section")?.className, "warm");
 
       host.querySelector("button")?.dispatchEvent(new window.Event("click", { bubbles: true }));
