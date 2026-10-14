@@ -4,6 +4,7 @@ use crate::{batch::Diagnostic, batch::SfcBlockType, virtual_ts::VirtualTsOptions
 use std::{fs, path::Path};
 use vize_atelier_core::TemplateSyntaxMode;
 mod alias_rewrite;
+mod auto_import_mirrors;
 mod base_url;
 mod case_dir;
 mod declaration_graph_identity;
