@@ -54,9 +54,36 @@ impl<'a> Flow<'a> {
     }
 }
 
+/// Every path must leave through `return` or `throw`, and, like the reference
+/// rule's `treatUndefinedAsUnspecified` bookkeeping, the getter's last `return`
+/// in source order must carry a value. An early bare `return;` guard followed
+/// by a valued `return` is therefore accepted (#8828).
 pub(super) fn returns_value(statements: &[Statement<'_>]) -> bool {
     let flow = sequence(statements);
-    flow.saw_value && flow.exits & (NORMAL | UNDEFINED) == 0 && flow.jumps.is_empty()
+    if flow.exits & NORMAL != 0 || !flow.jumps.is_empty() {
+        return false;
+    }
+    let mut last = LastReturn(None);
+    for statement in statements {
+        last.visit_statement(statement);
+    }
+    last.0 == Some(true)
+}
+
+/// Whether the last `return` of the getter itself (not of a nested function)
+/// has an argument.
+struct LastReturn(Option<bool>);
+impl<'a> Visit<'a> for LastReturn {
+    fn visit_function(&mut self, _: &oxc_ast::ast::Function<'a>, _: oxc_syntax::scope::ScopeFlags) {
+    }
+    fn visit_arrow_function_expression(&mut self, _: &oxc_ast::ast::ArrowFunctionExpression<'a>) {}
+    fn visit_class(&mut self, _: &oxc_ast::ast::Class<'a>) {}
+    fn visit_return_statement(&mut self, ret: &oxc_ast::ast::ReturnStatement<'a>) {
+        self.0 = Some(ret.argument.is_some());
+        if let Some(argument) = &ret.argument {
+            self.visit_expression(argument);
+        }
+    }
 }
 
 fn sequence<'a>(statements: &'a [Statement<'a>]) -> Flow<'a> {

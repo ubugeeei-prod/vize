@@ -84,7 +84,11 @@ fn reachable_completion_controls() {
         ("if(ok)return 1", 1),
         ("if(ok)return 1;return 2", 0),
         ("if(ok)return 1;else return 2", 0),
-        ("if(ok)return;else return 1", 1),
+        ("if(ok)return;else return 1", 0),
+        ("if(ok)return;return 1", 0),
+        ("if(ok)return 1;return", 1),
+        ("if(ok){return}", 1),
+        ("if(ok)return;const nested=()=>{return 1}", 1),
         ("switch(kind){case 'a':return 1;case 'b':return 2}", 1),
         ("switch(kind){case 'a':return 1;default:return 2}", 0),
         ("switch(kind){case 'a':break;default:return 2}", 1),
@@ -149,5 +153,22 @@ fn options_and_writable_getters_follow_the_same_paths() {
         let actual = linter().lint_script(source, "options.ts");
         assert_eq!(actual.error_count, errors, "{source}: {actual:#?}");
         assert_eq!(actual.diagnostics.len(), errors, "{source}: {actual:#?}");
+    }
+}
+
+/// Every recorded eslint-plugin-vue control agrees on whether the getter is reported.
+#[test]
+fn recorded_reference_controls_agree() {
+    let packet: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/linter/computed-return-flow-8828/flow-reference.json"
+    ))
+    .unwrap();
+    let cases = packet.as_array().unwrap();
+    assert_eq!(cases.len(), 18);
+    for case in cases {
+        let expected = case["results"][0]["messages"].as_array().unwrap().len();
+        let source = case["source"].as_str().unwrap();
+        let actual = linter().lint_sfc(source, "flow-control.vue");
+        assert_eq!(actual.diagnostics.len(), expected, "{}", case["body"]);
     }
 }
