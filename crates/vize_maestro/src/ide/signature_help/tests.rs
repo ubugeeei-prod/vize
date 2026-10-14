@@ -247,3 +247,30 @@ fn assert_signature_type(help: &tower_lsp::lsp_types::SignatureHelp, expected: &
         help.signatures[0].label
     );
 }
+
+#[test]
+fn superseded_corsa_requests_are_retried_and_other_failures_are_not() {
+    use super::is_superseded_request;
+    use vize_canon::CorsaBridgeError;
+
+    let cancelled = CorsaBridgeError::ResponseError {
+        code: -32800,
+        message: "Request cancelled".into(),
+    };
+    let modified = CorsaBridgeError::ResponseError {
+        code: -32801,
+        message: "Content modified".into(),
+    };
+    let go_cancelled = CorsaBridgeError::CommunicationError("context canceled".into());
+    assert!(is_superseded_request(&cancelled));
+    assert!(is_superseded_request(&modified));
+    assert!(is_superseded_request(&go_cancelled));
+
+    let invalid = CorsaBridgeError::ResponseError {
+        code: -32602,
+        message: "invalid params".into(),
+    };
+    assert!(!is_superseded_request(&invalid));
+    assert!(!is_superseded_request(&CorsaBridgeError::Timeout));
+    assert!(!is_superseded_request(&CorsaBridgeError::ProcessTerminated));
+}

@@ -19,8 +19,8 @@ use tower_lsp::lsp_types::{
 };
 #[cfg(feature = "native")]
 use vize_canon::{
-    CorsaBridge, LspDocumentation, LspParameterInformation, LspParameterLabel, LspSignatureHelp,
-    LspSignatureInformation,
+    CorsaBridge, CorsaBridgeError, LspDocumentation, LspParameterInformation, LspParameterLabel,
+    LspSignatureHelp, LspSignatureInformation,
 };
 
 #[cfg(feature = "native")]
@@ -119,8 +119,7 @@ impl SignatureHelpService {
         let doc = corsa_support::open_canonical_virtual_document(ctx, bridge).await?;
         let (line, character) =
             corsa_support::canonical_source_offset_to_position(&doc, ctx.offset)?;
-        let help = bridge
-            .signature_help_with_context(&doc.request_uri, line, character, context)
+        let help = request_signature_help(bridge, &doc.request_uri, line, character, context)
             .await
             .ok()??;
         Some(Self::convert_lsp_signature_help(help))
@@ -204,10 +203,7 @@ impl SignatureHelpService {
                 return None;
             }
         };
-        let help = match bridge
-            .signature_help_with_context(&uri, line, character, context)
-            .await
-        {
+        let help = match request_signature_help(bridge, &uri, line, character, context).await {
             Ok(Some(help)) => {
                 record_signature_help_stage(&mut trace, || SignatureHelpStage::RequestSome);
                 help
@@ -284,6 +280,43 @@ fn record_signature_help_stage(
 ) {
     if let Some(trace) = trace.as_mut() {
         trace.push(stage());
+    }
+}
+
+/// Request signature help, retrying once when Corsa cancelled the request
+/// because a newer snapshot superseded it (for example, right after a
+/// dependency edit). Signature help is read-only, so the retry is safe and
+/// answers against the current snapshot instead of returning nothing.
+async fn request_signature_help(
+    bridge: &CorsaBridge,
+    uri: &str,
+    line: u32,
+    character: u32,
+    context: Option<serde_json::Value>,
+) -> Result<Option<LspSignatureHelp>, CorsaBridgeError> {
+    match bridge
+        .signature_help_with_context(uri, line, character, context.clone())
+        .await
+    {
+        Err(error) if is_superseded_request(&error) => {
+            tracing::debug!("signature help was superseded ({error}); retrying once");
+            bridge
+                .signature_help_with_context(uri, line, character, context)
+                .await
+        }
+        result => result,
+    }
+}
+
+/// LSP `RequestCancelled` (-32800) and `ContentModified` (-32801), and the
+/// Go `context canceled` text tsgo reports when a newer request replaces one.
+fn is_superseded_request(error: &CorsaBridgeError) -> bool {
+    match error {
+        CorsaBridgeError::ResponseError { code, message } => {
+            matches!(code, -32800 | -32801) || message.contains("context canceled")
+        }
+        CorsaBridgeError::CommunicationError(message) => message.contains("context canceled"),
+        _ => false,
     }
 }
 
