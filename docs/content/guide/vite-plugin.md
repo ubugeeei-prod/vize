@@ -243,6 +243,20 @@ Vite normally skips `import.meta.*` replacement for virtual modules (prefixed wi
 
 For Nuxt compatibility, the plugin isolates `define` values per Vite environment (client vs. server/SSR). This prevents client-side environment values from leaking into SSR output.
 
+### Style Preprocessors and Pug
+
+`<style lang="scss">`, `sass`, `less` and `stylus` follow Vue's order: the preprocessor runs first, then Vize scopes its output and resolves `v-bind()`. `<style module>` class maps come from your bundler's CSS-module pipeline. Install the preprocessor package (`sass` or `sass-embedded`, `less`, `stylus`) in your project, as you would with `@vitejs/plugin-vue`. `<template lang="pug">` is compiled by Vize itself, so no extra package is needed.
+
+| Surface | scss / sass / less / stylus | pug |
+| --- | --- | --- |
+| Vite | Vite preprocesses; Vize scopes the result | Native |
+| `@vizejs/unplugin` (webpack, Rollup, Rolldown, esbuild) | webpack uses your loaders; Rollup, Rolldown and esbuild run your installed preprocessor | Native |
+| `@vizejs/rspack` | Your loaders, with css-loader or native CSS | Native |
+| `vize build` | Runs your installed preprocessor through Node | Native |
+| `vize fmt` | Preprocessor blocks are left byte-identical | Formatted |
+| `vize lint` | Template rules apply; style blocks are not linted as CSS | Template rules apply |
+| LSP | CSS completion and hover (indented syntax included); `v-bind()` go-to-definition | Tag completion and go-to-definition |
+
 ## Nuxt Compatibility
 
 The plugin exposes a compatibility shim for tools that probe for `@vitejs/plugin-vue`'s API (like Nuxt). This means Vize works with Nuxt's built-in Vue integration without special configuration:
