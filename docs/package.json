@@ -10,7 +10,7 @@
     "check:ui-docs": "node ./previews/ui/check-site.ts",
     "generate:og-images": "node ./scripts/generate-og-images.ts",
     "dev": "node ./scripts/ensure-browser.ts && pnpm generate:ui-previews && pnpm generate:reference && vp build && pnpm generate:og-images && vp preview",
-    "build": "node ./scripts/ensure-browser.ts && pnpm generate:ui-previews && pnpm generate:reference && vp build && pnpm generate:og-images && pnpm check:ui-docs",
+    "build": "node ./scripts/ensure-browser.ts && pnpm generate:ui-previews && pnpm generate:reference && vp build && node ./scripts/finish-build.ts",
     "preview": "vp preview"
   },
   "devDependencies": {
