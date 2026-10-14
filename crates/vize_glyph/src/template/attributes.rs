@@ -2,6 +2,7 @@ use crate::{
     attribute::write_attr_value,
     options::{AttributeSortOrder, FormatOptions},
 };
+use unicode_width::UnicodeWidthStr;
 use vize_l0::String;
 
 use super::directives::should_format_expression;
@@ -231,8 +232,8 @@ pub(crate) fn should_use_multiline_attrs(
     tag_name: &str,
     attrs: &[ParsedAttribute],
     rendered: &[String],
-    depth: usize,
-    indent: &[u8],
+    start_column: usize,
+    closing_len: usize,
 ) -> bool {
     if rendered
         .iter()
@@ -254,12 +255,13 @@ pub(crate) fn should_use_multiline_attrs(
         }
     }
 
-    let indent_len = indent.len() * depth;
-    let tag_len = 1 + tag_name.len();
-    let attrs_len: usize = rendered.iter().map(|a| 1 + a.len()).sum();
-    let closing_len = 1;
+    // Measure the printed line: the indentation including the SFC level around
+    // the template, the tag, every attribute by display width, and the `>` or
+    // ` />` that closes it.
+    let tag_len = 1 + tag_name.width();
+    let attrs_len: usize = rendered.iter().map(|a| 1 + a.width()).sum();
 
-    indent_len + tag_len + attrs_len + closing_len > options.print_width as usize
+    start_column + tag_len + attrs_len + closing_len > options.print_width as usize
 }
 
 #[cfg(test)]
