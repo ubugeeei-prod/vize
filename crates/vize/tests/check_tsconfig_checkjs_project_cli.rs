@@ -84,7 +84,7 @@ fn check_js_reports_javascript_errors_and_repairs() {
         clean.stderr
     );
     let clean_json = parse_json(&clean);
-    assert_program_contains(&clean_json, &["src/App.vue", "src/format.js"]);
+    assert_program_sources(&clean_json, &["src/App.vue", "src/format.js"]);
     assert_eq!(clean_json["errorCount"], 0, "{}", clean.stdout);
 
     project.write("src/format.js", BROKEN_FORMAT);
@@ -179,7 +179,7 @@ fn allow_js_without_check_js_keeps_javascript_errors_silent() {
         run.stderr
     );
     let json = parse_json(&run);
-    assert_program_contains(&json, &["src/App.vue", "src/format.js"]);
+    assert_program_sources(&json, &["src/App.vue", "src/format.js"]);
     assert_eq!(json["errorCount"], 0, "{}", run.stdout);
 }
 
@@ -264,7 +264,7 @@ fn parse_json(run: &CheckRun) -> serde_json::Value {
     })
 }
 
-fn assert_program_contains(json: &serde_json::Value, expected: &[&str]) {
+fn assert_program_sources(json: &serde_json::Value, expected: &[&str]) {
     let programs = json["programs"]
         .as_array()
         .expect("JSON output should include programs");
@@ -274,13 +274,9 @@ fn assert_program_contains(json: &serde_json::Value, expected: &[&str]) {
         .expect("program should include files")
         .iter()
         .map(|file| file.as_str().unwrap())
+        .filter(|file| file.starts_with("src/"))
         .collect::<Vec<_>>();
-    for file in expected {
-        assert!(
-            files.contains(file),
-            "program files should include {file}: {files:#?}"
-        );
-    }
+    assert_eq!(files, expected, "program source files: {files:#?}");
 }
 
 fn diagnostics_for(json: &serde_json::Value, file_name: &str) -> Vec<String> {
