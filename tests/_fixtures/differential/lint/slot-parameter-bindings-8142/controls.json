@@ -4,7 +4,7 @@
   "caseCount": 24,
   "preservedOriginalInputs": {
     "tests/_fixtures/differential/lint/slot-dynamic-modifiers-8142/controls.json": "bb0fce16d5f6a65fc9b70c1d57de19300633eadd0f8c7426312f68473ef44628",
-    "tests/_fixtures/differential/lint/slot-dynamic-modifiers-8142/consumers.json": "615310bfc29496c17fe7aa63598b1cc77a350eb6a7fd24d5cccbcb7868554e9d",
+    "tests/_fixtures/differential/lint/slot-dynamic-modifiers-8142/consumers.json": "cc5356e43533d5f3139aeb73b111fef4f5a39fc2afeb57c53a4e93590f5eba83",
     "tests/_fixtures/differential/lint/slot-dynamic-modifiers-8142/independent.json": "e7a3f5447f42470879b0499a784d6c40da2f1b09909cb5853aca852cff5dc549",
     "tests/_fixtures/differential/lint/slot-dynamic-bindings-8142/controls.json": "454296ebb926f0d309ce8a895188f26f411f6cdaac52b7b94393d67b2aec9411",
     "tests/_fixtures/differential/lint/slot-dynamic-bindings-8142/independent.json": "6843ad37a179742aee79742100fa3534e96b28020905a549f267f448e6ef65e3",
