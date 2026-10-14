@@ -17,6 +17,8 @@ mod callbacks;
 mod compat_reference;
 mod constructor;
 mod delimiters;
+#[cfg(test)]
+mod duplicate_dialect_tests;
 mod element;
 mod entry;
 #[cfg(test)]

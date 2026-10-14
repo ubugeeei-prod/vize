@@ -1,0 +1,15 @@
+var render = function render() {
+  var _vm = this,
+    _c = _vm._self._c
+  return _c(
+    "h4",
+    {
+      staticClass: "shop_title ellipsis",
+      class: _vm.item.is_premium ? "premium" : "",
+      attrs: { class: "shop_title ellipsis" },
+    },
+    [_vm._v(_vm._s(_vm.item.name))]
+  )
+}
+var staticRenderFns = []
+render._withStripped = true

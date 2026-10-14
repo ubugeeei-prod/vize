@@ -108,7 +108,9 @@ pub(crate) fn compile_template_block_with_capture(
     codegen_options: &CodegenOptions,
     capture: Option<&mut StageCapture>,
 ) -> Result<TemplateBlockCompileResult, SfcError> {
-    duplicates::reject_duplicate_props(template)?;
+    if !options.dialect.is_legacy() {
+        duplicates::reject_duplicate_props(template)?;
+    }
     let TemplateBlockCompileContext {
         scope_id,
         apply_scope_id,
