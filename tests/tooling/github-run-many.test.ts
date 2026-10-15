@@ -96,9 +96,10 @@ test("docs and release workflows run command groups with Node", () => {
       "node tools/support/github/run-many.ts vp run --filter './npm/cli' build",
     ],
   ] as const) {
+    const setupIndex = jobBody.indexOf("uses: ./.github/actions/setup-rust-script");
     const commandIndex = jobBody.indexOf(command);
-    assert.equal(jobBody.includes("setup-rust-script"), false, workflowName);
-    assert.ok(commandIndex >= 0, `${workflowName} must run ${commandPath}`);
+    assert.ok(setupIndex >= 0, `${workflowName} still runs rust-script task commands`);
+    assert.ok(commandIndex > setupIndex, `${workflowName} must run ${commandPath}`);
   }
 
   assert.doesNotMatch(docsWorkflow, /tools\/moon\/cmd\/github\/run_many/);

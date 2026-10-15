@@ -6,6 +6,7 @@ runs:
     - name: Setup Vite+ and Node.js
       uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
       with: { node-version-file: "package.json", cache: true, run-install: false }
+    - uses: ./.github/actions/setup-rust-script
     - name: Install package build dependencies
       shell: bash
       run: node tools/support/github/vp-install.ts --filter './npm/cli...' --filter './npm/builder/vite...' --filter './npm/oxlint...' --filter './npm/builder/unplugin...' --filter './npm/fresco...' --filter './npm/mcp-musea...' --filter './npm/builder/vite-musea...' --filter './npm/builder/rspack...' --filter './npm/framework/musea-nuxt...' --filter './npm/framework/nuxt-lint-config...' --filter './npm/framework/nuxt...' --filter './npm/marquette...' --filter './npm/compose/core...' --filter './npm/ui...'

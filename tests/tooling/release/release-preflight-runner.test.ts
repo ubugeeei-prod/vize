@@ -7,6 +7,7 @@ import { test } from "node:test";
 import {
   parseReleasePreflightMode,
   readPackageManifests,
+  verifyReleaseTarget,
 } from "../../../tools/support/compat/github/release-preflight.mjs";
 import { workspaceVersionFromCargoToml } from "../../../tools/support/compat/github/release-preflight-core.mjs";
 import { repoRoot } from "../_helpers/moonbit.ts";
@@ -15,6 +16,32 @@ import { writeFakeCommand } from "../support/fake-command.ts";
 import { createReleasePreflightVerifyOnlyFixture } from "../support/release-preflight-runner-fixture.ts";
 
 const sha = "a".repeat(40);
+
+test("a pinned candidate preflight accepts the release branch", () => {
+  assert.throws(
+    () =>
+      verifyReleaseTarget({
+        GITHUB_REF_TYPE: "branch",
+        GITHUB_REF_NAME: "release/v0.455.0",
+        GITHUB_SHA: sha,
+      }),
+    /requires a tag event/,
+  );
+  assert.throws(
+    () =>
+      verifyReleaseTarget({
+        RELEASE_PR_NUMBER: "9165",
+        RELEASE_TAG_NAME: "v0.455.0",
+        GITHUB_REF_TYPE: "branch",
+        GITHUB_SHA: sha,
+      }),
+    (error: unknown) => {
+      assert.equal(error instanceof Error, true);
+      assert.doesNotMatch((error as Error).message, /requires a tag event/);
+      return true;
+    },
+  );
+});
 
 test("release preflight CLI fails closed on unknown or ambiguous modes", () => {
   assert.equal(parseReleasePreflightMode([]), "bootstrap");

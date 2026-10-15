@@ -136,9 +136,10 @@ export function readPackageManifests() {
 }
 
 export function verifyReleaseTarget(env = process.env) {
-  const tag = env.GITHUB_REF_NAME ?? "";
+  const candidate = env.RELEASE_PR_NUMBER != null && env.RELEASE_PR_NUMBER !== "";
+  const tag = (candidate ? env.RELEASE_TAG_NAME : env.GITHUB_REF_NAME) ?? "";
   const sha = env.GITHUB_SHA ?? "";
-  if (env.GITHUB_REF_TYPE !== "tag") {
+  if (!candidate && env.GITHUB_REF_TYPE !== "tag") {
     throw new Error(
       `Release preflight requires a tag event, got ${env.GITHUB_REF_TYPE ?? "unknown"}`,
     );

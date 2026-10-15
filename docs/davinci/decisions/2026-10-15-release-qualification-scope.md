@@ -15,11 +15,13 @@ stay in the repository for local use. The wall-time benchmark can still time
 navigation capture; that benchmark is not a release gate.
 
 The release preflight command is
-`node tools/support/compat/github/release-preflight.mjs`. The package build
-sequencer is `node tools/support/github/run-many.ts`. Node's stable type
-stripping runs that TypeScript file. Those two paths no longer install or
-compile `rust-script`. Other `tools/commands/**/*.rs` entrypoints still use
-`rust-script` until each one has a TypeScript entry.
+`node tools/support/compat/github/release-preflight.mjs`. A pinned candidate
+passes `RELEASE_PR_NUMBER` and `RELEASE_TAG_NAME` on the release branch, so
+that command accepts the branch the same way the previous Rust entry did.
+The package build sequencer is `node tools/support/github/run-many.ts`.
+Node's stable type stripping runs that TypeScript file. Package builds still
+install `rust-script` because tasks such as `generate:rule-types` call the
+remaining `tools/commands/**/*.rs` entrypoints.
 
 This replaces the earlier release contract that required all five workflows
 and the browser docs captures before a tag could exist.
