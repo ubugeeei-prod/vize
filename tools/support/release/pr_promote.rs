@@ -6,30 +6,80 @@ use super::{
 use serde_json::Value;
 use std::{path::Path, process::Command};
 
-pub fn checks_pass(candidate: &Candidate, root: &Path) -> Result<bool, String> {
+fn pull_request_checks(
+    candidate: &Candidate,
+    root: &Path,
+    required_only: bool,
+) -> Result<Value, String> {
+    let number = candidate.number.to_string();
+    let mut args = vec![
+        "pr",
+        "checks",
+        number.as_str(),
+        "--repo",
+        &candidate.repository,
+    ];
+    if required_only {
+        args.push("--required");
+    }
+    args.extend(["--json", "name,bucket,link"]);
     let result = Command::new("gh")
-        .args([
-            "pr",
-            "checks",
-            &candidate.number.to_string(),
-            "--repo",
-            &candidate.repository,
-            "--required",
-            "--json",
-            "name,bucket,link",
-        ])
+        .args(&args)
         .current_dir(root)
         .output()
         .map_err(|e| e.to_string())?;
-    let checks: Value = serde_json::from_slice(&result.stdout).map_err(|_| {
-        format!(
-            "Could not read required PR checks: {}",
-            String::from_utf8_lossy(&result.stderr)
-        )
-    })?;
+    if result.status.success() {
+        return serde_json::from_slice(&result.stdout)
+            .map_err(|_| "Could not read PR checks".to_string());
+    }
+    let stderr = String::from_utf8_lossy(&result.stderr);
+    if required_only && stderr.contains("no required checks reported") {
+        return pull_request_checks(candidate, root, false);
+    }
+    Err(format!("Could not read required PR checks: {stderr}"))
+}
+
+fn main_required_names(repository: &str, root: &Path) -> Result<Vec<String>, String> {
+    let rules = github::api(repository, "rules/branches/main", root)?;
+    let rules = rules.as_array().ok_or("Missing main branch rules")?;
+    let mut names = Vec::new();
+    for rule in rules {
+        if rule.get("type").and_then(Value::as_str) != Some("required_status_checks") {
+            continue;
+        }
+        let checks = rule
+            .pointer("/parameters/required_status_checks")
+            .and_then(Value::as_array)
+            .ok_or("Invalid required status check rule")?;
+        for check in checks {
+            names.push(pr_contract::field(check, "/context")?.to_string());
+        }
+    }
+    if names.is_empty() {
+        return Err(
+            "No required status checks are configured in main's rulesets; refusing to promote."
+                .into(),
+        );
+    }
+    Ok(names)
+}
+
+pub fn checks_pass(candidate: &Candidate, root: &Path) -> Result<bool, String> {
+    let checks = pull_request_checks(candidate, root, true)?;
     let checks = checks.as_array().ok_or("Missing required PR checks")?;
+    let names = main_required_names(&candidate.repository, root)?;
+    let checks: Vec<Value> = checks
+        .iter()
+        .filter(|check| {
+            check
+                .get("name")
+                .and_then(Value::as_str)
+                .is_some_and(|name| names.iter().any(|required| required == name))
+        })
+        .cloned()
+        .collect();
     if checks.is_empty() {
-        return Err("No required PR checks were returned; refusing to merge.".into());
+        return Ok(false);
     }
     if checks.iter().any(|c| {
         matches!(
@@ -42,7 +92,7 @@ pub fn checks_pass(candidate: &Candidate, root: &Path) -> Result<bool, String> {
     let reported_pass = checks
         .iter()
         .all(|c| c.get("bucket").and_then(Value::as_str) == Some("pass"));
-    Ok(reported_pass && pr_checks::ready(candidate, checks, root)?)
+    Ok(reported_pass && pr_checks::ready(candidate, &checks, root)?)
 }
 
 pub fn refresh(
