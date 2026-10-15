@@ -10,4 +10,5 @@ lockfile. It does not resolve the registry again.
 
 A closed integration pull request whose branch is already gone does not block
 the next cut of the same version. An open pull request or a branch that is
-still on the remote is left for review.
+still on the remote is left for review. One closed receipt is not treated as
+several receipts.

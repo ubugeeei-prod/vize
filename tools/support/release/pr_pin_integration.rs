@@ -101,7 +101,7 @@ pub(super) fn integration_pr(
                 .ok_or("Missing integration number".into());
         }
     }
-    if !prs.is_empty() {
+    if prs.len() > 1 {
         return Err("Ambiguous integration PRs; refusing to replace any branch.".into());
     }
     if !github::git(
