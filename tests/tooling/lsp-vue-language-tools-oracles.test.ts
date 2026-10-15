@@ -27,7 +27,7 @@ test("Maestro scorecard executes representative must-include and must-exclude LS
           diagnostic.source === "vize/lint" && diagnostic.code === "vue/require-v-for-key",
       );
       assert.ok(keyDiagnostic, JSON.stringify(publish.diagnostics));
-      assert.deepEqual(keyDiagnostic.range, rangeFor(source, 'v-for="item in items"'));
+      assert.deepEqual(keyDiagnostic.range, rangeFor(source, '<li v-for="item in items">'));
     });
 
     await t.test("completion includes ranked bindings and excludes context leakage", async () => {
