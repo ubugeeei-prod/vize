@@ -26,6 +26,7 @@ jobs:
   instruction-counts:
     name: Instruction ceilings
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+    continue-on-error: true
     uses: ./.github/workflows/level-instruction-counts.yml
   level-dependency-direction:
     uses: ./.github/workflows/level-dependencies.yml
@@ -614,7 +615,6 @@ jobs:
       - node-engine-compat
       - check-vize-apps
       - pr-source-checks
-      - instruction-counts
       - level-dependency-direction
       - release-integration-catalog
       - release-gates

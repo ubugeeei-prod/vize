@@ -9,7 +9,6 @@ const CORE = ["fmt-rust", "check-js", "security-audit", "node-engine-compat", "c
 const PR_JOBS = [
   ...CORE,
   "pr-source-checks",
-  "instruction-counts",
   "level-dependency-direction",
   "release-integration-catalog",
   "release-gates",

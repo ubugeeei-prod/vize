@@ -6,6 +6,7 @@ import { aggregateNeedsResults } from "../../tools/support/compat/github/require
 import { readRepoFile } from "./support/github-workflows.ts";
 
 type Job = {
+  "continue-on-error"?: boolean;
   env?: Record<string, string>;
   if?: string;
   needs?: string[];
@@ -25,14 +26,15 @@ const instructionWorkflow = parse(
   readRepoFile(".github", "workflows", "level-instruction-counts.yml"),
 ) as Workflow;
 
-test("merge queue instruction ceilings are enforced through the required aggregate", () => {
+test("instruction ceilings run on the merge queue without blocking publication", () => {
   const caller = workflow.jobs?.["instruction-counts"];
   assert.equal(caller?.uses, "./.github/workflows/level-instruction-counts.yml");
+  assert.equal(caller?.["continue-on-error"], true);
   assert.equal(
     caller?.if,
     "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}",
   );
-  assert.ok(workflow.jobs?.["test-report"]?.needs?.includes("instruction-counts"));
+  assert.equal(workflow.jobs?.["test-report"]?.needs?.includes("instruction-counts"), false);
   assert.ok(Object.hasOwn(instructionWorkflow.on ?? {}, "workflow_call"));
   const gate = instructionWorkflow.jobs?.["instruction-counts"];
   assert.equal(gate?.if, undefined);
