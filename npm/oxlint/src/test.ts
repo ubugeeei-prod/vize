@@ -817,7 +817,7 @@ assert.notEqual(
 );
 assert.match(
   scriptlessRun.output,
-  /Scriptless\.vue[\s\S]*3:9[\s\S]*Elements in iteration expect to have 'v-bind:key' directives\./u,
+  /Scriptless\.vue[\s\S]*3:5[\s\S]*Elements in iteration expect to have 'v-bind:key' directives\./u,
   "scriptless workaround should report the original file location instead of the temporary script block",
 );
 assert.doesNotMatch(

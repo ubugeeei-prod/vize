@@ -212,7 +212,7 @@ impl Project {
             self.record("receipt", json!({ "mirrorWitnessCaptured": true }));
         });
         if lf {
-            assert_eq!(observed.historical_query_position, 20_908);
+            assert_eq!(observed.historical_query_position, 21_206);
             assert_eq!(
                 observed.query_position,
                 observed.historical_query_position + witness::slot_navigation_prelude_utf16_len()

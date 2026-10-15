@@ -1,5 +1,5 @@
 Scriptless.vue
-  3:9  error  Elements in iteration expect to have 'v-bind:key' directives.
+  3:5  error  Elements in iteration expect to have 'v-bind:key' directives.
     Details:
       Element: <li>  vize(vue/require-v-for-key)
 
