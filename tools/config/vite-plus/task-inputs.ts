@@ -120,7 +120,6 @@ const toolingInputs = [
   "examples/**",
   "playground/**",
   "README.md",
-  "AGENTS.md",
 ] satisfies TaskInput[];
 
 /**
