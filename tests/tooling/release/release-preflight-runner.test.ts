@@ -7,6 +7,7 @@ import { test } from "node:test";
 import {
   parseReleasePreflightMode,
   pinnedCandidatePublishError,
+  releaseDispatchRef,
   readPackageManifests,
   verifyReleaseTarget,
 } from "../../../tools/support/compat/github/release-preflight.mjs";
@@ -17,6 +18,21 @@ import { writeFakeCommand } from "../support/fake-command.ts";
 import { createReleasePreflightVerifyOnlyFixture } from "../support/release-preflight-runner-fixture.ts";
 
 const sha = "a".repeat(40);
+
+test("a pinned candidate dispatches Check on its release branch", () => {
+  assert.equal(
+    releaseDispatchRef(
+      { RELEASE_PR_NUMBER: "9171", GITHUB_REF_NAME: "release/v0.455.0" },
+      "v0.455.0",
+    ),
+    "release/v0.455.0",
+  );
+  assert.equal(releaseDispatchRef({}, "v0.455.0"), "v0.455.0");
+  assert.throws(
+    () => releaseDispatchRef({ RELEASE_PR_NUMBER: "9171", GITHUB_REF_NAME: "main" }, "v0.455.0"),
+    /candidate branch/,
+  );
+});
 
 test("a pinned candidate publishes from its parent on main", () => {
   const parent = "b".repeat(40);

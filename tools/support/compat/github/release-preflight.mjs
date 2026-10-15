@@ -216,6 +216,16 @@ export function readPackageManifests() {
   return manifests.sort((left, right) => left.path.localeCompare(right.path));
 }
 
+export function releaseDispatchRef(env, tag) {
+  const candidate = env.RELEASE_PR_NUMBER != null && env.RELEASE_PR_NUMBER !== "";
+  if (!candidate) return tag;
+  const branch = env.GITHUB_REF_NAME ?? "";
+  if (branch !== `release/${tag}`) {
+    throw new Error("Release dispatch must use its candidate branch");
+  }
+  return branch;
+}
+
 export function verifyReleaseTarget(env = process.env) {
   const candidate = env.RELEASE_PR_NUMBER != null && env.RELEASE_PR_NUMBER !== "";
   const tag = (candidate ? env.RELEASE_TAG_NAME : env.GITHUB_REF_NAME) ?? "";
@@ -304,7 +314,11 @@ export async function verifyReleasePreflight(env = process.env, { bootstrap = tr
     );
     return pages.flat();
   };
-  const dispatchPlans = createReleaseGateDispatchPlans({ ref: tag, headSha: sha, baseSha });
+  const dispatchPlans = createReleaseGateDispatchPlans({
+    ref: releaseDispatchRef(env, tag),
+    headSha: sha,
+    baseSha,
+  });
   let selectedRuns;
   if (bootstrap) {
     let previousWaitState = "";

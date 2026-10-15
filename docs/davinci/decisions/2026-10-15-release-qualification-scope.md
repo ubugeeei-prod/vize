@@ -19,7 +19,8 @@ The release preflight command is
 passes `RELEASE_PR_NUMBER` and `RELEASE_TAG_NAME` on the release branch. The
 release commit itself is not on main yet. Preflight checks that its parent is
 still on main's first-parent history, that main still has that parent's
-version, and that the tag does not exist yet.
+version, and that the tag does not exist yet. Check is dispatched on
+`release/<tag>`, because that tag ref does not exist until publication.
 The package build sequencer is `node tools/support/github/run-many.ts`.
 Node's stable type stripping runs that TypeScript file. Package builds still
 install `rust-script` because tasks such as `generate:rule-types` call the
