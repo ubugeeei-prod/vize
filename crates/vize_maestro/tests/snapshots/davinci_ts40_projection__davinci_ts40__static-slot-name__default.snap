@@ -24,7 +24,7 @@ import-source-map-probes=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca4959
 mappings=12:b47a2f59b3de3f44d7fcc33b51eed242e90ad326af46bef6b2d047cea85f1c8d
 semantic-links=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 diagnostics=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-authored-hits=11:7139cc78cb2041db342664a18ccc67ef6c40c29e4f4ca5df15eaef8506c72d46
+authored-hits=11:0cbd8e57542bef5288fc5fdccf2bbfa6260fa7e1cf8c9ba81b288d873eada70f
 authored-hit-anchors=["default", "static-header", "item", "active", "label"]
 [maestro]
 status=ok
@@ -35,5 +35,5 @@ import-source-map-probes=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca4959
 mappings=17:273b83f9760a56a83ece6f0018304e27b2f9c3490c11bc498f44bc774e02aabb
 semantic-links=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 diagnostics=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-authored-hits=14:2899e9c5b64c4c1e4028638beef49bb5bc07574522051a7a27342068cd813a09
+authored-hits=14:955bae5bf32b0fcf942f50f23c1673230fa8e51d8f251d1f1cbd8a8a13c21fcd
 authored-hit-anchors=["item", "active", "label"]
