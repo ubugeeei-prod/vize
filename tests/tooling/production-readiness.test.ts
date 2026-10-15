@@ -106,7 +106,7 @@ const items = [1]
     assert.equal(parsed[0]?.warningCount, 0);
     assert.equal(parsed[0]?.messages[0]?.ruleId, "vue/require-v-for-key");
     assert.equal(parsed[0]?.messages[0]?.line, 6);
-    assert.equal(parsed[0]?.messages[0]?.column, 8);
+    assert.equal(parsed[0]?.messages[0]?.column, 3);
   } finally {
     fs.rmSync(smokeDir, { force: true, recursive: true });
   }

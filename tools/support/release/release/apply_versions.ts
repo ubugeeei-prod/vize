@@ -1,4 +1,3 @@
-import { fileURLToPath } from "node:url";
 import { collectStdout, println, run, writeStderr } from "../command_io.ts";
 import {
   isDir,
@@ -76,14 +75,7 @@ export async function prepareCandidate(
   }
 
   println("Updating Cargo.lock...");
-  if (
-    (await run("rust-script", [
-      fileURLToPath(new URL("../../../commands/release/pr.rs", import.meta.url)),
-      "rewrite-workspace-lock",
-      currentVersion,
-      newVersion,
-    ])) !== 0
-  ) {
+  if (!rewriteWorkspaceLock(currentVersion, newVersion)) {
     writeStderr("Failed to update Cargo.lock\n");
     return 1;
   }
@@ -235,4 +227,33 @@ export async function prepareCandidate(
 
   println("Release candidate commit prepared; no tag was created.");
   return 0;
+}
+
+/** Same byte change the pin verifier accepts. A fixture without a lock is unchanged. */
+function rewriteWorkspaceLock(oldVersion: string, newVersion: string): boolean {
+  if (!pathExists("Cargo.lock")) return true;
+  const before = readFileToString("Cargo.lock");
+  if (before === null) return false;
+  let packageName = "";
+  let changed = false;
+  const lines = before.split("\n").map((line) => {
+    const trimmed = line.trim();
+    if (trimmed === "[[package]]") packageName = "";
+    if (trimmed.startsWith('name = "') && trimmed.endsWith('"')) {
+      packageName = trimmed.slice('name = "'.length, -1);
+    }
+    const owned =
+      packageName === "vize" ||
+      packageName.startsWith("vize_") ||
+      packageName === "davinci_harness" ||
+      packageName === "davinci_test_support" ||
+      packageName === "vize-zed-extension";
+    if (owned && trimmed === `version = "${oldVersion}"`) {
+      changed = true;
+      return line.replace(oldVersion, newVersion);
+    }
+    return line;
+  });
+  if (!changed) return false;
+  return tryWriteStringToFile("Cargo.lock", lines.join("\n"));
 }
