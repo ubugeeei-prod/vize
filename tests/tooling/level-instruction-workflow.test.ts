@@ -29,7 +29,8 @@ const instructionWorkflow = parse(
 test("instruction ceilings run on the merge queue without blocking publication", () => {
   const caller = workflow.jobs?.["instruction-counts"];
   assert.equal(caller?.uses, "./.github/workflows/level-instruction-counts.yml");
-  assert.equal(caller?.["continue-on-error"], true);
+  assert.equal(caller?.["continue-on-error"], undefined);
+  assert.equal(instructionWorkflow.jobs?.["instruction-counts"]?.["continue-on-error"], true);
   assert.equal(
     caller?.if,
     "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}",

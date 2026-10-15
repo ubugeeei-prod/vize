@@ -34,6 +34,7 @@ jobs:
     name: Per-stage instruction ceilings
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
+    continue-on-error: true
     env:
       # Reusable workflows retain the caller's workflow name. Other PRs check
       # registry/ratchet only; every merge group measures and enforces ceilings.
