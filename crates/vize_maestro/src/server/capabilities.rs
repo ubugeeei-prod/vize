@@ -258,7 +258,10 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
 /// Quick fixes always; TypeScript import source actions only where the native
 /// checker answers them.
 fn code_action_kinds(features: LspFeatureConfig) -> Vec<CodeActionKind> {
+    #[cfg(feature = "native")]
     let mut kinds = vec![CodeActionKind::QUICKFIX];
+    #[cfg(not(feature = "native"))]
+    let kinds = vec![CodeActionKind::QUICKFIX];
     #[cfg(feature = "native")]
     if features.typecheck {
         kinds.extend(

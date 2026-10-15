@@ -43,6 +43,7 @@ let
   crateAssetSuffixes = [
     ".d.ts"
     ".json"
+    ".mjs"
     ".txt"
     ".tsv"
   ];

@@ -57,7 +57,9 @@ test("hosted operator keeps user authority on protected main and does not deadlo
     assert.equal(invocation.env[variable], `\${{ inputs.${input} }}`);
   }
   assert.equal(
-    operator.steps.some((step: { uses?: string }) => step.uses === "./.github/actions/setup-moonbit"),
+    operator.steps.some(
+      (step: { uses?: string }) => step.uses === "./.github/actions/setup-moonbit",
+    ),
     false,
   );
   assert.equal(dependencies.run.trim(), "vp install --frozen-lockfile");

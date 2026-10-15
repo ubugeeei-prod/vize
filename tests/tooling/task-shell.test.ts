@@ -13,9 +13,7 @@ import {
   shellCommandForwardingArguments,
   withRustTaskEnvironment,
 } from "../../tools/config/vite-plus/task-shell.ts";
-import {
-  localVp,
-} from "../../tools/config/vite-plus/task-commands.ts";
+import { localVp } from "../../tools/config/vite-plus/task-commands.ts";
 import { checkTasks } from "../../tools/config/vite-plus/tasks/check.ts";
 import { releaseTasks } from "../../tools/config/vite-plus/tasks/release.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
