@@ -166,6 +166,10 @@ pub(super) fn rewrite(path: &str, content: &str, old: &str, new: &str) -> String
 pub fn rewrite_workspace_lock(old: &str, new: &str, root: &Path) -> Result<(), String> {
     let path = "Cargo.lock";
     let file = root.join(path);
+    // Release fixtures stage package manifests without a lockfile.
+    if !file.is_file() {
+        return Ok(());
+    }
     let before = std::fs::read_to_string(&file).map_err(|error| error.to_string())?;
     let after = rewrite(path, &before, old, new);
     if after == before {

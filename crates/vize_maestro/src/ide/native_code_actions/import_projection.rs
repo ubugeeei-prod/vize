@@ -18,7 +18,7 @@ use crate::ide::{IdeContext, offset_to_position, position_to_offset};
 
 pub(super) struct ImportProjection {
     /// Overlay path beside the SFC, so relative specifiers read the same.
-    pub(super) path: vize_carton::String,
+    pub(super) path: vize_l0::String,
     pub(super) text: String,
     /// Byte offset of the script content in the SFC.
     script_start: usize,
@@ -51,7 +51,7 @@ impl ImportProjection {
             return None;
         }
         let source_path = ctx.uri.to_file_path().ok()?;
-        let path = vize_carton::cstr!("{}.__vize_imports__.{extension}", source_path.to_str()?);
+        let path = vize_l0::cstr!("{}.__vize_imports__.{extension}", source_path.to_str()?);
 
         let used = template_used_imports(ctx, descriptor, content, extension)?;
         let mut text = content.to_string();
@@ -133,7 +133,7 @@ fn template_used_imports(
     } else {
         vize_atelier_sfc::croquis::analyze_sfc_descriptor(&descriptor, ast, options)
     };
-    let unused: &[vize_carton::CompactString] = if template_ok {
+    let unused: &[vize_l0::CompactString] = if template_ok {
         &croquis.unused_bindings
     } else {
         &[]
