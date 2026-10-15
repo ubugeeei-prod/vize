@@ -178,19 +178,14 @@ test("only a source-custody-qualified build can download or deploy, and success 
   assert(deploy.steps!.indexOf(confirm) > deploy.steps!.indexOf(pages));
 });
 
-test("release preflight requires docs build evidence, never mutable deployment", () => {
-  assert.ok(requiredReleaseWorkflows.includes("Docs build"));
-  assert.ok(!requiredReleaseWorkflows.includes("Deploy docs"));
+test("release preflight does not wait on docs build or mutable deployment", () => {
+  assert.equal(requiredReleaseWorkflows.includes("Docs build"), false);
+  assert.equal(requiredReleaseWorkflows.includes("Deploy docs"), false);
   assert.deepEqual(requiredReleaseWorkflowEvidence.get("Docs build"), {
     path: ".github/workflows/build-docs.yml",
     events: ["workflow_dispatch"],
   });
 
   const runs = requiredReleaseWorkflows.map((name, index) => successfulReleaseRun(name, index + 1));
-  const docsBuild = runs.find((run) => run.name === "Docs build");
-  assert.ok(docsBuild);
-  docsBuild.name = "Deploy docs";
-  docsBuild.path = ".github/workflows/deploy-docs.yml";
-  docsBuild.event = "workflow_run";
-  assert.throws(() => selectRequiredWorkflowRuns(runs, releaseSha), /Docs build: missing/);
+  assert.doesNotThrow(() => selectRequiredWorkflowRuns(runs, releaseSha));
 });

@@ -37,12 +37,6 @@ jobs:
           node-version-file: "package.json"
           run-install: false
 
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: stable }
-
-      - uses: ./.github/actions/setup-rust-script
-
       - name: Verify release identity, metadata, required gates, and release blockers
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -50,7 +44,7 @@ jobs:
           RELEASE_PR_NUMBER: ${{ inputs.release_pr }}
           RELEASE_TAG_NAME: ${{ inputs.tag_name }}
           RELEASE_PINNED: ${{ inputs.pinned }}
-        run: rust-script tools/commands/ci/github/release-preflight.rs
+        run: node tools/support/compat/github/release-preflight.mjs
 
   validate-crates:
     name: Validate crates.io publish plan

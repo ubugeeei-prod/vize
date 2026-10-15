@@ -34,24 +34,7 @@ test("required workflow selection fails closed for missing, stale, red, or wrong
     requiredReleaseWorkflows,
   );
 
-  assert.throws(
-    () =>
-      selectRequiredWorkflowRuns(
-        greenRuns.filter((run) => run.path !== ".github/workflows/fuzz.yml"),
-        releaseSha,
-      ),
-    /Fuzz: missing/,
-  );
-  assert.throws(
-    () =>
-      selectRequiredWorkflowRuns(
-        greenRuns.map((run) =>
-          run.path === ".github/workflows/miri.yml" ? { ...run, head_sha: "b".repeat(40) } : run,
-        ),
-        releaseSha,
-      ),
-    /Miri: missing/,
-  );
+  assert.throws(() => selectRequiredWorkflowRuns([], releaseSha), /Check: missing/);
   assert.throws(
     () =>
       selectRequiredWorkflowRuns(
@@ -72,17 +55,6 @@ test("required workflow selection fails closed for missing, stale, red, or wrong
       ),
     /Check: missing workflow_dispatch run/,
   );
-  for (const path of [".github/workflows/miri.yml", ".github/workflows/build-docs.yml"]) {
-    assert.throws(
-      () =>
-        selectRequiredWorkflowRuns(
-          greenRuns.map((run) => (run.path === path ? { ...run, event: "push" } : run)),
-          releaseSha,
-        ),
-      /missing workflow_dispatch run/,
-      path,
-    );
-  }
 });
 
 test("release evidence ignores a failed optional Benchmark run", () => {
@@ -127,20 +99,20 @@ test("release Check job evidence covers the exact SemVer matrix in Rust and JS",
 
 test("newest matching run wins across cancellation, reruns, and concurrent runs", () => {
   const greenRuns = requiredReleaseWorkflows
-    .filter((name) => name !== "Docs build")
+    .filter((name) => name !== "Check")
     .map((name, index) => successfulReleaseRun(name, index + 1));
   const olderSuccess = {
-    ...successfulReleaseRun("Docs build", 50),
+    ...successfulReleaseRun("Check", 50),
     run_started_at: "2026-07-12T00:50:00Z",
   };
   const newerCancellation = {
-    ...successfulReleaseRun("Docs build", 51),
+    ...successfulReleaseRun("Check", 51),
     run_started_at: "2026-07-12T00:51:00Z",
     conclusion: "cancelled",
   };
   assert.throws(
     () => selectRequiredWorkflowRuns([...greenRuns, olderSuccess, newerCancellation], releaseSha),
-    /Docs build: completed\/cancelled/,
+    /Check: completed\/cancelled/,
   );
 
   const rerunSuccess = {
@@ -160,7 +132,7 @@ test("newest matching run wins across cancellation, reruns, and concurrent runs"
   };
   assert.doesNotThrow(() =>
     selectRequiredWorkflowRuns(
-      [...greenRuns, supersededPending, successfulReleaseRun("Docs build", 52)],
+      [...greenRuns, supersededPending, successfulReleaseRun("Check", 52)],
       releaseSha,
     ),
   );
@@ -264,21 +236,10 @@ test("matrix-sensitive release gates require every successful job", () => {
 
 test("required workflow selection can report failed release jobs inline", () => {
   const runs = requiredReleaseWorkflows.map((name, index) => successfulReleaseRun(name, index + 1));
-  const matrix = runs.find((run) => run.name === "Real Project Matrix");
-  assert.ok(matrix);
-  matrix.conclusion = "cancelled";
-
-  const matrixJobs = Array.from({ length: requiredRealProjectMatrixShardCount }, (_, shard) =>
-    successfulReleaseJob(`real projects (${shard}/${requiredRealProjectMatrixShardCount})`),
-  );
-  matrixJobs[0] = { ...matrixJobs[0], conclusion: "cancelled" };
-  matrixJobs[12] = { ...matrixJobs[12], conclusion: "failure" };
-
-  const summary = summarizeRequiredWorkflowJobFailures("Real Project Matrix", matrixJobs);
-  assert.equal(
-    summary,
-    `required jobs: real projects (0/${requiredRealProjectMatrixShardCount})=completed/cancelled, real projects (12/${requiredRealProjectMatrixShardCount})=completed/failure`,
-  );
+  const check = runs.find((run) => run.name === "Check");
+  assert.ok(check);
+  check.conclusion = "cancelled";
+  const summary = "required jobs: test-scripts=completed/failure";
   assert.throws(
     () =>
       selectRequiredWorkflowRuns(
@@ -287,10 +248,8 @@ test("required workflow selection can report failed release jobs inline", () => 
         requiredReleaseWorkflows,
         new Map(),
         new Map(),
-        new Map([["Real Project Matrix", summary]]),
+        new Map([["Check", summary]]),
       ),
-    new RegExp(
-      `Real Project Matrix: completed\\/cancelled[\\s\\S]*required jobs: real projects \\(0\\/${requiredRealProjectMatrixShardCount}\\)=completed\\/cancelled, real projects \\(12\\/${requiredRealProjectMatrixShardCount}\\)=completed\\/failure`,
-    ),
+    /Check: completed\/cancelled[\s\S]*test-scripts=completed\/failure/,
   );
 });

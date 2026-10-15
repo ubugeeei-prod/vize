@@ -264,11 +264,10 @@ test("verify-only mode does not block on an optional failed Benchmark", () => {
   }
 });
 
-test("verify-only mode reports failed matrix shard jobs for red release evidence", () => {
+test("verify-only mode ignores a cancelled Real Project Matrix", () => {
   const tempDir = fs.mkdtempSync(path.join(tmpdir(), "vize-release-red-matrix-"));
   try {
     const fixture = createReleasePreflightVerifyOnlyFixture(tempDir, {
-      requireJobTimeoutArgs: true,
       mutateRuns(runs) {
         const matrix = runs.find((run) => run.name === "Real Project Matrix");
         assert.ok(matrix);
@@ -296,40 +295,37 @@ test("verify-only mode reports failed matrix shard jobs for red release evidence
     );
 
     assert.ifError(result.error);
-    assert.equal(result.status, 1, `${result.stderr}\n${result.stdout}`.trim());
-    assert.match(result.stderr, /Real Project Matrix: completed\/cancelled/);
-    assert.match(
-      result.stderr,
-      /required jobs: real projects \(0\/22\)=completed\/cancelled, real projects \(12\/22\)=completed\/failure/,
-    );
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+    assert.match(result.stdout, /Release preflight passed/);
+    assert.doesNotMatch(result.stderr, /Real Project Matrix/);
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });
   }
 });
 
-test("bootstrap mode stops waiting when an in-progress gate has failed required jobs", () => {
-  const tempDir = fs.mkdtempSync(path.join(tmpdir(), "vize-release-red-pending-matrix-"));
+test("bootstrap mode stops waiting when an in-progress Check has a failed required job", () => {
+  const tempDir = fs.mkdtempSync(path.join(tmpdir(), "vize-release-red-pending-check-"));
   try {
     const jobsRequestLog = path.join(tempDir, "jobs-request.log");
     const runsRequestLog = path.join(tempDir, "runs-request.log");
     const fixture = createReleasePreflightVerifyOnlyFixture(tempDir, {
       requireJobTimeoutArgs: true,
       mutateRuns(runs) {
-        const matrix = runs.find((run) => run.name === "Real Project Matrix");
-        assert.ok(matrix);
-        matrix.status = "in_progress";
-        matrix.conclusion = null;
+        const check = runs.find((run) => run.name === "Check");
+        assert.ok(check);
+        check.status = "in_progress";
+        check.conclusion = null;
       },
       mutateJobs(jobs) {
-        const matrixJobs = jobs[106];
-        assert.ok(matrixJobs);
-        const failedJobIndex = matrixJobs.findIndex((job) => job.name === "real projects (0/22)");
-        const pendingJobIndex = matrixJobs.findIndex((job) => job.name === "real projects (12/22)");
+        const checkJobs = jobs[101];
+        assert.ok(checkJobs);
+        const failedJobIndex = checkJobs.findIndex((job) => job.name === "test-scripts");
+        const pendingJobIndex = checkJobs.findIndex((job) => job.name === "test-js-packages");
         assert.notEqual(failedJobIndex, -1);
         assert.notEqual(pendingJobIndex, -1);
-        matrixJobs[failedJobIndex] = { ...matrixJobs[failedJobIndex], conclusion: "failure" };
-        matrixJobs[pendingJobIndex] = {
-          ...matrixJobs[pendingJobIndex],
+        checkJobs[failedJobIndex] = { ...checkJobs[failedJobIndex], conclusion: "failure" };
+        checkJobs[pendingJobIndex] = {
+          ...checkJobs[pendingJobIndex],
           status: "in_progress",
           conclusion: null,
         };
@@ -362,18 +358,18 @@ test("bootstrap mode stops waiting when an in-progress gate has failed required 
       assert.equal(runRequest.searchParams.get("head_sha"), sha);
     }
     assert.deepEqual(fs.readFileSync(jobsRequestLog, "utf8").trim().split("\n").filter(Boolean), [
-      "106",
-      "106",
+      "101",
+      "101",
     ]);
-    assert.match(result.stderr, /Real Project Matrix: in_progress\/no conclusion/);
-    assert.match(result.stderr, /real projects \(0\/22\)=completed\/failure/);
-    assert.match(result.stderr, /real projects \(12\/22\)=in_progress\/no conclusion/);
+    assert.match(result.stderr, /Check: in_progress\/no conclusion/);
+    assert.match(result.stderr, /test-scripts=completed\/failure/);
+    assert.match(result.stderr, /test-js-packages=in_progress\/no conclusion/);
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });
   }
 });
 
-test("verify-only mode reports observed seeded typecheck drift without refusing", () => {
+test("verify-only mode ignores seeded matrix typecheck drift", () => {
   const tempDir = fs.mkdtempSync(path.join(tmpdir(), "vize-release-mutation-drift-"));
   try {
     const fixture = createReleasePreflightVerifyOnlyFixture(tempDir, {
@@ -400,8 +396,8 @@ test("verify-only mode reports observed seeded typecheck drift without refusing"
     );
     assert.ifError(result.error);
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
-    assert.match(result.stdout, /typecheck parity not enforced::.*seeded mutation oracle/);
     assert.match(result.stdout, /Release preflight passed/);
+    assert.doesNotMatch(result.stdout, /typecheck parity not enforced/);
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });
   }

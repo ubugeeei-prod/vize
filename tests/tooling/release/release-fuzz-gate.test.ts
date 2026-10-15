@@ -14,14 +14,14 @@ import { readRepoFile } from "../support/github-workflows.ts";
 import { releaseSha } from "../support/release-preflight.ts";
 
 function fuzzPlan() {
-  const plans = createReleaseGateDispatchPlans({
+  return {
+    workflowName: "Fuzz",
+    workflowId: "fuzz.yml",
     ref: "v1.2.3",
-    headSha: releaseSha,
-    baseSha: "b".repeat(40),
-  });
-  const plan = plans.find((candidate) => candidate.workflowName === "Fuzz");
-  assert.ok(plan);
-  return plan;
+    inputs: { mode: "replay" },
+    expectedRunName: `Fuzz replay @ ${releaseSha}`,
+    acceptsScheduledEvidence: false,
+  };
 }
 
 function fuzzWorkflow() {
@@ -57,10 +57,19 @@ function fuzzCommand(mode: string): string {
   return result.stdout;
 }
 
-test("release evidence replays the corpus instead of searching for new inputs", () => {
-  // A fresh campaign is a randomized search, so gating a tag on one lets an
-  // input discovered minutes earlier block a release it has nothing to do with.
-  // Four of six tags around v0.325.0–v0.330.0 failed that way.
+test("release dispatch leaves Fuzz on its nightly schedule", () => {
+  const plans = createReleaseGateDispatchPlans({
+    ref: "v1.2.3",
+    headSha: releaseSha,
+    baseSha: "b".repeat(40),
+  });
+  assert.equal(
+    plans.some((candidate) => candidate.workflowName === "Fuzz"),
+    false,
+  );
+});
+
+test("replay evidence stays distinct from a fuzz campaign", () => {
   const plan = fuzzPlan();
 
   assert.deepEqual(plan.inputs, { mode: "replay" });

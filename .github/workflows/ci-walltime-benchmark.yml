@@ -120,7 +120,6 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: package.json, cache: true, run-install: false }
-      - uses: ./.github/actions/setup-rust-script
       - name: Install identical Docs dependencies and rendering fonts
         run: |
           node tools/support/github/vp-install.ts --filter './docs...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' --filter './npm/ui...' --filter './npm/compose/core...'
@@ -128,7 +127,7 @@ jobs:
           sudo apt-get install -y --no-install-recommends fonts-noto-cjk
       - name: Build the same native packages and Docs once
         run: |
-          rust-script tools/commands/ci/github/run-many.rs vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build
+          node tools/support/github/run-many.ts vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build
           vp run --no-cache --filter './docs' build
       - name: Serial complete navigation proof
         run: vp node docs/scripts/verify-navigation-render.ts --workers 1 --output docs-render-evidence/ci-walltime/serial

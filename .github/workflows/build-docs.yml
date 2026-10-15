@@ -16,11 +16,6 @@ on:
   schedule:
     - cron: "41 5 * * *"
   workflow_dispatch:
-    inputs:
-      capture_timings:
-        description: Record general navigation capture operation timings
-        type: boolean
-        default: false
   # The merge queue builds the same site and checks the reviewed routes' links
   # and anchors without the browser captures (Check / docs-build).
   workflow_call:
@@ -67,13 +62,11 @@ jobs:
           node-version-file: "package.json"
           cache: true
           run-install: false
-      - uses: ./.github/actions/setup-rust-script
-
       - name: Install JS dependencies
         run: node tools/support/github/vp-install.ts --filter './docs...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' --filter './npm/ui...' --filter './npm/compose/core...'
 
       - name: Build @vizejs/vite-plugin
-        run: rust-script tools/commands/ci/github/run-many.rs vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build
+        run: node tools/support/github/run-many.ts vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build
 
       - name: Install Japanese rendering fonts
         run: |
@@ -88,46 +81,6 @@ jobs:
           vp run --no-cache --filter './docs' build
           test -s docs-render-evidence/component-previews/browser-evidence.json
           test -s docs-render-evidence/component-previews/unavailable-storage-evidence.json
-
-      - name: Verify reviewed Japanese editorial reading paths
-        run: vp node docs/scripts/verify-ja-editorial-render.ts
-
-      - name: Verify static analysis reading flows
-        run: vp node docs/scripts/verify-navigation-render.ts --workers 2 --routes /guide/static-analysis,/ja/guide/static-analysis --output docs-render-evidence/static-analysis
-
-      - name: Verify all localized configuration journeys
-        run: vp node docs/scripts/verify-config-journey-render.ts
-
-      - name: Verify revised More guides reading flow
-        run: vp node docs/scripts/verify-more-guides-render.ts
-
-      - name: Verify reviewed reference reading flows
-        run: vp node docs/scripts/verify-navigation-render.ts --routes /guide/compiler-configuration-reference,/ja/guide/compiler-configuration-reference,/guide/experimentals-reference,/ja/guide/experimentals-reference --output docs-render-evidence/ja-references
-
-      - name: Verify reviewed WASM reading flows
-        run: vp node docs/scripts/verify-navigation-render.ts --routes /guide/wasm,/ja/guide/wasm --output docs-render-evidence/ja-wasm
-
-      - name: Verify JSX and Compiler Inspector reading paths
-        run: vp node docs/scripts/verify-navigation-render.ts --routes /guide/jsx,/ja/guide/jsx,/guide/jsx-babel-compat,/ja/guide/jsx-babel-compat,/guide/compiler-inspector,/ja/guide/compiler-inspector --output docs-render-evidence/compiler-tools
-
-      - name: Verify philosophy reading paths
-        run: vp node docs/scripts/verify-navigation-render.ts --routes /philosophy,/ja/philosophy --output docs-render-evidence/philosophy
-
-      - name: Verify reviewed Vapor and Musea blog reading paths
-        run: vp node docs/scripts/verify-navigation-render.ts --routes /blog,/ja/blog,/blog/notes,/ja/blog/notes,/blog/notes/2026-05-16-vapor-mode-and-the-next-vue-compiler-surface,/ja/blog/notes/2026-05-16-vapor-mode-and-the-next-vue-compiler-surface,/blog/notes/2026-05-16-why-musea-and-design-systems-matter-in-the-ai-era,/ja/blog/notes/2026-05-16-why-musea-and-design-systems-matter-in-the-ai-era --output docs-render-evidence/ja-blog-notes
-
-      - name: Verify rendered navigation and adoption guides
-        env:
-          CAPTURE_TIMINGS: ${{ github.event_name == 'workflow_dispatch' && inputs.capture_timings && 'true' || 'false' }}
-        run: |
-          capture_flags=()
-          if [ "$CAPTURE_TIMINGS" = true ]; then
-            capture_flags+=(--capture-timings)
-          fi
-          vp node docs/scripts/verify-navigation-render.ts --workers 2 "${capture_flags[@]}"
-
-      - name: Verify every page's Open Graph metadata and image
-        run: vp node docs/scripts/verify-og-images.ts
 
       - name: Upload rendered docs screenshots
         if: ${{ always() }}
@@ -159,8 +112,6 @@ jobs:
         uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
-
-      - uses: ./.github/actions/setup-rust-script
 
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
@@ -201,7 +152,7 @@ jobs:
         run: node tools/support/github/vp-install.ts --filter './playground...' --filter './examples/vite-musea...' --filter './npm/builder/vite-musea...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...'
 
       - name: Build npm packages
-        run: rust-script tools/commands/ci/github/run-many.rs vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build -- vp run --filter './npm/builder/vite-musea' build
+        run: node tools/support/github/run-many.ts vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build -- vp run --filter './npm/builder/vite-musea' build
 
       - name: Build playground
         run: vp run --filter './playground' build

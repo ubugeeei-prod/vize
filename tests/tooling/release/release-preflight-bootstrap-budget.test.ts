@@ -32,19 +32,21 @@ test("release gate wait budget covers the full Real Project Matrix release gate"
  * Project Matrix stays in the release path for real-project smoke evidence,
  * while typecheck parity remains a separately enforced ratchet.
  */
-test("the release gate set keeps safety gates while benchmarks stay optional", () => {
-  assert.deepEqual(requiredReleaseWorkflows, [
-    "Check",
+test("the release gate is Check; heavier workflows stay off the publish path", () => {
+  assert.deepEqual(requiredReleaseWorkflows, ["Check"]);
+  for (const removed of [
+    "Benchmark",
+    "Native Smoke",
+    "App E2E",
     "Fuzz",
     "Miri",
     "Real Project Matrix",
     "Docs build",
-  ]);
-  for (const removed of ["Benchmark", "Native Smoke", "App E2E"]) {
+  ]) {
     assert.equal(
       requiredReleaseWorkflows.includes(removed),
       false,
-      `${removed} must not be back without a measurement`,
+      `${removed} must not gate a release`,
     );
   }
 });
@@ -58,6 +60,6 @@ test("the release dispatches only gates that need tag-bound evidence", () => {
 
   assert.deepEqual(
     plans.map((plan) => plan.workflowName),
-    ["Check", "Miri", "Docs build", "Fuzz", "Real Project Matrix"],
+    ["Check"],
   );
 });

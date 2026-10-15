@@ -61,43 +61,12 @@ test("release gate plans bind exact SHAs to expected evidence titles", () => {
         inputs: {},
         expectedRunName: `Check full @ ${releaseSha}`,
       },
-      {
-        workflowName: "Miri",
-        workflowId: "miri.yml",
-        inputs: {},
-        expectedRunName: `Miri @ ${releaseSha}`,
-      },
-      {
-        workflowName: "Docs build",
-        workflowId: "build-docs.yml",
-        inputs: {},
-        expectedRunName: `Docs build @ ${releaseSha}`,
-      },
-      {
-        workflowName: "Fuzz",
-        workflowId: "fuzz.yml",
-        inputs: { mode: "replay" },
-        expectedRunName: `Fuzz replay @ ${releaseSha}`,
-      },
-      {
-        workflowName: "Real Project Matrix",
-        workflowId: "real-project-matrix.yml",
-        inputs: {
-          core_tools_mode: "enforce",
-          typecheck_dependencies_mode: "enforce",
-          lint_divergence_mode: "record-only",
-          lsp_mode: "record-only",
-          typecheck_divergence_mode: "skip",
-          davinci_dom_corpus_mode: "enforce",
-        },
-        expectedRunName: `Real Project Matrix release-gated @ ${releaseSha}`,
-      },
     ].map((plan) => ({ ref: "v1.2.3", ...plan })),
   );
 });
 
 test("tag-bound full gates include the exact SHA in their workflow run names", () => {
-  for (const workflowName of ["Check", "Miri", "Docs build"]) {
+  for (const workflowName of ["Check"]) {
     const plan = findReleasePlan(workflowName);
     const runName = readWorkflow(plan.workflowId)["run-name"] ?? "";
     assert.match(runName, /github\.sha/);
@@ -154,7 +123,7 @@ test("Benchmark keeps an on-demand exact range while release bootstrap leaves it
 });
 
 test("Fuzz dispatch identifies its mode and target", () => {
-  const fuzz = readWorkflow(findReleasePlan("Fuzz").workflowId);
+  const fuzz = readWorkflow("fuzz.yml");
   assert.equal(fuzz.on?.workflow_dispatch?.inputs?.["max-total-time"]?.default, "120");
   assert.match(fuzz["run-name"] ?? "", /^Fuzz /);
   assert.match(fuzz["run-name"] ?? "", /inputs\.max-total-time/);
@@ -267,7 +236,7 @@ test("release gate bootstrap attempts every missing dispatch before reporting fa
         throw new Error(`dispatch denied for ${plan.workflowName}`);
       },
     }),
-    /Failed to dispatch release gates:[\s\S]*Fuzz: dispatch denied[\s\S]*Real Project Matrix: dispatch denied/,
+    /Failed to dispatch release gates:[\s\S]*Check: dispatch denied/,
   );
   assert.deepEqual(
     attempts,
@@ -283,8 +252,8 @@ test("release gate bootstrap never retries or hides a red latest run", async () 
     run.display_title = plan.expectedRunName;
     run.event = "workflow_dispatch";
   }
-  const fuzz = findEvidenceRun(runs, "Fuzz");
-  fuzz.conclusion = "failure";
+  const check = findEvidenceRun(runs, "Check");
+  check.conclusion = "failure";
   const dispatched: string[] = [];
 
   await assert.rejects(
@@ -294,7 +263,7 @@ test("release gate bootstrap never retries or hides a red latest run", async () 
       listRuns: async () => runs,
       dispatchWorkflow: async (plan) => dispatched.push(plan.workflowName),
     }),
-    /Fuzz: completed\/failure/,
+    /Check: completed\/failure/,
   );
   assert.deepEqual(dispatched, []);
 });

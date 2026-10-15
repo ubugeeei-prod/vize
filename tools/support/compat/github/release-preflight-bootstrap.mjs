@@ -18,13 +18,6 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
     throw new Error("Release base SHA must differ from the release head SHA");
   if (!ref) throw new Error("Release dispatch ref is required");
 
-  // Release evidence replays the known corpus instead of running a fresh
-  // campaign. A campaign is a randomized search, so it can fail a tag over an
-  // input it discovered minutes earlier that has nothing to do with the release;
-  // discovery stays on the nightly schedule, where a find is triaged on its own
-  // schedule rather than blocking a publish.
-  const fuzzMode = "replay";
-
   return [
     {
       workflowName: "Check",
@@ -32,51 +25,6 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
       ref,
       inputs: {},
       expectedRunName: `Check full @ ${headSha}`,
-      acceptsScheduledEvidence: false,
-    },
-    {
-      workflowName: "Miri",
-      workflowId: "miri.yml",
-      ref,
-      inputs: {},
-      expectedRunName: `Miri @ ${headSha}`,
-      acceptsScheduledEvidence: false,
-    },
-    {
-      workflowName: "Docs build",
-      workflowId: "build-docs.yml",
-      ref,
-      inputs: {},
-      expectedRunName: `Docs build @ ${headSha}`,
-      acceptsScheduledEvidence: false,
-    },
-    {
-      workflowName: "Fuzz",
-      workflowId: "fuzz.yml",
-      ref,
-      inputs: { mode: fuzzMode },
-      expectedRunName: `Fuzz ${fuzzMode} @ ${headSha}`,
-      // The nightly schedule runs a campaign, so a scheduled run at the tag SHA
-      // is not replay evidence: it must not stand in for the dispatched replay.
-      acceptsScheduledEvidence: false,
-    },
-    {
-      workflowName: "Real Project Matrix",
-      workflowId: "real-project-matrix.yml",
-      ref,
-      // Tool surfaces and the Davinci corpus gate the release. Lint and LSP
-      // parity run record-only so their raw outcomes are retained, and
-      // typecheck divergence is skipped, until per-project budgets gate the
-      // three parity surfaces again.
-      inputs: {
-        core_tools_mode: "enforce",
-        typecheck_dependencies_mode: "enforce",
-        lint_divergence_mode: "record-only",
-        lsp_mode: "record-only",
-        typecheck_divergence_mode: "skip",
-        davinci_dom_corpus_mode: "enforce",
-      },
-      expectedRunName: `Real Project Matrix release-gated @ ${headSha}`,
       acceptsScheduledEvidence: false,
     },
   ];

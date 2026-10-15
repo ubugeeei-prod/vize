@@ -59,7 +59,6 @@ const releaseModes = {
 const enforcedModes = ["core_tools_mode", "typecheck_dependencies_mode"] as const;
 const recordedModes = ["lint_divergence_mode", "lsp_mode"] as const;
 const modeInputs = Object.keys(releaseModes);
-const refusedSurfaceSet = /complete release-gated surface set/;
 const workflow = parse(
   fs.readFileSync(path.join(repoRoot, ".github/workflows/real-project-matrix.yml"), "utf8"),
 );
@@ -68,10 +67,10 @@ const plans = createReleaseGateDispatchPlans({
   headSha: releaseSha,
   baseSha: "b".repeat(40),
 });
-const matrixPlan = plans.find(
-  (plan: { workflowName: string }) => plan.workflowName === "Real Project Matrix",
+assert.equal(
+  plans.some((plan: { workflowName: string }) => plan.workflowName === "Real Project Matrix"),
+  false,
 );
-assert.ok(matrixPlan);
 
 function primaryTitle(inputs: Record<string, string>) {
   return workflow["run-name"].replace(
@@ -81,40 +80,41 @@ function primaryTitle(inputs: Record<string, string>) {
   );
 }
 
-function assertSelectorRefuses(title: string, message: string) {
-  const runs = plans.map(
-    (plan: { workflowName: string; expectedRunName: string }, index: number) => ({
+function assertSelectorIgnoresMatrixTitle(title: string) {
+  const runs = [
+    ...plans.map((plan: { workflowName: string; expectedRunName: string }, index: number) => ({
       ...successfulReleaseRun(plan.workflowName, index + 1),
-      display_title: plan.workflowName === "Real Project Matrix" ? title : plan.expectedRunName,
+      display_title: plan.expectedRunName,
       head_branch: "release/v0.446.0",
       event: "workflow_dispatch",
-    }),
-  );
-  assert.throws(
-    () =>
-      selectRequiredWorkflowRuns(
-        runs,
-        releaseSha,
-        requiredReleaseWorkflows,
-        releaseGateRunQualifiers(plans),
-      ),
-    /Real Project Matrix: missing/,
-    message,
+    })),
+    {
+      ...successfulReleaseRun("Real Project Matrix", 99),
+      display_title: title,
+      head_branch: "release/v0.446.0",
+      event: "workflow_dispatch",
+    },
+  ];
+  assert.doesNotThrow(() =>
+    selectRequiredWorkflowRuns(
+      runs,
+      releaseSha,
+      requiredReleaseWorkflows,
+      releaseGateRunQualifiers(plans),
+    ),
   );
 }
 
-test("primary Matrix enum, actual run-name expression and release selector bind the exact release dispatch", () => {
-  assert.deepEqual(matrixPlan.inputs, releaseModes);
-  assert.equal(matrixPlan.expectedRunName, `Real Project Matrix release-gated @ ${releaseSha}`);
-  assert.equal(primaryTitle(matrixPlan.inputs), matrixPlan.expectedRunName);
+test("matrix run names stay descriptive and no longer gate the release", () => {
+  assert.equal(primaryTitle(releaseModes), `Real Project Matrix release-gated @ ${releaseSha}`);
   for (const name of modeInputs) {
     const input = workflow.on.workflow_dispatch.inputs[name];
     assert.equal(input.default, "enforce");
-    assert.ok(input.options.includes(matrixPlan.inputs[name]));
-    for (const mode of input.options.filter((value: string) => value !== matrixPlan.inputs[name])) {
-      const title = primaryTitle({ ...matrixPlan.inputs, [name]: mode });
+    assert.ok(input.options.includes(releaseModes[name]));
+    for (const mode of input.options.filter((value: string) => value !== releaseModes[name])) {
+      const title = primaryTitle({ ...releaseModes, [name]: mode });
       assert.equal(title, `Real Project Matrix observational @ ${releaseSha}`, `${name}=${mode}`);
-      assertSelectorRefuses(title, `${name}=${mode}`);
+      assertSelectorIgnoresMatrixTitle(title);
     }
   }
   const enforcedTitle = `Real Project Matrix enforced @ ${releaseSha}`;
@@ -123,7 +123,7 @@ test("primary Matrix enum, actual run-name expression and release selector bind 
     primaryTitle(Object.fromEntries(modeInputs.map((name) => [name, "enforce"]))),
     enforcedTitle,
   );
-  assertSelectorRefuses(enforcedTitle, "a fully enforced run is a different dispatch");
+  assertSelectorIgnoresMatrixTitle(enforcedTitle);
   assert.deepEqual(
     plans.map((plan: { workflowName: string }) => plan.workflowName).sort(byCodeUnit),
     [...requiredReleaseWorkflows].sort(byCodeUnit),
@@ -212,29 +212,25 @@ test("recorded parity surfaces retain a raw failure without refusing the release
   }
 });
 
-test("actual Rust release runtime refuses observational tool surfaces", () => {
+test("release preflight does not refuse observational matrix tool surfaces", () => {
   for (const name of enforcedModes) {
     const [mode, outcome] = modeOutcomes[name];
     for (const rawOutcome of ["success", "failure"]) {
       const report = actualSurfaceReport({ [mode]: "record-only", [outcome]: rawOutcome });
-      assert.equal(
-        report.status,
-        "success",
-        "observational policy stays distinct from release eligibility",
-      );
+      assert.equal(report.status, "success");
       const result = preflightWithReport(report);
-      assert.equal(result.status, 1, `${name}: ${result.stderr}`);
-      assert.match(result.stderr, refusedSurfaceSet);
+      assert.equal(result.status, 0, `${name}: ${result.stderr}`);
+      assert.match(result.stdout, /Release preflight passed/);
     }
   }
 });
 
-test("actual Rust release runtime refuses parity surfaces that were not dispatched as release-gated", () => {
+test("release preflight does not refuse matrix parity surfaces", () => {
   for (const name of recordedModes) {
     const [mode] = modeOutcomes[name];
     const result = preflightWithReport(actualSurfaceReport({ [mode]: "enforce" }));
-    assert.equal(result.status, 1, `${name}: ${result.stderr}`);
-    assert.match(result.stderr, refusedSurfaceSet);
+    assert.equal(result.status, 0, `${name}: ${result.stderr}`);
+    assert.match(result.stdout, /Release preflight passed/);
   }
   for (const mode of ["enforce", "record-only"]) {
     const result = preflightWithReport(
@@ -243,8 +239,8 @@ test("actual Rust release runtime refuses parity surfaces that were not dispatch
         VIZE_TYPECHECK_DIVERGENCE_OUTCOME: "success",
       }),
     );
-    assert.equal(result.status, 1, `typecheck ${mode}: ${result.stderr}`);
-    assert.match(result.stderr, refusedSurfaceSet);
+    assert.equal(result.status, 0, `typecheck ${mode}: ${result.stderr}`);
+    assert.match(result.stdout, /Release preflight passed/);
   }
 });
 

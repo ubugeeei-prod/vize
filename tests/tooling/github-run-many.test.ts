@@ -8,10 +8,10 @@ import { test } from "node:test";
 import { repoRoot } from "./_helpers/moonbit.ts";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
-const commandPath = "tools/commands/ci/github/run-many.rs";
+const commandPath = "tools/support/github/run-many.ts";
 
 function runMany(args: readonly string[], cwd = repoRoot) {
-  return spawnSync("rust-script", [path.join(repoRoot, commandPath), ...args], {
+  return spawnSync(process.execPath, [path.join(repoRoot, commandPath), ...args], {
     cwd,
     encoding: "utf8",
   });
@@ -71,7 +71,7 @@ test("github/run-many stops at the first failing command group", () => {
   }
 });
 
-test("docs and release workflows run command groups with Rust Script", () => {
+test("docs and release workflows run command groups with Node", () => {
   const docsWorkflow = readRepoFile(".github", "workflows", "build-docs.yml");
   const releaseWorkflow = readRepoFile(".github", "workflows", "release.yml");
   assert.match(
@@ -83,24 +83,22 @@ test("docs and release workflows run command groups with Rust Script", () => {
     [
       "build-docs.yml:build-docs",
       workflowJobBody(docsWorkflow, "build-docs"),
-      "rust-script tools/commands/ci/github/run-many.rs vp run --filter './npm/native' build:ci",
+      "node tools/support/github/run-many.ts vp run --filter './npm/native' build:ci",
     ],
     [
       "build-docs.yml:build-playground",
       workflowJobBody(docsWorkflow, "build-playground"),
-      "rust-script tools/commands/ci/github/run-many.rs vp run --filter './npm/native' build:ci",
+      "node tools/support/github/run-many.ts vp run --filter './npm/native' build:ci",
     ],
     [
       "release.yml:build-release-packages",
       readRepoFile(".github", "actions", "release-build-packages", "action.yml"),
-      "rust-script tools/commands/ci/github/run-many.rs vp run --filter './npm/cli' build",
+      "node tools/support/github/run-many.ts vp run --filter './npm/cli' build",
     ],
   ] as const) {
-    const setupIndex = jobBody.indexOf("uses: ./.github/actions/setup-rust-script");
     const commandIndex = jobBody.indexOf(command);
-    assert.ok(setupIndex >= 0, `${workflowName} must install rust-script`);
+    assert.equal(jobBody.includes("setup-rust-script"), false, workflowName);
     assert.ok(commandIndex >= 0, `${workflowName} must run ${commandPath}`);
-    assert.ok(setupIndex < commandIndex, `${workflowName} must install rust-script first`);
   }
 
   assert.doesNotMatch(docsWorkflow, /tools\/moon\/cmd\/github\/run_many/);

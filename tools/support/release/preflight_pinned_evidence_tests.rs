@@ -1,48 +1,27 @@
 use super::*;
 
 #[test]
-fn release_matrix_dispatch_enforces_tool_surfaces_and_records_parity_surfaces() {
+fn release_dispatch_requires_only_the_full_check() {
     let target = target();
     let plans =
         create_release_gate_dispatch_plans("release/v0.435.1", &target.sha, &target.base_sha)
             .unwrap();
-    let matrix = plans
-        .iter()
-        .find(|plan| plan.workflow_name == "Real Project Matrix")
-        .unwrap();
+    assert_eq!(plans.len(), 1);
+    assert_eq!(plans[0].workflow_name, "Check");
     assert_eq!(
-        matrix.inputs,
-        json!({
-            "core_tools_mode": "enforce",
-            "typecheck_dependencies_mode": "enforce",
-            "lint_divergence_mode": "record-only",
-            "lsp_mode": "record-only",
-            "typecheck_divergence_mode": "skip",
-            "davinci_dom_corpus_mode": "enforce",
-        })
+        plans[0].expected_run_name,
+        format!("Check full @ {}", target.sha)
     );
-    assert_eq!(
-        matrix.expected_run_name,
-        format!("Real Project Matrix release-gated @ {}", target.sha)
-    );
-    for foreign in ["observational", "enforced"] {
-        let mut runs = green_runs(&target, false);
-        runs.iter_mut()
-            .find(|run| run["path"] == ".github/workflows/real-project-matrix.yml")
-            .unwrap()["display_title"] =
-            json!(format!("Real Project Matrix {foreign} @ {}", target.sha));
-        assert!(
-            select_required_workflow_runs(
-                &runs,
-                &target.sha,
-                &release_evidence_shas(&target, true),
-                &plans,
-                None
-            )
-            .is_err(),
-            "{foreign}"
-        );
-    }
+    let runs = green_runs(&target, false);
+    let selected = select_required_workflow_runs(
+        &runs,
+        &target.sha,
+        &release_evidence_shas(&target, true),
+        &plans,
+        None,
+    )
+    .unwrap();
+    assert_eq!(selected["Check"]["head_sha"], target.sha);
 }
 
 fn target() -> ReleaseTarget {
@@ -85,42 +64,12 @@ fn green_runs(target: &ReleaseTarget, parent_corpus: bool) -> Vec<Value> {
 }
 
 #[test]
-fn pinned_cut_rejects_parent_only_fuzz_and_matrix_while_legacy_keeps_its_contract() {
+fn pinned_cut_selects_check_at_the_release_head() {
     let target = target();
     let plans =
         create_release_gate_dispatch_plans("release/v0.435.1", &target.sha, &target.base_sha)
             .unwrap();
-    let runs = green_runs(&target, true);
-    assert!(
-        select_required_workflow_runs(
-            &runs,
-            &target.sha,
-            &release_evidence_shas(&target, false),
-            &plans,
-            None
-        )
-        .is_ok()
-    );
-    let error = select_required_workflow_runs(
-        &runs,
-        &target.sha,
-        &release_evidence_shas(&target, true),
-        &plans,
-        None,
-    )
-    .unwrap_err();
-    assert!(error.contains("Fuzz: missing"), "{error}");
-    assert!(error.contains("Real Project Matrix: missing"), "{error}");
-}
-
-#[test]
-fn pinned_cut_requires_and_selects_all_five_original_head_runs() {
-    let target = target();
-    let plans =
-        create_release_gate_dispatch_plans("release/v0.435.1", &target.sha, &target.base_sha)
-            .unwrap();
-    let mut runs = green_runs(&target, true);
-    runs.extend(green_runs(&target, false));
+    let runs = green_runs(&target, false);
     let selected = select_required_workflow_runs(
         &runs,
         &target.sha,
@@ -130,22 +79,19 @@ fn pinned_cut_requires_and_selects_all_five_original_head_runs() {
     )
     .unwrap();
     assert_eq!(selected.len(), REQUIRED_RELEASE_WORKFLOWS.len());
-    for name in REQUIRED_RELEASE_WORKFLOWS {
-        assert_eq!(selected[*name]["head_sha"], target.sha);
-    }
+    assert_eq!(selected["Check"]["head_sha"], target.sha);
 }
 
 #[test]
-fn newer_red_original_head_fuzz_cannot_borrow_parent_success() {
+fn newer_red_check_fails_the_release_gate() {
     let target = target();
     let plans =
         create_release_gate_dispatch_plans("release/v0.435.1", &target.sha, &target.base_sha)
             .unwrap();
     let mut runs = green_runs(&target, false);
-    runs.extend(green_runs(&target, true));
     let mut failed = runs
         .iter()
-        .find(|run| run["path"] == ".github/workflows/fuzz.yml" && run["head_sha"] == target.sha)
+        .find(|run| run["path"] == ".github/workflows/check.yml")
         .unwrap()
         .clone();
     failed["conclusion"] = json!("failure");
@@ -160,5 +106,8 @@ fn newer_red_original_head_fuzz_cannot_borrow_parent_success() {
         None,
     )
     .unwrap_err();
-    assert!(error.contains("Fuzz: completed/failure"), "{error}");
+    assert!(
+        error.split("Check: completed/failure").nth(1).is_some(),
+        "{error}"
+    );
 }

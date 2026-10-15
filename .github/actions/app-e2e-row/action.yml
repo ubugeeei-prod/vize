@@ -135,7 +135,7 @@ runs:
     - name: Build local Vize packages
       shell: bash
       run: |
-        rust-script tools/commands/ci/github/run-many.rs \
+        node tools/support/github/run-many.ts \
           vp run --filter './npm/cli' build -- \
           vp run --filter './npm/builder/vite' build -- \
           vp run --filter './npm/framework/nuxt-lint-config' build -- \

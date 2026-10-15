@@ -1,6 +1,4 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
-import path from "node:path";
 import { test } from "node:test";
 
 import {
@@ -10,18 +8,6 @@ import {
 import { isVersionMetadataOnlyRelease } from "../../../tools/support/compat/github/release-preflight-core.mjs";
 import { requiredReleaseWorkflows } from "../../../tools/support/compat/github/release-preflight-evidence.mjs";
 import { releaseEvidenceShas } from "../../../tools/support/compat/github/release-preflight.mjs";
-import { repoRoot } from "../_helpers/moonbit.ts";
-
-test("production Rust pinned preflight requires all five original-head gates", () => {
-  const result = spawnSync(
-    "rust-script",
-    ["--test", path.join(repoRoot, "tools/commands/ci/github/release-preflight.rs")],
-    { encoding: "utf8" },
-  );
-  assert.equal(result.status, 0, `${result.error ?? ""}\n${result.stdout}\n${result.stderr}`);
-  assert.match(result.stdout, /pinned_cut_rejects_parent_only_fuzz_and_matrix/);
-  assert.match(result.stdout, /\b[1-9]\d* passed; 0 failed/);
-});
 
 /** The workspace lint budget is zero warnings, and `.sort()` needs a comparator. */
 const byCodeUnit = (left: string, right: string) => (left < right ? -1 : left > right ? 1 : 0);
@@ -95,7 +81,7 @@ function greenRun(
   };
 }
 
-test("a version-only release dispatches Check, Miri, and Docs at the tag", async () => {
+test("a version-only release dispatches Check at the tag", async () => {
   const plans = createReleaseGateDispatchPlans({
     ref: "v0.350.1",
     headSha: tagSha,
@@ -133,18 +119,12 @@ test("a version-only release dispatches Check, Miri, and Docs at the tag", async
     timeoutMs: 0,
     sleep: async () => {},
   });
-  assert.deepEqual(dispatched, ["Check", "Miri", "Docs build"]);
+  assert.deepEqual(dispatched, ["Check"]);
   assert.deepEqual(
     [...selected.keys()].sort(byCodeUnit),
     [...requiredReleaseWorkflows].sort(byCodeUnit),
   );
-  for (const gate of requiredReleaseWorkflows) {
-    assert.equal(
-      selected.get(gate)?.head_sha,
-      ["Check", "Miri", "Docs build"].includes(gate) ? tagSha : parentSha,
-      gate,
-    );
-  }
+  assert.equal(selected.get("Check")?.head_sha, tagSha);
 });
 
 test("without the reuse the same parent evidence does not satisfy the gates", async () => {

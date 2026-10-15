@@ -59,7 +59,7 @@ test("reusable release preflight verifies evidence and crate plans without regis
     "run-install": false,
   });
   const verification = verify.steps?.find((step) => step.run != null);
-  assert.equal(verification?.run, "rust-script tools/commands/ci/github/release-preflight.rs");
+  assert.equal(verification?.run, "node tools/support/compat/github/release-preflight.mjs");
   assert.equal(verification?.env?.GITHUB_TOKEN, "${{ github.token }}");
 
   const crateValidation = workflow.jobs?.["validate-crates"];

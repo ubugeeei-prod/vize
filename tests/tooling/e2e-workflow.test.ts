@@ -252,7 +252,7 @@ test("shared row action validates the plan and never parallelizes fixture proces
   const install = namedStep({ steps: action.runs?.steps }, "Install JavaScript dependencies");
   assert.match(install.run ?? "", /--filter '\.\/npm\/oxlint\.\.\.'/);
   const build = namedStep({ steps: action.runs?.steps }, "Build local Vize packages");
-  assert.match(build.run ?? "", /run-many\.rs/);
+  assert.match(build.run ?? "", /run-many\.ts/);
   for (const packagePath of [
     "./npm/cli",
     "./npm/builder/vite",

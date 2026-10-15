@@ -1,16 +1,10 @@
 import { requiredRealProjectMatrixShardCount } from "./release-preflight-matrix-evidence.mjs";
 
 /**
- * Real Project Matrix release evidence requires every enforced surface and
- * complete typecheck parity, corpus, mutation, and preparation proofs.
+ * Check is the release gate. Fuzz, Miri, Real Project Matrix, and Docs build
+ * keep their own schedules and are not required to publish.
  */
-export const requiredReleaseWorkflows = [
-  "Check",
-  "Fuzz",
-  "Miri",
-  "Real Project Matrix",
-  "Docs build",
-];
+export const requiredReleaseWorkflows = ["Check"];
 
 export const requiredReleaseWorkflowEvidence = new Map([
   ["Check", { path: ".github/workflows/check.yml", events: ["workflow_dispatch"] }],

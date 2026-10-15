@@ -26,10 +26,7 @@ import {
 import { githubApiPages, githubApiRequest } from "./release-preflight-github.mjs";
 import { downloadArtifactEntries } from "./release-preflight-artifact-entries.mjs";
 import { currentMatrixArtifacts } from "./release-preflight-matrix-selection.mjs";
-import {
-  assertRealProjectMatrixReleaseArtifacts,
-  requireRealProjectMatrixRun,
-} from "./release-preflight-matrix-evidence.mjs";
+import { assertRealProjectMatrixReleaseArtifacts } from "./release-preflight-matrix-evidence.mjs";
 import { releaseTypecheckParityEnforced } from "./release-preflight-typecheck-evidence.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
@@ -296,19 +293,21 @@ export async function verifyReleasePreflight(env = process.env, { bootstrap = tr
         .join("\n")}`,
     );
   }
-  const realProjectMatrixRun = requireRealProjectMatrixRun(selectedRuns);
-  const artifacts = await currentMatrixArtifacts({
-    run: realProjectMatrixRun,
-    currentJobs: currentMatrixJobs,
-    api: { apiUrl, repository, token },
-  });
-  await assertRealProjectMatrixReleaseArtifacts({
-    run: realProjectMatrixRun,
-    artifacts,
-    enforceParity: releaseTypecheckParityEnforced,
-    requireTypecheckArtifacts: releaseTypecheckParityEnforced,
-    readArtifactEntries: async (artifact) => downloadArtifactEntries({ artifact, token }),
-  });
+  const realProjectMatrixRun = selectedRuns.get("Real Project Matrix");
+  if (realProjectMatrixRun != null) {
+    const artifacts = await currentMatrixArtifacts({
+      run: realProjectMatrixRun,
+      currentJobs: currentMatrixJobs,
+      api: { apiUrl, repository, token },
+    });
+    await assertRealProjectMatrixReleaseArtifacts({
+      run: realProjectMatrixRun,
+      artifacts,
+      enforceParity: releaseTypecheckParityEnforced,
+      requireTypecheckArtifacts: releaseTypecheckParityEnforced,
+      readArtifactEntries: async (artifact) => downloadArtifactEntries({ artifact, token }),
+    });
+  }
   verifyGitReleaseTarget(tag, sha, version);
   console.log(`Release preflight passed for ${tag} (${sha}) at workspace version ${version}.`);
   console.log(`Required workflows: ${requiredReleaseWorkflows.join(", ")}`);
@@ -319,7 +318,7 @@ export function parseReleasePreflightMode(args) {
   if (args.length === 1 && args[0] === "--verify-only") return "verify-only";
   if (args.length === 1 && args[0] === "--target-only") return "target-only";
   throw new Error(
-    "Usage: rust-script tools/commands/ci/github/release-preflight.rs [--verify-only|--target-only]",
+    "Usage: node tools/support/compat/github/release-preflight.mjs [--verify-only|--target-only]",
   );
 }
 

@@ -63,7 +63,9 @@ void test("the actual reader remains Node-only and its original Docs rendering c
     assert.ok(localImportInputs(consumer).files.includes(reader), consumer);
   const rendering = readFileSync(join(root, ".github/workflows/build-docs.yml"), "utf8");
   assert.match(rendering, /vp run --filter '\.\/npm\/native' build:ci/);
-  assert.match(rendering, /vp node docs\/scripts\/verify-more-guides-render\.ts/);
+  assert.doesNotMatch(rendering, /verify-more-guides-render/);
+  assert.doesNotMatch(rendering, /verify-navigation-render/);
+  assert.doesNotMatch(rendering, /verify-og-images/);
   assert.match(
     readFileSync(join(root, ".github/workflows/pr-source-checks.yml"), "utf8"),
     /run-cli: "\$\{\{ needs\.pr-source-plan\.outputs\.tooling == 'true' \}\}"/,

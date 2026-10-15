@@ -1,0 +1,25 @@
+# Release qualification stops at Check
+
+A release publishes when the exact-SHA Check workflow is green. Fuzz, Miri,
+Real Project Matrix, and Docs build keep running on their own schedules and on
+main. They are not dispatched for a cut, and a red run of one of them does not
+block the tag.
+
+Check still has to finish its required jobs, including `test-scripts`, the
+JavaScript package jobs, and `cargo-semver-checks`. A failed required Check
+job still fails the cut.
+
+Docs build no longer walks the reviewed browser routes or Open Graph images.
+The site build and its component-preview evidence remain. The route scripts
+stay in the repository for local use. The wall-time benchmark can still time
+navigation capture; that benchmark is not a release gate.
+
+The release preflight command is
+`node tools/support/compat/github/release-preflight.mjs`. The package build
+sequencer is `node tools/support/github/run-many.ts`. Node's stable type
+stripping runs that TypeScript file. Those two paths no longer install or
+compile `rust-script`. Other `tools/commands/**/*.rs` entrypoints still use
+`rust-script` until each one has a TypeScript entry.
+
+This replaces the earlier release contract that required all five workflows
+and the browser docs captures before a tag could exist.

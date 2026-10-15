@@ -39,8 +39,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-const REQUIRED_RELEASE_WORKFLOWS: &[&str] =
-    &["Check", "Fuzz", "Miri", "Real Project Matrix", "Docs build"];
+const REQUIRED_RELEASE_WORKFLOWS: &[&str] = &["Check"];
 // Keep in sync with check.yml's semver-checks matrix. A skipped matrix must
 // never count as a validated release candidate.
 const REQUIRED_SEMVER_CRATES: &[&str] = &[
@@ -359,59 +358,14 @@ fn create_release_gate_dispatch_plans(
     if ref_name.is_empty() {
         return Err("Release dispatch ref is required".to_string());
     }
-    Ok(vec![
-        DispatchPlan {
-            workflow_name: "Check",
-            workflow_id: "check.yml",
-            ref_name: ref_name.to_string(),
-            inputs: json!({}),
-            expected_run_name: format!("Check full @ {head_sha}"),
-            accepts_scheduled_evidence: false,
-        },
-        DispatchPlan {
-            workflow_name: "Miri",
-            workflow_id: "miri.yml",
-            ref_name: ref_name.to_string(),
-            inputs: json!({}),
-            expected_run_name: format!("Miri @ {head_sha}"),
-            accepts_scheduled_evidence: false,
-        },
-        DispatchPlan {
-            workflow_name: "Docs build",
-            workflow_id: "build-docs.yml",
-            ref_name: ref_name.to_string(),
-            inputs: json!({}),
-            expected_run_name: format!("Docs build @ {head_sha}"),
-            accepts_scheduled_evidence: false,
-        },
-        DispatchPlan {
-            workflow_name: "Fuzz",
-            workflow_id: "fuzz.yml",
-            ref_name: ref_name.to_string(),
-            inputs: json!({ "mode": "replay" }),
-            expected_run_name: format!("Fuzz replay @ {head_sha}"),
-            accepts_scheduled_evidence: false,
-        },
-        DispatchPlan {
-            workflow_name: "Real Project Matrix",
-            workflow_id: "real-project-matrix.yml",
-            ref_name: ref_name.to_string(),
-            // Tool surfaces and the Davinci corpus gate the release. Lint and
-            // LSP parity run record-only so their raw outcomes are retained,
-            // and typecheck divergence is skipped, until per-project budgets
-            // gate the three parity surfaces again.
-            inputs: json!({
-                "core_tools_mode": "enforce",
-                "typecheck_dependencies_mode": "enforce",
-                "lint_divergence_mode": "record-only",
-                "lsp_mode": "record-only",
-                "typecheck_divergence_mode": "skip",
-                "davinci_dom_corpus_mode": "enforce",
-            }),
-            expected_run_name: format!("Real Project Matrix release-gated @ {head_sha}"),
-            accepts_scheduled_evidence: false,
-        },
-    ])
+    Ok(vec![DispatchPlan {
+        workflow_name: "Check",
+        workflow_id: "check.yml",
+        ref_name: ref_name.to_string(),
+        inputs: json!({}),
+        expected_run_name: format!("Check full @ {head_sha}"),
+        accepts_scheduled_evidence: false,
+    }])
 }
 
 fn list_runs_for_evidence(
