@@ -161,6 +161,19 @@ pub(super) fn rewrite(path: &str, content: &str, old: &str, new: &str) -> String
 }
 
 /// Standalone SDK locks share the same byte-exact authority as integration.
+/// The pin verifier accepts only this textual bump. `cargo update --workspace`
+/// also rewrites unrelated packages, so the integration would not match.
+pub fn rewrite_workspace_lock(old: &str, new: &str, root: &Path) -> Result<(), String> {
+    let path = "Cargo.lock";
+    let file = root.join(path);
+    let before = std::fs::read_to_string(&file).map_err(|error| error.to_string())?;
+    let after = rewrite(path, &before, old, new);
+    if after == before {
+        return Err("Cargo.lock contained no workspace version to rewrite.".into());
+    }
+    std::fs::write(file, after).map_err(|error| error.to_string())
+}
+
 pub fn rewrite_guest_lock(path: &str, old: &str, new: &str, root: &Path) -> Result<(), String> {
     if !matches!(
         path,

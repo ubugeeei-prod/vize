@@ -75,7 +75,14 @@ export async function prepareCandidate(
   }
 
   println("Updating Cargo.lock...");
-  if ((await run("cargo", ["update", "--workspace"])) !== 0) {
+  if (
+    (await run("rust-script", [
+      "tools/commands/release/pr.rs",
+      "rewrite-workspace-lock",
+      currentVersion,
+      newVersion,
+    ])) !== 0
+  ) {
     writeStderr("Failed to update Cargo.lock\n");
     return 1;
   }

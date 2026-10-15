@@ -51,6 +51,7 @@ fn run() -> Result<(), String> {
         .collect::<Vec<_>>()
         .as_slice()
     {
+        ["rewrite-workspace-lock", old, new] => pr_pin::rewrite_workspace_lock(old, new, &root),
         ["rewrite-guest-lock", path, old, new] => pr_pin::rewrite_guest_lock(path, old, new, &root),
         ["verify-producer-metadata", frozen] => pr_pin::verify_producer_metadata(frozen, &root),
         ["start", bump] => pr_start::start(bump, &root),
