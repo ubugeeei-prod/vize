@@ -62,7 +62,7 @@ pub(super) fn integration_pr(
             "--head",
             &branch,
             "--state",
-            "all",
+            "open",
             "--json",
             "number,body,state",
         ],
