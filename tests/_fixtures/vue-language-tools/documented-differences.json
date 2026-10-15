@@ -15,6 +15,16 @@
         { "file": "components/main.vue", "line": 74, "column": 11, "code": 2345 },
         { "file": "defineModel/main.vue", "line": 25, "column": 11, "code": 2345 }
       ]
+    },
+    {
+      "id": "v-generic-event-parameters",
+      "issue": 3984,
+      "reason": "In v-generic, `@vue-generic` is supposed to instantiate the following component so the `@foo` callback parameters are the emit tuple, not `any`. Canon still types those parameters as `any` on both the one-argument and two-argument handlers. `exactType` then reports TS2345 because `any` is not assignable to `never`. Upstream vue-tsc leaves this file clean. The props and the expect-error on the bare component are unchanged. Closing this needs the explicit generic binding to reach the listener parameters.",
+      "vizeOnly": [
+        { "file": "v-generic/main.vue", "line": 8, "column": 33, "code": 2345 },
+        { "file": "v-generic/main.vue", "line": 11, "column": 13, "code": 2345 },
+        { "file": "v-generic/main.vue", "line": 12, "column": 13, "code": 2345 }
+      ]
     }
   ]
 }

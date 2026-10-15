@@ -320,6 +320,18 @@ let nativeExitArmed = false;
 export function leaveMountedRuntimeProcess() {
   if (nativeExitArmed) return;
   nativeExitArmed = true;
+  const report = (error) => {
+    const text = error instanceof Error ? (error.stack ?? String(error)) : String(error);
+    writeSync(2, text.endsWith("\n") ? text : `${text}\n`);
+  };
+  process.on("uncaughtException", (error) => {
+    report(error);
+    process.exit(1);
+  });
+  process.on("unhandledRejection", (error) => {
+    report(error);
+    process.exit(1);
+  });
   process.on("exit", (code) => {
     if (process.platform === "win32" || typeof process.execve !== "function") return;
     const status = Number.isInteger(code) && code >= 0 && code <= 255 ? code : 1;

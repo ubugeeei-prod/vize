@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import { collectStdout, println, run, writeStderr } from "../command_io.ts";
 import {
   isDir,
@@ -77,7 +78,7 @@ export async function prepareCandidate(
   println("Updating Cargo.lock...");
   if (
     (await run("rust-script", [
-      "tools/commands/release/pr.rs",
+      fileURLToPath(new URL("../../../commands/release/pr.rs", import.meta.url)),
       "rewrite-workspace-lock",
       currentVersion,
       newVersion,

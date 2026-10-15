@@ -73,7 +73,10 @@ test("every documented difference names an authored line the oracle keeps clean"
   );
   assert.deepEqual(
     documented.differences.map((difference) => [difference.id, difference.issue]),
-    [["component-default-export-identity", 6253]],
+    [
+      ["component-default-export-identity", 6253],
+      ["v-generic-event-parameters", 3984],
+    ],
   );
   for (const difference of documented.differences) {
     assert.ok(difference.reason.length >= 200, `${difference.id} must explain itself`);
@@ -85,6 +88,9 @@ test("every documented difference names an authored line the oracle keeps clean"
     "components/main.vue:73:11:2345",
     "components/main.vue:74:11:2345",
     "defineModel/main.vue:25:11:2345",
+    "v-generic/main.vue:8:33:2345",
+    "v-generic/main.vue:11:13:2345",
+    "v-generic/main.vue:12:13:2345",
   ]);
   const oracle = new Set(manifest.expectedDiagnostics.map(identity));
   const corpus = new Set(manifest.files.map((file) => file.path));
