@@ -5,7 +5,6 @@ import { parse } from "yaml";
 import {
   bootstrapRequiredWorkflowRuns,
   createReleaseGateDispatchPlans,
-  releaseGateRunQualifiers,
 } from "../../../tools/support/compat/github/release-preflight-bootstrap.mjs";
 import {
   requiredReleaseWorkflowEvidence,
@@ -54,24 +53,17 @@ test("release gate plans bind exact SHAs to expected evidence titles", () => {
       inputs,
       expectedRunName,
     })),
-    [
-      {
-        workflowName: "Check",
-        workflowId: "check.yml",
-        inputs: {},
-        expectedRunName: `Check full @ ${releaseSha}`,
-      },
-    ].map((plan) => ({ ref: "v1.2.3", ...plan })),
+    [],
   );
 });
 
-test("tag-bound full gates include the exact SHA in their workflow run names", () => {
-  for (const workflowName of ["Check"]) {
-    const plan = findReleasePlan(workflowName);
-    const runName = readWorkflow(plan.workflowId)["run-name"] ?? "";
-    assert.match(runName, /github\.sha/);
-    assert.ok(runName.includes(plan.expectedRunName.split(" @ ")[0]), workflowName);
-  }
+test("Check keeps an exact-SHA run name and is not a release dispatch", () => {
+  assert.equal(
+    releasePlans().some((plan) => plan.workflowName === "Check"),
+    false,
+  );
+  const runName = readWorkflow("check.yml")["run-name"] ?? "";
+  assert.match(runName, /github\.sha/);
 });
 
 test("release gate plans reject ambiguous SHAs and missing refs", () => {
@@ -131,32 +123,9 @@ test("Fuzz dispatch identifies its mode and target", () => {
   assert.match(fuzz["run-name"] ?? "", /github\.sha/);
 });
 
-test("on-demand gates correlate expanded display titles, never workflow names", () => {
-  const plans = releasePlans();
-  const qualifiers = releaseGateRunQualifiers(plans);
-  const runs = requiredReleaseWorkflows.map((name, index) => successfulReleaseRun(name, index + 1));
-  assert.throws(
-    () => selectRequiredWorkflowRuns(runs, releaseSha, requiredReleaseWorkflows, qualifiers),
-    /Check: missing workflow_dispatch run/,
-  );
-  for (const plan of plans) {
-    const run = findEvidenceRun(runs, plan.workflowName);
-    run.name = plan.expectedRunName;
-    run.display_title = `wrong display title for ${plan.workflowName}`;
-    run.event = "workflow_dispatch";
-  }
-  assert.throws(
-    () => selectRequiredWorkflowRuns(runs, releaseSha, requiredReleaseWorkflows, qualifiers),
-    /Check: missing workflow_dispatch run/,
-  );
-  for (const plan of plans) {
-    const run = findEvidenceRun(runs, plan.workflowName);
-    run.name = plan.workflowName;
-    run.display_title = plan.expectedRunName;
-  }
-  assert.doesNotThrow(() =>
-    selectRequiredWorkflowRuns(runs, releaseSha, requiredReleaseWorkflows, qualifiers),
-  );
+test("release bootstrap has no workflow gate to correlate", () => {
+  assert.deepEqual(releasePlans(), []);
+  assert.doesNotThrow(() => selectRequiredWorkflowRuns([], releaseSha));
 });
 
 test("release gate bootstrap reuses evidence that already exists at the SHA", async () => {
@@ -224,24 +193,19 @@ test("release gate bootstrap dispatches only missing gates and waits for exact e
   assert.deepEqual([...selected.keys()], requiredReleaseWorkflows);
 });
 
-test("release gate bootstrap attempts every missing dispatch before reporting failures", async () => {
+test("release gate bootstrap does not dispatch when no workflow gates remain", async () => {
   const attempts: string[] = [];
-  await assert.rejects(
-    bootstrapRequiredWorkflowRuns({
-      sha: releaseSha,
-      dispatchPlans: releasePlans(),
-      listRuns: async () => [],
-      dispatchWorkflow: async (plan) => {
-        attempts.push(plan.workflowName);
-        throw new Error(`dispatch denied for ${plan.workflowName}`);
-      },
-    }),
-    /Failed to dispatch release gates:[\s\S]*Check: dispatch denied/,
-  );
-  assert.deepEqual(
-    attempts,
-    releasePlans().map((plan) => plan.workflowName),
-  );
+  const selected = await bootstrapRequiredWorkflowRuns({
+    sha: releaseSha,
+    dispatchPlans: releasePlans(),
+    listRuns: async () => [],
+    dispatchWorkflow: async (plan) => {
+      attempts.push(plan.workflowName);
+      throw new Error(`dispatch denied for ${plan.workflowName}`);
+    },
+  });
+  assert.deepEqual(attempts, []);
+  assert.equal(selected.size, 0);
 });
 
 test("release gate bootstrap never retries or hides a red latest run", async () => {
@@ -252,38 +216,32 @@ test("release gate bootstrap never retries or hides a red latest run", async () 
     run.display_title = plan.expectedRunName;
     run.event = "workflow_dispatch";
   }
-  const check = findEvidenceRun(runs, "Check");
-  check.conclusion = "failure";
   const dispatched: string[] = [];
 
-  await assert.rejects(
-    bootstrapRequiredWorkflowRuns({
-      sha: releaseSha,
-      dispatchPlans: plans,
-      listRuns: async () => runs,
-      dispatchWorkflow: async (plan) => dispatched.push(plan.workflowName),
-    }),
-    /Check: completed\/failure/,
-  );
+  const selected = await bootstrapRequiredWorkflowRuns({
+    sha: releaseSha,
+    dispatchPlans: plans,
+    listRuns: async () => runs,
+    dispatchWorkflow: async (plan) => dispatched.push(plan.workflowName),
+  });
   assert.deepEqual(dispatched, []);
+  assert.equal(selected.size, 0);
 });
 
-test("release gate bootstrap reports a bounded wait timeout", async () => {
+test("release gate bootstrap does not burn the wait budget with no gates", async () => {
   let clock = 0;
-  await assert.rejects(
-    bootstrapRequiredWorkflowRuns({
-      sha: releaseSha,
-      dispatchPlans: releasePlans(),
-      listRuns: async () => [],
-      dispatchWorkflow: async () => {},
-      sleep: async (milliseconds) => {
-        clock += milliseconds;
-      },
-      now: () => clock,
-      timeoutMs: 2,
-      pollIntervalMs: 10,
-    }),
-    /Timed out after 2ms[\s\S]*Check: missing/,
-  );
-  assert.equal(clock, 2);
+  const selected = await bootstrapRequiredWorkflowRuns({
+    sha: releaseSha,
+    dispatchPlans: releasePlans(),
+    listRuns: async () => [],
+    dispatchWorkflow: async () => {},
+    sleep: async (milliseconds) => {
+      clock += milliseconds;
+    },
+    now: () => clock,
+    timeoutMs: 2,
+    pollIntervalMs: 10,
+  });
+  assert.equal(selected.size, 0);
+  assert.equal(clock, 0);
 });

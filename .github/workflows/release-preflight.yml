@@ -20,7 +20,7 @@ jobs:
   verify:
     name: Verify release safety contract
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 360
+    timeout-minutes: 10
     permissions:
       actions: write
       contents: read

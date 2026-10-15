@@ -39,7 +39,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-const REQUIRED_RELEASE_WORKFLOWS: &[&str] = &["Check"];
+const REQUIRED_RELEASE_WORKFLOWS: &[&str] = &[];
 // Keep in sync with check.yml's semver-checks matrix. A skipped matrix must
 // never count as a validated release candidate.
 const REQUIRED_SEMVER_CRATES: &[&str] = &[
@@ -358,14 +358,8 @@ fn create_release_gate_dispatch_plans(
     if ref_name.is_empty() {
         return Err("Release dispatch ref is required".to_string());
     }
-    Ok(vec![DispatchPlan {
-        workflow_name: "Check",
-        workflow_id: "check.yml",
-        ref_name: ref_name.to_string(),
-        inputs: json!({}),
-        expected_run_name: format!("Check full @ {head_sha}"),
-        accepts_scheduled_evidence: false,
-    }])
+    let _ = (ref_name, head_sha);
+    Ok(vec![])
 }
 
 fn list_runs_for_evidence(

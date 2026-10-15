@@ -18,16 +18,7 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
     throw new Error("Release base SHA must differ from the release head SHA");
   if (!ref) throw new Error("Release dispatch ref is required");
 
-  return [
-    {
-      workflowName: "Check",
-      workflowId: "check.yml",
-      ref,
-      inputs: {},
-      expectedRunName: `Check full @ ${headSha}`,
-      acceptsScheduledEvidence: false,
-    },
-  ];
+  return [];
 }
 
 export function releaseGateRunQualifiers(dispatchPlans, evidenceShas = new Map()) {

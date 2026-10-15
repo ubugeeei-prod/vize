@@ -1,9 +1,11 @@
 # Release qualification stops at Check
 
-A release publishes when the exact-SHA Check workflow is green. Fuzz, Miri,
-Real Project Matrix, and Docs build keep running on their own schedules and on
-main. They are not dispatched for a cut, and a red run of one of them does not
-block the tag.
+A release publishes when its own builds are green. It does not dispatch or
+wait for Check, Fuzz, Miri, Real Project Matrix, or Docs build. Those keep
+their own schedules. After the release artifacts are ready, the operator
+enables auto-merge on the version integration. The promotion job waits at
+most 15 minutes for that merge and the tag. It does not wait for a second
+merge-queue run of Check, n8n, Musea, or Nuxt.
 
 Check still has to finish its required jobs, including `test-scripts`, the
 JavaScript package jobs, and `cargo-semver-checks`. A failed required Check

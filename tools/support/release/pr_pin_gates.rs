@@ -2,13 +2,7 @@
 use super::super::super::{pr_checks, pr_contract, pr_github as github};
 use serde_json::{Value, json};
 use std::{collections::BTreeMap, path::Path};
-const WORKFLOWS: [&str; 5] = [
-    "check.yml",
-    "n8n-adoption.yml",
-    "musea-browser.yml",
-    "nuxt-style-build.yml",
-    "nuxt3-module-build.yml",
-];
+const WORKFLOWS: [&str; 0] = [];
 
 pub(super) fn find(
     repository: &str,

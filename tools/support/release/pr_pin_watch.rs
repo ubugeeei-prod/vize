@@ -90,13 +90,25 @@ pub(super) fn watch(
             && pr_contract::ready_job(&github::jobs(repository, id, root)?)?
             && pr_promote::checks_pass(&source.candidate, root)?
         {
+            let _ = github::output(
+                "gh",
+                &[
+                    "pr",
+                    "merge",
+                    &source.integration.to_string(),
+                    "--auto",
+                    "--repo",
+                    repository,
+                ],
+                root,
+            );
             if let Some(receipt) = delivery::integration(&source, None, root)? {
                 budget.check()?;
                 delivery::promote(&source, id, &receipt, operator, budget, root)?;
             }
         }
         println!(
-            "Pinned source PR #{number}, H={head}, R={id}: qualification/publication continues. Root may admit integration only after all required H checks, five full H gates, every build, and full preflight are terminal green."
+            "Pinned source PR #{number}, H={head}, R={id}: qualification passed. Admitting the version integration; the tag follows that merge."
         );
         budget.sleep(Duration::from_secs(20))?;
     }

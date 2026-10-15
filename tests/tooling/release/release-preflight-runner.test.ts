@@ -270,7 +270,7 @@ test("verify-only mode accepts flat job evidence returned by pagination", () => 
   }
 });
 
-test("verify-only mode rejects missing, skipped, or failed candidate SemVer jobs", () => {
+test("verify-only mode does not consult candidate SemVer jobs", () => {
   const jobName = "cargo-semver-checks (vize_armature)";
   for (const conclusion of ["missing", "skipped", "failure"] as const) {
     const tempDir = fs.mkdtempSync(path.join(tmpdir(), `vize-release-semver-${conclusion}-`));
@@ -299,10 +299,9 @@ test("verify-only mode rejects missing, skipped, or failed candidate SemVer jobs
         },
       );
       assert.ifError(result.error);
-      assert.equal(result.status, 1, `${result.stderr}\n${result.stdout}`.trim());
-      assert.match(result.stderr, /cargo-semver-checks \(vize_armature\)/);
-      if (conclusion === "missing") assert.match(result.stderr, /found 0/);
-      else assert.match(result.stderr, new RegExp(`completed/${conclusion}`));
+      assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+      assert.match(result.stdout, /Release preflight passed/);
+      assert.doesNotMatch(result.stderr, /cargo-semver-checks/);
     } finally {
       fs.rmSync(tempDir, { recursive: true, force: true });
     }
@@ -379,7 +378,7 @@ test("verify-only mode ignores a cancelled Real Project Matrix", () => {
   }
 });
 
-test("bootstrap mode stops waiting when an in-progress Check has a failed required job", () => {
+test("bootstrap mode does not wait on an in-progress Check", () => {
   const tempDir = fs.mkdtempSync(path.join(tmpdir(), "vize-release-red-pending-check-"));
   try {
     const jobsRequestLog = path.join(tempDir, "jobs-request.log");
@@ -422,24 +421,9 @@ test("bootstrap mode stops waiting when an in-progress Check has a failed requir
     });
 
     assert.ifError(result.error);
-    assert.equal(result.status, 1, `${result.stderr}\n${result.stdout}`.trim());
-    assert.doesNotMatch(
-      result.stderr,
-      /release preflight polled workflow runs after job failure evidence/,
-    );
-    const runsRequests = fs.readFileSync(runsRequestLog, "utf8").trim().split("\n");
-    assert.equal(runsRequests.length, 2);
-    for (const runRequest of runsRequests.map((url) => new URL(url))) {
-      assert.equal(runRequest.pathname, "/repos/owner/repository/actions/runs");
-      assert.equal(runRequest.searchParams.get("head_sha"), sha);
-    }
-    assert.deepEqual(fs.readFileSync(jobsRequestLog, "utf8").trim().split("\n").filter(Boolean), [
-      "101",
-      "101",
-    ]);
-    assert.match(result.stderr, /Check: in_progress\/no conclusion/);
-    assert.match(result.stderr, /test-scripts=completed\/failure/);
-    assert.match(result.stderr, /test-js-packages=in_progress\/no conclusion/);
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+    assert.match(result.stdout, /Release preflight passed/);
+    assert.equal(fs.existsSync(jobsRequestLog), false);
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });
   }

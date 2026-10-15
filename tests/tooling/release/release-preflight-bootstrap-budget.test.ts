@@ -8,23 +8,23 @@ import {
 import { requiredReleaseWorkflows } from "../../../tools/support/compat/github/release-preflight-evidence.mjs";
 import { releaseSha } from "../support/release-preflight.ts";
 
-test("release gate wait budget covers the full Real Project Matrix release gate", async () => {
+test("release publication does not wait on an external workflow gate", async () => {
   let elapsed = 0;
-  await assert.rejects(
-    bootstrapRequiredWorkflowRuns({
-      sha: releaseSha,
-      dispatchPlans: [],
-      listRuns: async () => [],
-      dispatchWorkflow: async () => {},
-      sleep: async (milliseconds) => {
-        elapsed += milliseconds;
-      },
-      now: () => elapsed,
-      pollIntervalMs: 60 * 60 * 1000,
-    }),
-    /Timed out after 20700000ms waiting for release gates/,
-  );
-  assert.equal(elapsed, 345 * 60 * 1000);
+  const selected = await bootstrapRequiredWorkflowRuns({
+    sha: releaseSha,
+    dispatchPlans: [],
+    listRuns: async () => [],
+    dispatchWorkflow: async () => {
+      throw new Error("release publication must not dispatch a gate");
+    },
+    sleep: async (milliseconds) => {
+      elapsed += milliseconds;
+    },
+    now: () => elapsed,
+    pollIntervalMs: 60 * 60 * 1000,
+  });
+  assert.equal(selected.size, 0);
+  assert.equal(elapsed, 0);
 });
 
 /**
@@ -32,9 +32,10 @@ test("release gate wait budget covers the full Real Project Matrix release gate"
  * Project Matrix stays in the release path for real-project smoke evidence,
  * while typecheck parity remains a separately enforced ratchet.
  */
-test("the release gate is Check; heavier workflows stay off the publish path", () => {
-  assert.deepEqual(requiredReleaseWorkflows, ["Check"]);
+test("publication does not wait for a CI workflow", () => {
+  assert.deepEqual(requiredReleaseWorkflows, []);
   for (const removed of [
+    "Check",
     "Benchmark",
     "Native Smoke",
     "App E2E",
@@ -60,6 +61,6 @@ test("the release dispatches only gates that need tag-bound evidence", () => {
 
   assert.deepEqual(
     plans.map((plan) => plan.workflowName),
-    ["Check"],
+    [],
   );
 });

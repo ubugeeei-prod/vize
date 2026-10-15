@@ -338,7 +338,7 @@ pub fn wait_for_promotion(number: u64, head: &str, tag: &str, root: &Path) -> Re
         if main_version != source.base_version && main_version != tag.trim_start_matches('v') {
             return Err("A newer version owns main; pinned publication is forbidden.".into());
         }
-        if started.elapsed() > Duration::from_secs(20_400) {
+        if started.elapsed() > Duration::from_secs(12 * 60) {
             return Err(
                 "Timed out waiting for pinned integration and tag; no publication attempted."
                     .into(),

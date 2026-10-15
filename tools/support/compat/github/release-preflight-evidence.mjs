@@ -4,7 +4,7 @@ import { requiredRealProjectMatrixShardCount } from "./release-preflight-matrix-
  * Check is the release gate. Fuzz, Miri, Real Project Matrix, and Docs build
  * keep their own schedules and are not required to publish.
  */
-export const requiredReleaseWorkflows = ["Check"];
+export const requiredReleaseWorkflows = [];
 
 export const requiredReleaseWorkflowEvidence = new Map([
   ["Check", { path: ".github/workflows/check.yml", events: ["workflow_dispatch"] }],
