@@ -7,3 +7,7 @@ unrelated packages, so that integration was rejected and no tag was created.
 
 The release preparation now applies that same textual rewrite to the root
 lockfile. It does not resolve the registry again.
+
+A closed integration pull request whose branch is already gone does not block
+the next cut of the same version. An open pull request or a branch that is
+still on the remote is left for review.

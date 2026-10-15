@@ -64,27 +64,42 @@ pub(super) fn integration_pr(
             "--state",
             "all",
             "--json",
-            "number,body",
+            "number,body,state",
         ],
         root,
     )?;
     let prs: Value = serde_json::from_str(&found).map_err(|e| e.to_string())?;
     let prs = prs.as_array().ok_or("Missing integration PR list")?;
     if let [pr] = prs.as_slice() {
-        let body = pr["body"]
-            .as_str()
-            .ok_or("Missing existing integration body")?;
-        if marker(body, "vize-release-pin-head")? != candidate.head
-            || marker(body, "vize-release-pin-source")? != candidate.number.to_string()
-        {
-            return Err(
-                "Existing integration branch belongs to a different cut; preserve it for review."
-                    .into(),
-            );
+        // A closed receipt whose branch is gone is an abandoned cut of this
+        // version. The next cut may reuse the integration name.
+        let abandoned = pr["state"].as_str() == Some("CLOSED")
+            && github::git(
+                &[
+                    "ls-remote",
+                    "--heads",
+                    "origin",
+                    &format!("refs/heads/{branch}"),
+                ],
+                root,
+            )?
+            .is_empty();
+        if !abandoned {
+            let body = pr["body"]
+                .as_str()
+                .ok_or("Missing existing integration body")?;
+            if marker(body, "vize-release-pin-head")? != candidate.head
+                || marker(body, "vize-release-pin-source")? != candidate.number.to_string()
+            {
+                return Err(
+                    "Existing integration branch belongs to a different cut; preserve it for review."
+                        .into(),
+                );
+            }
+            return pr["number"]
+                .as_u64()
+                .ok_or("Missing integration number".into());
         }
-        return pr["number"]
-            .as_u64()
-            .ok_or("Missing integration number".into());
     }
     if !prs.is_empty() {
         return Err("Ambiguous integration PRs; refusing to replace any branch.".into());
