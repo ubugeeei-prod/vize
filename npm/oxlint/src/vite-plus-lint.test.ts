@@ -183,7 +183,7 @@ void test("the emitted lint block makes Oxlint report exactly the configured viz
         filename: "src/Violating.vue",
         labels: [{ column: 2, line: 2 }],
         message:
-          "Elements in iteration expect to have 'v-bind:key' directives. (at <template>:8:9)\n" +
+          "Elements in iteration expect to have 'v-bind:key' directives. (at <template>:8:5)\n" +
           "    Details:\n" +
           "      Element: <li>",
         severity: "error",

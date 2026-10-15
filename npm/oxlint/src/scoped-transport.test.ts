@@ -111,7 +111,7 @@ void test("real Oxlint scoped transport preserves original filters, positions an
         message:
           "Elements in iteration expect to have 'v-bind:key' directives.\n    Details:\n      Element: <li>",
         severity: "warning",
-        positions: [[line, 9]],
+        positions: [[line, 5]],
       }))
       .sort((a, b) => String(a.filename).localeCompare(String(b.filename))),
   );

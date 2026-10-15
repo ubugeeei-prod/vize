@@ -30,19 +30,19 @@ try {
       filename: "ScriptAndTemplate.vue",
       source: `<script setup lang="ts">\nconst items = [1, 2]\n</script>\n<template>\n  <ul>\n    <li v-for="item in items">{{ item }}</li>\n  </ul>\n</template>\n`,
       line: 6,
-      column: 9,
+      column: 5,
     },
     {
       filename: "EmptyScript.vue",
       source: `<script setup lang="ts"></script>\n<template>\n  <ul>\n    <li v-for="item in [1, 2]">{{ item }}</li>\n  </ul>\n</template>\n`,
       line: 4,
-      column: 9,
+      column: 5,
     },
     {
       filename: "Scriptless.vue",
       source: `<template>\n  <ul>\n    <li v-for="item in [1, 2]">{{ item }}</li>\n  </ul>\n</template>\n`,
       line: 3,
-      column: 9,
+      column: 5,
     },
   ];
 
