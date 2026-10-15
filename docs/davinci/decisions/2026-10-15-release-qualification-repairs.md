@@ -10,4 +10,4 @@ repairs land before the next cut.
   build preprocessor embedded with `include_str!`.
 - Wasmtime is pinned to `48.0.6`, the patch release that covers the
   2026-10-14 RustSec advisories. The update is `cargo update -p wasmtime
-  --precise 48.0.6` and the matching Cranelift/Pulley family only.
+--precise 48.0.6` and the matching Cranelift/Pulley family only.
