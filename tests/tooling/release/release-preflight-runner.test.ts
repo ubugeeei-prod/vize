@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { test } from "node:test";
 import {
   parseReleasePreflightMode,
+  pinnedCandidatePublishError,
   readPackageManifests,
   verifyReleaseTarget,
 } from "../../../tools/support/compat/github/release-preflight.mjs";
@@ -16,6 +17,38 @@ import { writeFakeCommand } from "../support/fake-command.ts";
 import { createReleasePreflightVerifyOnlyFixture } from "../support/release-preflight-runner-fixture.ts";
 
 const sha = "a".repeat(40);
+
+test("a pinned candidate publishes from its parent on main", () => {
+  const parent = "b".repeat(40);
+  const release = "c".repeat(40);
+  const base = {
+    head: release,
+    sha: release,
+    eventSha: release,
+    tag: "v0.455.0",
+    version: "0.455.0",
+    retired: false,
+    parent,
+    mainSha: parent,
+    mainHistory: [parent],
+    mainVersion: "0.454.0",
+    parentVersion: "0.454.0",
+    remoteTag: false,
+  };
+  assert.equal(pinnedCandidatePublishError(base), null);
+  assert.match(
+    pinnedCandidatePublishError({ ...base, mainHistory: ["d".repeat(40)] }) ?? "",
+    /Release parent/,
+  );
+  assert.match(
+    pinnedCandidatePublishError({ ...base, mainVersion: "0.456.0" }) ?? "",
+    /Another release owns main/,
+  );
+  assert.match(
+    pinnedCandidatePublishError({ ...base, remoteTag: true }) ?? "",
+    /immutable tag exists/,
+  );
+});
 
 test("a pinned candidate preflight accepts the release branch", () => {
   assert.throws(

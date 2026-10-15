@@ -54,7 +54,88 @@ function runGit(args, acceptedExitCodes = [0], cwd = root) {
   return result;
 }
 
-function verifyGitReleaseTarget(tag, sha, version) {
+export function pinnedCandidatePublishError({
+  head,
+  sha,
+  eventSha,
+  tag,
+  version,
+  retired,
+  parent,
+  mainSha,
+  mainHistory,
+  mainVersion,
+  parentVersion,
+  remoteTag,
+}) {
+  if (
+    head !== sha ||
+    (eventSha != null && eventSha !== "" && eventSha !== sha) ||
+    `v${version}` !== tag
+  ) {
+    return "The pinned workflow checkout/tag must be the exact immutable H.";
+  }
+  if (retired) {
+    return [
+      "This cut has a retirement archive; never resume/requalify it.",
+      "Prepare a new official minor cut after the authenticated reservation completes.",
+    ].join(" ");
+  }
+  if (!mainHistory.includes(parent)) {
+    return `Release parent ${parent} is not on the first-parent history of current origin/main ${mainSha}`;
+  }
+  if (mainVersion !== parentVersion) {
+    return "Another release owns main; the pinned candidate cannot publish.";
+  }
+  if (remoteTag) {
+    return "A candidate cannot requalify after its immutable tag exists; resume its original R.";
+  }
+  return null;
+}
+
+function verifyPinnedCandidate(tag, sha, version, env) {
+  const parent = releaseParentSha(sha);
+  const mainSha = runGit(["rev-parse", "refs/remotes/origin/main"]).stdout.trim();
+  const error = pinnedCandidatePublishError({
+    head: runGit(["rev-parse", "HEAD"]).stdout.trim(),
+    sha,
+    eventSha: env.GITHUB_SHA,
+    tag,
+    version,
+    retired: runGit([
+      "ls-remote",
+      "--refs",
+      "origin",
+      `refs/heads/release-retired/${tag}`,
+    ]).stdout.trim() !== "",
+    parent,
+    mainSha,
+    mainHistory: runGit(["rev-list", "--first-parent", "refs/remotes/origin/main"])
+      .stdout.trim()
+      .split(/\r?\n/),
+    mainVersion: workspaceVersionFromCargoToml(
+      runGit(["show", "refs/remotes/origin/main:Cargo.toml"]).stdout,
+    ),
+    parentVersion: workspaceVersionFromCargoToml(runGit(["show", `${parent}:Cargo.toml`]).stdout),
+    remoteTag: runGit([
+      "ls-remote",
+      "--tags",
+      "origin",
+      `refs/tags/${tag}`,
+      `refs/tags/${tag}^{}`,
+    ]).stdout.trim() !== "",
+  });
+  if (error != null) throw new Error(error);
+  console.log(
+    `Immutable source ${sha} is authorized; moving main does not substitute source or artifacts.`,
+  );
+}
+
+function verifyGitReleaseTarget(tag, sha, version, env = process.env) {
+  if (env.RELEASE_PR_NUMBER != null && env.RELEASE_PR_NUMBER !== "") {
+    verifyPinnedCandidate(tag, sha, version, env);
+    return;
+  }
   const head = runGit(["rev-parse", "HEAD"]).stdout.trim();
   if (head !== sha) {
     throw new Error(`Checked out HEAD ${head} does not match release event SHA ${sha}`);
@@ -150,7 +231,7 @@ export function verifyReleaseTarget(env = process.env) {
     cargoToml: fs.readFileSync(path.join(root, "Cargo.toml"), "utf8"),
     packageManifests: readPackageManifests(),
   });
-  verifyGitReleaseTarget(tag, sha, version);
+  verifyGitReleaseTarget(tag, sha, version, env);
   const baseSha = releaseParentSha(sha);
   return {
     tag,
@@ -309,7 +390,7 @@ export async function verifyReleasePreflight(env = process.env, { bootstrap = tr
       readArtifactEntries: async (artifact) => downloadArtifactEntries({ artifact, token }),
     });
   }
-  verifyGitReleaseTarget(tag, sha, version);
+  verifyGitReleaseTarget(tag, sha, version, env);
   console.log(`Release preflight passed for ${tag} (${sha}) at workspace version ${version}.`);
   console.log(`Required workflows: ${requiredReleaseWorkflows.join(", ")}`);
 }
