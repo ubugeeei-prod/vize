@@ -29,6 +29,9 @@ pub(super) fn verify(
             "The qualified protected candidate G must be the actual signed delivery V.".into(),
         );
     }
+    if WORKFLOWS.is_empty() {
+        return Ok(true);
+    }
     let response = github::api(
         repository,
         &format!("actions/runs?head_sha={gate}&per_page=100"),

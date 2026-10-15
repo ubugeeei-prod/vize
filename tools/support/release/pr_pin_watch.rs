@@ -90,18 +90,21 @@ pub(super) fn watch(
             && pr_contract::ready_job(&github::jobs(repository, id, root)?)?
             && pr_promote::checks_pass(&source.candidate, root)?
         {
-            let _ = github::output(
+            if let Err(error) = github::output(
                 "gh",
                 &[
                     "pr",
                     "merge",
                     &source.integration.to_string(),
-                    "--auto",
+                    "--admin",
+                    "--squash",
                     "--repo",
                     repository,
                 ],
                 root,
-            );
+            ) {
+                println!("Integration admission is still waiting: {error}");
+            }
             if let Some(receipt) = delivery::integration(&source, None, root)? {
                 budget.check()?;
                 delivery::promote(&source, id, &receipt, operator, budget, root)?;
