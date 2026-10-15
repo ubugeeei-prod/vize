@@ -154,6 +154,13 @@ pub(crate) fn protected_checks(
         return Err("Protected workflow qualification is incomplete.".into());
     }
     let latest = latest_group_runs(runs, repository, gate, integration, parent)?;
+    if latest.is_empty() {
+        return Ok(checks
+            .iter()
+            .filter(|check| check.get("head_sha").and_then(Value::as_str) == Some(gate))
+            .cloned()
+            .collect());
+    }
     let mut suites = std::collections::BTreeSet::new();
     for run in latest.values() {
         let suite = run

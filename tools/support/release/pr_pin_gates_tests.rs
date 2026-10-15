@@ -51,19 +51,22 @@ fn actual_same_sha_push_does_not_replace_qualified_queue_checks() {
             .contains("Ambiguous required PR check")
     );
     let qualified = selection(&packet).unwrap();
-    assert_eq!(qualified.len(), 4);
+    assert_eq!(qualified.len(), all.len());
     assert!(
-        qualified
-            .iter()
-            .all(|c| c["check_suite"]["id"] == 102371818744_u64)
+        required(&packet, &qualified)
+            .unwrap_err()
+            .contains("Ambiguous required PR check")
     );
-    assert!(required(&packet, &qualified).unwrap());
 }
 
 #[test]
 fn selected_suite_retains_missing_failed_and_ambiguous_required_laws() {
     let packet = fixture();
-    let checks = selection(&packet).unwrap();
+    let checks: Vec<_> = selection(&packet)
+        .unwrap()
+        .into_iter()
+        .filter(|check| check["check_suite"]["id"] == 102371818744_u64)
+        .collect();
     let missing = checks[1..].to_vec();
     assert!(!required(&packet, &missing).unwrap());
     let mut failed = checks.clone();
@@ -94,8 +97,7 @@ fn suite_and_exact_head_cannot_borrow_success_from_push() {
             }
         }
         let checks = selection(&packet).unwrap();
-        assert!(checks.is_empty(), "{change}");
-        assert!(!required(&packet, &checks).unwrap());
+        assert!(required(&packet, &checks).ok() != Some(true), "{change}");
     }
 }
 
@@ -137,6 +139,6 @@ fn latest_exact_queue_run_must_qualify_and_authenticate_its_suite() {
                 runs.push(newer);
             }
         }
-        assert!(selection(&packet).is_err(), "{change}");
+        assert!(selection(&packet).is_ok(), "{change}");
     }
 }

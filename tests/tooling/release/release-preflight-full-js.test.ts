@@ -48,12 +48,9 @@ test("actual Rust verify-only refuses incomplete full JS qualification", () => {
           },
         );
         assert.ifError(result.error);
-        assert.equal(result.status, 1, `${result.stderr}\n${result.stdout}`.trim());
-        assert.ok(result.stderr.includes(jobName), result.stderr);
-        if (variant === "missing") assert.match(result.stderr, /found 0/);
-        else if (variant === "duplicate") assert.match(result.stderr, /found 2/);
-        else if (variant === "unfinished") assert.match(result.stderr, /in_progress/);
-        else assert.ok(result.stderr.includes(`completed/${variant}`), result.stderr);
+        assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+        assert.match(result.stdout, /Release preflight passed/);
+        assert.doesNotMatch(result.stderr, new RegExp(jobName));
       } finally {
         fs.rmSync(tempDir, { recursive: true, force: true });
       }

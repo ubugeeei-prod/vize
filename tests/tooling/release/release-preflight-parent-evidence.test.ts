@@ -9,9 +9,6 @@ import { isVersionMetadataOnlyRelease } from "../../../tools/support/compat/gith
 import { requiredReleaseWorkflows } from "../../../tools/support/compat/github/release-preflight-evidence.mjs";
 import { releaseEvidenceShas } from "../../../tools/support/compat/github/release-preflight.mjs";
 
-/** The workspace lint budget is zero warnings, and `.sort()` needs a comparator. */
-const byCodeUnit = (left: string, right: string) => (left < right ? -1 : left > right ? 1 : 0);
-
 const tagSha = "a".repeat(40);
 const parentSha = "b".repeat(40);
 
