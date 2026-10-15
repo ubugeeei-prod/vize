@@ -61,8 +61,9 @@ fn a_signal_after_the_exact_passing_payload_fails() {
             "signal: Some(11)",
         ]
     );
+    let needle = "{\"passed\":1}";
     assert!(
-        report.contains("{\"passed\":1}"),
+        report.split_once(needle).is_some(),
         "rendered result must stay in the evidence:\n{report}"
     );
     for output in [

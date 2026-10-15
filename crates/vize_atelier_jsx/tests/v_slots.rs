@@ -335,11 +335,16 @@ fn plain_slot_objects_forward_verbatim() {
         "const A = (f) => <B>{{ default: f }}</B>;",
     ] {
         assert_eq!(diagnostics(source), Vec::<String>::new(), "{source}");
-        assert!(render_code(source).contains("default:"), "{source}");
+        let rendered = render_code(source);
+        assert!(
+            rendered.split_once("default:").is_some(),
+            "{source}\n{rendered}"
+        );
     }
+    let forwarded = render_code("const A = (s) => <B v-slots={{ default: s.icon }}/>;");
     assert!(
-        render_code("const A = (s) => <B v-slots={{ default: s.icon }}/>;")
-            .contains("{ default: s.icon }")
+        forwarded.split_once("{ default: s.icon }").is_some(),
+        "{forwarded}"
     );
     // JSX or TS syntax inside keeps the expansion and its warning.
     assert_eq!(

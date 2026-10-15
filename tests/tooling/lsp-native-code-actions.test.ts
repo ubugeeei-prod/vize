@@ -105,7 +105,13 @@ test("checker quick fixes apply to the current authored Vue buffer without lint"
           actions?.map(({ title, kind }) => ({ title, kind })),
           [{ title: "Implement interface 'Greeting'", kind: "quickfix" }],
         );
-        assert.equal(await request(range, ["source"]), null);
+        assert.deepEqual(
+          (await request(range, ["source"]))?.map(({ title, kind }) => ({ title, kind })),
+          [
+            { title: "Organize Imports", kind: "source.organizeImports" },
+            { title: "Sort Imports", kind: "source.sortImports" },
+          ],
+        );
         assert.equal(await request(range, []), null);
         assert.equal(
           await request({ start: { line: 0, character: 1 }, end: { line: 0, character: 1 } }),

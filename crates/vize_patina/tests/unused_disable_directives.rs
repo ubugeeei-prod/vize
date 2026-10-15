@@ -83,5 +83,9 @@ fn a_region_reports_only_the_rules_that_never_fired() {
     );
     let found = lint(&source, true);
     assert_eq!(found.len(), 1, "{found:?}");
-    assert!(found[0].1.contains("'vue/require-v-for-key'"), "{found:?}");
+    let message = &found[0].1;
+    assert!(
+        message.split_once("'vue/require-v-for-key'").is_some(),
+        "{found:?}"
+    );
 }
