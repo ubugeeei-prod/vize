@@ -90,16 +90,17 @@ pub(super) fn watch(
             && pr_contract::ready_job(&github::jobs(repository, id, root)?)?
             && pr_promote::checks_pass(&source.candidate, root)?
         {
+            let integration = source.integration.to_string();
+            let endpoint = format!("repos/{repository}/pulls/{integration}/merge");
             if let Err(error) = github::output(
                 "gh",
                 &[
-                    "pr",
-                    "merge",
-                    &source.integration.to_string(),
-                    "--admin",
-                    "--squash",
-                    "--repo",
-                    repository,
+                    "api",
+                    "--method",
+                    "PUT",
+                    &endpoint,
+                    "-f",
+                    "merge_method=squash",
                 ],
                 root,
             ) {
