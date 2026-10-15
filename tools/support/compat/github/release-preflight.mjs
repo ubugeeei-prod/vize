@@ -102,12 +102,13 @@ function verifyPinnedCandidate(tag, sha, version, env) {
     eventSha: env.GITHUB_SHA,
     tag,
     version,
-    retired: runGit([
-      "ls-remote",
-      "--refs",
-      "origin",
-      `refs/heads/release-retired/${tag}`,
-    ]).stdout.trim() !== "",
+    retired:
+      runGit([
+        "ls-remote",
+        "--refs",
+        "origin",
+        `refs/heads/release-retired/${tag}`,
+      ]).stdout.trim() !== "",
     parent,
     mainSha,
     mainHistory: runGit(["rev-list", "--first-parent", "refs/remotes/origin/main"])
@@ -117,13 +118,14 @@ function verifyPinnedCandidate(tag, sha, version, env) {
       runGit(["show", "refs/remotes/origin/main:Cargo.toml"]).stdout,
     ),
     parentVersion: workspaceVersionFromCargoToml(runGit(["show", `${parent}:Cargo.toml`]).stdout),
-    remoteTag: runGit([
-      "ls-remote",
-      "--tags",
-      "origin",
-      `refs/tags/${tag}`,
-      `refs/tags/${tag}^{}`,
-    ]).stdout.trim() !== "",
+    remoteTag:
+      runGit([
+        "ls-remote",
+        "--tags",
+        "origin",
+        `refs/tags/${tag}`,
+        `refs/tags/${tag}^{}`,
+      ]).stdout.trim() !== "",
   });
   if (error != null) throw new Error(error);
   console.log(

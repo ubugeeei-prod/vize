@@ -151,7 +151,7 @@ function verifyRecipes(root, docs, e2e) {
   // generated-WASM cache. Do not freeze the other Docs job or product libraries.
   assert.equal(
     hash(JSON.stringify(docs.jobs["build-playground"])),
-    "c3c1d8d2ab9cc111c2de77d2d24e826a489cd78d3e2bc424bd92dad0f9c7d193",
+    "9fb6e8300bea6cbcaae07e8b019d78c4ebeba9d39e7caa9ecd3e6171f65b7023",
     "reviewed whole Docs WASM producer changed",
   );
   for (const [file, expected] of Object.entries(producerHashes))
