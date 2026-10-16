@@ -430,7 +430,7 @@ fn warmed_reachable_type_facts_do_not_expand_the_512_module_root_limit() {
     // reached. That shared store must not turn all 514 modules (root + 513
     // dependencies) into admitted facts in Wide's independent type world.
     let world = vize_atelier_sfc::script::ScriptCompileContext::new(&wide_script)
-        .resolve_type_world(wide.to_str().unwrap(), None, false);
+        .resolve_type_world(wide.to_str().unwrap(), None);
     assert_eq!(world.modules.len(), 514);
     assert_eq!(
         world
