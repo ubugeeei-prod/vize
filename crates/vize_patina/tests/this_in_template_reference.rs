@@ -2,8 +2,7 @@
 
 use serde::Deserialize;
 use vize_l0::String;
-use vize_patina::rules::opinionated::vue::ThisInTemplate;
-use vize_patina::{Linter, RuleRegistry, Severity};
+use vize_patina::{HelpLevel, LintPreset, Linter, Locale, Severity};
 
 #[derive(Debug, Deserialize, PartialEq)]
 struct Range {
@@ -25,9 +24,10 @@ struct Corpus {
 }
 
 fn linter() -> Linter {
-    let mut registry = RuleRegistry::new();
-    registry.register(Box::new(ThisInTemplate));
-    Linter::with_registry(registry)
+    Linter::with_preset(LintPreset::Ecosystem)
+        .with_enabled_rules(Some(vec!["vue/this-in-template".into()]))
+        .with_locale(Locale::En)
+        .with_help_level(HelpLevel::Full)
 }
 
 #[test]
