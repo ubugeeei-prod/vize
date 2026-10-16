@@ -12,9 +12,15 @@ async function digest(path) {
 
 function checkout(cwd) {
   const git = (...args) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
+  const sha = git("rev-parse", "HEAD");
+  const source = git("show", `${sha}:rust-toolchain.toml`);
+  const channels = [...source.matchAll(/^channel\s*=\s*"([^"]+)"\s*$/gm)];
+  if (channels.length !== 1 || !["1.99.0", "1.99.1"].includes(channels[0][1]))
+    throw new Error("Rust archive requires a reviewed committed source toolchain");
   return {
+    toolchain: channels[0][1],
     workspaceRoot: resolve(cwd),
-    sha: git("rev-parse", "HEAD"),
+    sha,
     tree: git("rev-parse", "HEAD^{tree}"),
   };
 }
@@ -29,8 +35,9 @@ export async function createArchiveReceipt(
   const disableTsgo = Object.hasOwn(env, "VIZE_TEST_DISABLE_TSGO")
     ? env.VIZE_TEST_DISABLE_TSGO
     : null;
+  const { toolchain, ...source } = checkout(cwd);
   if (
-    !rustcVersion?.startsWith("rustc 1.99.0 ") ||
+    !rustcVersion?.startsWith(`rustc ${toolchain} `) ||
     !nextestVersion?.includes("0.9.146") ||
     !(
       (requireTsgo === "1" && disableTsgo === null) ||
@@ -41,7 +48,7 @@ export async function createArchiveReceipt(
     throw new Error("Rust archive requires the pinned CI toolchain and TSGO runtime envelope");
   return {
     schemaVersion: 3,
-    ...checkout(cwd),
+    ...source,
     platform: process.platform,
     arch: process.arch,
     // cargo-binstall may select GNU or musl binaries on identical runners.

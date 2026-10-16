@@ -13,6 +13,17 @@ expression: result.diagnostics
             "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
         ),
         labels: [],
-        fix: None,
+        fix: Some(
+            Fix {
+                message: "Replace the numeric keyCode modifier with a named key",
+                edits: [
+                    TextEdit {
+                        start: 14,
+                        end: 16,
+                        new_text: "enter",
+                    },
+                ],
+            },
+        ),
     },
 ]

@@ -67,6 +67,7 @@ export function sourceJudgeFixture(t) {
       "Cargo.toml",
       "Cargo.lock",
       "rust-toolchain.toml",
+      "rust-measurement-toolchain.toml",
       "tools/benchmarks/scripts/instruction-counts-suites.mjs",
       "docs/davinci/plan/budgets.toml",
       "docs/davinci/plan/instruction-budgets.toml",

@@ -19,6 +19,7 @@ void test("Rust archives reject different source, baked paths, runner, nextest, 
     git("config", "user.name", "CI Test");
     git("config", "user.email", "ci@example.invalid");
     writeFileSync(join(cwd, "fixture"), "source\n");
+    writeFileSync(join(cwd, "rust-toolchain.toml"), '[toolchain]\nchannel = "1.99.1"\n');
     git("add", ".");
     git("commit", "-qm", "fixture");
     const archive = join(cwd, "tests.tar.zst");
@@ -26,7 +27,7 @@ void test("Rust archives reject different source, baked paths, runner, nextest, 
     const context = {
       cwd,
       nextestVersion: "cargo-nextest 0.9.146",
-      rustcVersion: "rustc 1.99.0 (fixture)",
+      rustcVersion: "rustc 1.99.1 (fixture)",
       env: { VIZE_TEST_REQUIRE_TSGO: "1", VIZE_NUXT_CONFIG_ITERATIONS: "100" },
     };
     const receipt = await createArchiveReceipt(archive, context);
@@ -34,7 +35,14 @@ void test("Rust archives reject different source, baked paths, runner, nextest, 
       createArchiveReceipt(archive, { ...context, rustcVersion: "rustc 1.98.0 (old producer)" }),
       /pinned CI toolchain and TSGO runtime envelope/,
     );
+    await assert.rejects(
+      createArchiveReceipt(archive, { ...context, rustcVersion: "rustc 1.99.0 (old patch)" }),
+      /pinned CI toolchain and TSGO runtime envelope/,
+    );
+    // An uncommitted downgrade cannot change the source authority.
+    writeFileSync(join(cwd, "rust-toolchain.toml"), '[toolchain]\nchannel = "1.99.0"\n');
     await verifyArchiveReceipt(receipt, archive, context);
+    writeFileSync(join(cwd, "rust-toolchain.toml"), '[toolchain]\nchannel = "1.99.1"\n');
     for (const key of [
       "schemaVersion",
       "sha",
@@ -147,4 +155,42 @@ void test("Rust tier gate rejects failed, cancelled, absent, and skipped require
     assert.throws(() => requireRustTier(event, "true", needs), {
       message: "Unexpected Rust tier event",
     });
+});
+
+void test("archive compiler authority follows the exact committed reviewed patch", async (t) => {
+  const cwd = mkdtempSync(join(tmpdir(), "vize-rust-archive-toolchain-"));
+  t.after(() => rmSync(cwd, { recursive: true, force: true }));
+  const git = (...args) => execFileSync("git", args, { cwd, encoding: "utf8" });
+  git("init", "-q");
+  git("config", "user.name", "CI Test");
+  git("config", "user.email", "ci@example.invalid");
+  const archive = join(cwd, "tests.tar.zst");
+  writeFileSync(archive, "archive bytes");
+  for (const channel of ["1.99.0", "1.99.1", "1.99.2", "stable"]) {
+    writeFileSync(join(cwd, "rust-toolchain.toml"), `[toolchain]\nchannel = "${channel}"\n`);
+    git("add", "rust-toolchain.toml");
+    git("commit", "-qm", `test: source Rust ${channel}`);
+    const context = {
+      cwd,
+      nextestVersion: "cargo-nextest 0.9.146",
+      rustcVersion: `rustc ${channel} (fixture)`,
+      env: { VIZE_TEST_REQUIRE_TSGO: "1", VIZE_NUXT_CONFIG_ITERATIONS: "100" },
+    };
+    if (["1.99.0", "1.99.1"].includes(channel)) {
+      const receipt = await createArchiveReceipt(archive, context);
+      await verifyArchiveReceipt(receipt, archive, context);
+      await assert.rejects(
+        createArchiveReceipt(archive, {
+          ...context,
+          rustcVersion: `rustc ${channel}-nightly (fixture)`,
+        }),
+        /pinned CI toolchain/,
+      );
+    } else {
+      await assert.rejects(
+        createArchiveReceipt(archive, context),
+        /reviewed committed source toolchain/,
+      );
+    }
+  }
 });

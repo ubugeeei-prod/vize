@@ -1,8 +1,8 @@
+import { measurementToolchain } from "./measurement-toolchain.mjs";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
-import { parseTomlLite } from "../../support/compat/davinci/toml-lite.mjs";
 import {
   fixtureDigest,
   GUEST_ENVIRONMENT,
@@ -113,8 +113,7 @@ export function build(root, target, out) {
   );
   fs.mkdirSync(out, { recursive: true });
   writeJson(path.join(out, "harness-source-before.json"), sourcePin);
-  const toolchain = parseTomlLite(fs.readFileSync(path.join(root, "rust-toolchain.toml"), "utf8"))
-    .toolchain.channel;
+  const toolchain = measurementToolchain(root);
   assert.equal(toolchain, "1.99.0", "same-input memory recipe requires pinned Rust 1.99.0");
   const compiler = run(
     "rustup",

@@ -62,7 +62,7 @@ export function typecheckerSourceIdentity(repoRoot: string): SourceIdentity {
   const channels = [...committed.matchAll(/^channel\s*=\s*"([^"]+)"\s*$/gm)];
   assert.equal(channels.length, 1, "one committed Rust toolchain stamp is required");
   const toolchain = channels[0][1];
-  assert(["1.98.0", "1.99.0"].includes(toolchain), "unsupported source Rust toolchain");
+  assert(["1.98.0", "1.99.0", "1.99.1"].includes(toolchain), "unsupported source Rust toolchain");
   return { sha, tree: git("rev-parse", `${sha}^{tree}`), toolchain };
 }
 

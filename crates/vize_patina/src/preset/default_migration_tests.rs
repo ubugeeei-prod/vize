@@ -131,7 +131,7 @@ fn n8n_explicit_selection_retains_whole_findings_without_default_leakage() {
 }
 
 #[test]
-fn migration_memberships_deduplicate_and_keep_no_fix_contracts() {
+fn migration_memberships_deduplicate_and_preserve_fix_contracts() {
     let data = corpus();
     for preset in LintPreset::ALL {
         let mut registry = RuleRegistry::with_preset(preset);
@@ -149,7 +149,10 @@ fn migration_memberships_deduplicate_and_keep_no_fix_contracts() {
                 .filter(|r| r.meta().name == name.as_str().unwrap())
                 .collect();
             assert_eq!(rules.len(), 1);
-            assert!(!rules[0].meta().fixable);
+            assert_eq!(
+                rules[0].meta().fixable,
+                rules[0].meta().name == "vue/no-deprecated-v-on-number-modifiers"
+            );
             assert_eq!(rules[0].meta().default_severity, crate::Severity::Error);
         }
     }

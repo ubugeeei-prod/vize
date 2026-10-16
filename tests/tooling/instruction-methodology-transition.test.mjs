@@ -281,3 +281,26 @@ void test("repository source pin remains strict independently of an archived rep
     fs.rmSync(temporary, { recursive: true, force: true });
   }
 });
+
+void test("development patch updates cannot change the pinned measurement compiler", () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "instruction-measurement-pin-"));
+  try {
+    const { current } = packet(families[0]);
+    fs.writeFileSync(
+      path.join(temporary, "rust-toolchain.toml"),
+      '[toolchain]\nchannel = "1.99.1"\n',
+    );
+    assert.throws(() => verifyRepositoryInstructionBudgets(current, temporary), /must be 1.99.0/);
+    const explicit = path.join(temporary, "rust-measurement-toolchain.toml");
+    fs.writeFileSync(explicit, '[toolchain]\nchannel = "1.99.0"\n');
+    verifyRepositoryInstructionBudgets(current, temporary);
+    for (const channel of ["1.99.1", "stable", "1.98.0"]) {
+      fs.writeFileSync(explicit, `[toolchain]\nchannel = "${channel}"\n`);
+      assert.throws(() => verifyRepositoryInstructionBudgets(current, temporary), /must be 1.99.0/);
+    }
+    fs.writeFileSync(explicit, "invalid TOML\n");
+    assert.throws(() => verifyRepositoryInstructionBudgets(current, temporary));
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
