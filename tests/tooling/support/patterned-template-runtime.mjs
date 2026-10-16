@@ -3,13 +3,14 @@ import { writeSync } from "node:fs";
 import process from "node:process";
 import { transformSync } from "@babel/core";
 import { Window } from "happy-dom";
-import { leaveMountedRuntimeProcess, traceMountedBackend } from "./davinci-mounted-trace.mjs";
+import { traceMountedBackend } from "./davinci-mounted-trace.mjs";
 import { runtimeProcessEvidence } from "./mounted-runtime-devtools.ts";
+import { forbidMountedRuntimeAddons } from "./mounted-runtime-native-boundary.ts";
 
 const evidence = runtimeProcessEvidence();
-// After the evidence listener, so a failed run still prints its phase before
-// the native shutdown hook is skipped.
-leaveMountedRuntimeProcess();
+// This observer evaluates JavaScript only; the bundler lives in a separate
+// producer whose natural exit is checked before its module can be imported.
+forbidMountedRuntimeAddons();
 const chunks = [];
 for await (const chunk of process.stdin) chunks.push(chunk);
 const { backend, code, cases } = JSON.parse(Buffer.concat(chunks).toString("utf8"));

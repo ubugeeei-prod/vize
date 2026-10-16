@@ -8,7 +8,14 @@ on:
       - "tests/tooling/support/davinci-mounted-trace.mjs"
       - "tests/tooling/support/davinci-transition-trace.mjs"
       - "tests/tooling/support/vue-vapor-release.mjs"
+      - "tests/tooling/support/mounted-runtime-source.ts"
+      - "tests/tooling/support/mounted-runtime-producer.ts"
+      - "tests/tooling/support/mounted-runtime-native-boundary.ts"
+      - "tests/tooling/support/mounted-runtime-native-exit.mjs"
+      - "tests/tooling/support/patterned-template-runtime.mjs"
+      - "tests/tooling/mounted-runtime-source.test.ts"
       - "tools/support/compat/github/compare-mounted-runtime-devtools.ts"
+      - "tools/support/compat/github/verify-mounted-runtime-boundary.ts"
       - ".github/workflows/mounted-runtime-devtools-comparison.yml"
   workflow_dispatch:
     inputs:
@@ -193,6 +200,9 @@ jobs:
         run: cargo test --profile ci --package vize_atelier_vapor --test davinci_transition_parity --no-run
       - name: Compare complete traces and all fresh subprocesses
         run: vp exec node tools/support/compat/github/compare-mounted-runtime-devtools.ts "$RUNNER_TEMP/mounted-runtime-devtools-comparison"
+      - name: Verify complete producer exits and the pure JavaScript observer
+        if: ${{ !cancelled() }}
+        run: vp exec node tools/support/compat/github/verify-mounted-runtime-boundary.ts "$RUNNER_TEMP/mounted-runtime-devtools-comparison/boundary"
       - name: Retain complete traces, lifecycle events and timing evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
